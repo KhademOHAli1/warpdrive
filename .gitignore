@@ -26,3 +26,6 @@ docs/parity-captures/
 
 # Optional project-local runtime; install from the version declared in package.json.
 .runtime/
+
+# Local/CI browser failure evidence; never commit fixture traces or screenshots.
+/test-results/browser-smoke/

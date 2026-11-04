@@ -20,7 +20,10 @@ export function PipelineDirectoryRowItem({
   const t = useAppTranslations("pipelineLifecycle");
   const name = <bdi dir="auto">{row.name}</bdi>;
   return (
-    <li className="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <li
+      id={`pipeline-${row.id}`}
+      className="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div className="min-w-0 space-y-1">
         <div className="break-words text-sm font-medium">
           {row.isArchived ? (
@@ -43,7 +46,7 @@ export function PipelineDirectoryRowItem({
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {!row.isArchived && (
             <Link
-              href={`/pipeline/${row.id}/edit`}
+              href={`/pipeline/${row.id}/edit?from=settings`}
               className="rounded-md px-2 py-1.5 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {t("editStages")}

@@ -11,12 +11,15 @@ export async function generateMetadata() {
 
 export default async function EditPipelinePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ from?: string | string[] }>;
 }): Promise<React.ReactNode> {
   const translateSales = await getAppTranslations("sales");
 
   const { id } = await params;
+  const origin = (await searchParams)?.from;
   const ctx = await createContext();
   if (ctx.actor === null) {
     return <main>{translateSales("unauthorized_d089c")}</main>;
@@ -39,6 +42,7 @@ export default async function EditPipelinePage({
       <EditPipelineClient
         key={pipeline.id}
         pipelineId={pipeline.id}
+        returnToSettings={origin === "settings"}
         pipelineName={pipeline.name}
         pipelineUpdatedAt={pipeline.updatedAt.toISOString()}
         snapshotId={randomUUID()}

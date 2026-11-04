@@ -10,10 +10,11 @@ type History = {
 };
 type Action =
   | { type: "edit"; value: SetStateAction<WorkflowDefinition> }
-  | { type: "adopt"; value: WorkflowDefinition }
+  | { type: "adopt" | "reset"; value: WorkflowDefinition }
   | { type: "undo" | "redo" };
 
 function reduce(state: History, action: Action): History {
+  if (action.type === "reset") return { past: [], present: action.value, future: [] };
   if (action.type === "adopt") return { ...state, present: action.value };
   if (action.type === "edit") {
     const next = typeof action.value === "function" ? action.value(state.present) : action.value;
@@ -45,6 +46,7 @@ export function useGraphHistory(initial: WorkflowDefinition) {
       [],
     ),
     adopt: useCallback((value: WorkflowDefinition) => dispatch({ type: "adopt", value }), []),
+    reset: useCallback((value: WorkflowDefinition) => dispatch({ type: "reset", value }), []),
     undo: useCallback(() => dispatch({ type: "undo" }), []),
     redo: useCallback(() => dispatch({ type: "redo" }), []),
     canUndo: state.past.length > 0,

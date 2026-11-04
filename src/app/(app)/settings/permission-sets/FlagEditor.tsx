@@ -18,13 +18,14 @@ import {
   changedPermissionFlags,
   completePermissionFlags,
   type PermissionFlagMap,
+  type PermissionFlagValues,
 } from "./permissionSetFlags";
 
 interface Props {
   setId: string;
   name: string;
   flags: PermissionFlagMap;
-  onSaved: () => void;
+  onSaved: (flags: PermissionFlagValues) => void;
   onDirtyChange?: (dirty: boolean) => void;
   onPendingChange?: (pending: boolean) => void;
 }
@@ -77,7 +78,11 @@ export const FlagEditor = forwardRef<FlagEditorHandle, Props>(function FlagEdito
       setSaved(current);
       setStatus(true);
       onDirtyChange?.(false);
-      onSaved();
+      try {
+        onSaved(current);
+      } catch {
+        // A refresh callback cannot turn an acknowledged flag save into a failed write.
+      }
       return true;
     } catch {
       setError(L._errors.generic);

@@ -6,6 +6,7 @@ import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Switch } from "@/components/ui/Switch";
 import type { InterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import {
+  type PrefActionResult,
   setOpenDetailsAfterCreateAction,
   setScheduleFollowUpAfterWonAction,
   setUiFlagAction,
@@ -59,6 +60,8 @@ function Row({
   );
 }
 
+type BooleanWriteState = { persisted: boolean; revision: number; queue: Promise<void> };
+
 // Interface personal preferences (Pipedrive parity). Each toggle saves optimistically: flip the
 // local state immediately, then persist; on failure revert and surface the error app-wide. No batch
 // Save button, matching the schedule-follow-up toggle that already lives on this page.
@@ -93,34 +96,95 @@ export function InterfacePreferences({
   const [openDetails, setOpenDetails] = useState<OpenDetailsAfterCreate>(
     prefs.openDetailsAfterCreate,
   );
+  const flagWritesRef = useRef<Partial<Record<UiFlagKey, BooleanWriteState>>>({});
+  const followUpWriteRef = useRef<BooleanWriteState>({
+    persisted: initialScheduleFollowUp,
+    revision: 0,
+    queue: Promise.resolve(),
+  });
   const openDetailsRef = useRef(prefs.openDetailsAfterCreate);
   const persistedOpenDetailsRef = useRef(prefs.openDetailsAfterCreate);
   const openDetailsRevisionRef = useRef(0);
   const openDetailsWriteQueueRef = useRef<Promise<void>>(Promise.resolve());
 
-  async function toggleFlag(key: UiFlagKey, next: boolean): Promise<void> {
-    setFlags((f) => ({ ...f, [key]: next }));
-    const r = await setUiFlagAction({ key, value: next }, readCsrfToken());
-    if (!r.ok) {
-      setFlags((f) => ({ ...f, [key]: !next }));
-      reportError(r.error.id);
+  function refreshPreferences(): void {
+    try {
+      router.refresh();
+    } catch {
+      // A refresh failure neither undoes an acknowledged write nor poisons its write queue.
+    }
+  }
+
+  function failBooleanWrite(
+    write: BooleanWriteState,
+    revision: number,
+    rollback: (persisted: boolean) => void,
+    errorId?: string,
+  ): void {
+    if (revision !== write.revision) return;
+    rollback(write.persisted);
+    reportError(errorId);
+  }
+
+  async function persistBooleanWrite(
+    write: BooleanWriteState,
+    next: boolean,
+    revision: number,
+    operation: () => Promise<PrefActionResult>,
+    rollback: (persisted: boolean) => void,
+  ): Promise<void> {
+    try {
+      const result = await operation();
+      if (!result.ok) {
+        failBooleanWrite(write, revision, rollback, result.error.id);
+        return;
+      }
+    } catch {
+      failBooleanWrite(write, revision, rollback);
       return;
     }
-    router.refresh();
+    // A superseded success is still the durable baseline for a later failed intent.
+    write.persisted = next;
+    if (revision === write.revision) refreshPreferences();
+  }
+
+  function toggleFlag(key: UiFlagKey, next: boolean): void {
+    const write = flagWritesRef.current[key] ?? {
+      persisted: flags[key],
+      revision: 0,
+      queue: Promise.resolve(),
+    };
+    flagWritesRef.current[key] = write;
+    const revision = ++write.revision;
+    setFlags((f) => ({ ...f, [key]: next }));
+    // Each flag owns its queue; another preference need not wait for this write.
+    write.queue = write.queue.then(() =>
+      persistBooleanWrite(
+        write,
+        next,
+        revision,
+        () => setUiFlagAction({ key, value: next }, readCsrfToken()),
+        (persisted) => setFlags((current) => ({ ...current, [key]: persisted })),
+      ),
+    );
   }
 
   // "Show add activity modal after winning a deal" (Pipedrive's first Interface toggle). Keeps its
   // own dedicated action because the deal page reads this flag directly, not through the client
   // provider.
-  async function toggleScheduleFollowUp(next: boolean): Promise<void> {
+  function toggleScheduleFollowUp(next: boolean): void {
+    const write = followUpWriteRef.current;
+    const revision = ++write.revision;
     setScheduleFollowUp(next);
-    const r = await setScheduleFollowUpAfterWonAction({ enabled: next }, readCsrfToken());
-    if (!r.ok) {
-      setScheduleFollowUp(!next);
-      reportError(r.error.id);
-      return;
-    }
-    router.refresh();
+    write.queue = write.queue.then(() =>
+      persistBooleanWrite(
+        write,
+        next,
+        revision,
+        () => setScheduleFollowUpAfterWonAction({ enabled: next }, readCsrfToken()),
+        setScheduleFollowUp,
+      ),
+    );
   }
 
   function failOpenDetailsWrite(revision: number, errorId?: string): void {
@@ -144,7 +208,7 @@ export function InterfacePreferences({
       return;
     }
     persistedOpenDetailsRef.current = next;
-    if (revision === openDetailsRevisionRef.current) router.refresh();
+    if (revision === openDetailsRevisionRef.current) refreshPreferences();
   }
 
   function writeOpenDetails(

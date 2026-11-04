@@ -51,6 +51,7 @@ interface EditPipelineClientProps {
   pipelineUpdatedAt: string;
   snapshotId: string;
   stages: InitialStage[];
+  returnToSettings?: boolean;
 }
 
 export function EditPipelineClient({
@@ -59,11 +60,15 @@ export function EditPipelineClient({
   pipelineUpdatedAt,
   snapshotId,
   stages,
+  returnToSettings = false,
 }: EditPipelineClientProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
   const locale = useLocale();
 
   const router = useRouter();
+  const returnHref = returnToSettings
+    ? `/settings/company/pipelines#${encodeURIComponent(`pipeline-${pipelineId}`)}`
+    : `/pipeline/${pipelineId}`;
   const queryClient = useQueryClient();
   const nameId = useId();
   const originalIds = stages.map((s) => s.id);
@@ -163,7 +168,7 @@ export function EditPipelineClient({
         setPendingReorder(false);
       }
       queryClient.removeQueries({ queryKey: BOARD_QUERY_KEY(pipelineId) });
-      router.push(`/pipeline/${pipelineId}`);
+      router.push(returnHref);
     } catch {
       fail(ERROR_IDS.UI_ACTION_UNCONFIRMED);
     } finally {
@@ -191,7 +196,7 @@ export function EditPipelineClient({
         <div className="flex items-center gap-2 self-end">
           <button
             type="button"
-            onClick={() => router.push(`/pipeline/${pipelineId}`)}
+            onClick={() => router.push(returnHref)}
             className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
           >
             {translateSales("cancel_19766")}

@@ -58,6 +58,13 @@ class ReleaseAPI(PublicationAPI):
             return [self.release]
         return super().pages(path, key)
     def request(self, path, method="GET", payload=None):
+        if "/code-scanning/analyses?" in path and method == "GET":
+            return [{"id": index, "commit_sha": REVISION, "category": f"/language:{language}", "tool": {"name": "CodeQL"}, "error": ""}
+                    for index, language in enumerate(("javascript-typescript", "actions", "python"), 1)]
+        if "/code-scanning/alerts?" in path and method == "GET":
+            return []
+        if path.endswith("/git/ref/heads/main") and method == "GET":
+            return {"ref": "refs/heads/main", "object": {"type": "commit", "sha": REVISION}}
         if path.endswith("/releases/9") and method == "GET" and self.flip_prerelease_on_read:
             self.release["prerelease"] = True
         return super().request(path, method, payload)

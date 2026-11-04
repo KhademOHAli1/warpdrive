@@ -31,17 +31,25 @@ export function CompanyGeneralClient(props: Props): React.ReactNode {
     setPending(true);
     setSaved(false);
     setFailed(false);
+    let result: Awaited<ReturnType<typeof updateCompanyGeneralAction>>;
     try {
-      const r = await updateCompanyGeneralAction({ companyName: submittedName }, readCsrfToken());
-      if (r.ok) {
-        setSavedName(submittedName);
-        setSaved(true);
-        router.refresh();
-      } else setFailed(true);
+      result = await updateCompanyGeneralAction({ companyName: submittedName }, readCsrfToken());
     } catch {
       setFailed(true);
+      return;
     } finally {
       setPending(false);
+    }
+    if (!result.ok) {
+      setFailed(true);
+      return;
+    }
+    setSavedName(submittedName);
+    setSaved(true);
+    try {
+      router.refresh();
+    } catch {
+      // The name was saved; a failed refresh must not invite another save of the same value.
     }
   }
 

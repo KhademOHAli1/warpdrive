@@ -12,6 +12,7 @@ import {
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
+import { selectRunBranch } from "./runBranchSelection";
 import { advanceRunStep } from "./runStep";
 import { definitionSchema } from "./schemas";
 
@@ -57,10 +58,13 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
     const definition = parsed.data;
     const node = definition.nodes.find((item) => item.id === run.nextNodeId);
     if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
-    const result = await advanceRunStep(tx, actor, node, run, now, signal);
+    const result = await advanceRunStep(tx, actor, node, run, now, definition, signal);
     if (!result.ok) return failRun(tx, run, result.error, now, signal);
     if (result.value.status === "waiting") return ok("waiting" as const);
     const output = result.value.output;
+    const selected = selectRunBranch(definition, node, output);
+    if (!selected.ok) return failRun(tx, run, selected.error, now, signal);
+    const next = selected.value;
     await tx.insert(workflowSteps).values({
       runId,
       nodeId: node.id,
@@ -68,8 +72,6 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
       output,
       completedAt: now,
     });
-    const port = node.type === "condition" ? (output.result === true ? "true" : "false") : "next";
-    const next = definition.edges.find((edge) => edge.from === node.id && edge.port === port);
     const status = next === undefined ? ("succeeded" as const) : ("running" as const);
     await tx
       .update(workflowRuns)

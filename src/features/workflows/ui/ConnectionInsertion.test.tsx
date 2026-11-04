@@ -7,9 +7,33 @@ import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { validateDefinition } from "../definition";
 import { initialBlankDefinition, initialDefinition } from "../editorModel";
+import english from "../messages/workflows.en.json";
 import { currentLayout, positionFor } from "../nodeLayout";
 import type { WorkflowDefinition } from "../schemas";
 import { BuilderWorkspace } from "./BuilderWorkspace";
+import { paletteWorkflowId, readyPaletteRead } from "./palette.TestHelpers";
+
+vi.mock("./useWorkflowConfigurationReferences", () => ({
+  useWorkflowConfigurationReferences: () => ({
+    status: "ready",
+    options: [],
+    search: "",
+    onSearch: vi.fn(),
+    nextCursor: null,
+    selected: undefined,
+    unavailable: false,
+    stale: false,
+  }),
+}));
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
+}));
 
 vi.mock("@/features/workflows/ui/WorkflowCanvas", () => ({
   WorkflowCanvas: () => <div>Canvas omitted from connection insertion regression</div>,
@@ -53,7 +77,16 @@ function Workspace({
     onCommit(committed);
     setDefinition(committed);
   };
-  return <BuilderWorkspace definition={definition} onChange={change} editable issues={[]} />;
+  return (
+    <BuilderWorkspace
+      workflowId={paletteWorkflowId}
+      paletteRead={readyPaletteRead()}
+      definition={definition}
+      onChange={change}
+      editable
+      issues={[]}
+    />
+  );
 }
 
 function renderWorkspace(initial: WorkflowDefinition, locale: "en" | "fa" | "de" = "en") {
@@ -88,7 +121,12 @@ it("opens an occupied output palette without committing and restores its opener 
   expect(within(dialog).getByRole("button", { name: /^Read deal/ })).toBeEnabled();
   expect(within(dialog).getByRole("button", { name: /^Create task/ })).toBeEnabled();
   expect(within(dialog).getByRole("button", { name: /^Wait/ })).toBeEnabled();
-  expect(within(dialog).queryByRole("button", { name: /^Condition/ })).not.toBeInTheDocument();
+  const condition = within(dialog).getByRole("button", { name: /^Condition/ });
+  expect(condition).toBeVisible();
+  expect(condition).toHaveAttribute("aria-disabled", "true");
+  expect(condition).toHaveTextContent(english.paletteLinearOnly);
+  await user.click(condition);
+  expect(dialog).toBeVisible();
   expect(onCommit).not.toHaveBeenCalled();
   expect(initial).toEqual(before);
 

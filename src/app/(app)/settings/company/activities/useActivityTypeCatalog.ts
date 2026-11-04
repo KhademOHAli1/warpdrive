@@ -57,7 +57,11 @@ export function useActivityTypeCatalog(initial: ActivityTypeRow[]) {
       }
       change.commit?.();
       setSaved(true);
-      router.refresh();
+      try {
+        router.refresh();
+      } catch {
+        // The write was acknowledged; refresh must not roll it back or invite a duplicate retry.
+      }
       return true;
     } catch {
       change.rollback?.();

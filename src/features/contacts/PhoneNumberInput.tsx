@@ -1,4 +1,5 @@
 "use client";
+import { useId } from "react";
 import { Input } from "@/components/ui/Input";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { normalizePhoneInput, type PhoneCountry } from "@/utils/phoneNormalization";
@@ -25,6 +26,7 @@ export function PhoneNumberInput({
   className?: string;
 }) {
   const t = useAppTranslations("dataConventions");
+  const guidanceId = useId();
   const parsed = normalizePhoneInput(value, country);
   const hasValue = value.trim() !== "";
   return (
@@ -40,6 +42,7 @@ export function PhoneNumberInput({
         <Input
           id={id}
           aria-label={ariaLabel}
+          aria-describedby={hasValue ? guidanceId : undefined}
           type="tel"
           dir="ltr"
           maxLength={MAX_PHONE_LEN}
@@ -50,7 +53,7 @@ export function PhoneNumberInput({
         />
       </div>
       {hasValue && (
-        <p className="text-xs text-muted-foreground" aria-live="polite">
+        <p id={guidanceId} className="text-xs text-muted-foreground" aria-live="polite">
           {parsed.status === "valid" ? (
             <>
               {t("phone.internationalFormat")}: <bdi dir="ltr">{parsed.e164}</bdi>

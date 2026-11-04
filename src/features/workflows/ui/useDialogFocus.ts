@@ -19,7 +19,7 @@ export function useDialogFocus() {
     restore(event: Event, fallback: HTMLElement | null = null) {
       // These dialogs have several possible openers, so Radix has no single DialogTrigger.
       event.preventDefault();
-      if (target.current !== null && !focusAvailable(target.current)) focusAvailable(fallback);
+      if (!focusAvailable(target.current)) focusAvailable(fallback);
     },
   };
 }

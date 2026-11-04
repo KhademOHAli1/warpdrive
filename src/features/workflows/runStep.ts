@@ -4,10 +4,12 @@ import type { Db } from "@/db/client";
 import { workflowRuns } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
+import { validateNodeConfiguration } from "./configurationValidation";
 import { delayResumeAt } from "./delay";
+import { executableNode } from "./readiness";
 import { executeRunNode } from "./runActions";
 import type { StepOutput } from "./runTypes";
-import type { WorkflowNode } from "./schemas";
+import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 
 type StepProgress = { status: "waiting" } | { status: "completed"; output: StepOutput };
 
@@ -18,8 +20,15 @@ export async function advanceRunStep(
   node: WorkflowNode,
   run: typeof workflowRuns.$inferSelect,
   now: Date,
+  definition: WorkflowDefinition,
   signal: AbortSignal,
 ): Promise<Result<StepProgress, string>> {
+  if (!executableNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
+  if (
+    node.type !== "activity.create" &&
+    validateNodeConfiguration(node, { definition }).status !== "valid"
+  )
+    return err(ERROR_IDS.WORKFLOW_INVALID);
   if (run.status === "waiting") {
     const deadline = run.resumeAt;
     if (node.type !== "delay" || deadline === null || !Number.isFinite(deadline.getTime()))
@@ -47,6 +56,7 @@ export async function advanceRunStep(
     run.outputs,
     run.trigger,
     run.mode === "simulation",
+    definition,
     signal,
   );
   return result.ok ? ok({ status: "completed", output: result.value }) : result;

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useSyncedState } from "@/lib/useSyncedState";
 import { CreatePermissionSetDialog } from "./CreatePermissionSetDialog";
 import { FlagEditor, type FlagEditorHandle } from "./FlagEditor";
 import { PermissionSetDirectory } from "./PermissionSetDirectory";
@@ -12,12 +13,14 @@ import type { PermissionSetRow } from "./types";
 export function PermissionSetsClient({ sets }: { sets: PermissionSetRow[] }): React.ReactElement {
   const L = useSettingsMessages();
   const router = useRouter();
+  // Keep acknowledged flags when revisiting a role before refreshed server props arrive.
+  const [rows, setRows] = useSyncedState(sets);
   const editor = useRef<FlagEditorHandle>(null);
   const [selectedId, setSelectedId] = useState(sets[0]?.id);
   const [dirty, setDirty] = useState(false);
   const [pending, setPending] = useState(false);
   const [nextId, setNextId] = useState<string | null>(null);
-  const selected = sets.find((set) => set.id === selectedId) ?? sets[0];
+  const selected = rows.find((set) => set.id === selectedId) ?? rows[0];
 
   function select(id: string): void {
     setSelectedId(id);
@@ -44,7 +47,7 @@ export function PermissionSetsClient({ sets }: { sets: PermissionSetRow[] }): Re
         <CreatePermissionSetDialog disabled={pending} onCreated={() => router.refresh()} />
       </div>
       <PermissionSetDirectory
-        sets={sets}
+        sets={rows}
         selectedId={selected?.id}
         pending={pending}
         onSelect={requestSelection}
@@ -60,7 +63,14 @@ export function PermissionSetsClient({ sets }: { sets: PermissionSetRow[] }): Re
           setId={selected.id}
           name={selected.name}
           flags={selected.flags}
-          onSaved={() => router.refresh()}
+          onSaved={(flags) => {
+            setRows((current) =>
+              current.map((set) =>
+                set.id === selected.id ? { ...set, flags: { ...flags } } : set,
+              ),
+            );
+            router.refresh();
+          }}
           onDirtyChange={setDirty}
           onPendingChange={setPending}
         />

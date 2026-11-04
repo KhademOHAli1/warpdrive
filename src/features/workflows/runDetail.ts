@@ -4,6 +4,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflowRuns, workflowSteps, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { getWorkflow } from "./queries";
 import { describeRunRecovery, readFailureHistories } from "./runRecovery";
@@ -17,8 +18,11 @@ export async function readRunDetail(
   runId: string,
   signal: AbortSignal,
 ) {
+  signal.throwIfAborted();
   if (!z.string().uuid().safeParse(runId).success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  const workflow = await getWorkflow(db, actor, workflowId, signal);
+  const currentActor = await hydrateActor(db, actor.id, signal);
+  if (currentActor === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const workflow = await getWorkflow(db, currentActor, workflowId, signal);
   if (!workflow.ok) return workflow;
   const [run] = await db
     .select({
@@ -67,7 +71,7 @@ export async function readRunDetail(
   const { stored, ...safeRun } = run;
   const recovery = await describeRunRecovery(
     db,
-    actor,
+    currentActor,
     workflow.value,
     stored,
     run.definition,

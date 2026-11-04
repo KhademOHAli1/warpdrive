@@ -25,9 +25,13 @@ function applyAppearance(value: Appearance): void {
   document.documentElement.classList.toggle(DARK_CLASS, isDarkAppearance(value, prefersDark()));
 }
 
+export type AppearanceSaveStatus = "idle" | "saving" | "saved" | "error";
+
 export interface AppearanceChoice {
   value: Appearance;
   choose: (next: string) => void;
+  status: AppearanceSaveStatus;
+  retry: () => void;
 }
 
 // Owns picking an appearance: paint first, persist second, revert on failure. Separate from any
@@ -35,6 +39,8 @@ export interface AppearanceChoice {
 export function useAppearanceChoice(stored: Appearance): AppearanceChoice {
   const reportError = useActionError();
   const [value, setValue] = useState<Appearance>(stored);
+  const [status, setStatus] = useState<AppearanceSaveStatus>("idle");
+  const failedChoice = useRef<Appearance | null>(null);
   const lastSaved = useRef<Appearance>(stored);
   // Only the newest save may commit or revert. An older one settling last would speak for a
   // choice the user has already moved off, reverting what is on screen or reporting a stale error.
@@ -73,6 +79,8 @@ export function useAppearanceChoice(stored: Appearance): AppearanceChoice {
     const appearance = parseAppearance(next);
     const request = latestRequest.current + 1;
     latestRequest.current = request;
+    failedChoice.current = null;
+    setStatus("saving");
     setValue(appearance);
     applyAppearance(appearance);
     // Queue behind the save in flight. Ignoring a stale response is not enough on its own: two
@@ -87,12 +95,26 @@ export function useAppearanceChoice(stored: Appearance): AppearanceChoice {
     // Record what landed even for a superseded pick: it is what the database now holds, so it is
     // what a later failure must roll back to.
     if (r.ok) lastSaved.current = appearance;
-    if (request !== latestRequest.current || r.ok) return;
+    if (request !== latestRequest.current) return;
+    if (r.ok) {
+      setStatus("saved");
+      return;
+    }
+    failedChoice.current = appearance;
+    setStatus("error");
     const landed = lastSaved.current;
     setValue(landed);
     applyAppearance(landed);
     reportError(r.error.id);
   }
 
-  return { value, choose: (next) => void run(next) };
+  return {
+    value,
+    choose: (next) => void run(next),
+    status,
+    retry: () => {
+      const failed = failedChoice.current;
+      if (failed !== null) void run(failed);
+    },
+  };
 }

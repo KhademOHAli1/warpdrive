@@ -160,7 +160,7 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
               <h3 dir="auto" className="text-sm font-semibold">
                 {displayNodeName(node, locale)}
               </h3>
-              <NodeSummary node={node} />
+              <NodeSummary node={node} definition={detail.definition} />
             </div>
           )}
         </aside>

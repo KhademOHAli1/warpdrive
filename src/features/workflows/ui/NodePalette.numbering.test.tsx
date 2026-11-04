@@ -5,8 +5,10 @@ import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import type { NumberingSystem } from "@/lib/numberingSystem";
-import type { CreatableNodeType } from "../nodeFactory";
+import type { PickerSelection } from "../paletteContext";
 import { NodePalette } from "./NodePalette";
+import { paletteDefinition, readyPaletteRead } from "./palette.TestHelpers";
+import { buildPaletteView } from "./paletteView";
 
 afterEach(cleanup);
 
@@ -52,17 +54,23 @@ const scenarios: PaletteBoundsScenario[] = [
 it.each(scenarios)(
   "shows selected-numbering duration bounds in the palette for $name",
   ({ locale, numberingSystem, buttonName, expectedBounds }) => {
-    const onAdd = vi.fn<(type: CreatableNodeType) => void>();
+    const onChoose = vi.fn<(selection: PickerSelection) => void>();
     const onClose = vi.fn<() => void>();
     const preferences = numberingSystem === undefined ? { locale } : { locale, numberingSystem };
+    const model = buildPaletteView(
+      paletteDefinition(),
+      { kind: "detached" },
+      readyPaletteRead(),
+      true,
+    );
     render(
       <LocaleProvider {...preferences}>
-        <NodePalette open onClose={onClose} onAdd={onAdd} />
+        <NodePalette open onClose={onClose} model={model} onChoose={onChoose} />
       </LocaleProvider>,
     );
     const wait = screen.getByRole("button", { name: buttonName });
     expect(wait).toBeVisible();
-    expect(onAdd).not.toHaveBeenCalled();
+    expect(onChoose).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
 
     // Grouping punctuation is presentation; selected digits and both bounds must remain visible.

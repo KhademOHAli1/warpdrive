@@ -118,7 +118,11 @@ export function EnrichmentClient({
       // The mutation was acknowledged even if its cached readiness could not be refreshed.
       reportError();
     }
-    router.refresh();
+    try {
+      router.refresh();
+    } catch {
+      // The mutation was acknowledged; refresh must not retain a key as a failed-save draft.
+    }
     return true;
   }
 

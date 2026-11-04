@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import type { workflowRuns, workflowSteps } from "@/db/schema";
 import { initialDefinition } from "./editorModel";
 import { coherentFailedTask, retryableTaskDefinition } from "./runRetryProfile";
+import type { WorkflowNode } from "./schemas";
 
 function fixture() {
   const definition = initialDefinition({
@@ -97,3 +98,20 @@ it.each([
   if (cause === "invalidTime") step.completedAt = new Date(Number.NaN);
   expect(coherentFailedTask(f.definition, f.run, f.steps)).toBeNull();
 });
+
+const customRetrySettings: WorkflowNode["config"][] = [
+  {},
+  { "848408c6-faf7-4234-8de1-c63f1c9107dc": { kind: "value", value: 0 } },
+];
+it.each(customRetrySettings)(
+  "keeps custom-bearing task graphs outside the existing retry profile",
+  (customFields) => {
+    const f = fixture();
+    const task = f.definition.nodes.find((node) => node.type === "activity.create");
+    if (task === undefined) throw new Error("Missing task fixture");
+    task.config.customFields = customFields;
+    const before = structuredClone(f.definition);
+    expect(retryableTaskDefinition(f.definition)).toBeNull();
+    expect(f.definition).toEqual(before);
+  },
+);

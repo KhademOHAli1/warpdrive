@@ -46,7 +46,7 @@ afterEach(cleanup);
 
 async function enrollThroughSettings() {
   showSecurity(<SecuritySettings initial={securityStatus} />);
-  fireEvent.click(screen.getByRole("button", { name: "Manage" }));
+  fireEvent.click(screen.getByRole("button", { name: "Manage: Two-step verification" }));
   const dialog = screen.getByRole("dialog", { name: "Two-step verification" });
   fireEvent.click(within(dialog).getByRole("button", { name: "Set up authenticator" }));
   await within(dialog).findByText(PRIVATE_SEED);
@@ -106,7 +106,9 @@ test("SecurityAction protects real recovery-code children at its arbitrary-child
       <RecoveryCodes codes={PRIVATE_CODES} onContinue={vi.fn()} />
     </SecurityAction>,
   );
-  const trigger = screen.getByRole("button", { name: "Open security action" });
+  const trigger = screen.getByRole("button", {
+    name: "Open security action: Synthetic security action",
+  });
   fireEvent.click(trigger);
   const dialog = screen.getByRole("dialog", { name: "Synthetic security action" });
   const code = within(dialog).getByText(PRIVATE_CODES[0]);

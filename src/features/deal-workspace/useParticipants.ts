@@ -36,8 +36,16 @@ export function useParticipants(
   const participants = participantsQ.data ?? [];
 
   async function refresh(): Promise<void> {
-    await utils.deal.participants.invalidate({ dealId });
-    router.refresh();
+    try {
+      await utils.deal.participants.invalidate({ dealId });
+    } catch {
+      // Cache refresh failure does not undo the acknowledged participant write.
+    }
+    try {
+      router.refresh();
+    } catch {
+      // Page refresh failure does not undo the acknowledged participant write.
+    }
   }
 
   async function link(personId: string): Promise<string | null> {
@@ -67,9 +75,12 @@ export function useParticipants(
       readCsrfToken(),
     );
     if (!r.ok) return createFailureMessage(r.error.id, translateSales);
-    await Promise.all([
-      utils.contacts.personOptions.invalidate(),
-      orgId !== null ? utils.contacts.listPeopleForOrg.invalidate({ orgId }) : undefined,
+    // Refresh failures must not prevent linking the acknowledged created person.
+    await Promise.allSettled([
+      Promise.resolve().then(() => utils.contacts.personOptions.invalidate()),
+      orgId !== null
+        ? Promise.resolve().then(() => utils.contacts.listPeopleForOrg.invalidate({ orgId }))
+        : undefined,
     ]);
     const linkError = await link(r.value.id);
     if (linkError !== null)

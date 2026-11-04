@@ -311,3 +311,160 @@ it("disables mutations when no server-established account identity is available"
   expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
   expect(api.createCalendarEventAction).not.toHaveBeenCalled();
 });
+
+function expectNoCalendarWrites(): void {
+  expect(api.createCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.editCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.completeCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.deleteCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.retryCalendarReminderAction).not.toHaveBeenCalled();
+  expect(api.invalidate).not.toHaveBeenCalled();
+}
+
+it.each([
+  ["returned failure", "E_PERM_001"],
+  ["rejected read", null],
+  ["stale reminder read", "E_ACTIVITY_010"],
+  ["invalid reminder read", "E_ACTIVITY_009"],
+] as const)(
+  "clears a failed manual reminder read after a successful refreshed status (%s)",
+  async (_failure, errorId) => {
+    if (errorId === null) api.readCalendarEventAction.mockRejectedValueOnce(new Error("offline"));
+    else api.readCalendarEventAction.mockResolvedValueOnce({ ok: false, error: { id: errorId } });
+    const onClose = vi.fn();
+    const onSaved = vi.fn();
+    render(view({ editing: event, onClose, onSaved }));
+    fireEvent.change(screen.getByLabelText("Event title"), { target: { value: "Authored title" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "<p>Authored note</p>" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Refresh status" }));
+    await screen.findByRole("alert");
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Refresh status" })).not.toBeDisabled(),
+    );
+    let finishRead: ((value: { ok: true; value: EditableActivity }) => void) | undefined;
+    const refreshed = new Promise<{ ok: true; value: EditableActivity }>((resolve) => {
+      finishRead = resolve;
+    });
+    api.readCalendarEventAction.mockReturnValueOnce(refreshed);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh status" }));
+    await waitFor(() => expect(api.readCalendarEventAction).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("button", { name: "Refresh status" })).toBeDisabled();
+    expect(screen.getByLabelText("Event title")).toHaveValue("Authored title");
+    await act(async () => {
+      finishRead?.({
+        ok: true,
+        value: { ...event, reminder: { ...reminder, status: "delivered" } },
+      });
+      await refreshed;
+    });
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent("Added to notifications"),
+    );
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Event title")).toHaveValue("Authored title");
+    expect(screen.getByRole("textbox", { name: "Description" })).toHaveValue(
+      "<p>Authored note</p>",
+    );
+    expect(screen.getByRole("checkbox", { name: "In-app reminder" })).toBeChecked();
+    expect(screen.getByRole("button", { name: "Refresh status" })).not.toBeDisabled();
+    expect(api.readCalendarEventAction.mock.calls).toEqual([
+      [{ v: 1, expectedActorId: actorId, activityId: event.id }, "csrf"],
+      [{ v: 1, expectedActorId: actorId, activityId: event.id }, "csrf"],
+    ]);
+    expectNoCalendarWrites();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+  },
+);
+
+it("preserves authored date and reminder drafts while recovering a manual read", async () => {
+  api.readCalendarEventAction.mockRejectedValueOnce(new Error("offline"));
+  render(view({ editing: event }));
+  fireEvent.change(screen.getByLabelText("Event title"), { target: { value: "Authored title" } });
+  fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+    target: { value: "<p>Authored note</p>" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Start date" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Monday, March 22nd, 2027" }));
+  expect(screen.getByRole("button", { name: "Start date" })).toHaveTextContent("03/22/2027");
+  fireEvent.click(screen.getByRole("checkbox", { name: "In-app reminder" }));
+  fireEvent.click(screen.getByRole("button", { name: "Refresh status" }));
+  await screen.findByRole("alert");
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Refresh status" })).not.toBeDisabled(),
+  );
+  api.readCalendarEventAction.mockResolvedValueOnce({
+    ok: true,
+    value: {
+      ...event,
+      location: "Refreshed location",
+      reminder: { ...reminder, status: "delivered" },
+    },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Refresh status" }));
+  await waitFor(() => expect(screen.getByLabelText("Location")).toHaveValue("Refreshed location"));
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Event title")).toHaveValue("Authored title");
+  expect(screen.getByRole("textbox", { name: "Description" })).toHaveValue("<p>Authored note</p>");
+  expect(screen.getByRole("button", { name: "Start date" })).toHaveTextContent("03/22/2027");
+  expect(screen.getByRole("checkbox", { name: "In-app reminder" })).not.toBeChecked();
+  expect(api.readCalendarEventAction).toHaveBeenCalledTimes(2);
+  expectNoCalendarWrites();
+});
+
+it("keeps a validation error when a manual reminder read succeeds", async () => {
+  render(view({ editing: event }));
+  fireEvent.change(screen.getByLabelText("Event title"), { target: { value: "" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(screen.getByRole("alert")).toHaveTextContent("Enter a title for this event.");
+  api.readCalendarEventAction.mockResolvedValueOnce({
+    ok: true,
+    value: { ...event, reminder: { ...reminder, status: "delivered" } },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Refresh status" }));
+  await waitFor(() =>
+    expect(screen.getByRole("status")).toHaveTextContent("Added to notifications"),
+  );
+  expect(screen.getByRole("alert")).toHaveTextContent("Enter a title for this event.");
+  expect(screen.getByLabelText("Event title")).toHaveValue("");
+  expect(api.readCalendarEventAction).toHaveBeenCalledOnce();
+  expectNoCalendarWrites();
+});
+
+it("keeps a returned save error when a manual reminder read succeeds", async () => {
+  api.editCalendarEventAction.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
+  render(view({ editing: event }));
+  titleAndSave();
+  const error = await screen.findByRole("alert");
+  const saveError = error.textContent;
+  expect(saveError).not.toBe("");
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Refresh status" })).not.toBeDisabled(),
+  );
+  api.readCalendarEventAction.mockResolvedValueOnce({
+    ok: true,
+    value: { ...event, reminder: { ...reminder, status: "delivered" } },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Refresh status" }));
+  await waitFor(() =>
+    expect(screen.getByRole("status")).toHaveTextContent("Added to notifications"),
+  );
+  expect(screen.getByRole("alert").textContent).toBe(saveError);
+  expect(screen.getByLabelText("Event title")).toHaveValue("My event");
+  expect(api.editCalendarEventAction).toHaveBeenCalledExactlyOnceWith(
+    {
+      v: 1,
+      expectedActorId: actorId,
+      activity: { id: event.id, subject: "My event", expectedReminderGeneration: generationId },
+    },
+    "csrf",
+  );
+  expect(api.readCalendarEventAction).toHaveBeenCalledOnce();
+  expect(api.createCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.completeCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.deleteCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.retryCalendarReminderAction).not.toHaveBeenCalled();
+  expect(api.invalidate).not.toHaveBeenCalled();
+});

@@ -29,6 +29,9 @@ function linkedToTrigger(raw: unknown, definition: WorkflowDefinition, triggerId
 function taskConfiguration(node: WorkflowNode, definition: WorkflowDefinition, triggerId: string) {
   const subject = bindingSchema.safeParse(node.config.subject);
   return (
+    // Rich custom values have separate current-metadata/reference authority. The
+    // older retry profile has no qualified provenance path for those values.
+    !Object.hasOwn(node.config, "customFields") &&
     subject.success &&
     subject.data.kind === "value" &&
     typeof subject.data.value === "string" &&
@@ -36,6 +39,23 @@ function taskConfiguration(node: WorkflowNode, definition: WorkflowDefinition, t
     subject.data.value.length <= 255 &&
     linkedToTrigger(node.config.dealId, definition, triggerId)
   );
+}
+
+function usesNewMappingContract(node: WorkflowNode): boolean {
+  // Grouped conditions have new preparation and short-circuit semantics. They
+  // have no qualified recovery path in this older failed-task retry profile.
+  if (
+    node.type === "condition" &&
+    (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort"))
+  )
+    return true;
+  return Object.values(node.config).some((raw) => {
+    const parsed = bindingSchema.safeParse(raw);
+    if (!parsed.success) return false;
+    const binding = parsed.data;
+    if (binding.kind === "value") return Object.hasOwn(binding, "literalType");
+    return binding.path.length === 1 && binding.path[0] === "expectedCloseDate";
+  });
 }
 
 // Initial retry support is the existing database-only deal follow-up profile.
@@ -46,6 +66,9 @@ export function retryableTaskDefinition(raw: unknown): WorkflowDefinition | null
   const parsed = validateDefinition(raw);
   if (!parsed.ok || !executableDefinition(parsed.value)) return null;
   const definition = parsed.value;
+  // WF020 authoring/runtime qualification does not qualify recovery for new wire
+  // intent or new historical output fields in the older failed-task profile.
+  if (definition.nodes.some(usesNewMappingContract)) return null;
   const trigger = definition.nodes.find((node) => node.type === "trigger.manual");
   if (trigger === undefined) return null;
   const safe = definition.nodes.every((node) => {

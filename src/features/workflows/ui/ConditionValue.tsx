@@ -1,35 +1,55 @@
 "use client";
 import { useId } from "react";
-import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { ConfigurationMetadata } from "../configurationTypes";
+import { describeMappingTarget } from "../mappingCatalog";
+import type { MappingTarget } from "../mappingTypes";
 import {
-  type Binding,
-  bindingSchema,
+  type DraftBinding,
+  type DraftValueBinding,
+  draftBindingSchema,
   type WorkflowDefinition,
   type WorkflowNode,
 } from "../schemas";
-import { BindingField } from "./BindingField";
-export function ConditionValue({
-  definition,
-  node,
-  editable,
-  boolean,
-  status,
-  onChange,
-}: {
+import { BindingField, type ConditionBindingSelection } from "./BindingField";
+import { TypedLiteralValue } from "./TypedLiteralValue";
+
+interface Props {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   boolean: boolean;
   status: boolean;
-  onChange: (value: Binding) => void;
-}) {
+  onChange: (value: DraftBinding) => void;
+  error?: string;
+  metadata?: ConfigurationMetadata;
+  rawValue?: unknown;
+  operandPath?: readonly string[];
+  target?: MappingTarget;
+  conditionSelection?: ConditionBindingSelection;
+}
+function rawValue(props: Props) {
+  return props.operandPath === undefined ? props.node.config.right : props.rawValue;
+}
+function emptyLiteral(props: Props, target: MappingTarget | undefined): DraftValueBinding {
+  const kind = target?.contract.kind;
+  if (kind === "number" || kind === "date" || kind === "instant")
+    return { kind: "value", value: "", literalType: kind };
+  return { kind: "value", value: props.boolean ? true : props.status ? "open" : "" };
+}
+function LiteralValue({
+  errorId,
+  target,
+  ...props
+}: Omit<Props, "target"> & { errorId: string; target: MappingTarget | undefined }) {
   const t = useAppTranslations("workflows");
   const sales = useAppTranslations("sales");
   const id = useId();
-  const right = bindingSchema.safeParse(node.config.right);
-  const valueChoices = boolean
+  const parsed = draftBindingSchema.safeParse(rawValue(props));
+  const binding =
+    parsed.success && parsed.data.kind === "value" ? parsed.data : emptyLiteral(props, target);
+  const choices = props.boolean
     ? [
         { value: "true", label: t("boolTrue") },
         { value: "false", label: t("boolFalse") },
@@ -44,38 +64,66 @@ export function ConditionValue({
       <label htmlFor={id} className="text-sm font-medium">
         {t("conditionValue")}
       </label>
-      {right.success && right.data.kind === "reference" ? (
-        <BindingField
-          definition={definition}
-          nodeId={node.id}
-          value={right.data}
-          onChange={onChange}
-          kind="scalar"
-          label={t("conditionValue")}
-          sourceLabel={t("conditionValue")}
-          editable={editable}
-        />
-      ) : boolean || status ? (
+      {props.boolean || props.status ? (
         <Select
           ariaLabel={t("conditionValue")}
-          value={right.success && right.data.kind === "value" ? String(right.data.value ?? "") : ""}
-          disabled={!editable}
+          value={String(binding.value ?? "")}
+          disabled={!props.editable}
+          options={choices}
           placeholder={t("chooseValue")}
-          options={valueChoices}
-          onChange={(value) =>
-            onChange({ kind: "value", value: boolean ? value === "true" : value })
-          }
+          onChange={(value) => {
+            if (props.editable)
+              props.onChange({ kind: "value", value: props.boolean ? value === "true" : value });
+          }}
         />
       ) : (
-        <Input
-          dir="auto"
+        <TypedLiteralValue
           id={id}
-          value={right.success && right.data.kind === "value" ? String(right.data.value ?? "") : ""}
-          disabled={!editable}
-          maxLength={255}
-          onChange={(event) => onChange({ kind: "value", value: event.target.value })}
+          binding={binding}
+          target={target}
+          label={t("conditionValue")}
+          editable={props.editable}
+          error={props.error}
+          errorId={errorId}
+          hideError
+          onChange={props.onChange}
         />
       )}
     </div>
+  );
+}
+export function ConditionValue(props: Props) {
+  const t = useAppTranslations("workflows");
+  const described = describeMappingTarget(
+    props.definition,
+    props.node.id,
+    props.operandPath ?? ["right"],
+    props.metadata,
+  );
+  const target = props.target ?? (described.state === "ready" ? described.target : undefined);
+  return (
+    <BindingField
+      definition={props.definition}
+      nodeId={props.node.id}
+      value={rawValue(props)}
+      onChange={props.onChange}
+      kind="scalar"
+      label={t("conditionValue")}
+      sourceLabel={t("conditionValue") + " · " + t("configurationValueMode")}
+      editable={props.editable}
+      allowLiteral={false}
+      allowNull
+      nullLabel={t("configurationNullValue")}
+      literalControlLabel={t("literalValue")}
+      onSelectLiteral={() => {
+        if (props.editable) props.onChange(emptyLiteral(props, target));
+      }}
+      error={props.error}
+      target={target}
+      path={props.operandPath ?? ["right"]}
+      metadata={props.metadata}
+      conditionSelection={props.conditionSelection}
+      literalControl={(errorId) => <LiteralValue {...props} target={target} errorId={errorId} />}
+    />
   );
 }

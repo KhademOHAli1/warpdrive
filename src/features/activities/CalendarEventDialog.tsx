@@ -1,5 +1,6 @@
 "use client";
 import { CalendarDays, CheckCircle2, Clock3, Maximize2, Minimize2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
@@ -66,6 +67,16 @@ function saveButtonLabel({
 // Layout changes keep the same mounted form and draft. The sidebar contains actual CRM
 // fields; provider provisioning and invitation delivery retain their separate contracts.
 export function CalendarEventDialog(props: CalendarEventDialogProps): React.ReactNode {
+  // Capture before the title's React autofocus runs. This controlled dialog has no DialogTrigger.
+  const [opener] = useState(() => {
+    if (typeof document === "undefined") return null;
+    const active = document.activeElement;
+    return active instanceof HTMLElement &&
+      active !== document.body &&
+      active !== document.documentElement
+      ? active
+      : null;
+  });
   const {
     preferences,
     zone,
@@ -104,6 +115,17 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
       <DialogContent
         aria-describedby={undefined}
         dir={preferences.locale === "fa" ? "rtl" : "ltr"}
+        onCloseAutoFocus={(event) => {
+          if (
+            opener !== null &&
+            opener.isConnected &&
+            !opener.matches(":disabled") &&
+            opener.closest("[hidden],[inert]") === null
+          ) {
+            event.preventDefault();
+            opener.focus();
+          }
+        }}
         className={cn(
           "flex max-h-[90dvh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden border-border/80 bg-card p-0",
           details ? "sm:max-w-5xl" : "sm:max-w-2xl",

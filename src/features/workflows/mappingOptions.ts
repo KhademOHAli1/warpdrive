@@ -1,28 +1,23 @@
-import { ancestors } from "./graph";
-import { actionRegistry } from "./registry";
+import { describeMappingOutputs, legacyMappingTarget } from "./mappingCatalog";
+import { mappingCompatibility } from "./mappingCompatibility";
+import { coarseMappingType } from "./mappingOutputs";
 import type { WorkflowDefinition } from "./schemas";
 
 export type MappingKind = "text" | "deal" | "scalar";
 export function mappingOptions(graph: WorkflowDefinition, nodeId: string, kind: MappingKind) {
-  const available = ancestors(graph, nodeId);
-  return graph.nodes
-    .filter((node) => available.has(node.id))
-    .flatMap((node) =>
-      Object.entries(actionRegistry[node.type].outputs)
-        .filter(([field, type]) =>
-          kind === "deal"
-            ? (node.type === "trigger.manual" && field === "recordId") ||
-              (node.type === "record.read" && node.config.entity === "deal" && field === "id")
-            : kind === "text"
-              ? type === "string"
-              : type === "string" || type === "boolean",
-        )
-        .map(([field, type]) => ({
-          key: node.id + "." + field,
-          node,
-          field,
-          type,
-          binding: { kind: "reference" as const, nodeId: node.id, path: field.split(".") },
-        })),
-    );
+  const target = legacyMappingTarget(nodeId, kind);
+  return describeMappingOutputs(graph, nodeId).outputs.flatMap((output) => {
+    if (mappingCompatibility(output.contract, target) === "incompatible") return [];
+    const node = graph.nodes.find((entry) => entry.id === output.nodeId);
+    if (node === undefined) return [];
+    return [
+      {
+        key: output.nodeId + "." + output.path.join("."),
+        node,
+        field: output.field,
+        type: coarseMappingType(output.contract),
+        binding: { kind: "reference" as const, nodeId: output.nodeId, path: [...output.path] },
+      },
+    ];
+  });
 }

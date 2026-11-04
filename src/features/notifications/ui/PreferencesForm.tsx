@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import type { NotificationType } from "@/constants/notificationTypes";
@@ -52,6 +52,7 @@ function PreferenceRow({
   onRetry?: () => void;
 }) {
   const id = useId();
+  const labelRef = useRef<HTMLSpanElement>(null);
   const messages = useMessages();
   const L = useSettingsMessages();
   const { columnInApp, columnEmail, typeLabels } = messages.notifications.preferences;
@@ -64,7 +65,12 @@ function PreferenceRow({
       data-testid="pref-row"
       className="grid min-w-0 grid-cols-2 gap-x-6 gap-y-3 py-4 md:grid-cols-[minmax(0,1fr)_5.5rem_5.5rem] md:items-center"
     >
-      <span id={id} className="col-span-2 min-w-0 break-words text-sm font-medium md:col-span-1">
+      <span
+        id={id}
+        ref={labelRef}
+        tabIndex={-1}
+        className="col-span-2 min-w-0 break-words text-sm font-medium md:col-span-1"
+      >
         {typeLabels[type]}
       </span>
       <Toggle
@@ -90,7 +96,15 @@ function PreferenceRow({
                 {L._extra.notificationSaveError}
               </p>
               {onRetry !== undefined && (
-                <Button variant="outline" size="sm" onClick={onRetry}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Retry unmounts while saving disables both switches; keep focus on this row.
+                    labelRef.current?.focus();
+                    onRetry();
+                  }}
+                >
                   {messages.boundaries.retry}
                 </Button>
               )}

@@ -1,3 +1,17 @@
+## WF020 / #677 source increment — qualification pending
+
+The typed mapping source cut adds semantic upstream catalogs, readable chips and
+synthetic reference examples, retained numeric/date/instant draft intent, canonical
+civil-date read output and typed runtime resolution. Current actor/record/custom
+reference authority and existing live/simulation effect boundaries remain.
+[Mapping contract and limits](./mapping.md) describes the finite wire, missing/null
+behavior, historical-receipt policy and older retry exclusion. The first combined focused cut had807PASS/2fixture failures across809cases;
+the two corrected fixtures then passed all42affected cases without production
+changes. Source inventory2497 has0missing/0invalid classifications. Full hosted
+qualification remains pending.
+Formal dependencies, native/human acceptance, main integration, issue closure,
+release and deployment remain open. Earlier dated checkpoints below are historical.
+
 # Visual workflow implementation status
 
 > Branch synchronization, 2 November 2026: this branch now includes main `09288d5`, including canonical0098 and its green populated-upgrade/compatibility checks. The private insertion/ordered-step follow-up remains unfinished; older “current”, unstarted and publication-pending paragraphs below are retained as dated observations. Latest static14 was withdrawn unstarted at the safe stop. Live next work is tracked in [#674](https://github.com/KhademOHAli1/warpdrive/issues/674), with the shared [restart index #80](https://github.com/KhademOHAli1/warpdrive/issues/80).
@@ -496,3 +510,137 @@ This is a private follow-up candidate awaiting configured static qualification a
 - The viewer's AX tree proves document identity, not canvas semantics. DE's right edge was cropped at actual-size viewer scaling. FA was fitted through the visible viewer menu. This is neither actual CRM, DOM focus, keyboard nor assistive-technology acceptance. Other author/test/correction/publication and return routes remain unplayed; WF-005 stays open.
 - A step inserted into an occupied connection was appended to the stored node array. Six UI surfaces incorrectly reused that array's indexes for display. A shared dependency order now keeps the step list, canvas numbering, trace and reference/connection labels consistent without changing graph data or canvas positions/z-order. Among currently eligible nodes it retains creation priority. Draft cycles and duplicate identities remain visible for correction; runtime branch selection and publication validation are unchanged.
 - Actual test-first evidence: six UI behavior failures and six pure ordering failures were observed before the semantic fix, with controls and two earlier selector mistakes retained separately. Final affected 37 cases across 9 files passed. Biome on 12 files exited with 0 with two informational template-literal suggestions. These counts overlap prior cuts and must not be added. Current configured whole-project type generation/typecheck and typed lint, actual narrow CRM/browser/AT, Main/CI and full WF-017 acceptance remain separate gates.
+
+## WF-010 backend follow-up — PR #958
+
+The follow-up adds revision-checked archive/unarchive, safe persisted-draft duplication,
+and immutable-version restore-as-draft, with current-actor checks, common workflow-row
+locking and authorized archived/version reads. Existing publication revision/idempotency,
+run pins and the accepted archive fence remain required. See
+[lifecycle-services.md](lifecycle-services.md) for the source boundary.
+
+The original-source PostgreSQL baseline exposed nine intended authority/archived-read
+assertion failures and two passing controls before implementation. The pure copy-policy
+suite passed 105 cases locally. Exact-revision hosted qualification and subsequent
+integration/user-journey/release gates are maintained on
+[issue #668](https://github.com/KhademOHAli1/warpdrive/issues/668) and
+[PR #958](https://github.com/KhademOHAli1/warpdrive/pull/958). This checkpoint does not mark
+WF-010 complete or accept its broader dependencies. WF-016 pagination/library/UI work
+and privacy erasure/retention remain separate.
+
+
+## WF-016 library follow-up — draft PR #959
+
+The selected roadmap work now covers the full library/lifecycle UI source contract in
+[library.md](library.md), using the separately qualified WF-010 backend. It includes bounded
+server pages and owners, visibility-scoped metadata, independent lifecycle/live health,
+templates entry, archive/unarchive/duplicate/history/restore review, retained return context
+and write acknowledgement recovery. This is a source candidate, not a native or release
+acceptance statement.
+
+The existing-source real-PostgreSQL baseline in CI41731549474 reproduced one intended
+page-shape failure (old array of 61 owned workflows), with 3,520 other PG cases and
+9,458 units passing (3 existing skips). Types/lint/sites/Delivery passed; later builds
+were skipped. Later local focused checks passed 47 editor/save/navigation cases and
+73 library/filter/loading/focus cases at distinct recorded cuts, with direct source
+witnesses and process/link cleanup. The earlier 46-case command has incomplete direct
+witnesses and remains TRIAGE; a separate Vitest module-cache setting was initially missed,
+and broad dependency-cache preservation claims were withdrawn. Later checks disabled
+that cache and used private cache paths. Original receipts/results, including the first
+library access-recovery failure, are retained. Full exact-head hosted qualification,
+query-plan review and all integrated/native/human/release/install gates
+remain pending on [issue #673](https://github.com/KhademOHAli1/warpdrive/issues/673) and
+[PR #959](https://github.com/KhademOHAli1/warpdrive/pull/959).
+
+## WF-018 picker checkpoint — 4 November 2026, 08:27 UTC
+
+The private picker source increment covers the full finite catalog/search, supported
+versus unavailable states, current edit/prerequisite metadata, compatible branch input
+context and selection into existing configuration. See [picker.md](picker.md) for
+the exact boundary. Four action types insert; the manual entry opens its existing
+inspector without dirtying the draft. Record trigger and notification remain explicitly
+unavailable. Local offered paths need no external provider; this is not provider-ready
+or execution acceptance.
+
+Before production, the actual original-component baseline passed three controls and
+failed four intended missing-behavior assertions: category grouping/search and discovery
+of the unavailable record trigger/notification. Its original bytes, raw failure
+classification, source witnesses and pre-production handoff remain preserved. Future
+imports in later tests are not additional RED evidence.
+
+The current focused run passed **84 cases across 11 files**: 52 new pure/UI/adapter,
+seven adapted baseline and 25 retained legacy cases. The whole guarded run took
+11.054 seconds with Bun 1.4.4, env-i/no-env-file, one worker and private caches. All
+29 required direct raw-source witnesses and 350 compared pins held; owned PGID 91020
+and the temporary dependency link were cleaned up. Exact private receipts are under
+`work/workflow-675-picker-baseline/` and `work/workflow-675-complete-focused/`; the
+coverage handoff is `outputs/675-COVERAGE-AND-LIMITS.md`.
+
+Twelve new palette PostgreSQL cases are defined but **UNEXECUTED**. Full hosted
+types/typed lint/units/PG/builds, source-inventory generation, native browser/AT/RTL and
+human copy, main integration, issue closure and release gates remain open. No picker
+pull request has been created at this checkpoint. The parent #959 cut a9f28da has a
+separate recorded PG result of 26 date-related failures and 3,537 passes; its forward
+repair is in progress, and the picker will inherit the published repaired parent
+before its own hosted qualification. This checkpoint does not qualify the whole
+candidate, accept WF-007/WF-009/WF-017, close issue #675 or claim deployment.
+
+
+### 2026-11-04 — WF-019 source implementation checkpoint
+
+WF-018/#675 is source-qualified in ready PR961 at F31 after both current full CI runs
+(9595unit/3existing skips,3575PG,types/translations/lint,67pages,fivebundles,sites,
+Delivery135 and CodeQL); main/native/human/release gates stay separate.
+
+WF-019/#676 now implements shared five-profile configuration descriptors, UUID-keyed
+canonical activity custom fields, bounded current metadata/options/reference reads,
+explicit schema completeness and fresh publication/task-write validation. The same
+prepared current definition view reaches the canonical writer; custom-bearing graphs
+remain excluded from the old retry profile. See `configuration.md` for exact rules
+and limits. The actual preproduction inspector baseline was3controlsPASS/3authentic
+missing-behaviorRED; original raw evidence is retained. New pure/UI/PG cases are
+separately defined, not claimed executed at this checkpoint. Full current-head
+qualification and all later acceptance stages remain open.
+
+
+WF-019 local follow-up: all638Workflow unit cases/64files now PASS (parent500 plus
+132new cases and6adapted baseline cases), with source pins/raw witnesses and owned
+cleanup held. Source inventory2482files is clean (0missing/0invalid). The26new real
+PostgreSQL cases and whole-app hosted qualification remain pending; this is no main,
+native/human, release, deployment or provider acceptance.
+
+
+## WF022 grouped-condition source work — 4 November 2026
+
+Implementation is in progress above qualified WF020 source E872, whose PR964
+passed the observed hosted app/site/Delivery checks and configured CodeQL comparison.
+WF020 source implementation does not establish formal prerequisite acceptance.
+
+The new condition contract keeps version1 flat configurations unchanged until explicit
+conversion and adds bounded nested All/Any groups with stable predicate identities,
+per-row source-derived operand types, null/empty distinctions and an explicit false
+default path. Every static reference is checked before ordered lazy evaluation;
+missing/invalid needed values fail rather than falling through to default. Both
+exclusive ports must select a valid edge before a condition receipt/cursor commits.
+See [condition guide](conditions.md).
+
+An actual preproduction existing-API baseline observed3controlsPASS/5behaviorRED.
+Pure, evaluation, editor, copy and retry tests were frozen before their corresponding
+production changes; supplemental deep-parser and legacy compatibility cases were
+recorded before those fixes. Future-import test definitions are not executed RED.
+The17 newly defined real-PG cases have not run locally. The first combined focused
+Workflow run passed927cases/85files in49.878s;572compared pins,125fixed pins and
+90executable raw-source witnesses held, with owned process/link cleanup complete.
+This includes809inherited cases,50pure model/mapping,22evaluation,18copy/retry and
+20editor/summary cases, plus the8preserved original baseline cases counted once;
+overlapping behavior is not claimed as additional unique oracles. Inventory covers
+2507sources with0missing/0invalid, fingerprint
+`29eed183ecba70f36d644563c2a69aa86aeeea9b1d346c8c50cacc0266f1bd65`.
+Hosted full app/PG/type/lint/build qualification remains pending; no acceptance stage
+is closed by focused evidence.
+
+Grouped/default-bearing configurations remain outside the older failed-task retry
+profile. Reviewed incomplete copies remain inert; versions, completed receipts and
+effects are not rewritten. Source inventory, native keyboard/AT/RTL/theme/human
+journeys, main integration, release/deployment and installation acceptance remain
+separate gates. No action/provider/queue/permission/DDL/dependency is added.

@@ -4,7 +4,9 @@ The [central GitHub Project](https://github.com/users/KhademOHAli1/projects/3) a
 
 ## Ownership and scope
 
-@KhademOHAli1 is the accountable GitHub owner. Each canonical issue records its responsible module, original task IDs, specification links, full acceptance scope, observed historical status and dependencies. The established integration coordinator remains the sole canonical-main writer and heavy-job scheduler. Module implementation continues in existing workspaces. No branch or PR is required for delivery: direct-main commits link their canonical issues.
+@KhademOHAli1 is the accountable GitHub owner. Each canonical issue records its responsible module, original task IDs, specification links, full acceptance scope, observed historical status and dependencies. The established integration coordinator remains the sole canonical-main writer and heavy-job scheduler. Module implementation continues in existing workspaces, with canonical issue traceability for every included commit.
+
+The current user instruction freezes main at `68e9e55890dd1ceedfbfe0853019673bf79105e4` and combines all remaining branch work covered by that instruction into the existing `codex/ci-release-controls-20261103` branch and PR952. Create no new branches and make no more individual feature merges to main. Qualify the complete aggregate at an exact revision before one final reviewed main merge; then verify the actual resulting main CI and CodeQL evidence. This bounded consolidation does not establish a permanent integration branch or permit direct-main pushes. Follow [CI release controls](ci-release-controls.md).
 
 Source snapshots are historical observations, not certification. Imported work starts open unless current GitHub acceptance proves its full scope. Passing a subset, synthetic provider protocol checks, generated packets and failed-first diagnostics do not close a broad item. Overlapping plans have different denominators; do not publish a combined completion percentage.
 
@@ -20,15 +22,17 @@ Source snapshots are historical observations, not certification. Imported work s
 | Deployed                         | A separately authorized installation actually received that release.                                 |
 | Provider / installation accepted | The real provider or installed environment passed its declared acceptance checks.                    |
 
-Issue state and Project fields are views of evidence, never substitutes for it. Release tooling validates the exact revision, issue scope and acceptance record. A release does not authorize deployment or claim all expanded roadmaps are complete.
+Issue state and Project fields are views of evidence, never substitutes for it. Release tooling validates the exact revision, issue scope and acceptance record. A release does not authorize deployment or claim all expanded roadmaps are complete. Consolidating source does not accept or release every feature contained in that source.
+
+The existing MAIL policy assigns the next unreserved `1.5.x` patch in completion order, starting at `1.5.1`, to each release-ready mail deliverable; MAIL task numbers do not choose patch numbers. `1.6.0` remains reserved for the entire unchanged `programme/mail` scope. The core release policy, technical acceptance allowlist, human-only scopes and provider/installation gates remain unchanged. See [release operations](release-operations.md) for committed plans, exact-main CI, acceptance and explicit publication.
 
 ## Operating the roadmap
 
 1. Search the Project and source-to-issue mapping before creating work. Use the bug, feature or maintenance intake forms; report security vulnerabilities privately.
 2. Keep one canonical issue per bounded implementation, linking every applicable source ID. Preserve source acceptance, dependencies and evidence when splitting scope.
 3. Set the actual assignee, module label, priority and release milestone. Add native blocking relationships for genuine dependencies. Use a comment for current progress and link precise checks.
-4. Include the canonical issue in every delivery commit or delivery manifest. Follow the integration handoff and single heavy-job queue; required CI must pass before integration is called delivered.
-5. Record whole-scope acceptance with the documented release tooling format. Select a usable journey milestone and a full revision for the next release.
+4. Include the canonical issue in every delivery commit or delivery manifest. Follow the current single-consolidation instruction and single heavy-job queue. Record aggregate branch qualification separately from exact-main integration evidence.
+5. Record whole-scope acceptance with the documented release tooling format. Select a usable journey milestone and a full revision for the next release only when its actual scope and gates are ready.
 
 The importer preserves live state, operator notes and existing labels. Its mapping and exports are generated snapshots. Reconcile and rerun the importer for specification changes; do not manually edit generated mapping files or reset issues from old ledgers. See the release operator guide in this directory for exact commands after tooling integration.
 

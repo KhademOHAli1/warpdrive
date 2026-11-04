@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Tip } from "@/components/ui/tooltip";
-import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
+import { directionForLocale } from "@/features/i18n/registry";
 import { useFormatters } from "@/lib/useFormatters";
 import { delayMinutesSchema } from "../registry";
-import { bindingSchema, type WorkflowNode } from "../schemas";
+import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
+import { conditionSummary } from "./conditionSummary";
 
 function describeDelay(
   raw: unknown,
@@ -19,11 +23,81 @@ function describeDelay(
   return minutes.success ? format(minutes.data) : invalid;
 }
 
-export function NodeSummary({ node }: { node: WorkflowNode }) {
+function ConditionSummary({
+  node,
+  definition,
+}: {
+  node: WorkflowNode;
+  definition?: WorkflowDefinition;
+}) {
+  const t = useAppTranslations("workflows");
+  const sales = useAppTranslations("sales");
+  const locale = useLocale();
+  const messages = useMessages().workflows;
+  const format = useFormatters();
+  const [expanded, setExpanded] = useState(false);
+  const summary = conditionSummary({
+    node,
+    definition,
+    locale,
+    messages,
+    number: (value) => format.number(value, { maximumSignificantDigits: 21 }),
+    date: format.dateOnly,
+    instant: format.dateTime,
+    status: (value) =>
+      sales(
+        value === "open"
+          ? "computed.statusOpen"
+          : value === "won"
+            ? "computed.statusWon"
+            : "computed.statusLost",
+      ),
+  });
+  return (
+    <div dir={directionForLocale(locale)} className="mt-3 min-w-0 space-y-2">
+      <Tip label={summary.text}>
+        <p
+          dir="auto"
+          className={
+            (expanded ? "" : "line-clamp-2 ") +
+            "break-words text-xs leading-5 text-muted-foreground"
+          }
+        >
+          {summary.text}
+        </p>
+      </Tip>
+      {summary.grouped && (
+        <p className="text-xs text-muted-foreground">
+          {t(summary.count === 1 ? "conditionCountOne" : "conditionCount", {
+            number: format.number(summary.count),
+          })}
+        </p>
+      )}
+      {summary.count > 2 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {t(expanded ? "conditionCollapse" : "conditionExpand")}
+        </Button>
+      )}
+    </div>
+  );
+}
+export function NodeSummary({
+  node,
+  definition,
+}: {
+  node: WorkflowNode;
+  definition?: WorkflowDefinition;
+}) {
   const t = useAppTranslations("workflows");
   const sales = useAppTranslations("sales");
   const fmt = useFormatters();
   const fields: Record<string, string> = useMessages().workflows.fields;
+  if (node.type === "condition") return <ConditionSummary node={node} definition={definition} />;
   function value(input: unknown, status = false): string {
     const parsed = bindingSchema.safeParse(input);
     if (!parsed.success) return t("setupRequired");
@@ -53,24 +127,6 @@ export function NodeSummary({ node }: { node: WorkflowNode }) {
   if (node.type === "activity.create") summary = value(node.config.subject);
   if (node.type === "record.read")
     summary = t("readSummary", { source: value(node.config.recordId) });
-  if (node.type === "condition") {
-    const left = bindingSchema.safeParse(node.config.left);
-    const status =
-      left.success && left.data.kind === "reference" && left.data.path.join(".") === "status";
-    const operator = node.config.operator;
-    const comparison =
-      operator === "equals" ||
-      operator === "notEquals" ||
-      operator === "contains" ||
-      operator === "exists"
-        ? t(operator)
-        : t("setupRequired");
-    summary = t("conditionSummary", {
-      left: value(node.config.left),
-      operator: comparison,
-      right: operator === "exists" ? "" : value(node.config.right, status),
-    }).trim();
-  }
   return (
     <Tip label={summary}>
       <p

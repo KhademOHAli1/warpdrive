@@ -69,6 +69,101 @@ test("returns an invalid-definition result for malformed research URLs without t
   expect(read()).toMatchObject({ ok: false, error: { code: "invalid-definition" } });
 });
 
+test("rejects C1 NEXT LINE in a localized qualification title", () => {
+  validDefinition();
+  const source = qualificationDefinitionSource();
+  source.title.de = "Kundenbedarf\u0085prüfen";
+  expect(readQualificationDefinition(JSON.stringify(source))).toEqual({
+    ok: false,
+    error: { code: "invalid-definition", paths: [["title", "de"]] },
+  });
+});
+
+const c1TextCases: {
+  field: string;
+  path: (string | number)[];
+  change: (source: ReturnType<typeof qualificationDefinitionSource>) => void;
+}[] = [
+  {
+    field: "localized description (U+0080)",
+    path: ["description", "fa"],
+    change(source) {
+      source.description.fa = "بررسی\u0080نیاز";
+    },
+  },
+  {
+    field: "criterion label (U+0085)",
+    path: ["criteria", 0, "label", "en"],
+    change(source) {
+      for (const criterion of source.criteria) criterion.label.en = "Review\u0085need";
+    },
+  },
+  {
+    field: "criterion description (U+009B)",
+    path: ["criteria", 0, "description", "de"],
+    change(source) {
+      for (const criterion of source.criteria) criterion.description.de = "Bedarf\u009bprüfen";
+    },
+  },
+  {
+    field: "criterion prompt (U+009D)",
+    path: ["criteria", 0, "prompt", "fa"],
+    change(source) {
+      for (const criterion of source.criteria) criterion.prompt.fa = "بررسی\u009dنیاز";
+    },
+  },
+  {
+    field: "research reference name (U+009F)",
+    path: ["research", "references", 0, "name"],
+    change(source) {
+      for (const reference of source.research.references)
+        reference.name = "Research\u009freference";
+    },
+  },
+];
+
+test.each(c1TextCases)(
+  "rejects C1 controls in $field with the affected path",
+  ({ change, path }) => {
+    validDefinition();
+    const source = qualificationDefinitionSource();
+    change(source);
+    const result = readQualificationDefinition(JSON.stringify(source));
+    expect(result).toMatchObject({ ok: false, error: { code: "invalid-definition" } });
+    if (!result.ok) expect(result.error.paths).toContainEqual(path);
+  },
+);
+
+test.each([
+  { label: "Farsi joiners", locale: "fa", text: "نیازهای مشتری را می\u200cخواهیم بررسی کنیم" },
+  { label: "German combining text", locale: "de", text: "Kundenbedu\u0308rfnis pru\u0308fen" },
+  { label: "emoji with a joiner", locale: "en", text: "Review needs with 👩\u200d💻 🚀" },
+] as const)("preserves $label unchanged in bounded text", ({ locale, text }) => {
+  validDefinition();
+  const source = qualificationDefinitionSource();
+  source.title[locale] = text;
+  source.description[locale] = text;
+  for (const criterion of source.criteria) {
+    criterion.label[locale] = text;
+    criterion.description[locale] = text;
+    criterion.prompt[locale] = text;
+  }
+  for (const reference of source.research.references) reference.name = text;
+  const result = readQualificationDefinition(JSON.stringify(source));
+  expect(result.ok).toBe(true);
+  if (!result.ok) return;
+  expect(result.value.title[locale]).toBe(text);
+  expect(result.value.description[locale]).toBe(text);
+  for (const criterion of result.value.criteria) {
+    expect(criterion.label[locale]).toBe(text);
+    expect(criterion.description[locale]).toBe(text);
+    expect(criterion.prompt[locale]).toBe(text);
+  }
+  for (const reference of result.value.research.references) expect(reference.name).toBe(text);
+  expect(result.value.provenance.reviewStatus).toBe("pending");
+  expect(result.value.research.rightsStatus).toBe("pending");
+});
+
 test("rejects unsupported payloads, prototype keys, invalid content, and ambiguous criteria", () => {
   validDefinition();
   const base = qualificationDefinitionSource();
