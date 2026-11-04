@@ -37,17 +37,25 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
     setNameSaving(true);
     setNameSaved(false);
     setNameError(null);
+    let result: Awaited<ReturnType<typeof updateUserProfileAction>>;
     try {
-      const r = await updateUserProfileAction({ name: submittedName }, readCsrfToken());
-      if (r.ok) {
-        setSavedName(submittedName);
-        setNameSaved(true);
-        router.refresh();
-      } else setNameError(r.error.id);
+      result = await updateUserProfileAction({ name: submittedName }, readCsrfToken());
     } catch {
       setNameError("");
+      return;
     } finally {
       setNameSaving(false);
+    }
+    if (!result.ok) {
+      setNameError(result.error.id);
+      return;
+    }
+    setSavedName(submittedName);
+    setNameSaved(true);
+    try {
+      router.refresh();
+    } catch {
+      // A failed refresh must not present an acknowledged name save as a save failure.
     }
   }
 
@@ -89,9 +97,9 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
         </div>
       </SettingsCardBody>
       <SettingsCardFooter>
-        {nameSaved && draftName.trim() === savedName && (
+        {(nameSaving || (nameSaved && draftName.trim() === savedName)) && (
           <span role="status" className="me-auto text-sm text-muted-foreground">
-            {L.saved}
+            {nameSaving ? L._extra.saving : L.saved}
           </span>
         )}
         <Button
