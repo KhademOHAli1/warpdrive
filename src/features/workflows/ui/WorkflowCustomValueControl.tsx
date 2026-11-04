@@ -142,6 +142,10 @@ function RangeValue({ def, value, onChange }: ValueProps) {
   );
 }
 
+function stringValues(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item: unknown) => typeof item === "string");
+}
+
 function OptionValue({ def, value, onChange }: ValueProps) {
   const t = useAppTranslations("customFields");
   const active = def.options.filter((option) => option.archived !== true);
@@ -158,7 +162,8 @@ function OptionValue({ def, value, onChange }: ValueProps) {
       />
     );
   }
-  const selected = Array.isArray(value) ? value : [];
+  const selected = stringValues(value) ? value : [];
+  const invalidDraft = value !== undefined && !stringValues(value);
   return (
     <div className="space-y-1">
       {active.map((option) => (
@@ -166,11 +171,13 @@ function OptionValue({ def, value, onChange }: ValueProps) {
           <Checkbox
             label={option.label}
             checked={selected.includes(option.id)}
-            onCheckedChange={(checked) =>
+            disabled={invalidDraft}
+            onCheckedChange={(checked) => {
+              if (invalidDraft) return;
               onChange(
                 checked ? [...selected, option.id] : selected.filter((id) => id !== option.id),
-              )
-            }
+              );
+            }}
           />
           <bdi dir="auto">{option.label}</bdi>
         </div>

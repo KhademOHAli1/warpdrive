@@ -5,10 +5,9 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
-import { type MappingKind, mappingOptions } from "../mappingOptions";
-import { displayNodeName } from "../nodeNames";
-import { orderedWorkflowNodes } from "../nodeOrder";
-import { type Binding, bindingSchema, type WorkflowDefinition } from "../schemas";
+import type { MappingKind } from "../mappingOptions";
+import type { Binding, WorkflowDefinition } from "../schemas";
+import { bindingFieldModel, bindingFieldOptions } from "./bindingFieldModel";
 
 export function BindingField({
   definition,
@@ -52,45 +51,28 @@ export function BindingField({
   const fmt = useFormatters();
   const fields: Record<string, string> = useMessages().workflows.fields;
   const id = useId();
-  const parsed = bindingSchema.safeParse(value);
-  const binding = parsed.success ? parsed.data : undefined;
-  const choices = mappingOptions(definition, nodeId, kind);
-  const orderedNodes = orderedWorkflowNodes(definition);
-  const selected =
-    binding?.kind === "reference"
-      ? binding.nodeId + "." + binding.path.join(".")
-      : binding?.kind === "value" && binding.value === null && allowNull
-        ? "__null__"
-        : binding === undefined && onOmit !== undefined
-          ? "__omit__"
-          : literalControl !== undefined
-            ? "__record__"
-            : "__literal__";
-  const missing =
-    binding?.kind === "reference" && !choices.some((choice) => choice.key === selected);
-  const options = [
-    ...(onOmit === undefined ? [] : [{ value: "__omit__", label: t("customValueOmitted") }]),
-    ...(allowNull
-      ? [{ value: "__null__", label: nullLabel ?? t("configurationNoLinkedDeal") }]
-      : []),
-    ...(literalControl === undefined
-      ? []
-      : [
-          { value: "__record__", label: literalControlLabel ?? t("configurationLiteralReference") },
-        ]),
-    ...(allowLiteral ? [{ value: "__literal__", label: t("literalValue") }] : []),
-    ...choices.map((choice) => ({
-      value: choice.key,
-      label:
-        (fields[choice.field] ?? choice.field) +
-        " · " +
-        displayNodeName(choice.node, locale) +
-        " " +
-        fmt.number(orderedNodes.findIndex((node) => node.id === choice.node.id) + 1),
-      group: t("connectedValues"),
-    })),
-    ...(missing ? [{ value: selected, label: t("unavailableValue") }] : []),
-  ];
+  const model = bindingFieldModel(definition, nodeId, value, kind, {
+    allowLiteral,
+    allowNull,
+    hasOmit: onOmit !== undefined,
+    hasRecord: literalControl !== undefined,
+  });
+  const { choices, selected, missing } = model;
+  const options = bindingFieldOptions(
+    model,
+    definition,
+    locale,
+    fields,
+    (number) => fmt.number(number),
+    {
+      omit: t("customValueOmitted"),
+      null: nullLabel ?? t("configurationNoLinkedDeal"),
+      record: literalControlLabel ?? t("configurationLiteralReference"),
+      literal: t("literalValue"),
+      connected: t("connectedValues"),
+      missing: t("unavailableValue"),
+    },
+  );
   return (
     <fieldset
       className="min-w-0 space-y-2"
@@ -118,9 +100,9 @@ export function BindingField({
           }
         }}
       />
-      {selected === "__record__" &&
+      {model.showRecord &&
         (typeof literalControl === "function" ? literalControl(`${id}-error`) : literalControl)}
-      {allowLiteral && selected === "__literal__" && (
+      {model.showLiteral && (
         <div className="space-y-2 pt-2">
           <label htmlFor={id} className="text-sm font-medium">
             {label}
@@ -128,7 +110,7 @@ export function BindingField({
           <Input
             dir="auto"
             id={id}
-            value={binding?.kind === "value" ? String(binding.value ?? "") : ""}
+            value={model.literalValue}
             disabled={!editable}
             maxLength={maxLength ?? (kind === "text" ? 255 : 120)}
             aria-invalid={error !== undefined}
@@ -147,7 +129,7 @@ export function BindingField({
           {t("mappingInvalid")}
         </p>
       )}
-      {!allowLiteral && choices.length === 0 && (
+      {model.noVariables && (
         <p className="text-xs leading-5 text-muted-foreground">{t("noVariables")}</p>
       )}
     </fieldset>

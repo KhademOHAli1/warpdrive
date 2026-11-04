@@ -100,6 +100,56 @@ function optionPresentation(option: CustomFieldOption) {
     : { id: option.id, label: option.label, color: option.color };
 }
 
+function optionsFromSnapshot(
+  current: ConfigurationSnapshot,
+  input: z.output<typeof configurationOptionsInputSchema>,
+): Result<ConfigurationOptionsPage, AppError> {
+  const scope = configurationScope(current, input, {
+    kind: "options",
+    fieldId: input.fieldId,
+    query: input.query,
+    limit: input.limit,
+  });
+  const cursor = readConfigurationCursor(input.cursor, scope, "options");
+  if (!cursor.ok) return cursor;
+  const stale = configurationStale(current, input.fingerprint, cursor.value);
+  if (stale !== null) return ok(stale);
+  const def = current.defs.find((item) => item.id === input.fieldId);
+  if (input.type !== "activity.create" || def === undefined) return err(configurationDenied());
+  if (!["single_option", "multi_option", "autocomplete"].includes(def.type))
+    return err(configurationInvalid());
+  const active = def.options
+    .map((option, ordinal) => ({ option, ordinal }))
+    .filter((row) => row.option.archived !== true);
+  const after = cursor.value?.key;
+  const query = input.query.toLocaleLowerCase();
+  const matches = active.filter(
+    (row) =>
+      (after?.kind !== "options" || row.ordinal > after.ordinal) &&
+      row.option.label.toLocaleLowerCase().includes(query),
+  );
+  const shown = matches.slice(0, input.limit);
+  const last = shown.at(-1);
+  return ok({
+    state: "page",
+    workflowId: input.workflowId,
+    type: input.type,
+    version: input.version,
+    fieldId: input.fieldId,
+    fingerprint: current.fingerprint,
+    query: input.query,
+    items: shown.map((row) => optionPresentation(row.option)),
+    totalOptions: active.length,
+    nextCursor:
+      matches.length > input.limit && last !== undefined
+        ? writeConfigurationCursor(scope, current.fingerprint, {
+            kind: "options",
+            ordinal: last.ordinal,
+          })
+        : null,
+  });
+}
+
 export async function readWorkflowConfigurationOptions(
   db: Db,
   actor: PermSetUser,
@@ -115,52 +165,7 @@ export async function readWorkflowConfigurationOptions(
     actor,
     input,
     signal,
-    async (_tx, current) => {
-      const scope = configurationScope(current, input, {
-        kind: "options",
-        fieldId: input.fieldId,
-        query: input.query,
-        limit: input.limit,
-      });
-      const cursor = readConfigurationCursor(input.cursor, scope, "options");
-      if (!cursor.ok) return cursor;
-      const stale = configurationStale(current, input.fingerprint, cursor.value);
-      if (stale !== null) return ok(stale);
-      const def = current.defs.find((item) => item.id === input.fieldId);
-      if (input.type !== "activity.create" || def === undefined) return err(configurationDenied());
-      if (!["single_option", "multi_option", "autocomplete"].includes(def.type))
-        return err(configurationInvalid());
-      const active = def.options
-        .map((option, ordinal) => ({ option, ordinal }))
-        .filter((row) => row.option.archived !== true);
-      const after = cursor.value?.key;
-      const query = input.query.toLocaleLowerCase();
-      const matches = active.filter(
-        (row) =>
-          (after?.kind !== "options" || row.ordinal > after.ordinal) &&
-          row.option.label.toLocaleLowerCase().includes(query),
-      );
-      const shown = matches.slice(0, input.limit);
-      const last = shown.at(-1);
-      return ok({
-        state: "page",
-        workflowId: input.workflowId,
-        type: input.type,
-        version: input.version,
-        fieldId: input.fieldId,
-        fingerprint: current.fingerprint,
-        query: input.query,
-        items: shown.map((row) => optionPresentation(row.option)),
-        totalOptions: active.length,
-        nextCursor:
-          matches.length > input.limit && last !== undefined
-            ? writeConfigurationCursor(scope, current.fingerprint, {
-                kind: "options",
-                ordinal: last.ordinal,
-              })
-            : null,
-      });
-    },
+    (_tx, current) => Promise.resolve(optionsFromSnapshot(current, input)),
   );
 }
 

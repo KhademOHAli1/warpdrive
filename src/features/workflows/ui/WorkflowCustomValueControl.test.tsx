@@ -85,68 +85,105 @@ function Controlled({ def, changed }: { def: CustomFieldDef; changed: (value: un
   );
 }
 
+type ChangeWitness = (value: unknown) => void;
+
+function selectJourney(type: "single_option" | "user" | "person" | "org", changed: ChangeWitness) {
+  fireEvent.click(screen.getByRole("combobox", { name: "Field" }));
+  fireEvent.click(
+    screen.getByRole("option", { name: type === "single_option" ? "Active" : "Visible choice" }),
+  );
+  expect(changed).toHaveBeenLastCalledWith(type === "single_option" ? "a" : firstId);
+}
+
+function multiJourney(changed: ChangeWitness) {
+  fireEvent.click(screen.getByRole("checkbox", { name: "Active" }));
+  expect(changed).toHaveBeenLastCalledWith(["b", "a"]);
+  expect(screen.queryByRole("checkbox", { name: "Retired" })).not.toBeInTheDocument();
+}
+
+async function dateJourney(type: "date" | "date_range", changed: ChangeWitness) {
+  fireEvent.click(screen.getByRole("button", { name: type === "date" ? "Field" : "Field: start" }));
+  fireEvent.click(await screen.findByText("15"));
+  expect(changed).toHaveBeenLastCalledWith(
+    type === "date" ? "2026-06-15" : { start: "2026-06-15", end: "2026-06-25" },
+  );
+}
+
+function addressJourney(changed: ChangeWitness) {
+  fireEvent.change(screen.getByLabelText("Field: Latitude"), { target: { value: "52.5" } });
+  expect(changed).toHaveBeenLastCalledWith({ city: "Berlin", country: "DE", lat: 52.5, lng: 13.4 });
+  expect(initialValues.address).toEqual({ city: "Berlin", country: "DE", lat: 0, lng: 13.4 });
+}
+
+function numberJourney(type: "numeric" | "monetary", changed: ChangeWitness) {
+  const input = screen.getByRole("textbox", { name: "Field" });
+  fireEvent.change(input, { target: { value: type === "numeric" ? "-2.5" : "-12.50" } });
+  expect(changed).toHaveBeenLastCalledWith(type === "numeric" ? -2.5 : -12.5);
+}
+
+function timeJourney(type: "time" | "time_range", changed: ChangeWitness) {
+  const input = screen.getByRole("textbox", {
+    name: type === "time_range" ? "Field: start" : "Field",
+  });
+  fireEvent.change(input, { target: { value: "10:30" } });
+  expect(changed).toHaveBeenLastCalledWith(
+    type === "time_range" ? { start: "10:30", end: "17:00" } : "10:30",
+  );
+}
+
+function textJourney(
+  type: "text" | "autocomplete" | "large_text" | "phone",
+  changed: ChangeWitness,
+) {
+  const input = screen.getByRole("textbox", { name: "Field" });
+  const next = type === "phone" ? "+49 30 9876" : "After";
+  fireEvent.change(input, { target: { value: next } });
+  expect(changed).toHaveBeenLastCalledWith(next);
+  if (type === "text" || type === "autocomplete") expect(input).toHaveAttribute("maxlength", "255");
+  if (type === "large_text") expect(input).toHaveAttribute("maxlength", "65535");
+}
+
+async function editCustomType(type: CustomFieldDef["type"], changed: ChangeWitness): Promise<void> {
+  switch (type) {
+    case "single_option":
+    case "user":
+    case "person":
+    case "org":
+      selectJourney(type, changed);
+      return;
+    case "multi_option":
+      multiJourney(changed);
+      return;
+    case "date":
+    case "date_range":
+      await dateJourney(type, changed);
+      return;
+    case "address":
+      addressJourney(changed);
+      return;
+    case "numeric":
+    case "monetary":
+      numberJourney(type, changed);
+      return;
+    case "time":
+    case "time_range":
+      timeJourney(type, changed);
+      return;
+    case "text":
+    case "autocomplete":
+    case "large_text":
+    case "phone":
+      textJourney(type, changed);
+      return;
+  }
+}
+
 it.each(CUSTOM_FIELD_TYPES)(
   "edits %s with its canonical value shape and clears to omission",
   async (type) => {
     const changed = vi.fn();
     render(<Controlled def={field({ type })} changed={changed} />);
-    if (type === "single_option" || type === "user" || type === "person" || type === "org") {
-      fireEvent.click(screen.getByRole("combobox", { name: "Field" }));
-      fireEvent.click(
-        screen.getByRole("option", {
-          name: type === "single_option" ? "Active" : "Visible choice",
-        }),
-      );
-      expect(changed).toHaveBeenLastCalledWith(type === "single_option" ? "a" : firstId);
-    } else if (type === "multi_option") {
-      fireEvent.click(screen.getByRole("checkbox", { name: "Active" }));
-      expect(changed).toHaveBeenLastCalledWith(["b", "a"]);
-      expect(screen.queryByRole("checkbox", { name: "Retired" })).not.toBeInTheDocument();
-    } else if (type === "date" || type === "date_range") {
-      fireEvent.click(
-        screen.getByRole("button", { name: type === "date" ? "Field" : "Field: start" }),
-      );
-      fireEvent.click(await screen.findByText("15"));
-      expect(changed).toHaveBeenLastCalledWith(
-        type === "date" ? "2026-06-15" : { start: "2026-06-15", end: "2026-06-25" },
-      );
-    } else if (type === "address") {
-      fireEvent.change(screen.getByLabelText("Field: Latitude"), { target: { value: "52.5" } });
-      expect(changed).toHaveBeenLastCalledWith({
-        city: "Berlin",
-        country: "DE",
-        lat: 52.5,
-        lng: 13.4,
-      });
-      expect(initialValues.address).toEqual({ city: "Berlin", country: "DE", lat: 0, lng: 13.4 });
-    } else {
-      const input = screen.getByRole("textbox", {
-        name: type === "time_range" ? "Field: start" : "Field",
-      });
-      const next =
-        type === "numeric"
-          ? "-2.5"
-          : type === "monetary"
-            ? "-12.50"
-            : type === "time" || type === "time_range"
-              ? "10:30"
-              : type === "phone"
-                ? "+49 30 9876"
-                : "After";
-      fireEvent.change(input, { target: { value: next } });
-      const expected =
-        type === "numeric"
-          ? -2.5
-          : type === "monetary"
-            ? -12.5
-            : type === "time_range"
-              ? { start: "10:30", end: "17:00" }
-              : next;
-      expect(changed).toHaveBeenLastCalledWith(expected);
-      if (type === "text" || type === "autocomplete")
-        expect(input).toHaveAttribute("maxlength", "255");
-      if (type === "large_text") expect(input).toHaveAttribute("maxlength", "65535");
-    }
+    await editCustomType(type, changed);
     fireEvent.click(screen.getByRole("button", { name: "Clear value" }));
     expect(changed).toHaveBeenLastCalledWith(undefined);
     expect(screen.getByText("Not set")).toBeInTheDocument();
@@ -300,6 +337,22 @@ it("associates current errors with the value group and never stringifies false o
   expect(screen.getByRole("textbox", { name: "Field" })).toHaveValue("");
   expect(screen.queryByText("Not set")).not.toBeInTheDocument();
   expect(changed).not.toHaveBeenCalled();
+  const malformed = ["a", 0];
+  rerender(
+    <WorkflowCustomValueControl
+      def={field({ type: "multi_option" })}
+      value={malformed}
+      onChange={changed}
+      editable
+    />,
+  );
+  const choice = screen.getByRole("checkbox", { name: "Second" });
+  expect(choice).toBeDisabled();
+  fireEvent.click(choice);
+  expect(changed).not.toHaveBeenCalled();
+  expect(malformed).toEqual(["a", 0]);
+  fireEvent.click(screen.getByRole("button", { name: "Clear value" }));
+  expect(changed).toHaveBeenLastCalledWith(undefined);
 });
 
 it.each([

@@ -86,10 +86,12 @@ function currentFrame(
   return positive && receipt !== frame.receipt ? adoptFirst(frame, first, receipt) : frame;
 }
 function samePage(first: ConfigurationPage, page: ConfigurationPage | ConfigurationOptionsPage) {
+  const expected = findPaletteEntry(first.type, first.version);
   return (
+    expected !== undefined &&
     first.workflowId === page.workflowId &&
     first.type === page.type &&
-    first.version === page.version &&
+    expected === findPaletteEntry(page.type, page.version) &&
     first.fingerprint === page.fingerprint
   );
 }

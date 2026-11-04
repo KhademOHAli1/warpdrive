@@ -1,22 +1,35 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
-import { afterEach, assert, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, expect, it, type Mock, vi } from "vitest";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import type { WorkflowNode } from "../schemas";
 import type { ConfigurationOptionsPage, ConfigurationPage } from "./configurationMetadataView";
 import { useWorkflowConfiguration } from "./useWorkflowConfiguration";
 
 type ReadPage = RouterOutputs["workflows"]["configuration"];
-const io = vi.hoisted(() => ({
-  data: undefined as ReadPage | undefined,
-  fetching: false,
-  loading: false,
-  error: null as unknown,
-  updated: 1,
-  refetch: vi.fn<() => Promise<unknown>>(),
-  fields: vi.fn<(input: unknown) => Promise<ReadPage>>(),
-  options: vi.fn<(input: unknown) => Promise<RouterOutputs["workflows"]["configurationOptions"]>>(),
-}));
+interface ReadIO {
+  data: ReadPage | undefined;
+  fetching: boolean;
+  loading: boolean;
+  error: unknown;
+  updated: number;
+  refetch: Mock<() => Promise<unknown>>;
+  fields: Mock<(input: unknown) => Promise<ReadPage>>;
+  options: Mock<(input: unknown) => Promise<RouterOutputs["workflows"]["configurationOptions"]>>;
+}
+const io = vi.hoisted(
+  (): ReadIO => ({
+    data: undefined,
+    fetching: false,
+    loading: false,
+    error: null,
+    updated: 1,
+    refetch: vi.fn<() => Promise<unknown>>(),
+    fields: vi.fn<(input: unknown) => Promise<ReadPage>>(),
+    options:
+      vi.fn<(input: unknown) => Promise<RouterOutputs["workflows"]["configurationOptions"]>>(),
+  }),
+);
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     workflows: {

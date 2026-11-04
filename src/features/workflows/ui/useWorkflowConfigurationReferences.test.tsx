@@ -18,17 +18,30 @@ interface QueryState {
   fetching: boolean;
   refetch: Mock<() => Promise<unknown>>;
 }
-const io = vi.hoisted(() => ({
-  search: { data: undefined, at: 1, error: null, fetching: false, refetch: vi.fn() } as QueryState,
-  selected: {
-    data: undefined,
-    at: 1,
-    error: null,
-    fetching: false,
-    refetch: vi.fn(),
-  } as QueryState,
-  calls: vi.fn<(input: ConfigurationReferencesInput, options: unknown) => void>(),
-}));
+interface ReferenceReadIO {
+  search: QueryState;
+  selected: QueryState;
+  calls: Mock<(input: ConfigurationReferencesInput, options: unknown) => void>;
+}
+const io = vi.hoisted(
+  (): ReferenceReadIO => ({
+    search: {
+      data: undefined,
+      at: 1,
+      error: null,
+      fetching: false,
+      refetch: vi.fn<() => Promise<unknown>>(),
+    },
+    selected: {
+      data: undefined,
+      at: 1,
+      error: null,
+      fetching: false,
+      refetch: vi.fn<() => Promise<unknown>>(),
+    },
+    calls: vi.fn<(input: ConfigurationReferencesInput, options: unknown) => void>(),
+  }),
+);
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     workflows: {

@@ -59,7 +59,7 @@ export function WorkflowRecordChoice({
         <Button
           type="button"
           variant="outline"
-          disabled={read.loadingMore || read.status !== "ready"}
+          disabled={read.loadingMore === true || read.status !== "ready"}
           onClick={() => {
             void read.onMore?.();
           }}
@@ -74,7 +74,7 @@ export function WorkflowRecordChoice({
             type="button"
             variant="outline"
             onClick={() => {
-              void read.retry?.();
+              void read.retry();
             }}
           >
             {t("retry")}
