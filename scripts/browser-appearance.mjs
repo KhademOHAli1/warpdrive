@@ -487,6 +487,7 @@ function watchNetwork(context, page, entry) {
   const errors = [];
   const unexpected = [];
   const postCancellations = [];
+  let preferenceProbe;
   entry.navigationCancellations = [];
   entry.fulfilledResponseCancellations = [];
   let expectedTransportErrors = 0;
@@ -542,10 +543,27 @@ function watchNetwork(context, page, entry) {
     errors.push(message.text());
   });
   const ready = Promise.all([
-    context.route("**/*", (route) => {
-      if (new URL(route.request().url()).origin === origin) return route.continue();
-      unexpected.push(new URL(route.request().url()).origin);
-      return route.abort("blockedbyclient");
+    context.route("**/*", async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      const preference =
+        url.pathname === "/settings/appearance" &&
+        request.method() === "POST" &&
+        request.headers()["next-action"];
+      if (url.origin !== origin) {
+        unexpected.push(url.origin);
+        await route.abort("blockedbyclient");
+      } else if (preference) {
+        if (!preferenceProbe) {
+          errors.push({ path: url.pathname, error: "Preference action before probe attachment" });
+          await route.abort("blockedbyclient");
+        } else {
+          assert.equal(preferenceProbe.matches(request), true);
+          await preferenceProbe.handle(route);
+        }
+      } else {
+        await route.continue();
+      }
     }),
     context.routeWebSocket("**/*", (socket) => {
       unexpected.push(new URL(socket.url()).origin);
@@ -554,6 +572,10 @@ function watchNetwork(context, page, entry) {
   ]);
   return {
     ready,
+    attach(probe) {
+      assert.equal(preferenceProbe, undefined, "Only one preference probe owns this context");
+      preferenceProbe = probe;
+    },
     verify(expectedAborts, probe) {
       for (const { request, detail } of postCancellations) {
         const delivered = probe.deliveredObservation(request);
@@ -608,7 +630,8 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
     const options = catalog(`src/components/shell/messages/shell.${locale}.json`).appearance;
     const c = controls(page, L, options);
     await c.theme.waitFor();
-    probe = await createPreferenceProbe(page, { origin });
+    probe = createPreferenceProbe(page, { origin });
+    network.attach(probe);
     await exercise({
       page,
       context,
@@ -642,7 +665,10 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
         } finally {
           await drainContextRoutes(context);
         }
-        if (network && probe) network.verify(scenario === "transport" ? 2 : 0, probe);
+        if (network && probe) {
+          probe.assertHealthy();
+          network.verify(scenario === "transport" ? 2 : 0, probe);
+        }
         if (fatal instanceof Error) problem ??= fatal;
       } finally {
         await context.close();
@@ -679,7 +705,7 @@ try {
   await journey("en", 1280, "light", "transport", transport);
   await journey("en", 1280, "light", "ordering-success", (s) => ordering(s, false));
   await journey("en", 1280, "dark", "ordering-denial", (s) => ordering(s, true));
-  if (fatal instanceof Error) throw fatal;
+  if (fatal instanceof Error) throw asError(fatal);
   report.state = "PASS";
 } catch (error) {
   report.state = "FAIL";

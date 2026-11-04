@@ -66,8 +66,11 @@ receipt with the actual `APP_COMMIT`, production Build ID, browser version, loca
 viewport/media, exact announcement observations, database comparisons and context/browser/
 pool cleanup. It contains no authentication cookie, CSRF token, request body or raw Flight
 body. Each journey and the overall receipt can pass only after owned cleanup succeeds.
-Page routes and context routes are separately removed with bounded `behavior: "wait"`
-draining before final network verification and context closure. Late unhandled asynchronous
+One context route dispatcher owns all requests, enforcing the origin guard before delegating
+preference actions to the strict probe. Preference requests before probe attachment are
+blocked. Probe handlers and context routes are drained before final health/network
+verification and context closure; context routing uses bounded `behavior: "wait"`.
+Late unhandled asynchronous
 rejections fail the process and rewrite the retained overall receipt as FAIL; they cannot
 leave a passing artifact paired with a failing command. No route exception is ignored.
 The surrounding existing workflow trap stops its Next/HTTPS processes; GitHub owns service

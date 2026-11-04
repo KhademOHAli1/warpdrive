@@ -176,9 +176,9 @@ async function bounded(promise, message) {
   }
 }
 
-// Requires a fresh exclusively owned page: the probe is its only page-level route handler.
-// Context-level network guards belong to the caller and are drained separately by that owner.
-export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
+// The caller owns one context-level dispatcher. This probe installs no route handlers and
+// never falls back to another route layer; its handler accepts only matching preference POSTs.
+export function createPreferenceProbe(page, { origin, onObserved } = {}) {
   const target = new URL("/settings/appearance", origin ?? page.url());
   if (
     target.protocol !== "https:" ||
@@ -216,10 +216,6 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
   };
   const handle = async (route) => {
     const request = route.request();
-    if (!isPreferenceRequest(request, target)) {
-      await route.fallback();
-      return;
-    }
     const hold = pending;
     pending = undefined;
     let upstream;
@@ -271,15 +267,21 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
     }
   };
   const handler = (route) => {
+    if (!isPreferenceRequest(route.request(), target)) {
+      const problem = failure("a non-preference route was passed to the action handler");
+      fail(problem);
+      return Promise.reject(problem);
+    }
     const running = handle(route).catch(fail);
     handlers.add(running);
     void running.finally(() => handlers.delete(running));
     return running;
   };
-  await page.route("**/*", handler);
   return {
     actions,
     assertHealthy,
+    matches: (request) => isPreferenceRequest(request, target),
+    handle: handler,
     // Call after held delivered() settles. This proves exact request attribution and a
     // successful fulfill call; the journey separately verifies DOM and persisted results.
     deliveredObservation(request) {
@@ -334,9 +336,6 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
       closing = true;
       for (const hold of holds) hold.gate.resolve();
       try {
-        // Wait for Playwright's complete page-route lifecycle, including fallbacks after our
-        // callback returns. Removing the callback alone does not drain those continuations.
-        await bounded(page.unrouteAll({ behavior: "wait" }), "owned page routes did not drain");
         await bounded(Promise.all([...handlers]), "owned action routes did not drain");
       } catch (problem) {
         fail(problem);

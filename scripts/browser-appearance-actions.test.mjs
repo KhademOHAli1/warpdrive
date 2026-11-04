@@ -61,11 +61,11 @@ function deferred() {
 }
 
 // These fake routes verify helper custody only. They establish no native browser behavior.
-async function probeFixture({ failFulfill = false } = {}) {
+function probeFixture({ failFulfill = false } = {}) {
   const url = "https://127.0.0.1:3443/settings/appearance";
   const fulfillment = deferred();
   const fulfillStarted = deferred();
-  const state = { fetches: 0, fulfills: 0, disposals: 0, aborts: [], unroutes: 0 };
+  const state = { fetches: 0, fulfills: 0, disposals: 0, aborts: [] };
   const request = {
     url: () => url,
     method: () => "POST",
@@ -80,20 +80,7 @@ async function probeFixture({ failFulfill = false } = {}) {
       return Promise.resolve();
     },
   };
-  let handler;
-  const page = {
-    url: () => url,
-    route: (pattern, callback) => {
-      assert.equal(pattern, "**/*");
-      handler = callback;
-      return Promise.resolve();
-    },
-    unrouteAll: (options) => {
-      assert.deepEqual(options, { behavior: "wait" });
-      state.unroutes += 1;
-      return Promise.resolve();
-    },
-  };
+  const page = { url: () => url };
   const route = {
     request: () => request,
     fetch: (options) => {
@@ -113,12 +100,30 @@ async function probeFixture({ failFulfill = false } = {}) {
       return Promise.resolve();
     },
   };
-  const probe = await createPreferenceProbe(page, { origin: url });
-  return { probe, request, state, fulfillment, fulfillStarted, dispatch: () => handler(route) };
+  const probe = createPreferenceProbe(page, { origin: url });
+  assert.equal(probe.matches(request), true);
+  assert.equal(probe.matches({ ...request, method: () => "GET" }), false);
+  assert.equal(probe.matches({ ...request, headers: () => ({}) }), false);
+  assert.equal(
+    probe.matches({ ...request, url: () => "https://127.0.0.1:3443/settings/profile" }),
+    false,
+  );
+  assert.equal(
+    probe.matches({ ...request, url: () => "https://example.invalid/settings/appearance" }),
+    false,
+  );
+  return {
+    probe,
+    request,
+    state,
+    fulfillment,
+    fulfillStarted,
+    dispatch: () => probe.handle(route),
+  };
 }
 
 await test("attributes only the exact request after successful fulfillment settles", async () => {
-  const fixture = await probeFixture();
+  const fixture = probeFixture();
   const { probe, request } = fixture;
   const hold = probe.expect({ kind: "appearance", value: "night", ok: true });
   const running = fixture.dispatch();
@@ -153,11 +158,10 @@ await test("attributes only the exact request after successful fulfillment settl
     await running;
     await probe.close();
   }
-  assert.equal(fixture.state.unroutes, 1);
 });
 
 await test("failed fulfillment never qualifies and fails health and cleanup", async () => {
-  const fixture = await probeFixture({ failFulfill: true });
+  const fixture = probeFixture({ failFulfill: true });
   const { probe, request } = fixture;
   const hold = probe.expect({ kind: "appearance", value: "night", ok: true });
   const running = fixture.dispatch();
@@ -177,11 +181,10 @@ await test("failed fulfillment never qualifies and fails health and cleanup", as
     await running;
     await assert.rejects(probe.close(), /Appearance action probe:/);
   }
-  assert.equal(fixture.state.unroutes, 1);
 });
 
 await test("transport abort never fetches upstream or qualifies as fulfilled", async () => {
-  const fixture = await probeFixture();
+  const fixture = probeFixture();
   const { probe, request } = fixture;
   const hold = probe.expect({
     kind: "appearance",
@@ -212,5 +215,4 @@ await test("transport abort never fetches upstream or qualifies as fulfilled", a
     await running;
     await probe.close();
   }
-  assert.equal(fixture.state.unroutes, 1);
 });
