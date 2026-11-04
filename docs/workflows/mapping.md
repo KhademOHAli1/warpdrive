@@ -49,16 +49,16 @@ Invalid or empty date/instant input retains its mode for repair and draft copyin
 
 ## Finite output types
 
-| Output | Meaning |
-| --- | --- |
-| Manual `recordId`, deal read `id` | Deal identity. |
-| Deal read `title`, `status`, `currency`, `stageId` | Existing text or opaque code. |
-| Deal read `ownerId` | User identity; current active-user checks still apply before a custom user write. |
-| Deal read `value` | Exact-decimal string or null; never an implicit native number. |
-| Deal read `expectedCloseDate` | Canonical civil date or null, projected by a new actual read. |
-| Created task `id` | Activity identity. |
-| Condition `result` | Boolean. |
-| Completed wait `resumeAt` | Instant; a still-waiting step has no completed output. |
+| Output                                             | Meaning                                                                           |
+| -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Manual `recordId`, deal read `id`                  | Deal identity.                                                                    |
+| Deal read `title`, `status`, `currency`, `stageId` | Existing text or opaque code.                                                     |
+| Deal read `ownerId`                                | User identity; current active-user checks still apply before a custom user write. |
+| Deal read `value`                                  | Exact-decimal string or null; never an implicit native number.                    |
+| Deal read `expectedCloseDate`                      | Canonical civil date or null, projected by a new actual read.                     |
+| Created task `id`                                  | Activity identity.                                                                |
+| Condition `result`                                 | Boolean.                                                                          |
+| Completed wait `resumeAt`                          | Instant; a still-waiting step has no completed output.                            |
 
 No person, organization, custom CRM field, option, address or range output is
 invented from a database column or a nominal schema. Unsupported handlers remain
