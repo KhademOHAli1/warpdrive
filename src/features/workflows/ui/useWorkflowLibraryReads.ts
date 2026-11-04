@@ -197,11 +197,12 @@ function useLibraryAuthority(list: LibraryRead, input: LibraryLocationInput, can
   if (owners.denied && ownerBlock === null) setOwnerBlock({ page: list.data });
   else if (ownerBlock !== null && confirmedPage(list) && list.data !== ownerBlock.page)
     setOwnerBlock(null);
+  const refetch = list.refetch;
   useEffect(() => {
     // The current-scope owners endpoint revoked access. Revalidate the external
     // list query, without moving owner-response state through a child effect.
-    if (ownerBlock !== null) void list.refetch().catch(() => undefined);
-  }, [ownerBlock, list.refetch]);
+    if (ownerBlock !== null) void refetch().catch(() => undefined);
+  }, [ownerBlock, refetch]);
   const denied = listDenied || owners.denied || ownerBlock !== null;
   return { owners, denied, ...currentCapabilities(list, denied, canCreate) };
 }

@@ -292,6 +292,7 @@ describe("server-owned workflow library pages", () => {
       );
       await act(async () => {
         heldOwnerRetry.resolve({ isError: true });
+        await heldOwnerRetry.promise;
       });
       expect(screen.queryByText(english.libraryOwnersError)).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: english.retry })).not.toBeInTheDocument();
@@ -309,6 +310,7 @@ describe("server-owned workflow library pages", () => {
     } finally {
       await act(async () => {
         heldOwnerRetry.resolve({ isError: true });
+        await heldOwnerRetry.promise;
       });
     }
   });
@@ -396,12 +398,14 @@ describe("server-owned workflow library pages", () => {
       expect(screen.getByRole("button", { name: english.retry })).toBeEnabled();
       await act(async () => {
         heldOwnerRetry.resolve({ isError: true });
+        await heldOwnerRetry.promise;
       });
       expect(screen.getByRole("button", { name: english.retry })).toBeEnabled();
       expect(io.refetch).toHaveBeenCalledTimes(1);
     } finally {
       await act(async () => {
         heldOwnerRetry.resolve({ isError: true });
+        await heldOwnerRetry.promise;
       });
     }
   });
