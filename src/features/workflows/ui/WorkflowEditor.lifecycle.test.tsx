@@ -669,6 +669,8 @@ describe("current authority and explicit reconciliation regressions", () => {
     const publish = screen.getByRole("button", { name: english.publish });
     expect(publish).toBeEnabled();
     await user.click(publish);
+    const review = screen.getByRole("alertdialog", { name: english.publicationTitle });
+    await user.click(within(review).getByRole("button", { name: english.publicationConfirm }));
     await waitFor(() =>
       expect(io.publish).toHaveBeenCalledExactlyOnceWith(workflowId, 7, "workflow-csrf"),
     );

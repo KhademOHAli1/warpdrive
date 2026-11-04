@@ -22,6 +22,7 @@ import { useDialogFocus } from "./useDialogFocus";
 import { useWorkflowEditor, type WorkflowDetail } from "./useWorkflowEditor";
 import { useWorkflowLifecycle } from "./useWorkflowLifecycle";
 import { VersionsDialog } from "./VersionsDialog";
+import { WorkflowPublishReview } from "./WorkflowPublishReview";
 
 function editorStatus(
   editor: Pick<ReturnType<typeof useWorkflowEditor>, "archivedAt" | "active" | "number">,
@@ -46,6 +47,8 @@ export function WorkflowEditor({
   const libraryReturn = sanitizeLibraryReturnTo(returnTo);
   const lifecycle = useWorkflowLifecycle(initial.id, editor, libraryReturn);
   const [versionsOpen, setVersionsOpen] = useState(initialHistory);
+  const [publicationOpen, setPublicationOpen] = useState(false);
+  const publicationFocus = useDialogFocus();
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [copyName, setCopyName] = useState(() =>
     t("duplicateDefaultName", { name: initial.name }).slice(0, 120),
@@ -170,8 +173,17 @@ export function WorkflowEditor({
           )}
           {editor.capabilities.publish && (
             <Button
-              disabled={editor.pending || editor.issues.length > 0 || editor.name.trim() === ""}
-              onClick={() => author("publish")}
+              disabled={
+                editor.pending ||
+                editor.archivedAt !== null ||
+                !editor.available ||
+                editor.issues.length > 0 ||
+                editor.name.trim() === ""
+              }
+              onClick={(event) => {
+                publicationFocus.remember(event.currentTarget);
+                setPublicationOpen(true);
+              }}
             >
               {t("publish")}
             </Button>
@@ -269,6 +281,19 @@ export function WorkflowEditor({
           </TabsContent>
         </Tabs>
       </div>
+      {publicationOpen && (
+        <WorkflowPublishReview
+          current={editor}
+          pending={editor.pending}
+          invalid={editor.issues.length > 0 || editor.name.trim() === ""}
+          onClose={() => setPublicationOpen(false)}
+          onConfirm={() => {
+            setPublicationOpen(false);
+            author("publish");
+          }}
+          onCloseAutoFocus={(event) => publicationFocus.restore(event, heading.current)}
+        />
+      )}
       {versionsOpen && (
         <VersionsDialog
           workflowId={initial.id}
