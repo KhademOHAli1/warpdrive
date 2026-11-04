@@ -26,9 +26,3 @@ docs/parity-captures/
 
 # Optional project-local runtime; install from the version declared in package.json.
 .runtime/
-
-# Isolated CI reports and runner-local HTTPS material.
-/tests/browser/.tls/
-/tests/browser/playwright-report/
-/tests/browser/test-results/
-/audit-results/

@@ -402,7 +402,7 @@ class DelegatedAcceptanceTests(unittest.TestCase):
         with self.assertRaises(gates.GateError):
             gates.verify_issue(self.api, "o/r", 7, REVISION, {ITEM["id"]: item, dependency["id"]: dependency}, allow_agent=True)
 
-    def test_native_parent_traversal_keeps_human_context_for_every_child(self):
+    def test_parent_keeps_human_acceptance_without_downgrading_child_capability(self):
         self.prepare()
         child = dict(ITEM, id="technical/child", parent=ITEM["id"])
         child_issue = dict(ISSUE, number=8, body="<!-- warpdrive:delivery-id:technical/child -->")
@@ -420,7 +420,80 @@ class DelegatedAcceptanceTests(unittest.TestCase):
             with self.assertRaises(gates.GateError):
                 gates.verify_issue(GraphAPI(self.comment), "o/r", 7, REVISION, {ITEM["id"]: ITEM, child["id"]: child}, allow_parent=True, allow_agent=True)
         self.assertEqual(len(checked.call_args_list), 2)
-        self.assertTrue(all(call.kwargs["allow_agent"] is False for call in checked.call_args_list))
+        self.assertEqual([call.kwargs["allow_agent"] for call in checked.call_args_list], [True, False])
+
+    def recursive_graph(self, dependency=False):
+        self.prepare()
+        parent = dict(ITEM, id="programme/example", kind="programme")
+        child = dict(ITEM)
+        if dependency:
+            parent["dependencies"] = [ITEM["id"]]
+        else:
+            child["parent"] = parent["id"]
+        child_issue = dict(ISSUE, body=f"<!-- warpdrive:delivery-id:{ITEM['id']} -->")
+        parent_issue = dict(ISSUE, number=8, body=f"<!-- warpdrive:delivery-id:{parent['id']} -->")
+        parent_comments = [attestation(canonical_id=parent["id"],
+                                       acceptance_sha256=gates.scope_hash(parent))]
+        class GraphAPI(API):
+            def request(self, path, method="GET", payload=None):
+                return parent_issue if path.endswith("/issues/8") else super().request(path, method, payload)
+            def pages(self, path, key=None):
+                if path.endswith("/issues/8/comments"):
+                    return parent_comments
+                if path.endswith("/issues/8/sub_issues"):
+                    return [] if dependency else [child_issue]
+                if path.endswith("/issues/8/dependencies/blocked_by"):
+                    return [child_issue] if dependency else []
+                return super().pages(path, key)
+        return GraphAPI(self.comment), {parent["id"]: parent, child["id"]: child}, parent_comments
+
+    def test_real_recursive_gate_accepts_human_parent_and_opted_in_agent_child(self):
+        api, items, _ = self.recursive_graph()
+        proof = gates.verify_issue(api, "o/r", 8, REVISION, items,
+                                   allow_parent=True, allow_agent=True)
+        self.assertEqual(proof["id"], "programme/example")
+        self.assertEqual(proof["acceptance"]["mode"], "human")
+        self.assertTrue(any("/issues/7/comments" in path for path, _, _ in api.calls))
+        self.assertTrue(any("/workflows/12345/" in path for path, _, _ in api.calls))
+
+    def test_real_recursive_gate_keeps_valid_agent_dependency_capability(self):
+        api, items, _ = self.recursive_graph(dependency=True)
+        self.assertEqual(gates.verify_issue(api, "o/r", 8, REVISION, items,
+                         allow_parent=True, allow_agent=True)["acceptance"]["mode"], "human")
+
+    def test_recursive_gate_still_rejects_missing_opt_in_and_human_only_child(self):
+        for mutation in (lambda: self.policy["items"].clear(),
+                         lambda: self.policy["human_only_ids"].append(ITEM["id"])):
+            with self.subTest(mutation=mutation):
+                self.policy = policy()
+                api, items, _ = self.recursive_graph()
+                mutation()
+                with self.assertRaises(gates.GateError):
+                    gates.verify_issue(api, "o/r", 8, REVISION, items,
+                                       allow_parent=True, allow_agent=True)
+
+    def test_recursive_gate_does_not_accept_agent_parent_or_missing_human_parent(self):
+        for use_agent in (False, True):
+            with self.subTest(use_agent=use_agent):
+                api, items, comments = self.recursive_graph()
+                comments[:] = [self.comment] if use_agent else []
+                with self.assertRaises(gates.GateError):
+                    gates.verify_issue(api, "o/r", 8, REVISION, items,
+                                       allow_parent=True, allow_agent=True)
+
+    def test_recursive_gate_preserves_exact_ci_source_pins_and_historical_policy_rules(self):
+        api, items, _ = self.recursive_graph()
+        self.candidate_policy = json.loads(json.dumps(self.policy))
+        self.policy["items"]["technical/later"] = dict(self.policy["items"][ITEM["id"]])
+        self.assertEqual(gates.verify_issue(api, "o/r", 8, REVISION, items,
+                         allow_parent=True, allow_agent=True)["acceptance"]["mode"], "human")
+        api.ci_conclusion = "failure"
+        with self.assertRaises(gates.GateError):
+            gates.verify_issue(api, "o/r", 8, REVISION, items, allow_parent=True, allow_agent=True)
+        api.ci_conclusion = "success"
+        self.source = b"unreviewed source drift\n"
+        with self.assertRaises(gates.GateError):
+            gates.verify_issue(api, "o/r", 8, REVISION, items, allow_parent=True, allow_agent=True)
 
 
 if __name__ == "__main__":

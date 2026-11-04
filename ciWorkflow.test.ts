@@ -48,6 +48,8 @@ const workflow = z
 const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_BUN = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6";
 const PACKAGES = { crm: "package.json", site: "site/package.json", docs: "docs-site/package.json" };
+const DOCS_DEPENDENCY_CONTRACT =
+  "timeout 60s bun --no-env-file ../scripts/docs-dependency-contracts.mjs";
 
 function job(name: keyof typeof PACKAGES) {
   const found = workflow.jobs[name];
@@ -58,13 +60,19 @@ function commands(name: keyof typeof PACKAGES): string[] {
   return job(name).steps.flatMap((step) => (step.run === undefined ? [] : [step.run]));
 }
 
+function toolingEnvironment(name: string, command: string | undefined) {
+  if (name === "docs" && command === DOCS_DEPENDENCY_CONTRACT) {
+    return { BUN_OPTIONS: "--no-env-file" };
+  }
+  if (name === "site" && command === "bun run build") {
+    return { NEXT_TELEMETRY_DISABLED: "1" };
+  }
+  return undefined;
+}
+
 describe("public Bun CI", () => {
-  it("checks integration and release pushes, ordinary pull requests and manual runs with a read-only token", () => {
-    expect(workflow.on).toEqual({
-      push: { branches: ["main", "integration", "release/**"] },
-      pull_request: null,
-      workflow_dispatch: null,
-    });
+  it("checks every branch push, ordinary pull requests and manual runs with a read-only token", () => {
+    expect(workflow.on).toEqual({ push: null, pull_request: null, workflow_dispatch: null });
     expect(workflow.permissions).toEqual({ contents: "read" });
     expect(workflow.concurrency.group).toContain("github.workflow");
     expect(workflow.concurrency.group).toContain("github.ref");
@@ -122,6 +130,7 @@ describe("public Bun CI", () => {
     expect(job("docs").defaults?.run["working-directory"]).toBe("docs-site");
     expect(commands("docs")).toEqual([
       "bun install --frozen-lockfile",
+      DOCS_DEPENDENCY_CONTRACT,
       "bun run typecheck",
       "bun run build",
     ]);
@@ -160,9 +169,9 @@ describe("public Bun CI", () => {
     for (const [key, value] of Object.entries(env)) {
       if (key !== "APP_COMMIT") expect(value).not.toContain("${{");
     }
-    for (const check of Object.values(workflow.jobs)) {
+    for (const [name, check] of Object.entries(workflow.jobs)) {
       for (const step of check.steps) {
-        if (step.run !== "bun run build") expect(step.env).toBeUndefined();
+        if (step !== build) expect(step.env).toEqual(toolingEnvironment(name, step.run));
       }
     }
   });

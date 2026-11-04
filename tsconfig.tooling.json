@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "incremental": false,
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  "include": ["*.mjs", "scripts/*.mjs", ".env.example.test.ts"],
+  "exclude": ["node_modules", "site", "docs-site", ".runtime"]
+}

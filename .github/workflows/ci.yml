@@ -2,7 +2,6 @@ name: Public Bun CI
 
 on:
   push:
-    branches: [main, integration, "release/**"]
   pull_request:
   workflow_dispatch:
 
@@ -115,6 +114,10 @@ jobs:
           bun-version-file: docs-site/package.json
       - name: Install locked documentation dependencies
         run: bun install --frozen-lockfile
+      - name: Check resolved documentation dependency contracts
+        run: timeout 60s bun --no-env-file ../scripts/docs-dependency-contracts.mjs
+        env:
+          BUN_OPTIONS: --no-env-file
       - name: Check documentation types
         run: bun run typecheck
       - name: Build documentation site

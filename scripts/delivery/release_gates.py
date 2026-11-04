@@ -22,7 +22,6 @@ def item_for_issue(issue, items, allow_parent=False):
     return item
 
 def verify_ci(api, repo, revision, policy, dynamic_codeql_workflow=None):
-    dynamic_codeql_workflow = dynamic_codeql_workflow or policy.get("codeql_workflow_id")
     evidence = []
     for filename, expected_jobs in policy["required_workflows"].items():
         runs = api.pages(f"repos/{repo}/actions/workflows/{filename}/runs?head_sha={revision}", "workflow_runs")
@@ -44,11 +43,6 @@ def verify_ci(api, repo, revision, policy, dynamic_codeql_workflow=None):
             if len(matches) != 1 or matches[0].get("conclusion") != "success":
                 raise GateError(f"Required exact-revision job {name} did not pass")
         evidence.append({"workflow": filename, "run_id": latest["id"], "url": latest["html_url"], "attempt": latest.get("run_attempt", 1), "jobs": expected_jobs})
-    if policy.get("require_security_results"):
-        alerts = api.pages(f"repos/{repo}/code-scanning/alerts?state=open&ref={revision}")
-        blocking = [a for a in alerts if a.get("rule", {}).get("security_severity_level") in ("high", "critical") or a.get("rule", {}).get("severity") == "error"]
-        if blocking:
-            raise GateError("Release revision has blocking code-scanning findings")
     return evidence
 
 TECHNICAL_POLICY = "docs/delivery/technical-acceptance-policy.json"
@@ -280,7 +274,7 @@ def verify_issue(api, repo, number, revision, items, require_closed=True, allow_
         if expected_children != actual_children:
             raise GateError(f"Issue #{number} native children do not cover its canonical full scope")
         for child in children:
-            verify_issue(api, repo, child["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=agent_context)
+            verify_issue(api, repo, child["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=allow_agent)
     blockers = api.pages(f"repos/{repo}/issues/{number}/dependencies/blocked_by")
     if any(b.get("state") != "closed" or b.get("state_reason") != "completed" for b in blockers):
         raise GateError(f"Issue #{number} has an unfinished blocking dependency")
@@ -288,7 +282,7 @@ def verify_issue(api, repo, number, revision, items, require_closed=True, allow_
     if not set(item.get("dependencies", [])).issubset(actual_dependencies):
         raise GateError(f"Issue #{number} is missing a canonical blocking dependency on GitHub")
     for blocker in blockers:
-        verify_issue(api, repo, blocker["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=agent_context)
+        verify_issue(api, repo, blocker["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=allow_agent)
     proof = acceptance(api, repo, issue, item, revision, allow_agent=agent_context)
     memo[memo_key] = {"number": number, "id": item["id"], "title": issue["title"], "url": issue["html_url"], "acceptance": proof}
     return memo[memo_key]

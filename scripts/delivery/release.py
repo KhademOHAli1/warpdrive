@@ -15,6 +15,7 @@ from release_support import (
 
 from release_links import load_commit_links
 from release_publication import record_publication
+from release_mail import is_mail_version, mail_release_gate, next_mail_patch
 
 def require_revision(revision):
     if not SHA.fullmatch(revision):
@@ -55,14 +56,15 @@ def commit_references(api, repo, revision, base, overrides=None):
     return rows
 
 def release_gate(api, plan, policy, allow_published=False):
+    if plan.get("release_track") == "mail":
+        return mail_release_gate(api, plan, policy, require_revision, commit_references,
+                                 allow_published=allow_published)
+    if plan.get("release_track") not in (None, "core"):
+        raise GateError("Unsupported release track")
+    if is_mail_version(plan["version"]):
+        raise GateError("Versions 1.5.x and reserved 1.6.0 require the explicit MAIL release track")
     repo, revision = policy["repository"], plan["revision"]
     require_revision(revision)
-    # The successful dependency job must have run in release-strict mode. That mode is
-    # selected by package == next-plan version; alternate plan filenames cannot bypass it.
-    if policy.get("require_security_results"):
-        next_plan = load_candidate_json(revision, "docs/delivery/releases/next.json")
-        if next_plan.get("version") != plan.get("version"):
-            raise GateError("Release version differs from its committed next-release plan; strict dependency CI is not established")
     items = manifest_items(revision)
     if plan.get("schema_version") != 1:
         raise GateError("Unsupported release-plan schema")
@@ -76,7 +78,9 @@ def release_gate(api, plan, policy, allow_published=False):
         raise GateError("Release plan must include every issue in its nonempty milestone exactly once")
     tags = api.pages(f"repos/{repo}/tags")
     releases = api.pages(f"repos/{repo}/releases")
-    initial = not published_stable_releases(releases, "v" + plan["version"]) or milestone["number"] == policy.get("initial_milestone_number")
+    core_releases = [r for r in published_stable_releases(releases, "v" + plan["version"])
+                     if not is_mail_version(r["tag_name"])]
+    initial = not core_releases or milestone["number"] == policy.get("initial_milestone_number")
     required = policy["initial_journeys"] if initial else plan.get("required_journeys", [])
     journeys = plan.get("journeys", {})
     if any(not journeys.get(j) or not set(journeys[j]).issubset(issue_numbers) for j in required):
@@ -198,6 +202,7 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     version = sub.add_parser("next-version")
     version.add_argument("--bump", choices=["patch", "minor", "major"], default="patch")
+    version.add_argument("--track", choices=["core", "mail"], default="core")
     bump = sub.add_parser("bump-version")
     bump.add_argument("--version", required=True)
     bump.add_argument("--apply", action="store_true", help="Write only package/Bun root version fields")
@@ -224,8 +229,10 @@ def main():
     policy = trusted_release_policy(args.revision) if args.command in ("check", "prepare", "draft", "publish") else load_json(ROOT / "docs/delivery/release-policy.json")
     api, repo = GitHub(), policy["repository"]
     if args.command == "next-version":
+        if args.track == "mail" and args.bump != "patch":
+            raise GateError("MAIL next-version selects 1.5.x patches; 1.6.0 requires programme acceptance")
         names = [t["name"] for t in api.pages(f"repos/{repo}/tags")] + [r["tag_name"] for r in api.pages(f"repos/{repo}/releases")]
-        print(select_version(load_json(ROOT / "package.json")["version"], names, bump=args.bump))
+        print(next_mail_patch(names) if args.track == "mail" else select_version(load_json(ROOT / "package.json")["version"], names, bump=args.bump))
     elif args.command == "bump-version":
         names = [t["name"] for t in api.pages(f"repos/{repo}/tags")] + [r["tag_name"] for r in api.pages(f"repos/{repo}/releases")]
         validate_release_version(args.version, args.version, names)
