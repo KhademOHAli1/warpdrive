@@ -89,7 +89,7 @@ export function FieldRowItem({
         <div className="min-w-0">
           {editing ? (
             <Input
-              aria-label={S.rename}
+              aria-label={`${S.rename}: ${row.name}`}
               value={draft}
               disabled={task.pending}
               onChange={(e) => {
@@ -118,6 +118,7 @@ export function FieldRowItem({
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2">
           <ReorderControls
+            itemName={row.name}
             canMoveUp={!isFirst && !task.pending}
             canMoveDown={!isLast && !task.pending}
             onMoveUp={() => onMove("up")}
@@ -126,6 +127,7 @@ export function FieldRowItem({
           {editing ? (
             <>
               <Button
+                aria-label={`${S.save}: ${row.name}`}
                 variant="ghost"
                 size="sm"
                 onClick={() => void saveName()}
@@ -135,6 +137,7 @@ export function FieldRowItem({
                 {S.save}
               </Button>
               <Button
+                aria-label={`${S.cancel}: ${row.name}`}
                 variant="ghost"
                 size="sm"
                 disabled={task.pending}
@@ -150,6 +153,7 @@ export function FieldRowItem({
             </>
           ) : (
             <Button
+              aria-label={`${S.rename}: ${row.name}`}
               variant="ghost"
               size="sm"
               disabled={task.pending}
@@ -165,12 +169,19 @@ export function FieldRowItem({
           )}
           {isOptionType && (
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className={ROW_ACTION} disabled={task.pending}>
+              <Button
+                aria-label={`${S.editOptions}: ${row.name}`}
+                variant="ghost"
+                size="sm"
+                className={ROW_ACTION}
+                disabled={task.pending}
+              >
                 {S.editOptions}
               </Button>
             </CollapsibleTrigger>
           )}
           <Button
+            aria-label={`${S.archive}: ${row.name}`}
             variant="ghost"
             size="sm"
             onClick={() => void archive()}
