@@ -9,7 +9,7 @@ import english from "../messages/workflows.en.json";
 import persian from "../messages/workflows.fa.json";
 import { RunHistory } from "./RunHistory";
 
-type CancelReply = { ok: true; value: "cancelled" } | { ok: false; error: string };
+type CancelReply = { ok: true; value: "cancelled" | "failed" } | { ok: false; error: string };
 type ReadReply = { isError: boolean };
 type HistoryPoll = {
   refetchInterval: (query: { state: { data?: { status: string }[] } }) => number | false;
@@ -101,6 +101,39 @@ beforeEach(() => {
   queries.refetch.mockResolvedValue({ isError: false });
 });
 afterEach(cleanup);
+
+it("can cancel the same run after a failed result is retried into queued state", async () => {
+  queries.cancel.mockResolvedValueOnce({ ok: true, value: "failed" });
+  queries.refetch.mockImplementationOnce(() => {
+    queries.rows = [row("failed")];
+    return Promise.resolve({ isError: false });
+  });
+  const user = userEvent.setup();
+  const view = render(page());
+
+  await user.click(screen.getByRole("button", { name: english.cancelRun }));
+
+  await waitFor(() => expect(queries.refetch).toHaveBeenCalledTimes(1));
+  expectOneCancellation();
+  expect(screen.queryByText(english.runCancelled)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: english.cancelRun })).not.toBeInTheDocument();
+
+  // Authoritative recovery reactivates this same run ID; the history remains mounted.
+  queries.rows = [row("queued")];
+  view.rerender(page());
+  const cancel = screen.getByRole("button", { name: english.cancelRun });
+  expect(cancel).toBeEnabled();
+
+  await user.click(cancel);
+
+  await waitFor(() => expect(screen.getByText(english.runCancelled)).toBeVisible());
+  expect(queries.cancel).toHaveBeenCalledTimes(2);
+  expect(queries.cancel).toHaveBeenNthCalledWith(1, runId, "csrf");
+  expect(queries.cancel).toHaveBeenNthCalledWith(2, runId, "csrf");
+  expect(queries.refetch).toHaveBeenCalledTimes(2);
+  expect(screen.queryByRole("button", { name: english.cancelRun })).not.toBeInTheDocument();
+  expect(screen.queryByText(english.cancelUnknown)).not.toBeInTheDocument();
+});
 
 for (const failure of ["rejection", "synchronous throw", "error state"] as const) {
   it.each(locales)(

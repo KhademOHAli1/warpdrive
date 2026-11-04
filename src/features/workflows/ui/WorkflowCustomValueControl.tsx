@@ -19,6 +19,7 @@ import {
   customObjectPatch,
   customObjectValue,
   customTextValue,
+  useNumberEditingDraft,
 } from "./workflowCustomControlValues";
 
 export interface WorkflowCustomReference {
@@ -63,21 +64,33 @@ function TextValue({ def, value, onChange }: ValueProps) {
   );
 }
 
-function NumberValue({ def, value, onChange }: ValueProps) {
+function NumberValue({
+  def,
+  value,
+  onChange,
+  label = def.name,
+  id,
+}: ValueProps & { label?: string; id?: string }) {
   const locale = useLocale();
   const format = useFormatters();
   const shown =
     typeof value === "number"
-      ? format.number(value, { useGrouping: false, maximumFractionDigits: 20 })
+      ? format.number(value, { useGrouping: false, maximumSignificantDigits: 21 })
       : customTextValue(value);
+  const draft = useNumberEditingDraft(value, locale, shown);
   return (
     <Input
-      aria-label={def.name}
+      id={id}
+      aria-label={label}
       inputMode="decimal"
-      value={shown}
-      onChange={(event) =>
-        onChange(customNumberDraft(event.currentTarget.value, locale, def.type === "monetary"))
-      }
+      value={draft.text}
+      onChange={(event) => {
+        const raw = event.currentTarget.value;
+        const next = customNumberDraft(raw, locale, def.type === "monetary");
+        draft.capture(raw, next);
+        onChange(next);
+      }}
+      onBlur={draft.finish}
     />
   );
 }
@@ -189,8 +202,6 @@ function OptionValue({ def, value, onChange }: ValueProps) {
 function AddressValue({ def, value, onChange }: ValueProps) {
   const t = useAppTranslations("customFields");
   const w = useAppTranslations("workflows");
-  const locale = useLocale();
-  const format = useFormatters();
   const current = customObjectValue(value);
   const addressId = useId();
   return (
@@ -211,28 +222,15 @@ function AddressValue({ def, value, onChange }: ValueProps) {
       ))}
       {(["lat", "lng"] as const).map((part) => {
         const label = w(part === "lat" ? "customLatitude" : "customLongitude");
-        const coordinate = current[part];
-        const shown =
-          typeof coordinate === "number"
-            ? format.number(coordinate, { useGrouping: false, maximumFractionDigits: 20 })
-            : customTextValue(coordinate);
         return (
           <label key={part} htmlFor={`${addressId}-${part}`} className="block text-xs">
             {label}
-            <Input
+            <NumberValue
+              def={def}
               id={`${addressId}-${part}`}
-              aria-label={`${def.name}: ${label}`}
-              inputMode="decimal"
-              value={shown}
-              onChange={(event) =>
-                onChange(
-                  customObjectPatch(
-                    value,
-                    part,
-                    customNumberDraft(event.currentTarget.value, locale),
-                  ),
-                )
-              }
+              label={`${def.name}: ${label}`}
+              value={current[part]}
+              onChange={(next) => onChange(customObjectPatch(value, part, next))}
             />
           </label>
         );

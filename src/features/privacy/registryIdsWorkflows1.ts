@@ -27,7 +27,7 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/runBindings.ts#51a113c28ec18f06f4a5b23f1f3fcb4757204e4f0cc374473380affd43ab47b5",
   "sourceReview:src/features/workflows/ui/MappingChip.tsx#a71b1e37e5d9bbc21b59d27d4997c61a5a59b19a6f336daa02bff7bba4842953",
   "sourceReview:src/features/workflows/ui/MappingPreview.tsx#e1accd138673467dfd73cddc239336d880dc22bbbf6999a8b88ec3fe2b7b74cc",
-  "sourceReview:src/features/workflows/ui/TypedLiteralValue.tsx#7c2ad25e392fdc394c82df8adc83238f8058df6427f430f80eb1e8a32c2a9e87",
+  "sourceReview:src/features/workflows/ui/TypedLiteralValue.tsx#82f80c8a244ac873ea934be4b896f662a77e831b7ac84aa8c35517e0185095a9",
   "sourceReview:src/features/workflows/ui/VariablePicker.tsx#5466ab649e4a079caa3123842d1da788a4e8845e480391d81660896bfcad09d9",
   "sourceReview:src/features/workflows/ui/mappingView.ts#4c107cccecd667aaa7e96a92b8d8cd884159e3b885871aea1b2546431211b13d",
   // WF019: scoped metadata/visible reference labels and rich custom configuration.
@@ -74,13 +74,13 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/ui/DelayFields.tsx#897eb59e7299ec1de22cb6e516db13d961588c36d3148037e2038555d431537c",
   "sourceReview:src/features/workflows/ui/NodeInspector.tsx#94282ceaf8232072d9178149a523f7b18806a56aa4bbd8c8f949aef44d34b3e7",
   "sourceReview:src/features/workflows/ui/WorkflowCustomBinding.tsx#66a6df3ba41747d121e16bfb16eb043094b11ca381c00d5e8896f1deeedd32e5",
-  "sourceReview:src/features/workflows/ui/WorkflowCustomValueControl.tsx#400a88acaf2a7b22d65cc7325ad81e86d51fc0780332bf6bc9b2a9ac081818d4",
+  "sourceReview:src/features/workflows/ui/WorkflowCustomValueControl.tsx#6e05c9fcb30da0766ac7890dfeb8a92514634b4688025eaa1a75d4c5707306f1",
   "sourceReview:src/features/workflows/ui/WorkflowRecordChoice.tsx#07fe4fb34884b92dc07b9d901bdef1a4022c6b5939934c9d166a27239931d1d7",
   "sourceReview:src/features/workflows/ui/configurationIssueMessage.ts#4f1dbc33a2625bf8554628971b9e75a110e54a22ecd9289358f68edaa56af756",
   "sourceReview:src/features/workflows/ui/configurationMetadataView.ts#6b31f4308fba2ea539b725ead2e6b090d2dfdc8c89d4778f924a29333185a527",
   "sourceReview:src/features/workflows/ui/useWorkflowConfiguration.ts#ce4d6734c3dcd12e4e5e508261b473c0d173b85e49851746dc447a49795811f3",
   "sourceReview:src/features/workflows/ui/useWorkflowConfigurationReferences.ts#4f64bb536c0dae22df4fd68a4adc6d8a98eeacc6bff62346a1326e84f2f728f2",
-  "sourceReview:src/features/workflows/ui/workflowCustomControlValues.ts#8397769fb2ab3c2e10dcd91d9b979caa6c15296a3ec045aa6e7bfc60298a6f59",
+  "sourceReview:src/features/workflows/ui/workflowCustomControlValues.ts#7bff2615e8d243ed49ff97400353d2a0c2c0a5c7ae5036b618b16c05ba085790",
   "sourceReview:src/features/custom-fields/currentValidation.ts#ed848d1ea09b4c49fb729f36859d0973b9bb4b3705fa16ce42d55da3b5dab319",
 
   // WF018: finite authorized picker metadata and current-draft compatibility; no provider effects.
@@ -97,7 +97,7 @@ export const workflowIds1: string[] = [
   "writer:src/features/workflows/libraryCursor.ts#update:dynamic",
   "sourceReview:src/features/workflows/library.ts#e59938d8a07862f94290939fe3b3fbd32c091730f3c3ebc213afdaa17b6d1e28",
   "sourceReview:src/features/workflows/libraryCursor.ts#3e901a412af65086d29e61f66388ab7d44c46bf2740c114ffa4f6c08de28de8e",
-  "sourceReview:src/features/workflows/ui/RunHistory.tsx#1cde8b8ca1be5cf079ecaaa7e94781c3b1207768e585ade8ee8e89d1c548da1c",
+  "sourceReview:src/features/workflows/ui/RunHistory.tsx#e3a25dae0e58ffb0a80a640bebb6d5575d410bb0050b46be503864db1a202370",
   "sourceReview:src/features/workflows/ui/useWorkflowLifecycle.ts#086534ec918de6e7bbef3fbc0abdf3fa075d5348306141cd6c664d6ac2cdf694",
   "writer:src/features/workflows/lifecycle.ts#update:workflows",
   "writer:src/features/workflows/lifecycle.ts#insert:workflows",

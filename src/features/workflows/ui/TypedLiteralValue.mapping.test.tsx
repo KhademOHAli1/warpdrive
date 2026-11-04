@@ -50,6 +50,31 @@ it("displays and roundtrips tiny and large native numbers without changing their
   }
 });
 
+it.each([
+  { locale: "en", raw: "1.0250" },
+  { locale: "de", raw: "1,0250" },
+  { locale: "fa", raw: "۱٫۰۲۵۰" },
+] as const)(
+  "keeps typed $locale numeric trailing zeroes while emitting the correct native value",
+  async ({ locale, raw }) => {
+    const changed = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider locale={locale}>
+        <NativeRoundtrip value={0} changed={changed} />
+      </LocaleProvider>,
+    );
+    const input = screen.getByRole("textbox", { name: "Value" });
+    await user.clear(input);
+    await user.type(input, raw);
+    expect(input).toHaveValue(raw);
+    expect(changed).toHaveBeenLastCalledWith({ kind: "value", value: 1.025 });
+    const calls = changed.mock.calls.length;
+    await user.tab();
+    expect(changed).toHaveBeenCalledTimes(calls);
+  },
+);
+
 it("keeps incomplete numeric input tagged through blur and rerender without a text or zero fallback", () => {
   const changed = vi.fn();
   const { rerender } = render(

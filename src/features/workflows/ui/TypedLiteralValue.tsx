@@ -7,6 +7,7 @@ import { useFormatters } from "@/lib/useFormatters";
 import { numericLiteralFromInput, typedLiteralFromInput } from "../mappingLiteralIntent";
 import type { MappingTarget, MappingValueKind } from "../mappingTypes";
 import type { DraftValueBinding } from "../schemas";
+import { useNumberEditingDraft } from "./workflowCustomControlValues";
 
 type Intent = "text" | "number" | "boolean" | "date" | "instant" | "null";
 interface Props {
@@ -101,6 +102,13 @@ function LiteralInput({
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const format = useFormatters();
+  const shown =
+    typeof binding.value === "number"
+      ? format.number(binding.value, { useGrouping: false, maximumSignificantDigits: 21 })
+      : typeof binding.value === "string"
+        ? binding.value
+        : "";
+  const draft = useNumberEditingDraft(binding.value, locale, shown);
   if (intent === "null") return <p>{t("configurationNullValue")}</p>;
   if (intent === "boolean")
     return (
@@ -117,26 +125,25 @@ function LiteralInput({
         }}
       />
     );
-  const shown =
-    typeof binding.value === "number"
-      ? format.number(binding.value, { useGrouping: false, maximumSignificantDigits: 21 })
-      : typeof binding.value === "string"
-        ? binding.value
-        : "";
   return (
     <Input
       id={id}
       aria-label={name}
       inputMode={intent === "number" ? "decimal" : undefined}
       dir={intent === "text" ? "auto" : "ltr"}
-      value={shown}
+      value={intent === "number" ? draft.text : shown}
       disabled={!editable}
       maxLength={maxLength}
       aria-invalid={error !== undefined}
       aria-describedby={error === undefined ? undefined : errorId}
       onChange={(event) => {
-        if (editable) onChange(inputBinding(intent, event.currentTarget.value, locale));
+        if (!editable) return;
+        const raw = event.currentTarget.value;
+        const next = inputBinding(intent, raw, locale);
+        if (intent === "number") draft.capture(raw, next.value);
+        onChange(next);
       }}
+      onBlur={intent === "number" ? draft.finish : undefined}
     />
   );
 }

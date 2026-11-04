@@ -66,9 +66,9 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
         setError(true);
         return;
       }
-      setCancelled((current) => new Set([...current, id]));
+      if (result.value === "cancelled") setCancelled((current) => new Set([...current, id]));
       setCancelNotice(result.value);
-      // Record the cancellation before the independently fallible history read.
+      // Only an actual cancellation stays latched across the independently fallible history read.
       await refresh();
     } catch {
       setUnknown(true);

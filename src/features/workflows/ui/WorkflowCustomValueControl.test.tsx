@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import { CUSTOM_FIELD_TYPES } from "@/constants/customFieldTypes";
@@ -376,5 +377,124 @@ it.each([
     fireEvent.change(screen.getByRole("textbox", { name: "Budget" }), { target: { value: raw } });
     expect(changed).toHaveBeenLastCalledWith(-1234.5);
     expect(typeof changed.mock.calls.at(-1)?.[0]).toBe("number");
+  },
+);
+
+const decimalCases = [
+  { locale: "en", decimal: "1.25", zeroes: "1.0250", money: "1.20", last: "5" },
+  { locale: "de", decimal: "1,25", zeroes: "1,0250", money: "1,20", last: "5" },
+  { locale: "fa", decimal: "۱٫۲۵", zeroes: "۱٫۰۲۵۰", money: "۱٫۲۰", last: "۵" },
+] as const;
+
+it.each(decimalCases)(
+  "types a $locale numeric decimal and trailing zeroes without losing keystrokes",
+  async ({ locale, decimal, zeroes }) => {
+    const changed = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider locale={locale}>
+        <Controlled def={field({ type: "numeric" })} changed={changed} />
+      </LocaleProvider>,
+    );
+    const input = screen.getByRole("textbox", { name: "Field" });
+    await user.clear(input);
+    const incomplete = decimal.slice(0, 2);
+    await user.type(input, incomplete);
+    expect(input).toHaveValue(incomplete);
+    expect(changed).toHaveBeenLastCalledWith(incomplete);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    await user.type(input, decimal.slice(2));
+    expect(input).toHaveValue(decimal);
+    expect(changed).toHaveBeenLastCalledWith(1.25);
+    await user.clear(input);
+    await user.type(input, zeroes);
+    expect(input).toHaveValue(zeroes);
+    expect(changed).toHaveBeenLastCalledWith(1.025);
+    const calls = changed.mock.calls.length;
+    await user.tab();
+    expect(changed).toHaveBeenCalledTimes(calls);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  },
+);
+
+it("keeps a typed tiny custom number valid and unchanged when editing finishes", async () => {
+  const changed = vi.fn();
+  const user = userEvent.setup();
+  render(<Controlled def={field({ type: "numeric" })} changed={changed} />);
+  const input = screen.getByRole("textbox", { name: "Field" });
+  const raw = `0.${"0".repeat(29)}1`;
+  await user.clear(input);
+  await user.type(input, raw);
+  expect(input).toHaveValue(raw);
+  expect(changed).toHaveBeenLastCalledWith(1e-30);
+  const calls = changed.mock.calls.length;
+  await user.tab();
+  expect(input).toHaveValue(raw);
+  expect(changed).toHaveBeenCalledTimes(calls);
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+it.each(decimalCases)(
+  "types $locale money while preserving precision errors instead of silently changing the amount",
+  async ({ locale, money, last }) => {
+    const changed = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider locale={locale}>
+        <Controlled def={field({ type: "monetary" })} changed={changed} />
+      </LocaleProvider>,
+    );
+    const input = screen.getByRole("textbox", { name: "Field" });
+    await user.clear(input);
+    await user.type(input, money);
+    expect(input).toHaveValue(money);
+    expect(changed).toHaveBeenLastCalledWith(1.2);
+    await user.type(input, last);
+    expect(input).toHaveValue(money + last);
+    expect(changed).toHaveBeenLastCalledWith(money + last);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    const calls = changed.mock.calls.length;
+    await user.tab();
+    expect(input).toHaveValue(money + last);
+    expect(changed).toHaveBeenCalledTimes(calls);
+  },
+);
+
+it.each([
+  { locale: "en", latitude: "-52.050", longitude: "0.0120" },
+  { locale: "de", latitude: "-52,050", longitude: "0,0120" },
+  { locale: "fa", latitude: "−۵۲٫۰۵۰", longitude: "۰٫۰۱۲۰" },
+] as const)(
+  "types both $locale address coordinates without losing decimal digits",
+  async ({ locale, latitude, longitude }) => {
+    const changed = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider locale={locale}>
+        <Controlled def={field({ type: "address" })} changed={changed} />
+      </LocaleProvider>,
+    );
+    const coordinates = screen.getAllByRole("textbox").slice(-2);
+    const lat = coordinates[0]!;
+    const lng = coordinates[1]!;
+    await user.clear(lat);
+    await user.type(lat, latitude);
+    expect(lat).toHaveValue(latitude);
+    expect(changed).toHaveBeenLastCalledWith({
+      city: "Berlin",
+      country: "DE",
+      lat: -52.05,
+      lng: 13.4,
+    });
+    await user.clear(lng);
+    await user.type(lng, longitude);
+    expect(lng).toHaveValue(longitude);
+    expect(changed).toHaveBeenLastCalledWith({
+      city: "Berlin",
+      country: "DE",
+      lat: -52.05,
+      lng: 0.012,
+    });
+    expect(initialValues.address).toEqual({ city: "Berlin", country: "DE", lat: 0, lng: 13.4 });
   },
 );
