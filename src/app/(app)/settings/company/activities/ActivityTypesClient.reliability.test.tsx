@@ -134,3 +134,87 @@ describe("Activity catalog recovery", () => {
     expect(within(item("Beta")).getByRole("switch")).toBeEnabled();
   });
 });
+
+describe("Acknowledged activity catalog writes", () => {
+  beforeEach(() => {
+    mocks.refresh.mockImplementation(() => {
+      throw new Error("navigation interrupted");
+    });
+  });
+
+  async function expectSavedWithoutWriteError() {
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Saved"));
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
+    expect(mocks.report).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  }
+
+  it("clears an acknowledged add draft when refresh throws", async () => {
+    render(<ActivityTypesClient rows={rows} />);
+    const input = screen.getByLabelText("Activity type name");
+    fireEvent.change(input, { target: { value: "Customer research" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add activity type" }));
+    await expectSavedWithoutWriteError();
+    expect(mocks.create).toHaveBeenCalledTimes(1);
+    expect(mocks.create).toHaveBeenCalledWith(
+      { name: "Customer research", icon: "call", key: "customer_research" },
+      "csrf",
+    );
+    expect(input).toHaveValue("");
+    expect(input).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Add activity type" })).toBeDisabled();
+  });
+
+  it("commits an acknowledged rename and closes its editor when refresh throws", async () => {
+    render(<ActivityTypesClient rows={rows} />);
+    fireEvent.click(button("Alpha", "Rename"));
+    fireEvent.change(screen.getByLabelText("Activity type name: Alpha"), {
+      target: { value: "Customer research" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Save/ }));
+    await expectSavedWithoutWriteError();
+    expect(mocks.rename).toHaveBeenCalledTimes(1);
+    expect(mocks.rename).toHaveBeenCalledWith({ id: "a", name: "Customer research" }, "csrf");
+    expect(screen.getByText("Customer research")).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Activity type name: Customer research"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rename: Customer research" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Rename: Customer research" }));
+    expect(screen.getByRole("button", { name: /^Save/ })).toBeDisabled();
+  });
+
+  it("keeps an acknowledged active-state change when refresh throws", async () => {
+    render(<ActivityTypesClient rows={rows} />);
+    fireEvent.click(within(item("Alpha")).getByRole("switch"));
+    await expectSavedWithoutWriteError();
+    expect(mocks.toggle).toHaveBeenCalledTimes(1);
+    expect(mocks.toggle).toHaveBeenCalledWith({ id: "a", active: false }, "csrf");
+    const toggle = within(item("Alpha")).getByRole("switch");
+    expect(toggle).not.toBeChecked();
+    expect(toggle).toBeEnabled();
+  });
+
+  it("keeps an acknowledged deletion when refresh throws", async () => {
+    render(<ActivityTypesClient rows={rows} />);
+    fireEvent.click(button("Alpha", "Delete"));
+    await expectSavedWithoutWriteError();
+    expect(mocks.remove).toHaveBeenCalledTimes(1);
+    expect(mocks.remove).toHaveBeenCalledWith({ id: "a" }, "csrf");
+    expect(screen.queryByText("Alpha")).not.toBeInTheDocument();
+    expect(screen.getByText("Beta")).toBeInTheDocument();
+    expect(within(item("Beta")).getByRole("switch")).toBeEnabled();
+  });
+
+  it("retains an acknowledged reorder and releases the catalog lock when refresh throws", async () => {
+    render(<ActivityTypesClient rows={rows} />);
+    fireEvent.click(button("Alpha", "Move down"));
+    expect(order()).toEqual(["Beta", "Alpha"]);
+    await expectSavedWithoutWriteError();
+    expect(mocks.reorder).toHaveBeenCalledTimes(1);
+    expect(mocks.reorder).toHaveBeenCalledWith({ orderedIds: ["b", "a"] }, "csrf");
+    expect(order()).toEqual(["Beta", "Alpha"]);
+    expect(button("Alpha", "Move up")).toBeEnabled();
+    expect(button("Beta", "Move down")).toBeEnabled();
+  });
+});
