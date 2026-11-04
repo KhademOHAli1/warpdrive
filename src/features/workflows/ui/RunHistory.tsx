@@ -45,6 +45,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   const refreshButton = useRef<HTMLButtonElement>(null);
   const historyHeading = useRef<HTMLHeadingElement>(null);
   async function refresh() {
+    setRefreshFailed(false);
     try {
       const result = await list.refetch();
       setRefreshFailed(result.isError);
@@ -99,10 +100,8 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
           {cancelNotice === "cancelled" ? t("runCancelled") : t(`status.${cancelNotice}`)}
         </p>
       )}
-      {refreshFailed && (
-        <p className="text-sm text-muted-foreground">
-          {t(cancelled.size > 0 ? "refreshAfterAck" : "loadError")}
-        </p>
+      {refreshFailed && cancelled.size > 0 && (
+        <p className="text-sm text-muted-foreground">{t("refreshAfterAck")}</p>
       )}
       {unknown && (
         <div className="space-y-2">
@@ -119,7 +118,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
           </Button>
         </div>
       )}
-      {list.isError && (
+      {(refreshFailed || list.isError) && (
         <p role="alert" className="text-sm text-destructive">
           {t("loadError")}
         </p>
