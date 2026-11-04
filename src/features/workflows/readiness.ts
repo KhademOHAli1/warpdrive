@@ -27,7 +27,9 @@ export function executableNode(node: WorkflowNode): boolean {
     );
   if (node.type === "record.read") return node.config.entity === "deal";
   if (node.type === "activity.create")
-    return Object.keys(node.config).every((key) => key === "subject" || key === "dealId");
+    return Object.keys(node.config).every(
+      (key) => key === "subject" || key === "dealId" || key === "customFields",
+    );
   return false;
 }
 

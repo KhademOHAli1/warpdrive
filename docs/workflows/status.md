@@ -570,3 +570,27 @@ separate recorded PG result of 26 date-related failures and 3,537 passes; its fo
 repair is in progress, and the picker will inherit the published repaired parent
 before its own hosted qualification. This checkpoint does not qualify the whole
 candidate, accept WF-007/WF-009/WF-017, close issue #675 or claim deployment.
+
+
+### 2026-11-04 — WF-019 source implementation checkpoint
+
+WF-018/#675 is source-qualified in ready PR961 at F31 after both current full CI runs
+(9595unit/3existing skips,3575PG,types/translations/lint,67pages,fivebundles,sites,
+Delivery135 and CodeQL); main/native/human/release gates stay separate.
+
+WF-019/#676 now implements shared five-profile configuration descriptors, UUID-keyed
+canonical activity custom fields, bounded current metadata/options/reference reads,
+explicit schema completeness and fresh publication/task-write validation. The same
+prepared current definition view reaches the canonical writer; custom-bearing graphs
+remain excluded from the old retry profile. See `configuration.md` for exact rules
+and limits. The actual preproduction inspector baseline was3controlsPASS/3authentic
+missing-behaviorRED; original raw evidence is retained. New pure/UI/PG cases are
+separately defined, not claimed executed at this checkpoint. Full current-head
+qualification and all later acceptance stages remain open.
+
+
+WF-019 local follow-up: all638Workflow unit cases/64files now PASS (parent500 plus
+132new cases and6adapted baseline cases), with source pins/raw witnesses and owned
+cleanup held. Source inventory2482files is clean (0missing/0invalid). The26new real
+PostgreSQL cases and whole-app hosted qualification remain pending; this is no main,
+native/human, release, deployment or provider acceptance.

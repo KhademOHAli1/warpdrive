@@ -8,6 +8,7 @@ import {
   activityParticipants,
   deals,
 } from "@/db/schema";
+import type { PreparedCustomFieldValidation } from "@/features/custom-fields/currentValidation";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
@@ -60,6 +61,7 @@ function sanitizeNote(note: string | null): string | null {
 export interface CreateActivityOptions {
   doneAtOverride?: Date;
   scheduleReminder?: boolean;
+  customFieldValidation?: PreparedCustomFieldValidation;
 }
 
 function resolveDoneAt(done: boolean, override: Date | undefined): Date | null {
@@ -134,8 +136,12 @@ export async function createActivity(
 ): Promise<Result<Activity, AppError>> {
   // Parse at the boundary so defaulted fields (priority, dueAt, arrays) are always present.
   const input = activityCreateInput.parse(raw);
-  const defs = await listDefs(db, "activity", {}, signal);
-  const cf = buildCustomFieldsSchema(defs).safeParse(input.customFields);
+  const cf =
+    options.customFieldValidation === undefined
+      ? buildCustomFieldsSchema(await listDefs(db, "activity", {}, signal)).safeParse(
+          input.customFields,
+        )
+      : options.customFieldValidation.parseByKey(input.customFields);
   if (!cf.success) {
     return err(
       new AppError(ERROR_IDS.CF_VALUE_INVALID, "custom fields invalid", {

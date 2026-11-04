@@ -1,134 +1,98 @@
 "use client";
-
-import { type Ref, useId } from "react";
+import type { Ref } from "react";
 import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { Input } from "@/components/ui/Input";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
-import { displayNodeName, isAutomaticNodeName } from "../nodeNames";
+import { getConfigurationSpec } from "../configurationSpec";
+import { validateNodeConfiguration } from "../configurationValidation";
+import { displayNodeName } from "../nodeNames";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
-import { BindingField } from "./BindingField";
-import { ConditionFields } from "./ConditionFields";
-import { DelayFields } from "./DelayFields";
+import { ConfigurationMetadataStatus } from "./ConfigurationMetadataStatus";
+import { ConfigurationName } from "./ConfigurationName";
+import { ConfigurationNodeFields, RetainedConfigurationIssues } from "./ConfigurationNodeFields";
+import {
+  useWorkflowConfiguration,
+  type WorkflowConfigurationRead,
+} from "./useWorkflowConfiguration";
 
-export function NodeInspector({
-  definition,
-  node,
-  editable,
-  onChange,
-  onRemove,
-  nameInputRef,
-}: {
+interface Props {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
   onRemove: () => void;
   nameInputRef?: Ref<HTMLInputElement>;
-}) {
+  workflowId?: string;
+}
+const noRead: WorkflowConfigurationRead = {
+  metadata: { status: "incomplete" },
+  busy: false,
+  loadMore: undefined,
+  retry: () => Promise.resolve(),
+};
+function QueriedInspector(props: Props) {
+  const read = useWorkflowConfiguration(props.workflowId, props.node);
+  return <Inspector {...props} read={read} />;
+}
+export function NodeInspector(props: Props) {
+  return props.workflowId === undefined ? (
+    <Inspector {...props} read={noRead} />
+  ) : (
+    <QueriedInspector key={props.workflowId + ":" + props.node.type} {...props} />
+  );
+}
+const hints: Partial<Record<WorkflowNode["type"], string>> = {
+  "trigger.manual": "triggerHint",
+  "record.read": "readHint",
+  "activity.create": "taskHint",
+};
+function Inspector({
+  definition,
+  node,
+  editable: onEdit,
+  onChange,
+  onRemove,
+  nameInputRef,
+  workflowId,
+  read,
+}: Props & { read: WorkflowConfigurationRead }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
-  const id = useId();
-  const name = displayNodeName(node, locale);
-  const automatic = isAutomaticNodeName(node);
+  const editable = onEdit && read.authoring !== false && read.metadata.status !== "denied";
+  const spec = getConfigurationSpec(node.type, node.version, read.metadata);
+  const validation = validateNodeConfiguration(node, { definition, metadata: read.metadata });
+  const hint = hints[node.type];
   return (
     <section className="flex flex-col" aria-label={t("configure")}>
       <div className="border-b p-5">
         <p className="text-xs font-medium text-muted-foreground">{t("configure")}</p>
         <h2 dir="auto" className="mt-2 break-words text-lg font-semibold">
-          {name}
+          {displayNodeName(node, locale)}
         </h2>
       </div>
       <div className="space-y-5 p-5">
-        <div className="space-y-3">
-          <label htmlFor={id} className="text-sm font-medium">
-            {t("stepName")}
-          </label>
-          <Input
-            ref={nameInputRef}
-            dir="auto"
-            id={id}
-            value={name}
-            maxLength={120}
-            disabled={!editable}
-            onChange={(event) =>
-              onChange({ ...node, name: event.target.value, nameMode: "custom" })
-            }
-          />
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id={`${id}-auto`}
-              label={t("stepNameAutomatic")}
-              checked={automatic}
-              disabled={!editable}
-              onCheckedChange={(value) =>
-                onChange({ ...node, name, nameMode: value ? "automatic" : "custom" })
-              }
-            />
-            <label className="text-xs text-muted-foreground" htmlFor={`${id}-auto`}>
-              {t("stepNameAutomatic")}
-            </label>
-          </div>
-        </div>
-        {node.type === "trigger.manual" && (
-          <p className="text-sm leading-6 text-muted-foreground">{t("triggerHint")}</p>
-        )}
-        {node.type === "record.read" && (
-          <>
-            <p className="text-sm leading-6 text-muted-foreground">{t("readHint")}</p>
-            <BindingField
-              definition={definition}
-              nodeId={node.id}
-              value={node.config.recordId}
-              onChange={(recordId) => onChange({ ...node, config: { ...node.config, recordId } })}
-              kind="deal"
-              label={t("recordIdLabel")}
-              sourceLabel={t("recordSource")}
-              editable={editable}
-              allowLiteral={false}
-            />
-          </>
-        )}
-        {node.type === "activity.create" && (
-          <>
-            <p className="text-sm leading-6 text-muted-foreground">{t("taskHint")}</p>
-            <BindingField
-              definition={definition}
-              nodeId={node.id}
-              value={node.config.subject}
-              onChange={(subject) => onChange({ ...node, config: { ...node.config, subject } })}
-              kind="text"
-              label={t("subjectLabel")}
-              sourceLabel={t("subjectSource")}
-              editable={editable}
-            />
-            <BindingField
-              definition={definition}
-              nodeId={node.id}
-              value={node.config.dealId}
-              onChange={(dealId) => onChange({ ...node, config: { ...node.config, dealId } })}
-              kind="deal"
-              label={t("linkedDeal")}
-              sourceLabel={t("linkedDeal")}
-              editable={editable}
-              allowLiteral={false}
-            />
-          </>
-        )}
-        {node.type === "delay" && (
-          <DelayFields
-            value={node.config.minutes}
-            editable={editable}
-            onChange={(minutes) => onChange({ ...node, config: { ...node.config, minutes } })}
-          />
-        )}
-        {node.type === "condition" && (
-          <ConditionFields
-            definition={definition}
-            node={node}
-            editable={editable}
-            onChange={onChange}
-          />
+        <ConfigurationName
+          node={node}
+          editable={editable}
+          onChange={onChange}
+          nameInputRef={nameInputRef}
+          spec={spec}
+          validation={validation}
+        />
+        {hint !== undefined && <p className="text-sm text-muted-foreground">{t(hint)}</p>}
+        <ConfigurationNodeFields
+          definition={definition}
+          node={node}
+          editable={editable}
+          onChange={onChange}
+          workflowId={workflowId}
+          spec={spec}
+          validation={validation}
+          metadata={read.metadata}
+        />
+        <RetainedConfigurationIssues spec={spec} validation={validation} />
+        {node.type === "activity.create" && <ConfigurationMetadataStatus read={read} />}
+        {spec?.supported === false && (
+          <p className="text-xs text-muted-foreground">{t("configurationUnsupportedSetting")}</p>
         )}
       </div>
       {!node.type.startsWith("trigger.") && editable && (

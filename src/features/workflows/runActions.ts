@@ -4,15 +4,21 @@ import type { Db } from "@/db/client";
 import { activityTypes, deals } from "@/db/schema";
 import { createActivity } from "@/features/activities/repo";
 import { type ActivityCreateInput, activityCreateInput } from "@/features/activities/schemas";
+import {
+  type PreparedCustomFieldValidation,
+  prepareCurrentCustomFieldValidation,
+} from "@/features/custom-fields/currentValidation";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { err, ok, type Result } from "@/types/result";
 import { evaluateCondition } from "./condition";
+import { resolveTaskCustomFields } from "./configurationRuntime";
+import { validateNodeConfiguration } from "./configurationValidation";
 import { executableNode } from "./readiness";
 import { stringBinding, uuidBinding } from "./runBindings";
 import type { RunOutputs, StepOutput } from "./runTypes";
-import type { WorkflowNode } from "./schemas";
+import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 
 function referenceActor(actor: PermSetUser) {
   return {
@@ -32,6 +38,7 @@ export async function executeRunNode(
   outputs: RunOutputs,
   trigger: { recordId: string },
   simulation: boolean,
+  definition: WorkflowDefinition,
   signal: AbortSignal,
 ): Promise<Result<StepOutput, string>> {
   signal.throwIfAborted();
@@ -66,7 +73,7 @@ export async function executeRunNode(
         });
   }
   if (node.type === "activity.create")
-    return createRunActivity(db, actor, node, outputs, simulation, signal);
+    return createRunActivity(db, actor, node, outputs, simulation, definition, signal);
   return err(ERROR_IDS.WORKFLOW_NOT_READY);
 }
 
@@ -76,13 +83,17 @@ async function createRunActivity(
   node: WorkflowNode,
   outputs: RunOutputs,
   simulation: boolean,
+  definition: WorkflowDefinition,
   signal: AbortSignal,
 ): Promise<Result<StepOutput, string>> {
   if (!can(actor, "activity.create")) return err(ERROR_IDS.PERM_DENIED);
   const subject = stringBinding(node.config.subject, outputs);
   if (!subject.ok) return subject;
-  const deal =
-    node.config.dealId === undefined ? ok(null) : uuidBinding(node.config.dealId, outputs);
+  const linked = bindingSchema.safeParse(node.config.dealId);
+  const noDeal =
+    node.config.dealId === undefined ||
+    (linked.success && linked.data.kind === "value" && linked.data.value === null);
+  const deal = noDeal ? ok(null) : uuidBinding(node.config.dealId, outputs);
   if (!deal.ok) return deal;
   if (deal.value !== null) {
     const allowed = await assertReferenceVisible(
@@ -98,23 +109,45 @@ async function createRunActivity(
     .from(activityTypes)
     .where(and(eq(activityTypes.key, "task"), isNull(activityTypes.archivedAt)));
   if (type === undefined) return err(ERROR_IDS.WORKFLOW_NOT_READY);
+  const customFieldValidation = await prepareCurrentCustomFieldValidation(db, "activity", signal);
+  if (
+    validateNodeConfiguration(node, {
+      definition,
+      metadata: { status: "complete", defs: customFieldValidation.defs },
+    }).status !== "valid"
+  )
+    return err(ERROR_IDS.WORKFLOW_INVALID);
+  const customFields = await resolveTaskCustomFields(
+    db,
+    actor,
+    node,
+    { outputs },
+    customFieldValidation,
+    signal,
+  );
+  if (!customFields.ok) return err(customFields.error.id);
   const input = activityCreateInput.safeParse({
+    customFields: customFields.value,
     subject: subject.value,
     dealId: deal.value,
     typeId: type.id,
   });
   if (!input.success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  if (simulation) return previewActivity(db, actor, input.data, signal);
-  return writeActivity(db, actor, input.data, signal);
+  if (simulation) return previewActivity(db, actor, input.data, customFieldValidation, signal);
+  return writeActivity(db, actor, input.data, customFieldValidation, signal);
 }
 
 async function writeActivity(
   db: Db,
   actor: PermSetUser,
   input: ActivityCreateInput,
+  customFieldValidation: PreparedCustomFieldValidation,
   signal: AbortSignal,
 ): Promise<Result<StepOutput, string>> {
-  const result = await createActivity(db, actor, input, signal, { scheduleReminder: false });
+  const result = await createActivity(db, actor, input, signal, {
+    scheduleReminder: false,
+    customFieldValidation,
+  });
   return result.ok ? ok({ id: result.value.id }) : err(result.error.id);
 }
 
@@ -122,12 +155,13 @@ async function previewActivity(
   db: Db,
   actor: PermSetUser,
   input: ActivityCreateInput,
+  customFieldValidation: PreparedCustomFieldValidation,
   signal: AbortSignal,
 ): Promise<Result<StepOutput, string>> {
   let result: Result<StepOutput, string> = err(ERROR_IDS.WORKFLOW_WRITE_FAILED);
   try {
     await db.transaction(async (preview) => {
-      result = await writeActivity(preview, actor, input, signal);
+      result = await writeActivity(preview, actor, input, customFieldValidation, signal);
       // This is a savepoint inside the run transaction. All CRM writes and database
       // notifications are rolled back; only the labeled simulation result survives.
       preview.rollback();

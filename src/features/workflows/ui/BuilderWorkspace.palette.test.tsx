@@ -12,9 +12,32 @@ import { readyPaletteRead } from "./palette.TestHelpers";
 import type { PaletteRead } from "./paletteView";
 import { useGraphHistory } from "./useGraphHistory";
 
+vi.mock("./useWorkflowConfigurationReferences", () => ({
+  useWorkflowConfigurationReferences: () => ({
+    status: "ready",
+    options: [],
+    search: "",
+    onSearch: vi.fn(),
+    nextCursor: null,
+    selected: undefined,
+    unavailable: false,
+    stale: false,
+  }),
+}));
+
 vi.mock("./WorkflowCanvas", () => ({
   WorkflowCanvas: () => <div>Canvas omitted from picker journey</div>,
 }));
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
+}));
+
 afterEach(cleanup);
 const workflowId = "52f6b244-2ea8-400a-92c9-b584c938562f";
 

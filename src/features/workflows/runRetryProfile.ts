@@ -29,6 +29,9 @@ function linkedToTrigger(raw: unknown, definition: WorkflowDefinition, triggerId
 function taskConfiguration(node: WorkflowNode, definition: WorkflowDefinition, triggerId: string) {
   const subject = bindingSchema.safeParse(node.config.subject);
   return (
+    // Rich custom values have separate current-metadata/reference authority. The
+    // older retry profile has no qualified provenance path for those values.
+    !Object.hasOwn(node.config, "customFields") &&
     subject.success &&
     subject.data.kind === "value" &&
     typeof subject.data.value === "string" &&

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { configurationLimits } from "./configurationLimits";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
 const property = z
@@ -35,7 +36,7 @@ export const nodeSchema = z.strictObject({
   id: identifier,
   type: z.enum(nodeTypes),
   version: z.literal(1),
-  name: z.string().trim().min(1).max(120),
+  name: z.string().trim().min(configurationLimits.nameMin).max(configurationLimits.nameMax),
   nameMode: z.enum(["automatic", "custom"]).optional(),
   config: z.record(z.string(), z.json()),
 });
@@ -75,4 +76,5 @@ export interface DefinitionIssue {
   code: string;
   nodeId?: string;
   field?: string;
+  path?: readonly string[];
 }

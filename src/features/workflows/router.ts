@@ -1,8 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_IDS } from "@/constants/errorIds";
+import { type AppError, ERROR_IDS } from "@/constants/errorIds";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import type { Result } from "@/types/result";
+import {
+  configurationOptionsInputSchema,
+  configurationReferencesInputSchema,
+  readWorkflowConfigurationOptions,
+  readWorkflowConfigurationReferences,
+} from "./configurationLookups";
+import { configurationReadInputSchema, readWorkflowConfiguration } from "./configurationMetadata";
 import {
   listWorkflowOwners,
   workflowLibraryInputSchema,
@@ -35,7 +42,42 @@ function unwrapLibrary<T>(result: Result<T, string>) {
     });
   return result.value;
 }
+function unwrapConfiguration<T>(result: Result<T, AppError>): T {
+  if (!result.ok) return unwrapLibrary<T>({ ok: false, error: result.error.id });
+  return result.value;
+}
 export const workflowsRouter = router({
+  configuration: protectedProcedure
+    .input(configurationReadInputSchema)
+    .query(async ({ ctx, input }) =>
+      unwrapConfiguration(
+        await readWorkflowConfiguration(ctx.db, ctx.actor, AbortSignal.timeout(10_000), input),
+      ),
+    ),
+  configurationOptions: protectedProcedure
+    .input(configurationOptionsInputSchema)
+    .query(async ({ ctx, input }) =>
+      unwrapConfiguration(
+        await readWorkflowConfigurationOptions(
+          ctx.db,
+          ctx.actor,
+          AbortSignal.timeout(10_000),
+          input,
+        ),
+      ),
+    ),
+  configurationReferences: protectedProcedure
+    .input(configurationReferencesInputSchema)
+    .query(async ({ ctx, input }) =>
+      unwrapConfiguration(
+        await readWorkflowConfigurationReferences(
+          ctx.db,
+          ctx.actor,
+          AbortSignal.timeout(10_000),
+          input,
+        ),
+      ),
+    ),
   palette: protectedProcedure
     .input(z.strictObject({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) =>

@@ -10,26 +10,31 @@ import {
   type WorkflowNode,
 } from "../schemas";
 import { BindingField } from "./BindingField";
-export function ConditionValue({
-  definition,
-  node,
-  editable,
-  boolean,
-  status,
-  onChange,
-}: {
+
+interface Props {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   boolean: boolean;
   status: boolean;
   onChange: (value: Binding) => void;
-}) {
+  error?: string;
+}
+function LiteralValue({
+  node,
+  editable,
+  boolean,
+  status,
+  onChange,
+  error,
+  errorId,
+}: Omit<Props, "definition"> & { errorId: string }) {
   const t = useAppTranslations("workflows");
   const sales = useAppTranslations("sales");
   const id = useId();
-  const right = bindingSchema.safeParse(node.config.right);
-  const valueChoices = boolean
+  const parsed = bindingSchema.safeParse(node.config.right);
+  const value = parsed.success && parsed.data.kind === "value" ? parsed.data.value : "";
+  const choices = boolean
     ? [
         { value: "true", label: t("boolTrue") },
         { value: "false", label: t("boolFalse") },
@@ -44,38 +49,52 @@ export function ConditionValue({
       <label htmlFor={id} className="text-sm font-medium">
         {t("conditionValue")}
       </label>
-      {right.success && right.data.kind === "reference" ? (
-        <BindingField
-          definition={definition}
-          nodeId={node.id}
-          value={right.data}
-          onChange={onChange}
-          kind="scalar"
-          label={t("conditionValue")}
-          sourceLabel={t("conditionValue")}
-          editable={editable}
-        />
-      ) : boolean || status ? (
+      {boolean || status ? (
         <Select
           ariaLabel={t("conditionValue")}
-          value={right.success && right.data.kind === "value" ? String(right.data.value ?? "") : ""}
+          value={String(value ?? "")}
           disabled={!editable}
+          options={choices}
           placeholder={t("chooseValue")}
-          options={valueChoices}
           onChange={(value) =>
             onChange({ kind: "value", value: boolean ? value === "true" : value })
           }
         />
       ) : (
         <Input
-          dir="auto"
           id={id}
-          value={right.success && right.data.kind === "value" ? String(right.data.value ?? "") : ""}
+          dir="auto"
+          value={String(value ?? "")}
           disabled={!editable}
           maxLength={255}
+          aria-invalid={error !== undefined}
+          aria-describedby={error === undefined ? undefined : errorId}
           onChange={(event) => onChange({ kind: "value", value: event.target.value })}
         />
       )}
     </div>
+  );
+}
+export function ConditionValue(props: Props) {
+  const t = useAppTranslations("workflows");
+  const defaultValue = props.boolean ? true : props.status ? "open" : "";
+  return (
+    <BindingField
+      definition={props.definition}
+      nodeId={props.node.id}
+      value={props.node.config.right}
+      onChange={props.onChange}
+      kind="scalar"
+      label={t("conditionValue")}
+      sourceLabel={t("conditionValue") + " · " + t("configurationValueMode")}
+      editable={props.editable}
+      allowLiteral={false}
+      allowNull
+      nullLabel={t("configurationNullValue")}
+      literalControlLabel={t("literalValue")}
+      onSelectLiteral={() => props.onChange({ kind: "value", value: defaultValue })}
+      error={props.error}
+      literalControl={(errorId) => <LiteralValue {...props} errorId={errorId} />}
+    />
   );
 }

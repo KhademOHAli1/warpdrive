@@ -356,6 +356,16 @@ beforeEach(() => {
   ];
   io.runDetail = undefined;
 });
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
+}));
+
 afterEach(cleanup);
 
 describe("archived editor and version history", () => {

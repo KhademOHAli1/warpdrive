@@ -1,7 +1,9 @@
 "use client";
 
+import { useId } from "react";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { conditionSourceDefaults } from "../configurationSpec";
 import { mappingOptions } from "../mappingOptions";
 import {
   type Binding,
@@ -17,13 +19,16 @@ export function ConditionFields({
   node,
   editable,
   onChange,
+  errors = {},
 }: {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
+  errors?: Partial<Record<"left" | "right" | "operator", string>>;
 }) {
   const t = useAppTranslations("workflows");
+  const errorId = useId();
   const left = bindingSchema.safeParse(node.config.left);
   const choices = mappingOptions(definition, node.id, "scalar");
   const selected =
@@ -39,11 +44,9 @@ export function ConditionFields({
   function leftChanged(binding: Binding) {
     const key = binding.kind === "reference" ? binding.nodeId + "." + binding.path.join(".") : "";
     const next = choices.find((choice) => choice.key === key);
-    const defaultValue = next?.type === "boolean" ? true : next?.field === "status" ? "open" : "";
     update({
       left: binding,
-      right: { kind: "value", value: defaultValue },
-      operator: "equals",
+      ...conditionSourceDefaults({ type: next?.type, field: next?.field }),
     });
   }
   const operator = typeof node.config.operator === "string" ? node.config.operator : "equals";
@@ -60,8 +63,14 @@ export function ConditionFields({
         sourceLabel={t("conditionField")}
         editable={editable}
         allowLiteral={false}
+        error={errors.left}
       />
-      <div className="space-y-2">
+      <fieldset
+        className="min-w-0 space-y-2"
+        aria-label={t("conditionOperator")}
+        aria-invalid={errors.operator !== undefined}
+        aria-describedby={errors.operator === undefined ? undefined : errorId}
+      >
         <p className="text-sm font-medium">{t("conditionOperator")}</p>
         <Select
           ariaLabel={t("conditionOperator")}
@@ -75,7 +84,12 @@ export function ConditionFields({
           ]}
           onChange={(value) => update({ operator: value })}
         />
-      </div>
+        {errors.operator !== undefined && (
+          <p id={errorId} className="text-xs text-destructive">
+            {errors.operator}
+          </p>
+        )}
+      </fieldset>
       {operator !== "exists" && (
         <ConditionValue
           definition={definition}
@@ -84,6 +98,7 @@ export function ConditionFields({
           boolean={boolean}
           status={status}
           onChange={(right) => update({ right })}
+          error={errors.right}
         />
       )}
     </div>

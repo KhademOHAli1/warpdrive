@@ -247,6 +247,7 @@ export function BuilderWorkspace({
             ) : node !== undefined ? (
               <>
                 <NodeInspector
+                  workflowId={workflowId}
                   definition={definition}
                   node={node}
                   editable={editable}

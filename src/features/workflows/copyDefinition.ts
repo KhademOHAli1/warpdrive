@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { copyCustomFieldSettingsSchema } from "./configurationBindings";
 import { bindingSchema, definitionSchema, nodeSchema, type WorkflowDefinition } from "./schemas";
 
 // Keep the reviewed v1 binding keys explicit while reusing their scalar and path guards.
@@ -31,6 +32,7 @@ const copyNode = z.discriminatedUnion("type", [
     config: z
       .strictObject({
         subject: copyBinding,
+        customFields: copyCustomFieldSettingsSchema,
         dealId: copyBinding,
         assigneeId: copyBinding,
         dueAt: copyBinding,

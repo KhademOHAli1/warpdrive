@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { copyWorkflowDefinition } from "./copyDefinition";
 import { validateDefinition } from "./definition";
+import { initialDefinition } from "./editorModel";
 import { executableDefinition } from "./readiness";
 import { nodeTypes, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 
@@ -396,3 +397,64 @@ describe("copy policy fails closed without silently stripping material", () => {
     expect(JSON.stringify(result)).not.toContain("notification");
   });
 });
+
+it("copies UUID custom settings with rich and incomplete values without aliasing", () => {
+  const definition = initialDefinition({
+    start: "Start",
+    read: "Read",
+    task: "Task",
+    subject: "Follow up",
+  });
+  const task = definition.nodes.find((node) => node.type === "activity.create");
+  if (task === undefined) throw new Error("Missing task fixture");
+  task.config.customFields = {
+    "848408c6-faf7-4234-8de1-c63f1c9107dc": { kind: "value", value: { start: "2026-11-04" } },
+    "e96b131c-a58c-4469-84b1-81e249e653bc": {},
+  };
+  const before = structuredClone(definition);
+  const copied = copyWorkflowDefinition(definition);
+  expect(copied.ok).toBe(true);
+  if (!copied.ok) return;
+  expect(copied.value).toEqual(before);
+  expect(copied.value).not.toBe(definition);
+  const copiedTask = copied.value.nodes.find((node) => node.type === "activity.create");
+  expect(copiedTask?.config.customFields).not.toBe(task.config.customFields);
+  expect(definition).toEqual(before);
+});
+const invalidCustomCopySettings: WorkflowNode["config"][] = [
+  { "not-a-definition-id": { kind: "value", value: 0 } },
+  {
+    "848408c6-faf7-4234-8de1-c63f1c9107dc": {
+      kind: "value",
+      value: { country: "DE", credential: "secret" },
+    },
+  },
+  {
+    "848408c6-faf7-4234-8de1-c63f1c9107dc": {
+      kind: "reference",
+      nodeId: "start",
+      path: ["__proto__"],
+    },
+  },
+];
+it.each(invalidCustomCopySettings)(
+  "rejects unreviewed custom copy shapes instead of silently stripping them",
+  (customFields) => {
+    const definition = initialDefinition({
+      start: "Start",
+      read: "Read",
+      task: "Task",
+      subject: "Follow up",
+    });
+    const task = definition.nodes.find((node) => node.type === "activity.create");
+    if (task === undefined) throw new Error("Missing task fixture");
+    task.config.customFields = customFields;
+    const before = structuredClone(definition);
+    expect(copyWorkflowDefinition(definition)).toEqual({
+      ok: false,
+      error: ERROR_IDS.WORKFLOW_NOT_READY,
+      reason: "copy-unavailable",
+    });
+    expect(definition).toEqual(before);
+  },
+);

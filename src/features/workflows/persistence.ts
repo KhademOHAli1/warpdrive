@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflows, workflowVersions } from "@/db/schema";
+import { prepareCurrentCustomFieldValidation } from "@/features/custom-fields/currentValidation";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
@@ -95,7 +96,15 @@ export async function publishWorkflow(
     const { workflow: current, actor: currentActor } = locked.value;
     const stateError = lifecycleStateError(current, revision, false);
     if (stateError !== null) return err(stateError);
-    const definition = validateDefinition(current.draft);
+    const shape = definitionSchema.safeParse(current.draft);
+    if (!shape.success) return err(ERROR_IDS.WORKFLOW_INVALID);
+    const metadata = shape.data.nodes.some((node) => node.type === "activity.create")
+      ? {
+          status: "complete" as const,
+          defs: (await prepareCurrentCustomFieldValidation(tx, "activity", signal)).defs,
+        }
+      : { status: "complete" as const, defs: [] };
+    const definition = validateDefinition(shape.data, metadata);
     if (!definition.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
     if (!executableDefinition(definition.value)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
     if (current.publishedNumber !== null) {

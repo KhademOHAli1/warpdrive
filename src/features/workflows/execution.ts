@@ -57,7 +57,7 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
     const definition = parsed.data;
     const node = definition.nodes.find((item) => item.id === run.nextNodeId);
     if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
-    const result = await advanceRunStep(tx, actor, node, run, now, signal);
+    const result = await advanceRunStep(tx, actor, node, run, now, definition, signal);
     if (!result.ok) return failRun(tx, run, result.error, now, signal);
     if (result.value.status === "waiting") return ok("waiting" as const);
     const output = result.value.output;

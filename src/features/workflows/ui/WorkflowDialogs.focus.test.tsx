@@ -129,6 +129,16 @@ vi.mock("@/features/observability/capture", () => ({
   currentRoute: () => "/workflows/test",
 }));
 
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
+}));
+
 afterEach(() => {
   cleanup();
   queries.libraryRows = [];
