@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/OSS-007",
+  "acceptance_sha256": "ff2664248b1886108465f2756904621df080d6d2d093e0aa78e50ec5f8de38dc",
+  "reviewed_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+  "reviewed_at_utc": "2026-11-04T22:32:59.611597+00:00",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1a80a-30b1-75e2-9177-230a32699ecb",
+    "task_id": "/root/mail_task_release_scope_fix"
+  },
+  "summary": "Accepted the complete unchanged OSS-007 criterion after independent review of the ordinary push/PR qualification profiles, finite job/test/contract bounds, real PostgreSQL isolation, deterministic provider contracts and explicit actual-provider separation. Required lint/type/unit/database/contract work is implemented and was executed in the selected successful main runs. No additional CI configuration or provider campaign is needed for this bounded criterion.",
+  "limitations": "This is independent source/evidence review, not an acceptance attestation, issue closure, new CI execution, release or deployment. The reviewer authored the separate OSS-001 documentation correction and earlier release-publisher helpers; neither is used as OSS-007 proof or pinned here. The reviewer did not author these CI workflows, ciWorkflow.test.ts or the inspected runtime/test-profile configuration. Original main92bf CI is successful; the later v1.5.1 tag-push run41922044304 separately failed one real-PostgreSQL privacy expiry/barrier test after10298 unit successes and3749 PostgreSQL successes. That failed execution and skipped following builds remain failed, with no retry or reclassification. Every future selected acceptance revision still requires actual exact-main CI and the valid completed OSS-001 prerequisite. No live provider job or live OAuth/SMTP/vendor account success is claimed: ordinary PRs contain no authenticated actual-provider campaign, and optional real-provider exercises retain separately authorized finite-profile gates. Controlled fixtures, PostgreSQL containers and loopback browser/S3 protocols are not real-provider qualification. Whole-file hashes fence the inspected scope; they are not whole-application security certification. No build, install, test or service campaign was launched by this review.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583846",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/.github/workflows/ci.yml",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/ciWorkflow.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/vitest.config.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/vitest.globalSetup.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/scripts/docs-dependency-contracts.mjs",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/features/integrations/providers/conformance.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/integration-execution/architecture-clients-runtime-release.md"
+      ],
+      "assessment": "The ordinary push/PR/manual public workflow runs package-pinned frozen installs, app Next route generation and no-emit TypeScript, configured lint/i18n, both named Vitest projects, normal app/server builds, and independent site/docs checks. CRM is capped at40 minutes and site/docs at20; unit/integration worker count is2, tests have60-second bounds and hooks120 seconds. Shared Testcontainers PostgreSQL16 applies actual canonical migrations to a template and supplies separate cloned test databases; it does not mock SQL. The docs consumer contract command has an explicit60-second process cap; deterministic provider-operation conformance tests are collected by the normal unit project. ciWorkflow.test.ts verifies the exact three ordinary jobs, bounded budgets, commands, read-only token, pinned actions/runtimes and synthetic build environment without provider secret expressions. The separate quality workflow bounds audits/workflow validation/browser/release-PR checks; its browser admission requires loopback disposable PostgreSQL and disabled external effects, and the browser context blocks external requests/WebSockets. All ordinary main checks at the reviewed revision passed. No authenticated actual-provider job is included in the ordinary PR matrix; ARCH-011 and the evidence taxonomy require distinct explicitly authorized finite account/profile exercises. The criterion is satisfied by this separation, without inventing or qualifying a dedicated live-provider workflow."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "32413b9d1453dd7d68ace431aba47e99657bb590dced26f3fe75134072217b22"
+    },
+    {
+      "path": ".github/workflows/required-quality.yml",
+      "sha256": "35c20e00b7664c6a63999769d92b9b00d883b975763f82a50e35849de727fd6f"
+    },
+    {
+      "path": ".github/workflows/delivery.yml",
+      "sha256": "93e3973f7415966dad22edf91b71e5e73549fb01ec35ba8c332542beb0126735"
+    },
+    {
+      "path": "package.json",
+      "sha256": "eede68f50031c6d2341ccaa71620900caf4afc07f7f05f74807f8988378e8d54"
+    },
+    {
+      "path": "ciWorkflow.test.ts",
+      "sha256": "7623f31a20b98cdbfd0f0d215bce67bafe5e4615536ec6c236fd73f455a4f3a3"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005"
+    },
+    {
+      "path": "vitest.classify.ts",
+      "sha256": "e9d3fc819ffbc89c9e975c3f656612122b4e3be26abbfcc1160ea6dd35414dfe"
+    },
+    {
+      "path": "vitest.classify.test.ts",
+      "sha256": "543c8f0dc8aa21663308f054cbb3dbdf183c99b8e1f86331f21223b7da5eb564"
+    },
+    {
+      "path": "vitest.globalSetup.ts",
+      "sha256": "a8db8f578b075e64309eac72f1442692a136b03418e368d8ac3a330836479c29"
+    },
+    {
+      "path": "vitest.setup.ts",
+      "sha256": "60e699e2fe840a3649268ff2c7156a0d7e7b2eafdce14de84e9de1c1e75a6e87"
+    },
+    {
+      "path": "src/test/db.ts",
+      "sha256": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3"
+    },
+    {
+      "path": "scripts/docs-dependency-contracts.mjs",
+      "sha256": "d8d7510e426d8978490b7e4c7807d06dfbecab06e07a6674f5621a12e9e3598a"
+    },
+    {
+      "path": "src/features/integrations/providers/conformance.test.ts",
+      "sha256": "8965c76c99de01d8e24e9256c687c0d6f9ebb226b977bae14e4d111b226086cf"
+    },
+    {
+      "path": "docs/integration-execution/architecture-clients-runtime-release.md",
+      "sha256": "e86c5dd2a0c62dc02654f597b69496a2bccd77b1477d30597936e57fa0057d55"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "sha256": "3dc1c9b5f0402206e8fd1b2782215b439f5f7b27c759194bb311e3c8a538dec6"
+    },
+    {
+      "path": ".github/workflows/delivery-acceptance.yml",
+      "sha256": "b9aea27f816776ab448c9a359b9109bb8c7b5ece0c48c52b8fe2add350a7a4e8"
+    },
+    {
+      "path": "biome.json",
+      "sha256": "736657211ae25a4485d13a80688d352ac9436f53e73925cd1a2fc69de9cd6ff6"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "d374483e06db72a982aa0454d1e450e7017bbe30c4e06015d12d0589df10fdfa"
+    },
+    {
+      "path": "tsconfig.typecheck.json",
+      "sha256": "0f4a3ebc7013449817cf60aeb54124423e21bba58bcaf87f17d534d3c4611b0d"
+    },
+    {
+      "path": "src/features/integrations/providers/invoke.ts",
+      "sha256": "03cbca4c055bc3d71586e3213ed5d87e63cf476646ad22a05c3669edde073233"
+    },
+    {
+      "path": "scripts/browser-smoke.mjs",
+      "sha256": "65fae884e975076c911a9c6f1f4127ca50cd97a403df4583a5b8fcf894fb656a"
+    },
+    {
+      "path": "scripts/delivery/browser_smoke_environment.py",
+      "sha256": "33502b721a3dc002c170130b21c2773f2d9e996bdcd54108c0ef115e271b9d55"
+    },
+    {
+      "path": "docs/integration-execution/evidence-taxonomy.md",
+      "sha256": "acbcfc67424c73db4aac13345f9bd8df2f90ddc7633affac4eb91a4f3dc75108"
+    },
+    {
+      "path": "docs/integration-execution/provider-contract-qualification.md",
+      "sha256": "6bcda54f75824d25eda394bef977c4e15c6cd98de97f404072e427c3561c6af4"
+    }
+  ],
+  "required_source_paths_reviewed": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/required-quality.yml",
+    ".github/workflows/delivery.yml",
+    "package.json",
+    "ciWorkflow.test.ts",
+    "vitest.config.ts",
+    "vitest.classify.ts",
+    "vitest.classify.test.ts",
+    "vitest.globalSetup.ts",
+    "vitest.setup.ts",
+    "src/test/db.ts",
+    "scripts/docs-dependency-contracts.mjs",
+    "src/features/integrations/providers/conformance.test.ts",
+    "docs/integration-execution/architecture-clients-runtime-release.md"
+  ],
+  "review_breakdown": [
+    {
+      "area": "finite_static_and_test_profiles",
+      "source_paths": [
+        ".github/workflows/ci.yml",
+        "package.json",
+        "ciWorkflow.test.ts",
+        "biome.json",
+        "eslint.config.mjs",
+        "tsconfig.typecheck.json"
+      ],
+      "assessment": "Commands remain the declared full profiles, with normal typed lint and complexity15, no build-type bypass and fixed positive job budgets. Source meta-tests enforce the ordinary job set and fake configuration."
+    },
+    {
+      "area": "unit_database_contract_separation",
+      "source_paths": [
+        "vitest.config.ts",
+        "vitest.classify.ts",
+        "vitest.classify.test.ts",
+        "vitest.globalSetup.ts",
+        "vitest.setup.ts",
+        "src/test/db.ts",
+        "scripts/docs-dependency-contracts.mjs",
+        "src/features/integrations/providers/conformance.test.ts",
+        "src/features/integrations/providers/invoke.ts"
+      ],
+      "assessment": "Container-free unit and real-PG integration projects remain distinct; actual migrations/template clones and shutdown are explicit. Contract checks are deterministic/consumer-local and time bounded, not live-account proof."
+    },
+    {
+      "area": "ordinary_pr_and_actual_provider_boundary",
+      "source_paths": [
+        ".github/workflows/required-quality.yml",
+        ".github/workflows/delivery.yml",
+        ".github/workflows/release.yml",
+        ".github/workflows/delivery-acceptance.yml",
+        "scripts/browser-smoke.mjs",
+        "scripts/delivery/browser_smoke_environment.py",
+        "docs/integration-execution/architecture-clients-runtime-release.md",
+        "docs/integration-execution/evidence-taxonomy.md",
+        "docs/integration-execution/provider-contract-qualification.md"
+      ],
+      "assessment": "Ordinary validation has no live provider credentials or account campaign. Additional publication/completion workflows are explicit isolated operations; provider fixtures retain their synthetic labels. Actual provider profiles require separately authorized scoped actions, bounds and cleanup."
+    }
+  ],
+  "preserved_failed_execution": {
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41922044304",
+    "event": "push",
+    "head_branch": "v1.5.1",
+    "revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "failed_job_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41922044304/job/126896733679",
+    "unit_passed": 10298,
+    "existing_unit_skipped": 3,
+    "postgres_passed": 3749,
+    "postgres_failed": 1,
+    "failure": "authorityCompletionExpiry.integration.test.ts: own verification blocked after entry authentication denies on expiry without proof/case/event writes; observation/barrier and durable-state-preservation assertions. Subsequent builds were not run.",
+    "not_substituted_for_main_evidence": true
+  },
+  "gate_boundaries": {
+    "canonical_prerequisite": "integration/OSS-001",
+    "prerequisite_must_be_validly_completed_before_issue_closure": true,
+    "technical_eligibility_and_exact_main_acceptance_still_required": true,
+    "live_provider_or_human_journey_accepted": false
+  },
+  "source_pin_verification": {
+    "required_paths": 14,
+    "supporting_paths": 10,
+    "all_match_reviewed_commit_and_current_worktree": true,
+    "reviewer_launched_test_build_install_service_campaigns": 0
+  }
+}
