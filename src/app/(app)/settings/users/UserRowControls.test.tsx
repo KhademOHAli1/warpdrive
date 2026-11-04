@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { IDENTITY_ERROR_MESSAGES } from "@/constants/settingsIdentity";
+import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
 
 // Radix DropdownMenu relies on pointer-capture + scrollIntoView, which jsdom lacks.
 beforeAll(() => {
@@ -19,9 +20,14 @@ afterEach(() => {
 
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
+type MutationResult = { ok: true; value: true } | { ok: false; error: string };
 const { setUserAdminAction, setUserActiveAction, assignPermissionSetAction } = vi.hoisted(() => ({
-  setUserAdminAction: vi.fn(() => Promise.resolve({ ok: false as const, error: "unauthorized" })),
-  setUserActiveAction: vi.fn(() => Promise.resolve({ ok: true as const, value: true as const })),
+  setUserAdminAction: vi.fn(
+    (): Promise<MutationResult> => Promise.resolve({ ok: false, error: "unauthorized" }),
+  ),
+  setUserActiveAction: vi.fn(
+    (): Promise<MutationResult> => Promise.resolve({ ok: true, value: true }),
+  ),
   assignPermissionSetAction: vi.fn(
     (): Promise<{ ok: true; value: true } | { ok: false; error: string }> =>
       Promise.resolve({ ok: true, value: true }),
@@ -53,20 +59,20 @@ const PROPS = {
 
 type User = ReturnType<typeof userEvent.setup>;
 
-async function openMenu(user: User): Promise<void> {
-  await user.click(screen.getByRole("button", { name: "User actions" }));
+async function openMenu(user: User, menuName = "User actions"): Promise<void> {
+  await user.click(screen.getByRole("button", { name: menuName }));
   await screen.findByRole("menu");
 }
 
-async function chooseAction(user: User, name: string): Promise<void> {
-  await openMenu(user);
+async function chooseAction(user: User, name: string, menuName = "User actions"): Promise<void> {
+  await openMenu(user, menuName);
   const item = screen.getByRole("menuitem", { name });
   await waitFor(() => expect(item).not.toHaveAttribute("data-disabled"));
   await user.click(item);
 }
 
-async function openSetSubmenu(user: User): Promise<void> {
-  await openMenu(user);
+async function openSetSubmenu(user: User, menuName = "User actions"): Promise<void> {
+  await openMenu(user, menuName);
   await user.click(screen.getByRole("menuitem", { name: "Change permission set" }));
   await screen.findByRole("menuitemradio", { name: "Admin set" });
 }
@@ -180,4 +186,99 @@ describe("UserRowControls", () => {
     await waitFor(() => expect(PROPS.onChanged).toHaveBeenCalled());
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
+});
+
+const mutations = ["admin", "active", "set"] as const;
+type Mutation = (typeof mutations)[number];
+
+function mutationDetails(kind: Mutation) {
+  if (kind === "admin") {
+    return { action: setUserAdminAction, payload: { userId: PROPS.userId, isAdmin: true } };
+  }
+  if (kind === "active") {
+    return { action: setUserActiveAction, payload: { userId: PROPS.userId, isActive: false } };
+  }
+  return {
+    action: assignPermissionSetAction,
+    payload: { userId: PROPS.userId, setId: SET_REGULAR },
+  };
+}
+
+async function chooseMutation(user: User, kind: Mutation, menuName: string) {
+  if (kind === "set") {
+    await openSetSubmenu(user, menuName);
+    chooseSet("Regular set");
+  } else {
+    await chooseAction(user, kind === "admin" ? "Make admin" : "Deactivate", menuName);
+  }
+}
+
+describe("User row transport recovery", () => {
+  beforeEach(() => {
+    setUserAdminAction.mockReset().mockResolvedValue({ ok: false, error: "unauthorized" });
+    setUserActiveAction.mockReset().mockResolvedValue({ ok: true, value: true });
+    assignPermissionSetAction.mockReset().mockResolvedValue({ ok: true, value: true });
+  });
+
+  it.each(mutations)("retains row context and retries a rejected %s request", async (kind) => {
+    const { action, payload } = mutationDetails(kind);
+    let reject!: (reason: unknown) => void;
+    const pending = new Promise<MutationResult>((_resolve, rejectRequest) => {
+      reject = rejectRequest;
+    });
+    action.mockReturnValueOnce(pending).mockResolvedValueOnce({ ok: true, value: true });
+    const changed = vi.fn();
+    const user = userEvent.setup();
+    const userName = "Alexandra Morgan — International enterprise account management";
+    const menuName = `User actions: ${userName}`;
+    render(<UserRowControls {...PROPS} userName={userName} onChanged={changed} />);
+    await chooseMutation(user, kind, menuName);
+    const trigger = screen.getByRole("button", { name: menuName });
+    expect(trigger).toBeDisabled();
+    expect(action).toHaveBeenCalledExactlyOnceWith("csrf", payload);
+    await user.click(trigger);
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(changed).not.toHaveBeenCalled();
+
+    await act(async () => {
+      reject(new Error("private service diagnostic"));
+      await pending.catch(() => undefined);
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      settingsMessagesForLocale("en")._errors.generic,
+    );
+    await waitFor(() => expect(trigger).toBeEnabled());
+    expect(screen.queryByText("private service diagnostic")).not.toBeInTheDocument();
+    expect(changed).not.toHaveBeenCalled();
+    await chooseMutation(user, kind, menuName);
+    await waitFor(() => expect(changed).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(trigger).toBeEnabled());
+    expect(action).toHaveBeenCalledTimes(2);
+    expect(action).toHaveBeenNthCalledWith(2, "csrf", payload);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    for (const other of [setUserAdminAction, setUserActiveAction, assignPermissionSetAction]) {
+      if (other !== action) expect(other).not.toHaveBeenCalled();
+    }
+  });
+
+  it.each(mutations)(
+    "keeps an acknowledged %s request successful if refresh throws",
+    async (kind) => {
+      const { action, payload } = mutationDetails(kind);
+      action.mockResolvedValueOnce({ ok: true, value: true });
+      const changed = vi.fn(() => {
+        throw new Error("navigation interrupted");
+      });
+      const user = userEvent.setup();
+      const userName = "Alexandra Morgan — International enterprise account management";
+      const menuName = `User actions: ${userName}`;
+      render(<UserRowControls {...PROPS} userName={userName} onChanged={changed} />);
+      await chooseMutation(user, kind, menuName);
+      await waitFor(() => expect(changed).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(screen.getByRole("button", { name: menuName })).toBeEnabled());
+      expect(action).toHaveBeenCalledExactlyOnceWith("csrf", payload);
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryByText("navigation interrupted")).not.toBeInTheDocument();
+    },
+  );
 });
