@@ -1,3 +1,4 @@
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { CustomFieldDef } from "@/types/customFields";
 import type { ConfigurationMetadata } from "./configurationTypes";
 import { describeMappingTarget } from "./mappingCatalog";
@@ -86,7 +87,8 @@ export function mappingTarget(
   metadata: ConfigurationMetadata = noMappingFields,
 ) {
   const result = describeMappingTarget(definition, "task", path, metadata);
-  if (result.state !== "ready") throw new Error(`Fixture target unavailable: ${result.reason}`);
+  if (result.state !== "ready")
+    throw new AppError(ERROR_IDS.WORKFLOW_INVALID, `Fixture target unavailable: ${result.reason}`);
   return result.target;
 }
 export function reference(nodeId: string, field: string) {

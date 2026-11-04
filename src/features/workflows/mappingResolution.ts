@@ -55,7 +55,14 @@ function validStringOutput(value: string, contract: MappingValueContract) {
       return value.trim() === value && /^[+-]?\d+(?:\.\d+)?$/.test(value);
     case "entity":
       return contract.entity !== undefined && z.string().uuid().safeParse(value).success;
-    default:
+    case "number":
+    case "boolean":
+    case "time":
+    case "date-range":
+    case "time-range":
+    case "address":
+    case "option":
+    case "options":
       return false;
   }
 }
@@ -67,6 +74,10 @@ function validOutput(value: unknown, contract: MappingValueContract): value is M
   return typeof value === "boolean" && (contract.kind === "boolean" || contract.kind === "scalar");
 }
 
+function isOutputRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
 function resolveReference(
   reference: ReferenceBinding,
   outputs: RunOutputs,
@@ -75,10 +86,9 @@ function resolveReference(
   if (!matchesSource(reference, source)) return { state: "invalid", code: "descriptor-missing" };
   if (!Object.hasOwn(outputs, reference.nodeId))
     return { state: "missing", reason: "source-absent" };
-  const output = outputs[reference.nodeId];
+  const output: unknown = outputs[reference.nodeId];
   if (output === undefined) return { state: "missing", reason: "source-absent" };
-  if (output === null || typeof output !== "object" || Array.isArray(output))
-    return { state: "invalid", code: "output-type-invalid" };
+  if (!isOutputRecord(output)) return { state: "invalid", code: "output-type-invalid" };
   const field = reference.path.join(".");
   if (!Object.hasOwn(output, field)) return { state: "missing", reason: "property-absent" };
   const value = output[field];

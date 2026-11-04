@@ -28,15 +28,8 @@ function literalIntent(binding: DraftValueBinding): Intent {
   return typeof binding.value === "boolean" ? "boolean" : "text";
 }
 function primaryIntent(kind: MappingValueKind | undefined): Intent {
-  switch (kind) {
-    case "number":
-    case "date":
-    case "instant":
-    case "boolean":
-      return kind;
-    default:
-      return "text";
-  }
+  if (kind === "number" || kind === "date" || kind === "instant" || kind === "boolean") return kind;
+  return "text";
 }
 function intentChoices(target: MappingTarget | undefined, intent: Intent): Intent[] {
   const kinds: Intent[] =

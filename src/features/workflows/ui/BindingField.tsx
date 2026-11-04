@@ -125,7 +125,10 @@ export function BindingField({
   }
   function restoreFocus(event: Event) {
     event.preventDefault();
-    if (opener.current?.isConnected && !opener.current.matches(":disabled,[aria-disabled=true]"))
+    if (
+      opener.current?.isConnected === true &&
+      !opener.current.matches(":disabled,[aria-disabled=true]")
+    )
       opener.current.focus();
     else preview.current?.focus();
   }
