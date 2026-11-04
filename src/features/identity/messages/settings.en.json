@@ -816,6 +816,16 @@
     "autoSave": "Changes are saved automatically.",
     "saveToApply": "Select a value, then save to apply it.",
     "theme": "Theme",
+    "appearanceFeedback": {
+      "themeSaving": "Saving theme…",
+      "themeSaved": "Theme saved.",
+      "themeError": "Could not save the theme. The previous theme is shown. Try again.",
+      "themeRetry": "Retry theme save",
+      "densitySaving": "Saving interface density…",
+      "densitySaved": "Interface density saved.",
+      "densityError": "Could not save interface density. Your selection is kept. Try again.",
+      "densityRetry": "Retry density save"
+    },
     "themeDescription": "Choose a light or dark theme, or follow your device setting.",
     "densityDescription": "Choose how much space separates rows and controls.",
     "preview": "Format preview",

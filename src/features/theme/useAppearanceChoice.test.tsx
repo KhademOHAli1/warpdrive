@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 type PrefActionResult = { ok: true } | { ok: false; error: { id: string } };
@@ -23,6 +23,10 @@ function Harness({ value }: { value: Appearance }): React.ReactNode {
   const choice = useAppearanceChoice(value);
   return (
     <>
+      <output aria-label="Theme save">{choice.status}</output>
+      <button type="button" onClick={choice.retry}>
+        Retry theme
+      </button>
       {APPEARANCE_VALUES.map((option) => (
         <label key={option}>
           {LABELS[option]}
@@ -47,6 +51,157 @@ beforeEach(() => {
     "matchMedia",
     vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
   );
+});
+
+describe("useAppearanceChoice feedback and recovery", () => {
+  it("paints and writes the cookie immediately, but confirms saving only after the response", async () => {
+    const response = deferred();
+    setAppearanceAction.mockReturnValueOnce(response.promise);
+    render(<Harness value="day" />);
+    expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("idle");
+
+    pick("Night");
+    expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(true);
+    expect(document.cookie).toContain(`${APPEARANCE_COOKIE}=night`);
+    expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saving");
+    await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(1));
+
+    response.settle({ ok: true });
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saved"),
+    );
+    expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
+    expect(reportError).not.toHaveBeenCalled();
+  });
+
+  it("keeps saving feedback for the latest pick when an earlier success lands", async () => {
+    const first = deferred();
+    const second = deferred();
+    setAppearanceAction.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
+    render(<Harness value="day" />);
+    pick("Night");
+    pick("System");
+    await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(1));
+
+    first.settle({ ok: true });
+    await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saving");
+    expect(screen.getByRole("radio", { name: "System" })).toBeChecked();
+    expect(document.cookie).toContain(`${APPEARANCE_COOKIE}=system`);
+
+    second.settle({ ok: false, error: { id: "E_DB_001" } });
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("error"),
+    );
+    expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
+    expect(document.cookie).toContain(`${APPEARANCE_COOKIE}=night`);
+    expect(reportError).toHaveBeenCalledExactlyOnceWith("E_DB_001");
+  });
+
+  it("ignores stale failure feedback while the newest choice is still saving", async () => {
+    const first = deferred();
+    const second = deferred();
+    setAppearanceAction.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
+    render(<Harness value="day" />);
+    pick("Night");
+    pick("System");
+    first.settle({ ok: false, error: { id: "E_DB_001" } });
+    await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saving");
+    expect(reportError).not.toHaveBeenCalled();
+    second.settle({ ok: true });
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saved"),
+    );
+  });
+
+  it("retries the failed choice after rollback through the same save path only once", async () => {
+    const retry = deferred();
+    setAppearanceAction
+      .mockRejectedValueOnce(new Error("private database diagnostic"))
+      .mockReturnValueOnce(retry.promise);
+    render(<Harness value="day" />);
+    pick("Night");
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("error"),
+    );
+    expect(screen.getByRole("radio", { name: "Day" })).toBeChecked();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry theme" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry theme" }));
+    expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
+    expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(true);
+    expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saving");
+    await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(2));
+    expect(setAppearanceAction).toHaveBeenNthCalledWith(2, { appearance: "night" }, "csrf");
+    retry.settle({ ok: true });
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saved"),
+    );
+    expect(reportError).toHaveBeenCalledExactlyOnceWith("E_DB_003");
+  });
+
+  it("clears an obsolete retry when a new choice succeeds", async () => {
+    setAppearanceAction
+      .mockResolvedValueOnce({ ok: false, error: { id: "E_DB_001" } })
+      .mockResolvedValueOnce({ ok: true });
+    render(<Harness value="day" />);
+    pick("Night");
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("error"),
+    );
+    pick("System");
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saved"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retry theme" }));
+    expect(setAppearanceAction).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("radio", { name: "System" })).toBeChecked();
+  });
+
+  it("follows System changes during saving, after success, and after a failed pick rolls back", async () => {
+    const listeners = new Set<() => void>();
+    const mq = {
+      matches: false,
+      addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
+      removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
+    };
+    vi.stubGlobal("matchMedia", () => mq);
+    const response = deferred();
+    setAppearanceAction
+      .mockReturnValueOnce(response.promise)
+      .mockResolvedValueOnce({ ok: false, error: { id: "E_DB_001" } });
+    render(<Harness value="day" />);
+    pick("System");
+    act(() => {
+      mq.matches = true;
+      for (const listener of listeners) listener();
+    });
+    expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(true);
+    expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saving");
+    response.settle({ ok: true });
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("saved"),
+    );
+    act(() => {
+      mq.matches = false;
+      for (const listener of listeners) listener();
+    });
+    expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(false);
+
+    pick("Night");
+    await waitFor(() =>
+      expect(screen.getByRole("status", { name: "Theme save" })).toHaveTextContent("error"),
+    );
+    expect(screen.getByRole("radio", { name: "System" })).toBeChecked();
+    act(() => {
+      mq.matches = true;
+      for (const listener of listeners) listener();
+    });
+    expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(true);
+    cleanup();
+    expect(listeners.size).toBe(0);
+  });
 });
 
 afterEach(() => {
