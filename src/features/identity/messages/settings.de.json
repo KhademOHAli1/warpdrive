@@ -445,6 +445,7 @@
     "members": "Mitglieder",
     "add_or_remove_users_from_this_group": "Personen zu dieser Gruppe hinzufügen oder daraus entfernen.",
     "no_members_yet": "Noch keine Mitglieder vorhanden.",
+    "visibilityGroupMembersUnavailable": "Die Mitglieder konnten nicht geladen werden. Versuchen Sie es erneut.",
     "remove": "Entfernen",
     "add_member": "Mitglied hinzufügen",
     "select_a_user": "Benutzerkonto auswählen",
