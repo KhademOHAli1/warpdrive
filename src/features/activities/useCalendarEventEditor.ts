@@ -74,7 +74,14 @@ export function useCalendarEventEditor({
     end: draft.endTime || "10:00",
   });
   const [doneNow, setDoneNow] = useState(editing?.done ?? false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<{
+    message: string;
+    origin: "editor" | "read";
+  } | null>(null);
+  const setError = useCallback((message: string | null, origin: "editor" | "read" = "editor") => {
+    setErrorState(message === null ? null : { message, origin });
+  }, []);
+  const error = errorState?.message ?? null;
   const [legacyDateConfirmed, setLegacyDateConfirmed] = useState(false);
   const reminder = useCalendarReminderEditor(editing, zone);
   const persistence = useCalendarEventPersistence({
@@ -92,6 +99,7 @@ export function useCalendarEventEditor({
       setBaseline(next);
       setDoneNow(next.done);
       reminder.refresh(next);
+      setErrorState((current) => (current?.origin === "read" ? null : current));
     },
     onConfirmed: (kind, id) => {
       setError(null);
@@ -102,13 +110,14 @@ export function useCalendarEventEditor({
       }
     },
     onFailure: (kind, id) => {
-      if (id === "E_ACTIVITY_010") setError(t("reminder.stale"));
-      else if (id === "E_ACTIVITY_009") setError(t("reminder.invalid"));
-      else if (kind === "read") setError(t("editor.loadFailed"));
-      else if (kind === "delete") setError(S.deleteFailed(id));
+      const origin = kind === "read" ? "read" : "editor";
+      if (id === "E_ACTIVITY_010") setError(t("reminder.stale"), origin);
+      else if (id === "E_ACTIVITY_009") setError(t("reminder.invalid"), origin);
+      else if (kind === "read") setError(t("editor.loadFailed"), origin);
+      else if (kind === "delete") setError(S.deleteFailed(id), origin);
       else if (kind === "save")
-        setError(editing === undefined ? S.createFailed(id) : S.saveFailed(id));
-      else setError(S.updateFailed(id));
+        setError(editing === undefined ? S.createFailed(id) : S.saveFailed(id), origin);
+      else setError(S.updateFailed(id), origin);
     },
   });
   const value = { ...draft, typeId: draft.typeId || (types[0]?.id ?? "") };
