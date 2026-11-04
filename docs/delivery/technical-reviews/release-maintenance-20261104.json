@@ -1,0 +1,1141 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "ops/release-maintenance-2026-11-03",
+  "acceptance_sha256": "082ccddd76aa3213d78485c7a4cc7d57f08087c1ae5aa2b932b3a6c27c0da581",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/final_consolidation_review"
+  },
+  "reviewed_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+  "reviewed_at_utc": "2026-11-04T22:34:07.489Z",
+  "summary": "Independent full-scope review accepts all five unchanged original criteria of the bounded release-critical dependency, CI/tooling and mailbox timestamp hydration maintenance. Actual retained selected99f qualification, verified current source/input preservation, independently reconciled post99f release controls, exact92bf main qualification and actual v1.5.1 publication establish this technical repair without borrowing completion of wider MAIL or installation programmes.",
+  "limitations": "Retained API/native/physical/browser/tooling campaigns remain qualified at selected99f/buildd8ar and are not relabeled as new92bf runtime executions. Current92bf full CI and source-preservation reconciliation are separate evidence. Physical storage used an owned Seaweed S3-compatible fixture; the browser download used the compiled action plus renderer request, not a Composer download button or full908 journey. Metadata/license declarations are not universal engine/OS support or legal clearance. No live Google/provider, installed customer, full MAIL programme, human user journey or deployment acceptance is claimed. v1.5.1 accepted272 only;960 remained explicitly unaccepted source context. Formal delegated acceptance, closure audit and any later publication decision for960 remain separate. Private raw receipts/harnesses remain in the retained local archive and are not represented as public downloads.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/delivery/qualification/release-maintenance-20261104.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/dependency-security-qualification.md",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986"
+      ],
+      "assessment": "The selected99f full/production frozen installs, installed patched-byte and13edge readbacks,167identity/113transition engine-license-SRI ledger and allseverity root/docs/site/browser audits are retained with exact receipts. I reread and SHA256-verified all53 indexed receipt files, including the final install, metadata and browser-audit reviews. All16 recorded package/lock/patch inputs still equal92bf; docs patches and the isolated browser package/lock are also unchanged. Current four-lock security_audit.py remains unfiltered, requires native zero and valid zero-finding output, retains raw failures, and the actual92bf Dependency audit is successful. Existing manager/lock discipline is preserved; no ignore, false version or waived security check is used."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/delivery/qualification/release-maintenance-20261104.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/dependency-security-qualification.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/features/files/storage.ts",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955"
+      ],
+      "assessment": "I inspected the actual SDK81, deepmerge154 and consumer100 records and their independent current-hoisted-graph review, not only a summary. SDK81 covers real CJS/ESM Client/PostPolicy/CopyConditions, encoding, byte-split JSONL/backpressure and notification success/parser/transport errors. Separate actual physical25 uses the real application ESM StorageClient and CJS consumer against one owned Seaweed S3-compatible bucket for signed POST/stat/GET, failing and successful ETag-copy, delete and exact bytes, including Persian/German and percent/plus/space/quote/header cases. Separate fresh built-production browser25 proves native sign-in, mailbox-owned upload/confirm, persisted draft and compiled requestDownloadAction plus renderer signed GET. Retained unit37/integration66 exercise affected file authority, avatar and attachment consumers. Storage/avatar source and core attachment consumers are unchanged from99f; current92bf full unit/PostgreSQL CI separately passes. Original error and AbortSignal boundaries are retained; underlying Minio cancellation is not claimed stronger than its existing contract."
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/delivery/qualification/release-maintenance-20261104.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/dependency-security-qualification.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/scripts/docs-dependency-contracts.mjs",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955"
+      ],
+      "assessment": "Actual consumer100 names cover matcher file sets/options, preabort and traversal cancellation, archive members/content, TS/CTS/TSX/MTS compiler and legacy loader semantics, and real Drizzle TS config/schema export. Deepmerge154 covers14 source-bound call-shape adapters plus real exposed shadcn/registry config/CSS/Tailwind operations, ordering, clone/reference and prototype-key controls. Actual Testcontainers PostgreSQL lifecycle is present in the retained66integration and21populated migration runs with owned container teardown; the current test setup/migrator source is pinned. Actual Bun1.4.2 docs contracts cover SSG worker threads, CJS serializers and SockJS UUIDs, with separate serve13, frozen install, normal full docs build and site30tests/build. All docs/site and drizzle source is unchanged between99f and92bf. The current main docs/site and3750PostgreSQL checks also pass. No shared migration history or UI oracle was changed to obtain these results."
+    },
+    {
+      "id": "AC4",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/delivery/qualification/release-maintenance-20261104.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/features/email/connections/MailboxConnectionRow.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/features/email/connections/MailboxConnectionRow.hydration.test.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986"
+      ],
+      "assessment": "The unchanged hydration repair uses a shared ISO string during SSR/initial hydration then browser formatting, preserving datetime and existing controls/fallbacks. Retained focused38 and actual selected99f EN/DE/FA browser41 independently prove same-navigation raw ISO HTML then exact browser Intl text, owner/manage/capability/default/null behavior and foreign-account exclusion, with zero page/console/hydration diagnostics and no warning suppression. The row, hydration test and formatting sources remain unchanged. Post99f MailboxManagement changes are explanatory disconnect copy; existing hydration-display locale values are unchanged in all3locales. I reconciled current CI/release changes: strict four-lock audit and guarded9journey smoke profiles, current-main CodeQL findings, incremental-only disclosure policy, bounded full-evidence body packaging and exact40CRM/20site/docs workflow guard. Actual92bf12main checks pass; env restrictions, complexity15, full types/tests/builds and all four required-quality jobs remain intact. This accepts the declared hydration/tooling maintenance, not wider mailbox functionality."
+    },
+    {
+      "id": "AC5",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/delivery/qualification/release-maintenance-20261104.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/dependency-security-qualification.md",
+        "https://github.com/KhademOHAli1/warpdrive/pull/927",
+        "https://github.com/KhademOHAli1/warpdrive/pull/967",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583846",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915581429",
+        "https://github.com/KhademOHAli1/warpdrive/releases/tag/v1.5.1"
+      ],
+      "assessment": "The committed report and portable index preserve selected99f source/lock/artifact identities,53hashed local receipts, actual failed attempts,4507file static qualification, admitted normal application build340checks/fiveworkers, affected unit/integration/migration and docs/site pipelines with measured owned-resource cleanup. Source99f and report commit41b93ef292aa60c035c75f813b18d4de7e35f131 explicitly reference960. That historical qualification is bridged by unchanged dependency and relevant consumer inputs plus actual current92bf qualification:10298unit passes/3existing skips,3750PostgreSQL passes, full TypeScript and configured lint,67pages and all5server bundles; marketing/docs, delivery traceability, all4quality jobs and all3managed CodeQL categories are successful. I read the main CRM log and live check records. Failed30minute cuts and the subsequent stale timeout-guard failure remain failed, with local red-to-green guard evidence retained. The actual stable v1.5.1 release at92bf verifies the repaired publisher and5uploaded assets:130990byte full notes,310238byte traceability, checksums, VERSION and source archive. This publication accepted only272; it is evidence of operational release tooling, not acceptance or a publication receipt for960."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "32413b9d1453dd7d68ace431aba47e99657bb590dced26f3fe75134072217b22"
+    },
+    {
+      "path": ".github/workflows/delivery-acceptance.yml",
+      "sha256": "b9aea27f816776ab448c9a359b9109bb8c7b5ece0c48c52b8fe2add350a7a4e8"
+    },
+    {
+      "path": ".github/workflows/delivery.yml",
+      "sha256": "93e3973f7415966dad22edf91b71e5e73549fb01ec35ba8c332542beb0126735"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "sha256": "3dc1c9b5f0402206e8fd1b2782215b439f5f7b27c759194bb311e3c8a538dec6"
+    },
+    {
+      "path": ".github/workflows/required-quality.yml",
+      "sha256": "35c20e00b7664c6a63999769d92b9b00d883b975763f82a50e35849de727fd6f"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "0644cca3403e652c547b7d22a2fd4f27fc10e65f32417197391a8a6ea33a08ea"
+    },
+    {
+      "path": "bunfig.toml",
+      "sha256": "d09eb18ffee6896a4b74523d80b1bcd642a6966974e20c30bac94027a31fc202"
+    },
+    {
+      "path": "ciWorkflow.test.ts",
+      "sha256": "7623f31a20b98cdbfd0f0d215bce67bafe5e4615536ec6c236fd73f455a4f3a3"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "99fb755e9fc0c0efe8ba3aab996f6acc5a061e593ca41bb7c48ea69b4638caf5"
+    },
+    {
+      "path": "docs-site/bun.lock",
+      "sha256": "c5ede69a88b92dd52d29da83497671c60a957652c1d9b6892b10ba2e9f027827"
+    },
+    {
+      "path": "docs-site/package.json",
+      "sha256": "c97a833a98716c3a0c6009407f37b37f9d11a46b3ffef022b126c97448f644f8"
+    },
+    {
+      "path": "docs-site/patches/@fastify-deepmerge@3.2.4.patch",
+      "sha256": "54376dc3c504e29c92004d7567b7324a3b667afe8c94ac1616c09b867f1b3238"
+    },
+    {
+      "path": "docs-site/patches/serve-handler@6.1.7.patch",
+      "sha256": "c0b91e3ce1eb14bf2edc19e1bbd7b786d4e846ec7bf19d2c9b8099646d8add7b"
+    },
+    {
+      "path": "docs-site/tsconfig.json",
+      "sha256": "049d5f8a3edcb1f323c87c3680a725f83c49fa1bc5b17ebc578d5978d08ce0c5"
+    },
+    {
+      "path": "docs/delivery/mail-release-policy.json",
+      "sha256": "fdb530c37bb3a27b3cee09d49a5a5fa2b00f1a4b177f1897aaa8fc04a8cb94ad"
+    },
+    {
+      "path": "docs/delivery/qualification/release-maintenance-20261104.json",
+      "sha256": "436f9c8b91afc218f9e3ec8947741775a1ef5573ce191270645447a658779f20"
+    },
+    {
+      "path": "docs/delivery/release-policy.json",
+      "sha256": "d915398cef7eda89d685400182d215fcead27373ab1c3b09c46c4050df195fb9"
+    },
+    {
+      "path": "docs/dependency-security-qualification.md",
+      "sha256": "3df3df8cdd42b7e587aa3b89fffde4d0706268c0e22a44922e3fe459904cb06b"
+    },
+    {
+      "path": "drizzle.config.ts",
+      "sha256": "66e44ee7a480dc5af4468333337e02270d37ee916a9bbaa114114374ef0fb4da"
+    },
+    {
+      "path": "drizzle/0102_activity_reminder_intents.sql",
+      "sha256": "76ab427c5891c6e10fb9707511d56e6b16039af3a108953c0e46d0a5f4c0b110"
+    },
+    {
+      "path": "drizzle/0103_mail_read_intents.sql",
+      "sha256": "f974e5f284da617a896723fe6c5de8467ed370c991e5c905735a38cc535953c5"
+    },
+    {
+      "path": "drizzle/0104_mailbox_attachment_parent.sql",
+      "sha256": "ad52e5963eefbc52c72a7a1f275d34294a7d93dbe1178e42efb7c214e0cdae29"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "sha256": "4ce97b453a5d2ba493947b66a4b55d1b021a8ec3b4df56c092668ceb4375cec5"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "d374483e06db72a982aa0454d1e450e7017bbe30c4e06015d12d0589df10fdfa"
+    },
+    {
+      "path": "eslint.config.test.ts",
+      "sha256": "c869c97496905acd83c88f830d95678c3309ba4e5287d2373cccca2994358684"
+    },
+    {
+      "path": "eslint.restricted-syntax.mjs",
+      "sha256": "1caeedc51060b1895a8b1a1d877428fb155fdd307bd5da0034877f1ed259abd4"
+    },
+    {
+      "path": "next.config.test.ts",
+      "sha256": "090a4365c3347c408660f9bcf85afdcca43cb06ece66081d383e8dc623fab0b0"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "e84ae8a6a38e0e6438c527a1c053e9fad2b4c148ca83fa59ee9bd5ea9e397337"
+    },
+    {
+      "path": "package.json",
+      "sha256": "eede68f50031c6d2341ccaa71620900caf4afc07f7f05f74807f8988378e8d54"
+    },
+    {
+      "path": "patches/@fastify-deepmerge@3.2.4.patch",
+      "sha256": "54376dc3c504e29c92004d7567b7324a3b667afe8c94ac1616c09b867f1b3238"
+    },
+    {
+      "path": "patches/@shadcn-registry@0.2.1.patch",
+      "sha256": "219131f3e48ced514a968821db7dd4e6304c0a050e78aa87536ccccdde97ee18"
+    },
+    {
+      "path": "patches/eslint-plugin-import-x@4.17.1.patch",
+      "sha256": "651258b3138c351583f4288444fdf9118858f6b06baf813c14e199d856024707"
+    },
+    {
+      "path": "patches/minio@8.0.7.patch",
+      "sha256": "3b70a227f576699eb9a1825624594914481a23a3eb08ea7f75a48de6c2a46d37"
+    },
+    {
+      "path": "patches/next@16.4.3.patch",
+      "sha256": "dfe3c2ebd8572893cbd9ae759413aa520dce10fb4479f40203f1c620b2b2493e"
+    },
+    {
+      "path": "patches/query-string@7.1.3.patch",
+      "sha256": "32fabd661c87a64d8e92d6fb323ef8ca9b61812de3a3cba21215ac3373e9b641"
+    },
+    {
+      "path": "patches/shadcn@4.23.0.patch",
+      "sha256": "75bd1aa3fb9742bf1356fa05a439c893ede7bf6ecaa7fa4b5041c1c9a598f434"
+    },
+    {
+      "path": "scripts/browser-smoke-seed.mjs",
+      "sha256": "2485b55740d6ea1a717fe6aede48b588c916a536f7437bb6000feb74d2e14571"
+    },
+    {
+      "path": "scripts/browser-smoke.mjs",
+      "sha256": "65fae884e975076c911a9c6f1f4127ca50cd97a403df4583a5b8fcf894fb656a"
+    },
+    {
+      "path": "scripts/build-workers.mjs",
+      "sha256": "0651fec34093fa035712119c9e43d50be6641e1cb971af3a9832b12b3a89aec8"
+    },
+    {
+      "path": "scripts/delivery/browser_smoke_environment_test.py",
+      "sha256": "b2201af57aaa94fd88b56751baf1f09af4cc99c70e30965274f28f9b845e2890"
+    },
+    {
+      "path": "scripts/delivery/browser_smoke_environment.py",
+      "sha256": "33502b721a3dc002c170130b21c2773f2d9e996bdcd54108c0ef115e271b9d55"
+    },
+    {
+      "path": "scripts/delivery/release_agent_acceptance_test.py",
+      "sha256": "29c98d091edc3990bd100783c2039e92cfe5244446b6bcdb4a0f814c1e539ae6"
+    },
+    {
+      "path": "scripts/delivery/release_artifacts.py",
+      "sha256": "0338e49eb89ca3b96c6246b49239c70015c49c249b8523d100c81f918839f05e"
+    },
+    {
+      "path": "scripts/delivery/release_controls_test.py",
+      "sha256": "0e6ed63b564f417c78eb4995e0dcc4f238a0825fd88fdd0d1c469e2a4eadf2b2"
+    },
+    {
+      "path": "scripts/delivery/release_gates.py",
+      "sha256": "e0820fae87c1cad45d7309de99f0a81be6c2e530891793bb9db77400fce62b31"
+    },
+    {
+      "path": "scripts/delivery/release_links.py",
+      "sha256": "87abeeef58e0f12ed8914526927bc611f426da2e6a1c2fb0b88673f19e44dbd6"
+    },
+    {
+      "path": "scripts/delivery/release_mail_test.py",
+      "sha256": "d0dce8a8503b950c453d87723a1032ecf2557308c189d6421ea67a347dffd743"
+    },
+    {
+      "path": "scripts/delivery/release_mail.py",
+      "sha256": "9be5e5a8fe5d9294f2f7c0011fc7cf663558a7a1a57ff7b1770705d9318857d8"
+    },
+    {
+      "path": "scripts/delivery/release_notes_test.py",
+      "sha256": "d835c81fcbffa9fb483cea264314cd260a00677a0c5bcedd65cd42da16613a4e"
+    },
+    {
+      "path": "scripts/delivery/release_pr_test.py",
+      "sha256": "8055e468e8984534d38e4dce6f44dec6b11c257d3e6c4b05e834055821f43b66"
+    },
+    {
+      "path": "scripts/delivery/release_pr.py",
+      "sha256": "3e1e11ddb8116371c7545ba49b5c1f3a626055e73f767181d1f09f30f0ec478d"
+    },
+    {
+      "path": "scripts/delivery/release_publication_test.py",
+      "sha256": "fbf4e0377b7adfeca34b3c0f6908f5f4aae74066ec926596757a7eb98992a442"
+    },
+    {
+      "path": "scripts/delivery/release_publication.py",
+      "sha256": "70418ee0733c0c4878124ec090698c319a9fed253a02388f9e536edb3c6960c4"
+    },
+    {
+      "path": "scripts/delivery/release_security_test.py",
+      "sha256": "9f06bd5c11bb6a9bdb55f42b42197d76a722246abd83779bf27e4c25234f4051"
+    },
+    {
+      "path": "scripts/delivery/release_security.py",
+      "sha256": "d0e4d0b2dfbaeaab724d18ddc380d162fd0730386207d6b5fa881fb014a7f62d"
+    },
+    {
+      "path": "scripts/delivery/release_support.py",
+      "sha256": "768e675468837b0a6daa90c462b4b315e257c73b142994874a8f8864a4fadb8a"
+    },
+    {
+      "path": "scripts/delivery/release.py",
+      "sha256": "a03bab388ac6793644fc42ab24c81b31d2e4d7fc80991a396d64811faf077dc6"
+    },
+    {
+      "path": "scripts/delivery/security_audit_test.py",
+      "sha256": "ca260bbd0ced73a9e7dc74b674f09743569fb51f25465c0c025e6ba24d7885e8"
+    },
+    {
+      "path": "scripts/delivery/security_audit.py",
+      "sha256": "bcbb0d99882b84ab0dd791df56472ead224222837b8a537941936acd3394365a"
+    },
+    {
+      "path": "scripts/docs-dependency-contracts.mjs",
+      "sha256": "d8d7510e426d8978490b7e4c7807d06dfbecab06e07a6674f5621a12e9e3598a"
+    },
+    {
+      "path": "site/bun.lock",
+      "sha256": "27171c87ad035e52c37bc49099ba83f0ef92021a64a35e2874c9d0456a46c96f"
+    },
+    {
+      "path": "site/next.config.ts",
+      "sha256": "27a7fe75c3398f1dd1e089060be7646126f9831a07cb5e71b86446dd7418a86b"
+    },
+    {
+      "path": "site/package.json",
+      "sha256": "84ecc8cd53ef35b93e3ad4ec85197de2f5587425ee31148a0a08e6696fbf6768"
+    },
+    {
+      "path": "src/app/(app)/inbox/compose/ComposePageClient.tsx",
+      "sha256": "b6fccb9766b5eecb08747df4e7794e0ba71b17786bc73af69af4899484ca7a68"
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "ca6f8e9650a02069899aa038b6faabd236974635cc039a40317795167ec49d7e"
+    },
+    {
+      "path": "src/db/migrate.test.ts",
+      "sha256": "40df5536b8f5325063a082d90d6cc032b4d27c3550ba5c889d43f15e33909a00"
+    },
+    {
+      "path": "src/db/migrate.ts",
+      "sha256": "48ad4cbf5599585939cdf56658edf78e9d133295032304b882f35bf2ed5ddb56"
+    },
+    {
+      "path": "src/db/migrationAdmission.integration.test.ts",
+      "sha256": "7db979d590029fa2a50c713cf58206b5d78eb53157a8069a3588a741171d69dd"
+    },
+    {
+      "path": "src/db/migrationAdmission.ts",
+      "sha256": "2504f8c06bd82dea271f2ab0114f7f3d9e5916fad53fd48e7abc18068b78adb1"
+    },
+    {
+      "path": "src/db/migrationAdmissionConcurrency.integration.test.ts",
+      "sha256": "d46e7d50f6fc7acea46e89c170dbb3d94a61302a168db37874f5ef28caa116f3"
+    },
+    {
+      "path": "src/db/migrationAdmissionDatabase.ts",
+      "sha256": "844a84b0d304f26b32092d4b6d7ae17b0a04e4c468a7529ba190d6c49a442f5e"
+    },
+    {
+      "path": "src/db/migrationAdmissionIntegrity.ts",
+      "sha256": "7337b84067547794c698d8b09e40145d4ddcaec3b5ee96c7de8eb9dcc4ba8ecb"
+    },
+    {
+      "path": "src/db/migrationAdmissionMail.ts",
+      "sha256": "f11a48863618698baf63703efd32f992ed27c9c7b8ecf014dc337d2bd260df58"
+    },
+    {
+      "path": "src/db/migrationAdmissionMailboxAttachment.integration.test.ts",
+      "sha256": "e9381e3e3105698a6c2bf974d338e5344445e067d2d377eeb9fba082568b85d4"
+    },
+    {
+      "path": "src/db/migrationAdmissionMailRead.integration.test.ts",
+      "sha256": "88cde1ccf452ec1f73cd298fd3e89d26c21f50139211f87b205ab93526e6c988"
+    },
+    {
+      "path": "src/db/migrationAdmissionMailSource.ts",
+      "sha256": "4e2d0dae4d39ccc1c973cb2ef65533ed754c6ec0913672194ca6d6a182b6877b"
+    },
+    {
+      "path": "src/db/migrationAdmissionSource.ts",
+      "sha256": "162cf2bc69f46b5e489e2138ec3dca5333af8a88f02faaced90f8786287c56c4"
+    },
+    {
+      "path": "src/db/testing/index.ts",
+      "sha256": "453ddcef71767fec1d696fbbe961940b19f5521b41c830967705bb248e87ebc6"
+    },
+    {
+      "path": "src/features/email/attachmentAuthz.test.ts",
+      "sha256": "1b2fcef74aa52b30d12ba3f7746cbea219ac3f9743a71a4074bd8d41d6a71ad3"
+    },
+    {
+      "path": "src/features/email/attachmentDownload.imap.integration.test.ts",
+      "sha256": "9cb43eb247c684ed58bfe6359573a2bab7d441abd5d39a38e61ee8ef90dd694f"
+    },
+    {
+      "path": "src/features/email/attachmentDownload.stored.integration.test.ts",
+      "sha256": "44405064a403fdd77d3060e9e9d4ad33580132c0904cd58b885eeca615f43495"
+    },
+    {
+      "path": "src/features/email/attachmentDownload.test.ts",
+      "sha256": "0b3c371d7ebc951efecdd70be5521e3cc3605a6cd9af96bf907ad2f6ecb70c3d"
+    },
+    {
+      "path": "src/features/email/attachmentDownload.ts",
+      "sha256": "c1346432d16f41151651763c165e3b0b3a2c5835ad5fe6a90348e4c6f5a213e3"
+    },
+    {
+      "path": "src/features/email/attachmentDownloadAccess.ts",
+      "sha256": "81f4d4d8d0a5b4af2f44ce233aec6db7d84370034ff9a2d050337872430cc2a2"
+    },
+    {
+      "path": "src/features/email/attachmentDownloadBytes.ts",
+      "sha256": "457c9be86a68bc050b2332996714ce4c663021758ead997caae101d1d5d344b9"
+    },
+    {
+      "path": "src/features/email/attachmentDownloadHeaders.test.ts",
+      "sha256": "dc92f88739ea343b3d8edee1722beddae4fe2b140b106366e726d66e6154c3f7"
+    },
+    {
+      "path": "src/features/email/attachmentDownloadHeaders.ts",
+      "sha256": "3cc6da3be0b76e698b547f5a3834096fd12c147e2e1c9caa692d63c8c47df75b"
+    },
+    {
+      "path": "src/features/email/attachmentDownloadTypes.ts",
+      "sha256": "946e0948ba23532237164f9907525784a260085dad4c2a2b39fcc0b90daef4cc"
+    },
+    {
+      "path": "src/features/email/attachmentReads.ts",
+      "sha256": "132d749a6637a0408718a3caf0874354ce46addcf9cd529d84b277ee67f6e28c"
+    },
+    {
+      "path": "src/features/email/attachmentSend.helpers.ts",
+      "sha256": "28cd59560978c4852213a6b88608baffb41b53c85994165fdf1451fa3a9d7a19"
+    },
+    {
+      "path": "src/features/email/attachmentSend.test.ts",
+      "sha256": "ed3184c2c0a0fc1fef742e70866a74a83504846b98e0c619b9a7f07dc12e4600"
+    },
+    {
+      "path": "src/features/email/composer/AttachButton.test.tsx",
+      "sha256": "d3655dd8ab1f75c9d5acccc0fbe30d74870f698119067e866bdf34e9a4a900d2"
+    },
+    {
+      "path": "src/features/email/composer/AttachButton.tsx",
+      "sha256": "e3c3a1823eb603f41fe231350bd8087c14e23d19ef2b7c1d0f75907c2316002e"
+    },
+    {
+      "path": "src/features/email/composer/AttachmentList.tsx",
+      "sha256": "3b9882fd66269239614f8a6fe1a95be6312da374ff9d0f119474930b942b37b7"
+    },
+    {
+      "path": "src/features/email/composer/ComposerAttachments.test.tsx",
+      "sha256": "e0cb0432e53c2b5751bfea2b53f1bdbd37f81d71cbc5f65c8c419f51f2afa7f3"
+    },
+    {
+      "path": "src/features/email/connections/disconnectCopy.ts",
+      "sha256": "020c1577419ef0ac7eca12456e9fbaee8da890077c1806535e9a232406865746"
+    },
+    {
+      "path": "src/features/email/connections/MailboxConnectionRow.hydration.test.tsx",
+      "sha256": "88e628840fc7820909fccc5b31e5d83634c0d7e5b7329895333d8404aa058171"
+    },
+    {
+      "path": "src/features/email/connections/MailboxConnectionRow.tsx",
+      "sha256": "dfa228e8e8387f611f8d00aed568680cddfd636153239174c5f301fafbbeeaa6"
+    },
+    {
+      "path": "src/features/email/connections/MailboxConnectionsPanel.test.tsx",
+      "sha256": "3625cfccdfa464f637f89de54448f23afe0bb778d493b7ca911f4da37f2e11ea"
+    },
+    {
+      "path": "src/features/email/connections/MailboxConnectionsPanel.tsx",
+      "sha256": "290393acaf267e034faad4ddfcb5cf48d5cacdf5bbb75fa6ef5a86c7a3c48393"
+    },
+    {
+      "path": "src/features/email/connections/MailboxConnectionsRecovery.test.tsx",
+      "sha256": "d43c5fd21ab7f4e217272d9fb0351b5cc50169f7af08fcbdde2703c3e3c0c1fd"
+    },
+    {
+      "path": "src/features/email/connections/MailboxManagement.disconnect.test.tsx",
+      "sha256": "b2d5889602025de73c7a9aa80bbb38288cc90b4d4b9d3c604072ab361da118e5"
+    },
+    {
+      "path": "src/features/email/connections/MailboxManagement.tsx",
+      "sha256": "e3176ded14f4f4354364d23ad5e72468c5011e093002648a64fa1690f483dbbb"
+    },
+    {
+      "path": "src/features/email/connections/MailboxSentCopy.test.tsx",
+      "sha256": "c321126fe33f595c2f4a4585cb114dee6c30148484feb8cb51f21a200a28a551"
+    },
+    {
+      "path": "src/features/email/connections/MailboxSyncProgress.test.tsx",
+      "sha256": "d7a4dc90010e548b48e1010812452622988e4a2d44affd4d21a57f08022c985d"
+    },
+    {
+      "path": "src/features/email/connections/MailboxSyncProgress.tsx",
+      "sha256": "b1439d2129ff7e4f15f4208798b817ab5aa4a8786fcfc803025b3a5e5523c13f"
+    },
+    {
+      "path": "src/features/email/connections/messages.ts",
+      "sha256": "787fa1185292034ee555513302c3bf49dd29cf11599e698955de4674fde0d94c"
+    },
+    {
+      "path": "src/features/email/connections/messages/mailConnections.de.json",
+      "sha256": "ab96b48de43a62b30a3377d4d735510d5b11493823cab8a19223102468bd369e"
+    },
+    {
+      "path": "src/features/email/connections/messages/mailConnections.en.json",
+      "sha256": "8e72fb999e2ece979f1e37fe27e972640de3d0f32e511457684690502185a739"
+    },
+    {
+      "path": "src/features/email/connections/messages/mailConnections.fa.json",
+      "sha256": "5da2c59a3313455910c5595e8d12edddd5f73958cf8266557ed587e761a074ed"
+    },
+    {
+      "path": "src/features/email/connections/types.ts",
+      "sha256": "5aa2490eaccea60e6702d2bab9da5e43edbf39f3a26ec3b21899e9dd967652cf"
+    },
+    {
+      "path": "src/features/email/draftAttachments.ts",
+      "sha256": "5320e3e777a806f944f305a7581ff8164494a4eac328ba303596bbefc5e09d8e"
+    },
+    {
+      "path": "src/features/email/emailAttachmentLimits.integration.test.ts",
+      "sha256": "6c01b9f318fee8379a45283472666a677237936f7f3f61f9b27826fba1582e98"
+    },
+    {
+      "path": "src/features/email/emailAttachmentLimits.ts",
+      "sha256": "35e59898e0d00b71d914e3f5b2f38de8fbe70de831c967d929734ea264c6b635"
+    },
+    {
+      "path": "src/features/email/send.ts",
+      "sha256": "2b0c035c74a64c1ebc356a2b6fc422efc396d71d9609f8383bd746bd0cbebfbd"
+    },
+    {
+      "path": "src/features/email/sendDelivery.ts",
+      "sha256": "ef88ec1a6d309b3611e8c7b56e6a71d1638cffa59d21e24b05963c4d997a4357"
+    },
+    {
+      "path": "src/features/email/sendHelpers.ts",
+      "sha256": "8df38e499d55613d4140913ea5ff36ec417437fe5ed5f142ebe6cb0e685855d4"
+    },
+    {
+      "path": "src/features/email/sendPreparation.ts",
+      "sha256": "6663c8fe2995061c22e7fc4130731a17cd92185e04050f5378e1d2e26c31a913"
+    },
+    {
+      "path": "src/features/email/sendSystem.ts",
+      "sha256": "2c8731bd651c95d769b067474bc838efe93c2fe6bec0eca9fd9dd13c0be5adaa"
+    },
+    {
+      "path": "src/features/files/actions.test-helpers.ts",
+      "sha256": "7099eb09fe0b4c54067797baee4770f4d5c29a7f1796bb1eef22fd98fd4a9f7c"
+    },
+    {
+      "path": "src/features/files/actions.test.ts",
+      "sha256": "c180afd98c2edabfc7b3219942639c3d56198ee72e49cd3db6ce410e6ba87a49"
+    },
+    {
+      "path": "src/features/files/actions.ts",
+      "sha256": "311ec926b432b76e456b302ea1c16f5da6a9d63e14034d0f2faaf1244b06fcd0"
+    },
+    {
+      "path": "src/features/files/contentTypes.ts",
+      "sha256": "2d945fa533be47a5ba867b7a29256ea0369c86bb3b3dd9ab87fa673bb62408c7"
+    },
+    {
+      "path": "src/features/files/fileAttachments.constants.ts",
+      "sha256": "5e0fd896f88c8b14bf801ef667e7e880c6be88a67a28fdc4f4679e501b717f2d"
+    },
+    {
+      "path": "src/features/files/FileAttachments.test.tsx",
+      "sha256": "ec08f4035e64f37c3a8c366694f4b5980b55c1026fc14956b5564f5ede5d4316"
+    },
+    {
+      "path": "src/features/files/FileAttachments.tsx",
+      "sha256": "a7a931c17de0bf978b8aff90b92b8be5b98f1a6dab926c9f06bd16121bb9e26b"
+    },
+    {
+      "path": "src/features/files/fileAuthz.ts",
+      "sha256": "bcfcc65eff92395f3ddef59b4713ab215886c08197b558a0273bb8ccc7415333"
+    },
+    {
+      "path": "src/features/files/filesLocalization.test.tsx",
+      "sha256": "1d8c15c6bc0ec2229c59fb52789cdbaef618d12d049d58032655e7674d9a0cac"
+    },
+    {
+      "path": "src/features/files/fileWriteAuthz.test.ts",
+      "sha256": "6c7ef3d33fe42566bb84a5a97952c745930ab4e8535527788804c592520e2485"
+    },
+    {
+      "path": "src/features/files/fileWriteAuthz.ts",
+      "sha256": "46b020eae6c3e6f2f339966c2871357839331530e562323bc4b26edbf208c717"
+    },
+    {
+      "path": "src/features/files/keys.test.ts",
+      "sha256": "08e9b0cc4214fcd305a14012e4439579ebbd0b2f0e59c7b9770db54c512eb8b3"
+    },
+    {
+      "path": "src/features/files/keys.ts",
+      "sha256": "e38c480db26d7a7b32d085162fc98969d545708589cf7c8951b346a0f3f59322"
+    },
+    {
+      "path": "src/features/files/listFilesForEntity.test.ts",
+      "sha256": "74def2a121e29a02fbb99ce1796c5d9107710a722097d07d6914c6ea0d02eed4"
+    },
+    {
+      "path": "src/features/files/listFilesForEntity.ts",
+      "sha256": "cf2bd43a5f636eb1e4d4643b670d334a591f41ce7cf9fed4bf0048e4311d230f"
+    },
+    {
+      "path": "src/features/files/mailboxFileAuthz.integration.test.ts",
+      "sha256": "751a395c1895a31e06ce4fa45b76f3b9ce894ba37d2c186df09b2910bdb23131"
+    },
+    {
+      "path": "src/features/files/mailboxFileAuthz.ts",
+      "sha256": "d5eb92fa40ea7e290c2fb467a24217c370b1616a119e46055adc231ac0aed5a8"
+    },
+    {
+      "path": "src/features/files/messages/files.de.json",
+      "sha256": "f0a85e9a80343afd6347a447dc1e2ab1e711d77b549db7f264b2d6c45dad4ecd"
+    },
+    {
+      "path": "src/features/files/messages/files.en.json",
+      "sha256": "49df88585f45c60d96d5c804cf27e5cddf4ff4905a1e31ada2f9a4c749f04507"
+    },
+    {
+      "path": "src/features/files/messages/files.fa.json",
+      "sha256": "c7823f899765de5526403f8c945ce95372c7fbeb67f71d0af076ef598d319c49"
+    },
+    {
+      "path": "src/features/files/reaper.test.ts",
+      "sha256": "faed8234ac49ac9e0be95c548a97e0efd09636917a90b698c210581f05cfb2d6"
+    },
+    {
+      "path": "src/features/files/reaper.ts",
+      "sha256": "65b06be0c0e0b0d3c8d57d7e951a524ee5cb2fb1e13283e368c20c2327db7f59"
+    },
+    {
+      "path": "src/features/files/router.ts",
+      "sha256": "440d5cb7564875b36b7d971942bf7ef20512eebd6e8d3df3be686802976aa5f5"
+    },
+    {
+      "path": "src/features/files/schemas.ts",
+      "sha256": "acf7e71d3eab745afc7a37f5792b8e89ae2205f379d8650d53c5aa5d11cc3e60"
+    },
+    {
+      "path": "src/features/files/serverActions.test.ts",
+      "sha256": "8704e31e698bfcd9bb16d02c23926687fc21fac3559e6faf815353dd6e6a7b8e"
+    },
+    {
+      "path": "src/features/files/serverActions.ts",
+      "sha256": "788eb29e3ba7392d1a71f903a14ce567e4050bc1ffa72554d6f5314c67e0692f"
+    },
+    {
+      "path": "src/features/files/storage.ts",
+      "sha256": "401b3fe72bf16937d98cc261ce4076b42f6813bf6df7fca49ae9f635bf56e786"
+    },
+    {
+      "path": "src/features/files/storageFake.ts",
+      "sha256": "ca2ec48f8c3e2a0cb1fd6a964c2ad7db9f5f91f913b627e6571b1b009ffd1db4"
+    },
+    {
+      "path": "src/features/files/uploadHandshake.ts",
+      "sha256": "22647f1a19e7d75c6a1bb07484e1519c11a040b6fd42302a5ee68c4365cd5035"
+    },
+    {
+      "path": "src/features/i18n/LocaleProvider.tsx",
+      "sha256": "1009d98d61abb524982b5ecca90b7503b6a677ac190383620fca0ec287bf2e5a"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarActions.ts",
+      "sha256": "b5aed89038a31917b6c726abeaa422d780605898e63c2871a3dabe3effefef4b"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarServe.test.ts",
+      "sha256": "37248cef949cb7d6a00671642666bc6ed2c7bc6a895dc86fc8a99819ba3d253e"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarServe.ts",
+      "sha256": "7516054612dda7ee4075d46d6e5296498402d1a064cea06bb757c47e75085d55"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarService.test.ts",
+      "sha256": "c80a3324a75a62af3990c4db1a1f065f96a4205c995095fd382f6f516321ae72"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarService.ts",
+      "sha256": "829ce18d0365be40cf80f01f211e7fa13147854c9e4155dec01cbdba3a881af5"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarStorage.test.ts",
+      "sha256": "f89cbcb25871baab89425ee75d7ae26788494e345ee0e246fab30d98215dddb7"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarStorage.ts",
+      "sha256": "dc6253fdadd976bc559464f10eed006dd7de7f24a9b067a3ca91594f7c592cd7"
+    },
+    {
+      "path": "src/features/identity/avatar/AvatarUpload.test.tsx",
+      "sha256": "e915ed58efcf18297cdd366dc34f999dfd1c992608530373affccab562a3b7fe"
+    },
+    {
+      "path": "src/features/identity/avatar/AvatarUpload.tsx",
+      "sha256": "913dc3c4b437a838df8bccf2b2c78dff9d3142d9ad56506e5cc9250b86b29a5c"
+    },
+    {
+      "path": "src/features/identity/avatar/imageSniff.test.ts",
+      "sha256": "3fc92236bb492b664b480bdfbdd3f76cf9a38dcc6cb91afdf66814d50d027c00"
+    },
+    {
+      "path": "src/features/identity/avatar/imageSniff.ts",
+      "sha256": "1f72aa199521677e836ad7f139611498c0ae63814d0c58abff51c9f3e1034f77"
+    },
+    {
+      "path": "src/lib/useFormatters.ts",
+      "sha256": "b535b6286af85db871de1de64469a5048746749cf2e928bd21602e338495a8f8"
+    },
+    {
+      "path": "src/test/db.ts",
+      "sha256": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3"
+    },
+    {
+      "path": "tools/browser-smoke/bun.lock",
+      "sha256": "0244a9af935ec6d83da3cbb2e334d964bfe8d13e19a7b361c51bf7589273c4ca"
+    },
+    {
+      "path": "tools/browser-smoke/package.json",
+      "sha256": "afb4d72381088b3a3b15acb0171c86bd609e1f3351ebe6fd6a05821a4ba0cbfd"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005"
+    },
+    {
+      "path": "vitest.globalSetup.ts",
+      "sha256": "a8db8f578b075e64309eac72f1442692a136b03418e368d8ac3a330836479c29"
+    }
+  ],
+  "qualification_bridge": {
+    "selected_revision": "99f4a2df9a12dc60246c0e25274d6a4168636f0d",
+    "selected_tree": "269bec6683e054e05672a9fe0f73bbcaed24cf0d",
+    "selected_build_id": "d8ar2-BMc2T1yaEnkpc1B",
+    "current_reviewed_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "package_lock_patch_inputs": {
+      "recorded": 16,
+      "matching_current": 16
+    },
+    "local_receipt_verification": {
+      "indexed": 53,
+      "present": 53,
+      "matching_sha256": 53,
+      "new_campaigns_run_by_this_reviewer": 0
+    },
+    "unchanged_relevant_trees": [
+      "src/features/files",
+      "src/features/identity/avatar",
+      "docs-site",
+      "site",
+      "drizzle"
+    ],
+    "hydration_locale_display_keys": [
+      {
+        "path": "src/features/email/connections/messages/mailConnections.de.json",
+        "hydrationDisplayKeysUnchanged": true,
+        "changedKeys": ["disconnectGoogle", "disconnectGoogleManual", "disconnectQueued"]
+      },
+      {
+        "path": "src/features/email/connections/messages/mailConnections.en.json",
+        "hydrationDisplayKeysUnchanged": true,
+        "changedKeys": ["disconnectGoogle", "disconnectGoogleManual", "disconnectQueued"]
+      },
+      {
+        "path": "src/features/email/connections/messages/mailConnections.fa.json",
+        "hydrationDisplayKeysUnchanged": true,
+        "changedKeys": ["disconnectGoogle", "disconnectGoogleManual", "disconnectQueued"]
+      }
+    ],
+    "source_reconciliation": "Post99f workflow/security/release changes are reviewed at current92bf and pinned, rather than credited to historical native runs. Changes to MailboxManagement/disconnect-copy add explanatory copy and tests while retaining timestamp/owner/action behavior. Source pins cover the bounded required inputs, contracts, consumer seams, migration/test lifecycle and current release controls; they exclude518operational docs and the technical-policy file whose new eligibility Root owns."
+  },
+  "current_main_qualification": {
+    "revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "required_checks": [
+      {
+        "name": "Workflow validation",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986/job/126874238804"
+      },
+      {
+        "name": "Browser smoke checks",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986/job/126874238735"
+      },
+      {
+        "name": "Dependency audit",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986/job/126874238568"
+      },
+      {
+        "name": "Documentation site checks",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955/job/126874238566"
+      },
+      {
+        "name": "CRM checks",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955/job/126874238534"
+      },
+      {
+        "name": "Release PR validation",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986/job/126874238263"
+      },
+      {
+        "name": "Marketing site checks",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955/job/126874238132"
+      },
+      {
+        "name": "Delivery tooling",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583846/job/126874238022"
+      },
+      {
+        "name": "Delivery traceability",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583846/job/126874237800"
+      },
+      {
+        "name": "Analyze (javascript-typescript)",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915581429/job/126874236908"
+      },
+      {
+        "name": "Analyze (python)",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915581429/job/126874236590"
+      },
+      {
+        "name": "Analyze (actions)",
+        "result": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915581429/job/126874236399"
+      }
+    ],
+    "unit_passed": 10298,
+    "existing_unit_skipped": 3,
+    "postgres_passed": 3750,
+    "pages_generated": 67,
+    "server_bundles": 5,
+    "main_crm_log_facts": [
+      "2026-11-04T21:40:43.9714328Z  Test Files  1304 passed | 1 skipped (1305)",
+      "2026-11-04T21:40:43.9761094Z       Tests  10298 passed | 3 skipped (10301)",
+      "2026-11-04T21:50:58.6903352Z  Test Files  715 passed (715)",
+      "2026-11-04T21:50:58.6933239Z       Tests  3750 passed (3750)",
+      "2026-11-04T21:52:37.8413175Z ✓ Compiled successfully in 95s",
+      "2026-11-04T21:53:43.6930439Z ✓ Generating static pages using 3 workers (67/67) in 7.2s",
+      "2026-11-04T21:53:58.6208798Z   dist/sweep-spam.mjs  172.6kb",
+      "2026-11-04T21:53:58.6360354Z   dist/auth-operator.mjs  350.8kb",
+      "2026-11-04T21:53:58.6476834Z   dist/ws.mjs  181.1kb",
+      "2026-11-04T21:53:58.6797970Z   dist/migrate.mjs  202.5kb",
+      "2026-11-04T21:53:58.7341924Z   dist/worker.mjs  1.9mb ⚠️"
+    ]
+  },
+  "publication_tooling_evidence": {
+    "release_id": 434507614,
+    "tag": "v1.5.1",
+    "revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "url": "https://github.com/KhademOHAli1/warpdrive/releases/tag/v1.5.1",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-11-04T22:13:16Z",
+    "public_body_utf8_bytes": 1344,
+    "primary_accepted_issue": 272,
+    "issue960_accepted_by_this_publication": false,
+    "assets": [
+      {
+        "name": "release-notes.md",
+        "bytes": 130990,
+        "digest": "sha256:538038919a839f36263648c28fb4ab378bf8af7a9af8ccedc514dfd54a38335b",
+        "url": "https://github.com/KhademOHAli1/warpdrive/releases/download/v1.5.1/release-notes.md"
+      },
+      {
+        "name": "SHA256SUMS",
+        "bytes": 337,
+        "digest": "sha256:69f0636ed2fc8c49c519acc5fabc67780bd1206c8a60e480df51ffb53156bd83",
+        "url": "https://github.com/KhademOHAli1/warpdrive/releases/download/v1.5.1/SHA256SUMS"
+      },
+      {
+        "name": "traceability.json",
+        "bytes": 310238,
+        "digest": "sha256:91ac69a85b9c95c8ce08e08b86d33ef9444db4f8646d64661e6ede1e2e83330d",
+        "url": "https://github.com/KhademOHAli1/warpdrive/releases/download/v1.5.1/traceability.json"
+      },
+      {
+        "name": "VERSION",
+        "bytes": 6,
+        "digest": "sha256:dfe7d71b3f428eb73ed853f8fded65e2986896e21d69f45ebf06bb623b450e14",
+        "url": "https://github.com/KhademOHAli1/warpdrive/releases/download/v1.5.1/VERSION"
+      },
+      {
+        "name": "warpdrive-1.5.1-source.tar.gz",
+        "bytes": 30185189,
+        "digest": "sha256:c4305280a329e5e8af101d8ebbef062875a390ca12f6e87bcc9ebb0c00eeb8cb",
+        "url": "https://github.com/KhademOHAli1/warpdrive/releases/download/v1.5.1/warpdrive-1.5.1-source.tar.gz"
+      }
+    ],
+    "limit": "Actual stable publication/asset metadata, not deployment or a960release receipt."
+  },
+  "retained_local_receipts": [
+    {
+      "id": ".runtime/goal-dependency-remediation/root-selected99f-lint1/qualification1/HANDOFF.json",
+      "sha256": "de643519ba0a43e2766ab4f2a8c46b60e2eca34a200533a0393262cb8c24e924"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-selected99f-lint1/actual-result-review.json",
+      "sha256": "a54928a01d69bf656fe32d0e6e3fa23f492bbca36442e74d86606dbb133cd5cf"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-sdk-build-prep2/current-hoisted-api-qualification.json",
+      "sha256": "597fef5a63b1e26e9336b2dac2fe96555bbf65f673ae88136c90853f4ee5da24"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-api-replay-review1/actual-api-results-review.json",
+      "sha256": "8711db9bacb50b7b3937b69ed1dda75e8ce89cf29dc86c65214c09c32d3a8b97"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-sdk-build-prep2/build.public.json",
+      "sha256": "2c7562c0570365c3e20443f8b4efd7d35241053047fe7cc8df0f0a14f8cea4c7"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-sdk-build-prep2/admitted-build.public.json",
+      "sha256": "e79431f177930f9065f003eaa9f62e1ca7fe4f3e44cf38126b96aaf97c06a95e"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-sdk-review1/actual-build-admission-review.json",
+      "sha256": "8d722b567ff9b35bd873143309bc9c85d195cb0a6bbe08e5cd53e93599f6b083"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-storage-regressions-prep1/execution1/HANDOFF.json",
+      "sha256": "53fd6d90c6c5be06a9197f7c7f69a3ae5409b82960210428fa53adbf27f1e72c"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-storage-regressions-prep1/actual-result-review.json",
+      "sha256": "96b969082daee03edbe306d9252c82d875d73352727bcf32e4cae6341992bf59"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-prep2/runs/ROOT-SDK-HOISTED-PHYSICAL-STORAGE-BROWSER-20261104-2/sdk-physical-contract.public.json",
+      "sha256": "fe62a023b0016f2ef3a9bdc1dff06a3174b301854e51408207d1b0bcaab67bb4"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-prep2/runs/ROOT-SDK-HOISTED-PHYSICAL-STORAGE-BROWSER-20261104-2/browser-result.public.json",
+      "sha256": "e7e98b8771235501cbc2256b6e184c0c55deedcdd8b5483133419412185caba9"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-prep2/runs/ROOT-SDK-HOISTED-PHYSICAL-STORAGE-BROWSER-20261104-2/runtime.public.json",
+      "sha256": "defbad6051829a43e6adeeba532250b4fabea9697092d8cfee2c3111182e4616"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint2/HANDOFF.json",
+      "sha256": "2d1df26fbf624347119521404eb3b181562ef563093d7181a4780d4bd015da1b"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint2/actual-result-review.json",
+      "sha256": "0f5e81e9b9d4c37c9b393e8ada4548f7c25127a6bcefa7ac0cad1fa5a56311fe"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint2/cleanup-readback.json",
+      "sha256": "9df3944e03e6227a6224ec3227658a973137432e7a5f79483552ac10cd3ce58c"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/remaining-qualification-audit1/dependency-engine-license-ledger.json",
+      "sha256": "b1fac139bf6b3efdda59af02649dd49f5ec8ca0fce08bc6af7f8dd1bcf9872ab"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/remaining-qualification-audit1/dependency-delta-final-review.json",
+      "sha256": "9148454bf3bb722da8349c4d43d8e0b3556b222b1b11a69a4f4e539b0de43728"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/remaining-qualification-audit1/ci-definition-preservation.json",
+      "sha256": "3a9e487ba7e46844e2d7786cd0bf9f9b9c2ff4b91444e5c9201b097ff9584096"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/browser-lock-audit-current1/HANDOFF.json",
+      "sha256": "31828fd5a345b7050ba070d8ccb12fdad561cbbb90d001a9c5b4efb25623eb14"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/canonical-hoisted-install2/independent-readback/HANDOFF.json",
+      "sha256": "d880a28e4c4059542fbbfc353dc93032e624ee8262f8cfa2fbe57dde231de294"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep1/resolver71.node.result.json",
+      "sha256": "ccd5b5da1fd58d8e5d190ba0952c3de67bdc6844829016524d4de639719142b9"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep2/resolver71.bun2.result.json",
+      "sha256": "62c5084d03682e2876c2da24096957d3e7a991975c9f92ef15c5b8a9364d6c96"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep1/native-ws-probe.result.json",
+      "sha256": "5d2854b9b1ea64dcb544dfd71b4399b85f00a97f54401ec0ffdf4971dc0f7c96"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep1/minio81.result.public.json",
+      "sha256": "683c16f9e72e77a7a7dd7d836119d0a55b4e464a6b2d4ed4ff9ee7c8c29f452c"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime2/HANDOFF.json",
+      "sha256": "1599b00909ee4aca3d95bf3ae52d190de75333412458917cc6d62d7bda75c669"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime2/actual-result-review.json",
+      "sha256": "87e7cbc5f1cb5a187ad0b3f806f2b3499f3e780ab4b78828ab3cf4b8766c3928"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/migrations-selected99f-rehearsal1/execution2/HANDOFF.json",
+      "sha256": "7cf706f0a444ed14c3c38cfd536ada525479aa08444b02f248a33b65da8c6903"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/migrations-selected99f-rehearsal1/actual-result-review2.json",
+      "sha256": "ff4a6792cf979354e3f57156318f479d281c3ed5422c5d44ef33bc6326654818"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/HANDOFF.source.json",
+      "sha256": "5b6476f272186bad2690b24d9fd1d079d5337568ca5b8bc5d2232477fa067f46"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/install4/HANDOFF.json",
+      "sha256": "f3ae2651545aab399c30cb67ae19a3d1ec666400035b804197623a403e316328"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/docs-build1/HANDOFF.json",
+      "sha256": "7f8650d4104a4027b5705c3ee1e06072106f084f8bc6d5abb59cc55f3a846c9b"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/docs-build1/artifact-admission.json",
+      "sha256": "4da36dbb83241a8996fa751a822939081674c26ff5c570708ffe293d52b5804e"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/serve13-1/HANDOFF.json",
+      "sha256": "8efa232f98ecdc0141c8641067c397292cc698cf29a7cbe9c4f80e99d605cf9e"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/actual-docs-result-review.json",
+      "sha256": "bc504e2975ca64746824a22cc27aea9dddb034780d4f30ad56c09554c188167b"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/site-install1/HANDOFF.json",
+      "sha256": "5faa68203bb0cbfa513232e5d252b88b187f11630ddc613ba37c14f7796c0933"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/site-build1/HANDOFF.json",
+      "sha256": "80c616c5e9c4e2ed56ba4d497c8e7693e0eb31ecf38a0ee2cf0109150fd9e340"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/site-build1/root-artifact-cleanup-readback.json",
+      "sha256": "fa84bd1be7fcf33581c72ce6f849f88ef1cd4e7f870fc9d59ff37c695aab0802"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/actual-site-result-review.json",
+      "sha256": "ba25a1efcb1d101b0a79809d5248fc6698d844558a5a320a5bd73558be00846d"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-unit-selected99f1/execution1/HANDOFF.json",
+      "sha256": "c1a6d015a0299e7d8b61c9994009107e2823a897c99938dc60e615f20d691c58"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-unit-selected99f1/execution1/actual-result-review.json",
+      "sha256": "4b485afa97b88b1e7ad213961ea8ff98681f5525ae26855946a655871cdca76a"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-selected99f-prep1/runs/ROOT-SDK-SELECTED99F-HYDRATION-EN-DE-FA-20261104-1/runtime.public.json",
+      "sha256": "2c0625b185a4fafff51c5e9e57e1ea9a65295df38ae1f23e43776d063fdedb88"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-selected99f-prep1/runs/ROOT-SDK-SELECTED99F-HYDRATION-EN-DE-FA-20261104-1/browser-result.public.json",
+      "sha256": "e9f5a3e394fd83c64f2955cb8eea21e2314a738689a70a09e2538994c3ab7b68"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-selected99f-prep1/runs/ROOT-SDK-SELECTED99F-HYDRATION-EN-DE-FA-20261104-1/browser-driver.public.json",
+      "sha256": "d83a78f0ee5b7906ebf0989bad53336502d0677e06de6520e3782f7373466726"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-selected99f-joint1/HANDOFF.json",
+      "sha256": "59f5ddc0f4a4e2429223e13c2b31c02e2ea760eeb1243e46dd8a8152ccb9ea6e"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-selected99f-joint1/root-cleanup-readback.json",
+      "sha256": "5b1950ea9cff1386f0d38b4e8c964d3d6f65d8132ca727a311e790a5d793d15d"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hydration-selected99f-joint1/actual-result-review.json",
+      "sha256": "341d675cc224167117ca32d03858c66cecfa824e60a8d94360b00fcdd537eb56"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/sdk-build-runtime-retarget1/build/build.public.json",
+      "sha256": "d3e57e037426c634ea18b2e8529f4fd602ef64165b9cd4d5fc1b5dcc2d9545d0"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint1/HANDOFF.json",
+      "sha256": "819eb0c1b147cde44da73746ef33a124756aa326035cedef8bcb5030d2dded32"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/install1/admission.json",
+      "sha256": "e5228ec0dcbbae0e7c325991b11de11c780cabad650af8511dcf26219b8783b3"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/install3/HANDOFF.json",
+      "sha256": "e00113a02c71b6bec767313cef2e40a1f0f42f6e37a812efbc051b85ecc987b4"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/migrations-selected99f-rehearsal1/preflight-failure.json",
+      "sha256": "04e2f04f8680c4f105e116097c2dc55f624401567d056aa905448212c1698327"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/install1/HANDOFF.json",
+      "sha256": "c53538c5ca76c9c6d191b3287c1b38c102423f662a472efb152b6aca4d086aa3"
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime1/HANDOFF.json",
+      "sha256": "40c5d5363990e98ef0d0d8422e18f06bad4e6274ee8758e9e0610c7159bf5322"
+    }
+  ],
+  "preserved_failures": [
+    "Isolated-layout build stopped above8GiB by704KiB and remains unadmitted; later canonical hoisted build is distinct.",
+    "First physical-copy assertion failure after15checks remains failed; later controlled25case run is separate and does not reconstruct an unproven backend cause.",
+    "Docs config-argument/no-target and ENOTDIR invocations, migration-helper preflight, production peer-closure admission and Bun-nativews file-resolution failures remain preserved.",
+    "Consumer100 actual process exited0 with100assertions; original observer KeyError remains failed. Independently checked allocation/argv/source hashes and raw results justify the forward review without inventing an absent schema field.",
+    "PR967 initial30minute runs remain cancelled; subsequent916unit failure against the obsolete<=30guard remains failed. Exact40/20guard correction and later complete main qualification are separate cuts."
+  ],
+  "provenance_limit": "Reviewer identity is the actual CODEX_SESSION_ID and this independent task path; CODEX_THREAD_ID01a1a7dc-86fb-7f02-a772-446dc143a34b identifies this subtask. These are explicit Codex declarations, not separately GitHub-authenticated human reviewers. Root acceptor has a different actual task tuple.",
+  "source_pin_verification": {
+    "reviewed_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "count": 166,
+    "all_match_reviewed_git_blobs": true,
+    "all_match_current_working_bytes": true,
+    "own_review_file_not_pinned": true,
+    "proposed_policy_required_source_paths": "Use every source_pins.path as the independently proposed exact required-path set; no narrower subset was used for this full-five-criterion review."
+  }
+}
