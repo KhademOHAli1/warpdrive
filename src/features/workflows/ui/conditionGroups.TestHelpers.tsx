@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { assert } from "vitest";
 import { Button } from "@/components/ui/Button";
-import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { LocaleProvider, useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { definitionSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { ConditionFields } from "./ConditionFields";
 import { mappingLocales, prepareMappingDom } from "./mapping.TestHelpers";
@@ -218,6 +218,7 @@ export function HistoryEditor({
   changed: (node: WorkflowNode) => void;
   editable?: boolean;
 }) {
+  const t = useAppTranslations("workflows");
   const history = useGraphHistory(initial);
   const node = conditionNode(history.definition);
   return (
@@ -236,10 +237,10 @@ export function HistoryEditor({
         }}
       />
       <Button disabled={!history.canUndo} onClick={history.undo}>
-        Undo
+        {t("undo")}
       </Button>
       <Button disabled={!history.canRedo} onClick={history.redo}>
-        Redo
+        {t("redo")}
       </Button>
       <output data-graph>{JSON.stringify(history.definition)}</output>
     </>
