@@ -55,13 +55,13 @@ type LibraryRecord = {
   revision: number;
   publishedNumber: number | null;
   active: boolean;
-  archivedAt: Date | null;
-  updatedAt: Date;
+  archivedAt: Date | string | null;
+  updatedAt: Date | string;
   ownerId: string;
   ownerName: string;
   latestId: string | null;
   latestStatus: RunStatus | null;
-  latestCreatedAt: Date | null;
+  latestCreatedAt: Date | string | null;
   cursorUpdatedAt: string;
 };
 
@@ -161,6 +161,13 @@ export function buildWorkflowLibraryQuery(
     ) page ON true`;
 }
 
+function libraryDate(value: Date | string): Date {
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime()))
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Invalid workflow library timestamp");
+  return date;
+}
+
 function libraryRow(row: LibraryRecord, actor: PermSetUser): WorkflowLibraryRow {
   if (row.id === null) throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing workflow library row");
   if (row.latestId !== null && (row.latestStatus === null || row.latestCreatedAt === null))
@@ -173,7 +180,7 @@ function libraryRow(row: LibraryRecord, actor: PermSetUser): WorkflowLibraryRow 
     revision: row.revision,
     publishedNumber: row.publishedNumber,
     active: row.active,
-    archivedAt: row.archivedAt,
+    archivedAt: row.archivedAt === null ? null : libraryDate(row.archivedAt),
     lifecycle: archived
       ? "archived"
       : row.publishedNumber === null
@@ -181,12 +188,16 @@ function libraryRow(row: LibraryRecord, actor: PermSetUser): WorkflowLibraryRow 
         : row.active
           ? "active"
           : "paused",
-    updatedAt: row.updatedAt,
+    updatedAt: libraryDate(row.updatedAt),
     owner: { id: row.ownerId, name: row.ownerName },
     latestLiveRun:
       row.latestId === null || row.latestStatus === null || row.latestCreatedAt === null
         ? null
-        : { id: row.latestId, status: row.latestStatus, createdAt: row.latestCreatedAt },
+        : {
+            id: row.latestId,
+            status: row.latestStatus,
+            createdAt: libraryDate(row.latestCreatedAt),
+          },
     capabilities: {
       archive: !archived && edit,
       unarchive: archived && edit,
