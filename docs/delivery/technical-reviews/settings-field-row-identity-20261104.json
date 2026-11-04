@@ -1,0 +1,442 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "issue": 862,
+  "canonical_id": "settings/UX-12",
+  "acceptance_sha256": "7f2bda037e9faded1acc1880d0ac1e5525b3ac6e6683acff1a9d187e448dad3b",
+  "reviewed_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+  "reviewed_at_utc": "2026-11-04T22:37:32.370776+00:00",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/issue_closure_triage"
+  },
+  "actual_review_thread_id": "01a1a8aa-009e-7033-92d1-cfdd95d68b0d",
+  "summary": "Accepted the complete original UX-12 criterion after independent source, test-definition, retained real-application capture and source-equivalence review. Full field names remain discoverable in the responsive field rows at the retained 390px witness; current field-level controls compute complete localized field names and target the intended row; built-in, locked, hidden and custom distinctions remain enforced. No application-source correction is needed for this bounded technical scope.",
+  "limitations": "This artifact is an independent technical review, not an acceptance attestation, issue closure, newly executed test campaign, new browser qualification, release or deployment. The 390px visual evidence is historical actual compiled-app evidence at ec9b3f8; it is carried forward only through the explicit unchanged-layout/source analysis below. No fresh native sweep over every entity/type variant, actual screen-reader speech, assistive-technology certification or exhaustive keyboard campaign is claimed. Actual spoken output is untested and is not an original UX-12 acceptance clause. Current DOM tests mock server actions and router refresh; action-boundary tests mock the database repository; retained real PostgreSQL test definitions cover hidden/locked persistence separately. Successful original-main CI and the later failed same-source tag execution are retained separately. The eventual acceptance revision still needs its own required main checks. Whole-file hashes fence the relevant definitions, not unrelated contents or whole-application certification. No app, database, provider, preview or test process was launched and no peer source was modified.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "criterion": "UX-12: P1. Full field identity discoverable at 390px; controls name the field; locked/custom/hidden distinctions retained.",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/fields/FieldRowItem.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/fields/FieldRowItem.test.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/fields/BuiltinFieldRow.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/fields/BuiltinFieldRow.test.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/fields/DataFieldsClient.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/fields/DataFieldsClient.test.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/app/%28app%29/settings/company/ReorderControls.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/features/custom-fields/hiddenBuiltinsRepo.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/src/features/custom-fields/hiddenBuiltinsRepo.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/92bf473a0e69a8192b5322f4481c55faf3c20497/docs/delivery/sources/settings/prioritized-backlog.csv",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986"
+      ],
+      "basis": "Full-name responsiveness is established by retained actual 390px visual inspection plus unchanged row/layout/CSS definitions and current complete-name DOM witnesses. Contextual controls and correct row routing are directly checked in EN/DE/FA paired-long-name tests. Locked/custom/hidden distinctions are established by current rendering, action gates and repository guards/tests. No inference from title, CI alone, or spoken-output claims is used."
+    }
+  ],
+  "original_scope_bindings": {
+    "source_tasks": [
+      {
+        "source": "settings-approved",
+        "id": "UX-12",
+        "path": "docs/delivery/sources/settings/prioritized-backlog.csv",
+        "original": {
+          "ID": "UX-12",
+          "Destination": "Fields",
+          "Evidence and impact": "Early entity choice is useful. Mobile row actions squeeze name/type; Add sits after lists.",
+          "Proposed remedy": "Header Add, entity navigation, name-first rows and contextual actions; explicit option autosave feedback.",
+          "Priority and acceptance": "P1. Full field identity discoverable at 390px; controls name the field; locked/custom/hidden distinctions retained."
+        }
+      },
+      {
+        "source": "settings-execution",
+        "id": "UX-12",
+        "path": "docs/delivery/sources/settings/implementation-backlog-status.csv",
+        "original": {
+          "ID": "UX-12",
+          "Destination": "Fields",
+          "Evidence and impact": "Early entity choice is useful. Mobile row actions squeeze name/type; Add sits after lists.",
+          "Proposed remedy": "Header Add, entity navigation, name-first rows and contextual actions; explicit option autosave feedback.",
+          "Priority and acceptance": "P1. Full field identity discoverable at 390px; controls name the field; locked/custom/hidden distinctions retained.",
+          "Status": "implemented",
+          "Change classification": "P1 field identity/action readability and local mutation recovery",
+          "Implemented or preserved scope": "Header Add opens focused field creation; name-first custom/built-in rows retain type and contextual actions; option edits use deliberate Save/Cancel with saving/saved/error feedback; failed drafts and pending guards are retained.",
+          "Current evidence": "DataFieldsClient.tsx; CreateFieldDialog.tsx/tests; FieldRowItem.tsx/tests; BuiltinFieldRow.tsx/tests; OptionEditor.tsx/tests; FieldOptionRow.tsx; FieldTask.tsx. Native German entity-scoped Add dialog and Farsi full-name/action rows reviewed at 390px. See implementation-validation.md.",
+          "Remaining next action": "Complete native 390px long-name and keyboard checks across entity/type variants, including locked, hidden and custom distinctions.",
+          "Acceptance boundary": "Locked built-ins and existing field service restrictions remain; explicit option Save replaces the previous blur/autosave interaction."
+        }
+      }
+    ],
+    "criteria_unchanged": true,
+    "declared_dependencies": [],
+    "scope_hash_algorithm": "sha256 of canonical JSON with id, acceptance and source_tasks; UTF-8, sorted keys, no insignificant whitespace"
+  },
+  "clause_review": [
+    {
+      "clause": "Full field identity discoverable at 390px",
+      "finding": "FieldRowItem renders the entire row.name without truncation in a name-first block. The name and active-option summary use break-words and overflow-wrap:anywhere; a separate flex-wrap action row prevents controls from squeezing the title. BuiltinFieldRow similarly wraps labels. The retained actual390px Farsi screenshot visibly contains complete German/Persian custom names, type labels and wrapping actions. These layout definitions and their shared style dependencies are preserved at the reviewed main revision. The generic renderer covers the supported type/entity inputs without per-type truncation branches; exhaustive native permutations are not claimed."
+    },
+    {
+      "clause": "Controls name the field",
+      "finding": "Rename input, Rename, Save, Cancel, Edit options, Archive, Important, Show in add form and Up/Down field-row controls include the full field name. Current EN/DE/FA paired-long-name tests assert exact accessible names, draft names, independent disabled boundaries and callbacks/actions for the intended row. ReorderControls keeps its optional itemName contract, so unnamed callers retain their original labels. Built-in Hidden controls include their localized built-in label."
+    },
+    {
+      "clause": "Locked/custom/hidden distinctions retained",
+      "finding": "DataFieldsClient retains separate Built-in and Custom sections and entity-scoped lists. Locked identity fields display Always shown and no Hidden toggle; nonlocked built-ins retain their current hidden state. The page passes built-in locked and hidden values from the catalogue/repository. The server action retains CSRF/metadata.manage validation; hiddenBuiltinsRepo rejects locked and unknown keys before writes and performs idempotent hiding. Existing component/action/real-PostgreSQL test definitions preserve those boundaries."
+    },
+    {
+      "clause": "Original remedy and execution-boundary compatibility",
+      "finding": "Header Add, entity selection, name-first rows, contextual actions, deliberate option Save/Cancel, pending guards and saving/saved/error feedback remain represented in the pinned source and tests. The execution record explicitly replaced blur/autosave with deliberate option Save; this review retains that recorded boundary and does not invent an autosave obligation from the title. Later exhaustive native checks remain unexecuted historical verification suggestions; they are not represented as new results."
+    }
+  ],
+  "historical_visual_evidence": {
+    "source_revision": "ec9b3f8943e42736edc6713c099fd2ef14068d0a",
+    "capture_date": "2026-10-31",
+    "viewport_css_pixels": {
+      "width": 390,
+      "height": 844
+    },
+    "application_context": "Actual compiled application with a separate migrated local PostgreSQL database and synthetic non-administrator users with explicit management permissions, as recorded by the retained implementation validation. No new execution occurred during this review.",
+    "artifacts": [
+      {
+        "artifact_name": "fields-fa-mobile-rows-final.jpg",
+        "sha256": "eddcb247c40273efc6ac861bfb8442205ee968d295e8ed7ca5e33f131ffcb127",
+        "bytes": 34469,
+        "inspection": "Directly visually inspected during this independent review. Full German/Persian names, type, separate action row and builtin/hidden distinctions are visible."
+      },
+      {
+        "artifact_name": "fields-de-mobile-task-final.jpg",
+        "sha256": "30223d63c17050af2143a706580321899c26b64b0b689c4729d5ce2236bc6064",
+        "bytes": 21502,
+        "inspection": "Retained provenance for the recorded German entity-scoped Add dialog; no new visual inspection of this second image is claimed."
+      },
+      {
+        "artifact_name": "implementation-validation.md",
+        "sha256": "248358f8f455752c11427f7d559f57823fde82c5fc0a9df38fdf8f8d7cb828f2",
+        "bytes": 5651,
+        "inspection": "Read directly; binds the actual compiled-app observations to the full source revision and separates runtime, mocked client-test and provider limits."
+      },
+      {
+        "artifact_name": "implementation-preview.html",
+        "sha256": "24d2e1bbaab88718242c4135fce55b3ca437781e0db16934f65acf8f0f747fa5",
+        "bytes": 9456,
+        "inspection": "Read directly; identifies the retained images and source revision. No currently live preview is asserted."
+      }
+    ],
+    "byte_unchanged_paths": [
+      "src/app/(app)/settings/fields/BuiltinFieldRow.tsx",
+      "src/app/(app)/settings/fields/DataFieldsClient.tsx",
+      "src/app/(app)/settings/fields/FieldList.tsx",
+      "src/app/(app)/settings/fields/FieldTask.tsx",
+      "src/app/(app)/settings/fields/OptionEditor.tsx",
+      "src/app/(app)/settings/fields/FieldOptionRow.tsx",
+      "src/app/(app)/settings/SettingsSurface.tsx",
+      "src/app/globals.css",
+      "src/app/layout.tsx",
+      "src/components/ui/Switch.tsx",
+      "src/components/ui/Button.tsx",
+      "src/components/ui/Input.tsx",
+      "src/components/ui/Collapsible.tsx",
+      "src/components/ui/tooltip.tsx",
+      "src/components/ui/primitives/switch.tsx",
+      "src/components/ui/primitives/button.tsx",
+      "src/constants/builtinFields.ts",
+      "src/features/custom-fields/hiddenBuiltinsRepo.ts"
+    ],
+    "reviewed_changes": [
+      {
+        "path": "src/app/(app)/settings/fields/FieldRowItem.tsx",
+        "finding": "Compared full historical-to-reviewed-source diff. Only contextual aria-labels and ReorderControls itemName were added; name, type, option-summary, action-row and switch-row layout classes/structure are unchanged."
+      },
+      {
+        "path": "src/app/(app)/settings/company/ReorderControls.tsx",
+        "finding": "Compared full diff. Adds optional itemName and uses computed contextual names for tooltip/aria-label text; dimensions, hit-area, icon, disabled and callback structure remain unchanged."
+      },
+      {
+        "path": "src/app/(app)/layout.tsx",
+        "finding": "Compared full diff. Authentication return-path handling and a NativeActorProvider wrapper were added. Authenticated shell/content geometry and class strings remain identical. The pinned NativeActorProvider is a React context provider that emits no DOM."
+      }
+    ],
+    "evidence_ceiling": "Historical screenshot plus bounded source-equivalence derivation; no fabricated screenshot URL and no claim that the current main was freshly viewed in a browser."
+  },
+  "hosted_qualification": {
+    "verified_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "verification_method": "Read-only live GitHub workflow-run metadata and commit check-runs API during this review.",
+    "successful_original_main_runs": [
+      {
+        "workflow": "Public Bun CI",
+        "run_id": 41915583955,
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583955"
+      },
+      {
+        "workflow": "Required quality",
+        "run_id": 41915583986,
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583986"
+      },
+      {
+        "workflow": "Delivery",
+        "run_id": 41915583846,
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915583846"
+      },
+      {
+        "workflow": "CodeQL",
+        "run_id": 41915581429,
+        "conclusion": "success",
+        "analyses": ["javascript-typescript", "python", "actions"],
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41915581429"
+      }
+    ],
+    "preserved_later_failed_execution": {
+      "run_id": 41922044304,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41922044304",
+      "revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+      "observed_check": "CRM checks",
+      "conclusion": "failure",
+      "boundary": "The later same-source tag-push CRM failure is retained as failure; this review does not retry it, relabel it, or claim every execution at92bf passed. Other current main acceptance gates remain with the integrator."
+    }
+  },
+  "required_source_paths_reviewed": [
+    "src/app/(app)/settings/fields/page.tsx",
+    "src/app/(app)/settings/fields/DataFieldsClient.tsx",
+    "src/app/(app)/settings/fields/DataFieldsClient.test.tsx",
+    "src/app/(app)/settings/fields/FieldList.tsx",
+    "src/app/(app)/settings/fields/FieldRowItem.tsx",
+    "src/app/(app)/settings/fields/FieldRowItem.test.tsx",
+    "src/app/(app)/settings/fields/BuiltinFieldRow.tsx",
+    "src/app/(app)/settings/fields/BuiltinFieldRow.test.tsx",
+    "src/app/(app)/settings/fields/types.ts",
+    "src/app/(app)/settings/company/ReorderControls.tsx",
+    "src/app/(app)/settings/company/ReorderControls.test.tsx",
+    "src/components/ui/Switch.tsx",
+    "src/features/custom-fields/actions.ts",
+    "src/features/custom-fields/actions.builtin.test.ts",
+    "src/features/custom-fields/hiddenBuiltinsRepo.ts",
+    "src/features/custom-fields/hiddenBuiltinsRepo.test.ts",
+    "src/constants/builtinFields.ts",
+    "src/app/(app)/settings/SettingsSurface.tsx",
+    "src/app/globals.css",
+    "src/app/layout.tsx",
+    "src/app/(app)/layout.tsx",
+    "src/features/identity/NativeActorProvider.tsx"
+  ],
+  "source_pins": [
+    {
+      "path": "src/app/(app)/settings/fields/page.tsx",
+      "sha256": "0df3b0f0bad33106804c31af7a5515c99811c48b181ff77f95ba7c81d4b75924"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/DataFieldsClient.tsx",
+      "sha256": "e2055d90e28a969a9de9fdf724baeaae0fb03970e4710b66e4461b896f0e24c9"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/DataFieldsClient.test.tsx",
+      "sha256": "cbe653ac0474a2777942c6b2225cd0de83f8241a119ccc649a2778daab182d6d"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/FieldList.tsx",
+      "sha256": "224ac938368119faef397c070096c7a83896de4c65a9437d9a1864b481372b17"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/FieldRowItem.tsx",
+      "sha256": "2d65e553ddb496f8921bced9472da6e2cf1eb333a264d8d2404a6e105482cab7"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/FieldRowItem.test.tsx",
+      "sha256": "e2e5d909e0dd1d4e2e14d9bd7b6c2b23e1c7c6ba02a1254747a20b724afb61cc"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/BuiltinFieldRow.tsx",
+      "sha256": "c8a8688a04e370c15c817f7f671a318efe29202a5de52a50b4e5a4ed5357038f"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/BuiltinFieldRow.test.tsx",
+      "sha256": "aeb351f5b7935b1e98f0e0b50f0bdba0c637e52ddbb856a20cd1ad1a9e3a4092"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/types.ts",
+      "sha256": "28b17f4dc3709775d6d423a7d9c2408d47496f99382e091817d91a4ad45ae3c7"
+    },
+    {
+      "path": "src/app/(app)/settings/company/ReorderControls.tsx",
+      "sha256": "81ee0b7a45ccecbe0b21ecaf56aecea5bca8cec28800719e0b3ad27701f03c13"
+    },
+    {
+      "path": "src/app/(app)/settings/company/ReorderControls.test.tsx",
+      "sha256": "c4fdb4fcfad6bc8417033eb694cf393f2a009a00a27f0ed584594d97ee99dc38"
+    },
+    {
+      "path": "src/components/ui/Switch.tsx",
+      "sha256": "9b5888936d6097f32b652b6abf987c8a474b72b1734fe8995b83cc0a7fdf51e5"
+    },
+    {
+      "path": "src/features/custom-fields/actions.ts",
+      "sha256": "8c535f8b964bea17992cd10b38ca0bf2e9510d72ff789e1c75512e0f8a127575"
+    },
+    {
+      "path": "src/features/custom-fields/actions.builtin.test.ts",
+      "sha256": "184e5da2ad2fef90e9f16133dcc902539cf77a6026c56132d07575550a624587"
+    },
+    {
+      "path": "src/features/custom-fields/hiddenBuiltinsRepo.ts",
+      "sha256": "7f374fade39b6c74998ed50afa9c556827b85190d8a160fb229dc6835365f842"
+    },
+    {
+      "path": "src/features/custom-fields/hiddenBuiltinsRepo.test.ts",
+      "sha256": "4858203c67a90435adc337a3cfb977d05b2aaec239e36622ba9a36b51efc5825"
+    },
+    {
+      "path": "src/constants/builtinFields.ts",
+      "sha256": "9e2796a95e609fbc0e12373f6748097c987610e719d1128a20c2e9eaae7b2c62"
+    },
+    {
+      "path": "src/app/(app)/settings/SettingsSurface.tsx",
+      "sha256": "8727d963c96bad4add2ce6aba54f305a0e39990d0dad61702955c78b776cfe1e"
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "2fb8431455e89a122ff223dfbba72f7b261158173c4447987b8f5fa2683a2a3b"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "sha256": "14dd830967228ae9f6582d8ec310caa54bee43991aa2850cc29eda279aab74cc"
+    },
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": "e58a7127f79a14dd8348533929fa8fd8c916259f55e0ee1ee26fe31749ad9c86"
+    },
+    {
+      "path": "src/features/identity/NativeActorProvider.tsx",
+      "sha256": "afc37cc155a0b62cc5800a0906847f2d1de2382f50292d4b1702f2279de1463f"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/CreateFieldDialog.tsx",
+      "sha256": "6c04105a85f955d121f63b0f409514f19d2a38aedcc1152566efb7c64872022a"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/CreateFieldDialog.test.tsx",
+      "sha256": "44c9c074f7bd69f25274ecf9c15d7e5ed74e0d36284e7fa44e398888276f8075"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/CreateFieldDialog.context.test.tsx",
+      "sha256": "0a9ec30b57e63d6a398e527c055a177b4f3eb7c67d4ae84f3a5a38e480ffb2d8"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/OptionEditor.tsx",
+      "sha256": "4f9fbf5d785a669f9e6d837e74261746c7992c4af29f7fe1b2bedfccd77ceb23"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/OptionEditor.test.tsx",
+      "sha256": "21b42b204781d0ce39355024a57dc8ce82c451456fd93941cec6252dc0d0a392"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/FieldOptionRow.tsx",
+      "sha256": "a1b553bffc87c2e89815f75f175f3107a0832d50daacd1523a1c8ca610b6b1b3"
+    },
+    {
+      "path": "src/app/(app)/settings/fields/FieldTask.tsx",
+      "sha256": "f8a1fef93cd1dc320839b6161f5b1cd4edb9a57a822b433e6126abf4489f5c1a"
+    },
+    {
+      "path": "src/features/custom-fields/CreateFieldDialog.tsx",
+      "sha256": "d628a33bee9020d722591cd70c72d0cc77cbe31e48b442a292a071fd7848bf76"
+    },
+    {
+      "path": "src/features/custom-fields/defsRepo.ts",
+      "sha256": "ba5ab0c6eb056a163daafa1fc6db0fe8342662432db26b5ca20f34415c17c774"
+    },
+    {
+      "path": "src/features/custom-fields/defsRepo.test.ts",
+      "sha256": "affe0d7a4f4bd65ff28c9613611e17ce4f26d8649ed0aab8319aa910f7574828"
+    },
+    {
+      "path": "src/features/custom-fields/defSchema.ts",
+      "sha256": "894242c527e573095845fae480978e7f2583f1f83f73f548886516f770e13032"
+    },
+    {
+      "path": "src/features/custom-fields/actions.test.ts",
+      "sha256": "eb272e1858e6d7cbf87d4f24647ea63d47c2638ef0add842af7d9e85e6109d6a"
+    },
+    {
+      "path": "src/constants/customFieldTypes.ts",
+      "sha256": "7685ef07c4c838fcf3d1e42df97de6e68d9fcd062eaf63670edba5b5a1eb86dc"
+    },
+    {
+      "path": "src/components/ui/Button.tsx",
+      "sha256": "706fb879d60311899a2bce2e997d9cccce574b1a0251d1c1558e48282d411adf"
+    },
+    {
+      "path": "src/components/ui/Input.tsx",
+      "sha256": "41ea4b31de57fe8c557ca05f8d96832c05d4e3ef9452d03f2493b4da7ba5b863"
+    },
+    {
+      "path": "src/components/ui/Collapsible.tsx",
+      "sha256": "e44a7c32b871724d8c0a97830c2798910ce7b015a96a4a93312a07ef2bbf7969"
+    },
+    {
+      "path": "src/components/ui/tooltip.tsx",
+      "sha256": "92279e422403451d2eed682e21ca5906f69a231f157671f088445481ca8a2e47"
+    },
+    {
+      "path": "src/components/ui/primitives/switch.tsx",
+      "sha256": "442a922b9f65055edb89b420e5fd19c34058ebb3fba7ae5552fd2b370affdadf"
+    },
+    {
+      "path": "src/components/ui/primitives/button.tsx",
+      "sha256": "00c30cae5ece54a7885a17cf301c4f39a958a66d7867707981c3691ce83e55b8"
+    },
+    {
+      "path": "src/features/identity/settingsMessages.ts",
+      "sha256": "2fcaf45d6a2b05b79279be80075bbf1e5e6e6c1b59aa88e26e6262cd8dd5d261"
+    },
+    {
+      "path": "src/features/identity/useSettingsMessages.ts",
+      "sha256": "a9053dad32cec1f11f04ebc568143e73b6dacaa04ee139c2adc70efcdcbadada"
+    },
+    {
+      "path": "src/features/identity/messages/settings.en.json",
+      "sha256": "1d5f3805c2b36428ef7523f77c66d868da2378dcaff68e2f84fc5227715345b9"
+    },
+    {
+      "path": "src/features/identity/messages/settings.de.json",
+      "sha256": "1c26f83b4c3d487d49e8e1ab87c83d8c15d200863fe1f911caecd6ff740a4fb2"
+    },
+    {
+      "path": "src/features/identity/messages/settings.fa.json",
+      "sha256": "956d3acd3419ea2000c62b2844db56b0f9783aada026c2019811ec9d62abb76b"
+    },
+    {
+      "path": "src/features/i18n/LocaleProvider.tsx",
+      "sha256": "1009d98d61abb524982b5ecca90b7503b6a677ac190383620fca0ec287bf2e5a"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005"
+    },
+    {
+      "path": "vitest.classify.ts",
+      "sha256": "e9d3fc819ffbc89c9e975c3f656612122b4e3be26abbfcc1160ea6dd35414dfe"
+    },
+    {
+      "path": "docs/delivery/sources/settings/prioritized-backlog.csv",
+      "sha256": "4efc0d68ab53ac7b7d1bad50b1b69b8705487becd6461b76b80cbfd38097b1ff"
+    },
+    {
+      "path": "docs/delivery/sources/settings/implementation-backlog-status.csv",
+      "sha256": "0bba8684f188ca5645143b87fdb5f6146cebb856c73be4167acd1adbbf926114"
+    }
+  ],
+  "source_pin_verification": {
+    "reviewed_revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "all_pinned_working_bytes_equal_reviewed_revision": true,
+    "pin_count": 51,
+    "historical_byte_unchanged_paths_verified": 18,
+    "new_campaigns_run": false
+  },
+  "provenance_limit": "GitHub authenticates a later delegated posting principal only. The actual Codex runtime session, agent thread and independent task are retained process provenance, not a separately authenticated GitHub human reviewer. The reviewer authored no reviewed application source, runtime tests, historical screenshot or capture."
+}

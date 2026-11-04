@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/OSS-001",
+  "acceptance_sha256": "f7f3690b3d3342de05913286ada5f5447c2180a96a74992b66281fe374591530",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/final_consolidation_review"
+  },
+  "reviewed_revision": "6753bb69fbf475785fd0105f8889961f760fa91c",
+  "reviewed_at_utc": "2026-11-04T22:40:34.934Z",
+  "summary": "Independent maintainer-style source review accepts the complete original OSS-001 criterion: the intended maintained-fork/upstream relationship and original MIT attribution are preserved, module and integration ownership are explicit, the standing branch/PR merge strategy is consistent, and release maintenance retains the authoritative scope, evidence, version and publication rules. The documentation repair removes obsolete one-off freeze/direct-main guidance without changing release gates or upstream files.",
+  "limitations": "This is a bounded documentation/governance source review. It does not attest an upstream contribution agreement, upstream acceptance of this fork's changes, legal clearance, provider/product feature claims or commercial comparisons in the README. It does not establish live branch protection/environment reviewers, actual deployment or future exact-main CI. Root must still integrate the review/eligibility and obtain the required exact-main acceptance and closure audit. No code, workflow, licence, external repository, Git remote or release policy was mutated by this review.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/README.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/LICENSE",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/docs-site/docs/contributing.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/AGENTS.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/CLAUDE.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/docs/delivery/ci-release-controls.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/docs/delivery/release-operations.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/docs/delivery/release-policy.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/docs/delivery/mail-release-policy.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6753bb69fbf475785fd0105f8889961f760fa91c/.github/workflows/release.yml"
+      ],
+      "assessment": "All four parts of the unchanged original criterion are covered. README and the contribution guide identify KhademOHAli1/warpdrive as the maintained distribution and sneg55/warpdrive as upstream; the original Nikita Sawinyh MIT copyright/permission notice remains byte-identical to the reviewed main base. Read-only local remote inspection matches that intended origin/upstream relationship, and6753 retains the existing main ancestry. AGENTS assigns feature ownership to module chats and serializes main integration through the named coordinator/shared queue. AGENTS, CLAUDE and delivery controls now consistently require work-branch commits, reviewed PRs, exact increment qualification, resulting-main verification and containment before branch deletion; they retain unfinished work, installed migration lineage and no-force-push rules. The completed PR952 freeze is explicitly historical rather than a permanent integration branch or current prohibition on bounded work. Release operations and pinned policies preserve immutable version/tag/plan and full-history traceability, complete selected acceptance, exact-main CI/security, completion-order1.5.x tasks/full-programme1.6.0, separate core journeys, prepared/draft/published stages and deployment/provider boundaries. Release workflow serialization and environment references remain unchanged and are not misrepresented as configured protection. I reviewed the complete four-file6753 change and the10proposed required paths; no missing original subclause or contradictory current branch rule remains."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "README.md",
+      "sha256": "997da91b1d90dbdb6a4fd4d67add35aae58cbf779567cced25eff66c4c326238"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "88b3bcb8439f098f408eb5b5f371f385a0f2400e476358bbc592ec2bb2ecebac"
+    },
+    {
+      "path": "docs-site/docs/contributing.md",
+      "sha256": "dca92bc9edc46f4d5a9d59b3a4a81c2d7530f391e163d5144dbf55a59da73f6e"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "3941d72b41426a41d61b5d9c19670eeb13619ce9da4cefc10b2c723c41044eb7"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "7a438ad2ca7dc76648efa87c3cf0d8da3560c85ec1870cfaa63579c075fe1499"
+    },
+    {
+      "path": "docs/delivery/ci-release-controls.md",
+      "sha256": "f1b8c84295ddca15ae659144c0c64b29f2a841875ac17822176ed7f19dd61df0"
+    },
+    {
+      "path": "docs/delivery/release-operations.md",
+      "sha256": "1dce56a206fb07fff60173305fedc48e6d192987460c79dd9e9ba1e02a120c6d"
+    },
+    {
+      "path": "docs/delivery/release-policy.json",
+      "sha256": "d915398cef7eda89d685400182d215fcead27373ab1c3b09c46c4050df195fb9"
+    },
+    {
+      "path": "docs/delivery/mail-release-policy.json",
+      "sha256": "fdb530c37bb3a27b3cee09d49a5a5fa2b00f1a4b177f1897aaa8fc04a8cb94ad"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "sha256": "3dc1c9b5f0402206e8fd1b2782215b439f5f7b27c759194bb311e3c8a538dec6"
+    }
+  ],
+  "area_assessments": [
+    {
+      "area": "Distribution and intended upstream",
+      "result": "passed",
+      "assessment": "Maintained-fork attribution, upstream URL/history statement, public contribution destination, original copyright and MIT notice are preserved. Local origin resolves to github.com/KhademOHAli1/warpdrive.git and upstream to github.com/sneg55/warpdrive.git. This records the intended relationship, not external endorsement or a legal certification."
+    },
+    {
+      "area": "Branch ownership",
+      "result": "passed",
+      "assessment": "Feature chats retain module/private helper/UI/test ownership; the named settings/integration coordinator owns serialized main publication and the shared heavy-job allocation. Explicit boundaries preserve peer and excluded premium work."
+    },
+    {
+      "area": "Merge strategy",
+      "result": "passed",
+      "assessment": "Work branches and reviewed PRs replace the stale direct-main exception. Full increment checks precede merge, resulting-main evidence follows; completed branches close only after containment, while unfinished changes and migration histories remain protected. The PR952-only freeze and branch are correctly retained as historical."
+    },
+    {
+      "area": "Release maintenance",
+      "result": "passed",
+      "assessment": "The current core/MAIL policies and release workflow are unchanged. Documentation retains exact selected scope and version plans, canonical traceability and historical source disclosure, actual acceptance/CI/security gates, stable publication verification and distinct deployment/provider stages. Environment names do not fabricate protection or impose new approval requirements."
+    }
+  ],
+  "preservation_checks": {
+    "implementation_commit": "6753bb69fbf475785fd0105f8889961f760fa91c",
+    "implementation_parent": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+    "implementation_changed_paths": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/delivery/ci-release-controls.md",
+      "docs/delivery/release-operations.md"
+    ],
+    "unchanged_from_parent": [
+      "README.md",
+      "LICENSE",
+      "docs-site/docs/contributing.md",
+      "docs/delivery/release-policy.json",
+      "docs/delivery/mail-release-policy.json",
+      ".github/workflows/release.yml"
+    ],
+    "prior_consolidation_revision": "86201a96522f22607df3710d809a1391f562b940",
+    "prior_consolidation_is_ancestor": true,
+    "original_criterion": "OSS-001: Preserve intended upstream relationships and document branch ownership, merge strategy and release maintenance.",
+    "required_source_paths_verified": 10,
+    "all_pins_match_reviewed_git_blobs_and_current_bytes": true,
+    "peer_review_artifacts_preserved": true,
+    "foreign_dependabot_untouched": true
+  },
+  "reviewer_provenance": "Actual CODEX_SESSION_ID and this independent task path are declared. Actual subtask CODEX_THREAD_ID is01a1a7dc-86fb-7f02-a772-446dc143a34b. The Root accepting task has a distinct task tuple; these internal declarations are not independently authenticated GitHub human reviews.",
+  "verification_performed": [
+    "Read the original canonical item and both retained source-task bindings; independently recomputed the exact full-scope hash.",
+    "Read the four-file implementation diff and all10required documents/policies/workflow, including upstream attribution, licence and contribution ownership sections.",
+    "Compared all10source-pin hashes against committed6753 and current bytes; verified preservation of the upstream/licence/release-policy files and main/consolidation ancestry.",
+    "Read-only remote URL inspection; no runtime/test/API mutation, staging, commit, push or service campaign."
+  ]
+}
