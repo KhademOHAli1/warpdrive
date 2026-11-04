@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import german from "../messages/workflows.de.json";
+import english from "../messages/workflows.en.json";
+import persian from "../messages/workflows.fa.json";
 import { RunHistory } from "./RunHistory";
 import { RunRecovery } from "./RunRecovery";
 
@@ -40,6 +44,7 @@ vi.mock("../actions", () => ({
   cancelWorkflowAction: vi.fn(),
   retryWorkflowAction: queries.retry,
 }));
+vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "fixture-csrf" }));
 vi.mock("./WorkflowCanvas", () => ({
   WorkflowCanvas: () => <div>Canvas omitted from retry regression</div>,
 }));
@@ -69,7 +74,11 @@ beforeEach(() => {
   queries.refetch.mockResolvedValue(undefined);
   queries.invalidateRun.mockResolvedValue(undefined);
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.documentElement.removeAttribute("dir");
+  document.documentElement.removeAttribute("lang");
+});
 
 function mount(locale: "en" | "de" | "fa" = "en") {
   return render(
@@ -78,6 +87,110 @@ function mount(locale: "en" | "de" | "fa" = "en") {
     </LocaleProvider>,
   );
 }
+
+type Outcome = "denied" | "conflict" | "acknowledged" | "transport";
+type Invalidator = "list" | "detail";
+const catalogs = { en: english, de: german, fa: persian };
+const readFailureCases: {
+  locale: "en" | "de" | "fa";
+  outcome: Outcome;
+  invalidator: Invalidator;
+}[] = [
+  ...(["list", "detail"] as const).flatMap((invalidator) =>
+    (["denied", "conflict", "acknowledged", "transport"] as const).map((outcome) => ({
+      locale: "en" as const,
+      outcome,
+      invalidator,
+    })),
+  ),
+  ...(["de", "fa"] as const).flatMap((locale) => [
+    { locale, outcome: "denied" as const, invalidator: "detail" as const },
+    { locale, outcome: "conflict" as const, invalidator: "list" as const },
+  ]),
+];
+
+function deferredRefresh() {
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<void>((_resolve, fail) => {
+    reject = fail;
+  });
+  return { promise, reject };
+}
+
+it.each(readFailureCases)(
+  "preserves $outcome in $locale when $invalidator invalidation fails",
+  async ({ locale, outcome, invalidator }) => {
+    const L = catalogs[locale];
+    queries.rows = [row()];
+    if (outcome === "transport")
+      queries.retry.mockRejectedValueOnce(new Error("private action diagnostic"));
+    else
+      queries.retry.mockResolvedValueOnce(
+        outcome === "acknowledged"
+          ? { ok: true, value: { id: runId } }
+          : {
+              ok: false,
+              error: outcome === "denied" ? ERROR_IDS.WORKFLOW_DENIED : ERROR_IDS.WORKFLOW_CONFLICT,
+            },
+      );
+    const refresh = deferredRefresh();
+    (invalidator === "list" ? queries.refetch : queries.invalidateRun).mockReturnValueOnce(
+      refresh.promise,
+    );
+    const view = mount(locale);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: L.retryRun }));
+    await waitFor(() => expect(queries.retry).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole("button", { name: L.retrying })).toBeDisabled();
+    const expectedError =
+      outcome === "denied"
+        ? L.retryDenied
+        : outcome === "conflict"
+          ? L.retryConflict
+          : L.retryUnknown;
+    if (outcome === "acknowledged") expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    else expect(await screen.findByRole("alert")).toHaveTextContent(expectedError);
+    await user.click(screen.getByRole("button", { name: L.retrying }));
+    expect(queries.retry).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      refresh.reject(new Error("private refresh diagnostic"));
+      await refresh.promise.catch(() => undefined);
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: L.retryRun })).toBeEnabled());
+    if (outcome === "acknowledged") expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    else expect(screen.getByRole("alert")).toHaveTextContent(expectedError);
+    if (outcome === "denied" || outcome === "conflict") {
+      expect(screen.getByRole("alert")).not.toHaveTextContent(L.retryUnknown);
+    }
+    expect(screen.queryByText("private action diagnostic")).not.toBeInTheDocument();
+    expect(screen.queryByText("private refresh diagnostic")).not.toBeInTheDocument();
+    expect(queries.retry).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ runId, failureId, requestKey: expect.any(String) }),
+      "fixture-csrf",
+    );
+    expect(queries.refetch).toHaveBeenCalledExactlyOnceWith({ id: workflowId });
+    expect(queries.invalidateRun).toHaveBeenCalledExactlyOnceWith({ id: workflowId, runId });
+
+    if (outcome === "transport") {
+      const original = queries.retry.mock.calls[0]?.[0];
+      queries.retry.mockResolvedValueOnce({ ok: true, value: { id: runId } });
+      await user.click(screen.getByRole("button", { name: L.retryRun }));
+      await waitFor(() => expect(screen.getByRole("button", { name: L.retryRun })).toBeEnabled());
+      expect(queries.retry).toHaveBeenCalledTimes(2);
+      expect(queries.retry.mock.calls[1]?.[0]).toEqual(original);
+    } else if (outcome === "acknowledged") {
+      queries.rows = [{ ...row(), status: "queued", errorId: null }];
+      view.rerender(
+        <LocaleProvider locale={locale}>
+          <RunHistory workflowId={workflowId} canCancel />
+        </LocaleProvider>,
+      );
+      expect(screen.getByRole("status")).toHaveTextContent(L.retryRequested);
+      expect(screen.queryByRole("button", { name: L.retryRun })).not.toBeInTheDocument();
+      expect(queries.retry).toHaveBeenCalledTimes(1);
+    }
+  },
+);
 
 it("offers an explicit retry for a server-qualified failed task while preserving its completed count", () => {
   queries.rows = [row()];
