@@ -239,6 +239,8 @@ Use `draft` or `publish` in the same command only when that explicit external ac
 
 Artifacts are explicitly a pre-publication evidence snapshot (so their released/deployed fields remain false); the live GitHub Release and receipt represent publication. Artifacts preserve source revision, milestone, every canonical delivery, acceptance reviewer/comment and evidence URLs, included commits, exact CI run IDs and job names, and explicit stage boundaries. The source archive is the selected committed source, not local uncommitted work. MAIL manifests and notes distinguish the accepted release scope from unreleased source context; retaining historical source does not release every feature in that snapshot. It is reproducible for the same release evidence. Deployment and real provider/installation acceptance continue through their existing authorization and validation process.
 
+The complete `release-notes.md` attachment and `traceability.json` retain the full record. When those notes exceed a conservative 120,000 UTF-8 bytes, the GitHub release page uses a concise body naming the revision and accepted issue identities, disclosing unaccepted source context, and linking both complete attachments. This stays below the [125,000-character API limit recorded by GitHub CLI](https://github.com/cli/cli/issues/7815) without truncating the evidence files. The concise body is also checked before any tag or publication write; oversized selected scope fails rather than silently disappearing. Repair of an already published immutable release keeps its existing receipt-only path.
+
 ## Bounded verification
 
 ```sh
