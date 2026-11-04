@@ -41,7 +41,7 @@ const io = vi.hoisted(() => ({
   currentRead: vi.fn<() => Promise<WorkflowDetail>>(),
   listRefresh: vi.fn<() => Promise<void>>(),
   versionsRefresh: vi.fn<() => Promise<unknown>>(),
-  runsRefresh: vi.fn<() => Promise<unknown>>(),
+  runsRefresh: vi.fn<(input?: { id: string }) => Promise<unknown>>(),
   versions: [] as VersionSummary[],
   version: undefined as Version | undefined,
   versionsError: false,
@@ -72,7 +72,11 @@ vi.mock("@/lib/trpc-client", () => ({
         get: { invalidate: io.detailRefresh, fetch: io.currentRead },
         list: { invalidate: io.listRefresh },
         versions: { invalidate: io.versionsRefresh },
-        runs: { invalidate: io.runsRefresh },
+        runs: {
+          invalidate: (input: { id: string }, filters?: { refetchType: string }) =>
+            filters?.refetchType === "none" ? Promise.resolve() : io.runsRefresh(input),
+        },
+        runsPage: { invalidate: () => Promise.resolve() },
         version: {
           fetch: (input: unknown) => {
             io.versionRequest(input);
@@ -107,9 +111,9 @@ vi.mock("@/lib/trpc-client", () => ({
           };
         },
       },
-      runs: {
+      runsPage: {
         useQuery: () => ({
-          data: io.runs,
+          data: { items: io.runs, nextCursor: null },
           isLoading: false,
           isError: io.runsError,
           isFetching: false,

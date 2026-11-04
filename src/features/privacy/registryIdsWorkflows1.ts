@@ -1,5 +1,17 @@
 // Reviewed Workflow boundary identifiers. New or changed source requires review.
 export const workflowIds1: string[] = [
+  // WF027: bounded authorized run-history pages preserve the existing safe DTO.
+  // The browser fetch is same-origin query transport; Hash.update computes only
+  // an ephemeral context digest, not a database write or authority signature.
+  "external:src/features/workflows/ui/RunHistory.tsx#fetch",
+  "writer:src/features/workflows/runHistoryCursor.ts#update:dynamic",
+  "sourceReview:src/features/workflows/runHistoryProjection.ts#720e68b7b65828b68f3042535910e989fc4eec93de0b50b9d2bcf280b49f0afe",
+  "sourceReview:src/features/workflows/runHistoryTypes.ts#78bf4128d7d1a86d9ceef495371ba0952cca781e157003688fc9db16d23e4063",
+  "sourceReview:src/features/workflows/runHistoryPageInput.ts#c9a808c80f6202a076895ce9ed1aed5e456b9d5009e902bc80ac3f4c49b44385",
+  "sourceReview:src/features/workflows/runHistoryCursor.ts#ef6cdf3f445e8704b16ee24131f43067492c6a5f3aaa903b80eadd7b636862bc",
+  "sourceReview:src/features/workflows/runHistoryPage.ts#10b426c0501ff4f022db11806093388872ac7df2b639a053f6d42bb55949167d",
+  "sourceReview:src/features/workflows/ui/RunHistoryFilters.tsx#49809a1503b39f4cdc0b45bcc731beaa11fbb63c870af7d6b89e89ea93673b4d",
+
   // WF022: bounded transient parsing/evaluation and local stable-row edits.
   // These Sets/Maps are per-call/editor derived state, not durable stores.
   "derived:src/features/workflows/conditionExpressionBudget.ts",
@@ -97,7 +109,7 @@ export const workflowIds1: string[] = [
   "writer:src/features/workflows/libraryCursor.ts#update:dynamic",
   "sourceReview:src/features/workflows/library.ts#e59938d8a07862f94290939fe3b3fbd32c091730f3c3ebc213afdaa17b6d1e28",
   "sourceReview:src/features/workflows/libraryCursor.ts#3e901a412af65086d29e61f66388ab7d44c46bf2740c114ffa4f6c08de28de8e",
-  "sourceReview:src/features/workflows/ui/RunHistory.tsx#e3a25dae0e58ffb0a80a640bebb6d5575d410bb0050b46be503864db1a202370",
+  "sourceReview:src/features/workflows/ui/RunHistory.tsx#88bb8e6ddf33d58faeed4f91b9436533ffbf46bd8993849827b84737ce725f6f",
   "sourceReview:src/features/workflows/ui/useWorkflowLifecycle.ts#086534ec918de6e7bbef3fbc0abdf3fa075d5348306141cd6c664d6ac2cdf694",
   "writer:src/features/workflows/lifecycle.ts#update:workflows",
   "writer:src/features/workflows/lifecycle.ts#insert:workflows",
@@ -118,7 +130,7 @@ export const workflowIds1: string[] = [
   "writer:src/features/workflows/runRetry.ts#update:workflowRuns",
   "writer:src/features/workflows/runRetrySession.ts#execute:sql",
   "sourceReview:src/features/workflows/actions.ts#1d6b2a3fc046f37ea8f925252af45674fea5e0373b87e2a7488e6c2506458134",
-  "sourceReview:src/features/workflows/ui/RunRecovery.tsx#c349f7079de28c7ddb408b845911adb79ec0cfe5e144d9a90882867ae23d9714",
+  "sourceReview:src/features/workflows/ui/RunRecovery.tsx#9863c0f4879df02929f25bb441a1e172ef8ae6b977a129ce95cf7051c20b7f75",
   "derived:src/features/workflows/graph.ts",
   "derived:src/features/workflows/graphEditor.ts",
   "derived:src/features/workflows/nodeFactory.ts",
@@ -139,8 +151,8 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/nodeFactory.ts#4b9afa7656d89985ae43c34591584119a9a3538902d12d63c735f6d7cbb33198",
   "sourceReview:src/features/workflows/nodeLayout.ts#7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
   "sourceReview:src/features/workflows/persistence.ts#78159991a3cfbe38071e98651fa1892f6784e0e4dfef4054a43738d5d44c8bb3",
-  "sourceReview:src/features/workflows/queries.ts#5c4b47a3c273908c76e1ed55c012bc4c5ee83aa15e1c2f6976e73c3b48aaa9e7",
-  "sourceReview:src/features/workflows/router.ts#cc8c620d02300d2f07047422d3aaffd2ac4b78a6c4951ac3d9d8fd10129b7564",
+  "sourceReview:src/features/workflows/queries.ts#77c17d8ab0681508bdd02e11d830fa32619b237336a4a44c6397765f8206801d",
+  "sourceReview:src/features/workflows/router.ts#436e1a50d5e82288468b9f045b374bf4dd218ac88b0efaf664d88cfa378be9e6",
   "sourceReview:src/features/workflows/runAdmission.ts#c1a01c737cebe979c939110f08d4b6fb9b8f73ebb9506c35dc43d098ea455f32",
   "sourceReview:src/features/workflows/runControl.ts#f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057",
   "sourceReview:src/features/workflows/runDetail.ts#85f804b234bb799c7ef374e2f7449f1f5b13de2f9fcda2336a6a7759a2e8aae9",

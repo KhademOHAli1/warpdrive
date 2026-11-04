@@ -346,7 +346,14 @@ export function WorkflowEditor({
           onStarted={() => {
             runFocus.remember(runsTab.current);
             void Promise.resolve()
-              .then(() => utils.workflows.runs.invalidate({ id: initial.id }))
+              .then(() =>
+                Promise.all([
+                  Promise.resolve().then(() => utils.workflows.runs.invalidate({ id: initial.id })),
+                  Promise.resolve().then(() =>
+                    utils.workflows.runsPage.invalidate({ id: initial.id }),
+                  ),
+                ]),
+              )
               .catch(() => {
                 // History refresh failure does not undo the acknowledged run submission.
               });

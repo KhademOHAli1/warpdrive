@@ -36,7 +36,9 @@ const queries = vi.hoisted(() => {
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    useUtils: () => ({ workflows: { runs: { invalidate: vi.fn() } } }),
+    useUtils: () => ({
+      workflows: { runs: { invalidate: vi.fn() }, runsPage: { invalidate: vi.fn() } },
+    }),
     workflows: {
       owners: {
         useQuery: () => ({
@@ -78,9 +80,9 @@ vi.mock("@/lib/trpc-client", () => ({
           refetch: vi.fn(),
         }),
       },
-      runs: {
+      runsPage: {
         useQuery: () => ({
-          data: queries.rows,
+          data: { items: queries.rows, nextCursor: null },
           isLoading: false,
           isError: false,
           isFetching: false,

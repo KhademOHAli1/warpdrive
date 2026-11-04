@@ -38,7 +38,12 @@ type RunMessages = (typeof locales)[number]["messages"];
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    useUtils: () => ({ workflows: { runs: { invalidate: calls.invalidate } } }),
+    useUtils: () => ({
+      workflows: {
+        runs: { invalidate: calls.invalidate },
+        runsPage: { invalidate: () => Promise.resolve() },
+      },
+    }),
     search: {
       query: {
         useQuery: (_input: { q: string }, options: { enabled: boolean }) => ({

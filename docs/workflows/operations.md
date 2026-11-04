@@ -67,6 +67,15 @@ A dead-letter/needs-review policy, quotas, retention, and alerting remain produc
 Pausing prevents admission and leaves existing runs unchanged. Cancel those separately
 when needed. Neither pausing nor cancellation reverses completed CRM effects.
 
+## Filtered run history
+
+The run-history surface adds status/mode filters and 50-run older/newest pages through
+an additive protected page query. The existing array API remains available. Reads
+retain current server authority and the existing safe projection; pagination keys
+retain PostgreSQL microseconds independently of display dates. See the
+[bounded history contract](../development/workflow-run-history.md) for continuation,
+acknowledgment, live-view and qualification limits.
+
 ## Sensitive data and simulation
 
 Runs retain trigger references and step outputs internally. History responses expose coarse

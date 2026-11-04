@@ -11,6 +11,11 @@ import { RunHistory } from "./RunHistory";
 type HistoryPoll = {
   refetchInterval: (query: { state: { data: { status: string }[] } }) => number | false;
 };
+type PagePoll = {
+  refetchInterval: (query: {
+    state: { data?: { items: { status: string }[]; nextCursor: string | null } };
+  }) => number | false;
+};
 type DetailPoll = {
   refetchInterval: (query: { state: { data: { status: string } } }) => number | false;
 };
@@ -35,12 +40,23 @@ const queries = vi.hoisted(
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      workflows: {
+        runs: { invalidate: () => Promise.resolve() },
+        runsPage: { invalidate: () => Promise.resolve() },
+      },
+    }),
     workflows: {
-      runs: {
-        useQuery: (_input: unknown, options: HistoryPoll) => {
-          queries.historyOptions = options;
+      runsPage: {
+        useQuery: (_input: unknown, options: PagePoll) => {
+          queries.historyOptions = {
+            refetchInterval: (query) =>
+              options.refetchInterval({
+                state: { data: { items: query.state.data, nextCursor: null } },
+              }),
+          };
           return {
-            data: queries.rows,
+            data: { items: queries.rows, nextCursor: null },
             isLoading: false,
             isError: false,
             isFetching: false,
