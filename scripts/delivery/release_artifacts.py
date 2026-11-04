@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from release_support import GateError, run
 
+PUBLICATION_BODY_MAX_BYTES = 120000
+
 def notes(evidence):
     rows = [f"# Warpdrive {evidence['version']}", "", f"Revision: `{evidence['revision']}`", f"Milestone: [{evidence['milestone']['title']}]({evidence['milestone']['url']})", "", "## Accepted deliveries", ""]
     if evidence.get("release_track") == "mail":
@@ -15,7 +17,12 @@ def notes(evidence):
         if context:
             rows += ["", "## Unreleased source context", "",
                      "The source snapshot retains this history. These issues are not accepted or released by this publication and receive no publication updates."]
-            rows += [f"- [#{i['number']} {i['title']}]({i['url']}): UNRELEASED context; source issue state `{i['source_state']}`." for i in context]
+            rows += [f"- [#{i['number']} {i['title']}]({i['url']}): UNRELEASED context; source issue state `{i['source_state']}`; source origins: {', '.join(i.get('source_context_origins', ['unclassified']))}." for i in context]
+        fresh_context = [c for c in evidence["commits"] if c.get("fresh_production_context")]
+        if fresh_context:
+            rows += ["", "## Newly integrated, unaccepted production source", "",
+                     "The source archive includes the following newly integrated production changes outside this task's accepted scope. They are not historical baseline context. Their presence does not accept or complete their issues, the full MAIL programme, or a human journey."]
+            rows += [f"- [{c['sha'][:12]}]({c['url']}) {c['subject']} — UNRELEASED scope: {', '.join('#' + str(n) for n in sorted(set(c['unreleased_issues'] + c['unreleased_contributions'])))}." for c in fresh_context]
         if evidence.get("programme_coverage"):
             rows += ["", "## Verified full MAIL programme coverage", "",
                      "Previously released tasks keep their original milestones and publication receipts."]
@@ -24,7 +31,9 @@ def notes(evidence):
         for commit in evidence["commits"]:
             released = ", ".join("#" + str(n) for n in commit["released_issues"]) or "none"
             unreleased = ", ".join("#" + str(n) for n in sorted(set(commit["unreleased_issues"] + commit["unreleased_contributions"]))) or "none"
-            rows += [f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} — released scope: {released}; UNRELEASED context: {unreleased}."]
+            origin = commit.get("unreleased_context_origin")
+            origin_note = f"; context origin: {origin}" if origin else ""
+            rows += [f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} — released scope: {released}; UNRELEASED context: {unreleased}{origin_note}."]
     else:
         rows += ["", "## Included commits", ""]
         rows += [f"- [{c['sha'][:12]}]({c['url']}) {c['subject']} ({', '.join('#' + str(n) for n in c['issues'])})" for c in evidence["commits"]]
@@ -40,6 +49,41 @@ def notes(evidence):
     rows += [f"- [{c['workflow']}]({c['url']}): {', '.join(c['jobs'])}" for c in evidence["ci"]]
     rows += ["", "Deployment and real provider/installation acceptance remain separate operational actions. See traceability.json for acceptance evidence and limitations.", ""]
     return "\n".join(rows)
+
+def publication_notes(evidence, full_notes=None):
+    """Bound the GitHub body while retaining the complete notes as a release asset."""
+    full = notes(evidence) if full_notes is None else full_notes
+    if len(full.encode("utf-8")) <= PUBLICATION_BODY_MAX_BYTES:
+        return full
+    base = f"https://github.com/{evidence['repository']}/releases/download/v{evidence['version']}"
+    rows = [f"# Warpdrive {evidence['version']}", "",
+            f"Revision: `{evidence['revision']}`", ""]
+    if evidence.get("release_track") == "mail":
+        rows += ["<!-- warpdrive:release-track:mail -->",
+                 f"MAIL {evidence['mail_mode']} release; primary issue #{evidence['primary_issue']}."]
+        if evidence["mail_mode"] == "incremental":
+            rows += ["This task release does not accept the full MAIL programme. "
+                     "Technical acceptance alone is not human user-journey acceptance."]
+    rows += ["", "## Accepted deliveries", ""]
+    rows += [f"- [#{item['number']}]({item['url']})" +
+             (f" (`{item['id']}`)" if item.get("id") else "")
+             for item in evidence["issues"]]
+    if evidence.get("unreleased_context"):
+        rows += ["", "## Unaccepted source in this archive", "",
+                 "The source archive physically includes source context outside these accepted deliveries. "
+                 "Unselected issues are not accepted, completed or released by this publication. "
+                 "Any newly integrated context is disclosed as new, not historical. "
+                 "All original issue references, context and the complete commit ledger remain in the linked artifacts."]
+    rows += ["", "## Complete release evidence", "",
+             "The complete notes are attached without truncation; this summary stays within the publication size budget.",
+             f"- [Full release notes]({base}/release-notes.md)",
+             f"- [Complete traceability and acceptance evidence]({base}/traceability.json)",
+             f"- [Artifact checksums]({base}/SHA256SUMS)", "",
+             "Deployment and real provider/installation acceptance remain separate operational actions.", ""]
+    summary = "\n".join(rows)
+    if len(summary.encode("utf-8")) > PUBLICATION_BODY_MAX_BYTES:
+        raise GateError("Publication summary exceeds 120000 UTF-8 bytes; accepted scope cannot be truncated")
+    return summary
 
 def artifacts(evidence, destination):
     out = Path(destination)

@@ -38,6 +38,7 @@ def trusted_mail_policy(revision, repository):
             or not SHA.fullmatch(candidate["pr_integration_baseline"])
             or not isinstance(candidate.get("unreleased_context_baseline"), str)
             or not SHA.fullmatch(candidate["unreleased_context_baseline"])
+            or candidate.get("incremental_context_policy") not in (None, "disclose_unaccepted_source")
             or candidate.get("assignment") != "completion_order"):
         raise GateError("Unsupported MAIL release policy")
     return candidate
@@ -90,24 +91,33 @@ def programme_issues(api, repo, items):
     return sorted(found.values(), key=lambda i: i["number"])
 
 
-def classify_history(api, repo, commits, numbers, items, revision, context_baseline):
+def classify_history(api, repo, commits, numbers, items, revision, context_baseline,
+                     *, allow_fresh_context=False):
     """Keep the complete ledger while distinguishing released and unreleased scope."""
     run("git", "merge-base", "--is-ancestor", context_baseline, revision)
     historical = set(run("git", "rev-list", context_baseline).splitlines())
-    ledger, context_numbers = [], set()
+    ledger, context_numbers, context_origins = [], set(), {}
     selected = set(numbers)
     for commit in commits:
         released = sorted(set(commit["issues"]) & selected)
         unreleased = sorted(set(commit["issues"]) - selected)
         contributions = sorted(set(commit.get("contributes_to", [])))
         unreleased_contributions = sorted(set(contributions) - selected)
-        if unreleased and commit["sha"] not in historical:
+        has_context = bool(unreleased or unreleased_contributions)
+        origin = ("historical" if commit["sha"] in historical else "newly_integrated") if has_context else None
+        fresh_production_context = False
+        if has_context and origin == "newly_integrated":
             paths = run("git", "show", "--format=", "--name-only", "--first-parent", commit["sha"]).splitlines()
-            if any(path.startswith(("src/", "drizzle/")) for path in paths):
+            fresh_production_context = any(path.startswith(("src/", "drizzle/")) for path in paths)
+            if unreleased and fresh_production_context and not allow_fresh_context:
                 raise GateError("Fresh production delivery cannot be hidden as historical unreleased context")
         context_numbers.update(unreleased + unreleased_contributions)
+        for number in unreleased + unreleased_contributions:
+            context_origins.setdefault(number, set()).add(origin)
         ledger.append(dict(commit, released_issues=released, unreleased_issues=unreleased,
                            unreleased_contributions=unreleased_contributions,
+                           unreleased_context_origin=origin,
+                           fresh_production_context=fresh_production_context,
                            scope_status="released_scope" if released and not unreleased and not unreleased_contributions else
                            "mixed_released_and_unreleased_context" if released else "unreleased_context"))
     context = []
@@ -116,6 +126,7 @@ def classify_history(api, repo, commits, numbers, items, revision, context_basel
         item = item_for_issue(issue, items, allow_parent=True)
         context.append({"number": number, "id": item["id"], "title": issue["title"],
                         "url": issue["html_url"], "source_state": issue.get("state"),
+                        "source_context_origins": sorted(context_origins[number]),
                         "release_status": "not_released_by_this_publication",
                         "acceptance_claimed": False})
     return ledger, context
@@ -211,7 +222,9 @@ def mail_release_gate(api, plan, core_policy, require_revision, commit_reference
     commits = commit_references(api, repo, revision, base, plan)
     released_scope = set(numbers) | {i["number"] for i in coverage}
     commits, context = classify_history(api, repo, commits, released_scope, items, revision,
-                                         policy["unreleased_context_baseline"])
+                                         policy["unreleased_context_baseline"],
+                                         allow_fresh_context=(mode == "incremental" and
+                                             policy.get("incremental_context_policy") == "disclose_unaccepted_source"))
     pr_base = policy["pr_integration_baseline"]
     run("git", "merge-base", "--is-ancestor", pr_base, revision)
     new_commits = set(run("git", "rev-list", f"{pr_base}..{revision}").splitlines())
@@ -227,6 +240,7 @@ def mail_release_gate(api, plan, core_policy, require_revision, commit_reference
         "close_milestone": mode == "programme", "journeys": plan.get("journeys", {}),
         "issues": accepted, "commits": commits, "ci": ci, "unreleased_context": context,
         "programme_coverage": coverage, "unreleased_context_baseline": policy["unreleased_context_baseline"],
+        "incremental_context_policy": policy.get("incremental_context_policy") if mode == "incremental" else None,
         "primary_acceptance_mode": accepted_by_number[primary]["acceptance"].get("mode", "human"),
         "stages": {"source": True, "integrated": True, "technical_scope_accepted": True,
                    "user_journey_accepted": bool(journey and journey["acceptance"].get("mode", "human") == "human"),
