@@ -80004,6 +80004,36 @@
         "Then apply unchanged independent technical review, exact integrated main CI, permitted attestation and closure audit policy.",
         "If selected for publication, pass the unchanged MAIL release plan/milestone/version/traceability/CI gate separately."
       ]
+    },
+    {
+      "id": "ops/release-feed-provenance-2026-11-04",
+      "title": "Keep update notifications on this Warpdrive distribution",
+      "module": "operations",
+      "kind": "maintenance",
+      "parent": "ops/maintenance-intake",
+      "source_tasks": [],
+      "acceptance": [
+        "Checks use exactly the source-configured distribution endpoint, without upstream fallback. Foreign or unknown cached repository provenance exposes no release tag, URL, notes, update availability or checked timestamp through the version-status API/banner, before and after failed refresh. Read-time rejection preserves the stored row. Regressions must reproduce the original endpoint/cache behavior.",
+        "Valid distribution cache remains usable on refresh failure, including malformed/foreign successful payloads. A successful valid refresh replaces an old foreign row and restores the normal update status. Preserve source-configured fork compatibility, version precedence, disable option, HTTPS host, timeout/abort/schedule, authority, plain-text rendering and dismissal. Qualify affected unit/PostgreSQL/API/static checks and independently reviewed privacy companions/inventory before integration."
+      ],
+      "dependencies": [],
+      "evidence": [],
+      "owner": "KhademOHAli1",
+      "owner_role": "Settings/integration coordinator",
+      "module_owner_chat": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "observed_status": "in-progress",
+      "observed_stage": "private source and focused qualification; not integrated or accepted",
+      "priority": "P2",
+      "release": "next",
+      "labels": [
+        "type:maintenance"
+      ],
+      "notes": "Existing intake #962 under #81. Bounded distribution endpoint/cache provenance repair; preserves source-configured forks, last-good cache, version/disable/schedule/authority behavior and stored rows. No migration, dependency change, broader MAIL acceptance, published-version assertion or deployment. Independent review, exact-main CI, permitted attestation and closure audit remain separate required gates. Original intake criteria retained verbatim.",
+      "remaining_gates": [
+        "Complete affected source/runtime/static qualification and preserve actual failures.",
+        "Integrate through the existing feature branch with required exact-main CI; apply independent technical acceptance and closure audit.",
+        "Release/deployment remain separate gates."
+      ]
     }
   ],
   "aliases": {

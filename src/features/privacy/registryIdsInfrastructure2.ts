@@ -1,8 +1,8 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds2: string[] = [
   "sourceReview:src/features/realtime/wsMultiplexer.ts#548410e96afd6613932f10df54a1e06ffeb7660e5b17af3c0b8c2c6e9f668733",
-  "sourceReview:src/features/release/constants.ts#bc4c49f52abc86327d93a0fbec44db533923785e647d695a117194eeaecb7342",
-  "sourceReview:src/features/release/githubReleases.ts#72a981b2954acc4b1cea5448816d5acd6144d1a215d7a2126ed00a0f0a733866",
+  "sourceReview:src/features/release/constants.ts#61beb82d1c4406f396858787f3edf95829372b14d15329ad9c62b51e4bad4555",
+  "sourceReview:src/features/release/githubReleases.ts#e06d3b7d940680409ca6f8a90566cd8287a28029bec92be0ec08c4d3ee4b5936",
   "sourceReview:src/features/release/job.ts#0ce9f31f7806ae647e1363f1b1a16f428ebb49b993f6ab402abd501c18a1e6e3",
   "sourceReview:src/features/release/releaseStatus.ts#3b5260337aed90f80d7217542cb1020793335a3cfae055d1aa4fb7e7562bb3fb",
   "sourceReview:src/features/release/router.ts#870a8829750af76674fe4456dddb796adf1d0d41952446b1702a546f2b7840eb",

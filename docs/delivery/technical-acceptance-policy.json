@@ -570,6 +570,34 @@
         "src/features/mcp/tools/writes-email.ts",
         "src/server/worker.ts"
       ]
+    },
+    "ops/release-feed-provenance-2026-11-04": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "2eac9454ac4c6e5215a0edbb88a2b1e4e6b8663f00190111cd7171ab54a1d65a",
+      "rationale": "A bounded source-configured release endpoint, URL provenance and last-good-cache technical repair. Requires independent source review, actual regression/runtime evidence, unchanged acceptance scope and green exact-main CI. This eligibility is not acceptance and grants no human journey, provider, release or deployment acceptance.",
+      "required_source_paths": [
+        "src/features/privacy/registryIdsInfrastructure2.ts",
+        "src/features/release/compareVersions.test.ts",
+        "src/features/release/compareVersions.ts",
+        "src/features/release/computeStatus.test.ts",
+        "src/features/release/computeStatus.ts",
+        "src/features/release/constants.ts",
+        "src/features/release/currentVersion.test.ts",
+        "src/features/release/currentVersion.ts",
+        "src/features/release/githubReleases.test.ts",
+        "src/features/release/githubReleases.ts",
+        "src/features/release/job.test.ts",
+        "src/features/release/job.ts",
+        "src/features/release/releaseProvenance.test.ts",
+        "src/features/release/releaseProvenance.ts",
+        "src/features/release/releaseStatus.test.ts",
+        "src/features/release/releaseStatus.ts",
+        "src/features/release/resolveVersion.test.ts",
+        "src/features/release/resolveVersion.ts",
+        "src/features/release/router.test.ts",
+        "src/features/release/router.ts",
+        "src/features/release/types.ts"
+      ]
     }
   },
   "codeql_workflow_id": "403980173"
