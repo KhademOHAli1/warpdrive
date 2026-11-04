@@ -1,0 +1,424 @@
+{
+  "schema": "release-maintenance-qualification/v1",
+  "status": "SELECTED_SOURCE_LOCAL_QUALIFICATION_RECORDED_NOT_ACCEPTED",
+  "historicalSection": "Preserved 31 October baseline plus dated 4 November local qualification",
+  "canonical": {
+    "id": "ops/release-maintenance-2026-11-03",
+    "issue": 960,
+    "pr": 927
+  },
+  "historicalSource": {
+    "file": "docs/dependency-security-qualification.md",
+    "sha256": "82924093159801220b74e9f2e788ec39ff23a7eddfe4ac6976de890251fc689d",
+    "placement": "Preserved byte-identical suffix after dated update"
+  },
+  "source": {
+    "revision": "99f4a2df9a12dc60246c0e25274d6a4168636f0d",
+    "tree": "269bec6683e054e05672a9fe0f73bbcaed24cf0d",
+    "files": 7811,
+    "manifestSha256": "975b68c300c89acaa53bb935fbeb7a49220bbb687cee7ee7a946f7f718c2017a",
+    "scope": "selected99f only",
+    "selectedPackageManagerInputs": {
+      "package.json": "eede68f50031c6d2341ccaa71620900caf4afc07f7f05f74807f8988378e8d54",
+      "bun.lock": "0644cca3403e652c547b7d22a2fd4f27fc10e65f32417197391a8a6ea33a08ea",
+      "bunfig.toml": "d09eb18ffee6896a4b74523d80b1bcd642a6966974e20c30bac94027a31fc202",
+      "docs-site/package.json": "c97a833a98716c3a0c6009407f37b37f9d11a46b3ffef022b126c97448f644f8",
+      "docs-site/bun.lock": "c5ede69a88b92dd52d29da83497671c60a957652c1d9b6892b10ba2e9f027827",
+      "docs-site/tsconfig.json": "049d5f8a3edcb1f323c87c3680a725f83c49fa1bc5b17ebc578d5978d08ce0c5",
+      "site/package.json": "84ecc8cd53ef35b93e3ad4ec85197de2f5587425ee31148a0a08e6696fbf6768",
+      "site/bun.lock": "27171c87ad035e52c37bc49099ba83f0ef92021a64a35e2874c9d0456a46c96f",
+      "site/next.config.ts": "27a7fe75c3398f1dd1e089060be7646126f9831a07cb5e71b86446dd7418a86b",
+      "patches/@fastify-deepmerge@3.2.4.patch": "54376dc3c504e29c92004d7567b7324a3b667afe8c94ac1616c09b867f1b3238",
+      "patches/@shadcn-registry@0.2.1.patch": "219131f3e48ced514a968821db7dd4e6304c0a050e78aa87536ccccdde97ee18",
+      "patches/eslint-plugin-import-x@4.17.1.patch": "651258b3138c351583f4288444fdf9118858f6b06baf813c14e199d856024707",
+      "patches/minio@8.0.7.patch": "3b70a227f576699eb9a1825624594914481a23a3eb08ea7f75a48de6c2a46d37",
+      "patches/next@16.4.3.patch": "dfe3c2ebd8572893cbd9ae759413aa520dce10fb4479f40203f1c620b2b2493e",
+      "patches/query-string@7.1.3.patch": "32fabd661c87a64d8e92d6fb323ef8ca9b61812de3a3cba21215ac3373e9b641",
+      "patches/shadcn@4.23.0.patch": "75bd1aa3fb9742bf1356fa05a439c893ede7bf6ecaa7fa4b5041c1c9a598f434"
+    },
+    "declaredRuntimes": {
+      "rootBun": {
+        "version": "1.4.4",
+        "binarySha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc"
+      },
+      "docsAndSiteBun": {
+        "version": "1.4.2",
+        "binarySha256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5"
+      }
+    }
+  },
+  "originalAC": {
+    "preserved": ["AC1", "AC2", "AC3", "AC4", "AC5"],
+    "status": "Selected-source local AC1-AC4 checks passed; AC5 report traceability is supplied by the containing commit. Formal main-CI/technical acceptance/publication gates remain open.",
+    "AC1": "LOCAL_SELECTED99F_CLAUSES_COMPLETE",
+    "AC2": "LOCAL_SELECTED99F_CLAUSES_COMPLETE",
+    "AC3": "LOCAL_SELECTED99F_CLAUSES_COMPLETE",
+    "AC4": "COMPLETE_SELECTED99F_HYDRATION_UNIT38_AND_REAL_EN_DE_FA_BROWSER41",
+    "AC5": "LOCAL_CHECKS_COMPLETE_SAFE_REPORT_TRACEABILITY_SATISFIED_BY_CONTAINING_COMMIT",
+    "separateGates": "Main CI, independent technical review, attestation, acceptance, closure, release and deployment are separate policy gates, not extra AC5 scope."
+  },
+  "completed": {
+    "rootChecks": {
+      "state": "PASS_SELECTED99F_I18N_BIOME_TYPED_ESLINT_UI_CHECK",
+      "facts": "4507 configured files; 10 disjoint batches; 14/14 phases; zero ESLint errors/fatals/warnings; source/protected/index held; owned groups gone",
+      "receipt": {
+        "id": ".runtime/goal-dependency-remediation/root-selected99f-lint1/qualification1/HANDOFF.json",
+        "sha256": "de643519ba0a43e2766ab4f2a8c46b60e2eca34a200533a0393262cb8c24e924"
+      },
+      "review": {
+        "id": ".runtime/goal-dependency-remediation/root-selected99f-lint1/actual-result-review.json",
+        "sha256": "a54928a01d69bf656fe32d0e6e3fa23f492bbca36442e74d86606dbb133cd5cf"
+      }
+    },
+    "sdkAndStorage": {
+      "state": "PASS_SELECTED99F_CANONICAL_HOISTED_API_BUILD_AND_STORAGE",
+      "facts": "335 API assertions (81+154+100); normal build full TSC, 340 artifact checks and 5 workers; affected storage 103 (37 unit+66 integration); controlled physical storage 25 and production browser 25 with zero page errors; no full908/provider/main-CI/customer acceptance",
+      "api": [
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-sdk-build-prep2/current-hoisted-api-qualification.json",
+          "sha256": "597fef5a63b1e26e9336b2dac2fe96555bbf65f673ae88136c90853f4ee5da24"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-api-replay-review1/actual-api-results-review.json",
+          "sha256": "8711db9bacb50b7b3937b69ed1dda75e8ce89cf29dc86c65214c09c32d3a8b97"
+        }
+      ],
+      "build": [
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-sdk-build-prep2/build.public.json",
+          "sha256": "2c7562c0570365c3e20443f8b4efd7d35241053047fe7cc8df0f0a14f8cea4c7"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-sdk-build-prep2/admitted-build.public.json",
+          "sha256": "e79431f177930f9065f003eaa9f62e1ca7fe4f3e44cf38126b96aaf97c06a95e"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-sdk-review1/actual-build-admission-review.json",
+          "sha256": "8d722b567ff9b35bd873143309bc9c85d195cb0a6bbe08e5cd53e93599f6b083"
+        }
+      ],
+      "storage": [
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-storage-regressions-prep1/execution1/HANDOFF.json",
+          "sha256": "53fd6d90c6c5be06a9197f7c7f69a3ae5409b82960210428fa53adbf27f1e72c"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-storage-regressions-prep1/actual-result-review.json",
+          "sha256": "96b969082daee03edbe306d9252c82d875d73352727bcf32e4cae6341992bf59"
+        }
+      ],
+      "physicalBrowser": [
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-runtime-prep2/runs/ROOT-SDK-HOISTED-PHYSICAL-STORAGE-BROWSER-20261104-2/sdk-physical-contract.public.json",
+          "sha256": "fe62a023b0016f2ef3a9bdc1dff06a3174b301854e51408207d1b0bcaab67bb4"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-runtime-prep2/runs/ROOT-SDK-HOISTED-PHYSICAL-STORAGE-BROWSER-20261104-2/browser-result.public.json",
+          "sha256": "e7e98b8771235501cbc2256b6e184c0c55deedcdd8b5483133419412185caba9"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-runtime-prep2/runs/ROOT-SDK-HOISTED-PHYSICAL-STORAGE-BROWSER-20261104-2/runtime.public.json",
+          "sha256": "defbad6051829a43e6adeeba532250b4fabea9697092d8cfee2c3111182e4616"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint2/HANDOFF.json",
+          "sha256": "2d1df26fbf624347119521404eb3b181562ef563093d7181a4780d4bd015da1b"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint2/actual-result-review.json",
+          "sha256": "0f5e81e9b9d4c37c9b393e8ada4548f7c25127a6bcefa7ac0cad1fa5a56311fe"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint2/cleanup-readback.json",
+          "sha256": "9df3944e03e6227a6224ec3227658a973137432e7a5f79483552ac10cd3ce58c"
+        }
+      ]
+    },
+    "dependencyLedger": {
+      "state": "COMPLETE_SELECTED_DELTA_FIELDS_AND_SRI_VERIFIED",
+      "facts": "167 identities; 113 logical transitions; 100 official exact SRI records; 35 engine declaration changes; no blanket legal or universal compatibility claim",
+      "ledger": {
+        "id": ".runtime/goal-dependency-remediation/remaining-qualification-audit1/dependency-engine-license-ledger.json",
+        "sha256": "b1fac139bf6b3efdda59af02649dd49f5ec8ca0fce08bc6af7f8dd1bcf9872ab"
+      },
+      "review": {
+        "id": ".runtime/goal-dependency-remediation/remaining-qualification-audit1/dependency-delta-final-review.json",
+        "sha256": "9148454bf3bb722da8349c4d43d8e0b3556b222b1b11a69a4f4e539b0de43728"
+      },
+      "ciDefinition": {
+        "id": ".runtime/goal-dependency-remediation/remaining-qualification-audit1/ci-definition-preservation.json",
+        "sha256": "3a9e487ba7e46844e2d7786cd0bf9f9b9c2ff4b91444e5c9201b097ff9584096",
+        "facts": "Static baseline-to-selected workflow comparison; complexity 15 retained; no hosted or managed CodeQL state"
+      },
+      "isolatedBrowserAudit": {
+        "id": ".runtime/goal-dependency-remediation/browser-lock-audit-current1/HANDOFF.json",
+        "sha256": "31828fd5a345b7050ba070d8ccb12fdad561cbbb90d001a9c5b4efb25623eb14",
+        "disposition": "All severity,2packages,0 findings; no install/browser execution."
+      }
+    },
+    "rootInstall": {
+      "state": "PASS_CANONICAL_HOISTED_INSTALL_AND_READBACK",
+      "facts": "13/13 scoped dependency edges pass in Node+Bun; 12/12 installed patched files read back; source and lock alignment retained",
+      "receipt": {
+        "id": ".runtime/goal-dependency-remediation/canonical-hoisted-install2/independent-readback/HANDOFF.json",
+        "sha256": "d880a28e4c4059542fbbfc353dc93032e624ee8262f8cfa2fbe57dde231de294"
+      }
+    },
+    "production": {
+      "state": "PASS_FORWARD_ADMITTED_INSTALL_NODE71_BUN70_PLUS_NATIVE1_AND_SDK81",
+      "facts": "Node71 resolution; Bun70 physical resolutions plus native ws interface witness; SDK81 API/in-memory; prior failures preserved; no handshake, full WebSocket, physical, provider, main-CI or release claim",
+      "receipts": [
+        {
+          "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep1/resolver71.node.result.json",
+          "sha256": "ccd5b5da1fd58d8e5d190ba0952c3de67bdc6844829016524d4de639719142b9"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep2/resolver71.bun2.result.json",
+          "sha256": "62c5084d03682e2876c2da24096957d3e7a991975c9f92ef15c5b8a9364d6c96"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep1/native-ws-probe.result.json",
+          "sha256": "5d2854b9b1ea64dcb544dfd71b4399b85f00a97f54401ec0ffdf4971dc0f7c96"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime-prep1/minio81.result.public.json",
+          "sha256": "683c16f9e72e77a7a7dd7d836119d0a55b4e464a6b2d4ed4ff9ee7c8c29f452c"
+        },
+        {
+          "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime2/HANDOFF.json",
+          "sha256": "1599b00909ee4aca3d95bf3ae52d190de75333412458917cc6d62d7bda75c669"
+        }
+      ],
+      "review": {
+        "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime2/actual-result-review.json",
+        "sha256": "87e7cbc5f1cb5a187ad0b3f806f2b3499f3e780ab4b78828ab3cf4b8766c3928"
+      }
+    },
+    "migration": {
+      "state": "PASS_SELECTED99F_POPULATED_MIGRATION_REHEARSAL_ONLY",
+      "facts": "21/21 across 5 files; zero fail/skip/todo/runtime; populated 103->104->105, rerun/refusal and concurrency cases; source/index held; owned gone; foreign resources held",
+      "receipt": {
+        "id": ".runtime/goal-dependency-remediation/migrations-selected99f-rehearsal1/execution2/HANDOFF.json",
+        "sha256": "7cf706f0a444ed14c3c38cfd536ada525479aa08444b02f248a33b65da8c6903"
+      },
+      "review": {
+        "id": ".runtime/goal-dependency-remediation/migrations-selected99f-rehearsal1/actual-result-review2.json",
+        "sha256": "ff4a6792cf979354e3f57156318f479d281c3ed5422c5d44ef33bc6326654818"
+      }
+    },
+    "docsSite": {
+      "facts": "Selected99f Bun1.4.2 docs frozen install 1202 packages, audit 1184 packages/0 vulnerabilities, normal build 146 static artifacts/32 HTML/13 serve assertions; site frozen install 137 packages, audit 216/0, 30 tests, normal static build",
+      "docsSource": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/HANDOFF.source.json",
+        "sha256": "5b6476f272186bad2690b24d9fd1d079d5337568ca5b8bc5d2232477fa067f46"
+      },
+      "docsInstall": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/install4/HANDOFF.json",
+        "sha256": "f3ae2651545aab399c30cb67ae19a3d1ec666400035b804197623a403e316328"
+      },
+      "docsReceipt": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/docs-build1/HANDOFF.json",
+        "sha256": "7f8650d4104a4027b5705c3ee1e06072106f084f8bc6d5abb59cc55f3a846c9b"
+      },
+      "docsArtifactAdmission": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/docs-build1/artifact-admission.json",
+        "sha256": "4da36dbb83241a8996fa751a822939081674c26ff5c570708ffe293d52b5804e"
+      },
+      "docsServe": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/serve13-1/HANDOFF.json",
+        "sha256": "8efa232f98ecdc0141c8641067c397292cc698cf29a7cbe9c4f80e99d605cf9e"
+      },
+      "docsReview": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/actual-docs-result-review.json",
+        "sha256": "bc504e2975ca64746824a22cc27aea9dddb034780d4f30ad56c09554c188167b"
+      },
+      "siteInstall": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/site-install1/HANDOFF.json",
+        "sha256": "5faa68203bb0cbfa513232e5d252b88b187f11630ddc613ba37c14f7796c0933"
+      },
+      "siteReceipt": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/site-build1/HANDOFF.json",
+        "sha256": "80c616c5e9c4e2ed56ba4d497c8e7693e0eb31ecf38a0ee2cf0109150fd9e340"
+      },
+      "siteReadback": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/site-build1/root-artifact-cleanup-readback.json",
+        "sha256": "fa84bd1be7fcf33581c72ce6f849f88ef1cd4e7f870fc9d59ff37c695aab0802"
+      },
+      "siteReview": {
+        "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/actual-site-result-review.json",
+        "sha256": "ba25a1efcb1d101b0a79809d5248fc6698d844558a5a320a5bd73558be00846d"
+      }
+    },
+    "hydrationUnit": {
+      "state": "PASS_SELECTED99F_HYDRATION_AND_CONNECTION_UNIT38_ONLY",
+      "facts": "Current selected99f unit proof is 38/38 across 5 existing files with zero skip/todo/runtime/unhandled; this is not real-browser EN/DE/FA hydration",
+      "receipt": {
+        "id": ".runtime/goal-dependency-remediation/hydration-unit-selected99f1/execution1/HANDOFF.json",
+        "sha256": "c1a6d015a0299e7d8b61c9994009107e2823a897c99938dc60e615f20d691c58"
+      },
+      "review": {
+        "id": ".runtime/goal-dependency-remediation/hydration-unit-selected99f1/execution1/actual-result-review.json",
+        "sha256": "4b485afa97b88b1e7ad213961ea8ff98681f5525ae26855946a655871cdca76a",
+        "disposition": "Independent actual-case/source/resource/cleanup review PASS."
+      }
+    },
+    "hydrationBrowser": {
+      "state": "PASS_SELECTED99F_EN_DE_FA_HYDRATION_41",
+      "buildId": "d8ar2-BMc2T1yaEnkpc1B",
+      "checks": 41,
+      "pageErrors": 0,
+      "hydrationWarnings": 0,
+      "consoleWarningsOrErrors": 0,
+      "locales": [
+        {
+          "locale": "en",
+          "tag": "en-US",
+          "calendar": "gregory",
+          "numberingSystem": "latn",
+          "timeZone": "UTC",
+          "ssrTimeText": "Last synchronized 2026-11-03T13:37:52.202Z",
+          "localizedTimeText": "Last synchronized Nov 3, 2026, 01:37 PM",
+          "datetime": "2026-11-03T13:37:52.202Z",
+          "serverISO": true,
+          "localized": true,
+          "ownershipControls": true,
+          "nullFallback": true
+        },
+        {
+          "locale": "de",
+          "tag": "de-DE",
+          "calendar": "gregory",
+          "numberingSystem": "latn",
+          "timeZone": "UTC",
+          "ssrTimeText": "Zuletzt synchronisiert: 2026-11-03T13:37:52.202Z",
+          "localizedTimeText": "Zuletzt synchronisiert: 3. Nov. 2026, 13:37",
+          "datetime": "2026-11-03T13:37:52.202Z",
+          "serverISO": true,
+          "localized": true,
+          "ownershipControls": true,
+          "nullFallback": true
+        },
+        {
+          "locale": "fa",
+          "tag": "fa-IR",
+          "calendar": "persian",
+          "numberingSystem": "arabext",
+          "timeZone": "UTC",
+          "ssrTimeText": "آخرین همگام‌سازی: 2026-11-03T13:37:52.202Z",
+          "localizedTimeText": "آخرین همگام‌سازی: ۱۲ آبان ۱۴۰۵، ۱۳:۳۷",
+          "datetime": "2026-11-03T13:37:52.202Z",
+          "serverISO": true,
+          "localized": true,
+          "ownershipControls": true,
+          "nullFallback": true
+        }
+      ],
+      "sameNavigationRawHtmlISO": true,
+      "browserActualIntlLocalized": true,
+      "freshNativePasswordSessions": 3,
+      "ownedDisplayRows": 2,
+      "foreignControlExcluded": true,
+      "nullFallbackAndOwnershipControlsPreserved": true,
+      "nativeReceipt": {
+        "id": ".runtime/goal-dependency-remediation/hydration-selected99f-prep1/runs/ROOT-SDK-SELECTED99F-HYDRATION-EN-DE-FA-20261104-1/runtime.public.json",
+        "sha256": "2c0625b185a4fafff51c5e9e57e1ea9a65295df38ae1f23e43776d063fdedb88"
+      },
+      "browserReceipt": {
+        "id": ".runtime/goal-dependency-remediation/hydration-selected99f-prep1/runs/ROOT-SDK-SELECTED99F-HYDRATION-EN-DE-FA-20261104-1/browser-result.public.json",
+        "sha256": "e9f5a3e394fd83c64f2955cb8eea21e2314a738689a70a09e2538994c3ab7b68"
+      },
+      "browserDriverReceipt": {
+        "id": ".runtime/goal-dependency-remediation/hydration-selected99f-prep1/runs/ROOT-SDK-SELECTED99F-HYDRATION-EN-DE-FA-20261104-1/browser-driver.public.json",
+        "sha256": "d83a78f0ee5b7906ebf0989bad53336502d0677e06de6520e3782f7373466726"
+      },
+      "jointReceipt": {
+        "id": ".runtime/goal-dependency-remediation/hydration-selected99f-joint1/HANDOFF.json",
+        "sha256": "59f5ddc0f4a4e2429223e13c2b31c02e2ea760eeb1243e46dd8a8152ccb9ea6e"
+      },
+      "rootCleanupReadback": {
+        "id": ".runtime/goal-dependency-remediation/hydration-selected99f-joint1/root-cleanup-readback.json",
+        "sha256": "5b1950ea9cff1386f0d38b4e8c964d3d6f65d8132ca727a311e790a5d793d15d"
+      },
+      "scope": "Synthetic display fixtures, real compiled settings page, actual native sessions; not provider connection, send, full mailbox journey, release or customer acceptance.",
+      "review": {
+        "id": ".runtime/goal-dependency-remediation/hydration-selected99f-joint1/actual-result-review.json",
+        "sha256": "341d675cc224167117ca32d03858c66cecfa824e60a8d94360b00fcdd537eb56"
+      }
+    }
+  },
+  "open": {
+    "acceptance": "OPEN: no current-main, newer741/0c1, full-suite, hosted CI, release, deployment, provider or customer acceptance claim",
+    "publication": "The report is versioned by its containing commit on the existing feature branch. Integration, exact included-main CI, formal acceptance, closure and publication remain pending."
+  },
+  "reproducibility": {
+    "rootRuntime": "Bun 1.4.4",
+    "rootFrozen": "bun install --frozen-lockfile",
+    "rootChecks": [
+      "bun run typecheck",
+      "bun run lint",
+      "bun run test:unit --maxWorkers=2",
+      "bun run test:integration --maxWorkers=2"
+    ],
+    "rootBuild": ["bun run build", "bun run build:workers"],
+    "docsBun142": [
+      "bun install --frozen-lockfile",
+      "bun --bun ./node_modules/.bin/docusaurus build"
+    ],
+    "siteBun142": [
+      "bun install --frozen-lockfile",
+      "bun --bun next typegen",
+      "bun run typecheck",
+      "bun run test",
+      "bun run build"
+    ],
+    "rootProductionFrozen": "bun install --frozen-lockfile --production",
+    "allSeverityAudit": "bun audit --json (without severity/filter/ignore options, separately in each locked project)"
+  },
+  "customHarness": {
+    "rootLintRunnerSha256": "8e31a7420df74ac65ba7c58edcd5353957a05107caccaa73dfca21d943c7296e",
+    "rootLintEnumeratorSha256": "bc75edfdcd92e80021c498bb5e26056c2be6298ade5cfc057956d84a34895ba6",
+    "migrationRunnerSha256": "b4f40aeb85c4d0e8295126d0bce9618977b7449cf85a895a94c8f0bb729c1f63",
+    "evidence": "Local evidence archive only: raw logs and custom harness source are retained at these relative IDs, not tracked/publicly downloadable. Reproduction requires that archive plus fresh owned fixture allocation; normal repository commands are listed separately."
+  },
+  "boundary": "Selected99f local qualification; does not qualify newer feature commits or main and is not formal acceptance, closure, release, deployment or provider/customer proof.",
+  "preservedAttempts": [
+    {
+      "id": ".runtime/goal-dependency-remediation/sdk-build-runtime-retarget1/build/build.public.json",
+      "sha256": "d3e57e037426c634ea18b2e8529f4fd602ef64165b9cd4d5fc1b5dcc2d9545d0",
+      "disposition": "FAIL: earlier isolated-layout build stopped at 8 GiB+704 KiB observed RSS; not admitted."
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/hoisted-runtime-joint1/HANDOFF.json",
+      "sha256": "819eb0c1b147cde44da73746ef33a124756aa326035cedef8bcb5030d2dded32",
+      "disposition": "FAIL: physical precondition assertion after15passed checks; no browser launch. Backend cause not reconstructed; later helper wording correction separately reviewed."
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/install1/admission.json",
+      "sha256": "e5228ec0dcbbae0e7c325991b11de11c780cabad650af8511dcf26219b8783b3",
+      "disposition": "FAIL_INSTALL_TARGET_ADMISSION: CLI0 without install target; original introduced config argument."
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/docs-site-frozen-install2/install3/HANDOFF.json",
+      "sha256": "e00113a02c71b6bec767313cef2e40a1f0f42f6e37a812efbc051b85ecc987b4",
+      "disposition": "FAIL: introduced config argument interpreted as dependency path/ENOTDIR; normalCIcommand restored."
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/migrations-selected99f-rehearsal1/preflight-failure.json",
+      "sha256": "04e2f04f8680c4f105e116097c2dc55f624401567d056aa905448212c1698327",
+      "disposition": "FAIL before DB/tests: helper call signature; exact corrected invocation2 separate."
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/install1/HANDOFF.json",
+      "sha256": "c53538c5ca76c9c6d191b3287c1b38c102423f662a472efb152b6aca4d086aa3",
+      "disposition": "FAIL original admission oracle only: CLI0 frozen install succeeded, legitimate production peers invalidated dev-absence assumption."
+    },
+    {
+      "id": ".runtime/goal-dependency-remediation/root-production-hoisted-install1/runtime1/HANDOFF.json",
+      "sha256": "40c5d5363990e98ef0d0d8422e18f06bad4e6274ee8758e9e0610c7159bf5322",
+      "disposition": "FAIL Bun nativews file-only resolver: retained Node71PASS; SDK81 not started then. Corrected Bun-only invocation2 and SDK81 separately passed."
+    }
+  ],
+  "closedEvidenceGaps": {
+    "hydration": "Current selected99f/d8ar real EN/DE/FA SSR/hydration41 and focused38 passed; independent actual-result review and Root fresh cleanup readback passed."
+  }
+}
