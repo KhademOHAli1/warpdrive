@@ -12,7 +12,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Each feature chat owns its module, private helpers, UI and focused tests. Continue ordinary implementation autonomously; coordinate changes to shared contracts and overlapping files with the integration chat.
 
-Main publication belongs to the settings/integration coordinator (chat `01a19251-a472-7cd1-86cd-8dc245dd5b84`). Hand off qualified increments for sequential integration. Finish the current main CI before the next feature publication; a forward repair of a failing CI gate is a separate, explicitly reviewed increment. Preserve the actual results of cancelled or failed runs.
+Commit and push new work on feature branches and use pull requests. Do not commit or push directly to main. Main publication belongs to the settings/integration coordinator (chat `01a19251-a472-7cd1-86cd-8dc245dd5b84`). Hand off qualified increments for sequential integration. Finish the current main CI before the next feature publication; a forward repair of a failing CI gate is a separate, explicitly reviewed increment. Preserve the actual results of cancelled or failed runs.
 
 Every included main commit needs a genuine canonical issue reference or a committed mapping under `docs/delivery/commit-links.json`. Follow `docs/delivery/tracking.md`; a pull-request number alone is not a canonical issue. Preserve unfinished work and existing scope; source qualification does not close acceptance or release gates.
 

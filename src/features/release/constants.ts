@@ -1,5 +1,5 @@
-// The public OSS mirror we watch for new releases. Self-hosters of a fork can repoint this.
-const RELEASE_REPO = "sneg55/warpdrive";
+// Follow releases of this distribution. Other forks can repoint this repository.
+const RELEASE_REPO = "KhademOHAli1/warpdrive";
 export const GITHUB_RELEASES_URL = `https://api.github.com/repos/${RELEASE_REPO}/releases/latest`;
 
 // GitHub asks unauthenticated callers to send a User-Agent; omitting it gets requests rejected.

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const connectGmailStart = vi.fn();
@@ -15,7 +15,9 @@ vi.mock("@/features/email/actions", () => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf-token" }));
 
-import { EmailSyncClient, type MailboxView } from "./EmailSyncClient";
+import { EmailSyncClient, type MailboxView } from "@/app/(app)/settings/email-sync/EmailSyncClient";
+import { mailboxConnectionMessages } from "@/features/email/connections/messages";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 
 const originalLocation = window.location;
 
@@ -59,14 +61,62 @@ describe("EmailSyncClient", () => {
     expect(screen.getByRole("button", { name: "Disconnect" })).toBeInTheDocument();
   });
 
-  it("Disconnect calls the action with csrf + account id then refreshes", async () => {
+  it.each(["en", "de", "fa"] as const)(
+    "requires confirmation and preserves cancellation before disconnect (%s)",
+    async (locale) => {
+      const copy = mailboxConnectionMessages(locale);
+      disconnectMailboxAction.mockResolvedValue({ ok: true, value: { disconnected: true } });
+      render(
+        <LocaleProvider locale={locale}>
+          <EmailSyncClient mailbox={connected} />
+        </LocaleProvider>,
+      );
+      fireEvent.click(screen.getByRole("button"));
+      const dialog = screen.getByRole("alertdialog", { name: copy.disconnectTitle });
+      expect(disconnectMailboxAction).not.toHaveBeenCalled();
+      expect(dialog).toHaveTextContent(copy.disconnectDescription);
+      expect(dialog).toHaveTextContent(copy.disconnectQueued);
+      expect(dialog).toHaveTextContent(copy.disconnectGoogle);
+      expect(dialog).not.toHaveTextContent(copy.disconnectManual);
+      fireEvent.click(within(dialog).getByRole("button", { name: copy.cancel }));
+      expect(disconnectMailboxAction).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button"));
+      fireEvent.click(
+        within(screen.getByRole("alertdialog")).getByRole("button", { name: copy.disconnect }),
+      );
+      await waitFor(() =>
+        expect(disconnectMailboxAction).toHaveBeenCalledWith("csrf-token", { accountId: "acc-1" }),
+      );
+      expect(disconnectMailboxAction).toHaveBeenCalledTimes(1);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("does not disconnect another mailbox if the target changes while confirmation is open", () => {
     disconnectMailboxAction.mockResolvedValue({ ok: true, value: { disconnected: true } });
+    const { rerender } = render(<EmailSyncClient mailbox={connected} />);
+    fireEvent.click(screen.getByRole("button", { name: "Disconnect" }));
+    rerender(
+      <EmailSyncClient
+        mailbox={{ ...connected, id: "acc-2", emailAddress: "other@example.com" }}
+      />,
+    );
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Disconnect" }),
+    );
+    expect(disconnectMailboxAction).not.toHaveBeenCalled();
+  });
+
+  it("restores an actionable control after a disconnect request rejects", async () => {
+    disconnectMailboxAction.mockRejectedValue(new Error("synthetic transport failure"));
     render(<EmailSyncClient mailbox={connected} />);
     fireEvent.click(screen.getByRole("button", { name: "Disconnect" }));
-    await waitFor(() =>
-      expect(disconnectMailboxAction).toHaveBeenCalledWith("csrf-token", { accountId: "acc-1" }),
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Disconnect" }),
     );
-    expect(refresh).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeVisible());
+    expect(screen.getByRole("button", { name: "Disconnect" })).toBeEnabled();
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it("shows Reconnect and the last error for a disconnected mailbox", () => {

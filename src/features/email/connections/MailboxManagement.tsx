@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import { mailboxDisconnectDescription } from "./disconnectCopy";
 import { mailboxConnectionMessages } from "./messages";
 import type {
   MailboxConnectionActions,
@@ -52,6 +53,7 @@ export function MailboxManagement({
     );
   }
   const active = mailbox.status !== "disconnected";
+  const disconnectDescription = mailboxDisconnectDescription(L, mailbox.provider);
   return (
     <div className="space-y-5">
       <div className="space-y-2">
@@ -118,7 +120,9 @@ export function MailboxManagement({
         <p className="text-sm text-muted-foreground">{L.disconnectPending}</p>
       )}
       {mailbox.remoteRevocationStatus === "manual" && (
-        <p className="text-sm text-muted-foreground">{L.disconnectManual}</p>
+        <p className="text-sm text-muted-foreground">
+          {mailbox.provider === "gmail" ? L.disconnectGoogleManual : L.disconnectManual}
+        </p>
       )}
       {mailbox.remoteRevocationStatus === "complete" && (
         <p className="text-sm text-muted-foreground">{L.disconnectComplete}</p>
@@ -126,6 +130,7 @@ export function MailboxManagement({
       {active && (
         <div className="space-y-3 border-t pt-4">
           <p className="text-xs leading-relaxed text-muted-foreground">{L.disconnectDescription}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{L.disconnectQueued}</p>
           <Button
             variant="outline"
             size="sm"
@@ -141,11 +146,7 @@ export function MailboxManagement({
         open={confirmDisconnect}
         onOpenChange={setConfirmDisconnect}
         title={L.disconnectTitle}
-        description={
-          mailbox.provider === "imap_smtp"
-            ? `${L.disconnectDescription} ${L.disconnectManual}`
-            : L.disconnectDescription
-        }
+        description={disconnectDescription}
         confirmLabel={L.disconnect}
         cancelLabel={L.cancel}
         destructive

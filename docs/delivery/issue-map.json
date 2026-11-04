@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
-  "generated_at": "2026-11-02T15:37:39+00:00",
+  "generated_at": "2026-11-04T09:23:31+00:00",
   "issues": {
     "programme/integrations": {
       "number": 7,
@@ -5438,6 +5438,18 @@
       "id": 6165710240,
       "node_id": "I_kwDOVcNfnM8AAAABb4FFoA",
       "url": "https://github.com/KhademOHAli1/warpdrive/issues/916"
+    },
+    "ops/release-maintenance-2026-11-03": {
+      "number": 960,
+      "id": 6192799482,
+      "node_id": "I_kwDOVcNfnM8AAAABcR6e-g",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/960"
+    },
+    "ops/release-feed-provenance-2026-11-04": {
+      "number": 962,
+      "id": 6199407568,
+      "node_id": "I_kwDOVcNfnM8AAAABcYNz0A",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/962"
     }
   },
   "sources": [

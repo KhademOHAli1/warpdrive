@@ -1,7 +1,7 @@
 "use client";
 
 import { Mail } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -23,6 +23,12 @@ import { mailboxConnectionMessages, mailboxConnectionTranslator } from "./messag
 import type { MailboxConnectionActions, MailboxConnectionView } from "./types";
 import { MailboxConnectionFeedback, useMailboxConnectionTask } from "./useMailboxConnectionTask";
 
+// ICU date text can differ between Bun and the browser even with identical preferences.
+// Keep the shared ISO date through hydration, then display the browser's localized text.
+const subscribeHydration = () => () => undefined;
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
+
 export function MailboxConnectionRow({
   mailbox,
   actions,
@@ -43,6 +49,7 @@ export function MailboxConnectionRow({
   const L = mailboxConnectionMessages(preferences.locale);
   const t = mailboxConnectionTranslator(preferences.locale, preferences.numberingSystem);
   const format = useFormatters();
+  const hydrated = useSyncExternalStore(subscribeHydration, clientSnapshot, serverSnapshot);
   const [open, setOpen] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const gmail = useMailboxConnectionTask();
@@ -89,7 +96,9 @@ export function MailboxConnectionRow({
                 <span>{L.neverSynced}</span>
               ) : (
                 <time dateTime={mailbox.lastSyncAtIso}>
-                  {t("lastSynced", { date: format.dateTime(mailbox.lastSyncAtIso) })}
+                  {t("lastSynced", {
+                    date: hydrated ? format.dateTime(mailbox.lastSyncAtIso) : mailbox.lastSyncAtIso,
+                  })}
                 </time>
               )}
             </div>

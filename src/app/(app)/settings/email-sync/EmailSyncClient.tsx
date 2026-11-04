@@ -3,8 +3,12 @@ import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { connectGmailStart, disconnectMailboxAction } from "@/features/email/actions";
+import { mailboxDisconnectDescription } from "@/features/email/connections/disconnectCopy";
+import { mailboxConnectionMessages } from "@/features/email/connections/messages";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -26,6 +30,7 @@ export interface MailboxView {
 
 export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): React.ReactNode {
   const L = useSettingsMessages();
+  const mailboxCopy = mailboxConnectionMessages(useLocale());
   const format = useFormatters();
   const S = L._emailSync;
   function formatSync(iso: string | null): string {
@@ -38,6 +43,7 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
   // eslint-disable-next-line react-hooks/set-state-in-effect -- the clock is the browser's, not the request's: rendering a stall from the server time would disagree with the tab a minute later
   useEffect(() => setNow(new Date()), []);
   const [pending, setPending] = useState(false);
+  const [disconnectAccountId, setDisconnectAccountId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const connected = mailbox !== null && mailbox.status === "connected";
   const health = mailboxDisplayHealth(mailbox, now);
@@ -59,16 +65,18 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
     }
   }
 
-  async function disconnect(): Promise<void> {
-    if (mailbox === null) return;
+  async function disconnect(accountId: string): Promise<void> {
+    if (mailbox === null || mailbox.id !== accountId || pending) return;
     setPending(true);
     setError(null);
-    const r = await disconnectMailboxAction(readCsrfToken(), { accountId: mailbox.id });
-    setPending(false);
-    if (r.ok) {
-      router.refresh();
-    } else {
+    try {
+      const result = await disconnectMailboxAction(readCsrfToken(), { accountId });
+      if (result.ok) router.refresh();
+      else setError(S.actionError);
+    } catch {
       setError(S.actionError);
+    } finally {
+      setPending(false);
     }
   }
 
@@ -109,13 +117,17 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
       </SettingsCardBody>
 
       <SettingsCardFooter>
-        {error !== null ? <span className="mr-auto text-sm text-red-600">{error}</span> : null}
+        {error !== null ? (
+          <span role="alert" className="mr-auto text-sm text-red-600">
+            {error}
+          </span>
+        ) : null}
         {connected ? (
           <Button
             type="button"
             variant="outline"
             disabled={pending}
-            onClick={() => void disconnect()}
+            onClick={() => setDisconnectAccountId(mailbox.id)}
           >
             {pending ? S.disconnecting : S.disconnect}
           </Button>
@@ -125,6 +137,23 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
           </Button>
         )}
       </SettingsCardFooter>
+      <ConfirmDialog
+        open={disconnectAccountId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDisconnectAccountId(null);
+        }}
+        title={mailboxCopy.disconnectTitle}
+        description={mailboxDisconnectDescription(mailboxCopy, "gmail")}
+        confirmLabel={mailboxCopy.disconnect}
+        cancelLabel={mailboxCopy.cancel}
+        destructive
+        pending={pending}
+        onConfirm={() => {
+          const accountId = disconnectAccountId;
+          setDisconnectAccountId(null);
+          if (accountId !== null) void disconnect(accountId);
+        }}
+      />
     </SettingsCard>
   );
 }

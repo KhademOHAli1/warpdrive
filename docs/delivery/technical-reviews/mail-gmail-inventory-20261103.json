@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/MAIL-001",
+  "acceptance_sha256": "53ccbc9e7af2b355d3ae0cf8ed7cf4cbc207560fef1c96ffe7d62c7fd703dc12",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1a273-9418-7090-a0eb-1b72fb8a6655",
+    "task_id": "/root/gmail_inventory_review"
+  },
+  "reviewed_revision": "6a1802d2e7e533ea0222c8e7e0d7d7c99b2bc994",
+  "reviewed_at_utc": "2026-11-03T18:20:58.020911+00:00",
+  "summary": "Accepted the complete MAIL-001 source-inventory criterion: sync, local drafts, interactive and scheduled sending, tracking, domain restrictions, and current single-mailbox assumptions. The document accurately distinguishes implemented behavior from gaps after correction of an overbroad draft-replay claim. Current source and the actual worker, native login and mailbox OAuth paths support the inventory.",
+  "limitations": "This accepts the bounded source-inventory deliverable only, not MAIL-002 through MAIL-012, other IG scopes, live Google/provider behavior, installation or restore, EN/DE/FA human journeys, issue closure, release or deployment. Semantic review covered selected functions and sections; whole-file source hashes are drift fences, not a whole-file security-audit claim. Existing application-wide CI and controlled independent-mail R1 evidence remain contextual at their own revisions. The reviewed commit and its URLs are local and pending branch push at the time of review; integrated exact-main CI and all acceptance/release gates remain Root responsibilities.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/6a1802d2e7e533ea0222c8e7e0d7d7c99b2bc994/docs/mail/gmail-behavior-ownership.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6a1802d2e7e533ea0222c8e7e0d7d7c99b2bc994/docs/mail/gmail-behavior-ownership.qualification.json"
+      ],
+      "assessment": "All seven areas in the unchanged canonical criterion are recorded from current source, including explicit limits and missing behavior. No live-provider or other task acceptance is inferred from the inventory."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/mail/gmail-behavior-ownership.md",
+      "sha256": "fcb05fa5c5108c553a96448189b74ed2d4c4ac51485d17a5860b284e937e906f"
+    },
+    {
+      "path": "docs/mail/gmail-behavior-ownership.qualification.json",
+      "sha256": "b7db5d85542a2ddeeb2a834afb684705a9093b0acf96b4cc98d22b1b04cbee15"
+    },
+    {
+      "path": "src/app/(app)/inbox/compose/ComposePageClient.tsx",
+      "sha256": "b6fccb9766b5eecb08747df4e7794e0ba71b17786bc73af69af4899484ca7a68"
+    },
+    {
+      "path": "src/app/api/auth/[...all]/route.ts",
+      "sha256": "986e6cbb2edac9a818e08e3be3b72831faa466af1597cb3dca679e83b8e56ae8"
+    },
+    {
+      "path": "src/app/api/gmail/oauth/callback/route.ts",
+      "sha256": "b0193824ef1c839e5b238c89397c1ad7e0be6e13fb1e7f84d212ccae10136dd7"
+    },
+    {
+      "path": "src/app/auth/callback/route.ts",
+      "sha256": "ef7ce3404a092b74bcaa243122e86a3978e12b5de77c0753086a515f1ffef499"
+    },
+    {
+      "path": "src/app/auth/start/route.ts",
+      "sha256": "499abdcb101b156115bb8ed1eefd4ee04113148c0b87ee19c9f3ca234814a689"
+    },
+    {
+      "path": "src/app/t/click/[token]/route.ts",
+      "sha256": "62b3fae7904ca8aff709f423e07f836452affe2667e68e278f2aff89acc97fff"
+    },
+    {
+      "path": "src/app/t/open/[token]/route.ts",
+      "sha256": "5d8bbc8884e38b27b223e65cc0c96d78425deff11f11079fa60f4abcfbc8b109"
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "ca6f8e9650a02069899aa038b6faabd236974635cc039a40317795167ec49d7e"
+    },
+    {
+      "path": "src/db/schema/email.ts",
+      "sha256": "ed10dda2e0b25436b671540ad96da1ea241e20188875aeecf02bf9f63337e960"
+    },
+    {
+      "path": "src/db/schema/emailDrafts.ts",
+      "sha256": "2ae0b9dee76b49eb5bb0ab9f8cf21e2b5b2201f4ba2cb803fba43f5c680599bd"
+    },
+    {
+      "path": "src/entrypoints/worker.ts",
+      "sha256": "3b512216c11aeb4e9e8fdb9675282d62354ae6f6aaa6fcb8c85b3158cb671b82"
+    },
+    {
+      "path": "src/features/auth/better/admission.ts",
+      "sha256": "c8ccdcdd5b922dd24b544bae35f7e975c51df1049d3a4333b194b492dcae2b6f"
+    },
+    {
+      "path": "src/features/auth/better/auth.ts",
+      "sha256": "a6c34cd5c6632d59427ff6f819a4cd7f87b850d90b339e25d6a40c8c02429c81"
+    },
+    {
+      "path": "src/features/auth/better/nativeGateway.ts",
+      "sha256": "b7d96bbba61d4a7d5d8e40c6c11d5e1493500e2fa883af5c81f51c7ed69ccce3"
+    },
+    {
+      "path": "src/features/auth/google.ts",
+      "sha256": "4a49e70609f4444a9060551bcce86275f73bd9c599c66a193031001dbb368a16"
+    },
+    {
+      "path": "src/features/email/actions.ts",
+      "sha256": "130fb7c80b020c5e4eee8d8e7dda9ed481834f3e34aadb6a95600dcce3e97039"
+    },
+    {
+      "path": "src/features/email/composer/FromPicker.tsx",
+      "sha256": "b82286d04b53bfd79868639b8e4deea372f9b3ad6a21502b7698de7b19bea29b"
+    },
+    {
+      "path": "src/features/email/composer/composerMailbox.types.ts",
+      "sha256": "e34c428df05fe4f453133257c8679b6541a3a6c79a40a1c1db47185c783d06dd"
+    },
+    {
+      "path": "src/features/email/composer/draftAutosaveScope.ts",
+      "sha256": "6d06154cf5173518535ceb61c09815c6564afddf44681fe53da9ba78255a1f3c"
+    },
+    {
+      "path": "src/features/email/composer/useMailboxDraftCopy.ts",
+      "sha256": "453256df6277147db7524428f2a46e639b9a8aefaa492b2e88629a809d215247"
+    },
+    {
+      "path": "src/features/email/connections/types.ts",
+      "sha256": "5aa2490eaccea60e6702d2bab9da5e43edbf39f3a26ec3b21899e9dd967652cf"
+    },
+    {
+      "path": "src/features/email/crypto.ts",
+      "sha256": "fbe1633057080384f7f58a78f7f0bf4a57b5717022d553664f6c087cc0e1d1f3"
+    },
+    {
+      "path": "src/features/email/draftCreation.ts",
+      "sha256": "44772d0600b74d1c52ae502ea54377148f0d1fac2ccdab2d5ae96cc9109571cb"
+    },
+    {
+      "path": "src/features/email/draftLinks.ts",
+      "sha256": "ce6702c6b00e14141697b7c592f33475fa8b16fc2d1dd4d5ce09155953cf485b"
+    },
+    {
+      "path": "src/features/email/draftRepo.ts",
+      "sha256": "88aaec13f6093bc642171900dd26b0ca3bb87f73d714c147e7eff9aa09fb9fd2"
+    },
+    {
+      "path": "src/features/email/emailVisibility.ts",
+      "sha256": "b2903504c9e12affd187d9dfd3cde4cc2b7bc35ae7f9743c5703c62c3037d44f"
+    },
+    {
+      "path": "src/features/email/folderActions.ts",
+      "sha256": "1c56bbcd0bd7cb52c9659f6992b5d59c26820d8e071edc89c96936bbb3f546d9"
+    },
+    {
+      "path": "src/features/email/gmailClient.ts",
+      "sha256": "01217f08cbed369e54bc7a851a7f097aea9094af46705e6773aa86d44e6235c4"
+    },
+    {
+      "path": "src/features/email/gmailConnectionFence.ts",
+      "sha256": "56cbe5c06c947b6f8bfaefd52e79efc228fd1e819bf0f405affaf199e2fa599b"
+    },
+    {
+      "path": "src/features/email/gmailRecoveryCoverage.ts",
+      "sha256": "ba60e5f444a0ab07e122f13e65d5032686cb85bca98f976e5b24bc649cd38144"
+    },
+    {
+      "path": "src/features/email/gmailSendFence.ts",
+      "sha256": "a3ae2b9949fcb794fab49ebdfc4f58bddc88ae3a37fb8bd4b0328d79d73731e7"
+    },
+    {
+      "path": "src/features/email/gmailSyncCheckpoint.ts",
+      "sha256": "12a0b0fe552266ba58cf8ed56c2228ccfdbb05e2d75bd031dcc94e23e52537bd"
+    },
+    {
+      "path": "src/features/email/linking.ts",
+      "sha256": "ac44b4b31ea568dc5aee652a6de5ad8b378487e0a4c7628e417ee10a55e18a2a"
+    },
+    {
+      "path": "src/features/email/mailAccountsRepo.ts",
+      "sha256": "87a5df820a07af77de16b6a5e32bb047e9511089e0cb4233cc01290c12364161"
+    },
+    {
+      "path": "src/features/email/mailConnectionHttpView.ts",
+      "sha256": "66f186428b9e95f2dcb8eec5fe758308641234b81ebe119f8926b65faea4a304"
+    },
+    {
+      "path": "src/features/email/mailConnectionMutations.ts",
+      "sha256": "19eac25713a812fe1c5a846fb6cc3f035335b374f266cb5113765063586b5e6d"
+    },
+    {
+      "path": "src/features/email/mailConnectionProofContext.ts",
+      "sha256": "b4500b61f018333389594ab722b9e7ae35dc30e2397a436f4e53d03828e07051"
+    },
+    {
+      "path": "src/features/email/mailboxOwnership.ts",
+      "sha256": "5d2a09d1d3041c444c9efb86697d36c9456abed3ebc3be866c8fa136284492c6"
+    },
+    {
+      "path": "src/features/email/mergeContext.ts",
+      "sha256": "534b4d85392b3dfb93804029b2370c6b8445d2d4507bdd5359e9cd301257a57a"
+    },
+    {
+      "path": "src/features/email/oauth.ts",
+      "sha256": "3777dea876df7d948164545902eacb78010797c2287297a4520ef994bdf6ccfc"
+    },
+    {
+      "path": "src/features/email/oauthCallback.ts",
+      "sha256": "cd32a4e30dcec1d2ef14d8af8f65a7fbdecfdf72cf87b7e2a280be4283faf32b"
+    },
+    {
+      "path": "src/features/email/oauthProvider.ts",
+      "sha256": "c816503318b0bde3954b79f04ce6cbbba937c0fac9cf22e1fa1ca0542b12b7dc"
+    },
+    {
+      "path": "src/features/email/oauthStart.ts",
+      "sha256": "d33b8ef3cbbb21f563aea455274626120e066d294241f5076acd05e09bbca4aa"
+    },
+    {
+      "path": "src/features/email/oauthState.ts",
+      "sha256": "724d2ccc064197eafb027a4b96449dfa718067d0395055cf1d46d549f6a6957f"
+    },
+    {
+      "path": "src/features/email/outbox.ts",
+      "sha256": "3bec293b267098f9e0f5ebc8e87e6c3f87c2716823d4012275fadb62bb80e79a"
+    },
+    {
+      "path": "src/features/email/outboxCancel.ts",
+      "sha256": "8f0892809d6ef729acfbe913ac85bfd0950621296e938464dd4c355169428fad"
+    },
+    {
+      "path": "src/features/email/outboxClaim.ts",
+      "sha256": "f6833c0b71f43fb2b1a9c6d3a860a4e311d6141746d37dfe8f3086a3a62854bd"
+    },
+    {
+      "path": "src/features/email/outboxReconcile.ts",
+      "sha256": "347193baf2c8340391fe90c23b07960c93f7c2b2755f4c9984d4211671e32343"
+    },
+    {
+      "path": "src/features/email/resync.ts",
+      "sha256": "e49e50adae9a3798d26482177d7846e85dfc504ef2442f4f21f276053bf34e04"
+    },
+    {
+      "path": "src/features/email/router.ts",
+      "sha256": "8c9cbe508c3c063590112a7235e1cb77e8b3adc1b2a776d5650d5d8a78b503c2"
+    },
+    {
+      "path": "src/features/email/send.ts",
+      "sha256": "2b0c035c74a64c1ebc356a2b6fc422efc396d71d9609f8383bd746bd0cbebfbd"
+    },
+    {
+      "path": "src/features/email/sendConnection.ts",
+      "sha256": "cc0f9e83935d430285065bd3372657ef8dbf112a4ca71e0d2e4052678a1e0a63"
+    },
+    {
+      "path": "src/features/email/sendDelivery.ts",
+      "sha256": "ef88ec1a6d309b3611e8c7b56e6a71d1638cffa59d21e24b05963c4d997a4357"
+    },
+    {
+      "path": "src/features/email/sendHelpers.ts",
+      "sha256": "8df38e499d55613d4140913ea5ff36ec417437fe5ed5f142ebe6cb0e685855d4"
+    },
+    {
+      "path": "src/features/email/sendPreparation.ts",
+      "sha256": "6663c8fe2995061c22e7fc4130731a17cd92185e04050f5378e1d2e26c31a913"
+    },
+    {
+      "path": "src/features/email/sendScheduling.ts",
+      "sha256": "6f1a772b7954bc52bb6f45008ef657da145eeba39b636ec99a7a7e23e813b7de"
+    },
+    {
+      "path": "src/features/email/sendSystem.ts",
+      "sha256": "2c8731bd651c95d769b067474bc838efe93c2fe6bec0eca9fd9dd13c0be5adaa"
+    },
+    {
+      "path": "src/features/email/sync.ts",
+      "sha256": "7c5bcffd9a34d7bed40b4247305c26ffae7d53cae24d7599e229157a7c8d68a4"
+    },
+    {
+      "path": "src/features/email/syncCursor.ts",
+      "sha256": "6c5755f92fbb730f17d0e7fc3e1898f0b0313a7510dfceeb3eb9483d54203231"
+    },
+    {
+      "path": "src/features/email/syncScheduling.ts",
+      "sha256": "e9fa9b6a7bb363d26b8c3e2bf984c9b3513c486a4c3b48f1566d6518adcc6734"
+    },
+    {
+      "path": "src/features/email/threadVisibility.ts",
+      "sha256": "dbac74c6e16d86362124b14fe7ba31062b80f207eb832bd014d6112e7dd20ed7"
+    },
+    {
+      "path": "src/features/email/tokens.ts",
+      "sha256": "d8b5e65fb908ee3793913ca7def7d43d3d8f07109ccbf58da55a396abd9c7588"
+    },
+    {
+      "path": "src/features/email/tracking.ts",
+      "sha256": "c3ff4586366c30e225365ff1487e06be54be97ecc7c6c2af7d65b5d167555766"
+    },
+    {
+      "path": "src/features/email/trackingRecord.ts",
+      "sha256": "69d104e6166ff39bb1ce9ed6beb6c602eb06509906c2b0f2abc4cb399c1c6fff"
+    },
+    {
+      "path": "src/features/email/worker.ts",
+      "sha256": "d3454288f27d797211cfc9c1541f74913a476a37e5b47ed21b32eaaad82ccbed"
+    },
+    {
+      "path": "src/features/email/workerJobs.ts",
+      "sha256": "758ed56b9113a520b49121e835419b79db7c7b17df83e5fc2471ccebb542a999"
+    },
+    {
+      "path": "src/features/mcp/tools/reads-email.ts",
+      "sha256": "6f6c86a16dee66a25bf03def5fe6bd24d2df037f3959c34834898c03d1e955b0"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-email.ts",
+      "sha256": "8c5763a695fb2e598eb7c7ee5ea64d2f02539dcff4780b4cb21b2efeabdc727f"
+    },
+    {
+      "path": "src/server/worker.ts",
+      "sha256": "2eb3a215812b05fc38efb0af940094fec7c6acd35b7958e022e421de719a6730"
+    }
+  ],
+  "area_assessments": [
+    {
+      "area": "sync",
+      "result": "passed_source_inventory_review",
+      "assessment": "The inventory correctly records current-profile bootstrap with applied=0, incremental all-page checkpoints, expired-cursor recovery coverage, generation persistence fences and actual worker registration.",
+      "source_paths": [
+        "src/features/email/gmailClient.ts",
+        "src/features/email/gmailSyncCheckpoint.ts",
+        "src/features/email/sync.ts",
+        "src/features/email/resync.ts",
+        "src/features/email/gmailRecoveryCoverage.ts",
+        "src/features/email/syncCursor.ts",
+        "src/features/email/gmailConnectionFence.ts",
+        "src/features/email/syncScheduling.ts",
+        "src/features/email/worker.ts",
+        "src/features/email/workerJobs.ts",
+        "src/server/worker.ts",
+        "src/entrypoints/worker.ts"
+      ]
+    },
+    {
+      "area": "drafts",
+      "result": "passed_source_inventory_review",
+      "assessment": "The inventory correctly distinguishes local drafts from Gmail Drafts, owner-only access, retained fields, explicit sender copying, resume errors and the narrowed creation-replay guards.",
+      "source_paths": [
+        "src/features/email/draftRepo.ts",
+        "src/features/email/draftLinks.ts",
+        "src/features/email/folderActions.ts",
+        "src/features/email/router.ts",
+        "src/db/schema/emailDrafts.ts",
+        "src/app/(app)/inbox/compose/ComposePageClient.tsx",
+        "src/features/email/composer/useMailboxDraftCopy.ts"
+      ]
+    },
+    {
+      "area": "send",
+      "result": "passed_source_inventory_review",
+      "assessment": "The inventory records CSRF and trusted actor checks, ownership before token refresh, provider selection, immutable outbox identity and generation, bytes before stamping, reconciliation and the separate legacy system primitive.",
+      "source_paths": [
+        "src/features/email/actions.ts",
+        "src/features/email/send.ts",
+        "src/features/email/sendConnection.ts",
+        "src/features/email/sendDelivery.ts",
+        "src/features/email/sendPreparation.ts",
+        "src/features/email/sendHelpers.ts",
+        "src/features/email/outbox.ts",
+        "src/features/email/outboxReconcile.ts",
+        "src/features/email/gmailSendFence.ts",
+        "src/features/email/tokens.ts",
+        "src/features/email/sendSystem.ts"
+      ]
+    },
+    {
+      "area": "scheduled_send",
+      "result": "passed_source_inventory_review",
+      "assessment": "The inventory records token-refresh avoidance for a new future send, the prepared snapshot and delayed account/intent job, worker generation checks and cancellation race guards.",
+      "source_paths": [
+        "src/features/email/sendScheduling.ts",
+        "src/features/email/sendConnection.ts",
+        "src/features/email/sendDelivery.ts",
+        "src/features/email/sendPreparation.ts",
+        "src/features/email/worker.ts",
+        "src/features/email/outboxCancel.ts"
+      ]
+    },
+    {
+      "area": "tracking",
+      "result": "passed_source_inventory_review",
+      "assessment": "The inventory records independent default-off flags, opaque tokens, prepared-body rewriting, first-To attribution, associated and enabled event recording, and rate-limited pixel/redirect behavior.",
+      "source_paths": [
+        "src/features/email/send.ts",
+        "src/features/email/sendPreparation.ts",
+        "src/features/email/sendHelpers.ts",
+        "src/features/email/tracking.ts",
+        "src/features/email/trackingRecord.ts",
+        "src/app/t/open/[token]/route.ts",
+        "src/app/t/click/[token]/route.ts"
+      ]
+    },
+    {
+      "area": "domain_restrictions",
+      "result": "passed_source_inventory_review",
+      "assessment": "The child review confirms fresh PKCE state, exact Workspace domain and CRM-email binding, the separate current Better Auth login, encrypted grants, and credential-free projections.",
+      "reviewer_task": "/root/gmail_inventory_review/domain_ownership_check",
+      "source_paths": [
+        "src/features/email/oauth.ts",
+        "src/features/email/oauthStart.ts",
+        "src/features/email/oauthState.ts",
+        "src/features/email/oauthProvider.ts",
+        "src/features/email/oauthCallback.ts",
+        "src/features/auth/better/nativeGateway.ts",
+        "src/features/auth/better/auth.ts",
+        "src/features/auth/better/admission.ts",
+        "src/features/auth/google.ts",
+        "src/app/api/auth/[...all]/route.ts",
+        "src/app/auth/start/route.ts",
+        "src/app/auth/callback/route.ts",
+        "src/config/env.ts",
+        "src/features/email/crypto.ts",
+        "src/features/email/linking.ts",
+        "src/features/email/mailConnectionHttpView.ts"
+      ]
+    },
+    {
+      "area": "single_mailbox_assumptions",
+      "result": "passed_source_inventory_review",
+      "assessment": "The child review confirms multiple owned accounts, global address uniqueness, at most one default, legacy selection fallbacks, ownership and reply/copy constraints, draft-only MCP tools, and reserved provider values without an implemented adapter.",
+      "reviewer_task": "/root/gmail_inventory_review/domain_ownership_check",
+      "source_paths": [
+        "src/db/schema/email.ts",
+        "src/features/email/mailboxOwnership.ts",
+        "src/features/email/mailAccountsRepo.ts",
+        "src/features/email/connections/types.ts",
+        "src/features/email/composer/FromPicker.tsx",
+        "src/features/email/composer/composerMailbox.types.ts",
+        "src/features/email/emailVisibility.ts",
+        "src/features/email/threadVisibility.ts",
+        "src/features/mcp/tools/writes-email.ts",
+        "src/features/mcp/tools/reads-email.ts",
+        "src/features/email/mailConnectionMutations.ts"
+      ]
+    }
+  ],
+  "resolved_findings": [
+    {
+      "id": "DRAFT_REPLAY_SCOPE",
+      "original_document_sha256": "da49695953361b88544b43d84015ecd09cfaf46d780a49247e7b5db45b759830",
+      "problem": "The original never-recreate and stale-overwrite wording exceeded the actual creation-ID behavior.",
+      "resolution": "The corrected document limits creation replay to an existing row, records the subsequent mounted-snapshot update, and distinguishes missing-update and within-invocation disappearance guards from a deleted-ID tombstone or concurrent-edit version guarantee.",
+      "verified_sources": [
+        "src/features/email/draftCreation.ts:11-19",
+        "src/features/email/draftRepo.ts:94-142",
+        "src/features/email/composer/draftAutosaveScope.ts:80-98"
+      ]
+    },
+    {
+      "id": "DEFAULT_CARDINALITY",
+      "resolution": "The account model now states at most one default, matching the partial unique index."
+    }
+  ],
+  "source_pin_verification": {
+    "author_source_pins": 61,
+    "additional_reviewed_support_paths": 8,
+    "new_document_paths": 2,
+    "all_pins_match_reviewed_commit_and_current_worktree": true,
+    "local_markdown_links_resolved": 86,
+    "tests_services_provider_requests_started": 0
+  },
+  "evidence_publication_status": "Exact local commit exists; branch push and public URL availability are pending.",
+  "source_review_assessment_sha256": "6b2e7089d6d8aaba7875a4b959e981cab7c1c401f79eb11ce2ba16faa18cfcf5"
+}
