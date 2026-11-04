@@ -36,21 +36,30 @@ export default async function GroupDetailPage({
   const group = groups.find((g) => g.id === groupId);
   if (group === undefined) notFound();
 
-  let roster: ReactNode;
+  let rosterData:
+    | [
+        Awaited<ReturnType<typeof listGroupMembers>>,
+        Awaited<ReturnType<typeof listAssignableUsers>>,
+      ]
+    | undefined;
   try {
-    const [membersResult, allUsers] = await Promise.all([
+    rosterData = await Promise.all([
       listGroupMembers(db, actor, groupId, signal),
       listAssignableUsers(db, signal),
     ]);
-    roster = membersResult.ok ? (
-      <GroupMembersClient groupId={groupId} members={membersResult.value} allUsers={allUsers} />
+  } catch {
+    // The group is known; retain its heading and navigation while the roster is unavailable.
+  }
+  const roster =
+    rosterData !== undefined && rosterData[0].ok ? (
+      <GroupMembersClient
+        groupId={groupId}
+        members={rosterData[0].value}
+        allUsers={rosterData[1]}
+      />
     ) : (
       <GroupMembersUnavailable />
     );
-  } catch {
-    // The group is known; retain its heading and navigation while the roster is unavailable.
-    roster = <GroupMembersUnavailable />;
-  }
 
   return (
     <SettingsPage>

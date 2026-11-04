@@ -125,9 +125,7 @@ for (const failure of ["rejection", "synchronous throw", "error state"] as const
       await user.click(cancel);
 
       await waitFor(() => {
-        expect(
-          screen.queryByRole("button", { name: messages.cancelRun }),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: messages.cancelRun })).not.toBeInTheDocument();
         expect(screen.getByText(messages.refreshAfterAck)).toBeVisible();
         expect(screen.getByRole("alert")).toHaveTextContent(messages.loadError);
       });
@@ -184,9 +182,7 @@ it("fences a rejected cancellation until a successful read and explicit rearm", 
 
   await user.click(cancel);
 
-  await waitFor(() =>
-    expect(screen.getByRole("alert")).toHaveTextContent(english.cancelUnknown),
-  );
+  await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(english.cancelUnknown));
   expect(screen.queryByText(english.error)).not.toBeInTheDocument();
   expect(screen.queryByText(english.loadError)).not.toBeInTheDocument();
   expect(cancel).toBeDisabled();

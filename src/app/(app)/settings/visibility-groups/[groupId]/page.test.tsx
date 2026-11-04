@@ -12,19 +12,22 @@ type MemberResult =
   | { ok: true; value: { userId: string; name: string }[] }
   | { ok: false; error: string };
 type TestActor = { id: string; type: "admin" | "user"; flags: Set<string> };
-const mocks = vi.hoisted(() => ({
-  locale: "en" as Locale,
-  refresh: vi.fn(),
-  notFound: vi.fn(() => {
-    throw new Error("not found");
-  }),
-  context: vi.fn<() => Promise<{ actor: TestActor | null; db: object }>>(),
-  groups: vi.fn<() => Promise<{ id: string; name: string }[]>>(),
-  members: vi.fn<() => Promise<MemberResult>>(),
-  users: vi.fn<() => Promise<{ id: string; name: string; avatarUrl: string | null }[]>>(),
-  add: vi.fn(),
-  remove: vi.fn(),
-}));
+const mocks = vi.hoisted(() => {
+  const initial: { locale: Locale } = { locale: "en" };
+  return {
+    ...initial,
+    refresh: vi.fn(),
+    notFound: vi.fn(() => {
+      throw new Error("not found");
+    }),
+    context: vi.fn<() => Promise<{ actor: TestActor | null; db: object }>>(),
+    groups: vi.fn<() => Promise<{ id: string; name: string }[]>>(),
+    members: vi.fn<() => Promise<MemberResult>>(),
+    users: vi.fn<() => Promise<{ id: string; name: string; avatarUrl: string | null }[]>>(),
+    add: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.refresh }),
   notFound: mocks.notFound,

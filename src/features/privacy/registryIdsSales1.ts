@@ -57,7 +57,7 @@ export const salesDesignIds1: string[] = [
   "sourceReview:src/features/process-templates/duplicateJsonKeys.ts#88ef6623374cd5ae3e3c89045016ba01fd90ee3b1691379eb255bf9b7772afd9",
   "sourceReview:src/features/process-templates/templatePlan.ts#cec12c754b42491160c24ac1b40b1fa7a3ee80aac63d607259e0f39b7b16bd3f",
   "sourceReview:src/features/process-templates/templateSchemas.ts#43c5a2430eebc327e474f5759ddd35827b096810430173f81bcbffd11ece5039",
-  "sourceReview:src/features/sales-qualification/qualificationSchemas.ts#732f083f9aa5491a57608c9f47a1adf0e29ee40788d45b95c1c232f2740dfd7b",
+  "sourceReview:src/features/sales-qualification/qualificationSchemas.ts#a49b18176294824fe707bde7f34ca634afd91603966ea43f35ee6309cbaeecb8",
 ];
 export const salesDiagnosticsIds1: string[] = [
   "log:src/jobs/bossObserver.ts#error",

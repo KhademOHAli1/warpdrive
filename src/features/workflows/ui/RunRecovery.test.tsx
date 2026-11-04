@@ -117,22 +117,27 @@ function deferredRefresh() {
   return { promise, reject };
 }
 
+function mockRetryOutcome(outcome: Outcome) {
+  if (outcome === "transport") {
+    queries.retry.mockRejectedValueOnce(new Error("private action diagnostic"));
+    return;
+  }
+  queries.retry.mockResolvedValueOnce(
+    outcome === "acknowledged"
+      ? { ok: true, value: { id: runId } }
+      : {
+          ok: false,
+          error: outcome === "denied" ? ERROR_IDS.WORKFLOW_DENIED : ERROR_IDS.WORKFLOW_CONFLICT,
+        },
+  );
+}
+
 it.each(readFailureCases)(
   "preserves $outcome in $locale when $invalidator invalidation fails",
   async ({ locale, outcome, invalidator }) => {
     const L = catalogs[locale];
     queries.rows = [row()];
-    if (outcome === "transport")
-      queries.retry.mockRejectedValueOnce(new Error("private action diagnostic"));
-    else
-      queries.retry.mockResolvedValueOnce(
-        outcome === "acknowledged"
-          ? { ok: true, value: { id: runId } }
-          : {
-              ok: false,
-              error: outcome === "denied" ? ERROR_IDS.WORKFLOW_DENIED : ERROR_IDS.WORKFLOW_CONFLICT,
-            },
-      );
+    mockRetryOutcome(outcome);
     const refresh = deferredRefresh();
     (invalidator === "list" ? queries.refetch : queries.invalidateRun).mockReturnValueOnce(
       refresh.promise,

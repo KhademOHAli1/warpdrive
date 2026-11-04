@@ -18,6 +18,8 @@ type RunReply = { ok: true; value: { id: string } } | { ok: false; error: string
 const calls = vi.hoisted(() => ({
   run: vi.fn<(input: RunInput, token: string | null) => Promise<RunReply>>(),
   invalidate: vi.fn<(input: { id: string }) => Promise<void>>(),
+  routerPush: vi.fn<(href: string) => void>(),
+  routerRefresh: vi.fn<() => void>(),
   save: vi.fn(),
   publish: vi.fn(),
   pause: vi.fn(),
@@ -55,6 +57,9 @@ vi.mock("../actions", () => ({
   pauseWorkflowAction: calls.pause,
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: calls.routerPush, refresh: calls.routerRefresh }),
+}));
 vi.mock("./BuilderWorkspace", () => ({ BuilderWorkspace: () => <div>Configuration fixture</div> }));
 vi.mock("./RunHistory", () => ({ RunHistory: () => <div>Run history fixture</div> }));
 
@@ -70,7 +75,15 @@ function initial(active = true, canRun = true): WorkflowDetail {
     archivedAt: null,
     createdAt: new Date("2026-11-01T10:00:00Z"),
     updatedAt: new Date("2026-11-01T10:00:00Z"),
-    capabilities: { edit: true, publish: true, run: canRun, cancel: true },
+    capabilities: {
+      edit: true,
+      publish: true,
+      run: canRun,
+      cancel: true,
+      unarchive: false,
+      duplicate: true,
+      restore: true,
+    },
   };
 }
 
@@ -137,6 +150,8 @@ async function expectSubmitted(messages: RunMessages) {
 beforeEach(() => {
   calls.run.mockReset();
   calls.invalidate.mockReset();
+  calls.routerPush.mockReset();
+  calls.routerRefresh.mockReset();
   calls.save.mockReset();
   calls.publish.mockReset();
   calls.pause.mockReset();

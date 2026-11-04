@@ -59,24 +59,26 @@ function mockDesktopBreakpoint() {
     removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
   };
   const previous = Object.getOwnPropertyDescriptor(window, "matchMedia");
+  const matchMedia = vi.fn((requested: string) =>
+    requested === query
+      ? media
+      : {
+          media: requested,
+          matches: false,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+        },
+  );
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
-    value: vi.fn((requested: string) =>
-      requested === query
-        ? media
-        : {
-            media: requested,
-            matches: false,
-            addEventListener: () => undefined,
-            removeEventListener: () => undefined,
-          },
-    ),
+    value: matchMedia,
   });
   restoreMatchMedia = () => {
     if (previous === undefined) Reflect.deleteProperty(window, "matchMedia");
     else Object.defineProperty(window, "matchMedia", previous);
   };
   return {
+    matchMedia,
     enterDesktop() {
       matches = true;
       for (const listener of listeners) listener();
@@ -175,7 +177,7 @@ describe("settings navigation journey", () => {
     const breakpoint = mockDesktopBreakpoint();
     const user = userEvent.setup();
     const { unmount } = render(<SettingsNav isAdmin={false} canManageCompany canImport={false} />);
-    expect(window.matchMedia).toHaveBeenCalledWith("(min-width: 48rem)");
+    expect(breakpoint.matchMedia).toHaveBeenCalledWith("(min-width: 48rem)");
     const desktopActive = screen.getByRole("link", { name: "Users" });
     const trigger = screen.getByRole("button", { name: "Settings category: Users" });
     await user.click(trigger);

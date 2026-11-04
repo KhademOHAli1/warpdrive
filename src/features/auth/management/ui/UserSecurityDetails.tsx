@@ -34,7 +34,7 @@ export function UserSecurityDetails({
   // biome-ignore lint/correctness/useExhaustiveDependencies: Revision and Retry explicitly reload this read without changing the selected account.
   useEffect(() => {
     const controller = new AbortController();
-    let current = true;
+    const lifetime = { current: true };
     inFlight.current = true;
     void (async () => {
       try {
@@ -44,20 +44,21 @@ export function UserSecurityDetails({
         });
         const result = managedUserDetailsResponse.safeParse(await response.json());
         controller.signal.throwIfAborted();
-        if (!current) return;
+        if (!lifetime.current) return;
         if (!result.success || !result.data.ok || result.data.data.userId !== userId) {
           setLoad({ userId, revision, status: "error" });
           return;
         }
         setLoad({ userId, revision, status: "ready", details: result.data.data });
       } catch {
-        if (current && !controller.signal.aborted) setLoad({ userId, revision, status: "error" });
+        if (lifetime.current && !controller.signal.aborted)
+          setLoad({ userId, revision, status: "error" });
       } finally {
-        if (current) inFlight.current = false;
+        if (lifetime.current) inFlight.current = false;
       }
     })();
     return () => {
-      current = false;
+      lifetime.current = false;
       controller.abort();
       inFlight.current = false;
     };

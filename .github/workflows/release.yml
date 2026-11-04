@@ -22,6 +22,7 @@ on:
 permissions:
   contents: write
   actions: read
+  security-events: read
   issues: write
   pull-requests: read
 
@@ -35,6 +36,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # Environment names do not establish configured reviewers or protection rules.
+    environment: ${{ inputs.mode == 'publish' && 'release-approval' || 'release-preparation' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

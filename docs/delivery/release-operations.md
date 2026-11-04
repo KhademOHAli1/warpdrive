@@ -2,7 +2,7 @@
 
 GitHub issues and the central Project own live execution. Source implementation, integration with green CI, user-journey acceptance, release publication, deployment, and real provider/installation acceptance are separate statements. A source snapshot, generated packet, diagnostic, synthetic suite, or successful subset does not complete the original acceptance scope.
 
-Prepare all implementation, policy, version and release-plan changes on feature branches and integrate them through reviewed pull requests. Do not commit or push directly to main. The existing integration coordinator serializes PR integration and publication; this tooling grants no deployment authorization.
+Prepare all implementation, policy, version and release-plan changes on branches and integrate them through reviewed pull requests. Do not commit or push directly to main. Under the user's current consolidation instruction, combine the remaining in-scope branch work into the existing `codex/ci-release-controls-20261103` branch and PR #952, qualify that aggregate, then perform one final reviewed merge into main. Main is frozen at `68e9e55890dd1ceedfbfe0853019673bf79105e4` during this consolidation. Do not create another branch or perform additional individual main merges. Preserve each source branch until its work is accounted for; the coordinator owns final conflict resolution, cleanup and publication. This tooling grants no deployment authorization.
 
 The `required-quality.yml` workflow supplies four required checks on pull requests and pushes:
 `Dependency audit` audits every app, marketing, documentation and isolated browser lockfile, including
@@ -15,6 +15,32 @@ The browser tooling has its own exact dependency and lockfile under `tools/brows
 dependencies are unchanged. These checks do not attest the four complete human journeys, live provider
 behavior or publication readiness. MAIL publication additionally requires all four jobs successful on
 the exact main revision through its own policy. Historical core release policy remains unchanged.
+
+The same dependency job retains per-lock raw JSON-intended stdout, stderr, exact package/lock hashes,
+command exit codes and a structured summary even on failure. Every audit exit other than zero fails;
+there is no severity exception, historical baseline exemption, automatic fix or retry. A Monday 06:23
+UTC schedule runs this same four-lock audit to detect advisory drift. It skips the other three quality
+jobs on scheduled runs only; their existing push/PR/manual contexts remain unchanged. A scheduled audit
+is not a replacement for exact-revision main CI or a release approval.
+
+Fresh `draft` and `publish` actions additionally bind the named `refs/heads/main` ref to the selected
+SHA before and after reading CodeQL results. They require successful metadata for all three exact
+selected-commit language categories and examine every page of open alerts on that named ref.
+High/critical security findings and error-level results block; missing coverage, malformed data,
+moved main and API/permission failures fail closed. Raw-SHA queries are not used: the retained
+readback returned HTTP 200 and empty results for them. The live result snapshot is printed in the
+release run log, and `publish` repeats the guard immediately before its publication write. Existing
+artifact schemas/checksums stay unchanged. `security-events: read` permits the read; no alert dismissal
+is added. The generic exact-revision CI gate, historical technical acceptance audits and repair of
+already-published immutable receipts do not acquire a current-main requirement. Existing managed
+CodeQL workflow and all three Analyze jobs remain independently required by MAIL and technical policy.
+
+The release job names `release-preparation` for prepare/draft and `release-approval` for publish.
+These are proposed GitHub environment references, not proof that reviewers, branch restrictions or
+other protections are configured. The operator must inspect the actual environment settings before
+claiming a protected approval boundary. This source change does not configure those settings, create
+a new human acceptance requirement, or override the user's existing publication authorization.
+The explicit publish mode and complete release gates remain necessary in every environment.
 
 ## Delivery and completion
 
