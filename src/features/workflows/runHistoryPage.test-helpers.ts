@@ -137,7 +137,6 @@ async function setupHistory(signal: AbortSignal): Promise<HistoryFixture> {
           "workflow.publish": true,
           "workflow.run": true,
           "workflow.cancel": true,
-          "deal.view": true,
         },
       })
       .returning();

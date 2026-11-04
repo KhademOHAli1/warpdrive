@@ -137,7 +137,7 @@ function page(id = workflowId, canCancel = true) {
 }
 async function choose(user: ReturnType<typeof userEvent.setup>, label: string, option: string) {
   await user.click(screen.getByRole("combobox", { name: label }));
-  await user.click(screen.getByRole("option", { name: option, exact: true }));
+  await user.click(screen.getByRole("option", { name: option }));
 }
 beforeEach(() => {
   io.read.mockReset();
