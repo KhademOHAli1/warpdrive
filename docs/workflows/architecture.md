@@ -58,7 +58,14 @@ CRM events must be saved in an outbox in the same transaction as each mutation. 
 
 Database-only actions should commit effects with progress where possible. External effects need stable effect identities, provider idempotency where supported, and explicit reconciliation for ambiguous outcomes. Existing email outbox behavior is a reusable boundary; general exactly-once external delivery is not promised.
 
-The current UI is an early-access manual workflow builder, not the complete R1 release. CRM triggers/outbox, grouped conditions, durable waits, notifications, email, richer CRM actions, detailed payload inspection, retention, and operational limits still require implementation and qualification.
+The current UI is an early-access manual workflow builder, not the complete R1 release. CRM triggers/outbox, grouped conditions, notifications, email, richer CRM actions, detailed payload inspection, retention, and operational limits still require implementation and qualification.
+
+Durable literal waits use the existing persisted cursor for whole elapsed minutes or
+an explicitly tagged fixed ISO date/time with Z/UTC offset and exact millisecond
+precision. The bounded fixed-instant increment preserves one stored deadline after
+initial scheduling. Civil-calendar conversion, rescheduling, actual restart/natural-wait
+journeys and broader acceptance remain open; see the
+[fixed-instant contract and qualification limits](../development/workflow-fixed-instant-delay.md).
 
 Primary library references: [React Flow custom nodes](https://reactflow.dev/learn/customization/custom-nodes), [React Flow accessibility](https://reactflow.dev/learn/advanced-use/accessibility), and [pg-boss workers](https://github.com/timgit/pg-boss/blob/master/docs/api/workers.md).
 

@@ -14,10 +14,11 @@ export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
   if (node.type === "trigger.manual") return true;
   if (node.type === "delay") {
-    const minutes = bindingSchema.safeParse(node.config.minutes);
+    const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
+    const binding = bindingSchema.safeParse(node.config[selected]);
     return (
-      minutes.success &&
-      minutes.data.kind === "value" &&
+      binding.success &&
+      binding.data.kind === "value" &&
       actionRegistry.delay.config.safeParse(node.config).success
     );
   }

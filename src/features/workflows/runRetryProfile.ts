@@ -42,6 +42,9 @@ function taskConfiguration(node: WorkflowNode, definition: WorkflowDefinition, t
 }
 
 function usesNewMappingContract(node: WorkflowNode): boolean {
+  // Fixed-instant waits have no qualified recovery path in this older profile,
+  // including an incomplete own member that must never fall back to minutes.
+  if (Object.hasOwn(node.config, "until")) return true;
   // Grouped conditions have new preparation and short-circuit semantics. They
   // have no qualified recovery path in this older failed-task retry profile.
   if (

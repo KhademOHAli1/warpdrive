@@ -112,6 +112,10 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
           integer: true,
         },
       }),
+      field("until", "delayUntilLabel", "scalar", {
+        required: false,
+        modes: ["literal"],
+      }),
     ],
   },
   notification: { supported: false, fields: [name, unavailable("title", "string")] },

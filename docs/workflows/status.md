@@ -343,6 +343,11 @@ refreshed. The index now also links the merged authentication documentation.
 
 ## Historical task ledger
 
+This preserved ledger predates the current durable duration and bounded fixed-instant
+source increments. See the [WF023 / #680 contract and qualification note](../development/workflow-fixed-instant-delay.md)
+for their implemented scope and remaining gates; the original task rows below remain
+historical observations and do not classify current roadmap completion.
+
 States apply to the actual criteria in [the approved plan](implementation-plan.md):
 `todo` means implementation is not established; `in-progress` means only part of the
 criteria has evidence; `verified` means the stated task's bounded acceptance is evidenced;

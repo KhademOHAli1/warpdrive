@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { parseConditionConfig } from "./conditionExpression";
 import { copyCustomFieldSettingsSchema } from "./configurationBindings";
+import { boundedDelayConfig } from "./delayConfig";
 import {
   copyScalarBindingSchema,
   definitionSchema,
@@ -51,7 +52,16 @@ const copyNode = z.discriminatedUnion("type", [
   }),
   nodeSchema.extend({
     type: z.literal("delay"),
-    config: z.strictObject({ minutes: copyBinding }).partial(),
+    config: z.union([
+      z.strictObject({ minutes: copyBinding }).partial(),
+      z.custom<WorkflowDefinition["nodes"][number]["config"]>(
+        (raw) =>
+          raw !== null &&
+          typeof raw === "object" &&
+          Object.hasOwn(raw, "until") &&
+          boundedDelayConfig(raw),
+      ),
+    ]),
   }),
   nodeSchema.extend({
     type: z.literal("notification"),

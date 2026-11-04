@@ -10,6 +10,7 @@ import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../sc
 import { BindingField } from "./BindingField";
 import { ConditionFields } from "./ConditionFields";
 import { type ConfigurationIssueKey, configurationIssueKeys } from "./configurationIssueMessage";
+import { DelayConfigurationFields } from "./DelayConfigurationFields";
 import { DelayFields } from "./DelayFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
@@ -144,6 +145,21 @@ export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
   const t = useAppTranslations("workflows");
   const { spec, definition, node, editable, onChange, validation } = props;
   if (spec === null) return null;
+  if (node.type === "delay" && node.version === 1 && spec.supported)
+    return (
+      <DelayConfigurationFields
+        config={node.config}
+        editable={editable}
+        error={configurationFieldError(
+          validation,
+          Object.hasOwn(node.config, "until") ? "until" : "minutes",
+          t,
+        )}
+        onChange={(config) => {
+          if (editable) onChange({ ...node, config });
+        }}
+      />
+    );
   if (spec.fields.some((field) => field.control === "operator"))
     return (
       <ConditionFields
