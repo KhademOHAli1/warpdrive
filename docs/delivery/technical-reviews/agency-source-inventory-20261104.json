@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "agency/AP-00.1",
+  "acceptance_sha256": "3db2d63c4038cc11d3bec7ca300536c3afc070237f8c7bacf49cbb9878358747",
+  "reviewed_revision": "23feab1037c76205c465a9da9475ded0d8bb1f2c",
+  "reviewed_at_utc": "2026-11-04T22:46:59.719080+00:00",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1a80a-30b1-75e2-9177-230a32699ecb",
+    "task_id": "/root/mail_task_release_scope_fix"
+  },
+  "summary": "Accepted the complete unchanged AP-00.1/T00 source-inventory criterion after independent inspection and static verification of the new dated inventory, live selected remote main, seven retained owner cuts, eight preservation manifests and all2282 retained blob identities/byte hashes, both96-task snapshots and their identical201-edge DAG. Current closure dirt and pending PRs are excluded; private-ledger and service-ownership observation limits remain explicit and no peer source/runtime is adopted.",
+  "limitations": "Source/history/static inventory review only, not technical acceptance attestation, issue closure, runtime/upgrade qualification, Agency activation, provider/human acceptance, release or deployment. The selected implementation source remains the captured immutable public main92bf; 23feab is the reviewed committed inventory cut, not a claim that its pending closure metadata is implementation source or already integrated. All16 formal pins match23feab and the current tree; the inventory separately retains its15 historical source pins at92bf, including the older AGENTS bytes appropriate to that captured main. This reviewer authored the separate OSS-001 branch-documentation correction, not the Agency inventory. The ownership fact used here is the unchanged coordinator/module-ownership boundary already present at captured main92bf; this review does not independently accept OSS-001 or certify that documentation patch. Private applied ledger contents and current peer workspaces/processes/previews were not inspected. The9 idle owner receipts retain their2November timestamp; they are not current liveness, current process-control approval or proof every service is stopped. The source artifact records no service/control action and this reviewer performed none; no process forensics or live owner approval is claimed. Source URLs identify actual immutable Git objects; publication of pending review-cut URLs and future exact-main CI/eligibility/attestation remain Root responsibilities. The original96 execution acceptance flags remain false, and the other95 Agency tasks retain their complete original scope.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/delivery/agency-source-inventory-20261104.json",
+        "https://github.com/KhademOHAli1/warpdrive/commit/92bf473a0e69a8192b5322f4481c55faf3c20497",
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/delivery/sources/agency/approved/TEST-MATRIX.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/delivery/sources/agency/approved/TASKS.csv",
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/delivery/sources/agency/execution-2026-11-02/TASKS.live.csv",
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/development/preserved/2026-11-02/agency/manifest.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/development/preserved/2026-11-02/agency/source/docs/agency-projects/source-inventory-latest.json.source",
+        "https://github.com/KhademOHAli1/warpdrive/blob/23feab1037c76205c465a9da9475ded0d8bb1f2c/docs/development/preserved/2026-11-02/settings/handoff/2026-11-02/chat-terminal-receipt.json.source",
+        "https://github.com/KhademOHAli1/warpdrive/pull/966",
+        "https://github.com/KhademOHAli1/warpdrive/pull/968"
+      ],
+      "assessment": "The complete original criterion and both original source bindings are unchanged and match scope digest3db2d63c. The independently reread current public main is92bf with tree1a79e264; it is the sole selected implementation source. All seven dated owner heads, the prior Agency cut and all eight preserved module heads exist and are ancestors of that main. Every selected/historical source has an exact SHA. All eight manifests retain exact hashes, file counts and inactive.source archives; all2282 entries map to identical Git blob IDs and actual SHA256/byte counts, without adopting their code. Both source task CSVs retain96 unique IDs,201 known dependency edges, no cycle and the same canonical edge digest; all96 execution acceptance flags remainFalse. The new manifest explicitly refreshes selected main/ancestry and archive bindings while preserving the dated originals. The four committed closure-documentation deltas and six captured dirty paths are explicitly excluded, with pending feature PR966/968 heads independently reread and excluded. Applied-ledger availability is accurately recorded as owner-private/not accessed, not inferred installed state. Module/publication ownership is retained, historical nine-owner safe-stop evidence is dated, and current peer service ownership/liveness remains uninspected rather than invented. No peer workspace/runtime or preview is operated on. Those bounds satisfy this source-inventory criterion while preserving all later migration, owner receipt, runtime, installation, provider and Agency acceptance gates."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/delivery/agency-source-inventory-20261104.json",
+      "sha256": "bc562510a00625f3c237c1c00b465e7bbe3ce0cf332fe136020e676d42206630"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/agency/manifest.json",
+      "sha256": "7c0b8447cf5b6a998016d986988af9d63083643f8852c9d78a197105c5b404b0"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/privacy/manifest.json",
+      "sha256": "e9d0d5d7d9677a4496ddf51b24340ee55d131f0256c85f3a8f792160f055cd68"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/mail/manifest.json",
+      "sha256": "e39bfe73093a4243e3d3915017aecdbfc3655106a4fff6cb120affd37256cee0"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/integration/manifest.json",
+      "sha256": "e3c378fe09b287454d143e049c9c2beb376943e27ade744369a2b6999ba4e005"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/workflow/manifest.json",
+      "sha256": "5ac25f6938968e54ef1a3b2d1b9aa0efa8c78cd4043930f8ccd33ac63272147c"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/calendar/manifest.json",
+      "sha256": "eeb02adb94409c61fd0cfc0b28838b2b02cf3f9d073a306d9a7b8b4e42433ab7"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/settings/manifest.json",
+      "sha256": "381b3fc8d6d31a49e22fed23130d47d2e466333b0db88331999c0d22bca582c6"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/sales/manifest.json",
+      "sha256": "02e0d5fc38a137140d0cf5cd7505c63a6d13df7326903b698048fbe1292575a7"
+    },
+    {
+      "path": "docs/delivery/sources/agency/approved/TASKS.csv",
+      "sha256": "99a61fa49fd92aecf0988ac8d622ad12b19483dd04008ced47a5be66b9d1fbb9"
+    },
+    {
+      "path": "docs/delivery/sources/agency/execution-2026-11-02/TASKS.live.csv",
+      "sha256": "89960754c37f559e772c575fdb2ddee8094060a6c80c685fffd99a714d8be960"
+    },
+    {
+      "path": "docs/delivery/sources/agency/approved/TEST-MATRIX.md",
+      "sha256": "bfa9c0407d1962a1b708f71f5787848bf19d02aab9bb1c2bbba2bf3099112796"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/agency/source/docs/agency-projects/source-inventory-latest.json.source",
+      "sha256": "d022c83c7a6c48ad28f9cb180990836a3a3616b3037cfd4c31fa6b0fe191a9f0"
+    },
+    {
+      "path": "docs/delivery/roadmap.json",
+      "sha256": "c827bcfb087776bdfbfa9ee21e7a5ba6e660b2911b2955a36ea00bd4158c6986"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "3941d72b41426a41d61b5d9c19670eeb13619ce9da4cefc10b2c723c41044eb7"
+    },
+    {
+      "path": "docs/development/preserved/2026-11-02/settings/handoff/2026-11-02/chat-terminal-receipt.json.source",
+      "sha256": "27154cd85ba256f099af8be5854280f68a36e8a70c8cb907c5cbf4e8947396c1"
+    }
+  ],
+  "independent_checks": {
+    "live_public_main": {
+      "revision": "92bf473a0e69a8192b5322f4481c55faf3c20497",
+      "git_tree": "1a79e2649d4283c25d5a8e279a1b1bc8f340f2ec",
+      "protected": true,
+      "method": "Independent connected GitHub GET branches/main plus exact local Git tree/ancestry checks."
+    },
+    "retained_owner_heads": {
+      "count": 7,
+      "all_exact_historical_heads_exist_and_ancestor_of_selected_main": true,
+      "all_historical_dirty_path_counts_and_digests_match_original": true,
+      "prior_agency_cut_ancestor": true
+    },
+    "preservation": {
+      "manifests": 8,
+      "modules": [
+        "agency",
+        "privacy",
+        "mail",
+        "integration",
+        "workflow",
+        "calendar",
+        "settings",
+        "sales"
+      ],
+      "manifest_sha256_and_entry_counts_verified": true,
+      "all_original_heads_ancestor_of_selected_main": true,
+      "entries": 2282,
+      "unique_git_blobs": 1942,
+      "verified_payload_bytes": 22594915,
+      "all_entry_git_blob_sha256_and_byte_counts_match": true,
+      "all_archive_paths_have_source_suffix": true,
+      "archived_code_activation": false
+    },
+    "task_registers": {
+      "snapshots": 2,
+      "rows_each": 96,
+      "unique_ids_each": 96,
+      "dependency_edges_each": 201,
+      "dependency_graph_sha256": "f665c9a6350b2abb26a94f59be1a1879eda2bb2f07cc7e703f007fd8ac10ab9c",
+      "unknown_dependencies": [],
+      "cycles": [],
+      "identical_task_sets_and_edges": true,
+      "execution_accepted_true": 0
+    },
+    "exclusions": {
+      "captured_root_committed_delta_paths": 4,
+      "captured_root_dirty_paths": 6,
+      "all_marked_unselected": true,
+      "pending_prs": [
+        {
+          "number": 966,
+          "head": "b17d989d041186acb72828ad1e7458b900ccc48c",
+          "state": "open",
+          "merged": false
+        },
+        {
+          "number": 968,
+          "head": "c675f8023062c6ca9f8be8514b8d4737b338e026",
+          "state": "open",
+          "merged": false
+        }
+      ],
+      "pending_heads_not_ancestors_of_selected_main": true,
+      "dirty_or_peer_source_imported": false
+    },
+    "ledger_and_service_bounds": {
+      "seven_historical_owner_ledger_availability_strings_verified": true,
+      "private_ledger_contents_read": false,
+      "historical_idle_owner_receipts": 9,
+      "receipt_observed_at_utc": "2026-11-02T07:38:21.076Z",
+      "current_peer_process_or_preview_liveness_reinspected": false,
+      "current_owner_runtime_approval_inferred": false,
+      "service_control_actions": 0
+    },
+    "verification_kind": "Static Git/blob/CSV/JSON reads and metadata GETs only; no test runner, build, install, migration, DB/provider/service campaign."
+  },
+  "source_pin_verification": {
+    "inventory_plus_supporting_source_paths": 16,
+    "inventory_embedded_historical_pins_verified": 15,
+    "formal_pins_match_reviewed_commit_and_current_tree": true,
+    "original_scope_and_source_bindings_unchanged": true
+  },
+  "preserved_remaining_gates": [
+    "Private applied ledgers remain intentionally unaccessed; owner receipts and accepted combined runtime base are required before any later migration.",
+    "No source/static record establishes full Agency acceptance, other95 task completion, provider/human qualification, release or deployment.",
+    "Root still must integrate permitted technical eligibility, obtain exact selected-main CI, post distinct-agent acceptance and run the live closure gate/audit."
+  ]
+}

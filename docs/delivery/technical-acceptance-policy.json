@@ -867,6 +867,29 @@
         "docs/delivery/mail-release-policy.json",
         ".github/workflows/release.yml"
       ]
+    },
+    "agency/AP-00.1": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "3db2d63c4038cc11d3bec7ca300536c3afc070237f8c7bacf49cbb9878358747",
+      "rationale": "The complete original AP-00.1/T00 committed-source inventory, task-DAG validation, preserved dirty-source exclusions and provenance refresh. Ledger availability and service ownership observation limits are explicit. No Agency activation, peer runtime mutation, private-ledger inspection, migration acceptance, other Agency deliverable, provider or human journey acceptance.",
+      "required_source_paths": [
+        "docs/delivery/agency-source-inventory-20261104.json",
+        "docs/development/preserved/2026-11-02/agency/manifest.json",
+        "docs/development/preserved/2026-11-02/privacy/manifest.json",
+        "docs/development/preserved/2026-11-02/mail/manifest.json",
+        "docs/development/preserved/2026-11-02/integration/manifest.json",
+        "docs/development/preserved/2026-11-02/workflow/manifest.json",
+        "docs/development/preserved/2026-11-02/calendar/manifest.json",
+        "docs/development/preserved/2026-11-02/settings/manifest.json",
+        "docs/development/preserved/2026-11-02/sales/manifest.json",
+        "docs/delivery/sources/agency/approved/TASKS.csv",
+        "docs/delivery/sources/agency/execution-2026-11-02/TASKS.live.csv",
+        "docs/delivery/sources/agency/approved/TEST-MATRIX.md",
+        "docs/development/preserved/2026-11-02/agency/source/docs/agency-projects/source-inventory-latest.json.source",
+        "docs/delivery/roadmap.json",
+        "AGENTS.md",
+        "docs/development/preserved/2026-11-02/settings/handoff/2026-11-02/chat-terminal-receipt.json.source"
+      ]
     }
   },
   "codeql_workflow_id": "403980173"
