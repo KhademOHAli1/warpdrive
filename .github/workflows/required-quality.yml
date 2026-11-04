@@ -127,6 +127,8 @@ jobs:
           bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
       - name: Apply canonical migrations to disposable database
         run: bun --no-env-file src/entrypoints/migrate.ts
+      - name: Validate attribution of held appearance action results
+        run: node --test scripts/browser-appearance-actions.test.mjs
       - name: Create the scoped synthetic browser actor through native auth storage
         run: bun --no-env-file scripts/browser-smoke-seed.mjs
       - name: Build normal production application
@@ -156,6 +158,15 @@ jobs:
           done
           test "$ready" = 1
           timeout 300s bun --no-env-file scripts/browser-smoke.mjs
+          timeout 300s bun --no-env-file scripts/browser-appearance.mjs
+      - name: Retain appearance validation receipts and screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: appearance-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/appearance/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve browser failure traces and screenshots
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

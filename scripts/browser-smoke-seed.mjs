@@ -70,6 +70,20 @@ try {
   await client.query(
     "INSERT INTO settings(id,base_currency) VALUES(true,'EUR') ON CONFLICT(id) DO NOTHING",
   );
+  // Non-default siblings and a second actor make appearance preservation checks substantive.
+  await client.query(
+    "INSERT INTO users(id,email,name,is_admin) VALUES($1,'appearance-sentinel@example.invalid','Appearance sentinel',false)",
+    ["00000000-0000-4000-8000-000000000505"],
+  );
+  await client.query(
+    "INSERT INTO user_preferences(user_id,timezone,density,ui) VALUES($1,'Europe/Berlin','comfortable',$2),($3,'Asia/Tehran','compact',$4)",
+    [
+      id,
+      JSON.stringify({ appearance: "day", winSound: true, dailyActivityTarget: 7 }),
+      "00000000-0000-4000-8000-000000000505",
+      JSON.stringify({ appearance: "night", winSound: false }),
+    ],
+  );
   await client.query("COMMIT");
 } catch (error) {
   if (client) await client.query("ROLLBACK");
