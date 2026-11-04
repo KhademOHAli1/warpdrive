@@ -14,15 +14,15 @@ German and Farsi. Persian/Arabic character normalization applies consistently to
 and searchable text. Descriptions remain visible, and no-match feedback offers Clear.
 Wait bounds use the selected numbering system.
 
-| Entry | Selection and support |
-| --- | --- |
-| Manual trigger | Opens the existing manual entry's inspector; never inserts a second trigger. |
-| Record-change trigger | Visible with an unavailable-handler explanation; not selectable. |
-| Read deal | Inserts the existing deal-read configuration; other record entities are not advertised as supported. |
-| Create task | Inserts the existing subject/optional linked-deal task configuration. |
-| Notification | Visible with an unavailable-handler explanation; not selectable. |
-| Condition | Inserts the existing supported scalar-condition configuration where the graph permits it. |
-| Wait | Inserts a literal duration wait; reference-bound durations are not advertised as supported. |
+| Entry                 | Selection and support                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| Manual trigger        | Opens the existing manual entry's inspector; never inserts a second trigger.                         |
+| Record-change trigger | Visible with an unavailable-handler explanation; not selectable.                                     |
+| Read deal             | Inserts the existing deal-read configuration; other record entities are not advertised as supported. |
+| Create task           | Inserts the existing subject/optional linked-deal task configuration.                                |
+| Notification          | Visible with an unavailable-handler explanation; not selectable.                                     |
+| Condition             | Inserts the existing supported scalar-condition configuration where the graph permits it.            |
+| Wait                  | Inserts a literal duration wait; reference-bound durations are not advertised as supported.          |
 
 Catalog presence is not execution support. The picker adds no handler, trigger
 execution path, provider adapter, extension loader or database schema. Existing
