@@ -169,7 +169,7 @@ it("gap: copies reviewed incomplete or wrong-known until drafts without completi
     until(""),
     { until: { kind: "value", literalType: "number", value: "-" } },
     { until: { kind: "reference", nodeId: "start", path: ["recordId"] } },
-  ]) {
+  ] as WorkflowNode["config"][]) {
     const test = fixture(config);
     const before = structuredClone(test.definition);
     const copied = copyWorkflowDefinition(test.definition);

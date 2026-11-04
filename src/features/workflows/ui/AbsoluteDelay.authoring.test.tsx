@@ -257,7 +257,11 @@ it.each([
   expect(test.rendered.mock.lastCall?.[0]).toBe(test.initial);
 });
 
-it.each([
+it.each<{
+  name: string;
+  binding: WorkflowNode["config"][string];
+  shown: string;
+}>([
   {
     name: "wrong-known number intent",
     binding: { kind: "value", literalType: "number", value: "-" },
@@ -270,7 +274,7 @@ it.each([
     shown: "",
   },
 ])("retains an inert $name binding until an explicit edit", ({ binding, shown }) => {
-  const config = { until: binding } as WorkflowNode["config"];
+  const config: WorkflowNode["config"] = { until: binding };
   const test = mount(config);
   const input = screen.getByRole("textbox", { name: english.delayUntilLabel });
   expect(input).toHaveValue(shown);
