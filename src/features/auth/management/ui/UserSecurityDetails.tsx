@@ -1,11 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { managedUserDetailsResponse } from "../clientSchemas";
 import type { ManagedUserDetails } from "../contracts";
 import type { ManagementMessages } from "../messages";
 import type { AskManagementAction } from "./types";
 import { useManagementFormat } from "./useManagementFormat";
+
+type DetailsLoad = { userId: string; revision: string } & (
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; details: ManagedUserDetails }
+);
+
 export function UserSecurityDetails({
   L,
   userId,
@@ -20,11 +27,15 @@ export function UserSecurityDetails({
   pending: boolean;
 }) {
   const format = useManagementFormat();
-  const [details, setDetails] = useState<ManagedUserDetails | null>(null);
-  const [error, setError] = useState(false);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: A completed action changes revision so revoked sessions refresh immediately.
+  const [load, setLoad] = useState<DetailsLoad>({ userId, revision, status: "loading" });
+  const [retryCount, setRetryCount] = useState(0);
+  const inFlight = useRef(false);
+  const output = useRef<HTMLElement>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Revision and Retry explicitly reload this read without changing the selected account.
   useEffect(() => {
     const controller = new AbortController();
+    let current = true;
+    inFlight.current = true;
     void (async () => {
       try {
         const response = await fetch(`/api/auth-management/user?id=${encodeURIComponent(userId)}`, {
@@ -33,37 +44,60 @@ export function UserSecurityDetails({
         });
         const result = managedUserDetailsResponse.safeParse(await response.json());
         controller.signal.throwIfAborted();
-        if (!result.success || !result.data.ok) {
-          setError(true);
+        if (!current) return;
+        if (!result.success || !result.data.ok || result.data.data.userId !== userId) {
+          setLoad({ userId, revision, status: "error" });
           return;
         }
-        setDetails(result.data.data);
-        setError(false);
+        setLoad({ userId, revision, status: "ready", details: result.data.data });
       } catch {
-        if (!controller.signal.aborted) setError(true);
+        if (current && !controller.signal.aborted) setLoad({ userId, revision, status: "error" });
+      } finally {
+        if (current) inFlight.current = false;
       }
     })();
-    return () => controller.abort();
-  }, [userId, revision]);
-  if (error)
+    return () => {
+      current = false;
+      controller.abort();
+      inFlight.current = false;
+    };
+  }, [userId, revision, retryCount]);
+
+  function retry(): void {
+    if (inFlight.current || pending) return;
+    inFlight.current = true;
+    output.current?.focus();
+    setLoad({ userId, revision, status: "loading" });
+    setRetryCount((value) => value + 1);
+  }
+
+  if (load.userId !== userId || load.revision !== revision || load.status === "loading")
     return (
-      <p role="alert" className="text-sm text-destructive">
-        {L.loadError}
-      </p>
+      <section ref={output} aria-label={L.securityDetails} tabIndex={-1}>
+        <p role="status" className="text-sm text-muted-foreground">
+          {L.loading}
+        </p>
+      </section>
     );
-  if (details === null)
+  if (load.status === "error")
     return (
-      <p role="status" className="text-sm text-muted-foreground">
-        {L.loading}
-      </p>
+      <section ref={output} aria-label={L.securityDetails} tabIndex={-1} className="space-y-3">
+        <p role="alert" className="text-sm text-destructive">
+          {L.loadError}
+        </p>
+        <Button size="sm" variant="outline" disabled={pending} onClick={retry}>
+          {L.retry}
+        </Button>
+      </section>
     );
+  const details = load.details;
   const providers: Record<string, string> = {
     credential: L.passwordLogin,
     google: "Google",
     microsoft: "Microsoft",
   };
   return (
-    <div className="space-y-4">
+    <section ref={output} aria-label={L.securityDetails} tabIndex={-1} className="space-y-4">
       <h3 className="text-sm font-medium">{L.securityDetails}</h3>
       <dl className="grid gap-x-6 gap-y-4 rounded-lg border bg-muted/20 p-4 text-sm sm:grid-cols-2">
         <div>
@@ -116,6 +150,6 @@ export function UserSecurityDetails({
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }
