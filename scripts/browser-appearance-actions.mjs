@@ -189,6 +189,8 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
   const actions = [];
   const holds = new Set();
   const handlers = new Set();
+  const observations = new WeakMap();
+  const fulfilled = new WeakSet();
   let pending;
   let error;
   let closing = false;
@@ -203,9 +205,10 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
   const assertHealthy = () => {
     if (error) throw error;
   };
-  const record = async (hold, input, outcome) => {
+  const record = async (hold, input, outcome, request) => {
     hold.observation = { sequence: actions.length + 1, ...input, outcome };
     actions.push(hold.observation);
+    observations.set(request, hold.observation);
     if (onObserved) await bounded(onObserved(hold.observation), "observation callback timed out");
     hold.reached.resolve();
   };
@@ -228,7 +231,7 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
       };
       if (hold.transportAbort) {
         timer = setTimeout(releaseOnTimeout, 10_000);
-        await record(hold, input, { transport: "aborted_before_upstream" });
+        await record(hold, input, { transport: "aborted_before_upstream" }, request);
         await hold.gate.promise;
         assertHealthy();
         await route.abort("failed");
@@ -237,10 +240,11 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
       upstream = await route.fetch({ timeout: 10_000, maxRedirects: 0 });
       const outcome = await genuineOutcome(upstream, hold);
       timer = setTimeout(releaseOnTimeout, 10_000);
-      await record(hold, input, outcome);
+      await record(hold, input, outcome, request);
       await hold.gate.promise;
       assertHealthy();
       await route.fulfill({ response: upstream });
+      fulfilled.add(request);
     } catch (problem) {
       fail(problem);
       try {
@@ -274,6 +278,11 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
   return {
     actions,
     assertHealthy,
+    // Call after held delivered() settles. This proves exact request attribution and a
+    // successful fulfill call; the journey separately verifies DOM and persisted results.
+    deliveredObservation(request) {
+      return fulfilled.has(request) ? observations.get(request) : undefined;
+    },
     expect({ kind, value, ok, transportAbort = false }) {
       assertHealthy();
       const values =

@@ -429,7 +429,9 @@ async function ordering(s, denied) {
 function watchNetwork(context, page, entry) {
   const errors = [];
   const unexpected = [];
+  const postCancellations = [];
   entry.navigationCancellations = [];
+  entry.fulfilledResponseCancellations = [];
   let expectedTransportErrors = 0;
   page.on("requestfailed", (request) => {
     const url = new URL(request.url());
@@ -449,6 +451,17 @@ function watchNetwork(context, page, entry) {
       (detail.navigation || detail.rsc)
     ) {
       entry.navigationCancellations.push(detail);
+      return;
+    }
+    if (
+      url.origin === origin &&
+      url.pathname === "/settings/appearance" &&
+      detail.method === "POST" &&
+      request.headers()["next-action"] &&
+      detail.failure === "net::ERR_ABORTED"
+    ) {
+      // Classify after all held responses settle, using this exact Request object's custody.
+      postCancellations.push({ request, detail });
       return;
     }
     if (
@@ -484,8 +497,15 @@ function watchNetwork(context, page, entry) {
   ]);
   return {
     ready,
-    verify(expectedAborts) {
+    verify(expectedAborts, probe) {
+      for (const { request, detail } of postCancellations) {
+        const delivered = probe.deliveredObservation(request);
+        if (delivered) entry.fulfilledResponseCancellations.push({ ...detail, delivered });
+        else errors.push(detail);
+      }
       entry.expectedTransportErrors = expectedTransportErrors;
+      entry.unexpectedNetworkFailures = errors;
+      entry.unexpectedOrigins = unexpected;
       assert.equal(expectedTransportErrors, expectedAborts);
       assert.deepEqual(errors, [], "No unexpected browser errors");
       assert.deepEqual(unexpected, [], "No external requests or sockets");
@@ -542,8 +562,8 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
       entry,
     });
     probe.assertHealthy();
-    network.verify(scenario === "transport" ? 2 : 0);
     entry.actions = probe.actions;
+    network.verify(scenario === "transport" ? 2 : 0, probe);
     await page.screenshot({
       path: fileURLToPath(new URL(`${locale}-${width}-${colorScheme}-${scenario}.png`, evidence)),
       fullPage: true,

@@ -51,6 +51,11 @@ needed, so density feedback is exercised in both rendered themes. Navigation/rel
 cancel a superseded same-origin document or RSC GET with `net::ERR_ABORTED`; the receipt
 retains those exact classified cancellations. Other failed GETs, unexpected POSTs, browser
 errors and attempted external requests fail the journey.
+An aborted action stream is recorded separately only when the probe proves custody of that
+exact request object and successful fulfillment of its
+typed response. This classification occurs only after held-response completion and the
+independent DOM/database checks. An unknown or unfulfilled POST cancellation still fails;
+this is not a general allowance for failed mutations.
 
 ## Evidence and limits
 
@@ -64,9 +69,10 @@ container teardown. Preserve failed runs and diagnose their actual stage before 
 correction. A timeout or setup failure is not a product assertion result.
 
 `node --test scripts/browser-appearance-actions.test.mjs` separately checks the bounded
-Flight decoder's result attribution and malformed-input rejection. Those 16 cases are
-parser tests; they do not establish native behavior. Syntax/format checks likewise do not
-establish that a browser journey ran.
+Flight decoder's result attribution and malformed-input rejection (16 cases), plus exact
+request custody across pending/successful fulfillment, failed fulfillment, and transport
+abort (three cases). Those 19 helper cases do not establish native behavior. Syntax/format
+checks likewise do not establish that a browser journey ran.
 
 The original pre-presentation native baseline remains historical and unrun. The new matrix
 observes the integrated current appearance source; it cannot retroactively supply that
