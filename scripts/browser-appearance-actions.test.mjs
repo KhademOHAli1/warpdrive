@@ -4,14 +4,14 @@ import { decodePreferenceResult } from "./browser-appearance-actions.mjs";
 
 const bytes = (value) => new TextEncoder().encode(value);
 
-test("reads only the action result selected by root a", () => {
+await test("reads only the action result selected by root a", () => {
   assert.deepEqual(
     decodePreferenceResult(bytes('1:{"ok":false,"error":{"id":"E_OTHER"}}\n0:{"a":{"ok":true}}\n')),
     { ok: true },
   );
 });
 
-test("resolves forward action and error references", () => {
+await test("resolves forward action and error references", () => {
   assert.deepEqual(
     decodePreferenceResult(
       bytes('0:{"a":"$@1"}\n1:{"ok":false,"error":"$2"}\n2:{"id":"E_AUTH_CSRF"}\n'),
@@ -20,7 +20,7 @@ test("resolves forward action and error references", () => {
   );
 });
 
-test("skips length-framed text containing misleading result JSON", () => {
+await test("skips length-framed text containing misleading result JSON", () => {
   const text = '0:{"a":{"ok":false}}\n';
   const framed = `2:T${bytes(text).length.toString(16)},${text}`;
   assert.deepEqual(decodePreferenceResult(bytes(`${framed}0:{"a":{"ok":true}}\n`)), {
@@ -42,12 +42,12 @@ for (const [name, body] of [
   ["unterminated JSON row", '0:{"a":{"ok":true}}'],
   ["invalid hexadecimal model identity", 'z:{"a":{"ok":true}}\n'],
 ]) {
-  test(`rejects ${name}`, () => {
+  await test(`rejects ${name}`, () => {
     assert.throws(() => decodePreferenceResult(bytes(body)));
   });
 }
 
-test("rejects oversized and invalid UTF-8 bodies", () => {
+await test("rejects oversized and invalid UTF-8 bodies", () => {
   assert.throws(() => decodePreferenceResult(new Uint8Array(2_097_153)));
   assert.throws(() => decodePreferenceResult(Uint8Array.from([48, 58, 255, 10])));
 });

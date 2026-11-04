@@ -46,6 +46,12 @@ write waits, then hold its actual response. Stale success/denial must not overwr
 newest paint, show a stale error/dialog or announce a premature Saved state. Dark/light
 device changes affect System paint without another persistence action.
 
+Recovery setup selects the matching actual light/dark theme through the real action when
+needed, so density feedback is exercised in both rendered themes. Navigation/reload may
+cancel a superseded same-origin document or RSC GET with `net::ERR_ABORTED`; the receipt
+retains those exact classified cancellations. Other failed GETs, unexpected POSTs, browser
+errors and attempted external requests fail the journey.
+
 ## Evidence and limits
 
 The always-retained `appearance-validation-<run>-<attempt>` artifact contains a sanitized

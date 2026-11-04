@@ -52,6 +52,12 @@ function catalog(path) {
   return JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), "utf8"));
 }
 
+function asError(error) {
+  return error instanceof Error
+    ? error
+    : new Error("Appearance validation failed with a non-Error", { cause: error });
+}
+
 async function snapshot() {
   const { rows } = await pool.query(
     "SELECT user_id, timezone, density, ui, updated_at FROM user_preferences ORDER BY user_id",
@@ -301,7 +307,17 @@ async function reloadStored(s) {
 }
 
 async function recovery(s) {
-  const initial = await snapshot();
+  let initial = await snapshot();
+  const desiredTheme = s.entry.colorScheme === "dark" ? "night" : "day";
+  if (initial.own.ui.appearance !== desiredTheme) {
+    await action(s, {
+      kind: "appearance",
+      value: desiredTheme,
+      start: () => s.c.pick(desiredTheme),
+    });
+    initial = await snapshot();
+  }
+  const setupActions = s.probe.actions.length;
   assert.equal(await s.c.save().isDisabled(), true);
   const first = initial.own.ui.appearance === "night" ? "day" : "night";
   const second = first === "night" ? "day" : "night";
@@ -312,7 +328,11 @@ async function recovery(s) {
   await csrfFailure(s, "density", density, () => s.c.save().click());
   assert.equal(await s.c.radio(density).isChecked(), true);
   await reloadStored(s);
-  assert.equal(s.probe.actions.length, 5, "Only the five requested preference actions occurred");
+  assert.equal(
+    s.probe.actions.length,
+    setupActions + 5,
+    "Only the setup and five requested preference actions occurred",
+  );
 }
 
 async function transport(s) {
@@ -409,9 +429,28 @@ async function ordering(s, denied) {
 function watchNetwork(context, page, entry) {
   const errors = [];
   const unexpected = [];
+  entry.navigationCancellations = [];
   let expectedTransportErrors = 0;
   page.on("requestfailed", (request) => {
     const url = new URL(request.url());
+    const detail = {
+      path: url.pathname,
+      method: request.method(),
+      failure: request.failure()?.errorText,
+      navigation: request.isNavigationRequest(),
+      rsc: request.headers().rsc === "1",
+    };
+    // Explicit navigation/reload legitimately cancels the superseded document or RSC fetch.
+    // Keep each observation; all other failed GETs and every unexpected POST still fail.
+    if (
+      url.origin === origin &&
+      detail.method === "GET" &&
+      detail.failure === "net::ERR_ABORTED" &&
+      (detail.navigation || detail.rsc)
+    ) {
+      entry.navigationCancellations.push(detail);
+      return;
+    }
     if (
       url.origin === origin &&
       url.pathname === "/settings/appearance" &&
@@ -420,7 +459,7 @@ function watchNetwork(context, page, entry) {
       request.failure()?.errorText === "net::ERR_FAILED"
     ) {
       expectedTransportErrors += 1;
-    } else errors.push("Unexpected failed request");
+    } else errors.push(detail);
   });
   page.on("pageerror", (error) => errors.push(error.name));
   page.on("console", (message) => {
@@ -512,7 +551,7 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
   } catch (error) {
     entry.state = "FAIL";
     entry.error = String(error);
-    problem = error;
+    problem = asError(error);
     if (page) {
       await page
         .screenshot({ path: fileURLToPath(new URL("failure.png", evidence)), fullPage: true })
@@ -530,12 +569,12 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
     } catch (error) {
       entry.state = "FAIL";
       entry.error = String(error);
-      problem ??= error;
+      problem ??= asError(error);
     } finally {
       writeFileSync(new URL("receipt.json", evidence), JSON.stringify(report, null, 2));
     }
   }
-  if (problem) throw problem;
+  if (problem instanceof Error) throw problem;
   console.log(`appearance-${locale}-${width}-${colorScheme}-${scenario}: passed`);
 }
 
@@ -559,7 +598,7 @@ try {
 } catch (error) {
   report.state = "FAIL";
   report.error = String(error);
-  fatal = error;
+  fatal = asError(error);
 } finally {
   try {
     if (browser) await browser.close();
@@ -567,7 +606,7 @@ try {
   } catch (error) {
     report.state = "FAIL";
     report.error = String(error);
-    fatal ??= error;
+    fatal ??= asError(error);
   } finally {
     try {
       await pool.end();
@@ -575,10 +614,10 @@ try {
     } catch (error) {
       report.state = "FAIL";
       report.error = String(error);
-      fatal ??= error;
+      fatal ??= asError(error);
     } finally {
       writeFileSync(new URL("receipt.json", evidence), JSON.stringify(report, null, 2));
     }
   }
 }
-if (fatal) throw fatal;
+if (fatal instanceof Error) throw fatal;
