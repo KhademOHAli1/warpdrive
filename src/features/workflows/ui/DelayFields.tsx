@@ -12,10 +12,12 @@ export function DelayFields({
   value,
   editable,
   onChange,
+  error,
 }: {
   value: unknown;
   editable: boolean;
   onChange: (binding: Binding) => void;
+  error?: string;
 }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
@@ -38,7 +40,13 @@ export function DelayFields({
         dir="ltr"
         value={text}
         disabled={!editable}
-        aria-describedby={mapped ? `${id}-hint ${id}-literal-required` : `${id}-hint`}
+        aria-describedby={[
+          `${id}-hint`,
+          mapped ? `${id}-literal-required` : undefined,
+          error === undefined ? undefined : `${id}-error`,
+        ]
+          .filter(Boolean)
+          .join(" ")}
         aria-invalid={!delayMinutesSchema.safeParse(literal).success}
         onChange={(event) => {
           const raw = event.target.value;
@@ -55,6 +63,11 @@ export function DelayFields({
           max: max === null ? "" : fmt.number(max),
         })}
       </p>
+      {error !== undefined && (
+        <p id={`${id}-error`} className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
       {mapped && (
         <p id={`${id}-literal-required`} className="text-xs leading-5 text-destructive">
           {t("delayLiteralRequired")}

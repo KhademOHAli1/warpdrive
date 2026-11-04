@@ -17,13 +17,15 @@ import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import { portsFor } from "../graphEditor";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
-import type { WorkflowNode } from "../schemas";
+import type { WorkflowDefinition, WorkflowNode } from "../schemas";
+import { conditionPortLabel } from "./conditionPortLabel";
 import { NodeSummary } from "./NodeSummary";
 import type { AddFromOutput } from "./useConnectionGestures";
 
 export type CanvasNode = Node<
   {
     node: WorkflowNode;
+    definition?: WorkflowDefinition;
     invalid: boolean;
     index: number;
     completed?: boolean;
@@ -83,7 +85,7 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
           <TriangleAlert className="size-4 shrink-0 text-destructive" aria-label={t("invalid")} />
         )}
       </div>
-      <NodeSummary node={node} />
+      <NodeSummary node={node} definition={data.definition} />
       {data.completed === true && (
         <p className="mt-2 text-xs font-medium text-success">{t("stepCompleted")}</p>
       )}
@@ -94,7 +96,7 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
         >
           {ports.map((port) => (
             <span key={port} dir={directionForLocale(locale)}>
-              {t(port === "true" ? "truePort" : "falsePort")}
+              {t(conditionPortLabel(port))}
             </span>
           ))}
         </div>
@@ -112,9 +114,7 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
                 className="h-auto min-h-8 min-w-0 flex-1 gap-1 whitespace-normal px-2 py-1.5 text-xs"
                 aria-label={t("addAfter", {
                   name: displayNodeName(node, locale),
-                  port: t(
-                    port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort",
-                  ),
+                  port: t(conditionPortLabel(port)),
                 })}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -122,7 +122,7 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
                 }}
               >
                 <Plus className="size-3.5 shrink-0" />
-                {t(port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort")}
+                {t(conditionPortLabel(port))}
               </Button>
             ))}
         </div>
@@ -135,7 +135,7 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
           position={Position.Bottom}
           isConnectable={isConnectable}
           style={{ left: ports.length === 1 ? "50%" : index === 0 ? "25%" : "75%" }}
-          aria-label={t(port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort")}
+          aria-label={t(conditionPortLabel(port))}
         />
       ))}
     </section>

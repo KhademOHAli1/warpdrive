@@ -11,6 +11,16 @@ import { useWorkflowEditor, type WorkflowDetail } from "./useWorkflowEditor";
 import { WorkflowEditor } from "./WorkflowEditor";
 
 const actions = vi.hoisted(() => ({ save: vi.fn(), push: vi.fn() }));
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
+}));
+
 vi.mock("../actions", () => ({
   saveWorkflowAction: actions.save,
   publishWorkflowAction: vi.fn(),
@@ -78,7 +88,15 @@ function fixture(): WorkflowDetail {
     archivedAt: null,
     createdAt: new Date("2026-11-02T12:00:00Z"),
     updatedAt: new Date("2026-11-02T12:00:00Z"),
-    capabilities: { edit: true, publish: true, run: true, cancel: true },
+    capabilities: {
+      edit: true,
+      publish: true,
+      run: true,
+      cancel: true,
+      unarchive: false,
+      duplicate: true,
+      restore: true,
+    },
   };
 }
 function mount() {

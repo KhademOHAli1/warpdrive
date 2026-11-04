@@ -3,10 +3,12 @@ import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflowRuns, workflows, workflowVersions } from "@/db/schema";
+import { prepareCurrentCustomFieldValidation } from "@/features/custom-fields/currentValidation";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
+import { validateDefinition } from "./definition";
 import { executableDefinition } from "./readiness";
 
 const inputSchema = z.strictObject({
@@ -63,6 +65,14 @@ export async function admitManualRun(
         return err(ERROR_IDS.WORKFLOW_CONFLICT);
       return ok(existing);
     }
+    const metadata = version.definition.nodes.some((node) => node.type === "activity.create")
+      ? {
+          status: "complete" as const,
+          defs: (await prepareCurrentCustomFieldValidation(tx, "activity", signal)).defs,
+        }
+      : { status: "complete" as const, defs: [] };
+    if (!validateDefinition(version.definition, metadata).ok)
+      return err(ERROR_IDS.WORKFLOW_INVALID);
     const [run] = await tx
       .insert(workflowRuns)
       .values({

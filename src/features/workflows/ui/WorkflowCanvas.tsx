@@ -25,6 +25,7 @@ import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
 import { ConnectionFeedback } from "./ConnectionFeedback";
+import { conditionPortLabel } from "./conditionPortLabel";
 import { ResponsiveViewport, type RevealNode } from "./ResponsiveViewport";
 import { type AddFromOutput, useConnectionGestures } from "./useConnectionGestures";
 import { type CanvasNode, WorkflowNodeCard } from "./WorkflowNodeCard";
@@ -91,6 +92,7 @@ export function WorkflowCanvas({
     type: "workflow",
     data: {
       node,
+      definition,
       invalid: invalidNodes.has(node.id),
       index: uniqueIds ? (nodeIndices.get(node.id) ?? index) : index,
       completed: completedNodes?.has(node.id) === true,
@@ -113,8 +115,11 @@ export function WorkflowCanvas({
     data: { spec },
     selected: selectedEdge === edgeId(spec),
     markerEnd: { type: MarkerType.ArrowClosed },
-    label: spec.port === "next" ? undefined : t(spec.port === "true" ? "truePort" : "falsePort"),
-    ariaLabel: t("connectionName", { from: nameFor(spec.from), to: nameFor(spec.to) }),
+    label: spec.port === "next" ? undefined : t(conditionPortLabel(spec.port)),
+    ariaLabel:
+      t("connectionName", { from: nameFor(spec.from), to: nameFor(spec.to) }) +
+      " · " +
+      t(conditionPortLabel(spec.port)),
     deletable: editable,
     reconnectable: editable,
     interactionWidth: 28,

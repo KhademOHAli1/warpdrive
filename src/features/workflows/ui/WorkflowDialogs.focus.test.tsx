@@ -12,12 +12,20 @@ import { RunHistory } from "@/features/workflows/ui/RunHistory";
 import type { WorkflowDetail } from "@/features/workflows/ui/useWorkflowEditor";
 import { WorkflowEditor } from "@/features/workflows/ui/WorkflowEditor";
 import { WorkflowLibrary } from "@/features/workflows/ui/WorkflowLibrary";
+import type { RouterOutputs } from "@/lib/trpc-client";
+import { paletteWorkflowId, readyPaletteRead } from "./palette.TestHelpers";
+
+type LibraryRow = RouterOutputs["workflows"]["list"]["items"][number];
+type OriginalLibraryRow = Pick<
+  LibraryRow,
+  "id" | "name" | "active" | "publishedNumber" | "updatedAt"
+>;
 
 const queries = vi.hoisted(() => {
   const detail: unknown = undefined;
   return {
     rows: [] as unknown[],
-    libraryRows: [] as unknown[],
+    libraryRows: [] as OriginalLibraryRow[],
     detail,
     cancel: vi.fn(),
     create: vi.fn(),
@@ -30,9 +38,41 @@ vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     useUtils: () => ({ workflows: { runs: { invalidate: vi.fn() } } }),
     workflows: {
+      owners: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: false,
+          isFetching: false,
+          isError: false,
+          error: null,
+          refetch: vi.fn(),
+        }),
+      },
       list: {
         useQuery: () => ({
-          data: queries.libraryRows,
+          data: {
+            items: queries.libraryRows.map(
+              (row): LibraryRow => ({
+                ...row,
+                revision: 1,
+                archivedAt: null,
+                lifecycle: row.active
+                  ? "active"
+                  : row.publishedNumber === null
+                    ? "draft"
+                    : "paused",
+                owner: {
+                  id: "81a2e35a-8c1e-44c2-ae06-e9879d52af58",
+                  name: "Visible workflow owner",
+                },
+                latestLiveRun: null,
+                capabilities: { archive: false, unarchive: false, duplicate: false },
+              }),
+            ),
+            nextCursor: null,
+            scopeHasItems: queries.libraryRows.length > 0,
+            capabilities: { create: true, filterOwners: false },
+          },
           isLoading: false,
           isError: false,
           refetch: vi.fn(),
@@ -73,6 +113,10 @@ vi.mock("@/features/workflows/actions", () => ({
   saveWorkflowAction: vi.fn(),
   publishWorkflowAction: vi.fn(),
   pauseWorkflowAction: vi.fn(),
+  archiveWorkflowAction: vi.fn(),
+  unarchiveWorkflowAction: vi.fn(),
+  duplicateWorkflowAction: vi.fn(),
+  restoreWorkflowDraftAction: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: queries.push, refresh: vi.fn() }),
@@ -83,6 +127,16 @@ vi.mock("@/features/workflows/ui/WorkflowCanvas", () => ({
 vi.mock("@/features/observability/capture", () => ({
   capture: vi.fn(),
   currentRoute: () => "/workflows/test",
+}));
+
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
 }));
 
 afterEach(() => {
@@ -96,7 +150,16 @@ afterEach(() => {
 
 function Workspace({ initial }: { initial: WorkflowDefinition }) {
   const [definition, setDefinition] = useState(initial);
-  return <BuilderWorkspace definition={definition} onChange={setDefinition} editable issues={[]} />;
+  return (
+    <BuilderWorkspace
+      workflowId={paletteWorkflowId}
+      paletteRead={readyPaletteRead()}
+      definition={definition}
+      onChange={setDefinition}
+      editable
+      issues={[]}
+    />
+  );
 }
 
 async function dismissAndExpectFocus(trigger: HTMLElement) {
@@ -189,7 +252,7 @@ describe("workflow controlled-dialog keyboard focus return", () => {
     expect(queries.create).not.toHaveBeenCalled();
   });
 
-  it.each(["Escape", "Cancel"] as const)(
+  it.each(["Escape", "Close"] as const)(
     "returns to the originating New workflow control after successful creation before cold-route commit (%s)",
     async (dismissal) => {
       const createdId = "f8a12d86-3424-4a47-87db-24d65c024a27";
@@ -219,9 +282,13 @@ describe("workflow controlled-dialog keyboard focus return", () => {
           expect(queries.push).toHaveBeenCalledTimes(1);
           expect(queries.push).toHaveBeenCalledWith(destination);
           expect(dialog).toBeVisible();
-          expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeEnabled();
-          expect(within(dialog).getByRole("button", { name: "Create workflow" })).toBeEnabled();
-          expect(name).toBeEnabled();
+          expect(within(dialog).getByRole("button", { name: "Close" })).toBeEnabled();
+          expect(within(dialog).getByRole("button", { name: "Open workflow" })).toBeEnabled();
+          expect(within(dialog).getByRole("status")).toHaveTextContent("Workflow created");
+          expect(
+            within(dialog).queryByRole("button", { name: "Create workflow" }),
+          ).not.toBeInTheDocument();
+          expect(name.isConnected).toBe(false);
         },
         { timeout: 1000, onTimeout: (error) => error },
       );
@@ -231,7 +298,7 @@ describe("workflow controlled-dialog keyboard focus return", () => {
       );
       expect(opener.isConnected).toBe(true);
       if (dismissal === "Escape") await user.keyboard("{Escape}");
-      else await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+      else await user.click(within(dialog).getByRole("button", { name: "Close" }));
       await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument(), {
         timeout: 1000,
         onTimeout: (error) => error,
@@ -284,7 +351,15 @@ describe("workflow controlled-dialog keyboard focus return", () => {
         archivedAt: null,
         createdAt: new Date("2026-10-31T12:00:00Z"),
         updatedAt: new Date("2026-10-31T12:00:00Z"),
-        capabilities: { edit: true, publish: true, run: true, cancel: true },
+        capabilities: {
+          edit: true,
+          publish: true,
+          run: true,
+          cancel: true,
+          unarchive: false,
+          duplicate: true,
+          restore: true,
+        },
       };
       render(
         <LocaleProvider locale="en">

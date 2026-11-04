@@ -27,7 +27,15 @@ it("retranslates feedback on a live language switch without losing the draft", a
     archivedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    capabilities: { edit: true, publish: true, run: true, cancel: true },
+    capabilities: {
+      edit: true,
+      publish: true,
+      run: true,
+      cancel: true,
+      unarchive: false,
+      duplicate: true,
+      restore: true,
+    },
   };
   let locale: "en" | "fa" | "de" = "en";
   const wrapper = ({ children }: { children: ReactNode }) => (

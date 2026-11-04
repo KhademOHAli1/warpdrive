@@ -8,6 +8,7 @@ import { type ConnectionProblem, connectNodes, disconnectNodes, portsFor } from 
 import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
+import { conditionPortLabel } from "./conditionPortLabel";
 
 export function EdgeInspector({
   definition,
@@ -73,7 +74,7 @@ export function EdgeInspector({
           disabled={!editable}
           options={(source === undefined ? [] : portsFor(source)).map((port) => ({
             value: port,
-            label: t(port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort"),
+            label: t(conditionPortLabel(port)),
           }))}
           onChange={(port) => {
             if (source === undefined) return;

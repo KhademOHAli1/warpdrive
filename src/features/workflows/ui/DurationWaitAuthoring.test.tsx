@@ -10,6 +10,29 @@ import { initialBlankDefinition } from "../editorModel";
 import { delayMinutesSchema } from "../registry";
 import { bindingSchema, type WorkflowDefinition } from "../schemas";
 import { BuilderWorkspace } from "./BuilderWorkspace";
+import { paletteWorkflowId, readyPaletteRead } from "./palette.TestHelpers";
+
+vi.mock("./useWorkflowConfigurationReferences", () => ({
+  useWorkflowConfigurationReferences: () => ({
+    status: "ready",
+    options: [],
+    search: "",
+    onSearch: vi.fn(),
+    nextCursor: null,
+    selected: undefined,
+    unavailable: false,
+    stale: false,
+  }),
+}));
+vi.mock("./useWorkflowConfiguration", () => ({
+  useWorkflowConfiguration: () => ({
+    metadata: { status: "complete", defs: [] },
+    authoring: true,
+    busy: false,
+    loadMore: undefined,
+    retry: () => Promise.resolve(),
+  }),
+}));
 
 vi.mock("@/features/workflows/ui/WorkflowCanvas", () => ({
   WorkflowCanvas: () => <div>Canvas omitted from authoring regression</div>,
@@ -24,7 +47,16 @@ afterEach(cleanup);
 function Workspace({ onChange }: { onChange: (definition: WorkflowDefinition) => void }) {
   const [definition, setDefinition] = useState(() => initialBlankDefinition("Manual start"));
   useEffect(() => onChange(definition), [definition, onChange]);
-  return <BuilderWorkspace definition={definition} onChange={setDefinition} editable issues={[]} />;
+  return (
+    <BuilderWorkspace
+      workflowId={paletteWorkflowId}
+      paletteRead={readyPaletteRead()}
+      definition={definition}
+      onChange={setDefinition}
+      editable
+      issues={[]}
+    />
+  );
 }
 
 it.each([
