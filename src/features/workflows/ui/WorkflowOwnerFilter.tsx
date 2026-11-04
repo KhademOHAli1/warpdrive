@@ -1,78 +1,26 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { trpc } from "@/lib/trpc-client";
-import type { WorkflowOwnersInput, WorkflowOwnersPage } from "../library";
-import { libraryReadDenied, libraryRefetchFailed } from "./libraryErrors";
+import type { WorkflowOwnerQuery } from "./useWorkflowOwnerQuery";
 
 export function WorkflowOwnerFilter({
-  archive,
   value,
   selectedName,
   onChange,
-  onDenied,
+  query,
 }: {
-  archive: "current" | "archived";
   value: string | undefined;
   selectedName?: string;
   onChange: (id: string | undefined) => void;
-  onDenied: () => void;
+  query: WorkflowOwnerQuery;
 }) {
   const t = useAppTranslations("workflows");
   const id = useId();
-  const [search, setSearch] = useState("");
-  const [cursor, setCursor] = useState<string | undefined>();
-  const [rows, setRows] = useState<WorkflowOwnersPage["items"]>([]);
-  const [retrying, setRetrying] = useState(false);
-  const [retryError, setRetryError] = useState(false);
-  const denialReported = useRef(false);
-  const input: WorkflowOwnersInput = {
-    archive,
-    query: search.trim(),
-    limit: 25,
-    ...(cursor === undefined ? {} : { cursor }),
-  };
-  const query = trpc.workflows.owners.useQuery(input);
-  const denied = query.isError && libraryReadDenied(query.error);
-
-  useEffect(() => {
-    if (!denied || denialReported.current) return;
-    denialReported.current = true;
-    setRows([]);
-    setCursor(undefined);
-    onDenied();
-  }, [denied, onDenied]);
-
-  useEffect(() => {
-    if (query.data === undefined || denied) return;
-    const incoming = query.data.items;
-    setRows((previous) =>
-      cursor === undefined
-        ? incoming
-        : [
-            ...previous,
-            ...incoming.filter((owner) => !previous.some((old) => old.id === owner.id)),
-          ],
-    );
-  }, [query.data, cursor, denied]);
-
-  async function retry() {
-    if (retrying || query.isFetching) return;
-    setRetrying(true);
-    setRetryError(false);
-    try {
-      if (libraryRefetchFailed(await query.refetch())) setRetryError(true);
-    } catch {
-      setRetryError(true);
-    } finally {
-      setRetrying(false);
-    }
-  }
-
+  const { search, changeSearch, rows, retrying, retryError, retry, denied } = query;
   const selected =
     value !== undefined && !rows.some((owner) => owner.id === value)
       ? [{ value, label: selectedName ?? t("librarySelectedOwner") }]
@@ -101,14 +49,7 @@ export function WorkflowOwnerFilter({
           dir="auto"
           maxLength={200}
           value={search}
-          onChange={(event) => {
-            const nextSearch = event.target.value;
-            setSearch(nextSearch);
-            if (nextSearch.trim() === search.trim()) return;
-            setCursor(undefined);
-            setRows([]);
-            setRetryError(false);
-          }}
+          onChange={(event) => changeSearch(event.target.value)}
         />
       </div>
       {(query.isLoading || query.isFetching) && (
@@ -144,7 +85,7 @@ export function WorkflowOwnerFilter({
           size="sm"
           variant="outline"
           disabled={query.isFetching || retrying}
-          onClick={() => setCursor(query.data?.nextCursor ?? undefined)}
+          onClick={query.more}
         >
           {t("libraryMoreOwners")}
         </Button>

@@ -250,11 +250,9 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
       restore: false,
     });
   }
-  const reconcile = useRef(applyCurrentMetadata);
-  reconcile.current = applyCurrentMetadata;
-  useEffect(() => {
-    reconcile.current(initial);
-  }, [initial]);
+  // Explicit current reads reconcile metadata/baselines through applyCurrentMetadata.
+  // A new workflow ID remounts the editor at the route boundary; local drafts survive
+  // same-workflow RSC refreshes instead of being silently replaced from props.
   async function perform(operation: "save" | "publish" | "pause") {
     if (
       archivedAt !== null ||

@@ -65,14 +65,15 @@ vi.mock("@/lib/trpc-client", () => ({
         },
       },
       owners: {
-        useQuery: (input: unknown, options?: unknown) => {
-          io.owners(input, options);
+        useQuery: (input: unknown, options?: { enabled?: boolean }) => {
+          const enabled = options?.enabled !== false;
+          if (enabled) io.owners(input, options);
           return {
-            data: io.ownerData,
+            data: enabled ? io.ownerData : undefined,
             isLoading: false,
             isFetching: false,
-            isError: io.ownerError !== null,
-            error: io.ownerError,
+            isError: enabled && io.ownerError !== null,
+            error: enabled ? io.ownerError : null,
             refetch: io.refetch,
           };
         },
@@ -208,7 +209,9 @@ beforeEach(() => {
   io.error = null;
   io.ownerError = null;
   io.ownerData = { items: [{ id: ownerId, name: "Workflow Owner" }], nextCursor: null };
-  io.refetch.mockReset().mockImplementation(async () => ({ data: io.data, isError: false }));
+  io.refetch
+    .mockReset()
+    .mockImplementation(() => Promise.resolve({ data: io.data, isError: false }));
   io.invalidate.mockReset().mockResolvedValue(undefined);
   io.push.mockReset();
   io.refresh.mockReset();
@@ -268,37 +271,139 @@ describe("server-owned workflow library pages", () => {
   it("resets status/page on archive-view change and obtains owner options only in permitted scope", async () => {
     io.data = { ...page(), nextCursor: "next", capabilities: { create: true, filterOwners: true } };
     const user = userEvent.setup();
+    const heldOwnerRetry = deferred<unknown>();
+    io.ownerError = { message: "old owner read", data: { code: "INTERNAL_SERVER_ERROR" } };
+    io.refetch.mockImplementationOnce(() => heldOwnerRetry.promise);
     render(view());
-    await select(user, english.libraryStatus, english.active);
-    await user.click(screen.getByRole("button", { name: "Next page" }));
-    await select(user, "Workflow visibility", "Archived workflows");
-    await waitFor(() => expect(lastRequest()).toEqual({ ...defaults, archive: "archived" }));
-    await waitFor(() =>
+    try {
+      await user.click(screen.getByRole("button", { name: english.retry }));
+      expect(io.refetch).toHaveBeenCalledTimes(1);
+      io.ownerError = null;
+      await select(user, english.libraryStatus, english.active);
+      await user.click(screen.getByRole("button", { name: "Next page" }));
+      await select(user, "Workflow visibility", "Archived workflows");
+      await waitFor(() => expect(lastRequest()).toEqual({ ...defaults, archive: "archived" }));
+      await waitFor(() =>
+        expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({
+          archive: "archived",
+          query: "",
+          limit: 25,
+        }),
+      );
+      await act(async () => {
+        heldOwnerRetry.resolve({ isError: true });
+      });
+      expect(screen.queryByText(english.libraryOwnersError)).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: english.retry })).not.toBeInTheDocument();
+      await user.type(screen.getByRole("searchbox", { name: english.libraryOwnerSearch }), " ");
       expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({
         archive: "archived",
         query: "",
         limit: 25,
-      }),
-    );
-    await user.type(screen.getByRole("searchbox", { name: english.libraryOwnerSearch }), " ");
-    expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({
-      archive: "archived",
-      query: "",
-      limit: 25,
-    });
-    expect(screen.queryByText(english.libraryNoOwners)).not.toBeInTheDocument();
-    await select(user, "Workflow owner", "Workflow Owner");
-    await waitFor(() =>
-      expect(lastRequest()).toEqual({ ...defaults, archive: "archived", ownerId }),
-    );
+      });
+      expect(screen.queryByText(english.libraryNoOwners)).not.toBeInTheDocument();
+      await select(user, "Workflow owner", "Workflow Owner");
+      await waitFor(() =>
+        expect(lastRequest()).toEqual({ ...defaults, archive: "archived", ownerId }),
+      );
+    } finally {
+      await act(async () => {
+        heldOwnerRetry.resolve({ isError: true });
+      });
+    }
   });
 
-  it("lets current server capabilities revoke stale create/owner controls", () => {
-    io.data = { ...page(), capabilities: { create: false, filterOwners: false } };
-    render(view("en", true));
-    expect(screen.queryByRole("button", { name: english.new })).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "Workflow owner" })).not.toBeInTheDocument();
+  it("paginates bounded owners, merges unique options, and resets query/archive continuations", async () => {
+    const secondOwner = { id: "32dbaf94-46a3-49a6-9783-cff314ba81f6", name: "Second owner" };
+    const matchedOwner = { id: "65524552-6819-473f-ac23-4f0b2cf200e4", name: "Z matched owner" };
+    const archivedOwner = { id: "c7a0a44b-cbec-4df9-b0d2-6d4fe0f520fa", name: "Archived owner" };
+    const firstOwner = { id: ownerId, name: "Workflow Owner" };
+    const retainedOwner = { id: "bcac63ac-bb0a-436a-9f17-4a8d70bd4f7a", name: "Retained owner" };
+    io.data = { ...page(), capabilities: { create: true, filterOwners: true } };
+    io.ownerData = { items: [firstOwner, retainedOwner], nextCursor: "owners-second" };
+    const user = userEvent.setup();
+    const mounted = render(view());
+    await user.click(screen.getByRole("button", { name: english.libraryMoreOwners }));
+    expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({
+      archive: "current",
+      query: "",
+      limit: 25,
+      cursor: "owners-second",
+    });
+    io.ownerData = { items: [firstOwner, secondOwner], nextCursor: null };
+    mounted.rerender(view());
+    await user.click(screen.getByRole("combobox", { name: english.libraryOwner }));
+    expect(await screen.findAllByRole("option", { name: firstOwner.name })).toHaveLength(1);
+    expect(screen.getAllByRole("option", { name: retainedOwner.name })).toHaveLength(1);
+    expect(screen.getAllByRole("option", { name: secondOwner.name })).toHaveLength(1);
+    await user.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("button", { name: english.libraryMoreOwners }),
+    ).not.toBeInTheDocument();
+
+    io.ownerData = { items: [matchedOwner], nextCursor: "matched-second" };
+    await user.type(screen.getByRole("searchbox", { name: english.libraryOwnerSearch }), "  Z  ");
+    expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({ archive: "current", query: "Z", limit: 25 });
+    await user.click(screen.getByRole("combobox", { name: english.libraryOwner }));
+    expect(await screen.findByRole("option", { name: matchedOwner.name })).toBeVisible();
+    expect(screen.queryByRole("option", { name: firstOwner.name })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: retainedOwner.name })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: secondOwner.name })).not.toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: english.libraryMoreOwners }));
+    expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({
+      archive: "current",
+      query: "Z",
+      limit: 25,
+      cursor: "matched-second",
+    });
+    io.ownerData = { items: [archivedOwner], nextCursor: null };
+    await select(user, english.libraryArchive, english.libraryArchived);
+    expect(io.owners.mock.calls.at(-1)?.[0]).toEqual({ archive: "archived", query: "", limit: 25 });
+    expect(screen.getByRole("searchbox", { name: english.libraryOwnerSearch })).toHaveValue("");
+    await user.click(screen.getByRole("combobox", { name: english.libraryOwner }));
+    expect(await screen.findByRole("option", { name: archivedOwner.name })).toBeVisible();
+    expect(screen.queryByRole("option", { name: matchedOwner.name })).not.toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    for (const [request] of io.owners.mock.calls)
+      expect(request).toEqual(expect.objectContaining({ limit: 25 }));
+    expect(io.refetch).not.toHaveBeenCalled();
     expect(io.create).not.toHaveBeenCalled();
+    expect(io.archive).not.toHaveBeenCalled();
+    expect(io.unarchive).not.toHaveBeenCalled();
+    expect(io.duplicate).not.toHaveBeenCalled();
+  });
+
+  it("lets current server capabilities revoke stale create/owner controls", async () => {
+    const heldOwnerRetry = deferred<unknown>();
+    io.data = { ...page(), capabilities: { create: true, filterOwners: true } };
+    io.ownerError = { message: "owner read", data: { code: "INTERNAL_SERVER_ERROR" } };
+    io.refetch.mockImplementationOnce(() => heldOwnerRetry.promise);
+    const user = userEvent.setup();
+    const mounted = render(view("en", true));
+    try {
+      await user.click(screen.getByRole("button", { name: english.retry }));
+      expect(io.refetch).toHaveBeenCalledTimes(1);
+      io.data = { ...page(), capabilities: { create: false, filterOwners: false } };
+      io.ownerError = null;
+      mounted.rerender(view("en", true));
+      expect(screen.queryByRole("button", { name: english.new })).not.toBeInTheDocument();
+      expect(screen.queryByRole("combobox", { name: "Workflow owner" })).not.toBeInTheDocument();
+      expect(io.create).not.toHaveBeenCalled();
+      io.data = { ...page(), capabilities: { create: true, filterOwners: true } };
+      io.ownerError = { message: "fresh owner read", data: { code: "INTERNAL_SERVER_ERROR" } };
+      mounted.rerender(view("en", true));
+      expect(screen.getByRole("button", { name: english.retry })).toBeEnabled();
+      await act(async () => {
+        heldOwnerRetry.resolve({ isError: true });
+      });
+      expect(screen.getByRole("button", { name: english.retry })).toBeEnabled();
+      expect(io.refetch).toHaveBeenCalledTimes(1);
+    } finally {
+      await act(async () => {
+        heldOwnerRetry.resolve({ isError: true });
+      });
+    }
   });
 
   it("does not infer row write rights from create permission and retains authorized history entry", async () => {

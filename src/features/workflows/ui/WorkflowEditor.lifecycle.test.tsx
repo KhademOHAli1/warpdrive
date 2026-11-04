@@ -10,6 +10,7 @@ import type { RouterOutputs } from "@/lib/trpc-client";
 import type {
   archiveWorkflowAction,
   cancelWorkflowAction,
+  publishWorkflowAction,
   restoreWorkflowDraftAction,
 } from "../actions";
 import { initialBlankDefinition } from "../editorModel";
@@ -73,9 +74,9 @@ vi.mock("@/lib/trpc-client", () => ({
         versions: { invalidate: io.versionsRefresh },
         runs: { invalidate: io.runsRefresh },
         version: {
-          fetch: async (input: unknown) => {
+          fetch: (input: unknown) => {
             io.versionRequest(input);
-            return io.version;
+            return Promise.resolve(io.version);
           },
         },
       },
@@ -283,15 +284,16 @@ beforeEach(() => {
   io.save
     .mockReset()
     .mockImplementation(
-      async (input: { name: string; definition: WorkflowDefinition; revision: number }) => ({
-        ok: true,
-        value: {
-          ...stored(),
-          name: input.name,
-          draft: input.definition,
-          revision: input.revision + 1,
-        },
-      }),
+      (input: { name: string; definition: WorkflowDefinition; revision: number }) =>
+        Promise.resolve({
+          ok: true,
+          value: {
+            ...stored(),
+            name: input.name,
+            draft: input.definition,
+            revision: input.revision + 1,
+          },
+        }),
     );
   io.archive.mockReset().mockResolvedValue({ ok: true, value: { ...stored(true), revision: 8 } });
   io.unarchive
@@ -322,8 +324,10 @@ beforeEach(() => {
   io.listRefresh.mockReset().mockResolvedValue(undefined);
   io.versionsRefresh
     .mockReset()
-    .mockImplementation(async () => ({ data: io.versions, isError: false }));
-  io.runsRefresh.mockReset().mockImplementation(async () => ({ data: io.runs, isError: false }));
+    .mockImplementation(() => Promise.resolve({ data: io.versions, isError: false }));
+  io.runsRefresh
+    .mockReset()
+    .mockImplementation(() => Promise.resolve({ data: io.runs, isError: false }));
   io.versionsError = false;
   io.versionError = false;
   io.versionLoading = false;
@@ -645,7 +649,7 @@ describe("current authority and explicit reconciliation regressions", () => {
         publishedBy: ownerId,
         createdAt: new Date("2026-11-04T00:00:00Z"),
       },
-    } satisfies Awaited<ReturnType<typeof import("../actions").publishWorkflowAction>>;
+    } satisfies Awaited<ReturnType<typeof publishWorkflowAction>>;
     io.publish.mockResolvedValueOnce(publication);
     const user = userEvent.setup();
     render(view(initial));
@@ -805,9 +809,9 @@ describe("current authority and explicit reconciliation regressions", () => {
 
   it("reports a completed run accurately when cancellation loses a race and never cancels it again", async () => {
     io.cancel.mockResolvedValueOnce({ ok: true, value: "succeeded" });
-    io.runsRefresh.mockImplementationOnce(async () => {
+    io.runsRefresh.mockImplementationOnce(() => {
       io.runs = io.runs.map((run): Run => ({ ...run, status: "succeeded" }));
-      return { data: io.runs, isError: false };
+      return Promise.resolve({ data: io.runs, isError: false });
     });
     const user = userEvent.setup();
     render(view(fixture(true)));
@@ -864,13 +868,13 @@ describe("current authority and explicit reconciliation regressions", () => {
 
   it("retains a cancellation ACK while a failed history query reports a read error and never replays the write", async () => {
     io.runsRefresh
-      .mockImplementationOnce(async () => {
+      .mockImplementationOnce(() => {
         io.runsError = true;
-        return { data: io.runs, isError: true };
+        return Promise.resolve({ data: io.runs, isError: true });
       })
-      .mockImplementationOnce(async () => {
+      .mockImplementationOnce(() => {
         io.runsError = false;
-        return { data: io.runs, isError: false };
+        return Promise.resolve({ data: io.runs, isError: false });
       });
     const user = userEvent.setup();
     render(view(fixture(true)));

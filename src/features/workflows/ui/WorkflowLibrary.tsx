@@ -14,23 +14,9 @@ import {
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
-import type { WorkflowLibraryPage, WorkflowLibraryRow } from "../library";
-import {
-  libraryReadDenied,
-  libraryReadInvalid,
-  libraryRefetchFailed,
-  libraryRefetchHasData,
-} from "./libraryErrors";
-import {
-  buildLibraryLocation,
-  defaultLibraryLocation,
-  type LibraryLocationInput,
-  parseLibraryLocation,
-  sanitizeLibraryReturnTo,
-  workflowLocation,
-} from "./libraryLocation";
+import type { WorkflowLibraryRow } from "../library";
+import { workflowLocation } from "./libraryLocation";
 import {
   type LibraryOverlay,
   libraryEmptyState,
@@ -41,6 +27,7 @@ import {
 } from "./libraryView";
 import { NewWorkflowDialog, type NewWorkflowMemory } from "./NewWorkflowDialog";
 import { useDialogFocus } from "./useDialogFocus";
+import { useWorkflowLibraryReads } from "./useWorkflowLibraryReads";
 import {
   type LibraryAcknowledgement,
   type LibraryCommandMemory,
@@ -70,24 +57,38 @@ export function WorkflowLibrary({
 }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
-  const initial = parseLibraryLocation(sanitizeLibraryReturnTo(initialLocation));
-  const [input, setInput] = useState<LibraryLocationInput>(initial);
-  const [search, setSearch] = useState(initial.query);
-  const [previous, setPrevious] = useState<(string | undefined)[]>([]);
+  const reads = useWorkflowLibraryReads(initialLocation, canCreate);
+  const {
+    input,
+    search,
+    setSearch,
+    previous,
+    cursorReset,
+    returnTo,
+    list,
+    data,
+    denied,
+    createAllowed,
+    ownersAllowed,
+    invalid,
+    readProblem,
+    retrying,
+    readError,
+    confirmedAfterAck,
+    reread,
+    change,
+    next,
+    back,
+    beginAck,
+    owners,
+  } = reads;
   const [creating, setCreating] = useState(false);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [creationMemory, setCreationMemory] = useState<NewWorkflowMemory>();
   const [commandMemory, setCommandMemory] = useState<Record<string, LibraryCommandMemory>>({});
-  const [ownerDenied, setOwnerDenied] = useState(false);
-  const ownerDeniedAt = useRef<WorkflowLibraryPage | undefined>(undefined);
   const [ack, setAck] = useState<Ack | null>(null);
   const [overlays, setOverlays] = useState<Record<string, LibraryOverlay>>({});
-  const [readProblem, setReadProblem] = useState(false);
-  const [retrying, setRetrying] = useState(false);
   const [refreshingAck, setRefreshingAck] = useState(false);
-  const [cursorReset, setCursorReset] = useState(false);
-  const [confirmedAfterAck, setConfirmedAfterAck] = useState(true);
-  const retryGuard = useRef(false);
   const id = useId();
   const focus = useDialogFocus();
   const searchInput = useRef<HTMLInputElement>(null);
@@ -95,137 +96,16 @@ export function WorkflowLibrary({
   const newWorkflow = useRef<HTMLButtonElement>(null);
   const rowButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const opening = useRef(false);
-  const activeInput = useRef(input);
-  activeInput.current = input;
-  const list = trpc.workflows.list.useQuery(input, { placeholderData: (old) => old });
-  const denied = ownerDenied || (list.isError && libraryReadDenied(list.error));
-  const invalid = list.isError && libraryReadInvalid(list.error);
-  const data = list.data;
-  const createAllowed = !denied && (data?.capabilities.create ?? canCreate);
-  const ownersAllowed = !denied && data?.capabilities.filterOwners === true;
-  const currentKey = JSON.stringify(input);
-  const returnTo = buildLibraryLocation(input);
-
-  useEffect(() => {
-    if (!denied) return;
+  if (denied && (creating || selection !== null)) {
     setCreating(false);
     setSelection(null);
-    opening.current = false;
+  }
+  useEffect(() => {
+    if (denied) opening.current = false;
   }, [denied]);
-  useEffect(() => {
-    if (window.location.pathname === "/workflows")
-      window.history.replaceState(window.history.state, "", returnTo);
-  }, [returnTo]);
-  useEffect(() => {
-    const restore = () => {
-      if (window.location.pathname !== "/workflows") return;
-      const value = parseLibraryLocation(window.location.search);
-      setInput(value);
-      setSearch(value.query);
-      setPrevious([]);
-      setCursorReset(false);
-    };
-    window.addEventListener("popstate", restore);
-    return () => window.removeEventListener("popstate", restore);
-  }, []);
-  useEffect(() => {
-    if (data !== undefined && !data.capabilities.filterOwners && input.ownerId !== undefined) {
-      setInput((current) => {
-        const next = { ...current };
-        delete next.ownerId;
-        delete next.cursor;
-        return next;
-      });
-      setPrevious([]);
-    }
-  }, [data, input.ownerId]);
-  useEffect(() => {
-    if (invalid && input.cursor !== undefined) {
-      setInput((current) => {
-        const next = { ...current };
-        delete next.cursor;
-        return next;
-      });
-      setPrevious([]);
-      setCursorReset(true);
-    }
-  }, [invalid, input.cursor]);
-  useEffect(() => {
-    if (data !== undefined && !list.isError && !list.isFetching && !list.isPlaceholderData)
-      setConfirmedAfterAck(true);
-  }, [data, list.isError, list.isFetching, list.isPlaceholderData]);
-  useEffect(() => {
-    if (
-      ownerDenied &&
-      data !== undefined &&
-      data !== ownerDeniedAt.current &&
-      !list.isError &&
-      !list.isFetching &&
-      !list.isPlaceholderData
-    )
-      setOwnerDenied(false);
-  }, [ownerDenied, data, list.isError, list.isFetching, list.isPlaceholderData]);
-
-  function change(patch: Partial<LibraryLocationInput>) {
-    setInput((current) => {
-      const next = { ...current, ...patch };
-      delete next.cursor;
-      if (next.ownerId === undefined) delete next.ownerId;
-      return next;
-    });
-    setPrevious([]);
-    setCursorReset(false);
-    setReadProblem(false);
-  }
   function clear() {
-    setInput(defaultLibraryLocation());
-    setSearch("");
-    setPrevious([]);
-    setCursorReset(false);
-    setReadProblem(false);
+    reads.clear();
     searchInput.current?.focus();
-  }
-  function next() {
-    if (list.isFetching || data?.nextCursor === null || data?.nextCursor === undefined) return;
-    setPrevious((current) => [...current, input.cursor]);
-    setInput((current) => ({ ...current, cursor: data.nextCursor ?? undefined }));
-    setReadProblem(false);
-  }
-  function back() {
-    if (list.isFetching || previous.length === 0) return;
-    const token = previous[previous.length - 1];
-    setPrevious((current) => current.slice(0, -1));
-    setInput((current) => {
-      const next = { ...current };
-      if (token === undefined) delete next.cursor;
-      else next.cursor = token;
-      return next;
-    });
-    setReadProblem(false);
-  }
-  async function reread(force = false): Promise<boolean> {
-    if (retryGuard.current || (!force && list.isFetching)) return false;
-    retryGuard.current = true;
-    setRetrying(true);
-    setReadProblem(false);
-    const requestedKey = currentKey;
-    try {
-      const result = await list.refetch();
-      const ok = !libraryRefetchFailed(result);
-      if (JSON.stringify(activeInput.current) === requestedKey) {
-        setReadProblem(!ok);
-        if (ok && libraryRefetchHasData(result)) setConfirmedAfterAck(true);
-      }
-      return (
-        ok && libraryRefetchHasData(result) && JSON.stringify(activeInput.current) === requestedKey
-      );
-    } catch {
-      if (JSON.stringify(activeInput.current) === requestedKey) setReadProblem(true);
-      return false;
-    } finally {
-      retryGuard.current = false;
-      setRetrying(false);
-    }
   }
   function start(event: MouseEvent<HTMLButtonElement>) {
     if (!createAllowed) return;
@@ -244,25 +124,13 @@ export function WorkflowLibrary({
     setSelection(null);
     opening.current = false;
   }
-  function ownersDenied() {
-    ownerDeniedAt.current = data;
-    setOwnerDenied(true);
-    setInput((current) => {
-      const next = { ...current };
-      delete next.ownerId;
-      delete next.cursor;
-      return next;
-    });
-    setPrevious([]);
-    void reread();
-  }
   function restoreFocus(event: Event) {
     focus.restore(event, fallbackTarget(searchInput.current, heading.current));
   }
   async function acknowledged(operation: "archive" | "unarchive", row: LibraryAcknowledgement) {
     setOverlays((current) => ({ ...current, [row.id]: libraryOverlay(row) }));
     setAck({ operation, id: row.id });
-    setConfirmedAfterAck(false);
+    beginAck();
     setRefreshingAck(true);
     close();
     try {
@@ -274,7 +142,6 @@ export function WorkflowLibrary({
 
   const rows = libraryVisibleRows(data, overlays, input, denied, list.isPlaceholderData);
   const pendingRead = list.isLoading || list.isFetching || list.isPlaceholderData || refreshingAck;
-  const readError = !denied && (list.isError || readProblem);
   const confirmed =
     data !== undefined && !denied && !pendingRead && !readError && confirmedAfterAck;
   const empties = libraryEmptyState(data, rows, input, confirmed);
@@ -417,11 +284,10 @@ export function WorkflowLibrary({
         {ownersAllowed && (
           <WorkflowOwnerFilter
             key={input.archive}
-            archive={input.archive}
             value={input.ownerId}
             selectedName={rows.find((row) => row.owner.id === input.ownerId)?.owner.name}
             onChange={(ownerId) => change({ ownerId })}
-            onDenied={ownersDenied}
+            query={owners}
           />
         )}
         <div className="flex flex-wrap items-center gap-3">

@@ -1,5 +1,5 @@
 import { type SQL, sql } from "drizzle-orm";
-import { ERROR_IDS } from "@/constants/errorIds";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
@@ -162,9 +162,9 @@ export function buildWorkflowLibraryQuery(
 }
 
 function libraryRow(row: LibraryRecord, actor: PermSetUser): WorkflowLibraryRow {
-  if (row.id === null) throw new Error("Missing workflow library row");
+  if (row.id === null) throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing workflow library row");
   if (row.latestId !== null && (row.latestStatus === null || row.latestCreatedAt === null))
-    throw new Error("Incomplete latest workflow run metadata");
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Incomplete latest workflow run metadata");
   const archived = row.archivedAt !== null;
   const edit = canWorkflow(actor, "edit", row.ownerId);
   return {
@@ -195,6 +195,16 @@ function libraryRow(row: LibraryRecord, actor: PermSetUser): WorkflowLibraryRow 
   };
 }
 
+function readPageCursor(
+  input: NormalizedWorkflowLibraryInput,
+  fingerprint: string,
+): Result<WorkflowLibraryCursor | undefined, string> {
+  if (input.cursor === undefined) return ok(undefined);
+  const decoded = readWorkflowLibraryCursor(input.cursor, fingerprint);
+  if (!decoded.ok) return decoded;
+  return decoded.value.key.sort === input.sort ? decoded : err(ERROR_IDS.WORKFLOW_INVALID);
+}
+
 export async function listWorkflows(
   db: Db,
   actor: PermSetUser,
@@ -214,20 +224,16 @@ export async function listWorkflows(
     input.ownerId = undefined;
   }
   const fingerprint = pageFingerprint(currentActor, input);
-  let cursor: WorkflowLibraryCursor | undefined;
-  if (input.cursor !== undefined) {
-    const decoded = readWorkflowLibraryCursor(input.cursor, fingerprint);
-    if (!decoded.ok) return decoded;
-    if (decoded.value.key.sort !== input.sort) return err(ERROR_IDS.WORKFLOW_INVALID);
-    cursor = decoded.value;
-  }
+  const cursor = readPageCursor(input, fingerprint);
+  if (!cursor.ok) return cursor;
   signal.throwIfAborted();
   const result = await db.execute<LibraryRecord>(
-    buildWorkflowLibraryQuery(currentActor, input, cursor),
+    buildWorkflowLibraryQuery(currentActor, input, cursor.value),
   );
   signal.throwIfAborted();
   const scope = result.rows[0];
-  if (scope === undefined) throw new Error("Workflow library query omitted its scope result");
+  if (scope === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Workflow library query omitted its scope result");
   const rows = result.rows.filter((row) => row.id !== null);
   const shown = rows.slice(0, input.limit);
   let nextCursor: string | null = null;

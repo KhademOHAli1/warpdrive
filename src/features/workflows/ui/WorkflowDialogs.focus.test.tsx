@@ -37,6 +37,16 @@ vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     useUtils: () => ({ workflows: { runs: { invalidate: vi.fn() } } }),
     workflows: {
+      owners: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: false,
+          isFetching: false,
+          isError: false,
+          error: null,
+          refetch: vi.fn(),
+        }),
+      },
       list: {
         useQuery: () => ({
           data: {

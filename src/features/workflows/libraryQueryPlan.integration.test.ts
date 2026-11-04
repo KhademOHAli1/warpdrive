@@ -5,7 +5,7 @@ import type { Db } from "@/db/client";
 import { permissionSets, workflowRuns, workflows, workflowVersions } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
 import { hydrateActor } from "@/server/hydrateActor";
-import { makeTestDb } from "@/test/db";
+import { makeTestDb, type TestDb } from "@/test/db";
 import {
   buildWorkflowLibraryQuery,
   buildWorkflowOwnersQuery,
@@ -66,118 +66,169 @@ async function explain(db: Db, label: string, query: SQL, limit: number) {
   );
 }
 
+type PlanOwner = Awaited<ReturnType<typeof seedUser>>;
+
+async function seedPlanOwners(test: TestDb) {
+  const [permissions] = await test.db
+    .insert(permissionSets)
+    .values({
+      name: "Synthetic plan scope",
+      flags: { "workflow.view": true, "workflow.create": true, "workflow.edit": true },
+    })
+    .returning();
+  assert(permissions !== undefined);
+  const owners: PlanOwner[] = [];
+  for (let index = 0; index < 10; index++) {
+    owners.push(
+      await seedUser(test.db, {
+        name: `Synthetic plan owner ${index}`,
+        permissionSetId: permissions.id,
+      }),
+    );
+  }
+  const regularOwner = owners[0];
+  assert(regularOwner !== undefined);
+  const admin = await seedUser(test.db, { name: "Synthetic plan administrator", isAdmin: true });
+  const actor = await hydrateActor(test.db, regularOwner.id, signal);
+  const administrator = await hydrateActor(test.db, admin.id, signal);
+  assert(actor !== null && administrator !== null);
+  return { owners, actor, administrator };
+}
+
+function makePlanWorkflowRows(owners: PlanOwner[]) {
+  return Array.from({ length: 2000 }, (_, index) => {
+    const owner = owners[index % owners.length];
+    assert(owner !== undefined);
+    return {
+      id: crypto.randomUUID(),
+      ownerId: owner.id,
+      name: `${index % 5 === 0 ? "Synthetic Rückruf %_\\ پیگیری" : "Synthetic normal"} ${String(index).padStart(4, "0")}`,
+      draft: definition,
+      archivedAt: index % 8 === 0 ? new Date("2026-11-01T00:00:00Z") : null,
+      updatedAt: new Date(Date.UTC(2026, 10, 2, 0, 0, index)),
+    };
+  });
+}
+type PlanWorkflowRow = ReturnType<typeof makePlanWorkflowRows>[number];
+
+async function seedPlanWorkflows(db: Db, rows: PlanWorkflowRow[]) {
+  for (let offset = 0; offset < rows.length; offset += 250) {
+    await db.insert(workflows).values(rows.slice(offset, offset + 250));
+  }
+}
+
+function makePlanVersions(rows: PlanWorkflowRow[]) {
+  return rows.flatMap((row, index) =>
+    index % 4 === 0
+      ? []
+      : [
+          {
+            id: crypto.randomUUID(),
+            workflowId: row.id,
+            number: 1,
+            name: row.name,
+            definition,
+            publishedBy: row.ownerId,
+          },
+        ],
+  );
+}
+type PlanVersion = ReturnType<typeof makePlanVersions>[number];
+
+async function seedPlanVersions(db: Db, rows: PlanWorkflowRow[], published: PlanVersion[]) {
+  for (let offset = 0; offset < published.length; offset += 250) {
+    await db.insert(workflowVersions).values(published.slice(offset, offset + 250));
+  }
+  await db
+    .update(workflows)
+    .set({ publishedNumber: 1 })
+    .where(
+      inArray(
+        workflows.id,
+        published.map((version) => version.workflowId),
+      ),
+    );
+  const activeIds = rows
+    .filter((row, index) => row.archivedAt === null && index % 4 > 1)
+    .map((row) => row.id);
+  await db.update(workflows).set({ active: true }).where(inArray(workflows.id, activeIds));
+}
+
+function planRunStatus(
+  sourceIndex: number,
+  generation: number,
+): (typeof workflowRuns.$inferSelect)["status"] {
+  if (generation !== 4) return generation === 2 ? "succeeded" : "failed";
+  const latestState = Math.floor(sourceIndex / 10) % 3;
+  if (latestState === 0) return "failed";
+  return latestState === 1 ? "succeeded" : "waiting";
+}
+
+function makePlanRun(
+  version: PlanVersion,
+  source: PlanWorkflowRow,
+  sourceIndex: number,
+  index: number,
+  generation: number,
+): typeof workflowRuns.$inferInsert {
+  const status = planRunStatus(sourceIndex, generation);
+  return {
+    workflowId: version.workflowId,
+    versionId: version.id,
+    actorId: source.ownerId,
+    requestKey: crypto.randomUUID(),
+    mode: generation % 2 === 0 ? "live" : "simulation",
+    status,
+    trigger: { recordId: crypto.randomUUID() },
+    outputs: { start: { value: "Synthetic plan output" } },
+    createdAt: new Date(Date.UTC(2026, 10, 3, 0, generation, index)),
+    nextNodeId: status === "waiting" ? "start" : null,
+    resumeAt: status === "waiting" ? new Date("2099-01-01T00:00:00Z") : null,
+  };
+}
+
+function makePlanRuns(rows: PlanWorkflowRow[], published: PlanVersion[]) {
+  const sourceById = new Map(rows.map((row) => [row.id, row]));
+  const sourceIndexById = new Map(rows.map((row, index) => [row.id, index]));
+  const runs: (typeof workflowRuns.$inferInsert)[] = [];
+  for (const [index, version] of published.entries()) {
+    const source = sourceById.get(version.workflowId);
+    assert(source !== undefined);
+    const sourceIndex = sourceIndexById.get(version.workflowId);
+    assert(sourceIndex !== undefined);
+    for (let generation = 0; generation < 6; generation++) {
+      runs.push(makePlanRun(version, source, sourceIndex, index, generation));
+    }
+  }
+  return runs;
+}
+
+async function seedPlanRuns(db: Db, runs: (typeof workflowRuns.$inferInsert)[]) {
+  for (let offset = 0; offset < runs.length; offset += 250) {
+    await db.insert(workflowRuns).values(runs.slice(offset, offset + 250));
+  }
+}
+
+async function seedPlanFixture(test: TestDb) {
+  const principals = await seedPlanOwners(test);
+  const rows = makePlanWorkflowRows(principals.owners);
+  await seedPlanWorkflows(test.db, rows);
+  const published = makePlanVersions(rows);
+  await seedPlanVersions(test.db, rows, published);
+  const runs = makePlanRuns(rows, published);
+  expect(rows).toHaveLength(2000);
+  expect(published).toHaveLength(1500);
+  expect(runs).toHaveLength(9000);
+  await seedPlanRuns(test.db, runs);
+  // Own disposable statistics only; no index/extension/DDL is introduced by this test.
+  await test.pool.query("ANALYZE workflows, workflow_versions, workflow_runs, users");
+  return principals;
+}
+
 it("LC20/21 records real query plans over a finite mixed-owner library and live-run history", async () => {
   const test = await makeTestDb();
   try {
-    const [permissions] = await test.db
-      .insert(permissionSets)
-      .values({
-        name: "Synthetic plan scope",
-        flags: { "workflow.view": true, "workflow.create": true, "workflow.edit": true },
-      })
-      .returning();
-    assert(permissions !== undefined);
-    const owners: Awaited<ReturnType<typeof seedUser>>[] = [];
-    for (let index = 0; index < 10; index++)
-      owners.push(
-        await seedUser(test.db, {
-          name: `Synthetic plan owner ${index}`,
-          permissionSetId: permissions.id,
-        }),
-      );
-    const regularOwner = owners[0];
-    assert(regularOwner !== undefined);
-    const admin = await seedUser(test.db, { name: "Synthetic plan administrator", isAdmin: true });
-    const actor = await hydrateActor(test.db, regularOwner.id, signal);
-    const administrator = await hydrateActor(test.db, admin.id, signal);
-    assert(actor !== null && administrator !== null);
-    const rows = Array.from({ length: 2000 }, (_, index) => {
-      const owner = owners[index % owners.length];
-      assert(owner !== undefined);
-      return {
-        id: crypto.randomUUID(),
-        ownerId: owner.id,
-        name: `${index % 5 === 0 ? "Synthetic Rückruf %_\\ پیگیری" : "Synthetic normal"} ${String(index).padStart(4, "0")}`,
-        draft: definition,
-        archivedAt: index % 8 === 0 ? new Date("2026-11-01T00:00:00Z") : null,
-        updatedAt: new Date(Date.UTC(2026, 10, 2, 0, 0, index)),
-      };
-    });
-    for (let offset = 0; offset < rows.length; offset += 250)
-      await test.db.insert(workflows).values(rows.slice(offset, offset + 250));
-    const published = rows.flatMap((row, index) =>
-      index % 4 === 0
-        ? []
-        : [
-            {
-              id: crypto.randomUUID(),
-              workflowId: row.id,
-              number: 1,
-              name: row.name,
-              definition,
-              publishedBy: row.ownerId,
-            },
-          ],
-    );
-    for (let offset = 0; offset < published.length; offset += 250)
-      await test.db.insert(workflowVersions).values(published.slice(offset, offset + 250));
-    await test.db
-      .update(workflows)
-      .set({ publishedNumber: 1 })
-      .where(
-        inArray(
-          workflows.id,
-          published.map((version) => version.workflowId),
-        ),
-      );
-    const activeIds = rows
-      .filter((row, index) => row.archivedAt === null && index % 4 > 1)
-      .map((row) => row.id);
-    await test.db.update(workflows).set({ active: true }).where(inArray(workflows.id, activeIds));
-    const sourceById = new Map(rows.map((row) => [row.id, row]));
-    const sourceIndexById = new Map(rows.map((row, index) => [row.id, index]));
-    const runs: (typeof workflowRuns.$inferInsert)[] = [];
-    for (const [index, version] of published.entries()) {
-      const source = sourceById.get(version.workflowId);
-      assert(source !== undefined);
-      const sourceIndex = sourceIndexById.get(version.workflowId);
-      assert(sourceIndex !== undefined);
-      const latestState = Math.floor(sourceIndex / 10) % 3;
-      for (let generation = 0; generation < 6; generation++) {
-        const mode = generation % 2 === 0 ? "live" : "simulation";
-        const status =
-          generation === 4
-            ? latestState === 0
-              ? "failed"
-              : latestState === 1
-                ? "succeeded"
-                : "waiting"
-            : generation === 2
-              ? "succeeded"
-              : "failed";
-        runs.push({
-          workflowId: version.workflowId,
-          versionId: version.id,
-          actorId: source.ownerId,
-          requestKey: crypto.randomUUID(),
-          mode,
-          status,
-          trigger: { recordId: crypto.randomUUID() },
-          outputs: { start: { value: "Synthetic plan output" } },
-          createdAt: new Date(Date.UTC(2026, 10, 3, 0, generation, index)),
-          nextNodeId: status === "waiting" ? "start" : null,
-          resumeAt: status === "waiting" ? new Date("2099-01-01T00:00:00Z") : null,
-        });
-      }
-    }
-    expect(rows).toHaveLength(2000);
-    expect(published).toHaveLength(1500);
-    expect(runs).toHaveLength(9000);
-    for (let offset = 0; offset < runs.length; offset += 250)
-      await test.db.insert(workflowRuns).values(runs.slice(offset, offset + 250));
-    // Own disposable statistics only; no index/extension/DDL is introduced by this test.
-    await test.pool.query("ANALYZE workflows, workflow_versions, workflow_runs, users");
-
+    const { owners, actor, administrator } = await seedPlanFixture(test);
     const defaultInput = workflowLibraryInputSchema.parse(undefined);
     const first = await listWorkflows(test.db, actor, signal, defaultInput);
     assert(first.ok, JSON.stringify(first));

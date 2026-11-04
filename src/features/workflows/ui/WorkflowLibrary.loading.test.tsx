@@ -32,6 +32,16 @@ const queries = vi.hoisted(() => ({
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     workflows: {
+      owners: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: false,
+          isFetching: false,
+          isError: false,
+          error: null,
+          refetch: vi.fn(),
+        }),
+      },
       list: {
         useQuery: () => ({
           data:

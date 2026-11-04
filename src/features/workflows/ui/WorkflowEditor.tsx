@@ -13,7 +13,8 @@ import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { trpc } from "@/lib/trpc-client";
 import { BuilderWorkspace } from "./BuilderWorkspace";
 import { EditorDuplicateDialog } from "./EditorDuplicateDialog";
-import { EditorLifecycleConfirmation } from "./EditorLifecycleConfirmation";
+import { type EditorLifecycleRequest, EditorLifecycleReview } from "./EditorLifecycleReview";
+import { EditorRecovery } from "./EditorRecovery";
 import { sanitizeLibraryReturnTo } from "./libraryLocation";
 import { RunDialog } from "./RunDialog";
 import { RunHistory } from "./RunHistory";
@@ -21,6 +22,14 @@ import { useDialogFocus } from "./useDialogFocus";
 import { useWorkflowEditor, type WorkflowDetail } from "./useWorkflowEditor";
 import { useWorkflowLifecycle } from "./useWorkflowLifecycle";
 import { VersionsDialog } from "./VersionsDialog";
+
+function editorStatus(
+  editor: Pick<ReturnType<typeof useWorkflowEditor>, "archivedAt" | "active" | "number">,
+) {
+  if (editor.archivedAt !== null) return "archived";
+  if (editor.number === null) return "draft";
+  return editor.active ? "active" : "paused";
+}
 
 export function WorkflowEditor({
   initial,
@@ -42,10 +51,7 @@ export function WorkflowEditor({
     t("duplicateDefaultName", { name: initial.name }).slice(0, 120),
   );
   const confirming = useRef(false);
-  const [confirmation, setConfirmation] = useState<{
-    operation: "archive" | "unarchive" | "restore";
-    versionNumber?: number;
-  } | null>(null);
+  const [confirmation, setConfirmation] = useState<EditorLifecycleRequest | null>(null);
   const lifecycleFocus = useDialogFocus();
   const heading = useRef<HTMLHeadingElement>(null);
   const lifecycleError = lifecycle.error === null ? null : t(lifecycle.error);
@@ -61,42 +67,7 @@ export function WorkflowEditor({
   const editable = editor.archivedAt === null && editor.capabilities.edit && !editor.pending;
   const runnable =
     editor.archivedAt === null && editor.capabilities.run && editor.active && !editor.pending;
-  const recovery = (lifecycle.refreshFailed ||
-    lifecycle.unknown ||
-    lifecycle.navigationPending) && (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border p-4 text-sm">
-      <p>
-        {t(
-          lifecycle.unknown
-            ? "writeUnknown"
-            : lifecycle.navigationPending
-              ? "navigationAfterAck"
-              : "refreshAfterAck",
-        )}
-      </p>
-      <Button
-        variant="outline"
-        disabled={lifecycle.refreshing}
-        onClick={() => void lifecycle.refresh()}
-      >
-        {t("refresh")}
-      </Button>
-      {lifecycle.copyId !== null && (
-        <Button variant="outline" onClick={() => lifecycle.openCopy()}>
-          {t("openCopy")}
-        </Button>
-      )}
-      {lifecycle.unknown && (
-        <>
-          <Link href={libraryReturn}>{t("reviewLibrary")}</Link>
-          <p>{t("retryReconcileHint")}</p>
-          <Button variant="outline" onClick={lifecycle.allowRetry}>
-            {t("allowRetry")}
-          </Button>
-        </>
-      )}
-    </div>
-  );
+  const recovery = <EditorRecovery lifecycle={lifecycle} libraryReturn={libraryReturn} />;
   return (
     <div className="mx-auto flex max-w-[1700px] flex-col gap-4 xl:h-[calc(100dvh-120px)] xl:min-h-[620px]">
       <h1 ref={heading} tabIndex={-1} className="sr-only">
@@ -131,13 +102,7 @@ export function WorkflowEditor({
           />
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <Badge variant={editor.active ? "success" : "secondary"}>
-              {editor.archivedAt !== null
-                ? t("archived")
-                : editor.active
-                  ? t("active")
-                  : editor.number === null
-                    ? t("draft")
-                    : t("paused")}
+              {t(editorStatus(editor))}
             </Badge>
             <span>
               {editor.number === null ? t("notPublished") : t("version", { number: editor.number })}
@@ -336,31 +301,15 @@ export function WorkflowEditor({
           }
         />
       )}
-      <EditorLifecycleConfirmation
-        open={confirmation !== null}
-        onCloseAutoFocus={(event) => lifecycleFocus.restore(event, heading.current)}
+      <EditorLifecycleReview
+        request={confirmation}
+        revision={editor.revision}
+        dirty={editor.dirty}
         pending={editor.pending}
+        onCloseAutoFocus={(event) => lifecycleFocus.restore(event, heading.current)}
         onOpenChange={(open) => {
           if (!open && !editor.pending && !confirming.current) setConfirmation(null);
         }}
-        title={
-          confirmation?.operation === "restore"
-            ? t("restoreTitle", { number: String(confirmation.versionNumber ?? 1) })
-            : t(confirmation?.operation === "unarchive" ? "unarchiveTitle" : "archiveTitle")
-        }
-        description={
-          confirmation?.operation === "restore"
-            ? `${t("restoreHint")} ${t("restoreRevision", { revision: String(editor.revision) })} ${editor.dirty ? t("restoreUnsaved") : ""}`
-            : t(confirmation?.operation === "unarchive" ? "unarchiveHint" : "archiveHint")
-        }
-        confirmLabel={t(
-          confirmation?.operation === "restore"
-            ? "restoreAsDraft"
-            : confirmation?.operation === "unarchive"
-              ? "unarchive"
-              : "archive",
-        )}
-        cancelLabel={t("cancel")}
         onConfirm={() => {
           const request = confirmation;
           if (request === null || confirming.current) return;
