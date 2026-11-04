@@ -15,7 +15,12 @@ def notes(evidence):
         if context:
             rows += ["", "## Unreleased source context", "",
                      "The source snapshot retains this history. These issues are not accepted or released by this publication and receive no publication updates."]
-            rows += [f"- [#{i['number']} {i['title']}]({i['url']}): UNRELEASED context; source issue state `{i['source_state']}`." for i in context]
+            rows += [f"- [#{i['number']} {i['title']}]({i['url']}): UNRELEASED context; source issue state `{i['source_state']}`; source origins: {', '.join(i.get('source_context_origins', ['unclassified']))}." for i in context]
+        fresh_context = [c for c in evidence["commits"] if c.get("fresh_production_context")]
+        if fresh_context:
+            rows += ["", "## Newly integrated, unaccepted production source", "",
+                     "The source archive includes the following newly integrated production changes outside this task's accepted scope. They are not historical baseline context. Their presence does not accept or complete their issues, the full MAIL programme, or a human journey."]
+            rows += [f"- [{c['sha'][:12]}]({c['url']}) {c['subject']} — UNRELEASED scope: {', '.join('#' + str(n) for n in sorted(set(c['unreleased_issues'] + c['unreleased_contributions'])))}." for c in fresh_context]
         if evidence.get("programme_coverage"):
             rows += ["", "## Verified full MAIL programme coverage", "",
                      "Previously released tasks keep their original milestones and publication receipts."]
@@ -24,7 +29,9 @@ def notes(evidence):
         for commit in evidence["commits"]:
             released = ", ".join("#" + str(n) for n in commit["released_issues"]) or "none"
             unreleased = ", ".join("#" + str(n) for n in sorted(set(commit["unreleased_issues"] + commit["unreleased_contributions"]))) or "none"
-            rows += [f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} — released scope: {released}; UNRELEASED context: {unreleased}."]
+            origin = commit.get("unreleased_context_origin")
+            origin_note = f"; context origin: {origin}" if origin else ""
+            rows += [f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} — released scope: {released}; UNRELEASED context: {unreleased}{origin_note}."]
     else:
         rows += ["", "## Included commits", ""]
         rows += [f"- [{c['sha'][:12]}]({c['url']}) {c['subject']} ({', '.join('#' + str(n) for n in c['issues'])})" for c in evidence["commits"]]
