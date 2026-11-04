@@ -91,4 +91,26 @@ describe("EnrichmentClient key save outcome", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(refresh).toHaveBeenCalledTimes(1);
   });
+
+  it("clears an acknowledged key without claiming save failure when page refresh throws", async () => {
+    refresh.mockImplementationOnce(() => {
+      throw new Error("navigation interrupted");
+    });
+    const field = setup();
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(field).toHaveValue(""));
+    expect(field).toHaveAttribute("type", "password");
+    expect(screen.getByRole("button", { name: S.save })).toBeEnabled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(reportError).not.toHaveBeenCalled();
+    expect(invalidateStatus).toHaveBeenCalledTimes(1);
+    expect(setProviderKeyAction).toHaveBeenCalledExactlyOnceWith(
+      { provider: "apollo", apiKey: "replacement-key" },
+      "csrf",
+    );
+    expect(testProviderAction).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: S.save }));
+    expect(setProviderKeyAction).toHaveBeenCalledTimes(1);
+    expect(testProviderAction).not.toHaveBeenCalled();
+  });
 });
