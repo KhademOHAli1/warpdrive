@@ -60,6 +60,7 @@ export default async function PipelinesSettingsPage(): Promise<ReactNode> {
           {pipelines.map((p) => (
             <li
               key={p.id}
+              id={`pipeline-${p.id}`}
               className="flex items-center justify-between px-4 py-3 transition-colors duration-150 ease-out hover:bg-accent/50 motion-reduce:transition-none"
             >
               <div>
@@ -69,7 +70,7 @@ export default async function PipelinesSettingsPage(): Promise<ReactNode> {
                 </div>
               </div>
               <Link
-                href={`/pipeline/${p.id}/edit`}
+                href={`/pipeline/${p.id}/edit?from=settings`}
                 className="text-sm font-medium text-primary hover:underline"
               >
                 {L.editStages}
