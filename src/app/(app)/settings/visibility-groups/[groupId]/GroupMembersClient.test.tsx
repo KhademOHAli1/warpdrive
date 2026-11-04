@@ -146,7 +146,7 @@ describe("GroupMembersClient", () => {
       expect(screen.queryByText("private database diagnostic")).not.toBeInTheDocument();
       expect(screen.getByText("Ann")).toBeInTheDocument();
       expect(screen.getByLabelText("Add member")).toHaveTextContent("Bob");
-      expect(screen.getByRole("button", { name: "Add" })).toBeEnabled();
+      await waitFor(() => expect(screen.getByRole("button", { name: "Add" })).toBeEnabled());
       expect(refresh).not.toHaveBeenCalled();
 
       const retry = deferred();
@@ -192,7 +192,7 @@ describe("GroupMembersClient", () => {
       expect(screen.queryByText("private removal diagnostic")).not.toBeInTheDocument();
       expect(screen.getByText("Ann")).toBeInTheDocument();
       expect(screen.getByLabelText("Add member")).toHaveTextContent("Bob");
-      expect(screen.getByRole("button", { name: "Remove Ann" })).toBeEnabled();
+      await waitFor(() => expect(screen.getByRole("button", { name: "Remove Ann" })).toBeEnabled());
       expect(refresh).not.toHaveBeenCalled();
       const retry = deferred();
       removeGroupMemberAction.mockReturnValueOnce(retry.promise);
