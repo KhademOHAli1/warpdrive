@@ -1,5 +1,5 @@
 "use client";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import type {
   ConfigurationFieldSpec,
   ConfigurationMetadata,
@@ -32,22 +32,28 @@ export function configurationFieldError(
   const issue = validation.issues.find((issue) => issue.path[0] === key);
   return issue === undefined ? undefined : translate(configurationIssueKeys[issue.code]);
 }
+function descriptorLabel(messages: Readonly<Record<string, unknown>>, key: string): string {
+  const value = Object.hasOwn(messages, key) ? messages[key] : undefined;
+  return typeof value === "string" ? value : key;
+}
 function BuiltinField({
   field,
   ...props
 }: ConfigurationFieldsProps & { field: ConfigurationFieldSpec }) {
   const t = useAppTranslations("workflows");
+  const messages = useMessages().workflows;
   const { definition, node, editable, onChange, workflowId, validation } = props;
   const pathKey = field.path[0];
   if (pathKey === undefined) return null;
   const key = pathKey;
   const deal = field.valueType === "deal";
-  const label = t(field.label, {});
-  const sourceLabels: Record<string, string> = {
+  const label = descriptorLabel(messages, field.label);
+  const sourceLabels = {
     subject: "subjectSource",
     recordId: "recordSource",
-  };
-  const sourceLabel = sourceLabels[key] === undefined ? label : t(sourceLabels[key], {});
+  } as const satisfies Record<string, string>;
+  const sourceKey = key === "subject" || key === "recordId" ? sourceLabels[key] : undefined;
+  const sourceLabel = sourceKey === undefined ? label : t(sourceKey);
   const parsed = bindingSchema.safeParse(node.config[key]);
   const value = parsed.success && parsed.data.kind === "value" ? parsed.data.value : undefined;
   function update(fieldKey: string, value: WorkflowNode["config"][string] | undefined) {

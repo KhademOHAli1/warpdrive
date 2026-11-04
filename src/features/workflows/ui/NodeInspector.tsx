@@ -40,11 +40,15 @@ export function NodeInspector(props: Props) {
     <QueriedInspector key={props.workflowId + ":" + props.node.type} {...props} />
   );
 }
-const hints: Partial<Record<WorkflowNode["type"], string>> = {
+const hints = {
   "trigger.manual": "triggerHint",
+  "trigger.record": undefined,
   "record.read": "readHint",
   "activity.create": "taskHint",
-};
+  condition: undefined,
+  delay: undefined,
+  notification: undefined,
+} as const satisfies Record<WorkflowNode["type"], string | undefined>;
 function Inspector({
   definition,
   node,
@@ -78,7 +82,7 @@ function Inspector({
           spec={spec}
           validation={validation}
         />
-        {hint !== undefined && <p className="text-sm text-muted-foreground">{t(hint, {})}</p>}
+        {hint !== undefined && <p className="text-sm text-muted-foreground">{t(hint)}</p>}
         <ConfigurationNodeFields
           definition={definition}
           node={node}

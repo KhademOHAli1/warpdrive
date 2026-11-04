@@ -51,7 +51,7 @@ function strictSchema(defs: CustomFieldDef[]) {
     .transform((values, ctx) => {
       const parsed = canonical.safeParse(values);
       if (parsed.success) return parsed.data;
-      for (const issue of parsed.error.issues) ctx.addIssue(issue);
+      for (const issue of parsed.error.issues) ctx.addIssue({ ...issue });
       return z.NEVER;
     });
 }

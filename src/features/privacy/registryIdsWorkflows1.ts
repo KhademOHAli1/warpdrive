@@ -38,9 +38,9 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/ui/ConditionValue.tsx#0d5ca0c9c00665b6c4de402da1da9ca0c86a302345236cd23c1f8d1c58b77854",
   "sourceReview:src/features/workflows/ui/ConfigurationMetadataStatus.tsx#0693d54c6ce9e60b1812311be18ec0882f1d48da6bc070b86f9fe69c616cbdc1",
   "sourceReview:src/features/workflows/ui/ConfigurationName.tsx#5284cc972ffc1957ce5f71fe195c63886b803cf22c38b7482bfc0add141271a7",
-  "sourceReview:src/features/workflows/ui/ConfigurationNodeFields.tsx#14705e839c8a07a01a95e2045eb9826692447b6bb82054401f46245319cd4144",
+  "sourceReview:src/features/workflows/ui/ConfigurationNodeFields.tsx#627f463fe8189896ea12908e632aff1daad07adc19e74a0dae9a2f7517aca55f",
   "sourceReview:src/features/workflows/ui/DelayFields.tsx#897eb59e7299ec1de22cb6e516db13d961588c36d3148037e2038555d431537c",
-  "sourceReview:src/features/workflows/ui/NodeInspector.tsx#bba42de1a37ab2a1c6cd00820125f821acf07116fd353b283afc2d4cdd9bbe98",
+  "sourceReview:src/features/workflows/ui/NodeInspector.tsx#94282ceaf8232072d9178149a523f7b18806a56aa4bbd8c8f949aef44d34b3e7",
   "sourceReview:src/features/workflows/ui/WorkflowCustomBinding.tsx#44b9ddf20881c28385289edad5f5e53833aa9c4e10f0db330af9afdd3edf66e4",
   "sourceReview:src/features/workflows/ui/WorkflowCustomValueControl.tsx#6ab199554e9fe310b249a101bc68041ccc55ad3592af827fba614e725288f824",
   "sourceReview:src/features/workflows/ui/WorkflowRecordChoice.tsx#5a78c07fa4ae94885df185bd353e45ff7f66f29de0c2ada4ae99513847b2d63a",
@@ -49,7 +49,7 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/ui/useWorkflowConfiguration.ts#dae9e7f5ab73a58878c315a25a55257a7ddc4553f5fc436871fde06ad57564e4",
   "sourceReview:src/features/workflows/ui/useWorkflowConfigurationReferences.ts#4f64bb536c0dae22df4fd68a4adc6d8a98eeacc6bff62346a1326e84f2f728f2",
   "sourceReview:src/features/workflows/ui/workflowCustomControlValues.ts#8397769fb2ab3c2e10dcd91d9b979caa6c15296a3ec045aa6e7bfc60298a6f59",
-  "sourceReview:src/features/custom-fields/currentValidation.ts#8f38f098f8180bcb65f0d93e6323fee9e42bebaddeaca57a235cf204bb071c42",
+  "sourceReview:src/features/custom-fields/currentValidation.ts#ed848d1ea09b4c49fb729f36859d0973b9bb4b3705fa16ce42d55da3b5dab319",
 
   // WF018: finite authorized picker metadata and current-draft compatibility; no provider effects.
   "derived:src/features/workflows/paletteContext.ts",
