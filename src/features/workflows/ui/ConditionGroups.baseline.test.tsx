@@ -180,7 +180,7 @@ it("control: displays a real legacy status comparison, emits one explicit edit a
   expect(changed).not.toHaveBeenCalled();
   const user = userEvent.setup();
   await user.click(screen.getByRole("combobox", { name: copy.conditionOperator }));
-  await user.click(screen.getByRole("option", { name: copy.notEquals, exact: true }));
+  await user.click(screen.getByRole("option", { name: copy.notEquals }));
   expect(changed).toHaveBeenCalledExactlyOnceWith({
     ...test.node,
     config: { ...test.node.config, operator: "notEquals" },

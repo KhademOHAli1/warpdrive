@@ -31,13 +31,13 @@ import {
 beforeAll(prepareGroupDom);
 afterEach(cleanup);
 function row(ordinal: string) {
-  return screen.getByRole("group", { name: labels.row + " 1." + ordinal, exact: true });
+  return screen.getByRole("group", { name: labels.row + " 1." + ordinal });
 }
 function rootGroup() {
-  return screen.getByRole("group", { name: labels.group + " 1", exact: true });
+  return screen.getByRole("group", { name: labels.group + " 1" });
 }
 function firstOperand(element: HTMLElement) {
-  return within(element).getByRole("group", { name: copy.conditionField, exact: true });
+  return within(element).getByRole("group", { name: copy.conditionField });
 }
 function editor(
   definition: WorkflowDefinition,
@@ -88,7 +88,7 @@ it.each(groupLocales)(
     const match = screen.getByRole("combobox", { name: context.groups.match });
     expect(match).toHaveTextContent(context.groups.all);
     await user.click(match);
-    await user.click(screen.getByRole("option", { name: context.groups.any, exact: true }));
+    await user.click(screen.getByRole("option", { name: context.groups.any }));
     expect(
       object(conditionNode(graphFromOutput(mounted.container)).config.expression).operator,
     ).toBe("or");
@@ -96,9 +96,9 @@ it.each(groupLocales)(
       numberingSystem: context.numberingSystem,
     }).format(1);
     expect(
-      screen.getByRole("group", { name: context.groups.row + " " + one + "." + one, exact: true }),
+      screen.getByRole("group", { name: context.groups.row + " " + one + "." + one }),
     ).toBeInTheDocument();
-    const fields = screen.getAllByRole("group", { name: context.copy.conditionField, exact: true });
+    const fields = screen.getAllByRole("group", { name: context.copy.conditionField });
     const first = fields[0];
     assert(first !== undefined);
     await user.click(within(first).getByRole("button", { name: context.copy.mappingChooseSource }));
@@ -148,9 +148,9 @@ it("keeps legacy bytes inert until explicit conversion and makes conversion one 
     test.definition.nodes.map((node) => node.id),
   );
   const convertedBytes = JSON.stringify(graphFromOutput(mounted.container));
-  await user.click(screen.getByRole("button", { name: "Undo", exact: true }));
+  await user.click(screen.getByRole("button", { name: "Undo" }));
   expect(JSON.stringify(graphFromOutput(mounted.container))).toBe(bytes);
-  await user.click(screen.getByRole("button", { name: "Redo", exact: true }));
+  await user.click(screen.getByRole("button", { name: "Redo" }));
   expect(JSON.stringify(graphFromOutput(mounted.container))).toBe(convertedBytes);
   expect(JSON.stringify(test.node.config)).toBe(configBytes);
   mounted.unmount();
@@ -171,7 +171,7 @@ it("adds and removes a stable predicate while retaining its sibling and restorin
   const changed = vi.fn<(node: WorkflowNode) => void>();
   const mounted = render(history(test.definition, changed));
   const user = userEvent.setup();
-  await user.click(within(rootGroup()).getByRole("button", { name: labels.add, exact: true }));
+  await user.click(within(rootGroup()).getByRole("button", { name: labels.add }));
   const entries = children(conditionNode(graphFromOutput(mounted.container)).config.expression);
   expect(entries).toHaveLength(2);
   expect(object(entries[0]).id).toBe("kept_rule");
@@ -179,14 +179,14 @@ it("adds and removes a stable predicate while retaining its sibling and restorin
   expect(object(entries[1]).id).not.toBe("kept_rule");
   const input = within(row("1")).getByRole("textbox", { name: copy.conditionValue });
   const originalId = input.id;
-  await user.click(within(row("2")).getByRole("button", { name: labels.remove, exact: true }));
+  await user.click(within(row("2")).getByRole("button", { name: labels.remove }));
   expect(children(conditionNode(graphFromOutput(mounted.container)).config.expression)).toEqual([
     object(entries[0]),
   ]);
   expect(within(row("1")).getByRole("textbox", { name: copy.conditionValue }).id).toBe(originalId);
   await waitFor(() =>
     expect([
-      within(rootGroup()).getByRole("button", { name: labels.add, exact: true }),
+      within(rootGroup()).getByRole("button", { name: labels.add }),
       ...within(row("1")).getAllByRole("button"),
     ]).toContain(document.activeElement),
   );
@@ -197,13 +197,13 @@ it("nests a group and reorders only expression children with one undoable edit p
   const changed = vi.fn<(node: WorkflowNode) => void>();
   const mounted = render(history(test.definition, changed));
   const user = userEvent.setup();
-  await user.click(within(rootGroup()).getByRole("button", { name: labels.addGroup, exact: true }));
-  const nestedGroup = screen.getByRole("group", { name: labels.group + " 1.3", exact: true });
-  await user.click(within(nestedGroup).getByRole("button", { name: labels.add, exact: true }));
+  await user.click(within(rootGroup()).getByRole("button", { name: labels.addGroup }));
+  const nestedGroup = screen.getByRole("group", { name: labels.group + " 1.3" });
+  await user.click(within(nestedGroup).getByRole("button", { name: labels.add }));
   const beforeMove = graphFromOutput(mounted.container);
   const nested = object(children(conditionNode(beforeMove).config.expression)[2]);
   expect(children(nested)).toHaveLength(1);
-  await user.click(within(row("2")).getByRole("button", { name: labels.earlier, exact: true }));
+  await user.click(within(row("2")).getByRole("button", { name: labels.earlier }));
   const next = graphFromOutput(mounted.container);
   expect(children(conditionNode(next).config.expression).map((item) => object(item).id)).toEqual([
     "value_rule",
@@ -213,16 +213,16 @@ it("nests a group and reorders only expression children with one undoable edit p
   expect(next.edges).toEqual(test.definition.edges);
   expect(next.nodes.map((node) => node.id)).toEqual(test.definition.nodes.map((node) => node.id));
   expect(changed).toHaveBeenCalledTimes(3);
-  await user.click(screen.getByRole("button", { name: "Undo", exact: true }));
+  await user.click(screen.getByRole("button", { name: "Undo" }));
   expect(graphFromOutput(mounted.container)).toEqual(beforeMove);
 });
 function boundCase(config: WorkflowNode["config"], groupName: string, action: string) {
   const test = fixture(config);
   const changed = vi.fn();
   const mounted = render(editor(test.definition, changed));
-  const area = screen.getByRole("group", { name: groupName, exact: true });
+  const area = screen.getByRole("group", { name: groupName });
   const button = within(area)
-    .getAllByRole("button", { name: action, exact: true })
+    .getAllByRole("button", { name: action })
     .find((candidate) => candidate.closest("fieldset") === area);
   assert(button !== undefined);
   expect(button).toBeDisabled();
@@ -288,7 +288,7 @@ it("enforces each finite group budget and retains empty and over-limit drafts wi
   const changed = vi.fn();
   const view = render(editor(empty.definition, changed));
   expect(rootGroup()).toHaveTextContent(labels.omitted);
-  expect(within(rootGroup()).getByRole("button", { name: labels.add, exact: true })).toBeEnabled();
+  expect(within(rootGroup()).getByRole("button", { name: labels.add })).toBeEnabled();
   view.unmount();
   const invalid = fixture(
     grouped([
@@ -376,7 +376,7 @@ it("guards readonly and denied transitions during an open picker and uses an eff
       within(firstOperand(row("1"))).getByRole("region", { name: copy.mappingPreviewTitle }),
     ).toHaveFocus(),
   );
-  expect(within(rootGroup()).getByRole("button", { name: labels.add, exact: true })).toBeDisabled();
+  expect(within(rootGroup()).getByRole("button", { name: labels.add })).toBeDisabled();
   expect(changed).not.toHaveBeenCalled();
 });
 it("retains native zero, false and invalid numeric raw intent in their own predicate contexts", () => {
@@ -417,7 +417,7 @@ it("labels exact decimal context while preserving full and fragment strings with
     literal("00012.3400"),
   );
   await user.click(within(row("1")).getByRole("combobox", { name: copy.conditionOperator }));
-  await user.click(screen.getByRole("option", { name: copy.contains, exact: true }));
+  await user.click(screen.getByRole("option", { name: copy.contains }));
   expect(row("1")).toHaveTextContent("Text fragment");
   fireEvent.change(input, { target: { value: ".3400" } });
   expect(operandOf(conditionNode(graphFromOutput(mounted.container)), 0).right).toEqual(
@@ -494,6 +494,6 @@ it("closes a same-binding choice with reordered keys without creating a callback
   await waitFor(() => expect(opener).toHaveFocus());
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(changed).not.toHaveBeenCalled();
-  expect(screen.getByRole("button", { name: "Undo", exact: true })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
   expect(graphFromOutput(mounted.container)).toEqual(test.definition);
 });
