@@ -110,7 +110,9 @@ function availableSources(definition: WorkflowDefinition, upstream: Set<string>)
 function manualTrigger(definition: WorkflowDefinition): WorkflowNode | undefined {
   const triggers = definition.nodes.filter((node) => node.type.startsWith("trigger."));
   const trigger = triggers[0];
-  return triggers.length === 1 && trigger?.type === "trigger.manual" && trigger.version === 1
+  return triggers.length === 1 &&
+    trigger?.type === "trigger.manual" &&
+    findPaletteEntry(trigger.type, trigger.version) !== undefined
     ? trigger
     : undefined;
 }

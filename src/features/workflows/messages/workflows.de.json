@@ -324,7 +324,7 @@
   "allowCancelRetry": "Ich habe den Lauf geprüft; weiteren Abbruchversuch erlauben",
   "libraryInvalidFilters": "Prüfen Sie die Suche und die Filter und versuchen Sie es erneut.",
   "paletteCategoryTriggers": "Auslöser",
-  "paletteCategoryCrm": "CRM",
+  "paletteCategoryCrm": "CRM-Daten",
   "paletteCategoryLogic": "Logik",
   "paletteCategoryTiming": "Zeitsteuerung",
   "paletteManual": "Manueller Auslöser",

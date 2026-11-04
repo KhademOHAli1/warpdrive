@@ -1,4 +1,5 @@
 import {
+  findPaletteEntry,
   type PaletteCatalogEntry,
   type PaletteEntryState,
   paletteCatalog,
@@ -44,7 +45,8 @@ function selectionFor(
   if (entry.selection === "unavailable") return null;
   if (entry.selection === "insert") return { kind: "insert", type: entry.type, version: 1 };
   const manual = definition.nodes.filter(
-    (node) => node.type === "trigger.manual" && node.version === 1,
+    (node) =>
+      node.type === "trigger.manual" && findPaletteEntry(node.type, node.version) !== undefined,
   );
   const node = manual[0];
   return manual.length === 1 && node !== undefined
@@ -85,10 +87,10 @@ export function buildPaletteView(
   if (sameKey && status !== "denied") {
     for (const catalog of paletteCatalog) {
       const state = read.data?.entries.find(
-        (item) => item.type === catalog.type && item.version === catalog.version,
+        (item) => findPaletteEntry(item.type, item.version) === catalog,
       );
       const input = context.entries.find(
-        (item) => item.type === catalog.type && item.version === catalog.version,
+        (item) => findPaletteEntry(item.type, item.version) === catalog,
       );
       if (state === undefined || input === undefined) continue;
       const selection = selectionFor(catalog, definition);

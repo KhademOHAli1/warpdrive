@@ -3,7 +3,7 @@ export const workflowIds1: string[] = [
   // WF018: finite authorized picker metadata and current-draft compatibility; no provider effects.
   "derived:src/features/workflows/paletteContext.ts",
   "derived:src/features/workflows/ui/NodePalette.tsx",
-  "sourceReview:src/features/workflows/paletteContext.ts#d48650f88c3aa4393064e32d92870b2972784f6efa573aa3145d466bff0b2019",
+  "sourceReview:src/features/workflows/paletteContext.ts#46d68e5922dc86b06f7591933c3b1a98617f0032305e2ce35d56516fcf3e9e36",
   "sourceReview:src/features/workflows/ui/NodePalette.tsx#36144836ec2b6aac1d24d82782b365208215459b2ca3efbfeb5ac96c209f494c",
 
   // WF016: raw execute below is scoped SELECT only; Hash.update is transient cursor
