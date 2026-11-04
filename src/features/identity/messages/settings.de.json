@@ -810,6 +810,7 @@
     "activityTypesDescription": "Legen Sie fest, welche Arten von Aktivitäten Ihr Team planen kann.",
     "labelsDescription": "Verwalten Sie die Labels, mit denen Ihr Team Datensätze organisiert.",
     "lostReasonsDescription": "Legen Sie die Gründe fest, die Ihr Team bei verlorenen Verkaufschancen auswählen kann.",
+    "lostReasonArchiveHelp": "Archivierte Gründe können künftig nicht mehr ausgewählt werden. Bei bestehenden Verkaufschancen bleibt der erfasste Grund erhalten.",
     "emailContent": "Vorlagen und Signaturen",
     "onlyYou": "Für Sie persönlich",
     "wholeWorkspace": "Gesamter Arbeitsbereich",
