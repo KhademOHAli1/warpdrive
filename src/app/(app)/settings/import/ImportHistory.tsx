@@ -67,6 +67,7 @@ export function ImportHistory(): React.ReactNode {
   const reportError = useActionError();
   const query = trpc.import.listBatches.useQuery();
   const batches = query.data;
+  const emptyReadPending = batches?.length === 0 && query.isFetching;
 
   async function onUndo(batchId: string): Promise<void> {
     const r = await undoImportAction(batchId, readCsrfToken());
@@ -76,7 +77,7 @@ export function ImportHistory(): React.ReactNode {
 
   return (
     <div className="space-y-4">
-      {(batches === undefined || query.isError) && (
+      {(batches === undefined || query.isError || emptyReadPending) && (
         <ImportQueryFeedback
           loadingLabel={L._extra.importJourney.loadingHistory}
           failed={query.isError}
@@ -86,11 +87,14 @@ export function ImportHistory(): React.ReactNode {
       )}
       {batches !== undefined &&
         (batches.length === 0 ? (
-          <SettingsCard>
-            <SettingsCardBody>
-              <p className="text-sm text-muted-foreground">{IMP.historyEmpty}</p>
-            </SettingsCardBody>
-          </SettingsCard>
+          !query.isError &&
+          !query.isFetching && (
+            <SettingsCard>
+              <SettingsCardBody>
+                <p className="text-sm text-muted-foreground">{IMP.historyEmpty}</p>
+              </SettingsCardBody>
+            </SettingsCard>
+          )
         ) : (
           <SettingsCard className="overflow-x-auto shadow-none">
             <table className="w-full min-w-[720px] text-sm">
