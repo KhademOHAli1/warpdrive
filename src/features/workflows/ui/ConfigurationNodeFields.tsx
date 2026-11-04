@@ -9,7 +9,7 @@ import type {
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { BindingField } from "./BindingField";
 import { ConditionFields } from "./ConditionFields";
-import { configurationIssueKeys } from "./configurationIssueMessage";
+import { type ConfigurationIssueKey, configurationIssueKeys } from "./configurationIssueMessage";
 import { DelayFields } from "./DelayFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
@@ -27,7 +27,7 @@ export interface ConfigurationFieldsProps {
 export function configurationFieldError(
   validation: ConfigurationValidation,
   key: string,
-  translate: (key: string) => string,
+  translate: (key: ConfigurationIssueKey) => string,
 ) {
   const issue = validation.issues.find((issue) => issue.path[0] === key);
   return issue === undefined ? undefined : translate(configurationIssueKeys[issue.code]);
@@ -38,22 +38,23 @@ function BuiltinField({
 }: ConfigurationFieldsProps & { field: ConfigurationFieldSpec }) {
   const t = useAppTranslations("workflows");
   const { definition, node, editable, onChange, workflowId, validation } = props;
-  const key = field.path[0];
-  if (key === undefined) return null;
+  const pathKey = field.path[0];
+  if (pathKey === undefined) return null;
+  const key = pathKey;
   const deal = field.valueType === "deal";
-  const label = t(field.label);
+  const label = t(field.label, {});
   const sourceLabels: Record<string, string> = {
     subject: "subjectSource",
     recordId: "recordSource",
   };
-  const sourceLabel = sourceLabels[key] === undefined ? label : t(sourceLabels[key]);
+  const sourceLabel = sourceLabels[key] === undefined ? label : t(sourceLabels[key], {});
   const parsed = bindingSchema.safeParse(node.config[key]);
   const value = parsed.success && parsed.data.kind === "value" ? parsed.data.value : undefined;
-  function update(value: WorkflowNode["config"][string] | undefined) {
+  function update(fieldKey: string, value: WorkflowNode["config"][string] | undefined) {
     if (!editable) return;
     const config = { ...node.config };
-    if (value === undefined) delete config[key];
-    else config[key] = value;
+    if (value === undefined) delete config[fieldKey];
+    else config[fieldKey] = value;
     onChange({ ...node, config });
   }
   const literal =
@@ -65,7 +66,7 @@ function BuiltinField({
         value={value}
         editable={editable}
         label={label}
-        onChange={(id) => update({ kind: "value", value: id })}
+        onChange={(id) => update(key, { kind: "value", value: id })}
       />
     ) : undefined;
   return (
@@ -73,14 +74,14 @@ function BuiltinField({
       definition={definition}
       nodeId={node.id}
       value={node.config[key]}
-      onChange={update}
+      onChange={(binding) => update(key, binding)}
       kind={deal ? "deal" : "text"}
       label={label}
       sourceLabel={sourceLabel}
       editable={editable}
       allowLiteral={!deal}
       allowNull={field.nullable}
-      onOmit={field.modes.includes("omit") ? () => update(undefined) : undefined}
+      onOmit={field.modes.includes("omit") ? () => update(key, undefined) : undefined}
       maxLength={field.constraints?.maxLength}
       error={configurationFieldError(validation, key, t)}
       literalControl={literal}

@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import type { workflowRuns, workflowSteps } from "@/db/schema";
 import { initialDefinition } from "./editorModel";
 import { coherentFailedTask, retryableTaskDefinition } from "./runRetryProfile";
+import type { WorkflowNode } from "./schemas";
 
 function fixture() {
   const definition = initialDefinition({
@@ -98,7 +99,11 @@ it.each([
   expect(coherentFailedTask(f.definition, f.run, f.steps)).toBeNull();
 });
 
-it.each([{}, { "848408c6-faf7-4234-8de1-c63f1c9107dc": { kind: "value", value: 0 } }])(
+const customRetrySettings: WorkflowNode["config"][] = [
+  {},
+  { "848408c6-faf7-4234-8de1-c63f1c9107dc": { kind: "value", value: 0 } },
+];
+it.each(customRetrySettings)(
   "keeps custom-bearing task graphs outside the existing retry profile",
   (customFields) => {
     const f = fixture();

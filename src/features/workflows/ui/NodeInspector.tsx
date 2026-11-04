@@ -78,7 +78,7 @@ function Inspector({
           spec={spec}
           validation={validation}
         />
-        {hint !== undefined && <p className="text-sm text-muted-foreground">{t(hint)}</p>}
+        {hint !== undefined && <p className="text-sm text-muted-foreground">{t(hint, {})}</p>}
         <ConfigurationNodeFields
           definition={definition}
           node={node}

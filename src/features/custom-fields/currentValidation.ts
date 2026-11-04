@@ -37,6 +37,7 @@ function rejectNestedKeys(def: CustomFieldDef, value: unknown, ctx: z.Refinement
 
 function strictSchema(defs: CustomFieldDef[]) {
   const byKey = new Map(defs.map((def) => [def.key, def]));
+  const canonical = buildCustomFieldsSchema(defs);
   return z
     .record(z.string(), z.unknown())
     .superRefine((values, ctx) => {
@@ -47,7 +48,12 @@ function strictSchema(defs: CustomFieldDef[]) {
         else rejectNestedKeys(def, values[key], ctx);
       }
     })
-    .pipe(buildCustomFieldsSchema(defs));
+    .transform((values, ctx) => {
+      const parsed = canonical.safeParse(values);
+      if (parsed.success) return parsed.data;
+      for (const issue of parsed.error.issues) ctx.addIssue(issue);
+      return z.NEVER;
+    });
 }
 
 // Server-only context: functions/private symbol are intentionally not a wire DTO.

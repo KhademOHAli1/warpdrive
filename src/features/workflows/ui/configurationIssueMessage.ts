@@ -1,5 +1,5 @@
 import type { ConfigurationIssueCode } from "../configurationTypes";
-export const configurationIssueKeys: Record<ConfigurationIssueCode, string> = {
+export const configurationIssueKeys = {
   required: "configurationRequired",
   invalid_type: "configurationInvalidType",
   invalid_value: "configurationInvalidValue",
@@ -15,4 +15,6 @@ export const configurationIssueKeys: Record<ConfigurationIssueCode, string> = {
   unsupported_setting: "configurationUnsupportedSetting",
   metadata_incomplete: "configurationMetadataIncomplete",
   metadata_stale: "configurationMetadataStale",
-};
+} as const satisfies Record<ConfigurationIssueCode, string>;
+
+export type ConfigurationIssueKey = (typeof configurationIssueKeys)[ConfigurationIssueCode];
