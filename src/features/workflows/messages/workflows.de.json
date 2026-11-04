@@ -413,7 +413,7 @@
   "configurationLiteralDateInvalid": "Geben Sie ein gültiges gregorianisches Datum im Format JJJJ-MM-TT ein.",
   "configurationLiteralInstantInvalid": "Geben Sie ein gültiges ISO-Datum mit Uhrzeit und Zeitzonenversatz oder Z ein.",
   "mappingTypes": {
-    "text": "Text",
+    "text": "Textwert",
     "number": "Zahl",
     "boolean": "Wahrheitswert",
     "decimal": "Exakte Dezimalzahl",
@@ -424,7 +424,7 @@
     "time-range": "Zeitbereich",
     "address": "Adresse",
     "entity": "Datensatzverweis",
-    "option": "Option",
+    "option": "Auswahlwert",
     "options": "Optionen",
     "scalar": "Wert"
   },
