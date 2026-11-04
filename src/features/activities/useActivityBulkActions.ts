@@ -38,12 +38,18 @@ export function useActivityBulkActions(selection: RowSelection): ActivityBulkAct
     if (ids.length === 0) return;
     const failedIds = await runBulkAction(ids, action);
     const someSucceeded = failedIds.length < ids.length;
-    if (someSucceeded) await invalidateActivityLists();
     // Don't silently drop failures: clear only the ids that actually succeeded, keep the
     // failed ones selected (so the user sees exactly what still needs attention).
     selection.clear();
     for (const id of failedIds) selection.toggle(id);
     setError(failedIds.length > 0 ? failureError : null);
+    if (someSucceeded) {
+      try {
+        await invalidateActivityLists();
+      } catch {
+        // A read refresh failure does not undo acknowledged per-ID action outcomes.
+      }
+    }
   }
 
   return {
