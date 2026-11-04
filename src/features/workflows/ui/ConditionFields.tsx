@@ -4,10 +4,11 @@ import { useId } from "react";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { conditionSourceDefaults } from "../configurationSpec";
+import type { ConfigurationMetadata } from "../configurationTypes";
 import { mappingOptions } from "../mappingOptions";
 import {
-  type Binding,
-  bindingSchema,
+  type DraftBinding,
+  draftBindingSchema,
   type WorkflowDefinition,
   type WorkflowNode,
 } from "../schemas";
@@ -20,16 +21,18 @@ export function ConditionFields({
   editable,
   onChange,
   errors = {},
+  metadata,
 }: {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
   errors?: Partial<Record<"left" | "right" | "operator", string>>;
+  metadata?: ConfigurationMetadata;
 }) {
   const t = useAppTranslations("workflows");
   const errorId = useId();
-  const left = bindingSchema.safeParse(node.config.left);
+  const left = draftBindingSchema.safeParse(node.config.left);
   const choices = mappingOptions(definition, node.id, "scalar");
   const selected =
     left.success && left.data.kind === "reference"
@@ -38,10 +41,11 @@ export function ConditionFields({
   const field = choices.find((choice) => choice.key === selected);
   const boolean = field?.type === "boolean";
   const status = field?.node.type === "record.read" && field.field === "status";
+  const temporal = field?.type === "date" || field?.type === "instant";
   function update(config: WorkflowNode["config"]) {
-    onChange({ ...node, config: { ...node.config, ...config } });
+    if (editable) onChange({ ...node, config: { ...node.config, ...config } });
   }
-  function leftChanged(binding: Binding) {
+  function leftChanged(binding: DraftBinding) {
     const key = binding.kind === "reference" ? binding.nodeId + "." + binding.path.join(".") : "";
     const next = choices.find((choice) => choice.key === key);
     update({
@@ -64,6 +68,8 @@ export function ConditionFields({
         editable={editable}
         allowLiteral={false}
         error={errors.left}
+        path={["left"]}
+        metadata={metadata}
       />
       <fieldset
         className="min-w-0 space-y-2"
@@ -80,7 +86,9 @@ export function ConditionFields({
             { value: "equals", label: t("equals") },
             { value: "notEquals", label: t("notEquals") },
             { value: "exists", label: t("exists") },
-            ...(!boolean && !status ? [{ value: "contains", label: t("contains") }] : []),
+            ...(!boolean && !status && !temporal
+              ? [{ value: "contains", label: t("contains") }]
+              : []),
           ]}
           onChange={(value) => update({ operator: value })}
         />
@@ -99,6 +107,7 @@ export function ConditionFields({
           status={status}
           onChange={(right) => update({ right })}
           error={errors.right}
+          metadata={metadata}
         />
       )}
     </div>

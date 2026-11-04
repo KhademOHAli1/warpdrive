@@ -1,15 +1,19 @@
 "use client";
 import { useId } from "react";
-import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { ConfigurationMetadata } from "../configurationTypes";
+import { describeMappingTarget } from "../mappingCatalog";
+import type { MappingTarget } from "../mappingTypes";
 import {
-  type Binding,
-  bindingSchema,
+  type DraftBinding,
+  type DraftValueBinding,
+  draftBindingSchema,
   type WorkflowDefinition,
   type WorkflowNode,
 } from "../schemas";
 import { BindingField } from "./BindingField";
+import { TypedLiteralValue } from "./TypedLiteralValue";
 
 interface Props {
   definition: WorkflowDefinition;
@@ -17,24 +21,28 @@ interface Props {
   editable: boolean;
   boolean: boolean;
   status: boolean;
-  onChange: (value: Binding) => void;
+  onChange: (value: DraftBinding) => void;
   error?: string;
+  metadata?: ConfigurationMetadata;
+}
+function emptyLiteral(props: Props, target: MappingTarget | undefined): DraftValueBinding {
+  const kind = target?.contract.kind;
+  if (kind === "number" || kind === "date" || kind === "instant")
+    return { kind: "value", value: "", literalType: kind };
+  return { kind: "value", value: props.boolean ? true : props.status ? "open" : "" };
 }
 function LiteralValue({
-  node,
-  editable,
-  boolean,
-  status,
-  onChange,
-  error,
   errorId,
-}: Omit<Props, "definition"> & { errorId: string }) {
+  target,
+  ...props
+}: Props & { errorId: string; target: MappingTarget | undefined }) {
   const t = useAppTranslations("workflows");
   const sales = useAppTranslations("sales");
   const id = useId();
-  const parsed = bindingSchema.safeParse(node.config.right);
-  const value = parsed.success && parsed.data.kind === "value" ? parsed.data.value : "";
-  const choices = boolean
+  const parsed = draftBindingSchema.safeParse(props.node.config.right);
+  const binding =
+    parsed.success && parsed.data.kind === "value" ? parsed.data : emptyLiteral(props, target);
+  const choices = props.boolean
     ? [
         { value: "true", label: t("boolTrue") },
         { value: "false", label: t("boolFalse") },
@@ -49,27 +57,29 @@ function LiteralValue({
       <label htmlFor={id} className="text-sm font-medium">
         {t("conditionValue")}
       </label>
-      {boolean || status ? (
+      {props.boolean || props.status ? (
         <Select
           ariaLabel={t("conditionValue")}
-          value={String(value ?? "")}
-          disabled={!editable}
+          value={String(binding.value ?? "")}
+          disabled={!props.editable}
           options={choices}
           placeholder={t("chooseValue")}
-          onChange={(value) =>
-            onChange({ kind: "value", value: boolean ? value === "true" : value })
-          }
+          onChange={(value) => {
+            if (props.editable)
+              props.onChange({ kind: "value", value: props.boolean ? value === "true" : value });
+          }}
         />
       ) : (
-        <Input
+        <TypedLiteralValue
           id={id}
-          dir="auto"
-          value={String(value ?? "")}
-          disabled={!editable}
-          maxLength={255}
-          aria-invalid={error !== undefined}
-          aria-describedby={error === undefined ? undefined : errorId}
-          onChange={(event) => onChange({ kind: "value", value: event.target.value })}
+          binding={binding}
+          target={target}
+          label={t("conditionValue")}
+          editable={props.editable}
+          error={props.error}
+          errorId={errorId}
+          hideError
+          onChange={props.onChange}
         />
       )}
     </div>
@@ -77,7 +87,13 @@ function LiteralValue({
 }
 export function ConditionValue(props: Props) {
   const t = useAppTranslations("workflows");
-  const defaultValue = props.boolean ? true : props.status ? "open" : "";
+  const described = describeMappingTarget(
+    props.definition,
+    props.node.id,
+    ["right"],
+    props.metadata,
+  );
+  const target = described.state === "ready" ? described.target : undefined;
   return (
     <BindingField
       definition={props.definition}
@@ -92,9 +108,14 @@ export function ConditionValue(props: Props) {
       allowNull
       nullLabel={t("configurationNullValue")}
       literalControlLabel={t("literalValue")}
-      onSelectLiteral={() => props.onChange({ kind: "value", value: defaultValue })}
+      onSelectLiteral={() => {
+        if (props.editable) props.onChange(emptyLiteral(props, target));
+      }}
       error={props.error}
-      literalControl={(errorId) => <LiteralValue {...props} errorId={errorId} />}
+      target={target}
+      path={["right"]}
+      metadata={props.metadata}
+      literalControl={(errorId) => <LiteralValue {...props} target={target} errorId={errorId} />}
     />
   );
 }

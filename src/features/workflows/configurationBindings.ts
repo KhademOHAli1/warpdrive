@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { CustomFieldType } from "@/constants/customFieldTypes";
 import { bindingSchema } from "./schemas";
 
 // Rich values belong only to task custom fields. Global scalar bindings stay scalar.
@@ -42,3 +43,12 @@ const copyReference = bindingSchema.options[1]
   .partial();
 export const copyCustomFieldBindingSchema = z.union([copyLiteral, copyReference]);
 export const copyCustomFieldSettingsSchema = z.record(fieldIdentity, copyCustomFieldBindingSchema);
+
+// Canonical rich schemas strip unknown object keys; shared workflow validation must
+// reject cross-shape draft keys before asking those schemas to validate values.
+export function customLiteralKeysAllowed(type: CustomFieldType, value: unknown): boolean {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return true;
+  if (type === "address") return addressDraft.safeParse(value).success;
+  if (type === "date_range" || type === "time_range") return rangeDraft.safeParse(value).success;
+  return true;
+}

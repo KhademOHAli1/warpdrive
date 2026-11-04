@@ -266,6 +266,7 @@ describe("shared step configuration validation", () => {
         operator: "equals",
       },
     };
+    definition.nodes.push(node);
     const result = validateNodeConfiguration(node, context(definition));
     expect(result.issues).toContainEqual(
       expect.objectContaining({ code: "required", path: ["name"] }),

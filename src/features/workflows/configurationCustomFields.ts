@@ -1,14 +1,18 @@
 import { z } from "zod";
 import { buildCustomFieldsSchema, valueSchemaFor } from "@/features/custom-fields/validate";
 import type { CustomFieldDef } from "@/types/customFields";
-import { type CustomFieldBinding, customFieldBindingSchema } from "./configurationBindings";
+import {
+  type CustomFieldBinding,
+  customFieldBindingSchema,
+  customLiteralKeysAllowed,
+} from "./configurationBindings";
 import { configurationIssue } from "./configurationBuiltin";
-import { compatibleCustomOutput, configurationOutput } from "./configurationReference";
 import type {
   ConfigurationContext,
   ConfigurationIssueCode,
   ConfigurationValidation,
 } from "./configurationTypes";
+import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
 import type { WorkflowNode } from "./schemas";
 
 function objectMap(raw: unknown): raw is Record<string, unknown> {
@@ -28,6 +32,10 @@ function literalIssues(
   binding: Extract<CustomFieldBinding, { kind: "value" }>,
   result: ConfigurationValidation,
 ): void {
+  if (!customLiteralKeysAllowed(def.type, binding.value)) {
+    result.issues.push(configurationIssue(node, ["customFields", def.id], "invalid_value"));
+    return;
+  }
   const parsed = valueSchemaFor(def).safeParse(binding.value);
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
@@ -62,15 +70,20 @@ function validateFieldBinding(
     literalIssues(node, def, parsed.data, result);
     return;
   }
-  const output = configurationOutput(context.definition, node.id, parsed.data);
-  const code =
-    output === null
-      ? "reference_missing"
-      : compatibleCustomOutput(def.type, output)
-        ? null
-        : "reference_incompatible";
-  if (code === null) result.runtimeChecks.push(path);
-  else result.issues.push(configurationIssue(node, path, code));
+  const target = describeMappingTarget(context.definition, node.id, path, context.metadata);
+  if (target.state !== "ready") {
+    result.issues.push(...target.issues);
+    return;
+  }
+  const inspected = inspectMapping(
+    context.definition,
+    node.id,
+    target.target,
+    parsed.data,
+    context.metadata,
+  );
+  result.issues.push(...inspected.issues);
+  result.runtimeChecks.push(...inspected.runtimeChecks);
 }
 
 function validateKnownField(

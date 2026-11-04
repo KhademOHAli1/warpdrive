@@ -1,9 +1,4 @@
-import { z } from "zod";
-import {
-  bindingOutputType,
-  compatibleBuiltinOutput,
-  configurationOutput,
-} from "./configurationReference";
+import { bindingOutputType, temporalConditionMismatch } from "./configurationReference";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type {
   ConfigurationContext,
@@ -11,33 +6,8 @@ import type {
   ConfigurationIssueCode,
   ConfigurationValidation,
 } from "./configurationTypes";
+import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
 import { bindingSchema, type WorkflowNode } from "./schemas";
-
-interface BindingRule {
-  expected: "string" | "deal" | "number" | "scalar";
-  required?: boolean;
-  nullable?: boolean;
-  nonblank?: boolean;
-  max?: number;
-}
-
-function bindingRule(node: WorkflowNode, key: string): BindingRule {
-  const field = configurationProfiles[node.type].fields.find((entry) => entry.path[0] === key);
-  const expected = field?.valueType;
-  const kind = expected === "deal" || expected === "scalar" ? expected : "string";
-  const conditional = field?.requiredWhen;
-  const required =
-    conditional === undefined
-      ? field?.required
-      : node.config[conditional.field] !== conditional.not;
-  return {
-    expected: kind,
-    required,
-    nullable: field?.nullable,
-    nonblank: field?.constraints?.trim,
-    max: field?.constraints?.maxLength,
-  };
-}
 
 export function configurationIssue(
   node: WorkflowNode,
@@ -47,51 +17,26 @@ export function configurationIssue(
   return { nodeId: node.id, path, code };
 }
 
-function literalProblem(value: unknown, rule: BindingRule): ConfigurationIssueCode | null {
-  if (value === null) return rule.nullable === true ? null : "invalid_type";
-  if (rule.expected === "deal")
-    return z.string().uuid().safeParse(value).success ? null : "invalid_value";
-  if (rule.expected !== "scalar" && typeof value !== rule.expected) return "invalid_type";
-  if (typeof value !== "string") return null;
-  if (rule.nonblank === true && value.trim().length === 0) return "required";
-  if (rule.max !== undefined && value.length > rule.max) return "too_long";
-  return null;
-}
-
 function checkBinding(
   node: WorkflowNode,
   field: string,
   context: ConfigurationContext,
   result: ConfigurationValidation,
 ): void {
-  const rule = bindingRule(node, field);
-  const raw = node.config[field];
-  if (raw === undefined) {
-    if (rule.required === true) result.issues.push(configurationIssue(node, [field], "required"));
+  const described = describeMappingTarget(context.definition, node.id, [field], context.metadata);
+  if (described.state !== "ready") {
+    result.issues.push(...described.issues);
     return;
   }
-  const parsed = bindingSchema.safeParse(raw);
-  if (!parsed.success) {
-    result.issues.push(configurationIssue(node, [field], "invalid_value"));
-    return;
-  }
-  const binding = parsed.data;
-  if (binding.kind === "value") {
-    const code = literalProblem(binding.value, rule);
-    if (code !== null) result.issues.push(configurationIssue(node, [field], code));
-    if (code === null && rule.expected === "deal" && binding.value !== null)
-      result.runtimeChecks.push([field]);
-    return;
-  }
-  const output = configurationOutput(context.definition, node.id, binding);
-  const code =
-    output === null
-      ? "reference_missing"
-      : compatibleBuiltinOutput(rule.expected, output)
-        ? null
-        : "reference_incompatible";
-  if (code === null) result.runtimeChecks.push([field]);
-  else result.issues.push(configurationIssue(node, [field], code));
+  const inspected = inspectMapping(
+    context.definition,
+    node.id,
+    described.target,
+    node.config[field],
+    context.metadata,
+  );
+  result.issues.push(...inspected.issues);
+  result.runtimeChecks.push(...inspected.runtimeChecks);
 }
 
 function validateRead(
@@ -169,6 +114,8 @@ function validateCondition(
   if (!valid) result.issues.push(configurationIssue(node, ["operator"], "unsupported_setting"));
   checkBinding(node, "right", context, result);
   containsTypes(node, context, result);
+  if (temporalConditionMismatch(context.definition, node))
+    result.issues.push(configurationIssue(node, ["right"], "invalid_type"));
 }
 
 function allowedKeys(node: WorkflowNode): string[] {

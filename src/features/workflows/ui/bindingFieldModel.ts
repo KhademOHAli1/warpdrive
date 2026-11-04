@@ -3,7 +3,13 @@ import type { Locale } from "@/features/i18n/registry";
 import { type MappingKind, mappingOptions } from "../mappingOptions";
 import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
-import { type Binding, bindingSchema, type WorkflowDefinition } from "../schemas";
+import {
+  type DraftBinding,
+  draftBindingSchema,
+  type ReferenceBinding,
+  type WorkflowDefinition,
+  type WorkflowNode,
+} from "../schemas";
 
 interface Modes {
   allowLiteral: boolean;
@@ -12,7 +18,14 @@ interface Modes {
   hasRecord: boolean;
 }
 
-function selectedBindingKey(binding: Binding | undefined, modes: Modes): string {
+export interface BindingFieldChoice {
+  key: string;
+  node: WorkflowNode;
+  field: string;
+  binding: ReferenceBinding;
+}
+
+function selectedBindingKey(binding: DraftBinding | undefined, modes: Modes): string {
   if (binding?.kind === "reference") return binding.nodeId + "." + binding.path.join(".");
   if (binding?.kind === "value" && binding.value === null && modes.allowNull) return "__null__";
   if (binding === undefined && modes.hasOmit) return "__omit__";
@@ -25,10 +38,12 @@ export function bindingFieldModel(
   value: unknown,
   kind: MappingKind,
   modes: Modes,
+  providedChoices?: readonly BindingFieldChoice[],
 ) {
-  const parsed = bindingSchema.safeParse(value);
+  const parsed = draftBindingSchema.safeParse(value);
   const binding = parsed.success ? parsed.data : undefined;
-  const choices = mappingOptions(definition, nodeId, kind);
+  const choices =
+    providedChoices === undefined ? mappingOptions(definition, nodeId, kind) : [...providedChoices];
   const selected = selectedBindingKey(binding, modes);
   const missing =
     binding?.kind === "reference" && !choices.some((choice) => choice.key === selected);

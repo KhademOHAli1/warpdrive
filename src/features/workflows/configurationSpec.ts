@@ -170,6 +170,10 @@ export function conditionSourceDefaults(source: {
   type?: ValueType;
   field?: string;
 }): WorkflowNode["config"] {
+  if (source.type === "number")
+    return { operator: "equals", right: { kind: "value", value: "", literalType: "number" } };
+  if (source.type === "date" || source.type === "instant")
+    return { operator: "equals", right: { kind: "value", value: "", literalType: source.type } };
   const value = source.type === "boolean" ? true : source.field === "status" ? "open" : "";
   return { operator: "equals", right: { kind: "value", value } };
 }

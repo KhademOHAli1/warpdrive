@@ -91,6 +91,8 @@ function BuiltinField({
       maxLength={field.constraints?.maxLength}
       error={configurationFieldError(validation, key, t)}
       literalControl={literal}
+      path={field.path}
+      metadata={props.metadata}
     />
   );
 }
@@ -118,6 +120,7 @@ function ConfigurationField({
         def={def}
         workflowId={props.workflowId}
         fingerprint={metadata.fingerprint}
+        metadata={metadata}
         editable={editable}
         onChange={onChange}
         error={issue === undefined ? undefined : t(configurationIssueKeys[issue.code])}
@@ -153,6 +156,7 @@ export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
           right: configurationFieldError(validation, "right", t),
           operator: configurationFieldError(validation, "operator", t),
         }}
+        metadata={props.metadata}
       />
     );
   return (

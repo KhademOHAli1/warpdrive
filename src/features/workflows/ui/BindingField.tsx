@@ -1,13 +1,21 @@
 "use client";
 
-import { type ReactNode, useId } from "react";
-import { Input } from "@/components/ui/Input";
+import { type ReactNode, useId, useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import type { ConfigurationMetadata } from "../configurationTypes";
+import { inspectMapping, sameMappingReference } from "../mappingCatalog";
 import type { MappingKind } from "../mappingOptions";
-import type { Binding, WorkflowDefinition } from "../schemas";
+import type { MappingTarget } from "../mappingTypes";
+import type { DraftBinding, ReferenceBinding, WorkflowDefinition } from "../schemas";
 import { bindingFieldModel, bindingFieldOptions } from "./bindingFieldModel";
+import { MappingChip } from "./MappingChip";
+import { MappingPreview } from "./MappingPreview";
+import { bindingChoices, bindingTarget, buildMappingPickerModel } from "./mappingView";
+import { TypedLiteralValue } from "./TypedLiteralValue";
+import { VariablePicker } from "./VariablePicker";
 
 export function BindingField({
   definition,
@@ -27,11 +35,14 @@ export function BindingField({
   nullLabel,
   error,
   maxLength,
+  target,
+  metadata,
+  path,
 }: {
   definition: WorkflowDefinition;
   nodeId: string;
   value: unknown;
-  onChange: (binding: Binding) => void;
+  onChange: (binding: DraftBinding) => void;
   kind: MappingKind;
   label: string;
   sourceLabel: string;
@@ -45,18 +56,50 @@ export function BindingField({
   nullLabel?: string;
   error?: string;
   maxLength?: number;
+  target?: MappingTarget;
+  metadata?: ConfigurationMetadata;
+  path?: readonly string[];
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const fmt = useFormatters();
   const fields: Record<string, string> = useMessages().workflows.fields;
   const id = useId();
-  const model = bindingFieldModel(definition, nodeId, value, kind, {
-    allowLiteral,
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const opener = useRef<HTMLButtonElement>(null);
+  const preview = useRef<HTMLElement>(null);
+  const currentTarget = bindingTarget(
+    definition,
+    nodeId,
+    kind,
+    target,
+    path,
+    metadata,
     allowNull,
-    hasOmit: onOmit !== undefined,
-    hasRecord: literalControl !== undefined,
-  });
+    onOmit === undefined,
+  );
+  const picker = buildMappingPickerModel(
+    definition,
+    nodeId,
+    currentTarget,
+    value,
+    metadata,
+    editable,
+  );
+  const typedChoices = bindingChoices(picker);
+  const model = bindingFieldModel(
+    definition,
+    nodeId,
+    value,
+    kind,
+    {
+      allowLiteral,
+      allowNull,
+      hasOmit: onOmit !== undefined,
+      hasRecord: literalControl !== undefined,
+    },
+    typedChoices,
+  );
   const { choices, selected, missing } = model;
   const options = bindingFieldOptions(
     model,
@@ -73,6 +116,19 @@ export function BindingField({
       missing: t("unavailableValue"),
     },
   );
+  function choose(reference: ReferenceBinding) {
+    if (!editable || picker.state === "denied") return;
+    const checked = inspectMapping(definition, nodeId, currentTarget, reference, metadata);
+    if (checked.availability !== "available" || checked.compatibility === "incompatible") return;
+    if (!sameMappingReference(value, reference)) onChange(reference);
+    setPickerOpen(false);
+  }
+  function restoreFocus(event: Event) {
+    event.preventDefault();
+    if (opener.current?.isConnected && !opener.current.matches(":disabled,[aria-disabled=true]"))
+      opener.current.focus();
+    else preview.current?.focus();
+  }
   return (
     <fieldset
       className="min-w-0 space-y-2"
@@ -88,6 +144,7 @@ export function BindingField({
         disabled={!editable}
         placeholder={t("chooseValue")}
         onChange={(key) => {
+          if (!editable) return;
           if (key === "__omit__") onOmit?.();
           else if (key === "__null__") onChange({ kind: "value", value: null });
           else if (key === "__record__") {
@@ -96,7 +153,7 @@ export function BindingField({
           } else if (key === "__literal__") onChange({ kind: "value", value: "" });
           else {
             const choice = choices.find((item) => item.key === key);
-            if (choice !== undefined) onChange(choice.binding);
+            if (choice !== undefined) choose(choice.binding);
           }
         }}
       />
@@ -107,15 +164,17 @@ export function BindingField({
           <label htmlFor={id} className="text-sm font-medium">
             {label}
           </label>
-          <Input
-            dir="auto"
+          <TypedLiteralValue
             id={id}
-            value={model.literalValue}
-            disabled={!editable}
+            binding={model.binding?.kind === "value" ? model.binding : { kind: "value", value: "" }}
+            target={currentTarget}
+            label={label}
+            editable={editable}
             maxLength={maxLength ?? (kind === "text" ? 255 : 120)}
-            aria-invalid={error !== undefined}
-            aria-describedby={error === undefined ? undefined : `${id}-error`}
-            onChange={(event) => onChange({ kind: "value", value: event.target.value })}
+            error={error}
+            errorId={`${id}-error`}
+            hideError
+            onChange={onChange}
           />
         </div>
       )}
@@ -132,6 +191,41 @@ export function BindingField({
       {model.noVariables && (
         <p className="text-xs leading-5 text-muted-foreground">{t("noVariables")}</p>
       )}
+      <Button
+        ref={opener}
+        size="sm"
+        variant="outline"
+        disabled={!editable || picker.state === "denied"}
+        onClick={() => setPickerOpen(true)}
+      >
+        {t("mappingChooseSource")}
+      </Button>
+      {model.binding?.kind === "reference" && (
+        <MappingChip
+          model={picker}
+          onInspect={() => preview.current?.focus()}
+          onChange={() => setPickerOpen(true)}
+          onRemove={() => {
+            if (!editable) return;
+            if (onOmit !== undefined) onOmit();
+            else if (onSelectLiteral !== undefined) onSelectLiteral();
+            else onChange({ kind: "value", value: "" });
+          }}
+        />
+      )}
+      <MappingPreview
+        model={picker.preview}
+        focusRef={preview}
+        id={`${id}-preview`}
+        denied={picker.state === "denied"}
+      />
+      <VariablePicker
+        open={pickerOpen}
+        model={picker}
+        onChoose={choose}
+        onClose={() => setPickerOpen(false)}
+        onCloseAutoFocus={restoreFocus}
+      />
     </fieldset>
   );
 }

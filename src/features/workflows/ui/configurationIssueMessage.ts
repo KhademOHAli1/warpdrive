@@ -15,6 +15,9 @@ export const configurationIssueKeys = {
   unsupported_setting: "configurationUnsupportedSetting",
   metadata_incomplete: "configurationMetadataIncomplete",
   metadata_stale: "configurationMetadataStale",
+  literal_number_invalid: "configurationLiteralNumberInvalid",
+  literal_date_invalid: "configurationLiteralDateInvalid",
+  literal_instant_invalid: "configurationLiteralInstantInvalid",
 } as const satisfies Record<ConfigurationIssueCode, string>;
 
 export type ConfigurationIssueKey = (typeof configurationIssueKeys)[ConfigurationIssueCode];

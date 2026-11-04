@@ -1,10 +1,16 @@
 import { appendConnectedNode, type OutputTarget } from "./connectionGestures";
-import { ancestors } from "./graph";
 import { type ConnectionProblem, insertNode, portsFor } from "./graphEditor";
+import { mappingPathNodes } from "./mappingAvailability";
+import {
+  describeMappingOutputsAfter,
+  legacyMappingTarget,
+  mappingOutputForReference,
+} from "./mappingCatalog";
+import { mappingCompatibility } from "./mappingCompatibility";
+import { coarseMappingType } from "./mappingOutputs";
 import { type CreatableNodeType, makeNode } from "./nodeFactory";
 import { positionForNewNode } from "./nodeLayout";
 import { findPaletteEntry, type PaletteCatalogEntry, paletteCatalog } from "./paletteCatalog";
-import { actionRegistry } from "./registry";
 import {
   bindingSchema,
   type NodePosition,
@@ -82,29 +88,21 @@ function placementFor(definition: WorkflowDefinition, request: PickerRequest): P
     output: request.output,
     occupiedDestinationId: occupied?.to ?? null,
     reason: null,
-    upstream: new Set([...ancestors(definition, source.id), source.id]),
+    upstream: new Set(mappingPathNodes(definition, source.id, true).nodes.map((node) => node.id)),
   };
 }
 
-function semantic(node: WorkflowNode, field: string): PaletteSource["semantic"] {
-  const manual = node.type === "trigger.manual" && field === "recordId";
-  const read = node.type === "record.read" && node.config.entity === "deal" && field === "id";
-  return manual || read ? "deal-id" : "scalar";
-}
-
-function availableSources(definition: WorkflowDefinition, upstream: Set<string>): PaletteSource[] {
-  return definition.nodes
-    .filter((node) => upstream.has(node.id))
-    .flatMap((node) => {
-      const descriptor = findPaletteEntry(node.type, node.version);
-      if (descriptor?.support !== "supported") return [];
-      return Object.entries(actionRegistry[node.type].outputs).map(([field, valueType]) => ({
-        nodeId: node.id,
-        path: field.split("."),
-        valueType,
-        semantic: semantic(node, field),
-      }));
-    });
+function availableSources(
+  definition: WorkflowDefinition,
+  sourceId: string | undefined,
+): PaletteSource[] {
+  if (sourceId === undefined) return [];
+  return describeMappingOutputsAfter(definition, sourceId).outputs.map((output) => ({
+    nodeId: output.nodeId,
+    path: [...output.path],
+    valueType: coarseMappingType(output.contract),
+    semantic: output.contract.entity === "deal" ? "deal-id" : "scalar",
+  }));
 }
 
 function manualTrigger(definition: WorkflowDefinition): WorkflowNode | undefined {
@@ -132,18 +130,29 @@ function entryReason(
   return null;
 }
 
-function acceptsInput(kind: PaletteCatalogEntry["input"], source: PaletteSource): boolean {
-  if (kind === "deal") return source.semantic === "deal-id";
-  if (kind === "optional") return source.valueType === "string";
-  return kind === "scalar" && (source.valueType === "string" || source.valueType === "boolean");
+function acceptsInput(
+  definition: WorkflowDefinition,
+  kind: PaletteCatalogEntry["input"],
+  source: PaletteSource,
+): boolean {
+  if (kind === "none") return false;
+  const output = mappingOutputForReference(definition, {
+    kind: "reference",
+    nodeId: source.nodeId,
+    path: source.path,
+  });
+  if (output === undefined) return false;
+  const target = legacyMappingTarget("target", kind === "optional" ? "text" : kind);
+  return mappingCompatibility(output.contract, target) !== "incompatible";
 }
 
 function inputContext(
+  definition: WorkflowDefinition,
   descriptor: PaletteCatalogEntry,
   sources: PaletteSource[],
 ): PaletteContextEntry["input"] {
   if (descriptor.input === "none") return { state: "not-required", sources: [] };
-  const compatible = sources.filter((source) => acceptsInput(descriptor.input, source));
+  const compatible = sources.filter((source) => acceptsInput(definition, descriptor.input, source));
   const state =
     compatible.length > 0
       ? "available"
@@ -158,7 +167,7 @@ export function describePaletteContext(
   request: PickerRequest,
 ): PaletteContext {
   const placement = placementFor(definition, request);
-  const sources = availableSources(definition, placement.upstream);
+  const sources = availableSources(definition, placement.source?.id);
   return {
     source: placement.source,
     output: placement.output,
@@ -168,7 +177,7 @@ export function describePaletteContext(
       type: descriptor.type,
       version: descriptor.version,
       reason: entryReason(definition, descriptor, placement),
-      input: inputContext(descriptor, sources),
+      input: inputContext(definition, descriptor, sources),
     })),
   };
 }

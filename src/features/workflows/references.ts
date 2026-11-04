@@ -1,31 +1,15 @@
-import { err, ok, type Result } from "@/types/result";
 import { customFieldBindingSchema } from "./configurationBindings";
-import { ancestors } from "./graph";
+import { conditionContainsMismatch, temporalConditionMismatch } from "./configurationReference";
+import { mappingPathNodes } from "./mappingAvailability";
+import { describeMappingTarget, inspectMapping, mappingOutputForReference } from "./mappingCatalog";
 import { actionRegistry } from "./registry";
 import {
   type Binding,
   bindingSchema,
   type DefinitionIssue,
-  type ValueType,
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
-
-function bindingType(
-  definition: WorkflowDefinition,
-  available: Set<string>,
-  binding: Binding,
-): Result<ValueType | undefined, string> {
-  if (binding.kind === "value")
-    return ok(binding.value === null ? undefined : (typeof binding.value as ValueType));
-  const source = definition.nodes.find((node) => node.id === binding.nodeId);
-  if (!available.has(binding.nodeId) || source === undefined) return err("unavailable_reference");
-  const outputs = actionRegistry[source.type].outputs;
-  const key = binding.path.join(".");
-  if (!Object.hasOwn(outputs, key)) return err("unknown_output");
-  const type = outputs[key];
-  return type === undefined ? err("unknown_output") : ok(type);
-}
 
 function nodeBindings(node: WorkflowNode): { field: string; binding: Binding }[] {
   const bindings: { field: string; binding: Binding }[] = [];
@@ -43,30 +27,48 @@ function nodeBindings(node: WorkflowNode): { field: string; binding: Binding }[]
   return bindings;
 }
 
-function nullableLink(node: WorkflowNode, field: string, binding: Binding): boolean {
-  return (
-    node.type === "activity.create" &&
-    field === "dealId" &&
-    binding.kind === "value" &&
-    binding.value === null
-  );
+function structuralReferenceIssue(
+  definition: WorkflowDefinition,
+  node: WorkflowNode,
+  binding: Extract<Binding, { kind: "reference" }>,
+): string | null {
+  const path = mappingPathNodes(definition, node.id);
+  if (!path.nodes.some((entry) => entry.id === binding.nodeId)) return "unavailable_reference";
+  const source = definition.nodes.find((entry) => entry.id === binding.nodeId);
+  if (source === undefined) return "unavailable_reference";
+  const key = binding.path.join(".");
+  return Object.hasOwn(actionRegistry[source.type].outputs, key) ? null : "unknown_output";
+}
+
+function bindingIssue(
+  definition: WorkflowDefinition,
+  node: WorkflowNode,
+  field: string,
+  binding: Binding,
+): string | null {
+  if (binding.kind === "reference") {
+    const structural = structuralReferenceIssue(definition, node, binding);
+    if (structural !== null) return structural;
+    // Unsupported nominal handlers remain the separate NOT_READY gate. They are
+    // never offered by the catalog or interpreted as qualified runtime values.
+    if (mappingOutputForReference(definition, binding) === undefined) return null;
+  }
+  if (field.startsWith("customFields.")) return null; // Complete metadata owns target validation.
+  const target = describeMappingTarget(definition, node.id, [field]);
+  if (target.state !== "ready") return null;
+  const inspected = inspectMapping(definition, node.id, target.target, binding);
+  return inspected.compatibility === "incompatible" ? "type_mismatch" : null;
 }
 
 export function inspectReferences(definition: WorkflowDefinition): DefinitionIssue[] {
   const issues: DefinitionIssue[] = [];
   for (const node of definition.nodes) {
-    const available = ancestors(definition, node.id);
     for (const { field, binding } of nodeBindings(node)) {
-      if (nullableLink(node, field, binding)) continue;
-      const actual = bindingType(definition, available, binding);
-      if (!actual.ok) {
-        issues.push({ code: actual.error, nodeId: node.id, field });
-        continue;
-      }
-      const expected = actionRegistry[node.type].inputs[field];
-      if (expected !== undefined && expected !== actual.value)
-        issues.push({ code: "type_mismatch", nodeId: node.id, field });
+      const code = bindingIssue(definition, node, field, binding);
+      if (code !== null) issues.push({ code, nodeId: node.id, field });
     }
+    if (temporalConditionMismatch(definition, node) || conditionContainsMismatch(definition, node))
+      issues.push({ code: "type_mismatch", nodeId: node.id, field: "right" });
   }
   return issues;
 }

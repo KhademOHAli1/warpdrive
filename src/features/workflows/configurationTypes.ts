@@ -18,7 +18,10 @@ export type ConfigurationIssueCode =
   | "reference_unavailable"
   | "unsupported_setting"
   | "metadata_incomplete"
-  | "metadata_stale";
+  | "metadata_stale"
+  | "literal_number_invalid"
+  | "literal_date_invalid"
+  | "literal_instant_invalid";
 
 export interface ConfigurationIssue {
   nodeId: string;

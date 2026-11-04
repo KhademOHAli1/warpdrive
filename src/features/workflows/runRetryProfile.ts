@@ -41,6 +41,16 @@ function taskConfiguration(node: WorkflowNode, definition: WorkflowDefinition, t
   );
 }
 
+function usesNewMappingContract(node: WorkflowNode): boolean {
+  return Object.values(node.config).some((raw) => {
+    const parsed = bindingSchema.safeParse(raw);
+    if (!parsed.success) return false;
+    const binding = parsed.data;
+    if (binding.kind === "value") return Object.hasOwn(binding, "literalType");
+    return binding.path.length === 1 && binding.path[0] === "expectedCloseDate";
+  });
+}
+
 // Initial retry support is the existing database-only deal follow-up profile.
 // A saved arbitrary string from an old CRM output must not become a new unlinked
 // task after access to that source record changes. Literal subjects and a visible
@@ -49,6 +59,9 @@ export function retryableTaskDefinition(raw: unknown): WorkflowDefinition | null
   const parsed = validateDefinition(raw);
   if (!parsed.ok || !executableDefinition(parsed.value)) return null;
   const definition = parsed.value;
+  // WF020 authoring/runtime qualification does not qualify recovery for new wire
+  // intent or new historical output fields in the older failed-task profile.
+  if (definition.nodes.some(usesNewMappingContract)) return null;
   const trigger = definition.nodes.find((node) => node.type === "trigger.manual");
   if (trigger === undefined) return null;
   const safe = definition.nodes.every((node) => {

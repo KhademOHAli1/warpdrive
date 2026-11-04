@@ -1,3 +1,17 @@
+## WF020 / #677 source increment — qualification pending
+
+The typed mapping source cut adds semantic upstream catalogs, readable chips and
+synthetic reference examples, retained numeric/date/instant draft intent, canonical
+civil-date read output and typed runtime resolution. Current actor/record/custom
+reference authority and existing live/simulation effect boundaries remain.
+[Mapping contract and limits](./mapping.md) describes the finite wire, missing/null
+behavior, historical-receipt policy and older retry exclusion. The first combined focused cut had807PASS/2fixture failures across809cases;
+the two corrected fixtures then passed all42affected cases without production
+changes. Source inventory2497 has0missing/0invalid classifications. Full hosted
+qualification remains pending.
+Formal dependencies, native/human acceptance, main integration, issue closure,
+release and deployment remain open. Earlier dated checkpoints below are historical.
+
 # Visual workflow implementation status
 
 > Branch synchronization, 2 November 2026: this branch now includes main `09288d5`, including canonical0098 and its green populated-upgrade/compatibility checks. The private insertion/ordered-step follow-up remains unfinished; older “current”, unstarted and publication-pending paragraphs below are retained as dated observations. Latest static14 was withdrawn unstarted at the safe stop. Live next work is tracked in [#674](https://github.com/KhademOHAli1/warpdrive/issues/674), with the shared [restart index #80](https://github.com/KhademOHAli1/warpdrive/issues/80).

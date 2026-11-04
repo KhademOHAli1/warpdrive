@@ -2,6 +2,8 @@ import { z } from "zod";
 import { customFieldSettingsSchema } from "./configurationBindings";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type { ConfigurationProfile } from "./configurationTypes";
+import { coarseMappingOutputs, mappingOutputContracts } from "./mappingOutputs";
+import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
 
 interface ActionSpec {
@@ -9,6 +11,7 @@ interface ActionSpec {
   config: z.ZodType;
   inputs: Record<string, ValueType>;
   outputs: Record<string, ValueType>;
+  outputContracts: Record<string, MappingValueContract>;
   effect: "none" | "database" | "wait";
 }
 const entity = z.enum(["deal", "lead", "person", "organization"]);
@@ -24,36 +27,30 @@ export const conditionConfigSchema = z
     right: bindingSchema.optional(),
   })
   .refine((value) => value.operator === "exists" || value.right !== undefined);
-const recordOutputs: Record<string, ValueType> = {
-  id: "string",
-  title: "string",
-  ownerId: "string",
-  stageId: "string",
-  status: "string",
-  value: "decimal",
-  currency: "string",
-};
 
 export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   "trigger.manual": {
     configuration: configurationProfiles["trigger.manual"],
     config: z.strictObject({}),
     inputs: {},
-    outputs: { recordId: "string" },
+    outputs: coarseMappingOutputs("trigger.manual"),
+    outputContracts: mappingOutputContracts("trigger.manual"),
     effect: "none",
   },
   "trigger.record": {
     configuration: configurationProfiles["trigger.record"],
     config: z.strictObject({ entity, event: z.enum(["created", "updated", "stageChanged"]) }),
     inputs: {},
-    outputs: { recordId: "string", eventId: "string" },
+    outputs: coarseMappingOutputs("trigger.record"),
+    outputContracts: mappingOutputContracts("trigger.record"),
     effect: "none",
   },
   "record.read": {
     configuration: configurationProfiles["record.read"],
     config: z.strictObject({ entity, recordId: bindingSchema }),
     inputs: { recordId: "string" },
-    outputs: recordOutputs,
+    outputs: coarseMappingOutputs("record.read"),
+    outputContracts: mappingOutputContracts("record.read"),
     effect: "none",
   },
   "activity.create": {
@@ -73,14 +70,16 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
       customFields: customFieldSettingsSchema.optional(),
     }),
     inputs: { subject: "string", dealId: "string", assigneeId: "string", dueAt: "string" },
-    outputs: { id: "string" },
+    outputs: coarseMappingOutputs("activity.create"),
+    outputContracts: mappingOutputContracts("activity.create"),
     effect: "database",
   },
   condition: {
     configuration: configurationProfiles.condition,
     config: conditionConfigSchema,
     inputs: {},
-    outputs: { result: "boolean" },
+    outputs: coarseMappingOutputs("condition"),
+    outputContracts: mappingOutputContracts("condition"),
     effect: "none",
   },
   delay: {
@@ -92,14 +91,16 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
       ),
     }),
     inputs: { minutes: "number" },
-    outputs: { resumeAt: "string" },
+    outputs: coarseMappingOutputs("delay"),
+    outputContracts: mappingOutputContracts("delay"),
     effect: "wait",
   },
   notification: {
     configuration: configurationProfiles.notification,
     config: z.strictObject({ title: bindingSchema }),
     inputs: { title: "string" },
-    outputs: { id: "string" },
+    outputs: coarseMappingOutputs("notification"),
+    outputContracts: mappingOutputContracts("notification"),
     effect: "database",
   },
 };

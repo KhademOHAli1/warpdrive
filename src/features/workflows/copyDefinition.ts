@@ -1,16 +1,16 @@
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { copyCustomFieldSettingsSchema } from "./configurationBindings";
-import { bindingSchema, definitionSchema, nodeSchema, type WorkflowDefinition } from "./schemas";
+import {
+  copyScalarBindingSchema,
+  definitionSchema,
+  nodeSchema,
+  type WorkflowDefinition,
+} from "./schemas";
 
 // Keep the reviewed v1 binding keys explicit while reusing their scalar and path guards.
 // A missing selection is copyable; mixed branches and undeclared fields are not.
-const literalBinding = bindingSchema.options[0].pick({ kind: true, value: true }).partial();
-const referenceBinding = bindingSchema.options[1]
-  .pick({ kind: true, nodeId: true, path: true })
-  .extend({ path: z.array(bindingSchema.options[1].shape.path.element).max(8) })
-  .partial();
-const copyBinding = z.union([literalBinding, referenceBinding]);
+const copyBinding = copyScalarBindingSchema;
 const entity = z.enum(["deal", "lead", "person", "organization"]);
 
 // These are copy shapes, not publication requirements. Every known config field may

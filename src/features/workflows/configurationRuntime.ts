@@ -7,12 +7,14 @@ import type { CustomFieldDef } from "@/types/customFields";
 import { err, ok, type Result } from "@/types/result";
 import { customFieldSettingsSchema } from "./configurationBindings";
 import type { ConfigurationIssue } from "./configurationTypes";
-import { bindingValue } from "./runBindings";
+import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
+import { resolveMapping } from "./mappingResolution";
 import type { RunOutputs } from "./runTypes";
-import type { WorkflowNode } from "./schemas";
+import type { Binding, WorkflowDefinition, WorkflowNode } from "./schemas";
 
 export interface RunBindingContext {
   outputs: RunOutputs;
+  definition: WorkflowDefinition;
 }
 
 function invalid(
@@ -50,6 +52,39 @@ function referenceKind(def: CustomFieldDef): "user" | "person" | "organization" 
   if (def.type === "org") return "organization";
   if (def.type === "user" || def.type === "person") return def.type;
   return null;
+}
+
+function resolveCustomReference(
+  node: WorkflowNode,
+  fieldId: string,
+  binding: Extract<Binding, { kind: "reference" }>,
+  run: RunBindingContext,
+  defs: CustomFieldDef[],
+): Result<unknown, AppError> {
+  const metadata = { status: "complete" as const, defs };
+  const selected = describeMappingTarget(
+    run.definition,
+    node.id,
+    ["customFields", fieldId],
+    metadata,
+  );
+  if (selected.state !== "ready") return invalid(node, fieldId, "reference_incompatible");
+  const inspection = inspectMapping(run.definition, node.id, selected.target, binding, metadata);
+  if (
+    inspection.compatibility === "incompatible" ||
+    inspection.issues.length > 0 ||
+    inspection.source === undefined
+  )
+    return invalid(node, fieldId, inspection.issues[0]?.code ?? "reference_incompatible");
+  const resolved = resolveMapping(binding, run.outputs, inspection.source);
+  if (resolved.state === "missing")
+    return err(
+      new AppError(ERROR_IDS.WORKFLOW_BINDING_MISSING, "Task custom reference missing", {
+        issues: [{ nodeId: node.id, path: ["customFields", fieldId], code: "reference_missing" }],
+      }),
+    );
+  if (resolved.state === "invalid") return invalid(node, fieldId, "invalid_type");
+  return ok(resolved.state === "null" ? null : resolved.value);
 }
 
 async function checkReferences(
@@ -107,7 +142,12 @@ export async function resolveTaskCustomFields(
     const def = byId.get(id);
     if (def === undefined || def.targetEntity !== "activity" || def.archivedAt !== null)
       return invalid(node, id, "unknown_field");
-    const value = binding.kind === "value" ? binding.value : bindingValue(binding, run.outputs);
+    const resolved =
+      binding.kind === "value"
+        ? ok(binding.value)
+        : resolveCustomReference(node, id, binding, run, defs);
+    if (!resolved.ok) return resolved;
+    const value = resolved.value;
     if (value === undefined) return invalid(node, id, "reference_missing");
     Object.defineProperty(values, def.key, {
       value,

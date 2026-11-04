@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { configurationLimits } from "./configurationLimits";
+import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
 const property = z
@@ -8,19 +9,36 @@ const property = z
   .max(80)
   .refine((value) => !["__proto__", "prototype", "constructor"].includes(value));
 
-export const bindingSchema = z.discriminatedUnion("kind", [
-  z.strictObject({
-    kind: z.literal("value"),
-    value: z.union([z.string().max(50_000), z.number().finite(), z.boolean(), z.null()]),
-  }),
-  z.strictObject({
-    kind: z.literal("reference"),
-    nodeId: identifier,
-    path: z.array(property).min(1).max(8),
-  }),
+const draftValueBindingSchema = z.strictObject({
+  kind: z.literal("value"),
+  value: z.union([z.string().max(50_000), z.number().finite(), z.boolean(), z.null()]),
+  literalType: z.enum(scalarLiteralTypes).optional(),
+});
+const referenceBindingSchema = z.strictObject({
+  kind: z.literal("reference"),
+  nodeId: identifier,
+  path: z.array(property).min(1).max(8),
+});
+export const draftBindingSchema = z.discriminatedUnion("kind", [
+  draftValueBindingSchema,
+  referenceBindingSchema,
 ]);
+export const bindingSchema = z.discriminatedUnion("kind", [
+  draftValueBindingSchema.superRefine((literal, context) => {
+    const issue = validateLiteralIntent(literal);
+    if (issue !== null) context.addIssue({ code: "custom", path: ["value"], message: issue });
+  }),
+  referenceBindingSchema,
+]);
+export const copyScalarBindingSchema = z.union([
+  draftValueBindingSchema.partial(),
+  referenceBindingSchema.extend({ path: z.array(property).max(8) }).partial(),
+]);
+export type DraftBinding = z.infer<typeof draftBindingSchema>;
+export type DraftValueBinding = Extract<DraftBinding, { kind: "value" }>;
+export type ReferenceBinding = Extract<DraftBinding, { kind: "reference" }>;
 export type Binding = z.infer<typeof bindingSchema>;
-export type ValueType = "string" | "number" | "boolean" | "decimal";
+export type ValueType = "string" | "number" | "boolean" | "decimal" | "date" | "instant";
 
 export const nodeTypes = [
   "trigger.manual",
