@@ -124,25 +124,31 @@ it(
         assert(blockerPid !== undefined);
         await holder.query("SELECT id FROM workflow_runs WHERE id=$1 FOR UPDATE", [run.id]);
         pending = Promise.allSettled([advanceWorkflowRun(test.db, run.id, signal)]);
+        let observedAtMs = Number.NaN;
         await expect
           .poll(
             async () => {
               signal.throwIfAborted();
               await holder.query("SELECT pg_stat_clear_snapshot()");
-              const blocked = await holder.query<{ blocked: boolean }>(
+              const blocked = await holder.query<{ blocked: boolean; observed_at: Date }>(
                 `SELECT EXISTS (
                   SELECT 1 FROM pg_stat_activity AS a
                   WHERE a.datname=current_database() AND a.state='active'
                     AND a.wait_event_type='Lock' AND $1::int=ANY(pg_blocking_pids(a.pid))
                     AND a.query ILIKE '%workflow_runs%' AND a.query ILIKE '%for update%'
-                ) AS blocked`,
+                ) AS blocked, date_trunc('milliseconds', clock_timestamp()) AS observed_at`,
                 [blockerPid],
               );
-              return blocked.rows[0]?.blocked === true;
+              const observed = blocked.rows[0];
+              if (observed?.blocked === true && observed.observed_at instanceof Date)
+                observedAtMs = observed.observed_at.getTime();
+              return observed?.blocked === true;
             },
             { timeout: 2000, interval: 10 },
           )
           .toBe(true);
+        expect(Number.isFinite(observedAtMs)).toBe(true);
+        expect(observedAtMs).toBeLessThan(target.getTime());
         await holder.query(
           `SELECT pg_sleep(GREATEST(0, extract(epoch from
             ($1::timestamptz-clock_timestamp())))+0.01)`,
