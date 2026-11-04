@@ -234,7 +234,7 @@ it("uses the same Otherwise default caption on real editors/card, canvas label p
     fetch.mockRestore();
   }
 });
-it("escapes authored text and safely summarizes malformed structured literals without coercion, disclosure or preview fetch", async () => {
+it("escapes authored text and safely summarizes malformed structured literals without coercion, disclosure or preview fetch", () => {
   const authored = '<img src=x onerror="window.conditionInjected=true">';
   const escaped = fixture(
     grouped([predicate("escaped", reference("title"), "equals", literal(authored))]),
