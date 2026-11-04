@@ -124,4 +124,60 @@ describe("Team editor recovery", () => {
     );
     expect(screen.getByLabelText("Manager")).toHaveTextContent("Former Manager");
   });
+
+  it("keeps a fully acknowledged save successful when refresh throws", async () => {
+    mocks.refresh.mockImplementationOnce(() => {
+      throw new Error("navigation interrupted");
+    });
+    setup();
+    fireEvent.change(screen.getByLabelText("Team name"), { target: { value: "Edited" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Saved"));
+    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.update).toHaveBeenCalledWith("csrf", {
+      teamId: "team",
+      name: "Edited",
+      managerId: "alice",
+    });
+    expect(mocks.members).toHaveBeenCalledTimes(1);
+    expect(mocks.members).toHaveBeenCalledWith("csrf", { teamId: "team", userIds: ["alice"] });
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Team details were saved, but its members were not/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save members" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(screen.getByLabelText("Team name")).toHaveValue("Edited");
+    expect(screen.getByLabelText("Team name")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Delete team: Edited" })).toBeEnabled();
+  });
+
+  it("finishes partial membership recovery when its acknowledged retry cannot refresh", async () => {
+    mocks.members.mockResolvedValueOnce({ ok: false, error: "unauthorized" });
+    mocks.refresh.mockImplementationOnce(() => {
+      throw new Error("navigation interrupted");
+    });
+    setup();
+    fireEvent.change(screen.getByLabelText("Team name"), { target: { value: "Edited" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByText(/Team details were saved, but its members were not/);
+    expect(mocks.refresh).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Save members" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Saved"));
+    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.members).toHaveBeenCalledTimes(2);
+    expect(mocks.members).toHaveBeenLastCalledWith("csrf", { teamId: "team", userIds: ["alice"] });
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Team details were saved, but its members were not/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save members" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(screen.getByLabelText("Team name")).toHaveValue("Edited");
+    expect(screen.getByLabelText("Team name")).toBeEnabled();
+  });
 });
