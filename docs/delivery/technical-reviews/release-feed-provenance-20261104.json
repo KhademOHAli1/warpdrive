@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "ops/release-feed-provenance-2026-11-04",
+  "acceptance_sha256": "2eac9454ac4c6e5215a0edbb88a2b1e4e6b8663f00190111cd7171ab54a1d65a",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1a6f6-9d68-7c11-853f-48be427a70c7",
+    "task_id": "/root/mail_incremental_releases/pr952_browser_review"
+  },
+  "reviewed_revision": "0c1d5cd3432228f108968c6750c76e7726180466",
+  "reviewed_at_utc": "2026-11-04T16:25:00.622019+00:00",
+  "summary": "Accepted both original canonical criteria after a fresh full-scope independent review of all 21 required paths,14 supporting seams and retained source-bound qualification evidence. Source-configured endpoint/provenance, last-good cache and fork refresh behavior satisfy the bounded repair; version precedence, disable, authority, fetch timeout/abort/schedule, plaintext notes, dismissal and source-only privacy contracts remain intact.",
+  "limitations": "Private proposed canonical source-review record only: no acceptance attestation, issue closure, publication, deployment, live GitHub/provider or installation proof. No tests, candidate imports/runtimes, network/API or CI were run by this reviewer. Retained success is62 release plus 31 privacy unit cases and native11 cache/job/persistence cases plus4 API cases in a separate enabled setting, never one green15-case run. Earlier failures remain preserved; GitHub HTTP was mocked. Dedicated timeout-expiry, negative-authority and malicious-markup regressions are not claimed; preservation was reviewed in unchanged source. Existing valid-URL nullable tag/notes mapping remains. Whole-file pins are drift fences for reviewed scope/functions, not whole-file or whole-app security certification. Exact selected-main CI/CodeQL, distinct-agent attestation, closure audit and release gates remain Root responsibilities. Source URLs identify locally verified ancestor objects; remote availability was not queried.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/constants.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/githubReleases.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/releaseProvenance.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/computeStatus.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/job.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/router.test.ts"
+      ],
+      "assessment": "Accepted the unchanged first criterion. The configured endpoint and provenance predicate enforce the same distribution with no application upstream fallback. Foreign/unknown cache exposes none of the five release fields before or after failed refresh and stays stored. Retained RED 18 has eight intended endpoint/cache/payload assertion failures and ten controls; two native RED cases reproduce raw last-good-row replacement failures. Current source and green evidence repair those original failures."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/githubReleases.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/job.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/compareVersions.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/resolveVersion.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/release/ui/VersionBanner.tsx",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/server/trpc/trpc.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/src/features/privacy/registryIdsInfrastructure2.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/0c1d5cd3432228f108968c6750c76e7726180466/docs/privacy-inventory-report.json"
+      ],
+      "assessment": "Accepted the complete unchanged second criterion at its bounded technical ceiling. Invalid refreshes preserve last-good cache; valid replacement restores status, including a source-configured fork. Reviewed version, disable, authority, fetch timeout/abort, scheduling, React plaintext and dismissal seams remain unchanged. Retained source-bound release/privacy units, PostgreSQL/API, declared static and inventory records qualify affected paths; dedicated timeout-expiry/negative-authority/malicious-markup runtime cases are not invented, with those preservation claims explicitly supported by source review."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "src/features/privacy/registryIdsInfrastructure2.ts",
+      "sha256": "279b596c55373ff4a60a008076142a92bb8a465f396e6a2fdf8f21b99da8ecd7"
+    },
+    {
+      "path": "src/features/release/compareVersions.test.ts",
+      "sha256": "169c6c93e30a0b6b070eb0a2fd6860ce734baf23b217f02000392ed917d8972c"
+    },
+    {
+      "path": "src/features/release/compareVersions.ts",
+      "sha256": "faee213d8c5de802ba63220f21bc51f8301574c5532271b9bd63f2bcfa93a54e"
+    },
+    {
+      "path": "src/features/release/computeStatus.test.ts",
+      "sha256": "1c611202051c599495342e44764a265fdddb3f4455e60573327edfcb934eb596"
+    },
+    {
+      "path": "src/features/release/computeStatus.ts",
+      "sha256": "0911b09cb7fc98ccbc83d7d3527b8867510b677170433479b44c03a149e0ae2a"
+    },
+    {
+      "path": "src/features/release/constants.ts",
+      "sha256": "61beb82d1c4406f396858787f3edf95829372b14d15329ad9c62b51e4bad4555"
+    },
+    {
+      "path": "src/features/release/currentVersion.test.ts",
+      "sha256": "bffd87f25700d440562e2a5ec11a106614296f0297c09b6ac1021c2f3df74dcb"
+    },
+    {
+      "path": "src/features/release/currentVersion.ts",
+      "sha256": "98fe2b01a8ad364ca2db966af5378fd941560130dc22310f549c5705c3345ac2"
+    },
+    {
+      "path": "src/features/release/githubReleases.test.ts",
+      "sha256": "d7ac0b4514765c7c731cd91c33447f7094a1000c483c325d7272a886cd926876"
+    },
+    {
+      "path": "src/features/release/githubReleases.ts",
+      "sha256": "e06d3b7d940680409ca6f8a90566cd8287a28029bec92be0ec08c4d3ee4b5936"
+    },
+    {
+      "path": "src/features/release/job.test.ts",
+      "sha256": "a46225bd8ac346c1762e3eb2cc5ecc32f86c9182a99d0775558e54dd685caf18"
+    },
+    {
+      "path": "src/features/release/job.ts",
+      "sha256": "0ce9f31f7806ae647e1363f1b1a16f428ebb49b993f6ab402abd501c18a1e6e3"
+    },
+    {
+      "path": "src/features/release/releaseProvenance.test.ts",
+      "sha256": "50ae3c5a9c5d7d98f4e93bbb3391390597c9d88c764157a24d16713ca833c4ee"
+    },
+    {
+      "path": "src/features/release/releaseProvenance.ts",
+      "sha256": "4f64b4c98c6f6d0b3b6e3bf07d715d3c7972ca8131150566b6e983155f3ffe29"
+    },
+    {
+      "path": "src/features/release/releaseStatus.test.ts",
+      "sha256": "219aa8c0555961b9d759409ced77e52db9e069982536e2208ae122b5827705eb"
+    },
+    {
+      "path": "src/features/release/releaseStatus.ts",
+      "sha256": "3b5260337aed90f80d7217542cb1020793335a3cfae055d1aa4fb7e7562bb3fb"
+    },
+    {
+      "path": "src/features/release/resolveVersion.test.ts",
+      "sha256": "1b302b727dfeda6ff1dc13028ed3b366523c6718bbf7f919812cd4e63e8278af"
+    },
+    {
+      "path": "src/features/release/resolveVersion.ts",
+      "sha256": "c6d4fe308e5140eb140f0ee115a47ba3531a0bc9d321bfd33140a98fe2308f63"
+    },
+    {
+      "path": "src/features/release/router.test.ts",
+      "sha256": "e32b7868c7ef59f1f02ab3b1d247facaa09a98d0b6ee3fbced7df7e2bce74a90"
+    },
+    {
+      "path": "src/features/release/router.ts",
+      "sha256": "870a8829750af76674fe4456dddb796adf1d0d41952446b1702a546f2b7840eb"
+    },
+    {
+      "path": "src/features/release/types.ts",
+      "sha256": "df2419c76b62084bb3af1bc75a9664248cd45d1de5dcd7d61359eef22b7e33a8"
+    },
+    {
+      "path": "src/features/release/ui/VersionBanner.tsx",
+      "sha256": "d8431515419292c801737142708098da41e977a366687a44324f212e5b29c9d5"
+    },
+    {
+      "path": "src/features/release/ui/VersionBanner.test.tsx",
+      "sha256": "7af3a0dad777be41f642ba12f99846bf7ddc68ba8115422807e8f35a32108b77"
+    },
+    {
+      "path": "src/features/release/ui/useVersion.ts",
+      "sha256": "21f1a6af29de4fe91ff5e6f82617066267c65400557f14d35abb718189cb2341"
+    },
+    {
+      "path": "src/db/schema/release.ts",
+      "sha256": "cbbe6d8dae8e28a43c3a23578697b70c4ac642db4b28ab49b477975f68c5abce"
+    },
+    {
+      "path": "src/server/trpc/trpc.ts",
+      "sha256": "f18719f864a9599c56fc6af040479a8796618847d1accc9a4227fff0ae4df491"
+    },
+    {
+      "path": "src/server/trpc/context.ts",
+      "sha256": "5c6352a7b530f9899514c329045ed71818c840e07348675cf1c24f91471bbee8"
+    },
+    {
+      "path": "src/server/trpc/root.ts",
+      "sha256": "e78d87b663d4c8a3563758a98147fb2d8879adb085409d4caf84ef5bb86095c4"
+    },
+    {
+      "path": "src/server/worker.ts",
+      "sha256": "2eb3a215812b05fc38efb0af940094fec7c6acd35b7958e022e421de719a6730"
+    },
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": "e58a7127f79a14dd8348533929fa8fd8c916259f55e0ee1ee26fe31749ad9c86"
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "ca6f8e9650a02069899aa038b6faabd236974635cc039a40317795167ec49d7e"
+    },
+    {
+      "path": "src/features/privacy/registryClassification.ts",
+      "sha256": "819096839f4d001ed3aca4a9fa97d717a4a28d08a7d8813d50e8166917da9d27"
+    },
+    {
+      "path": "src/features/privacy/registryClassificationsOperational.ts",
+      "sha256": "fa31f627cb730c4d2db758e7099cd55b474e672c6c89eb5f57410a1bf7da896e"
+    },
+    {
+      "path": "src/features/privacy/registryDiscovery.ts",
+      "sha256": "70b8453776d3c11ae6749b4d17e5815c8c352bd2dce3febaed07e302d8cd70cb"
+    },
+    {
+      "path": "src/features/privacy/registry.ts",
+      "sha256": "271478d0c7534874e5bd078cca5bf39e6b4865f6d926ec13bb316451db4a4fb8"
+    }
+  ],
+  "area_assessments": [
+    {
+      "area": "endpoint_and_provenance",
+      "source_paths": [
+        "src/features/release/constants.ts",
+        "src/features/release/githubReleases.ts",
+        "src/features/release/githubReleases.test.ts",
+        "src/features/release/releaseProvenance.ts",
+        "src/features/release/releaseProvenance.test.ts"
+      ],
+      "assessment": "The source-configured repository controls the single fetch URL and the derived disclosure rule. No application fallback exists. HTTPS github.com release-tag URLs must match the same repository; case/default-443 normalization is supported while foreign/unknown repos, credentials, alternate hosts/ports, HTTP, queries/fragments, extra path and encoded-owner ambiguity are rejected. Existing nullable tag/notes mapping is retained when URL provenance is valid.",
+      "result": "passed_source_review"
+    },
+    {
+      "area": "cache_and_api",
+      "source_paths": [
+        "src/features/release/computeStatus.ts",
+        "src/features/release/computeStatus.test.ts",
+        "src/features/release/releaseStatus.ts",
+        "src/features/release/releaseStatus.test.ts",
+        "src/features/release/router.ts",
+        "src/features/release/router.test.ts",
+        "src/db/schema/release.ts"
+      ],
+      "assessment": "The singleton row is upserted only for an ok fetch result. Failed/non-2xx/network/JSON/schema/URL-provenance reads preserve the last-good row and timestamp. Foreign/unknown stored provenance produces null tag, URL, notes, availability and checkedAt without deleting the row. Valid refresh replaces a hidden foreign row. Tests assert raw-row equality and the full API projection.",
+      "result": "passed_source_review"
+    },
+    {
+      "area": "precedence_and_disable",
+      "source_paths": [
+        "src/features/release/compareVersions.ts",
+        "src/features/release/compareVersions.test.ts",
+        "src/features/release/resolveVersion.ts",
+        "src/features/release/resolveVersion.test.ts",
+        "src/features/release/currentVersion.ts",
+        "src/features/release/currentVersion.test.ts",
+        "src/features/release/types.ts",
+        "src/config/env.ts"
+      ],
+      "assessment": "Semver/prerelease ordering, APP_VERSION then package then dev resolution and null comparison behavior remain. Disabled status omits release data, and disabled worker registration returns before queue, handler, schedule or initial send. This preserves the existing version contract rather than expanding parser guarantees.",
+      "result": "passed_source_review"
+    },
+    {
+      "area": "authority_timeout_abort_schedule",
+      "source_paths": [
+        "src/features/release/job.ts",
+        "src/features/release/job.test.ts",
+        "src/server/worker.ts",
+        "src/server/trpc/trpc.ts",
+        "src/server/trpc/context.ts",
+        "src/server/trpc/root.ts",
+        "src/app/(app)/layout.tsx"
+      ],
+      "assessment": "The API remains a protected cached read requiring actor/session; it does not perform a GitHub fetch. The native context resolves live session/actor, and the existing shell mounts the banner only for admins. This does not mislabel the authenticated API as admin-only. Enabled registration retains the six-hour cron, immediate job and fresh 10-second AbortSignal passed to fetch. Source review establishes preservation, not a measured timeout expiry or a new whole-job deadline.",
+      "result": "passed_source_review"
+    },
+    {
+      "area": "plaintext_and_dismissal",
+      "source_paths": [
+        "src/features/release/ui/VersionBanner.tsx",
+        "src/features/release/ui/VersionBanner.test.tsx",
+        "src/features/release/ui/useVersion.ts"
+      ],
+      "assessment": "Notes remain React text children, not HTML/Markdown injection. Version-keyed dismissal and blocked-storage fallbacks remain; a newer tag reappears. The existing one-hour query cache, no focus refetch and no retry are unchanged. Ten retained banner cases cover state/dismissal/expansion/storage behavior, not a dedicated malicious-markup payload run.",
+      "result": "passed_source_review"
+    },
+    {
+      "area": "privacy_companion_and_inventory",
+      "source_paths": [
+        "src/features/privacy/registryIdsInfrastructure2.ts",
+        "src/features/privacy/registryClassification.ts",
+        "src/features/privacy/registryClassificationsOperational.ts",
+        "src/features/privacy/registryDiscovery.ts",
+        "src/features/privacy/registry.ts"
+      ],
+      "assessment": "Changed release-source digests are correct under the existing fetch, release.check queue, failure log, singleton cache and localStorage dismissal classifications. Parsing URLs adds no external provider/store boundary. Source-only proof and lifecycle dispositions remain unchanged; scanner coverage is not subject disclosure, erasure or installation acceptance. The fresh review covers the companion semantically, beyond its earlier comparison digest.",
+      "result": "passed_source_review"
+    }
+  ],
+  "record_status": "PRIVATE_CANONICAL_REVIEW_PROPOSAL_NOT_COMMITTED_NO_ATTESTATION",
+  "runtime_identity_context": {
+    "CODEX_THREAD_ID": "01a1a6f6-9d68-7c11-853f-48be427a70c7",
+    "CODEX_SESSION_ID": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "session_id_basis": "Actual current runtime reviewer thread UUID; shared host session alias retained separately, no invented UUID."
+  },
+  "independence": {
+    "source_implementation_authored_by_reviewer": false,
+    "scope_or_policy_changed_by_reviewer": false,
+    "retained_qualification_subreview_task": "/root/mail_incremental_releases/pr952_browser_review/release962_pin_readiness",
+    "note": "Fresh actual review of all required source and full preservation seams; not a relabeling of the earlier partial private review."
+  },
+  "prior_review": {
+    "path": ".runtime/parallel-release-pointer-20261104/independent-review1/review3.candidate2.json",
+    "sha256": "ac783a3db21fec929af1db36a6ec9aeacef813446a4d4e85fab031dab24d7bfd",
+    "state": "PASS_SOURCE_ONLY_UNEXECUTED",
+    "use": "Prior endpoint/cache findings retained as context; missing current pins, seams, provenance and whole-criterion coverage were freshly reviewed."
+  },
+  "retained_qualification": {
+    "artifacts": [
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-formatted-binding.json",
+        "sha256": "ff4b353b0f0f9f7c4a990dc37fd3cfa827c53ad13253056e26e247164fa46ac0"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-binding.json",
+        "sha256": "02abfab53ee73e6e6f257c4a84dd3b0642fa9d0301240ce85c3bf5199d6c21db"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/red-unit1/unit.result.json",
+        "sha256": "eb2eac13265bb6c47563d59437cf7d7551fb39d58eb6a34ac2862e2487cf26b3"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/red-pg1/native.result.json",
+        "sha256": "d81bc10553cf43f1f770b6b535ae4b168fd23f8d20c5a2d72153e98c2056ff59"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-unit2/unit.result.json",
+        "sha256": "4878f67169747efacf83a913a0172e1640c23c9774d9859e0fb0382fc28f8339"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-unit2/unit.receipt.json",
+        "sha256": "ddf78ddb46aac98dc7711804fc6b237169b01c36bc0e578a15763dd0b09d1a23"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-pg1/native.result.json",
+        "sha256": "8d0d0c6065f237181533cd1ffd1badd3bd5f2943ffe88ce80d7a8702d5f8274b"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-api2/native.result.json",
+        "sha256": "76fc0ef893a6088c15b10cef672df5a05543cfd221f8f0577f148409a9fc50ed"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/static1/typecheck.receipt.json",
+        "sha256": "efe36c90f4514f0af013fc6dc8699fcf76e7bf420eb7a01b32a2713bfaca7859"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/static1/typedlint.receipt.json",
+        "sha256": "8da64c0fb8969fd4a5bcef357eabc96bcf445372cb24dc421361638efa7a7464"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/static1/i18n.receipt.json",
+        "sha256": "a3185d94da33951c804b7228f510a7e16fb69bf4cea677c4959cd087548855ee"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/green-unit2/biome.receipt.json",
+        "sha256": "7f67bcaaa4022a326fb763781beb771b3f7dd73eac9359f5bc2c161d8b73c919"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/inventory1/inventory.stdout.txt",
+        "sha256": "388f0d2cb11c3585d5a67b3d4301afa58b94fe0fdadbdb0b7493c27269762890"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/LOCAL-COMMIT.json",
+        "sha256": "7d734cd48aae2bf733306c3882c908d972d24607065a7178814ea8bfc2e9a82c"
+      },
+      {
+        "path": ".runtime/parallel-release-pointer-20261104/qualification1/staged-tree-review.json",
+        "sha256": "fcfed43b7b5c4161935f66ce00c2ef15f0b1782e291ea6a08365cb6fb3f1c6b4"
+      },
+      {
+        "path": ".runtime/parallel-mail-008-20261104/full-qualification1/source-manifest3.json",
+        "sha256": "aee3f95e0570860514bd9dd9445d9886699347fb568db1f9b734dad6938f7474"
+      }
+    ],
+    "unit": "93/93:62 release plus 31 privacy, zero failed/skipped",
+    "native": "11passed/4failed in original15-case run with disabled=true; all 4 API cases then passed with disabled=false. Source unchanged except3 test formatting differences. No single all-green 15-case run claimed.",
+    "static": "Retained declared typegen/TSC, configured typed lint on 10 files, i18n and Biome on 10 files exited 0.",
+    "failures_preserved": "RED unit: 8 intended failures plus 10 controls; RED native: 2 raw-row preservation failures plus 6 intentionally filtered cases; observer, API-environment, initial Biome and metadata failures retained.",
+    "source_binding": "source-manifest3 plus green-formatted-binding matches all 21 qualified 0c paths; native green-binding 18/21 differs only by3 test formatting deltas.",
+    "reviewer_reran_any_checks": false
+  },
+  "source_pin_verification": {
+    "required_source_paths": 21,
+    "additional_reviewed_support_paths": 14,
+    "total_pins": 35,
+    "all_match_reviewed_revision_and_current_worktree": true,
+    "reviewed_revision_ancestor_of_frozen_main_and_current_head": true,
+    "frozen_main": "68e9e55890dd1ceedfbfe0853019673bf79105e4",
+    "current_head_at_readback": "bf0ec1c51af3eaf999af1968376e96e0683b81d5",
+    "criteria_and_scope_unchanged": true
+  },
+  "current_inventory_readback": {
+    "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/sequential-merge-20261104/privacy-inventory-final2.json",
+    "sha256": "72674875b4bf107bcbb35654dd6865cc8f12d98f5f45c160e2e988a9bbb0bb4a",
+    "origin": "Root executed the aggregate scanner; reviewer read the retained report.",
+    "source_files": 2537,
+    "coverage": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    },
+    "limit": "Volatile aggregate report is supporting evidence, not a source pin at the older reviewed revision. Required 21 and stable privacy seams are separately fenced."
+  },
+  "evidence_publication_status": "Private proposal only; no canonical record or source edit, Git mutation, issue update or external publication performed.",
+  "source_review_assessment_sha256": "9fc0c9c66ccb8ee8c94e6c6762f35916cba445bae58716093d4bcac8540cd873"
+}
