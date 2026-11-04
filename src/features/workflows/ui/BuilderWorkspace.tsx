@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
-import { appendConnectedNode, type OutputTarget } from "../connectionGestures";
-import { type ConnectionProblem, edgeId, insertNode, removeNode } from "../graphEditor";
-import { type CreatableNodeType, makeNode } from "../nodeFactory";
-import { arrangeGraph, positionForNewNode } from "../nodeLayout";
+import type { OutputTarget } from "../connectionGestures";
+import { type ConnectionProblem, edgeId, removeNode } from "../graphEditor";
+import { arrangeGraph } from "../nodeLayout";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
+import { type PickerRequest, type PickerSelection, selectPaletteEntry } from "../paletteContext";
 import type { DefinitionIssue, NodePosition, WorkflowDefinition } from "../schemas";
 import { BuilderFrame } from "./BuilderFrame";
 import { ConnectionEditor } from "./ConnectionEditor";
@@ -20,27 +20,32 @@ import { DefinitionIssues } from "./DefinitionIssues";
 import { EdgeInspector } from "./EdgeInspector";
 import { type GraphHistoryControls, HistoryControls, handleHistoryKey } from "./HistoryControls";
 import { NodeInspector } from "./NodeInspector";
-import { NodePalette } from "./NodePalette";
+import type { PaletteRead } from "./paletteView";
 import type { RevealNode } from "./ResponsiveViewport";
 import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
-
-const linearNodeTypes: readonly CreatableNodeType[] = ["record.read", "activity.create", "delay"];
+import { WorkflowPalette } from "./WorkflowPalette";
 
 export function BuilderWorkspace({
   definition,
+  workflowId,
+  paletteRead,
   onChange,
   editable,
   issues,
   history,
 }: {
   definition: WorkflowDefinition;
+  workflowId?: string;
+  paletteRead?: PaletteRead;
   onChange: Dispatch<SetStateAction<WorkflowDefinition>>;
   editable: boolean;
   issues: DefinitionIssue[];
   history?: GraphHistoryControls;
 }) {
   const t = useAppTranslations("workflows");
+  const workspace = useRef<HTMLElement>(null);
+  const activeRequest = useRef<object | null>(null);
   const locale = useLocale();
   const fmt = useFormatters();
   const [expanded, setExpanded] = useState(false);
@@ -51,9 +56,11 @@ export function BuilderWorkspace({
   const focusInsertedStep = useRef(false);
   const [selected, setSelected] = useState(definition.nodes[0]?.id ?? "start");
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
-  const [palette, setPalette] = useState<{ output?: OutputTarget; position?: NodePosition } | null>(
-    null,
-  );
+  const [palette, setPalette] = useState<{
+    output?: OutputTarget;
+    position?: NodePosition;
+    token: object;
+  } | null>(null);
   const [problem, setProblem] = useState<ConnectionProblem | null>(null);
   const [layoutRevision, setLayoutRevision] = useState(0);
   const [reveal, setReveal] = useState<RevealNode>({
@@ -62,14 +69,6 @@ export function BuilderWorkspace({
   });
   const node = definition.nodes.find((item) => item.id === selected);
   const edge = definition.edges.find((item) => edgeId(item) === selectedEdge);
-  const source = definition.nodes.find((item) => item.id === palette?.output?.from);
-  const pendingOutput = palette?.output;
-  const occupiedOutput =
-    pendingOutput === undefined
-      ? undefined
-      : definition.edges.find(
-          (item) => item.from === pendingOutput.from && item.port === pendingOutput.port,
-        );
   const invalidNodes = new Set(
     issues.flatMap((issue) => (issue.nodeId === undefined ? [] : [issue.nodeId])),
   );
@@ -89,31 +88,57 @@ export function BuilderWorkspace({
       opener instanceof HTMLElement && opener !== document.body ? opener : addButton.current,
     );
     focusInsertedStep.current = false;
-    setPalette(request);
+    const token = {};
+    activeRequest.current = token;
+    setProblem(null);
+    setPalette({ ...request, token });
   }
-  function add(type: CreatableNodeType) {
-    const id = `node_${crypto.randomUUID().slice(0, 8)}`;
-    const output = palette?.output;
-    const position = palette?.position ?? positionForNewNode(definition, selected, output);
-    const next = makeNode(definition, type, id, t(nodeLabelKeys[type]), t("subject"), output?.from);
-    if (output === undefined) onChange(insertNode(definition, next, position));
-    else {
-      const result = appendConnectedNode(definition, next, position, output);
-      if (!result.ok) {
-        setProblem(result.error);
-        return;
-      }
-      onChange(result.value);
+  function closePalette() {
+    activeRequest.current = null;
+    setPalette(null);
+  }
+  function pickerRequest(): PickerRequest {
+    if (palette?.output === undefined) return { kind: "detached", position: palette?.position };
+    return { kind: "output", output: palette.output, position: palette.position };
+  }
+  function choose(selection: PickerSelection, read: PaletteRead) {
+    if (palette === null || activeRequest.current !== palette.token) return;
+    const expectedId = workflowId ?? read.workflowId;
+    const confirmed =
+      read.status === "ready" &&
+      read.workflowId === expectedId &&
+      read.data !== undefined &&
+      read.data.workflowId === expectedId;
+    const result = selectPaletteEntry(definition, pickerRequest(), selection, {
+      editable: editable && read.data?.authoring.allowed === true,
+      metadataConfirmed: confirmed,
+      newNodeId: `node_${crypto.randomUUID().slice(0, 8)}`,
+      selectedId: selected,
+      nameForType: (type) => t(nodeLabelKeys[type]),
+      subject: t("subject"),
+    });
+    if (!result.ok) {
+      if (
+        result.reason !== "not-editable" &&
+        result.reason !== "metadata-unconfirmed" &&
+        result.reason !== "unavailable-action"
+      )
+        setProblem(result.reason);
+      return;
     }
+    activeRequest.current = null;
+    if (result.changed) onChange(result.definition);
     setProblem(null);
     focusInsertedStep.current = true;
-    revealStep(id);
+    revealStep(result.selectedId);
     setPalette(null);
-    setLayoutRevision((value) => value + 1);
+    if (result.changed) setLayoutRevision((value) => value + 1);
   }
   return (
     <BuilderFrame expanded={expanded} onExpandedChange={setExpanded} returnFocus={focusButton}>
       <section
+        ref={workspace}
+        tabIndex={-1}
         aria-label={t("canvasTools")}
         onKeyDown={(event) => handleHistoryKey(event, history, editable)}
         className="xl:flex xl:h-full xl:min-h-0 xl:flex-col"
@@ -252,34 +277,26 @@ export function BuilderWorkspace({
           </aside>
         </div>
         {palette !== null && (
-          <NodePalette
-            open
-            onClose={() => setPalette(null)}
-            onAdd={add}
-            allowedTypes={occupiedOutput === undefined ? undefined : linearNodeTypes}
+          <WorkflowPalette
+            workflowId={workflowId}
+            read={paletteRead}
+            definition={definition}
+            request={pickerRequest()}
+            editable={editable}
+            onClose={closePalette}
+            onChoose={choose}
             onCloseAutoFocus={(event) => {
               if (focusInsertedStep.current) {
                 event.preventDefault();
                 focusAvailable(stepName.current);
-              } else paletteFocus.restore(event, addButton.current);
+              } else
+                paletteFocus.restore(
+                  event,
+                  addButton.current?.matches(":disabled") === false
+                    ? addButton.current
+                    : workspace.current,
+                );
             }}
-            context={
-              palette.output === undefined
-                ? undefined
-                : t("paletteContext", {
-                    name:
-                      source === undefined
-                        ? t("unavailableValue")
-                        : displayNodeName(source, locale),
-                    port: t(
-                      palette.output.port === "true"
-                        ? "truePort"
-                        : palette.output.port === "false"
-                          ? "falsePort"
-                          : "nextPort",
-                    ),
-                  })
-            }
           />
         )}
       </section>

@@ -13,6 +13,7 @@ import type { WorkflowDetail } from "@/features/workflows/ui/useWorkflowEditor";
 import { WorkflowEditor } from "@/features/workflows/ui/WorkflowEditor";
 import { WorkflowLibrary } from "@/features/workflows/ui/WorkflowLibrary";
 import type { RouterOutputs } from "@/lib/trpc-client";
+import { paletteWorkflowId, readyPaletteRead } from "./palette.TestHelpers";
 
 type LibraryRow = RouterOutputs["workflows"]["list"]["items"][number];
 type OriginalLibraryRow = Pick<
@@ -139,7 +140,16 @@ afterEach(() => {
 
 function Workspace({ initial }: { initial: WorkflowDefinition }) {
   const [definition, setDefinition] = useState(initial);
-  return <BuilderWorkspace definition={definition} onChange={setDefinition} editable issues={[]} />;
+  return (
+    <BuilderWorkspace
+      workflowId={paletteWorkflowId}
+      paletteRead={readyPaletteRead()}
+      definition={definition}
+      onChange={setDefinition}
+      editable
+      issues={[]}
+    />
+  );
 }
 
 async function dismissAndExpectFocus(trigger: HTMLElement) {

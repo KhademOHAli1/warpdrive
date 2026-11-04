@@ -537,3 +537,36 @@ library access-recovery failure, are retained. Full exact-head hosted qualificat
 query-plan review and all integrated/native/human/release/install gates
 remain pending on [issue #673](https://github.com/KhademOHAli1/warpdrive/issues/673) and
 [PR #959](https://github.com/KhademOHAli1/warpdrive/pull/959).
+
+## WF-018 picker checkpoint — 4 November 2026, 08:27 UTC
+
+The private picker source increment covers the full finite catalog/search, supported
+versus unavailable states, current edit/prerequisite metadata, compatible branch input
+context and selection into existing configuration. See [picker.md](picker.md) for
+the exact boundary. Four action types insert; the manual entry opens its existing
+inspector without dirtying the draft. Record trigger and notification remain explicitly
+unavailable. Local offered paths need no external provider; this is not provider-ready
+or execution acceptance.
+
+Before production, the actual original-component baseline passed three controls and
+failed four intended missing-behavior assertions: category grouping/search and discovery
+of the unavailable record trigger/notification. Its original bytes, raw failure
+classification, source witnesses and pre-production handoff remain preserved. Future
+imports in later tests are not additional RED evidence.
+
+The current focused run passed **84 cases across 11 files**: 52 new pure/UI/adapter,
+seven adapted baseline and 25 retained legacy cases. The whole guarded run took
+11.054 seconds with Bun 1.4.4, env-i/no-env-file, one worker and private caches. All
+29 required direct raw-source witnesses and 350 compared pins held; owned PGID 91020
+and the temporary dependency link were cleaned up. Exact private receipts are under
+`work/workflow-675-picker-baseline/` and `work/workflow-675-complete-focused/`; the
+coverage handoff is `outputs/675-COVERAGE-AND-LIMITS.md`.
+
+Twelve new palette PostgreSQL cases are defined but **UNEXECUTED**. Full hosted
+types/typed lint/units/PG/builds, source-inventory generation, native browser/AT/RTL and
+human copy, main integration, issue closure and release gates remain open. No picker
+pull request has been created at this checkpoint. The parent #959 cut a9f28da has a
+separate recorded PG result of 26 date-related failures and 3,537 passes; its forward
+repair is in progress, and the picker will inherit the published repaired parent
+before its own hosted qualification. This checkpoint does not qualify the whole
+candidate, accept WF-007/WF-009/WF-017, close issue #675 or claim deployment.

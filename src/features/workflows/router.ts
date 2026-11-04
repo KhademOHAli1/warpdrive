@@ -8,6 +8,7 @@ import {
   workflowLibraryInputSchema,
   workflowOwnersInputSchema,
 } from "./library";
+import { readWorkflowPalette } from "./palette";
 import {
   getWorkflow,
   listWorkflows,
@@ -35,6 +36,13 @@ function unwrapLibrary<T>(result: Result<T, string>) {
   return result.value;
 }
 export const workflowsRouter = router({
+  palette: protectedProcedure
+    .input(z.strictObject({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) =>
+      unwrapLibrary(
+        await readWorkflowPalette(ctx.db, ctx.actor, input.id, AbortSignal.timeout(10_000)),
+      ),
+    ),
   run: protectedProcedure
     .input(z.strictObject({ id: z.string().uuid(), runId: z.string().uuid() }))
     .query(async ({ ctx, input }) =>

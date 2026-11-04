@@ -254,6 +254,7 @@ export function WorkflowEditor({
           </div>
           <TabsContent value="configure" className="mt-0 xl:min-h-0 xl:flex-1">
             <BuilderWorkspace
+              workflowId={initial.id}
               definition={editor.definition}
               onChange={editor.setDefinition}
               editable={editable}

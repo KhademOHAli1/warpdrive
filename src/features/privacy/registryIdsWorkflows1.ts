@@ -1,5 +1,11 @@
 // Reviewed Workflow boundary identifiers. New or changed source requires review.
 export const workflowIds1: string[] = [
+  // WF018: finite authorized picker metadata and current-draft compatibility; no provider effects.
+  "derived:src/features/workflows/paletteContext.ts",
+  "derived:src/features/workflows/ui/NodePalette.tsx",
+  "sourceReview:src/features/workflows/paletteContext.ts#d48650f88c3aa4393064e32d92870b2972784f6efa573aa3145d466bff0b2019",
+  "sourceReview:src/features/workflows/ui/NodePalette.tsx#36144836ec2b6aac1d24d82782b365208215459b2ca3efbfeb5ac96c209f494c",
+
   // WF016: raw execute below is scoped SELECT only; Hash.update is transient cursor
   // fingerprinting. Neither conservative writer identifier introduces database DML.
   "derived:src/features/workflows/ui/RunHistory.tsx",
@@ -51,12 +57,12 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/nodeLayout.ts#7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
   "sourceReview:src/features/workflows/persistence.ts#3a9beebd1989aed9c13fae827ba4b7f28d8e997240279ee9e4471e6bc5bf6151",
   "sourceReview:src/features/workflows/queries.ts#5c4b47a3c273908c76e1ed55c012bc4c5ee83aa15e1c2f6976e73c3b48aaa9e7",
-  "sourceReview:src/features/workflows/router.ts#65ad0695b4cf5dd202c2f06f4e6cccc3726e2928137da69b5e0027c7bdc704c9",
+  "sourceReview:src/features/workflows/router.ts#0379835110a710682665347802358f3e7eac2f21f0d3714b941bcb29aecfee37",
   "sourceReview:src/features/workflows/runAdmission.ts#bcc5151df4e2d601fc4cba720bdfa6865eef41eea943ba4e194ab37dcb7b154c",
   "sourceReview:src/features/workflows/runControl.ts#f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057",
   "sourceReview:src/features/workflows/runDetail.ts#85f804b234bb799c7ef374e2f7449f1f5b13de2f9fcda2336a6a7759a2e8aae9",
   "sourceReview:src/features/workflows/runStep.ts#02413024451583b1414f5516e76597eb3b2a449707d7425658bc46b63abb245a",
-  "sourceReview:src/features/workflows/ui/BuilderWorkspace.tsx#446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+  "sourceReview:src/features/workflows/ui/BuilderWorkspace.tsx#646e12043576f686e27ad9ceded637f3497f849f1f6bbba8129d2c73a9151fe3",
   "sourceReview:src/features/workflows/ui/ConditionFields.tsx#253ed26de35e235dd52b6234169ce5cf0950472abb814e83d2f907eab9e84443",
   "sourceReview:src/features/workflows/ui/DefinitionIssues.tsx#eb49da641d781d7dc0aedc2ca257864e0a88e0312442ed68b2576e7e071d4bee",
   "sourceReview:src/features/workflows/ui/RunTrace.tsx#960dbc06d93d22a2916d7a2760fcb1214bf0d77f260b23fe8c630a4a617dd7a0",
