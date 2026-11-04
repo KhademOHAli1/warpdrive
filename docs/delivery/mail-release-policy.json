@@ -4,6 +4,7 @@
   "release_track": "mail",
   "authorization": "User decision on 3 November 2026: release each complete mail deliverable as the next 1.5.x patch in completion order; reserve 1.6.0 for the full original mail programme.",
   "assignment": "completion_order",
+  "incremental_context_policy": "disclose_unaccepted_source",
   "patch_series": "1.5",
   "programme_version": "1.6.0",
   "programme_id": "programme/mail",
@@ -21,5 +22,5 @@
       "Release PR validation"
     ]
   },
-  "limits": "Each patch releases exactly one completed mail deliverable and explicitly accepted support scope. The full bootstrap commit ledger remains visible; unselected pre-existing context and broad contributions are explicitly unreleased and receive no acceptance/publication updates. Fresh production delivery outside accepted scope cannot be hidden as history. Existing explicit technical-agent eligibility, independent review, human-only IDs, canonical prerequisites, exact-main CI and provider/installation criteria remain in force. Programme coverage preserves historical milestone membership. Publication does not deploy an installation."
+  "limits": "Each patch releases exactly one completed mail deliverable and explicitly accepted support scope. The full bootstrap commit ledger remains visible. Incremental task releases disclose all unselected source and broad contributions as unaccepted context, distinguishing historical from newly integrated source without moving the fixed baseline; that context receives no acceptance, completion or publication updates. Full-programme publication retains its complete original scope and existing context restrictions. Existing explicit technical-agent eligibility, independent review, human-only IDs, canonical prerequisites, exact-main CI and provider/installation criteria remain in force. Programme coverage preserves historical milestone membership. Publication does not deploy an installation."
 }

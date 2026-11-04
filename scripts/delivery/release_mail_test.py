@@ -144,6 +144,83 @@ class MailReleaseTests(unittest.TestCase):
                 with self.assertRaisesRegex(GateError, "Fresh production delivery"):
                     self.check()
 
+    def test_explicit_incremental_policy_discloses_new_source_without_accepting_it(self):
+        self.trusted.return_value["incremental_context_policy"] = "disclose_unaccepted_source"
+        self.items["ops/unfinished"] = dict(ITEM, id="ops/unfinished", module="operations")
+        context = dict(issue(999, "ops/unfinished"), state="open", state_reason=None)
+        api = API(all_issues=[issue(7, "mail/A"), context])
+        self.commits.return_value = [
+            {"sha": BOOTSTRAP, "issues": [999], "original_issues": [999],
+             "subject": "Original source", "url": "https://github.com/o/r/commit/" + BOOTSTRAP},
+            {"sha": REVISION, "issues": [7, 999], "original_issues": [7, 999],
+             "subject": "Newly integrated source", "url": "https://github.com/o/r/commit/" + REVISION,
+             "pull_requests": [{"number": 927, "title": "Consolidate", "url": "https://github.com/o/r/pull/927"}]},
+        ]
+        self.git.side_effect = ["", BOOTSTRAP, "src/new-unaccepted-feature.ts\n", "", REVISION]
+        evidence = self.check(api=api)
+        historical, fresh = evidence["commits"]
+        self.assertEqual(historical["unreleased_context_origin"], "historical")
+        self.assertFalse(historical["fresh_production_context"])
+        self.assertEqual(fresh["unreleased_context_origin"], "newly_integrated")
+        self.assertTrue(fresh["fresh_production_context"])
+        self.assertEqual(fresh["original_issues"], [7, 999])
+        self.assertEqual(fresh["released_issues"], [7])
+        self.assertEqual(fresh["unreleased_issues"], [999])
+        self.assertEqual(fresh["pull_requests"][0]["number"], 927)
+        self.assertEqual(evidence["unreleased_context_baseline"], POLICY["unreleased_context_baseline"])
+        self.assertEqual(evidence["unreleased_context"][0]["source_context_origins"], ["historical", "newly_integrated"])
+        self.assertFalse(evidence["unreleased_context"][0]["acceptance_claimed"])
+        self.assertEqual(evidence["unreleased_context"][0]["release_status"], "not_released_by_this_publication")
+        self.assertEqual([call.args[2] for call in self.verify.call_args_list], [7])
+        self.assertEqual([item["number"] for item in evidence["issues"]], [7])
+        self.assertFalse(evidence["stages"]["user_journey_accepted"])
+        self.assertFalse(evidence["stages"]["mail_programme_accepted"])
+        text = release.notes(evidence)
+        self.assertIn("Newly integrated, unaccepted production source", text)
+        self.assertIn("They are not historical baseline context", text)
+        self.assertIn("context origin: newly_integrated", text)
+        self.assertIn("#999 ops/unfinished", text)
+
+    def test_incremental_disclosure_does_not_weaken_programme_scope(self):
+        self.trusted.return_value["incremental_context_policy"] = "disclose_unaccepted_source"
+        self.items["ops/unfinished"] = dict(ITEM, id="ops/unfinished", module="operations")
+        context = dict(issue(999, "ops/unfinished"), state="open", state_reason=None)
+        selected = plan(version="1.6.0", mail_mode="programme", primary_issue=11,
+                        canonical_id="programme/mail", issues=[7, 11])
+        api = API(issues=[issue(7, "mail/A"), issue(11, "programme/mail")],
+                  all_issues=[issue(7, "mail/A"), issue(11, "programme/mail"), context])
+        self.commits.return_value = [{"sha": REVISION, "issues": [999]}]
+        self.git.side_effect = ["", "", "src/new-unaccepted-feature.ts\n"]
+        with self.assertRaisesRegex(GateError, "Fresh production delivery"):
+            self.check(selected, api)
+
+    def test_new_broad_contribution_is_disclosed_with_accepted_delivery(self):
+        self.trusted.return_value["incremental_context_policy"] = "disclose_unaccepted_source"
+        self.items["ops/unfinished"] = dict(ITEM, id="ops/unfinished", module="operations", kind="programme")
+        context = dict(issue(999, "ops/unfinished"), state="open", state_reason=None)
+        api = API(all_issues=[issue(7, "mail/A"), context])
+        self.commits.return_value = [{
+            "sha": REVISION, "issues": [7], "original_issues": [7, 999],
+            "contributes_to": [999], "subject": "Bounded delivery and contribution",
+            "url": "https://github.com/o/r/commit/" + REVISION,
+            "pull_requests": [{"number": 927, "title": "Delivery", "url": "https://github.com/o/r/pull/927"}],
+        }]
+        self.git.side_effect = ["", "", "src/existing-feature.ts\n", "", REVISION]
+        evidence = self.check(api=api)
+        commit = evidence["commits"][0]
+        self.assertEqual(commit["released_issues"], [7])
+        self.assertEqual(commit["unreleased_issues"], [])
+        self.assertEqual(commit["unreleased_contributions"], [999])
+        self.assertEqual(commit["original_issues"], [7, 999])
+        self.assertEqual(commit["unreleased_context_origin"], "newly_integrated")
+        self.assertTrue(commit["fresh_production_context"])
+        self.assertEqual(evidence["unreleased_context"][0]["source_context_origins"], ["newly_integrated"])
+        self.assertFalse(evidence["unreleased_context"][0]["acceptance_claimed"])
+        self.assertEqual([call.args[2] for call in self.verify.call_args_list], [7])
+        text = release.notes(evidence)
+        self.assertIn("Newly integrated, unaccepted production source", text)
+        self.assertIn("UNRELEASED scope: #999", text)
+
     def test_unreleased_broad_contribution_is_preserved_without_accepting_parent(self):
         self.items["ops/unfinished"] = dict(ITEM, id="ops/unfinished", module="operations", kind="programme")
         context = dict(issue(999, "ops/unfinished"), state="open", state_reason=None)
@@ -279,6 +356,18 @@ class TrustedAndCoreTests(unittest.TestCase):
     def test_mail_policy_cannot_be_supplied_only_by_candidate(self):
         with patch.object(mail, "run", return_value=REVISION), patch.object(mail, "load_candidate_json", side_effect=[POLICY, dict(POLICY, assignment="task_number")]), self.assertRaisesRegex(GateError, "trusted main policy"):
             mail.trusted_mail_policy(REVISION, "o/r")
+
+    def test_incremental_context_disclosure_requires_known_trusted_policy(self):
+        for value in (None, "disclose_unaccepted_source"):
+            with self.subTest(value=value):
+                policy = dict(POLICY, incremental_context_policy=value)
+                with patch.object(mail, "run", return_value=REVISION), patch.object(mail, "load_candidate_json", side_effect=[policy, policy]):
+                    self.assertEqual(mail.trusted_mail_policy(REVISION, "o/r"), policy)
+        for value in (True, "accept_everything", {}, []):
+            with self.subTest(value=value):
+                policy = dict(POLICY, incremental_context_policy=value)
+                with patch.object(mail, "run", return_value=REVISION), patch.object(mail, "load_candidate_json", side_effect=[policy, policy]), self.assertRaisesRegex(GateError, "Unsupported MAIL release policy"):
+                    mail.trusted_mail_policy(REVISION, "o/r")
 
     def test_core_cannot_publish_reserved_mail_version(self):
         for value in ("1.5.1", "1.6.0"):

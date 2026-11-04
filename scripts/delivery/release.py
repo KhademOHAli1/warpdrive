@@ -107,7 +107,7 @@ def release_gate(api, plan, policy, allow_published=False):
         raise GateError("Every included commit's canonical issues must be accepted in the selected release milestone")
     return {"schema_version": 1, "snapshot_stage": "pre-publication", "repository": repo, "version": plan["version"], "revision": revision, "base_revision": base, "milestone": {"number": milestone["number"], "title": milestone["title"], "url": milestone["html_url"]}, "journeys": journeys, "issues": accepted, "commits": commits, "ci": ci, "stages": {"source": True, "integrated": True, "user_journey_accepted": True, "released": False, "deployed": False, "provider_installation_accepted": False}}
 
-from release_artifacts import notes, artifacts, verify_uploaded_assets
+from release_artifacts import notes, publication_notes, artifacts, verify_uploaded_assets
 
 def trusted_release_policy(revision):
     require_revision(revision)
@@ -128,6 +128,8 @@ def publish(api, plan, evidence, directory, mode):
         # Fresh draft/publication only: historical acceptance and immutable receipt
         # repair must not require an old revision to remain the current main tip.
         print(json.dumps({"release_security": verify_release_code_scanning(api, repo, revision)}, sort_keys=True))
+        # Validate body packaging before creating a tag or changing a draft.
+        body = publication_notes(evidence, full_notes=notes(evidence))
     # gh release --verify-tag prevents GitHub from silently tagging the default branch tip.
     refs = api.pages(f"repos/{repo}/tags")
     if not any(t["name"] == tag for t in refs):
@@ -140,7 +142,6 @@ def publish(api, plan, evidence, directory, mode):
             raise GateError("Refusing to modify an already published release")
         verify_uploaded_assets(directory, current["assets"])
         return record_publication(api, evidence, current["id"])
-    body = notes(evidence)
     if not current:
         current = api.request(f"repos/{repo}/releases", "POST", {"tag_name": tag, "target_commitish": revision, "name": f"Warpdrive {evidence['version']}", "body": body, "draft": True, "prerelease": False})
     else:
