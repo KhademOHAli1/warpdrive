@@ -82,7 +82,7 @@ describe("public Bun CI", () => {
     expect(Object.keys(workflow.jobs).sort()).toEqual(["crm", "docs", "site"]);
     for (const name of Object.keys(PACKAGES) as (keyof typeof PACKAGES)[]) {
       const check = job(name);
-      expect(check["timeout-minutes"]).toBeLessThanOrEqual(30);
+      expect(check["timeout-minutes"]).toBe(name === "crm" ? 40 : 20);
       expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual([
         CHECKOUT,
         SETUP_BUN,
