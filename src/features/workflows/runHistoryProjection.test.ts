@@ -2,14 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { workflows } from "@/db/schema";
-import type { HydratedActor } from "@/server/hydrateActor";
+import type { HydratedActor, hydrateActor } from "@/server/hydrateActor";
 import { readRunHistoryPage } from "./runHistoryPage";
 import { hydrateRunHistoryRows, type RunHistorySourceRow } from "./runHistoryProjection";
+import type { describeRunRecovery, readFailureHistories } from "./runRecovery";
 
 const boundary = vi.hoisted(() => ({
-  actor: vi.fn<typeof import("@/server/hydrateActor").hydrateActor>(),
-  failures: vi.fn<typeof import("./runRecovery").readFailureHistories>(),
-  recovery: vi.fn<typeof import("./runRecovery").describeRunRecovery>(),
+  actor: vi.fn<typeof hydrateActor>(),
+  failures: vi.fn<typeof readFailureHistories>(),
+  recovery: vi.fn<typeof describeRunRecovery>(),
 }));
 vi.mock("@/server/hydrateActor", () => ({ hydrateActor: boundary.actor }));
 vi.mock("./runRecovery", () => ({
@@ -98,12 +99,12 @@ function stepDb() {
       completedAt: now,
     },
   ];
-  const orderBy = vi.fn(async () => steps);
+  const orderBy = vi.fn(() => Promise.resolve(steps));
   const select = vi.fn(() => ({ from: () => ({ where: () => ({ orderBy }) }) }));
   return { db: { select } as unknown as Db, select, steps };
 }
 function authorityDb(rows: (typeof workflows.$inferSelect)[]) {
-  const limit = vi.fn(async () => rows);
+  const limit = vi.fn(() => Promise.resolve(rows));
   const select = vi.fn(() => ({ from: () => ({ where: () => ({ limit }) }) }));
   return { db: { select } as unknown as Db, select, limit };
 }
