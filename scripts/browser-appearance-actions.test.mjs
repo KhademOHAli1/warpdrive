@@ -88,9 +88,8 @@ async function probeFixture({ failFulfill = false } = {}) {
       handler = callback;
       return Promise.resolve();
     },
-    unroute: (pattern, callback) => {
-      assert.equal(pattern, "**/*");
-      assert.equal(callback, handler);
+    unrouteAll: (options) => {
+      assert.deepEqual(options, { behavior: "wait" });
       state.unroutes += 1;
       return Promise.resolve();
     },

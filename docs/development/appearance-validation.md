@@ -26,6 +26,8 @@ theme cookie/paint, failed-theme rollback, failed-density draft retention and lo
 geometry are checked directly. The exact local saving/saved/error text, one named live
 region per card/role, atomic announcement markup and absence of contradictory simultaneous
 success/error are asserted. Accessibility snapshots and screenshots are retained.
+At narrow widths, density feedback must use the card's available content width, with
+Save/Retry below it. This prevents a long localized error becoming a word-wide column.
 
 The action probe holds only genuine typed Next action responses and blocks unsupported or
 unscheduled actions. It validates the root-selected Flight result, rather than HTTP status
@@ -64,6 +66,10 @@ receipt with the actual `APP_COMMIT`, production Build ID, browser version, loca
 viewport/media, exact announcement observations, database comparisons and context/browser/
 pool cleanup. It contains no authentication cookie, CSRF token, request body or raw Flight
 body. Each journey and the overall receipt can pass only after owned cleanup succeeds.
+Page routes and context routes are separately removed with bounded `behavior: "wait"`
+draining before final network verification and context closure. Late unhandled asynchronous
+rejections fail the process and rewrite the retained overall receipt as FAIL; they cannot
+leave a passing artifact paired with a failing command. No route exception is ignored.
 The surrounding existing workflow trap stops its Next/HTTPS processes; GitHub owns service
 container teardown. Preserve failed runs and diagnose their actual stage before any
 correction. A timeout or setup failure is not a product assertion result.

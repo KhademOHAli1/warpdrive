@@ -36,6 +36,7 @@ const report = {
   limits:
     "Live-region markup and accessibility snapshots; actual screen-reader speech and human acceptance are unrun. No provider, release or deployment qualification.",
   journeys: [],
+  unhandledErrors: [],
   cleanup: { browserClosed: false, databasePoolClosed: false },
 };
 const pool = new pg.Pool({
@@ -47,6 +48,22 @@ const pool = new pg.Pool({
   options: "-c default_transaction_read_only=on",
 });
 let browser;
+let fatal;
+
+// A late library callback rejection must fail both the process and its retained receipt.
+process.on("unhandledRejection", (error) => {
+  fatal ??= asError(error);
+  report.state = "FAIL";
+  report.unhandledErrors.push({
+    name: error instanceof Error ? error.name : "NonErrorRejection",
+    message:
+      error instanceof Error && error.message === "Route is already handled!"
+        ? error.message
+        : "Unhandled asynchronous browser harness rejection",
+  });
+  process.exitCode = 1;
+  writeFileSync(new URL("receipt.json", evidence), JSON.stringify(report, null, 2));
+});
 
 function catalog(path) {
   return JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), "utf8"));
@@ -56,6 +73,20 @@ function asError(error) {
   return error instanceof Error
     ? error
     : new Error("Appearance validation failed with a non-Error", { cause: error });
+}
+
+async function drainContextRoutes(context) {
+  let timer;
+  try {
+    await Promise.race([
+      context.unrouteAll({ behavior: "wait" }),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Owned context routes did not drain")), 10_000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function snapshot() {
@@ -102,7 +133,7 @@ async function login(page) {
   assert.equal(response.status(), 200);
 }
 
-async function live(page, label, role, text, entry) {
+async function live(page, label, role, text, entry, density = false) {
   const region = page.getByRole(role, { name: label, exact: true });
   await region.filter({ hasText: text }).waitFor({ state: "visible" });
   assert.equal(await region.count(), 1, "One local announcement region per card and role");
@@ -136,6 +167,32 @@ async function live(page, label, role, text, entry) {
     true,
     "Feedback text is neither horizontally clipped nor outside the viewport",
   );
+  if (density && entry.viewport.width < 640) {
+    const layout = await region.evaluate((el) => {
+      const footer = el.parentElement?.parentElement?.parentElement;
+      const button = footer?.querySelector("button");
+      if (!footer || !button) return null;
+      const style = getComputedStyle(footer);
+      return {
+        width: el.getBoundingClientRect().width,
+        available:
+          footer.clientWidth -
+          Number.parseFloat(style.paddingInlineStart) -
+          Number.parseFloat(style.paddingInlineEnd),
+        below: button.getBoundingClientRect().top >= el.getBoundingClientRect().bottom - 1,
+      };
+    });
+    assert.ok(layout, "Density footer and its existing Save/Retry control are present");
+    assert.ok(
+      layout.width >= layout.available - 1,
+      "Mobile density feedback uses the available card width",
+    );
+    assert.equal(
+      layout.below,
+      true,
+      "Mobile Save/Retry sits below the feedback instead of squeezing its text",
+    );
+  }
   if (role === "alert") {
     await page.screenshot({
       path: fileURLToPath(
@@ -201,7 +258,7 @@ async function action(s, { kind, value, ok = true, transportAbort = false, start
   });
   const label = kind === "appearance" ? s.L._hierarchy.theme : s.L.density;
   const prefix = kind === "appearance" ? "theme" : "density";
-  await live(s.page, label, "status", s.F[`${prefix}Saving`], s.entry);
+  await live(s.page, label, "status", s.F[`${prefix}Saving`], s.entry, kind === "density");
   if (kind === "appearance") await paint(s.page, value);
   else {
     assert.equal(
@@ -215,14 +272,14 @@ async function action(s, { kind, value, ok = true, transportAbort = false, start
   await hold.delivered();
   if (!ok || transportAbort) {
     await dismissError(s.page, s.entry);
-    await live(s.page, label, "alert", s.F[`${prefix}Error`], s.entry);
+    await live(s.page, label, "alert", s.F[`${prefix}Error`], s.entry, kind === "density");
     if (kind === "appearance") await paint(s.page, before.own.ui.appearance);
     else {
       assert.equal(await s.c.radio(value).isChecked(), true, "Failed density draft is retained");
       assert.equal(await s.c.density.getAttribute("data-density"), before.own.density);
     }
   } else {
-    await live(s.page, label, "status", s.F[`${prefix}Saved`], s.entry);
+    await live(s.page, label, "status", s.F[`${prefix}Saved`], s.entry, kind === "density");
     if (kind === "density") {
       await s.page.waitForFunction(
         (density) =>
@@ -538,9 +595,10 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
   let probe;
   let page;
   let problem;
+  let network;
   try {
     page = await context.newPage();
-    const network = watchNetwork(context, page, entry);
+    network = watchNetwork(context, page, entry);
     await network.ready;
     await context.addCookies([{ name: "warpdrive_locale", value: locale, url: origin }]);
     await login(page);
@@ -563,7 +621,6 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
     });
     probe.assertHealthy();
     entry.actions = probe.actions;
-    network.verify(scenario === "transport" ? 2 : 0, probe);
     await page.screenshot({
       path: fileURLToPath(new URL(`${locale}-${width}-${colorScheme}-${scenario}.png`, evidence)),
       fullPage: true,
@@ -580,12 +637,21 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
   } finally {
     try {
       try {
-        if (probe) await probe.close();
+        try {
+          if (probe) await probe.close();
+        } finally {
+          await drainContextRoutes(context);
+        }
+        if (network && probe) network.verify(scenario === "transport" ? 2 : 0, probe);
+        if (fatal instanceof Error) problem ??= fatal;
       } finally {
         await context.close();
         entry.contextClosed = true;
       }
-      if (entry.state !== "FAIL") entry.state = "PASS";
+      if (problem instanceof Error) {
+        entry.state = "FAIL";
+        entry.error = String(problem);
+      } else entry.state = "PASS";
     } catch (error) {
       entry.state = "FAIL";
       entry.error = String(error);
@@ -598,7 +664,6 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
   console.log(`appearance-${locale}-${width}-${colorScheme}-${scenario}: passed`);
 }
 
-let fatal;
 try {
   const readOnly = await pool.query("SHOW default_transaction_read_only");
   assert.equal(readOnly.rows[0].default_transaction_read_only, "on");
@@ -614,6 +679,7 @@ try {
   await journey("en", 1280, "light", "transport", transport);
   await journey("en", 1280, "light", "ordering-success", (s) => ordering(s, false));
   await journey("en", 1280, "dark", "ordering-denial", (s) => ordering(s, true));
+  if (fatal instanceof Error) throw fatal;
   report.state = "PASS";
 } catch (error) {
   report.state = "FAIL";

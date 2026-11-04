@@ -176,6 +176,8 @@ async function bounded(promise, message) {
   }
 }
 
+// Requires a fresh exclusively owned page: the probe is its only page-level route handler.
+// Context-level network guards belong to the caller and are drained separately by that owner.
 export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
   const target = new URL("/settings/appearance", origin ?? page.url());
   if (
@@ -332,7 +334,9 @@ export async function createPreferenceProbe(page, { origin, onObserved } = {}) {
       closing = true;
       for (const hold of holds) hold.gate.resolve();
       try {
-        await page.unroute("**/*", handler);
+        // Wait for Playwright's complete page-route lifecycle, including fallbacks after our
+        // callback returns. Removing the callback alone does not drain those continuations.
+        await bounded(page.unrouteAll({ behavior: "wait" }), "owned page routes did not drain");
         await bounded(Promise.all([...handlers]), "owned action routes did not drain");
       } catch (problem) {
         fail(problem);
