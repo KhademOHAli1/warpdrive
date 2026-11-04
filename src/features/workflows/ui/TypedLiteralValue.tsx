@@ -164,6 +164,11 @@ export function TypedLiteralValue({
       aria-describedby={error === undefined ? undefined : descriptionId}
       className="min-w-0 space-y-2"
     >
+      {target?.literalContext !== undefined && (
+        <p className="text-xs text-muted-foreground">
+          {t(target.literalContext === "decimal" ? "mappingTypes.decimal" : "conditionFragment")}
+        </p>
+      )}
       <LiteralType
         binding={binding}
         target={target}

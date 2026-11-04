@@ -43,6 +43,8 @@ export interface MappingTarget {
   required: boolean;
   mode: "binding" | "literal-only";
   customFieldId?: string;
+  literalContext?: "decimal" | "decimal-fragment";
+  acceptedKinds?: readonly MappingValueKind[];
 }
 
 export interface MappingOutput {

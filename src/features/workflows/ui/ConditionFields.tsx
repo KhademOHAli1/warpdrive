@@ -1,10 +1,11 @@
 "use client";
 
 import { useId } from "react";
+import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { conditionSourceDefaults } from "../configurationSpec";
-import type { ConfigurationMetadata } from "../configurationTypes";
+import type { ConfigurationIssue, ConfigurationMetadata } from "../configurationTypes";
 import { mappingOptions } from "../mappingOptions";
 import {
   type DraftBinding,
@@ -13,23 +14,52 @@ import {
   type WorkflowNode,
 } from "../schemas";
 import { BindingField } from "./BindingField";
+import { ConditionGroupFields } from "./ConditionGroupFields";
 import { ConditionValue } from "./ConditionValue";
+import { convertCondition } from "./conditionGroupEdits";
 
-export function ConditionFields({
-  definition,
-  node,
-  editable,
-  onChange,
-  errors = {},
-  metadata,
-}: {
+interface Props {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
   errors?: Partial<Record<"left" | "right" | "operator", string>>;
   metadata?: ConfigurationMetadata;
-}) {
+  issues?: readonly ConfigurationIssue[];
+}
+export function ConditionFields(props: Props) {
+  const t = useAppTranslations("workflows");
+  const editable = props.editable && props.metadata?.status !== "denied";
+  if (
+    Object.hasOwn(props.node.config, "expression") ||
+    Object.hasOwn(props.node.config, "defaultPort")
+  )
+    return <ConditionGroupFields {...props} />;
+  const converted = convertCondition(props.node.config);
+  return (
+    <div className="space-y-4">
+      <LegacyConditionFields {...props} editable={editable} />
+      <Button
+        variant="outline"
+        disabled={!editable || converted === undefined}
+        onClick={() => {
+          if (editable && converted !== undefined)
+            props.onChange({ ...props.node, config: converted });
+        }}
+      >
+        {t("conditionConvert")}
+      </Button>
+    </div>
+  );
+}
+function LegacyConditionFields({
+  definition,
+  node,
+  editable,
+  onChange,
+  errors = {},
+  metadata,
+}: Props) {
   const t = useAppTranslations("workflows");
   const errorId = useId();
   const left = draftBindingSchema.safeParse(node.config.left);

@@ -2,6 +2,10 @@ import type { CustomFieldType } from "@/constants/customFieldTypes";
 import type { MappingCompatibility, MappingTarget, MappingValueContract } from "./mappingTypes";
 import type { DraftValueBinding } from "./schemas";
 
+export function isExactMappingDecimal(value: unknown): value is string {
+  return typeof value === "string" && value.trim() === value && /^[+-]?\d+(?:\.\d+)?$/.test(value);
+}
+
 export function customMappingContract(
   type: CustomFieldType,
   fieldId?: string,
@@ -48,6 +52,10 @@ export function mappingCompatibility(
   source: MappingValueContract,
   target: MappingTarget,
 ): MappingCompatibility {
-  if (!sameKind(source, target.contract)) return "incompatible";
+  if (target.acceptedKinds !== undefined) {
+    if (!target.acceptedKinds.includes(source.kind)) return "incompatible";
+    if (target.contract.kind === "entity" && !sameKind(source, target.contract))
+      return "incompatible";
+  } else if (!sameKind(source, target.contract)) return "incompatible";
   return source.nullable && !target.contract.nullable ? "runtime-value-check" : "compatible";
 }

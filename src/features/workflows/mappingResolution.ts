@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isExactMappingDecimal } from "./mappingCompatibility";
 import { validateLiteralIntent } from "./mappingLiteralIntent";
 import type { MappingOutput, MappingValueContract } from "./mappingTypes";
 import type { RunOutputs } from "./runTypes";
@@ -52,7 +53,7 @@ function validStringOutput(value: string, contract: MappingValueContract) {
     case "instant":
       return temporalValue(value, contract.kind);
     case "decimal":
-      return value.trim() === value && /^[+-]?\d+(?:\.\d+)?$/.test(value);
+      return isExactMappingDecimal(value);
     case "entity":
       return contract.entity !== undefined && z.string().uuid().safeParse(value).success;
     case "number":

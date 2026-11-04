@@ -608,3 +608,39 @@ WF-019 local follow-up: all638Workflow unit cases/64files now PASS (parent500 pl
 cleanup held. Source inventory2482files is clean (0missing/0invalid). The26new real
 PostgreSQL cases and whole-app hosted qualification remain pending; this is no main,
 native/human, release, deployment or provider acceptance.
+
+
+## WF022 grouped-condition source work — 4 November 2026
+
+Implementation is in progress above qualified WF020 source E872, whose PR964
+passed the observed hosted app/site/Delivery checks and configured CodeQL comparison.
+WF020 source implementation does not establish formal prerequisite acceptance.
+
+The new condition contract keeps version1 flat configurations unchanged until explicit
+conversion and adds bounded nested All/Any groups with stable predicate identities,
+per-row source-derived operand types, null/empty distinctions and an explicit false
+default path. Every static reference is checked before ordered lazy evaluation;
+missing/invalid needed values fail rather than falling through to default. Both
+exclusive ports must select a valid edge before a condition receipt/cursor commits.
+See [condition guide](conditions.md).
+
+An actual preproduction existing-API baseline observed3controlsPASS/5behaviorRED.
+Pure, evaluation, editor, copy and retry tests were frozen before their corresponding
+production changes; supplemental deep-parser and legacy compatibility cases were
+recorded before those fixes. Future-import test definitions are not executed RED.
+The17 newly defined real-PG cases have not run locally. The first combined focused
+Workflow run passed927cases/85files in49.878s;572compared pins,125fixed pins and
+90executable raw-source witnesses held, with owned process/link cleanup complete.
+This includes809inherited cases,50pure model/mapping,22evaluation,18copy/retry and
+20editor/summary cases, plus the8preserved original baseline cases counted once;
+overlapping behavior is not claimed as additional unique oracles. Inventory covers
+2507sources with0missing/0invalid, fingerprint
+`29eed183ecba70f36d644563c2a69aa86aeeea9b1d346c8c50cacc0266f1bd65`.
+Hosted full app/PG/type/lint/build qualification remains pending; no acceptance stage
+is closed by focused evidence.
+
+Grouped/default-bearing configurations remain outside the older failed-task retry
+profile. Reviewed incomplete copies remain inert; versions, completed receipts and
+effects are not rewritten. Source inventory, native keyboard/AT/RTL/theme/human
+journeys, main integration, release/deployment and installation acceptance remain
+separate gates. No action/provider/queue/permission/DDL/dependency is added.

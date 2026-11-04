@@ -157,6 +157,7 @@ export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
           operator: configurationFieldError(validation, "operator", t),
         }}
         metadata={props.metadata}
+        issues={validation.issues}
       />
     );
   return (

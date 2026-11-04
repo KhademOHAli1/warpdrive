@@ -1,3 +1,4 @@
+import { prepareConditionConfig } from "./conditionMapping";
 import { bindingOutputType, temporalConditionMismatch } from "./configurationReference";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type {
@@ -100,11 +101,32 @@ function containsTypes(
   }
 }
 
+function validateGroupedCondition(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+): void {
+  const prepared = prepareConditionConfig(node.config, { ...context, nodeId: node.id });
+  if (!prepared.ok) {
+    result.issues.push(...prepared.error);
+    return;
+  }
+  for (const predicate of prepared.value.predicates) {
+    result.runtimeChecks.push(...predicate.left.inspection.runtimeChecks);
+    if (predicate.right !== undefined)
+      result.runtimeChecks.push(...predicate.right.inspection.runtimeChecks);
+  }
+}
+
 function validateCondition(
   node: WorkflowNode,
   context: ConfigurationContext,
   result: ConfigurationValidation,
 ): void {
+  if (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort")) {
+    validateGroupedCondition(node, context, result);
+    return;
+  }
   checkBinding(node, "left", context, result);
   const operator = node.config.operator;
   const choices =
@@ -119,6 +141,11 @@ function validateCondition(
 }
 
 function allowedKeys(node: WorkflowNode): string[] {
+  if (
+    node.type === "condition" &&
+    (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort"))
+  )
+    return ["expression", "defaultPort"];
   const fields = configurationProfiles[node.type].fields;
   const keys = fields
     .map((field) => field.path[0])

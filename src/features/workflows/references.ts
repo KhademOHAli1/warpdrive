@@ -1,3 +1,4 @@
+import { prepareConditionConfig } from "./conditionMapping";
 import { customFieldBindingSchema } from "./configurationBindings";
 import { conditionContainsMismatch, temporalConditionMismatch } from "./configurationReference";
 import { mappingPathNodes } from "./mappingAvailability";
@@ -60,9 +61,35 @@ function bindingIssue(
   return inspected.compatibility === "incompatible" ? "type_mismatch" : null;
 }
 
+function groupedReferenceIssues(
+  definition: WorkflowDefinition,
+  node: WorkflowNode,
+): DefinitionIssue[] | null {
+  if (
+    node.type !== "condition" ||
+    (!Object.hasOwn(node.config, "expression") && !Object.hasOwn(node.config, "defaultPort"))
+  )
+    return null;
+  const prepared = prepareConditionConfig(node.config, { definition, nodeId: node.id });
+  if (prepared.ok) return [];
+  return prepared.error
+    .filter((issue) => issue.code !== "unsupported_setting")
+    .map((issue) => ({
+      code: issue.code,
+      nodeId: node.id,
+      field: issue.path.join("."),
+      path: issue.path,
+    }));
+}
+
 export function inspectReferences(definition: WorkflowDefinition): DefinitionIssue[] {
   const issues: DefinitionIssue[] = [];
   for (const node of definition.nodes) {
+    const grouped = groupedReferenceIssues(definition, node);
+    if (grouped !== null) {
+      issues.push(...grouped);
+      continue;
+    }
     for (const { field, binding } of nodeBindings(node)) {
       const code = bindingIssue(definition, node, field, binding);
       if (code !== null) issues.push({ code, nodeId: node.id, field });

@@ -42,6 +42,13 @@ function taskConfiguration(node: WorkflowNode, definition: WorkflowDefinition, t
 }
 
 function usesNewMappingContract(node: WorkflowNode): boolean {
+  // Grouped conditions have new preparation and short-circuit semantics. They
+  // have no qualified recovery path in this older failed-task retry profile.
+  if (
+    node.type === "condition" &&
+    (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort"))
+  )
+    return true;
   return Object.values(node.config).some((raw) => {
     const parsed = bindingSchema.safeParse(raw);
     if (!parsed.success) return false;

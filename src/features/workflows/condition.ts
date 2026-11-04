@@ -1,19 +1,18 @@
 import { ERROR_IDS } from "@/constants/errorIds";
 import { err } from "@/types/result";
+import { evaluateGroupedCondition } from "./conditionEvaluation";
+import type { LegacyConditionConfig } from "./conditionExpression";
+import { type ConditionContext, prepareConditionConfig } from "./conditionMapping";
 import { compareMappingValues } from "./mappingComparison";
-import { conditionConfigSchema } from "./registry";
 import { resolveRunBinding } from "./runBindings";
 import type { RunOutputs } from "./runTypes";
-import type { WorkflowDefinition } from "./schemas";
 
-interface ConditionContext {
-  definition: WorkflowDefinition;
-  nodeId: string;
-}
-export function evaluateCondition(raw: unknown, outputs: RunOutputs, context?: ConditionContext) {
-  const parsed = conditionConfigSchema.safeParse(raw);
-  if (!parsed.success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  const { left, operator, right } = parsed.data;
+function evaluateLegacyCondition(
+  config: LegacyConditionConfig,
+  outputs: RunOutputs,
+  context?: ConditionContext,
+) {
+  const { left, operator, right } = config;
   const lhs = resolveRunBinding(
     left,
     outputs,
@@ -30,4 +29,12 @@ export function evaluateCondition(raw: unknown, outputs: RunOutputs, context?: C
     context === undefined ? undefined : { ...context, path: ["right"] },
   );
   return compareMappingValues(operator, lhs, rhs);
+}
+
+export function evaluateCondition(raw: unknown, outputs: RunOutputs, context?: ConditionContext) {
+  const prepared = prepareConditionConfig(raw, context);
+  if (!prepared.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
+  return prepared.value.kind === "legacy"
+    ? evaluateLegacyCondition(prepared.value.config, outputs, context)
+    : evaluateGroupedCondition(prepared.value, outputs);
 }

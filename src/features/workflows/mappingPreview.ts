@@ -28,7 +28,8 @@ function literalPreview(raw: unknown, inspection: MappingInspection): MappingPre
   const parsed = draftBindingSchema.safeParse(raw);
   const literal = parsed.success && parsed.data.kind === "value" ? parsed.data : undefined;
   let intent: MappingValueKind | "null" = "scalar";
-  if (inspection.target?.customFieldId !== undefined) intent = inspection.target.contract.kind;
+  if (inspection.target?.literalContext === "decimal") intent = "decimal";
+  else if (inspection.target?.customFieldId !== undefined) intent = inspection.target.contract.kind;
   else if (literal !== undefined) intent = literalMappingContract(literal).kind;
   if (value === undefined)
     return {

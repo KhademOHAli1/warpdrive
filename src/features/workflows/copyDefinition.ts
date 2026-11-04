@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { parseConditionConfig } from "./conditionExpression";
 import { copyCustomFieldSettingsSchema } from "./configurationBindings";
 import {
   copyScalarBindingSchema,
@@ -42,13 +43,11 @@ const copyNode = z.discriminatedUnion("type", [
   }),
   nodeSchema.extend({
     type: z.literal("condition"),
-    config: z
-      .strictObject({
-        left: copyBinding,
-        operator: z.enum(["exists", "equals", "notEquals", "greaterThan", "contains"]),
-        right: copyBinding,
-      })
-      .partial(),
+    // The shared parser bounds grouped input before walking it. Keep reviewed
+    // incomplete/raw drafts byte-for-byte; publication has separate requirements.
+    config: z.custom<WorkflowDefinition["nodes"][number]["config"]>(
+      (raw) => parseConditionConfig(raw, "copy").ok,
+    ),
   }),
   nodeSchema.extend({
     type: z.literal("delay"),

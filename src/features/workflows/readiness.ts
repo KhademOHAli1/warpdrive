@@ -1,3 +1,4 @@
+import { parseConditionConfig } from "./conditionExpression";
 import { actionRegistry } from "./registry";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 
@@ -20,11 +21,16 @@ export function executableNode(node: WorkflowNode): boolean {
       actionRegistry.delay.config.safeParse(node.config).success
     );
   }
-  if (node.type === "condition")
+  if (node.type === "condition") {
+    if (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort")) {
+      const grouped = parseConditionConfig(node.config, "execute");
+      return grouped.ok && grouped.value.kind === "grouped";
+    }
     return (
       typeof node.config.operator === "string" &&
       ["exists", "equals", "notEquals", "contains"].includes(node.config.operator)
     );
+  }
   if (node.type === "record.read") return node.config.entity === "deal";
   if (node.type === "activity.create")
     return Object.keys(node.config).every(

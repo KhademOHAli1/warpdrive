@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { boundedConditionConfig } from "./conditionExpressionBudget";
 import { configurationLimits } from "./configurationLimits";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
 
@@ -56,7 +57,10 @@ export const nodeSchema = z.strictObject({
   version: z.literal(1),
   name: z.string().trim().min(configurationLimits.nameMin).max(configurationLimits.nameMax),
   nameMode: z.enum(["automatic", "custom"]).optional(),
-  config: z.record(z.string(), z.json()),
+  config: z
+    .unknown()
+    .refine(boundedConditionConfig, "Condition expression exceeds safe bounds")
+    .pipe(z.record(z.string(), z.json())),
 });
 
 export const definitionSchema = z.strictObject({

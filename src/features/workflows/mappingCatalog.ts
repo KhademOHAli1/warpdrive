@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { buildCustomFieldsSchema, valueSchemaFor } from "@/features/custom-fields/validate";
 import type { CustomFieldDef } from "@/types/customFields";
+import { conditionOperandEntry, parseConditionConfig } from "./conditionExpression";
 import { customFieldBindingSchema, customLiteralKeysAllowed } from "./configurationBindings";
 import { getConfigurationSpec } from "./configurationSpec";
 import type {
@@ -12,6 +13,7 @@ import type {
 import { mappingPathNodes } from "./mappingAvailability";
 import {
   customMappingContract,
+  isExactMappingDecimal,
   literalMappingContract,
   mappingCompatibility,
 } from "./mappingCompatibility";
@@ -24,6 +26,7 @@ import type {
   MappingOutput,
   MappingTarget,
   MappingTargetResult,
+  MappingValueContract,
 } from "./mappingTypes";
 import { actionRegistry } from "./registry";
 import {
@@ -231,9 +234,90 @@ export function describeMappingTarget(
   const node = nodes[0];
   if (nodes.length !== 1 || node === undefined)
     return unavailableTarget(nodeId, path, "source-missing", "reference_missing");
+  if (node.type === "condition" && path[0] === "expression")
+    return groupedConditionTarget(definition, node, path);
   return path[0] === "customFields"
     ? customTarget(node, path, metadata)
     : builtinTarget(definition, node, path);
+}
+
+function conditionLeftContract(
+  definition: WorkflowDefinition,
+  raw: unknown,
+): MappingValueContract | undefined {
+  const parsed = draftBindingSchema.safeParse(raw);
+  if (!parsed.success) return undefined;
+  return parsed.data.kind === "reference"
+    ? mappingOutputForReference(definition, parsed.data)?.contract
+    : literalMappingContract(parsed.data);
+}
+
+function groupedRightTarget(
+  target: MappingTarget,
+  left: MappingValueContract | undefined,
+  operator: unknown,
+): MappingTarget {
+  if (operator === "exists" || operator === "isEmpty") return { ...target, required: false };
+  if (operator === "contains")
+    return {
+      ...target,
+      contract: { kind: "text", nullable: false },
+      acceptedKinds: ["text", "decimal"],
+      ...(left?.kind === "decimal" ? { literalContext: "decimal-fragment" as const } : {}),
+    };
+  if (left === undefined || left.kind === "scalar") return target;
+  return {
+    ...target,
+    contract: { ...left, nullable: true },
+    acceptedKinds: [left.kind],
+    ...(left.kind === "decimal" ? { literalContext: "decimal" as const } : {}),
+  };
+}
+
+export function conditionTargetForRole(
+  nodeId: string,
+  path: readonly string[],
+  operand: "left" | "right",
+  operator: unknown,
+  left: MappingValueContract | undefined,
+): MappingTarget {
+  let target: MappingTarget = {
+    ...legacyMappingTarget(nodeId, "scalar", { required: true, nullable: true }),
+    path: [...path],
+  };
+  if (operand === "right") return groupedRightTarget(target, left, operator);
+  if (operator === "contains")
+    target = {
+      ...target,
+      contract: { kind: "scalar", nullable: false },
+      acceptedKinds: ["text", "decimal"],
+    };
+  if (operator === "isEmpty") target = { ...target, acceptedKinds: ["text"] };
+  return target;
+}
+
+function groupedConditionTarget(
+  definition: WorkflowDefinition,
+  node: WorkflowNode,
+  path: readonly string[],
+): MappingTargetResult {
+  const parsed = parseConditionConfig(node.config, "draft");
+  if (!parsed.ok || parsed.value.kind !== "grouped")
+    return unavailableTarget(node.id, path, "unknown-output", "invalid_value");
+  const located = conditionOperandEntry(parsed.value, path);
+  if (located === undefined)
+    return unavailableTarget(node.id, path, "unknown-output", "unknown_setting");
+  const predicate = located.entry.predicate;
+  return {
+    state: "ready",
+    target: conditionTargetForRole(
+      node.id,
+      path,
+      located.operand,
+      predicate.operator,
+      conditionLeftContract(definition, predicate.left),
+    ),
+  };
 }
 
 function failedInspection(
@@ -359,10 +443,11 @@ function numberConstraint(
 }
 
 function literalConstraints(
-  definition: WorkflowDefinition,
+  definition: WorkflowDefinition | undefined,
   target: MappingTarget,
   literal: DraftValueBinding,
 ): ConfigurationIssue[] {
+  if (definition === undefined) return [];
   const node = definition.nodes.find((entry) => entry.id === target.nodeId);
   if (node === undefined) return [];
   const field = getConfigurationSpec(node.type, node.version)?.fields.find(
@@ -377,7 +462,7 @@ function literalConstraints(
 }
 
 function scalarLiteralIssues(
-  definition: WorkflowDefinition,
+  definition: WorkflowDefinition | undefined,
   nodeId: string,
   target: MappingTarget,
   literal: DraftValueBinding,
@@ -386,6 +471,10 @@ function scalarLiteralIssues(
   if (invalid !== null) return [issue(nodeId, target.path, invalid)];
   if (literal.value === null)
     return target.contract.nullable ? [] : [issue(nodeId, target.path, "invalid_type")];
+  if (target.literalContext === "decimal")
+    return literal.literalType === undefined && isExactMappingDecimal(literal.value)
+      ? []
+      : [issue(nodeId, target.path, "invalid_value")];
   if (target.contract.kind === "entity")
     return z.string().uuid().safeParse(literal.value).success && literal.literalType === undefined
       ? []
@@ -396,7 +485,7 @@ function scalarLiteralIssues(
 }
 
 function literalInspection(
-  definition: WorkflowDefinition,
+  definition: WorkflowDefinition | undefined,
   nodeId: string,
   target: MappingTarget,
   raw: unknown,
@@ -423,7 +512,7 @@ function literalInspection(
 }
 
 export function inspectMapping(
-  definition: WorkflowDefinition,
+  definition: WorkflowDefinition | undefined,
   nodeId: string,
   target: MappingTarget | undefined,
   raw: unknown,
@@ -444,9 +533,12 @@ export function inspectMapping(
     };
   }
   const parsed = bindingSchema.options[1].safeParse(raw);
-  return parsed.success
-    ? referenceInspection(definition, nodeId, target, parsed.data, metadata)
-    : literalInspection(definition, nodeId, target, raw, metadata);
+  if (parsed.success) {
+    if (definition === undefined)
+      return failedInspection(nodeId, target, "metadata-incomplete", "reference_unavailable");
+    return referenceInspection(definition, nodeId, target, parsed.data, metadata);
+  }
+  return literalInspection(definition, nodeId, target, raw, metadata);
 }
 
 function applyReference(
@@ -508,6 +600,7 @@ export function applyMappingSelection(
   editable: boolean,
 ) {
   const denied = { ok: false as const, issue: issue(nodeId, target.path, "reference_unavailable") };
+  if (target.path[0] === "expression") return denied;
   if (!editable) return denied;
   const current = describeMappingTarget(definition, nodeId, target.path, metadata);
   const binding = bindingSchema.options[1].safeParse(rawReference);

@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  type GroupedConditionConfig,
+  type LegacyConditionConfig,
+  parseConditionConfig,
+} from "./conditionExpression";
 import { customFieldSettingsSchema } from "./configurationBindings";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type { ConfigurationProfile } from "./configurationTypes";
@@ -20,13 +25,15 @@ export const delayMinutesSchema = z
   .int()
   .min(configurationLimits.waitMin)
   .max(configurationLimits.waitMax);
-export const conditionConfigSchema = z
-  .strictObject({
-    left: bindingSchema,
-    operator: z.enum(["exists", "equals", "notEquals", "greaterThan", "contains"]),
-    right: bindingSchema.optional(),
-  })
-  .refine((value) => value.operator === "exists" || value.right !== undefined);
+export const conditionConfigSchema = z.unknown().transform((raw, context) => {
+  const parsed = parseConditionConfig(raw, "execute");
+  if (!parsed.ok) {
+    for (const issue of parsed.error)
+      context.addIssue({ code: "custom", path: [...issue.path], message: issue.code });
+    return z.NEVER;
+  }
+  return parsed.value.config as LegacyConditionConfig | GroupedConditionConfig;
+});
 
 export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   "trigger.manual": {

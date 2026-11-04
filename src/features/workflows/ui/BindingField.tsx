@@ -5,17 +5,23 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { applyConditionMappingSelection } from "../conditionMapping";
 import type { ConfigurationMetadata } from "../configurationTypes";
 import { inspectMapping, sameMappingReference } from "../mappingCatalog";
 import type { MappingKind } from "../mappingOptions";
 import type { MappingTarget } from "../mappingTypes";
-import type { DraftBinding, ReferenceBinding, WorkflowDefinition } from "../schemas";
+import type { DraftBinding, ReferenceBinding, WorkflowDefinition, WorkflowNode } from "../schemas";
 import { bindingFieldModel, bindingFieldOptions } from "./bindingFieldModel";
 import { MappingChip } from "./MappingChip";
 import { MappingPreview } from "./MappingPreview";
 import { bindingChoices, bindingTarget, buildMappingPickerModel } from "./mappingView";
 import { TypedLiteralValue } from "./TypedLiteralValue";
 import { VariablePicker } from "./VariablePicker";
+
+export interface ConditionBindingSelection {
+  predicateId: string;
+  onChange: (node: WorkflowNode) => void;
+}
 
 export function BindingField({
   definition,
@@ -38,6 +44,7 @@ export function BindingField({
   target,
   metadata,
   path,
+  conditionSelection,
 }: {
   definition: WorkflowDefinition;
   nodeId: string;
@@ -59,6 +66,7 @@ export function BindingField({
   target?: MappingTarget;
   metadata?: ConfigurationMetadata;
   path?: readonly string[];
+  conditionSelection?: ConditionBindingSelection;
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -66,6 +74,10 @@ export function BindingField({
   const fields: Record<string, string> = useMessages().workflows.fields;
   const id = useId();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [openedScope, setOpenedScope] = useState<{
+    path: readonly string[];
+    predicateId: string;
+  }>();
   const opener = useRef<HTMLButtonElement>(null);
   const preview = useRef<HTMLElement>(null);
   const currentTarget = bindingTarget(
@@ -120,8 +132,31 @@ export function BindingField({
     if (!editable || picker.state === "denied") return;
     const checked = inspectMapping(definition, nodeId, currentTarget, reference, metadata);
     if (checked.availability !== "available" || checked.compatibility === "incompatible") return;
-    if (!sameMappingReference(value, reference)) onChange(reference);
+    if (conditionSelection !== undefined) {
+      const scope = pickerOpen
+        ? openedScope
+        : { path: currentTarget?.path ?? [], predicateId: conditionSelection.predicateId };
+      if (scope === undefined) return;
+      const result = applyConditionMappingSelection(
+        definition,
+        nodeId,
+        { path: scope.path, expectedPredicateId: scope.predicateId, binding: reference },
+        metadata,
+        editable,
+      );
+      if (!result.ok) return;
+      const changed = result.definition.nodes.find((node) => node.id === nodeId);
+      if (result.changed && changed !== undefined) conditionSelection.onChange(changed);
+    } else if (!sameMappingReference(value, reference)) onChange(reference);
     setPickerOpen(false);
+  }
+  function openPicker() {
+    setOpenedScope(
+      conditionSelection === undefined
+        ? undefined
+        : { path: [...(currentTarget?.path ?? [])], predicateId: conditionSelection.predicateId },
+    );
+    setPickerOpen(true);
   }
   function restoreFocus(event: Event) {
     event.preventDefault();
@@ -199,7 +234,7 @@ export function BindingField({
         size="sm"
         variant="outline"
         disabled={!editable || picker.state === "denied"}
-        onClick={() => setPickerOpen(true)}
+        onClick={openPicker}
       >
         {t("mappingChooseSource")}
       </Button>
@@ -207,7 +242,7 @@ export function BindingField({
         <MappingChip
           model={picker}
           onInspect={() => preview.current?.focus()}
-          onChange={() => setPickerOpen(true)}
+          onChange={openPicker}
           onRemove={() => {
             if (!editable) return;
             if (onOmit !== undefined) onOmit();

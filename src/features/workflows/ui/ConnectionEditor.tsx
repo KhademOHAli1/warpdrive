@@ -9,6 +9,7 @@ import { type ConnectionProblem, connectNodes, disconnectNodes, portsFor } from 
 import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
+import { conditionPortLabel } from "./conditionPortLabel";
 import type { AddFromOutput } from "./useConnectionGestures";
 
 export function ConnectionEditor({
@@ -38,7 +39,7 @@ export function ConnectionEditor({
         const existing = definition.edges.find(
           (edge) => edge.from === node.id && edge.port === port,
         );
-        const label = t(port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort");
+        const label = t(conditionPortLabel(port));
         return (
           <div key={port} className="space-y-2">
             <p className="text-xs font-medium">{label}</p>

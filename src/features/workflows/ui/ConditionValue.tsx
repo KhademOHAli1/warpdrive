@@ -12,7 +12,7 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "../schemas";
-import { BindingField } from "./BindingField";
+import { BindingField, type ConditionBindingSelection } from "./BindingField";
 import { TypedLiteralValue } from "./TypedLiteralValue";
 
 interface Props {
@@ -24,6 +24,13 @@ interface Props {
   onChange: (value: DraftBinding) => void;
   error?: string;
   metadata?: ConfigurationMetadata;
+  rawValue?: unknown;
+  operandPath?: readonly string[];
+  target?: MappingTarget;
+  conditionSelection?: ConditionBindingSelection;
+}
+function rawValue(props: Props) {
+  return props.operandPath === undefined ? props.node.config.right : props.rawValue;
 }
 function emptyLiteral(props: Props, target: MappingTarget | undefined): DraftValueBinding {
   const kind = target?.contract.kind;
@@ -35,11 +42,11 @@ function LiteralValue({
   errorId,
   target,
   ...props
-}: Props & { errorId: string; target: MappingTarget | undefined }) {
+}: Omit<Props, "target"> & { errorId: string; target: MappingTarget | undefined }) {
   const t = useAppTranslations("workflows");
   const sales = useAppTranslations("sales");
   const id = useId();
-  const parsed = draftBindingSchema.safeParse(props.node.config.right);
+  const parsed = draftBindingSchema.safeParse(rawValue(props));
   const binding =
     parsed.success && parsed.data.kind === "value" ? parsed.data : emptyLiteral(props, target);
   const choices = props.boolean
@@ -90,15 +97,15 @@ export function ConditionValue(props: Props) {
   const described = describeMappingTarget(
     props.definition,
     props.node.id,
-    ["right"],
+    props.operandPath ?? ["right"],
     props.metadata,
   );
-  const target = described.state === "ready" ? described.target : undefined;
+  const target = props.target ?? (described.state === "ready" ? described.target : undefined);
   return (
     <BindingField
       definition={props.definition}
       nodeId={props.node.id}
-      value={props.node.config.right}
+      value={rawValue(props)}
       onChange={props.onChange}
       kind="scalar"
       label={t("conditionValue")}
@@ -113,8 +120,9 @@ export function ConditionValue(props: Props) {
       }}
       error={props.error}
       target={target}
-      path={["right"]}
+      path={props.operandPath ?? ["right"]}
       metadata={props.metadata}
+      conditionSelection={props.conditionSelection}
       literalControl={(errorId) => <LiteralValue {...props} target={target} errorId={errorId} />}
     />
   );
