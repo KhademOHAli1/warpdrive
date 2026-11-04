@@ -80,7 +80,12 @@ export function SecurityAction({
           <div className="text-sm leading-relaxed text-muted-foreground">{description}</div>
         </div>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            aria-label={action === title ? action : `${action}: ${title}`}
+          >
             {action}
           </Button>
         </DialogTrigger>
