@@ -1,3 +1,4 @@
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import german from "../messages/workflows.de.json";
 import english from "../messages/workflows.en.json";
 import persian from "../messages/workflows.fa.json";
@@ -64,7 +65,7 @@ export function paletteDefinition(): WorkflowDefinition {
 
 export function deferred<T>() {
   let resolve: (value: T) => void = () => {
-    throw new Error("Deferred resolver not initialized");
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Deferred resolver not initialized");
   };
   const promise = new Promise<T>((settle) => {
     resolve = settle;

@@ -1,18 +1,28 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, type Mock, vi } from "vitest";
 import type { WorkflowPaletteSnapshot } from "../paletteCatalog";
 import { paletteSnapshot } from "./palette.TestHelpers";
 import { useWorkflowPalette } from "./useWorkflowPalette";
 
-const io = vi.hoisted(() => ({
-  data: undefined as WorkflowPaletteSnapshot | undefined,
-  fetching: false,
-  loading: false,
-  error: null as unknown,
-  refetch: vi.fn<() => Promise<unknown>>(),
-  calls: vi.fn<(input: unknown, options: unknown) => void>(),
-}));
+interface QueryIO {
+  data: WorkflowPaletteSnapshot | undefined;
+  fetching: boolean;
+  loading: boolean;
+  error: unknown;
+  refetch: Mock<() => Promise<unknown>>;
+  calls: Mock<(input: unknown, options: unknown) => void>;
+}
+const io = vi.hoisted(
+  (): QueryIO => ({
+    data: undefined,
+    fetching: false,
+    loading: false,
+    error: null,
+    refetch: vi.fn<() => Promise<unknown>>(),
+    calls: vi.fn<(input: unknown, options: unknown) => void>(),
+  }),
+);
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     workflows: {
