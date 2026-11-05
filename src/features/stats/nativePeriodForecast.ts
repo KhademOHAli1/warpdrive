@@ -274,15 +274,10 @@ function rosterFailure(
     { state: "unavailable" }
   >["reason"],
 ): NativePeriodForecast {
-  switch (reason) {
-    case "snapshot-fact-limit":
-      return unavailable("roster-limit");
-    case "snapshot-capture-incomplete":
-    case "source-writes-pending":
-      return unavailable("roster-unqualified");
-    default:
-      return unavailable("source-unavailable");
-  }
+  if (reason === "snapshot-fact-limit") return unavailable("roster-limit");
+  if (reason === "snapshot-capture-incomplete" || reason === "source-writes-pending")
+    return unavailable("roster-unqualified");
+  return unavailable("source-unavailable");
 }
 
 async function readInSnapshot(

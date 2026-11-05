@@ -93,7 +93,7 @@ export const currentAccountConcentrationInventoryEntry = classifyInventory(
 
 export const nativePeriodForecastInventoryEntry = classifyInventory(
   [
-    "sourceReview:src/features/stats/nativePeriodForecast.ts#2bda591be7981366436c5c41c7c889d611b9a774383708d58a58c8a8b6e09533",
+    "sourceReview:src/features/stats/nativePeriodForecast.ts#108611f3e5c87f63f8df3eef094c79116e546289127a38f3c5c7ed89641cff97",
     "writer:src/features/stats/nativePeriodForecast.ts#execute:sql",
   ],
   {

@@ -29,13 +29,14 @@ function readScenario(
   name: Scenario,
   locale: ReturnType<typeof localeTagForFormatting>,
 ): Assumptions | undefined {
-  const win = readForecastFactor(String(form.get(`${name}.win`) ?? ""), locale, "probability");
-  const timing = readForecastFactor(
-    String(form.get(`${name}.timing`) ?? ""),
-    locale,
-    "probability",
-  );
-  const size = readForecastFactor(String(form.get(`${name}.size`) ?? ""), locale, "size");
+  function factor(key: "win" | "timing" | "size") {
+    const value = form.get(`${name}.${key}`);
+    if (value !== null && typeof value !== "string") return undefined;
+    return readForecastFactor(value ?? "", locale, key === "size" ? "size" : "probability");
+  }
+  const win = factor("win");
+  const timing = factor("timing");
+  const size = factor("size");
   if (win === undefined || timing === undefined || size === undefined) return undefined;
   return {
     pWin: win,
@@ -218,7 +219,7 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
                 ariaLabel={S.targetFrom}
                 value={target.from}
                 onChange={(value) => {
-                  if (!value || disabled) return;
+                  if (value === null || disabled) return;
                   setTarget({ ...target, from: value });
                   clearResult();
                 }}
@@ -227,7 +228,7 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
                 ariaLabel={S.targetTo}
                 value={target.to}
                 onChange={(value) => {
-                  if (!value || disabled) return;
+                  if (value === null || disabled) return;
                   setTarget({ ...target, to: value });
                   clearResult();
                 }}
