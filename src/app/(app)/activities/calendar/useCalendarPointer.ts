@@ -20,7 +20,11 @@ import {
 } from "@/features/activities/calendarResize";
 import { isOverlayOpen } from "@/features/shortcuts/shortcutTarget";
 import { instantParts } from "@/lib/zonedDateTime";
-import { type CalendarPreviewBox, calendarPreviewBoxes } from "./calendarPointerGeometry";
+import {
+  agendaInlineBounds,
+  type CalendarPreviewBox,
+  calendarPreviewBoxes,
+} from "./calendarPointerGeometry";
 
 export interface CalendarPointerPreview {
   selection: CalendarSelection;
@@ -47,6 +51,8 @@ const INTERACTIVE =
   "a,button,input,select,textarea,[role=button],[role=combobox],[contenteditable=true]";
 const TOUCH_HOLD_MS = 420;
 const DRAG_SLOP_PX = 5;
+const SCROLL_EDGE_PX = 32;
+const SCROLL_STEP_PX = 12;
 
 function calendarPoint(element: Element | null, y: number, resize = false): CalendarPoint | null {
   const surface = element?.closest<HTMLElement>("[data-calendar-surface]");
@@ -61,7 +67,7 @@ function calendarPoint(element: Element | null, y: number, resize = false): Cale
 
 function scrollHost(element: HTMLElement): HTMLElement | null {
   const agenda = element.closest<HTMLElement>("[data-agenda-scroll]");
-  if (agenda !== null) return element.dataset.calendarSurface === "date" ? null : agenda;
+  if (agenda !== null) return agenda;
   let parent = element.parentElement;
   while (parent !== null) {
     if (
@@ -74,13 +80,36 @@ function scrollHost(element: HTMLElement): HTMLElement | null {
   return document.scrollingElement instanceof HTMLElement ? document.scrollingElement : null;
 }
 
-function scrollStep(host: HTMLElement, y: number): number {
+function verticalScrollStep(host: HTMLElement, y: number): number {
   const rect =
     host === document.scrollingElement
       ? { top: 0, bottom: window.innerHeight }
       : host.getBoundingClientRect();
   const pinned = host.querySelector<HTMLElement>(".sticky")?.getBoundingClientRect().height ?? 0;
-  return y < rect.top + pinned + 32 ? -12 : y > rect.bottom - 32 ? 12 : 0;
+  if (y < rect.top + pinned + SCROLL_EDGE_PX) return -SCROLL_STEP_PX;
+  return y > rect.bottom - SCROLL_EDGE_PX ? SCROLL_STEP_PX : 0;
+}
+
+function agendaHorizontalScrollStep(host: HTMLElement, x: number): number {
+  if (host.scrollWidth <= host.clientWidth) return 0;
+  const { left, right } = agendaInlineBounds(host);
+  const edge = Math.min(SCROLL_EDGE_PX, (right - left) / 2);
+  if (edge <= 0) return 0;
+  // scrollLeft follows physical coordinates even when RTL starts at the right edge.
+  if (x < left + edge) return -SCROLL_STEP_PX;
+  return x > right - edge ? SCROLL_STEP_PX : 0;
+}
+
+function scrollDuringDrag({ scroll: host, origin }: Gesture, x: number, y: number): boolean {
+  if (host === null) return false;
+  const agenda = host.hasAttribute("data-agenda-scroll");
+  const horizontal = agenda ? agendaHorizontalScrollStep(host, x) : 0;
+  const vertical = agenda && origin.kind === "date" ? 0 : verticalScrollStep(host, y);
+  const left = host.scrollLeft;
+  const top = host.scrollTop;
+  if (horizontal !== 0) host.scrollLeft += horizontal;
+  if (vertical !== 0) host.scrollTop += vertical;
+  return host.scrollLeft !== left || host.scrollTop !== top;
 }
 
 function pointAtPosition(
@@ -275,15 +304,9 @@ export function useCalendarPointer({
   function autoScroll(): void {
     const current = gesture.current;
     if (current === null || !current.active) return;
-    const host = current.scroll;
-    if (host !== null) {
-      const y = position.current.y;
-      const step = scrollStep(host, y);
-      const before = host.scrollTop;
-      if (step !== 0) host.scrollTop += step;
-      if (host.scrollTop !== before) {
-        update(pointAtPosition(root.current, position.current.x, y, current.resizeEdge !== null));
-      }
+    const { x, y } = position.current;
+    if (scrollDuringDrag(current, x, y)) {
+      update(pointAtPosition(root.current, x, y, current.resizeEdge !== null));
     }
     frame.current = requestAnimationFrame(autoScroll);
   }

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { allDayRowCount } from "@/features/activities/agendaLayout";
+import { allDayRowCount, layoutTimed, splitAllDay } from "@/features/activities/agendaLayout";
 import { initialScrollHour } from "@/features/activities/agendaScroll";
 import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
@@ -19,10 +19,11 @@ import {
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
-import { AgendaDayColumn } from "./AgendaDayColumn";
+import { AgendaDayColumn, TIMED_OVERFLOW_WIDTH_PX } from "./AgendaDayColumn";
 import { AgendaDayHeader } from "./AgendaDayHeader";
 import { AllDayLane } from "./AllDayLane";
 import { calendarDayLabel } from "./calendarLabels";
+import { agendaInlineBounds } from "./calendarPointerGeometry";
 import { NowLine } from "./NowLine";
 import { TimeGutter } from "./TimeGutter";
 
@@ -34,6 +35,19 @@ interface CreateSlot {
 // Stable identity so a day with nothing on it does not defeat AgendaDayColumn's memo.
 const NO_ITEMS: CalendarActivity[] = [];
 
+function revealKeyboardFocus(event: React.FocusEvent<HTMLDivElement>): void {
+  const host = event.currentTarget;
+  const target = event.target;
+  if (host.scrollWidth <= host.clientWidth || !target.matches(":focus-visible")) return;
+  const { left, right } = agendaInlineBounds(host);
+  const item = target.getBoundingClientRect();
+  if (item.width > right - left) return;
+  // A focused item can be inside the scrollport yet still sit under the sticky time gutter.
+  const rtl = getComputedStyle(host).direction === "rtl";
+  const covered = rtl ? item.right - right : left - item.left;
+  if (covered > 0) host.scrollLeft += (covered + 2) * (rtl ? 1 : -1);
+}
+
 // Interactive hourly week agenda: a time gutter plus seven day columns, sharing one set of grid
 // tracks across a pinned header row, a pinned all-day row, and a scrolling hour region. Clicking a
 // chip opens the record the activity hangs off; clicking an empty hour lane opens AddActivityModal
@@ -42,14 +56,15 @@ const NO_ITEMS: CalendarActivity[] = [];
 export function WeekAgendaGrid({
   dayIsos,
   activities,
+  view = "week",
 }: {
   dayIsos: string[];
   activities: CalendarActivity[];
+  view?: "day" | "week";
 }): React.ReactNode {
   const router = useRouter();
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
-  const gridTemplateColumns = `${AGENDA_GUTTER_WIDTH} repeat(${dayIsos.length}, minmax(0, 1fr))`;
 
   const setPreview = useRecordPreview((s) => s.setPreview);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -68,6 +83,27 @@ export function WeekAgendaGrid({
     () => groupByLocalDay(activities, dayIsos, true, preferences.timeZone),
     [activities, dayIsos, preferences.timeZone],
   );
+  const columns = useMemo(
+    () =>
+      dayIsos.map((iso) => {
+        const items = grouped.get(iso) ?? NO_ITEMS;
+        const { timed } = splitAllDay(items);
+        const layout = layoutTimed(timed, preferences.timeZone, iso, view === "day" ? 20 : 3);
+        const minLaneWidth = view === "day" ? 96 : 36;
+        const minWidth = layout.placements.reduce((width, placement) => {
+          const lanes = Math.round(100 / placement.widthPct);
+          const overflowWidth = placement.overflowing ? TIMED_OVERFLOW_WIDTH_PX : 0;
+          return Math.max(width, lanes * minLaneWidth + overflowWidth);
+        }, 96);
+        return { iso, items, layout, minWidth };
+      }),
+    [dayIsos, grouped, preferences.timeZone, view],
+  );
+  const gridTemplateColumns = [
+    AGENDA_GUTTER_WIDTH,
+    ...columns.map(({ minWidth }) => `minmax(${minWidth}px, 1fr)`),
+  ].join(" ");
+  const columnsWidth = columns.reduce((width, column) => width + column.minWidth, 0);
   const selected = activities.find((a) => a.id === selectedId) ?? null;
   // One lane height for the whole week: a lane sized per column would push only some days' hour
   // grids down, and the same hour would sit at a different height in each column.
@@ -91,6 +127,7 @@ export function WeekAgendaGrid({
     const hours = hoursRef.current;
     if (el === null || hours === null || anchoredWeek.current === weekKey) return;
     anchoredWeek.current = weekKey;
+    el.scrollLeft = 0;
     el.scrollTop =
       hours.offsetTop +
       initialScrollHour([...grouped.values()].flat(), preferences.timeZone) * HOUR_HEIGHT_PX;
@@ -128,47 +165,54 @@ export function WeekAgendaGrid({
             up with their own headings. Sticky keeps the pinned rows visible without that. */}
         {/* relative so the hour grid's offsetTop measures from this box, which is what the scroll
             anchor adds to the target hour to clear the pinned rows above it. */}
-        <div ref={scrollRef} data-agenda-scroll className="relative max-h-[60vh] overflow-y-auto">
-          <div className="sticky top-0 z-30 bg-card">
-            <div className="grid border-b border-border" style={{ gridTemplateColumns }}>
-              <div className="bg-muted/40" />
-              {dayIsos.map((iso) => (
-                <AgendaDayHeader key={iso} iso={iso} today={iso === todayIso} />
-              ))}
-            </div>
-
-            {allDayRows > 0 && (
+        <div
+          ref={scrollRef}
+          data-agenda-scroll
+          onFocusCapture={revealKeyboardFocus}
+          className="relative max-h-[60vh] overflow-auto"
+        >
+          <div style={{ minWidth: `calc(${AGENDA_GUTTER_WIDTH} + ${columnsWidth}px)` }}>
+            <div className="sticky top-0 z-30 bg-card">
               <div className="grid border-b border-border" style={{ gridTemplateColumns }}>
-                <div className="bg-muted/40 px-1.5 py-1 text-end text-[10px] text-muted-foreground">
-                  {t("allDay")}
-                </div>
+                <div className="sticky start-0 z-10 bg-muted" />
                 {dayIsos.map((iso) => (
-                  <AllDayLane
-                    key={iso}
-                    iso={iso}
-                    dayLabel={calendarDayLabel(iso, preferences)}
-                    items={grouped.get(iso) ?? NO_ITEMS}
-                    rows={allDayRows}
-                    onOpenActivity={openActivity}
-                  />
+                  <AgendaDayHeader key={iso} iso={iso} today={iso === todayIso} />
                 ))}
               </div>
-            )}
-          </div>
 
-          <div ref={hoursRef} className="relative grid" style={{ gridTemplateColumns }}>
-            <TimeGutter />
-            {dayIsos.map((iso) => (
-              <AgendaDayColumn
-                key={iso}
-                iso={iso}
-                dayLabel={calendarDayLabel(iso, preferences)}
-                items={grouped.get(iso) ?? NO_ITEMS}
-                onOpenActivity={openActivity}
-                onOpenSlot={openSlot}
-              />
-            ))}
-            {showNowLine && now !== null && <NowLine now={now} timeZone={preferences.timeZone} />}
+              {allDayRows > 0 && (
+                <div className="grid border-b border-border" style={{ gridTemplateColumns }}>
+                  <div className="sticky start-0 z-10 bg-muted px-1.5 py-1 text-end text-[10px] text-muted-foreground">
+                    {t("allDay")}
+                  </div>
+                  {columns.map(({ iso, items }) => (
+                    <AllDayLane
+                      key={iso}
+                      iso={iso}
+                      dayLabel={calendarDayLabel(iso, preferences)}
+                      items={items}
+                      rows={allDayRows}
+                      onOpenActivity={openActivity}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div ref={hoursRef} className="relative grid" style={{ gridTemplateColumns }}>
+              <TimeGutter />
+              {columns.map(({ iso, layout }) => (
+                <AgendaDayColumn
+                  key={iso}
+                  iso={iso}
+                  dayLabel={calendarDayLabel(iso, preferences)}
+                  layout={layout}
+                  onOpenActivity={openActivity}
+                  onOpenSlot={openSlot}
+                />
+              ))}
+              {showNowLine && now !== null && <NowLine now={now} timeZone={preferences.timeZone} />}
+            </div>
           </div>
         </div>
       </div>
