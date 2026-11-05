@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { layoutTimed } from "@/features/activities/agendaLayout";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { HOUR_HEIGHT_PX } from "@/features/activities/weekAgenda";
 import { AgendaDayColumn } from "./AgendaDayColumn";
@@ -32,7 +33,7 @@ function renderColumn(items: CalendarActivity[], onOpenActivity = vi.fn(), onOpe
     <AgendaDayColumn
       iso="2026-07-15"
       dayLabel="Wednesday 15 July 2026"
-      items={items}
+      layout={layoutTimed(items, "UTC", "2026-07-15")}
       onOpenActivity={onOpenActivity}
       onOpenSlot={onOpenSlot}
     />,
@@ -77,7 +78,7 @@ describe("AgendaDayColumn", () => {
           key={iso}
           iso={iso}
           dayLabel={iso}
-          items={[event]}
+          layout={layoutTimed([event], "UTC", iso)}
           onOpenActivity={onOpenActivity}
           onOpenSlot={onOpenSlot}
         />
@@ -127,37 +128,15 @@ describe("AgendaDayColumn", () => {
 
   it("collapses the activities past the lane cap into a counted more-chip", () => {
     renderColumn(fiveAtNine());
-    expect(screen.getByRole("button", { name: "Show 4 more activities" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /^Activity / })).toHaveLength(3);
+    expect(screen.getByRole("button", { name: "Show 2 more activities" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Activity e" })).toBeNull();
-  });
-
-  it("gives the more-chip a pixel floor so the count itself is never what gets clipped", () => {
-    // 30% of a 180px column is 54px, which rendered "+5 more" as "+5 ...".
-    renderColumn(fiveAtNine());
-    const block = screen.getByRole("button", { name: "Show 4 more activities" }).parentElement;
-    expect(block).toHaveClass("w-[min(max(30%,5rem),60%)]", "end-0");
-  });
-
-  it("caps the more-chip so a narrow column cannot starve the chip beside it", () => {
-    // Without the 60% ceiling the 5rem floor outgrows a narrow column: the more-chip spills over
-    // the neighbour and the surviving chip collapses to nothing, hiding an activity that is not in
-    // the more-chip's own list.
-    renderColumn(fiveAtNine());
-    const block = screen.getByRole("button", { name: "Show 4 more activities" }).parentElement;
-    expect(block?.className).toContain(",60%)]");
-  });
-
-  it("gives the surviving chip whatever the more-chip does not take", () => {
-    renderColumn(fiveAtNine());
-    const chip = screen.getByRole("button", { name: "Activity a" }).parentElement;
-    expect(chip).toHaveClass("w-[calc(100%-min(max(30%,5rem),60%))]");
-    expect(chip?.style.width).toBe("");
   });
 
   it("lists what the more-chip stands for, so nothing is unreachable from the calendar", () => {
     const items = fiveAtNine();
     const { onOpenActivity } = renderColumn(items);
-    fireEvent.click(screen.getByRole("button", { name: "Show 4 more activities" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show 2 more activities" }));
     fireEvent.click(screen.getByRole("button", { name: /Activity e/ }));
     expect(onOpenActivity).toHaveBeenCalledWith(items[4]);
   });
@@ -166,10 +145,11 @@ describe("AgendaDayColumn", () => {
     renderColumn([
       mk("a", new Date("2026-07-15T09:00:00Z"), 240),
       mk("b", new Date("2026-07-15T09:00:00Z"), 240),
-      mk("c", new Date("2026-07-15T09:00:00Z"), 60),
-      mk("d", new Date("2026-07-15T11:00:00Z"), 60),
+      mk("c", new Date("2026-07-15T09:00:00Z"), 240),
+      mk("d", new Date("2026-07-15T09:00:00Z"), 60),
+      mk("e", new Date("2026-07-15T09:30:00Z"), 60),
     ]);
-    const trigger = screen.getByRole("button", { name: "Show 3 more activities" });
+    const trigger = screen.getByRole("button", { name: "Show 2 more activities" });
     expect(trigger.parentElement?.style.pointerEvents).toBe("none");
     expect(trigger.style.pointerEvents).toBe("auto");
   });

@@ -283,7 +283,7 @@ export function CalendarClient({
       ) : view === "day" ? (
         <>
           {displayed.length === 0 && empty}
-          <WeekAgendaGrid dayIsos={dayIsos} activities={displayed} />
+          <WeekAgendaGrid view="day" dayIsos={dayIsos} activities={displayed} />
         </>
       ) : view === "month" ? (
         <>

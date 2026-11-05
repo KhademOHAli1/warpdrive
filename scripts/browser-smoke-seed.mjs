@@ -21,6 +21,7 @@ if (admission.error || admission.status !== 0) {
 const { db, pool } = await import("../src/db/client.ts");
 const { createBetterAuth } = await import("../src/features/auth/better/auth.ts");
 const { ALL_PERMISSION_FLAG_KEYS } = await import("../src/constants/permissionFlags.ts");
+const { calendarOverlapFixture } = await import("./calendar-interactions-browser.mjs");
 const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
@@ -121,6 +122,21 @@ try {
       [regional.id, regional.id, password],
     );
   }
+  const overlap = await client.query(
+    `INSERT INTO activities(type_id, subject, due_at, end_at, duration_minutes, owner_id, assignee_id)
+     SELECT activity_types.id, $2 || series.n, $3, $4, 60, $1, $1
+     FROM activity_types CROSS JOIN generate_series(1, $5::integer) AS series(n)
+     WHERE activity_types.key = 'meeting'`,
+    [
+      id,
+      calendarOverlapFixture.titlePrefix,
+      calendarOverlapFixture.startUtc,
+      calendarOverlapFixture.endUtc,
+      calendarOverlapFixture.count,
+    ],
+  );
+  if (overlap.rowCount !== calendarOverlapFixture.count)
+    throw new Error("Calendar overlap fixture has the wrong number of events");
   await client.query("COMMIT");
 } catch (error) {
   if (client) await client.query("ROLLBACK");

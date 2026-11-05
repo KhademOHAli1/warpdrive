@@ -3,6 +3,13 @@ import assert from "node:assert/strict";
 const date = "2030-06-17";
 const nextDate = "2030-06-18";
 const subject = "CI calendar pointer event";
+export const calendarOverlapFixture = {
+  date: "2031-02-09", // Sunday, at the far end of the Week agenda.
+  startUtc: "2031-02-09T09:00:00.000Z",
+  endUtc: "2031-02-09T10:00:00.000Z",
+  titlePrefix: "CI overlap event ",
+  count: 21,
+};
 
 function surface(page, kind, iso) {
   return page.locator(`[data-calendar-surface="${kind}"][data-calendar-date="${iso}"]`);
@@ -172,6 +179,116 @@ async function assertTouchMove(page, calendar) {
   } finally {
     await session.detach();
   }
+}
+
+async function assertInternalHorizontalScroll(page, host) {
+  const before = await host.evaluate((element) => {
+    element.scrollLeft = 0;
+    return {
+      extent: element.scrollWidth - element.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  assert.ok(before.extent > 0, "A narrow agenda has its own horizontal scroll range");
+  assert.ok(before.pageOverflow <= 1, "The agenda does not add page-level horizontal overflow");
+  await host.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  await painted(page);
+  assert.ok(
+    await host.evaluate((element) => element.scrollLeft > 0 && window.scrollX === 0),
+    "The agenda scrolls without panning the page",
+  );
+}
+
+async function assertDisjointCards(chips, more, minTrackWidth) {
+  const boxes = await chips.evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { x: box.x, width: box.width, y: box.y, height: box.height };
+    }),
+  );
+  assert.ok(
+    boxes.every((box) => box.width >= minTrackWidth - 4 && box.height > 0),
+    "Every visible event keeps its usable track width",
+  );
+  boxes.push(await bounds(more, "Visible counted overflow trigger"));
+  boxes.sort((a, b) => a.x - b.x);
+  for (const [index, box] of boxes.entries()) {
+    const previous = boxes[index - 1];
+    assert.ok(
+      previous === undefined || box.x >= previous.x + previous.width - 1,
+      "Simultaneous events and the overflow trigger have disjoint horizontal boxes",
+    );
+  }
+}
+
+async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth) {
+  const fixture = calendarOverlapFixture;
+  const hidden = fixture.count - visible;
+  await page.goto(`/activities/calendar?view=${view}&d=${fixture.date}`);
+  const column = await parkTimedRange(page, 600, 660, fixture.date);
+  const host = page.locator("[data-agenda-scroll]");
+  const chips = column.locator("[data-calendar-event-id]");
+  assert.equal(await chips.count(), visible, `${view} displays ${visible} actual event cards`);
+  const more = column.getByRole("button", {
+    name: hidden === 1 ? "Show one more activity" : `Show ${hidden} more activities`,
+    exact: true,
+  });
+  assert.equal((await more.textContent())?.trim(), `+${hidden} more`);
+  await assertInternalHorizontalScroll(page, host);
+  await assertDisjointCards(chips, more, minTrackWidth);
+  const [timedTrack, allDayTrack] = await Promise.all([
+    bounds(column, "Timed date track"),
+    bounds(surface(page, "date", fixture.date), "Pinned all-day date track"),
+  ]);
+  assert.ok(
+    Math.abs(timedTrack.x - allDayTrack.x) <= 1 &&
+      Math.abs(timedTrack.width - allDayTrack.width) <= 1,
+    "Pinned all-day dates stay aligned with the scrolled time grid",
+  );
+  const clip = await bounds(host, "Agenda scroll viewport");
+  const moreBox = await bounds(more, "Overflow trigger reached by horizontal scrolling");
+  assert.ok(
+    moreBox.x >= clip.x - 1 && moreBox.x + moreBox.width <= clip.x + clip.width + 1,
+    "Horizontal scrolling brings the entire overflow action into view",
+  );
+  assert.ok(
+    await more.evaluate((button) => button.scrollWidth <= button.clientWidth + 1),
+    "The overflow count stays readable",
+  );
+
+  await more.click();
+  const overflowChips = page.locator(
+    "[data-radix-popper-content-wrapper] [data-calendar-event-id]",
+  );
+  await overflowChips.first().waitFor();
+  assert.equal(await overflowChips.count(), hidden, "Overflow lists every hidden event");
+  const visibleIds = await chips.evaluateAll((nodes) =>
+    nodes.map((node) => node.dataset.calendarEventId),
+  );
+  const hiddenIds = await overflowChips.evaluateAll((nodes) =>
+    nodes.map((node) => node.dataset.calendarEventId),
+  );
+  assert.equal(
+    new Set([...visibleIds, ...hiddenIds]).size,
+    fixture.count,
+    "Each seeded event appears exactly once",
+  );
+  const firstHidden = overflowChips.first();
+  const title = (await firstHidden.textContent())?.trim();
+  assert.ok(title?.startsWith(fixture.titlePrefix));
+  await firstHidden.click();
+  const editor = page.getByRole("dialog", { name: calendar.editor.edit, exact: true });
+  await assertSchedule(editor, calendar, fixture.date, "10:00", "11:00");
+  assert.equal(
+    await editor
+      .getByRole("textbox", { name: calendar.editor.eventTitle, exact: true })
+      .inputValue(),
+    title,
+  );
+  await page.keyboard.press("Escape");
+  await editor.waitFor({ state: "hidden" });
 }
 
 export async function runCalendarInteractionsBrowserSmoke({ journey, login, catalog }) {
@@ -347,5 +464,15 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
     },
     { width: 390, height: 844 },
     true,
+  );
+  await journey(
+    "calendar-overlap-lanes",
+    "en",
+    async (page) => {
+      await login(page);
+      await assertOverlapAgenda(page, calendar, "week", 3, 36);
+      await assertOverlapAgenda(page, calendar, "day", 20, 96);
+    },
+    { width: 390, height: 844 },
   );
 }
