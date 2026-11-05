@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import { TOKEN_REFRESH_SKEW_SECONDS } from "@/constants/email";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -34,7 +34,7 @@ async function finishRefresh(
   accountId: string,
   snapshot: TokenSnapshot,
   refreshed: Result<RefreshedToken, AppError>,
-  signal: AbortSignal,
+  { signal, eligibleStatus }: { signal: AbortSignal; eligibleStatus: SQL },
 ): Promise<Result<number, AppError>> {
   return db.transaction(async (tx) => {
     // A short commit phase fences HTTP work against suspension and reconnect.
@@ -49,10 +49,10 @@ async function finishRefresh(
     if (!refreshed.ok) {
       if (refreshed.error.id === "E_GMAIL_002")
         await tx.execute(sql`
-        UPDATE email_accounts SET status='disconnected',last_error_id='E_GMAIL_002',
+        UPDATE email_accounts AS a SET status='disconnected',last_error_id='E_GMAIL_002',
           refresh_token_enc=NULL,connection_generation=connection_generation+1,credential_version=credential_version+1,updated_at=now()
         WHERE id=${accountId} AND user_id=${snapshot.user_id} AND provider='gmail'
-          AND status='connected' AND NOT paused AND connection_generation=${snapshot.connection_generation}
+          AND ${eligibleStatus} AND NOT paused AND connection_generation=${snapshot.connection_generation}
           AND credential_version=${snapshot.credential_version} AND refresh_token_enc=${snapshot.refresh_token_enc}
       `);
       signal.throwIfAborted();
@@ -62,10 +62,10 @@ async function finishRefresh(
     const token = rotated === undefined ? snapshot.refresh_token_enc : encryptToken(rotated);
     const updated = (
       await tx.execute(sql`
-      UPDATE email_accounts SET refresh_token_enc=${token},
+      UPDATE email_accounts AS a SET refresh_token_enc=${token},
         credential_version=credential_version+${rotated === undefined ? 0 : 1},updated_at=now()
       WHERE id=${accountId} AND user_id=${snapshot.user_id} AND provider='gmail'
-        AND status='connected' AND NOT paused AND connection_generation=${snapshot.connection_generation}
+        AND ${eligibleStatus} AND NOT paused AND connection_generation=${snapshot.connection_generation}
         AND credential_version=${snapshot.credential_version} AND refresh_token_enc=${snapshot.refresh_token_enc}
       RETURNING credential_version
     `)
@@ -84,16 +84,27 @@ export async function ensureAccessToken(
     signal: AbortSignal;
     cached?: AccessToken;
     now?: number;
+    // Sync may recover an error state using the mailbox generation the job read.
+    syncGeneration?: number;
     deps: RefreshDeps;
   },
 ): Promise<Result<AccessToken, AppError>> {
   const { signal } = args;
   signal.throwIfAborted();
+  const eligibleStatus =
+    args.syncGeneration === undefined
+      ? sql`a.status='connected'`
+      : sql`a.status IN ('connected','error')`;
+  const generationCheck =
+    args.syncGeneration === undefined
+      ? sql``
+      : sql`AND a.connection_generation=${args.syncGeneration}`;
   const loaded = await db.execute(sql`
     SELECT a.user_id,a.refresh_token_enc,a.connection_generation,a.credential_version FROM email_accounts a
     JOIN users u ON u.id=a.user_id
-    WHERE a.id=${args.accountId} AND a.provider='gmail' AND a.status='connected' AND NOT a.paused
+    WHERE a.id=${args.accountId} AND a.provider='gmail' AND ${eligibleStatus} AND NOT a.paused
       AND a.refresh_token_enc IS NOT NULL AND u.is_active AND u.invited_at IS NULL
+      ${generationCheck}
   `);
   signal.throwIfAborted();
   const snapshot = loaded.rows[0] as TokenSnapshot | undefined;
@@ -117,7 +128,10 @@ export async function ensureAccessToken(
     return err(new AppError("E_GMAIL_001", "gmail refresh unavailable", {}));
   }
   signal.throwIfAborted();
-  const committed = await finishRefresh(db, args.accountId, snapshot, refreshed, signal);
+  const committed = await finishRefresh(db, args.accountId, snapshot, refreshed, {
+    signal,
+    eligibleStatus,
+  });
   if (!committed.ok) return committed;
   if (!refreshed.ok) return refreshed;
   return ok({

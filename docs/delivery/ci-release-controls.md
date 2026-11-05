@@ -41,7 +41,9 @@ qualification is supplied by `full-ci.yml` (`CRM full checks`, `Marketing site f
 workflows run only by explicit dispatch or when their own definition is changed in a pull request.
 The exact-main release policy requires the full contexts; a light context cannot substitute for them.
 
-Each complete increment must satisfy the actual applicable checks at its exact revision before merging. `Delivery traceability` is additionally a main-only job; its future successful main result cannot be claimed before the merge. Review the increment's committed issue mapping before merging and verify this job at the resulting main revision afterward. An authored check list is not a claim that branch protection or rulesets have been configured; verify actual settings when relying on their enforcement.
+Each complete increment must satisfy the actual applicable checks at its exact revision before merging. For the full pre-merge checks, retain either the hosted job results or equivalent evidence from the same pinned commands on that revision in an isolated workspace. Record the revision, commands and results, including the full unit and PostgreSQL suites, production builds and browser checks. The required GitHub PR checks still apply, and standalone runs do not replace hosted results required on the resulting main revision.
+
+`Delivery traceability` is additionally a main-only job; its future successful main result cannot be claimed before the merge. Review the increment's committed issue mapping before merging and verify this job at the resulting main revision afterward. An authored check list is not a claim that branch protection or rulesets have been configured; verify actual settings when relying on their enforcement.
 
 For integration and publication, retain latest successful required runs on the exact selected main SHA. Running, failed, cancelled, skipped, stale, wrong-revision and non-main runs do not substitute for required successful main evidence. Preserve the current track-specific policy requirements rather than widening the historical core or technical policy by documentation alone.
 
