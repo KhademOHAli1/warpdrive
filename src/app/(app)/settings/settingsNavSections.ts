@@ -1,6 +1,7 @@
 import {
   Bell,
   Building2,
+  CreditCard,
   Eye,
   Globe2,
   ListChecks,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { authScreensMessagesForLocale } from "@/features/auth/authScreensMessages";
 import { managementMessagesForLocale } from "@/features/auth/management/messages";
+import { billingMessagesForLocale } from "@/features/billing/messages";
 import type { Locale } from "@/features/i18n/registry";
 import type { SettingsMessages } from "@/features/identity/settingsMessages";
 import { privacyRequestMessagesForLocale } from "@/features/privacy/privacyRequestMessages";
@@ -39,18 +41,20 @@ export interface SettingsNavAccess {
   isAdmin: boolean;
   canManageCompany: boolean;
   canImport: boolean;
+  billingEnabled?: boolean;
 }
 
 // Keep permission gates beside the route inventory so search cannot expose hidden destinations.
 export function settingsNavSections(
   L: SettingsMessages,
   locale: Locale,
-  { isAdmin, canManageCompany, canImport }: SettingsNavAccess,
+  { isAdmin, canManageCompany, canImport, billingEnabled = false }: SettingsNavAccess,
 ): SettingsNavSection[] {
   const H = L._hierarchy;
   const securityLabel = authScreensMessagesForLocale(locale).flow.securityTitle;
   const managementLabel = managementMessagesForLocale(locale).title;
   const privacyLabel = privacyRequestMessagesForLocale(locale).workspaceTitle;
+  const billingLabel = billingMessagesForLocale(locale).title;
   return [
     {
       id: "personal",
@@ -72,6 +76,9 @@ export function settingsNavSections(
             title: H.workspace,
             items: [
               { href: "/settings/company", label: H.workspaceDetails, icon: Building2 },
+              ...(isAdmin && billingEnabled
+                ? [{ href: "/settings/billing", label: billingLabel, icon: CreditCard }]
+                : []),
               { href: "/settings/users", label: L.users, icon: Users },
               { href: "/settings/security-admin", label: managementLabel, icon: ShieldCheck },
               { href: "/settings/teams", label: L.teams, icon: UsersRound },

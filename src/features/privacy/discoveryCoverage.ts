@@ -14,6 +14,11 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 // Literal reviewed declarations deliberately do not learn new tables from the catalog.
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
+    ["billing_accounts", "billing_operations", "billing_webhook_receipts", "billing_audit_events"],
+    "unsupported",
+    "Merchant billing bindings, linkable operation fingerprints, provider event receipts and administrator audit references require a dedicated subject/provenance and finance-retention adapter. A payer may be a legal person, sole trader or finance contact; workspace administration does not establish data-subject identity. This declaration enables no generic export, erasure or provider deletion.",
+  ),
+  ...group(
     ["email_read_intents"],
     "unsupported",
     "Actor-bound read-operation bindings, mailbox/thread references, dispatch claims and outcome timestamps require a dedicated subject/provenance and safe-projection adapter. Mailbox ownership or current administration does not establish receipt disclosure or erasure authority. Supported disconnect, deactivation, reconnect and trash retain receipts; physical purge and automatic cleanup remain inactive. Admitted/unknown barriers cannot be expired, reset, taken over or pruned. This coverage declaration grants no lifecycle execution capability.",
