@@ -81,6 +81,10 @@ export function WorkflowDiagramEdge(props: EdgeProps<WorkflowCanvasEdge>) {
   const arrow =
     data?.markerPrefix === undefined ? markerEnd : `url(#${data.markerPrefix}-${state})`;
   const mutable = data?.onInsert !== undefined || data?.onDisconnect !== undefined;
+  const labelTransform =
+    data?.spec.port.startsWith("branch:") === true
+      ? `translate(-50%, -50%) translate(${geometry.overlay.x}px, ${geometry.overlay.y}px)`
+      : `${props.sourcePosition === Position.Right ? "translate(10px, -50%)" : "translate(-50%, 10px)"} translate(${props.sourceX}px, ${props.sourceY}px)`;
   return (
     <>
       {geometry.paths.map((path, index) => (
@@ -97,7 +101,7 @@ export function WorkflowDiagramEdge(props: EdgeProps<WorkflowCanvasEdge>) {
           <span
             className="workflow-edge-label"
             style={{
-              transform: `${props.sourcePosition === Position.Right ? "translate(10px, -50%)" : "translate(-50%, 10px)"} translate(${props.sourceX}px, ${props.sourceY}px)`,
+              transform: labelTransform,
             }}
           >
             {props.label}

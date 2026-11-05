@@ -9,9 +9,12 @@ import type {
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { BindingField } from "./BindingField";
 import { ConditionFields } from "./ConditionFields";
+import { CreateRecordConfigurationFields } from "./CreateRecordConfigurationFields";
 import { type ConfigurationIssueKey, configurationIssueKeys } from "./configurationIssueMessage";
 import { DelayConfigurationFields } from "./DelayConfigurationFields";
 import { DelayFields } from "./DelayFields";
+import { DelayScheduleFields } from "./DelayScheduleFields";
+import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
 
@@ -145,6 +148,30 @@ export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
   const t = useAppTranslations("workflows");
   const { spec, definition, node, editable, onChange, validation } = props;
   if (spec === null) return null;
+  if (node.type === "record.create" && spec.supported)
+    return (
+      <CreateRecordConfigurationFields
+        definition={definition}
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        validation={validation}
+      />
+    );
+  if (node.type === "ifElse" && spec.supported)
+    return (
+      <IfElseConfigurationFields
+        definition={definition}
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        onRemoveConnectedRoute={onChange}
+        metadata={props.metadata}
+        issues={validation.issues}
+      />
+    );
+  if (node.type === "delay" && spec.supported && Object.hasOwn(node.config, "delayType"))
+    return <DelayScheduleFields {...props} />;
   if (node.type === "delay" && spec.supported)
     return (
       <DelayConfigurationFields

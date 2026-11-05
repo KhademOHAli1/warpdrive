@@ -1,6 +1,7 @@
 import { ERROR_IDS } from "@/constants/errorIds";
 import { err, ok, type Result } from "@/types/result";
 import { inspectGraph } from "./graph";
+import { branchPort, ifElsePorts } from "./ifElseBudget";
 import type { StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 
@@ -12,6 +13,17 @@ export function selectRunBranch(
   node: WorkflowNode,
   output: StepOutput,
 ): Result<WorkflowEdge | undefined, string> {
+  if (node.type === "ifElse") {
+    if (
+      !Object.hasOwn(output, "matchingBranchId") ||
+      typeof output.matchingBranchId !== "string" ||
+      inspectGraph(definition).length !== 0
+    )
+      return err(ERROR_IDS.WORKFLOW_INVALID);
+    const port = branchPort(output.matchingBranchId);
+    if (!ifElsePorts(node.config).includes(port)) return err(ERROR_IDS.WORKFLOW_INVALID);
+    return ok(definition.edges.find((edge) => edge.from === node.id && edge.port === port));
+  }
   if (node.type === "filter") {
     if (
       !Object.hasOwn(output, "matchesFilter") ||

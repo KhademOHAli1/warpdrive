@@ -10,6 +10,8 @@ export interface LiveRunEffects {
     readonly task: number;
     readonly condition: number;
     readonly filter?: number;
+    readonly ifElse?: number;
+    readonly recordCreate?: number;
     readonly delay: number;
   };
 }
@@ -83,6 +85,8 @@ const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["count
   "activity.create": "task",
   condition: "condition",
   filter: "filter",
+  ifElse: "ifElse",
+  "record.create": "recordCreate",
   delay: "delay",
 };
 

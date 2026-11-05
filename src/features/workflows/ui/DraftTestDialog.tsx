@@ -25,8 +25,10 @@ import {
   type DraftSimulationStep,
   draftSimulationNodeTypes,
 } from "../draftSimulationReceipt";
+import { portsFor } from "../graphPorts";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
-import type { WorkflowDefinition } from "../schemas";
+import { type WorkflowDefinition, type WorkflowNode, workflowPortSchema } from "../schemas";
+import { useConditionPortLabel } from "./conditionPortLabel";
 
 export interface DraftTestSnapshot {
   readonly cutKey: string;
@@ -93,16 +95,21 @@ function attachStepError(step: DraftSimulationStep, value: Record<string, unknow
   step.errorId = value.errorId;
   return true;
 }
-function attachStepPort(step: DraftSimulationStep, value: Record<string, unknown>): boolean {
+function attachStepPort(
+  step: DraftSimulationStep,
+  value: Record<string, unknown>,
+  node: WorkflowNode,
+): boolean {
   if (!Object.hasOwn(value, "port") || value.port === undefined) return true;
-  const port = value.port;
-  if (port !== "next" && port !== "true" && port !== "false") return false;
-  if (step.status === "succeeded" && !successfulPort(step.nodeType, port)) return false;
-  step.port = port;
+  const port = workflowPortSchema.safeParse(value.port);
+  if (!port.success) return false;
+  if (
+    (step.status === "succeeded" || node.type === "ifElse" || port.data.startsWith("branch:")) &&
+    !portsFor(node).includes(port.data)
+  )
+    return false;
+  step.port = port.data;
   return true;
-}
-function successfulPort(type: DraftSimulationNodeType, port: "next" | "true" | "false"): boolean {
-  return type === "condition" ? port !== "next" : port === "next";
 }
 function attachStepWait(step: DraftSimulationStep, value: Record<string, unknown>): boolean {
   if (!Object.hasOwn(value, "waitResumeAt") || value.waitResumeAt === undefined) return true;
@@ -112,7 +119,7 @@ function attachStepWait(step: DraftSimulationStep, value: Record<string, unknown
 }
 function readStep(
   value: unknown,
-  nodes: ReadonlyMap<string, DraftSimulationNodeType>,
+  nodes: ReadonlyMap<string, WorkflowNode>,
 ): DraftSimulationStep | null {
   if (!plainRecord(value) || !onlyKeys(value, stepKeys)) return null;
   if (!requiredStepKeys.every((key) => Object.hasOwn(value, key))) return null;
@@ -125,17 +132,20 @@ function readStep(
   )
     return null;
   if (status !== "succeeded" && status !== "failed") return null;
-  if (nodes.get(nodeId) !== nodeType) return null;
+  const node = nodes.get(nodeId);
+  if (node?.type !== nodeType) return null;
   const step: DraftSimulationStep = { nodeId, nodeType, status };
-  return attachStepError(step, value) && attachStepPort(step, value) && attachStepWait(step, value)
+  return attachStepError(step, value) &&
+    attachStepPort(step, value, node) &&
+    attachStepWait(step, value)
     ? step
     : null;
 }
-function submittedNodes(snapshot: DraftTestSnapshot): Map<string, DraftSimulationNodeType> | null {
-  const nodes = new Map<string, DraftSimulationNodeType>();
+function submittedNodes(snapshot: DraftTestSnapshot): Map<string, WorkflowNode> | null {
+  const nodes = new Map<string, WorkflowNode>();
   for (const node of snapshot.definition.nodes) {
     if (!draftNodeType(node.type) || nodes.has(node.id)) return null;
-    nodes.set(node.id, node.type);
+    nodes.set(node.id, node);
   }
   return nodes;
 }
@@ -242,7 +252,7 @@ function DraftTestResults({
               </p>
               <p>{t(step.status === "succeeded" ? "status.succeeded" : "status.failed")}</p>
               {step.status === "failed" && <p>{t("draftSimulationStepFailed")}</p>}
-              <DraftStepDetails step={step} />
+              <DraftStepDetails step={step} node={node} />
             </li>
           );
         })}
@@ -250,15 +260,19 @@ function DraftTestResults({
     </section>
   );
 }
-function DraftStepDetails({ step }: { step: DraftSimulationStep }) {
+function DraftStepDetails({ step, node }: { step: DraftSimulationStep; node?: WorkflowNode }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
+  const portLabel = useConditionPortLabel();
   const branch =
     step.status === "succeeded" && step.nodeType === "condition" ? step.port : undefined;
   return (
     <>
       {branch === "true" && <p>{t("draftSimulationBranchTrue")}</p>}
       {branch === "false" && <p>{t("draftSimulationBranchFalse")}</p>}
+      {step.status === "succeeded" && step.nodeType === "ifElse" && step.port !== undefined && (
+        <p>{t("ifElseSelectedRoute", { route: portLabel(step.port, node) })}</p>
+      )}
       {step.status === "succeeded" &&
         step.nodeType === "delay" &&
         step.waitResumeAt !== undefined && (

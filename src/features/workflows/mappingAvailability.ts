@@ -1,3 +1,4 @@
+import { portsFor } from "./graphPorts";
 import type { MappingAvailability } from "./mappingTypes";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 
@@ -11,7 +12,7 @@ type PathStep =
   | { kind: "invalid"; issue: MappingAvailability };
 
 function validPort(source: WorkflowNode, port: string): boolean {
-  return source.type === "condition" ? port === "true" || port === "false" : port === "next";
+  return portsFor(source).includes(port);
 }
 
 function uniqueNode(definition: WorkflowDefinition, id: string): WorkflowNode | undefined {

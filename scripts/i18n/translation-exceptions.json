@@ -189,6 +189,11 @@
   "src/features/workflows/messages/workflows": {
     "de": {
       "filter": "Filter is the standard German noun for a step that filters its input.",
+      "recordCreateObjects.deal": "Deal is the established German singular CRM term used for a sales opportunity.",
+      "recordCreateObjects.lead": "Lead is the established German CRM term for an unqualified opportunity.",
+      "recordCreateFields.name": "Name is the standard German field label and shares the English spelling.",
+      "recordCreateFields.pipelineId": "Pipeline is the established German CRM term for the ordered sales stages.",
+      "recordCreateFields.region": "Region is the standard German address field label and shares the English spelling.",
       "title": "Workflows is the established German term used consistently in navigation and headings.",
       "simulationMode": "Simulation is the correct German noun and is spelled identically in English."
     }

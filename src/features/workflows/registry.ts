@@ -7,10 +7,17 @@ import {
 import { customFieldSettingsSchema } from "./configurationBindings";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type { ConfigurationProfile } from "./configurationTypes";
-import { delayUntilDate } from "./delayConfig";
+import {
+  delayDurationAmount,
+  delayDurationMilliseconds,
+  delayDurationUnits,
+  delayUntilDate,
+} from "./delayConfig";
+import { parseIfElseConfig } from "./ifElseConfig";
 import { coarseMappingOutputs, mappingOutputContracts } from "./mappingOutputs";
 import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
+import { recordCreateConfig } from "./workflowRecordCreateContract";
 
 interface ActionSpec {
   configuration: ConfigurationProfile;
@@ -26,6 +33,45 @@ export const delayMinutesSchema = z
   .int()
   .min(configurationLimits.waitMin)
   .max(configurationLimits.waitMax);
+
+const durationBinding = bindingSchema.refine(
+  (binding) =>
+    binding.kind === "reference" ||
+    ((binding.literalType === undefined || binding.literalType === "number") &&
+      delayDurationAmount(binding.value) !== null),
+  "out_of_range",
+);
+
+export const delayScheduleConfigSchema = z.discriminatedUnion("delayType", [
+  z.strictObject({
+    delayType: z.literal("DURATION"),
+    duration: z
+      .strictObject({
+        days: durationBinding.optional(),
+        hours: durationBinding.optional(),
+        minutes: durationBinding.optional(),
+        seconds: durationBinding.optional(),
+      })
+      .refine((duration) => {
+        const minimum = Object.fromEntries(
+          delayDurationUnits.map((unit) => {
+            const binding = duration[unit];
+            return [unit, binding?.kind === "value" ? binding.value : 0];
+          }),
+        );
+        return delayDurationMilliseconds(minimum) !== null;
+      }, "out_of_range"),
+  }),
+  z.strictObject({
+    delayType: z.literal("SCHEDULED_DATE"),
+    scheduledDateTime: bindingSchema.refine(
+      (binding) =>
+        binding.kind === "reference" ||
+        (binding.literalType === "instant" && delayUntilDate(binding.value) !== null),
+      "literal_instant_invalid",
+    ),
+  }),
+]);
 export const conditionConfigSchema = z.unknown().transform((raw, context) => {
   const parsed = parseConditionConfig(raw, "execute");
   if (!parsed.ok) {
@@ -90,6 +136,22 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputContracts: mappingOutputContracts("condition"),
     effect: "none",
   },
+  ifElse: {
+    configuration: configurationProfiles.ifElse,
+    config: z.custom((raw) => parseIfElseConfig(raw, "execute").ok),
+    inputs: {},
+    outputs: coarseMappingOutputs("ifElse"),
+    outputContracts: mappingOutputContracts("ifElse"),
+    effect: "none",
+  },
+  "record.create": {
+    configuration: configurationProfiles["record.create"],
+    config: recordCreateConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.create"),
+    outputContracts: mappingOutputContracts("record.create"),
+    effect: "database",
+  },
   filter: {
     configuration: configurationProfiles.filter,
     config: conditionConfigSchema,
@@ -101,6 +163,7 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   delay: {
     configuration: configurationProfiles.delay,
     config: z.union([
+      delayScheduleConfigSchema,
       z.strictObject({
         minutes: bindingSchema.refine(
           (binding) =>
@@ -116,7 +179,7 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
         ),
       }),
     ]),
-    inputs: { minutes: "number", until: "instant" },
+    inputs: { minutes: "number", until: "instant", scheduledDateTime: "instant" },
     outputs: coarseMappingOutputs("delay"),
     outputContracts: mappingOutputContracts("delay"),
     effect: "wait",

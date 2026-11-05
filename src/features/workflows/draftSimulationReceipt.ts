@@ -1,10 +1,13 @@
 import type { ERROR_IDS } from "@/constants/errorIds";
+import type { WorkflowEdge } from "./schemas";
 
 export const draftSimulationNodeTypes = [
   "trigger.manual",
   "record.read",
+  "record.create",
   "activity.create",
   "condition",
+  "ifElse",
   "filter",
   "delay",
 ] as const;
@@ -17,7 +20,7 @@ export interface DraftSimulationStep {
   nodeType: DraftSimulationNodeType;
   status: "succeeded" | "failed";
   errorId?: DraftSimulationErrorId;
-  port?: "next" | "true" | "false";
+  port?: WorkflowEdge["port"];
   waitResumeAt?: string;
 }
 

@@ -258,7 +258,11 @@ it("keeps representable incomplete drafts instead of fabricating detached refere
     ).toBe(false);
     if (type === "activity.create")
       expect(inserted?.config.subject).toEqual({ kind: "value", value: "Call" });
-    if (type === "delay") expect(inserted?.config.minutes).toEqual({ kind: "value", value: 1 });
+    if (type === "delay")
+      expect(inserted?.config).toEqual({
+        delayType: "DURATION",
+        duration: { minutes: { kind: "value", value: 1 } },
+      });
   }
 });
 

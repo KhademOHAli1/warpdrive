@@ -1,9 +1,26 @@
-import type { NodePosition, WorkflowDefinition, WorkflowEdge } from "./schemas";
+import { portsFor } from "./graphPorts";
+import { ifElsePortDetails } from "./ifElseBudget";
+import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 
 export type NodeMeasurements = ReadonlyMap<string, { width: number; height: number }>;
 
 const COLUMN_SPACING = 360;
 const ROW_SPACING = 150;
+
+export function ifElseBranchOffset(node: WorkflowNode, port: WorkflowEdge["port"]) {
+  if (node.type !== "ifElse") return null;
+  const branch = ifElsePortDetails(node.config, port);
+  if (branch === null) return null;
+  // Twenty places the initial If/Else pair at ±200 and inserts later routes
+  // at 200px intervals around the parent. Both paths use the 120px drop.
+  const x =
+    branch.count === 2
+      ? branch.index === 0
+        ? -200
+        : 200
+      : (branch.index - (branch.count - 1) / 2) * 200;
+  return { x, y: 120 };
+}
 
 export function positionFor(graph: WorkflowDefinition, id: string): NodePosition {
   return (
@@ -81,7 +98,15 @@ export function positionForNewNode(
         : output.port === "false"
           ? 200
           : 0;
-  const suggested = boundedPosition({ ...origin, x: origin.x + offset, y: origin.y + ROW_SPACING });
+  const source =
+    output === undefined ? undefined : graph.nodes.find((node) => node.id === output.from);
+  const branch =
+    output === undefined || source === undefined ? null : ifElseBranchOffset(source, output.port);
+  const suggested = boundedPosition({
+    ...origin,
+    x: origin.x + (branch?.x ?? offset),
+    y: origin.y + (branch?.y ?? ROW_SPACING),
+  });
   return previous === undefined ? suggested : clearPosition(graph, suggested, measurements);
 }
 export function currentLayout(graph: WorkflowDefinition): Record<string, NodePosition> {
@@ -110,11 +135,14 @@ function clearPosition(
 export function arrangeGraph(graph: WorkflowDefinition): WorkflowDefinition {
   const widths = new Map<string, number>();
   const positions = new Map<string, NodePosition>();
-  const children = (id: string) =>
-    graph.edges
+  function children(id: string) {
+    const node = graph.nodes.find((item) => item.id === id);
+    const ports = node === undefined ? [] : portsFor(node);
+    return graph.edges
       .filter((edge) => edge.from === id)
-      .sort((a, b) => Number(a.port === "false") - Number(b.port === "false"))
+      .sort((a, b) => ports.indexOf(a.port) - ports.indexOf(b.port))
       .map((edge) => edge.to);
+  }
   function width(id: string, active = new Set<string>()): number {
     if (active.has(id)) return 1;
     const cached = widths.get(id);

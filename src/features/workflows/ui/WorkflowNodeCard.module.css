@@ -85,6 +85,7 @@
   color: var(--workflow-record-trigger-icon);
 }
 
+.icon[data-node-type="ifElse"],
 .icon[data-node-type="condition"],
 .icon[data-node-type="filter"],
 .icon[data-node-type="delay"] {
@@ -194,6 +195,30 @@
   transform: translateY(-50%);
 }
 
+.branchConnector {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  overflow: visible;
+  color: var(--workflow-border-strong);
+  pointer-events: none;
+}
+
+.freeBranch {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.freeBranchLabel {
+  inset: auto auto calc(100% + 4px) 50%;
+  transform: translateX(-50%);
+}
+
+.node .branchHandle:global(.react-flow__handle)::before {
+  width: 18px;
+  height: 28px;
+}
+
 .addButton {
   display: flex;
   align-items: center;
@@ -297,4 +322,8 @@
   .card {
     transition: none;
   }
+}
+
+.pendingCard {
+  --node-title: var(--workflow-light-text);
 }

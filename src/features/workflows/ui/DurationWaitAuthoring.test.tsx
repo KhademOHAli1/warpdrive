@@ -7,8 +7,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { validateDefinition } from "../definition";
 import { initialBlankDefinition } from "../editorModel";
-import { delayMinutesSchema } from "../registry";
-import { bindingSchema, type WorkflowDefinition } from "../schemas";
+import type { WorkflowDefinition } from "../schemas";
 import { BuilderWorkspace } from "./BuilderWorkspace";
 import { paletteWorkflowId, readyPaletteRead } from "./palette.TestHelpers";
 
@@ -69,7 +68,8 @@ it.each([
     steps: "Workflow steps",
     configure: "Configure",
     stepName: "Step name",
-    duration: "Wait duration (minutes)",
+    duration: "Minutes",
+    minuteValue: "1",
   },
   {
     locale: "fa",
@@ -80,7 +80,8 @@ it.each([
     steps: "مراحل گردش‌کار",
     configure: "تنظیمات",
     stepName: "نام مرحله",
-    duration: "مدت انتظار (دقیقه)",
+    duration: "دقیقه",
+    minuteValue: "۱",
   },
   {
     locale: "de",
@@ -91,10 +92,11 @@ it.each([
     steps: "Workflow-Schritte",
     configure: "Konfiguration",
     stepName: "Schrittname",
-    duration: "Wartezeit (Minuten)",
+    duration: "Minuten",
+    minuteValue: "1",
   },
 ] as const)(
-  "inserts a localized literal wait and focuses its inspector in $locale",
+  "inserts a localized duration wait and focuses its inspector in $locale",
   async (copy) => {
     const onChange = vi.fn<(definition: WorkflowDefinition) => void>();
     render(
@@ -132,12 +134,10 @@ it.each([
       name: copy.wait,
       nameMode: "automatic",
     });
-    const binding = bindingSchema.safeParse(wait.config.minutes);
-    if (!binding.success || binding.data.kind !== "value")
-      throw new Error("A new duration wait must use a literal binding");
-    const minutes = delayMinutesSchema.safeParse(binding.data.value);
-    if (!minutes.success) throw new Error("A new duration wait must use valid whole minutes");
-    expect(wait.config).toEqual({ minutes: { kind: "value", value: minutes.data } });
+    expect(wait.config).toEqual({
+      delayType: "DURATION",
+      duration: { minutes: { kind: "value", value: 1 } },
+    });
     expect(definition.edges).toEqual([{ from: "start", to: wait.id, port: "next" }]);
     expect(validateDefinition(definition).ok).toBe(true);
 
@@ -148,7 +148,7 @@ it.each([
     const inspector = screen.getByRole("region", { name: copy.configure });
     const stepName = within(inspector).getByRole("textbox", { name: copy.stepName });
     expect(stepName).toHaveValue(copy.wait);
-    expect(within(inspector).getByLabelText(copy.duration)).toHaveValue(String(minutes.data));
+    expect(within(inspector).getByLabelText(copy.duration)).toHaveValue(copy.minuteValue);
     await waitFor(() => expect(stepName).toHaveFocus(), {
       timeout: 1000,
       onTimeout: (error) => error,
@@ -157,7 +157,7 @@ it.each([
     await user.click(within(steps).getByRole("button", { name: new RegExp(copy.start) }));
     expect(screen.queryByLabelText(copy.duration)).not.toBeInTheDocument();
     await user.click(within(steps).getByRole("button", { name: new RegExp(copy.wait) }));
-    expect(screen.getByLabelText(copy.duration)).toHaveValue(String(minutes.data));
+    expect(screen.getByLabelText(copy.duration)).toHaveValue(copy.minuteValue);
     expect(onChange.mock.lastCall?.[0]).toBe(definition);
   },
 );

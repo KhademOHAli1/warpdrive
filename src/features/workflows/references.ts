@@ -1,6 +1,8 @@
 import { prepareConditionConfig } from "./conditionMapping";
 import { customFieldBindingSchema } from "./configurationBindings";
 import { conditionContainsMismatch, temporalConditionMismatch } from "./configurationReference";
+import { delayDurationSettings, delayDurationUnits } from "./delayConfig";
+import { prepareIfElseConfig } from "./ifElse";
 import { mappingPathNodes } from "./mappingAvailability";
 import { describeMappingTarget, inspectMapping, mappingOutputForReference } from "./mappingCatalog";
 import { actionRegistry } from "./registry";
@@ -12,11 +14,36 @@ import {
   type WorkflowNode,
 } from "./schemas";
 
-function nodeBindings(node: WorkflowNode): { field: string; binding: Binding }[] {
-  const bindings: { field: string; binding: Binding }[] = [];
+function nodeBindings(node: WorkflowNode) {
+  const bindings: { field: string; binding: Binding; path?: readonly string[] }[] = [];
   for (const [field, value] of Object.entries(node.config)) {
     const parsed = bindingSchema.safeParse(value);
     if (parsed.success) bindings.push({ field, binding: parsed.data });
+  }
+  if (node.type === "delay" && node.config.delayType === "DURATION") {
+    const duration = delayDurationSettings(node.config.duration);
+    for (const unit of delayDurationUnits) {
+      const parsed = bindingSchema.options[1].safeParse(duration?.[unit]);
+      if (parsed.success)
+        bindings.push({
+          field: `duration.${unit}`,
+          path: ["duration", unit],
+          binding: parsed.data,
+        });
+    }
+  }
+  const fields = node.config.fields;
+  if (
+    node.type === "record.create" &&
+    fields !== null &&
+    typeof fields === "object" &&
+    !Array.isArray(fields)
+  ) {
+    for (const [key, value] of Object.entries(fields)) {
+      const parsed = bindingSchema.safeParse(value);
+      if (parsed.success)
+        bindings.push({ field: `fields.${key}`, path: ["fields", key], binding: parsed.data });
+    }
   }
   const custom = node.config.customFields;
   if (custom === null || typeof custom !== "object" || Array.isArray(custom)) return bindings;
@@ -46,6 +73,7 @@ function bindingIssue(
   node: WorkflowNode,
   field: string,
   binding: Binding,
+  path: readonly string[] = [field],
 ): string | null {
   if (binding.kind === "reference") {
     const structural = structuralReferenceIssue(definition, node, binding);
@@ -55,7 +83,7 @@ function bindingIssue(
     if (mappingOutputForReference(definition, binding) === undefined) return null;
   }
   if (field.startsWith("customFields.")) return null; // Complete metadata owns target validation.
-  const target = describeMappingTarget(definition, node.id, [field]);
+  const target = describeMappingTarget(definition, node.id, path);
   if (target.state !== "ready") return null;
   const inspected = inspectMapping(definition, node.id, target.target, binding);
   return inspected.compatibility === "incompatible" ? "type_mismatch" : null;
@@ -65,6 +93,17 @@ function groupedReferenceIssues(
   definition: WorkflowDefinition,
   node: WorkflowNode,
 ): DefinitionIssue[] | null {
+  if (node.type === "ifElse") {
+    const checked = prepareIfElseConfig(node.config, { definition, nodeId: node.id });
+    return checked.ok
+      ? []
+      : checked.error.map((issue) => ({
+          code: issue.code,
+          nodeId: node.id,
+          field: issue.path.join("."),
+          path: issue.path,
+        }));
+  }
   if (
     (node.type !== "condition" && node.type !== "filter") ||
     (!Object.hasOwn(node.config, "expression") && !Object.hasOwn(node.config, "defaultPort"))
@@ -90,9 +129,10 @@ export function inspectReferences(definition: WorkflowDefinition): DefinitionIss
       issues.push(...grouped);
       continue;
     }
-    for (const { field, binding } of nodeBindings(node)) {
-      const code = bindingIssue(definition, node, field, binding);
-      if (code !== null) issues.push({ code, nodeId: node.id, field });
+    for (const { field, binding, path } of nodeBindings(node)) {
+      const code = bindingIssue(definition, node, field, binding, path);
+      if (code !== null)
+        issues.push({ code, nodeId: node.id, field, ...(path === undefined ? {} : { path }) });
     }
     if (temporalConditionMismatch(definition, node) || conditionContainsMismatch(definition, node))
       issues.push({ code: "type_mismatch", nodeId: node.id, field: "right" });

@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import { appendConnectedNode } from "./connectionGestures";
 import { initialDefinition } from "./editorModel";
+import { branchPort, newIfElseBranch, newIfElseConfig } from "./ifElse";
 import { makeNode } from "./nodeFactory";
 import { arrangeGraph, currentLayout, positionFor, positionForNewNode } from "./nodeLayout";
 import type { NodePosition, WorkflowDefinition } from "./schemas";
@@ -8,6 +9,20 @@ import type { NodePosition, WorkflowDefinition } from "./schemas";
 function sample(): WorkflowDefinition {
   return initialDefinition({ start: "Start", read: "Read", task: "Task", subject: "Call" });
 }
+
+it("places new ordered routes on separate 120px branches and keeps existing positions intact", () => {
+  const graph = sample();
+  const config = newIfElseConfig();
+  graph.nodes.push({ id: "switch", type: "ifElse", name: "If/Else", version: 1, config });
+  graph.layout = { switch: { x: 100, y: 200, anchor: "center" } };
+  const position = (id: string) =>
+    positionForNewNode(graph, "switch", { from: "switch", port: branchPort(id) });
+  expect(position("if")).toEqual({ x: -100, y: 320, anchor: "center" });
+  expect(position("else")).toEqual({ x: 300, y: 320, anchor: "center" });
+  config.branches.push(newIfElseBranch("middle"));
+  expect(position("middle")).toEqual({ x: 100, y: 320, anchor: "center" });
+  expect(graph.layout.switch).toEqual({ x: 100, y: 200, anchor: "center" });
+});
 
 function expectClear(graph: WorkflowDefinition, position: NodePosition) {
   // Keep compact workflow cards and their trailing add controls clear of neighboring cells.

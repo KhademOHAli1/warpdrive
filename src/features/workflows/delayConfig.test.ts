@@ -129,7 +129,7 @@ describe("fixed instant wait static contract", () => {
     },
   );
 
-  it("declares the fixed instant field without changing the duration default", () => {
+  it("retains the legacy fixed instant field alongside the new duration default", () => {
     expect(getConfigurationSpec("delay", 1)?.fields).toContainEqual(
       expect.objectContaining({
         path: ["until"],
@@ -137,7 +137,10 @@ describe("fixed instant wait static contract", () => {
         required: false,
       }),
     );
-    expect(defaultConfiguration("delay", {})).toEqual({ minutes: value(1) });
+    expect(defaultConfiguration("delay", {})).toEqual({
+      delayType: "DURATION",
+      duration: { minutes: value(1) },
+    });
   });
 });
 

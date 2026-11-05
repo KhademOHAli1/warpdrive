@@ -3,8 +3,7 @@
 import { useNodesInitialized, useReactFlow, useStore } from "@xyflow/react";
 import { useEffect, useRef } from "react";
 
-// Keep the camera when labels or panels change language. A substantial width change
-// needs a new fit so a desktop pan position cannot leave a narrow canvas empty.
+// A side panel changes the width, not the viewer's zoom or vertical pan.
 export type RevealNode = { id: string; nonce: number };
 export function ResponsiveViewport({ reveal }: { reveal?: RevealNode }) {
   const width = useStore((state) => state.width);
@@ -29,10 +28,12 @@ export function ResponsiveViewport({ reveal }: { reveal?: RevealNode }) {
       );
       return;
     }
-    if (Math.abs(width - previousWidth.current) <= 48) return;
+    const widthChange = width - previousWidth.current;
+    if (widthChange === 0) return;
     previousWidth.current = width;
-    void fitView({ padding: 0.2, minZoom: 0.7, maxZoom: 1.1 });
-  }, [width, ready, reveal, fitView, getNodes, getNodesBounds, getViewport, setViewport]);
+    const current = getViewport();
+    void setViewport({ ...current, x: current.x + widthChange / 2 }, { duration: 0 });
+  }, [width, ready, reveal, getNodes, getNodesBounds, getViewport, setViewport]);
   useEffect(() => {
     if (
       !ready ||

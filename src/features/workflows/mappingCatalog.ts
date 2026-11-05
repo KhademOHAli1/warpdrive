@@ -10,6 +10,7 @@ import type {
   ConfigurationIssueCode,
   ConfigurationMetadata,
 } from "./configurationTypes";
+import { delayDurationSettings, delayDurationUnits } from "./delayConfig";
 import { mappingPathNodes } from "./mappingAvailability";
 import {
   customMappingContract,
@@ -37,6 +38,11 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import {
+  recordCreateEntitySchema,
+  recordCreateFieldTarget,
+  recordCreateOutputContract,
+} from "./workflowRecordCreateContract";
 
 function issue(
   nodeId: string,
@@ -59,7 +65,16 @@ function qualifiedSource(node: WorkflowNode): boolean {
 function outputsFor(node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
   const needsConfiguration = !actionRegistry[node.type].config.safeParse(node.config).success;
-  return Object.entries(actionRegistry[node.type].outputContracts).flatMap(([field, contract]) =>
+  const entity =
+    node.type === "record.create"
+      ? recordCreateEntitySchema.safeParse(node.config.entity)
+      : undefined;
+  if (entity !== undefined && !entity.success) return [];
+  const contracts =
+    entity?.success === true
+      ? { id: recordCreateOutputContract(entity.data) }
+      : actionRegistry[node.type].outputContracts;
+  return Object.entries(contracts).flatMap(([field, contract]) =>
     isMappingFieldKey(field)
       ? [
           {
@@ -228,6 +243,31 @@ function builtinTarget(
   return { state: "ready", target };
 }
 
+function delayScheduleTarget(node: WorkflowNode, path: readonly string[]): MappingTargetResult {
+  const durationUnit =
+    node.config.delayType === "DURATION" &&
+    path.length === 2 &&
+    path[0] === "duration" &&
+    delayDurationUnits.some((unit) => unit === path[1]);
+  const instant =
+    node.config.delayType === "SCHEDULED_DATE" &&
+    path.length === 1 &&
+    path[0] === "scheduledDateTime";
+  if (!durationUnit && !instant)
+    return unavailableTarget(node.id, path, "unknown-output", "unknown_setting");
+  return {
+    state: "ready",
+    target: {
+      nodeId: node.id,
+      path: [...path],
+      required: instant,
+      mode: "binding",
+      contract: { kind: instant ? "instant" : "number", nullable: false },
+      acceptedKinds: instant ? ["instant", "date"] : ["number", "decimal"],
+    },
+  };
+}
+
 export function describeMappingTarget(
   definition: WorkflowDefinition,
   nodeId: string,
@@ -238,6 +278,18 @@ export function describeMappingTarget(
   const node = nodes[0];
   if (nodes.length !== 1 || node === undefined)
     return unavailableTarget(nodeId, path, "source-missing", "reference_missing");
+  if (node.type === "record.create") {
+    const entity = recordCreateEntitySchema.safeParse(node.config.entity);
+    const target =
+      entity.success && path[0] === "fields" && path.length === 2 && path[1] !== undefined
+        ? recordCreateFieldTarget(node.id, entity.data, path[1])
+        : undefined;
+    return target === undefined
+      ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
+      : { state: "ready", target };
+  }
+  if (node.type === "delay" && Object.hasOwn(node.config, "delayType"))
+    return delayScheduleTarget(node, path);
   if ((node.type === "condition" || node.type === "filter") && path[0] === "expression")
     return groupedConditionTarget(definition, node, path);
   return path[0] === "customFields"
@@ -555,6 +607,21 @@ function applyReference(
   const node = copy.nodes.find((entry) => entry.id === nodeId);
   const key = path[0];
   if (node === undefined || key === undefined) return undefined;
+  if (node.type === "delay" && key === "duration" && path[1] !== undefined) {
+    const previous = node.config.duration;
+    if (previous !== undefined && delayDurationSettings(previous) === undefined) return undefined;
+    node.config.duration = {
+      ...(previous !== null && typeof previous === "object" ? previous : {}),
+      [path[1]]: binding,
+    };
+    return copy;
+  }
+  if (node.type === "record.create" && key === "fields" && path[1] !== undefined) {
+    const current = node.config.fields;
+    if (current === null || typeof current !== "object" || Array.isArray(current)) return undefined;
+    node.config.fields = { ...current, [path[1]]: binding };
+    return copy;
+  }
   if (key !== "customFields") {
     node.config[key] = binding;
     return copy;
@@ -587,6 +654,14 @@ function currentBinding(
   const node = definition.nodes.find((entry) => entry.id === nodeId);
   const key = path[0];
   if (node === undefined || key === undefined) return undefined;
+  if (node.type === "delay" && key === "duration" && path[1] !== undefined)
+    return delayDurationSettings(node.config.duration)?.[path[1]];
+  if (node.type === "record.create" && key === "fields" && path[1] !== undefined) {
+    const fields = node.config.fields;
+    return fields !== null && typeof fields === "object" && !Array.isArray(fields)
+      ? fields[path[1]]
+      : undefined;
+  }
   if (key !== "customFields") return node.config[key];
   const settings = node.config.customFields;
   if (settings === null || typeof settings !== "object" || Array.isArray(settings))

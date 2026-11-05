@@ -49,6 +49,7 @@
 .icon[data-node-type="trigger.record"] {
   color: var(--workflow-record-trigger-icon);
 }
+.icon[data-node-type="ifElse"],
 .icon[data-node-type="condition"],
 .icon[data-node-type="delay"],
 .icon[data-node-type="filter"] {

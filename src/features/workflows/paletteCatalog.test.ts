@@ -4,15 +4,17 @@ import { findPaletteEntry, paletteCatalog } from "./paletteCatalog";
 import { executableNode } from "./readiness";
 import { nodeTypes, type WorkflowNode } from "./schemas";
 
-it("classifies exactly the eight known version-one entries in deliberate order", () => {
+it("classifies the known version-one entries in deliberate order", () => {
   expect(paletteCatalog.map((entry) => entry.type)).toEqual([
     "trigger.manual",
     "trigger.record",
+    "record.create",
     "record.read",
     "activity.create",
     "notification",
     "condition",
     "filter",
+    "ifElse",
     "delay",
   ]);
   expect(new Set(paletteCatalog.map((entry) => entry.type))).toEqual(new Set(nodeTypes));
@@ -22,7 +24,7 @@ it("classifies exactly the eight known version-one entries in deliberate order",
   }
 });
 
-it("keeps only the five factory types insertable and configures the existing manual trigger", () => {
+it("keeps only factory-supported types insertable and configures the existing manual trigger", () => {
   expect(
     paletteCatalog
       .filter((entry) => entry.selection === "insert")
@@ -42,11 +44,13 @@ it("describes supported runtime subsets without promoting broader schema variant
     paletteCatalog.filter((entry) => entry.support === "supported").map((entry) => entry.profile),
   ).toEqual([
     "manual-trigger",
+    "create-record",
     "deal-read",
     "basic-task",
     "scalar-condition",
     "scalar-condition",
-    "literal-duration",
+    "ordered-condition",
+    "delay-schedule",
   ]);
   const node = (type: WorkflowNode["type"], config: WorkflowNode["config"]): WorkflowNode => ({
     id: "example",
@@ -93,7 +97,7 @@ it("provides categories and real label/description keys for the finite localized
   });
   expect(findPaletteEntry("delay", 1)).toMatchObject({
     labelKey: "delay",
-    descriptionKey: "delayMinutesHint",
+    descriptionKey: "delayScheduleHint",
   });
 });
 

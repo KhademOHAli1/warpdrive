@@ -19,7 +19,7 @@ export type MappingValueKind =
 export interface MappingValueContract {
   kind: MappingValueKind;
   nullable: boolean;
-  entity?: "deal" | "activity" | "user" | "person" | "organization";
+  entity?: "deal" | "lead" | "activity" | "user" | "person" | "organization";
   optionFieldId?: string;
 }
 
@@ -34,6 +34,7 @@ export type MappingFieldKey =
   | "currency"
   | "result"
   | "matchesFilter"
+  | "matchingBranchId"
   | "resumeAt"
   | "expectedCloseDate";
 

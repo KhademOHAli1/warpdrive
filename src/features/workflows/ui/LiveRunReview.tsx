@@ -37,6 +37,12 @@ export function LiveRunReview({
     ...((review.effects.counts.filter ?? 0) > 0
       ? [{ label: t("filter"), count: review.effects.counts.filter ?? 0 }]
       : []),
+    ...((review.effects.counts.ifElse ?? 0) > 0
+      ? [{ label: t("ifElseAction"), count: review.effects.counts.ifElse ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordCreate ?? 0) > 0
+      ? [{ label: t("createRecord"), count: review.effects.counts.recordCreate ?? 0 }]
+      : []),
     { label: t("delay"), count: review.effects.counts.delay },
   ];
   return (
@@ -64,6 +70,7 @@ export function LiveRunReview({
       <p className="text-muted-foreground">{t("liveReviewConfigured")}</p>
       {review.effects.counts.read > 0 && <p>{t("liveReviewRead")}</p>}
       {review.effects.counts.task > 0 && <p>{t("liveReviewTask")}</p>}
+      {(review.effects.counts.recordCreate ?? 0) > 0 && <p>{t("liveReviewRecordCreate")}</p>}
       {review.effects.counts.delay > 0 && <p>{t("liveReviewWait")}</p>}
       <p className="text-muted-foreground">{t("liveReviewPermissions")}</p>
       <p className="text-muted-foreground">{t("liveReviewOmitted")}</p>

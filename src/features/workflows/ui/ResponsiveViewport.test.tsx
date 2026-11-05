@@ -30,16 +30,17 @@ afterEach(() => {
   flow.nodes = [{ id: "start" }];
   flow.viewport = { x: 0, y: 150, zoom: 1 };
 });
-it("fits nodes again after a substantial canvas width change", () => {
+it("recenters horizontally when a panel opens without changing user pan or zoom", () => {
   const view = render(<ResponsiveViewport />);
+  flow.viewport = { x: 290, y: 190, zoom: 0.8 };
   expect(flow.fitView).not.toHaveBeenCalled();
-  flow.width = 340;
+  flow.width = 500;
   view.rerender(<ResponsiveViewport />);
-  expect(flow.fitView).toHaveBeenCalledTimes(1);
+  expect(flow.setViewport).toHaveBeenLastCalledWith({ x: 90, y: 190, zoom: 0.8 }, { duration: 0 });
+  expect(flow.fitView).not.toHaveBeenCalled();
 });
-it("preserves the camera across ordinary rerenders and small width changes", () => {
+it("preserves the camera across ordinary rerenders", () => {
   const view = render(<ResponsiveViewport />);
-  flow.width = 898;
   view.rerender(<ResponsiveViewport />);
   expect(flow.fitView).not.toHaveBeenCalled();
   expect(flow.setViewport).toHaveBeenCalledTimes(1);

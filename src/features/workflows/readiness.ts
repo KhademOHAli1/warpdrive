@@ -14,6 +14,8 @@ export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
   if (node.type === "trigger.manual") return true;
   if (node.type === "delay") {
+    if (Object.hasOwn(node.config, "delayType"))
+      return actionRegistry.delay.config.safeParse(node.config).success;
     const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
     const binding = bindingSchema.safeParse(node.config[selected]);
     return (
@@ -22,6 +24,8 @@ export function executableNode(node: WorkflowNode): boolean {
       actionRegistry.delay.config.safeParse(node.config).success
     );
   }
+  if (node.type === "ifElse" || node.type === "record.create")
+    return actionRegistry[node.type].config.safeParse(node.config).success;
   if (node.type === "condition" || node.type === "filter") {
     if (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort")) {
       const grouped = parseConditionConfig(node.config, "execute");
@@ -44,13 +48,12 @@ export function executableDefinition(definition: WorkflowDefinition): boolean {
   return isSupportedVersion(definition.schemaVersion) && definition.nodes.every(executableNode);
 }
 
-// Draft simulation intentionally has a narrower wait contract than published
-// execution. Fixed-instant waits remain executable after publication, but the
-// draft transaction only projects bounded duration waits and must never route an
-// `until` binding through delayResumeAt as if it were a `minutes` binding.
+// Legacy fixed instants retain their existing published-only contract. The
+// configured schedules share the same deadline projection in both modes.
 export function draftExecutableNode(node: WorkflowNode): boolean {
   if (!executableNode(node)) return false;
   if (node.type !== "delay") return true;
+  if (Object.hasOwn(node.config, "delayType")) return true;
   return (
     !Object.hasOwn(node.config, "until") &&
     Object.keys(node.config).every((key) => key === "minutes")

@@ -7,6 +7,8 @@ import type {
   ConfigurationSpec,
   ConfigurationValueKind,
 } from "./configurationTypes";
+import { delayDurationUnits } from "./delayConfig";
+import { newIfElseConfig } from "./ifElseConfig";
 import type { ValueType, WorkflowNode } from "./schemas";
 
 export { configurationLimits } from "./configurationLimits";
@@ -99,6 +101,8 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
       }),
     ],
   },
+  ifElse: { supported: true, fields: [name] },
+  "record.create": { supported: true, fields: [name] },
   filter: {
     supported: true,
     fields: [
@@ -133,6 +137,14 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
         required: false,
         modes: ["literal"],
       }),
+      ...delayDurationUnits.map((unit) =>
+        field(unit, `delayUnits.${unit}`, "numeric", {
+          path: ["duration", unit],
+          required: false,
+          constraints: { min: 0 },
+        }),
+      ),
+      field("scheduledDateTime", "delayScheduledDateTime", "scalar"),
     ],
   },
   notification: { supported: false, fields: [name, unavailable("title", "string")] },
@@ -205,9 +217,15 @@ export function defaultConfiguration(
 ): WorkflowNode["config"] {
   const recordId = { kind: "reference", nodeId: source.trigger?.id ?? "start", path: ["recordId"] };
   if (type === "record.read") return { entity: "deal", recordId };
+  if (type === "ifElse") return newIfElseConfig();
+  if (type === "record.create") return { fields: {} };
   if (type === "activity.create")
     return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };
-  if (type === "delay") return { minutes: { kind: "value", value: configurationLimits.waitMin } };
+  if (type === "delay")
+    return {
+      delayType: "DURATION",
+      duration: { minutes: { kind: "value", value: configurationLimits.waitMin } },
+    };
   if (type !== "condition" && type !== "filter") return {};
   const read = source.read;
   return {

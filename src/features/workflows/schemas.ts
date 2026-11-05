@@ -2,6 +2,7 @@ import { z } from "zod";
 import { boundedConditionConfig } from "./conditionExpressionBudget";
 import { configurationLimits } from "./configurationLimits";
 import { boundedDelayConfig } from "./delayConfig";
+import { boundedIfElseConfig, branchPortSchema } from "./ifElseBudget";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
@@ -46,8 +47,10 @@ export const nodeTypes = [
   "trigger.manual",
   "trigger.record",
   "record.read",
+  "record.create",
   "activity.create",
   "condition",
+  "ifElse",
   "filter",
   "delay",
   "notification",
@@ -62,9 +65,20 @@ export const nodeSchema = z.strictObject({
   config: z
     .unknown()
     .refine(boundedConditionConfig, "Condition expression exceeds safe bounds")
-    .refine(boundedDelayConfig, "Fixed instant wait exceeds its reviewed scalar shape")
+    .refine(
+      (raw) =>
+        !(
+          raw !== null &&
+          typeof raw === "object" &&
+          (Object.hasOwn(raw, "branches") || Object.hasOwn(raw, "fallbackId"))
+        ) || boundedIfElseConfig(raw),
+      "If/Else routes exceed safe bounds",
+    )
+    .refine(boundedDelayConfig, "Delay settings exceed safe bounds")
     .pipe(z.record(z.string(), z.json())),
 });
+
+export const workflowPortSchema = z.union([z.enum(["next", "true", "false"]), branchPortSchema]);
 
 export const definitionSchema = z.strictObject({
   schemaVersion: z.literal(1),
@@ -85,7 +99,7 @@ export const definitionSchema = z.strictObject({
       z.strictObject({
         from: identifier,
         to: identifier,
-        port: z.enum(["next", "true", "false"]),
+        port: workflowPortSchema,
       }),
     )
     .max(200),

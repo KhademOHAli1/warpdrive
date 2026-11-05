@@ -16,11 +16,13 @@ import { evaluateCondition } from "./condition";
 import { resolveTaskCustomFields } from "./configurationRuntime";
 import { validateNodeConfiguration } from "./configurationValidation";
 import { evaluateFilter } from "./filter";
+import { evaluateIfElse } from "./ifElse";
 import { validateLiteralIntent } from "./mappingLiteralIntent";
 import { executableNode } from "./readiness";
 import { stringBinding, uuidBinding } from "./runBindings";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import { createWorkflowRecord } from "./workflowRecordCreate";
 
 function referenceActor(actor: PermSetUser) {
   return {
@@ -48,6 +50,18 @@ export async function executeRunNode(
   if (node.type === "trigger.manual") return ok({ recordId: trigger.recordId });
   if (node.type === "filter")
     return evaluateFilter(node.config, outputs, { definition, nodeId: node.id });
+  if (node.type === "ifElse")
+    return evaluateIfElse(node.config, outputs, { definition, nodeId: node.id });
+  if (node.type === "record.create")
+    return createWorkflowRecord(
+      db,
+      actor,
+      node,
+      outputs,
+      definition,
+      simulation ? "simulation" : "live",
+      signal,
+    );
   if (node.type === "condition")
     return evaluateCondition(node.config, outputs, { definition, nodeId: node.id });
   if (node.type === "record.read" && node.config.entity === "deal")

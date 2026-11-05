@@ -17,7 +17,7 @@ interface PaletteBoundsScenario {
   locale: Locale;
   numberingSystem: NumberingSystem | undefined;
   buttonName: RegExp;
-  expectedBounds: readonly string[];
+  expectedDays: readonly string[];
 }
 
 const scenarios: PaletteBoundsScenario[] = [
@@ -26,34 +26,34 @@ const scenarios: PaletteBoundsScenario[] = [
     locale: "fa",
     numberingSystem: undefined,
     buttonName: /^انتظار/,
-    expectedBounds: ["۱", "۵۲۵۶۰۰"],
+    expectedDays: ["۳۶۵"],
   },
   {
     name: "English with explicit Persian digits",
     locale: "en",
     numberingSystem: "arabext",
     buttonName: /^Wait/,
-    expectedBounds: ["۱", "۵۲۵۶۰۰"],
+    expectedDays: ["۳۶۵"],
   },
   {
     name: "Farsi with explicit Latin digits",
     locale: "fa",
     numberingSystem: "latn",
     buttonName: /^انتظار/,
-    expectedBounds: ["1", "525600"],
+    expectedDays: ["365"],
   },
   {
     name: "English with explicit Latin digits",
     locale: "en",
     numberingSystem: "latn",
     buttonName: /^Wait/,
-    expectedBounds: ["1", "525600"],
+    expectedDays: ["365"],
   },
 ];
 
 it.each(scenarios)(
-  "shows selected-numbering duration bounds in the palette for $name",
-  ({ locale, numberingSystem, buttonName, expectedBounds }) => {
+  "shows the localized maximum duration in the palette for $name",
+  ({ locale, numberingSystem, buttonName, expectedDays }) => {
     const onChoose = vi.fn<(selection: PickerSelection) => void>();
     const onClose = vi.fn<() => void>();
     const preferences = numberingSystem === undefined ? { locale } : { locale, numberingSystem };
@@ -73,8 +73,8 @@ it.each(scenarios)(
     expect(onChoose).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
 
-    // Grouping punctuation is presentation; selected digits and both bounds must remain visible.
+    // The maximum duration follows the user’s selected digits in the accessible description.
     const bounds = (wait.textContent ?? "").replaceAll(/[,٬]/g, "").match(/[0-9۰-۹٠-٩]+/g);
-    expect(bounds).toEqual(expectedBounds);
+    expect(bounds).toEqual(expectedDays);
   },
 );

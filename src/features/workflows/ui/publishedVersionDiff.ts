@@ -1,5 +1,7 @@
 import { configurationLimits } from "../configurationLimits";
-import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
+import { ifElsePortDetails } from "../ifElseBudget";
+import { type WorkflowDefinition, type WorkflowEdge, workflowPortSchema } from "../schemas";
+import type { IfElsePortLabel } from "./conditionPortLabel";
 
 export interface ComparableVersion {
   name: string;
@@ -15,12 +17,11 @@ export interface StepDifference {
   namingChanged: boolean;
   configurationChanged: boolean;
 }
-export interface ConnectionDifference {
+export type ConnectionDifference = {
   ordinal: number;
   fromName: string;
   toName: string;
-  port: WorkflowEdge["port"];
-}
+} & ({ port: "next" | "true" | "false" } | { port: "branch"; branch: IfElsePortLabel });
 export interface VersionDifference {
   nameChanged: boolean;
   layoutChanged: boolean;
@@ -199,14 +200,20 @@ function connections(
       !onlyKeys(edge, ["from", "port", "to"]) ||
       typeof edge.from !== "string" ||
       typeof edge.to !== "string" ||
-      !nodes.has(edge.from) ||
-      !nodes.has(edge.to) ||
-      (edge.port !== "next" && edge.port !== "true" && edge.port !== "false")
+      !nodes.has(edge.to)
     )
       throw unavailable();
-    const key = JSON.stringify([edge.from, edge.port, edge.to]);
+    const from = nodes.get(edge.from);
+    const port = workflowPortSchema.safeParse(edge.port);
+    if (from === undefined || !port.success) throw unavailable();
+    if (
+      (from.type === "ifElse" || port.data.startsWith("branch:")) &&
+      (from.type !== "ifElse" || ifElsePortDetails(from.config, port.data) === null)
+    )
+      throw unavailable();
+    const key = JSON.stringify([edge.from, port.data, edge.to]);
     const existing = result.get(key);
-    const connection: WorkflowEdge = { from: edge.from, port: edge.port, to: edge.to };
+    const connection: WorkflowEdge = { from: edge.from, port: port.data, to: edge.to };
     if (existing === undefined) result.set(key, [connection]);
     else existing.push(connection);
   }
@@ -220,7 +227,12 @@ function connectionNames(
   const from = nodes.get(edge.from);
   const to = nodes.get(edge.to);
   if (from === undefined || to === undefined) throw unavailable();
-  return { ordinal, fromName: from.name, toName: to.name, port: edge.port };
+  const names = { ordinal, fromName: from.name, toName: to.name };
+  if (edge.port === "next" || edge.port === "true" || edge.port === "false")
+    return { ...names, port: edge.port };
+  const branch = ifElsePortDetails(from.config, edge.port);
+  if (branch === null) throw unavailable();
+  return { ...names, port: "branch", branch: { index: branch.index, fallback: branch.fallback } };
 }
 function connectionDifference(
   source: Map<string, WorkflowEdge[]>,

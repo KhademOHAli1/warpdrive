@@ -14,6 +14,7 @@ import { makeNode } from "../nodeFactory";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 import type { WorkflowCanvasEdge } from "./WorkflowDiagramEdge";
 import type { CanvasNode } from "./WorkflowNodeCard";
+import { pendingEdgeId, pendingStepId } from "./workflowPendingInsertion";
 
 const flow = vi.hoisted(() => {
   const props: ReactFlowProps<CanvasNode, WorkflowCanvasEdge> = {};
@@ -39,6 +40,60 @@ vi.mock("@xyflow/react", () => ({
   useConnection: () => ({ inProgress: false }),
 }));
 afterEach(cleanup);
+
+it("shows a transient step only for a free output and never commits its diagram changes", () => {
+  const definition = initialDefinition({
+    start: "Start",
+    read: "Read",
+    task: "Task",
+    subject: "Call",
+  });
+  const original = structuredClone(definition);
+  const onChange = vi.fn();
+  const draw = (source?: string, editable = true) => (
+    <WorkflowCanvas
+      definition={definition}
+      selected=""
+      selectedEdge={null}
+      onSelect={vi.fn()}
+      onSelectEdge={vi.fn()}
+      onChange={onChange}
+      onProblem={vi.fn()}
+      editable={editable}
+      invalidNodes={new Set()}
+      layoutRevision={0}
+      pendingInsert={
+        source === undefined
+          ? undefined
+          : { output: { from: source, port: "next" }, focusPicker: vi.fn() }
+      }
+    />
+  );
+  const view = render(draw("task"));
+  expect(flow.nodes.find((node) => node.id === pendingStepId)).toMatchObject({
+    type: "pendingWorkflowStep",
+    position: { x: 0, y: 450 },
+    origin: [0.5, 0.5],
+    draggable: false,
+    deletable: false,
+  });
+  expect(flow.props.edges?.find((edge) => edge.id === pendingEdgeId)).toMatchObject({
+    source: "task",
+    target: pendingStepId,
+    deletable: false,
+    reconnectable: false,
+  });
+  act(() => flow.change?.([{ id: pendingStepId, type: "remove" }]));
+  expect(onChange).not.toHaveBeenCalled();
+  view.rerender(draw("start"));
+  expect(flow.nodes.some((node) => node.id === pendingStepId)).toBe(false);
+  expect(flow.props.edges).toHaveLength(definition.edges.length);
+  view.rerender(draw("task", false));
+  expect(flow.nodes.some((node) => node.id === pendingStepId)).toBe(false);
+  view.rerender(draw());
+  expect(flow.props.edges).toHaveLength(definition.edges.length);
+  expect(definition).toEqual(original);
+});
 it("retains node measurements during selection and language changes without dirtying the graph", () => {
   const definition = initialDefinition({
     start: "Start",

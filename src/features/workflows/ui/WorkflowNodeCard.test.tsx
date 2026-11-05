@@ -3,8 +3,11 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { NodeProps } from "@xyflow/react";
+import type { CSSProperties } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { OutputTarget } from "../connectionGestures";
+import { newIfElseBranch, newIfElseConfig } from "../ifElse";
 import type { WorkflowNode } from "../schemas";
 import { type CanvasNode, WorkflowNodeCard } from "./WorkflowNodeCard";
 
@@ -13,11 +16,13 @@ vi.mock("@xyflow/react", () => ({
     id,
     type,
     position,
+    style,
     "aria-label": label,
   }: {
     id: string;
     type: string;
     position: string;
+    style?: CSSProperties;
     "aria-label"?: string;
   }) => (
     <span
@@ -26,6 +31,7 @@ vi.mock("@xyflow/react", () => ({
       data-position={position}
       data-type={type}
       aria-label={label}
+      style={style}
     />
   ),
   Position: { Top: "top", Bottom: "bottom", Right: "right" },
@@ -50,7 +56,7 @@ function props(
     onChangeType?: () => void;
     onDuplicate?: () => void;
     onRemove?: () => void;
-    onAdd?: (source: { from: string; port: "next" | "true" | "false" }) => void;
+    onAdd?: (source: OutputTarget) => void;
   } = {},
 ): NodeProps<CanvasNode> {
   return {
@@ -206,4 +212,32 @@ it("keeps conditional port IDs while routing Matches right and Otherwise down", 
     [{ from: "check", port: "true" }],
     [{ from: "check", port: "false" }],
   ]);
+});
+
+it("keeps ordered routes separately addressable along the bottom and adds the chosen route", async () => {
+  const config = newIfElseConfig();
+  config.branches.push(newIfElseBranch("follow_up"));
+  const branch: WorkflowNode = {
+    ...wait,
+    type: "ifElse",
+    id: "switch",
+    name: "If/Else",
+    nameMode: "custom",
+    config,
+  };
+  const onAdd = vi.fn();
+  render(<WorkflowNodeCard {...props(branch, false, { onAdd })} />);
+  const handles = ["if", "follow_up", "else"].map((id) =>
+    screen.getByTestId(`handle-branch:${id}`),
+  );
+  expect(handles.map((handle) => handle.getAttribute("aria-label"))).toEqual([
+    "If",
+    "Else if 1",
+    "Else",
+  ]);
+  expect(handles.every((handle) => handle.dataset.position === "bottom")).toBe(true);
+  expect(new Set(handles.map((handle) => handle.style.left)).size).toBe(3);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Add a step after If/Else: Else if 1" }));
+  expect(onAdd).toHaveBeenCalledExactlyOnceWith({ from: "switch", port: "branch:follow_up" });
 });

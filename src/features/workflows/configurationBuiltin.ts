@@ -7,9 +7,12 @@ import type {
   ConfigurationIssueCode,
   ConfigurationValidation,
 } from "./configurationTypes";
-import { boundedDelayConfig, delayUntilDate } from "./delayConfig";
+import { boundedDelayConfig, delayDurationUnits, delayUntilDate } from "./delayConfig";
+import { prepareIfElseConfig } from "./ifElse";
 import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
+import { delayScheduleConfigSchema } from "./registry";
 import { bindingSchema, draftBindingSchema, type WorkflowNode } from "./schemas";
+import { recordCreateConfig } from "./workflowRecordCreateContract";
 
 export function configurationIssue(
   node: WorkflowNode,
@@ -25,7 +28,17 @@ function checkBinding(
   context: ConfigurationContext,
   result: ConfigurationValidation,
 ): void {
-  const described = describeMappingTarget(context.definition, node.id, [field], context.metadata);
+  checkMapping(node, [field], node.config[field], context, result);
+}
+
+function checkMapping(
+  node: WorkflowNode,
+  path: readonly string[],
+  raw: unknown,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+): void {
+  const described = describeMappingTarget(context.definition, node.id, path, context.metadata);
   if (described.state !== "ready") {
     result.issues.push(...described.issues);
     return;
@@ -34,7 +47,7 @@ function checkBinding(
     context.definition,
     node.id,
     described.target,
-    node.config[field],
+    raw,
     context.metadata,
   );
   result.issues.push(...inspected.issues);
@@ -97,7 +110,45 @@ function validateUntil(node: WorkflowNode, result: ConfigurationValidation): voi
     result.issues.push(configurationIssue(node, ["until"], "literal_instant_invalid"));
 }
 
-function validateWait(node: WorkflowNode, result: ConfigurationValidation): void {
+function validateDelaySchedule(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+): void {
+  const parsed = delayScheduleConfigSchema.safeParse(node.config);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const path = issue.path.filter((key): key is string => typeof key === "string");
+      let code: ConfigurationIssueCode = "invalid_value";
+      if (issue.message === "out_of_range" || issue.message === "literal_instant_invalid")
+        code = issue.message;
+      else if (path.length === 1 && path[0] !== undefined && node.config[path[0]] === undefined)
+        code = "required";
+      result.issues.push(configurationIssue(node, path, code));
+    }
+    return;
+  }
+  const settings = parsed.data;
+  if (settings.delayType === "SCHEDULED_DATE") {
+    checkBinding(node, "scheduledDateTime", context, result);
+    return;
+  }
+  for (const unit of delayDurationUnits) {
+    const binding = settings.duration[unit];
+    if (binding?.kind === "reference")
+      checkMapping(node, ["duration", unit], binding, context, result);
+  }
+}
+
+function validateWait(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+): void {
+  if (Object.hasOwn(node.config, "delayType")) {
+    validateDelaySchedule(node, context, result);
+    return;
+  }
   if (Object.hasOwn(node.config, "until")) {
     validateUntil(node, result);
     return;
@@ -178,7 +229,32 @@ function validateCondition(
     result.issues.push(configurationIssue(node, ["right"], "invalid_type"));
 }
 
+function validateRecordCreate(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = recordCreateConfig.safeParse(node.config);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const path = issue.path.map(String);
+      const code =
+        issue.message === "required" || issue.message === "unknown_setting"
+          ? issue.message
+          : "invalid_value";
+      result.issues.push(configurationIssue(node, path, code));
+    }
+    return;
+  }
+  for (const [key, binding] of Object.entries(parsed.data.fields))
+    checkMapping(node, ["fields", key], binding, context, result);
+}
+
 function allowedKeys(node: WorkflowNode): string[] {
+  if (node.type === "ifElse") return ["branches", "fallbackId"];
+  if (node.type === "record.create") return ["entity", "fields"];
+  if (node.type === "delay" && Object.hasOwn(node.config, "delayType"))
+    return ["delayType", node.config.delayType === "DURATION" ? "duration" : "scheduledDateTime"];
   if (
     (node.type === "condition" || node.type === "filter") &&
     (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort"))
@@ -208,9 +284,16 @@ export function validateBuiltinConfiguration(
     result.issues.push(configurationIssue(node, ["name"], "too_long"));
   if (node.type === "record.read") validateRead(node, context, result);
   else if (node.type === "activity.create") validateTask(node, context, result);
-  else if (node.type === "condition" || node.type === "filter")
+  else if (node.type === "record.create") validateRecordCreate(node, context, result);
+  else if (node.type === "ifElse") {
+    const checked = prepareIfElseConfig(node.config, {
+      definition: context.definition,
+      nodeId: node.id,
+    });
+    if (!checked.ok) result.issues.push(...checked.error);
+  } else if (node.type === "condition" || node.type === "filter")
     validateCondition(node, context, result);
-  else if (node.type === "delay") validateWait(node, result);
+  else if (node.type === "delay") validateWait(node, context, result);
   else if (node.type !== "trigger.manual")
     result.issues.push(configurationIssue(node, [], "unsupported_setting"));
 }

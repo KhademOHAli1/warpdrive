@@ -164,7 +164,8 @@ it.each([
     steps: "Workflow steps",
     configure: "Configure",
     stepName: "Step name",
-    duration: "Wait duration (minutes)",
+    duration: "Minutes",
+    minuteValue: "1",
   },
   {
     locale: "fa",
@@ -175,7 +176,8 @@ it.each([
     steps: "مراحل گردش‌کار",
     configure: "تنظیمات",
     stepName: "نام مرحله",
-    duration: "مدت انتظار (دقیقه)",
+    duration: "دقیقه",
+    minuteValue: "۱",
   },
   {
     locale: "de",
@@ -186,7 +188,8 @@ it.each([
     steps: "Workflow-Schritte",
     configure: "Konfiguration",
     stepName: "Schrittname",
-    duration: "Wartezeit (Minuten)",
+    duration: "Minuten",
+    minuteValue: "1",
   },
 ] as const)(
   "commits one occupied-output Wait insertion and preserves bindings, positions and focus in $locale",
@@ -217,7 +220,7 @@ it.each([
       version: 1,
       name: copy.wait,
       nameMode: "automatic",
-      config: { minutes: { kind: "value", value: 1 } },
+      config: { delayType: "DURATION", duration: { minutes: { kind: "value", value: 1 } } },
     });
     expect(committed.nodes).toHaveLength(4);
     for (const node of initial.nodes) {
@@ -245,7 +248,7 @@ it.each([
     const inspector = screen.getByRole("region", { name: copy.configure });
     const stepName = within(inspector).getByRole("textbox", { name: copy.stepName });
     expect(stepName).toHaveValue(copy.wait);
-    expect(within(inspector).getByLabelText(copy.duration)).toHaveValue("1");
+    expect(within(inspector).getByLabelText(copy.duration)).toHaveValue(copy.minuteValue);
     await waitFor(() => expect(stepName).toHaveFocus(), {
       timeout: 1000,
       onTimeout: (error) => error,

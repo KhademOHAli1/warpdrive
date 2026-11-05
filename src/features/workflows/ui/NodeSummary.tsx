@@ -6,8 +6,8 @@ import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { directionForLocale } from "@/features/i18n/registry";
 import { useFormatters } from "@/lib/useFormatters";
-import { delayUntilDate } from "../delayConfig";
-import { delayMinutesSchema } from "../registry";
+import { delayDurationAmount, delayDurationUnits, delayUntilDate } from "../delayConfig";
+import { delayMinutesSchema, delayScheduleConfigSchema } from "../registry";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { conditionSummary } from "./conditionSummary";
 import { WaitTimestamp } from "./WaitTimestamp";
@@ -27,12 +27,13 @@ function describeDelay(
 
 function FixedInstantDelaySummary({ config }: { config: WorkflowNode["config"] }) {
   const t = useAppTranslations("workflows");
-  const binding = bindingSchema.safeParse(config.until);
+  const scheduled = config.delayType === "SCHEDULED_DATE";
+  const binding = bindingSchema.safeParse(scheduled ? config.scheduledDateTime : config.until);
   const raw =
     binding.success && binding.data.kind === "value" && binding.data.literalType === "instant"
       ? binding.data.value
       : null;
-  const date = Object.keys(config).length === 1 ? delayUntilDate(raw) : null;
+  const date = Object.keys(config).length === (scheduled ? 2 : 1) ? delayUntilDate(raw) : null;
   if (date !== null && typeof raw === "string")
     return (
       <p
@@ -49,7 +50,7 @@ function FixedInstantDelaySummary({ config }: { config: WorkflowNode["config"] }
     );
   const invalid =
     binding.success && binding.data.kind === "reference"
-      ? t("delayUntilLiteralRequired")
+      ? t(scheduled ? "delayMappedDate" : "delayUntilLiteralRequired")
       : t("setupRequired");
   return (
     <Tip label={invalid}>
@@ -61,6 +62,29 @@ function FixedInstantDelaySummary({ config }: { config: WorkflowNode["config"] }
       </p>
     </Tip>
   );
+}
+
+function configuredDurationSummary(
+  config: WorkflowNode["config"],
+  t: ReturnType<typeof useAppTranslations<"workflows">>,
+  format: ReturnType<typeof useFormatters>["number"],
+) {
+  const parsed = delayScheduleConfigSchema.safeParse(config);
+  if (!parsed.success || parsed.data.delayType !== "DURATION") return t("setupRequired");
+  const { duration } = parsed.data;
+  if (Object.values(duration).some((binding) => binding?.kind === "reference"))
+    return t("delayMappedDuration");
+  const amounts = delayDurationUnits.flatMap((unit) => {
+    const binding = duration[unit];
+    const amount = binding?.kind === "value" ? delayDurationAmount(binding.value) : null;
+    return amount === null || amount === 0
+      ? []
+      : [format(amount, { style: "unit", unit: unit.slice(0, -1), unitDisplay: "short" })];
+  });
+  return t("delayConfiguredDuration", {
+    duration:
+      amounts.length === 0 ? format(0, { style: "unit", unit: "second" }) : amounts.join(" · "),
+  });
 }
 
 function ConditionSummary({
@@ -139,7 +163,10 @@ export function NodeSummary({
   const fields: Record<string, string> = useMessages().workflows.fields;
   if (node.type === "condition" || node.type === "filter")
     return <ConditionSummary node={node} definition={definition} />;
-  if (node.type === "delay" && Object.hasOwn(node.config, "until"))
+  if (
+    node.type === "delay" &&
+    (Object.hasOwn(node.config, "until") || node.config.delayType === "SCHEDULED_DATE")
+  )
     return <FixedInstantDelaySummary config={node.config} />;
   function value(input: unknown, status = false): string {
     const parsed = bindingSchema.safeParse(input);
@@ -161,12 +188,14 @@ export function NodeSummary({
   }
   let summary = t("manualSummary");
   if (node.type === "delay")
-    summary = describeDelay(
-      node.config.minutes,
-      t("setupRequired"),
-      t("delayLiteralRequired"),
-      (minutes) => t("delaySummary", { minutes: fmt.number(minutes) }),
-    );
+    summary = Object.hasOwn(node.config, "delayType")
+      ? configuredDurationSummary(node.config, t, fmt.number)
+      : describeDelay(
+          node.config.minutes,
+          t("setupRequired"),
+          t("delayLiteralRequired"),
+          (minutes) => t("delaySummary", { minutes: fmt.number(minutes) }),
+        );
   if (node.type === "activity.create") summary = value(node.config.subject);
   if (node.type === "record.read")
     summary = t("readSummary", { source: value(node.config.recordId) });

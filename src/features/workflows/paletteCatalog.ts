@@ -35,8 +35,10 @@ interface CatalogDescriptor {
     | "manual-trigger"
     | "deal-read"
     | "basic-task"
+    | "create-record"
+    | "ordered-condition"
     | "scalar-condition"
-    | "literal-duration"
+    | "delay-schedule"
     | "unavailable";
   input: "deal" | "optional" | "scalar" | "none";
   support: PaletteEntryState["support"];
@@ -81,6 +83,16 @@ export const paletteCatalog = [
     categoryKey: "paletteCategoryTriggers",
     labelKey: "paletteRecordTrigger",
     descriptionKey: "paletteRecordTriggerHint",
+  },
+  {
+    ...insertable,
+    type: "record.create",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "createRecord",
+    descriptionKey: "createRecordHint",
+    profile: "create-record",
+    input: "optional",
   },
   {
     ...insertable,
@@ -132,12 +144,22 @@ export const paletteCatalog = [
   },
   {
     ...insertable,
+    type: "ifElse",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "ifElseAction",
+    descriptionKey: "ifElseActionHint",
+    profile: "ordered-condition",
+    input: "scalar",
+  },
+  {
+    ...insertable,
     type: "delay",
     category: "timing",
     categoryKey: "paletteCategoryTiming",
     labelKey: "delay",
-    descriptionKey: "delayMinutesHint",
-    profile: "literal-duration",
+    descriptionKey: "delayScheduleHint",
+    profile: "delay-schedule",
     input: "none",
   },
 ] as const satisfies readonly CatalogDescriptor[];

@@ -5,8 +5,10 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
   "trigger.manual": "hand-move",
   "trigger.record": "playlist-add",
   "record.read": "search",
+  "record.create": "plus",
   "activity.create": "plus",
   condition: "arrows-split",
+  ifElse: "arrows-split",
   filter: "filter",
   delay: "player-pause",
   notification: "send",
@@ -14,7 +16,8 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
 
 export function workflowNodeCategory(type: WorkflowNode["type"]) {
   if (type.startsWith("trigger.")) return "nodeCategoryTrigger";
-  if (type === "condition" || type === "filter" || type === "delay") return "nodeCategoryFlow";
+  if (type === "condition" || type === "ifElse" || type === "filter" || type === "delay")
+    return "nodeCategoryFlow";
   return type === "notification" ? "nodeCategoryCore" : "nodeCategoryData";
 }
 
@@ -22,6 +25,8 @@ export function workflowNodeStrokeWidth(type: WorkflowNode["type"]): 1.6 | 2 {
   return type === "record.read" ||
     type === "activity.create" ||
     type === "condition" ||
+    type === "ifElse" ||
+    type === "record.create" ||
     type === "notification"
     ? 1.6
     : 2;

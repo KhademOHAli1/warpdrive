@@ -20,9 +20,15 @@ export { admitManualRun } from "./runAdmission";
 
 // Database-only effects and progress share this transaction. A crash rolls both back;
 // competing workers serialize on the run row and re-read the persisted cursor.
-export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSignal) {
+export async function advanceWorkflowRun(
+  db: Db,
+  runId: string,
+  signal: AbortSignal,
+  onWaitArmed?: (deadline: Date, databaseNow: Date) => Promise<void>,
+) {
   if (!z.string().uuid().safeParse(runId).success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  return db.transaction(async (tx) => {
+  let wait: { deadline: Date | undefined; databaseNow: Date } | undefined;
+  const progress = await db.transaction(async (tx) => {
     const [run] = await tx
       .select()
       .from(workflowRuns)
@@ -60,7 +66,10 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
     if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
     const result = await advanceRunStep(tx, actor, node, run, now, definition, signal);
     if (!result.ok) return failRun(tx, run, result.error, now, signal);
-    if (result.value.status === "waiting") return ok("waiting" as const);
+    if (result.value.status === "waiting") {
+      wait = { deadline: result.value.armedDeadline, databaseNow: now };
+      return ok("waiting" as const);
+    }
     const output = result.value.output;
     const selected = selectRunBranch(definition, node, output);
     if (!selected.ok) return failRun(tx, run, selected.error, now, signal);
@@ -86,6 +95,8 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
     signal.throwIfAborted();
     return ok(status);
   });
+  if (wait?.deadline !== undefined) await onWaitArmed?.(wait.deadline, wait.databaseNow);
+  return progress;
 }
 
 async function failRun(

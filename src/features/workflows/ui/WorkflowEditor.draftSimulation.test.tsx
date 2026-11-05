@@ -7,10 +7,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { initialDefinition } from "../editorModel";
+import { branchPort, newIfElseBranch, newIfElseConfig } from "../ifElse";
 import german from "../messages/workflows.de.json";
 import english from "../messages/workflows.en.json";
 import persian from "../messages/workflows.fa.json";
-import type { WorkflowDefinition, WorkflowNode } from "../schemas";
+import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "../schemas";
+import { captureDraftTestSnapshot, DraftTestDialog } from "./DraftTestDialog";
 import type { WorkflowConfigurationRead } from "./useWorkflowConfiguration";
 import type { WorkflowDetail } from "./useWorkflowEditor";
 import { WorkflowEditor } from "./WorkflowEditor";
@@ -21,7 +23,7 @@ type DraftStep = {
   nodeType: WorkflowNode["type"];
   status: "succeeded" | "failed";
   errorId?: string;
-  port?: "next" | "true" | "false";
+  port?: WorkflowEdge["port"];
   waitResumeAt?: string;
 };
 type DraftReceipt = {
@@ -689,6 +691,62 @@ describe("unsaved draft simulation on the actual editor", () => {
       expect(
         within(dialog).queryByRole("region", { name: locales[0].results }),
       ).not.toBeInTheDocument();
+      expectNoPersistentCommand();
+    },
+  );
+
+  it.each([
+    { routeId: "PRIVATE_CONFIGURED_ROUTE", accepted: true },
+    { routeId: "PRIVATE_UNRELATED_ROUTE", accepted: false },
+  ])(
+    "validates the submitted If/Else branch membership before rendering a receipt ($accepted)",
+    async ({ routeId, accepted }) => {
+      const draft = definition();
+      const config = newIfElseConfig();
+      config.branches.push(newIfElseBranch("PRIVATE_CONFIGURED_ROUTE"));
+      draft.nodes.splice(2, 0, {
+        id: "switch",
+        type: "ifElse",
+        version: 1,
+        name: "Choose route",
+        config,
+      });
+      draft.edges.splice(
+        1,
+        1,
+        { from: "read", to: "switch", port: "next" },
+        { from: "switch", to: "wait", port: branchPort("PRIVATE_CONFIGURED_ROUTE") },
+      );
+      const reply = receipt(workflowId, draft);
+      reply.steps = reply.steps.map((step) =>
+        step.nodeId === "switch" ? { ...step, port: branchPort(routeId) } : step,
+      );
+      io.simulate.mockResolvedValueOnce({ ok: true, value: reply });
+      render(
+        <LocaleProvider locale="en">
+          <DraftTestDialog
+            snapshot={captureDraftTestSnapshot(workflowId, "Branch test", draft)}
+            onClose={vi.fn()}
+            onCloseAutoFocus={vi.fn()}
+          />
+        </LocaleProvider>,
+      );
+      const dialog = screen.getByRole("dialog", { name: locales[0].entry });
+      const user = userEvent.setup();
+      await chooseRecord(user, dialog);
+      await user.click(draftConfirm(dialog));
+      if (accepted) {
+        const results = within(dialog).getByRole("region", { name: locales[0].results });
+        expect(results).toHaveTextContent(
+          english.ifElseSelectedRoute.replace("{route}", "Else if 1"),
+        );
+      } else {
+        expect(within(dialog).getByRole("alert")).toHaveTextContent(genericError);
+        expect(
+          within(dialog).queryByRole("region", { name: locales[0].results }),
+        ).not.toBeInTheDocument();
+      }
+      expect(dialog).not.toHaveTextContent(routeId);
       expectNoPersistentCommand();
     },
   );

@@ -37,6 +37,17 @@ Seven actual PostgreSQL cases are prepared in src/features/workflows/filter.inte
 
 This first functional slice deliberately shares the reviewed predicate grammar: flat exists/equals/notEquals/contains,and grouped predicates adding isEmpty with AND/OR. Full Twenty operator/type parity remains open: its broader generic filter operand enum includes negative contains,numeric comparisons,date ordering/relative/past/future/today and vector search. Those controls are not advertised as supported. The remaining matrix rows still require their concrete handlers and configuration flows; the Filter increment does not close overall block parity.
 
+## Second increment: ordered If/Else, record creation and richer Delay
+
+- **If/Else (A11):** evaluate conditions in order and continue along the first matching branch or Else. An unconnected chosen branch ends successfully. Removing a branch removes only that outgoing connection; the downstream node stays on the canvas. This uses the same bounded operators as Filter.
+- **Create Record (A1):** create a deal, lead, person, organization or task through the native CRM service under the run actor's permissions. Supports mapped built-in fields and typed record IDs as outputs. Creation participates in the workflow transaction; simulations roll it back. Custom and installed object support remain open.
+- **Delay (A12):** wait for a bounded days/hours/minutes/seconds duration or a scheduled date/time, including typed variables. The engine resolves the time once, persists it, and resumes through the existing queue and recovery path. Older saved delays keep their behavior.
+- The canvas shows a temporary empty node when inserting a step from a free connector. The picker opens without changing zoom, and closing it discards the temporary node without changing the draft.
+
+Verification: 568 focused tests across 33 files passed, including branch selection, mapping, inspector behavior, and privacy inventory checks. Two additional PostgreSQL cases cover first-match record creation with competing deliveries and simulation rollback. Native PostgreSQL and rendered browser qualification were not run on the shared workstation.
+
+The gap tables below preserve the initial audit. Apply these increment notes when reading their statuses.
+
 ## Catalog visibility and configuration gates
 
 The five groups are Data (6), AI (2), Flow (5), Core (5), Human Input (2); installed applications can contribute Other/Logic Function rows. See [the selector](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-front/src/modules/side-panel/pages/workflow/action/components/SidePanelWorkflowSelectAction.tsx).

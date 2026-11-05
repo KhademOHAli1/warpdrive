@@ -3,8 +3,10 @@ import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 
 export const creatableNodeTypes = [
   "record.read",
+  "record.create",
   "activity.create",
   "condition",
+  "ifElse",
   "filter",
   "delay",
 ] as const;

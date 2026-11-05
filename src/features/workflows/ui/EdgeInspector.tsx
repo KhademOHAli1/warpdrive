@@ -8,7 +8,7 @@ import { type ConnectionProblem, connectNodes, disconnectNodes, portsFor } from 
 import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
-import { conditionPortLabel } from "./conditionPortLabel";
+import { useConditionPortLabel } from "./conditionPortLabel";
 import { WorkflowReferenceIcon } from "./WorkflowReferenceIcon";
 import styles from "./workflowInspector.module.css";
 import "./workflowTheme.css";
@@ -31,6 +31,7 @@ export function EdgeInspector({
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const fmt = useFormatters();
+  const portLabel = useConditionPortLabel();
   const source = definition.nodes.find((node) => node.id === edge.from);
   function change(next: WorkflowEdge) {
     const result = connectNodes(definition, next, edge);
@@ -96,7 +97,7 @@ export function EdgeInspector({
             disabled={!editable}
             options={(source === undefined ? [] : portsFor(source)).map((port) => ({
               value: port,
-              label: t(conditionPortLabel(port)),
+              label: portLabel(port, source),
             }))}
             onChange={(port) => {
               if (source === undefined) return;

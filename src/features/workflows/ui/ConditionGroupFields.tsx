@@ -26,6 +26,7 @@ export interface ConditionGroupProps {
   onChange: (node: WorkflowNode) => void;
   metadata?: ConfigurationMetadata;
   issues?: readonly ConfigurationIssue[];
+  showOtherwise?: boolean;
 }
 interface GroupProps extends ConditionGroupProps {
   entry: ConditionObject;
@@ -209,24 +210,28 @@ export function ConditionGroupFields(props: ConditionGroupProps) {
   return (
     <div className="space-y-4">
       <GroupRow {...props} editable={editable} entry={root} indices={[]} ordinals={[1]} />
-      <p className="text-xs text-muted-foreground">
-        {props.node.config.defaultPort === "false"
-          ? otherwise
-          : t("conditionOmitted") + ": " + otherwise}
-      </p>
-      {props.node.config.defaultPort !== "false" && (
-        <Button
-          disabled={!editable}
-          onClick={() => {
-            if (editable)
-              props.onChange({
-                ...props.node,
-                config: { ...props.node.config, defaultPort: "false" },
-              });
-          }}
-        >
-          {t(props.node.type === "filter" ? "filterUseDefault" : "conditionUseDefault")}
-        </Button>
+      {props.showOtherwise !== false && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            {props.node.config.defaultPort === "false"
+              ? otherwise
+              : t("conditionOmitted") + ": " + otherwise}
+          </p>
+          {props.node.config.defaultPort !== "false" && (
+            <Button
+              disabled={!editable}
+              onClick={() => {
+                if (editable)
+                  props.onChange({
+                    ...props.node,
+                    config: { ...props.node.config, defaultPort: "false" },
+                  });
+              }}
+            >
+              {t(props.node.type === "filter" ? "filterUseDefault" : "conditionUseDefault")}
+            </Button>
+          )}
+        </>
       )}
     </div>
   );

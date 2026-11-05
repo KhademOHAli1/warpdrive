@@ -19,10 +19,13 @@ export function paletteSnapshot(
   const types = [
     "trigger.manual",
     "trigger.record",
+    "record.create",
     "record.read",
     "activity.create",
     "notification",
     "condition",
+    "filter",
+    "ifElse",
     "delay",
   ] as const;
   const entries: WorkflowPaletteSnapshot["entries"] = types.map((type) => {

@@ -138,7 +138,7 @@ describe("shared configuration profile descriptors", () => {
     });
   });
 
-  it("shares the literal wait bound/default without enabling mapped waits", () => {
+  it("keeps the legacy wait bound and defaults new waits to the configurable duration", () => {
     expect(getConfigurationSpec("delay", 1, metadata)?.fields).toContainEqual(
       expect.objectContaining({
         path: ["minutes"],
@@ -148,7 +148,10 @@ describe("shared configuration profile descriptors", () => {
         constraints: { min: 1, max: 525600, integer: true },
       }),
     );
-    expect(defaultConfiguration("delay", {})).toEqual({ minutes: { kind: "value", value: 1 } });
+    expect(defaultConfiguration("delay", {})).toEqual({
+      delayType: "DURATION",
+      duration: { minutes: { kind: "value", value: 1 } },
+    });
   });
 
   it("keeps unsupported actions and schema-only task settings explicitly read-only", () => {

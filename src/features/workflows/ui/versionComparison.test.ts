@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { branchPort, newIfElseBranch, newIfElseConfig } from "../ifElse";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "../schemas";
 import { type ComparableVersion, comparePublishedVersions } from "./publishedVersionDiff";
 
@@ -25,6 +26,34 @@ function unavailable(before: ComparableVersion, after: ComparableVersion) {
 }
 
 describe("published version comparison projection", () => {
+  it("reports branch labels by ordinal without exposing their persisted IDs", () => {
+    const config = newIfElseConfig();
+    config.branches.push(newIfElseBranch("PRIVATE_ROUTE_IDENTIFIER"));
+    const nodes: WorkflowNode[] = [
+      { ...node("switch", "Choose route", config), type: "ifElse" },
+      node("finish", "Finish"),
+    ];
+    const before = version(nodes, [edge("switch", "finish", branchPort("else"))]);
+    const after = version(nodes, [
+      edge("switch", "finish", branchPort("PRIVATE_ROUTE_IDENTIFIER")),
+    ]);
+    const result = comparePublishedVersions(before, after);
+    expect(result.addedConnections).toEqual([
+      {
+        ordinal: 0,
+        fromName: "Choose route",
+        toName: "Finish",
+        port: "branch",
+        branch: { index: 1, fallback: false },
+      },
+    ]);
+    expect(result.removedConnections[0]).toMatchObject({
+      port: "branch",
+      branch: { index: 2, fallback: true },
+    });
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_ROUTE_IDENTIFIER");
+    unavailable(before, version(nodes, [edge("switch", "finish", branchPort("unconfigured"))]));
+  });
   it("reports an unchanged immutable publication without modifying either input", () => {
     const before = version([node("start", "Start", { value: "synthetic-value" })]);
     const after = structuredClone(before);

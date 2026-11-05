@@ -11,7 +11,9 @@ import { executeRunNode } from "./runActions";
 import type { StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 
-type StepProgress = { status: "waiting" } | { status: "completed"; output: StepOutput };
+type StepProgress =
+  | { status: "waiting"; armedDeadline?: Date }
+  | { status: "completed"; output: StepOutput };
 
 // The caller holds this run's row lock and has rehydrated its current authority.
 export async function advanceRunStep(
@@ -38,7 +40,11 @@ export async function advanceRunStep(
       : ok({ status: "completed", output: { resumeAt: deadline.toISOString() } });
   }
   if (node.type === "delay") {
-    const deadline = delayScheduleAt(node.config, now);
+    const deadline = delayScheduleAt(node.config, now, {
+      definition,
+      nodeId: node.id,
+      outputs: run.outputs,
+    });
     if (!deadline.ok) return deadline;
     if (run.mode === "simulation" || deadline.value.getTime() <= now.getTime())
       return ok({ status: "completed", output: { resumeAt: deadline.value.toISOString() } });
@@ -47,7 +53,7 @@ export async function advanceRunStep(
       .set({ status: "waiting", resumeAt: deadline.value, updatedAt: now })
       .where(eq(workflowRuns.id, run.id));
     signal.throwIfAborted();
-    return ok({ status: "waiting" });
+    return ok({ status: "waiting", armedDeadline: deadline.value });
   }
   const result = await executeRunNode(
     db,

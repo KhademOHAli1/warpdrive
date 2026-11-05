@@ -143,7 +143,10 @@ function entryReason(
   if (placement.reason !== null) return placement.reason;
   if (request.kind === "replace") return null;
   if (definition.nodes.length >= 100) return "nodeLimit";
-  if (descriptor.type === "condition" && placement.occupiedDestinationId !== null)
+  if (
+    (descriptor.type === "condition" || descriptor.type === "ifElse") &&
+    placement.occupiedDestinationId !== null
+  )
     return "invalidPort";
   return null;
 }

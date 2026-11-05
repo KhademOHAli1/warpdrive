@@ -229,9 +229,11 @@ function RunReviewContent({
 function submissionLabel(
   error: boolean,
   mode: Mode,
-): "retry" | "confirmSimulation" | "confirmLive" {
+  createsRecords: boolean,
+): "retry" | "confirmSimulation" | "confirmLive" | "confirmLiveRecords" {
   if (error) return "retry";
-  return mode === "simulation" ? "confirmSimulation" : "confirmLive";
+  if (mode === "simulation") return "confirmSimulation";
+  return createsRecords ? "confirmLiveRecords" : "confirmLive";
 }
 
 export function RunDialog({
@@ -322,7 +324,13 @@ export function RunDialog({
         <DialogHeader>
           <DialogTitle>{t("runTitle")}</DialogTitle>
           <DialogDescription>
-            {t(displayMode === "simulation" ? "simulationHint" : "liveHint")}
+            {t(
+              displayMode === "simulation"
+                ? "simulationHint"
+                : (displayedReview?.effects.counts.recordCreate ?? 0) > 0
+                  ? "liveRecordsHint"
+                  : "liveHint",
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-5">
@@ -360,7 +368,13 @@ export function RunDialog({
               {t("cancel")}
             </Button>
             <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
-              {t(submissionLabel(error, displayMode))}
+              {t(
+                submissionLabel(
+                  error,
+                  displayMode,
+                  (displayedReview?.effects.counts.recordCreate ?? 0) > 0,
+                ),
+              )}
             </Button>
           </DialogFooter>
         </div>

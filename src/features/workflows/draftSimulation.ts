@@ -8,7 +8,7 @@ import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { err, ok, type Result } from "@/types/result";
 import { canWorkflow } from "./access";
 import { validateDefinition } from "./definition";
-import { delayResumeAt } from "./delay";
+import { delayScheduleAt } from "./delay";
 import {
   draftSimulationInputLimits,
   type PreparedDraftSimulationInput,
@@ -27,6 +27,7 @@ import { executeRunNode } from "./runActions";
 import { selectRunBranch } from "./runBranchSelection";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
+import { createWorkflowRecord } from "./workflowRecordCreate";
 
 type DraftNode = WorkflowNode & { type: DraftSimulationNodeType };
 interface SimulationContext {
@@ -138,9 +139,23 @@ async function executeDraftNode(
   now: Date,
 ): Promise<Result<StepOutput, string>> {
   if (node.type === "delay") {
-    const projected = delayResumeAt(node.config.minutes, now);
+    const projected = delayScheduleAt(node.config, now, {
+      definition: context.definition,
+      nodeId: node.id,
+      outputs,
+    });
     return projected.ok ? ok({ resumeAt: projected.value.toISOString() }) : projected;
   }
+  if (node.type === "record.create")
+    return createWorkflowRecord(
+      context.db,
+      actor,
+      node,
+      outputs,
+      context.definition,
+      "draft-simulation",
+      context.signal,
+    );
   return executeRunNode(
     context.db,
     actor,

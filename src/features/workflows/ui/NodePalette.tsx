@@ -5,9 +5,10 @@ import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { maxDelayDays } from "../delayConfig";
 import { displayNodeName } from "../nodeNames";
 import type { PickerSelection } from "../paletteContext";
-import { delayMinutesSchema } from "../registry";
+import { useConditionPortLabel } from "./conditionPortLabel";
 import type { PaletteView, PaletteViewEntry } from "./paletteView";
 import { WorkflowReferenceIcon } from "./WorkflowReferenceIcon";
 import {
@@ -33,7 +34,7 @@ function PaletteRow({
   onChoose: (selection: PickerSelection) => void;
 }) {
   const t = useAppTranslations("workflows");
-  const fmt = useFormatters();
+  const format = useFormatters();
   const descriptionId = useId();
   const structural = row.context.reason;
   const restriction =
@@ -43,20 +44,16 @@ function PaletteRow({
         ? t("paletteManualUnavailable")
         : structural !== null
           ? t(
-              row.catalog.type === "condition" && structural === "invalidPort"
+              (row.catalog.type === "condition" || row.catalog.type === "ifElse") &&
+                structural === "invalidPort"
                 ? "paletteLinearOnly"
                 : `connectionErrors.${structural}`,
             )
           : null;
-  const actionDescription = t(
-    row.catalog.descriptionKey,
+  const actionDescription =
     row.catalog.type === "delay"
-      ? {
-          min: delayMinutesSchema.minValue === null ? "" : fmt.number(delayMinutesSchema.minValue),
-          max: delayMinutesSchema.maxValue === null ? "" : fmt.number(delayMinutesSchema.maxValue),
-        }
-      : undefined,
-  );
+      ? t(row.catalog.descriptionKey, { days: format.number(maxDelayDays) })
+      : t(row.catalog.descriptionKey);
   const warningKeys = {
     "activity-create-required": "paletteActivityRequired",
     "task-type-unavailable": "paletteTaskTypeUnavailable",
@@ -72,6 +69,7 @@ function PaletteRow({
   return (
     <button
       type="button"
+      data-workflow-palette-choice
       className={styles.row}
       aria-disabled={!row.canChoose}
       aria-label={t(row.catalog.labelKey)}
@@ -159,6 +157,7 @@ export function NodePalette({
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
+  const labelPort = useConditionPortLabel();
   const source = model.definition.nodes.find((node) => node.id === model.context.source?.id);
   const rows = model.entries.filter(
     (row) => row.catalog.type.startsWith("trigger.") === model.triggerPicker,
@@ -192,13 +191,7 @@ export function NodePalette({
               model.context.output !== null &&
               t("paletteContext", {
                 name: displayNodeName(source, locale),
-                port: t(
-                  model.context.output.port === "true"
-                    ? "truePort"
-                    : model.context.output.port === "false"
-                      ? "falsePort"
-                      : "nextPort",
-                ),
+                port: labelPort(model.context.output.port, source),
               })}
           </DialogPrimitive.Description>
         </header>

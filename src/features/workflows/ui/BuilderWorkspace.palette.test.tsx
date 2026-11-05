@@ -227,7 +227,7 @@ it("changes a node type through the actual canvas callback without changing its 
   expect(next?.edges).toEqual(graph.edges);
   expect(next?.nodes).toHaveLength(graph.nodes.length);
   expect(screen.getByRole("textbox", { name: "Step name" })).toHaveValue("Wait");
-  expect(screen.getByLabelText("Wait duration (minutes)")).toHaveValue("1");
+  expect(screen.getByLabelText("Minutes")).toHaveValue("1");
   expect(onCommit).toHaveBeenCalledOnce();
   expect(graph).toEqual(before);
 });

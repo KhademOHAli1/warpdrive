@@ -1,4 +1,5 @@
 import { err, ok } from "@/types/result";
+import { portsFor } from "./graphPorts";
 import { currentLayout, positionFor } from "./nodeLayout";
 import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 
@@ -12,9 +13,7 @@ export type ConnectionProblem =
 export function edgeId(edge: WorkflowEdge) {
   return `${edge.from}:${edge.port}:${edge.to}`;
 }
-export function portsFor(node: WorkflowNode): WorkflowEdge["port"][] {
-  return node.type === "condition" ? ["true", "false"] : ["next"];
-}
+export { portsFor } from "./graphPorts";
 export function disconnectNodes(graph: WorkflowDefinition, edge: WorkflowEdge): WorkflowDefinition {
   return { ...graph, edges: graph.edges.filter((item) => edgeId(item) !== edgeId(edge)) };
 }
@@ -54,6 +53,23 @@ export function insertNode(
     ...graph,
     nodes: [...graph.nodes, node],
     layout: { ...currentLayout(graph), [node.id]: position },
+  };
+}
+
+export function updateNodeConfiguration(
+  graph: WorkflowDefinition,
+  node: WorkflowNode,
+): WorkflowDefinition {
+  const current = graph.nodes.find((item) => item.id === node.id);
+  if (current?.type !== node.type || current.version !== node.version) return graph;
+  const ports = portsFor(node);
+  return {
+    ...graph,
+    nodes: graph.nodes.map((item) => (item.id === node.id ? node : item)),
+    edges:
+      node.type === "ifElse"
+        ? graph.edges.filter((edge) => edge.from !== node.id || ports.includes(edge.port))
+        : graph.edges,
   };
 }
 export function moveNode(

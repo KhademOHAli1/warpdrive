@@ -3,17 +3,32 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { parseConditionConfig } from "./conditionExpression";
 import { copyCustomFieldSettingsSchema } from "./configurationBindings";
 import { boundedDelayConfig } from "./delayConfig";
+import { parseIfElseConfig } from "./ifElseConfig";
 import {
   copyScalarBindingSchema,
   definitionSchema,
   nodeSchema,
   type WorkflowDefinition,
 } from "./schemas";
+import { recordCreateEntitySchema, recordCreateFields } from "./workflowRecordCreateContract";
 
 // Keep the reviewed v1 binding keys explicit while reusing their scalar and path guards.
 // A missing selection is copyable; mixed branches and undeclared fields are not.
 const copyBinding = copyScalarBindingSchema;
 const entity = z.enum(["deal", "lead", "person", "organization"]);
+
+const copyCreateRecord = z
+  .strictObject({
+    entity: recordCreateEntitySchema.optional(),
+    fields: z.record(z.string().min(1).max(32), copyBinding).optional(),
+  })
+  .refine((config) =>
+    Object.keys(config.fields ?? {}).every(
+      (key) =>
+        config.entity !== undefined &&
+        recordCreateFields[config.entity].some((field) => field.key === key),
+    ),
+  );
 
 // These are copy shapes, not publication requirements. Every known config field may
 // be incomplete, but new actions, versions, credentials, and identity fields need review.
@@ -28,6 +43,18 @@ const copyNode = z.discriminatedUnion("type", [
   nodeSchema.extend({
     type: z.literal("record.read"),
     config: z.strictObject({ entity, recordId: copyBinding }).partial(),
+  }),
+  nodeSchema.extend({ type: z.literal("record.create"), config: copyCreateRecord }),
+  nodeSchema.extend({
+    type: z.literal("ifElse"),
+    config: z.custom<WorkflowDefinition["nodes"][number]["config"]>(
+      (raw) =>
+        (raw !== null &&
+          typeof raw === "object" &&
+          !Array.isArray(raw) &&
+          Object.keys(raw).length === 0) ||
+        parseIfElseConfig(raw, "copy").ok,
+    ),
   }),
   nodeSchema.extend({
     type: z.literal("activity.create"),
@@ -58,7 +85,7 @@ const copyNode = z.discriminatedUnion("type", [
         (raw) =>
           raw !== null &&
           typeof raw === "object" &&
-          Object.hasOwn(raw, "until") &&
+          (Object.hasOwn(raw, "until") || Object.hasOwn(raw, "delayType")) &&
           boundedDelayConfig(raw),
       ),
     ]),

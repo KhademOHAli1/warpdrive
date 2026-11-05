@@ -9,7 +9,12 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import type { OutputTarget } from "../connectionGestures";
 import { duplicateNode } from "../duplicateNode";
-import { type ConnectionProblem, edgeId, removeNode } from "../graphEditor";
+import {
+  type ConnectionProblem,
+  edgeId,
+  removeNode,
+  updateNodeConfiguration,
+} from "../graphEditor";
 import { arrangeGraph, type NodeMeasurements } from "../nodeLayout";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
@@ -108,6 +113,35 @@ export function BuilderWorkspace({
     setSelected("");
     setSelectedEdge(null);
   }
+  function selectCanvasNode(id: string) {
+    if (palette !== null) {
+      activeRequest.current = null;
+      focusInsertedStep.current = id !== "";
+      setPalette(null);
+    }
+    select(id);
+  }
+  function selectCanvasEdge(id: string | null) {
+    if (id !== null && palette !== null) {
+      activeRequest.current = null;
+      setPalette(null);
+    }
+    setSelectedEdge(id);
+  }
+  function clearCanvasSelection() {
+    if (palette !== null) closePalette();
+    else if (selected !== "" || selectedEdge !== null) closeInspector();
+  }
+  function focusPalette() {
+    const panel = workspace.current?.querySelector('[role="dialog"]');
+    focusAvailable(
+      panel?.querySelector<HTMLElement>(
+        '[data-workflow-palette-choice]:not([aria-disabled="true"])',
+      ) ??
+        panel?.querySelector<HTMLElement>("button") ??
+        null,
+    );
+  }
   function pickerRequest(): PickerRequest {
     if (palette?.replacementId !== undefined)
       return { kind: "replace", nodeId: palette.replacementId };
@@ -126,7 +160,7 @@ export function BuilderWorkspace({
       editable: editable && read.data?.authoring.allowed === true,
       metadataConfirmed: confirmed,
       newNodeId: `node_${crypto.randomUUID().slice(0, 8)}`,
-      selectedId: selected,
+      selectedId: selected || undefined,
       measurements: nodeMeasurements.current,
       nameForType: (type) => t(nodeLabelKeys[type]),
       subject: t("subject"),
@@ -144,9 +178,8 @@ export function BuilderWorkspace({
     if (result.changed) onChange(result.definition);
     setProblem(null);
     focusInsertedStep.current = true;
-    revealStep(result.selectedId);
+    select(result.selectedId);
     setPalette(null);
-    if (result.changed) setLayoutRevision((value) => value + 1);
   }
   return (
     <BuilderFrame expanded={expanded} onExpandedChange={setExpanded} returnFocus={focusButton}>
@@ -235,8 +268,9 @@ export function BuilderWorkspace({
               definition={definition}
               selected={selected}
               selectedEdge={selectedEdge}
-              onSelect={select}
-              onSelectEdge={setSelectedEdge}
+              onSelect={selectCanvasNode}
+              onSelectEdge={selectCanvasEdge}
+              onClearSelection={clearCanvasSelection}
               onChange={onChange}
               onNodeMeasurements={(value) => {
                 nodeMeasurements.current = value;
@@ -256,8 +290,17 @@ export function BuilderWorkspace({
                 }
                 onChange(result.value);
                 setProblem(null);
-                revealStep(newId);
+                select(newId);
               }}
+              pendingInsert={
+                palette !== null && palette.replacementId === undefined
+                  ? {
+                      output: palette.output,
+                      position: palette.position,
+                      focusPicker: focusPalette,
+                    }
+                  : undefined
+              }
               editable={editable}
               invalidNodes={invalidNodes}
               layoutRevision={layoutRevision}
@@ -308,12 +351,7 @@ export function BuilderWorkspace({
                       nameInputRef={stepName}
                       onClose={closeInspector}
                       onChange={(changed) =>
-                        onChange((graph) => ({
-                          ...graph,
-                          nodes: graph.nodes.map((item) =>
-                            item.id === changed.id ? changed : item,
-                          ),
-                        }))
+                        onChange((graph) => updateNodeConfiguration(graph, changed))
                       }
                       onRemove={() => {
                         if (!editable || node.type.startsWith("trigger.")) return;
