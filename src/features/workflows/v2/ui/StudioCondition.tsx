@@ -1,12 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { BlockJson } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioValue } from "./StudioValue";
-import { asArray, asObject, emptyCondition, textValue } from "./studioModel";
 import { fieldCatalog, type StudioFormProps } from "./studioFormTypes";
+import { asArray, asObject, emptyCondition, textValue } from "./studioModel";
+import { useDraftRowKeys } from "./useDraftRowKeys";
 
 export function StudioCondition({
   value,
@@ -23,12 +24,13 @@ export function StudioCondition({
   const L = useSharedBlocksMessages();
   const condition = asObject(value);
   const grouped = condition.combinator === "and" || condition.combinator === "or";
+  const conditions = Array.isArray(value) ? value : asArray(condition.conditions);
+  const rowKeys = useDraftRowKeys(conditions.length);
   const nativeFields =
     props.studio.objects
       .find((object) => object.name === textValue(props.node.config.objectName))
       ?.fields.filter((field) => field.readable) ?? [];
   if (grouped || Array.isArray(value)) {
-    const conditions = Array.isArray(value) ? value : asArray(condition.conditions);
     function update(children: BlockJson[]) {
       onChange({ combinator: condition.combinator === "or" ? "or" : "and", conditions: children });
     }
@@ -44,13 +46,13 @@ export function StudioCondition({
           ]}
           onChange={(combinator) => onChange({ combinator, conditions })}
         />
-        {conditions.map((child, index) => (
-          <div key={index} className="space-y-2 border-t pt-3">
+        {rowKeys.keys.map((key, index) => (
+          <div key={key} className="space-y-2 border-t pt-3">
             <StudioCondition
               {...props}
               native={native}
               depth={depth + 1}
-              value={child}
+              value={conditions[index]}
               onChange={(next) =>
                 update(conditions.map((item, childIndex) => (childIndex === index ? next : item)))
               }
@@ -60,7 +62,10 @@ export function StudioCondition({
               size="sm"
               disabled={props.disabled}
               className="h-7 px-1 text-xs text-destructive"
-              onClick={() => update(conditions.filter((_, childIndex) => childIndex !== index))}
+              onClick={() => {
+                rowKeys.remove(index);
+                update(conditions.filter((_, childIndex) => childIndex !== index));
+              }}
             >
               {L.remove}
             </Button>

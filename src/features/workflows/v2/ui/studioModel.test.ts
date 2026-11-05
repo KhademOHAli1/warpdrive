@@ -12,8 +12,8 @@ import {
   connectStudioNodes,
   initialConfig,
   studioVariables,
-  updateStudioNode,
   textValue,
+  updateStudioNode,
 } from "./studioModel";
 
 function node(id: string, type: WorkflowV2Node["type"]): WorkflowV2Node {

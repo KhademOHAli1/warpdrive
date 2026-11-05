@@ -14,12 +14,12 @@ import { StudioConnections } from "./StudioConnections";
 import { StudioLiveDialog } from "./StudioLiveDialog";
 import { StudioOutput } from "./StudioOutput";
 import { StudioTrigger } from "./StudioTrigger";
+import { studioSetupHref, updateStudioNode } from "./studioModel";
 import { useStudioLeaveGuard } from "./useStudioLeaveGuard";
 import { useWorkflowStudio, type WorkflowStudioModel } from "./useWorkflowStudio";
 import { WorkflowRunPanel } from "./WorkflowRunPanel";
 import { studioCategory, studioIcons, WorkflowStudioCanvas } from "./WorkflowStudioCanvas";
 import { WorkflowStudioInspector } from "./WorkflowStudioInspector";
-import { studioSetupHref, updateStudioNode } from "./studioModel";
 
 function StudioToolbar({
   model,
@@ -221,8 +221,8 @@ function StudioSidebar({
             <p className="text-xs font-medium">
               {L.runStates[model.simulation.status] ?? L.testResult}
             </p>
-            {model.simulation.steps.map((step, index) => (
-              <section key={`${step.visitKey}:${index}`} className="space-y-2 border-t pt-3">
+            {model.simulation.steps.map((step) => (
+              <section key={step.visitKey} className="space-y-2 border-t pt-3">
                 <Button
                   variant="ghost"
                   size="sm"

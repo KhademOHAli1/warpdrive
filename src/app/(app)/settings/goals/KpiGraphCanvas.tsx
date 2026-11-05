@@ -2,9 +2,9 @@
 
 import {
   Background,
+  type Connection,
   ConnectionLineType,
   Controls,
-  type Connection,
   type Edge,
   type EdgeChange,
   Handle,
@@ -19,7 +19,9 @@ import {
 } from "@xyflow/react";
 import { Calculator, Database, GitBranch, Hash, Network, Target } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { BlockCard } from "@/features/blocks/ui/BlockCard";
 import { useKpiGraphMessages } from "@/features/goals/kpiGraphMessages";
+import { kpiGraphInputHandles } from "@/features/goals/kpiGraphValidation";
 import { useKpiMessages } from "@/features/goals/kpiMessages";
 import type {
   KpiGraph,
@@ -27,11 +29,9 @@ import type {
   KpiGraphNode,
   KpiGraphNodeResult,
 } from "@/features/goals/kpiModel";
-import { kpiGraphInputHandles } from "@/features/goals/kpiGraphValidation";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { ResponsiveViewport } from "@/features/workflows/ui/ResponsiveViewport";
 import { useFormatters } from "@/lib/useFormatters";
-import { BlockCard } from "@/features/blocks/ui/BlockCard";
 import { removeGraphNode } from "./KpiGraphModel";
 import "@xyflow/react/dist/style.css";
 import "@/features/workflows/ui/workflowCanvas.css";
@@ -93,7 +93,12 @@ function KpiNode({ data, selected, isConnectable }: NodeProps<CanvasNode>) {
         invalid={data.invalid}
         icon={<Icon className="size-3.5" aria-hidden />}
         result={
-          result === undefined ? undefined : <span aria-label={L.nodeOutput}>{resultText()}</span>
+          result === undefined ? undefined : (
+            <span>
+              <span className="sr-only">{L.nodeOutput} </span>
+              {resultText()}
+            </span>
+          )
         }
       >
         {inputs.map((input, index) => (
@@ -129,7 +134,7 @@ function FitPreview({
   const ready = useNodesInitialized();
   const { fitView } = useReactFlow();
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || measurements.size === 0) return;
     const frame = requestAnimationFrame(() => {
       void fitView({ padding: 0.25, minZoom: 0.15, maxZoom: 1.05 });
     });

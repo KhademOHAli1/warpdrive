@@ -1,7 +1,7 @@
 "use client";
 
-import { Search, ArrowUpRight } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { ArrowUpRight, Search } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useSharedBlocksMessages } from "../sharedBlocksMessages";

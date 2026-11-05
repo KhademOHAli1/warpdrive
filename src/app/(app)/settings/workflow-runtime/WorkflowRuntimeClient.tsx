@@ -3,6 +3,7 @@
 import { Braces, Sparkles } from "lucide-react";
 import { type FormEvent, type ReactNode, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
@@ -129,7 +130,7 @@ function AiConnection({ initial, L }: { initial: Snapshot; L: Messages }) {
               dir="ltr"
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://provider.example/v1"
+              placeholder={L.endpointExample}
               maxLength={2000}
             />
           </Field>
@@ -166,14 +167,15 @@ function AiConnection({ initial, L }: { initial: Snapshot; L: Messages }) {
             />
           </Field>
           {state.hasAiKey ? (
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-2 text-sm">
+              <Checkbox
+                id="runtime-remove-key"
+                label={L.removeKey}
                 checked={remove}
-                onChange={(event) => setRemove(event.target.checked)}
+                onCheckedChange={setRemove}
               />
-              {L.removeKey}
-            </label>
+              <label htmlFor="runtime-remove-key">{L.removeKey}</label>
+            </div>
           ) : null}
         </SettingsCardBody>
         <SettingsCardFooter>

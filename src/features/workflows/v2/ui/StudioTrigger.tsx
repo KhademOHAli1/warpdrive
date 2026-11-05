@@ -3,15 +3,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import {
-  TRIGGER_BLOCK_KINDS,
   type BlockJson,
+  TRIGGER_BLOCK_KINDS,
   type WorkflowV2Document,
   type WorkflowV2Studio,
   type WorkflowV2Trigger,
 } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { MASK_CLASS } from "@/features/observability/replayMasking";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { rotateWorkflowV2WebhookAction } from "../actions";
@@ -69,7 +69,7 @@ function WebhookFields({
           value={`/api/workflows-v2/${document.id}`}
           className="text-xs"
         />
-        <p className="text-[10px] text-muted-foreground">POST</p>
+        <p className="text-[10px] text-muted-foreground">{L.webhookMethod}</p>
       </BlockField>
       <Button
         variant="outline"

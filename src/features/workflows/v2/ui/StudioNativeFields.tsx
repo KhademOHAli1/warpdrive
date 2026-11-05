@@ -2,14 +2,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { BlockField } from "@/features/blocks/ui/BlockField";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
-import { StudioValue } from "./StudioValue";
-import { asObject, textValue } from "./studioModel";
-import { fieldCatalog, type StudioFormProps } from "./studioFormTypes";
-import { StudioBound, StudioFixed } from "./StudioFormControls";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioCondition } from "./StudioCondition";
+import { StudioBound, StudioFixed } from "./StudioFormControls";
 import { StudioRecordPicker } from "./StudioRecordPicker";
+import { StudioValue } from "./StudioValue";
+import { fieldCatalog, type StudioFormProps } from "./studioFormTypes";
+import { asObject, textValue } from "./studioModel";
 
 function NativeWriteValues(props: StudioFormProps) {
   const L = useSharedBlocksMessages();

@@ -1,13 +1,14 @@
 "use client";
+import { Variable } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { BlockField } from "@/features/blocks/ui/BlockField";
 import { BlockVariablePicker } from "@/features/blocks/ui/BlockVariablePicker";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
 import { StudioBound, StudioFixed, StudioToggle } from "./StudioFormControls";
-import { asObject, studioVariables, textValue } from "./studioModel";
 import { fieldCatalog, type StudioFormProps } from "./studioFormTypes";
+import { asObject, studioVariables, textValue } from "./studioModel";
 
 function EmailBody(props: StudioFormProps) {
   const L = useSharedBlocksMessages();
@@ -31,7 +32,7 @@ function EmailBody(props: StudioFormProps) {
           aria-label={`${L.chooseVariable}: ${L.fields.body}`}
           onClick={() => setOpen(true)}
         >
-          (x)
+          <Variable className="size-3.5" aria-hidden />
         </Button>
       </div>
       <RichTextBody
@@ -113,7 +114,7 @@ export function StudioCommunicationFields(
       return (
         <>
           <BlockField label={L.fields.location ?? ""}>
-            <p className="text-xs">Warpdrive Calendar</p>
+            <p className="text-xs">{L.calendarDestination}</p>
           </BlockField>
           <StudioBound {...props} name="title" />
           <StudioBound {...props} name="startsAt" type="instant" />

@@ -2,13 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { BlockJson, NativeEntity } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { lookupWorkflowV2RecordsAction } from "../actions";
-import { asArray, rawValue, textValue } from "./studioModel";
-import type { StudioFormProps } from "./studioFormTypes";
 import { StudioBound } from "./StudioFormControls";
+import type { StudioFormProps } from "./studioFormTypes";
+import { asArray, rawValue, textValue } from "./studioModel";
 
 export function StudioRecordPicker({
   multiple = false,

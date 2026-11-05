@@ -7,6 +7,7 @@ const en = {
   ai: "AI connection",
   aiDescription: "AI Agent and Classify use this connection when a published workflow runs.",
   endpoint: "Provider base URL",
+  endpointExample: "https://provider.example/v1",
   models: "Allowed models",
   modelsHint: "One model ID per line.",
   defaultModel: "Default model",
@@ -39,6 +40,7 @@ const de: typeof en = {
   aiDescription:
     "KI-Agent und Klassifizieren nutzen diese Verbindung bei der Ausführung eines veröffentlichten Workflows.",
   endpoint: "Basis-URL des Anbieters",
+  endpointExample: "https://provider.example/v1",
   models: "Erlaubte Modelle",
   modelsHint: "Eine Modell-ID pro Zeile.",
   defaultModel: "Standardmodell",
@@ -71,6 +73,7 @@ const fa: typeof en = {
   aiDescription:
     "عامل هوش مصنوعی و دسته‌بندی هنگام اجرای گردش کار منتشرشده از این اتصال استفاده می‌کنند.",
   endpoint: "نشانی پایه ارائه‌دهنده",
+  endpointExample: "https://provider.example/v1",
   models: "مدل‌های مجاز",
   modelsHint: "در هر خط یک شناسه مدل وارد کنید.",
   defaultModel: "مدل پیش‌فرض",

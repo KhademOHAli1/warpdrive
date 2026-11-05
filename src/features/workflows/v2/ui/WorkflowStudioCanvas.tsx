@@ -1,37 +1,37 @@
 "use client";
 import {
   Background,
+  type Connection,
   ConnectionLineType,
   Controls,
+  type EdgeChange,
   Handle,
-  Position,
-  ReactFlow,
-  type Connection,
   type Node,
   type NodeChange,
   type NodeProps,
-  type EdgeChange,
+  Position,
+  ReactFlow,
 } from "@xyflow/react";
 import {
   CirclePlay,
+  Clock,
+  Code2,
   Database,
   GitBranch,
-  Code2,
-  Clock,
+  ListFilter,
   Mail,
   Sparkles,
-  ListFilter,
 } from "lucide-react";
 import { useState } from "react";
-import { BlockCard } from "@/features/blocks/ui/BlockCard";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type {
   ActionBlockKind,
   WorkflowV2Definition,
   WorkflowV2Node,
 } from "@/features/blocks/contracts";
-import { ResponsiveViewport } from "@/features/workflows/ui/ResponsiveViewport";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockCard } from "@/features/blocks/ui/BlockCard";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { ResponsiveViewport } from "@/features/workflows/ui/ResponsiveViewport";
 import {
   arrangeStudio,
   asArray,

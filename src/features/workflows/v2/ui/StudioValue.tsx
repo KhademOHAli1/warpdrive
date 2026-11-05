@@ -17,6 +17,7 @@ import { BlockVariablePicker } from "@/features/blocks/ui/BlockVariablePicker";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
+import { StudioTemporalValue } from "./StudioTemporalValue";
 import {
   asArray,
   asObject,
@@ -25,7 +26,6 @@ import {
   studioVariables,
   textValue,
 } from "./studioModel";
-import { StudioTemporalValue } from "./StudioTemporalValue";
 
 export interface StudioValueProps {
   label: string;

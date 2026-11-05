@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import { Variable } from "lucide-react";
+import { type ReactNode, useId } from "react";
 import { Button } from "@/components/ui/Button";
 import { useSharedBlocksMessages } from "../sharedBlocksMessages";
 
@@ -89,7 +90,7 @@ export function BlockBindingField({
           aria-label={`${L.chooseVariable}: ${label}`}
           onClick={onVariable}
         >
-          (x)
+          <Variable className="size-3.5" aria-hidden />
         </Button>
       </div>
     </BlockField>

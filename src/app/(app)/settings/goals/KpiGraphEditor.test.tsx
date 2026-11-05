@@ -3,8 +3,8 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { KpiActionResult, KpiDefinition, KpiMeasurement } from "@/features/goals/kpiModel";
-import { KpiGraphEditor, type KpiGraphEditorProps } from "./KpiGraphEditor";
 import type { KpiGraphCanvasProps } from "./KpiGraphCanvas";
+import { KpiGraphEditor, type KpiGraphEditorProps } from "./KpiGraphEditor";
 
 const actions = vi.hoisted(() => ({
   previewKpiAction: vi.fn<(...args: unknown[]) => Promise<KpiActionResult<KpiMeasurement>>>(),

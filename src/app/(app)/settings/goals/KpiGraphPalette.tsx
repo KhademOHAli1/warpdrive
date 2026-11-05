@@ -8,6 +8,7 @@ import { BlockPalette } from "@/features/blocks/ui/BlockPalette";
 import { useKpiGraphMessages } from "@/features/goals/kpiGraphMessages";
 import type { KpiGraph } from "@/features/goals/kpiModel";
 import type { GraphNodeKind } from "./KpiGraphModel";
+
 const icons = {
   metric: Database,
   constant: Hash,

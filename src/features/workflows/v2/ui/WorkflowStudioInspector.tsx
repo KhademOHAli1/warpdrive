@@ -1,16 +1,16 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { BlockField } from "@/features/blocks/ui/BlockField";
+import type { WorkflowV2Node } from "@/features/blocks/contracts";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
-import { StudioNativeFields } from "./StudioNativeFields";
-import { StudioFlowFields } from "./StudioFlowFields";
+import { BlockField } from "@/features/blocks/ui/BlockField";
+import { StudioAiFields } from "./StudioAiFields";
 import { StudioCommunicationFields } from "./StudioCommunicationFields";
+import { StudioFlowFields } from "./StudioFlowFields";
 import { StudioHumanFields } from "./StudioHumanFields";
 import { StudioIntegrationFields } from "./StudioIntegrationFields";
-import { StudioAiFields } from "./StudioAiFields";
+import { StudioNativeFields } from "./StudioNativeFields";
 import type { StudioFormProps } from "./studioFormTypes";
-import type { WorkflowV2Node } from "@/features/blocks/contracts";
 import { studioSetupHref } from "./studioModel";
 
 export function WorkflowStudioInspector(

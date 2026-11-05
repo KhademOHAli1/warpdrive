@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { useKpiGraphMessages } from "@/features/goals/kpiGraphMessages";
+import { kpiGraphInputHandles } from "@/features/goals/kpiGraphValidation";
 import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { useKpiMessages } from "@/features/goals/kpiMessages";
 import {
@@ -21,7 +22,6 @@ import {
   type KpiGraphNodeResult,
   type KpiStatus,
 } from "@/features/goals/kpiModel";
-import { kpiGraphInputHandles } from "@/features/goals/kpiGraphValidation";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import { useFormatters } from "@/lib/useFormatters";

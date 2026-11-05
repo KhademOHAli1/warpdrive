@@ -3,29 +3,33 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { BlockJson } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioBound, StudioFixed, StudioSchemaFields } from "./StudioFormControls";
-import { asArray, asObject, textValue } from "./studioModel";
 import type { StudioFormProps } from "./studioFormTypes";
+import { asArray, asObject, textValue } from "./studioModel";
+import { useDraftRowKeys } from "./useDraftRowKeys";
 
 function ClassifyQuestions(props: StudioFormProps) {
   const L = useSharedBlocksMessages();
   const questions = asArray(props.node.config.questions).map(asObject);
+  const rowKeys = useDraftRowKeys(questions.length);
   function update(next: BlockJson[]) {
     props.onChange({ ...props.node.config, questions: next });
   }
   return (
     <div className="space-y-4">
-      {questions.map((question, index) => {
+      {rowKeys.keys.map((key, index) => {
+        const question = questions[index];
+        if (question === undefined) return null;
         function change(patch: Record<string, BlockJson>) {
           update(
             questions.map((item, position) => (position === index ? { ...item, ...patch } : item)),
           );
         }
         return (
-          <section key={index} className="space-y-3 border-t pt-3">
+          <section key={key} className="space-y-3 border-t pt-3">
             <BlockField label={L.fields.name ?? ""}>
               <Input
                 aria-label={`${L.fields.question}: ${index + 1}`}
@@ -93,7 +97,10 @@ function ClassifyQuestions(props: StudioFormProps) {
               size="sm"
               className="text-destructive"
               disabled={props.disabled || questions.length === 1}
-              onClick={() => update(questions.filter((_, position) => position !== index))}
+              onClick={() => {
+                rowKeys.remove(index);
+                update(questions.filter((_, position) => position !== index));
+              }}
             >
               {L.remove}
             </Button>

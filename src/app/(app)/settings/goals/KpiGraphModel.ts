@@ -1,3 +1,8 @@
+import {
+  kpiGraphInputHandles,
+  kpiGraphNodeType,
+  validateKpiGraph,
+} from "@/features/goals/kpiGraphValidation";
 import type {
   KpiDefinition,
   KpiDefinitionInput,
@@ -6,11 +11,6 @@ import type {
   KpiGraphNode,
   KpiPeriod,
 } from "@/features/goals/kpiModel";
-import {
-  kpiGraphInputHandles,
-  kpiGraphNodeType,
-  validateKpiGraph,
-} from "@/features/goals/kpiGraphValidation";
 import { kpiDefinitionInput } from "@/features/goals/kpiSchemas";
 
 export type GraphNodeKind = KpiGraphNode["type"];
@@ -204,9 +204,9 @@ export function arrangeKpiGraph(graph: KpiGraph): KpiGraph {
   }
   const positions = new Map<string, { x: number; y: number }>();
   for (const [level, nodes] of levels)
-    nodes.forEach((node, index) =>
-      positions.set(node.id, { x: (index - (nodes.length - 1) / 2) * 285, y: level * 185 }),
-    );
+    nodes.forEach((node, index) => {
+      positions.set(node.id, { x: (index - (nodes.length - 1) / 2) * 285, y: level * 185 });
+    });
   return {
     ...graph,
     nodes: graph.nodes.map((node) => ({

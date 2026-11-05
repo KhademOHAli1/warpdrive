@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type {
   BlockJson,
   BlockOutput,
@@ -13,6 +11,8 @@ import type {
   WorkflowV2RunDetail,
   WorkflowV2Wait,
 } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
@@ -21,8 +21,8 @@ import {
   readWorkflowV2RunAction,
   resumeWorkflowV2FormAction,
 } from "../actions";
-import { asArray, asObject, textValue } from "./studioModel";
 import { StudioOutput } from "./StudioOutput";
+import { asArray, asObject, textValue } from "./studioModel";
 
 export function ResponseForm({
   wait,

@@ -1,12 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, MoreHorizontal } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +19,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import type { WorkflowV2LibraryEntry } from "@/features/blocks/contracts";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import {
@@ -28,12 +28,12 @@ import {
   duplicateWorkflowAction,
   unarchiveWorkflowAction,
 } from "@/features/workflows/actions";
-import { useFormatters } from "@/lib/useFormatters";
 import {
   buildLibraryLocation,
   parseLibraryLocation,
   workflowLocation,
 } from "@/features/workflows/ui/libraryLocation";
+import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   archiveWorkflowV2Action,
@@ -105,8 +105,11 @@ export function UnifiedWorkflowLibrary({
   const [selection, setSelection] = useState<WorkflowV2LibraryEntry | null>(null);
   const lock = useRef(false);
   const generation = useRef(0);
+  const lastRefresh = useRef(0);
   useEffect(() => {
     const request = ++generation.current;
+    const delay = reload === lastRefresh.current ? 180 : 0;
+    lastRefresh.current = reload;
     const timer = setTimeout(() => {
       void listWorkflowAllEnginesAction({ query, archive, status, limit: 25, cursor })
         .then((result) => {
@@ -122,7 +125,7 @@ export function UnifiedWorkflowLibrary({
         .finally(() => {
           if (request === generation.current) setLoading(false);
         });
-    }, 180);
+    }, delay);
     return () => {
       clearTimeout(timer);
       generation.current += 1;

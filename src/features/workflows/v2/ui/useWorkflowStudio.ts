@@ -1,13 +1,14 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   ActionBlockKind,
   BlockOutput,
   WorkflowV2Definition,
   WorkflowV2Document,
+  WorkflowV2Studio,
 } from "@/features/blocks/contracts";
-import { parseWorkflowV2Draft, validateWorkflowV2 } from "@/features/blocks/validation";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { parseWorkflowV2Draft, validateWorkflowV2 } from "@/features/blocks/validation";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   archiveWorkflowV2Action,
@@ -27,7 +28,6 @@ import {
   portsForNode,
   removeStudioNode,
 } from "./studioModel";
-import type { WorkflowV2Studio } from "@/features/blocks/contracts";
 
 type Simulation = Extract<
   Awaited<ReturnType<typeof testWorkflowV2DraftAction>>,
@@ -82,7 +82,7 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
             : L.failed,
     );
   }
-  async function loadStudio() {
+  const loadStudio = useCallback(async () => {
     const request = ++generation.current;
     try {
       const result = await readWorkflowV2StudioAction();
@@ -94,14 +94,14 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
     } catch {
       if (alive.current && request === generation.current) setMetadataError(true);
     }
-  }
+  }, []);
   useEffect(() => {
     let active = true;
     void Promise.resolve().then(() => (active ? loadStudio() : undefined));
     return () => {
       active = false;
     };
-  }, []);
+  }, [loadStudio]);
   function accept(next: WorkflowV2Document) {
     setDocument(next);
     setSaved(stamp(next));

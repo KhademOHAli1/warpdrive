@@ -9,11 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { BlockOutput } from "@/features/blocks/contracts";
-import type { WorkflowStudioModel } from "./useWorkflowStudio";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { StudioRecordPicker } from "./StudioRecordPicker";
 import { rawValue } from "./studioModel";
+import type { WorkflowStudioModel } from "./useWorkflowStudio";
 export function StudioLiveDialog({
   model,
   onClose,

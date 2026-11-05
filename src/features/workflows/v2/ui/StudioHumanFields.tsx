@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { BlockJson } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioBound } from "./StudioFormControls";
-import { asArray, asObject, freshId, textValue } from "./studioModel";
 import type { StudioFormProps } from "./studioFormTypes";
+import { asArray, asObject, freshId, textValue } from "./studioModel";
 
 export function StudioHumanFields(props: StudioFormProps) {
   const L = useSharedBlocksMessages();

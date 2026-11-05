@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { KpiDefinition, KpiGraph, KpiGraphNode } from "@/features/goals/kpiModel";
 import { validateKpiGraphUnits } from "@/features/goals/kpiGraphUnits";
+import type { KpiDefinition, KpiGraph, KpiGraphNode } from "@/features/goals/kpiModel";
 import {
   changeGraphNode,
   connectGraphInput,

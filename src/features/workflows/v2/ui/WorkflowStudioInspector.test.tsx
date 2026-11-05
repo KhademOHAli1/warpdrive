@@ -8,8 +8,8 @@ import {
   type WorkflowV2Definition,
   type WorkflowV2Studio,
 } from "@/features/blocks/contracts";
-import { WorkflowStudioInspector } from "./WorkflowStudioInspector";
 import { initialConfig } from "./studioModel";
+import { WorkflowStudioInspector } from "./WorkflowStudioInspector";
 
 vi.mock("../actions", () => ({
   lookupWorkflowV2RecordsAction: vi.fn().mockResolvedValue({ ok: true, value: [] }),

@@ -2,13 +2,13 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { BlockJson } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioCondition } from "./StudioCondition";
 import { StudioBound, StudioFixed, StudioToggle } from "./StudioFormControls";
-import { asArray, asObject, emptyCondition, freshId, textValue } from "./studioModel";
 import type { StudioFormProps } from "./studioFormTypes";
+import { asArray, asObject, emptyCondition, freshId, textValue } from "./studioModel";
 
 function BranchFields(props: StudioFormProps) {
   const L = useSharedBlocksMessages();

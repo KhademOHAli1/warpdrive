@@ -1,9 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { BlockField } from "@/features/blocks/ui/BlockField";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import type { WorkflowV2Definition, WorkflowV2Node } from "@/features/blocks/contracts";
+import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
+import { BlockField } from "@/features/blocks/ui/BlockField";
 import { asArray, asObject, connectStudioNodes, portsForNode, textValue } from "./studioModel";
 export function StudioConnections({
   definition,

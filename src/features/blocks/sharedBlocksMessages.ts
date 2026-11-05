@@ -4,6 +4,7 @@ import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 
 const en = {
+  webhookMethod: "POST",
   validation: {
     E_WORKFLOW_V2_UNREACHABLE: "Connect every step to the trigger before testing or publishing.",
     E_WORKFLOW_V2_EDGE: "Reconnect the step to an available route.",
@@ -76,6 +77,7 @@ const en = {
   searchBlocks: "Search blocks",
   searchVariables: "Search variables",
   chooseVariable: "Choose a variable",
+  calendarDestination: "Warpdrive Calendar",
   variableHint:
     "Choose a compatible output from an earlier step. Lists and records can be used as a whole.",
   noVariables: "No compatible variables are available here.",
@@ -328,6 +330,7 @@ type Copy = {
   [K in keyof typeof en]: (typeof en)[K] extends string ? string : Record<string, string>;
 };
 const de: Copy = {
+  webhookMethod: "POST",
   validation: {
     E_WORKFLOW_V2_UNREACHABLE:
       "Vor Test oder Veröffentlichung jeden Schritt mit dem Auslöser verbinden.",
@@ -404,6 +407,7 @@ const de: Copy = {
   searchBlocks: "Bausteine suchen",
   searchVariables: "Variablen suchen",
   chooseVariable: "Variable auswählen",
+  calendarDestination: "Warpdrive-Kalender",
   variableHint:
     "Einen passenden Ausgang eines vorherigen Schritts wählen. Listen und Datensätze können vollständig übergeben werden.",
   noVariables: "Hier sind keine passenden Variablen verfügbar.",
@@ -653,6 +657,7 @@ const de: Copy = {
   },
 };
 const fa: Copy = {
+  webhookMethod: "POST",
   validation: {
     E_WORKFLOW_V2_UNREACHABLE: "پیش از آزمون یا انتشار همه مراحل را به محرک متصل کنید.",
     E_WORKFLOW_V2_EDGE: "مرحله را به یک مسیر در دسترس متصل کنید.",
@@ -725,6 +730,7 @@ const fa: Copy = {
   searchBlocks: "جست‌وجوی بلوک‌ها",
   searchVariables: "جست‌وجوی متغیرها",
   chooseVariable: "انتخاب متغیر",
+  calendarDestination: "تقویم وارپ‌درایو",
   variableHint:
     "خروجی سازگار یکی از مراحل قبلی را انتخاب کنید. فهرست‌ها و رکوردها را می‌توان کامل استفاده کرد.",
   noVariables: "متغیر سازگاری در این بخش در دسترس نیست.",
