@@ -2,7 +2,6 @@ import { sql } from "drizzle-orm";
 import { SYNC_JITTER_MODULO_SECONDS } from "@/constants/email";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { db as prodDb } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
 import { makeStorageClient } from "@/features/files/storage";
 import { err, ok, type Result } from "@/types/result";
@@ -44,20 +43,21 @@ export interface SyncDeps {
 }
 
 async function defaultResolveClient(
+  db: Db,
   accountId: string,
   signal: AbortSignal,
+  syncGeneration?: number,
 ): Promise<Result<GmailClient, AppError>> {
   signal.throwIfAborted();
-  const token = await ensureAccessToken(prodDb, {
+  const token = await ensureAccessToken(db, {
     signal,
     accountId,
+    syncGeneration,
     deps: { refresh: makeRefresh(signal) },
   });
   if (!token.ok) return token;
   return ok(createGmailClient(token.value.token));
 }
-
-const defaultSyncDeps: SyncDeps = { resolveClient: defaultResolveClient };
 
 // Per-job sync handler. Resolves a client, runs syncMailbox, and on ANY error stamps
 // last_error_id and RETURNS the err (never throws raw, never logs tokens). The pg-boss
@@ -65,7 +65,7 @@ const defaultSyncDeps: SyncDeps = { resolveClient: defaultResolveClient };
 export async function runSyncJob(
   db: Db,
   args: { accountId: string; signal: AbortSignal; now?: Date },
-  deps: SyncDeps = defaultSyncDeps,
+  deps?: SyncDeps,
 ): Promise<Result<{ applied: number; more?: boolean; deferred?: boolean }, AppError>> {
   args.signal.throwIfAborted();
   const account = (
@@ -79,9 +79,11 @@ export async function runSyncJob(
   args.signal.throwIfAborted();
   if (account === undefined || account.status === "disconnected" || account.paused)
     return ok({ applied: 0 });
-  if (account.provider === "imap_smtp") return runImapSyncJob(db, args, deps.imap);
+  if (account.provider === "imap_smtp") return runImapSyncJob(db, args, deps?.imap);
   if (account.provider !== "gmail") return ok({ applied: 0 });
-  const client = await deps.resolveClient(args.accountId, args.signal);
+  const client = await (deps === undefined
+    ? defaultResolveClient(db, args.accountId, args.signal, account.connection_generation)
+    : deps.resolveClient(args.accountId, args.signal));
   if (!client.ok)
     return stampError(db, args.accountId, account.connection_generation, client.error, args.signal);
 
@@ -104,7 +106,9 @@ export async function runSyncJob(
 export async function runSendJob(
   db: Db,
   args: { accountId: string; idempotencyKey: string; signal: AbortSignal },
-  deps: SyncDeps = defaultSyncDeps,
+  deps: SyncDeps = {
+    resolveClient: (accountId, signal) => defaultResolveClient(db, accountId, signal),
+  },
 ): Promise<Result<{ status: string }, AppError>> {
   args.signal.throwIfAborted();
   if (await privateIntakeBlocksQueuedSend(db, args))
