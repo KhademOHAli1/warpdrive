@@ -1,5 +1,29 @@
 import { classifyInventory } from "./registryClassification";
 
+export const recordedDealSourceInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/recordedDealSourceReport.ts",
+    "sourceReview:src/features/stats/recordedDealSourceReport.ts#9e7475b7833a2d3b222b65b81e82f7bd152da89689032770fd846d634ef1ed59",
+    "writer:src/features/stats/recordedDealSourceReport.ts#execute:sql",
+  ],
+  {
+    owner: "recorded CRM deal source analytics",
+    categories: [
+      "current recorded channel, deal owner and visibility, nominal deal values and clocks",
+    ],
+    subjectRelation:
+      "Deal records may concern people and organizations. Current channel labels do not establish identity or attribution.",
+    purpose:
+      "Summarize currently authorized in-period deal creation and outcomes by the recorded native channel classes and one currency.",
+    disclosure:
+      "Only fixed channel classes, current authorized counts, known sums and elapsed totals. Raw source text, free-form reference, identities, names and underlying CRM rows are excluded.",
+    retention: "Read only, no new storage. Source records retain their existing lifecycle policy.",
+    externalEffects:
+      "An authenticated server caller can request a read-only repeatable-read observation. Transaction-local settings bound query time. No provider, export or CRM write.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const analyticsComputationInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/analyticsInputAdmission.ts",
