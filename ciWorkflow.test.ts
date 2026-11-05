@@ -243,7 +243,7 @@ describe("public Bun CI", () => {
       });
     const result = spawnSync("python3", ["scripts/delivery/browser_smoke_environment.py"], {
       cwd: fileURLToPath(new URL(".", import.meta.url)),
-      env: { ...declaredEnvironment, PATH: process.env.PATH ?? "" },
+      env: { ...declaredEnvironment, PATH: "/usr/bin:/bin" },
       encoding: "utf8",
     });
     expect(result.status).toBe(0);

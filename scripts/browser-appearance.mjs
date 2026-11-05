@@ -137,6 +137,16 @@ async function login(page) {
   assert.equal(response.status(), 200);
 }
 
+async function visitAuthenticatedAppearance(page, context, locale) {
+  if (nativeSessions.has(locale)) {
+    assert.equal((await page.goto("/settings/appearance")).status(), 200);
+    return;
+  }
+  await login(page);
+  nativeSessions.set(locale, await context.storageState());
+  report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
+}
+
 async function live(page, label, role, text, entry, density = false) {
   const region = page.getByRole(role, { name: label, exact: true });
   await region.filter({ hasText: text }).waitFor({ state: "visible" });
@@ -629,13 +639,7 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
     network = watchNetwork(context, page, entry);
     await network.ready;
     await context.addCookies([{ name: "warpdrive_locale", value: locale, url: origin }]);
-    if (!nativeSessions.has(locale)) {
-      await login(page);
-      nativeSessions.set(locale, await context.storageState());
-      report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
-    } else {
-      assert.equal((await page.goto("/settings/appearance")).status(), 200);
-    }
+    await visitAuthenticatedAppearance(page, context, locale);
     assert.equal(await page.locator("html").getAttribute("lang"), locale);
     assert.equal(await page.locator("html").getAttribute("dir"), locale === "fa" ? "rtl" : "ltr");
     const L = catalog(`src/features/identity/messages/settings.${locale}.json`);
