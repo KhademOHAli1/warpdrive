@@ -234,10 +234,13 @@ describe("public Bun CI", () => {
   });
 
   it("passes the declared full browser environment through the canonical admission guard", () => {
-    const declaredEnvironment = {
-      ...(fullQualityDocument.env ?? {}),
-      ...(fullQualityDocument.jobs?.browser?.env ?? {}),
-    };
+    const declaredEnvironment = z
+      .object({ NODE_ENV: z.literal("production") })
+      .catchall(z.string())
+      .parse({
+        ...(fullQualityDocument.env ?? {}),
+        ...(fullQualityDocument.jobs?.browser?.env ?? {}),
+      });
     const result = spawnSync("python3", ["scripts/delivery/browser_smoke_environment.py"], {
       cwd: fileURLToPath(new URL(".", import.meta.url)),
       env: { ...declaredEnvironment, PATH: process.env.PATH ?? "" },
