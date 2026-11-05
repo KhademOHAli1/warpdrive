@@ -19,6 +19,7 @@ import { winRate } from "@/features/stats/winRate";
 import { wonDealStats } from "@/features/stats/wonDealStats";
 import { wonTrend } from "@/features/stats/wonTrend";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { analyticsAttentionInput, readAnalyticsAttention } from "./analyticsAttention";
 import { readCurrentLeadHandoffReport } from "./currentLeadHandoffReport";
 import { dealRecords } from "./dealRecords";
 import { readCurrentStageAgingView } from "./history/currentStageAgingRepository";
@@ -129,6 +130,20 @@ export const statsRouter = router({
     );
     return dealWinCohortView(report, horizon);
   }),
+
+  currentAttention: protectedProcedure
+    .input(analyticsAttentionInput.omit({ limit: true, offset: true }))
+    .query(async ({ ctx, input }) => {
+      const result = await readAnalyticsAttention(ctx.db, ctx.actor, { ...input, limit: 1 }, SIG());
+      if (result.state !== "available") return result;
+      return {
+        state: "available" as const,
+        definition: result.definition,
+        timeZone: result.timeZone,
+        observedAt: result.observedAt,
+        counts: result.counts,
+      };
+    }),
 
   stageAging: protectedProcedure
     .input(stageAgingInput)

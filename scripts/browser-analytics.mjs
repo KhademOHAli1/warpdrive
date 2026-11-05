@@ -1001,7 +1001,13 @@ async function verifyCohortPanel(active) {
           input.timeZoneIdentity === actor.timeZone,
         action,
       );
-    const [aging, first] = await Promise.all([
+    const [attention, aging, first] = await Promise.all([
+      rpcAfter(
+        page,
+        "stats.currentAttention",
+        (input) => input.pipelineId === actor.pipelineId && input.currency === currency,
+        () => {},
+      ),
       rpcAfter(
         page,
         "stats.stageAging",
@@ -1010,6 +1016,25 @@ async function verifyCohortPanel(active) {
       ),
       cohortAfter("30-days", () => page.getByRole("tab", exact(S.pipelineTab)).click()),
     ]);
+    const attentionPanel = page.getByRole("region", exact(S.currentAttention.title));
+    assert.equal(attention.input.from, undefined);
+    assert.equal(attention.data.state, "available");
+    assert.equal(attention.data.timeZone, actor.timeZone);
+    assert.deepEqual(attention.data.counts, {
+      overdueActivities: 0,
+      dealsWithoutNextStep: active ? 1 : 0,
+    });
+    assert.deepEqual(Object.keys(attention.data).sort(), [
+      "counts",
+      "definition",
+      "observedAt",
+      "state",
+      "timeZone",
+    ]);
+    await attentionPanel
+      .getByText(S.currentAttention.dealsWithoutNextStep, { exact: true })
+      .waitFor();
+    entry.attentionProof = attention.data.counts;
     const agingPanel = page.getByRole("region", exact(S.stageAging.title));
     assert.deepEqual(aging.input.ownerScope, { kind: "me" });
     assert.equal(aging.input.from, undefined);

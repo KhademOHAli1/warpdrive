@@ -224,5 +224,15 @@
     "permission": "Your current permissions do not allow you to view this report.",
     "allPipelines": "Choose All pipelines to see the report. Leads have no pipeline before conversion.",
     "unavailable": "Lead-to-deal links are unavailable for these filters."
+  },
+  "currentAttention": {
+    "title": "Deal next actions",
+    "definition": "These counts use the current pipeline, owner and currency. Overdue work follows the activity queue’s account time zone. An open deal needs a next step when it has no unfinished linked activity.",
+    "observedAt": "Checked at",
+    "overdueActivities": "Overdue deal activities",
+    "dealsWithoutNextStep": "Open deals without a next step",
+    "permission": "Your current permissions do not allow you to view this report.",
+    "unavailable": "Current next-action counts are unavailable for these filters.",
+    "matchLimit": "This scope has too many matches for a complete count. Choose a narrower scope."
   }
 }

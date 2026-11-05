@@ -124,6 +124,23 @@ vi.mock("@/lib/trpc-client", () => ({
           };
         },
       },
+      currentAttention: {
+        useQuery: () => ({
+          data: {
+            state: "available",
+            definition: "current-deal-next-action-queue-v1",
+            timeZone: "Europe/Berlin",
+            observedAt: "2026-11-05T07:00:00.123456Z",
+            counts: { overdueActivities: 4, dealsWithoutNextStep: 2 },
+          },
+          isFetchedAfterMount: true,
+          isFetching: false,
+          isPaused: false,
+          isPlaceholderData: false,
+          isError: false,
+          refetch: vi.fn(),
+        }),
+      },
       stageAging: {
         useQuery: (input: unknown, options: unknown) => {
           fixture.agingQuery(input, options);
@@ -390,6 +407,16 @@ describe("Performance report experience", () => {
       expect.objectContaining({ pipelineId: "p1" }),
       expect.objectContaining({ enabled: false }),
     );
+  });
+
+  it("keeps the deal attention counts separate and displays the queue's account zone", async () => {
+    mount();
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    const panel = within(screen.getByRole("region", { name: "Deal next actions" }));
+    expect(panel.getByText("(Europe/Berlin)")).toBeVisible();
+    expect(panel.getByText("Overdue deal activities")).toBeVisible();
+    expect(panel.getByText("Open deals without a next step")).toBeVisible();
+    expect(panel.getAllByRole("definition").map((cell) => cell.textContent)).toEqual(["4", "2"]);
   });
 
   it("selects only the requested preset when month and quarter have identical bounds", async () => {

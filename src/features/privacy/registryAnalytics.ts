@@ -47,6 +47,28 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
   },
 );
 
+export const analyticsAttentionInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/analyticsAttention.ts",
+    "sourceReview:src/features/stats/analyticsAttention.ts#04a3d6d41222077a83208fac37632cf61d04fe6bf928e8887c1b0c7141495bc5",
+    "writer:src/features/stats/analyticsAttention.ts#execute:dynamic",
+    "writer:src/features/stats/analyticsAttention.ts#execute:sql",
+  ],
+  {
+    owner: "scoped current deal next actions",
+    categories: ["deal and activity identifiers, deal ownership, visibility and due clocks"],
+    subjectRelation: "The source may reference activities or deals about people and organizations.",
+    purpose:
+      "Count overdue deal activities and open deals with no unfinished linked activity under the canonical queue rules.",
+    disclosure:
+      "The current protected report returns only the two authorized counts, observation time and account zone. Anchors and exact due evidence remain in the private reader.",
+    retention: "Read-only computation. Source rows retain their existing lifecycle policies.",
+    externalEffects:
+      "One bounded database snapshot and transaction-local settings. No CRM or provider writes.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const currentLeadHandoffInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/hydrateReportActor.ts",

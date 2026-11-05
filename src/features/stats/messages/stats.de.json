@@ -224,5 +224,15 @@
     "permission": "Ihre aktuellen Berechtigungen erlauben keinen Zugriff auf diesen Bericht.",
     "allPipelines": "Wählen Sie Alle Pipelines, um den Bericht anzuzeigen. Leads gehören vor der Umwandlung keiner Pipeline an.",
     "unavailable": "Für diese Filter sind keine Verknüpfungen zwischen Leads und Deals verfügbar."
+  },
+  "currentAttention": {
+    "title": "Nächste Schritte für Deals",
+    "definition": "Die Zahlen beziehen sich auf die aktuelle Pipeline, die Zuständigkeit und die Währung. Für überfällige Aktivitäten gilt die Zeitzone des Kontos. Bei offenen Deals ohne verknüpfte unerledigte Aktivität fehlt der nächste Schritt.",
+    "observedAt": "Geprüft am",
+    "overdueActivities": "Überfällige Deal-Aktivitäten",
+    "dealsWithoutNextStep": "Offene Deals ohne nächsten Schritt",
+    "permission": "Ihre aktuellen Berechtigungen erlauben keinen Zugriff auf diesen Bericht.",
+    "unavailable": "Für diese Filter sind keine aktuellen Zahlen zu nächsten Schritten verfügbar.",
+    "matchLimit": "Für diesen Umfang gibt es zu viele Treffer für eine vollständige Zählung. Grenzen Sie die Auswahl ein."
   }
 }

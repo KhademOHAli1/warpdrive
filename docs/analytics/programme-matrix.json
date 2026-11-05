@@ -1602,7 +1602,7 @@
         "src/features/activities/next-action-queue/queueTypes.ts",
         "src/features/activities/next-action-queue/readNextActionQueue.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "qualification-input"],
       "dataRequirements": ["Canonical activity evidence and versioned thresholds."],
       "acceptance": [

@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
 import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
+import { CurrentAttentionPanel } from "./CurrentAttentionPanel";
 import { CurrentLeadHandoffPanel } from "./CurrentLeadHandoffPanel";
 import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
@@ -316,7 +317,11 @@ export function Dashboard({
                 <DealWinCohortPanel scope={reportScope} />
               </>
             )}
-            <StageAgingReport key={JSON.stringify(currentScope)} scope={currentScope} />
+            <StageAgingReport key={`aging-${JSON.stringify(currentScope)}`} scope={currentScope} />
+            <CurrentAttentionPanel
+              key={`attention-${JSON.stringify(currentScope)}`}
+              scope={currentScope}
+            />
           </TabsContent>
         </Tabs>
       </div>
