@@ -6,9 +6,9 @@ import type { Db } from "@/db/client";
 import type { LocalePreferenceFallback } from "@/features/i18n/localePreferenceCookies";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { canonicalMoney } from "@/lib/canonicalMoney";
-import { hydrateActor } from "@/server/hydrateActor";
 import type { DashboardFilters, OwnerScope } from "@/types/stats";
 import { dealMetricPopulation, visibleDealPopulation } from "./dealPopulation";
+import { hydrateReportActor } from "./hydrateReportActor";
 import { resolveReportScope } from "./resolveReportScope";
 import { dashboardInput } from "./schemas";
 
@@ -56,24 +56,6 @@ export type RecordedDealSourceReport =
       effectiveOwnerScope: OwnerScope["kind"];
       rows: z.output<typeof resultSchema>["rows"];
     };
-
-async function currentActor(tx: Db, request: PermSetUser, signal: AbortSignal) {
-  if (!request.isActive) return null;
-  const live = await hydrateActor(tx, request.id, signal);
-  if (live === null || request.type === "admin") return live;
-  return {
-    id: live.id,
-    type: "regular",
-    isActive: true,
-    groupIds: new Set([...request.groupIds].filter((id) => live.groupIds.has(id))),
-    managedUserIds: new Set(
-      [...(request.managedUserIds ?? [])].filter((id) => live.managedUserIds?.has(id) === true),
-    ),
-    flags: new Set(
-      [...request.flags].filter((flag) => live.type === "admin" || live.flags.has(flag)),
-    ),
-  } satisfies PermSetUser;
-}
 
 async function readRows(
   tx: Db,
@@ -133,7 +115,7 @@ async function readInSnapshot(
 ): Promise<RecordedDealSourceReport> {
   await tx.execute(sql`SET LOCAL statement_timeout = '5000ms'`);
   await tx.execute(sql`SET LOCAL lock_timeout = '2000ms'`);
-  const actor = await currentActor(tx, requestActor, signal);
+  const actor = await hydrateReportActor(tx, requestActor, signal);
   if (actor === null) return { state: "permission" };
   const { currency, effectiveOwnerScope, filters } = await resolveReportScope(
     tx,

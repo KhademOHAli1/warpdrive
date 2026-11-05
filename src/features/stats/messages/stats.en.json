@@ -208,5 +208,21 @@
     "empty": "No eligible deals were added, won, or lost in this period.",
     "permission": "Your current permissions do not allow you to view this report.",
     "unavailable": "Recorded deal sources are unavailable for these filters."
+  },
+  "currentHandoff": {
+    "title": "Lead-to-deal links",
+    "definition": "The date range selects leads by their creation date. Linked deals are counted when they are active and visible to you now. Handoff and first-response timing require recorded events.",
+    "creationPeriod": "Lead creation period",
+    "eligibleLeads": "Leads in scope",
+    "linkedLeads": "Leads with a visible deal",
+    "distinctLinkedDeals": "Distinct linked deals",
+    "pendingUnlinkedLeads": "Active leads without a link",
+    "archivedUnlinkedLeads": "Archived leads without a link",
+    "unavailableLinkedLeads": "Leads with an unavailable link",
+    "ownLeadsOnly": "This report covers your own leads.",
+    "empty": "No leads were created in this period for these filters.",
+    "permission": "Your current permissions do not allow you to view this report.",
+    "allPipelines": "Choose All pipelines to see the report. Leads have no pipeline before conversion.",
+    "unavailable": "Lead-to-deal links are unavailable for these filters."
   }
 }

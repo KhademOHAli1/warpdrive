@@ -26,7 +26,7 @@ export const dealReportExportInventoryEntry = classifyInventory(
 export const recordedDealSourceInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/recordedDealSourceReport.ts",
-    "sourceReview:src/features/stats/recordedDealSourceReport.ts#9e7475b7833a2d3b222b65b81e82f7bd152da89689032770fd846d634ef1ed59",
+    "sourceReview:src/features/stats/recordedDealSourceReport.ts#3ab90044df83b3662c5d0de9d81c1cec95340f01969edc15d6ce90b75aff1931",
     "writer:src/features/stats/recordedDealSourceReport.ts#execute:sql",
   ],
   {
@@ -43,6 +43,31 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
     retention: "Read only, no new storage. Source records retain their existing lifecycle policy.",
     externalEffects:
       "An authenticated server caller can request a read-only repeatable-read observation. Transaction-local settings bound query time. No provider, export or CRM write.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
+export const currentLeadHandoffInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/hydrateReportActor.ts",
+    "sourceReview:src/features/stats/currentLeadHandoffReport.ts#d74f1f114ea4f75639e4a50d8d675cf1453b185146d602fd9a4c9d3e5445416d",
+    "sourceReview:src/features/stats/hydrateReportActor.ts#cc1a43a053f20aaa3ba8c1b3183baf21f8adfd914a2b27a96c6dc278aac3c7cd",
+    "writer:src/features/stats/currentLeadHandoffReport.ts#execute:sql",
+  ],
+  {
+    owner: "current lead and deal linkage analytics",
+    categories: [
+      "lead creation clock, lead scope and ownership, recorded deal linkage and visibility",
+    ],
+    subjectRelation: "Lead and deal records may concern people and organizations.",
+    purpose:
+      "Count links across two independently authorized CRM populations in a read-only snapshot.",
+    disclosure:
+      "Authorized aggregate counts. The source lead list already exposes whether a lead was converted. An unavailable link count combines all destination failures without revealing target identifiers, attributes or reasons.",
+    retention:
+      "No new storage. Source lead and deal rows retain their existing lifecycle policies.",
+    externalEffects:
+      "Authenticated snapshot read with transaction-local statement and lock bounds. No CRM or provider writes.",
     erasureTask: "DPL-15 / #714",
   },
 );

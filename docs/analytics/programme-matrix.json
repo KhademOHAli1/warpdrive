@@ -261,8 +261,12 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": ["src/features/leads/leadConvert.ts", "src/db/schema/activities.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/leads/leadConvert.ts",
+        "src/features/stats/currentLeadHandoffReport.ts",
+        "src/db/schema/activities.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["funnel-journey", "history-exact-events"],
       "dataRequirements": [
         "Qualified handoff, acceptance/rejection and first-response event definition."

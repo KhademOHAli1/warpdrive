@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { CurrentLeadHandoffReport } from "../currentLeadHandoffReport";
 import type { DealWinCohortView } from "../history/dealWinCohortView";
 import type { StageAgingView } from "../history/stageAgingView";
 import type { RecordedDealSourceReport } from "../recordedDealSourceReport";
@@ -26,6 +27,9 @@ const fixture = vi.hoisted(() => ({
   recordedSourceReport: vi.fn<() => RecordedDealSourceReport>(),
   recordedSourceFresh: true,
   recordedSourceFetching: false,
+  handoffQuery: vi.fn(),
+  handoffReport: vi.fn<() => CurrentLeadHandoffReport>(),
+  handoffFetching: false,
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
@@ -91,6 +95,20 @@ vi.mock("@/lib/trpc-client", () => ({
             isPaused: false,
             isPlaceholderData: false,
             refetch: fixture.recordedSourceRefetch,
+          };
+        },
+      },
+      currentLeadHandoff: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.handoffQuery(input, options);
+          return {
+            data: fixture.handoffReport(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: fixture.handoffFetching,
+            isPaused: false,
+            isPlaceholderData: false,
+            refetch: vi.fn(),
           };
         },
       },
@@ -172,6 +190,8 @@ beforeEach(() => {
   fixture.recordedSourceReport.mockReturnValue({ state: "unavailable" });
   fixture.recordedSourceFresh = true;
   fixture.recordedSourceFetching = false;
+  fixture.handoffFetching = false;
+  fixture.handoffReport.mockReturnValue({ state: "permission" });
 });
 const mount = () =>
   render(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
@@ -323,6 +343,53 @@ describe("Performance report experience", () => {
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(fixture.recordedSourceRefetch).toHaveBeenCalledOnce();
     expect(findTable()).not.toBeInTheDocument();
+  });
+
+  it("shows current lead linkage only on a fresh all-pipelines read", async () => {
+    fixture.handoffReport.mockReturnValue({
+      state: "available",
+      definition: "current-lead-deal-link-v1",
+      population: "current-visible-leads-created-in-period",
+      destination: "current-visible-live-linked-deal",
+      handoffHistory: "unqualified",
+      firstResponseHistory: "unqualified",
+      currency: "USD",
+      timeZone: "Europe/Berlin",
+      effectiveOwnerScope: "me",
+      counts: {
+        eligibleLeads: 9,
+        linkedLeads: 4,
+        distinctLinkedDeals: 3,
+        pendingUnlinkedLeads: 2,
+        archivedUnlinkedLeads: 1,
+        unavailableLinkedLeads: 2,
+      },
+    });
+    const page = mount();
+    await userEvent.click(screen.getByRole("tab", { name: "Acquisition" }));
+    const panel = within(screen.getByRole("region", { name: "Lead-to-deal links" }));
+    expect(panel.getByText("Lead creation period")).toBeVisible();
+    expect(
+      panel
+        .getAllByRole("definition")
+        .slice(-6)
+        .map((cell) => cell.textContent),
+    ).toEqual(["9", "4", "3", "2", "1", "2"]);
+    expect(fixture.handoffQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pipelineId: null, currency: "USD" }),
+      expect.objectContaining({ enabled: true, gcTime: 0 }),
+    );
+    fixture.handoffFetching = true;
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(panel.queryByText("Leads with a visible deal")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
+    await userEvent.click(screen.getByRole("option", { name: "Sales" }));
+    const scopedPanel = within(screen.getByRole("region", { name: "Lead-to-deal links" }));
+    expect(scopedPanel.getByText(/Choose All pipelines/)).toBeVisible();
+    expect(fixture.handoffQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pipelineId: "p1" }),
+      expect.objectContaining({ enabled: false }),
+    );
   });
 
   it("selects only the requested preset when month and quarter have identical bounds", async () => {

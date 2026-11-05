@@ -208,5 +208,21 @@
     "empty": "In diesem Zeitraum wurden keine passenden Deals angelegt, gewonnen oder verloren.",
     "permission": "Mit Ihren aktuellen Berechtigungen können Sie diesen Bericht nicht einsehen.",
     "unavailable": "Für diese Auswahl sind keine erfassten Dealquellen verfügbar."
+  },
+  "currentHandoff": {
+    "title": "Verknüpfungen zwischen Leads und Deals",
+    "definition": "Der Zeitraum bezieht sich auf das Erstellungsdatum der Leads. Verknüpfte Deals zählen, wenn sie aktuell aktiv und für Sie sichtbar sind. Übergabe- und Reaktionszeiten setzen aufgezeichnete Ereignisse voraus.",
+    "creationPeriod": "Erstellungszeitraum der Leads",
+    "eligibleLeads": "Berücksichtigte Leads",
+    "linkedLeads": "Leads mit sichtbarem Deal",
+    "distinctLinkedDeals": "Eindeutig verknüpfte Deals",
+    "pendingUnlinkedLeads": "Aktive Leads ohne Verknüpfung",
+    "archivedUnlinkedLeads": "Archivierte Leads ohne Verknüpfung",
+    "unavailableLinkedLeads": "Leads mit nicht verfügbarer Verknüpfung",
+    "ownLeadsOnly": "Dieser Bericht umfasst Ihre eigenen Leads.",
+    "empty": "In diesem Zeitraum wurden für diese Filter keine Leads erstellt.",
+    "permission": "Ihre aktuellen Berechtigungen erlauben keinen Zugriff auf diesen Bericht.",
+    "allPipelines": "Wählen Sie Alle Pipelines, um den Bericht anzuzeigen. Leads gehören vor der Umwandlung keiner Pipeline an.",
+    "unavailable": "Für diese Filter sind keine Verknüpfungen zwischen Leads und Deals verfügbar."
   }
 }

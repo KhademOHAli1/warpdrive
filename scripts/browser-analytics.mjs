@@ -3,7 +3,11 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
-import { ANALYTICS_BROWSER as actor, ANALYTICS_DEALS as deals } from "./browser-analytics-seed.mjs";
+import {
+  ANALYTICS_BROWSER as actor,
+  ANALYTICS_DEALS as deals,
+  ANALYTICS_LEADS as leads,
+} from "./browser-analytics-seed.mjs";
 
 // Use the same admission boundary as the existing full browser packs, before loading clients.
 assert.equal(process.env.GITHUB_ACTIONS, "true", "Requires the disposable hosted runner");
@@ -836,6 +840,63 @@ async function verifyRecordedDealSources() {
   });
 }
 
+async function verifyLeadHandoff() {
+  await journey("en-current-lead-links", async (page, _context, entry) => {
+    const S = copy.en.stats;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, {
+      allPipelines: true,
+    });
+    const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
+    const result = await rpcAfter(
+      page,
+      "stats.currentLeadHandoff",
+      (input) =>
+        input.from === filtered.input.from &&
+        input.to === filtered.input.to &&
+        input.pipelineId === null &&
+        input.currency === currency,
+      () => page.getByRole("tab", exact(S.recordedSource.tab)).click(),
+    );
+    assert.deepEqual(result.input.ownerScope, { kind: "me" });
+    const counts = {
+      eligibleLeads: 5,
+      linkedLeads: 2,
+      distinctLinkedDeals: 1,
+      pendingUnlinkedLeads: 1,
+      archivedUnlinkedLeads: 1,
+      unavailableLinkedLeads: 1,
+    };
+    assert.deepEqual(result.data.counts, counts);
+    assert.equal(result.data.state, "available");
+    assert.equal(result.data.timeZone, actor.timeZone);
+    assert.equal(result.data.firstResponseHistory, "unqualified");
+    const payload = JSON.stringify(result.data);
+    assert.ok(Object.values(leads).every((id) => !payload.includes(id)));
+    assert.ok(Object.values(deals).every(({ id }) => !payload.includes(id)));
+    const panel = page.getByRole("region", exact(S.currentHandoff.title));
+    await panel.getByText(S.currentHandoff.eligibleLeads, { exact: true }).waitFor();
+    assert.deepEqual((await panel.getByRole("definition").allTextContents()).slice(-6), [
+      "5",
+      "2",
+      "1",
+      "1",
+      "1",
+      "1",
+    ]);
+    await panel.scrollIntoViewIfNeeded();
+    await capture(page, "en-current-lead-links");
+    await rpcAfter(
+      page,
+      "stats.dashboard",
+      (input) => input.pipelineId === actor.pipelineId,
+      () => choose(page, S.pipelineLabel, actor.pipelineName, dashboard(page, "en")),
+    );
+    await panel.getByText(S.currentHandoff.allPipelines, { exact: true }).waitFor();
+    assert.equal(await panel.getByText(S.currentHandoff.eligibleLeads, { exact: true }).count(), 0);
+    entry.leadLinkProof = { counts, pipelineSelectionWithheld: true };
+  });
+}
+
 async function verifyDealReportDownload() {
   await journey("en-won-deal-csv", async (page, _context, entry) => {
     const S = copy.en.stats;
@@ -1172,6 +1233,7 @@ try {
 
   await verifyRestrictedPipeline();
   await verifyRecordedDealSources();
+  await verifyLeadHandoff();
   await verifyDealReportDownload();
   await matrix("en", "gregory");
   await setRegional("en", "timeZone", "UTC", {

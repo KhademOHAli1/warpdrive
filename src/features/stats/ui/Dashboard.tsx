@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
 import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
+import { CurrentLeadHandoffPanel } from "./CurrentLeadHandoffPanel";
 import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
 import { DealRecordsDrawer } from "./DealRecordsDrawer";
@@ -184,8 +185,15 @@ export function Dashboard({
             <ActivityTypesWidget data={result.activitiesByType} />
           </div>
         </TabsContent>
-        <TabsContent value="acquisition">
-          <RecordedDealSourcePanel key={JSON.stringify(reportScope)} scope={reportScope} />
+        <TabsContent value="acquisition" className="space-y-5">
+          <RecordedDealSourcePanel
+            key={`source-${JSON.stringify(reportScope)}`}
+            scope={reportScope}
+          />
+          <CurrentLeadHandoffPanel
+            key={`handoff-${JSON.stringify(reportScope)}`}
+            scope={reportScope}
+          />
         </TabsContent>
       </div>
     );

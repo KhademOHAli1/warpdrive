@@ -19,6 +19,7 @@ import { winRate } from "@/features/stats/winRate";
 import { wonDealStats } from "@/features/stats/wonDealStats";
 import { wonTrend } from "@/features/stats/wonTrend";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { readCurrentLeadHandoffReport } from "./currentLeadHandoffReport";
 import { dealRecords } from "./dealRecords";
 import { readCurrentStageAgingView } from "./history/currentStageAgingRepository";
 import { readObservedDealWinCohorts } from "./history/dealCohortRepository";
@@ -109,6 +110,12 @@ export const statsRouter = router({
     .input(dashboardInput)
     .query(({ ctx, input }) =>
       readRecordedDealSourceReport(ctx.db, ctx.actor, input, SIG(), ctx.localeFallback),
+    ),
+
+  currentLeadHandoff: protectedProcedure
+    .input(dashboardInput)
+    .query(({ ctx, input }) =>
+      readCurrentLeadHandoffReport(ctx.db, ctx.actor, input, SIG(), ctx.localeFallback),
     ),
 
   dealWinCohorts: protectedProcedure.input(dealWinCohortsInput).query(async ({ ctx, input }) => {

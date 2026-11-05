@@ -52,6 +52,16 @@ export const ANALYTICS_DEALS = {
   },
 };
 
+export const ANALYTICS_LEADS = {
+  linked: id(620),
+  secondLink: id(621),
+  pending: id(622),
+  archived: id(623),
+  restricted: id(624),
+  hidden: id(625),
+  old: id(626),
+};
+
 const fixtureChannels = {
   recorded: "referral",
   zero: "referral",
@@ -171,6 +181,30 @@ export async function seedAnalyticsBrowserFixtures(
         key === "otherCurrency",
         age,
         fixtureChannels[key] ?? null,
+      ],
+    );
+  }
+  const leadFixtures = [
+    ["linked", ANALYTICS_DEALS.recorded.id, true],
+    ["secondLink", ANALYTICS_DEALS.recorded.id, true],
+    ["pending", null, false],
+    ["archived", null, true],
+    ["restricted", ANALYTICS_DEALS.restricted.id, true],
+    ["hidden", ANALYTICS_DEALS.recorded.id, true],
+    ["old", null, false],
+  ];
+  for (const [key, dealId, archived] of leadFixtures) {
+    await client.query(
+      `INSERT INTO leads(id,title,owner_id,visibility_level,created_at,archived_at,converted_deal_id)
+       VALUES($1,$2,$3,'owner',transaction_timestamp() - $4::interval,
+              CASE WHEN $5::boolean THEN transaction_timestamp() END,$6)`,
+      [
+        ANALYTICS_LEADS[key],
+        `CI Analytics lead ${key}`,
+        key === "hidden" ? otherOwnerId : a.actorId,
+        key === "old" ? "60 days" : "4 days",
+        archived,
+        dealId,
       ],
     );
   }

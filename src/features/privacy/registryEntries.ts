@@ -2,6 +2,7 @@ import {
   analyticsComputationInventoryEntry,
   analyticsGovernedCustodyInventoryEntry,
   analyticsInventoryEntry,
+  currentLeadHandoffInventoryEntry,
   dealReportExportInventoryEntry,
   recordedDealSourceInventoryEntry,
 } from "./registryAnalytics";
@@ -47,6 +48,7 @@ import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
   analyticsInventoryEntry,
+  currentLeadHandoffInventoryEntry,
   dealReportExportInventoryEntry,
   recordedDealSourceInventoryEntry,
   analyticsComputationInventoryEntry,
