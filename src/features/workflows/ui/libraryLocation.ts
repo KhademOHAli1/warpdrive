@@ -9,9 +9,20 @@ export interface LibraryLocationInput {
   limit: number;
   ownerId?: string;
   cursor?: string;
+  engine?: "legacy";
 }
 
-const keys = ["query", "archive", "status", "ownerId", "health", "sort", "limit", "cursor"];
+const keys = [
+  "query",
+  "archive",
+  "status",
+  "ownerId",
+  "health",
+  "sort",
+  "limit",
+  "cursor",
+  "engine",
+];
 const uuid = z.string().uuid();
 const cursor = /^[A-Za-z0-9_-]{1,4096}$/;
 
@@ -32,6 +43,7 @@ export function parseLibraryLocation(search: string): LibraryLocationInput {
     search.startsWith("/workflows") ? (queryStart < 0 ? "" : search.slice(queryStart + 1)) : search,
   );
   const value = defaultLibraryLocation();
+  if (params.get("engine") === "legacy") value.engine = "legacy";
   value.query = (params.get("query") ?? "").trim().slice(0, 200);
   if (params.get("archive") === "archived") value.archive = "archived";
   const status = params.get("status");
@@ -55,6 +67,7 @@ export function parseLibraryLocation(search: string): LibraryLocationInput {
 
 export function buildLibraryLocation(input: LibraryLocationInput): string {
   const params = new URLSearchParams();
+  if (input.engine === "legacy") params.set("engine", "legacy");
   if (input.query.trim() !== "") params.set("query", input.query.trim());
   if (input.archive !== "current") params.set("archive", input.archive);
   if (input.status !== "all" && input.archive === "current") params.set("status", input.status);
@@ -82,6 +95,7 @@ function validParameters(params: URLSearchParams): boolean {
     status: ["all", "draft", "active", "paused"],
     health: ["all", "latest-live-failed"],
     sort: ["updated-desc", "name-asc", "name-desc"],
+    engine: ["legacy"],
   };
   return Object.entries(choices).every(
     ([key, allowed]) => !params.has(key) || allowed.includes(params.get(key) ?? ""),

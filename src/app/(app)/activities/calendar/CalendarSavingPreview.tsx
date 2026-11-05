@@ -10,11 +10,13 @@ export function CalendarSavingPreview({
   subject,
   kind,
   root,
+  label,
 }: {
   selection: CalendarSelection;
   subject: string;
   kind: CalendarPoint["kind"];
   root: RefObject<HTMLElement | null>;
+  label: string;
 }): React.ReactNode {
   const [boxes, setBoxes] = useState<CalendarPreviewBox[]>([]);
 
@@ -50,5 +52,5 @@ export function CalendarSavingPreview({
     };
   }, [selection, kind, root]);
 
-  return <CalendarGesturePreview preview={{ selection, subject, boxes }} saving />;
+  return <CalendarGesturePreview preview={{ selection, subject, boxes }} savingLabel={label} />;
 }

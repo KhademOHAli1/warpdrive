@@ -8,10 +8,12 @@ import { afterCalendarCommit } from "./calendarAfterCommit";
 import { withCalendarActor } from "./calendarNativeAuthority";
 import { readCalendarRequestSession } from "./calendarRequestSession";
 import { rescheduleCalendarEvent } from "./calendarReschedule";
+import { calendarScheduleMatches } from "./calendarReschedulePlan";
 import {
   type CalendarRescheduleActionResult,
   calendarRescheduleEnvelopeV1,
 } from "./calendarRescheduleSchemas";
+import { signCalendarUndo } from "./calendarRescheduleUndo";
 
 export async function rescheduleCalendarEventAction(
   raw: unknown,
@@ -24,14 +26,28 @@ export async function rescheduleCalendarEventAction(
   const signal = SIG();
   const who = await readCalendarRequestSession(db, signal);
   if (who === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const input = parsed.data.activity;
   const result = await withCalendarActor(
     db,
     who,
     parsed.data.expectedActorId,
     signal,
-    (tx, actor) => rescheduleCalendarEvent(tx, actor, parsed.data.activity, signal),
+    (tx, actor) => rescheduleCalendarEvent(tx, actor, input, signal, who.sessionId),
   );
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   afterCalendarCommit(result.value.id);
-  return { ok: true, value: result.value };
+  if ("undo" in input.target || calendarScheduleMatches(result.value, input.expected))
+    return { ok: true, value: result.value };
+  return {
+    ok: true,
+    value: result.value,
+    undoToken: signCalendarUndo({
+      actorId: who.userId,
+      sessionId: who.sessionId,
+      id: result.value.id,
+      timeZone: input.timeZone,
+      expected: result.value,
+      original: input.expected,
+    }),
+  };
 }

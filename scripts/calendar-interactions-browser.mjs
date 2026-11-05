@@ -3,6 +3,13 @@ import assert from "node:assert/strict";
 const date = "2030-06-17";
 const nextDate = "2030-06-18";
 const subject = "CI calendar pointer event";
+export const calendarOverlapFixture = {
+  date: "2031-02-07", // Friday leaves room to scroll a focused event behind the time gutter.
+  startUtc: "2031-02-07T09:00:00.000Z",
+  endUtc: "2031-02-07T10:00:00.000Z",
+  titlePrefix: "CI overlap event ",
+  count: 21,
+};
 
 function surface(page, kind, iso) {
   return page.locator(`[data-calendar-surface="${kind}"][data-calendar-date="${iso}"]`);
@@ -23,8 +30,8 @@ async function painted(page) {
 
 // Set up stable scroll geometry only. The gestures below use Chromium's actual mouse events;
 // they do not dispatch DOM events, call application handlers, or replace network responses.
-async function parkTimedRange(page, firstMinute, lastMinute) {
-  const column = surface(page, "time", date);
+async function parkTimedRange(page, firstMinute, lastMinute, iso = date) {
+  const column = surface(page, "time", iso);
   await column.waitFor();
   await page.locator("[data-agenda-scroll]").scrollIntoViewIfNeeded();
   await column.evaluate(
@@ -91,11 +98,12 @@ async function assertSchedule(dialog, calendar, iso, start, end) {
   );
 }
 
-async function checkPersistedEvent(page, calendar, id, iso, start, end) {
+async function checkPersistedEvent(page, calendar, id, iso, start, end, touch = false) {
   await page.reload();
   const chip = page.locator(`[data-calendar-event-id="${id}"]`);
   await chip.waitFor();
-  await chip.click();
+  if (touch) await chip.tap();
+  else await chip.click();
   const dialog = page.getByRole("dialog");
   await assertSchedule(dialog, calendar, iso, start, end);
   assert.equal(
@@ -106,6 +114,223 @@ async function checkPersistedEvent(page, calendar, id, iso, start, end) {
   );
   await page.keyboard.press("Escape");
   await dialog.waitFor({ state: "hidden" });
+}
+
+async function shiftDayEvent(page, id, minutes, edge) {
+  await parkTimedRange(page, 600, 825);
+  const chip = page.locator(`[data-calendar-event-id="${id}"]`);
+  const handle = edge === undefined ? chip : chip.locator(`[data-calendar-resize-edge="${edge}"]`);
+  const box = await bounds(handle, "Event chip or resize grip");
+  const column = await bounds(surface(page, "time", date), "Day surface");
+  const from = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await drag(page, from, { x: from.x, y: from.y + (column.height * minutes) / 1440 });
+}
+
+async function assertTouchMove(page, calendar) {
+  await page.goto(`/activities/calendar?view=day&d=${nextDate}`);
+  const chip = page.locator("[data-calendar-event-id]").filter({ hasText: subject });
+  await chip.waitFor();
+  const id = await chip.getAttribute("data-calendar-event-id");
+  assert.ok(id, "The event moved on desktop is available on touch");
+  await checkPersistedEvent(page, calendar, id, nextDate, "12:15", "13:30", true);
+
+  const session = await page.context().newCDPSession(page);
+  const touch = (type, point) =>
+    session.send("Input.dispatchTouchEvent", {
+      type,
+      touchPoints: point === undefined ? [] : [{ ...point, id: 1 }],
+    });
+  try {
+    await parkTimedRange(page, 735, 885, nextDate);
+    const box = await bounds(chip, "Event chip before quick swipe");
+    const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const scroll = page.locator("[data-agenda-scroll]");
+    const before = await scroll.evaluate((node) => node.scrollTop);
+    await touch("touchStart", start);
+    await touch("touchMove", { x: start.x, y: start.y - 18 });
+    await touch("touchMove", { x: start.x, y: start.y - 75 });
+    await touch("touchEnd");
+    await page.waitForFunction(
+      (previous) => (document.querySelector("[data-agenda-scroll]")?.scrollTop ?? 0) > previous + 5,
+      before,
+    );
+    assert.equal(await page.getByRole("dialog").count(), 0, "A swipe still scrolls the agenda");
+    await checkPersistedEvent(page, calendar, id, nextDate, "12:15", "13:30", true);
+
+    const column = await parkTimedRange(page, 735, 885, nextDate);
+    const day = await bounds(column, "Touch day surface");
+    const event = await bounds(chip, "Event chip before long press");
+    const from = { x: event.x + event.width / 2, y: event.y + event.height / 2 };
+    await touch("touchStart", from);
+    try {
+      await chip.and(page.locator('[data-calendar-dragging="true"]')).waitFor();
+      await touch("touchMove", { x: from.x, y: from.y + (day.height * 60) / 1440 });
+      await painted(page);
+    } finally {
+      await touch("touchEnd");
+    }
+    await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
+    assert.equal(
+      await page.getByRole("dialog").count(),
+      0,
+      "A touch drop does not open the editor",
+    );
+    await checkPersistedEvent(page, calendar, id, nextDate, "13:15", "14:30", true);
+  } finally {
+    await session.detach();
+  }
+}
+
+async function assertInternalHorizontalScroll(page, host) {
+  const before = await host.evaluate((element) => {
+    element.scrollLeft = 0;
+    return {
+      extent: element.scrollWidth - element.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  assert.ok(before.extent > 0, "A narrow agenda has its own horizontal scroll range");
+  assert.ok(before.pageOverflow <= 1, "The agenda does not add page-level horizontal overflow");
+  await host.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  await painted(page);
+  assert.ok(
+    await host.evaluate((element) => element.scrollLeft > 0 && window.scrollX === 0),
+    "The agenda scrolls without panning the page",
+  );
+}
+
+async function assertDisjointCards(chips, more, minTrackWidth) {
+  const boxes = await chips.evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { x: box.x, width: box.width, y: box.y, height: box.height };
+    }),
+  );
+  assert.ok(
+    boxes.every((box) => box.width >= minTrackWidth - 4 && box.height > 0),
+    "Every visible event keeps its usable track width",
+  );
+  boxes.push(await bounds(more, "Visible counted overflow trigger"));
+  boxes.sort((a, b) => a.x - b.x);
+  for (const [index, box] of boxes.entries()) {
+    const previous = boxes[index - 1];
+    assert.ok(
+      previous === undefined || box.x >= previous.x + previous.width - 1,
+      "Simultaneous events and the overflow trigger have disjoint horizontal boxes",
+    );
+  }
+}
+
+async function assertKeyboardReveal(page, host, chips) {
+  const target = chips.nth(1);
+  for (const direction of ["ltr", "rtl"]) {
+    await host.evaluate((element, value) => {
+      element.style.direction = value;
+    }, direction);
+    for (const [neighbor, key] of [
+      [0, "Tab"],
+      [2, "Shift+Tab"],
+    ]) {
+      await chips.nth(neighbor).evaluate((chip) => chip.focus({ preventScroll: true }));
+      const covered = await target.evaluate((chip, rtl) => {
+        const scroll = chip.closest("[data-agenda-scroll]");
+        const gutter = scroll.querySelector("[data-agenda-gutter]");
+        const edge = gutter.getBoundingClientRect();
+        const item = chip.getBoundingClientRect();
+        scroll.scrollLeft += rtl ? item.right - edge.left - 15 : item.left - edge.right + 15;
+        const parked = chip.getBoundingClientRect();
+        return rtl ? parked.right > edge.left + 5 : parked.left < edge.right - 5;
+      }, direction === "rtl");
+      assert.ok(covered, `${direction}: keyboard target starts behind the sticky gutter`);
+      await page.keyboard.press(key);
+      await painted(page);
+      assert.ok(
+        await target.evaluate((chip, rtl) => {
+          const edge = chip
+            .closest("[data-agenda-scroll]")
+            .querySelector("[data-agenda-gutter]")
+            .getBoundingClientRect();
+          const item = chip.getBoundingClientRect();
+          return (
+            chip === document.activeElement &&
+            (rtl ? item.right <= edge.left + 1 : item.left >= edge.right - 1)
+          );
+        }, direction === "rtl"),
+        `${direction}: ${key} reveals the focused event past the sticky gutter`,
+      );
+    }
+  }
+}
+
+async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth) {
+  const fixture = calendarOverlapFixture;
+  const hidden = fixture.count - visible;
+  await page.goto(`/activities/calendar?view=${view}&d=${fixture.date}`);
+  const column = await parkTimedRange(page, 600, 660, fixture.date);
+  const host = page.locator("[data-agenda-scroll]");
+  const chips = column.locator("[data-calendar-event-id]");
+  assert.equal(await chips.count(), visible, `${view} displays ${visible} actual event cards`);
+  const more = column.getByRole("button", {
+    name: hidden === 1 ? "Show one more activity" : `Show ${hidden} more activities`,
+    exact: true,
+  });
+  assert.equal((await more.textContent())?.trim(), `+${hidden} more`);
+  await assertInternalHorizontalScroll(page, host);
+  await assertDisjointCards(chips, more, minTrackWidth);
+  const [timedTrack, allDayTrack] = await Promise.all([
+    bounds(column, "Timed date track"),
+    bounds(surface(page, "date", fixture.date), "Pinned all-day date track"),
+  ]);
+  assert.ok(
+    Math.abs(timedTrack.x - allDayTrack.x) <= 1 &&
+      Math.abs(timedTrack.width - allDayTrack.width) <= 1,
+    "Pinned all-day dates stay aligned with the scrolled time grid",
+  );
+  const clip = await bounds(host, "Agenda scroll viewport");
+  const moreBox = await bounds(more, "Overflow trigger reached by horizontal scrolling");
+  assert.ok(
+    moreBox.x >= clip.x - 1 && moreBox.x + moreBox.width <= clip.x + clip.width + 1,
+    "Horizontal scrolling brings the entire overflow action into view",
+  );
+  assert.ok(
+    await more.evaluate((button) => button.scrollWidth <= button.clientWidth + 1),
+    "The overflow count stays readable",
+  );
+
+  await more.click();
+  const overflowChips = page.locator(
+    "[data-radix-popper-content-wrapper] [data-calendar-event-id]",
+  );
+  await overflowChips.first().waitFor();
+  assert.equal(await overflowChips.count(), hidden, "Overflow lists every hidden event");
+  const visibleIds = await chips.evaluateAll((nodes) =>
+    nodes.map((node) => node.dataset.calendarEventId),
+  );
+  const hiddenIds = await overflowChips.evaluateAll((nodes) =>
+    nodes.map((node) => node.dataset.calendarEventId),
+  );
+  assert.equal(
+    new Set([...visibleIds, ...hiddenIds]).size,
+    fixture.count,
+    "Each seeded event appears exactly once",
+  );
+  const firstHidden = overflowChips.first();
+  const title = (await firstHidden.textContent())?.trim();
+  assert.ok(title?.startsWith(fixture.titlePrefix));
+  await firstHidden.click();
+  const editor = page.getByRole("dialog", { name: calendar.editor.edit, exact: true });
+  await assertSchedule(editor, calendar, fixture.date, "10:00", "11:00");
+  assert.equal(
+    await editor
+      .getByRole("textbox", { name: calendar.editor.eventTitle, exact: true })
+      .inputValue(),
+    title,
+  );
+  await page.keyboard.press("Escape");
+  await editor.waitFor({ state: "hidden" });
+  if (view === "week") await assertKeyboardReveal(page, host, chips);
 }
 
 export async function runCalendarInteractionsBrowserSmoke({ journey, login, catalog }) {
@@ -140,21 +365,27 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
       assert.ok(id, "The drawn event receives a persisted ID");
       await checkPersistedEvent(page, calendar, id, date, "10:00", "11:00");
 
-      await parkTimedRange(page, 600, 780);
-      const chipBox = await bounds(
-        page.locator(`[data-calendar-event-id="${id}"]`),
-        "Saved event chip",
-      );
-      const fullDay = await bounds(surface(page, "time", date), "Day surface for time move");
-      const from = { x: chipBox.x + chipBox.width * 0.65, y: chipBox.y + 6 };
-      await drag(page, from, { x: from.x, y: from.y + (fullDay.height * 120) / 1440 });
+      await shiftDayEvent(page, id, 120);
       await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
       assert.equal(
         await page.getByRole("dialog").count(),
         0,
         "Trailing drag click does not open the editor",
       );
+      await page.getByRole("button", { name: calendar.interaction.undo, exact: true }).click();
+      await page.getByText(calendar.interaction.undoSaved, { exact: true }).waitFor();
+      await checkPersistedEvent(page, calendar, id, date, "10:00", "11:00");
+
+      await shiftDayEvent(page, id, 120);
+      await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
       await checkPersistedEvent(page, calendar, id, date, "12:00", "13:00");
+
+      await shiftDayEvent(page, id, 15, "start");
+      await page.getByText(calendar.interaction.resizeSaved, { exact: true }).waitFor();
+      await checkPersistedEvent(page, calendar, id, date, "12:15", "13:00");
+      await shiftDayEvent(page, id, 30, "end");
+      await page.getByText(calendar.interaction.resizeSaved, { exact: true }).waitFor();
+      await checkPersistedEvent(page, calendar, id, date, "12:15", "13:30");
 
       // A cancelled active drag must neither invoke a server action nor change stored time.
       await parkTimedRange(page, 720, 900);
@@ -171,7 +402,7 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
           "Chip for cancellation",
         );
         const day = await bounds(surface(page, "time", date), "Day for cancellation");
-        const origin = { x: current.x + current.width * 0.65, y: current.y + 6 };
+        const origin = { x: current.x + current.width * 0.65, y: current.y + current.height / 2 };
         await drag(
           page,
           origin,
@@ -193,7 +424,7 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
       } finally {
         page.off("request", recordAction);
       }
-      await checkPersistedEvent(page, calendar, id, date, "12:00", "13:00");
+      await checkPersistedEvent(page, calendar, id, date, "12:15", "13:30");
 
       await page.goto(`/activities/calendar?view=month&d=${date}`);
       const nextCell = surface(page, "date", nextDate);
@@ -209,7 +440,7 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
         { x: destination.x + destination.width / 2, y: destination.y + destination.height - 12 },
       );
       await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
-      await checkPersistedEvent(page, calendar, id, nextDate, "12:00", "13:00");
+      await checkPersistedEvent(page, calendar, id, nextDate, "12:15", "13:30");
       assert.equal(
         await surface(page, "date", date).locator(`[data-calendar-event-id="${id}"]`).count(),
         0,
@@ -265,5 +496,25 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
       );
     },
     { width: 1440, height: 1100 },
+  );
+  await journey(
+    "calendar-touch-interactions",
+    "en",
+    async (page) => {
+      await login(page);
+      await assertTouchMove(page, calendar);
+    },
+    { width: 390, height: 844 },
+    true,
+  );
+  await journey(
+    "calendar-overlap-lanes",
+    "en",
+    async (page) => {
+      await login(page);
+      await assertOverlapAgenda(page, calendar, "week", 3, 36);
+      await assertOverlapAgenda(page, calendar, "day", 20, 96);
+    },
+    { width: 390, height: 844 },
   );
 }

@@ -12,9 +12,19 @@ import {
   movePreviewSelection,
   snapCalendarMinute,
 } from "@/features/activities/calendarGesture";
+import {
+  type CalendarResizeEdge,
+  type CalendarResizeTarget,
+  calendarResizeTarget,
+  snapCalendarResizeMinute,
+} from "@/features/activities/calendarResize";
 import { isOverlayOpen } from "@/features/shortcuts/shortcutTarget";
 import { instantParts } from "@/lib/zonedDateTime";
-import { type CalendarPreviewBox, calendarPreviewBoxes } from "./calendarPointerGeometry";
+import {
+  agendaInlineBounds,
+  type CalendarPreviewBox,
+  calendarPreviewBoxes,
+} from "./calendarPointerGeometry";
 
 export interface CalendarPointerPreview {
   selection: CalendarSelection;
@@ -24,12 +34,13 @@ export interface CalendarPointerPreview {
 
 interface Gesture {
   id: number;
+  touch: boolean;
+  resizeEdge: CalendarResizeEdge | null;
   x: number;
   y: number;
   active: boolean;
   scopeKey: string;
   origin: CalendarPoint;
-  point: CalendarPoint | null;
   activity: CalendarActivity | null;
   capture: HTMLElement;
   chip: HTMLElement | null;
@@ -38,20 +49,25 @@ interface Gesture {
 
 const INTERACTIVE =
   "a,button,input,select,textarea,[role=button],[role=combobox],[contenteditable=true]";
+const TOUCH_HOLD_MS = 420;
+const DRAG_SLOP_PX = 5;
+const SCROLL_EDGE_PX = 32;
+const SCROLL_STEP_PX = 12;
 
-function calendarPoint(element: Element | null, y: number): CalendarPoint | null {
+function calendarPoint(element: Element | null, y: number, resize = false): CalendarPoint | null {
   const surface = element?.closest<HTMLElement>("[data-calendar-surface]");
   const date = surface?.dataset.calendarDate;
   if (surface === undefined || surface === null || date === undefined) return null;
   if (surface.dataset.calendarSurface === "date") return { date, minute: 0, kind: "date" };
   const rect = surface.getBoundingClientRect();
   if (rect.height <= 0) return null;
-  return { date, minute: snapCalendarMinute(y - rect.top, rect.height), kind: "time" };
+  const snap = resize ? snapCalendarResizeMinute : snapCalendarMinute;
+  return { date, minute: snap(y - rect.top, rect.height), kind: "time" };
 }
 
 function scrollHost(element: HTMLElement): HTMLElement | null {
   const agenda = element.closest<HTMLElement>("[data-agenda-scroll]");
-  if (agenda !== null) return element.dataset.calendarSurface === "date" ? null : agenda;
+  if (agenda !== null) return agenda;
   let parent = element.parentElement;
   while (parent !== null) {
     if (
@@ -64,13 +80,113 @@ function scrollHost(element: HTMLElement): HTMLElement | null {
   return document.scrollingElement instanceof HTMLElement ? document.scrollingElement : null;
 }
 
-function scrollStep(host: HTMLElement, y: number): number {
+function verticalScrollStep(host: HTMLElement, y: number): number {
   const rect =
     host === document.scrollingElement
       ? { top: 0, bottom: window.innerHeight }
       : host.getBoundingClientRect();
   const pinned = host.querySelector<HTMLElement>(".sticky")?.getBoundingClientRect().height ?? 0;
-  return y < rect.top + pinned + 32 ? -12 : y > rect.bottom - 32 ? 12 : 0;
+  if (y < rect.top + pinned + SCROLL_EDGE_PX) return -SCROLL_STEP_PX;
+  return y > rect.bottom - SCROLL_EDGE_PX ? SCROLL_STEP_PX : 0;
+}
+
+function agendaHorizontalScrollStep(host: HTMLElement, x: number): number {
+  if (host.scrollWidth <= host.clientWidth) return 0;
+  const { left, right } = agendaInlineBounds(host);
+  const edge = Math.min(SCROLL_EDGE_PX, (right - left) / 2);
+  if (edge <= 0) return 0;
+  // scrollLeft follows physical coordinates even when RTL starts at the right edge.
+  if (x < left + edge) return -SCROLL_STEP_PX;
+  return x > right - edge ? SCROLL_STEP_PX : 0;
+}
+
+function scrollDuringDrag({ scroll: host, origin }: Gesture, x: number, y: number): boolean {
+  if (host === null) return false;
+  const agenda = host.hasAttribute("data-agenda-scroll");
+  const horizontal = agenda ? agendaHorizontalScrollStep(host, x) : 0;
+  const vertical = agenda && origin.kind === "date" ? 0 : verticalScrollStep(host, y);
+  const left = host.scrollLeft;
+  const top = host.scrollTop;
+  if (horizontal !== 0) host.scrollLeft += horizontal;
+  if (vertical !== 0) host.scrollTop += vertical;
+  return host.scrollLeft !== left || host.scrollTop !== top;
+}
+
+function pointAtPosition(
+  root: HTMLElement | null,
+  x: number,
+  y: number,
+  resize: boolean,
+): CalendarPoint | null {
+  const hit = document.elementFromPoint(x, y);
+  return hit !== null && root?.contains(hit) === true ? calendarPoint(hit, y, resize) : null;
+}
+
+function activateGesture(current: Gesture): void {
+  current.active = true;
+  current.chip?.setAttribute("data-calendar-dragging", "true");
+}
+
+function resizeEdgeOf(target: Element, enabled: boolean): CalendarResizeEdge | null {
+  if (!enabled) return null;
+  const edge = target.closest<HTMLElement>("[data-calendar-resize-edge]")?.dataset
+    .calendarResizeEdge;
+  return edge === "start" || edge === "end" ? edge : null;
+}
+
+function gestureFromPointer(
+  event: React.PointerEvent<HTMLElement>,
+  activities: CalendarActivity[],
+  scopeKey: string,
+  canResize: boolean,
+): Gesture | null {
+  const target = event.target;
+  if (!(target instanceof Element)) return null;
+  const touch = event.pointerType === "touch";
+  const resizeEdge = resizeEdgeOf(target, !touch && canResize);
+  const surface = target.closest<HTMLElement>("[data-calendar-surface]");
+  const origin = calendarPoint(target, event.clientY, resizeEdge !== null);
+  if (surface === null || origin === null || !event.currentTarget.contains(surface)) return null;
+  const chip = target.closest<HTMLElement>("[data-calendar-event-id]");
+  const activity =
+    chip === null ? null : (activities.find((a) => a.id === chip.dataset.calendarEventId) ?? null);
+  if ((chip !== null || touch) && activity === null) return null;
+  if (
+    chip === null &&
+    target.closest(INTERACTIVE) !== null &&
+    target.closest("[data-hour]") === null
+  )
+    return null;
+  return {
+    id: event.pointerId,
+    touch,
+    resizeEdge,
+    x: event.clientX,
+    y: event.clientY,
+    active: false,
+    scopeKey,
+    origin,
+    activity,
+    capture: target.closest<HTMLElement>("a,button") ?? chip ?? surface,
+    chip,
+    scroll: scrollHost(surface),
+  };
+}
+
+function selectionForPoint(
+  current: Gesture,
+  point: CalendarPoint,
+  timeZone: string,
+): CalendarSelection | null {
+  if (current.activity === null) return calendarSelection(current.origin, point);
+  if (current.resizeEdge !== null) {
+    return (
+      calendarResizeTarget(current.activity, current.resizeEdge, current.origin, point, timeZone)
+        ?.selection ?? null
+    );
+  }
+  const target = calendarMoveTarget(current.activity, current.origin, point, timeZone);
+  return target === null ? null : movePreviewSelection(current.activity, target, timeZone);
 }
 
 export function useCalendarPointer({
@@ -80,6 +196,7 @@ export function useCalendarPointer({
   disabled,
   onCreate,
   onMove,
+  onResize,
   onInvalidMove,
 }: {
   scopeKey: string;
@@ -88,11 +205,17 @@ export function useCalendarPointer({
   disabled: boolean;
   onCreate: (selection: CalendarSelection) => void;
   onMove: (activity: CalendarActivity, target: CalendarMoveTarget) => void;
+  onResize?: (
+    activity: CalendarActivity,
+    target: CalendarResizeTarget,
+    selection: CalendarSelection,
+  ) => void;
   onInvalidMove?: () => void;
 }) {
   const root = useRef<HTMLElement>(null);
   const gesture = useRef<Gesture | null>(null);
   const suppressClick = useRef(false);
+  const cancelHold = useRef<(() => void) | null>(null);
   const frame = useRef<number | null>(null);
   const position = useRef({ x: 0, y: 0 });
   const [preview, setPreview] = useState<CalendarPointerPreview | null>(null);
@@ -100,6 +223,8 @@ export function useCalendarPointer({
   const stop = useCallback(() => {
     const current = gesture.current;
     gesture.current = null;
+    cancelHold.current?.();
+    cancelHold.current = null;
     if (frame.current !== null) cancelAnimationFrame(frame.current);
     frame.current = null;
     if (current !== null) {
@@ -130,32 +255,47 @@ export function useCalendarPointer({
     };
   }, [scopeKey, disabled, stop]);
 
+  useEffect(() => {
+    const calendar = root.current;
+    if (calendar === null) return;
+    const doc = calendar.ownerDocument;
+    const extraTouch = (event: TouchEvent): void => {
+      if (gesture.current?.touch === true && event.touches.length > 1) stop();
+    };
+    const touchMove = (event: TouchEvent): void => {
+      const current = gesture.current;
+      if (current?.touch !== true) return;
+      if (
+        !current.active ||
+        event.touches.length !== 1 ||
+        !event.cancelable ||
+        isOverlayOpen(doc)
+      ) {
+        stop();
+        return;
+      }
+      event.preventDefault();
+    };
+    // Keep native panning available before the hold. A change to touch-action mid-gesture
+    // cannot claim the scroll, so cancel the first native touchmove only once the hold wins.
+    calendar.addEventListener("touchmove", touchMove, { capture: true, passive: false });
+    doc.addEventListener("touchstart", extraTouch, { capture: true, passive: true });
+    return () => {
+      calendar.removeEventListener("touchmove", touchMove, true);
+      doc.removeEventListener("touchstart", extraTouch, true);
+    };
+  }, [stop]);
+
   function update(point: CalendarPoint | null): void {
     const current = gesture.current;
     if (current === null || !current.active) return;
-    current.point = point;
-    if (point === null) {
-      setPreview(null);
-      return;
-    }
-    if (current.activity === null) {
-      const selection = calendarSelection(current.origin, point);
-      setPreview(
-        selection === null
-          ? null
-          : { selection, boxes: calendarPreviewBoxes(selection, root.current, point.kind) },
-      );
-      return;
-    }
-    const target = calendarMoveTarget(current.activity, current.origin, point, timeZone);
-    const selection =
-      target === null ? null : movePreviewSelection(current.activity, target, timeZone);
+    const selection = point === null ? null : selectionForPoint(current, point, timeZone);
     setPreview(
-      selection === null
+      selection === null || point === null
         ? null
         : {
             selection,
-            subject: current.activity.subject,
+            subject: current.activity?.subject,
             boxes: calendarPreviewBoxes(selection, root.current, point.kind),
           },
     );
@@ -164,117 +304,121 @@ export function useCalendarPointer({
   function autoScroll(): void {
     const current = gesture.current;
     if (current === null || !current.active) return;
-    const host = current.scroll;
-    if (host !== null) {
-      const y = position.current.y;
-      const step = scrollStep(host, y);
-      const before = host.scrollTop;
-      if (step !== 0) host.scrollTop += step;
-      if (host.scrollTop !== before) {
-        const hit = document.elementFromPoint(position.current.x, y);
-        update(hit !== null && root.current?.contains(hit) === true ? calendarPoint(hit, y) : null);
-      }
+    const { x, y } = position.current;
+    if (scrollDuringDrag(current, x, y)) {
+      update(pointAtPosition(root.current, x, y, current.resizeEdge !== null));
     }
     frame.current = requestAnimationFrame(autoScroll);
   }
 
-  function onPointerDownCapture(event: React.PointerEvent<HTMLElement>): void {
-    suppressClick.current = false;
-    if (
-      disabled ||
-      event.button !== 0 ||
-      event.isPrimary === false ||
-      event.pointerType === "touch" ||
-      isOverlayOpen(document)
-    )
-      return;
-    if (!(event.target instanceof Element)) return;
-    const surface = event.target.closest<HTMLElement>("[data-calendar-surface]");
-    const origin = calendarPoint(event.target, event.clientY);
-    if (surface === null || origin === null || !event.currentTarget.contains(surface)) return;
-    const chip = event.target.closest<HTMLElement>("[data-calendar-event-id]");
-    const activity =
-      chip === null
-        ? null
-        : (activities.find((a) => a.id === chip.dataset.calendarEventId) ?? null);
-    if (chip !== null && activity === null) return;
-    if (
-      chip === null &&
-      event.target.closest(INTERACTIVE) !== null &&
-      event.target.closest("[data-hour]") === null
-    )
-      return;
-    const capture = event.target.closest<HTMLElement>("a,button") ?? chip ?? surface;
-    gesture.current = {
-      id: event.pointerId,
-      x: event.clientX,
-      y: event.clientY,
-      active: false,
-      scopeKey,
-      origin,
-      point: origin,
-      activity,
-      capture,
-      chip,
-      scroll: scrollHost(surface),
+  function holdTouch(current: Gesture): void {
+    const doc = current.capture.ownerDocument;
+    const overlay = new MutationObserver(() => {
+      if (isOverlayOpen(doc)) stop();
+    });
+    overlay.observe(doc.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["role", "data-radix-popper-content-wrapper"],
+    });
+    const timer = window.setTimeout(() => {
+      if (gesture.current !== current) return;
+      if (root.current?.contains(current.capture) !== true || isOverlayOpen(doc)) {
+        stop();
+        return;
+      }
+      overlay.disconnect();
+      cancelHold.current = null;
+      activateGesture(current);
+      update(current.origin);
+    }, TOUCH_HOLD_MS);
+    cancelHold.current = () => {
+      window.clearTimeout(timer);
+      overlay.disconnect();
     };
+  }
+
+  function onPointerDownCapture(event: React.PointerEvent<HTMLElement>): void {
+    const ongoing = gesture.current;
+    if (ongoing !== null) {
+      if (ongoing.touch && event.pointerType === "touch" && ongoing.id !== event.pointerId) stop();
+      return;
+    }
+    if (event.button !== 0 || event.isPrimary === false) return;
+    suppressClick.current = false;
+    if (disabled || isOverlayOpen(document)) return;
+    const current = gestureFromPointer(event, activities, scopeKey, onResize !== undefined);
+    if (current === null) return;
+    gesture.current = current;
     position.current = { x: event.clientX, y: event.clientY };
-    capture.setPointerCapture(event.pointerId);
+    current.capture.setPointerCapture(event.pointerId);
+    if (current.touch) holdTouch(current);
   }
 
   function onPointerMoveCapture(event: React.PointerEvent<HTMLElement>): void {
-    if (disabled) {
+    const current = gesture.current;
+    if (current === null || current.id !== event.pointerId) return;
+    if (disabled || isOverlayOpen(document)) {
       stop();
       return;
     }
-    const current = gesture.current;
-    if (current === null || current.id !== event.pointerId) return;
     position.current = { x: event.clientX, y: event.clientY };
-    if (!current.active && Math.hypot(event.clientX - current.x, event.clientY - current.y) < 5)
-      return;
     if (!current.active) {
-      current.active = true;
-      current.chip?.setAttribute("data-calendar-dragging", "true");
-      frame.current = requestAnimationFrame(autoScroll);
+      if (Math.hypot(event.clientX - current.x, event.clientY - current.y) < DRAG_SLOP_PX) return;
+      if (current.touch) {
+        stop();
+        return;
+      }
+      activateGesture(current);
     }
+    if (frame.current === null) frame.current = requestAnimationFrame(autoScroll);
     event.preventDefault();
-    const hit = document.elementFromPoint(event.clientX, event.clientY);
     update(
-      hit !== null && root.current?.contains(hit) === true
-        ? calendarPoint(hit, event.clientY)
-        : null,
+      pointAtPosition(root.current, event.clientX, event.clientY, current.resizeEdge !== null),
     );
+  }
+
+  function commitGesture({ activity, origin, resizeEdge }: Gesture, point: CalendarPoint): void {
+    if (activity === null) {
+      const selection = calendarSelection(origin, point);
+      if (selection !== null) onCreate(selection);
+      return;
+    }
+    if (resizeEdge !== null) {
+      const resize = calendarResizeTarget(activity, resizeEdge, origin, point, timeZone);
+      if (resize === null) onInvalidMove?.();
+      else if (resize.changed) onResize?.(activity, resize.target, resize.selection);
+      return;
+    }
+    const target = calendarMoveTarget(activity, origin, point, timeZone);
+    if (target === null) {
+      onInvalidMove?.();
+      return;
+    }
+    const start = instantParts(activity.dueAt, timeZone);
+    if (
+      target.date === activityDay(activity, timeZone) &&
+      (target.time === undefined || target.time === start.time)
+    )
+      return;
+    onMove(activity, target);
   }
 
   function onPointerUpCapture(event: React.PointerEvent<HTMLElement>): void {
     const current = gesture.current;
     if (current === null || current.id !== event.pointerId) return;
-    const { activity, origin, active } = current;
-    const hit = document.elementFromPoint(event.clientX, event.clientY);
-    const point =
-      hit !== null && root.current?.contains(hit) === true
-        ? calendarPoint(hit, event.clientY)
-        : null;
     stop();
-    if (disabled || !active || point === null) return;
+    if (disabled || !current.active || isOverlayOpen(document)) return;
+    const point = pointAtPosition(
+      root.current,
+      event.clientX,
+      event.clientY,
+      current.resizeEdge !== null,
+    );
+    if (point === null) return;
     event.preventDefault();
-    if (activity === null) {
-      const selection = calendarSelection(origin, point);
-      if (selection !== null) onCreate(selection);
-    } else {
-      const target = calendarMoveTarget(activity, origin, point, timeZone);
-      if (target === null) {
-        onInvalidMove?.();
-        return;
-      }
-      const start = instantParts(activity.dueAt, timeZone);
-      if (
-        target.date === activityDay(activity, timeZone) &&
-        (target.time === undefined || target.time === start.time)
-      )
-        return;
-      onMove(activity, target);
-    }
+    commitGesture(current, point);
   }
 
   function onClickCapture(event: React.MouseEvent<HTMLElement>): void {
@@ -311,6 +455,16 @@ export function useCalendarPointer({
         if (gesture.current?.id === event.pointerId) stop();
       },
       onClickCapture,
+      onContextMenuCapture: (event: React.MouseEvent<HTMLElement>) => {
+        const current = gesture.current;
+        if (
+          current?.touch === true &&
+          event.target instanceof Node &&
+          current.chip?.contains(event.target) === true
+        ) {
+          event.preventDefault();
+        }
+      },
       onDragStartCapture: (event: React.DragEvent<HTMLElement>) => {
         if (
           event.target instanceof Element &&

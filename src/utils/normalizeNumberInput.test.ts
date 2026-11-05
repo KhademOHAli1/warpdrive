@@ -16,6 +16,26 @@ describe("normalizeNumberInput", () => {
     expect(normalizeNumberInput("1.234", "en")).toBe("1.234");
   });
 
+  it("keeps Swiss German decimals exact and accepts either apostrophe used for grouping", () => {
+    expect(normalizeNumberInput("1.234", "de-CH")).toBe("1.234");
+    expect(normalizeNumberInput("1’234.5678", "de-CH")).toBe("1234.5678");
+    expect(normalizeNumberInput("1'234.500", "de-CH-u-nu-latn")).toBe("1234.500");
+    expect(normalizeNumberInput("9007199254740993.123400", "de-CH")).toBe(
+      "9007199254740993.123400",
+    );
+    expect(normalizeNumberInput("12’34.5", "de-CH")).toBeNull();
+    expect(normalizeNumberInput("1,234", "de-CH")).toBeNull();
+    expect(normalizeNumberInput("1’234'567.89", "de-CH")).toBeNull();
+    expect(normalizeNumberInput("1.234", "de-DE")).toBe("1234");
+  });
+
+  it("uses regional grouping and reads Persian numerals with either punctuation", () => {
+    expect(normalizeNumberInput("12,34,567.89", "en-IN")).toBe("1234567.89");
+    expect(normalizeNumberInput("1,234,567.89", "en-IN")).toBeNull();
+    expect(normalizeNumberInput("\u200e−۱۲٬۳۴۵٫۶۷", "fa-IR")).toBe("-12345.67");
+    expect(normalizeNumberInput("۱۲۳.۴۵", "fa-IR-u-nu-arabext")).toBe("123.45");
+  });
+
   it.each([
     "12,34",
     "1,,234",

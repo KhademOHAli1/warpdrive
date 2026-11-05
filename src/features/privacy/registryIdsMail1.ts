@@ -126,7 +126,7 @@ export const mailSyncIds1: string[] = [
   "external:src/features/email/providers/imapSession.ts#manualTransport",
   "sourceReview:src/db/schema/mailRemote.ts#f8dbf558045243f7e30f3c6a4b87200c503d5f0239b0c91ba074dcea9aa0e46d",
   "sourceReview:src/features/email/gmailConnectionFence.ts#56cbe5c06c947b6f8bfaefd52e79efc228fd1e819bf0f405affaf199e2fa599b",
-  "sourceReview:src/features/email/gmailRecoveryCoverage.ts#ba60e5f444a0ab07e122f13e65d5032686cb85bca98f976e5b24bc649cd38144",
+  "sourceReview:src/features/email/gmailRecoveryCoverage.ts#199097a25655fa9d1bb41ec9899acb0f699bfb623e858feda1b788d5b5b90c1d",
   "sourceReview:src/features/email/gmailSendFence.ts#a3ae2b9949fcb794fab49ebdfc4f58bddc88ae3a37fb8bd4b0328d79d73731e7",
   "sourceReview:src/features/email/gmailSyncCheckpoint.ts#12a0b0fe552266ba58cf8ed56c2228ccfdbb05e2d75bd031dcc94e23e52537bd",
   "sourceReview:src/features/email/imapApplyAttachmentFallback.ts#f7f6c38486e6b6b394679c36d481db058b9707f831839688f81186ab3aa5d926",

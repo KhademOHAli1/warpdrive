@@ -8,10 +8,10 @@ import type { CalendarPointerPreview } from "./useCalendarPointer";
 
 export function CalendarGesturePreview({
   preview,
-  saving = false,
+  savingLabel,
 }: {
   preview: CalendarPointerPreview | null;
-  saving?: boolean;
+  savingLabel?: string;
 }): React.ReactNode {
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
@@ -32,9 +32,7 @@ export function CalendarGesturePreview({
     start: labelPoint(selection.date, selection.time),
     end: labelPoint(selection.endDate, selection.endTime),
   });
-  const label = saving
-    ? t("interaction.moving")
-    : `${preview.subject ?? t("editor.create")} · ${range}`;
+  const label = savingLabel ?? `${preview.subject ?? t("editor.create")} · ${range}`;
   return createPortal(
     <>
       <span className="sr-only" role="status">

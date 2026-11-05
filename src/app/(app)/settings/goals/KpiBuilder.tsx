@@ -24,6 +24,7 @@ import {
   previewKpiAction,
   saveKpiDefinitionAction,
 } from "@/features/goals/kpiActions";
+import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { kpiText, useKpiMessages } from "@/features/goals/kpiMessages";
 import {
   KPI_CALCULATIONS,
@@ -48,6 +49,7 @@ import {
 } from "@/features/goals/kpiSchemas";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
+import { type FormattingLocaleTag, localeTagForFormatting } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import { instantCivilDate } from "@/lib/zonedDateTime";
@@ -67,6 +69,7 @@ export interface KpiBuilderProps {
   sourceRequirement?: string;
   definition?: KpiDefinition;
   revision?: KpiDefinition;
+  assignmentOnly?: boolean;
   onDone: () => void;
   onCancel: () => void;
   onBusyChange?: (busy: boolean) => void;
@@ -74,7 +77,7 @@ export interface KpiBuilderProps {
 
 interface NumericDraft {
   raw: string;
-  locale: Locale;
+  locale: FormattingLocaleTag;
   canonical?: string;
   authored: boolean;
 }
@@ -341,15 +344,17 @@ function useKpiBuilder({
   sourceRequirement,
   definition,
   revision,
+  assignmentOnly = false,
   onDone,
   onCancel,
   onBusyChange,
 }: KpiBuilderProps) {
   const L = useKpiMessages();
   const preferences = useLocalePreferences();
+  const numericLocale = localeTagForFormatting(preferences);
   const format = useFormatters();
   const id = useId();
-  const [step, setStep] = useState(definition ? 2 : 0);
+  const [step, setStep] = useState(definition || assignmentOnly ? 2 : 0);
   const [draft, setDraft] = useState<KpiDefinitionInput>(() => {
     const seed: KpiDefinitionInput = {
       name: "",
@@ -379,6 +384,7 @@ function useKpiBuilder({
       customUnit: seed.customUnit,
       numeratorStatus: seed.numeratorStatus,
       denominatorStatus: seed.denominatorStatus,
+      graph: seed.graph,
     };
   });
   const [definitionOnly, setDefinitionOnly] = useState(!!revision);
@@ -393,7 +399,7 @@ function useKpiBuilder({
       raw: "",
       canonical: value,
       authored: false,
-      locale: preferences.locale,
+      locale: numericLocale,
     });
     return {
       target: display(initialCondition?.target ?? "100"),
@@ -454,6 +460,7 @@ function useKpiBuilder({
   const currentPreview = preview?.fingerprint === previewFingerprint ? preview.value : null;
   const ratio = draft.calculation === "percentage" || draft.calculation === "ratio";
   const canPace =
+    draft.graph === undefined &&
     conditionKind === "at_least" &&
     Number(condition.target) > 0 &&
     period.kind !== "rolling" &&
@@ -526,7 +533,7 @@ function useKpiBuilder({
       [key]: {
         raw,
         authored: true,
-        locale: current[key].authored ? current[key].locale : preferences.locale,
+        locale: current[key].authored ? current[key].locale : numericLocale,
       },
     }));
   }
@@ -697,6 +704,7 @@ function useKpiBuilder({
     draft,
     definition,
     revision,
+    assignmentOnly,
     sourceRequirement,
     baseCurrency,
     pipelines,
@@ -777,6 +785,34 @@ export function KpiBuilder(props: KpiBuilderProps): React.ReactElement {
     next,
     save,
   } = model;
+  if (props.assignmentOnly === true) {
+    return (
+      <div className="space-y-4" aria-busy={saving || previewing}>
+        <p className="text-sm font-medium">{model.draft.name}</p>
+        <fieldset disabled={saving || previewing} className="space-y-4">
+          <KpiTargetStep model={model} />
+          <p className="text-xs text-muted-foreground">{summary}</p>
+          <KpiReviewStep model={model} />
+        </fieldset>
+        {error !== null && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        <div className="sticky -bottom-6 flex justify-end gap-2 border-t bg-background py-3">
+          <Button variant="ghost" disabled={saving || previewing} onClick={onCancel}>
+            {L.cancel}
+          </Button>
+          <Button
+            disabled={saving || previewing || currentPreview === null}
+            onClick={() => void save()}
+          >
+            {saving ? L.saving : L.createGoal}
+          </Button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6" aria-busy={saving || previewing}>
       <nav
@@ -1142,6 +1178,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
     preferences,
     definition,
     revision,
+    assignmentOnly,
     id,
     definitionOnly,
     changed,
@@ -1169,7 +1206,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
   } = model;
   return (
     <>
-      {!definition && !revision && (
+      {!definition && !revision && !assignmentOnly && (
         <label
           htmlFor={`${id}-definition-only`}
           className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted/15 p-4"
@@ -1245,7 +1282,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
               value={String(fiscalStartMonth)}
               options={Array.from({ length: 12 }, (_, index) => ({
                 value: String(index + 1),
-                label: new Intl.DateTimeFormat(preferences.locale, {
+                label: new Intl.DateTimeFormat(localeTagForFormatting(preferences), {
                   month: "long",
                   calendar: "gregory",
                   timeZone: "UTC",
@@ -1364,6 +1401,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
 }
 
 function KpiReviewStep({ model }: { model: BuilderModel }): React.ReactElement {
+  const H = useKpiHubMessages();
   const {
     L,
     draft,
@@ -1381,9 +1419,11 @@ function KpiReviewStep({ model }: { model: BuilderModel }): React.ReactElement {
         <div className="min-w-0">
           <p className="text-sm font-medium">{draft.name}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {L.sources[draft.source]}
+            {draft.graph ? H.customKpi : L.sources[draft.source]}
             <ChevronRight aria-hidden="true" className="mx-1 inline size-3 rtl:rotate-180" />
-            {L.calculations[draft.calculation]}
+            {draft.graph
+              ? `${draft.graph.nodes.length} ${H.nodes}`
+              : L.calculations[draft.calculation]}
           </p>
         </div>
         <Button

@@ -84,7 +84,7 @@ function PreferenceRow({
         event={typeLabels[type]}
         channel={columnEmail}
         checked={pref.email}
-        disabled={saving}
+        disabled={saving || type === "workflow_message"}
         onChange={(next) => onChange({ ...pref, email: next })}
       />
       {feedback !== undefined && (

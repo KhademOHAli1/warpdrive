@@ -21,6 +21,7 @@ if (admission.error || admission.status !== 0) {
 const { db, pool } = await import("../src/db/client.ts");
 const { createBetterAuth } = await import("../src/features/auth/better/auth.ts");
 const { ALL_PERMISSION_FLAG_KEYS } = await import("../src/constants/permissionFlags.ts");
+const { calendarOverlapFixture } = await import("./calendar-interactions-browser.mjs");
 const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
@@ -43,6 +44,17 @@ const regionalActors = [
   },
 ];
 const granted = new Set(["deal.create", "activity.create", "workflow.view", "workflow.create"]);
+const studioGranted = new Set([
+  "goals.manage",
+  "workflow.view",
+  "workflow.create",
+  "workflow.edit",
+  "workflow.run",
+]);
+const studioId = "00000000-0000-4000-8000-00000000050a";
+const studioPermission = "00000000-0000-4000-8000-00000000050b";
+const permissionFlags = (grants) =>
+  JSON.stringify(Object.fromEntries(ALL_PERMISSION_FLAG_KEYS.map((key) => [key, grants.has(key)])));
 let client;
 try {
   const auth = createBetterAuth(db);
@@ -51,12 +63,7 @@ try {
   await client.query("BEGIN");
   await client.query(
     "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI browser permissions',$2)",
-    [
-      permission,
-      JSON.stringify(
-        Object.fromEntries(ALL_PERMISSION_FLAG_KEYS.map((key) => [key, granted.has(key)])),
-      ),
-    ],
+    [permission, permissionFlags(granted)],
   );
   await client.query("INSERT INTO visibility_groups(id,name) VALUES($1,'CI browser group')", [
     group,
@@ -101,6 +108,27 @@ try {
       JSON.stringify({ appearance: "night", winSound: false }),
     ],
   );
+  // Preserve the original actor's denied edit/run baseline for the temporary-grant packs.
+  await client.query(
+    "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI studio permissions',$2)",
+    [studioPermission, permissionFlags(studioGranted)],
+  );
+  await client.query(
+    "INSERT INTO users(id,email,name,is_admin,permission_set_id,primary_visibility_group_id) VALUES($1,'studio-browser@example.invalid','CI Studio Browser',false,$2,$3)",
+    [studioId, studioPermission, group],
+  );
+  await client.query("INSERT INTO visibility_group_members(group_id,user_id) VALUES($1,$2)", [
+    group,
+    studioId,
+  ]);
+  await client.query(
+    "INSERT INTO auth_users(id,email,name,email_verified) VALUES($1,'studio-browser@example.invalid','CI Studio Browser',true)",
+    [studioId],
+  );
+  await client.query(
+    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+    [studioId, studioId, password],
+  );
   // Fresh regional actors intentionally have no user_preferences rows or locale cookies. The
   // production harness proves that browser hints are persisted through the authorized UI.
   for (const regional of regionalActors) {
@@ -121,6 +149,21 @@ try {
       [regional.id, regional.id, password],
     );
   }
+  const overlap = await client.query(
+    `INSERT INTO activities(type_id, subject, due_at, end_at, duration_minutes, owner_id, assignee_id)
+     SELECT activity_types.id, $2 || series.n, $3, $4, 60, $1, $1
+     FROM activity_types CROSS JOIN generate_series(1, $5::integer) AS series(n)
+     WHERE activity_types.key = 'meeting'`,
+    [
+      id,
+      calendarOverlapFixture.titlePrefix,
+      calendarOverlapFixture.startUtc,
+      calendarOverlapFixture.endUtc,
+      calendarOverlapFixture.count,
+    ],
+  );
+  if (overlap.rowCount !== calendarOverlapFixture.count)
+    throw new Error("Calendar overlap fixture has the wrong number of events");
   await client.query("COMMIT");
 } catch (error) {
   if (client) await client.query("ROLLBACK");

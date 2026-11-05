@@ -24,6 +24,17 @@ function item(over: {
 }
 
 describe("notificationHref", () => {
+  it("opens the recipient approval request only for a valid workflow wait ID", () => {
+    const id = "34653af5-4a33-49e6-a92a-193bd862bf12";
+    expect(
+      notificationHref(item({ type: "workflow_message", payload: { approvalWaitId: id } })),
+    ).toBe(`/workflows/requests/${id}`);
+    expect(
+      notificationHref(
+        item({ type: "workflow_message", payload: { approvalWaitId: "../../settings" } }),
+      ),
+    ).toBe("/workflows");
+  });
   it("never routes an activity-scoped reminder to a deal URL", () => {
     // Regression: reminder rows carry entityType "activity" and the ACTIVITY id, and the map
     // built /deals/<activityId> unconditionally, which always rendered Not found.

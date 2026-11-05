@@ -46,6 +46,21 @@ describe("splitAllDay", () => {
 });
 
 describe("layoutTimed", () => {
+  it("leaves an exact midnight end on the preceding segment", () => {
+    const event = activity({
+      id: "midnight",
+      dueAt: at(23),
+      endAt: at(24),
+    });
+    expect(layoutTimed([event], "UTC", "2026-08-24").placements[0]).toMatchObject({
+      topPx: 23 * 48,
+      heightPx: 48,
+      resizeStart: true,
+      resizeEnd: true,
+    });
+    expect(layoutTimed([event], "UTC", "2026-08-25").placements).toEqual([]);
+  });
+
   it("gives a lone activity the full column width", () => {
     const [p] = layoutTimed([activity({ id: "a", dueAt: at(9) })]).placements;
     expect(p).toMatchObject({ leftPct: 0, widthPct: 100, topPx: 9 * 48, heightPx: 48 });
@@ -62,14 +77,15 @@ describe("layoutTimed", () => {
     ]);
   });
 
-  it("stops at two side-by-side lanes rather than shrinking a third of a column into initials", () => {
-    const { placements: out, overflows } = layoutTimed([
+  it("fits three overlapping activities in Week without overflow", () => {
+    const { placements, overflows } = layoutTimed([
       activity({ id: "a", dueAt: at(9) }),
       activity({ id: "b", dueAt: at(9, 15) }),
       activity({ id: "c", dueAt: at(9, 30) }),
     ]);
-    expect(out.map((p) => p.activity.id)).toEqual(["a"]);
-    expect(overflows[0]?.activities.map((a) => a.id)).toEqual(["b", "c"]);
+    expect(placements.map((p) => p.activity.id)).toEqual(["a", "b", "c"]);
+    expect(placements.map((p) => p.widthPct)).toEqual([100 / 3, 100 / 3, 100 / 3]);
+    expect(overflows).toEqual([]);
   });
 
   it("gives back the full width once an activity no longer overlaps the previous one", () => {
@@ -116,28 +132,25 @@ describe("layoutTimed", () => {
 });
 
 describe("layoutTimed overflow", () => {
-  it("stops narrowing past the lane cap and collapses the rest into one overflow block", () => {
-    // Five activities at the same minute would each be a fifth of a ~200px column: too narrow to
-    // read one word, which is what made a busy day unreadable.
+  it("keeps three Week cards visible and puts only the excess in overflow", () => {
     const items = ["a", "b", "c", "d", "e"].map((id) => activity({ id, dueAt: at(9) }));
     const { placements, overflows } = layoutTimed(items);
-    expect(placements.map((p) => p.activity.id)).toEqual(["a"]);
+    expect(placements.map((p) => p.activity.id)).toEqual(["a", "b", "c"]);
+    expect(placements.map((p) => p.leftPct)).toEqual([0, 100 / 3, 200 / 3]);
     expect(overflows).toHaveLength(1);
-    expect(overflows[0]?.activities.map((a) => a.id)).toEqual(["b", "c", "d", "e"]);
+    expect(overflows[0]?.activities.map((a) => a.id)).toEqual(["d", "e"]);
   });
 
-  it("marks the surviving chip as sharing its row with a more-chip", () => {
-    // 30% of a 180px column is 54px, which clips "+5 more" to "+5 ...". The renderer needs to know
-    // which chips sit beside a more-chip so it can give that chip a pixel floor.
-    const items = ["a", "b", "c"].map((id) => activity({ id, dueAt: at(9) }));
+  it("marks all three visible cards in the overflowing cluster", () => {
+    const items = ["a", "b", "c", "d"].map((id) => activity({ id, dueAt: at(9) }));
     const { placements } = layoutTimed(items);
-    expect(placements[0]?.overflowing).toBe(true);
+    expect(placements.map((p) => p.overflowing)).toEqual([true, true, true]);
   });
 
   it("leaves a cluster that fits within the cap unflagged", () => {
-    const items = ["a", "b"].map((id) => activity({ id, dueAt: at(9) }));
+    const items = ["a", "b", "c"].map((id) => activity({ id, dueAt: at(9) }));
     const { placements } = layoutTimed(items);
-    expect(placements.map((p) => p.overflowing)).toEqual([false, false]);
+    expect(placements.map((p) => p.overflowing)).toEqual([false, false, false]);
   });
 
   it("leaves a cluster that fits within the cap untouched", () => {
@@ -148,17 +161,37 @@ describe("layoutTimed overflow", () => {
   });
 
   it("spans the overflow block over the hidden activities it stands for", () => {
-    // a holds the one visible lane 09:00-13:00; b, c and d are pushed into the more-chip, which
-    // therefore has to cover 09:00 to 13:00, not just b's own hour.
+    // a, b and c occupy the visible lanes 09:00–13:00. The overflow only spans d and e.
     const items = [
       activity({ id: "a", dueAt: at(9), durationMinutes: 240 }),
       activity({ id: "b", dueAt: at(9), durationMinutes: 240 }),
-      activity({ id: "c", dueAt: at(9), durationMinutes: 60 }),
-      activity({ id: "d", dueAt: at(11), durationMinutes: 60 }),
+      activity({ id: "c", dueAt: at(9), durationMinutes: 240 }),
+      activity({ id: "d", dueAt: at(9), durationMinutes: 60 }),
+      activity({ id: "e", dueAt: at(9, 30), durationMinutes: 90 }),
     ];
     const { overflows } = layoutTimed(items);
-    expect(overflows[0]?.activities.map((a) => a.id)).toEqual(["b", "c", "d"]);
-    expect(overflows[0]).toMatchObject({ topPx: 9 * 48, heightPx: 4 * 48 });
+    expect(overflows[0]?.activities.map((a) => a.id)).toEqual(["d", "e"]);
+    expect(overflows[0]).toMatchObject({ topPx: 9 * 48, heightPx: 2 * 48 });
+  });
+
+  it("gives disjoint crowded periods separate counts even when a visible event bridges them", () => {
+    const bridge = activity({ id: "bridge", dueAt: at(9), durationMinutes: 240 });
+    const morning = ["a", "b", "c"].map((id) => activity({ id, dueAt: at(9) }));
+    const later = ["d", "e", "f"].map((id) => activity({ id, dueAt: at(11) }));
+    const { overflows } = layoutTimed([bridge, ...morning, ...later]);
+    expect(overflows).toEqual([
+      { activities: [morning[2]], topPx: 9 * 48, heightPx: 48 },
+      { activities: [later[2]], topPx: 11 * 48, heightPx: 48 },
+    ]);
+  });
+
+  it("admits a later event into a freed lane within an overflowing cluster", () => {
+    const early = ["a", "b", "c"].map((id) => activity({ id, dueAt: at(9) }));
+    const hidden = activity({ id: "d", dueAt: at(9, 15), durationMinutes: 120 });
+    const later = activity({ id: "e", dueAt: at(10) });
+    const { placements, overflows } = layoutTimed([...early, hidden, later]);
+    expect(placements.map((p) => p.activity.id)).toEqual(["a", "b", "c", "e"]);
+    expect(overflows[0]?.activities).toEqual([hidden]);
   });
 
   it("keeps a later, separate cluster at full width after an earlier one overflowed", () => {
@@ -169,6 +202,37 @@ describe("layoutTimed overflow", () => {
       leftPct: 0,
       widthPct: 100,
     });
+  });
+});
+
+describe("layoutTimed Day capacity", () => {
+  it.each([
+    { count: 20, hidden: [] },
+    { count: 21, hidden: [["event-20"]] },
+  ])("shows 20 of $count simultaneous events", ({ count, hidden }) => {
+    const items = Array.from({ length: count }, (_, i) =>
+      activity({ id: `event-${String(i).padStart(2, "0")}` }),
+    );
+    const { placements, overflows } = layoutTimed(items, "UTC", "2026-08-24", 20);
+    expect(placements.map((p) => p.activity.id)).toEqual(items.slice(0, 20).map((a) => a.id));
+    expect(placements[19]).toMatchObject({
+      leftPct: 95,
+      widthPct: 5,
+      resizeStart: true,
+      resizeEnd: true,
+    });
+    expect(overflows.map((overflow) => overflow.activities.map((a) => a.id))).toEqual(hidden);
+  });
+
+  it("limits concurrent lanes even when a day contains more than twenty events", () => {
+    const anchor = activity({ id: "anchor", dueAt: at(0), durationMinutes: 720 });
+    const others = Array.from({ length: 21 }, (_, i) =>
+      activity({ id: `slot-${i}`, dueAt: at(0, i * 30), durationMinutes: 30 }),
+    );
+    const { placements, overflows } = layoutTimed([anchor, ...others], "UTC", "2026-08-24", 20);
+    expect(placements).toHaveLength(22);
+    expect(placements.every((p) => p.widthPct === 50)).toBe(true);
+    expect(overflows).toEqual([]);
   });
 });
 

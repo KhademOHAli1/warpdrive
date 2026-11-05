@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowUpRight, ChevronDown, Database, PencilLine } from "lucide-react";
+import { ArrowUpRight, ChevronRight, PencilLine } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { useKpiMessages } from "@/features/goals/kpiMessages";
@@ -14,7 +14,7 @@ import { useKpiPresentation } from "./useKpiPresentation";
 
 export { useKpiPresentation } from "./useKpiPresentation";
 
-function Evidence({ row }: { row: KpiGoalResult }): ReactNode {
+export function KpiEvidence({ row }: { row: KpiGoalResult }): ReactNode {
   const S = useKpiHubMessages();
   const B = useKpiMessages();
   const format = useFormatters();
@@ -92,6 +92,9 @@ function Evidence({ row }: { row: KpiGoalResult }): ReactNode {
               {measurement.contributors.map((record) => (
                 <tr key={record.id} className="border-b last:border-0">
                   <td className="max-w-80 px-3 py-2">
+                    {record.nodeLabel !== undefined && record.nodeLabel !== "" && (
+                      <p className="mb-1 text-xs text-muted-foreground">{record.nodeLabel}</p>
+                    )}
                     {record.href === null ? (
                       record.label
                     ) : (
@@ -117,7 +120,7 @@ function Evidence({ row }: { row: KpiGoalResult }): ReactNode {
                   <td className="whitespace-nowrap px-3 py-2 text-end tabular-nums">
                     {record.value === null
                       ? "—"
-                      : ["percentage", "ratio"].includes(definition.calculation)
+                      : definition.graph || ["percentage", "ratio"].includes(definition.calculation)
                         ? format.number(record.value)
                         : presentation.value(record.value, definition)}
                   </td>
@@ -161,107 +164,106 @@ export function KpiResults({
   const S = useKpiHubMessages();
   const format = useFormatters();
   const presentation = useKpiPresentation();
+  const [expanded, setExpanded] = useState<string | null>(null);
   return (
-    <div className="space-y-3">
-      {rows.map((row) => {
-        const { goal, definition, measurement, assessment } = row;
-        const reliable = measurement.state === "available" && measurement.value !== null;
-        const standing = reliable ? assessment.standing : measurement.state;
-        const scopeName =
-          goal.scope === "company"
-            ? S.company
-            : (row.scopeName ?? names[goal.scopeId ?? ""] ?? S[goal.scope]);
-        return (
-          <article key={goal.id} className="overflow-hidden rounded-xl border bg-card">
-            <div className="space-y-4 px-5 py-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="break-words text-sm font-semibold leading-relaxed">
-                    {goal.name !== undefined && goal.name !== "" ? goal.name : definition.name}
-                  </h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {scopeName} · {S.revision} {format.number(definition.revision)}
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs font-medium",
-                    reliable && assessment.standing === "met"
-                      ? "border-emerald-600/25 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
-                      : reliable && assessment.standing === "not_met"
-                        ? "border-destructive/25 bg-destructive/5 text-destructive"
-                        : "bg-muted/30 text-muted-foreground",
-                  )}
-                >
-                  {S[standing]}
-                </span>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
-                <div>
-                  <p className="text-xs text-muted-foreground">{S.value}</p>
-                  <p className="mt-1 break-words text-2xl font-medium tracking-tight tabular-nums">
+    <div className="overflow-x-auto border-y">
+      <table className="w-full text-start text-sm">
+        <caption className="sr-only">{S.goals}</caption>
+        <thead className="border-b bg-muted/20 text-xs text-muted-foreground">
+          <tr>
+            {[S.name, S.scope, S.target, S.value, S.status].map((label) => (
+              <th key={label} scope="col" className="px-3 py-2 text-start font-medium">
+                {label}
+              </th>
+            ))}
+            <th scope="col">
+              <span className="sr-only">{S.recordMeasurement}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const { goal, definition, measurement, assessment } = row;
+            const reliable = measurement.state === "available" && measurement.value !== null;
+            const standing = reliable ? assessment.standing : measurement.state;
+            const name = goal.name !== undefined && goal.name !== "" ? goal.name : definition.name;
+            const scope =
+              goal.scope === "company"
+                ? S.company
+                : (row.scopeName ?? names[goal.scopeId ?? ""] ?? S[goal.scope]);
+            return (
+              <Fragment key={goal.id}>
+                <tr className="border-b last:border-b-0 hover:bg-muted/15">
+                  <td className="min-w-48 px-3 py-2.5">
+                    <button
+                      type="button"
+                      className="flex min-h-8 items-center gap-2 text-start font-medium outline-none hover:text-link focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label={`${S.evidence}: ${name}`}
+                      aria-expanded={expanded === goal.id}
+                      onClick={() => setExpanded(expanded === goal.id ? null : goal.id)}
+                    >
+                      <ChevronRight
+                        aria-hidden
+                        className={cn(
+                          "size-3.5 shrink-0 text-muted-foreground rtl:rotate-180",
+                          expanded === goal.id && "rotate-90 rtl:rotate-90",
+                        )}
+                      />
+                      <span>{name}</span>
+                    </button>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{scope}</td>
+                  <td className="min-w-44 px-3 py-2.5 tabular-nums">
+                    <span>{presentation.condition(goal.condition, definition)}</span>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {measurement.period === null
+                        ? S.noPeriod
+                        : `${format.dateOnly(measurement.period.start)} – ${format.dateOnly(measurement.period.end)}`}
+                    </p>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
                     {presentation.value(measurement.value, definition)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{S.target}</p>
-                  <p className="mt-1 text-sm font-medium tabular-nums">
-                    {presentation.condition(goal.condition, definition)}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {measurement.period === null
-                      ? S.noPeriod
-                      : `${format.dateOnly(measurement.period.start)} – ${format.dateOnly(measurement.period.end)}`}
-                  </p>
-                </div>
-              </div>
-              {reliable && assessment.attainment !== null && goal.condition.kind === "at_least" && (
-                <meter
-                  aria-label={`${definition.name}: ${S.target}`}
-                  min={0}
-                  max={100}
-                  optimum={100}
-                  value={Math.max(0, Math.min(100, assessment.attainment * 100))}
-                  aria-valuetext={format.number(assessment.attainment, {
-                    style: "percent",
-                    maximumFractionDigits: 0,
-                  })}
-                  className={cn(
-                    "h-1.5 w-full [&::-webkit-meter-bar]:rounded-full [&::-webkit-meter-bar]:border-0 [&::-webkit-meter-bar]:bg-muted [&::-webkit-meter-bar]:bg-none [&::-webkit-meter-optimum-value]:bg-none [&::-webkit-meter-suboptimum-value]:bg-none [&::-webkit-meter-even-less-good-value]:bg-none",
-                    assessment.standing === "met"
-                      ? "[&::-webkit-meter-optimum-value]:bg-emerald-600 [&::-webkit-meter-suboptimum-value]:bg-emerald-600 [&::-webkit-meter-even-less-good-value]:bg-emerald-600 [&::-moz-meter-bar]:bg-emerald-600"
-                      : "[&::-webkit-meter-optimum-value]:bg-link [&::-webkit-meter-suboptimum-value]:bg-link [&::-webkit-meter-even-less-good-value]:bg-link [&::-moz-meter-bar]:bg-link",
-                  )}
-                >
-                  {format.number(assessment.attainment, {
-                    style: "percent",
-                    maximumFractionDigits: 0,
-                  })}
-                </meter>
-              )}
-              {definition.source === "manual" && onMeasure && (
-                <Button variant="outline" size="sm" onClick={() => onMeasure(row)}>
-                  <PencilLine aria-hidden className="size-3.5" />
-                  {S.recordMeasurement}
-                </Button>
-              )}
-            </div>
-            <details className="group">
-              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between border-t px-5 py-2 text-xs font-medium text-muted-foreground outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring">
-                <span className="flex items-center gap-2">
-                  <Database aria-hidden className="size-3.5" />
-                  {S.evidence}
-                </span>
-                <ChevronDown
-                  aria-hidden
-                  className="size-3.5 transition-transform group-open:rotate-180 motion-reduce:transition-none"
-                />
-              </summary>
-              <Evidence row={row} />
-            </details>
-          </article>
-        );
-      })}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-xs",
+                        reliable && assessment.standing === "met"
+                          ? "text-emerald-700 dark:text-emerald-400"
+                          : reliable && assessment.standing === "not_met"
+                            ? "text-destructive"
+                            : "text-muted-foreground",
+                      )}
+                    >
+                      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+                      {S[standing]}
+                    </span>
+                  </td>
+                  <td className="px-2 py-2.5">
+                    {definition.source === "manual" && onMeasure && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`${S.recordMeasurement}: ${name}`}
+                        onClick={() => onMeasure(row)}
+                      >
+                        <PencilLine aria-hidden className="size-3.5" />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+                {expanded === goal.id && (
+                  <tr>
+                    <td colSpan={6} className="p-0">
+                      <KpiEvidence row={row} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { NotificationType } from "@/constants/notificationTypes";
 import { entityHref } from "@/features/notifications/entityHref";
+import { isUuidParam } from "@/lib/isUuidParam";
 import type { NotificationFeedItem } from "@/types/notification";
 
 // Deep-link resolution for the notifications feed. Every route here resolves through entityHref,
@@ -7,6 +8,7 @@ import type { NotificationFeedItem } from "@/types/notification";
 // per-type entry supplies only the fallback for a row whose ref is missing or not routable.
 const FALLBACK: Record<NotificationType, string> = {
   mention: "/",
+  workflow_message: "/workflows",
   activity_assigned: "/activities/calendar",
   activity_reminder: "/activities/calendar",
   deal_followed_update: "/",
@@ -27,6 +29,12 @@ function threadHref(item: NotificationFeedItem): string | null {
 }
 
 export function notificationHref(item: NotificationFeedItem): string {
+  if (item.type === "workflow_message") {
+    const id = item.payload.approvalWaitId;
+    return typeof id === "string" && isUuidParam(id)
+      ? `/workflows/requests/${id}`
+      : FALLBACK[item.type];
+  }
   if (item.type === "email_open" || item.type === "email_click") {
     return threadHref(item) ?? FALLBACK[item.type];
   }

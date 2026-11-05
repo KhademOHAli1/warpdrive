@@ -1,5 +1,5 @@
 {
-  "id": "2e1a6bf4-1beb-433c-8f79-26ac7f5daa00",
+  "id": "90d3b213-4edf-4ad3-a9a0-57f23255a59d",
   "prevId": "2de33a02-1d24-403d-a30f-14942427b8f2",
   "version": "7",
   "dialect": "postgresql",
@@ -14772,12 +14772,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "iterator_frame": {
-          "name": "iterator_frame",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "resume_at": {
           "name": "resume_at",
           "type": "timestamp with time zone",
@@ -14950,10 +14944,6 @@
         "workflow_runs_mode_ck": {
           "name": "workflow_runs_mode_ck",
           "value": "\"workflow_runs\".\"mode\" IN ('simulation','live')"
-        },
-        "workflow_runs_iterator_frame_ck": {
-          "name": "workflow_runs_iterator_frame_ck",
-          "value": "\"workflow_runs\".\"iterator_frame\" IS NULL OR (\"workflow_runs\".\"status\" IN ('running','waiting') AND \"workflow_runs\".\"next_node_id\" IS NOT NULL AND jsonb_typeof(\"workflow_runs\".\"iterator_frame\") = 'object')"
         }
       },
       "isRLSEnabled": false
@@ -14980,26 +14970,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "iteration_index": {
-          "name": "iteration_index",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true,
-          "default": -1
-        },
-        "outcome": {
-          "name": "outcome",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'succeeded'"
-        },
-        "error_id": {
-          "name": "error_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "simulated": {
           "name": "simulated",
@@ -15044,20 +15014,1140 @@
           "nullsNotDistinct": false,
           "columns": [
             "run_id",
-            "node_id",
-            "iteration_index"
+            "node_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_effects": {
+      "name": "workflow_v2_effects",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execution_id": {
+          "name": "execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effect_key": {
+          "name": "effect_key",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'prepared'"
+        },
+        "request": {
+          "name": "request",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "output": {
+          "name": "output",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_id": {
+          "name": "error_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_v2_effects_run_id_workflow_v2_runs_id_fk": {
+          "name": "workflow_v2_effects_run_id_workflow_v2_runs_id_fk",
+          "tableFrom": "workflow_v2_effects",
+          "tableTo": "workflow_v2_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_effects_execution_id_workflow_v2_executions_id_fk": {
+          "name": "workflow_v2_effects_execution_id_workflow_v2_executions_id_fk",
+          "tableFrom": "workflow_v2_effects",
+          "tableTo": "workflow_v2_executions",
+          "columnsFrom": [
+            "execution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_v2_effect_execution_unique": {
+          "name": "workflow_v2_effect_execution_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "execution_id"
+          ]
+        },
+        "workflow_v2_effect_key_unique": {
+          "name": "workflow_v2_effect_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "effect_key"
           ]
         }
       },
       "policies": {},
       "checkConstraints": {
-        "workflow_steps_iteration_index_ck": {
-          "name": "workflow_steps_iteration_index_ck",
-          "value": "\"workflow_steps\".\"iteration_index\" BETWEEN -1 AND 99"
+        "workflow_v2_effect_status": {
+          "name": "workflow_v2_effect_status",
+          "value": "\"workflow_v2_effects\".\"status\" IN ('prepared','claimed','applied','failed','unknown')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_executions": {
+      "name": "workflow_v2_executions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
-        "workflow_steps_outcome_ck": {
-          "name": "workflow_steps_outcome_ck",
-          "value": "(\"workflow_steps\".\"outcome\" = 'succeeded' AND \"workflow_steps\".\"error_id\" IS NULL) OR\n        (\"workflow_steps\".\"outcome\" = 'failed' AND \"workflow_steps\".\"iteration_index\" >= 0 AND \"workflow_steps\".\"error_id\" IS NOT NULL AND \"workflow_steps\".\"output\" = '{}'::jsonb)"
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "node_id": {
+          "name": "node_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visit_key": {
+          "name": "visit_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "frame_path": {
+          "name": "frame_path",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "output": {
+          "name": "output",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_id": {
+          "name": "error_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_v2_executions_run_id_workflow_v2_runs_id_fk": {
+          "name": "workflow_v2_executions_run_id_workflow_v2_runs_id_fk",
+          "tableFrom": "workflow_v2_executions",
+          "tableTo": "workflow_v2_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_v2_execution_visit_unique": {
+          "name": "workflow_v2_execution_visit_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "run_id",
+            "visit_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_execution_status": {
+          "name": "workflow_v2_execution_status",
+          "value": "\"workflow_v2_executions\".\"status\" IN ('running','waiting','completed','failed')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_logic_functions": {
+      "name": "workflow_v2_logic_functions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "family_id": {
+          "name": "family_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "source_code": {
+          "name": "source_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "input_schema": {
+          "name": "input_schema",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "output_schema": {
+          "name": "output_schema",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workflow_v2_function_revision_idx": {
+          "name": "workflow_v2_function_revision_idx",
+          "columns": [
+            {
+              "expression": "family_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "revision",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workflow_v2_logic_functions_created_by_users_id_fk": {
+          "name": "workflow_v2_logic_functions_created_by_users_id_fk",
+          "tableFrom": "workflow_v2_logic_functions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_function_positive_revision": {
+          "name": "workflow_v2_function_positive_revision",
+          "value": "\"workflow_v2_logic_functions\".\"revision\">0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_record_events": {
+      "name": "workflow_v2_record_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "entity": {
+          "name": "entity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "record_id": {
+          "name": "record_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "before": {
+          "name": "before",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "after": {
+          "name": "after",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "changed_fields": {
+          "name": "changed_fields",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin_run_id": {
+          "name": "origin_run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_id": {
+          "name": "error_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "workflow_v2_record_event_pending_idx": {
+          "name": "workflow_v2_record_event_pending_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_record_event_status": {
+          "name": "workflow_v2_record_event_status",
+          "value": "\"workflow_v2_record_events\".\"status\" IN ('pending','claimed','delivered','failed')"
+        },
+        "workflow_v2_record_event_entity": {
+          "name": "workflow_v2_record_event_entity",
+          "value": "\"workflow_v2_record_events\".\"entity\" IN ('deal','lead','person','organization','activity')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_runs": {
+      "name": "workflow_v2_runs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_id": {
+          "name": "version_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_key": {
+          "name": "request_key",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "state": {
+          "name": "state",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "error_id": {
+          "name": "error_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workflow_v2_run_status_idx": {
+          "name": "workflow_v2_run_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workflow_v2_runs_workflow_id_workflows_v2_id_fk": {
+          "name": "workflow_v2_runs_workflow_id_workflows_v2_id_fk",
+          "tableFrom": "workflow_v2_runs",
+          "tableTo": "workflows_v2",
+          "columnsFrom": [
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_runs_actor_id_users_id_fk": {
+          "name": "workflow_v2_runs_actor_id_users_id_fk",
+          "tableFrom": "workflow_v2_runs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_run_pinned_version": {
+          "name": "workflow_v2_run_pinned_version",
+          "tableFrom": "workflow_v2_runs",
+          "tableTo": "workflow_v2_versions",
+          "columnsFrom": [
+            "version_id",
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id",
+            "workflow_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_v2_run_request_unique": {
+          "name": "workflow_v2_run_request_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "workflow_id",
+            "actor_id",
+            "request_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_run_status": {
+          "name": "workflow_v2_run_status",
+          "value": "\"workflow_v2_runs\".\"status\" IN ('queued','running','waiting','succeeded','failed','cancelled')"
+        },
+        "workflow_v2_run_mode": {
+          "name": "workflow_v2_run_mode",
+          "value": "\"workflow_v2_runs\".\"mode\" IN ('test','live')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_runtime_settings": {
+      "name": "workflow_v2_runtime_settings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "boolean",
+          "primaryKey": true,
+          "notNull": true,
+          "default": true
+        },
+        "ai_base_url": {
+          "name": "ai_base_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ai_api_key": {
+          "name": "ai_api_key",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ai_default_model": {
+          "name": "ai_default_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ai_models": {
+          "name": "ai_models",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "internal_endpoints": {
+          "name": "internal_endpoints",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_v2_runtime_settings_updated_by_users_id_fk": {
+          "name": "workflow_v2_runtime_settings_updated_by_users_id_fk",
+          "tableFrom": "workflow_v2_runtime_settings",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_runtime_singleton": {
+          "name": "workflow_v2_runtime_singleton",
+          "value": "\"workflow_v2_runtime_settings\".\"id\"=true"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_trigger_receipts": {
+      "name": "workflow_v2_trigger_receipts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_id": {
+          "name": "version_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_key": {
+          "name": "event_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_v2_trigger_receipts_workflow_id_workflows_v2_id_fk": {
+          "name": "workflow_v2_trigger_receipts_workflow_id_workflows_v2_id_fk",
+          "tableFrom": "workflow_v2_trigger_receipts",
+          "tableTo": "workflows_v2",
+          "columnsFrom": [
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_trigger_receipts_version_id_workflow_v2_versions_id_fk": {
+          "name": "workflow_v2_trigger_receipts_version_id_workflow_v2_versions_id_fk",
+          "tableFrom": "workflow_v2_trigger_receipts",
+          "tableTo": "workflow_v2_versions",
+          "columnsFrom": [
+            "version_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_trigger_receipts_run_id_workflow_v2_runs_id_fk": {
+          "name": "workflow_v2_trigger_receipts_run_id_workflow_v2_runs_id_fk",
+          "tableFrom": "workflow_v2_trigger_receipts",
+          "tableTo": "workflow_v2_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_v2_trigger_event_unique": {
+          "name": "workflow_v2_trigger_event_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "workflow_id",
+            "event_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_versions": {
+      "name": "workflow_v2_versions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition": {
+          "name": "definition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_by": {
+          "name": "published_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_v2_versions_workflow_id_workflows_v2_id_fk": {
+          "name": "workflow_v2_versions_workflow_id_workflows_v2_id_fk",
+          "tableFrom": "workflow_v2_versions",
+          "tableTo": "workflows_v2",
+          "columnsFrom": [
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_versions_published_by_users_id_fk": {
+          "name": "workflow_v2_versions_published_by_users_id_fk",
+          "tableFrom": "workflow_v2_versions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "published_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_v2_version_number_unique": {
+          "name": "workflow_v2_version_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "workflow_id",
+            "number"
+          ]
+        },
+        "workflow_v2_version_identity_unique": {
+          "name": "workflow_v2_version_identity_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "workflow_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_version_positive": {
+          "name": "workflow_v2_version_positive",
+          "value": "\"workflow_v2_versions\".\"number\">0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_v2_waits": {
+      "name": "workflow_v2_waits",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execution_id": {
+          "name": "execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "responder_id": {
+          "name": "responder_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wake_at": {
+          "name": "wake_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "output": {
+          "name": "output",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receipt_key": {
+          "name": "receipt_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "resumed_at": {
+          "name": "resumed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "workflow_v2_wait_due_idx": {
+          "name": "workflow_v2_wait_due_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "wake_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workflow_v2_waits_run_id_workflow_v2_runs_id_fk": {
+          "name": "workflow_v2_waits_run_id_workflow_v2_runs_id_fk",
+          "tableFrom": "workflow_v2_waits",
+          "tableTo": "workflow_v2_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_waits_execution_id_workflow_v2_executions_id_fk": {
+          "name": "workflow_v2_waits_execution_id_workflow_v2_executions_id_fk",
+          "tableFrom": "workflow_v2_waits",
+          "tableTo": "workflow_v2_executions",
+          "columnsFrom": [
+            "execution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_v2_waits_responder_id_users_id_fk": {
+          "name": "workflow_v2_waits_responder_id_users_id_fk",
+          "tableFrom": "workflow_v2_waits",
+          "tableTo": "users",
+          "columnsFrom": [
+            "responder_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_v2_wait_execution_unique": {
+          "name": "workflow_v2_wait_execution_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "execution_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "workflow_v2_wait_kind": {
+          "name": "workflow_v2_wait_kind",
+          "value": "\"workflow_v2_waits\".\"kind\" IN ('delay','form','event','chat')"
+        },
+        "workflow_v2_wait_status": {
+          "name": "workflow_v2_wait_status",
+          "value": "\"workflow_v2_waits\".\"status\" IN ('open','resumed','expired','cancelled')"
         }
       },
       "isRLSEnabled": false
@@ -15281,6 +16371,130 @@
         "workflows_active_published": {
           "name": "workflows_active_published",
           "value": "NOT \"workflows\".\"active\" OR (\"workflows\".\"published_number\" IS NOT NULL AND \"workflows\".\"archived_at\" IS NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflows_v2": {
+      "name": "workflows_v2",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "draft": {
+          "name": "draft",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "runtime_state": {
+          "name": "runtime_state",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "published_number": {
+          "name": "published_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workflows_v2_owner_idx": {
+          "name": "workflows_v2_owner_idx",
+          "columns": [
+            {
+              "expression": "owner_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workflows_v2_owner_id_users_id_fk": {
+          "name": "workflows_v2_owner_id_users_id_fk",
+          "tableFrom": "workflows_v2",
+          "tableTo": "users",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workflows_v2_revision_positive": {
+          "name": "workflows_v2_revision_positive",
+          "value": "\"workflows_v2\".\"revision\">0"
+        },
+        "workflows_v2_active_published": {
+          "name": "workflows_v2_active_published",
+          "value": "NOT \"workflows_v2\".\"active\" OR (\"workflows_v2\".\"published_number\" IS NOT NULL AND \"workflows_v2\".\"archived_at\" IS NULL)"
         }
       },
       "isRLSEnabled": false
@@ -15656,7 +16870,8 @@
         "deal_won",
         "deal_lost",
         "comment_reply",
-        "deal_email_received"
+        "deal_email_received",
+        "workflow_message"
       ]
     },
     "public.visibility_level": {

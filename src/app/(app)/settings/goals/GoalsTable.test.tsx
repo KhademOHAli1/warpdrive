@@ -141,7 +141,7 @@ it.each(["en", "de", "fa"] as const)(
     const goals = [goal({})];
     const user = userEvent.setup();
     const view = render(table(locale, goals, onChanged, onEdit));
-    const row = screen.getByRole("listitem");
+    const row = screen.getAllByRole("row")[1] as HTMLElement;
     const remove = rowDelete(row, messages);
     const confirm = await openDelete(user, row, messages);
     expect(actions.deleteGoalAction).not.toHaveBeenCalled();
@@ -157,8 +157,8 @@ it.each(["en", "de", "fa"] as const)(
     expect(onChanged).toHaveBeenCalledTimes(1);
     expect(onChanged).toHaveBeenCalledWith();
     expect(onEdit).not.toHaveBeenCalled();
-    expect(screen.getByRole("listitem")).toBe(row);
-    expect(screen.getByRole("list")).toHaveAttribute("aria-busy", "false");
+    expect(screen.getAllByRole("row")[1] as HTMLElement).toBe(row);
+    expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "false");
 
     await openDelete(user, row, messages);
     await user.keyboard("{Escape}");
@@ -169,7 +169,7 @@ it.each(["en", "de", "fa"] as const)(
     view.rerender(table(locale, [], onChanged, onEdit));
 
     expect(screen.getByText(messages.goalsEmpty)).toBeVisible();
-    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(actions.deleteGoalAction).toHaveBeenCalledTimes(1);
     expect(onChanged).toHaveBeenCalledTimes(1);
@@ -193,14 +193,14 @@ for (const failure of ["denied result", "rejection"] as const) {
       const onEdit = vi.fn();
       const user = userEvent.setup();
       render(table(locale, [goal({})], onChanged, onEdit));
-      const row = screen.getByRole("listitem");
+      const row = screen.getAllByRole("row")[1] as HTMLElement;
       const remove = rowDelete(row, messages);
 
       await user.click(await openDelete(user, row, messages));
       await waitFor(() => expect(remove).toBeEnabled());
 
       expect(screen.getByRole("alert")).toHaveTextContent(messages.goalSaveFailed);
-      expect(screen.getByRole("listitem")).toBe(row);
+      expect(screen.getAllByRole("row")[1] as HTMLElement).toBe(row);
       expect(actions.deleteGoalAction).toHaveBeenCalledTimes(1);
       expect(actions.deleteGoalAction).toHaveBeenCalledWith("g1", "csrf");
       expect(onChanged).not.toHaveBeenCalled();
@@ -211,7 +211,7 @@ for (const failure of ["denied result", "rejection"] as const) {
 
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
-      expect(screen.getByRole("listitem")).toBe(row);
+      expect(screen.getAllByRole("row")[1] as HTMLElement).toBe(row);
       expect(actions.deleteGoalAction).toHaveBeenCalledTimes(2);
       expect(actions.deleteGoalAction).toHaveBeenNthCalledWith(1, "g1", "csrf");
       expect(actions.deleteGoalAction).toHaveBeenNthCalledWith(2, "g1", "csrf");
@@ -235,18 +235,18 @@ it("holds all row actions until ACK and releases the next goal's lock", async ()
   const goals = [goal({}), secondGoal];
   const user = userEvent.setup();
   const view = render(table("en", goals, onChanged, onEdit));
-  const [firstRow, secondRow] = screen.getAllByRole("listitem");
+  const [firstRow, secondRow] = screen.getAllByRole("row").slice(1);
   if (firstRow === undefined || secondRow === undefined) throw new Error("Both goals must exist");
   const secondDelete = rowDelete(secondRow, messages);
 
   await user.click(await openDelete(user, firstRow, messages));
 
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
-  expect(screen.getByRole("list")).toHaveAttribute("aria-busy", "true");
-  for (const button of within(screen.getByRole("list")).getAllByRole("button")) {
+  expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "true");
+  for (const button of within(screen.getByRole("table")).getAllByRole("button")) {
     expect(button).toBeDisabled();
   }
-  expect(screen.getAllByRole("listitem")).toHaveLength(2);
+  expect(screen.getAllByRole("row").slice(1)).toHaveLength(2);
   expect(actions.deleteGoalAction).toHaveBeenCalledTimes(1);
   expect(actions.deleteGoalAction).toHaveBeenCalledWith("g1", "csrf");
   expect(onChanged).not.toHaveBeenCalled();
@@ -259,14 +259,14 @@ it("holds all row actions until ACK and releases the next goal's lock", async ()
     return Promise.resolve();
   });
 
-  expect(screen.getByRole("list")).toHaveAttribute("aria-busy", "false");
+  expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "false");
   expect(secondDelete).toBeEnabled();
-  expect(screen.getAllByRole("listitem")).toHaveLength(2);
+  expect(screen.getAllByRole("row").slice(1)).toHaveLength(2);
   expect(onChanged).toHaveBeenCalledTimes(1);
   view.rerender(table("en", [secondGoal], onChanged, onEdit));
   actions.deleteGoalAction.mockResolvedValueOnce({ ok: true, value: { id: "g2" } });
 
-  await user.click(await openDelete(user, screen.getByRole("listitem"), messages));
+  await user.click(await openDelete(user, screen.getAllByRole("row")[1] as HTMLElement, messages));
   await waitFor(() => expect(secondDelete).toBeEnabled());
 
   expect(actions.deleteGoalAction).toHaveBeenCalledTimes(2);
@@ -283,11 +283,11 @@ it("does not delete a goal when its confirmation is dismissed", async () => {
   const user = userEvent.setup();
   render(table("en", [goal({})], onChanged, onEdit));
 
-  await openDelete(user, screen.getByRole("listitem"), messages);
+  await openDelete(user, screen.getAllByRole("row")[1] as HTMLElement, messages);
   await user.keyboard("{Escape}");
   await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
 
-  expect(screen.getByRole("listitem")).toBeInTheDocument();
+  expect(screen.getAllByRole("row")[1] as HTMLElement).toBeInTheDocument();
   expect(actions.deleteGoalAction).not.toHaveBeenCalled();
   expect(onChanged).not.toHaveBeenCalled();
   expect(onEdit).not.toHaveBeenCalled();

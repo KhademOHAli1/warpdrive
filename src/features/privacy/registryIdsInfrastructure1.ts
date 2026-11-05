@@ -1,5 +1,7 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds1: string[] = [
+  "derived:src/utils/normalizeNumberInput.ts",
+  "sourceReview:src/utils/normalizeNumberInput.ts#4663e4b1d2f24952c50d80680dbd357e925269c10cab458429bd0430c8eee3fc",
   "derived:src/components/ui/dateFormat.ts",
   "sourceReview:src/components/ui/dateFormat.ts#f8b625c87a3efc5e03f8085b34236639e811f41db8c10440760b35964f6032af",
   "browserStore:src/features/release/ui/VersionBanner.tsx#RELEASE_DISMISS_KEY",

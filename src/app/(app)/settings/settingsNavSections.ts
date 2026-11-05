@@ -25,6 +25,7 @@ import { billingMessagesForLocale } from "@/features/billing/messages";
 import type { Locale } from "@/features/i18n/registry";
 import type { SettingsMessages } from "@/features/identity/settingsMessages";
 import { privacyRequestMessagesForLocale } from "@/features/privacy/privacyRequestMessages";
+import { workflowRuntimeMessages } from "@/features/workflows/v2/workflowRuntimeMessages";
 
 export interface SettingsNavItem {
   href: string;
@@ -93,6 +94,15 @@ export function settingsNavSections(
               { href: "/settings/company/pipelines", label: L.pipelines, icon: ListChecks },
               { href: "/settings/company/activities", label: H.activityTypes, icon: ListChecks },
               { href: "/settings/goals", label: L.goals, icon: Target },
+              ...(isAdmin
+                ? [
+                    {
+                      href: "/settings/workflow-runtime",
+                      label: workflowRuntimeMessages(locale).title,
+                      icon: ListChecks,
+                    },
+                  ]
+                : []),
               { href: "/settings/company/labels", label: L.labels, icon: Table2 },
               { href: "/settings/company/lost-reasons", label: L.lostReasons, icon: ListChecks },
             ],

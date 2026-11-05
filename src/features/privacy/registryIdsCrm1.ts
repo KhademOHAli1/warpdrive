@@ -92,8 +92,8 @@ export const crmIds1: string[] = [
   "queue:activity.reminder",
   "queue:activity.reminder.native.v1",
   "queue:activity.reminder.reconcile.v1",
-  "sourceReview:src/app/(app)/activities/calendar/useCalendarPointer.ts#f37d2ad08abd5b38e7ded98673669eb1e2e30ffb6c3fa277872dc23d07667e2d",
-  "sourceReview:src/app/(app)/activities/calendar/WeekAgendaGrid.tsx#7253c4abd9cb66faeba6e1ae6d0b55912051b223e1057e4037da7846339fb814",
+  "sourceReview:src/app/(app)/activities/calendar/useCalendarPointer.ts#f17f184e196f5ec34a4e0c098fdbe0580f85bbdcf5da57b793028ef6a5273cec",
+  "sourceReview:src/app/(app)/activities/calendar/WeekAgendaGrid.tsx#eea0601f0c3e45c2fc591c2613fe078d0ed9c791fee6e6a2a929dad5b803ea22",
   "sourceReview:src/app/(app)/contacts/ContactOverviewSection.tsx#fbe58edc67eb832035b8a3db0a2f3debe1aadea64a5ee06d23e12990b8803f35",
   "sourceReview:src/app/(app)/contacts/orgs/[orgId]/OrgFirmographicsPanel.tsx#3095abd7254a40a6446b17535dfaf4341acc79dea4d47fd18cd22d3410b60201",
   "sourceReview:src/app/(app)/contacts/orgs/[orgId]/OrgSidebar.tsx#aa6b92bf2709bc909dd73e747be1724ec6649fbbe2da7ee163d1db0c72f81ea4",
@@ -101,12 +101,12 @@ export const crmIds1: string[] = [
   "sourceReview:src/app/(app)/contacts/people/[personId]/PersonSidebar.tsx#1bc9ab560551d53e8484c354e1ef339e4fecf6ed0348dba64db36790bf706fa4",
   "sourceReview:src/app/(app)/contacts/people/page.tsx#92453e7a8de331e1a8f7032afb0df369105e2c230412d0b6e239ffed142e8ee8",
   "sourceReview:src/app/(app)/deals/[dealId]/tabs.tsx#ace4c3cce65664a53615183e48dd746007314e7d10c1e0aa8fdb31fbf4dc647e",
-  "sourceReview:src/app/(app)/settings/goals/GoalsClient.tsx#481f9e4715deddb4206861ac6f86ef2205029553edc445071e09f69e8ad4ebd7",
+  "sourceReview:src/app/(app)/settings/goals/GoalsClient.tsx#aee17b4cb4bac3b55572e4480befbe26129c318666696d2aa8552a7eb660d5e6",
   "sourceReview:src/features/activities/ActivitiesTable.tsx#1f68ad77c61d4d1e437bfc6b414d246e0de21b6fa5c13c00644b1ea834164b02",
   "sourceReview:src/features/activities/ActivityDayGroups.tsx#5ef2f98e4bc5ba2ed950d5a2c5556ecda85441aa1e57726ef84bb97e0a7b9339",
   "sourceReview:src/features/activities/activityDelete.ts#e23d8fdb44a1f6ed4597ba7dcd2927662c80e73865cc0c161dde330943c58647",
   "sourceReview:src/features/activities/ActivityList.tsx#33ddc049bdb7070b3a47a7c4e5a9f8277ab9406838273dfc1662954e171c77cc",
-  "sourceReview:src/features/activities/activityUpdate.ts#2a169e98546c2fea74dc67d06f560db9327a5ee4d481cb6f481e8cbebd31decf",
+  "sourceReview:src/features/activities/activityUpdate.ts#9e5edaee16525eb52f2ea78ed34c8279f2f9fa42f27c0e49490eb9893076daed",
   "sourceReview:src/features/activities/calendarAfterCommit.ts#8d986a7fd0750f2f97121a5c6514fc7481ee1f7028a06aa84b03c071e2643e9b",
   "sourceReview:src/features/activities/isBlankHtml.ts#f0ddf220c4ba92bf79bdb0ab652fd41b3661ccdfcd5ebe0c7b69dd50344a0266",
   "sourceReview:src/features/activities/nextActivity.ts#974f5ff8733af6a7dbd7fe49a11c06c4a26dfbb013a7b9143efc59b903887b1a",
@@ -156,4 +156,10 @@ export const crmIds1: string[] = [
   "sourceReview:src/app/(app)/settings/company/labels/useLabelCatalog.ts#400e9599821af3cdda7d6d92ce42294f52ec39c89543b3b0377c31a0db08664f",
   "derived:src/features/deal-workspace/history/customFieldOptions.ts",
   "sourceReview:src/features/deal-workspace/history/customFieldOptions.ts#954942aa4fff5859a28c8bfc764fd0a0eec52396e587fcca42109de787476c90",
+];
+
+export const calendarUndoIds1: string[] = [
+  "sourceReview:src/features/activities/calendarRescheduleUndo.ts#58c225e294eeafbc6e40977aba72042a62482c3b66c2482a10d0d900c0d2b603",
+  "writer:src/features/activities/calendarRescheduleUndo.ts#update:payload",
+  "writer:src/features/activities/calendarRescheduleUndo.ts#update:warpdrive-calendar-undo-v1",
 ];

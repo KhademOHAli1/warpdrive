@@ -20,7 +20,8 @@
     "deal_lost": "A deal you follow was lost",
     "comment_reply": "New reply to a comment",
     "deal_email_received": "New email: {subject}",
-    "emailFallback": "on a deal"
+    "emailFallback": "on a deal",
+    "workflow_message": "{title}: {message}"
   },
   "preferences": {
     "pageTitle": "Notification preferences",
@@ -38,7 +39,8 @@
       "deal_won": "Deal won",
       "deal_lost": "Deal lost",
       "comment_reply": "Comment replies",
-      "deal_email_received": "New email on my deals"
+      "deal_email_received": "New email on my deals",
+      "workflow_message": "Workflow messages"
     }
   },
   "email": {
