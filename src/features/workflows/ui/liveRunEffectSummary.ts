@@ -9,6 +9,7 @@ export interface LiveRunEffects {
     readonly read: number;
     readonly task: number;
     readonly condition: number;
+    readonly filter?: number;
     readonly delay: number;
   };
 }
@@ -81,6 +82,7 @@ const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["count
   "record.read": "read",
   "activity.create": "task",
   condition: "condition",
+  filter: "filter",
   delay: "delay",
 };
 
@@ -90,11 +92,13 @@ export function projectLiveRunEffects(input: unknown): LiveRunEffects | null {
     if (!boundedJson(input)) return null;
     const checked = validateDefinition(input);
     if (!checked.ok || !executableDefinition(checked.value)) return null;
-    const counts = { start: 0, read: 0, task: 0, condition: 0, delay: 0 };
+    const counts: {
+      -readonly [Key in keyof LiveRunEffects["counts"]]: LiveRunEffects["counts"][Key];
+    } = { start: 0, read: 0, task: 0, condition: 0, delay: 0 };
     for (const node of checked.value.nodes) {
       const key = countKey[node.type];
       if (key === undefined) return null;
-      counts[key]++;
+      counts[key] = (counts[key] ?? 0) + 1;
     }
     if (counts.start !== 1) return null;
     return { configuredSteps: checked.value.nodes.length, counts };

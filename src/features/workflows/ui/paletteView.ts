@@ -29,6 +29,8 @@ export type PaletteViewEntry = {
   canChoose: boolean;
 };
 export type PaletteView = {
+  replacing: boolean;
+  triggerPicker: boolean;
   status: PaletteRead["status"];
   entries: PaletteViewEntry[];
   context: PaletteContext;
@@ -105,6 +107,12 @@ export function buildPaletteView(
     }
   }
   return {
+    replacing: request.kind === "replace",
+    triggerPicker:
+      request.kind === "replace" &&
+      definition.nodes.some(
+        (node) => node.id === request.nodeId && node.type.startsWith("trigger."),
+      ),
     status,
     entries,
     context,

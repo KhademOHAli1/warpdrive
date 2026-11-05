@@ -22,7 +22,7 @@ export function executableNode(node: WorkflowNode): boolean {
       actionRegistry.delay.config.safeParse(node.config).success
     );
   }
-  if (node.type === "condition") {
+  if (node.type === "condition" || node.type === "filter") {
     if (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort")) {
       const grouped = parseConditionConfig(node.config, "execute");
       return grouped.ok && grouped.value.kind === "grouped";

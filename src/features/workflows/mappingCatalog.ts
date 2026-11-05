@@ -220,7 +220,7 @@ function builtinTarget(
   if (field.readOnly === true)
     return unavailableTarget(node.id, path, "unsupported-source", "unsupported_setting");
   const target = targetForField(node, field);
-  if (node.type === "condition" && path[0] === "right") {
+  if ((node.type === "condition" || node.type === "filter") && path[0] === "right") {
     const left = conditionRightContract(definition, node);
     if (left?.kind === "date" || left?.kind === "instant")
       target.contract = { kind: left.kind, nullable: true };
@@ -238,7 +238,7 @@ export function describeMappingTarget(
   const node = nodes[0];
   if (nodes.length !== 1 || node === undefined)
     return unavailableTarget(nodeId, path, "source-missing", "reference_missing");
-  if (node.type === "condition" && path[0] === "expression")
+  if ((node.type === "condition" || node.type === "filter") && path[0] === "expression")
     return groupedConditionTarget(definition, node, path);
   return path[0] === "customFields"
     ? customTarget(node, path, metadata)

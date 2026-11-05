@@ -122,6 +122,16 @@ export const paletteCatalog = [
   },
   {
     ...insertable,
+    type: "filter",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "filter",
+    descriptionKey: "filterActionHint",
+    profile: "scalar-condition",
+    input: "scalar",
+  },
+  {
+    ...insertable,
     type: "delay",
     category: "timing",
     categoryKey: "paletteCategoryTiming",

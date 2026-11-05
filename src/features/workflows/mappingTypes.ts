@@ -33,6 +33,7 @@ export type MappingFieldKey =
   | "value"
   | "currency"
   | "result"
+  | "matchesFilter"
   | "resumeAt"
   | "expectedCloseDate";
 

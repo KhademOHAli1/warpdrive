@@ -10,6 +10,7 @@ export const nodeLabelKeys = {
   "record.read": "read",
   "activity.create": "task",
   condition: "condition",
+  filter: "filter",
   delay: "delay",
   notification: "notification",
 } as const;

@@ -74,7 +74,8 @@ function validLayout(value: unknown): void {
     if (
       !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(key) ||
       !record(point) ||
-      !onlyKeys(point, ["x", "y"]) ||
+      !onlyKeys(point, ["x", "y", "anchor"]) ||
+      (point.anchor !== undefined && point.anchor !== "center") ||
       !Object.hasOwn(point, "x") ||
       !Object.hasOwn(point, "y") ||
       typeof point.x !== "number" ||

@@ -1,32 +1,34 @@
 "use client";
 
-import { GitBranch } from "lucide-react";
+import { GitBranch, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Tip } from "@/components/ui/tooltip";
 import { DOCS_SITE_URL } from "@/constants/docs";
-import { NAV_ITEMS, type NavKey } from "@/constants/nav";
+import {
+  type NAV_ITEMS,
+  type NavKey,
+  UTILITY_NAV_ITEMS,
+  WORKSPACE_NAV_ITEMS,
+} from "@/constants/nav";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
 import {
   ActivitiesIcon,
   ContactsIcon,
-  DashboardIcon,
   DocsIcon,
   InboxIcon,
   LeadsIcon,
-  PipelineIcon,
   SettingsIcon,
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
 
-const ICONS: Record<NavKey, typeof PipelineIcon> = {
-  pipeline: PipelineIcon,
+const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,
   inbox: InboxIcon,
-  dashboard: DashboardIcon,
+  dashboard: LayoutDashboard,
   settings: SettingsIcon,
   workflows: GitBranch,
 };
@@ -110,11 +112,11 @@ export function SidebarMenu({
             {t("section")}
           </p>
           <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
-            {NAV_ITEMS.filter((item) => item.key !== "settings").map(menuItem)}
+            {WORKSPACE_NAV_ITEMS.map(menuItem)}
           </div>
         </div>
         <div className={styles.utilityNav}>
-          {NAV_ITEMS.filter((item) => item.key === "settings").map(menuItem)}
+          {UTILITY_NAV_ITEMS.map(menuItem)}
           {expanded ? (
             docs
           ) : (

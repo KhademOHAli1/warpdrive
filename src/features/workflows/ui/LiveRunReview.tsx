@@ -34,6 +34,9 @@ export function LiveRunReview({
     { label: t("read"), count: review.effects.counts.read },
     { label: t("task"), count: review.effects.counts.task },
     { label: t("condition"), count: review.effects.counts.condition },
+    ...((review.effects.counts.filter ?? 0) > 0
+      ? [{ label: t("filter"), count: review.effects.counts.filter ?? 0 }]
+      : []),
     { label: t("delay"), count: review.effects.counts.delay },
   ];
   return (

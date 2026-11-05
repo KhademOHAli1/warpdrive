@@ -4,7 +4,7 @@ import { inspectGraph } from "./graph";
 import type { StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 
-// A condition has no external/database effect, so malformed stored branches can
+// Predicate steps have no external/database effect, so malformed stored branches can
 // fail before its receipt/cursor commit. Ordinary nodes retain their existing
 // terminal/next behavior; this introduces no new failure after an activity write.
 export function selectRunBranch(
@@ -12,6 +12,15 @@ export function selectRunBranch(
   node: WorkflowNode,
   output: StepOutput,
 ): Result<WorkflowEdge | undefined, string> {
+  if (node.type === "filter") {
+    if (
+      !Object.hasOwn(output, "matchesFilter") ||
+      typeof output.matchesFilter !== "boolean" ||
+      inspectGraph(definition).length !== 0
+    )
+      return err(ERROR_IDS.WORKFLOW_INVALID);
+    if (!output.matchesFilter) return ok(undefined);
+  }
   if (node.type !== "condition")
     return ok(definition.edges.find((edge) => edge.from === node.id && edge.port === "next"));
   if (!Object.hasOwn(output, "result") || typeof output.result !== "boolean")

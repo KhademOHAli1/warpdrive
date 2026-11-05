@@ -9,7 +9,7 @@ import {
 import { mappingCompatibility } from "./mappingCompatibility";
 import { coarseMappingType } from "./mappingOutputs";
 import { type CreatableNodeType, makeNode } from "./nodeFactory";
-import { positionForNewNode } from "./nodeLayout";
+import { type NodeMeasurements, positionForNewNode } from "./nodeLayout";
 import { findPaletteEntry, type PaletteCatalogEntry, paletteCatalog } from "./paletteCatalog";
 import {
   bindingSchema,
@@ -22,7 +22,8 @@ import {
 
 export type PickerRequest =
   | { kind: "detached"; position?: NodePosition }
-  | { kind: "output"; output: OutputTarget; position?: NodePosition };
+  | { kind: "output"; output: OutputTarget; position?: NodePosition }
+  | { kind: "replace"; nodeId: string };
 export type PickerSelection =
   | { kind: "insert"; type: CreatableNodeType; version: 1 }
   | { kind: "configure"; type: "trigger.manual"; nodeId: string; version: 1 };
@@ -65,6 +66,7 @@ interface SelectionOptions {
   selectedId?: string;
   nameForType: (type: CreatableNodeType) => string;
   subject: string;
+  measurements?: NodeMeasurements;
 }
 
 function placementFor(definition: WorkflowDefinition, request: PickerRequest): Placement {
@@ -76,6 +78,14 @@ function placementFor(definition: WorkflowDefinition, request: PickerRequest): P
     upstream: new Set<string>(),
   };
   if (request.kind === "detached") return empty;
+  if (request.kind === "replace") {
+    const replaced = definition.nodes.find((node) => node.id === request.nodeId);
+    if (replaced === undefined) return { ...empty, reason: "missingNode" };
+    const incoming = definition.edges.find((edge) => edge.to === replaced.id);
+    return incoming === undefined
+      ? empty
+      : placementFor(definition, { kind: "output", output: incoming });
+  }
   const source = definition.nodes.find((node) => node.id === request.output.from);
   if (source === undefined) return { ...empty, output: request.output, reason: "missingNode" };
   if (!portsFor(source).includes(request.output.port))
@@ -119,11 +129,19 @@ function entryReason(
   definition: WorkflowDefinition,
   descriptor: PaletteCatalogEntry,
   placement: Placement,
+  request: PickerRequest,
 ): PaletteContextEntry["reason"] {
   if (descriptor.selection === "unavailable") return "unavailable-action";
+  if (request.kind === "replace") {
+    const replaced = definition.nodes.find((node) => node.id === request.nodeId);
+    if (replaced === undefined) return "missingNode";
+    if (replaced.type.startsWith("trigger.") !== descriptor.type.startsWith("trigger."))
+      return "unavailable-action";
+  }
   if (descriptor.selection === "configure")
     return manualTrigger(definition) === undefined ? "unavailable-action" : null;
   if (placement.reason !== null) return placement.reason;
+  if (request.kind === "replace") return null;
   if (definition.nodes.length >= 100) return "nodeLimit";
   if (descriptor.type === "condition" && placement.occupiedDestinationId !== null)
     return "invalidPort";
@@ -176,7 +194,7 @@ export function describePaletteContext(
     entries: paletteCatalog.map((descriptor) => ({
       type: descriptor.type,
       version: descriptor.version,
-      reason: entryReason(definition, descriptor, placement),
+      reason: entryReason(definition, descriptor, placement, request),
       input: inputContext(definition, descriptor, sources),
     })),
   };
@@ -215,13 +233,15 @@ function nodePosition(
   definition: WorkflowDefinition,
   request: PickerRequest,
   selectedId: string | undefined,
+  measurements?: NodeMeasurements,
 ): NodePosition {
   return (
-    request.position ??
+    (request.kind === "replace" ? definition.layout?.[request.nodeId] : request.position) ??
     positionForNewNode(
       definition,
       selectedId ?? definition.nodes[0]?.id ?? "start",
       request.kind === "output" ? request.output : undefined,
+      measurements,
     )
   );
 }
@@ -231,7 +251,8 @@ function validPosition(position: NodePosition): boolean {
     Number.isFinite(position.x) &&
     Number.isFinite(position.y) &&
     Math.abs(position.x) <= 100000 &&
-    Math.abs(position.y) <= 100000
+    Math.abs(position.y) <= 100000 &&
+    (position.anchor === undefined || position.anchor === "center")
   );
 }
 
@@ -255,7 +276,27 @@ function insertSelection(
     placement.upstream,
   );
   if (!nodeSchema.safeParse(node).success) return { ok: false, reason: "unavailable-action" };
-  const position = nodePosition(definition, request, options.selectedId);
+  if (request.kind === "replace") {
+    const previous = definition.nodes.find((item) => item.id === request.nodeId);
+    if (previous === undefined) return { ok: false, reason: "missingNode" };
+    if (previous.type.startsWith("trigger.")) return { ok: false, reason: "unavailable-action" };
+    if (previous.type === type)
+      return { ok: true, definition, selectedId: previous.id, changed: false };
+    const replacement = { ...node, id: previous.id };
+    return {
+      ok: true,
+      definition: {
+        ...definition,
+        nodes: definition.nodes.map((item) => (item.id === previous.id ? replacement : item)),
+        edges: definition.edges.filter(
+          (edge) => edge.from !== previous.id || portsFor(replacement).includes(edge.port),
+        ),
+      },
+      selectedId: previous.id,
+      changed: true,
+    };
+  }
+  const position = nodePosition(definition, request, options.selectedId, options.measurements);
   if (!validPosition(position)) return { ok: false, reason: "unavailable-action" };
   if (definition.nodes.some((existing) => existing.id === node.id))
     return { ok: false, reason: "unavailable-action" };

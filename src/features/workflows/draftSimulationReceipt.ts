@@ -5,6 +5,7 @@ export const draftSimulationNodeTypes = [
   "record.read",
   "activity.create",
   "condition",
+  "filter",
   "delay",
 ] as const;
 

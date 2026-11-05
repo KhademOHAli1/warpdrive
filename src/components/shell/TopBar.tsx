@@ -23,7 +23,7 @@ export async function TopBar({
 }): Promise<React.ReactNode> {
   const t = await getAppTranslations("shell");
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-app-topbar>
       <div className={styles.brandArea}>
         <MobileNavTrigger />
         <Link href="/pipeline" aria-label={t("home", { app: APP_NAME })} className={styles.brand}>

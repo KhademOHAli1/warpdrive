@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { initialBlankDefinition } from "./editorModel";
 import type { CreatableNodeType } from "./nodeFactory";
 import { describePaletteContext, type PaletteContext, selectPaletteEntry } from "./paletteContext";
-import type { WorkflowDefinition, WorkflowNode } from "./schemas";
+import { definitionSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 
 function branch(): WorkflowDefinition {
   const graph = initialBlankDefinition("Start");
@@ -290,4 +290,90 @@ it("is pure and fails closed for unavailable, forged, unconfirmed or unauthorize
   ).toEqual({ ok: false, reason: "unavailable-action" });
   describePaletteContext(graph, { kind: "output", output: { from: "read_true", port: "next" } });
   expect(graph).toEqual(before);
+});
+
+it("replaces a step in place, retaining identity, layout, input and compatible output connections", () => {
+  const graph = branch();
+  graph.layout = { gate: { x: 42, y: 75 } };
+  const original = structuredClone(graph);
+  const result = selectPaletteEntry(
+    graph,
+    { kind: "replace", nodeId: "gate" },
+    { kind: "insert", type: "delay", version: 1 },
+    options(),
+  );
+  expect(result.ok).toBe(true);
+  if (!result.ok) return;
+  expect(result.definition.nodes.find((node) => node.id === "gate")?.type).toBe("delay");
+  expect(result.definition.nodes).toHaveLength(graph.nodes.length);
+  expect(result.definition.layout).toEqual(graph.layout);
+  expect(result.definition.edges).toContainEqual({ from: "start", to: "gate", port: "next" });
+  expect(result.definition.edges.some((edge) => edge.from === "gate")).toBe(false);
+  expect(result.definition.nodes.some((node) => node.id === "read_true")).toBe(true);
+  expect(graph).toEqual(original);
+});
+
+it("uses ephemeral measurements to center an output insertion without moving legacy source coordinates", () => {
+  const graph = branch();
+  graph.layout = { read_false: { x: 20, y: 500 }, gate: { x: -100, y: 100, anchor: "center" } };
+  const before = structuredClone(graph);
+  const result = selectPaletteEntry(
+    graph,
+    { kind: "output", output: { from: "read_false", port: "next" } },
+    { kind: "insert", type: "delay", version: 1 },
+    { ...options(), measurements: new Map([["read_false", { width: 220, height: 44 }]]) },
+  );
+  expect(result.ok).toBe(true);
+  if (!result.ok) return;
+  expect(result.definition.layout?.inserted).toEqual({ x: 130, y: 672, anchor: "center" });
+  expect(result.definition.layout?.read_false).toEqual({ x: 20, y: 500 });
+  expect(result.definition.layout?.gate).toEqual(graph.layout.gate);
+  expect(graph).toEqual(before);
+});
+
+it("retains an explicit edge midpoint center through insertion and JSON round-trip", () => {
+  const graph = branch();
+  graph.layout = { start: { x: 17, y: 9 }, gate: { x: 100, y: 500, anchor: "center" } };
+  const result = selectPaletteEntry(
+    graph,
+    {
+      kind: "output",
+      output: { from: "start", port: "next" },
+      position: { x: 200, y: 250, anchor: "center" },
+    },
+    { kind: "insert", type: "delay", version: 1 },
+    options(),
+  );
+  expect(result.ok).toBe(true);
+  if (!result.ok) return;
+  expect(result.definition.layout?.inserted).toEqual({ x: 200, y: 250, anchor: "center" });
+  expect(result.definition.layout?.start).toEqual({ x: 17, y: 9 });
+  expect(result.definition.edges).toContainEqual({ from: "start", to: "inserted", port: "next" });
+  expect(result.definition.edges).toContainEqual({ from: "inserted", to: "gate", port: "next" });
+  expect(definitionSchema.parse(JSON.parse(JSON.stringify(result.definition))).layout).toEqual(
+    result.definition.layout,
+  );
+});
+it("does not reset configuration when the same type is chosen, and blocks stale or unauthorized replacement", () => {
+  const graph = branch();
+  const request = { kind: "replace", nodeId: "gate" } as const;
+  const selection = { kind: "insert", type: "condition", version: 1 };
+  expect(selectPaletteEntry(graph, request, selection, options())).toMatchObject({
+    ok: true,
+    changed: false,
+    definition: graph,
+  });
+  expect(selectPaletteEntry(graph, request, selection, { ...options(), editable: false })).toEqual({
+    ok: false,
+    reason: "not-editable",
+  });
+  expect(
+    selectPaletteEntry(graph, request, selection, { ...options(), metadataConfirmed: false }),
+  ).toEqual({ ok: false, reason: "metadata-unconfirmed" });
+  expect(
+    selectPaletteEntry(graph, { kind: "replace", nodeId: "gone" }, selection, options()),
+  ).toEqual({ ok: false, reason: "missingNode" });
+  expect(
+    selectPaletteEntry(graph, { kind: "replace", nodeId: "start" }, selection, options()),
+  ).toEqual({ ok: false, reason: "unavailable-action" });
 });

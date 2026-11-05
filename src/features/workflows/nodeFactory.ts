@@ -1,7 +1,13 @@
 import { ancestors } from "./graph";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 
-export const creatableNodeTypes = ["record.read", "activity.create", "condition", "delay"] as const;
+export const creatableNodeTypes = [
+  "record.read",
+  "activity.create",
+  "condition",
+  "filter",
+  "delay",
+] as const;
 export type CreatableNodeType = (typeof creatableNodeTypes)[number];
 export function makeNode(
   graph: WorkflowDefinition,

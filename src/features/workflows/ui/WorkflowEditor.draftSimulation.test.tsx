@@ -270,6 +270,11 @@ async function editUnsavedDraft(
   messages: Messages = english,
 ) {
   const name = screen.getByRole("textbox", { name: messages.name });
+  const trigger = within(screen.getByRole("navigation", { name: messages.steps })).getAllByRole(
+    "button",
+  )[0];
+  if (trigger === undefined) throw new Error("Draft fixture is missing its trigger step");
+  await user.click(trigger);
   const step = screen.getByRole("textbox", { name: messages.stepName });
   await user.clear(name);
   await user.type(name, dirtyName);
@@ -286,12 +291,17 @@ async function chooseRecord(
   await user.click(within(dialog).getByRole("combobox", { name: messages.deal }));
   await user.click(screen.getByRole("option", { name: recordName }));
 }
+async function openOptions(user: ReturnType<typeof userEvent.setup>, messages: Messages = english) {
+  const opener = screen.getByLabelText(messages.workflowOptions, { selector: "button" });
+  if (screen.queryByRole("menu") === null) await user.click(opener);
+  return opener;
+}
 async function openDraft(
   user: ReturnType<typeof userEvent.setup>,
   copy: (typeof locales)[number] = locales[0],
 ) {
-  const opener = screen.getByRole("button", { name: copy.entry });
-  await user.click(opener);
+  const opener = await openOptions(user, copy.messages);
+  await user.click(screen.getByRole("menuitem", { name: copy.entry }));
   const dialog = screen.getByRole("dialog", { name: copy.entry });
   return { dialog, opener };
 }
@@ -344,7 +354,8 @@ describe("unsaved draft simulation on the actual editor", () => {
     expect(fields.step).toHaveValue(dirtyStep);
     expect(screen.getByText(english.unsaved)).toBeVisible();
     expect(screen.getByRole("button", { name: english.save })).toBeEnabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeEnabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: english.simulation })).toBeEnabled();
     expect(io.simulate).not.toHaveBeenCalled();
     expectNoPersistentCommand();
   });
@@ -368,7 +379,8 @@ describe("unsaved draft simulation on the actual editor", () => {
   it("preserves the existing published simulation and durable-run acknowledgement path", async () => {
     const user = userEvent.setup();
     render(view());
-    await user.click(screen.getByRole("button", { name: english.simulation }));
+    await openOptions(user);
+    await user.click(screen.getByRole("menuitem", { name: english.simulation }));
     const dialog = screen.getByRole("dialog", { name: english.runTitle });
     await chooseRecord(user, dialog);
     await user.click(within(dialog).getByRole("button", { name: english.confirmSimulation }));
@@ -419,10 +431,11 @@ describe("unsaved draft simulation on the actual editor", () => {
   it("allows an authorized valid unpublished inactive draft without enabling published runs", async () => {
     const user = userEvent.setup();
     render(view(fixture({ active: false, publishedNumber: null })));
-    const entry = screen.getByRole("button", { name: locales[0].entry });
+    await openOptions(user);
+    const entry = screen.getByRole("menuitem", { name: locales[0].entry });
     expect(entry).toBeEnabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.live })).toBeDisabled();
+    expect(screen.getByRole("menuitem", { name: english.simulation })).toBeDisabled();
+    expect(screen.getByRole("menuitem", { name: english.live })).toBeDisabled();
     const { dialog } = await openDraft(user);
     await chooseRecord(user, dialog);
     await user.click(draftConfirm(dialog));
@@ -436,38 +449,44 @@ describe("unsaved draft simulation on the actual editor", () => {
 
   it.each(["edit denied", "run denied", "archived"] as const)(
     "disables draft simulation when %s",
-    (reason) => {
+    async (reason) => {
+      const user = userEvent.setup();
       const initial = fixture();
       if (reason === "edit denied") initial.capabilities.edit = false;
       else if (reason === "run denied") initial.capabilities.run = false;
       else initial.archivedAt = new Date("2026-11-04T12:00:00Z");
       render(view(initial));
 
-      expect(screen.getByRole("button", { name: locales[0].entry })).toBeDisabled();
+      await openOptions(user);
+      expect(screen.getByRole("menuitem", { name: locales[0].entry })).toBeDisabled();
       expect(io.simulate).not.toHaveBeenCalled();
       expectNoPersistentCommand();
     },
   );
 
-  it("withholds simulation for a locally invalid graph while retaining publication validation", () => {
+  it("withholds simulation for a locally invalid graph while retaining publication validation", async () => {
+    const user = userEvent.setup();
     const initial = fixture();
     initial.draft.edges = [{ from: "start", to: "missing", port: "next" }];
     render(view(initial));
 
-    expect(screen.getByRole("button", { name: locales[0].entry })).toBeDisabled();
     expect(screen.getByRole("button", { name: english.publish })).toBeDisabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: locales[0].entry })).toBeDisabled();
     expect(io.simulate).not.toHaveBeenCalled();
     expectNoPersistentCommand();
   });
 
-  it("keeps fixed-instant waits publishable while withholding the duration-only draft action", () => {
+  it("keeps fixed-instant waits publishable while withholding the duration-only draft action", async () => {
+    const user = userEvent.setup();
     render(view(fixture({ draft: fixedInstantDefinition() })));
 
-    expect(screen.getByRole("button", { name: english.draftSimulation })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeEnabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: english.draftSimulation })).toBeDisabled();
+    expect(screen.getByRole("menuitem", { name: english.simulation })).toBeEnabled();
   });
 
-  it("cancels with Escape and restores the draft-test opener without commands", async () => {
+  it("cancels with Escape and restores Workflow options without commands", async () => {
     const user = userEvent.setup();
     render(view());
     await editUnsavedDraft(user);

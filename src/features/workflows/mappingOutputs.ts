@@ -19,6 +19,7 @@ const contracts: Record<WorkflowNode["type"], OutputContracts> = {
   },
   "activity.create": { id: { kind: "entity", entity: "activity", nullable: false } },
   condition: { result: { kind: "boolean", nullable: false } },
+  filter: { matchesFilter: { kind: "boolean", nullable: false } },
   delay: { resumeAt: { kind: "instant", nullable: false } },
   notification: { id: text },
 };
@@ -38,6 +39,7 @@ export function isMappingFieldKey(key: string): key is MappingFieldKey {
     "value",
     "currency",
     "result",
+    "matchesFilter",
     "resumeAt",
     "expectedCloseDate",
   ].includes(key);

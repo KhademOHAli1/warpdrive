@@ -90,6 +90,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputContracts: mappingOutputContracts("condition"),
     effect: "none",
   },
+  filter: {
+    configuration: configurationProfiles.filter,
+    config: conditionConfigSchema,
+    inputs: {},
+    outputs: coarseMappingOutputs("filter"),
+    outputContracts: mappingOutputContracts("filter"),
+    effect: "none",
+  },
   delay: {
     configuration: configurationProfiles.delay,
     config: z.union([

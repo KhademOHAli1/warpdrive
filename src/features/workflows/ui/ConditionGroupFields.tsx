@@ -177,6 +177,7 @@ function GroupRow(props: GroupProps) {
 }
 export function ConditionGroupFields(props: ConditionGroupProps) {
   const t = useAppTranslations("workflows");
+  const otherwise = t(props.node.type === "filter" ? "filterActionHint" : "conditionOtherwise");
   const root = conditionRoot(props.node.config);
   const editable = props.editable && props.metadata?.status !== "denied";
   const parsed = parseConditionConfig(props.node.config, "draft");
@@ -210,8 +211,8 @@ export function ConditionGroupFields(props: ConditionGroupProps) {
       <GroupRow {...props} editable={editable} entry={root} indices={[]} ordinals={[1]} />
       <p className="text-xs text-muted-foreground">
         {props.node.config.defaultPort === "false"
-          ? t("conditionOtherwise")
-          : t("conditionOmitted") + ": " + t("conditionOtherwise")}
+          ? otherwise
+          : t("conditionOmitted") + ": " + otherwise}
       </p>
       {props.node.config.defaultPort !== "false" && (
         <Button
@@ -224,7 +225,7 @@ export function ConditionGroupFields(props: ConditionGroupProps) {
               });
           }}
         >
-          {t("conditionUseDefault")}
+          {t(props.node.type === "filter" ? "filterUseDefault" : "conditionUseDefault")}
         </Button>
       )}
     </div>

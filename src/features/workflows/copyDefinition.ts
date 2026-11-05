@@ -43,7 +43,7 @@ const copyNode = z.discriminatedUnion("type", [
       .partial(),
   }),
   nodeSchema.extend({
-    type: z.literal("condition"),
+    type: z.enum(["condition", "filter"]),
     // The shared parser bounds grouped input before walking it. Keep reviewed
     // incomplete/raw drafts byte-for-byte; publication has separate requirements.
     config: z.custom<WorkflowDefinition["nodes"][number]["config"]>(

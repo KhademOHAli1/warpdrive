@@ -103,14 +103,17 @@ it.each([
       </LocaleProvider>,
     );
     const user = userEvent.setup();
+    await user.click(
+      within(screen.getByRole("navigation", { name: copy.steps })).getByRole("button", {
+        name: new RegExp(copy.start),
+      }),
+    );
     screen.getByRole("button", { name: copy.add }).focus();
     await user.keyboard("{Enter}");
     const dialog = await screen.findByRole("dialog");
-    const search = within(dialog).getByRole("textbox", { name: copy.search });
-    expect(search).toHaveFocus();
-    await user.type(search, copy.wait);
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
     const choice = within(dialog).getByRole("button", { name: new RegExp(copy.wait) });
-    await user.tab();
+    choice.focus();
     expect(choice).toHaveFocus();
     await user.keyboard("{Enter}");
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument(), {

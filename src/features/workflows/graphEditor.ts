@@ -1,5 +1,5 @@
 import { err, ok } from "@/types/result";
-import { currentLayout } from "./nodeLayout";
+import { currentLayout, positionFor } from "./nodeLayout";
 import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 
 export type ConnectionProblem =
@@ -62,6 +62,7 @@ export function moveNode(
   position: NodePosition,
 ): WorkflowDefinition {
   if (!graph.nodes.some((node) => node.id === id)) return graph;
+  const anchor = position.anchor ?? positionFor(graph, id).anchor;
   return {
     ...graph,
     layout: {
@@ -69,6 +70,7 @@ export function moveNode(
       [id]: {
         x: Math.max(-100000, Math.min(100000, position.x)),
         y: Math.max(-100000, Math.min(100000, position.y)),
+        ...(anchor === "center" ? { anchor } : {}),
       },
     },
   };

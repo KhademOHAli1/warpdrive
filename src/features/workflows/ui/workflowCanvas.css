@@ -1,15 +1,20 @@
 .workflow-canvas {
-  --xy-background-color: transparent;
-  --xy-background-pattern-dots-color: hsl(var(--border));
-  --xy-edge-stroke: hsl(var(--muted-foreground));
-  --xy-edge-stroke-selected: hsl(var(--primary));
-  --xy-controls-button-background-color: hsl(var(--card));
-  --xy-controls-button-color: hsl(var(--foreground));
-  --xy-controls-button-border-color: hsl(var(--border));
-  --xy-controls-button-background-color-hover: hsl(var(--accent));
+  --xy-background-color: var(--workflow-canvas-surface);
+  --xy-background-pattern-color: var(--workflow-border-medium);
+  --xy-edge-stroke: var(--workflow-border-strong);
+  --xy-edge-stroke-selected: var(--workflow-accent);
+  --xy-controls-button-background-color: var(--workflow-panel-surface);
+  --xy-controls-button-color: var(--workflow-tertiary-text);
+  --xy-controls-button-border-color: var(--workflow-border-strong);
+  --xy-controls-button-background-color-hover: var(--workflow-hover-surface);
+  --xy-node-background-color: none;
   --xy-node-border: 0;
-  --xy-handle-background-color: hsl(var(--card));
-  --xy-handle-border-color: hsl(var(--muted-foreground));
+  --xy-node-border-radius: 0;
+  --xy-node-boxshadow-hover: none;
+  --xy-node-boxshadow-selected: none;
+  --xy-handle-background-color: var(--workflow-canvas-surface);
+  --xy-handle-border-color: var(--workflow-border-strong);
+  background: var(--workflow-canvas-surface);
 }
 .workflow-canvas .react-flow__node {
   cursor: grab;
@@ -17,40 +22,62 @@
 .workflow-canvas[data-dragging="true"] .react-flow__node {
   cursor: grabbing;
 }
+.workflow-canvas[data-editable="false"] .react-flow__node {
+  cursor: pointer;
+}
 .workflow-canvas .react-flow__handle {
-  width: 36px;
-  height: 36px;
+  width: 7px;
+  height: 7px;
   border: 0;
   background: transparent;
   box-shadow: none;
+}
+.workflow-canvas .react-flow__handle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
 .workflow-canvas .react-flow__handle::after {
   content: "";
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 16px;
-  height: 16px;
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 3px solid hsl(var(--card));
-  background: hsl(var(--primary));
-  box-shadow: 0 0 0 1px hsl(var(--border));
+  border: 1px solid var(--workflow-border-strong);
+  background: var(--workflow-canvas-surface);
   pointer-events: none;
   transition:
-    box-shadow 120ms ease,
-    background-color 120ms ease;
+    transform 100ms ease-out,
+    border-color 100ms ease,
+    background-color 100ms ease;
 }
-.workflow-canvas .react-flow__handle:hover::after {
-  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--primary)) 15%, transparent);
+.workflow-canvas .react-flow__handle.target::after {
+  display: none;
+}
+.workflow-canvas .react-flow__node.selected .react-flow__handle.source::after,
+.workflow-canvas .react-flow__handle.source:hover::after {
+  border-color: var(--workflow-accent);
+  background: var(--workflow-accent-surface);
+}
+.workflow-canvas .react-flow__handle.source:hover::after {
+  transform: translate(-50%, -50%) scale(1.5);
 }
 .workflow-canvas .react-flow__handle.connectingto.valid::after {
-  background: hsl(var(--success));
-  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--success)) 20%, transparent);
+  background: var(--workflow-success-surface);
+  border-color: var(--workflow-success);
 }
 .workflow-canvas .react-flow__handle.connectingto:not(.valid)::after {
-  background: hsl(var(--destructive));
-  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--destructive)) 15%, transparent);
+  background: var(--workflow-danger-surface);
+  border-color: var(--workflow-danger);
 }
 @media (prefers-reduced-motion: reduce) {
   .workflow-canvas .react-flow__handle::after {
@@ -58,28 +85,110 @@
   }
 }
 .workflow-canvas .react-flow__edge.selected .react-flow__edge-path {
-  stroke: hsl(var(--primary));
-  stroke-width: 2.5;
+  stroke: var(--workflow-accent);
 }
 .workflow-canvas .react-flow__connection-path {
-  stroke: hsl(var(--primary));
-  stroke-width: 2;
+  stroke: var(--workflow-accent);
+  stroke-width: 1;
+}
+.workflow-canvas .workflow-connection-path {
+  marker-end: var(--workflow-connection-marker);
 }
 .workflow-canvas .react-flow__edge-textbg {
-  fill: hsl(var(--card));
+  fill: var(--workflow-card-surface);
 }
 .workflow-canvas .react-flow__edge-text {
-  fill: hsl(var(--foreground));
+  fill: var(--workflow-primary-text);
   font-family: inherit;
 }
 .workflow-canvas .react-flow__node:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid var(--workflow-accent);
   outline-offset: 5px;
-  border-radius: var(--radius);
+  border-radius: 8px;
 }
 .workflow-canvas .react-flow__controls {
-  border-radius: var(--radius);
+  border-radius: 4px;
   overflow: hidden;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--workflow-border-strong);
   box-shadow: none;
+}
+.workflow-canvas .react-flow__controls:not(:focus-within) {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+  margin: -1px;
+  padding: 0;
+  pointer-events: none;
+}
+.workflow-canvas .workflow-edge-markers {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.workflow-canvas .workflow-edge-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--workflow-border-strong);
+  border-radius: 4px;
+  background: var(--workflow-card-surface);
+  color: var(--workflow-light-text);
+  font-size: 11.05px;
+  font-weight: 600;
+  padding: 2px 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.workflow-canvas .workflow-edge-controls {
+  position: absolute;
+  padding: 4px;
+  pointer-events: all;
+  opacity: 0;
+}
+.workflow-canvas .workflow-edge-controls[data-visible="true"],
+.workflow-canvas .workflow-edge-controls:focus-within,
+.workflow-canvas .workflow-edge-controls:hover {
+  opacity: 1;
+}
+.workflow-canvas .workflow-edge-control-group {
+  display: flex;
+  min-inline-size: 0;
+  gap: 2px;
+  border: 1px solid var(--workflow-border-strong);
+  border-radius: 4px;
+  background: var(--workflow-hover-overlay);
+  backdrop-filter: blur(20px);
+  margin: 0;
+  padding: 2px;
+}
+.workflow-canvas .workflow-edge-control-group:hover {
+  box-shadow: 0 2px 4px rgb(0 0 0 / 4%);
+}
+.workflow-canvas .workflow-edge-action {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 1px;
+  background: transparent;
+  color: var(--workflow-tertiary-text);
+  padding: 0;
+}
+.workflow-canvas .workflow-edge-action:hover {
+  background: var(--workflow-hover-surface);
+  color: var(--workflow-secondary-text);
+}
+.workflow-canvas .workflow-edge-action:focus-visible {
+  outline: 2px solid var(--workflow-accent);
+  outline-offset: 1px;
 }

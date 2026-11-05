@@ -137,7 +137,8 @@ export function NodeSummary({
   const sales = useAppTranslations("sales");
   const fmt = useFormatters();
   const fields: Record<string, string> = useMessages().workflows.fields;
-  if (node.type === "condition") return <ConditionSummary node={node} definition={definition} />;
+  if (node.type === "condition" || node.type === "filter")
+    return <ConditionSummary node={node} definition={definition} />;
   if (node.type === "delay" && Object.hasOwn(node.config, "until"))
     return <FixedInstantDelaySummary config={node.config} />;
   function value(input: unknown, status = false): string {

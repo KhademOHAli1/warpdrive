@@ -1,0 +1,300 @@
+/* Measured from Twenty v2.55.0 workflow-node components, b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5. */
+.node {
+  position: relative;
+  width: max-content;
+  max-width: 240px;
+  text-align: start;
+}
+
+.card {
+  --node-background: var(--workflow-card-surface);
+  --node-border: var(--workflow-border-strong);
+  --node-label: var(--workflow-tertiary-text);
+  --node-title: var(--workflow-primary-text);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-width: 44px;
+  max-width: 240px;
+  border: 1px solid var(--node-border);
+  border-radius: 8px;
+  background: var(--node-background);
+  cursor: pointer;
+  padding: 8px;
+  font-size: 13px;
+  transition: border-color 0.1s;
+}
+
+.selected {
+  --node-background: var(--workflow-accent-surface);
+  --node-border: var(--workflow-accent);
+  --node-label: var(--workflow-accent-text);
+  --node-title: var(--workflow-primary-text);
+}
+
+.completed {
+  --node-label: var(--workflow-success-text);
+  --node-title: var(--workflow-primary-text);
+}
+
+.completed.selected {
+  --node-background: var(--workflow-success-surface);
+  --node-border: var(--workflow-success);
+}
+
+.invalid {
+  --node-label: var(--workflow-danger-text);
+  --node-title: var(--workflow-primary-text);
+}
+
+.invalid.selected {
+  --node-background: var(--workflow-danger-surface);
+  --node-border: var(--workflow-danger);
+}
+
+.card:hover {
+  background:
+    linear-gradient(var(--workflow-hover-overlay), var(--workflow-hover-overlay)),
+    var(--node-background);
+}
+
+.connectable:hover {
+  border-color: var(--workflow-accent);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 4px;
+  background: var(--workflow-icon-surface);
+  color: var(--workflow-record-icon);
+}
+
+.icon[data-node-type="trigger.manual"] {
+  color: var(--workflow-trigger-icon);
+}
+
+.icon[data-node-type="trigger.record"] {
+  color: var(--workflow-record-trigger-icon);
+}
+
+.icon[data-node-type="condition"],
+.icon[data-node-type="filter"],
+.icon[data-node-type="delay"] {
+  color: var(--workflow-flow-icon);
+}
+
+.icon[data-node-type="notification"] {
+  color: var(--workflow-notification-icon);
+}
+
+.rightPart {
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 184px;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 14px;
+}
+
+.label {
+  color: var(--node-label);
+  font-size: 11.05px;
+  font-weight: 600;
+}
+
+.title {
+  display: -webkit-box;
+  align-self: stretch;
+  overflow: hidden;
+  box-sizing: border-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  color: var(--node-title);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+}
+
+.description {
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}
+
+.description :global(button) {
+  display: none;
+}
+
+.freeOutput {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  transform: translateX(-50%);
+}
+
+.freeOutputRight {
+  top: 50%;
+  left: 100%;
+  flex-direction: row;
+  transform: translateY(-50%);
+}
+
+.connector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  color: var(--workflow-border-strong);
+  pointer-events: none;
+}
+
+.branchLabel {
+  position: absolute;
+  top: 14px;
+  max-width: 112px;
+  border: 1px solid var(--workflow-border-strong);
+  border-radius: 4px;
+  background: var(--workflow-card-surface);
+  color: var(--workflow-light-text);
+  padding: 2px 4px;
+  font-size: 11.05px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.freeOutputRight .branchLabel {
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-height: 0;
+  border: 1px solid var(--workflow-icon-surface);
+  border-radius: 8px;
+  background: var(--workflow-hover-overlay);
+  color: var(--workflow-secondary-text);
+  padding: 0;
+  box-shadow: none;
+}
+
+.addButton:hover {
+  background: var(--workflow-tertiary-surface);
+}
+
+.addButton:active {
+  background: var(--workflow-quaternary-surface);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--workflow-accent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.options {
+  position: absolute;
+  top: 0;
+  right: -16px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  transform: translateX(100%);
+}
+
+.optionsButton {
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  border: 1px solid var(--workflow-border-strong);
+  border-radius: 8px;
+  background: var(--workflow-panel-surface);
+  color: var(--workflow-tertiary-text);
+  padding: 0;
+  box-shadow: var(--workflow-shadow-light);
+}
+
+.optionsButton:hover {
+  background: var(--workflow-tertiary-surface);
+}
+
+.optionsButton:focus-visible {
+  outline: 2px solid var(--workflow-accent);
+  outline-offset: 2px;
+}
+
+.optionsMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 200px;
+  border: 1px solid var(--workflow-border-medium);
+  border-radius: 8px;
+  background: var(--workflow-popover-surface);
+  backdrop-filter: var(--workflow-popover-filter);
+  color: var(--workflow-primary-text);
+  padding: 4px;
+  box-shadow: var(--workflow-shadow-strong);
+}
+
+.option {
+  gap: 8px;
+  min-height: 32px;
+  border-radius: 4px;
+  padding: 0 4px;
+  color: var(--workflow-secondary-text);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.option:focus,
+.option[data-highlighted] {
+  background: var(--workflow-hover-surface);
+  color: var(--workflow-primary-text);
+}
+
+.removeOption {
+  color: var(--workflow-danger-text);
+}
+
+.removeOption:focus,
+.removeOption[data-highlighted] {
+  color: var(--workflow-danger-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

@@ -4,7 +4,7 @@ import { findPaletteEntry, paletteCatalog } from "./paletteCatalog";
 import { executableNode } from "./readiness";
 import { nodeTypes, type WorkflowNode } from "./schemas";
 
-it("classifies exactly the seven known version-one entries in deliberate order", () => {
+it("classifies exactly the eight known version-one entries in deliberate order", () => {
   expect(paletteCatalog.map((entry) => entry.type)).toEqual([
     "trigger.manual",
     "trigger.record",
@@ -12,6 +12,7 @@ it("classifies exactly the seven known version-one entries in deliberate order",
     "activity.create",
     "notification",
     "condition",
+    "filter",
     "delay",
   ]);
   expect(new Set(paletteCatalog.map((entry) => entry.type))).toEqual(new Set(nodeTypes));
@@ -21,7 +22,7 @@ it("classifies exactly the seven known version-one entries in deliberate order",
   }
 });
 
-it("keeps only the four factory types insertable and configures the existing manual trigger", () => {
+it("keeps only the five factory types insertable and configures the existing manual trigger", () => {
   expect(
     paletteCatalog
       .filter((entry) => entry.selection === "insert")
@@ -39,7 +40,14 @@ it("keeps only the four factory types insertable and configures the existing man
 it("describes supported runtime subsets without promoting broader schema variants", () => {
   expect(
     paletteCatalog.filter((entry) => entry.support === "supported").map((entry) => entry.profile),
-  ).toEqual(["manual-trigger", "deal-read", "basic-task", "scalar-condition", "literal-duration"]);
+  ).toEqual([
+    "manual-trigger",
+    "deal-read",
+    "basic-task",
+    "scalar-condition",
+    "scalar-condition",
+    "literal-duration",
+  ]);
   const node = (type: WorkflowNode["type"], config: WorkflowNode["config"]): WorkflowNode => ({
     id: "example",
     type,

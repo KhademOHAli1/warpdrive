@@ -30,6 +30,14 @@
     "expandGroup": "باز کردن زیرمنوی {label}",
     "collapseGroup": "بستن زیرمنوی {label}"
   },
+  "dashboardViews": {
+    "dashboard": "داشبورد",
+    "select": "انتخاب داشبورد",
+    "selectCurrent": "انتخاب داشبورد: {name}",
+    "pipelines": "قیف‌های فروش",
+    "performance": "عملکرد",
+    "addPipeline": "افزودن قیف فروش جدید"
+  },
   "appearance": {
     "title": "ظاهر برنامه",
     "day": "روشن",

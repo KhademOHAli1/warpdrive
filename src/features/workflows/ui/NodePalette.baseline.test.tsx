@@ -18,7 +18,10 @@ function callbacks() {
     onClose: vi.fn<() => void>(),
   };
 }
-function palette(handlers: ReturnType<typeof callbacks>, open = true) {
+function palette(
+  handlers: ReturnType<typeof callbacks>,
+  { open = true, trigger = false, occupied = false } = {},
+) {
   const definition = paletteDefinition();
   definition.nodes.push({
     id: "review",
@@ -32,9 +35,21 @@ function palette(handlers: ReturnType<typeof callbacks>, open = true) {
     },
   });
   definition.edges.push({ from: "start", to: "review", port: "next" });
+  if (occupied) {
+    definition.nodes.push({
+      id: "read",
+      type: "record.read",
+      version: 1,
+      name: "Read",
+      config: {},
+    });
+    definition.edges.push({ from: "review", to: "read", port: "true" });
+  }
   const model = buildPaletteView(
     definition,
-    { kind: "output", output: { from: "review", port: "true" } },
+    trigger
+      ? { kind: "replace", nodeId: "start" }
+      : { kind: "output", output: { from: "review", port: "true" } },
     readyPaletteRead(),
     true,
   );
@@ -45,109 +60,108 @@ function palette(handlers: ReturnType<typeof callbacks>, open = true) {
   );
 }
 
-it("retains current labels, descriptions, localized search and supported selection", async () => {
+it("keeps action descriptions and source context accessible in the compact picker", async () => {
   const handlers = callbacks();
   const user = userEvent.setup();
   render(palette(handlers));
-  expect(screen.getByText(`Review · ${english.truePort}`)).toBeVisible();
+  const dialog = screen.getByRole("dialog", { name: english.selectAction });
+  expect(dialog).toHaveAccessibleDescription(
+    expect.stringContaining(`Review · ${english.truePort}`),
+  );
+  expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   for (const label of [english.read, english.task, english.condition, english.delay]) {
-    expect(screen.getByRole("button", { name: new RegExp(label) })).toBeVisible();
+    expect(within(dialog).getByRole("button", { name: label, exact: true })).toBeVisible();
   }
-  expect(screen.getByText(english.readActionHint)).toBeVisible();
-  await user.type(screen.getByRole("textbox", { name: english.searchNodes }), "selected deal");
-  expect(screen.getByRole("button", { name: new RegExp(english.read) })).toBeVisible();
-  expect(
-    screen.queryByRole("button", { name: new RegExp(english.condition) }),
-  ).not.toBeInTheDocument();
+  const read = within(dialog).getByRole("button", { name: english.read, exact: true });
+  expect(read).toHaveAccessibleDescription(expect.stringContaining(english.readActionHint));
   expect(handlers.onChoose).not.toHaveBeenCalled();
-  expect(handlers.onClose).not.toHaveBeenCalled();
-  await user.click(screen.getByRole("button", { name: new RegExp(english.read) }));
-  expect(handlers.onChoose).toHaveBeenCalledTimes(1);
-  expect(handlers.onChoose).toHaveBeenCalledWith({
+  await user.click(read);
+  expect(handlers.onChoose).toHaveBeenCalledExactlyOnceWith({
     kind: "insert",
     type: "record.read",
     version: 1,
   });
+  expect(handlers.onClose).not.toHaveBeenCalled();
 });
 
-it("retains no-results feedback and Clear without inserting a node", async () => {
+it("dismisses with the named close control without inserting a node", async () => {
   const handlers = callbacks();
   const user = userEvent.setup();
   render(palette(handlers));
-  await user.type(screen.getByRole("textbox", { name: english.searchNodes }), "no-such-action-675");
-  expect(screen.getByRole("status")).toHaveTextContent(english.noNodes);
-  await user.click(screen.getByRole("button", { name: english.clearSearch }));
-  expect(screen.getByRole("textbox", { name: english.searchNodes })).toHaveValue("");
-  expect(screen.getByRole("button", { name: new RegExp(english.task) })).toBeVisible();
+  await user.click(screen.getByRole("button", { name: english.close, exact: true }));
+  expect(handlers.onClose).toHaveBeenCalledTimes(1);
   expect(handlers.onChoose).not.toHaveBeenCalled();
-  expect(handlers.onClose).not.toHaveBeenCalled();
 });
 
 it("retains controlled open and real shared-dialog Escape close behavior", async () => {
   const handlers = callbacks();
   const user = userEvent.setup();
-  const mounted = render(palette(handlers, false));
+  const mounted = render(palette(handlers, { open: false }));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   mounted.rerender(palette(handlers));
-  expect(screen.getByRole("dialog", { name: english.chooseNode })).toBeVisible();
+  expect(screen.getByRole("dialog", { name: english.selectAction })).toBeVisible();
   await user.keyboard("{Escape}");
   expect(handlers.onClose).toHaveBeenCalledTimes(1);
-  mounted.rerender(palette(handlers, false));
+  mounted.rerender(palette(handlers, { open: false }));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(handlers.onChoose).not.toHaveBeenCalled();
 });
 
-it("groups the reviewed catalog under discoverable category headings", () => {
+it("groups action choices under Data, Flow and Core while withholding triggers", () => {
   const handlers = callbacks();
   render(palette(handlers));
-  // Existing choices are setup controls, preceding the new missing-behavior assertion.
-  expect(screen.getByRole("button", { name: new RegExp(english.read) })).toBeVisible();
-  for (const category of ["CRM", "Logic", "Timing", "Triggers"]) {
-    expect(screen.getByRole("heading", { name: category })).toBeVisible();
+  for (const category of [
+    english.nodeCategoryData,
+    english.nodeCategoryFlow,
+    english.nodeCategoryCore,
+  ]) {
+    expect(screen.getByRole("heading", { name: category, exact: true })).toBeVisible();
   }
+  expect(
+    screen.queryByRole("heading", { name: english.nodeCategoryTrigger }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: english.paletteManual })).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: english.paletteRecordTrigger }),
+  ).not.toBeInTheDocument();
   expect(handlers.onChoose).not.toHaveBeenCalled();
 });
 
-it("finds an action by its localized category rather than only its title or description", async () => {
+it("explains a structural insertion restriction and keeps the safe linear action available", async () => {
   const handlers = callbacks();
   const user = userEvent.setup();
-  render(palette(handlers));
-  expect(screen.getByRole("button", { name: new RegExp(english.delay) })).toBeVisible();
-  await user.type(screen.getByRole("textbox", { name: english.searchNodes }), "Timing");
-  expect(screen.getByRole("button", { name: new RegExp(english.delay) })).toBeVisible();
-  expect(screen.queryByText(english.noNodes)).not.toBeInTheDocument();
+  render(palette(handlers, { occupied: true }));
+  const condition = screen.getByRole("button", { name: english.condition, exact: true });
+  expect(condition).toHaveAttribute("aria-disabled", "true");
+  expect(condition).toHaveAccessibleDescription(expect.stringContaining(english.paletteLinearOnly));
+  await user.click(condition);
+  fireEvent.click(condition);
   expect(handlers.onChoose).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: english.delay, exact: true }));
+  expect(handlers.onChoose).toHaveBeenCalledExactlyOnceWith({
+    kind: "insert",
+    type: "delay",
+    version: 1,
+  });
 });
 
 it.each([
-  {
-    label: "record-change trigger",
-    query: "record",
-    title: /^(?:record (?:change|changed|changes)(?: trigger)?|when a record changes)$/i,
-    button: /record (?:change|changed|changes)(?: trigger)?/i,
-  },
-  {
-    label: "notification",
-    query: english.notification,
-    title: /^Notification$/i,
-    button: /Notification/i,
-  },
+  { label: "record-change trigger", title: english.paletteRecordTrigger, trigger: true },
+  { label: "notification", title: english.notification, trigger: false },
 ])(
-  "keeps the known unsupported $label discoverable with a safe unavailable explanation",
-  async ({ query, title, button }) => {
+  "keeps the known unsupported $label discoverable with a safe explanation",
+  async ({ title, trigger }) => {
     const handlers = callbacks();
     const user = userEvent.setup();
-    render(palette(handlers));
-    expect(screen.getByRole("dialog", { name: english.chooseNode })).toBeVisible();
-    fireEvent.change(screen.getByRole("textbox", { name: english.searchNodes }), {
-      target: { value: query },
+    render(palette(handlers, { trigger }));
+    const dialog = screen.getByRole("dialog", {
+      name: trigger ? english.selectTrigger : english.selectAction,
     });
-    const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText(title)).toBeVisible();
-    expect(within(dialog).getByText(english.paletteUnavailable)).toBeVisible();
-    // Static entries and guarded/disabled buttons are both valid presentation choices.
-    const action = within(dialog).queryByRole("button", { name: button });
-    if (action !== null) await user.click(action);
+    const action = within(dialog).getByRole("button", { name: title, exact: true });
+    expect(action).toHaveAttribute("aria-disabled", "true");
+    expect(action).toHaveAccessibleDescription(expect.stringContaining(english.paletteUnavailable));
+    expect(within(action).getByText(`· ${english.paletteUnavailable}`)).toBeVisible();
+    await user.click(action);
     expect(handlers.onChoose).not.toHaveBeenCalled();
     expect(handlers.onClose).not.toHaveBeenCalled();
     expect(dialog).toBeVisible();

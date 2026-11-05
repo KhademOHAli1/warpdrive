@@ -425,16 +425,25 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
   const name = page.getByRole("textbox", { name: copy.name, exact: true });
   const step = page.getByRole("textbox", { name: copy.stepName, exact: true });
   await name.fill(profile.unsavedName);
+  await page
+    .getByRole("navigation", { name: copy.steps, exact: true })
+    .getByRole("button", { name: /CI saved draft trigger/ })
+    .press("Enter");
   await step.fill(profile.unsavedStep);
   await page.getByText(copy.unsaved, { exact: true }).waitFor();
   assert.equal(await page.getByRole("button", { name: copy.save, exact: true }).isEnabled(), true);
+  const opener = page.getByRole("button", { name: copy.workflowOptions, exact: true });
+  await opener.click();
+  const menu = page.getByRole("menu");
   assert.equal(
-    await page.getByRole("button", { name: copy.simulation, exact: true }).isDisabled(),
+    await menu.getByRole("menuitem", { name: copy.simulation, exact: true }).isDisabled(),
     true,
   );
-  assert.equal(await page.getByRole("button", { name: copy.live, exact: true }).isDisabled(), true);
-  const opener = page.getByRole("button", { name: copy.draftSimulation, exact: true });
-  await opener.click();
+  assert.equal(
+    await menu.getByRole("menuitem", { name: copy.live, exact: true }).isDisabled(),
+    true,
+  );
+  await menu.getByRole("menuitem", { name: copy.draftSimulation, exact: true }).click();
   const dialog = page.getByRole("dialog", { name: copy.draftSimulation, exact: true });
   await dialog.getByText(profile.unsavedName, { exact: true }).waitFor();
   await dialog.getByRole("textbox", { name: copy.search, exact: true }).fill(profile.dealName);

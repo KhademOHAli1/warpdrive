@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
+import { DashboardSelect } from "@/features/dashboards/DashboardSelect";
 import { createSalesStrings } from "@/features/deals/salesStrings";
 import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server";
 import { CreatePipelineButton } from "@/features/pipelines/CreatePipelineButton";
@@ -7,8 +8,8 @@ import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
 
 export async function generateMetadata() {
-  const STRINGS = createSalesStrings((await getLocalePreferences()).locale);
-  return { title: STRINGS.nav.pipeline };
+  const nav = await getAppTranslations("nav");
+  return { title: nav("dashboard") };
 }
 
 // The primary nav links to /pipeline, but a board is always scoped to a specific
@@ -17,7 +18,7 @@ export async function generateMetadata() {
 export default async function PipelineIndexPage(): Promise<React.ReactNode> {
   const STRINGS = createSalesStrings((await getLocalePreferences()).locale);
 
-  const translateSales = await getAppTranslations("sales");
+  const nav = await getAppTranslations("nav");
 
   const ctx = await createContext();
   if (ctx.actor === null) {
@@ -27,20 +28,25 @@ export default async function PipelineIndexPage(): Promise<React.ReactNode> {
   const pipelines = await caller.pipeline.list();
   const first = pipelines[0];
   if (first === undefined) {
-    // A manager with no visible pipelines gets a create CTA (fresh install / no default seeded);
-    // a non-manager genuinely has nothing to act on, so keep the plain message.
+    // Performance remains reachable even when this viewer has no visible pipeline dashboard.
     const canManage =
       ctx.actor.type === "admin" || ctx.actor.flags.has(PERMISSION_FLAGS.PIPELINE_MANAGE);
     return (
-      <main
-        aria-label={translateSales("pipeline_37e1c")}
-        className="grid h-full place-items-center p-8"
-      >
-        <div className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-muted-foreground">{STRINGS.settings.noPipelinesYet}</p>
-          {canManage && (
-            <CreatePipelineButton label={STRINGS.settings.createFirstPipeline} onCreated="board" />
-          )}
+      <main aria-label={nav("dashboard")} className="flex h-full flex-col p-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold">{nav("dashboard")}</h1>
+          <DashboardSelect current={null} pipelines={pipelines} canManagePipelines={canManage} />
+        </div>
+        <div className="grid flex-1 place-items-center p-4">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">{STRINGS.settings.noPipelinesYet}</p>
+            {canManage && (
+              <CreatePipelineButton
+                label={STRINGS.settings.createFirstPipeline}
+                onCreated="board"
+              />
+            )}
+          </div>
         </div>
       </main>
     );

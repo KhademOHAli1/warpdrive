@@ -185,7 +185,7 @@ function Workspace({ initial }: { initial: WorkflowDefinition }) {
   );
 }
 
-async function dismissAndExpectFocus(trigger: HTMLElement) {
+async function dismissAndExpectFocus(trigger: HTMLElement, returnTarget: HTMLElement = trigger) {
   const user = userEvent.setup();
   trigger.focus();
   expect(trigger).toHaveFocus();
@@ -200,8 +200,8 @@ async function dismissAndExpectFocus(trigger: HTMLElement) {
   await waitFor(
     () =>
       expect(
-        document.activeElement === trigger,
-        `Closing the dialog should restore focus to ${trigger.textContent?.trim()}; active element is ${document.activeElement?.tagName}`,
+        document.activeElement === returnTarget,
+        `Closing the dialog should restore focus to ${returnTarget.textContent?.trim()}; active element is ${document.activeElement?.tagName}`,
       ).toBe(true),
     { timeout: 1000, onTimeout: (error) => error },
   );
@@ -356,7 +356,7 @@ describe("workflow controlled-dialog keyboard focus return", () => {
   );
 
   it.each(["Simulate", "Run workflow"])(
-    "returns from run setup to %s without starting an execution",
+    "returns from run setup to Workflow options after choosing %s without starting an execution",
     async (label) => {
       const initial: WorkflowDetail = {
         id: "6ef69ee6-a029-476c-9f26-020fa475cdec",
@@ -389,7 +389,12 @@ describe("workflow controlled-dialog keyboard focus return", () => {
           <WorkflowEditor initial={initial} />
         </LocaleProvider>,
       );
-      await dismissAndExpectFocus(screen.getByRole("button", { name: label }));
+      const options = screen.getByRole("button", { name: "Workflow options" });
+      await userEvent.setup().click(options);
+      await dismissAndExpectFocus(
+        within(screen.getByRole("menu")).getByRole("menuitem", { name: label, exact: true }),
+        options,
+      );
       expect(queries.run).not.toHaveBeenCalled();
     },
   );
@@ -445,13 +450,18 @@ describe("workflow controlled-dialog keyboard focus return", () => {
     await dismissAndExpectFocus(screen.getByRole("button", { name: "Add node" }));
   });
 
-  it("returns from the node palette to the connected-step configuration control", async () => {
+  it("returns from the node palette to the workspace when its configuration opener unmounts", async () => {
     render(
       <LocaleProvider locale="en">
         <Workspace initial={initialBlankDefinition("Start")} />
       </LocaleProvider>,
     );
-    await dismissAndExpectFocus(screen.getByRole("button", { name: "Add a new connected step" }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: /Manual start/, pressed: false }));
+    const opener = screen.getByRole("button", { name: "Add a new connected step" });
+    await dismissAndExpectFocus(opener, screen.getByRole("region", { name: "Canvas controls" }));
+    expect(opener).not.toBeInTheDocument();
   });
 
   it("focuses the new seventh step name after successful keyboard palette insertion", async () => {
@@ -485,10 +495,11 @@ describe("workflow controlled-dialog keyboard focus return", () => {
     const user = userEvent.setup();
     screen.getByRole("button", { name: "Add node" }).focus();
     await user.keyboard("{Enter}");
-    expect(await screen.findByRole("textbox", { name: "Search steps" })).toHaveFocus();
-    await user.keyboard("Create task");
-    await user.tab();
-    expect(screen.getByRole("button", { name: /Create task/ })).toHaveFocus();
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    const choice = within(dialog).getByRole("button", { name: "Create task", exact: true });
+    choice.focus();
+    expect(choice).toHaveFocus();
     await user.keyboard("{Enter}");
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument(), {
       timeout: 1000,

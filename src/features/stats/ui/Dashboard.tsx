@@ -5,6 +5,7 @@ import { useState } from "react";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
+import { DashboardSelect } from "@/features/dashboards/DashboardSelect";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { OwnerScope } from "@/types/stats";
@@ -34,6 +35,7 @@ interface DashboardProps {
   // Whether to offer the link into goal settings. Reading goals needs no permission; setting
   // someone's quota does.
   canManageGoals?: boolean;
+  canManagePipelines?: boolean;
   // Resolved server-side in the viewer's timezone so goal periods do not roll a day early or
   // late for someone sitting near UTC midnight.
   today: string;
@@ -47,6 +49,7 @@ interface DashboardProps {
 export function Dashboard({
   canViewOthers,
   canManageGoals = false,
+  canManagePipelines = false,
   currency,
   today,
 }: DashboardProps) {
@@ -135,6 +138,11 @@ export function Dashboard({
         <h1 className="text-balance text-display font-[450] leading-tight tracking-tight">
           {S.title}
         </h1>
+        <DashboardSelect
+          current={{ kind: "performance" }}
+          pipelines={pipelines}
+          canManagePipelines={canManagePipelines}
+        />
         <div className="w-56">
           <CurrencySelect value={selectedCurrency} onChange={setSelectedCurrency} />
         </div>

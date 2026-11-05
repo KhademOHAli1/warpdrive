@@ -109,6 +109,18 @@ describe("published version comparison projection", () => {
     expect(result.removedConnections).toHaveLength(0);
   });
 
+  it("compares center-anchor layout changes without treating them as configuration or exposing coordinates", () => {
+    const before = version([node("start")], [], { start: { x: 12, y: 34 } });
+    const after = version([node("start")], [], { start: { x: 12, y: 34, anchor: "center" } });
+    const result = comparePublishedVersions(before, after);
+    expect(result.layoutChanged).toBe(true);
+    expect(result.changedSteps).toHaveLength(0);
+    expect(result.addedConnections).toHaveLength(0);
+    expect(result.removedConnections).toHaveLength(0);
+    expect(JSON.stringify(result)).not.toContain("anchor");
+    expect(comparePublishedVersions(after, structuredClone(after)).unchanged).toBe(true);
+  });
+
   it("treats missing and empty layout maps as equivalent", () => {
     expect(comparePublishedVersions(version(), version([node("start")], [], {})).unchanged).toBe(
       true,
@@ -331,6 +343,11 @@ describe("published version comparison projection", () => {
     { label: "array", layout: [] },
     { label: "missing coordinate", layout: { start: { x: 0 } } },
     { label: "extra coordinate", layout: { start: { x: 0, y: 0, z: 0 } } },
+    { label: "unknown anchor", layout: { start: { x: 0, y: 0, anchor: "top-right" } } },
+    {
+      label: "extra field on centered position",
+      layout: { start: { x: 0, y: 0, anchor: "center", actorId: "private" } },
+    },
     { label: "non-number coordinate", layout: { start: { x: "hidden-coordinate", y: 0 } } },
     { label: "non-finite coordinate", layout: { start: { x: Number.POSITIVE_INFINITY, y: 0 } } },
     { label: "out-of-range coordinate", layout: { start: { x: 100_001, y: 0 } } },

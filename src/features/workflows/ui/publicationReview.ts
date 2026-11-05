@@ -61,6 +61,7 @@ const descriptions = {
   "record.read": "publicationReadStep",
   "activity.create": "publicationTaskStep",
   condition: "publicationConditionStep",
+  filter: "publicationFilterStep",
   delay: "publicationWaitStep",
   notification: "publicationUnavailableStep",
 } satisfies Record<WorkflowNode["type"], keyof AppMessages["workflows"]>;

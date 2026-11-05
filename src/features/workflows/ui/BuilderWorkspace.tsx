@@ -8,8 +8,9 @@ import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import type { OutputTarget } from "../connectionGestures";
+import { duplicateNode } from "../duplicateNode";
 import { type ConnectionProblem, edgeId, removeNode } from "../graphEditor";
-import { arrangeGraph } from "../nodeLayout";
+import { arrangeGraph, type NodeMeasurements } from "../nodeLayout";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
 import { type PickerRequest, type PickerSelection, selectPaletteEntry } from "../paletteContext";
@@ -25,6 +26,8 @@ import type { RevealNode } from "./ResponsiveViewport";
 import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 import { WorkflowPalette } from "./WorkflowPalette";
+import styles from "./workflowEditor.module.css";
+import "./workflowTheme.css";
 
 export function BuilderWorkspace({
   definition,
@@ -46,6 +49,7 @@ export function BuilderWorkspace({
   const t = useAppTranslations("workflows");
   const workspace = useRef<HTMLElement>(null);
   const activeRequest = useRef<object | null>(null);
+  const nodeMeasurements = useRef<NodeMeasurements>(new Map());
   const locale = useLocale();
   const fmt = useFormatters();
   const [expanded, setExpanded] = useState(false);
@@ -54,11 +58,12 @@ export function BuilderWorkspace({
   const stepName = useRef<HTMLInputElement>(null);
   const paletteFocus = useDialogFocus();
   const focusInsertedStep = useRef(false);
-  const [selected, setSelected] = useState(definition.nodes[0]?.id ?? "start");
+  const [selected, setSelected] = useState("");
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [palette, setPalette] = useState<{
     output?: OutputTarget;
     position?: NodePosition;
+    replacementId?: string;
     token: object;
   } | null>(null);
   const [problem, setProblem] = useState<ConnectionProblem | null>(null);
@@ -75,17 +80,21 @@ export function BuilderWorkspace({
   function select(id: string) {
     setSelected(id);
     setSelectedEdge(null);
+    if (id === "") focusAvailable(workspace.current);
+  }
+  function closeInspector() {
+    select("");
   }
   function revealStep(id: string) {
     select(id);
     setReveal((previous) => ({ id, nonce: previous.nonce + 1 }));
   }
   function openPalette(
-    request: { output?: OutputTarget; position?: NodePosition },
+    request: { output?: OutputTarget; position?: NodePosition; replacementId?: string },
     opener = document.activeElement,
   ) {
     paletteFocus.remember(
-      opener instanceof HTMLElement && opener !== document.body ? opener : addButton.current,
+      opener instanceof HTMLElement && opener !== document.body ? opener : workspace.current,
     );
     focusInsertedStep.current = false;
     const token = {};
@@ -96,8 +105,12 @@ export function BuilderWorkspace({
   function closePalette() {
     activeRequest.current = null;
     setPalette(null);
+    setSelected("");
+    setSelectedEdge(null);
   }
   function pickerRequest(): PickerRequest {
+    if (palette?.replacementId !== undefined)
+      return { kind: "replace", nodeId: palette.replacementId };
     if (palette?.output === undefined) return { kind: "detached", position: palette?.position };
     return { kind: "output", output: palette.output, position: palette.position };
   }
@@ -114,6 +127,7 @@ export function BuilderWorkspace({
       metadataConfirmed: confirmed,
       newNodeId: `node_${crypto.randomUUID().slice(0, 8)}`,
       selectedId: selected,
+      measurements: nodeMeasurements.current,
       nameForType: (type) => t(nodeLabelKeys[type]),
       subject: t("subject"),
     });
@@ -141,9 +155,9 @@ export function BuilderWorkspace({
         tabIndex={-1}
         aria-label={t("canvasTools")}
         onKeyDown={(event) => handleHistoryKey(event, history, editable)}
-        className="xl:flex xl:h-full xl:min-h-0 xl:flex-col"
+        className={`workflow-twenty-theme ${styles.workspace}`}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/15 px-5 py-3 pe-12">
+        <div className={styles.tools}>
           <p className="max-w-xl text-xs leading-5 text-muted-foreground">{t("connectHint")}</p>
           <div className="flex flex-wrap gap-2">
             {history !== undefined && <HistoryControls history={history} editable={editable} />}
@@ -192,12 +206,17 @@ export function BuilderWorkspace({
             {t(`connectionErrors.${problem}`)}
           </p>
         )}
-        <div className="grid min-w-0 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_350px]">
-          <div className="min-w-0 xl:flex xl:min-h-0 xl:flex-col">
-            <nav
-              aria-label={t("steps")}
-              className="flex shrink-0 gap-1 overflow-x-auto border-b p-2 [&>button]:shrink-0"
-            >
+        <div
+          className={styles.builderGrid}
+          data-panel={palette !== null || node !== undefined || edge !== undefined}
+        >
+          <div className={styles.canvasColumn}>
+            {palette === null && node === undefined && edge === undefined && issues.length > 0 && (
+              <div className={styles.canvasIssues}>
+                <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
+              </div>
+            )}
+            <nav aria-label={t("steps")} className={styles.stepNavigation}>
               {orderedWorkflowNodes(definition).map((item, index) => (
                 <Button
                   key={item.id}
@@ -219,7 +238,26 @@ export function BuilderWorkspace({
               onSelect={select}
               onSelectEdge={setSelectedEdge}
               onChange={onChange}
+              onNodeMeasurements={(value) => {
+                nodeMeasurements.current = value;
+              }}
               onProblem={setProblem}
+              onChangeType={(nodeId) => {
+                select(nodeId);
+                openPalette({ replacementId: nodeId });
+              }}
+              onDuplicate={(nodeId) => {
+                if (!editable) return;
+                const newId = `node_${crypto.randomUUID().slice(0, 8)}`;
+                const result = duplicateNode(definition, nodeId, newId);
+                if (!result.ok) {
+                  if (result.error === "nodeLimit") setProblem("nodeLimit");
+                  return;
+                }
+                onChange(result.value);
+                setProblem(null);
+                revealStep(newId);
+              }}
               editable={editable}
               invalidNodes={invalidNodes}
               layoutRevision={layoutRevision}
@@ -230,76 +268,75 @@ export function BuilderWorkspace({
               }}
             />
           </div>
-          <aside
-            className="min-w-0 border-t bg-card xl:min-h-0 xl:overflow-y-auto xl:border-s xl:border-t-0"
-            aria-label={t("configure")}
-          >
-            <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
-            {edge !== undefined ? (
-              <EdgeInspector
-                definition={definition}
-                edge={edge}
-                editable={editable}
-                onChange={onChange}
-                onProblem={setProblem}
-                onClose={() => setSelectedEdge(null)}
-              />
-            ) : node !== undefined ? (
-              <>
-                <NodeInspector
+          {(palette !== null || node !== undefined || edge !== undefined) && (
+            <aside className={styles.inspector} aria-label={t("configure")}>
+              {palette !== null ? (
+                <WorkflowPalette
                   workflowId={workflowId}
+                  read={paletteRead}
                   definition={definition}
-                  node={node}
+                  request={pickerRequest()}
                   editable={editable}
-                  nameInputRef={stepName}
-                  onChange={(changed) =>
-                    onChange((graph) => ({
-                      ...graph,
-                      nodes: graph.nodes.map((item) => (item.id === changed.id ? changed : item)),
-                    }))
-                  }
-                  onRemove={() => {
-                    onChange((graph) => removeNode(graph, node.id));
-                    select(definition.nodes[0]?.id ?? "start");
+                  onClose={closePalette}
+                  onChoose={choose}
+                  onCloseAutoFocus={(event) => {
+                    if (focusInsertedStep.current) {
+                      event.preventDefault();
+                      focusAvailable(stepName.current);
+                    } else paletteFocus.restore(event, workspace.current);
                   }}
                 />
-                <ConnectionEditor
-                  definition={definition}
-                  node={node}
-                  editable={editable}
-                  onChange={onChange}
-                  onProblem={setProblem}
-                  onAdd={(output) => openPalette({ output })}
-                />
-              </>
-            ) : (
-              <p className="p-5 text-sm text-muted-foreground">{t("configureHint")}</p>
-            )}
-          </aside>
+              ) : null}
+              <div hidden={palette !== null}>
+                <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
+                {edge !== undefined ? (
+                  <EdgeInspector
+                    definition={definition}
+                    edge={edge}
+                    editable={editable}
+                    onChange={onChange}
+                    onProblem={setProblem}
+                    onClose={closeInspector}
+                  />
+                ) : node !== undefined ? (
+                  <>
+                    <NodeInspector
+                      workflowId={workflowId}
+                      definition={definition}
+                      node={node}
+                      editable={editable}
+                      nameInputRef={stepName}
+                      onClose={closeInspector}
+                      onChange={(changed) =>
+                        onChange((graph) => ({
+                          ...graph,
+                          nodes: graph.nodes.map((item) =>
+                            item.id === changed.id ? changed : item,
+                          ),
+                        }))
+                      }
+                      onRemove={() => {
+                        if (!editable || node.type.startsWith("trigger.")) return;
+                        onChange((graph) => removeNode(graph, node.id));
+                        closeInspector();
+                      }}
+                    />
+                    <ConnectionEditor
+                      definition={definition}
+                      node={node}
+                      editable={editable}
+                      onChange={onChange}
+                      onProblem={setProblem}
+                      onAdd={(output) => openPalette({ output })}
+                    />
+                  </>
+                ) : (
+                  <p className="p-5 text-sm text-muted-foreground">{t("configureHint")}</p>
+                )}
+              </div>
+            </aside>
+          )}
         </div>
-        {palette !== null && (
-          <WorkflowPalette
-            workflowId={workflowId}
-            read={paletteRead}
-            definition={definition}
-            request={pickerRequest()}
-            editable={editable}
-            onClose={closePalette}
-            onChoose={choose}
-            onCloseAutoFocus={(event) => {
-              if (focusInsertedStep.current) {
-                event.preventDefault();
-                focusAvailable(stepName.current);
-              } else
-                paletteFocus.restore(
-                  event,
-                  addButton.current?.matches(":disabled") === false
-                    ? addButton.current
-                    : workspace.current,
-                );
-            }}
-          />
-        )}
       </section>
     </BuilderFrame>
   );

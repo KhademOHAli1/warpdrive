@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, assert, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { validateDefinition } from "../definition";
 import { initialBlankDefinition, initialDefinition } from "../editorModel";
@@ -106,18 +106,28 @@ async function expectPaletteClosed() {
   });
 }
 
-it("opens an occupied output palette without committing and restores its opener on Escape", async () => {
+async function selectStart(user: ReturnType<typeof userEvent.setup>, stepsName = "Workflow steps") {
+  const first = within(screen.getByRole("navigation", { name: stepsName })).getAllByRole(
+    "button",
+  )[0];
+  assert(first !== undefined);
+  await user.click(first);
+}
+
+it("opens an occupied output palette without committing and closes its panel to the workspace on Escape", async () => {
   const initial = sample();
   const before = structuredClone(initial);
   const onCommit = renderWorkspace(initial);
   const user = userEvent.setup();
+  await selectStart(user);
   const connections = screen.getByRole("region", { name: "Connections" });
   const opener = within(connections).getByRole("button", { name: "Insert a step here" });
   opener.focus();
   await user.keyboard("{Enter}");
 
   const dialog = await screen.findByRole("dialog");
-  expect(within(dialog).getByRole("textbox", { name: "Search steps" })).toHaveFocus();
+  expect(dialog).toContainElement(document.activeElement as HTMLElement);
+  expect(within(dialog).queryByRole("textbox")).not.toBeInTheDocument();
   expect(within(dialog).getByRole("button", { name: /^Read deal/ })).toBeEnabled();
   expect(within(dialog).getByRole("button", { name: /^Create task/ })).toBeEnabled();
   expect(within(dialog).getByRole("button", { name: /^Wait/ })).toBeEnabled();
@@ -132,10 +142,14 @@ it("opens an occupied output palette without committing and restores its opener 
 
   await user.keyboard("{Escape}");
   await expectPaletteClosed();
-  await waitFor(() => expect(opener).toHaveFocus(), {
-    timeout: 1000,
-    onTimeout: (error) => error,
-  });
+  await waitFor(
+    () => expect(screen.getByRole("region", { name: "Canvas controls" })).toHaveFocus(),
+    {
+      timeout: 1000,
+      onTimeout: (error) => error,
+    },
+  );
+  expect(opener).not.toBeInTheDocument();
   expect(onCommit).not.toHaveBeenCalled();
   expect(initial).toEqual(before);
 });
@@ -177,20 +191,20 @@ it.each([
 ] as const)(
   "commits one occupied-output Wait insertion and preserves bindings, positions and focus in $locale",
   async (copy) => {
-    // No explicit layout: exercise the normal source/read fallback positions (0,0)/(0,260).
+    // No explicit layout: exercise the normal source/read fallback positions (0,0)/(0,150).
     const initial = sample();
     const before = structuredClone(initial);
     const onCommit = renderWorkspace(initial, copy.locale);
     const user = userEvent.setup();
+    await selectStart(user, copy.steps);
     const connections = screen.getByRole("region", { name: copy.connections });
     within(connections).getByRole("button", { name: copy.insert }).focus();
     await user.keyboard("{Enter}");
     const dialog = await screen.findByRole("dialog");
     expect(onCommit).not.toHaveBeenCalled();
-    const search = within(dialog).getByRole("textbox", { name: copy.search });
-    await user.type(search, copy.wait);
-    await user.tab();
-    expect(within(dialog).getByRole("button", { name: new RegExp(`^${copy.wait}`) })).toHaveFocus();
+    const choice = within(dialog).getByRole("button", { name: new RegExp(`^${copy.wait}`) });
+    choice.focus();
+    expect(choice).toHaveFocus();
     await user.keyboard("{Enter}");
     await expectPaletteClosed();
 
@@ -245,6 +259,7 @@ it("keeps Condition available when adding to a free output", async () => {
   const before = structuredClone(initial);
   const onCommit = renderWorkspace(initial);
   const user = userEvent.setup();
+  await selectStart(user);
   await user.click(screen.getByRole("button", { name: "Add a new connected step" }));
   const dialog = await screen.findByRole("dialog");
   expect(onCommit).not.toHaveBeenCalled();
@@ -288,6 +303,7 @@ it("keeps Condition available from the toolbar without replacing existing connec
 it("numbers the inserted Wait before its connected Read deal and Create task", async () => {
   const onCommit = renderWorkspace(sample());
   const user = userEvent.setup();
+  await selectStart(user);
   const connections = screen.getByRole("region", { name: "Connections" });
   await user.click(within(connections).getByRole("button", { name: "Insert a step here" }));
   const dialog = await screen.findByRole("dialog");

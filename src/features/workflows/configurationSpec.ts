@@ -99,6 +99,23 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
       }),
     ],
   },
+  filter: {
+    supported: true,
+    fields: [
+      name,
+      field("left", "conditionField", "scalar", { modes: ["reference"], nullable: true }),
+      field("operator", "conditionOperator", "operator", {
+        control: "operator",
+        modes: ["literal"],
+        choices: ["exists", "equals", "notEquals", "contains"],
+      }),
+      field("right", "conditionValue", "scalar", {
+        nullable: true,
+        modes: ["literal", "reference", "null"],
+        requiredWhen: { field: "operator", not: "exists" },
+      }),
+    ],
+  },
   delay: {
     supported: true,
     fields: [
@@ -191,7 +208,7 @@ export function defaultConfiguration(
   if (type === "activity.create")
     return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };
   if (type === "delay") return { minutes: { kind: "value", value: configurationLimits.waitMin } };
-  if (type !== "condition") return {};
+  if (type !== "condition" && type !== "filter") return {};
   const read = source.read;
   return {
     left: {

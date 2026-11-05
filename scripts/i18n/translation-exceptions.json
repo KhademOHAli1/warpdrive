@@ -55,6 +55,8 @@
   "src/components/shell/messages/shell": {
     "de": {
       "appearance.system": "System is the standard German label for following the operating-system appearance.",
+      "dashboardViews.dashboard": "Dashboard is the established German interface term and matches the navigation label.",
+      "dashboardViews.pipelines": "Pipelines is the established German plural for CRM sales pipelines.",
       "search.headingLeads": "Leads is the agreed German CRM term; not translated as Führung."
     }
   },
@@ -150,6 +152,7 @@
   },
   "src/features/i18n/messages/": {
     "de": {
+      "nav.dashboard": "Dashboard is the established German interface term for the central dashboard area.",
       "nav.leads": "Leads is the established German CRM plural, used consistently across the interface.",
       "nav.workflows": "Workflows is the established German product term for configurable business automation."
     }
@@ -185,6 +188,7 @@
   },
   "src/features/workflows/messages/workflows": {
     "de": {
+      "filter": "Filter is the standard German noun for a step that filters its input.",
       "title": "Workflows is the established German term used consistently in navigation and headings.",
       "simulationMode": "Simulation is the correct German noun and is spelled identically in English."
     }

@@ -48,6 +48,7 @@ export const nodeTypes = [
   "record.read",
   "activity.create",
   "condition",
+  "filter",
   "delay",
   "notification",
 ] as const;
@@ -73,6 +74,7 @@ export const definitionSchema = z.strictObject({
       z.strictObject({
         x: z.number().finite().min(-100000).max(100000),
         y: z.number().finite().min(-100000).max(100000),
+        anchor: z.literal("center").optional(),
       }),
     )
     .refine((positions) => Object.keys(positions).length <= 100)
@@ -95,6 +97,8 @@ export type WorkflowEdge = WorkflowDefinition["edges"][number];
 export interface NodePosition {
   x: number;
   y: number;
+  // Existing stored coordinates without a marker keep their original top-left anchor.
+  anchor?: "center";
 }
 export interface DefinitionIssue {
   code: string;

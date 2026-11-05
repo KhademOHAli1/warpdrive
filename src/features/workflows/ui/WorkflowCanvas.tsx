@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  Background,
-  ConnectionLineType,
-  Controls,
-  type Edge,
-  type EdgeChange,
-  MarkerType,
-  type NodeChange,
-  ReactFlow,
-} from "@xyflow/react";
-import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
+import { Background, Controls, type EdgeChange, type NodeChange, ReactFlow } from "@xyflow/react";
+import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import { useEffect, useId, useState } from "react";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import {
   type ConnectionProblem,
@@ -20,20 +11,23 @@ import {
   moveNode,
   removeNode,
 } from "../graphEditor";
-import { positionFor } from "../nodeLayout";
+import { type NodeMeasurements, positionFor, positionForNewNode } from "../nodeLayout";
 import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
-import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
+import type { NodePosition, WorkflowDefinition } from "../schemas";
 import { ConnectionFeedback } from "./ConnectionFeedback";
 import { conditionPortLabel } from "./conditionPortLabel";
 import { ResponsiveViewport, type RevealNode } from "./ResponsiveViewport";
 import { type AddFromOutput, useConnectionGestures } from "./useConnectionGestures";
+import { type WorkflowCanvasEdge, WorkflowDiagramEdge } from "./WorkflowDiagramEdge";
+import { WorkflowConnectionLine, WorkflowEdgeMarkers } from "./WorkflowEdgeMarkers";
 import { type CanvasNode, WorkflowNodeCard } from "./WorkflowNodeCard";
 import "@xyflow/react/dist/style.css";
 import "./workflowCanvas.css";
+import "./workflowTheme.css";
 
 const nodeTypes = { workflow: WorkflowNodeCard };
-type CanvasEdge = Edge<{ spec: WorkflowEdge }>;
+const edgeTypes = { workflow: WorkflowDiagramEdge };
 
 export function WorkflowCanvas({
   definition,
@@ -47,6 +41,9 @@ export function WorkflowCanvas({
   invalidNodes,
   layoutRevision,
   onAdd,
+  onChangeType,
+  onDuplicate,
+  onNodeMeasurements,
   reveal,
   completedNodes,
 }: {
@@ -61,11 +58,16 @@ export function WorkflowCanvas({
   invalidNodes: Set<string>;
   layoutRevision: number;
   onAdd?: AddFromOutput;
+  onChangeType?: (nodeId: string) => void;
+  onDuplicate?: (nodeId: string) => void;
+  onNodeMeasurements?: (measurements: NodeMeasurements) => void;
   reveal?: RevealNode;
   completedNodes?: Set<string>;
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
+  const markerPrefix = `workflow-arrow-${useId().replaceAll(":", "")}`;
+  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [dragPositions, setDragPositions] = useState(new Map<string, { x: number; y: number }>());
   const gestures = useConnectionGestures({
@@ -74,11 +76,23 @@ export function WorkflowCanvas({
     onChange,
     onProblem,
     onSelectEdge,
-    onAdd,
+    onAdd: onAdd === undefined ? undefined : openOutput,
   });
   const [measurements, setMeasurements] = useState(
     new Map<string, { width: number; height: number }>(),
   );
+  useEffect(() => {
+    onNodeMeasurements?.(measurements);
+  }, [measurements, onNodeMeasurements]);
+  function openOutput(output: Parameters<AddFromOutput>[0], position?: NodePosition) {
+    if (!editable || onAdd === undefined) return;
+    onAdd(
+      output,
+      position === undefined
+        ? positionForNewNode(definition, output.from, output, measurements)
+        : { ...position, anchor: "center" },
+    );
+  }
   function nameFor(id: string) {
     const node = definition.nodes.find((item) => item.id === id);
     return node === undefined ? t("unavailableValue") : displayNodeName(node, locale);
@@ -87,34 +101,70 @@ export function WorkflowCanvas({
     orderedWorkflowNodes(definition).map((node, index) => [node.id, index]),
   );
   const uniqueIds = nodeIndices.size === definition.nodes.length;
-  const nodes: CanvasNode[] = definition.nodes.map((node, index) => ({
-    id: node.id,
-    type: "workflow",
-    data: {
-      node,
-      definition,
-      invalid: invalidNodes.has(node.id),
-      index: uniqueIds ? (nodeIndices.get(node.id) ?? index) : index,
-      completed: completedNodes?.has(node.id) === true,
-      onAdd: editable ? onAdd : undefined,
-      outputs: definition.edges.filter((edge) => edge.from === node.id).map((edge) => edge.port),
-    },
-    position: dragPositions.get(node.id) ?? positionFor(definition, node.id),
-    measured: measurements.get(node.id),
-    selected: selectedEdge === null && selected === node.id,
-    deletable: editable && !node.type.startsWith("trigger."),
-    ariaLabel: displayNodeName(node, locale),
-  }));
-  const edges: CanvasEdge[] = definition.edges.map((spec) => ({
+  const nodes: CanvasNode[] = definition.nodes.map((node, index) => {
+    const storedPosition = positionFor(definition, node.id);
+    const position = dragPositions.get(node.id) ?? storedPosition;
+    return {
+      id: node.id,
+      type: "workflow",
+      data: {
+        node,
+        definition,
+        invalid: invalidNodes.has(node.id),
+        index: uniqueIds ? (nodeIndices.get(node.id) ?? index) : index,
+        completed: completedNodes?.has(node.id) === true,
+        onAdd: editable && onAdd !== undefined ? openOutput : undefined,
+        onChangeType:
+          editable && onChangeType !== undefined ? () => onChangeType(node.id) : undefined,
+        onDuplicate:
+          editable && !node.type.startsWith("trigger.") && onDuplicate !== undefined
+            ? () => onDuplicate(node.id)
+            : undefined,
+        onConfigure: editable
+          ? () => {
+              onSelect(node.id);
+              onSelectEdge(null);
+            }
+          : undefined,
+        onRemove:
+          editable && !node.type.startsWith("trigger.")
+            ? () => removeCanvasNode(node.id)
+            : undefined,
+        outputs: definition.edges.filter((edge) => edge.from === node.id).map((edge) => edge.port),
+      },
+      position: { x: position.x, y: position.y },
+      origin: storedPosition.anchor === "center" ? [0.5, 0.5] : [0, 0],
+      measured: measurements.get(node.id),
+      selected: selectedEdge === null && selected === node.id,
+      deletable: editable && !node.type.startsWith("trigger."),
+      ariaLabel: displayNodeName(node, locale),
+    };
+  });
+  const edges: WorkflowCanvasEdge[] = definition.edges.map((spec) => ({
     id: edgeId(spec),
     source: spec.from,
     target: spec.to,
     sourceHandle: spec.port,
     targetHandle: "in",
-    type: "smoothstep",
-    data: { spec },
+    type: "workflow",
+    data: {
+      spec,
+      markerPrefix,
+      hovered: hoveredEdge === edgeId(spec),
+      completed: completedNodes?.has(spec.from) === true && completedNodes.has(spec.to),
+      onInsert:
+        editable && onAdd !== undefined
+          ? (position) => openOutput({ from: spec.from, port: spec.port }, position)
+          : undefined,
+      onDisconnect: editable
+        ? () => {
+            onChange((graph) => disconnectNodes(graph, spec));
+            onSelectEdge(null);
+          }
+        : undefined,
+    },
     selected: selectedEdge === edgeId(spec),
-    markerEnd: { type: MarkerType.ArrowClosed },
+    markerEnd: `${markerPrefix}-default`,
     label: spec.port === "next" ? undefined : t(conditionPortLabel(spec.port)),
     ariaLabel:
       t("connectionName", { from: nameFor(spec.from), to: nameFor(spec.to) }) +
@@ -136,6 +186,16 @@ export function WorkflowCanvas({
       return new Map(previous).set(id, dimensions);
     });
   }
+  function removeCanvasNode(id: string) {
+    if (
+      !editable ||
+      !definition.nodes.some((node) => node.id === id && !node.type.startsWith("trigger."))
+    )
+      return;
+    onChange((graph) => removeNode(graph, id));
+    onSelect("");
+    onSelectEdge(null);
+  }
   function applyGraphNodeChange(change: NodeChange<CanvasNode>) {
     if (!editable) return;
     if (change.type === "position" && change.position !== undefined) {
@@ -149,8 +209,7 @@ export function WorkflowCanvas({
       if (change.dragging !== true) onChange((graph) => moveNode(graph, change.id, position));
     }
     if (change.type === "remove") {
-      onChange((graph) => removeNode(graph, change.id));
-      onSelect(definition.nodes.find((node) => node.id !== change.id)?.id ?? "start");
+      removeCanvasNode(change.id);
     }
   }
   function nodeChanges(changes: NodeChange<CanvasNode>[]) {
@@ -164,7 +223,7 @@ export function WorkflowCanvas({
       applyGraphNodeChange(change);
     }
   }
-  function edgeChanges(changes: EdgeChange<CanvasEdge>[]) {
+  function edgeChanges(changes: EdgeChange<WorkflowCanvasEdge>[]) {
     for (const change of changes) {
       if (change.type === "select" && change.selected) onSelectEdge(change.id);
       if (change.type === "remove" && editable) {
@@ -178,17 +237,21 @@ export function WorkflowCanvas({
     <section
       dir="ltr"
       aria-label={t("canvas")}
-      className="workflow-canvas relative h-[440px] min-w-0 bg-muted/20 xl:h-auto xl:min-h-0 xl:flex-1"
+      className="workflow-twenty-theme workflow-canvas relative h-full min-h-0 min-w-0 flex-1"
       data-dragging={dragging}
+      data-editable={editable}
+      style={{ "--workflow-connection-marker": `url(#${markerPrefix}-selected)` } as CSSProperties}
     >
+      <WorkflowEdgeMarkers prefix={markerPrefix} />
       <ReactFlow
         key={layoutRevision}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        fitView
+        edgeTypes={edgeTypes}
+        nodeOrigin={[0.5, 0.5]}
+        defaultViewport={{ x: 0, y: 150, zoom: 1 }}
         minZoom={0.1}
-        fitViewOptions={{ padding: 0.12, minZoom: 0.75, maxZoom: 1.1 }}
         nodeExtent={[
           [-100000, -100000],
           [100000, 100000],
@@ -202,7 +265,7 @@ export function WorkflowCanvas({
         isValidConnection={gestures.isValidConnection}
         connectionRadius={32}
         connectionDragThreshold={4}
-        connectionLineType={ConnectionLineType.SmoothStep}
+        connectionLineComponent={WorkflowConnectionLine}
         onInit={gestures.initialize}
         onConnectStart={() => onProblem(null)}
         onConnectEnd={gestures.finish}
@@ -214,6 +277,8 @@ export function WorkflowCanvas({
           onSelectEdge(null);
         }}
         onEdgeClick={(_, edge) => onSelectEdge(edge.id)}
+        onEdgeMouseEnter={(_, edge) => setHoveredEdge(edge.id)}
+        onEdgeMouseLeave={() => setHoveredEdge(null)}
         onPaneClick={() => onSelectEdge(null)}
         onNodeDragStart={() => setDragging(true)}
         onNodeDragStop={() => setDragging(false)}
@@ -235,7 +300,7 @@ export function WorkflowCanvas({
       >
         <ResponsiveViewport reveal={reveal} />
         <ConnectionFeedback occupied={definition.edges} />
-        <Background gap={22} size={1} />
+        <Background color="var(--workflow-border-medium)" size={2} />
         <Controls
           showInteractive={false}
           position={locale === "fa" ? "bottom-right" : "bottom-left"}

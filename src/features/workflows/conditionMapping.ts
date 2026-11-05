@@ -64,7 +64,9 @@ function issue(
   return { nodeId, path, code };
 }
 function conditionNode(definition: WorkflowDefinition, nodeId: string): WorkflowNode | undefined {
-  const nodes = definition.nodes.filter((node) => node.id === nodeId && node.type === "condition");
+  const nodes = definition.nodes.filter(
+    (node) => node.id === nodeId && (node.type === "condition" || node.type === "filter"),
+  );
   return nodes.length === 1 ? nodes[0] : undefined;
 }
 function bindingContract(

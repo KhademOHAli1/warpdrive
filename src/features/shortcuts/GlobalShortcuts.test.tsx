@@ -42,11 +42,11 @@ afterEach(() => {
 describe("GlobalShortcuts number keys", () => {
   test.each([
     ["2", "/activities"],
-    ["3", "/inbox"],
-    ["4", "/leads"],
+    ["3", "/leads"],
+    ["4", "/inbox"],
     ["5", "/contacts/people"],
+    ["6", "/settings"],
     ["7", "/workflows"],
-    ["8", "/settings"],
   ])("%s follows the visible sidebar order to %s", (key, href) => {
     renderShortcuts();
     const previousLength = window.history.length;
@@ -69,7 +69,7 @@ describe("GlobalShortcuts number keys", () => {
 
   test.each([
     ["2", "/activities"],
-    ["8", "/settings"],
+    ["6", "/settings"],
   ])("%s respects document capture cancellation when leaving Inbox for %s", (key, href) => {
     const view = renderShortcuts();
     let blockedHref: string | null = null;
@@ -138,7 +138,7 @@ describe("GlobalShortcuts number keys", () => {
     fireEvent.keyDown(window, { key: "۲", shiftKey: true });
     fireEvent.keyDown(window, { key: "۲", ctrlKey: true });
     fireEvent.keyDown(window, { key: "۲", altKey: true });
-    expect(window.location.pathname).toBe("/inbox");
+    expect(window.location.pathname).toBe("/leads");
   });
 
   test("unbinds on unmount", () => {

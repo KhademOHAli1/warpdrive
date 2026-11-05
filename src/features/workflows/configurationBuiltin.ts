@@ -180,7 +180,7 @@ function validateCondition(
 
 function allowedKeys(node: WorkflowNode): string[] {
   if (
-    node.type === "condition" &&
+    (node.type === "condition" || node.type === "filter") &&
     (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort"))
   )
     return ["expression", "defaultPort"];
@@ -208,7 +208,8 @@ export function validateBuiltinConfiguration(
     result.issues.push(configurationIssue(node, ["name"], "too_long"));
   if (node.type === "record.read") validateRead(node, context, result);
   else if (node.type === "activity.create") validateTask(node, context, result);
-  else if (node.type === "condition") validateCondition(node, context, result);
+  else if (node.type === "condition" || node.type === "filter")
+    validateCondition(node, context, result);
   else if (node.type === "delay") validateWait(node, result);
   else if (node.type !== "trigger.manual")
     result.issues.push(configurationIssue(node, [], "unsupported_setting"));

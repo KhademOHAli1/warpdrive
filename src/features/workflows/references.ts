@@ -66,7 +66,7 @@ function groupedReferenceIssues(
   node: WorkflowNode,
 ): DefinitionIssue[] | null {
   if (
-    node.type !== "condition" ||
+    (node.type !== "condition" && node.type !== "filter") ||
     (!Object.hasOwn(node.config, "expression") && !Object.hasOwn(node.config, "defaultPort"))
   )
     return null;
