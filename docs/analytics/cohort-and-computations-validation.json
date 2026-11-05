@@ -141,5 +141,9 @@
     "Canonical migration admission and writer-only snapshot custody. Direct database owner authority is not solved by source metadata.",
     "Current reports in browser-mode on multiple devices, cohort curves, source ingestion, model evaluation, retained-history policy and broader programme.",
     "No exact-main qualification of this increment, human acceptance, merge or release."
-  ]
+  ],
+  "followupBase": {
+    "revision": "c7e80db23493375c1254ee43fa78af9e8ccadca2",
+    "change": "PR #993 only updates demo mailbox setup, its inventory pin and a native fixture. The exact focused analytics files are unchanged; refresh the combined inventory and hosted candidate evidence."
+  }
 }
