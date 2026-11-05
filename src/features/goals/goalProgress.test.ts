@@ -38,6 +38,107 @@ async function seedGoal(values: Partial<typeof schema.goals.$inferInsert>): Prom
 }
 
 describe("goalProgress", () => {
+  it("neutralises missing eligible deal values without contaminating scope, currency, period or count goals", async () => {
+    const alice = await seedUser(h);
+    const bob = await seedUser(h);
+    const { pipeline, stages } = await seedPipeline(h);
+    const stage = stages[0];
+    if (stage === undefined) throw new Error("no stage");
+    for (const row of [
+      {
+        title: "Known zero",
+        value: "0",
+        currency: "EUR",
+        ownerId: alice.id,
+        visibilityLevel: "all" as const,
+        lostTime: new Date("2026-03-05T12:00:00Z"),
+      },
+      {
+        title: "Hidden missing value",
+        value: null,
+        currency: "EUR",
+        ownerId: bob.id,
+        visibilityLevel: "owner" as const,
+        lostTime: new Date("2026-03-05T12:00:00Z"),
+      },
+      {
+        title: "Other currency missing value",
+        value: null,
+        currency: "USD",
+        ownerId: alice.id,
+        visibilityLevel: "all" as const,
+        lostTime: new Date("2026-03-05T12:00:00Z"),
+      },
+      {
+        title: "Other period missing value",
+        value: null,
+        currency: "EUR",
+        ownerId: alice.id,
+        visibilityLevel: "all" as const,
+        lostTime: new Date("2026-04-05T12:00:00Z"),
+      },
+    ])
+      await seedDeal(h, { ...row, status: "lost", pipelineId: pipeline.id, stageId: stage.id });
+    const goal = await seedGoal({
+      subject: "deal",
+      action: "lost",
+      metric: "value",
+      currency: "EUR",
+      pipelineId: pipeline.id,
+      target: "0",
+    });
+    const control = await goalProgress(
+      h.db,
+      toActor(alice),
+      goal,
+      "2026-03-15",
+      new AbortController().signal,
+    );
+    expect(control).toMatchObject({ dataState: "available", attainment: 1 });
+    expect(Number(control?.actual)).toBe(0);
+    await seedDeal(h, {
+      title: "Eligible missing value",
+      value: null,
+      currency: "EUR",
+      status: "lost",
+      ownerId: alice.id,
+      visibilityLevel: "all",
+      lostTime: new Date("2026-03-05T12:00:00Z"),
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+    });
+    const incomplete = await goalProgress(
+      h.db,
+      toActor(alice),
+      goal,
+      "2026-03-15",
+      new AbortController().signal,
+    );
+    expect(incomplete?.attainment).toBeNull();
+    expect(incomplete).toMatchObject({
+      dataState: "incomplete",
+      missingValueCount: 1,
+      missingMeasurementDateCount: 0,
+      pace: null,
+    });
+    expect(Number(incomplete?.actual)).toBe(0);
+    const countGoal = await seedGoal({
+      subject: "deal",
+      action: "lost",
+      metric: "count",
+      pipelineId: pipeline.id,
+      target: "3",
+    });
+    expect(
+      await goalProgress(
+        h.db,
+        toActor(alice),
+        countGoal,
+        "2026-03-15",
+        new AbortController().signal,
+      ),
+    ).toMatchObject({ actual: "3", dataState: "available", missingValueCount: 0, attainment: 1 });
+  });
   it("keeps a legacy zero-loss ceiling neutral for a visible undated loss without exposing hidden losses", async () => {
     const alice = await seedUser(h);
     const bob = await seedUser(h);

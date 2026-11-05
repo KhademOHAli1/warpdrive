@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -23,6 +24,7 @@ import {
   previewKpiAction,
   saveKpiDefinitionAction,
 } from "@/features/goals/kpiActions";
+import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { kpiText, useKpiMessages } from "@/features/goals/kpiMessages";
 import {
   KPI_CALCULATIONS,
@@ -66,6 +68,7 @@ export interface KpiBuilderProps {
   sourceRequirement?: string;
   definition?: KpiDefinition;
   revision?: KpiDefinition;
+  assignmentOnly?: boolean;
   onDone: () => void;
   onCancel: () => void;
   onBusyChange?: (busy: boolean) => void;
@@ -340,6 +343,7 @@ function useKpiBuilder({
   sourceRequirement,
   definition,
   revision,
+  assignmentOnly = false,
   onDone,
   onCancel,
   onBusyChange,
@@ -348,7 +352,7 @@ function useKpiBuilder({
   const preferences = useLocalePreferences();
   const format = useFormatters();
   const id = useId();
-  const [step, setStep] = useState(definition ? 2 : 0);
+  const [step, setStep] = useState(definition || assignmentOnly ? 2 : 0);
   const [draft, setDraft] = useState<KpiDefinitionInput>(() => {
     const seed: KpiDefinitionInput = {
       name: "",
@@ -378,6 +382,7 @@ function useKpiBuilder({
       customUnit: seed.customUnit,
       numeratorStatus: seed.numeratorStatus,
       denominatorStatus: seed.denominatorStatus,
+      graph: seed.graph,
     };
   });
   const [definitionOnly, setDefinitionOnly] = useState(!!revision);
@@ -453,6 +458,7 @@ function useKpiBuilder({
   const currentPreview = preview?.fingerprint === previewFingerprint ? preview.value : null;
   const ratio = draft.calculation === "percentage" || draft.calculation === "ratio";
   const canPace =
+    draft.graph === undefined &&
     conditionKind === "at_least" &&
     Number(condition.target) > 0 &&
     period.kind !== "rolling" &&
@@ -696,6 +702,7 @@ function useKpiBuilder({
     draft,
     definition,
     revision,
+    assignmentOnly,
     sourceRequirement,
     baseCurrency,
     pipelines,
@@ -776,6 +783,34 @@ export function KpiBuilder(props: KpiBuilderProps): React.ReactElement {
     next,
     save,
   } = model;
+  if (props.assignmentOnly === true) {
+    return (
+      <div className="space-y-4" aria-busy={saving || previewing}>
+        <p className="text-sm font-medium">{model.draft.name}</p>
+        <fieldset disabled={saving || previewing} className="space-y-4">
+          <KpiTargetStep model={model} />
+          <p className="text-xs text-muted-foreground">{summary}</p>
+          <KpiReviewStep model={model} />
+        </fieldset>
+        {error !== null && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        <div className="sticky -bottom-6 flex justify-end gap-2 border-t bg-background py-3">
+          <Button variant="ghost" disabled={saving || previewing} onClick={onCancel}>
+            {L.cancel}
+          </Button>
+          <Button
+            disabled={saving || previewing || currentPreview === null}
+            onClick={() => void save()}
+          >
+            {saving ? L.saving : L.createGoal}
+          </Button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6" aria-busy={saving || previewing}>
       <nav
@@ -783,7 +818,8 @@ export function KpiBuilder(props: KpiBuilderProps): React.ReactElement {
         className="grid grid-cols-4 gap-1 border-b pb-5 sm:gap-4"
       >
         {L.steps.map((label, index) => (
-          <button
+          <Button
+            variant="ghost"
             key={label}
             type="button"
             disabled={saving || previewing || index > step}
@@ -815,7 +851,7 @@ export function KpiBuilder(props: KpiBuilderProps): React.ReactElement {
               )}
             </span>
             <span className="hidden min-[360px]:inline">{label}</span>
-          </button>
+          </Button>
         ))}
       </nav>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-8">
@@ -1140,6 +1176,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
     preferences,
     definition,
     revision,
+    assignmentOnly,
     definitionOnly,
     changed,
     setDefinitionOnly,
@@ -1166,16 +1203,20 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
   } = model;
   return (
     <>
-      {!definition && !revision && (
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted/15 p-4">
-          <input
-            type="checkbox"
+      {!definition && !revision && !assignmentOnly && (
+        <label
+          htmlFor={`${model.id}-definition-only`}
+          className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted/15 p-4"
+        >
+          <Checkbox
+            id={`${model.id}-definition-only`}
+            label={L.definitionOnly}
             checked={definitionOnly}
-            onChange={(event) => {
+            onCheckedChange={(checked) => {
               changed();
-              setDefinitionOnly(event.target.checked);
+              setDefinitionOnly(checked);
             }}
-            className="mt-0.5 size-4 accent-[var(--link)]"
+            className="mt-0.5 size-4"
           />
           <span>
             <span className="block text-sm font-medium">{L.definitionOnly}</span>
@@ -1357,6 +1398,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
 }
 
 function KpiReviewStep({ model }: { model: BuilderModel }): React.ReactElement {
+  const H = useKpiHubMessages();
   const {
     L,
     draft,
@@ -1374,9 +1416,11 @@ function KpiReviewStep({ model }: { model: BuilderModel }): React.ReactElement {
         <div className="min-w-0">
           <p className="text-sm font-medium">{draft.name}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {L.sources[draft.source]}
+            {draft.graph ? H.customKpi : L.sources[draft.source]}
             <ChevronRight aria-hidden="true" className="mx-1 inline size-3 rtl:rotate-180" />
-            {L.calculations[draft.calculation]}
+            {draft.graph
+              ? `${draft.graph.nodes.length} ${H.nodes}`
+              : L.calculations[draft.calculation]}
           </p>
         </div>
         <Button

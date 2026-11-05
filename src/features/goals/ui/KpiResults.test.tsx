@@ -104,7 +104,7 @@ describe("KPI results", () => {
       },
     ];
     render(<KpiResults rows={[row]} />);
-    fireEvent.click(screen.getByText("View records"));
+    fireEvent.click(screen.getByRole("button", { name: /^View records:/ }));
     expect(screen.getByText("42", { exact: true })).toBeVisible();
     const excludedRow = screen.getByText("Missing survey").closest("tr");
     expect(excludedRow).not.toBeNull();
@@ -127,7 +127,7 @@ describe("KPI results", () => {
       },
     ];
     render(<KpiResults rows={[row]} />);
-    fireEvent.click(screen.getByText("View records"));
+    fireEvent.click(screen.getByRole("button", { name: /^View records:/ }));
     const recordRow = screen.getByText("Won deal").closest("tr");
     expect(recordRow).not.toBeNull();
     const cells = within(recordRow as HTMLTableRowElement).getAllByRole("cell");
@@ -160,7 +160,7 @@ describe("KPI results", () => {
       },
     ];
     render(<KpiResults rows={[row]} />);
-    fireEvent.click(screen.getByText("View records"));
+    fireEvent.click(screen.getByRole("button", { name: /^View records:/ }));
     const record = screen.getByText("Client follow-up").closest("tr");
     expect(record).toHaveTextContent("Nov 4, 2026");
     expect(record).toHaveTextContent("Open");
@@ -172,7 +172,7 @@ describe("KPI results", () => {
     const row = result();
     const onMeasure = vi.fn();
     render(<KpiResults rows={[row]} onMeasure={onMeasure} />);
-    fireEvent.click(screen.getByRole("button", { name: "Record measurement" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Record measurement:/ }));
     expect(onMeasure).toHaveBeenCalledWith(row);
   });
 

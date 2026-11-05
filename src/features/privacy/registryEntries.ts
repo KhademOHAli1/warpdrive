@@ -35,12 +35,18 @@ import { migrationInventoryEntry } from "./registryMigrations";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import type { RegistryEntry } from "./registryTypes";
+import {
+  workflowBlocksInventoryEntry,
+  workflowRuntimeInventoryEntry,
+} from "./registryWorkflowBlocks";
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
   kpiInventoryEntry,
   billingInventoryEntry,
   workflowInventoryEntry,
+  workflowBlocksInventoryEntry,
+  workflowRuntimeInventoryEntry,
   migrationInventoryEntry,
   ...mailInventoryEntries,
   ...mailSharedInventoryEntries,
@@ -126,7 +132,7 @@ export const registryEntries: RegistryEntry[] = [
     subjectRelation:
       "Verified contact and workforce subjects remain distinct. Shared addresses, reverse custom references and indirect graph edges are candidates requiring review; ownership does not expand identity.",
     purpose:
-      "Read bounded PostgreSQL candidate IDs and relationship provenance across 18 declared candidate adapters, with 89 explicit per-table blockers.",
+      "Read bounded PostgreSQL candidate IDs and relationship provenance through the declared candidate adapters, with explicit blockers for every other reviewed store.",
     disclosure:
       "Candidate metadata requires current specific case authority, fresh authentication and verification. Candidate coverage is not an immutable approved scope or authority to export full records.",
     retention:

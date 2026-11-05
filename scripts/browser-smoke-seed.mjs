@@ -25,7 +25,15 @@ const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
 const group = "00000000-0000-4000-8000-000000000504";
-const granted = new Set(["deal.create", "activity.create", "workflow.view", "workflow.create"]);
+const granted = new Set([
+  "deal.create",
+  "activity.create",
+  "goals.manage",
+  "workflow.view",
+  "workflow.create",
+  "workflow.edit",
+  "workflow.run",
+]);
 let client;
 try {
   const auth = createBetterAuth(db);

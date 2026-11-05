@@ -750,6 +750,13 @@
       "when": 1793899180483,
       "tag": "0106_kpi_scorecards",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1793904430117,
+      "tag": "0107_workflow_blocks",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,27 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 // Literal reviewed declarations deliberately do not learn new tables from the catalog.
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
+    [
+      "workflows_v2",
+      "workflow_v2_versions",
+      "workflow_v2_runs",
+      "workflow_v2_executions",
+      "workflow_v2_effects",
+      "workflow_v2_waits",
+      "workflow_v2_trigger_receipts",
+      "workflow_v2_record_events",
+      "workflow_v2_logic_functions",
+      "workflow_v2_runtime_settings",
+    ],
+    "unsupported",
+    "Workflow graphs, code, workforce links, form answers, copied CRM rows, provider request/result receipts and encrypted runtime credentials require dedicated provenance and lifecycle adapters. Ordinary workflow access, terminal snapshot clearing and credential replacement do not establish a subject identity, disclosure scope, remote erasure or retention authority. This declaration enables no lifecycle execution capability.",
+  ),
+  ...group(
+    ["kpi_definitions", "kpi_schemes", "kpi_goals", "kpi_measurements", "kpi_snapshots"],
+    "unsupported",
+    "Authored KPI names, calculation graphs and filters, responsible workforce links, manual source notes and viewer-bound evaluated snapshots require a dedicated subject/provenance and lifecycle adapter. Current record visibility, goal responsibility or administrator status does not establish disclosure, erasure or retention authority. This declaration enables no lifecycle execution capability.",
+  ),
+  ...group(
     ["billing_accounts", "billing_operations", "billing_webhook_receipts", "billing_audit_events"],
     "unsupported",
     "Merchant billing bindings, linkable operation fingerprints, provider event receipts and administrator audit references require a dedicated subject/provenance and finance-retention adapter. A payer may be a legal person, sole trader or finance contact; workspace administration does not establish data-subject identity. This declaration enables no generic export, erasure or provider deletion.",

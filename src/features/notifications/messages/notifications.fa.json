@@ -20,7 +20,8 @@
     "deal_lost": "یکی از فرصت‌های فروشی که دنبال می‌کنید ناموفق شد",
     "comment_reply": "پاسخ تازه‌ای به دیدگاه شما داده شد",
     "deal_email_received": "ایمیل تازه: {subject}",
-    "emailFallback": "دربارهٔ یک فرصت فروش"
+    "emailFallback": "دربارهٔ یک فرصت فروش",
+    "workflow_message": "{title}: {message}"
   },
   "preferences": {
     "pageTitle": "تنظیمات اعلان‌ها",
@@ -38,7 +39,8 @@
       "deal_won": "فرصت فروش موفق",
       "deal_lost": "فرصت فروش ناموفق",
       "comment_reply": "پاسخ به دیدگاه‌های من",
-      "deal_email_received": "ایمیل تازه دربارهٔ فرصت‌های فروش من"
+      "deal_email_received": "ایمیل تازه دربارهٔ فرصت‌های فروش من",
+      "workflow_message": "پیام‌های گردش کار"
     }
   },
   "email": {

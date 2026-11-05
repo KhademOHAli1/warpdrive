@@ -187,10 +187,43 @@ try {
       .fill("CI follow-up draft");
     await dialog.getByRole("button", { name: workflows.create, exact: true }).click();
     await page.waitForURL(/\/workflows\/[0-9a-f-]+$/);
+    await page.getByRole("button", { name: "Add step", exact: true }).first().click();
+    await page.getByRole("button", { name: "Code", exact: true }).click();
+    await page
+      .getByRole("textbox", { name: "Source code", exact: true })
+      .fill("export function main(): { calculated: number } { return { calculated: 42 }; }");
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
+    await page.getByText("Draft · Revision 2", { exact: true }).waitFor();
+    await page.reload();
+    await page.getByRole("group", { name: "Code", exact: true }).waitFor();
+    await page.getByRole("button", { name: "Safe test", exact: true }).click();
+    await page.getByText("Evaluated", { exact: true }).waitFor();
+    await page.getByText("42", { exact: true }).waitFor();
     await page.goto("/workflows");
     await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
     await page.reload();
     await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
+  });
+  await journey("goals-list-and-custom-kpi", "en", async (page) => {
+    await login(page);
+    await page.goto("/settings/goals");
+    await page.getByRole("heading", { name: "Goals & KPIs", exact: true }).waitFor();
+    await page.getByRole("button", { name: "New goal", exact: true }).click();
+    const ordinary = page.getByRole("dialog", { name: "New goal", exact: true });
+    await ordinary.getByRole("textbox", { name: "Target", exact: true }).waitFor();
+    await ordinary.getByRole("button", { name: "Cancel", exact: true }).click();
+    await page.getByRole("button", { name: "Custom KPI", exact: true }).click();
+    const canvas = page.getByRole("dialog", { name: "KPI editor", exact: true });
+    await canvas.getByRole("textbox", { name: "KPI name", exact: true }).fill("CI custom win rate");
+    await canvas.getByRole("button", { name: "Add node", exact: true }).click();
+    await page.getByRole("button", { name: "Win-rate example", exact: true }).click();
+    await canvas.getByRole("banner").getByRole("button", { name: "Preview", exact: true }).click();
+    await canvas.getByRole("button", { name: "Save KPI", exact: true }).click();
+    await page.getByRole("tab", { name: "KPI library" }).click();
+    await page.getByRole("button", { name: "CI custom win rate", exact: true }).waitFor();
+    await page.reload();
+    await page.getByRole("tab", { name: "KPI library" }).click();
+    await page.getByRole("button", { name: "CI custom win rate", exact: true }).waitFor();
   });
   const { runWorkflowDraftSimulationBrowserSmoke } = await import(
     "./workflow-draft-simulation-browser.mjs"

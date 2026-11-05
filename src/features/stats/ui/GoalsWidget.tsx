@@ -100,9 +100,21 @@ function GoalRow({ row }: { row: GoalWithProgress }): React.ReactNode {
       </p>
       {incomplete && (
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          <span className="font-medium">{K.incomplete}</span> · {K.missingDateCount}:{" "}
-          {format.number(progress.missingMeasurementDateCount ?? 0)}.{" "}
-          {K.issues.missing_measurement_dates}
+          <span className="font-medium">{K.incomplete}</span>
+          {(progress.missingMeasurementDateCount ?? 0) > 0 && (
+            <>
+              {" "}
+              · {K.missingDateCount}: {format.number(progress.missingMeasurementDateCount ?? 0)}.{" "}
+              {K.issues.missing_measurement_dates}
+            </>
+          )}
+          {(progress.missingValueCount ?? 0) > 0 && (
+            <>
+              {" "}
+              · {K.missingValueCount}: {format.number(progress.missingValueCount ?? 0)}.{" "}
+              {K.issues.missing_values}
+            </>
+          )}
         </p>
       )}
     </div>

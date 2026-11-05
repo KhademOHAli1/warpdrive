@@ -86,8 +86,10 @@ jobs:
         run: bun --no-env-file src/entrypoints/migrate.ts
       - name: Create the scoped synthetic browser actor through native auth storage
         run: bun --no-env-file scripts/browser-smoke-seed.mjs
-      - name: Build normal production application
-        run: bun --no-env-file run build
+      - name: Build normal production application and code worker
+        run: |
+          bun --no-env-file run build
+          bun --no-env-file run build:workers
       - name: Exercise serial browser packs without external requests
         run: |
           openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
