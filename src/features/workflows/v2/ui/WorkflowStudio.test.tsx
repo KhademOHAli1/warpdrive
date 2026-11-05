@@ -126,7 +126,7 @@ describe("workflow studio persistence and authority", () => {
     await screen.findByRole("combobox", { name: "Change trigger" });
     fireEvent.click(screen.getByRole("button", { name: "Change diagram step" }));
     await screen.findByRole("heading", { name: "Select Action" });
-    fireEvent.click(screen.getByRole("button", { name: "Code", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Code" }));
     expect(await screen.findByRole("heading", { name: "Code" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Duplicate diagram step" }));
     expect(await screen.findByRole("heading", { name: "Code (Duplicate)" })).toBeInTheDocument();
