@@ -80,7 +80,10 @@ function useLibraryNavigation(initialLocation: string) {
     setCursorReset(false);
   }
   function clear() {
-    adopt(defaultLibraryLocation());
+    adopt({
+      ...defaultLibraryLocation(),
+      ...(input.engine === "legacy" ? { engine: "legacy" } : {}),
+    });
     setSearch("");
     setPrevious([]);
     setCursorReset(false);
@@ -207,9 +210,15 @@ function useLibraryAuthority(list: LibraryRead, input: LibraryLocationInput, can
   return { owners, denied, ...currentCapabilities(list, denied, canCreate) };
 }
 
-export function useWorkflowLibraryReads(initialLocation: string, canCreate: boolean) {
+export function useWorkflowLibraryReads(
+  initialLocation: string,
+  canCreate: boolean,
+  allowNew = true,
+) {
   const navigation = useLibraryNavigation(initialLocation);
-  const list = trpc.workflows.list.useQuery(navigation.input, { placeholderData: (old) => old });
+  const queryInput = { ...navigation.input };
+  delete queryInput.engine;
+  const list = trpc.workflows.list.useQuery(queryInput, { placeholderData: (old) => old });
   const authority = useLibraryAuthority(list, navigation.input, canCreate);
   const recovery = useReadRecovery(list, navigation.currentKey, navigation.isCurrent);
   const invalid = list.isError && libraryReadInvalid(list.error);
@@ -245,6 +254,7 @@ export function useWorkflowLibraryReads(initialLocation: string, canCreate: bool
   return {
     ...navigation,
     ...authority,
+    createAllowed: allowNew && authority.createAllowed,
     ...recovery,
     list,
     data: list.data,

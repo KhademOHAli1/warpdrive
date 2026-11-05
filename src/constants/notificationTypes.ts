@@ -11,6 +11,7 @@ export const NOTIFICATION_TYPES = [
   "deal_lost",
   "comment_reply",
   "deal_email_received",
+  "workflow_message",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

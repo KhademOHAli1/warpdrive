@@ -18,7 +18,7 @@ describe("phase 5 schema", () => {
     });
   });
 
-  it("declares notification_type enum with all 9 values", async () => {
+  it("declares the supported notification types", async () => {
     await withTestDb(async (db) => {
       const rows = await db.execute(sql`
         select enumlabel from pg_enum e
@@ -37,6 +37,7 @@ describe("phase 5 schema", () => {
           "email_click",
           "email_open",
           "mention",
+          "workflow_message",
         ].sort(),
       );
     });

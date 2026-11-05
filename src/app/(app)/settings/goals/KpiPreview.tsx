@@ -76,7 +76,9 @@ export function KpiPreview({
   const included = measurement.contributors.filter((record) => record.included);
   const excluded = measurement.contributors.filter((record) => !record.included);
   const displayRecord = (value: string): string =>
-    definition.calculation === "percentage" || definition.calculation === "ratio"
+    definition.graph ||
+    definition.calculation === "percentage" ||
+    definition.calculation === "ratio"
       ? format.number(value, { maximumFractionDigits: 4 })
       : display(value);
   return (
@@ -150,6 +152,9 @@ export function KpiPreview({
                 key={record.id}
                 className="flex min-w-0 items-start justify-between gap-4 p-3 text-xs"
               >
+                {record.nodeLabel !== undefined && record.nodeLabel !== "" && (
+                  <span className="text-muted-foreground">{record.nodeLabel}</span>
+                )}
                 {record.href?.startsWith("/") === true && !record.href.startsWith("//") ? (
                   <Link
                     className="min-w-0 break-words font-medium underline-offset-4 hover:underline"

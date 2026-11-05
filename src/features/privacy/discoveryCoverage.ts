@@ -15,6 +15,22 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
     [
+      "workflows_v2",
+      "workflow_v2_versions",
+      "workflow_v2_runs",
+      "workflow_v2_executions",
+      "workflow_v2_effects",
+      "workflow_v2_waits",
+      "workflow_v2_trigger_receipts",
+      "workflow_v2_record_events",
+      "workflow_v2_logic_functions",
+      "workflow_v2_runtime_settings",
+    ],
+    "unsupported",
+    "Workflow graphs, code, workforce links, form answers, copied CRM rows, provider request/result receipts and encrypted runtime credentials require dedicated provenance and lifecycle adapters. Ordinary workflow access, terminal snapshot clearing and credential replacement do not establish a subject identity, disclosure scope, remote erasure or retention authority. This declaration enables no lifecycle execution capability.",
+  ),
+  ...group(
+    [
       "company_profiles",
       "company_legal_entities",
       "company_operations",
@@ -52,7 +68,7 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
     ["kpi_definitions", "kpi_schemes", "kpi_goals", "kpi_measurements", "kpi_snapshots"],
     "unsupported",
-    "KPI definitions, version-pinned scorecard revisions, workforce assignments, manual observations and viewer-bound snapshots require a dedicated subject/provenance and lifecycle adapter. A creator, assignee, CRM contributor or snapshot viewer is not by itself a reviewed privacy subject or disclosure authority. Append-only triggers and goal archiving are product behavior, not erasure, export, rectification, restriction or retention execution. These tables are excluded from candidate discovery and no generic lifecycle capability is granted.",
+    "KPI definitions, version-pinned scorecard revisions, workforce assignments, manual observations and viewer-bound snapshots require a dedicated subject/provenance and lifecycle adapter. Authored calculation graphs and filters can contain record references, constants and free text. A creator, assignee, CRM contributor or snapshot viewer is not by itself a reviewed privacy subject or disclosure authority. Append-only triggers and goal archiving are product behavior, not erasure, export, rectification, restriction or retention execution. These tables are excluded from candidate discovery and no generic lifecycle capability is granted.",
   ),
   ...group(
     DISCOVERY_ADAPTER_TABLES,

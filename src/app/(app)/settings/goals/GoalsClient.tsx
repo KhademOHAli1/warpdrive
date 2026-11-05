@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Goal } from "@/db/schema/goals";
 import { createGoalAction, updateGoalAction } from "@/features/goals/actions";
+import type { KpiGoalResult } from "@/features/goals/kpiModel";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { type GoalDraft, GoalForm, type Option } from "./GoalForm";
@@ -24,6 +26,12 @@ export function GoalsClient({
   pipelines,
   activityTypes,
   baseCurrency,
+  customGoals,
+  onCustomOpen,
+  pendingCustom,
+  customUnavailable,
+  toolbar,
+  extraActions,
 }: {
   goals: Goal[];
   users: Option[];
@@ -31,6 +39,12 @@ export function GoalsClient({
   pipelines: Option[];
   activityTypes: Option[];
   baseCurrency?: string;
+  customGoals?: KpiGoalResult[];
+  onCustomOpen?: (row: KpiGoalResult) => void;
+  pendingCustom?: boolean;
+  customUnavailable?: boolean;
+  toolbar?: ReactNode;
+  extraActions?: ReactNode;
 }): React.ReactElement {
   const L = useSettingsMessages();
   const S = L;
@@ -65,10 +79,14 @@ export function GoalsClient({
           if (!busy) setCreating(open);
         }}
       >
-        <div className="flex justify-end">
-          <DialogTrigger asChild>
-            <Button>{S.goalNew}</Button>
-          </DialogTrigger>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>{toolbar}</div>
+          <div className="flex items-center gap-2">
+            {extraActions}
+            <DialogTrigger asChild>
+              <Button>{S.goalNew}</Button>
+            </DialogTrigger>
+          </div>
         </div>
         <DialogContent
           className="max-h-[90dvh] max-w-2xl overflow-y-auto"
@@ -94,9 +112,13 @@ export function GoalsClient({
           />
         </DialogContent>
       </Dialog>
-      <div className="mt-6">
+      <div className="mt-3">
         <GoalsTable
           goals={goals}
+          customGoals={customGoals}
+          onCustomOpen={onCustomOpen}
+          pendingCustom={pendingCustom}
+          customUnavailable={customUnavailable}
           assigneeNames={assigneeNames}
           onChanged={refresh}
           onEdit={(goal) => {
