@@ -3,7 +3,7 @@ export const workflowIds1: string[] = [
   // WF026: transient authored-definition review and exact local consistency state.
   // These source reviews add no durable store, authority token or execution handler.
   "sourceReview:src/features/workflows/ui/WorkflowPublishReview.tsx#44a8150e912be1446de7b2eef6ce426c44574d9561448f8936585b118ca77202",
-  "sourceReview:src/features/workflows/ui/publicationReview.ts#fd42fb2cd04bd54060cd6e1f3f61b360787e7967db91d2dcd645e0abfff183e7",
+  "sourceReview:src/features/workflows/ui/publicationReview.ts#74c60e481051c0b95312b3f558a58ca26fafb86fd2b3e62be637bcb8c5b4dda6",
 
   // WF022: bounded transient parsing/evaluation and local stable-row edits.
   // These Sets/Maps are per-call/editor derived state, not durable stores.

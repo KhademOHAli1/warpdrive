@@ -1,4 +1,5 @@
-import { findPaletteEntry } from "../paletteCatalog";
+import type { AppMessages } from "@/features/i18n/catalog";
+import { findPaletteEntry, type PaletteCatalogEntry } from "../paletteCatalog";
 import { executableNode } from "../readiness";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
 
@@ -54,7 +55,7 @@ export function publicationReviewCurrent(
   // remain responsible for current authority and execution readiness.
   return snapshot.cut === publicationCut(source);
 }
-const descriptions: Record<WorkflowNode["type"], string> = {
+const descriptions = {
   "trigger.manual": "publicationManualStep",
   "trigger.record": "publicationUnavailableStep",
   "record.read": "publicationReadStep",
@@ -62,9 +63,16 @@ const descriptions: Record<WorkflowNode["type"], string> = {
   condition: "publicationConditionStep",
   delay: "publicationWaitStep",
   notification: "publicationUnavailableStep",
-};
+} satisfies Record<WorkflowNode["type"], keyof AppMessages["workflows"]>;
+export interface PublicationReviewStep {
+  id: WorkflowNode["id"];
+  name: WorkflowNode["name"];
+  labelKey: PaletteCatalogEntry["labelKey"] | "notReady";
+  descriptionKey: (typeof descriptions)[WorkflowNode["type"]];
+  ready: boolean;
+}
 export function publicationReviewSteps(definition: WorkflowDefinition) {
-  return definition.nodes.map((node) => {
+  return definition.nodes.map((node): PublicationReviewStep => {
     const ready = executableNode(node);
     return {
       id: node.id,
