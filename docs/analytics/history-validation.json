@@ -22,7 +22,7 @@
     },
     {
       "path": "src/features/stats/history/currentStageEpisodes.ts",
-      "sha256": "80264d0c513d609aaf7146578cf15c15fbc17bb2d99d065510fd4b34d845f3ee"
+      "sha256": "96f511943ee380b22eda9f517ef8927ffca46434099ddb75da60dc6dac8e39d7"
     },
     {
       "path": "src/features/stats/history/stageStatistics.ts",
@@ -108,11 +108,20 @@
       "files": 2,
       "vitestSeconds": 1.26,
       "log": "work/i2-registry-unit.log"
+    },
+    {
+      "name": "Affected adapter cases after type-guard correction",
+      "result": "passed",
+      "tests": 10,
+      "files": 1,
+      "vitestSeconds": 0.444,
+      "log": "work/i2-adapter-type-fix-unit.log",
+      "limitation": "Container-free behavior checks; no local compiler/typed lint run."
     }
   ],
   "resourceEvidence": {
     "observedPressureLevel": 2,
-    "observedFreeMemoryPercent": "50–52 at entries",
+    "observedFreeMemoryPercent": "45–52 at entries",
     "disk": "More than 8 GiB free",
     "execution": "Warning-mode focused lane; 55-second finite command deadlines, one owned check at a time. Owned aggregate peak RSS unmeasured; no normal-pressure or peak-conformance claim."
   },
@@ -130,5 +139,14 @@
   ],
   "localHeavyValidation": "Explicitly kept queued by the user. No allocation claimed, no local database/browser/compiler/build/install started.",
   "cleanup": "All owned focused commands terminated. No task container, database, browser or server launched; no shared service modified.",
-  "base": "02b1563e8ee4125959bbd53d0e6a646529337025"
+  "base": "02b1563e8ee4125959bbd53d0e6a646529337025",
+  "retainedHostedDiagnostics": [
+    {
+      "source": "2fda2f7a27e191bb48ef0e026ca430340865016c",
+      "mergeCandidate": "107e23af935dea97e6c7e406d6cfe76942558f63",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42086116816",
+      "result": "Next type generation passed; TSC failed TS2322 at currentStageEpisodes.ts negative union-state guard. Lint and focused hosted tests skipped. Marketing/documentation, required quality and delivery checks passed.",
+      "correction": "Explicit positive missing/unavailable early returns preserve behavior and remove the narrowing error. Fresh hosted type/lint evidence remains required."
+    }
+  ]
 }

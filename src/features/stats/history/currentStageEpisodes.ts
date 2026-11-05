@@ -32,7 +32,8 @@ export type CurrentStageEpisodeReport =
 export function currentStageEpisodesFromHistory(
   history: CurrentDealHistory,
 ): CurrentStageEpisodeReport {
-  if (history.state !== "available" && history.state !== "partial") return history;
+  if (history.state === "missing") return history;
+  if (history.state === "unavailable") return history;
   if (history.state === "partial" || !history.complete)
     return { state: "unavailable", reason: "history-limit" };
   const folded = foldTransactionHistory(history.events);

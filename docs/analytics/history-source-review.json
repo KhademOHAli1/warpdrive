@@ -55,7 +55,7 @@
     },
     {
       "path": "src/features/stats/history/currentStageEpisodes.ts",
-      "sha256": "80264d0c513d609aaf7146578cf15c15fbc17bb2d99d065510fd4b34d845f3ee"
+      "sha256": "96f511943ee380b22eda9f517ef8927ffca46434099ddb75da60dc6dac8e39d7"
     },
     {
       "path": "src/features/stats/history/stageStatistics.ts",
@@ -139,5 +139,16 @@
     "censoring": "Completed observed-entry durations, current observed-entry ages and baseline lower-bound contributors are separate populations. Baseline declarations are checked reciprocally.",
     "continuity": "Movement exits require the destination episode; closed-state corrections and later reopened stage/pipeline changes remain valid.",
     "boundary": "Matching activation/cutoff metadata cannot prove common MVCC membership, cohort completeness or authority. The future collecting adapter owns that proof. Groups have recorded pipeline/stage IDs only, no historical definition/incarnation/name resolution."
-  }
+  },
+  "amendments": [
+    {
+      "path": "src/features/stats/history/currentStageEpisodes.ts",
+      "previousSha256": "80264d0c513d609aaf7146578cf15c15fbc17bb2d99d065510fd4b34d845f3ee",
+      "sha256": "96f511943ee380b22eda9f517ef8927ffca46434099ddb75da60dc6dac8e39d7",
+      "reviewer": "/root/history_sources",
+      "trigger": "Hosted TSC TS2322 at the negative state guard.",
+      "correction": "Use explicit missing/unavailable early returns with no assertions or casts. Runtime states and partial/incomplete gate unchanged.",
+      "review": "Independent source inspection found no new correctness/privacy issue; no reviewer execution."
+    }
+  ]
 }

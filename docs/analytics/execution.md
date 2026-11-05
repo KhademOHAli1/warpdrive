@@ -22,3 +22,5 @@ All 76 capability rows in `programme-matrix.json` remain included. No first incr
 - The statistical kernel passes 44 focused cases after independent reciprocal-censoring and sequence-continuity corrections. It keeps completed durations, current ages and lower bounds separate with exact median/P75/P90 and contributor IDs. Common MVCC/cohort proof and actual report collection/UI remain unimplemented.
 
 - Main advanced to `02b1563e8ee4125959bbd53d0e6a646529337025` with Calendar interactions, sidebar and billing delivery tracking. Task merge `581f83b` preserves those changes. No analytics/runtime helper overlap or new canonical migration was observed; regenerate the global inventory from the combined source.
+
+- Hosted I2 static run42086116816 passed type generation but failed TSC TS2322 in the completeness adapter's negative union-state guard. Explicit positive missing/unavailable returns preserve behavior; independent amendment review and ten affected cases pass. Lint/native/build remain unqualified pending fresh hosted results.
