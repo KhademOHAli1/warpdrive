@@ -1,6 +1,6 @@
 import { type SQL, TransactionRollbackError } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
-import { beforeEach, expect, it, vi } from "vitest";
+import { assert, beforeEach, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type * as PersonsRepo from "@/features/contacts/personsRepo";
@@ -157,9 +157,10 @@ it("holds the visible contact row before refreshing authority and calling the na
   });
   expect(result).toEqual(ok({ id: recordId }));
   expect(lock).toHaveBeenCalledWith("update");
-  expect(lock.mock.invocationCallOrder[0]).toBeLessThan(
-    native.hydrateActor.mock.invocationCallOrder[0],
-  );
+  const lockedAt = lock.mock.invocationCallOrder[0];
+  const hydratedAt = native.hydrateActor.mock.invocationCallOrder[0];
+  assert(lockedAt !== undefined && hydratedAt !== undefined);
+  expect(lockedAt).toBeLessThan(hydratedAt);
   expect(native.updatePerson).toHaveBeenCalledWith(
     tx,
     expect.objectContaining({ managedUserIds: current.managedUserIds }),

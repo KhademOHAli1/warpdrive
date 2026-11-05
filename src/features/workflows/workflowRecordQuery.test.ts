@@ -114,7 +114,7 @@ it("returns the full visible count even when an offset page is empty", async () 
 });
 
 it("builds grouped expressions and refuses unsupported fields, sorts, and bounds before reading", async () => {
-  const nested = {
+  const nested: WorkflowNode["config"][string] = {
     kind: "group",
     id: groupId,
     combinator: "or",

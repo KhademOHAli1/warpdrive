@@ -134,9 +134,10 @@ export function workflowRecordSnapshot(
 ): WorkflowRecordSnapshot | null {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return null;
   const record = raw as Record<string, unknown>;
-  if (typeof record.id !== "string") return null;
+  if (typeof record.id !== "string" || !validValue(entity, "id", record.id)) return null;
   const snapshot: WorkflowRecordSnapshot = { id: record.id };
   for (const field of recordSearchFields[entity]) {
+    if (field === "id") continue;
     const value = Object.hasOwn(record, field) ? record[field] : undefined;
     if (!validValue(entity, field, value)) return null;
     snapshot[field] = value;

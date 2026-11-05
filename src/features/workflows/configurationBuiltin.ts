@@ -276,18 +276,26 @@ function appendSchemaIssues(
   }
 }
 
-function validateRecordMutation(
+function validateRecordDelete(
   node: WorkflowNode,
   context: ConfigurationContext,
   result: ConfigurationValidation,
 ) {
-  const schema = node.type === "record.update" ? recordUpdateConfig : recordDeleteConfig;
-  const parsed = schema.safeParse(node.config);
+  const parsed = recordDeleteConfig.safeParse(node.config);
   if (!parsed.success) return appendSchemaIssues(node, parsed.error.issues, result);
   checkMapping(node, ["recordId"], parsed.data.recordId, context, result);
-  if ("fields" in parsed.data)
-    for (const [key, value] of Object.entries(parsed.data.fields))
-      checkMapping(node, ["fields", key], value, context, result);
+}
+
+function validateRecordUpdate(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = recordUpdateConfig.safeParse(node.config);
+  if (!parsed.success) return appendSchemaIssues(node, parsed.error.issues, result);
+  checkMapping(node, ["recordId"], parsed.data.recordId, context, result);
+  for (const [key, value] of Object.entries(parsed.data.fields))
+    checkMapping(node, ["fields", key], value, context, result);
 }
 
 function validateRecordSearch(
@@ -337,8 +345,8 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "record.read": validateRead,
   "activity.create": validateTask,
   "record.create": validateRecordCreate,
-  "record.update": validateRecordMutation,
-  "record.delete": validateRecordMutation,
+  "record.update": validateRecordUpdate,
+  "record.delete": validateRecordDelete,
   "record.search": validateRecordSearch,
   "record.pick": validateRecordPick,
   "email.draft": validateEmailDraft,

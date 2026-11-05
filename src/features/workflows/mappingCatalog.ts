@@ -637,7 +637,10 @@ function writeDelayMapping(node: WorkflowNode, unit: string, binding: ReferenceB
   const previous = node.config.duration;
   const settings = delayDurationSettings(previous);
   if (previous !== undefined && settings === undefined) return false;
-  node.config.duration = { ...settings, [unit]: binding };
+  node.config.duration = {
+    ...(previous !== null && typeof previous === "object" ? previous : {}),
+    [unit]: binding,
+  };
   return true;
 }
 

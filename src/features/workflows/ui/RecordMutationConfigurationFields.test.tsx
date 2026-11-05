@@ -70,8 +70,8 @@ function lookup(label: string) {
 }
 
 async function choose(user: ReturnType<typeof userEvent.setup>, label: string, option: string) {
-  await user.click(screen.getByRole("combobox", { name: label, exact: true }));
-  await user.click(screen.getByRole("option", { name: option, exact: true }));
+  await user.click(screen.getByRole("combobox", { name: label }));
+  await user.click(screen.getByRole("option", { name: option }));
 }
 
 it("opens the scoped named Record chooser after Object and edits only selected fields", async () => {
@@ -90,7 +90,7 @@ it("opens the scoped named Record chooser after Object and edits only selected f
   );
   await choose(user, "Record · Select a record", "Northwind");
   await choose(user, "Add a field", "Name");
-  await user.type(screen.getByRole("textbox", { name: "Name", exact: true }), "Northwind Labs");
+  await user.type(screen.getByRole("textbox", { name: "Name" }), "Northwind Labs");
   expect(onChange).toHaveBeenLastCalledWith(
     expect.objectContaining({
       config: {
@@ -101,7 +101,7 @@ it("opens the scoped named Record chooser after Object and edits only selected f
     }),
   );
   await user.click(screen.getByRole("button", { name: "Remove Name" }));
-  expect(screen.queryByRole("textbox", { name: "Name", exact: true })).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "Name" })).toBeNull();
   await choose(user, "Object", "People");
   expect(onChange).toHaveBeenLastCalledWith(
     expect.objectContaining({
@@ -164,9 +164,7 @@ it("reads only a saved label in readonly mode and hides it after access is lost"
     expect.objectContaining({ mode: "selected", ids: [recordId] }),
     expect.objectContaining({ enabled: true }),
   );
-  expect(screen.getByRole("combobox", { name: "Record", exact: true })).toHaveTextContent(
-    "Northwind",
-  );
+  expect(screen.getByRole("combobox", { name: "Record" })).toHaveTextContent("Northwind");
   expect(screen.queryByRole("textbox", { name: /search choices/i })).toBeNull();
 
   selectedQuery.mockReturnValue({ data, isError: true });

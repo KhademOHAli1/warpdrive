@@ -47,21 +47,28 @@ function resolvePatch(
   return ok(patch);
 }
 
+function parseMutationConfig(node: WorkflowNode) {
+  if (node.type === "record.update") {
+    const parsed = recordUpdateConfig.safeParse(node.config);
+    return parsed.success ? { kind: "update" as const, config: parsed.data } : null;
+  }
+  const parsed = recordDeleteConfig.safeParse(node.config);
+  return parsed.success ? { kind: "delete" as const, config: parsed.data } : null;
+}
+
 function prepare(node: WorkflowNode, outputs: RunOutputs, definition: WorkflowDefinition) {
-  const parsed = (
-    node.type === "record.update" ? recordUpdateConfig : recordDeleteConfig
-  ).safeParse(node.config);
-  if (!parsed.success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  const record = uuidBinding(parsed.data.recordId, outputs, {
+  const parsed = parseMutationConfig(node);
+  if (parsed === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const record = uuidBinding(parsed.config.recordId, outputs, {
     definition,
     nodeId: node.id,
     path: ["recordId"],
   });
   if (!record.ok) return record;
   const patch =
-    "fields" in parsed.data ? resolvePatch(parsed.data, definition, node.id, outputs) : ok(null);
+    parsed.kind === "update" ? resolvePatch(parsed.config, definition, node.id, outputs) : ok(null);
   return patch.ok
-    ? ok({ entity: parsed.data.entity, id: record.value, patch: patch.value })
+    ? ok({ entity: parsed.config.entity, id: record.value, patch: patch.value })
     : patch;
 }
 
