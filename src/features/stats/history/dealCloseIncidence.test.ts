@@ -45,6 +45,58 @@ function request(subjects: readonly DealCloseSubject[]): DealCloseIncidenceInput
 const open = subject("open", "2026-03-10T00:00:00Z");
 
 describe("descriptive deal close incidence", () => {
+  test("matches the published R survival competing-risk reference at event ages", () => {
+    // Therneau, A package for survival analysis in R, section 2.3.1.
+    // Preserve the reference times. Use its state a as win and combine b and c as loss.
+    const sample = [
+      [1, "won"],
+      [2, "won"],
+      [3, "lost"],
+      [4, "censor"],
+      [5, "won"],
+      [6, "won"],
+      [7, "lost"],
+      [8, "censor"],
+      [6, "lost"],
+      [7, "lost"],
+      [8, "censor"],
+    ] as const;
+    const march = (dayOfMonth: number) =>
+      `2026-03-${String(dayOfMonth).padStart(2, "0")}T00:00:00Z`;
+    const subjects = sample.map(([age, outcome], index) => {
+      const id = `reference-${index + 1}`;
+      return outcome === "censor"
+        ? subject(id, march(11 - age))
+        : subject(id, captureActivatedAt, close(id, outcome, march(1 + age)));
+    });
+    const result = computeDealCloseIncidence(request(subjects));
+    expect(result.state).toBe("available");
+    if (result.state !== "available") return;
+    const expected = [
+      { age: 1, atRisk: 11, events: 1, eventFree: 0.909, won: 0.0909, lost: 0 },
+      { age: 2, atRisk: 10, events: 1, eventFree: 0.818, won: 0.1818, lost: 0 },
+      { age: 3, atRisk: 9, events: 1, eventFree: 0.727, won: 0.1818, lost: 0.0909 },
+      { age: 5, atRisk: 7, events: 1, eventFree: 0.623, won: 0.2857, lost: 0.0909 },
+      { age: 6, atRisk: 6, events: 2, eventFree: 0.416, won: 0.3896, lost: 0.1948 },
+      { age: 7, atRisk: 4, events: 2, eventFree: 0.208, won: 0.3896, lost: 0.4028 },
+    ];
+    const eventSteps = result.steps.filter((step) => step.won + step.lost > 0);
+    expect(
+      eventSteps.map((step) => [step.elapsedNanoseconds, step.atRiskBefore, step.won + step.lost]),
+    ).toEqual(expected.map((row) => [(BigInt(row.age) * day).toString(), row.atRisk, row.events]));
+    for (const row of expected) {
+      const actual = eventSteps.find(
+        (step) => step.elapsedNanoseconds === (BigInt(row.age) * day).toString(),
+      );
+      // The published probabilities are rounded. The lost total combines two rounded columns.
+      expect(Math.abs(Number(actual?.probability.eventFree) - row.eventFree)).toBeLessThan(
+        0.000501,
+      );
+      expect(Math.abs(Number(actual?.probability.won) - row.won)).toBeLessThan(0.000051);
+      expect(Math.abs(Number(actual?.probability.lost) - row.lost)).toBeLessThan(0.000551);
+    }
+  });
+
   test("withdraws earlier censors and keeps tied censors in the closing risk set", () => {
     const subjects = [
       subject("win-3", "2026-03-01T00:00:00Z", close("win-3", "won", "2026-03-04T00:00:00Z")),
