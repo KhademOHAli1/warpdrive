@@ -783,7 +783,7 @@
         "Unknown source, source correction, multi-contact purchase and mixed currency exclusion."
       ],
       "deliveryIncrement": "I3",
-      "currentSourceNote": "Bounded native reader groups current authorized deal creation and outcomes by recorded channel, without inferring acquisition or campaign credit. Native execution, lead/handoff/campaign evidence and viewer report remain open."
+      "currentSourceNote": "The Acquisition tab groups current authorized deal creation and outcomes by recorded channel. Lead, handoff and campaign evidence remain open, alongside hosted qualification of the current tab."
     },
     {
       "id": "source-cost-retention",

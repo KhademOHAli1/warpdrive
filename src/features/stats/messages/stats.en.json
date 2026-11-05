@@ -186,5 +186,25 @@
     "noPeriod": "The selected dates do not overlap the captured deal history.",
     "unavailable": "Deal cohort results are unavailable for these filters.",
     "ownDealsOnly": "This report is limited to your own deals."
+  },
+  "recordedSource": {
+    "tab": "Acquisition",
+    "title": "Recorded deal sources",
+    "definition": "Deals are grouped by the channel on their current CRM record. Added uses the recorded creation date. Won and lost use the current outcome and its recorded date. A deal can count toward both added and an outcome.",
+    "period": "Reporting period",
+    "channel": "Recorded channel",
+    "added": "Added in period",
+    "won": "Won in period",
+    "lost": "Lost in period",
+    "wonValue": "Nominal won value",
+    "wonCycle": "Average recorded win cycle",
+    "samples": "{count, number} of {total, plural, one {# win} other {# wins}}",
+    "sampleBasis": "Nominal value sums the recorded amounts for wins with an amount in the selected currency. Average cycle includes wins dated on or after recorded creation. Each sample count uses that channel's won deals.",
+    "noSample": "No eligible sample",
+    "unrecorded": "Channel unrecorded",
+    "unrecognized": "Unrecognized channel",
+    "empty": "No eligible deals were added, won, or lost in this period.",
+    "permission": "Your current permissions do not allow you to view this report.",
+    "unavailable": "Recorded deal sources are unavailable for these filters."
   }
 }

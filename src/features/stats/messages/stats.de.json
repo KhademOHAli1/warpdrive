@@ -186,5 +186,25 @@
     "noPeriod": "Der ausgewählte Zeitraum überschneidet sich nicht mit dem erfassten Verlauf.",
     "unavailable": "Für diese Filter sind keine Kohortenergebnisse verfügbar.",
     "ownDealsOnly": "Dieser Bericht zeigt nur Ihre eigenen Verkaufschancen."
+  },
+  "recordedSource": {
+    "tab": "Akquise",
+    "title": "Erfasste Dealquellen",
+    "definition": "Maßgeblich ist der aktuell im CRM hinterlegte Kanal. Neuanlagen zählen nach ihrem erfassten Erstellungsdatum. Gewonnene und verlorene Deals zählen nach ihrem aktuellen Ergebnis und dem dafür erfassten Datum. Ein Deal kann als Neuanlage und als Abschluss zählen.",
+    "period": "Berichtszeitraum",
+    "channel": "Erfasster Kanal",
+    "added": "Im Zeitraum angelegt",
+    "won": "Im Zeitraum gewonnen",
+    "lost": "Im Zeitraum verloren",
+    "wonValue": "Nominalwert gewonnener Deals",
+    "wonCycle": "Ø erfasste Dauer bis zum Gewinn",
+    "samples": "{count, number} von {total, plural, one {# gewonnenen Deal} other {# gewonnenen Deals}}",
+    "sampleBasis": "Der Nominalwert summiert die erfassten Beträge gewonnener Deals in der gewählten Währung. In die durchschnittliche Dauer fließen Gewinne am oder nach dem erfassten Erstellungszeitpunkt ein. Bezugsgröße sind jeweils die gewonnenen Deals des Kanals.",
+    "noSample": "Keine auswertbaren Daten",
+    "unrecorded": "Kanal nicht erfasst",
+    "unrecognized": "Kanal nicht zugeordnet",
+    "empty": "In diesem Zeitraum wurden keine passenden Deals angelegt, gewonnen oder verloren.",
+    "permission": "Mit Ihren aktuellen Berechtigungen können Sie diesen Bericht nicht einsehen.",
+    "unavailable": "Für diese Auswahl sind keine erfassten Dealquellen verfügbar."
   }
 }

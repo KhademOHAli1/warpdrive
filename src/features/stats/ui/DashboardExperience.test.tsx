@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { DealWinCohortView } from "../history/dealWinCohortView";
 import type { StageAgingView } from "../history/stageAgingView";
+import type { RecordedDealSourceReport } from "../recordedDealSourceReport";
 
 const fixture = vi.hoisted(() => ({
   refetch: vi.fn(),
@@ -20,6 +21,11 @@ const fixture = vi.hoisted(() => ({
   agingFetching: false,
   agingPlaceholder: false,
   agingError: false,
+  recordedSourceQuery: vi.fn(),
+  recordedSourceRefetch: vi.fn(),
+  recordedSourceReport: vi.fn<() => RecordedDealSourceReport>(),
+  recordedSourceFresh: true,
+  recordedSourceFetching: false,
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
@@ -74,6 +80,20 @@ vi.mock("@/lib/trpc-client", () => ({
         },
       },
       ownerOptions: { useQuery: () => ({ data: { users: [], teams: [] } }) },
+      recordedDealSource: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.recordedSourceQuery(input, options);
+          return {
+            data: fixture.recordedSourceReport(),
+            isError: false,
+            isFetchedAfterMount: fixture.recordedSourceFresh,
+            isFetching: fixture.recordedSourceFetching,
+            isPaused: false,
+            isPlaceholderData: false,
+            refetch: fixture.recordedSourceRefetch,
+          };
+        },
+      },
       dealWinCohorts: {
         useQuery: (input: unknown, options: unknown) => {
           fixture.cohortQuery(input, options);
@@ -149,6 +169,9 @@ beforeEach(() => {
   fixture.agingFetching = false;
   fixture.agingPlaceholder = false;
   fixture.agingError = false;
+  fixture.recordedSourceReport.mockReturnValue({ state: "unavailable" });
+  fixture.recordedSourceFresh = true;
+  fixture.recordedSourceFetching = false;
 });
 const mount = () =>
   render(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
@@ -206,6 +229,102 @@ function ChangeReportTimeZone() {
 }
 
 describe("Performance report experience", () => {
+  it("loads a scoped Acquisition read and keeps its outcome samples and refresh states separate", async () => {
+    fixture.recordedSourceFresh = false;
+    fixture.recordedSourceReport.mockReturnValue({
+      state: "available",
+      definition: "recorded-deal-source-current-v1",
+      currency: "USD",
+      timeZone: "Europe/Berlin",
+      effectiveOwnerScope: "me",
+      rows: [
+        {
+          channel: "campaign",
+          added: 3,
+          won: 2,
+          lost: 0,
+          wonValueCount: 1,
+          wonValue: "0",
+          wonCycleCount: 2,
+          wonCycleMicroseconds: "259200000000",
+        },
+        {
+          channel: "unrecognized",
+          added: 1,
+          won: 1,
+          lost: 0,
+          wonValueCount: 0,
+          wonValue: null,
+          wonCycleCount: 1,
+          wonCycleMicroseconds: "0",
+        },
+        {
+          channel: "unrecorded",
+          added: 0,
+          won: 0,
+          lost: 2,
+          wonValueCount: 0,
+          wonValue: null,
+          wonCycleCount: 0,
+          wonCycleMicroseconds: null,
+        },
+      ],
+    });
+    const page = mount();
+    const rerender = () =>
+      page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(fixture.recordedSourceQuery).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Last 30 days" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
+    await userEvent.click(screen.getByRole("option", { name: "Sales" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Acquisition" }));
+    expect(fixture.recordedSourceQuery).toHaveBeenLastCalledWith(
+      {
+        currency: "USD",
+        pipelineId: "p1",
+        ownerScope: { kind: "me" },
+        from: "2026-10-07",
+        to: "2026-11-05",
+        timeZoneIdentity: "UTC",
+      },
+      expect.objectContaining({ gcTime: 0, refetchOnMount: "always" }),
+    );
+    const findTable = () => screen.queryByRole("table", { name: "Recorded deal sources" });
+    expect(findTable()).not.toBeInTheDocument();
+    fixture.recordedSourceFresh = true;
+    rerender();
+
+    const panel = screen.getByRole("region", { name: "Recorded deal sources" });
+    expect(panel).toHaveTextContent("Europe/Berlin");
+    expect(
+      within(panel)
+        .getAllByRole("definition")
+        .slice(-3)
+        .map((item) => item.textContent),
+    ).toEqual(["4", "3", "2"]);
+    const campaign = within(panel).getByRole("row", { name: /Marketing campaign/ });
+    const value = within(campaign).getAllByRole("cell").at(-2);
+    const cycle = within(campaign).getAllByRole("cell").at(-1);
+    expect(value).toHaveTextContent("$0");
+    expect(value).toHaveTextContent("1 of 2 wins");
+    expect(cycle).toHaveTextContent("1.5");
+    expect(cycle).toHaveTextContent("2 of 2 wins");
+    expect(within(panel).getByRole("row", { name: /Unrecognized channel/ })).toHaveTextContent(
+      "No eligible sample",
+    );
+    expect(within(panel).getByRole("row", { name: /Channel unrecorded/ })).toBeInTheDocument();
+
+    fixture.recordedSourceFetching = true;
+    rerender();
+    expect(findTable()).not.toBeInTheDocument();
+    fixture.recordedSourceFetching = false;
+    fixture.recordedSourceReport.mockReturnValue({ state: "unavailable" });
+    rerender();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(fixture.recordedSourceRefetch).toHaveBeenCalledOnce();
+    expect(findTable()).not.toBeInTheDocument();
+  });
+
   it("selects only the requested preset when month and quarter have identical bounds", async () => {
     render(<Dashboard today="2026-10-05" currency="USD" canViewOthers />);
     await userEvent.click(screen.getByRole("button", { name: "This quarter" }));

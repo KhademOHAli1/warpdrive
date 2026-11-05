@@ -51,6 +51,17 @@ export const ANALYTICS_DEALS = {
   },
 };
 
+const fixtureChannels = {
+  recorded: "referral",
+  zero: "referral",
+  negativeCycle: "CI unrecognized source witness",
+  boundary: "web_form",
+  otherCurrency: "referral",
+  otherOwner: "referral",
+  hidden: "referral",
+  restricted: "referral",
+};
+
 export async function seedAnalyticsBrowserFixtures(
   client,
   { passwordHash, permissionSetId, groupId, otherOwnerId },
@@ -135,12 +146,12 @@ export async function seedAnalyticsBrowserFixtures(
          FROM anchor
        )
        INSERT INTO deals(id,title,status,value,currency,pipeline_id,stage_id,owner_id,
-                         visibility_level,created_at,won_time,lost_time)
+                         visibility_level,created_at,won_time,lost_time,source_channel)
        SELECT $1::uuid,$2::text,$3::deal_status,$4::numeric,currency,
               $5::uuid,$6::uuid,$7::uuid,$8::visibility_level,
               closed_at - $11::integer * interval '24 hours',
               CASE WHEN $3::deal_status = 'won' THEN closed_at END,
-              CASE WHEN $3::deal_status = 'lost' THEN closed_at END
+              CASE WHEN $3::deal_status = 'lost' THEN closed_at END,$12::text
        FROM instant`,
       [
         row.id,
@@ -154,6 +165,7 @@ export async function seedAnalyticsBrowserFixtures(
         key === "boundary",
         key === "otherCurrency",
         age,
+        fixtureChannels[key] ?? null,
       ],
     );
   }

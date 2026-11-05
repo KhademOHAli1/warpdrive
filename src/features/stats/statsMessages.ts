@@ -34,6 +34,8 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       recordsValueCount: (count: number, total: number) =>
         t("_extra.recordsValueCount", { count, total }),
       recordsPage: (page: number) => t("_extra.recordsPage", { page }),
+      recordedSourceSamples: (count: number, total: number) =>
+        t("recordedSource.samples", { count, total }),
     },
   };
 }

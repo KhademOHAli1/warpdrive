@@ -1,6 +1,11 @@
 "use client";
 
-import { CalendarDays, LayoutDashboard, SlidersHorizontal } from "lucide-react";
+import {
+  CalendarDays,
+  ChartNoAxesCombined,
+  LayoutDashboard,
+  SlidersHorizontal,
+} from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -27,6 +32,7 @@ import { GoalsWidget } from "./GoalsWidget";
 import { KpiPerformance } from "./KpiPerformance";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
 import { Panel } from "./Panel";
+import { RecordedDealSourcePanel } from "./RecordedDealSourcePanel";
 import { Scoreboard } from "./Scoreboard";
 import { StageAgingReport } from "./StageAgingReport";
 import { WonTrendWidget } from "./TrendWidget";
@@ -176,6 +182,9 @@ export function Dashboard({
             <ActivityTypesWidget data={result.activitiesByType} />
           </div>
         </TabsContent>
+        <TabsContent value="acquisition">
+          <RecordedDealSourcePanel key={JSON.stringify(reportScope)} scope={reportScope} />
+        </TabsContent>
       </div>
     );
   }
@@ -278,6 +287,10 @@ export function Dashboard({
             <TabsTrigger value="activities" className={REPORT_TAB}>
               <CalendarDays aria-hidden="true" className="me-2 hidden size-4 sm:block" />
               {S.activitiesTab}
+            </TabsTrigger>
+            <TabsTrigger value="acquisition" className={REPORT_TAB}>
+              <ChartNoAxesCombined aria-hidden="true" className="me-2 hidden size-4 sm:block" />
+              {S.recordedSource.tab}
             </TabsTrigger>
           </TabsList>
           {body}

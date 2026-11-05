@@ -24,6 +24,7 @@ import { readCurrentStageAgingView } from "./history/currentStageAgingRepository
 import { readObservedDealWinCohorts } from "./history/dealCohortRepository";
 import { dealWinCohortHorizon, dealWinCohortView } from "./history/dealWinCohortView";
 import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "./metricDictionary";
+import { readRecordedDealSourceReport } from "./recordedDealSourceReport";
 import { resolveReportScope } from "./resolveReportScope";
 import { dashboardInput, dealRecordsInput, dealWinCohortsInput, stageAgingInput } from "./schemas";
 
@@ -103,6 +104,12 @@ export const statsRouter = router({
       generatedAt: new Date().toISOString(),
     };
   }),
+
+  recordedDealSource: protectedProcedure
+    .input(dashboardInput)
+    .query(({ ctx, input }) =>
+      readRecordedDealSourceReport(ctx.db, ctx.actor, input, SIG(), ctx.localeFallback),
+    ),
 
   dealWinCohorts: protectedProcedure.input(dealWinCohortsInput).query(async ({ ctx, input }) => {
     const { from, to, pipelineId, ownerScope, currency, horizon } = input;

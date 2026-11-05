@@ -1,8 +1,8 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "7a197bb1d32ac8b5301d550fd35a325d5e8f496cc6aac723e7bfef27f40e09ff",
-  "sourceFiles": 2764,
+  "sourceFingerprint": "0e6ff2c72bbe29b3411728cd33a2b6d4fa9285165779e75b4a511cc09813bed5",
+  "sourceFiles": 2765,
   "discoveredCounts": {
     "browserStore": 4,
     "derived": 389,
@@ -19,7 +19,7 @@
     "ok": false,
     "missing": [
       "derived:src/features/stats/ui/StageAgingPanel.tsx",
-      "sourceReview:src/features/stats/router.ts#eede2c20ea9f4909709fa1a29c6490acfa0ade9649b05a6f48efa5be17679489",
+      "sourceReview:src/features/stats/router.ts#588d18c8eab20c63209644210a166a26231ff4172dae1bdc8f23de217d72be9c",
       "sourceReview:src/features/stats/ui/StageAgingPanel.tsx#47394710d463d54d78e8dd7e30e80234e6f05fae3de842408950097cd682037f"
     ],
     "invalid": []

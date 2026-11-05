@@ -83,7 +83,7 @@ const report = {
   buildId: readFileSync(new URL("../.next/BUILD_ID", import.meta.url), "utf8").trim(),
   browser: "Chromium",
   criteria:
-    "Live CRM drill-down, viewer civil periods and rendering; synthetic cohort read against the private capture proposal",
+    "Live CRM drill-down, recorded source, viewer civil periods and rendering. Cohort and stage aging use the disposable capture proposal.",
   limits:
     "Disposable synthetic CRM records and hosted Chromium viewports. The actor is limited to their own reports. Cohort capture uses the unnumbered proposal. No installed history, provider, human accessibility or release acceptance.",
   nativeLogins: 0,
@@ -780,6 +780,62 @@ async function verifyRestrictedPipeline() {
   });
 }
 
+async function verifyRecordedDealSources() {
+  await journey("en-recorded-deal-sources", async (page, _context, entry) => {
+    const S = copy.en.stats;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, {
+      allPipelines: true,
+    });
+    const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
+    const result = await rpcAfter(
+      page,
+      "stats.recordedDealSource",
+      (input) =>
+        input.from === filtered.input.from &&
+        input.to === filtered.input.to &&
+        input.currency === currency &&
+        input.pipelineId === null &&
+        input.timeZoneIdentity === actor.timeZone,
+      () => page.getByRole("tab", exact(S.recordedSource.tab)).click(),
+    );
+    assert.deepEqual(result.input.ownerScope, { kind: "me" });
+    assert.equal(result.data.state, "available");
+    assert.equal(result.data.effectiveOwnerScope, "me");
+    assert.equal(result.data.timeZone, actor.timeZone);
+    assert.equal(result.data.currency, currency);
+    const rows = result.data.rows.map(
+      ({ channel, added, won, lost, wonValue, wonValueCount, wonCycleCount }) => [
+        channel,
+        added,
+        won,
+        lost,
+        wonValue,
+        wonValueCount,
+        wonCycleCount,
+      ],
+    );
+    assert.deepEqual(rows, [
+      ["referral", 2, 2, 0, "123.4567", 2, 2],
+      ["unrecognized", 1, 1, 0, "10.00", 1, 0],
+      ["unrecorded", 2, 1, 1, null, 0, 1],
+      ["web_form", 1, 1, 0, "7.25", 1, 1],
+    ]);
+    const payload = JSON.stringify(result.data);
+    assert.ok(!payload.includes("CI unrecognized source witness"));
+    assert.ok(forbidden.every((id) => !payload.includes(id)));
+    const panel = page.getByRole("region", exact(S.recordedSource.title));
+    await panel
+      .getByRole("row", { name: /Referral/ })
+      .getByText(/123\.4567/)
+      .waitFor();
+    await panel.getByRole("row", { name: /Unrecognized channel/ }).waitFor();
+    await panel.getByRole("row", { name: /Channel unrecorded/ }).waitFor();
+    await panel.scrollIntoViewIfNeeded();
+    await capture(page, "en-recorded-deal-sources");
+    entry.sourceProof = { channelSummaries: rows };
+  });
+}
+
 // The entry point has already admitted the disposable hosted database. Run the private
 // proposal only after the existing I1 assertions have finished against the canonical prefix.
 async function activateSyntheticCohort() {
@@ -837,16 +893,47 @@ async function verifyCohortPanel(active) {
           input.timeZoneIdentity === actor.timeZone,
         action,
       );
-    const first = await cohortAfter("30-days", () =>
-      page.getByRole("tab", exact(S.pipelineTab)).click(),
-    );
+    const [aging, first] = await Promise.all([
+      rpcAfter(
+        page,
+        "stats.stageAging",
+        (input) => input.pipelineId === actor.pipelineId && input.currency === currency,
+        () => {},
+      ),
+      cohortAfter("30-days", () => page.getByRole("tab", exact(S.pipelineTab)).click()),
+    ]);
+    const agingPanel = page.getByRole("region", exact(S.stageAging.title));
+    assert.deepEqual(aging.input.ownerScope, { kind: "me" });
+    assert.equal(aging.input.from, undefined);
     assert.deepEqual(first.input.ownerScope, { kind: "me" });
     if (!active) {
       assert.deepEqual(first.data, { state: "coverage-not-started" });
+      assert.deepEqual(aging.data, { state: "unavailable", reason: "capture" });
+      await agingPanel.getByText(S.stageAging.capture, { exact: true }).waitFor();
       await panel.getByText(S.cohort.noCapture, { exact: true }).waitFor();
       entry.cohortState = first.data.state;
+      entry.stageAgingState = aging.data.state;
       return;
     }
+
+    assert.equal(aging.data.state, "available");
+    assert.equal(aging.data.currency, currency);
+    assert.equal(aging.data.dealCount, 7);
+    assert.equal(aging.data.currentOpenDealCount, 1);
+    assert.equal(aging.data.rows.length, 1);
+    const currentStay = aging.data.rows[0];
+    assert.equal(currentStay.stageName, "CI Analytics Stage");
+    assert.equal(currentStay.currentOpen.sampleCount, 1);
+    assert.equal(currentStay.completed.sampleCount, 0);
+    assert.equal(currentStay.leftCensored.currentOpen.sampleCount, 0);
+    assert.ok(!JSON.stringify(aging.data).includes(cohortFixture.id));
+    await agingPanel.getByRole("heading", exact(currentStay.stageName)).waitFor();
+    await agingPanel.scrollIntoViewIfNeeded();
+    await capture(page, "en-persian-stage-aging");
+    entry.stageAgingProof = {
+      deals: aging.data.dealCount,
+      openSamples: currentStay.currentOpen.sampleCount,
+    };
 
     assert.equal(first.data.state, "available");
     assert.equal(first.data.population, "current-authorized-live-deals");
@@ -1037,6 +1124,7 @@ try {
   });
 
   await verifyRestrictedPipeline();
+  await verifyRecordedDealSources();
   await matrix("en", "gregory");
   await setRegional("en", "timeZone", "UTC", {
     locale: "en",
