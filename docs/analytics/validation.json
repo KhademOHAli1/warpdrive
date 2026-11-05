@@ -77,5 +77,14 @@
     "peakOwnedRSS": "unmeasured; no peak/conformance claim"
   },
   "remainingScope": "All later rows of programme-matrix.json, including reliable history, source adapters, snapshots, cohorts, attribution, forecasts, customer economics, experiments, survival, calibration, predictive scoring and MMM remain included.",
-  "rebaseNote": "Source hashes retained after reconciliation with latest workflow/settings main. Global inventory regenerated; no new local heavy check. Automatic CI is now light and cannot qualify database/build/browser acceptance."
+  "rebaseNote": "Source hashes retained after reconciliation with latest workflow/settings main. Global inventory regenerated; no new local heavy check. Automatic CI is now light and cannot qualify database/build/browser acceptance.",
+  "hostedStaticEvidence": [
+    {
+      "head": "d8278952a9329046b5bc0de4ab56b824dcb419c5",
+      "mergeCandidate": "ae3cc13985ce53d7b68b73cb5c560176fabb84db",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42067606975",
+      "result": "CRM type generation passed; TSC failed TS18048 in the new test seed closure. Lint/focused hosted tests skipped. Other sites passed.",
+      "correction": "Capture the validated stage.id before entering the async seed closure; test fixture only. Later exact-head check required."
+    }
+  ]
 }

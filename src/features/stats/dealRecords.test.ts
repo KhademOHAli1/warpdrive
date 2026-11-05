@@ -39,6 +39,7 @@ async function fixture(db: Db) {
   const { pipeline, stages } = await seedPipelineWithStages(db, ["Qualify"]);
   const stage = stages[0];
   if (stage === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "Missing test stage");
+  const stageId = stage.id;
   const filters: DashboardFilters = {
     ...RANGE,
     currency: "USD",
@@ -52,7 +53,7 @@ async function fixture(db: Db) {
       .values({
         title: "Report deal",
         pipelineId: pipeline.id,
-        stageId: stage.id,
+        stageId,
         ownerId: user.id,
         visibilityLevel: "all",
         currency: "USD",
