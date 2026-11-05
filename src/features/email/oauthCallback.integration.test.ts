@@ -62,6 +62,63 @@ describe("Gmail OAuth start and callback", () => {
     });
   });
 
+  it("reports unavailable initial sync without leaking secrets and consumes the OAuth proof once", async () => {
+    await withTestDb(async (db) => {
+      const f = await seedMailHttpSession(db);
+      const start = await startGmailOAuth(db, f.headers, signal());
+      if (!start.ok) throw new Error("expected native consent");
+      const provider = deps(f.user.email);
+      provider.enqueue.mockRejectedValue(new Error("synthetic-queue-secret"));
+      const callback = createGmailOAuthCallback(db, provider);
+
+      const response = await callback(request(f, start.value.state));
+      const location = response.headers.get("location");
+      const redirect = new URL(location!);
+      const body = await response.text();
+
+      expect(response.status).toBe(303);
+      expect(redirect.pathname).toBe("/inbox");
+      expect(redirect.search).toBe("?connect=sync_unavailable");
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
+      expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+      expect(`${location}\n${body}`).not.toMatch(
+        /synthetic-queue-secret|synthetic-access|synthetic-refresh|synthetic-private-code|verifier|state=/,
+      );
+
+      const accounts = (
+        await db.execute(
+          sql`SELECT user_id,email_address,provider,status,refresh_token_enc FROM email_accounts WHERE user_id=${f.user.id}`,
+        )
+      ).rows as {
+        user_id: string;
+        email_address: string;
+        provider: string;
+        status: string;
+        refresh_token_enc: Buffer | null;
+      }[];
+      expect(accounts).toHaveLength(1);
+      expect(accounts[0]).toMatchObject({
+        user_id: f.user.id,
+        email_address: f.user.email,
+        provider: "gmail",
+        status: "connected",
+      });
+      expect(accounts[0]?.refresh_token_enc).not.toBeNull();
+
+      const proofs = (
+        await db.execute(
+          sql`SELECT consumed_at,payload_enc FROM mail_connection_checks WHERE user_id=${f.user.id}`,
+        )
+      ).rows as { consumed_at: Date | null; payload_enc: Buffer | null }[];
+      expect(proofs).toHaveLength(1);
+      expect(proofs[0]?.consumed_at).not.toBeNull();
+      expect(proofs[0]?.payload_enc).toBeNull();
+      expect(reason(await callback(request(f, start.value.state)))).toBe("stale_state");
+      expect(provider.exchangeCode).toHaveBeenCalledOnce();
+      expect(provider.enqueue).toHaveBeenCalledOnce();
+    });
+  });
+
   it.each(["pending", "stale", "unverified", "inactive"])(
     "denies %s native sessions before start and callback provider IO",
     async (kind) => {

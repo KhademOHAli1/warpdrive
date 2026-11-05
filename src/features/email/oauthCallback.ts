@@ -23,7 +23,7 @@ export interface GmailCallbackDependencies {
   fetchIdentity: ProviderDeps["fetchIdentity"];
   enqueue?: (accountId: string) => Promise<void>;
 }
-function redirect(status: "ok" | "error", reason?: GmailOAuthError): Response {
+function redirect(status: "ok" | "error" | "sync_unavailable", reason?: GmailOAuthError): Response {
   const target = new URL("/inbox", env.BASE_URL);
   target.searchParams.set("connect", status);
   if (reason !== undefined) target.searchParams.set("reason", reason);
@@ -82,6 +82,7 @@ export function createGmailOAuthCallback(db: Db, deps: GmailCallbackDependencies
           await deps.enqueue(result.value.accountId);
         } catch {
           console.error("[gmail/oauth/callback] initial sync enqueue unavailable");
+          return redirect("sync_unavailable");
         }
       }
       return redirect("ok");

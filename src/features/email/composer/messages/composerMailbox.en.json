@@ -42,6 +42,7 @@
   "connectFreshAuth": "Verify your identity again, then reconnect your Gmail mailbox.",
   "connectPermission": "You do not have permission to connect this mailbox.",
   "connectCancelled": "Gmail connection was cancelled. Your existing mailboxes are unchanged.",
+  "connectSyncUnavailable": "Gmail is connected, but the first sync could not start. Your mailbox may not be up to date yet.",
   "openConnections": "Manage mailboxes",
   "verifyIdentity": "Verify identity",
   "alreadySentTitle": "This message was already accepted",
