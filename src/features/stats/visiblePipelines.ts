@@ -11,7 +11,7 @@ import type { Db } from "@/db/client";
 import { pipelines } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 
-function predicate(actor: PermSetUser): SQL | undefined {
+export function visiblePipelinePredicate(actor: PermSetUser): SQL | undefined {
   if (actor.type === "admin") return sql`true`;
   const groupIds = Array.from(actor.groupIds);
   return or(
@@ -31,7 +31,7 @@ export async function visiblePipelineOptions(
   return db
     .select({ id: pipelines.id, name: pipelines.name })
     .from(pipelines)
-    .where(and(eq(pipelines.isArchived, false), predicate(actor)))
+    .where(and(eq(pipelines.isArchived, false), visiblePipelinePredicate(actor)))
     .orderBy(pipelines.order);
 }
 
@@ -44,7 +44,7 @@ export async function visiblePipelineIds(
   const rows = await db
     .select({ id: pipelines.id })
     .from(pipelines)
-    .where(and(eq(pipelines.isArchived, false), predicate(actor)))
+    .where(and(eq(pipelines.isArchived, false), visiblePipelinePredicate(actor)))
     .orderBy(pipelines.order);
   return rows.map((r) => r.id);
 }
@@ -59,6 +59,12 @@ export async function isPipelineVisible(
   const [row] = await db
     .select({ id: pipelines.id })
     .from(pipelines)
-    .where(and(eq(pipelines.id, pipelineId), eq(pipelines.isArchived, false), predicate(actor)));
+    .where(
+      and(
+        eq(pipelines.id, pipelineId),
+        eq(pipelines.isArchived, false),
+        visiblePipelinePredicate(actor),
+      ),
+    );
   return row !== undefined;
 }

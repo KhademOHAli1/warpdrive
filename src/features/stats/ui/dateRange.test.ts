@@ -20,7 +20,62 @@ describe("performance civil-date presets", () => {
   it("uses the server's reporting year even when the browser clock differs", () => {
     expect(presetRange("year", "2027-01-01")).toEqual({ from: "2027-01-01", to: "2027-01-01" });
   });
-  it("uses Gregorian month arithmetic without changing the chosen display calendar", () => {
+  it("preserves the Gregorian default for existing callers", () => {
     expect(presetRange("month", "2026-03-21")).toEqual({ from: "2026-03-01", to: "2026-03-21" });
   });
+
+  it.each(["month", "quarter", "year"] as const)(
+    "starts a Persian %s preset at Nowruz on the first day of the year",
+    (preset) => {
+      expect(presetRange(preset, "2026-03-21", "persian")).toEqual({
+        from: "2026-03-21",
+        to: "2026-03-21",
+      });
+    },
+  );
+
+  it.each([
+    ["2025-03-20", "2025-02-19", "2024-12-21", "2024-03-20"],
+    ["2026-03-20", "2026-02-20", "2025-12-22", "2025-03-21"],
+  ])(
+    "keeps the final day of leap or ordinary Esfand in its real Persian periods: %s",
+    (today, month, quarter, year) => {
+      expect(presetRange("month", today, "persian")).toEqual({ from: month, to: today });
+      expect(presetRange("quarter", today, "persian")).toEqual({ from: quarter, to: today });
+      expect(presetRange("year", today, "persian")).toEqual({ from: year, to: today });
+    },
+  );
+
+  it.each([
+    ["2026-06-21", "2026-03-21"],
+    ["2026-06-22", "2026-06-22"],
+    ["2026-09-22", "2026-06-22"],
+    ["2026-09-23", "2026-09-23"],
+    ["2026-12-21", "2026-09-23"],
+    ["2026-12-22", "2026-12-22"],
+    ["2027-01-01", "2026-12-22"],
+  ])("uses Persian quarter boundaries for %s", (today, from) => {
+    expect(presetRange("quarter", today, "persian")).toEqual({ from, to: today });
+  });
+
+  it("keeps the same ISO storage and today while the calendar changes the period start", () => {
+    expect(presetRange("year", "2026-11-05", "gregory")).toEqual({
+      from: "2026-01-01",
+      to: "2026-11-05",
+    });
+    expect(presetRange("year", "2026-11-05", "persian")).toEqual({
+      from: "2026-03-21",
+      to: "2026-11-05",
+    });
+  });
+
+  it.each(["gregory", "persian"] as const)(
+    "keeps last30 as 30 inclusive civil dates across Nowruz with the %s calendar",
+    (calendar) => {
+      expect(presetRange("last30", "2026-03-21", calendar)).toEqual({
+        from: "2026-02-20",
+        to: "2026-03-21",
+      });
+    },
+  );
 });

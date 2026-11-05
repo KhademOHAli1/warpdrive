@@ -8,7 +8,7 @@
     "liveExecution": "Canonical GitHub issues and central Project; this matrix preserves capability coverage and acceptance, not a competing issue-status ledger.",
     "authoringExclusion": "Settings → Goals, KPI definition and KPI scheme authoring are owned by another chat; consume agreed outputs only.",
     "excludedWorkspace": "codex/deal-workspace-premium remains uninspected and unchanged.",
-    "publication": "Integration coordinator owns main publication. No merge, release or deployment is implied.",
+    "publication": "The user explicitly authorizes this chat to merge the completed programme into main and publish a compatible three-part release after required qualification. Preserve reviewed PRs, exact-main CI/CodeQL, acceptance and release gates.",
     "existingChats": "No authorization to contact or interrupt existing chats."
   },
   "baseline": {
@@ -31,14 +31,14 @@
     },
     "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. No new allocation or prior exception reused.",
     "latestRemoteObservation": {
-      "sha": "cd7a964a4d7f992299d846c34e397396c6a268ab",
+      "sha": "02b1563e8ee4125959bbd53d0e6a646529337025",
       "date": "2026-11-05",
-      "change": "Workflow/settings and light CI PR #980; no stats/Goals authoring source overlap. Global inventory regenerated."
+      "change": "Calendar interaction and approved sidebar/delivery updates reconciled through task merge 581f83b; peer source preserved. Canonical migration still ends at0105."
     }
   },
   "statusMeaning": {
     "remaining": "Included work not established delivered/qualified by this matrix.",
-    "in-progress": "Current I1 implementation; no completion or acceptance claim.",
+    "in-progress": "Source implementation underway in I1/I2; no completion or acceptance claim.",
     "preserved-local": "Historical local UI checkpoint retained, without new qualification."
   },
   "increments": [
@@ -501,7 +501,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/stageConversion.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "history-stage-versions"],
       "dataRequirements": ["Exact visit entry/exit timestamps and duration eligibility."],
       "acceptance": [
@@ -526,7 +526,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/deals.ts", "src/db/schema/stages.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["scope-filters", "aging-distribution"],
       "dataRequirements": ["Current stageEnteredAt, team mapping and configurable age policy."],
       "acceptance": [
@@ -559,7 +559,7 @@
         "src/features/deals/statusTransition.ts",
         "src/features/pipelines/stageActions.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "history-stage-versions"],
       "dataRequirements": ["Ordered transition identities and versioned stage map."],
       "acceptance": [
@@ -1649,7 +1649,7 @@
         "src/server/realtime/events.ts",
         "src/server/notify.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary", "ownership-contracts"],
       "dataRequirements": [
         "Atomic mutation/event identity, before/after state, origin/provenance and deterministic sequence."
@@ -1679,7 +1679,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/stages.ts", "src/features/pipelines/stageActions.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["ownership-contracts"],
       "dataRequirements": ["Immutable stage identity/name/order/version at event time."],
       "acceptance": [
@@ -1730,7 +1730,7 @@
         "src/features/stats/stageConversion.ts",
         "src/features/import/commitDeal.history.test.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary"],
       "dataRequirements": [
         "Observed audit coverage, known import provenance and reliable-history start."
@@ -2107,7 +2107,7 @@
         "src/features/activities/accountTimeZone.ts",
         "src/features/stats/ui/dateRange.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary"],
       "dataRequirements": [
         "Independent locale/calendar/timezone preferences and canonical instants."
@@ -2333,7 +2333,7 @@
         "Fresh one-use queue allocation before heavy type/lint/build/database/browser validation."
       ],
       "acceptance": [
-        "Clean task-owned commits/PRs with canonical issue mapping; main publication reserved to integration coordinator.",
+        "Clean task-owned commits/PRs with canonical issue mapping; final programme merge/publication expressly authorized by the user after required qualification.",
         "Source implemented, integrated/CI, accepted, released, deployed and real-source qualified are independent gates.",
         "Retain all unfinished/advanced scope and actual failures; never infer whole-programme completion from a slice."
       ],
@@ -2364,5 +2364,22 @@
     "preparedUnrun": "17 PostgreSQL cases; configured typegen/TSC and typed lint; actual desktop/mobile light/dark EN/DE/FA/RTL browser review.",
     "remaining": "All broad canonical acceptance and later programme capabilities remain open.",
     "inputContractReview": "docs/analytics/input-contract-review.json"
+  },
+  "currentHistoryIncrementEvidence": {
+    "state": "Private source proposal; no canonical migration or installed report",
+    "source": [
+      "src/db/schema/analyticsHistory.ts",
+      "docs/analytics/history-capture-proposal.sql",
+      "src/features/stats/history/contracts.ts",
+      "src/features/stats/history/fold.ts",
+      "src/features/stats/history/coverage.ts",
+      "src/features/stats/history/repository.ts",
+      "src/features/stats/history/stageEpisodes.ts",
+      "src/features/stats/history/currentStageEpisodes.ts",
+      "src/features/stats/history/stageStatistics.ts"
+    ],
+    "capture": "Database-observed row changes with activation baseline, top-level transaction/snapshot witness and record incarnations; observed times and ordinals are not commit times.",
+    "reader": "Bounded internal current-deal reader, shared current authority and same-observation historical pipeline gate; reused pipeline IDs conservatively denied. No retained-deletion authority or browser DTO.",
+    "remaining": "Canonical admission/populated upgrade, native cases, authenticated actor/command adapter, historical stage definition selection, production report services/UI, workload measurement, snapshot writer and all later capabilities remain open."
   }
 }

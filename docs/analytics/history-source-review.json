@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "reviewer": {
+    "kind": "Independent Codex team source review",
+    "agent": "/root/history_sources",
+    "limitation": "Collaborating agent source inspection, not authenticated external/human acceptance, native execution or installed evidence."
+  },
+  "scope": "I2 unnumbered database capture proposal, typed lossless history/folding/coverage, current-deal internal reader, same-observation pipeline authority and synthetic native test definitions. Includes stage-episode kernel and completeness service adapter source; statistical aggregation source review complete.",
+  "result": "No remaining definite actionable finding in this source scope after the listed corrections. Source-only conclusion; native/installation qualification remains open.",
+  "sources": [
+    {
+      "path": "src/db/schema/analyticsHistory.ts",
+      "sha256": "ac12a8b33b1141bc08418a31ad45ef57858aaa1ff84c3303c71490c5e666c319"
+    },
+    {
+      "path": "docs/analytics/history-capture-proposal.sql",
+      "sha256": "35281c9d1de52d1e0b99d84fcb0b4bb1cb2141c846204ff842fe6e3edce2f690"
+    },
+    {
+      "path": "src/features/stats/history/contracts.ts",
+      "sha256": "f2e39240d24d46cbf883af37ee2ee3b5a69294bbbdda34e9573ca7d138cb9a79"
+    },
+    {
+      "path": "src/features/stats/history/fold.ts",
+      "sha256": "8797d4e5b1db270a9d71be587749a53d30eee1e22d692161f9e93514bdde6652"
+    },
+    {
+      "path": "src/features/stats/history/coverage.ts",
+      "sha256": "646c713460bbb9338307a97d549d9cdf4995f1a8a744c276de88b824ac2fa128"
+    },
+    {
+      "path": "src/features/stats/history/repository.ts",
+      "sha256": "f797f21fe9de3b9db911f58e1580e6df8208140e8505f1837b2e250fedd41461"
+    },
+    {
+      "path": "src/features/stats/visiblePipelines.ts",
+      "sha256": "c9cf24e1a6f5dd3644e80911874de0c9d69958da9df70093f466026e90b4b215"
+    },
+    {
+      "path": "src/features/stats/history/capture.test-helpers.ts",
+      "sha256": "5c820b678f276c2c9afaffe34d113e0d2c03afe897506c91b407db1f1ddafa93"
+    },
+    {
+      "path": "src/features/stats/history/capture.integration.test.ts",
+      "sha256": "5465650acf2d34a16bec29ff159e3aa9ccfdfe632ab1066f075166ef20a440b1"
+    },
+    {
+      "path": "src/features/stats/history/repository.integration.test.ts",
+      "sha256": "b9c3c4ed804aa8876f79bd0be3da3bab573a7accadcc8c11d66c33877b9470d8"
+    },
+    {
+      "path": "src/features/stats/history/stageEpisodes.ts",
+      "sha256": "3cd1d2944db399dc5c676b6c074f505f7d694e66f810b7a3845b1840054ecad6"
+    },
+    {
+      "path": "src/features/stats/history/currentStageEpisodes.ts",
+      "sha256": "80264d0c513d609aaf7146578cf15c15fbc17bb2d99d065510fd4b34d845f3ee"
+    },
+    {
+      "path": "src/features/stats/history/stageStatistics.ts",
+      "sha256": "72c14845455676890312a1d870604d30d947653b61c093fedebab24e49ff6cf6"
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "finding": "BigInt refinement could run after a lexical failure and throw on malformed text.",
+      "correction": "Validate positive decimal shape and bounded length before BigInt conversion."
+    },
+    {
+      "finding": "Command ID UUID parser disagreed with SQL text storage.",
+      "correction": "Accept nonempty opaque text or null; no provenance is inferred."
+    },
+    {
+      "finding": "Snapshot lexical shape alone accepted impossible native witnesses.",
+      "correction": "Bound XID8 values and require xmin<=xmax, sorted unique in-progress XIDs within [xmin,xmax). Native PG output assumptions remain explicit."
+    },
+    {
+      "finding": "Trigger name, function OID and ALWAYS status did not establish full guard shape.",
+      "correction": "Verify expected event/timing/row bitmask, no WHEN/arguments/column restriction, and noninternal/nondeferrable shape."
+    },
+    {
+      "finding": "Historical pipeline IDs came from an earlier READ COMMITTED observation.",
+      "correction": "Evaluate permitted pipelines in the same SQL snapshot as the deal/event facts using the existing shared pipeline predicate."
+    },
+    {
+      "finding": "A visible pipeline UUID recreated after deletion could grant an old incarnation history.",
+      "correction": "Require active current pipeline head and matching tip projection; deny any pipeline UUID with prior incarnation evidence pending an event-specific referenced-incarnation resolver."
+    },
+    {
+      "finding": "A direct internal caller could supply broad owner filters without the reporting permission ceiling.",
+      "correction": "Reapply can(stats.viewOthers); otherwise restrict owners to the actor, in addition to row visibility. This matches the existing ownerScope policy."
+    },
+    {
+      "finding": "A declared open activation baseline could be falsely supplied as observed entry and enter exact quantiles.",
+      "correction": "Reciprocal first-episode censoring rules require baseline left censoring and its lower-bound-only population."
+    },
+    {
+      "finding": "A movement exit without its destination episode could be accepted as a complete episode sequence.",
+      "correction": "Check transaction-final movement/destination and closed/reopen continuity, while preserving closed won/lost corrections without invented stays."
+    }
+  ],
+  "privacyBoundary": {
+    "data": "Titles and loss free text, exact deal values/currency/status, source and person/organization/workforce references, visibility, stage/pipeline definitions, microsecond timestamps, revisions, incarnations and native transaction snapshots. Free text can contain personal data.",
+    "writes": "Private SQL proposal, if installed, transactionally captures deal/stage/pipeline baselines and material row changes plus heads. Schema declarations alone create no storage. Report table has no authenticated writer.",
+    "reads": "Internal bounded SELECT of current authorized live deal incarnation; matching state chain and capture tip, same-observation current historical-pipeline authority. Global baseline counts excluded.",
+    "excluded": "No unrestricted custom fields/labels, provider I/O, email, campaign/spending action, object export, verified subject identity, retained-deletion authority or lifecycle operation.",
+    "retention": "Proposed immutable event/baseline/snapshot rows retain previous and deleted-state facts. No qualified retention/erasure adapter exists; immutability does not authorize indefinite retention.",
+    "registry": "Separate analytics inventory classification with all six lifecycle capabilities unsupported."
+  },
+  "limitations": [
+    "Private SQL has no canonical migration ordinal, journal/snapshot or schema-index export; populated upgrade and migration framework transaction integration remain unqualified.",
+    "Ordinals/timestamps represent row observation, not commit chronology or imported business events. Baselines do not establish past creation/stage entry.",
+    "Catalog health and projection matching do not prove uninterrupted history against privileged DDL/function replacement or an unseen ABA capture gap.",
+    "Current deal reader grants no archived/deleted-record history authority; raw contact references, events and transaction snapshots require scoped application/browser/export DTOs.",
+    "Reused pipeline UUIDs are deliberately undergranted, including new histories, until referenced-incarnation selection is implemented.",
+    "Native tests use constructed actors and private disposable clones. Their definitions do not qualify live sessions/hydration/revocation, provider sources, migration admission or installed use.",
+    "Snapshot writer, historical stage definition selection, aggregates/report services/UI and broader programme capabilities remain unfinished.",
+    "A complete snapshot-through-cutoff chain is a server repository precondition. Pure kernels cannot detect an omitted later event; ordinal alone never proves completeness.",
+    "Pure stage statistics are not an integrated cohort/report collector. A common cutoff string, grouped IDs and valid arithmetic do not qualify common snapshot membership, source eligibility or stage definitions."
+  ],
+  "primaryReferences": [
+    "https://github.com/postgres/postgres/blob/REL_16_STABLE/src/backend/utils/adt/xid8funcs.c",
+    "https://github.com/postgres/postgres/blob/REL_16_STABLE/src/include/catalog/pg_trigger.h"
+  ],
+  "execution": "Reviewer executed no tests or checks. Root execution receipts are separate and scoped to their actual source cut.",
+  "stageEpisodeReview": {
+    "reviewer": "/root/history_sources",
+    "result": "No remaining definite source blocker under transaction-final inactive-state policy.",
+    "policy": "Unknown baseline entry remains left-censored; observed completed stays and current open age are distinct. Same-transaction round trips disappear during folding. Archive/delete final states or restoration across transactions remain unavailable. Partial or incomplete repository output is rejected before aging.",
+    "precision": "Elapsed spans are exact nanosecond decimal text from Temporal; observed boundaries are not commit or asserted business timestamps.",
+    "authority": "Returned facts remain identifiable internal analytics data, including entity/pipeline/stage and event/ordinal witnesses. No anonymization, browser/export qualification or retained-record authority is granted."
+  },
+  "statisticsReview": {
+    "reviewer": "/root/history_sources",
+    "result": "No remaining source blocker after reciprocal censoring and episode-continuity amendments.",
+    "arithmetic": "Exact BigInt arithmetic midpoint median with half nanoseconds; nearest-rank P75/P90; zero and repeated-visit samples explicit.",
+    "bounds": "At most 5,000 deal-incarnation inputs and 50,000 episodes; unsuccessful, duplicated, mixed-frame, contradictory or invalid-quantity inputs fail explicitly.",
+    "censoring": "Completed observed-entry durations, current observed-entry ages and baseline lower-bound contributors are separate populations. Baseline declarations are checked reciprocally.",
+    "continuity": "Movement exits require the destination episode; closed-state corrections and later reopened stage/pipeline changes remain valid.",
+    "boundary": "Matching activation/cutoff metadata cannot prove common MVCC membership, cohort completeness or authority. The future collecting adapter owns that proof. Groups have recorded pipeline/stage IDs only, no historical definition/incarnation/name resolution."
+  }
+}

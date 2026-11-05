@@ -92,11 +92,11 @@ export function Dashboard({
 }: DashboardProps) {
   const S = useStatsMessages();
   const tCurrency = useAppTranslations("sales");
-  const { timeZone } = useLocalePreferences();
+  const { timeZone, calendar } = useLocalePreferences();
   const preferencePending = useLocalePreferencePending();
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
-  const [range, setRange] = useState(() => presetRange("year", today));
+  const [range, setRange] = useState(() => presetRange("year", today, calendar));
   const [selectedPipelineId, setSelectedPipelineId] = useState(ALL_PIPELINES);
   const [inspection, setInspection] = useState<{
     metric: DealRecordMetric;

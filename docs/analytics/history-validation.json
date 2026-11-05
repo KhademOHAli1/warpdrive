@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "programmeComplete": false,
+  "qualification": "Focused source checks only. Database proposal and native test definitions remain unexecuted locally; no migration, installed report, integrated-main or release acceptance.",
+  "sources": [
+    {
+      "path": "src/features/stats/history/contracts.ts",
+      "sha256": "f2e39240d24d46cbf883af37ee2ee3b5a69294bbbdda34e9573ca7d138cb9a79"
+    },
+    {
+      "path": "src/features/stats/history/fold.ts",
+      "sha256": "8797d4e5b1db270a9d71be587749a53d30eee1e22d692161f9e93514bdde6652"
+    },
+    {
+      "path": "src/features/stats/history/coverage.ts",
+      "sha256": "646c713460bbb9338307a97d549d9cdf4995f1a8a744c276de88b824ac2fa128"
+    },
+    {
+      "path": "src/features/stats/history/stageEpisodes.ts",
+      "sha256": "3cd1d2944db399dc5c676b6c074f505f7d694e66f810b7a3845b1840054ecad6"
+    },
+    {
+      "path": "src/features/stats/history/currentStageEpisodes.ts",
+      "sha256": "80264d0c513d609aaf7146578cf15c15fbc17bb2d99d065510fd4b34d845f3ee"
+    },
+    {
+      "path": "src/features/stats/history/stageStatistics.ts",
+      "sha256": "72c14845455676890312a1d870604d30d947653b61c093fedebab24e49ff6cf6"
+    }
+  ],
+  "runtime": "Pinned Bun 1.4.4; borrowed dependencies reused without installs or deliberate dependency edits; clean env; BUN_OPTIONS=--no-env-file, direct --no-env-file, Vite envDir:false; no dotenv or service started; one worker.",
+  "checks": [
+    {
+      "name": "Earlier I2 history/regional/dashboard focused cut",
+      "result": "passed",
+      "tests": 153,
+      "files": 7,
+      "vitestSeconds": 4.73,
+      "limitation": "Earlier source cut before required history snapshot/opaque command-ID refinements; does not qualify later amendments."
+    },
+    {
+      "name": "Current history contracts/fold/coverage",
+      "result": "passed",
+      "tests": 139,
+      "files": 3,
+      "vitestSeconds": 0.245,
+      "log": "work/i2-history-unit-current.log"
+    },
+    {
+      "name": "Stage episodes and completeness adapter",
+      "result": "passed",
+      "tests": 49,
+      "files": 2,
+      "vitestSeconds": 0.399,
+      "log": "work/i2-aging-unit.log"
+    },
+    {
+      "name": "Regional translation audit",
+      "result": "passed",
+      "catalogIssues": 0,
+      "newSourceFindings": 0,
+      "log": "work/i2-i18n.log"
+    },
+    {
+      "name": "Amended completeness adapter, including in-transaction archive/restore policy",
+      "result": "passed",
+      "tests": 10,
+      "files": 1,
+      "vitestSeconds": 0.367,
+      "log": "work/i2-adapter-amended-unit.log",
+      "limitation": "Replaces the earlier nine adapter cases at the amended test cut; unchanged stage kernel forty cases retain their earlier result."
+    },
+    {
+      "name": "Bounded exact stage statistics",
+      "result": "passed",
+      "tests": 44,
+      "files": 1,
+      "vitestSeconds": 0.147,
+      "log": "work/i2-statistics-unit.log",
+      "cache": "--no-cache; no install or deliberate dependency edits."
+    },
+    {
+      "name": "Independent history/statistics source review",
+      "result": "completed within source-only scope",
+      "report": "docs/analytics/history-source-review.json"
+    },
+    {
+      "name": "Configured focused formatter",
+      "result": "passed",
+      "files": 40,
+      "limitation": "No typed lint or compile result. SQL is reviewed source; unsupported formatter input types are not formatted."
+    },
+    {
+      "name": "Unmodified inventory after main reconciliation",
+      "result": "passed",
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "report": "docs/privacy-inventory-report.json"
+    },
+    {
+      "name": "Registry regression and validity suites",
+      "result": "passed",
+      "tests": 20,
+      "files": 2,
+      "vitestSeconds": 1.26,
+      "log": "work/i2-registry-unit.log"
+    }
+  ],
+  "resourceEvidence": {
+    "observedPressureLevel": 2,
+    "observedFreeMemoryPercent": "50–52 at entries",
+    "disk": "More than 8 GiB free",
+    "execution": "Warning-mode focused lane; 55-second finite command deadlines, one owned check at a time. Owned aggregate peak RSS unmeasured; no normal-pressure or peak-conformance claim."
+  },
+  "nativePreparedUnrun": [
+    "src/features/stats/history/capture.integration.test.ts",
+    "src/features/stats/history/repository.integration.test.ts"
+  ],
+  "remaining": [
+    "Native populated clone/proposal/compatibility and concurrency execution",
+    "Canonical contiguous migration reservation, framework transaction integration, generated parity and populated upgrade",
+    "Current I2 configured typegen/TSC/typed lint on hosted runner",
+    "Authenticated caller/session/actor lifecycle qualification",
+    "Real rendered desktop/mobile light/dark EN/DE/FA/RTL browser review",
+    "Stage/report services UI, exact-current main checks, full programme and release gates"
+  ],
+  "localHeavyValidation": "Explicitly kept queued by the user. No allocation claimed, no local database/browser/compiler/build/install started.",
+  "cleanup": "All owned focused commands terminated. No task container, database, browser or server launched; no shared service modified.",
+  "base": "02b1563e8ee4125959bbd53d0e6a646529337025"
+}

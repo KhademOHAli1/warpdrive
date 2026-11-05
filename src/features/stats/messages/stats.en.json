@@ -125,5 +125,7 @@
   "recordsClosedBasis": "Currently won or lost deals whose corresponding close date is in this period. Won deals form the win-rate numerator; all listed deals form its denominator.",
   "recordsWonValueBasis": "Currently won deals closed in this period with a recorded value. Only these values enter the average; a recorded zero is included.",
   "recordsWonCycleBasis": "Currently won deals closed in this period whose win date is on or after creation. Each listed deal contributes one creation-to-win duration to the median.",
-  "funnelLegacyNotice": "Includes inferred passage through earlier stages using the current stage order. Elapsed time combines completed stays and current open age. All-pipeline results combine stage positions."
+  "funnelLegacyNotice": "Includes inferred passage through earlier stages using the current stage order. Elapsed time combines completed stays and current open age. All-pipeline results combine stage positions.",
+  "presetCalendarGregorian": "Month, quarter and year presets follow the Gregorian calendar and end today.",
+  "presetCalendarPersian": "Month, quarter and year presets follow the Iranian Solar Hijri calendar and end today."
 }

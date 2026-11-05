@@ -125,5 +125,7 @@
   "recordsClosedBasis": "Aktuell gewonnene oder verlorene Deals mit entsprechendem Abschlussdatum in diesem Zeitraum. Gewonnene Deals bilden den Zähler der Abschlussquote; alle aufgeführten Deals bilden den Nenner.",
   "recordsWonValueBasis": "Aktuell gewonnene Deals mit Abschluss in diesem Zeitraum und erfasstem Wert. Nur diese Werte fließen in den Durchschnitt ein; ein erfasster Nullwert wird berücksichtigt.",
   "recordsWonCycleBasis": "Aktuell gewonnene Deals mit Abschluss in diesem Zeitraum, deren Gewinndatum nicht vor der Erstellung liegt. Jeder aufgeführte Deal trägt eine Dauer von der Erstellung bis zum Gewinn zum Median bei.",
-  "funnelLegacyNotice": "Enthält abgeleitete Durchgänge durch frühere Phasen anhand der aktuellen Reihenfolge. Die verstrichene Zeit verbindet abgeschlossene Aufenthalte und das Alter offener Vorgänge. Bei allen Pipelines werden Phasenpositionen zusammengeführt."
+  "funnelLegacyNotice": "Enthält abgeleitete Durchgänge durch frühere Phasen anhand der aktuellen Reihenfolge. Die verstrichene Zeit verbindet abgeschlossene Aufenthalte und das Alter offener Vorgänge. Bei allen Pipelines werden Phasenpositionen zusammengeführt.",
+  "presetCalendarGregorian": "Die Schnellwahl für Monat, Quartal und Jahr folgt dem gregorianischen Kalender und reicht bis heute.",
+  "presetCalendarPersian": "Die Schnellwahl für Monat, Quartal und Jahr folgt dem iranischen Sonnenkalender und reicht bis heute."
 }
