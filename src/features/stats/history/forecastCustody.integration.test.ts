@@ -1,6 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { Pool } from "pg";
 import { describe, expect, test } from "vitest";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { calculatePeriodForecast } from "@/features/stats/periodForecast";
 import { makeTestDb, type TestDb } from "@/test/db";
 import {
@@ -8,6 +10,11 @@ import {
   type HistoryCaptureFixture,
   prepareHistoryCapture,
 } from "./capture.test-helpers";
+
+import {
+  type ForecastCommitExpectation,
+  qualifyForecastCommit,
+} from "./forecastCommitQualification";
 
 const correctionReason = "Re-observed the deal and updated the model assumption";
 
@@ -62,6 +69,7 @@ interface Options {
   targetAlreadyStarted?: boolean;
   targetNonMidnight?: boolean;
   anchorDay?: string;
+  beforeCommit?: (expected: ForecastCommitExpectation) => Promise<void>;
 }
 
 // This fixture exercises private storage only. The synthetic scope and assumptions
@@ -174,7 +182,7 @@ async function save(h: TestDb, f: HistoryCaptureFixture, options: Options = {}) 
       result,
     });
 
-    await client.query(
+    const inserted = await client.query<{ writerXid: string; insertedAt: string }>(
       `INSERT INTO public.analytics_report_snapshots (
         id, activation_id, kind, definition_version, report_definition, model_version,
         model_definition, scope, currency, time_zone, calendar, cutoff_observed_at,
@@ -186,7 +194,8 @@ async function save(h: TestDb, f: HistoryCaptureFixture, options: Options = {}) 
         $5::jsonb, $6::jsonb, 'EUR', 'UTC', 'gregory', $7::timestamptz,
         $8::pg_catalog.pg_snapshot, $9::date, $10::date, $11::jsonb, $12::uuid,
         $13::uuid, $14, $15, $16::timestamptz, $17::timestamptz, $18::uuid, $19
-      )`,
+      ) RETURNING forecast_writer_xid::text AS "writerXid",
+        public.analytics_history_utc(created_at) AS "insertedAt"`,
       [
         id,
         source.activationId,
@@ -209,9 +218,26 @@ async function save(h: TestDb, f: HistoryCaptureFixture, options: Options = {}) 
         reason,
       ],
     );
+    const receipt = inserted.rows[0];
+    if (receipt === undefined) throw new Error("Expected a forecast insert receipt");
+    const expected: ForecastCommitExpectation = {
+      snapshotId: id,
+      activationId: source.activationId,
+      requestKey,
+      currency: "EUR",
+      writerXid: receipt.writerXid,
+      captureSnapshot: options.snapshotOverride ?? source.snapshot,
+      predictionCutoff: source.cut,
+      insertedAt: receipt.insertedAt,
+      requestSha256: digest("warpdrive-forecast-request-v1", requestBytes),
+      payloadSha256: digest("warpdrive-forecast-payload-v1", payloadBytes),
+      target: { ...target, fromDate: source.fromDate, toExclusiveDate: source.toDate },
+    };
+    await options.beforeCommit?.(expected);
     await client.query("COMMIT");
     return {
       id,
+      expected,
       requestKey,
       requestBytes,
       payloadBytes,
@@ -255,7 +281,139 @@ function digest(domain: string, bytes: string): string {
   return createHash("sha256").update(`${domain}\n${bytes}`, "utf8").digest("hex");
 }
 
+function fixtureCreator(id: string): PermSetUser {
+  return { id, type: "regular", isActive: true, groupIds: new Set(), flags: new Set() };
+}
+
+function observerPool(h: TestDb): Pool {
+  return new Pool({
+    connectionString: h.url,
+    max: 1,
+    connectionTimeoutMillis: 2_000,
+    query_timeout: 6_000,
+  });
+}
+
+const signal = () => AbortSignal.timeout(10_000);
+const noProof = { state: "unavailable", reason: "no-qualifying-receipt" };
+
 describe("private forecast custody proposal", () => {
+  test("observes an independently committed receipt for only the active creator and exact expectation", async () => {
+    await withCustody(async (h, f) => {
+      const reader = observerPool(h);
+      const actor = fixtureCreator(f.userId);
+      try {
+        const original = await save(h, f, {
+          beforeCommit: async (expected) => {
+            expect(await qualifyForecastCommit(reader, actor, expected, signal())).toEqual(noProof);
+          },
+        });
+        const result = await qualifyForecastCommit(reader, actor, original.expected, signal());
+        expect(result).toMatchObject({
+          state: "confirmed",
+          proof: {
+            ...original.expected,
+            creatorId: f.userId,
+            basis: "independent-native-visibility-before-target",
+          },
+        });
+        if (result.state !== "confirmed") throw new Error("Expected committed visibility");
+        expect(result.proof.confirmedAt >= original.expected.insertedAt).toBe(true);
+        expect(result.proof.confirmedAt < original.expected.target.from).toBe(true);
+
+        const other = randomUUID();
+        await h.pool.query(
+          "INSERT INTO public.users(id,email,name) VALUES($1,$2,'Another creator')",
+          [other, `other-${other}@example.test`],
+        );
+        expect(
+          await qualifyForecastCommit(reader, fixtureCreator(other), original.expected, signal()),
+        ).toEqual(noProof);
+        expect(
+          await qualifyForecastCommit(
+            reader,
+            actor,
+            {
+              ...original.expected,
+              target: {
+                ...original.expected.target,
+                from: original.expected.target.from.replace(".000000Z", ".000001Z"),
+              },
+            },
+            signal(),
+          ),
+        ).toEqual(noProof);
+        expect(
+          await qualifyForecastCommit(
+            reader,
+            actor,
+            {
+              ...original.expected,
+              payloadSha256: "0".repeat(64),
+            },
+            signal(),
+          ),
+        ).toEqual(noProof);
+
+        await h.pool.query("UPDATE public.users SET is_active=false WHERE id=$1", [f.userId]);
+        expect(await qualifyForecastCommit(reader, actor, original.expected, signal())).toEqual(
+          noProof,
+        );
+      } finally {
+        await reader.end();
+      }
+    });
+  });
+
+  test("rejects a dirty checkout and later replacement of the forecast tuple", async () => {
+    await withCustody(async (h, f) => {
+      const original = await save(h, f);
+      const actor = fixtureCreator(f.userId);
+      const reader = observerPool(h);
+      try {
+        const dirty = await reader.connect();
+        try {
+          await dirty.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
+        } finally {
+          dirty.release();
+        }
+        expect(await qualifyForecastCommit(reader, actor, original.expected, signal())).toEqual({
+          state: "unavailable",
+          reason: "session-unavailable",
+        });
+        expect(
+          await qualifyForecastCommit(reader, actor, original.expected, signal()),
+        ).toMatchObject({ state: "confirmed" });
+
+        // Disposable owner-only corruption control. Keep all bytes and stamps unchanged
+        // but create a different tuple, then restore the guard before reading.
+        await h.pool.query(
+          "ALTER TABLE public.analytics_report_snapshots DISABLE TRIGGER analytics_snapshots_mutation_guard",
+        );
+        try {
+          await h.pool.query(
+            "UPDATE public.analytics_report_snapshots SET created_at=created_at WHERE id=$1",
+            [original.id],
+          );
+        } finally {
+          await h.pool.query(
+            "ALTER TABLE public.analytics_report_snapshots ENABLE ALWAYS TRIGGER analytics_snapshots_mutation_guard",
+          );
+        }
+        const actual = await h.pool.query<{ originalTuple: boolean }>(
+          'SELECT xmin=forecast_writer_xid::pg_catalog.xid AS "originalTuple" FROM public.analytics_report_snapshots WHERE id=$1',
+          [original.id],
+        );
+        expect(actual.rows).toEqual([{ originalTuple: false }]);
+        expect(await qualifyForecastCommit(reader, actor, original.expected, signal())).toEqual(
+          noProof,
+        );
+      } finally {
+        await reader.end();
+      }
+    });
+  });
+
   test("preserves exact bytes, prediction and roster across source edits and a linked correction", async () => {
     await withCustody(async (h, f) => {
       const original = await save(h, f);

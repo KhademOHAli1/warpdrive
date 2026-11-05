@@ -47,6 +47,30 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
   },
 );
 
+export const analyticsForecastCommitInventoryEntry = classifyInventory(
+  [
+    "sourceReview:src/features/stats/history/forecastCommitQualification.ts#56fbc23b26cd57ad0211060810b4b70ddbe18d3ea8ca1435715341f02bcaa90b",
+    "writer:src/features/stats/history/forecastCommitQualification.ts#query:BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY",
+    "writer:src/features/stats/history/forecastCommitQualification.ts#query:ROLLBACK",
+    "writer:src/features/stats/history/forecastCommitQualification.ts#query:SET LOCAL search_path = pg_catalog, pg_temp; SET LOCAL statement_timeout = '5000ms'; SET LOCAL lock_timeout = '2000ms'",
+    "writer:src/features/stats/history/forecastCommitQualification.ts#query:dynamic",
+  ],
+  {
+    owner: "private pre-target forecast commit qualification",
+    categories: [
+      "forecast creator and receipt identifiers, digests, native transaction witnesses and clocks",
+    ],
+    subjectRelation: "The expected receipt names its creator and references a private forecast.",
+    purpose:
+      "Verify that a specific forecast tuple was visible to a separate native primary snapshot before the forecast target began.",
+    disclosure:
+      "Private server-side proof for the exact creator and receipt. No roster, forecast assumptions or result bytes enter the proof.",
+    retention: "Transient proof only. Durable proof custody requires an explicit admission policy.",
+    externalEffects: "Bounded read-only PostgreSQL transaction. No persistent or provider writes.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const analyticsAttentionInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/analyticsAttention.ts",

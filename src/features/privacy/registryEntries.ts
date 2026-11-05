@@ -1,6 +1,7 @@
 import {
   analyticsAttentionInventoryEntry,
   analyticsComputationInventoryEntry,
+  analyticsForecastCommitInventoryEntry,
   analyticsGovernedCustodyInventoryEntry,
   analyticsInventoryEntry,
   currentLeadHandoffInventoryEntry,
@@ -58,6 +59,7 @@ export const registryEntries: RegistryEntry[] = [
   recordedDealSourceInventoryEntry,
   analyticsAttentionInventoryEntry,
   analyticsComputationInventoryEntry,
+  analyticsForecastCommitInventoryEntry,
   analyticsGovernedCustodyInventoryEntry,
   kpiInventoryEntry,
   billingInventoryEntry,
