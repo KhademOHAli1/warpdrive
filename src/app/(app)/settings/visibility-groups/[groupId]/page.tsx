@@ -50,16 +50,11 @@ export default async function GroupDetailPage({
   } catch {
     // The group is known; retain its heading and navigation while the roster is unavailable.
   }
-  const roster =
-    rosterData !== undefined && rosterData[0].ok ? (
-      <GroupMembersClient
-        groupId={groupId}
-        members={rosterData[0].value}
-        allUsers={rosterData[1]}
-      />
-    ) : (
-      <GroupMembersUnavailable />
-    );
+  const roster = rosterData?.[0].ok ? (
+    <GroupMembersClient groupId={groupId} members={rosterData[0].value} allUsers={rosterData[1]} />
+  ) : (
+    <GroupMembersUnavailable />
+  );
 
   return (
     <SettingsPage>
