@@ -2313,7 +2313,7 @@
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "input-contracts", "scope-permissions"],
       "dataRequirements": [
         "Qualified outcomes, immutable dataset/cutoff/model version and prespecified temporal evaluation."

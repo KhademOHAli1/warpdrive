@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import { isTimeZone } from "@/features/i18n/preferences";
@@ -352,7 +353,10 @@ function periodMoney({ forecastUnits, actualUnits }: Scored): PeriodMoney {
   };
 }
 
-function evaluatePeriod(pair: Pair): PeriodResult | Failure {
+function evaluatePeriod(
+  pair: Pair,
+  observe?: (member: Member, actual: Outcome) => void,
+): PeriodResult | Failure {
   if (!rosterSizeMatches(pair)) return fail("roster-mismatch");
   const indexed = indexActuals(pair);
   if (!indexed.ok) return indexed;
@@ -382,6 +386,7 @@ function evaluatePeriod(pair: Pair): PeriodResult | Failure {
     dealIds.add(member.dealId);
     incarnationIds.add(member.incarnationId);
     addEvidence(coverage, totals, paired, member, actual);
+    observe?.(member, actual);
   }
 
   const covered =
@@ -512,13 +517,7 @@ function validateSequence(periods: Pair[], expectedKey: string): Failure | null 
   return null;
 }
 
-/**
- * Version 1 compares original, pre-target predictions for a frozen open-deal roster with
- * immutable settled outcome evidence for that same roster. Producers prove manifest custody,
- * current viewer authority, original cutoff, and full positive/negative outcome collection.
- * A matched label enables an input for calibration, never a fitted or qualified probability.
- */
-export function evaluateSavedForecasts(input: unknown): ForecastEvaluation {
+function validatedFrame(input: unknown) {
   const frame = frameSchema.safeParse(input);
   if (!frame.success || frame.data.periods.length === 0) return fail("invalid-input");
   if (frame.data.periods.length > MAX_FORECAST_EVALUATION_PERIODS) return fail("bounded-limit");
@@ -528,8 +527,35 @@ export function evaluateSavedForecasts(input: unknown): ForecastEvaluation {
   if (first === undefined) return fail("invalid-input");
   const invalid = validateSequence(parsed.periods, comparisonKey(first.forecast));
   if (invalid !== null) return invalid;
+  return {
+    ok: true as const,
+    evaluationAsOf: frame.data.evaluationAsOf,
+    pairs: parsed.periods,
+    first,
+  };
+}
+
+function forecastModel(saved: Pair["forecast"]) {
+  return {
+    forecastDefinitionVersion: saved.forecastDefinitionVersion,
+    modelId: saved.modelId,
+    modelVersion: saved.modelVersion,
+    scenario: saved.scenario,
+  };
+}
+
+/**
+ * Version 1 compares original, pre-target predictions for a frozen open-deal roster with
+ * immutable settled outcome evidence for that same roster. Producers prove manifest custody,
+ * current viewer authority, original cutoff, and full positive/negative outcome collection.
+ * A matched label enables an input for calibration, never a fitted or qualified probability.
+ */
+export function evaluateSavedForecasts(input: unknown): ForecastEvaluation {
+  const frame = validatedFrame(input);
+  if (!frame.ok) return frame;
+  const { evaluationAsOf, first } = frame;
   const evaluated: PeriodResult[] = [];
-  for (const pair of parsed.periods) {
+  for (const pair of frame.pairs) {
     const period = evaluatePeriod(pair);
     if (!period.ok) return period;
     evaluated.push(period);
@@ -541,14 +567,9 @@ export function evaluateSavedForecasts(input: unknown): ForecastEvaluation {
     ok: true,
     definitionVersion: FORECAST_EVALUATION_DEFINITION_VERSION,
     basis: "settled-saved-open-cohort",
-    evaluationAsOf: frame.data.evaluationAsOf,
+    evaluationAsOf,
     measurement: first.forecast.measurement,
-    forecastModel: {
-      forecastDefinitionVersion: first.forecast.forecastDefinitionVersion,
-      modelId: first.forecast.modelId,
-      modelVersion: first.forecast.modelVersion,
-      scenario: first.forecast.scenario,
-    },
+    forecastModel: forecastModel(first.forecast),
     periods,
     coverage: {
       totalPeriods: periods.length,
@@ -558,5 +579,74 @@ export function evaluateSavedForecasts(input: unknown): ForecastEvaluation {
     },
     metrics: accuracy(scores),
     calibration: calibration(evaluated, first.forecast.scenario),
+  };
+}
+
+type Matched = { member: Member; actual: Outcome };
+
+function manifestDigest(kind: "forecast" | "actual", manifest: unknown): string {
+  return createHash("sha256")
+    .update(`warpdrive-forecast-calibration-manifest-v1\n${kind}\n`)
+    .update(JSON.stringify(manifest))
+    .digest("hex");
+}
+
+function calibrationPeriod(pair: Pair, matched: Matched[]) {
+  // Identity is already unique and canonicalized by the shared roster evaluator.
+  matched.sort((a, b) => (a.member.dealId < b.member.dealId ? -1 : 1));
+  const saved = pair.forecast;
+  const settled = pair.actual;
+  return {
+    forecastSnapshotId: saved.snapshotId,
+    actualManifestId: settled.manifestId,
+    predictionCutoff: saved.predictionCutoff,
+    savedAt: saved.savedAt,
+    target: saved.target,
+    probabilityEvidence: saved.probabilityEvidence,
+    actualObservedAt: settled.observedAt,
+    forecastManifestSha256: manifestDigest("forecast", {
+      ...saved,
+      members: matched.map(({ member }) => member),
+    }),
+    actualManifestSha256: manifestDigest("actual", {
+      ...settled,
+      members: matched.map(({ member: { dealId, incarnationId }, actual }) => ({
+        dealId,
+        incarnationId,
+        outcome: actual,
+      })),
+    }),
+    samples: matched.map(({ member, actual }) => ({
+      dealId: member.dealId,
+      incarnationId: member.incarnationId,
+      probability: member.periodWinProbability,
+      won: actual.kind === "unknown" ? null : actual.kind === "won",
+    })),
+  };
+}
+
+/** Private custody handoff. A matching fingerprint binds data and does not grant authority. */
+export function prepareForecastCalibration(input: unknown) {
+  const frame = validatedFrame(input);
+  if (!frame.ok) return frame;
+  const periods: ReturnType<typeof calibrationPeriod>[] = [];
+  const evaluated: PeriodResult[] = [];
+  for (const pair of frame.pairs) {
+    const matched: Matched[] = [];
+    const period = evaluatePeriod(pair, (member, actual) => {
+      matched.push({ member, actual });
+    });
+    if (!period.ok) return period;
+    evaluated.push(period);
+    periods.push(calibrationPeriod(pair, matched));
+  }
+  const saved = frame.first.forecast;
+  return {
+    ok: true as const,
+    evaluationAsOf: frame.evaluationAsOf,
+    measurement: saved.measurement,
+    forecastModel: forecastModel(saved),
+    eligibility: calibration(evaluated, saved.scenario),
+    periods,
   };
 }
