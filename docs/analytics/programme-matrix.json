@@ -1156,8 +1156,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/commercialDecomposition.ts",
+        "src/features/stats/commercialDecomposition.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["cohort-basis", "segment-dimensions", "dictionary"],
       "dataRequirements": [
         "Comparable periods/populations and mathematically defined decomposition."
@@ -1166,7 +1169,8 @@
         "Components reconcile where decomposition is appropriate; path/order and residual assumptions are explicit."
       ],
       "tests": ["Reconciliation, composition-only change, zero baseline and noncomparable scopes."],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private exact ordered bridge and seven focused fixtures. Qualified cohort/segment collection, viewer result and acceptance remain open."
     },
     {
       "id": "commercial-profitability",
