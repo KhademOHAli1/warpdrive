@@ -1,4 +1,8 @@
-import { analyticsComputationInventoryEntry, analyticsInventoryEntry } from "./registryAnalytics";
+import {
+  analyticsComputationInventoryEntry,
+  analyticsGovernedCustodyInventoryEntry,
+  analyticsInventoryEntry,
+} from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
@@ -42,6 +46,7 @@ import { workflowInventoryEntry } from "./registryWorkflows";
 export const registryEntries: RegistryEntry[] = [
   analyticsInventoryEntry,
   analyticsComputationInventoryEntry,
+  analyticsGovernedCustodyInventoryEntry,
   kpiInventoryEntry,
   billingInventoryEntry,
   companyWorkInventoryEntry,

@@ -2073,7 +2073,11 @@
       "baselineCode": [
         "src/db/schema/importBatches.ts",
         "src/db/schema/importExternalIds.ts",
-        "docs/sales-platform/product-signal-event-contract.md"
+        "docs/sales-platform/product-signal-event-contract.md",
+        "src/features/stats/analyticsInputContracts.ts",
+        "src/features/stats/analyticsInputAdmission.ts",
+        "src/features/stats/governedInputRepository.ts",
+        "docs/analytics/governed-source-storage-proposal.sql"
       ],
       "status": "in-progress",
       "dependencies": ["ownership-contracts", "scope-permissions"],
@@ -2088,7 +2092,7 @@
         "Native intake validation, replay/conflict, source revocation, correction, identity, bounded payload and database persistence."
       ],
       "deliveryIncrement": "I3",
-      "currentSourceNote": "Versioned Zod/Temporal payload validators and independent review implemented. Authenticated ingest, persistence, persistent dedup/corrections, source adapters and real source qualification remain unimplemented. See governed-inputs.md."
+      "currentSourceNote": "Versioned payload validators, an atomic planner and an unnumbered private custody writer are implemented in source. Native fixture qualification, installed storage, authenticated adapters, real sources and privacy lifecycle remain open. See governed-inputs.md."
     },
     {
       "id": "regional-boundaries",

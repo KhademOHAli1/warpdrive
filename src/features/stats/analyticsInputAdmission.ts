@@ -88,9 +88,14 @@ export function fingerprintAnalyticsInputEvent(
     version: ANALYTICS_INPUT_FINGERPRINT_VERSION,
     digest: createHash("sha256")
       .update(`${ANALYTICS_INPUT_FINGERPRINT_VERSION}\n`, "utf8")
-      .update(canonicalJson(event), "utf8")
+      .update(canonicalAnalyticsInputEvent(event), "utf8")
       .digest("hex"),
   };
+}
+
+/** The byte representation shared by v1 event fingerprints and durable custody. */
+export function canonicalAnalyticsInputEvent(event: AnalyticsSourceEvent): string {
+  return canonicalJson(event);
 }
 
 function receiptFor(event: AnalyticsSourceEvent): AnalyticsInputReceipt {

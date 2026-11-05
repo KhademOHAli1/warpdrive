@@ -6,7 +6,7 @@ export const analyticsComputationInventoryEntry = classifyInventory(
     "derived:src/features/stats/attribution.ts",
     "derived:src/features/stats/history/dealCloseIncidence.ts",
     "derived:src/features/stats/periodForecast.ts",
-    "sourceReview:src/features/stats/analyticsInputAdmission.ts#674093beb290f925d774c58d0992657351fa8ae1a85f7a21886dbe04ddba482f",
+    "sourceReview:src/features/stats/analyticsInputAdmission.ts#559893ca5917887784666fb30672259f1be3d96ed2823aea15d96b4c7dc21ed3",
     "sourceReview:src/features/stats/attribution.ts#5f6a361893b683967972de619327f39595c784f5fe7070335fe1a417b35d2de7",
     "sourceReview:src/features/stats/history/dealCloseIncidence.ts#0ad2c3f82f2b868f682222a470d379347dcfccba1c119085b4c29a06d5b43071",
     "sourceReview:src/features/stats/periodForecast.ts#500d5c56f006ea39067c741877de1b581de7731142750b431ffbd91cfead2021",
@@ -30,6 +30,40 @@ export const analyticsComputationInventoryEntry = classifyInventory(
       "Transient computation only. Immutable source receipts, correction policy, subject restrictions and deletion require separately qualified storage and lifecycle behavior.",
     externalEffects:
       "No database, file, provider or network calls. The update identifier feeds bytes to an in-memory SHA-256 hash; it does not persist, amend or transmit an event.",
+    erasureTask: "DPL-15 / #596 / #597",
+  },
+);
+
+export const analyticsGovernedCustodyInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/governedInputRepository.ts",
+    "sourceReview:docs/analytics/governed-source-storage-proposal.sql#3e402a7e317a75febbd1b5b160fbbae1c9c9593e8f33266b7f85251d6b9ffaeb",
+    "sourceReview:src/features/stats/governedInputRepository.ts#a540a07dbf2dc522436e21af8fb5515fe2fd01d630b4b85d3f66a431dc567aa1",
+    "writer:src/features/stats/governedInputRepository.ts#query:BEGIN ISOLATION LEVEL READ COMMITTED READ ONLY; SET LOCAL statement_timeout = '5000ms'",
+    "writer:src/features/stats/governedInputRepository.ts#query:BEGIN ISOLATION LEVEL READ COMMITTED READ WRITE",
+    "writer:src/features/stats/governedInputRepository.ts#query:COMMIT",
+    "writer:src/features/stats/governedInputRepository.ts#query:ROLLBACK",
+    "writer:src/features/stats/governedInputRepository.ts#query:SELECT 1 FROM public.users WHERE id = $1::uuid AND is_active FOR SHARE",
+    "writer:src/features/stats/governedInputRepository.ts#query:SET LOCAL statement_timeout = '5000ms'; SET LOCAL lock_timeout = '2000ms'; SET LOCAL synchronous_commit = on",
+    "writer:src/features/stats/governedInputRepository.ts#query:dynamic",
+  ],
+  {
+    owner: "marketing and sales analytics governed source custody proposal",
+    categories: [
+      "producer, registration and grant identifiers and active or revoked policy references",
+      "pseudonymous actor and source subject references, source revisions and delivery receipts",
+      "validated source event bodies, financial facts, timestamps and exact canonical fingerprints",
+    ],
+    subjectRelation:
+      "The payload and provenance may relate to people, accounts, deals and purchases. Fingerprints and producer keys do not identify a person independently. Authenticated user or service evidence must come from a separate trusted server adapter.",
+    purpose:
+      "Serialize bounded source admissions and preserve first event, correction, and exact retry evidence in a disposable custody proposal.",
+    disclosure:
+      "Private receipt to the trusted server caller. No viewer, provider, browser, export or privacy lifecycle entry point. Neither a receipt nor a stored grant supplies current permission to see source payloads.",
+    retention:
+      "Immutable source events and receipts by proposal; producer and grant identity persist across disablement and revocation. No erasure, backup or retained-authority policy has been qualified. The proposal remains outside canonical schema.",
+    externalEffects:
+      "With disposable storage supplied, the repository reads and locks authority and prior metadata, inserts one atomic admission and confirms the exact committed receipt. The SQL would add internal tables and guards; it supplies no runtime grants, provider or network call.",
     erasureTask: "DPL-15 / #596 / #597",
   },
 );

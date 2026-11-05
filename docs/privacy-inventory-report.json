@@ -1,20 +1,20 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "ce5305bc2d9acf7bbb07a82847c4b2cbcacdaac0818948b5b8f050b601c8e031",
-  "sourceFiles": 2753,
+  "sourceFingerprint": "23e003946b7755e2dfde70b1bf8bc48a3cb41afd3a84aa61614d21ad1b6f89da",
+  "sourceFiles": 2754,
   "discoveredCounts": {
     "browserStore": 4,
-    "derived": 381,
+    "derived": 382,
     "external": 38,
     "log": 50,
     "objectNamespace": 23,
     "queue": 17,
-    "sourceReview": 897,
+    "sourceReview": 898,
     "table": 134,
-    "writer": 877
+    "writer": 884
   },
-  "classifiedDeclarations": 2653,
+  "classifiedDeclarations": 2663,
   "coverage": {
     "ok": true,
     "missing": [],
