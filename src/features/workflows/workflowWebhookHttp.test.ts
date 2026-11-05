@@ -25,6 +25,14 @@ const headers = {
 const bytes = new TextEncoder().encode(` { "eventId": "${eventId}", "recordId": "${recordId}" }\n`);
 type Services = Parameters<typeof handleWorkflowWebhookRequest>[2];
 
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 function fixture() {
   const admit = vi.fn<Services["admit"]>().mockResolvedValue(ok({ runId, replayed: false }));
   const nudge = vi.fn<Services["nudge"]>().mockResolvedValue(undefined);
@@ -70,8 +78,8 @@ function expectStatus(response: Response, status: number) {
 
 it("preserves the complete exact POST byte snapshot and does not nudge before admission resolves", async () => {
   const test = fixture();
-  const result = Promise.withResolvers<Awaited<ReturnType<Services["admit"]>>>();
-  const entered = Promise.withResolvers<void>();
+  const result = deferred<Awaited<ReturnType<Services["admit"]>>>();
+  const entered = deferred<void>();
   test.admit.mockImplementationOnce(() => {
     entered.resolve();
     return result.promise;
@@ -156,11 +164,11 @@ it("rejects unknown params and absent or combined signature headers without invo
 it("cancels POST bodies with malformed authentication headers without reading a chunk", async () => {
   const test = fixture();
   for (const overrides of [
-    { "x-warpdrive-webhook-timestamp": "0177300000" },
-    { "x-warpdrive-webhook-timestamp": "1, 2" },
-    { "x-warpdrive-webhook-signature": `v1=${"G".repeat(64)}` },
-    { "x-warpdrive-webhook-signature": `v2=${"a".repeat(64)}` },
-  ] satisfies Record<string, string>[]) {
+    new Headers({ "x-warpdrive-webhook-timestamp": "0177300000" }),
+    new Headers({ "x-warpdrive-webhook-timestamp": "1, 2" }),
+    new Headers({ "x-warpdrive-webhook-signature": `v1=${"G".repeat(64)}` }),
+    new Headers({ "x-warpdrive-webhook-signature": `v2=${"a".repeat(64)}` }),
+  ]) {
     const pull = vi.fn();
     const cancel = vi.fn();
     const stream = new ReadableStream<Uint8Array>({ pull, cancel }, { highWaterMark: 0 });
@@ -247,7 +255,7 @@ it("reads at most the configured byte cap and cancels both declared and streamed
 it("cancels a pending body read when the client aborts and does not admit", async () => {
   const test = fixture();
   const abort = new AbortController();
-  const read = Promise.withResolvers<void>();
+  const read = deferred<void>();
   const cancel = vi.fn();
   const stream = new ReadableStream<Uint8Array>({
     pull() {
