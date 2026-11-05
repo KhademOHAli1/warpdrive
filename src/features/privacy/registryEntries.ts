@@ -12,6 +12,7 @@ import {
   nativePeriodForecastInventoryEntry,
   recordedDealSourceInventoryEntry,
   savedPerformanceInventoryEntry,
+  settledForecastOutcomesInventoryEntry,
 } from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
@@ -67,6 +68,7 @@ export const registryEntries: RegistryEntry[] = [
   nativePeriodForecastInventoryEntry,
   recordedDealSourceInventoryEntry,
   savedPerformanceInventoryEntry,
+  settledForecastOutcomesInventoryEntry,
   analyticsAttentionInventoryEntry,
   analyticsComputationInventoryEntry,
   analyticsForecastCommitInventoryEntry,

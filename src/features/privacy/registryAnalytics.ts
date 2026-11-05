@@ -167,6 +167,34 @@ export const savedPerformanceInventoryEntry = classifyInventory(
   },
 );
 
+export const settledForecastOutcomesInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/history/settledForecastOutcomes.ts",
+    "derived:src/features/stats/history/settledForecastOutcomesRepository.ts",
+    "sourceReview:src/features/stats/history/settledForecastOutcomes.ts#7ad217a369c58052e4191e9f56fdab9e736f6d8e2c2a89488b042ceffa42ea7c",
+    "sourceReview:src/features/stats/history/settledForecastOutcomesRepository.ts#ed72039241dc0191e97e8c6187925a447ae7654e62b1541065a0b7134a94b734",
+    "writer:src/features/stats/history/settledForecastOutcomesRepository.ts#execute:sql",
+    "writer:src/features/stats/history/settledForecastOutcomesRepository.ts#query:dynamic",
+  ],
+  {
+    owner: "private settled forecast outcome evidence",
+    categories: [
+      "authorized deal and workforce identifiers, exact recorded values, forecast receipts and native transaction witnesses",
+    ],
+    subjectRelation:
+      "The capture and receipt refer to CRM opportunities that may concern people and organizations.",
+    purpose:
+      "Classify a complete eligible saved open-deal roster using native post-period captured transaction evidence.",
+    disclosure:
+      "Private server evidence only. Current source and historical scope checks must admit the complete roster. No application viewer or raw public export.",
+    retention:
+      "Transient collection. Immutable actual settlement and lifecycle qualification are separate steps.",
+    externalEffects:
+      "The dedicated primary session allocates a barrier XID and performs a bounded read-only transaction. It writes no CRM or forecast rows.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const analyticsForecastCommitInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/stats/history/forecastCommitQualification.ts#29ecfac652288f84698dfa25f729a71ca10c25d25517cea10b91226298bcf280",

@@ -15,3 +15,5 @@ The production sources do not yet offer an issuer. The nominal input marks this 
 3. A prospective holdout registry and immutable trained artifact, with membership and target selection frozen before prediction, training and feature provenance limited to each prediction cutoff, no holdout outcome or future feature access, and model/version correspondence to the original prediction bytes. Timestamp and digest equality alone cannot verify a trained model or detect leakage.
 
 The current manual scenario belongs to the what-if report. Production calibration needs a separately qualified issuer. The seven synthetic cases cover arithmetic, bin boundaries, sparse samples, evidence substitution, chronology, duplicates and incomplete labels. All 37 focused forecast, evaluation and calibration tests passed.
+
+The [private native outcome collector](forecast-actual-capture.md) supplies a bounded candidate for later actual settlement. Its eligible input still requires complete forecast roster issuance and an immutable actual finalizer.
