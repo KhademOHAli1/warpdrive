@@ -1,0 +1,85 @@
+import { useLocale } from "@/features/i18n/LocaleProvider";
+
+const en = {
+  title: "Find legal company details",
+  hint: "Search GLEIF by company name. Coverage is limited to companies with an LEI. Review the address and register number before adding a new legal entity. Manual entry is always available.",
+  query: "Legal company name",
+  country: "Country (ISO code, optional)",
+  search: "Search GLEIF",
+  empty: "No active LEI records found. Enter your company manually.",
+  select: "Review this company",
+  confirm: "Confirm and add legal entity",
+  cancel: "Cancel selection",
+  retry: "Retry the same request",
+  saved: "Legal entity added",
+  failed: "Request failed. Check your session, try again, or use manual entry.",
+  review: "Review identity fields",
+  source: "Source and time",
+  vatTitle: "Check an EU VAT identifier",
+  vatHint:
+    "Only the entered country and VAT number are sent to the European Commission VIES service. The result applies to that identifier at the displayed time. It does not determine tax treatment or verify the whole company.",
+  vatCountry: "VAT country code (Greece: EL)",
+  vatNumber: "VAT number without country prefix",
+  check: "Check VAT",
+  valid: "VAT identifier is valid",
+  invalid: "VAT identifier is not valid",
+  busy: "Working…",
+  provider:
+    "Provider unavailable or response could not be confirmed. This is not an invalid VAT result.",
+};
+const de: typeof en = {
+  title: "Rechtliche Firmendaten suchen",
+  hint: "GLEIF nach Firmennamen durchsuchen. Erfasst sind nur Unternehmen mit LEI. Anschrift und Registernummer vor dem Anlegen prüfen. Manuelle Eingabe ist jederzeit möglich.",
+  query: "Rechtlicher Firmenname",
+  country: "Land (ISO-Code, optional)",
+  search: "In GLEIF suchen",
+  empty: "Keine aktiven LEI-Einträge gefunden. Unternehmen manuell eingeben.",
+  select: "Dieses Unternehmen prüfen",
+  confirm: "Bestätigen und Rechtseinheit hinzufügen",
+  cancel: "Auswahl abbrechen",
+  retry: "Dieselbe Anfrage erneut versuchen",
+  saved: "Rechtseinheit hinzugefügt",
+  failed: "Anfrage fehlgeschlagen. Sitzung prüfen, erneut versuchen oder manuell eingeben.",
+  review: "Identitätsdaten prüfen",
+  source: "Quelle und Zeitpunkt",
+  vatTitle: "EU-Umsatzsteuer-ID prüfen",
+  vatHint:
+    "Nur das eingegebene Land und die USt-ID werden an den VIES-Dienst der Europäischen Kommission gesendet. Das Ergebnis gilt zu diesem Zeitpunkt für diese ID. Es bestimmt keine steuerliche Behandlung und verifiziert nicht das gesamte Unternehmen.",
+  vatCountry: "USt-Ländercode (Griechenland: EL)",
+  vatNumber: "USt-ID ohne Länderpräfix",
+  check: "USt-ID prüfen",
+  valid: "USt-ID ist gültig",
+  invalid: "USt-ID ist nicht gültig",
+  busy: "Wird bearbeitet…",
+  provider:
+    "Dienst nicht verfügbar oder Antwort nicht bestätigbar. Das ist kein ungültiges Prüfergebnis.",
+};
+const fa: typeof en = {
+  title: "جست‌وجوی اطلاعات حقوقی شرکت",
+  hint: "نام شرکت را در GLEIF جست‌وجو کنید. فقط شرکت‌های دارای LEI پوشش داده می‌شوند. پیش از افزودن، نشانی و شماره ثبت را بررسی کنید. ورود دستی همیشه در دسترس است.",
+  query: "نام حقوقی شرکت",
+  country: "کشور (کد ISO، اختیاری)",
+  search: "جست‌وجو در GLEIF",
+  empty: "رکورد فعال LEI پیدا نشد. اطلاعات شرکت را دستی وارد کنید.",
+  select: "بررسی این شرکت",
+  confirm: "تأیید و افزودن شخص حقوقی",
+  cancel: "لغو انتخاب",
+  retry: "تلاش دوباره با همان درخواست",
+  saved: "شخص حقوقی افزوده شد",
+  failed: "درخواست انجام نشد. نشست را بررسی کنید، دوباره تلاش کنید یا دستی وارد کنید.",
+  review: "بررسی اطلاعات هویتی",
+  source: "منبع و زمان",
+  vatTitle: "بررسی شناسه مالیات بر ارزش افزوده اتحادیه اروپا",
+  vatHint:
+    "فقط کشور و شماره واردشده به سامانه VIES کمیسیون اروپا ارسال می‌شود. نتیجه در زمان نمایش‌داده‌شده برای همان شناسه معتبر است و وضعیت مالیاتی یا هویت کل شرکت را تأیید نمی‌کند.",
+  vatCountry: "کد کشور مالیات (یونان: EL)",
+  vatNumber: "شماره مالیاتی بدون پیشوند کشور",
+  check: "بررسی شناسه مالیاتی",
+  valid: "شناسه مالیاتی معتبر است",
+  invalid: "شناسه مالیاتی معتبر نیست",
+  busy: "در حال انجام…",
+  provider: "سرویس در دسترس نیست یا پاسخ قابل تأیید نیست. این به معنی نامعتبر بودن شناسه نیست.",
+};
+export function useLookupMessages() {
+  return { en, de, fa }[useLocale()];
+}

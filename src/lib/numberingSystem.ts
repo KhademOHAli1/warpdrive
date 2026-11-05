@@ -1,6 +1,10 @@
 export const NUMBERING_SYSTEMS = ["arabext", "latn"] as const;
 export type NumberingSystem = (typeof NUMBERING_SYSTEMS)[number];
 export type NumberedLocale<Locale extends string> = Locale | `${Locale}-u-nu-${NumberingSystem}`;
+export type RegionalNumberedLocale<Locale extends string> =
+  | NumberedLocale<Locale>
+  | `${Locale}-${string}`
+  | `${Locale}-${string}-u-nu-${NumberingSystem}`;
 
 export function displayNumberingSystem({
   locale = "en",
@@ -12,7 +16,7 @@ export function displayNumberingSystem({
   return numberingSystem ?? (locale.startsWith("fa") ? "arabext" : "latn");
 }
 
-export function localeWithNumberingSystem<Locale extends "en" | "fa" | "de">(
+export function localeWithNumberingSystem<Locale extends string>(
   locale: Locale,
   numberingSystem?: NumberingSystem,
 ): NumberedLocale<Locale>;

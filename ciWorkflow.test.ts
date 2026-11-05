@@ -140,12 +140,12 @@ describe("public Bun CI", () => {
     }
   });
 
-  it("keeps ordinary CRM checks light and excludes unit, PostgreSQL and build campaigns", () => {
+  it("keeps ordinary CRM checks focused and excludes PostgreSQL and build campaigns", () => {
     expect(commands("crm")).toEqual([
       "bun install --frozen-lockfile",
       "bun run typecheck",
       "bun run lint",
-      "bun run test:unit --maxWorkers=2 src/features/theme/appearance.test.ts src/features/theme/appearanceBundle.test.ts src/features/identity/densityAction.test.ts src/features/identity/preferencesSchema.test.ts src/features/identity/preferencesSelection.test.ts src/features/workflows/draftSimulationAction.test.ts src/features/workflows/draftSimulationInput.test.ts src/features/workflows/runRetryActions.test.ts ciWorkflow.test.ts",
+      "bun run test:unit --maxWorkers=2 src/features/theme/appearance.test.ts src/features/theme/appearanceBundle.test.ts src/features/identity/densityAction.test.ts src/features/identity/preferencesSchema.test.ts src/features/identity/preferencesSelection.test.ts src/features/workflows/draftSimulationAction.test.ts src/features/workflows/draftSimulationInput.test.ts src/features/workflows/runRetryActions.test.ts src/features/billing src/features/goals/kpiSchemas.test.ts src/features/goals/goalProgress.test.ts src/features/goals/kpiTrend.test.ts src/features/i18n/regionalContext.test.ts src/features/i18n/useBrowserRegionalContext.test.tsx src/app/\\(app\\)/settings/profile/LanguageSettings.test.tsx src/features/privacy/discoveryCoverage.test.ts src/features/privacy/registry.test.ts src/app/\\(app\\)/settings/designSystemConformance.test.ts src/typeScale.test.ts src/paletteTokens.test.ts src/app/\\(app\\)/layout.privacyReturn.test.tsx ciWorkflow.test.ts",
     ]);
     expect(commands("crm").join("\n")).not.toMatch(/test:integration|build:workers|bun run build/);
     const metadata = JSON.parse(

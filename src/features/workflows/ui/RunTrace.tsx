@@ -54,6 +54,21 @@ function IteratorOccurrences({ steps }: { steps: RunDetail["steps"] }) {
     </>
   );
 }
+
+function traceStepLabel(
+  step: RunDetail["steps"][number] | undefined,
+  status: RunDetail["status"],
+  isNext: boolean,
+) {
+  if (step !== undefined) {
+    if (step.outcome === "failed") return "status.failed";
+    return step.simulated ? "stepSimulated" : "stepCompleted";
+  }
+  if (isNext && status === "waiting") return "stepWaiting";
+  if (isNext && status === "failed") return "stoppedHere";
+  return "stepNotReached";
+}
+
 export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId?: string }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -184,17 +199,7 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
                         {fmt.number(index + 1)} · {displayNodeName(item, locale)}
                       </bdi>
                       <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
-                        {step === undefined
-                          ? detail.nextNodeId === item.id && detail.status === "waiting"
-                            ? t("stepWaiting")
-                            : detail.nextNodeId === item.id && detail.status === "failed"
-                              ? t("stoppedHere")
-                              : t("stepNotReached")
-                          : step.outcome === "failed"
-                            ? t("status.failed")
-                            : step.simulated
-                              ? t("stepSimulated")
-                              : t("stepCompleted")}
+                        {t(traceStepLabel(step, detail.status, detail.nextNodeId === item.id))}
                       </span>
                       <IteratorOccurrences steps={occurrences} />
                       {item.type === "record.delete" && step?.recordDeleted === true && (

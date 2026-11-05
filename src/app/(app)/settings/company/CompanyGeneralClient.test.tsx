@@ -1,170 +1,195 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
-
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
-});
-
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
-vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-
-const { updateCompanyGeneralAction, refresh } = vi.hoisted(() => ({
-  refresh: vi.fn(),
-  updateCompanyGeneralAction: vi.fn(
-    (): Promise<{ ok: true } | { ok: false; error: { id: string } }> =>
-      Promise.resolve({ ok: true }),
-  ),
-}));
-vi.mock("@/features/settings/actions", () => ({ updateCompanyGeneralAction }));
-
+import { companyCommandSchema, companyOverviewSchema } from "@/features/company-profile/contracts";
 import { CompanyGeneralClient } from "./CompanyGeneralClient";
 
-beforeEach(() => {
-  updateCompanyGeneralAction.mockReset().mockResolvedValue({ ok: true });
-  refresh.mockReset();
+vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+const overview = companyOverviewSchema.parse({
+  workspaceScope: "11111111-1111-4111-8111-111111111111",
+  details: { companyName: "Acme" },
+  detailsRevision: 0,
+  branding: { iconUrl: null, logoUrl: null, foregroundColor: "#000000" },
+  brandingRevision: 0,
+  baseCurrency: "EUR",
+  legalEntities: [],
+  payerPreferences: null,
+  payerRevision: null,
+  capabilities: { manageProfile: true, manageLegal: false },
+  confirmedAt: null,
+  provenance: null,
 });
-
-type SaveResult = { ok: true } | { ok: false; error: { id: string } };
-
-function deferred() {
-  let settle!: (result: SaveResult) => void;
-  const promise = new Promise<SaveResult>((resolve) => {
-    settle = resolve;
+function response(data: unknown) {
+  return new Response(JSON.stringify({ ok: true, data }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
   });
-  return { promise, settle };
 }
-
+const fetchMock = vi.fn<typeof fetch>();
+const saved = {
+  ...overview,
+  detailsRevision: 1,
+  details: { ...overview.details, companyName: "New company" },
+};
+async function edit() {
+  render(<CompanyGeneralClient actorId="actor" />);
+  fireEvent.change(await screen.findByLabelText("Company name"), {
+    target: { value: "New company" },
+  });
+}
+beforeEach(() => {
+  sessionStorage.clear();
+  fetchMock.mockReset();
+  vi.stubGlobal("fetch", fetchMock);
+  fetchMock.mockResolvedValue(response(overview));
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 describe("CompanyGeneralClient", () => {
-  it("renders the base currency read-only", () => {
-    render(<CompanyGeneralClient companyName="Acme" baseCurrency="EUR" />);
+  it("offers optional company context and the work-profile setup from Workspace details", async () => {
+    render(<CompanyGeneralClient actorId="actor" />);
+    expect(await screen.findByLabelText("Website")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Work profile" })).toHaveAttribute(
+      "href",
+      "/settings/company/work-profile",
+    );
     expect(screen.getByText("EUR")).toBeInTheDocument();
-    // No editable currency control.
-    expect(screen.queryByLabelText("Base currency")).toBeNull();
+    expect(screen.queryByLabelText("Base currency")).not.toBeInTheDocument();
   });
+  it("keeps a dirty draft on cancel and replays the original navigation only after confirmation", async () => {
+    await edit();
+    const link = screen.getByRole("link", { name: "Work profile" });
+    const follow = vi.fn((event: Event) => event.preventDefault());
+    link.addEventListener("click", follow);
 
-  it("saves the edited company name via the action", async () => {
-    render(<CompanyGeneralClient companyName="Acme" baseCurrency="USD" />);
-    fireEvent.change(screen.getByLabelText("Company name"), { target: { value: "Acme Corp" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    await waitFor(() =>
-      expect(updateCompanyGeneralAction).toHaveBeenCalledWith({ companyName: "Acme Corp" }, "csrf"),
+    fireEvent.click(link);
+    expect(screen.getByRole("alertdialog")).toHaveTextContent(
+      "Leave this page without saving the draft?",
     );
-    expect(await screen.findByText("Saved")).toBeInTheDocument();
+    expect(follow).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByLabelText("Company name")).toHaveValue("New company");
+    expect(follow).not.toHaveBeenCalled();
+
+    fireEvent.click(link);
+    fireEvent.click(screen.getByRole("button", { name: "Leave page" }));
+    await waitFor(() => expect(follow).toHaveBeenCalledTimes(1));
   });
-
-  it("only offers Save for a changed value and returns to unchanged after success", async () => {
-    render(<CompanyGeneralClient companyName="Acme" baseCurrency="EUR" />);
-    const save = screen.getByRole("button", { name: "Save" });
-    expect(save).toBeDisabled();
-    fireEvent.change(screen.getByLabelText("Company name"), { target: { value: "Acme Europe" } });
-    expect(save).toBeEnabled();
-    fireEvent.click(save);
-    expect(await screen.findByRole("status")).toHaveTextContent("Saved");
-    expect(save).toBeDisabled();
-  });
-
-  it("retains the edited company name and offers retry after a rejected save", async () => {
-    updateCompanyGeneralAction.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
-    render(<CompanyGeneralClient companyName="Acme" baseCurrency="EUR" />);
-    const input = screen.getByLabelText("Company name");
-    fireEvent.change(input, { target: { value: "Acme Europe" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      settingsMessagesForLocale("en")._errors.generic,
-    );
-    expect(input).toHaveValue("Acme Europe");
-    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
-    expect(screen.queryByText("Saved")).toBeNull();
-  });
-
-  it.each(["returned", "rejected"] as const)(
-    "retries an unchanged draft after a %s failure and waits for acknowledgement",
-    async (failure) => {
-      if (failure === "returned") {
-        updateCompanyGeneralAction.mockResolvedValueOnce({
-          ok: false,
-          error: { id: "E_PERM_001" },
-        });
-      } else {
-        updateCompanyGeneralAction.mockRejectedValueOnce(new Error("offline"));
-      }
-      render(<CompanyGeneralClient companyName="Acme" baseCurrency="EUR" />);
-      const input = screen.getByLabelText("Company name");
-      const draft = " Acme Europe ";
-      fireEvent.change(input, { target: { value: draft } });
-      fireEvent.click(screen.getByRole("button", { name: "Save" }));
-      expect(await screen.findByRole("alert")).toHaveTextContent(
-        settingsMessagesForLocale("en")._errors.generic,
-      );
-      expect(input).toHaveValue(draft);
-      expect(input).toHaveAttribute("aria-invalid", "true");
-      expect(screen.queryByRole("status")).not.toBeInTheDocument();
-      expect(refresh).not.toHaveBeenCalled();
-
-      const retry = deferred();
-      updateCompanyGeneralAction.mockReturnValueOnce(retry.promise);
-      const save = screen.getByRole("button", { name: "Save" });
-      fireEvent.click(save);
-      expect(input).toHaveValue(draft);
-      expect(input).toHaveAttribute("aria-invalid", "false");
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(screen.queryByRole("status")).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Saving..." })).toBeDisabled();
-      expect(updateCompanyGeneralAction).toHaveBeenCalledTimes(2);
-      expect(updateCompanyGeneralAction).toHaveBeenNthCalledWith(
-        1,
-        { companyName: "Acme Europe" },
-        "csrf",
-      );
-      expect(updateCompanyGeneralAction).toHaveBeenNthCalledWith(
-        2,
-        { companyName: "Acme Europe" },
-        "csrf",
-      );
-      expect(refresh).not.toHaveBeenCalled();
-
-      await act(async () => {
-        retry.settle({ ok: true });
-        await retry.promise;
-      });
-      expect(screen.getByRole("status")).toHaveTextContent("Saved");
-      expect(input).toHaveValue(draft);
-      expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(refresh).toHaveBeenCalledTimes(1);
-      fireEvent.click(save);
-      expect(updateCompanyGeneralAction).toHaveBeenCalledTimes(2);
-    },
-  );
-
-  it("keeps acknowledged success and the unchanged guard when refreshing throws", async () => {
-    refresh.mockImplementationOnce(() => {
-      throw new Error("refresh interrupted");
+  it("submits full typed context with current revision and UUID", async () => {
+    fetchMock.mockResolvedValueOnce(response(overview)).mockResolvedValueOnce(response(saved));
+    await edit();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByText("Changes saved");
+    const options = fetchMock.mock.calls[1]?.[1];
+    expect(typeof options?.body).toBe("string");
+    const body: unknown = JSON.parse(typeof options?.body === "string" ? options.body : "null");
+    expect(body).toMatchObject({
+      action: "save_details",
+      expectedRevision: 0,
+      details: { companyName: "New company", website: "", roleContacts: [] },
     });
-    render(<CompanyGeneralClient companyName="Acme" baseCurrency="EUR" />);
-    const input = screen.getByLabelText("Company name");
-    fireEvent.change(input, { target: { value: "Acme Europe" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("status")).toHaveTextContent("Saved");
-    expect(input).toHaveValue("Acme Europe");
-    expect(input).toHaveAttribute("aria-invalid", "false");
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
-    expect(refresh).toHaveBeenCalledTimes(1);
-    expect(updateCompanyGeneralAction).toHaveBeenCalledTimes(1);
+    expect(body).toHaveProperty("requestId", expect.stringMatching(/^[a-f\d-]{36}$/));
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
   });
-
-  it("clears busy state and preserves input after a transport failure", async () => {
-    updateCompanyGeneralAction.mockRejectedValueOnce(new Error("offline"));
-    render(<CompanyGeneralClient companyName="Acme" baseCurrency="EUR" />);
-    fireEvent.change(screen.getByLabelText("Company name"), { target: { value: "Acme Europe" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(screen.getByLabelText("Company name")).toHaveValue("Acme Europe");
-    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+  it("retries identical command and UUID after unknown outcome and retains the draft", async () => {
+    fetchMock
+      .mockResolvedValueOnce(response(overview))
+      .mockRejectedValueOnce(new TypeError("Network disconnected"))
+      .mockResolvedValueOnce(response(saved));
+    await edit();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    expect(await screen.findByText(/The result is unknown/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Company name")).toHaveValue("New company");
+    expect(screen.getByLabelText("Company name")).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Retry the same request" }));
+    await screen.findByText("Changes saved");
+    expect(fetchMock.mock.calls[1]?.[1]?.body).toBe(fetchMock.mock.calls[2]?.[1]?.body);
+  });
+  it("preserves a conflict draft and requires review against the reloaded revision", async () => {
+    const other = {
+      ...overview,
+      detailsRevision: 2,
+      details: { ...overview.details, website: "https://example.org" },
+    };
+    fetchMock
+      .mockResolvedValueOnce(response(overview))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: false, error: { code: "conflict" } }), { status: 409 }),
+      )
+      .mockResolvedValueOnce(response(other));
+    await edit();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Someone changed this record");
+    expect(screen.getByLabelText("Company name")).toHaveValue("New company");
+    fireEvent.click(screen.getByRole("button", { name: "Review and edit draft" }));
+    expect(screen.getByLabelText("Company name")).not.toBeDisabled();
+    expect(screen.getByLabelText("Company name")).toHaveValue("New company");
+    fireEvent.click(screen.getByRole("button", { name: "Reload current data" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Review changes" }));
+    expect(screen.getByLabelText("Company name")).toHaveValue("New company");
+    expect(screen.getByLabelText("Website")).toHaveValue("https://example.org");
+  });
+  it("retains known ACK if refreshing the server data fails", async () => {
+    fetchMock
+      .mockResolvedValueOnce(response(overview))
+      .mockResolvedValueOnce(response(saved))
+      .mockRejectedValueOnce(new TypeError("Offline"));
+    await edit();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByText("Changes saved");
+    fireEvent.click(screen.getByRole("button", { name: "Reload current data" }));
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(screen.getByText("Changes saved")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+  it("never stores private contact payloads in browser storage", async () => {
+    fetchMock
+      .mockResolvedValueOnce(response(overview))
+      .mockRejectedValueOnce(new TypeError("Offline"));
+    await edit();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByText(/The result is unknown/);
+    const stored = Array.from({ length: sessionStorage.length }, (_, i) =>
+      sessionStorage.getItem(sessionStorage.key(i) ?? ""),
+    ).join("");
+    expect(stored).not.toContain("New company");
+    expect(stored).not.toContain("roleContacts");
+    expect(stored).toContain("requestId");
+  });
+  it("safely unlocks a recovered pending operation only after server cancellation", async () => {
+    fetchMock
+      .mockResolvedValueOnce(response(overview))
+      .mockRejectedValueOnce(new TypeError("Offline"));
+    await edit();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByText(/The result is unknown/);
+    const sent = fetchMock.mock.calls[1]?.[1]?.body;
+    const parsed: unknown = JSON.parse(typeof sent === "string" ? sent : "null");
+    const command = companyCommandSchema.parse(parsed);
+    cleanup();
+    fetchMock
+      .mockResolvedValueOnce(response(overview))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: false, error: { code: "not_found" } }), { status: 404 }),
+      )
+      .mockResolvedValueOnce(response({ status: "canceled", operationId: command.requestId }));
+    render(<CompanyGeneralClient actorId="actor" />);
+    expect(await screen.findByLabelText("Company name")).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Retry the same request" }));
+    await screen.findByRole("alert");
+    expect(screen.getByLabelText("Company name")).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel the pending request" }));
+    await waitFor(() => expect(screen.getByLabelText("Company name")).not.toBeDisabled());
+    const canceled = fetchMock.mock.calls[4]?.[1]?.body;
+    expect(typeof canceled === "string" ? JSON.parse(canceled) : null).toMatchObject({
+      action: "cancel_operation",
+      operationId: command.requestId,
+      operationAction: "save_details",
+    });
   });
 });

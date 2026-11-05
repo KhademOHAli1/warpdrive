@@ -1,14 +1,9 @@
 "use client";
 
-import { GitBranch, LayoutDashboard } from "lucide-react";
+import { BriefcaseBusiness, GitBranch, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DOCS_SITE_URL } from "@/constants/docs";
-import {
-  type NAV_ITEMS,
-  type NavKey,
-  UTILITY_NAV_ITEMS,
-  WORKSPACE_NAV_ITEMS,
-} from "@/constants/nav";
+import type { NavKey } from "@/constants/nav";
 import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
@@ -22,13 +17,15 @@ import {
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
 import { SidebarToggle } from "./SidebarToggle";
+import { useWorkspaceNavigation } from "./WorkspaceShellProvider";
 
 const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
+  dashboard: LayoutDashboard,
+  work: BriefcaseBusiness,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,
   inbox: InboxIcon,
-  dashboard: LayoutDashboard,
   settings: SettingsIcon,
   workflows: GitBranch,
 };
@@ -45,6 +42,7 @@ export function SidebarMenu({
   mobile?: boolean;
 }) {
   const pathname = usePathname();
+  const navItems = useWorkspaceNavigation();
   const messages = useMessages();
   const t = useAppTranslations("shell.sidebar");
   const activities = useAppTranslations("activities");
@@ -62,7 +60,7 @@ export function SidebarMenu({
       ];
     return undefined;
   }
-  function menuItem(item: (typeof NAV_ITEMS)[number]) {
+  function menuItem(item: (typeof navItems)[number]) {
     return (
       <SidebarMenuItem
         key={item.key}
@@ -113,13 +111,16 @@ export function SidebarMenu({
             {t("section")}
           </p>
           <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
-            {WORKSPACE_NAV_ITEMS.map(menuItem)}
+            {navItems
+              .filter((item) => item.key !== "settings" && item.key !== "workflows")
+              .map(menuItem)}
           </div>
         </div>
         <div className={styles.utilityNav}>
           {expanded && (
             <>
-              {UTILITY_NAV_ITEMS.map(menuItem)}
+              {navItems.filter((item) => item.key === "settings").map(menuItem)}
+              {navItems.filter((item) => item.key === "workflows").map(menuItem)}
               {docs}
             </>
           )}

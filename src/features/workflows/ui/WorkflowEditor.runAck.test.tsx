@@ -18,7 +18,7 @@ type RunInput = {
   requestKey: string;
   recordId: string;
   mode: Mode;
-  reviewedVersionId?: string;
+  reviewedVersionId: string;
 };
 type RunReply = { ok: true; value: { id: string } } | { ok: false; error: string };
 
@@ -178,7 +178,7 @@ function expectRunPayload(mode: Mode, times: number) {
       ),
       recordId,
       mode,
-      ...(mode === "live" ? { reviewedVersionId: publishedVersionId } : {}),
+      reviewedVersionId: publishedVersionId,
     },
     "csrf",
   );

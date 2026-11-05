@@ -160,32 +160,33 @@ function groupedReferenceIssues(
     }));
 }
 
-export function inspectReferences(definition: WorkflowDefinition): DefinitionIssue[] {
+function iteratorReferenceIssues(
+  definition: WorkflowDefinition,
+  node: WorkflowNode,
+): DefinitionIssue[] {
+  const source = bindingSchema.options[1].safeParse(node.config.items);
+  if (!source.success || iteratorSourceIsUpstream(definition, node, source.data.nodeId)) return [];
+  return [{ code: "unavailable_reference", nodeId: node.id, field: "items", path: ["items"] }];
+}
+
+function inspectNodeReferences(
+  definition: WorkflowDefinition,
+  node: WorkflowNode,
+): DefinitionIssue[] {
+  if (node.type === "iterator") return iteratorReferenceIssues(definition, node);
+  const grouped = groupedReferenceIssues(definition, node);
+  if (grouped !== null) return grouped;
   const issues: DefinitionIssue[] = [];
-  for (const node of definition.nodes) {
-    if (node.type === "iterator") {
-      const source = bindingSchema.options[1].safeParse(node.config.items);
-      if (source.success && !iteratorSourceIsUpstream(definition, node, source.data.nodeId))
-        issues.push({
-          code: "unavailable_reference",
-          nodeId: node.id,
-          field: "items",
-          path: ["items"],
-        });
-      continue;
-    }
-    const grouped = groupedReferenceIssues(definition, node);
-    if (grouped !== null) {
-      issues.push(...grouped);
-      continue;
-    }
-    for (const { field, binding, path } of nodeBindings(node)) {
-      const code = bindingIssue(definition, node, field, binding, path);
-      if (code !== null)
-        issues.push({ code, nodeId: node.id, field, ...(path === undefined ? {} : { path }) });
-    }
-    if (temporalConditionMismatch(definition, node) || conditionContainsMismatch(definition, node))
-      issues.push({ code: "type_mismatch", nodeId: node.id, field: "right" });
+  for (const { field, binding, path } of nodeBindings(node)) {
+    const code = bindingIssue(definition, node, field, binding, path);
+    if (code !== null)
+      issues.push({ code, nodeId: node.id, field, ...(path === undefined ? {} : { path }) });
   }
+  if (temporalConditionMismatch(definition, node) || conditionContainsMismatch(definition, node))
+    issues.push({ code: "type_mismatch", nodeId: node.id, field: "right" });
   return issues;
+}
+
+export function inspectReferences(definition: WorkflowDefinition): DefinitionIssue[] {
+  return definition.nodes.flatMap((node) => inspectNodeReferences(definition, node));
 }

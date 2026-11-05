@@ -1,5 +1,7 @@
+import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
+import { companyWorkInventoryEntry } from "./registryCompanyWork";
 import { archiveCodecIds1 } from "./registryIdsArchiveCodec1";
 import { authenticationIds1 } from "./registryIdsAuthentication1";
 import { authenticationIds2 } from "./registryIdsAuthentication2";
@@ -27,6 +29,7 @@ import { requestServicesIds1 } from "./registryIdsRequestServices1";
 import { scopeDraftIds1 } from "./registryIdsScopeDraft1";
 import { stagingQualificationIds1 } from "./registryIdsStagingQualification1";
 import { toolingIds1 } from "./registryIdsTooling1";
+import { kpiInventoryEntry } from "./registryKpis";
 import { mailInventoryEntries } from "./registryMail";
 import { mailSharedInventoryEntries } from "./registryMailShared";
 import { migrationInventoryEntry } from "./registryMigrations";
@@ -36,6 +39,9 @@ import type { RegistryEntry } from "./registryTypes";
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
+  kpiInventoryEntry,
+  billingInventoryEntry,
+  companyWorkInventoryEntry,
   workflowInventoryEntry,
   migrationInventoryEntry,
   ...mailInventoryEntries,

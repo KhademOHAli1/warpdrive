@@ -218,15 +218,15 @@ it("changes a node type through the actual canvas callback without changing its 
   const picker = screen.getByRole("dialog");
   expect(within(picker).queryByRole("textbox")).not.toBeInTheDocument();
   expect(onCommit).not.toHaveBeenCalled();
-  await choose(userEvent.setup(), /^Wait/);
+  await choose(userEvent.setup(), /^Delay/);
   const next = onCommit.mock.lastCall?.[0];
   expect(next?.nodes.find((node) => node.id === "read")).toMatchObject({
     type: "delay",
-    name: "Wait",
+    name: "Delay",
   });
   expect(next?.edges).toEqual(graph.edges);
   expect(next?.nodes).toHaveLength(graph.nodes.length);
-  expect(screen.getByRole("textbox", { name: "Step name" })).toHaveValue("Wait");
+  expect(screen.getByRole("textbox", { name: "Step name" })).toHaveValue("Delay");
   expect(screen.getByLabelText("Minutes")).toHaveValue("1");
   expect(onCommit).toHaveBeenCalledOnce();
   expect(graph).toEqual(before);
@@ -349,7 +349,7 @@ it("explains an occupied output restriction and splices one Wait without replaci
   ).toBeVisible();
   expect(condition).toHaveAccessibleDescription(/linear|branching/i);
   expect(condition).toHaveAttribute("aria-disabled", "true");
-  await choose(user, /^Wait/);
+  await choose(user, /^Delay/);
   const next = onCommit.mock.calls[0]?.[0];
   const wait = next?.nodes.find((node) => node.type === "delay");
   expect(next?.edges).toEqual(

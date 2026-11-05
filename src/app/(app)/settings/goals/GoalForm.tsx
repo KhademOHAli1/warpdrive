@@ -14,6 +14,7 @@ import {
 import type { Goal } from "@/db/schema/goals";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { goalTargetInput } from "@/features/goals/goalTargetText";
+import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
@@ -59,6 +60,7 @@ export function GoalForm({
   const S = L;
   const { locale, timeZone } = useLocalePreferences();
   const format = useFormatters();
+  const K = useKpiHubMessages();
   const sales = useAppTranslations("sales");
 
   const [currency, setCurrency] = useState(initial?.currency ?? baseCurrency);
@@ -255,7 +257,7 @@ export function GoalForm({
             options={GOAL_INTERVALS.map((i) => ({ value: i, label: L._extra.goalIntervals[i] }))}
           />
         </Field>
-        <Field label={S.goalTarget}>
+        <Field label={action === "lost" ? `${S.goalTarget} · ${K.at_most}` : S.goalTarget}>
           <Input
             aria-label={S.goalTarget}
             placeholder={S.goalTarget}
@@ -265,6 +267,9 @@ export function GoalForm({
               setTargetDraft((current) => ({ raw, locale: current?.locale ?? locale }));
             }}
           />
+          {action === "lost" && (
+            <p className="text-xs leading-relaxed text-muted-foreground">{K.legacyLimit}</p>
+          )}
         </Field>
         <Field label={S.goalStartsOn}>
           <DatePicker

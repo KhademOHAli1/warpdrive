@@ -7,6 +7,7 @@ import { DOCS_SITE_URL } from "@/constants/docs";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { LeftNav } from "./LeftNav";
 import styles from "./LeftNav.module.css";
+import { WorkspaceShellProvider } from "./WorkspaceShellProvider";
 
 // LeftNav reads the current path via usePathname to mark the active item; mock it so the
 // component renders outside an app-router provider.
@@ -196,6 +197,28 @@ describe("LeftNav", () => {
     expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/pipeline");
     expect(screen.queryByRole("link", { name: "Pipeline" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Performance" })).toBeNull();
+  });
+
+  test("applies workspace branding and work module visibility to the combined rail", () => {
+    render(
+      <WorkspaceShellProvider
+        brand={{
+          displayName: "Fixture Company",
+          iconUrl: null,
+          accentColor: null,
+          foregroundColor: "#ffffff",
+        }}
+        modules={["work", "contacts"]}
+        canViewWork
+      >
+        <LeftNav />
+      </WorkspaceShellProvider>,
+    );
+    expect(screen.getByRole("link", { name: "Fixture Company home" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Work" }).getAttribute("href")).toBe("/work");
+    expect(screen.getByRole("link", { name: "Contacts" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/dashboard");
+    expect(screen.queryByRole("link", { name: "Activities" })).toBeNull();
   });
 
   test("marks the active section with aria-current", () => {

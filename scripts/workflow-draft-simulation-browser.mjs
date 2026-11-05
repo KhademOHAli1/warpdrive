@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { prepareLocaleThroughUi } from "./browser-locale-preferences.mjs";
 
 // This pack runs serially after the original nine smoke journeys. Its 6821xx/6822xx/6823xx
 // fixture IDs are independent of the appearance, delay and history packs. Each pack must restore
@@ -435,14 +436,13 @@ async function captureEditor(page, profile, copy, name) {
   await add.waitFor();
   return [editor, palette];
 }
-async function exerciseDraft(page, pool, profile, copy, login, origin) {
-  // login() asserts an English board. Set FA only after that real login, then navigate freshly.
-  await login(page);
-  if (profile.locale !== "en") {
-    await page
-      .context()
-      .addCookies([{ name: "warpdrive_locale", value: profile.locale, url: origin }]);
-  }
+async function exerciseDraft(page, pool, profile, copy, signIn, origin) {
+  // The prior journey can leave a different saved account language. Establish this journey's
+  // language through the real control before asserting the authenticated board's exact name.
+  await signIn(page);
+  const localePreparation = await prepareLocaleThroughUi(page, origin, profile.locale);
+  await page.goto(`/pipeline/${fixture.pipeline}`);
+  await page.getByRole("main", { name: copy.boardLabel, exact: true }).waitFor();
   await page.goto(`/workflows/${profile.workflowId}`);
   assert.equal(await page.locator("html").getAttribute("lang"), profile.locale);
   assert.equal(
@@ -560,6 +560,7 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
   const dom = {
     language: profile.locale,
     direction: profile.locale === "fa" ? "rtl" : "ltr",
+    localePreparation,
     viewport: profile.viewport,
     outcome: profile.failed ? "failed" : "completed",
     rowText: await rows.allInnerTexts(),
@@ -660,7 +661,7 @@ async function finalizeFixtures(
   return { failure, restored, cleaned, ended };
 }
 
-export async function runWorkflowDraftSimulationBrowserSmoke({ journey, login, catalog, origin }) {
+export async function runWorkflowDraftSimulationBrowserSmoke({ journey, signIn, catalog, origin }) {
   admittedProfile();
   assert.equal(
     origin,
@@ -701,15 +702,19 @@ export async function runWorkflowDraftSimulationBrowserSmoke({ journey, login, c
     for (const profile of profiles) {
       currentProfile = profile;
       assert.equal(brokenPool, false, "The owned fixture pool reported an idle connection failure");
-      const copy = catalog(`src/features/workflows/messages/workflows.${profile.locale}.json`);
+      const salesCopy = catalog(`src/features/deals/messages/sales.${profile.locale}.json`);
+      const copy = {
+        ...catalog(`src/features/workflows/messages/workflows.${profile.locale}.json`),
+        boardLabel: salesCopy.board_arg0_2d402.replace("{arg0}", "CI Pipeline"),
+      };
       /** @type {{ value: Awaited<ReturnType<typeof exerciseDraft>> | undefined }} */
       const observed = { value: undefined };
-      // All contexts begin in EN for login(); the FA exercise changes its own locale afterward.
+      // Start with the original EN login hint; the saved account language is established in the UI.
       await journey(
         profile.name,
         "en",
         async (page) => {
-          observed.value = await exerciseDraft(page, pool, profile, copy, login, origin);
+          observed.value = await exerciseDraft(page, pool, profile, copy, signIn, origin);
         },
         profile.viewport,
       );

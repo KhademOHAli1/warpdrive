@@ -71,7 +71,10 @@ describe("browser regional context", () => {
   });
 
   it("does not choose the first country when the runtime combines time zone aliases", () => {
-    const original = Reflect.get(Intl.DateTimeFormat.prototype, "resolvedOptions");
+    const original = Object.getOwnPropertyDescriptor(
+      Intl.DateTimeFormat.prototype,
+      "resolvedOptions",
+    )?.value as Intl.DateTimeFormat["resolvedOptions"];
     vi.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").mockImplementation(function (
       this: Intl.DateTimeFormat,
     ) {

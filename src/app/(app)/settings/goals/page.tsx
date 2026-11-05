@@ -2,15 +2,16 @@ import { asc, isNull } from "drizzle-orm";
 import type { ReactNode } from "react";
 import { activityTypes, teams } from "@/db/schema";
 import { goals } from "@/db/schema/goals";
+import { todayInZone } from "@/features/goals/todayInZone";
+import { getLocalePreferences } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { visiblePipelineOptions } from "@/features/stats/visiblePipelines";
 import { createContext } from "@/server/trpc/context";
-import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
-import { GoalsClient } from "./GoalsClient";
+import { KpiWorkspace } from "./KpiWorkspace";
 
 export async function generateMetadata() {
   const L = await getServerSettingsMessages();
@@ -42,15 +43,15 @@ export default async function GoalsSettingsPage(): Promise<ReactNode> {
   ]);
 
   return (
-    <SettingsPage>
-      <SettingsHeading scope="workspace" title={L.goals} description={L.goalsDescription} />
-      <GoalsClient
+    <SettingsPage className="max-w-6xl">
+      <KpiWorkspace
         goals={goalRows}
         baseCurrency={await readBaseCurrency(db, signal)}
         users={users.map((u) => ({ id: u.id, name: u.name }))}
         teams={teamRows}
         pipelines={pipelineRows}
         activityTypes={typeRows}
+        today={todayInZone((await getLocalePreferences()).timeZone, new Date())}
       />
     </SettingsPage>
   );

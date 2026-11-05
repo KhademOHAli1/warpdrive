@@ -18,6 +18,33 @@ async function seedMailbox(db: TestDb, userId: string, email: string): Promise<s
   return row.id;
 }
 
+async function seedMailboxState(
+  db: TestDb,
+  userId: string,
+  email: string,
+  state: {
+    provider: "gmail" | "imap_smtp";
+    isDefault: boolean;
+    generation: number;
+    credentialVersion: number;
+    credentials: Buffer | null;
+    refreshToken: Buffer | null;
+  },
+): Promise<string> {
+  const row = (
+    await db.execute(sql`
+      INSERT INTO email_accounts
+        (user_id, email_address, provider, is_default, connection_generation,
+         credential_version, credentials_enc, refresh_token_enc)
+      VALUES
+        (${userId}, ${email}, ${state.provider}, ${state.isDefault}, ${state.generation},
+         ${state.credentialVersion}, ${state.credentials}, ${state.refreshToken})
+      RETURNING id
+    `)
+  ).rows[0] as { id: string };
+  return row.id;
+}
+
 async function seedDeal(db: TestDb, ownerId: string): Promise<string> {
   const { pipeline, stages } = await seedPipelineWithStages(db, ["Qualified"]);
   const row = (
@@ -116,6 +143,99 @@ test("create_email_draft fails with a typed error when the actor has no connecte
 
     expect(result.isError).toBe(true);
     expect(textOf(result)).toContain("E_GMAIL");
+  });
+});
+
+test("create_email_draft honors a case-insensitive explicit mailbox and preserves its state", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, { isAdmin: true });
+    const defaultId = await seedMailboxState(db, user.id, "default@example.com", {
+      provider: "gmail",
+      isDefault: true,
+      generation: 7,
+      credentialVersion: 3,
+      credentials: null,
+      refreshToken: Buffer.from("default-gmail-refresh"),
+    });
+    const secondaryId = await seedMailboxState(db, user.id, "secondary@example.com", {
+      provider: "imap_smtp",
+      isDefault: false,
+      generation: 19,
+      credentialVersion: 5,
+      credentials: Buffer.from("secondary-imap-credentials"),
+      refreshToken: null,
+    });
+    const before = (
+      await db.execute(sql`
+        SELECT connection_generation, credential_version, credentials_enc, refresh_token_enc
+        FROM email_accounts WHERE id=${secondaryId}
+      `)
+    ).rows[0];
+    if (before === undefined) throw new Error("secondary mailbox missing");
+    const actor = await hydrateActor(db, user.id, AbortSignal.timeout(5_000));
+    if (actor === null) throw new Error("actor missing");
+
+    const server = new McpServer({ name: "email-tools-test", version: "1.0.0" });
+    const tools = registerWriteTools(server, () => buildAppContext(db, actor), db);
+    const explicit = await tools.invoke("create_email_draft", {
+      fromEmail: "SeCoNdArY@ExAmPlE.CoM",
+      to: ["secondary-recipient@example.com"],
+      subject: "Secondary mailbox",
+      body: "Use the explicitly selected mailbox.",
+    });
+    expect(explicit.isError).not.toBe(true);
+    const omitted = await tools.invoke("create_email_draft", {
+      to: ["default-recipient@example.com"],
+      subject: "Default mailbox",
+      body: "Retain the default fallback.",
+    });
+    expect(omitted.isError).not.toBe(true);
+
+    const drafts = (
+      await db.execute(sql`
+        SELECT subject, account_id FROM email_drafts ORDER BY subject
+      `)
+    ).rows as Array<{ subject: string; account_id: string }>;
+    expect(drafts).toEqual([
+      { subject: "Default mailbox", account_id: defaultId },
+      { subject: "Secondary mailbox", account_id: secondaryId },
+    ]);
+    const after = (
+      await db.execute(sql`
+        SELECT connection_generation, credential_version, credentials_enc, refresh_token_enc
+        FROM email_accounts WHERE id=${secondaryId}
+      `)
+    ).rows[0];
+    expect(after).toEqual(before);
+  });
+});
+
+test("create_email_draft gives foreign and missing mailboxes the same unavailable error", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, { isAdmin: true });
+    await seedMailbox(db, user.id, "owner@example.com");
+    const foreign = await seedUser(db, { email: "foreign-owner@example.com" });
+    await seedMailbox(db, foreign.id, "foreign@example.com");
+    const actor = await hydrateActor(db, user.id, AbortSignal.timeout(5_000));
+    if (actor === null) throw new Error("actor missing");
+
+    const server = new McpServer({ name: "email-tools-test", version: "1.0.0" });
+    const tools = registerWriteTools(server, () => buildAppContext(db, actor), db);
+    const invoke = (fromEmail: string) =>
+      tools.invoke("create_email_draft", {
+        fromEmail,
+        to: ["recipient@example.com"],
+        subject: "Must not persist",
+        body: "The sender is unavailable.",
+      });
+    const foreignResult = await invoke("FOREIGN@EXAMPLE.COM");
+    const missingResult = await invoke("missing@example.com");
+
+    expect(foreignResult.isError).toBe(true);
+    expect(missingResult.isError).toBe(true);
+    expect(textOf(foreignResult)).toBe("E_GMAIL_014: draft unavailable");
+    expect(textOf(missingResult)).toBe(textOf(foreignResult));
+    expect((await db.execute(sql`SELECT id FROM email_drafts`)).rows).toHaveLength(0);
   });
 });
 

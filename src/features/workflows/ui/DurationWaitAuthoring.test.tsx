@@ -61,7 +61,7 @@ function Workspace({ onChange }: { onChange: (definition: WorkflowDefinition) =>
 it.each([
   {
     locale: "en",
-    wait: "Wait",
+    wait: "Delay",
     start: "Manual start",
     add: "Add a new connected step",
     search: "Search steps",

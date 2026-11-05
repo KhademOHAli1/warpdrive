@@ -14,6 +14,27 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 // Literal reviewed declarations deliberately do not learn new tables from the catalog.
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
+    [
+      "company_profiles",
+      "company_legal_entities",
+      "company_operations",
+      "company_assets",
+      "workspace_work_profiles",
+      "work_types",
+      "work_stages",
+      "work_items",
+      "work_operations",
+      "work_installations",
+    ],
+    "unsupported",
+    "Company/role/legal/payer data, encrypted receipts and branding bytes, plus workforce/CRM-linked operational records and preset snapshots, require dedicated subject/provenance and safe-projection adapters. Management, ownership, current CRM visibility and provider matches do not establish data-subject identity. Archive, pointer removal and guarded preset undo are not personal-data erasure. Provider copies, physical objects, historical receipts and backups require separate lifecycle qualification; no generic discovery, export, erasure or retention adapter is enabled.",
+  ),
+  ...group(
+    ["billing_accounts", "billing_operations", "billing_webhook_receipts", "billing_audit_events"],
+    "unsupported",
+    "Merchant billing bindings, linkable operation fingerprints, provider event receipts and administrator audit references require a dedicated subject/provenance and finance-retention adapter. A payer may be a legal person, sole trader or finance contact; workspace administration does not establish data-subject identity. This declaration enables no generic export, erasure or provider deletion.",
+  ),
+  ...group(
     ["email_read_intents"],
     "unsupported",
     "Actor-bound read-operation bindings, mailbox/thread references, dispatch claims and outcome timestamps require a dedicated subject/provenance and safe-projection adapter. Mailbox ownership or current administration does not establish receipt disclosure or erasure authority. Supported disconnect, deactivation, reconnect and trash retain receipts; physical purge and automatic cleanup remain inactive. Admitted/unknown barriers cannot be expired, reset, taken over or pruned. This coverage declaration grants no lifecycle execution capability.",
@@ -27,6 +48,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     ["deal_create_operations"],
     "unsupported",
     "Actor-linked native deal creation receipts and intent fingerprints require a dedicated provenance and retention adapter. Deal visibility, a deleted-deal tombstone and account administration do not establish subject disclosure or erasure authority. Actor deletion remains restricted until a coordinated lifecycle is reviewed.",
+  ),
+  ...group(
+    ["kpi_definitions", "kpi_schemes", "kpi_goals", "kpi_measurements", "kpi_snapshots"],
+    "unsupported",
+    "KPI definitions, version-pinned scorecard revisions, workforce assignments, manual observations and viewer-bound snapshots require a dedicated subject/provenance and lifecycle adapter. A creator, assignee, CRM contributor or snapshot viewer is not by itself a reviewed privacy subject or disclosure authority. Append-only triggers and goal archiving are product behavior, not erasure, export, rectification, restriction or retention execution. These tables are excluded from candidate discovery and no generic lifecycle capability is granted.",
   ),
   ...group(
     DISCOVERY_ADAPTER_TABLES,

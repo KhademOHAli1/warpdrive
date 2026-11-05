@@ -76,12 +76,16 @@ async function journey(name, locale, exercise, viewport) {
   }
 }
 
-async function login(page) {
+async function signIn(page) {
   await page.goto("/login");
   await page.locator('input[name="email"]').fill("browser@example.invalid");
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+}
+
+async function login(page) {
+  await signIn(page);
   await page.getByRole("main", { name: "Board CI Pipeline", exact: true }).waitFor();
 }
 
@@ -166,6 +170,11 @@ try {
     await page.getByText("CI persisted event", { exact: true }).first().waitFor();
   });
 
+  const { runCalendarInteractionsBrowserSmoke } = await import(
+    "./calendar-interactions-browser.mjs"
+  );
+  await runCalendarInteractionsBrowserSmoke({ journey, login, catalog });
+
   await journey("mailbox-setup-cancel", "en", async (page) => {
     await login(page);
     await page.goto("/settings/email-sync");
@@ -195,7 +204,7 @@ try {
   const { runWorkflowDraftSimulationBrowserSmoke } = await import(
     "./workflow-draft-simulation-browser.mjs"
   );
-  await runWorkflowDraftSimulationBrowserSmoke({ journey, login, catalog, origin });
+  await runWorkflowDraftSimulationBrowserSmoke({ journey, signIn, catalog, origin });
 } finally {
   await browser.close();
 }

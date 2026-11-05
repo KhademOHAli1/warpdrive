@@ -49,10 +49,12 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
       <button
         type="button"
         data-type={a.typeKey}
+        data-calendar-event-id={a.id}
+        draggable={false}
         onClick={() => onOpen(a)}
         // items-start keeps the text at the top of a block sized to a whole meeting, rather than
         // floating in the middle of it the way a button centres its content by default.
-        className={`flex w-full items-start truncate rounded px-1 my-0.5 text-start text-xs hover:underline ${tone} ${className}`}
+        className={`flex w-full select-none cursor-grab items-start truncate rounded px-1 my-0.5 text-start text-xs hover:underline data-[calendar-dragging=true]:opacity-40 data-[calendar-pending=true]:opacity-40 ${tone} ${className}`}
       >
         {label}
       </button>
@@ -61,10 +63,12 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
   return (
     <div
       data-type={a.typeKey}
-      className={`text-xs rounded px-1 my-0.5 truncate ${tone} ${className}`}
+      data-calendar-event-id={a.id}
+      draggable={false}
+      className={`select-none cursor-grab text-xs rounded px-1 my-0.5 truncate data-[calendar-dragging=true]:opacity-40 data-[calendar-pending=true]:opacity-40 ${tone} ${className}`}
     >
       {target.kind === "record" ? (
-        <a href={target.href} className="hover:underline">
+        <a href={target.href} draggable={false} className="hover:underline">
           {label}
         </a>
       ) : (

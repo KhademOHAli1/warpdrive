@@ -32,7 +32,7 @@ const scenarios: PaletteBoundsScenario[] = [
     name: "English with explicit Persian digits",
     locale: "en",
     numberingSystem: "arabext",
-    buttonName: /^Wait/,
+    buttonName: /^Delay/,
     expectedDays: ["۳۶۵"],
   },
   {
@@ -46,7 +46,7 @@ const scenarios: PaletteBoundsScenario[] = [
     name: "English with explicit Latin digits",
     locale: "en",
     numberingSystem: "latn",
-    buttonName: /^Wait/,
+    buttonName: /^Delay/,
     expectedDays: ["365"],
   },
 ];

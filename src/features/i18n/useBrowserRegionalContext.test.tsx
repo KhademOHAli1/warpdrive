@@ -7,7 +7,11 @@ import { LocaleProvider, useLocalePreferences, useSetLocalePreferences } from ".
 
 const save = vi.hoisted(() => vi.fn());
 vi.mock("./actions", () => ({ saveLocalePreferencesAction: save }));
-const actualResolvedOptions = Reflect.get(Intl.DateTimeFormat.prototype, "resolvedOptions");
+// Retain the native intrinsic for the explicit .call(this) in the resolver replacement below.
+const actualResolvedOptions = Object.getOwnPropertyDescriptor(
+  Intl.DateTimeFormat.prototype,
+  "resolvedOptions",
+)?.value as Intl.DateTimeFormat["resolvedOptions"];
 
 function CurrentContext() {
   const preferences = useLocalePreferences();

@@ -1,5 +1,5 @@
 {
-  "id": "a92de5e2-e0fd-493e-beb4-8ec966b65e0d",
+  "id": "82e103dd-aed8-463f-a96d-9b5dc52a3732",
   "prevId": "229e4b40-4ef6-409d-a935-fd297d71f15c",
   "version": "7",
   "dialect": "postgresql",
@@ -2450,6 +2450,401 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.billing_accounts": {
+      "name": "billing_accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'workspace'"
+        },
+        "livemode": {
+          "name": "livemode",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "checkout_operation_id": {
+          "name": "checkout_operation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seat_operation_id": {
+          "name": "seat_operation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription": {
+          "name": "subscription",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sync_state": {
+          "name": "sync_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'never'"
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "billing_accounts_scope_mode_uq": {
+          "name": "billing_accounts_scope_mode_uq",
+          "columns": [
+            {
+              "expression": "scope",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "livemode",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "billing_accounts_customer_id_unique": {
+          "name": "billing_accounts_customer_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "customer_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "billing_accounts_scope_check": {
+          "name": "billing_accounts_scope_check",
+          "value": "\"billing_accounts\".\"scope\" = 'workspace'"
+        },
+        "billing_accounts_sync_check": {
+          "name": "billing_accounts_sync_check",
+          "value": "\"billing_accounts\".\"sync_state\" IN ('never', 'current', 'needs_review')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.billing_audit_events": {
+      "name": "billing_audit_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "billing_audit_account_idx": {
+          "name": "billing_audit_account_idx",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "billing_audit_events_account_id_billing_accounts_id_fk": {
+          "name": "billing_audit_events_account_id_billing_accounts_id_fk",
+          "tableFrom": "billing_audit_events",
+          "tableTo": "billing_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.billing_operations": {
+      "name": "billing_operations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_key": {
+          "name": "request_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fingerprint": {
+          "name": "fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resource_id": {
+          "name": "resource_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "billing_operations_request_uq": {
+          "name": "billing_operations_request_uq",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "kind",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "request_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "billing_operations_account_id_billing_accounts_id_fk": {
+          "name": "billing_operations_account_id_billing_accounts_id_fk",
+          "tableFrom": "billing_operations",
+          "tableTo": "billing_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "billing_operations_kind_check": {
+          "name": "billing_operations_kind_check",
+          "value": "\"billing_operations\".\"kind\" IN ('customer', 'checkout', 'seats')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.billing_webhook_receipts": {
+      "name": "billing_webhook_receipts",
+      "schema": "",
+      "columns": {
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "digest": {
+          "name": "digest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_created": {
+          "name": "provider_created",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "billing_webhook_account_idx": {
+          "name": "billing_webhook_account_idx",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "billing_webhook_receipts_account_id_billing_accounts_id_fk": {
+          "name": "billing_webhook_receipts_account_id_billing_accounts_id_fk",
+          "tableFrom": "billing_webhook_receipts",
+          "tableTo": "billing_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -12918,12 +13313,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "iterator_frame": {
-          "name": "iterator_frame",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "resume_at": {
           "name": "resume_at",
           "type": "timestamp with time zone",
@@ -13096,10 +13485,6 @@
         "workflow_runs_mode_ck": {
           "name": "workflow_runs_mode_ck",
           "value": "\"workflow_runs\".\"mode\" IN ('simulation','live')"
-        },
-        "workflow_runs_iterator_frame_ck": {
-          "name": "workflow_runs_iterator_frame_ck",
-          "value": "\"workflow_runs\".\"iterator_frame\" IS NULL OR (\"workflow_runs\".\"status\" IN ('running','waiting') AND \"workflow_runs\".\"next_node_id\" IS NOT NULL AND jsonb_typeof(\"workflow_runs\".\"iterator_frame\") = 'object')"
         }
       },
       "isRLSEnabled": false
@@ -13126,26 +13511,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "iteration_index": {
-          "name": "iteration_index",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true,
-          "default": -1
-        },
-        "outcome": {
-          "name": "outcome",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'succeeded'"
-        },
-        "error_id": {
-          "name": "error_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "simulated": {
           "name": "simulated",
@@ -13190,22 +13555,12 @@
           "nullsNotDistinct": false,
           "columns": [
             "run_id",
-            "node_id",
-            "iteration_index"
+            "node_id"
           ]
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "workflow_steps_iteration_index_ck": {
-          "name": "workflow_steps_iteration_index_ck",
-          "value": "\"workflow_steps\".\"iteration_index\" BETWEEN -1 AND 99"
-        },
-        "workflow_steps_outcome_ck": {
-          "name": "workflow_steps_outcome_ck",
-          "value": "(\"workflow_steps\".\"outcome\" = 'succeeded' AND \"workflow_steps\".\"error_id\" IS NULL) OR\n        (\"workflow_steps\".\"outcome\" = 'failed' AND \"workflow_steps\".\"iteration_index\" >= 0 AND \"workflow_steps\".\"error_id\" IS NOT NULL AND \"workflow_steps\".\"output\" = '{}'::jsonb)"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.workflow_versions": {

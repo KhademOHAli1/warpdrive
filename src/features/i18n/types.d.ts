@@ -1,11 +1,10 @@
-import type { FormattingLocaleTag } from "@/lib/localeFormatting";
-import type { NumberedLocale } from "@/lib/numberingSystem";
+import type { RegionalNumberedLocale } from "@/lib/numberingSystem";
 import type { AppMessages } from "./catalog";
 import type { Locale as AppLocale } from "./registry";
 
 declare module "next-intl" {
   interface AppConfig {
-    Locale: NumberedLocale<AppLocale> | FormattingLocaleTag;
+    Locale: RegionalNumberedLocale<AppLocale>;
     Messages: AppMessages;
   }
 }

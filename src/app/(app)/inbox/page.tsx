@@ -24,10 +24,14 @@ export default async function InboxPage({
   const sp = await searchParams;
   const folder = parseFolder(typeof sp.folder === "string" ? sp.folder : undefined);
   const inbox = <InboxListClient selfActorId={ctx.actor.id} folder={folder} />;
-  if (sp.connect !== "error") return inbox;
+  const syncStartFailed = sp.connect === "sync_unavailable";
+  if (sp.connect !== "error" && !syncStartFailed) return inbox;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <GmailConnectionNotice reason={typeof sp.reason === "string" ? sp.reason : undefined} />
+      <GmailConnectionNotice
+        syncStartFailed={syncStartFailed}
+        reason={typeof sp.reason === "string" ? sp.reason : undefined}
+      />
       <div className="min-h-0 flex-1">{inbox}</div>
     </div>
   );

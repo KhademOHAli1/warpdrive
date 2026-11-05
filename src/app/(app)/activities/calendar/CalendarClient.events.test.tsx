@@ -126,3 +126,14 @@ it("opens a standalone month event for editing while keeping CRM record links", 
   fireEvent.click(screen.getByRole("button", { name: "Local meeting" }));
   expect(screen.getByRole("dialog", { name: "Edit fixture" })).toHaveTextContent("standalone");
 });
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

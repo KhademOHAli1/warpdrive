@@ -753,7 +753,13 @@
       "workflow_edit": "Eigene Workflow-Entwürfe bearbeiten",
       "workflow_publish": "Eigene Workflows veröffentlichen und aktivieren",
       "workflow_run": "Eigene Workflows ausführen",
-      "workflow_cancel": "Eigene Workflow-Ausführungen abbrechen"
+      "workflow_cancel": "Eigene Workflow-Ausführungen abbrechen",
+      "company_profile_manage": "Unternehmensprofil verwalten",
+      "company_legal_manage": "Rechtliche Einheiten und Zahlerdaten verwalten",
+      "work_view": "Operative Arbeit ansehen",
+      "work_create": "Operative Arbeit erstellen",
+      "work_change": "Sichtbare operative Arbeit bearbeiten",
+      "work_manage": "Arbeitsarten und Phasen verwalten"
     },
     "icons": {
       "call": "Anruf",

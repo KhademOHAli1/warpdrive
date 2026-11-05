@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { env } from "@/config/env";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
@@ -17,7 +18,12 @@ export default async function SettingsLayout({
   const canImport = actor !== null && can(actor, "data.import");
   return (
     <div className="flex flex-col gap-6 md:flex-row md:gap-8">
-      <SettingsNav isAdmin={isAdmin} canManageCompany={canManageCompany} canImport={canImport} />
+      <SettingsNav
+        isAdmin={isAdmin}
+        canManageCompany={canManageCompany}
+        canImport={canImport}
+        billingEnabled={env.BILLING_ENABLED === "true"}
+      />
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );

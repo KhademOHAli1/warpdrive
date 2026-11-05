@@ -6,6 +6,11 @@ export type NodeMeasurements = ReadonlyMap<string, { width: number; height: numb
 
 const COLUMN_SPACING = 360;
 const ROW_SPACING = 150;
+const OUTPUT_X_OFFSETS: Partial<Record<WorkflowEdge["port"], number>> = {
+  true: -200,
+  false: 200,
+  loop: COLUMN_SPACING,
+};
 
 export function ifElseBranchOffset(node: WorkflowNode, port: WorkflowEdge["port"]) {
   if (node.type !== "ifElse") return null;
@@ -90,16 +95,7 @@ export function positionForNewNode(
         measurements,
       );
   }
-  const offset =
-    output === undefined
-      ? COLUMN_SPACING
-      : output.port === "true"
-        ? -200
-        : output.port === "false"
-          ? 200
-          : output.port === "loop"
-            ? COLUMN_SPACING
-            : 0;
+  const offset = output === undefined ? COLUMN_SPACING : (OUTPUT_X_OFFSETS[output.port] ?? 0);
   const source =
     output === undefined ? undefined : graph.nodes.find((node) => node.id === output.from);
   const branch =

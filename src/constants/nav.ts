@@ -5,6 +5,7 @@ export const WORKSPACE_NAV_ITEMS = [
     section: "/pipeline",
     additionalSections: ["/dashboard"],
   },
+  { href: "/work", key: "work", section: "/work" },
   { href: "/activities", key: "activities", section: "/activities" },
   { href: "/leads", key: "leads", section: "/leads" },
   { href: "/inbox", key: "inbox", section: "/inbox" },

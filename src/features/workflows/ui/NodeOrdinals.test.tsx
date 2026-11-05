@@ -112,7 +112,7 @@ it("shows the inserted Wait's connection-order ordinal in the predecessor's Conn
   expect(definition).toEqual(before);
   expect(onChange).not.toHaveBeenCalled();
   expect(onProblem).not.toHaveBeenCalled();
-  expect(screen.getByRole("combobox", { name: "Next step" })).toHaveTextContent("Wait · 2");
+  expect(screen.getByRole("combobox", { name: "Next step" })).toHaveTextContent("Delay · 2");
 });
 
 it("shows connection-order source and target ordinals in EdgeInspector after Wait insertion", () => {

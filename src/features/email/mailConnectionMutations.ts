@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
-import { PGBOSS_QUEUE_EMAIL_SYNC } from "@/constants/jobNames";
+import { BACKOFF_START_MS } from "@/constants/email";
+import { EMAIL_JOB_RETRY_LIMIT, PGBOSS_QUEUE_EMAIL_SYNC } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { resolveWorkflowSession } from "@/features/auth/better/sessionPolicy";
 import { recordSecurityEvent } from "@/features/auth/management/audit";
@@ -31,9 +32,20 @@ function availableQueue(): EnqueueSync | null {
   if (boss === null) return null;
   return async (accountId, signal) => {
     signal.throwIfAborted();
-    const queued = await boss.send(PGBOSS_QUEUE_EMAIL_SYNC, { accountId });
+    // The standard queue's send() can enqueue duplicates even with a singleton key.
+    const { jobs } = await boss.upsert(
+      PGBOSS_QUEUE_EMAIL_SYNC,
+      { accountId },
+      {
+        singletonKey: accountId,
+        startAfter: 0,
+        retryLimit: EMAIL_JOB_RETRY_LIMIT,
+        retryBackoff: true,
+        retryDelay: Math.ceil(BACKOFF_START_MS / 1000),
+      },
+    );
     signal.throwIfAborted();
-    return queued !== null;
+    return jobs.length > 0;
   };
 }
 

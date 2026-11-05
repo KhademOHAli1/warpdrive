@@ -71,7 +71,7 @@ export function WeekAgendaGrid({
   const selected = activities.find((a) => a.id === selectedId) ?? null;
   // One lane height for the whole week: a lane sized per column would push only some days' hour
   // grids down, and the same hour would sit at a different height in each column.
-  const allDayRows = useMemo(() => allDayRowCount(grouped.values()), [grouped]);
+  const allDayRows = useMemo(() => Math.max(1, allDayRowCount(grouped.values())), [grouped]);
   const todayIso = now === null ? null : localDayIso(now, preferences.timeZone);
   const showNowLine = todayIso !== null && dayIsos.includes(todayIso);
 
@@ -145,6 +145,7 @@ export function WeekAgendaGrid({
                 {dayIsos.map((iso) => (
                   <AllDayLane
                     key={iso}
+                    iso={iso}
                     dayLabel={calendarDayLabel(iso, preferences)}
                     items={grouped.get(iso) ?? NO_ITEMS}
                     rows={allDayRows}

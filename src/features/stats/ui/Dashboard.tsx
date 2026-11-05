@@ -1,49 +1,90 @@
 "use client";
 
+import { CalendarDays, LayoutDashboard, SlidersHorizontal } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { DashboardSelect } from "@/features/dashboards/DashboardSelect";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import {
+  useAppTranslations,
+  useLocalePreferencePending,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
+import type { DealRecordMetric } from "@/features/stats/metricDictionary";
 import { trpc } from "@/lib/trpc-client";
+import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
 import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
+import { DashboardError, DashboardLoading } from "./DashboardState";
+import { DateRangeControl } from "./DateRangeControl";
+import { DealRecordsDrawer } from "./DealRecordsDrawer";
+import { presetRange } from "./dateRange";
 import { GoalsWidget } from "./GoalsWidget";
+import { KpiPerformance } from "./KpiPerformance";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
+import { Panel } from "./Panel";
 import { Scoreboard } from "./Scoreboard";
 import { WonTrendWidget } from "./TrendWidget";
 import { ActivitiesWidget, DealPerformanceWidget, FunnelWidget, StageSumsWidget } from "./widgets";
 
-// Date range default: current calendar year, computed at render time so it stays valid.
-function currentYearRange(): { from: string; to: string } {
-  const year = new Date().getFullYear();
-  return { from: `${year}-01-01`, to: `${year}-12-31` };
-}
-
-// Sentinel Select value for the "All pipelines" option. A real pipeline id is a
-// uuid, so this never collides. It maps to a null pipelineId, which the stats
-// router aggregates across every visible pipeline (STATS-08).
 const ALL_PIPELINES = "all";
-
 const ME_SCOPE: OwnerScope = { kind: "me" };
+const REPORT_TAB = cn(
+  PILL_TAB,
+  "min-h-10 flex-none px-4 data-[state=active]:bg-link/10 data-[state=active]:text-link",
+);
 
 interface DashboardProps {
   canViewOthers: boolean;
-  // Whether to offer the link into goal settings. Reading goals needs no permission; setting
-  // someone's quota does.
   canManageGoals?: boolean;
   canManagePipelines?: boolean;
-  // Resolved server-side in the viewer's timezone so goal periods do not roll a day early or
-  // late for someone sitting near UTC midnight.
   today: string;
   currency: string;
-  // Retained for API stability with the page that renders this component. The
-  // dashboard now defaults to "All pipelines" (STATS-08) instead of preselecting
-  // a single default pipeline, so this is no longer read.
   defaultPipelineId?: string | null;
+}
+
+function DashboardGoals({
+  today,
+  currency,
+  canManage,
+}: {
+  today: string;
+  currency: string;
+  canManage: boolean;
+}) {
+  const S = useStatsMessages();
+  const goals = trpc.goals.list.useQuery({ on: today });
+  if (goals.isError) {
+    return (
+      <Panel title={S.widgetGoals} isEmpty={false} emptyText="">
+        <p role="alert" className="text-sm text-muted-foreground">
+          {S.goalsUnavailable}
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          disabled={goals.isFetching}
+          onClick={() => {
+            void goals.refetch();
+          }}
+        >
+          {S.retry}
+        </Button>
+      </Panel>
+    );
+  }
+  if (goals.isLoading) {
+    return (
+      <Panel title={S.widgetGoals} isEmpty={false} emptyText="">
+        <p role="status">{S.loading}</p>
+      </Panel>
+    );
+  }
+  return <GoalsWidget data={goals.data ?? []} currency={currency} canManage={canManage} />;
 }
 
 export function Dashboard({
@@ -54,127 +95,221 @@ export function Dashboard({
   today,
 }: DashboardProps) {
   const S = useStatsMessages();
-
   const tCurrency = useAppTranslations("sales");
+  const { timeZone } = useLocalePreferences();
+  const preferencePending = useLocalePreferencePending();
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
-  const initial = currentYearRange();
-  const [from, setFrom] = useState(initial.from);
-  const [to, setTo] = useState(initial.to);
-  // Default to "All pipelines" (STATS-08). The user can rescope to a specific
-  // pipeline and back to all without reloading.
-  const [selectedPipelineId, setSelectedPipelineId] = useState<string>(ALL_PIPELINES);
-
+  const [range, setRange] = useState(() => presetRange("year", today));
+  const [selectedPipelineId, setSelectedPipelineId] = useState(ALL_PIPELINES);
+  const [inspection, setInspection] = useState<{
+    metric: DealRecordMetric;
+    trigger: HTMLButtonElement;
+  } | null>(null);
+  const reportScope = {
+    timeZoneIdentity: timeZone,
+    currency: selectedCurrency,
+    pipelineId: selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId,
+    ownerScope,
+    ...range,
+  };
+  const validRange = range.from <= range.to;
   const pipelinesQ = trpc.pipeline.list.useQuery();
-  const pipelines = pipelinesQ.data ?? [];
-  // "All pipelines" is the first option and the default selection.
   const pipelineOptions = [
     { value: ALL_PIPELINES, label: S.allPipelines },
-    ...pipelines.map((p) => ({ value: p.id, label: p.name })),
+    ...(pipelinesQ.data ?? []).map((p) => ({ value: p.id, label: p.name })),
   ];
-
-  // ALL_PIPELINES => null pipelineId (aggregate across all visible pipelines).
-  const pipelineId = selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId;
-
   const ownerOptionsQ = trpc.stats.ownerOptions.useQuery(undefined, { enabled: canViewOthers });
-  const goalsQ = trpc.goals.list.useQuery({ on: today });
-
-  const data = trpc.stats.dashboard.useQuery({
-    currency: selectedCurrency,
-    pipelineId,
-    ownerScope,
-    from,
-    to,
-  });
-
-  // Resolved only once loading/error have cleared, so the toolbar (title, owner
-  // toggle, date-range pickers) can render unconditionally below regardless of
-  // query state; only the widget area depends on `result`.
-  const result = !data.isLoading && !data.isError ? data.data : undefined;
-
+  const data = trpc.stats.dashboard.useQuery(
+    {
+      timeZoneIdentity: timeZone,
+      currency: selectedCurrency,
+      pipelineId: selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId,
+      ownerScope,
+      ...range,
+    },
+    { enabled: validRange && !preferencePending },
+  );
+  const result =
+    validRange && !preferencePending && !data.isLoading && !data.isError ? data.data : undefined;
   let body: React.ReactNode;
-  if (data.isLoading) {
-    body = <p>{S.loading}</p>;
+  if (!validRange) {
+    body = (
+      <p
+        role="alert"
+        className="rounded-xl border border-destructive/30 bg-card p-5 text-sm text-destructive"
+      >
+        {S.invalidRange}
+      </p>
+    );
   } else if (data.isError) {
-    // The only reachable dashboard error is E_STATS_001 (a specific pipeline not visible, e.g. a
-    // stale selection). "All pipelines" no longer errors on a missing default (STATS-08).
-    body = <p className="text-muted-foreground">{S.statsUnavailable}</p>;
+    body = (
+      <DashboardError
+        onRetry={() => {
+          void data.refetch();
+        }}
+        retrying={preferencePending || data.isFetching}
+      />
+    );
   } else if (result === undefined) {
-    // Brief window between isLoading=false and data arrival (e.g. background refetch).
-    body = <p>{S.loading}</p>;
+    body = <DashboardLoading />;
   } else {
     body = (
-      <div className="space-y-4">
+      <div className="space-y-5">
         <Scoreboard
           deals={result.dealPerformance}
           won={result.wonDealStats}
           activities={result.activities}
           winRate={result.winRate}
           currency={result.currency}
+          onInspect={(metric, trigger) => setInspection({ metric, trigger })}
         />
-        <GoalsWidget
-          data={goalsQ.data ?? []}
-          currency={result.currency}
-          canManage={canManageGoals}
-        />
-        {/* Full width above the grid: a time series is the one panel a reader scans left to
-            right, and half a column squeezes twelve months into an unreadable tick run. */}
-        <WonTrendWidget data={result.wonTrend} currency={result.currency} />
-        <div className="grid gap-4 md:grid-cols-2">
-          <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
-          <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
-          <ActivitiesWidget data={result.activities} />
-          <StageSumsWidget data={result.stageSums} currency={result.currency} />
-          <ActivityTypesWidget data={result.activitiesByType} />
-          <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
-        </div>
+        <TabsContent value="overview" className="space-y-5">
+          <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <WonTrendWidget data={result.wonTrend} currency={result.currency} />
+            <DashboardGoals today={today} currency={result.currency} canManage={canManageGoals} />
+          </div>
+          <KpiPerformance today={today} canManage={canManageGoals} />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
+            <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
+          </div>
+        </TabsContent>
+        <TabsContent value="pipeline" className="space-y-5">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
+            <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
+            <StageSumsWidget data={result.stageSums} currency={result.currency} />
+            <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
+          </div>
+        </TabsContent>
+        <TabsContent value="activities" className="space-y-5">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <ActivitiesWidget data={result.activities} />
+            <ActivityTypesWidget data={result.activitiesByType} />
+          </div>
+        </TabsContent>
       </div>
     );
   }
-
   return (
-    <div className="p-6">
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-balance text-display font-[450] leading-tight tracking-tight">
-          {S.title}
-        </h1>
-        <DashboardSelect
-          current={{ kind: "performance" }}
-          pipelines={pipelines}
-          canManagePipelines={canManagePipelines}
-        />
-        <div className="w-56">
-          <CurrencySelect value={selectedCurrency} onChange={setSelectedCurrency} />
-        </div>
-        <OwnerScopeSelect
-          value={result?.effectiveOwnerScope ?? ownerScope}
-          onChange={setOwnerScope}
-          canViewOthers={canViewOthers}
-          users={ownerOptionsQ.data?.users ?? []}
-          teams={ownerOptionsQ.data?.teams ?? []}
-        />
-        <div className="flex items-center gap-2">
-          <DatePicker
-            ariaLabel={S.rangeStartLabel}
-            value={from}
-            onChange={(v) => setFrom(v ?? initial.from)}
+    <div className="min-h-full bg-muted/20 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-balance text-display font-[450] leading-tight tracking-tight">
+              {S.title}
+            </h1>
+            <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground">
+              {S.subtitle}
+            </p>
+          </div>
+          <DashboardSelect
+            current={{ kind: "performance" }}
+            pipelines={pipelinesQ.data ?? []}
+            canManagePipelines={canManagePipelines}
           />
-          <span aria-hidden="true">{S.rangeSeparator}</span>
-          <DatePicker
-            ariaLabel={S.rangeEndLabel}
-            value={to}
-            onChange={(v) => setTo(v ?? initial.to)}
-          />
-        </div>
-        <Select
-          ariaLabel={S.pipelineLabel}
-          value={selectedPipelineId}
-          onChange={(v) => setSelectedPipelineId(v)}
-          options={pipelineOptions}
-        />
+        </header>
+        <section
+          aria-label={S.filtersLabel}
+          className="space-y-4 rounded-xl border bg-card p-4 sm:p-5 [&_button]:min-h-10"
+        >
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+            <div className="col-span-2 min-w-0 space-y-2 xl:col-span-1">
+              <p className="text-xs font-medium text-muted-foreground">{S.pipelineLabel}</p>
+              <Select
+                ariaLabel={S.pipelineLabel}
+                value={selectedPipelineId}
+                onChange={setSelectedPipelineId}
+                options={pipelineOptions}
+                disabled={pipelinesQ.isLoading || pipelinesQ.isError}
+              />
+            </div>
+            <div className="min-w-0 space-y-2 [&_button]:w-full">
+              <p className="text-xs font-medium text-muted-foreground">{S.ownerScopeLabel}</p>
+              <OwnerScopeSelect
+                value={result?.effectiveOwnerScope ?? ownerScope}
+                onChange={setOwnerScope}
+                canViewOthers={canViewOthers}
+                users={ownerOptionsQ.data?.users ?? []}
+                teams={ownerOptionsQ.data?.teams ?? []}
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">{S.currencyLabel}</p>
+              <CurrencySelect value={selectedCurrency} onChange={setSelectedCurrency} />
+            </div>
+          </div>
+          <DateRangeControl today={today} from={range.from} to={range.to} onChange={setRange} />
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {tCurrency("currencyNotice")}
+          </p>
+          {result !== undefined && result.timeZone !== "" && (
+            <p className="text-xs text-muted-foreground">
+              {S.recordsTimeZone}: <bdi>{result.timeZone}</bdi>
+            </p>
+          )}
+          {pipelinesQ.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {S.pipelinesUnavailable}{" "}
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={pipelinesQ.isFetching}
+                onClick={() => {
+                  void pipelinesQ.refetch();
+                }}
+              >
+                {S.retry}
+              </Button>
+            </p>
+          )}
+          {canViewOthers && ownerOptionsQ.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {S.ownersUnavailable}{" "}
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={ownerOptionsQ.isFetching}
+                onClick={() => {
+                  void ownerOptionsQ.refetch();
+                }}
+              >
+                {S.retry}
+              </Button>
+            </p>
+          )}
+        </section>
+        <Tabs defaultValue="overview">
+          <TabsList
+            aria-label={S.viewsLabel}
+            className="mb-5 min-h-12 flex-wrap gap-1 border-b pb-3 group-data-horizontal/tabs:h-auto"
+          >
+            <TabsTrigger value="overview" className={REPORT_TAB}>
+              <LayoutDashboard aria-hidden="true" className="me-2 hidden size-4 sm:block" />
+              {S.overviewTab}
+            </TabsTrigger>
+            <TabsTrigger value="pipeline" className={REPORT_TAB}>
+              <SlidersHorizontal aria-hidden="true" className="me-2 hidden size-4 sm:block" />
+              {S.pipelineTab}
+            </TabsTrigger>
+            <TabsTrigger value="activities" className={REPORT_TAB}>
+              <CalendarDays aria-hidden="true" className="me-2 hidden size-4 sm:block" />
+              {S.activitiesTab}
+            </TabsTrigger>
+          </TabsList>
+          {body}
+        </Tabs>
       </div>
-      <p className="mb-4 text-sm text-muted-foreground">{tCurrency("currencyNotice")}</p>
-      {body}
+      {inspection !== null && validRange && (
+        <DealRecordsDrawer
+          key={JSON.stringify({ ...reportScope, metric: inspection.metric })}
+          scope={reportScope}
+          metric={inspection.metric}
+          returnFocus={inspection.trigger}
+          onClose={() => setInspection(null)}
+        />
+      )}
     </div>
   );
 }

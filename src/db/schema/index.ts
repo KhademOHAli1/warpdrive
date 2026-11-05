@@ -1,3 +1,7 @@
+// Installation-scoped subscription, company and operational-work tables.
+export * from "@/features/billing/schema";
+export * from "@/features/company-profile/schema";
+export * from "@/features/work-profile/schema";
 export * from "./activities";
 export * from "./activityGuests";
 export * from "./activityParticipants";
@@ -32,6 +36,7 @@ export * from "./importBatches";
 export * from "./importExternalIds";
 export * from "./importRows";
 export * from "./integrations";
+export * from "./kpis";
 export * from "./labels";
 export * from "./leads";
 export * from "./lostReasons";

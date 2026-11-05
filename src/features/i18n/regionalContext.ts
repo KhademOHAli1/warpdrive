@@ -11,7 +11,7 @@ export interface RegionalContext {
 }
 
 type TimeZoneCountries = Map<string, Set<RegionalCountry>>;
-const countryIndexes = new WeakMap<Intl.DateTimeFormat["resolvedOptions"], TimeZoneCountries>();
+const countryIndexes = new WeakMap<object, TimeZoneCountries>();
 const locationTimeZones = Object.values(COUNTRY_TIME_ZONES).flat();
 const locationZones = new Set(locationTimeZones);
 
@@ -31,8 +31,13 @@ function canonicalTimeZone(timeZone: string): string | undefined {
 }
 
 function countriesByTimeZone(): TimeZoneCountries {
-  const resolver = Reflect.get(Intl.DateTimeFormat.prototype, "resolvedOptions");
-  const cached = countryIndexes.get(resolver);
+  // The function identity invalidates the cache when the runtime replaces its zone resolver.
+  const resolver: unknown = Object.getOwnPropertyDescriptor(
+    Intl.DateTimeFormat.prototype,
+    "resolvedOptions",
+  )?.value;
+  const cacheKey = typeof resolver === "function" ? resolver : Intl.DateTimeFormat.prototype;
+  const cached = countryIndexes.get(cacheKey);
   if (cached !== undefined) return cached;
   const index: TimeZoneCountries = new Map();
   for (const country of REGIONAL_COUNTRIES) {
@@ -44,7 +49,7 @@ function countriesByTimeZone(): TimeZoneCountries {
       index.set(canonical, countries);
     }
   }
-  countryIndexes.set(resolver, index);
+  countryIndexes.set(cacheKey, index);
   return index;
 }
 

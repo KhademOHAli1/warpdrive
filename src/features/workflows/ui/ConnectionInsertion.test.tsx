@@ -130,7 +130,7 @@ it("opens an occupied output palette without committing and closes its panel to 
   expect(within(dialog).queryByRole("textbox")).not.toBeInTheDocument();
   expect(within(dialog).getByRole("button", { name: /^Read deal/ })).toBeEnabled();
   expect(within(dialog).getByRole("button", { name: /^Create task/ })).toBeEnabled();
-  expect(within(dialog).getByRole("button", { name: /^Wait/ })).toBeEnabled();
+  expect(within(dialog).getByRole("button", { name: /^Delay/ })).toBeEnabled();
   const condition = within(dialog).getByRole("button", { name: /^Condition/ });
   expect(condition).toBeVisible();
   expect(condition).toHaveAttribute("aria-disabled", "true");
@@ -160,7 +160,7 @@ it.each([
     connections: "Connections",
     insert: "Insert a step here",
     search: "Search steps",
-    wait: "Wait",
+    wait: "Delay",
     steps: "Workflow steps",
     configure: "Configure",
     stepName: "Step name",
@@ -310,14 +310,14 @@ it("numbers the inserted Wait before its connected Read deal and Create task", a
   const connections = screen.getByRole("region", { name: "Connections" });
   await user.click(within(connections).getByRole("button", { name: "Insert a step here" }));
   const dialog = await screen.findByRole("dialog");
-  await user.click(within(dialog).getByRole("button", { name: /^Wait/ }));
+  await user.click(within(dialog).getByRole("button", { name: /^Delay/ }));
   await expectPaletteClosed();
 
   const steps = screen.getByRole("navigation", { name: "Workflow steps" });
   const buttons = within(steps).getAllByRole("button");
   expect(buttons.map((button) => button.getAttribute("title"))).toEqual([
     "Manual start",
-    "Wait",
+    "Delay",
     "Read deal",
     "Create task",
   ]);

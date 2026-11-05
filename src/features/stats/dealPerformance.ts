@@ -5,26 +5,13 @@
 // windowed count.
 // Always applies dealVisibilityPredicate via dealVisibilityClause (requires
 // FROM deals d JOIN pipelines p ON p.id = d.pipeline_id).
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
-import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { ownerFilterClause } from "@/features/stats/ownerIds";
 import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, DealCounters, MoneyBucket } from "@/types/stats";
-
-// Build a DealVisibilitySession from a PermSetUser (same shape, different names).
-function toSession(actor: PermSetUser) {
-  return {
-    userId: actor.id,
-    isAdmin: actor.type === "admin",
-    isActive: actor.isActive,
-    sessionLive: true,
-    visibilityGroupIds: Array.from(actor.groupIds),
-    managedUserIds: Array.from(actor.managedUserIds ?? []),
-  };
-}
+import { dealMetricPopulation, visibleDealPopulation } from "./dealPopulation";
 
 interface CounterRow {
   addedCount: number;
@@ -45,18 +32,11 @@ export async function dealPerformance(
 ): Promise<DealCounters> {
   signal.throwIfAborted();
 
-  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
-  const visClause = dealVisibilityClause(toSession(actor));
-  const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
-  const pipelineClause =
-    filters.pipelineId !== null ? sql`AND d.pipeline_id = ${filters.pipelineId}` : sql``;
-
-  const from = sql`${filters.from}::date`;
-  const toExclusive = sql`${filters.to}::date + INTERVAL '1 day'`;
-  const addedIn = sql`d.created_at >= ${from} AND d.created_at < ${toExclusive}`;
-  const wonIn = sql`d.status = 'won' AND d.won_time >= ${from} AND d.won_time < ${toExclusive}`;
-  const lostIn = sql`d.status = 'lost' AND d.lost_time >= ${from} AND d.lost_time < ${toExclusive}`;
-  const isOpen = sql`d.status = 'open'`;
+  const visible = await visibleDealPopulation(db, actor, filters, signal);
+  const addedIn = dealMetricPopulation("added", filters);
+  const wonIn = dealMetricPopulation("won", filters);
+  const lostIn = dealMetricPopulation("lost", filters);
+  const isOpen = dealMetricPopulation("open", filters);
 
   const result = await db.execute(sql`
     SELECT
@@ -70,13 +50,7 @@ export async function dealPerformance(
       coalesce(sum(d.value) filter (where ${isOpen}), 0)::text AS "openValue"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
-    WHERE d.deleted_at IS NULL
-      AND d.archived_at IS NULL
-      AND p.is_archived = false
-      ${pipelineClause}
-      ${ownerClause}
-      ${currencyClause}
-      AND ${visClause}
+    WHERE ${visible}
   `);
 
   signal.throwIfAborted();

@@ -3,12 +3,12 @@ import type { IranianMoneyUnit } from "./iranianMoney";
 import {
   displayNumberingSystem,
   localeWithNumberingSystem,
-  type NumberedLocale,
   type NumberingSystem,
+  type RegionalNumberedLocale,
 } from "./numberingSystem";
 
 export type FormattingLocale = "en" | "fa" | "de";
-export type FormattingLocaleTag = NumberedLocale<`${FormattingLocale}-${Uppercase<string>}`>;
+export type FormattingLocaleTag = RegionalNumberedLocale<FormattingLocale>;
 export type CalendarSystem = "gregory" | "persian";
 
 export interface FormattingPreferences {
@@ -25,7 +25,11 @@ export type DateDisplayOptions = Omit<
   "calendar" | "numberingSystem" | "timeZone"
 >;
 
-const LOCALE_TAGS: Record<FormattingLocale, string> = { en: "en-US", fa: "fa-IR", de: "de-DE" };
+const LOCALE_TAGS: Record<FormattingLocale, `${FormattingLocale}-${string}`> = {
+  en: "en-US",
+  fa: "fa-IR",
+  de: "de-DE",
+};
 const MEDIUM_DATE: DateDisplayOptions = { year: "numeric", month: "short", day: "numeric" };
 
 export function resolveFormattingPreferences(
@@ -49,14 +53,10 @@ export function resolveFormattingPreferences(
 export function localeTagForFormatting(
   preferences: Partial<FormattingPreferences> = {},
 ): FormattingLocaleTag {
-  const tag = LOCALE_TAGS[preferences.locale ?? "en"];
-  // Intl canonicalizes the optional region and preserves the supported language.
-  return localeWithNumberingSystem(
-    preferences.country === undefined
-      ? tag
-      : new Intl.Locale(tag, { region: preferences.country }).toString(),
-    preferences.numberingSystem,
-  ) as FormattingLocaleTag;
+  const locale = preferences.locale ?? "en";
+  const tag: `${FormattingLocale}-${string}` =
+    preferences.country === undefined ? LOCALE_TAGS[locale] : `${locale}-${preferences.country}`;
+  return localeWithNumberingSystem(tag, preferences.numberingSystem);
 }
 
 export function formatNumber(

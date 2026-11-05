@@ -740,8 +740,29 @@
     {
       "idx": 105,
       "version": "7",
+      "when": 1793895428336,
+      "tag": "0105_workspace_billing",
+      "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1793903417078,
+      "tag": "0106_company_work_profile",
+      "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1793906965219,
+      "tag": "0107_kpi_scorecards",
+      "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "7",
       "when": 1793913731569,
-      "tag": "0105_workflow_iterator_occurrences",
+      "tag": "0108_workflow_iterator_occurrences",
       "breakpoints": true
     }
   ]

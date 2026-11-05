@@ -6,16 +6,29 @@ description: "The Warpdrive Performance page: sales metrics, the stage funnel, q
 
 # Performance
 
-`/dashboard` is the Performance page: a scoreboard of sales metrics on top, quota
-goals under it, and charts below.
+`/dashboard` is the Performance page. Use **Overview** for headline metrics, won
+value over time, your applicable goals and a pipeline summary. **Pipeline** shows
+deal outcomes, funnel conversion, current stage values and lost reasons.
+**Activities** shows activity counters and the completion breakdown by type.
 
 ![The Performance page](/img/screenshots/dashboard/overview.png)
 
 ## Metrics
 
-The scoreboard covers deals added, won, lost, and open, activities completed, added,
-and scheduled, win rate, average and median won deal size, and sales cycle length.
-Below it sit activities completed by type and lost reasons by count and value.
+The scoreboard shows won deal value and count, win rate, average won deal value,
+median sales cycle and completed activities. The individual reports retain added,
+won, lost and open deal counts and values, and separate activity counters.
+
+Use the pipeline, owner and currency filters to choose the report scope. Quick
+ranges offer the last 30 days, this month to date, this quarter to date and the
+current year to date. Custom start/end dates remain available. Presets use Gregorian
+date boundaries and the viewer's server-resolved current date; the date pickers
+continue to respect display preferences. A reversed range must be corrected
+before the report can load. Switching report tabs retains the selected filters.
+
+The monthly trend has a **Show monthly data** control for reading the same values
+in a visible table. The table remains available to assistive technology when the
+visual table is collapsed.
 
 Each counter windows on the column that records its event: "Won" over a range means
 deals **won** in that range, not deals created in it that happen to be won now, and
@@ -46,6 +59,9 @@ goal starting in February runs February to April.
 Goals are managed on `/settings/goals`, behind the `goals.manage` permission.
 Reading them needs no permission.
 
+Goals keep their own dates and assignee scope independently of the report filters.
+A failed goals request is reported separately from a successful request with no goals.
+
 ## Numbers are visibility-scoped
 
 Figures are computed with the same visibility rule as the records behind them.
@@ -63,9 +79,10 @@ When reconciling a disputed number, compare as the **same user**, then check
 
 ## Scope
 
-The page is deliberately a summary rather than a reporting tool. Forecast views and
-configurable reports are out of scope for Warpdrive. For anything beyond these
-figures, query the database directly.
+This page summarizes the currently supported metrics. The broader analytics
+roadmap tracks forecasting, saved reports and permission-safe record drill-down.
+The current views do not add forecasts, previous-period comparisons or currency
+conversion.
 
 ## Related
 
