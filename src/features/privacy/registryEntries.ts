@@ -2,6 +2,7 @@ import { analyticsInventoryEntry } from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
+import { companyWorkInventoryEntry } from "./registryCompanyWork";
 import { archiveCodecIds1 } from "./registryIdsArchiveCodec1";
 import { authenticationIds1 } from "./registryIdsAuthentication1";
 import { authenticationIds2 } from "./registryIdsAuthentication2";
@@ -40,6 +41,7 @@ import { workflowInventoryEntry } from "./registryWorkflows";
 export const registryEntries: RegistryEntry[] = [
   analyticsInventoryEntry,
   billingInventoryEntry,
+  companyWorkInventoryEntry,
   workflowInventoryEntry,
   migrationInventoryEntry,
   ...mailInventoryEntries,

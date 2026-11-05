@@ -743,6 +743,13 @@
       "when": 1793895428336,
       "tag": "0105_workspace_billing",
       "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1793903417078,
+      "tag": "0106_company_work_profile",
+      "breakpoints": true
     }
   ]
 }

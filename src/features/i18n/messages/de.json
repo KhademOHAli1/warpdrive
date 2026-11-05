@@ -12,7 +12,8 @@
     "inbox": "Posteingang",
     "dashboard": "Vertriebsleistung",
     "settings": "Einstellungen",
-    "docs": "Hilfe & Dokumentation"
+    "docs": "Hilfe & Dokumentation",
+    "work": "Arbeit"
   },
   "auth": {
     "signInWithGoogle": "Mit Google anmelden",

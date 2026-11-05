@@ -12,6 +12,7 @@ import { BillingErrorNotice } from "./BillingErrorNotice";
 import { BillingHistory } from "./BillingHistory";
 import { BillingProfileForm, BillingStartControls } from "./BillingProfileForm";
 import { BillingSummary } from "./BillingSummary";
+import { CompanyBillingCopy } from "./CompanyBillingCopy";
 import { SeatChangeCard } from "./SeatChangeCard";
 import { useBillingController } from "./useBillingController";
 
@@ -91,6 +92,13 @@ export function BillingSettingsClient(props: {
         <SettingsCard>
           <SettingsCardHeader title={messages.profile} description={messages.profileDescription} />
           <SettingsCardBody>
+            <CompanyBillingCopy
+              disabled={checkoutLocked}
+              onCopy={(copied) => {
+                for (const key of Object.keys(copied) as (keyof typeof copied)[])
+                  controller.updateDraft(key, copied[key]);
+              }}
+            />
             <BillingProfileForm
               messages={messages}
               draft={draft}

@@ -49,6 +49,8 @@ describe("error IDs", () => {
       "PRIVACY",
       "PREF",
       "BILLING",
+      "COMPANY",
+      "WORK",
     ];
     for (const id of Object.values(ERROR_IDS)) {
       const m = /^E_([A-Z]+)_(\d{3})$/.exec(id);
