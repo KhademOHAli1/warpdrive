@@ -208,4 +208,65 @@ describe("recoverFrom404 coverage", () => {
       expect(row.trashed_at).not.toBeNull();
     });
   });
+
+  it.each([
+    { failure: "purged", providerStatus: 404, recovered: true },
+    { failure: "temporarily unavailable", providerStatus: 503, recovered: false },
+  ])(
+    "handles a $failure CRM-linked thread during coverage",
+    async ({ providerStatus, recovered }) => {
+      await withTestDb(async (db) => {
+        const { acctId, userId } = await seedAccount(db, { startHistoryId: "100" });
+        const person = (
+          await db.execute(sql`
+          INSERT INTO persons (name, primary_email, owner_id, visibility_level)
+          VALUES ('Linked person', 'linked@example.test', ${userId}, 'all') RETURNING id
+        `)
+        ).rows[0] as { id: string };
+        const thread = (
+          await db.execute(sql`
+          INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, last_message_at)
+          VALUES ('linked-thread', ${acctId}, 'Linked thread', ${person.id}, now()) RETURNING id
+        `)
+        ).rows[0] as { id: string };
+
+        const fake = new FakeGmailClient();
+        fake.getThread = () =>
+          Promise.resolve(
+            err(new AppError("E_GMAIL_001", "thread lookup failed", { status: providerStatus })),
+          );
+        fake.listResults = [{ messages: [{ id: "recent-msg", threadId: "recent-thread" }] }];
+        fake.messages.set("recent-msg", msg("recent-msg", "recent-thread", "sender@example.test"));
+        fake.profileHistoryId = "150";
+
+        const result = await recoverFrom404(db, {
+          accountId: acctId,
+          gmail: fake,
+          signal: newSignal(),
+        });
+        expect(result).toMatchObject(
+          recovered
+            ? { ok: true, value: { applied: 1 } }
+            : { ok: false, error: { id: "E_GMAIL_001", context: { status: 503 } } },
+        );
+        expect(await countMessages(db, acctId)).toBe(recovered ? 1 : 0);
+
+        const linked = (
+          await db.execute(sql`
+          SELECT person_id, trashed_at IS NOT NULL AS trashed FROM email_threads WHERE id=${thread.id}
+        `)
+        ).rows[0];
+        expect(linked).toEqual({ person_id: person.id, trashed: recovered });
+        const checkpoint = (
+          await db.execute(sql`
+          SELECT last_history_id, status FROM email_accounts WHERE id=${acctId}
+        `)
+        ).rows[0];
+        expect(checkpoint).toEqual({
+          last_history_id: recovered ? "150" : "100",
+          status: recovered ? "connected" : "error",
+        });
+      });
+    },
+  );
 });

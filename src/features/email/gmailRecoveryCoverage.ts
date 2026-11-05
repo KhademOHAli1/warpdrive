@@ -5,7 +5,7 @@ import type { Db } from "@/db/client";
 import { ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
 import { withGmailConnection } from "./gmailConnectionFence";
-import { reconcileThreadTrash } from "./trashReconcile";
+import { markThreadTrashed, reconcileThreadTrash } from "./trashReconcile";
 
 // Coverage includes the recent window and every linked thread, including old
 // messages whose labels changed while the history cursor was unavailable.
@@ -40,14 +40,21 @@ export async function collectGmailRecoveryCoverage(
   for (const row of linked.rows as { gmail_thread_id: string }[]) {
     const thread = await args.gmail.getThread({ id: row.gmail_thread_id, signal: args.signal });
     args.signal.throwIfAborted();
-    if (!thread.ok) return thread;
-    for (const message of thread.value.messages) ids.add(message.id);
+    if (!thread.ok && thread.error.context?.status !== 404) return thread;
+    const messages = thread.ok ? thread.value.messages : null;
+    messages?.forEach(({ id }) => {
+      ids.add(id);
+    });
+    // Like incremental sync, retain the CRM link and hide a thread purged from Gmail.
     const written = await withGmailConnection(
       db,
       args.accountId,
       args.generation,
       args.signal,
-      (tx) => reconcileThreadTrash(tx, args.accountId, row.gmail_thread_id, thread.value.messages),
+      (tx) =>
+        messages === null
+          ? markThreadTrashed(tx, args.accountId, row.gmail_thread_id)
+          : reconcileThreadTrash(tx, args.accountId, row.gmail_thread_id, messages),
     );
     if (!written.ok) return written;
   }
