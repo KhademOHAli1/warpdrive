@@ -1,9 +1,45 @@
 import { describe, expect, it } from "vitest";
-import { monthTitle, selectWindow, stepAnchorIso, weekTitle } from "./calendarView";
+import {
+  dayTitle,
+  monthTitle,
+  selectWindow,
+  stepAnchorIso,
+  weekTitle,
+  yearTitle,
+} from "./calendarView";
 
 const PERSIAN = { calendar: "persian", locale: "fa" } as const;
 
 describe("Solar Hijri calendar windows", () => {
+  it("fetches a full Iranian year from Nowruz through the following Nowruz", () => {
+    const { days, range } = selectWindow("year", "2026-11-05", {
+      ...PERSIAN,
+      timeZone: "Asia/Tehran",
+    });
+    expect(days).toHaveLength(365);
+    expect(days[0]?.toISOString().slice(0, 10)).toBe("2026-03-21");
+    expect(days[364]?.toISOString().slice(0, 10)).toBe("2027-03-20");
+    expect(range.from.toISOString()).toBe("2026-03-20T20:30:00.000Z");
+    expect(range.to.toISOString()).toBe("2027-03-20T20:30:00.000Z");
+  });
+
+  it("includes Esfand's leap day in year 1403 and clamps it when stepping years", () => {
+    const { days } = selectWindow("year", "2025-03-20", PERSIAN);
+    expect(days).toHaveLength(366);
+    expect(days[0]?.toISOString().slice(0, 10)).toBe("2024-03-20");
+    expect(days[365]?.toISOString().slice(0, 10)).toBe("2025-03-20");
+    expect(stepAnchorIso("year", "2025-03-20", 1, PERSIAN)).toBe("2026-03-20");
+    expect(stepAnchorIso("year", "2025-03-20", -1, PERSIAN)).toBe("2024-03-19");
+    expect(stepAnchorIso("year", "2026-03-21", -1, PERSIAN)).toBe("2025-03-21");
+  });
+
+  it("keeps day windows on the stored civil date and localizes day/year titles", () => {
+    const { days } = selectWindow("day", "2026-03-21", PERSIAN);
+    expect(days.map((day) => day.toISOString().slice(0, 10))).toEqual(["2026-03-21"]);
+    expect(dayTitle("2026-03-21", PERSIAN)).toContain("فروردین");
+    expect(yearTitle("2026-03-21", PERSIAN)).toBe("۱۴۰۵");
+    expect(yearTitle("2026-03-21", { ...PERSIAN, numberingSystem: "latn" })).toBe("1405");
+  });
   it("starts Farvardin 1405 on Nowruz and fetches its whole six-week grid", () => {
     const { days, range } = selectWindow("month", "2026-03-28", PERSIAN);
     expect(days).toHaveLength(42);

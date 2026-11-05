@@ -26,17 +26,29 @@ export function calendarEmptyState({
   locale?: "en" | "fa" | "de";
 }): CalendarEmpty {
   const messages = CALENDAR_MESSAGES[locale];
+  const titles = {
+    day: messages.emptyDayTitle,
+    week: messages.emptyWeekTitle,
+    month: messages.emptyMonthTitle,
+    year: messages.emptyYearTitle,
+  };
+  const filteredTitles = {
+    day: messages.emptyFilteredDayTitle,
+    week: messages.emptyFilteredWeekTitle,
+    month: messages.emptyFilteredMonthTitle,
+    year: messages.emptyFilteredYearTitle,
+  };
   if (hasFilter && hasUnfilteredActivities) {
     return {
       kind: "filtered",
-      title: view === "week" ? messages.emptyFilteredWeekTitle : messages.emptyFilteredMonthTitle,
+      title: filteredTitles[view],
       body: messages.emptyFilteredBody,
       action: messages.emptyFilteredAction,
     };
   }
   return {
     kind: "none",
-    title: view === "week" ? messages.emptyWeekTitle : messages.emptyMonthTitle,
+    title: titles[view],
     body: messages.emptyBody,
     action: messages.emptyAction,
   };
