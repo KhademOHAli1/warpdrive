@@ -1,6 +1,10 @@
 import { sql } from "drizzle-orm";
+import { PgBoss } from "pg-boss";
 import { describe, expect, it, vi } from "vitest";
+import { PGBOSS_QUEUE_EMAIL_SYNC } from "@/constants/jobNames";
 import { withTestDb } from "@/db/testing";
+import { setBoss } from "@/jobs/boss";
+import { makeTestDb } from "@/test/db";
 import { ok } from "@/types/result";
 import { decryptToken, encryptToken } from "./crypto";
 import { listActorMailboxes } from "./mailAccountsRepo";
@@ -79,6 +83,59 @@ describe("mail connection mutations", () => {
       ).toEqual({ ok: false, error: "connection_changed" });
     });
   });
+
+  it.each([
+    { condition: "with a scheduled tick", hasScheduledTick: true },
+    { condition: "without a scheduled tick", hasScheduledTick: false },
+  ])(
+    "queues one immediately runnable Gmail sync on concurrent retries $condition",
+    async ({ hasScheduledTick }) => {
+      const { db, url, close } = await makeTestDb();
+      const boss = new PgBoss(url);
+      const bossKey = Symbol.for("warpdrive.jobs.boss");
+      const bossGlobal = globalThis as { [bossKey]?: PgBoss | null };
+      const previousBoss = bossGlobal[bossKey];
+      try {
+        const f = await seedMailHttpSession(db);
+        const { id: accountId } = await mailbox(db, f.user.id, { provider: "gmail" });
+        await boss.start();
+        await boss.createQueue(PGBOSS_QUEUE_EMAIL_SYNC);
+        setBoss(boss);
+
+        let scheduledId: string | null = null;
+        if (hasScheduledTick) {
+          scheduledId = await boss.send(
+            PGBOSS_QUEUE_EMAIL_SYNC,
+            { accountId },
+            { singletonKey: accountId, startAfter: 3600 },
+          );
+          expect(scheduledId).not.toBeNull();
+        }
+
+        const retry = () =>
+          mutateMailboxConnection(db, f.context, { accountId, action: "retry" }, signal());
+        expect(await Promise.all([retry(), retry()])).toEqual([ok(undefined), ok(undefined)]);
+
+        const jobs = (
+          await db.execute(sql`SELECT id, singleton_key, start_after <= now() AS runnable
+        FROM pgboss.job
+        WHERE name=${PGBOSS_QUEUE_EMAIL_SYNC} AND data->>'accountId'=${accountId}
+          AND state IN ('created','retry')`)
+        ).rows;
+        expect(jobs).toHaveLength(1);
+        expect(jobs[0]).toMatchObject({ singleton_key: accountId, runnable: true });
+        if (hasScheduledTick) expect(jobs[0]?.id).toBe(scheduledId);
+      } finally {
+        if (previousBoss === undefined) delete bossGlobal[bossKey];
+        else bossGlobal[bossKey] = previousBoss;
+        try {
+          await boss.stop();
+        } finally {
+          await close();
+        }
+      }
+    },
+  );
 
   it("atomically queues Google revocation, clears credentials and replaces a disconnected default", async () => {
     await withTestDb(async (db) => {
