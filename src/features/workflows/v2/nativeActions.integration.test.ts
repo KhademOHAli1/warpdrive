@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import type { Db } from "@/db/client";
-import { activityTypes, persons } from "@/db/schema";
+import { activityTypes, organizations, persons } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { BlockOutput, WorkflowV2Node } from "@/features/blocks/contracts";
@@ -132,6 +132,40 @@ it("does not expose hidden records through find, pick or upsert and honors withh
       (await action(db, who, "CREATE_RECORD", { objectName: "person", fields: { name: "Denied" } }))
         .ok,
     ).toBe(false);
+  });
+});
+
+it("balances candidate organizations by related records visible to the running actor", async () => {
+  await withTestDb(async (db) => {
+    const owner = await seedUser(db, { isAdmin: true });
+    const member = await seedUser(db);
+    const [a, b] = await db
+      .insert(organizations)
+      .values([
+        { name: "Organization A", ownerId: owner.id, visibilityLevel: "all" },
+        { name: "Organization B", ownerId: owner.id, visibilityLevel: "all" },
+      ])
+      .returning();
+    if (a === undefined || b === undefined) throw new Error("fixture missing");
+    await db.insert(persons).values([
+      { name: "Visible to member", orgId: a.id, ownerId: owner.id, visibilityLevel: "all" },
+      { name: "Private contact 1", orgId: b.id, ownerId: owner.id, visibilityLevel: "owner" },
+      { name: "Private contact 2", orgId: b.id, ownerId: owner.id, visibilityLevel: "owner" },
+    ]);
+    const config = {
+      objectName: "organization",
+      recordIds: [a.id, b.id],
+      selectionMode: "LOAD_BALANCED",
+      loadRelation: { objectName: "person", field: "orgId" },
+    };
+    expect(await action(db, actor(member.id, false), "PICK_RECORD", config)).toMatchObject({
+      ok: true,
+      value: { recordId: b.id },
+    });
+    expect(await action(db, actor(owner.id), "PICK_RECORD", config)).toMatchObject({
+      ok: true,
+      value: { recordId: a.id },
+    });
   });
 });
 

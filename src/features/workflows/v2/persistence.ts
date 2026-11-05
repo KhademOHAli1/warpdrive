@@ -6,12 +6,15 @@ import type {
   WorkflowV2Adapters,
   WorkflowV2Definition,
   WorkflowV2LibraryEntry,
+  WorkflowV2PublishedManualLaunch,
+  WorkflowV2Trigger,
 } from "@/features/blocks/contracts";
 import { parseWorkflowV2Draft, validateWorkflowV2 } from "@/features/blocks/validation";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "../access";
+import { nativeObjectName } from "./nativeFields";
 import { validWorkflowV2Trigger, workflowV2Readiness } from "./readiness";
 import { authorizedWorkflow, documentDto, V2_ERROR } from "./shared";
 
@@ -27,6 +30,29 @@ const empty: WorkflowV2Definition = {
   edges: [],
   entryNodeIds: [],
 };
+
+function manualLaunch(trigger?: WorkflowV2Trigger): WorkflowV2PublishedManualLaunch | undefined {
+  if (trigger?.type !== "manual") return undefined;
+  const { availability, objectName } = trigger.config;
+  if (availability === undefined || availability === "global") return { availability: "global" };
+  if ((availability === "single" || availability === "bulk") && nativeObjectName(objectName))
+    return { availability, objectName };
+  return undefined;
+}
+
+export async function documentWithPublishedLaunch(
+  db: Db,
+  row: typeof workflowsV2.$inferSelect,
+  actor: PermSetUser,
+  signal: AbortSignal,
+) {
+  if (row.publishedNumber === null || !canWorkflow(actor, "run", row.ownerId))
+    return documentDto(row, actor);
+  const version = await publishedWorkflowV2(db, row.id, row.publishedNumber);
+  signal.throwIfAborted();
+  return documentDto(row, actor, manualLaunch(version?.definition.trigger));
+}
+
 export async function createWorkflowV2(
   db: Db,
   actor: PermSetUser,
@@ -73,7 +99,9 @@ export async function saveWorkflowV2(
       })
       .where(eq(workflowsV2.id, input.data.id))
       .returning();
-    return row === undefined ? err(V2_ERROR.write) : ok(documentDto(row, access.value.actor));
+    return row === undefined
+      ? err(V2_ERROR.write)
+      : ok(await documentWithPublishedLaunch(tx, row, access.value.actor, signal));
   });
 }
 export async function publishWorkflowV2(
@@ -130,15 +158,24 @@ export async function publishWorkflowV2(
     return version === undefined || row === undefined
       ? err(V2_ERROR.write)
       : ok({
-          document: documentDto(row, currentActor),
-          version: { ...version, createdAt: version.createdAt.toISOString() },
+          document: documentDto(row, currentActor, manualLaunch(version.definition.trigger)),
+          version: {
+            id: version.id,
+            workflowId: version.workflowId,
+            number: version.number,
+            name: version.name,
+            publishedBy: version.publishedBy,
+            createdAt: version.createdAt.toISOString(),
+          },
         });
   });
 }
 export async function readWorkflowV2(db: Db, actor: PermSetUser, id: string, signal: AbortSignal) {
   if (!z.uuid().safeParse(id).success) return err(V2_ERROR.invalid);
   const access = await authorizedWorkflow(db, actor, id, "view", signal);
-  return access.ok ? ok(documentDto(access.value.workflow, access.value.actor)) : access;
+  return access.ok
+    ? ok(await documentWithPublishedLaunch(db, access.value.workflow, access.value.actor, signal))
+    : access;
 }
 export async function listWorkflowV2(db: Db, actor: PermSetUser, signal: AbortSignal) {
   const current = await hydrateActor(db, actor.id, signal);
@@ -176,7 +213,9 @@ export async function changeWorkflowV2State(
       })
       .where(eq(workflowsV2.id, row.id))
       .returning();
-    return saved === undefined ? err(V2_ERROR.write) : ok(documentDto(saved, access.value.actor));
+    return saved === undefined
+      ? err(V2_ERROR.write)
+      : ok(await documentWithPublishedLaunch(tx, saved, access.value.actor, signal));
   });
 }
 export async function duplicateWorkflowV2(

@@ -60,6 +60,14 @@ const studio: WorkflowV2Studio = {
           updateable: false,
           upsertIdentity: true,
         },
+        {
+          key: "value",
+          label: "Value",
+          type: "number",
+          readable: true,
+          createable: true,
+          updateable: true,
+        },
       ],
     },
     {
@@ -83,6 +91,21 @@ const studio: WorkflowV2Studio = {
           createable: true,
           updateable: true,
           upsertIdentity: true,
+        },
+      ],
+    },
+    {
+      name: "activity",
+      label: "Activity",
+      fields: [
+        {
+          key: "dealId",
+          label: "Deal",
+          type: "string",
+          readable: true,
+          createable: true,
+          updateable: true,
+          referenceObject: "deal",
         },
       ],
     },
@@ -162,5 +185,46 @@ describe("structured configuration for the shared action catalog", () => {
     fireEvent.change(field, { target: { value } });
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange.mock.calls[0]?.[0]).toHaveProperty(path, expected);
+  });
+
+  it("balances candidate deals by visible related activities instead of their value", () => {
+    const node = {
+      id: "pick",
+      type: "PICK_RECORD" as const,
+      version: 1 as const,
+      name: "Pick a deal",
+      config: {
+        objectName: "deal",
+        recordIds: [{ kind: "literal", value: recordId }],
+        selectionMode: "LOAD_BALANCED",
+        loadField: "value",
+      },
+    };
+    const onChange = vi.fn();
+    render(
+      <WorkflowStudioInspector
+        node={node}
+        definition={{
+          schemaVersion: 2,
+          trigger: { type: "manual", config: {} },
+          nodes: [node],
+          edges: [],
+          entryNodeIds: [node.id],
+        }}
+        studio={studio}
+        disabled={false}
+        onChange={onChange}
+        onNodeChange={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    const picker = screen.getByRole("combobox", { name: "Balance by" });
+    expect(picker).toHaveDisplayValue("Value");
+    const option = screen.getByRole("option", { name: "Activity · Deal" });
+    fireEvent.change(picker, { target: { value: option.getAttribute("value") } });
+    const updated = onChange.mock.calls[0]?.[0];
+    expect(updated).toHaveProperty("loadRelation", { objectName: "activity", field: "dealId" });
+    expect(updated).not.toHaveProperty("loadField");
+    expect(updated).toHaveProperty("recordIds", node.config.recordIds);
   });
 });

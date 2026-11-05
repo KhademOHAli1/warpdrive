@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkflowV2Document, WorkflowV2Studio } from "@/features/blocks/contracts";
 import { WorkflowStudio } from "./WorkflowStudio";
@@ -96,6 +96,7 @@ const initial: WorkflowV2Document = {
 };
 beforeEach(() => {
   actions.readWorkflowV2StudioAction.mockResolvedValue({ ok: true, value: studio });
+  actions.listWorkflowV2RunsAction.mockResolvedValue({ ok: true, value: [] });
 });
 afterEach(() => {
   cleanup();
@@ -154,5 +155,125 @@ describe("workflow studio persistence and authority", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("changed elsewhere");
     expect(screen.getByRole("textbox", { name: "Workflow name" })).toHaveValue("Preserved");
     expect(actions.publishWorkflowV2Action).not.toHaveBeenCalled();
+  });
+});
+
+describe("published manual launch", () => {
+  const active: WorkflowV2Document = { ...initial, active: true, publishedNumber: 4 };
+
+  it("runs the published global trigger without saving a different dirty draft", async () => {
+    const draft: WorkflowV2Document["draft"] = {
+      ...initial.draft,
+      trigger: { type: "schedule", config: { mode: "interval", intervalMinutes: 30 } },
+    };
+    actions.testWorkflowV2DraftAction.mockResolvedValue({
+      ok: true,
+      value: { mode: "test", status: "completed", steps: [] },
+    });
+    actions.startWorkflowV2Action.mockResolvedValue({ ok: true, value: { id } });
+    render(
+      <WorkflowStudio
+        initial={{ ...active, draft, publishedManualLaunch: { availability: "global" } }}
+      />,
+    );
+    await screen.findByRole("combobox", { name: "Change trigger" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Workflow name" }), {
+      target: { value: "Unsaved schedule draft" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Safe test" }));
+    await waitFor(() =>
+      expect(actions.testWorkflowV2DraftAction).toHaveBeenCalledWith(
+        { definition: draft, trigger: {} },
+        "csrf",
+      ),
+    );
+    const run = screen.getByRole("button", { name: "Run live" });
+    await waitFor(() => expect(run).toBeEnabled());
+    fireEvent.click(run);
+    const dialog = screen.getByRole("dialog", { name: "Run live" });
+    expect(within(dialog).getByText("Version 4")).toBeInTheDocument();
+    expect(within(dialog).queryByRole("textbox", { name: "Search records" })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Start live run" }));
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    expect(actions.startWorkflowV2Action).toHaveBeenCalledWith(
+      { id, requestKey: expect.any(String), mode: "live", trigger: {}, expectedPublishedNumber: 4 },
+      "csrf",
+    );
+    expect(actions.saveWorkflowV2Action).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox", { name: "Workflow name" })).toHaveValue(
+      "Unsaved schedule draft",
+    );
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
+  });
+
+  it.each(["single", "bulk"] as const)(
+    "launches with %s records of the published entity and no draft variables",
+    async (availability) => {
+      const first = "10000000-0000-4000-8000-000000000002";
+      const second = "10000000-0000-4000-8000-000000000003";
+      actions.lookupWorkflowV2RecordsAction.mockResolvedValue({
+        ok: true,
+        value: [
+          { id: first, label: "First deal" },
+          { id: second, label: "Second deal" },
+        ],
+      });
+      actions.startWorkflowV2Action.mockResolvedValue({ ok: true, value: { id } });
+      render(
+        <WorkflowStudio
+          initial={{
+            ...active,
+            publishedManualLaunch: { availability, objectName: "deal" },
+            draft: {
+              ...initial.draft,
+              trigger: { type: "manual", config: { availability: "single", objectName: "person" } },
+            },
+          }}
+        />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Run live" }));
+      const dialog = screen.getByRole("dialog", { name: "Run live" });
+      const confirm = within(dialog).getByRole("button", { name: "Start live run" });
+      expect(confirm).toBeDisabled();
+      expect(within(dialog).queryByRole("button", { name: /choose a variable/i })).toBeNull();
+      fireEvent.click(await within(dialog).findByRole("button", { name: "First deal" }));
+      if (availability === "bulk") {
+        fireEvent.click(within(dialog).getByRole("button", { name: "Second deal" }));
+      }
+      expect(actions.lookupWorkflowV2RecordsAction).toHaveBeenCalledExactlyOnceWith({
+        objectName: "deal",
+        search: "",
+      });
+      fireEvent.click(confirm);
+      await waitFor(() => expect(dialog).not.toBeInTheDocument());
+      expect(actions.startWorkflowV2Action).toHaveBeenCalledWith(
+        {
+          id,
+          requestKey: expect.any(String),
+          mode: "live",
+          expectedPublishedNumber: 4,
+          trigger: availability === "bulk" ? { recordIds: [first, second] } : { recordId: first },
+        },
+        "csrf",
+      );
+    },
+  );
+
+  it.each<[string, Partial<WorkflowV2Document>]>([
+    ["nonmanual publication", {}],
+    ["unpublished manual draft", { publishedNumber: null }],
+    ["paused workflow", { active: false, publishedManualLaunch: { availability: "global" } }],
+    [
+      "read-only workflow",
+      { capabilities: { edit: false, publish: false, run: false, archive: false } },
+    ],
+  ])("disables live launch for a %s", async (_label, overrides) => {
+    render(<WorkflowStudio initial={{ ...active, ...overrides }} />);
+    await screen.findByRole("combobox", { name: "Change trigger" });
+    const run = screen.getByRole("button", { name: "Run live" });
+    expect(run).toBeDisabled();
+    fireEvent.click(run);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(actions.startWorkflowV2Action).not.toHaveBeenCalled();
   });
 });

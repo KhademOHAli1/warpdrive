@@ -1,7 +1,11 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { workflowsV2 } from "@/db/schema/workflowV2";
-import type { WorkflowV2Document, WorkflowV2Run } from "@/features/blocks/contracts";
+import type {
+  WorkflowV2Document,
+  WorkflowV2PublishedManualLaunch,
+  WorkflowV2Run,
+} from "@/features/blocks/contracts";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
@@ -20,7 +24,9 @@ export const V2_ERROR = {
 export function documentDto(
   row: typeof workflowsV2.$inferSelect,
   actor?: PermSetUser,
+  publishedManualLaunch?: WorkflowV2PublishedManualLaunch,
 ): WorkflowV2Document {
+  const run = actor !== undefined && canWorkflow(actor, "run", row.ownerId);
   return {
     id: row.id,
     engineVersion: 2,
@@ -32,13 +38,16 @@ export function documentDto(
     publishedNumber: row.publishedNumber,
     updatedAt: row.updatedAt.toISOString(),
     draft: row.draft,
+    ...(run && row.publishedNumber !== null && publishedManualLaunch !== undefined
+      ? { publishedManualLaunch }
+      : {}),
     ...(actor === undefined
       ? {}
       : {
           capabilities: {
             edit: canWorkflow(actor, "edit", row.ownerId),
             publish: canWorkflow(actor, "publish", row.ownerId),
-            run: canWorkflow(actor, "run", row.ownerId),
+            run,
             archive: canWorkflow(actor, "edit", row.ownerId),
           },
         }),

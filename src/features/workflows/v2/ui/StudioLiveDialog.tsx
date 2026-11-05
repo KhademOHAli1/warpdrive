@@ -10,21 +10,43 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { BlockOutput } from "@/features/blocks/contracts";
-import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
-import { StudioRecordPicker } from "./StudioRecordPicker";
-import { rawValue } from "./studioModel";
+import { useFormatters } from "@/lib/useFormatters";
+import { StudioRecordOptions } from "./StudioRecordPicker";
 import type { WorkflowStudioModel } from "./useWorkflowStudio";
+
 export function StudioLiveDialog({
+  launch,
   model,
   onClose,
 }: {
+  launch: NonNullable<WorkflowStudioModel["manualLaunch"]>;
   model: WorkflowStudioModel;
   onClose: () => void;
 }) {
-  const L = useSharedBlocksMessages();
-  const [payload, setPayload] = useState<BlockOutput>({});
+  const { L } = model;
+  const format = useFormatters();
+  const [records, setRecords] = useState<string[]>([]);
   const [requestKey] = useState(() => crypto.randomUUID());
-  const config = model.document.draft.trigger.config;
+  const recordId = records[0];
+  const canLaunch = launch.availability === "global" || recordId !== undefined;
+  function chooseRecord(id: string) {
+    setRecords((current) => {
+      if (launch.availability === "single") return [id];
+      return current.includes(id) ? current.filter((record) => record !== id) : [...current, id];
+    });
+  }
+  function start() {
+    if (!canLaunch) return;
+    const trigger: BlockOutput =
+      launch.availability === "bulk"
+        ? { recordIds: records }
+        : launch.availability === "single" && recordId !== undefined
+          ? { recordId }
+          : {};
+    void model.live(trigger, requestKey, launch.version).then((started) => {
+      if (started) onClose();
+    });
+  }
   return (
     <Dialog
       open
@@ -45,32 +67,17 @@ export function StudioLiveDialog({
           <DialogDescription>{L.liveHint}</DialogDescription>
         </DialogHeader>
         <p className="text-xs text-muted-foreground">
-          {L.version} {model.document.publishedNumber}
+          {L.version} {format.number(launch.version)}
         </p>
-        {model.studio !== null &&
-          config.availability !== undefined &&
-          config.availability !== "global" && (
-            <StudioRecordPicker
-              node={{
-                id: "$trigger",
-                type: "FIND_RECORDS",
-                version: 1,
-                name: L.trigger,
-                config: { ...config, ...payload },
-              }}
-              definition={model.document.draft}
-              studio={model.studio}
-              disabled={model.pending}
-              multiple={config.availability === "bulk"}
-              onChange={(next) =>
-                setPayload({
-                  ...payload,
-                  ...(next.recordId === undefined ? {} : { recordId: rawValue(next.recordId) }),
-                  ...(next.recordIds === undefined ? {} : { recordIds: rawValue(next.recordIds) }),
-                })
-              }
-            />
-          )}
+        {launch.availability !== "global" && (
+          <StudioRecordOptions
+            objectName={launch.objectName}
+            selected={records}
+            disabled={model.pending}
+            selectionLimit={launch.availability === "bulk" ? 100 : undefined}
+            onChoose={chooseRecord}
+          />
+        )}
         {model.error !== null && (
           <p role="alert" className="text-xs text-destructive">
             {model.error}
@@ -80,14 +87,7 @@ export function StudioLiveDialog({
           <Button variant="outline" disabled={model.pending} onClick={onClose}>
             {L.cancel}
           </Button>
-          <Button
-            disabled={model.pending || model.dirty}
-            onClick={() => {
-              void model.live(payload, requestKey).then((started) => {
-                if (started) onClose();
-              });
-            }}
-          >
+          <Button disabled={model.pending || !canLaunch} onClick={start}>
             {model.pending ? L.working : L.runConfirm}
           </Button>
         </DialogFooter>

@@ -10,18 +10,25 @@ import { StudioBound } from "./StudioFormControls";
 import type { StudioFormProps } from "./studioFormTypes";
 import { asArray, rawValue, textValue } from "./studioModel";
 
-export function StudioRecordPicker({
-  multiple = false,
-  ...props
-}: StudioFormProps & { multiple?: boolean }) {
+export function StudioRecordOptions({
+  objectName,
+  selected,
+  disabled,
+  selectionLimit,
+  onChoose,
+}: {
+  objectName: NativeEntity;
+  selected: readonly string[];
+  disabled: boolean;
+  selectionLimit?: number;
+  onChoose: (id: string) => void;
+}) {
   const L = useSharedBlocksMessages();
   const [search, setSearch] = useState("");
   const [rows, setRows] = useState<{ id: string; label: string }[]>([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const generation = useRef(0);
-  const objectName = textValue(props.node.config.objectName) as NativeEntity;
-  const key = multiple ? "recordIds" : "recordId";
   useEffect(() => {
     const request = ++generation.current;
     const controller = setTimeout(() => {
@@ -46,6 +53,57 @@ export function StudioRecordPicker({
       generation.current += 1;
     };
   }, [objectName, search]);
+  return (
+    <BlockField label={L.searchRecords}>
+      <Input
+        aria-label={L.searchRecords}
+        value={search}
+        disabled={disabled}
+        onChange={(event) => setSearch(event.target.value)}
+        className="h-8 text-xs"
+      />
+      <div className="max-h-36 overflow-y-auto">
+        {loading && (
+          <p role="status" className="py-2 text-xs text-muted-foreground">
+            {L.working}
+          </p>
+        )}
+        {error ? (
+          <p role="alert" className="py-2 text-xs text-destructive">
+            {L.failed}
+          </p>
+        ) : (
+          rows.map((row) => (
+            <Button
+              key={row.id}
+              variant={selected.includes(row.id) ? "outline" : "ghost"}
+              size="sm"
+              aria-pressed={selected.includes(row.id)}
+              disabled={
+                disabled ||
+                (selectionLimit !== undefined &&
+                  selected.length >= selectionLimit &&
+                  !selected.includes(row.id))
+              }
+              className="h-auto min-h-8 w-full justify-start text-start text-xs font-normal"
+              onClick={() => onChoose(row.id)}
+            >
+              {row.label}
+            </Button>
+          ))
+        )}
+      </div>
+    </BlockField>
+  );
+}
+
+export function StudioRecordPicker({
+  multiple = false,
+  ...props
+}: StudioFormProps & { multiple?: boolean }) {
+  const L = useSharedBlocksMessages();
+  const objectName = textValue(props.node.config.objectName) as NativeEntity;
+  const key = multiple ? "recordIds" : "recordId";
   const selected = multiple
     ? asArray(rawValue(props.node.config[key])).filter(
         (value): value is string => typeof value === "string",
@@ -67,41 +125,12 @@ export function StudioRecordPicker({
         label={L.fields[multiple ? "candidates" : "recordId"]}
         type={multiple ? "array" : "string"}
       />
-      <BlockField label={L.searchVariables}>
-        <Input
-          aria-label={`${L.fields.recordId}: ${L.searchVariables}`}
-          value={search}
-          disabled={props.disabled}
-          onChange={(event) => setSearch(event.target.value)}
-          className="h-8 text-xs"
-        />
-        <div className="max-h-36 overflow-y-auto">
-          {loading && (
-            <p role="status" className="py-2 text-xs text-muted-foreground">
-              {L.working}
-            </p>
-          )}
-          {error ? (
-            <p role="alert" className="py-2 text-xs text-destructive">
-              {L.failed}
-            </p>
-          ) : (
-            rows.map((row) => (
-              <Button
-                key={row.id}
-                variant={selected.includes(row.id) ? "outline" : "ghost"}
-                size="sm"
-                aria-pressed={selected.includes(row.id)}
-                disabled={props.disabled}
-                className="h-auto min-h-8 w-full justify-start text-start text-xs font-normal"
-                onClick={() => choose(row.id)}
-              >
-                {row.label}
-              </Button>
-            ))
-          )}
-        </div>
-      </BlockField>
+      <StudioRecordOptions
+        objectName={objectName}
+        selected={selected}
+        disabled={props.disabled}
+        onChoose={choose}
+      />
     </div>
   );
 }

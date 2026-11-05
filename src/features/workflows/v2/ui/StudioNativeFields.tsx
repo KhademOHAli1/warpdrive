@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import type { BlockFieldDescriptor, BlockJson } from "@/features/blocks/contracts";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioCondition } from "./StudioCondition";
@@ -10,6 +11,65 @@ import { StudioRecordPicker } from "./StudioRecordPicker";
 import { StudioValue } from "./StudioValue";
 import { fieldCatalog, type StudioFormProps } from "./studioFormTypes";
 import { asObject, textValue } from "./studioModel";
+
+function clearLoad(config: Record<string, BlockJson>) {
+  const next = { ...config };
+  delete next.loadField;
+  delete next.loadRelation;
+  return next;
+}
+
+function PickLoadField({
+  node,
+  studio,
+  onChange,
+  disabled,
+  objectFields,
+}: StudioFormProps & { objectFields: BlockFieldDescriptor[] }) {
+  const L = useSharedBlocksMessages();
+  const objectName = textValue(node.config.objectName);
+  const choices = [
+    ...objectFields
+      .filter((field) => field.readable && field.type === "number")
+      .map((field) => ({
+        value: `field:${field.key}`,
+        label: field.label,
+        group: L.fields.loadField,
+        config: { loadField: field.key },
+      })),
+    ...studio.objects.flatMap((object) =>
+      object.fields
+        .filter((field) => field.readable && field.referenceObject === objectName)
+        .map((field) => ({
+          value: `relation:${object.name}:${field.key}`,
+          label: `${object.label} · ${field.label}`,
+          group: L.fields.loadObject,
+          config: { loadRelation: { objectName: object.name, field: field.key } },
+        })),
+    ),
+  ];
+  const loadRelation = asObject(node.config.loadRelation);
+  const value =
+    node.config.loadField === undefined
+      ? `relation:${textValue(loadRelation.objectName)}:${textValue(loadRelation.field)}`
+      : `field:${textValue(node.config.loadField)}`;
+  const label = L.fields.balanceBy ?? "";
+  return (
+    <BlockField label={label}>
+      <Select
+        ariaLabel={label}
+        value={value}
+        disabled={disabled || choices.length === 0}
+        options={choices}
+        placeholder={L.fields.loadSelect}
+        onChange={(selected) => {
+          const choice = choices.find((option) => option.value === selected);
+          if (choice !== undefined) onChange({ ...clearLoad(node.config), ...choice.config });
+        }}
+      />
+    </BlockField>
+  );
+}
 
 function NativeWriteValues(props: StudioFormProps) {
   const L = useSharedBlocksMessages();
@@ -100,7 +160,7 @@ export function StudioNativeFields(props: StudioFormProps) {
           options={studio.objects.map((object) => ({ value: object.name, label: object.label }))}
           onChange={(objectName) =>
             onChange({
-              ...config,
+              ...(node.type === "PICK_RECORD" ? clearLoad(config) : config),
               objectName,
               fields: {},
               filters: [],
@@ -183,17 +243,7 @@ export function StudioNativeFields(props: StudioFormProps) {
             }))}
           />
           {config.selectionMode === "LOAD_BALANCED" && (
-            <>
-              <StudioFixed
-                {...props}
-                name="loadField"
-                label={L.fields.loadField}
-                options={objectFields
-                  .filter((field) => field.type === "number")
-                  .map((field) => ({ value: field.key, label: field.label }))}
-              />
-              <p className="text-[11px] text-muted-foreground">{L.fields.loadObject}</p>
-            </>
+            <PickLoadField {...props} objectFields={objectFields} />
           )}
         </>
       )}

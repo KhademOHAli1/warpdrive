@@ -139,10 +139,14 @@ export interface WorkflowV2LibraryEntry {
   publishedNumber: number | null;
   updatedAt: string;
 }
+export type WorkflowV2PublishedManualLaunch =
+  | { availability: "global" }
+  | { availability: "single" | "bulk"; objectName: NativeEntity };
 export interface WorkflowV2Document extends WorkflowV2LibraryEntry {
   engineVersion: 2;
   draft: WorkflowV2Definition;
   capabilities?: { edit: boolean; publish: boolean; run: boolean; archive: boolean };
+  publishedManualLaunch?: WorkflowV2PublishedManualLaunch;
 }
 export interface WorkflowV2Version {
   id: string;

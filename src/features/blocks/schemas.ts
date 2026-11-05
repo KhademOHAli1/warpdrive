@@ -220,6 +220,9 @@ const configs = {
     startsAt: z.iso.datetime({ offset: true }),
     endsAt: z.iso.datetime({ offset: true }),
     allDay: z.boolean().optional(),
+    // Leave room for HTML escaping within the activity note's 50,000-character limit.
+    description: z.string().max(8_000).optional(),
+    location: z.string().trim().max(255).optional(),
     timeZone: z.string().max(100).optional(),
     attendeeEmails: z.array(z.email()).max(100).optional(),
     sendInvitations: z.boolean().optional(),

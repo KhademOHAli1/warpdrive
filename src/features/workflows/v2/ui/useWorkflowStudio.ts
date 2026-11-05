@@ -70,6 +70,14 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
   const capabilities = document.capabilities ??
     initial.capabilities ?? { edit: false, publish: false, run: false, archive: false };
   const disabled = pending || archived || !capabilities.edit;
+  const manualLaunch =
+    !archived &&
+    document.active &&
+    capabilities.run &&
+    document.publishedNumber !== null &&
+    document.publishedManualLaunch !== undefined
+      ? { ...document.publishedManualLaunch, version: document.publishedNumber }
+      : null;
   function failure(id: string) {
     if (!alive.current) return;
     setError(
@@ -279,22 +287,14 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
       if (alive.current) setPending(false);
     }
   }
-  async function live(trigger: BlockOutput, requestKey: string) {
-    if (
-      lock.current ||
-      pending ||
-      archived ||
-      !capabilities.run ||
-      !document.active ||
-      document.publishedNumber === null
-    )
-      return false;
+  async function live(trigger: BlockOutput, requestKey: string, expectedPublishedNumber: number) {
+    if (lock.current || pending || manualLaunch === null) return false;
     lock.current = true;
     setPending(true);
     setError(null);
     try {
       const result = await startWorkflowV2Action(
-        { id: document.id, requestKey, mode: "live", trigger },
+        { id: document.id, requestKey, mode: "live", trigger, expectedPublishedNumber },
         readCsrfToken(),
       );
       if (!alive.current) return false;
@@ -339,6 +339,7 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
     reveal,
     command,
     test,
+    manualLaunch,
     live,
     runId,
     simulation: simulation?.stamp === stamp(document) ? simulation.value : null,

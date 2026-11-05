@@ -100,14 +100,7 @@ function StudioToolbar({
           <Button
             size="sm"
             variant="outline"
-            disabled={
-              model.pending ||
-              model.archived ||
-              !model.capabilities.run ||
-              model.dirty ||
-              !model.document.active ||
-              model.document.draft.trigger.type !== "manual"
-            }
+            disabled={model.pending || model.manualLaunch === null}
             onClick={onLive}
           >
             {L.run}
@@ -347,7 +340,7 @@ export function WorkflowStudio({
 }) {
   const model = useWorkflowStudio(initial);
   const { locale } = useLocalePreferences();
-  const [live, setLive] = useState(false);
+  const [live, setLive] = useState<WorkflowStudioModel["manualLaunch"]>(null);
   const [archive, setArchive] = useState(false);
   const [palettePort, setPalettePort] = useState<string>();
   const leave = useStudioLeaveGuard(model.dirty, model.pending);
@@ -374,7 +367,7 @@ export function WorkflowStudio({
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-background">
         <StudioToolbar
           model={model}
-          onLive={() => setLive(true)}
+          onLive={() => setLive(model.manualLaunch)}
           onArchive={() => setArchive(true)}
           onPalette={() => {
             setPalettePort(undefined);
@@ -419,7 +412,9 @@ export function WorkflowStudio({
           </aside>
         </div>
       </div>
-      {live && <StudioLiveDialog model={model} onClose={() => setLive(false)} />}
+      {live !== null && (
+        <StudioLiveDialog launch={live} model={model} onClose={() => setLive(null)} />
+      )}
       <ConfirmDialog
         open={archive}
         onOpenChange={setArchive}

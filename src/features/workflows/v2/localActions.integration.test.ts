@@ -79,7 +79,7 @@ it("creates a private sanitized local draft in an owned disconnected mailbox and
   });
 });
 
-it("creates an actual local all-day event with civil dates and refuses unsupported invitations", async () => {
+it("creates a local all-day event with safe details and refuses unsupported invitations", async () => {
   await withTestDb(async (db) => {
     const user = await seedUser(db, { isAdmin: true });
     const who = actor(user.id);
@@ -88,6 +88,8 @@ it("creates an actual local all-day event with civil dates and refuses unsupport
       startsAt: "2026-11-05T00:00:00+03:30",
       endsAt: "2026-11-05T23:59:00+03:30",
       allDay: true,
+      description: "Review & plan\n<script>alert(1)</script>",
+      location: "  Room 4  ",
       timeZone: "Asia/Tehran",
     };
     const result = await run(db, who, "CREATE_CALENDAR_EVENT", config);
@@ -106,6 +108,8 @@ it("creates an actual local all-day event with civil dates and refuses unsupport
       allDay: true,
       dueDate: "2026-11-05",
       endDate: "2026-11-05",
+      note: "<p>Review &amp; plan<br>&lt;script&gt;alert(1)&lt;/script&gt;</p>",
+      location: "Room 4",
     });
     const invitation = {
       ...config,

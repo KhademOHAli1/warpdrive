@@ -7,6 +7,7 @@ import { activityReminderTimeZone } from "@/features/activities/reminderIntentTy
 import { createActivity } from "@/features/activities/repo";
 import type { BlockOutput } from "@/features/blocks/contracts";
 import { resolvedBlockConfigSchemas } from "@/features/blocks/schemas";
+import { plainTextToParagraphHtml } from "@/features/email/plainText";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { instantCivilDate } from "@/lib/zonedDateTime";
@@ -63,6 +64,7 @@ export async function createLocalCalendarEvent(
     return err("workflow_calendar_assignee_unavailable");
   const preferences = await activityAccountPreferences(db, actor.id);
   const zone = activityReminderTimeZone.parse(input.timeZone ?? preferences.timeZone);
+  const note = plainTextToParagraphHtml(input.description ?? "");
   const created = await createActivity(
     db,
     actor,
@@ -74,6 +76,8 @@ export async function createLocalCalendarEvent(
       allDay: input.allDay ?? false,
       authoredTimeZone: zone,
       assigneeId,
+      note: note === "" ? null : note,
+      location: input.location === "" ? null : input.location,
       dueDate: input.allDay === true ? instantCivilDate(input.startsAt, zone) : null,
       endDate: input.allDay === true ? instantCivilDate(input.endsAt, zone) : null,
       reminder: { kind: "none" },

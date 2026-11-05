@@ -9,10 +9,10 @@ import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "../access";
 import { initialV2State } from "./admission";
-import { publishedWorkflowV2 } from "./persistence";
+import { documentWithPublishedLaunch, publishedWorkflowV2 } from "./persistence";
 import { workflowV2Readiness } from "./readiness";
 import { matchesResponseSchema } from "./responseSchema";
-import { authorizedWorkflow, documentDto, V2_ERROR } from "./shared";
+import { authorizedWorkflow, V2_ERROR } from "./shared";
 import { createWebhookCredential, verifyWebhookCredential } from "./webhookCredential";
 
 export function canonicalBlockJson(value: BlockJson): string {
@@ -62,7 +62,12 @@ export async function rotateWorkflowV2Webhook(
       })
       .where(eq(workflowsV2.id, workflow.id))
       .returning();
-    return row === undefined ? err(V2_ERROR.write) : ok({ document: documentDto(row), apiKey });
+    return row === undefined
+      ? err(V2_ERROR.write)
+      : ok({
+          document: await documentWithPublishedLaunch(tx, row, access.value.actor, signal),
+          apiKey,
+        });
   });
 }
 

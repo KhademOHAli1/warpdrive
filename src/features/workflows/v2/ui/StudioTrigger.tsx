@@ -24,7 +24,7 @@ export function triggerLabelKey(type: WorkflowV2Trigger["type"]) {
 }
 export function initialTriggerConfig(type: WorkflowV2Trigger["type"]): Record<string, BlockJson> {
   if (type.startsWith("record.")) return { objectName: "deal", updatedFields: [] };
-  if (type === "manual") return { availability: "global", pinned: false };
+  if (type === "manual") return { availability: "global" };
   if (type === "schedule") return { mode: "interval", intervalMinutes: 60 };
   return { authentication: "api_key", responseSchema: { type: "object", properties: {} } };
 }
@@ -182,39 +182,25 @@ export function StudioTrigger({
         </BlockField>
       )}
       {trigger.type === "manual" && (
-        <>
-          <BlockField label={L.fields.availability ?? ""}>
-            <Select
-              ariaLabel={L.fields.availability ?? ""}
-              value={textValue(config.availability) || "global"}
-              disabled={disabled}
-              options={["global", "single", "bulk"].map((value) => ({
-                value,
-                label: L.fields[value] ?? value,
-              }))}
-              onChange={(availability) =>
-                update({
-                  availability,
-                  ...(availability === "global"
-                    ? {}
-                    : { objectName: studio.objects[0]?.name ?? "deal" }),
-                })
-              }
-            />
-          </BlockField>
-          <BlockField label={L.fields.pinned ?? ""}>
-            <Select
-              ariaLabel={L.fields.pinned ?? ""}
-              value={config.pinned === true ? "true" : "false"}
-              disabled={disabled}
-              options={[
-                { value: "true", label: L.true },
-                { value: "false", label: L.false },
-              ]}
-              onChange={(value) => update({ pinned: value === "true" })}
-            />
-          </BlockField>
-        </>
+        <BlockField label={L.fields.availability ?? ""}>
+          <Select
+            ariaLabel={L.fields.availability ?? ""}
+            value={textValue(config.availability) || "global"}
+            disabled={disabled}
+            options={["global", "single", "bulk"].map((value) => ({
+              value,
+              label: L.fields[value] ?? value,
+            }))}
+            onChange={(availability) =>
+              update({
+                availability,
+                ...(availability === "global"
+                  ? {}
+                  : { objectName: studio.objects[0]?.name ?? "deal" }),
+              })
+            }
+          />
+        </BlockField>
       )}
       {trigger.type === "schedule" && (
         <>

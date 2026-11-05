@@ -21,7 +21,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok } from "@/types/result";
 import { startWorkflowV2 } from "./admission";
 import { executeNativeAction, nativeActionReadiness } from "./nativeActions";
-import { createWorkflowV2, publishWorkflowV2, saveWorkflowV2 } from "./persistence";
+import { createWorkflowV2, publishWorkflowV2, readWorkflowV2, saveWorkflowV2 } from "./persistence";
 import { readWorkflowV2Run } from "./queries";
 import { drainWorkflowV2RecordOutbox } from "./recordOutbox";
 import { advanceWorkflowV2Run } from "./runner";
@@ -120,6 +120,7 @@ it("pins immutable versions and commits each native loop effect with one receipt
       ],
     );
     const workflow = await published(db, who, draft);
+    expect(workflow.publishedManualLaunch).toEqual({ availability: "global" });
     const request = { id: workflow.id, requestKey: randomUUID(), trigger: {} };
     const starts = await Promise.all([
       startWorkflowV2(db, who, request, adapters, signal()),
@@ -368,6 +369,8 @@ it("authenticates published webhooks and rejects idempotency key reuse for diffe
       signal(),
     );
     if (!published.ok) throw new Error(published.error);
+    expect(published.value.document).not.toHaveProperty("publishedManualLaunch");
+    expect(published.value.version).not.toHaveProperty("definition");
     const request = {
       requestKey: randomUUID(),
       apiKey: rotated.value.apiKey,
@@ -461,6 +464,147 @@ async function regularWorkflowActor(db: Db) {
   const user = await seedUser(db, { permissionSetId: set.id });
   return { ...actor(user.id), type: "regular" as const };
 }
+
+it("keeps live record selection pinned while a manual draft changes from single to bulk", async () => {
+  await withTestDb(async (db) => {
+    const who = await regularWorkflowActor(db);
+    const [person] = await db
+      .insert(persons)
+      .values({ name: "Single launch record", ownerId: who.id, visibilityLevel: "owner" })
+      .returning({ id: persons.id });
+    const [organization] = await db
+      .insert(organizations)
+      .values({ name: "Bulk launch record", ownerId: who.id, visibilityLevel: "owner" })
+      .returning({ id: organizations.id });
+    if (person === undefined || organization === undefined)
+      throw new Error("Missing launch records");
+    const single = { availability: "single", objectName: "person" } as const;
+    const bulk = { availability: "bulk", objectName: "organization" } as const;
+    const draft: WorkflowV2Definition = {
+      ...definition(
+        [node("filter", "FILTER", { condition: { left: true, operator: "eq", right: true } })],
+        [],
+      ),
+      trigger: { type: "manual", config: { ...single, pinned: true } },
+    };
+    const initial = await published(db, who, draft);
+    expect(initial.publishedManualLaunch).toEqual(single);
+    const saved = await saveWorkflowV2(
+      db,
+      who,
+      {
+        id: initial.id,
+        expectedRevision: initial.revision,
+        name: initial.name,
+        definition: { ...draft, trigger: { type: "manual", config: bulk } },
+      },
+      signal(),
+    );
+    if (!saved.ok) throw new Error(saved.error);
+    expect(saved.value.draft.trigger.config).toEqual(bulk);
+    expect(saved.value.publishedManualLaunch).toEqual(single);
+    expect(await readWorkflowV2(db, who, initial.id, signal())).toMatchObject({
+      ok: true,
+      value: { publishedManualLaunch: single },
+    });
+
+    const launch = (expectedPublishedNumber: number | null, trigger: Record<string, unknown>) =>
+      startWorkflowV2(
+        db,
+        who,
+        { id: initial.id, requestKey: randomUUID(), expectedPublishedNumber, trigger },
+        adapters,
+        signal(),
+      );
+    expect(await launch(initial.publishedNumber, { recordId: person.id })).toMatchObject({
+      ok: true,
+      value: { trigger: { recordId: person.id } },
+    });
+    const next = await publishWorkflowV2(
+      db,
+      who,
+      { id: initial.id, expectedRevision: saved.value.revision },
+      adapters,
+      signal(),
+    );
+    if (!next.ok) throw new Error(next.error);
+    expect(next.value.document.publishedManualLaunch).toEqual(bulk);
+    expect(await launch(initial.publishedNumber, { recordId: person.id })).toEqual({
+      ok: false,
+      error: "E_WORKFLOW_V2_CONFLICT",
+    });
+    expect(
+      await launch(next.value.document.publishedNumber, { recordIds: [organization.id] }),
+    ).toMatchObject({
+      ok: true,
+      value: { trigger: { recordIds: [organization.id] } },
+    });
+  });
+});
+
+it("withholds published launch metadata after the owner loses run permission", async () => {
+  await withTestDb(async (db) => {
+    const who = await regularWorkflowActor(db);
+    const draft = definition(
+      [node("filter", "FILTER", { condition: { left: true, operator: "eq", right: true } })],
+      [],
+    );
+    const created = await createWorkflowV2(
+      db,
+      who,
+      { name: "Launch permission", definition: draft },
+      signal(),
+    );
+    if (!created.ok) throw new Error(created.error);
+    expect(created.value).not.toHaveProperty("publishedManualLaunch");
+    const publication = await publishWorkflowV2(
+      db,
+      who,
+      { id: created.value.id, expectedRevision: created.value.revision },
+      adapters,
+      signal(),
+    );
+    if (!publication.ok) throw new Error(publication.error);
+    expect(publication.value.document.publishedManualLaunch).toEqual({ availability: "global" });
+    const webhookDraft = await saveWorkflowV2(
+      db,
+      who,
+      {
+        id: created.value.id,
+        expectedRevision: publication.value.document.revision,
+        name: created.value.name,
+        definition: {
+          ...draft,
+          trigger: { type: "webhook", config: { authentication: "api_key" } },
+        },
+      },
+      signal(),
+    );
+    if (!webhookDraft.ok) throw new Error(webhookDraft.error);
+    const rotated = await rotateWorkflowV2Webhook(
+      db,
+      who,
+      { id: created.value.id, expectedRevision: webhookDraft.value.revision },
+      signal(),
+    );
+    if (!rotated.ok) throw new Error(rotated.error);
+    expect(rotated.value.document.publishedManualLaunch).toEqual({ availability: "global" });
+    const [owner] = await db
+      .select({ permissionSetId: users.permissionSetId })
+      .from(users)
+      .where(eq(users.id, who.id));
+    if (owner === undefined || owner.permissionSetId === null)
+      throw new Error("Missing permission set");
+    await db
+      .update(permissionSets)
+      .set({ flags: { "workflow.view": true, "workflow.edit": true } })
+      .where(eq(permissionSets.id, owner.permissionSetId));
+    const view = await readWorkflowV2(db, who, created.value.id, signal());
+    if (!view.ok) throw new Error(view.error);
+    expect(view.value.capabilities?.run).toBe(false);
+    expect(view.value).not.toHaveProperty("publishedManualLaunch");
+  });
+});
 
 it("denies an outbound binding when its CRM source becomes hidden during a delay", async () => {
   await withTestDb(async (db) => {
