@@ -102,11 +102,18 @@ def validate_review(review, item, eligibility, candidate, read_blob, is_ancestor
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", default="")
+    parser.add_argument("--integration-revision", help="Captured canonical revision for branch-push comparison")
     args = parser.parse_args()
     candidate = run("git", "rev-parse", "HEAD").strip()
     if args.base and args.base != "0" * 40 and not SHA.fullmatch(args.base):
         raise GateError("Base revision must be a complete Git SHA")
     base = args.base if args.base and args.base != "0" * 40 else run("git", "rev-parse", "HEAD^").strip()
+    if args.integration_revision is not None:
+        if not SHA.fullmatch(args.integration_revision) or args.integration_revision == "0" * 40:
+            raise GateError("Integration revision must be a complete nonzero Git SHA")
+        base = run("git", "merge-base", "--all", candidate, args.integration_revision).strip()
+        if not SHA.fullmatch(base) or base == "0" * 40:
+            raise GateError("Integration revision must have one complete nonzero common ancestor")
     read = lambda path: load_candidate_json(candidate, path)
     plan = read("docs/delivery/releases/next.json")
     items = {item["id"]: item for item in read("docs/delivery/roadmap.json")["items"]}

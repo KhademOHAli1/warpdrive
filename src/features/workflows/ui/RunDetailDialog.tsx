@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -23,16 +25,6 @@ export function RunDetailDialog({
   onCloseAutoFocus?: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
-  const query = trpc.workflows.run.useQuery(
-    { id: workflowId, runId },
-    {
-      refetchInterval: (state) =>
-        state.state.data !== undefined &&
-        ["queued", "running", "waiting"].includes(state.state.data.status)
-          ? 2500
-          : false,
-    },
-  );
   return (
     <Dialog
       open
@@ -48,22 +40,75 @@ export function RunDetailDialog({
           <DialogTitle>{t("runDetails")}</DialogTitle>
           <DialogDescription>{t("historicalGraphHint")}</DialogDescription>
         </DialogHeader>
-        {query.isLoading && (
-          <p role="status" className="p-5">
-            {t("loading")}
-          </p>
-        )}
-        {query.isError && (
-          <p role="alert" className="p-5 text-destructive">
-            {t("loadError")}
-          </p>
-        )}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {query.data !== undefined && (
-            <RunTrace key={query.data.id} detail={query.data} workflowId={workflowId} />
-          )}
-        </div>
+        <RunDetailRead
+          key={JSON.stringify([workflowId, runId])}
+          workflowId={workflowId}
+          runId={runId}
+        />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RunDetailRead({ workflowId, runId }: { workflowId: string; runId: string }) {
+  const t = useAppTranslations("workflows");
+  const [retrying, setRetrying] = useState(false);
+  const query = trpc.workflows.run.useQuery(
+    { id: workflowId, runId },
+    {
+      placeholderData: undefined,
+      retry: false,
+      refetchInterval: (state) =>
+        state.state.status === "success" &&
+        state.state.data?.id === runId &&
+        ["queued", "running", "waiting"].includes(state.state.data.status)
+          ? 2500
+          : false,
+    },
+  );
+  const readProblem = query.isError || (query.data !== undefined && query.data.id !== runId);
+  const visibleDetail =
+    query.isError || query.isPlaceholderData || query.data?.id !== runId ? undefined : query.data;
+  const loading = query.isLoading || query.isPlaceholderData || retrying;
+
+  async function retryRead() {
+    if (query.isFetching || retrying) return;
+    setRetrying(true);
+    try {
+      await query.refetch({ cancelRefetch: false, throwOnError: false });
+    } finally {
+      setRetrying(false);
+    }
+  }
+
+  return (
+    <>
+      {loading && (
+        <p role="status" className="px-5 py-3">
+          {t("loading")}
+        </p>
+      )}
+      {(readProblem || retrying) && (
+        <div className="space-y-3 px-5 py-3">
+          {readProblem && (
+            <p role="alert" className="text-destructive">
+              {t("loadError")}
+            </p>
+          )}
+          <Button
+            variant="outline"
+            disabled={query.isFetching || retrying}
+            onClick={() => void retryRead()}
+          >
+            {t("retry")}
+          </Button>
+        </div>
+      )}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {visibleDetail !== undefined && (
+          <RunTrace key={visibleDetail.id} detail={visibleDetail} workflowId={workflowId} />
+        )}
+      </div>
+    </>
   );
 }

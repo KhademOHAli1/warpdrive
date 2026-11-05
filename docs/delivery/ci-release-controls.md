@@ -33,6 +33,14 @@ Retain one authored source for each of these eight PR check contexts; do not rev
 | `required-quality.yml` | `Browser smoke checks`      |
 | `required-quality.yml` | `Release PR validation`     |
 
+The three `ci.yml` contexts are intentionally light: they install the locked package, run type
+and static/lint checks, and execute only focused contract tests. `Browser smoke checks` is likewise
+an admission/security guard and does not start a database, build the app, or launch Chromium. Full
+qualification is supplied by `full-ci.yml` (`CRM full checks`, `Marketing site full checks`, and
+`Documentation site full checks`) and `full-quality.yml` (`Full browser smoke checks`). Those full
+workflows run only by explicit dispatch or when their own definition is changed in a pull request.
+The exact-main release policy requires the full contexts; a light context cannot substitute for them.
+
 Each complete increment must satisfy the actual applicable checks at its exact revision before merging. `Delivery traceability` is additionally a main-only job; its future successful main result cannot be claimed before the merge. Review the increment's committed issue mapping before merging and verify this job at the resulting main revision afterward. An authored check list is not a claim that branch protection or rulesets have been configured; verify actual settings when relying on their enforcement.
 
 For integration and publication, retain latest successful required runs on the exact selected main SHA. Running, failed, cancelled, skipped, stale, wrong-revision and non-main runs do not substitute for required successful main evidence. Preserve the current track-specific policy requirements rather than widening the historical core or technical policy by documentation alone.
@@ -43,11 +51,11 @@ Retain the managed CodeQL workflow `403980173` and all three required analyses: 
 
 `Dependency audit` audits the actual Bun lockfiles for the root application, marketing site, documentation site and `tools/browser-smoke`, including production and development dependencies. It performs no install, exclusion, advisory ignore or automatic fix, and every reported severity fails. Keep this all-severity gate; do not restore PR952's high/critical-only or base-difference maintenance mode. An audit failure remains visible until actually resolved and rechecked; workflow changes and release-plan versions do not convert it into success.
 
-Retain each of the four audits' raw stdout and stderr, exit result, and a summary of the audited package/lockfile hashes even when an audit fails. The Monday 06:23 UTC schedule (`23 6 * * 1`) runs this same audit only. The other three `required-quality.yml` jobs—`Workflow validation`, `Browser smoke checks` and `Release PR validation`—skip only the schedule event; their push, pull-request and manual behavior remains. Keep the same single check contexts and dependency roots.
+Retain each of the four audits' raw stdout and stderr, exit result, and a summary of the audited package/lockfile hashes even when an audit fails. Keep the same single check contexts and dependency roots. Full CI and browser qualification are explicit workflows and are not inferred from this audit or from a light result.
 
 ## Browser and acceptance boundaries
 
-Keep the single `required-quality.yml` browser job, ordinary production build/start, canonical migrations, disposable loopback PostgreSQL/HTTPS, and the existing pinned `tools/browser-smoke` dependency and lockfile. Preserve external HTTP/WebSocket blocking, service-worker blocking and browser-error checks. Fixture admission must validate the connection actually used before database imports; a `DATABASE_URL_FILE` override must not redirect a seeded known-password actor beyond the admitted disposable database. Native password login must remain real; add no production authentication bypass or application test route.
+Keep `required-quality.yml`'s browser guard as a small static admission check. The full browser job in `full-quality.yml` retains ordinary production build/start, canonical migrations, disposable loopback PostgreSQL/HTTPS, the existing pinned `tools/browser-smoke` dependency and lockfile, external HTTP/WebSocket blocking, service-worker blocking and browser-error checks. Fixture admission must validate the connection actually used before database imports; a `DATABASE_URL_FILE` override must not redirect a seeded known-password actor beyond the admitted disposable database. Native password login must remain real; add no production authentication bypass or application test route.
 
 The browser harness includes EN/DE/FA login hydration and protected unauthenticated redirects, plus the deal/calendar persistence, mailbox setup/cancel emptiness, workflow draft persistence and DE/FA mobile/password-visibility cases integrated through PR952. Record actual selected-revision run results before claiming that coverage passes. Preserve useful failure traces and screenshots without creating another job or dependency root. Bounded smoke success does not establish reminder delivery, provider/SMTP outcomes, durable workflow execution, installation behavior or any complete protected human journey.
 

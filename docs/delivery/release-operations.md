@@ -9,21 +9,23 @@ The one-off branch consolidation from frozen base `68e9e55890dd1ceedfbfe08530196
 The `required-quality.yml` workflow supplies four required checks on pull requests and pushes:
 `Dependency audit` audits every app, marketing, documentation and isolated browser lockfile, including
 development dependencies, and fails on any reported vulnerability; `Workflow validation` runs the
-checksum-verified official actionlint release against all workflows; `Browser smoke checks` runs real
-Chromium against the built application with disposable loopback PostgreSQL and HTTPS, checking EN/DE/FA
+checksum-verified official actionlint release against all workflows; `Browser smoke checks` runs a static
+disposable-environment admission and external-effect guard. `full-quality.yml` runs Chromium against the
+built application with disposable loopback PostgreSQL and HTTPS, checking EN/DE/FA
 login hydration and unauthenticated redirects without provider traffic or mail sends; `Release PR
 validation` checks version, canonical plan and newly proposed independent source-review coherence.
 The browser tooling has its own exact dependency and lockfile under `tools/browser-smoke`; app
 dependencies are unchanged. These checks do not attest the four complete human journeys, live provider
-behavior or publication readiness. MAIL publication additionally requires all four jobs successful on
-the exact main revision through its own policy. Historical core release policy remains unchanged.
+behavior or publication readiness. `full-ci.yml` supplies the full app/site/docs tests and builds.
+MAIL publication additionally requires those full jobs successful on the exact main revision through its
+own policy. Historical core release policy remains unchanged.
 
 The same dependency job retains per-lock raw JSON-intended stdout, stderr, exact package/lock hashes,
 command exit codes and a structured summary even on failure. Every audit exit other than zero fails;
 there is no severity exception, historical baseline exemption, automatic fix or retry. A Monday 06:23
-UTC schedule runs this same four-lock audit to detect advisory drift. It skips the other three quality
-jobs on scheduled runs only; their existing push/PR/manual contexts remain unchanged. A scheduled audit
-is not a replacement for exact-revision main CI or a release approval.
+UTC schedule runs this same four-lock audit to detect advisory drift. Full workflows are manual or
+definition-change runs; a light result is not a replacement for exact-revision full main CI or a release
+approval.
 
 Fresh `draft` and `publish` actions additionally bind the named `refs/heads/main` ref to the selected
 SHA before and after reading CodeQL results. They require successful metadata for all three exact

@@ -3,7 +3,13 @@
   "repository": "KhademOHAli1/warpdrive",
   "traceability_baseline": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
   "required_workflows": {
-    "ci.yml": ["CRM checks", "Marketing site checks", "Documentation site checks"],
+    "full-ci.yml": [
+      "CRM full checks",
+      "Marketing site full checks",
+      "Documentation site full checks"
+    ],
+    "full-quality.yml": ["Full browser smoke checks"],
+    "required-quality.yml": ["Dependency audit", "Workflow validation", "Release PR validation"],
     "delivery.yml": ["Delivery tooling", "Delivery traceability"]
   },
   "initial_milestone": "Next usable release: Core CRM journeys",

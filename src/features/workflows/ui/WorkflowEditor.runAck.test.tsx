@@ -4,6 +4,7 @@ import { act, cleanup, render, screen, waitFor, within } from "@testing-library/
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { RouterOutputs } from "@/lib/trpc-client";
 import { initialDefinition } from "../editorModel";
 import german from "../messages/workflows.de.json";
 import english from "../messages/workflows.en.json";
@@ -12,7 +13,13 @@ import type { WorkflowDetail } from "./useWorkflowEditor";
 import { WorkflowEditor } from "./WorkflowEditor";
 
 type Mode = "simulation" | "live";
-type RunInput = { workflowId: string; requestKey: string; recordId: string; mode: Mode };
+type RunInput = {
+  workflowId: string;
+  requestKey: string;
+  recordId: string;
+  mode: Mode;
+  reviewedVersionId?: string;
+};
 type RunReply = { ok: true; value: { id: string } } | { ok: false; error: string };
 
 const calls = vi.hoisted(() => ({
@@ -28,6 +35,7 @@ const calls = vi.hoisted(() => ({
 const workflowId = "0a2e900b-20fa-4f3a-91c2-2e8936ceee29";
 const recordId = "24f51ed4-113b-4086-b4fd-a9e8a17e6214";
 const acknowledgedRunId = "53719a17-7044-4092-8629-6f1497d4d5c4";
+const publishedVersionId = "b04708c1-a396-409e-a76d-ef7874e3f42c";
 const recordName = "Acme Europe — selected existing deal";
 const locales = [
   { locale: "en", messages: english },
@@ -38,7 +46,32 @@ type RunMessages = (typeof locales)[number]["messages"];
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    useUtils: () => ({ workflows: { runs: { invalidate: calls.invalidate } } }),
+    useUtils: () => ({
+      workflows: {
+        runs: { invalidate: calls.invalidate },
+        runsPage: { invalidate: () => Promise.resolve() },
+      },
+    }),
+    workflows: {
+      get: {
+        useQuery: () => ({
+          data: initial(),
+          isFetching: false,
+          isError: false,
+          isPlaceholderData: false,
+          refetch: () => Promise.resolve(),
+        }),
+      },
+      version: {
+        useQuery: () => ({
+          data: publication(),
+          isFetching: false,
+          isError: false,
+          isPlaceholderData: false,
+          refetch: () => Promise.resolve(),
+        }),
+      },
+    },
     search: {
       query: {
         useQuery: (_input: { q: string }, options: { enabled: boolean }) => ({
@@ -95,6 +128,16 @@ function mount(locale: "en" | "de" | "fa" = "en", active = true, canRun = true) 
   );
 }
 
+function publication(): RouterOutputs["workflows"]["version"] {
+  return {
+    id: publishedVersionId,
+    number: 1,
+    name: "Published synthetic workflow",
+    createdAt: new Date("2026-11-01T10:00:00Z"),
+    definition: initialDefinition({ start: "Start", read: "Read", task: "Task", subject: "Call" }),
+  };
+}
+
 async function chooseRecord(
   user: ReturnType<typeof userEvent.setup>,
   messages: RunMessages,
@@ -114,6 +157,12 @@ async function chooseRecord(
   await user.type(within(dialog).getByRole("textbox", { name: messages.search }), "Acme");
   await user.click(within(dialog).getByRole("combobox", { name: messages.deal }));
   await user.click(screen.getByRole("option", { name: recordName }));
+  if (mode === "live") {
+    expect(confirm).toBeDisabled();
+    await user.click(
+      within(dialog).getByRole("checkbox", { name: messages.liveReviewAcknowledgement }),
+    );
+  }
   expect(confirm).toBeEnabled();
   return { dialog, confirm };
 }
@@ -128,6 +177,7 @@ function expectRunPayload(mode: Mode, times: number) {
       ),
       recordId,
       mode,
+      ...(mode === "live" ? { reviewedVersionId: publishedVersionId } : {}),
     },
     "csrf",
   );
@@ -140,6 +190,7 @@ async function expectSubmitted(messages: RunMessages) {
   expect(screen.queryByRole("dialog", { name: messages.runTitle })).not.toBeInTheDocument();
   expect(screen.getByRole("status")).toHaveTextContent(messages.runStarted);
   expect(screen.queryByText(messages.runError)).not.toBeInTheDocument();
+  expect(screen.queryByText(messages.testSubmissionError)).not.toBeInTheDocument();
   expect(screen.queryByText(messages.status.succeeded)).not.toBeInTheDocument();
   const runs = screen.getByRole("tab", { name: messages.runs });
   expect(runs).toHaveAttribute("aria-selected", "true");
@@ -221,7 +272,7 @@ for (const mode of ["simulation", "live"] as const) {
       await waitFor(() => expect(confirm).toBeEnabled());
 
       expect(screen.getByRole("dialog", { name: english.runTitle })).toBe(dialog);
-      expect(within(dialog).getByRole("alert")).toHaveTextContent(english.runError);
+      expect(within(dialog).getByRole("alert")).toHaveTextContent(english.testSubmissionError);
       expect(within(dialog).getByRole("textbox", { name: english.search })).toHaveValue("Acme");
       expect(within(dialog).getByRole("combobox", { name: english.deal })).toHaveTextContent(
         recordName,

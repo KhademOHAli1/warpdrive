@@ -5,6 +5,7 @@ import { requireFreshIdentityAction } from "@/features/identity/actions/fresh";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
 import { err } from "@/types/result";
+import { simulateWorkflowDraft } from "./draftSimulation";
 import {
   archiveWorkflow,
   duplicateWorkflow,
@@ -78,6 +79,16 @@ export async function runWorkflowAction(input: unknown, token: string | null) {
   if (result.ok) await nudgeWorkflowRun(result.value.id);
   return result.ok ? { ok: true as const, value: { id: result.value.id } } : result;
 }
+
+export async function simulateWorkflowDraftAction(
+  input: unknown,
+  token: string | null,
+): ReturnType<typeof simulateWorkflowDraft> {
+  const ctx = await authorizedContext(token);
+  if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  return simulateWorkflowDraft(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));
+}
+
 export async function cancelWorkflowAction(id: string, token: string | null) {
   const ctx = await authorizedContext(token);
   if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);

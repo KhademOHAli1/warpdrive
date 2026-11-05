@@ -197,6 +197,10 @@ function targetForField(node: WorkflowNode, field: ConfigurationFieldSpec): Mapp
     target.contract = { kind: "number", nullable: false };
     target.mode = "literal-only";
   }
+  if (node.type === "delay" && field.path.length === 1 && field.path[0] === "until") {
+    target.contract = { kind: "instant", nullable: false };
+    target.mode = "literal-only";
+  }
   return target;
 }
 

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
+import type { QueryState } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
@@ -11,8 +12,15 @@ import { RunHistory } from "./RunHistory";
 type HistoryPoll = {
   refetchInterval: (query: { state: { data: { status: string }[] } }) => number | false;
 };
+type PagePoll = {
+  refetchInterval: (query: {
+    state: { data?: { items: { status: string }[]; nextCursor: string | null } };
+  }) => number | false;
+};
 type DetailPoll = {
-  refetchInterval: (query: { state: { data: { status: string } } }) => number | false;
+  refetchInterval: (query: {
+    state: Pick<QueryState<{ id: string; status: string }>, "data" | "status">;
+  }) => number | false;
 };
 interface QueryFixtures {
   rows: unknown[];
@@ -35,12 +43,23 @@ const queries = vi.hoisted(
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      workflows: {
+        runs: { invalidate: () => Promise.resolve() },
+        runsPage: { invalidate: () => Promise.resolve() },
+      },
+    }),
     workflows: {
-      runs: {
-        useQuery: (_input: unknown, options: HistoryPoll) => {
-          queries.historyOptions = options;
+      runsPage: {
+        useQuery: (_input: unknown, options: PagePoll) => {
+          queries.historyOptions = {
+            refetchInterval: (query) =>
+              options.refetchInterval({
+                state: { data: { items: query.state.data, nextCursor: null } },
+              }),
+          };
           return {
-            data: queries.rows,
+            data: { items: queries.rows, nextCursor: null },
             isLoading: false,
             isError: false,
             isFetching: false,
@@ -171,7 +190,7 @@ it("identifies the armed wait and stored deadline while preserving a later step 
   expect(screen.getByText("Scheduled resume")).toBeVisible();
   expect(document.querySelector(`time[datetime="${resumeAt.toISOString()}"]`)).toBeInTheDocument();
   const interval = queries.detailOptions?.refetchInterval({
-    state: { data: { status: "waiting" } },
+    state: { status: "success", data: { id: runId, status: "waiting" } },
   });
   expect(typeof interval).toBe("number");
   expect(interval).toBeGreaterThan(0);
