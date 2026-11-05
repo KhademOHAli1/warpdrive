@@ -115,3 +115,30 @@ it.each(customRetrySettings)(
     expect(f.definition).toEqual(before);
   },
 );
+
+it("keeps fixed-instant waits out of the legacy failed-task retry profile", () => {
+  const f = fixture();
+  f.definition.nodes.push({
+    id: "fixed_wait",
+    type: "delay",
+    version: 1,
+    name: "Fixed wait",
+    nameMode: "automatic",
+    config: {
+      until: {
+        kind: "value",
+        literalType: "instant",
+        value: "2030-03-20T12:00:00.000Z",
+      },
+    },
+  });
+  f.definition.edges = [
+    { from: "start", to: "read", port: "next" },
+    { from: "read", to: "fixed_wait", port: "next" },
+    { from: "fixed_wait", to: "task", port: "next" },
+  ];
+
+  // Published execution supports this validated node, but retry has no qualified
+  // path for its fixed deadline and must not reinterpret it as minutes.
+  expect(retryableTaskDefinition(f.definition)).toBeNull();
+});

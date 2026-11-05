@@ -13,8 +13,9 @@ describe("personal mailbox identity and lifecycle", () => {
     await withTestDb(async (db) => {
       const owner = await seedUser(db);
       const other = await seedUser(db);
-      const gmail = randomUUID();
-      const imap = randomUUID();
+      // Fixed public IDs keep credential-byte probes separate from UUID entropy.
+      const gmail = "00000000-0000-4000-8000-000000000601";
+      const imap = "00000000-0000-4000-8000-000000000602";
       await db.execute(sql`
         INSERT INTO email_accounts (id, user_id, email_address, refresh_token_enc)
         VALUES (${gmail}, ${owner.id}, 'original@example.test', decode('0102','hex'))
