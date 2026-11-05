@@ -7,6 +7,7 @@ const EFFECT_METHODS = new Set([
   "write",
   "insert",
   "update",
+  "upsert",
   "delete",
   "execute",
   "presignPost",
@@ -27,6 +28,7 @@ const EFFECT_METHODS = new Set([
 ]);
 const QUEUE_METHODS = new Set([
   "send",
+  "upsert",
   "work",
   "createQueue",
   "schedule",
