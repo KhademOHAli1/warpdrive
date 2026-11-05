@@ -4,9 +4,9 @@ const date = "2030-06-17";
 const nextDate = "2030-06-18";
 const subject = "CI calendar pointer event";
 export const calendarOverlapFixture = {
-  date: "2031-02-09", // Sunday, at the far end of the Week agenda.
-  startUtc: "2031-02-09T09:00:00.000Z",
-  endUtc: "2031-02-09T10:00:00.000Z",
+  date: "2031-02-07", // Friday leaves room to scroll a focused event behind the time gutter.
+  startUtc: "2031-02-07T09:00:00.000Z",
+  endUtc: "2031-02-07T10:00:00.000Z",
   titlePrefix: "CI overlap event ",
   count: 21,
 };
@@ -223,6 +223,47 @@ async function assertDisjointCards(chips, more, minTrackWidth) {
   }
 }
 
+async function assertKeyboardReveal(page, host, chips) {
+  const target = chips.nth(1);
+  for (const direction of ["ltr", "rtl"]) {
+    await host.evaluate((element, value) => {
+      element.style.direction = value;
+    }, direction);
+    for (const [neighbor, key] of [
+      [0, "Tab"],
+      [2, "Shift+Tab"],
+    ]) {
+      await chips.nth(neighbor).evaluate((chip) => chip.focus({ preventScroll: true }));
+      const covered = await target.evaluate((chip, rtl) => {
+        const scroll = chip.closest("[data-agenda-scroll]");
+        const gutter = scroll.querySelector("[data-agenda-gutter]");
+        const edge = gutter.getBoundingClientRect();
+        const item = chip.getBoundingClientRect();
+        scroll.scrollLeft += rtl ? item.right - edge.left - 15 : item.left - edge.right + 15;
+        const parked = chip.getBoundingClientRect();
+        return rtl ? parked.right > edge.left + 5 : parked.left < edge.right - 5;
+      }, direction === "rtl");
+      assert.ok(covered, `${direction}: keyboard target starts behind the sticky gutter`);
+      await page.keyboard.press(key);
+      await painted(page);
+      assert.ok(
+        await target.evaluate((chip, rtl) => {
+          const edge = chip
+            .closest("[data-agenda-scroll]")
+            .querySelector("[data-agenda-gutter]")
+            .getBoundingClientRect();
+          const item = chip.getBoundingClientRect();
+          return (
+            chip === document.activeElement &&
+            (rtl ? item.right <= edge.left + 1 : item.left >= edge.right - 1)
+          );
+        }, direction === "rtl"),
+        `${direction}: ${key} reveals the focused event past the sticky gutter`,
+      );
+    }
+  }
+}
+
 async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth) {
   const fixture = calendarOverlapFixture;
   const hidden = fixture.count - visible;
@@ -289,6 +330,7 @@ async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth)
   );
   await page.keyboard.press("Escape");
   await editor.waitFor({ state: "hidden" });
+  if (view === "week") await assertKeyboardReveal(page, host, chips);
 }
 
 export async function runCalendarInteractionsBrowserSmoke({ journey, login, catalog }) {

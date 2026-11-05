@@ -23,6 +23,7 @@ import { AgendaDayColumn, TIMED_OVERFLOW_WIDTH_PX } from "./AgendaDayColumn";
 import { AgendaDayHeader } from "./AgendaDayHeader";
 import { AllDayLane } from "./AllDayLane";
 import { calendarDayLabel } from "./calendarLabels";
+import { agendaInlineBounds } from "./calendarPointerGeometry";
 import { NowLine } from "./NowLine";
 import { TimeGutter } from "./TimeGutter";
 
@@ -33,6 +34,19 @@ interface CreateSlot {
 
 // Stable identity so a day with nothing on it does not defeat AgendaDayColumn's memo.
 const NO_ITEMS: CalendarActivity[] = [];
+
+function revealKeyboardFocus(event: React.FocusEvent<HTMLDivElement>): void {
+  const host = event.currentTarget;
+  const target = event.target;
+  if (host.scrollWidth <= host.clientWidth || !target.matches(":focus-visible")) return;
+  const { left, right } = agendaInlineBounds(host);
+  const item = target.getBoundingClientRect();
+  if (item.width > right - left) return;
+  // A focused item can be inside the scrollport yet still sit under the sticky time gutter.
+  const rtl = getComputedStyle(host).direction === "rtl";
+  const covered = rtl ? item.right - right : left - item.left;
+  if (covered > 0) host.scrollLeft += (covered + 2) * (rtl ? 1 : -1);
+}
 
 // Interactive hourly week agenda: a time gutter plus seven day columns, sharing one set of grid
 // tracks across a pinned header row, a pinned all-day row, and a scrolling hour region. Clicking a
@@ -151,7 +165,12 @@ export function WeekAgendaGrid({
             up with their own headings. Sticky keeps the pinned rows visible without that. */}
         {/* relative so the hour grid's offsetTop measures from this box, which is what the scroll
             anchor adds to the target hour to clear the pinned rows above it. */}
-        <div ref={scrollRef} data-agenda-scroll className="relative max-h-[60vh] overflow-auto">
+        <div
+          ref={scrollRef}
+          data-agenda-scroll
+          onFocusCapture={revealKeyboardFocus}
+          className="relative max-h-[60vh] overflow-auto"
+        >
           <div style={{ minWidth: `calc(${AGENDA_GUTTER_WIDTH} + ${columnsWidth}px)` }}>
             <div className="sticky top-0 z-30 bg-card">
               <div className="grid border-b border-border" style={{ gridTemplateColumns }}>
