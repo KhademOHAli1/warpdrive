@@ -47,6 +47,28 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
   },
 );
 
+export const leadLinkCaptureInventoryEntry = classifyInventory(
+  [
+    "sourceReview:docs/analytics/lead-link-capture-proposal.sql#5df2df514d7dc6c27baf6abcfa5ab5bd406ab3314ba30c333fa84011f8b509a5",
+    "table:analytics_lead_link_capture",
+    "table:analytics_lead_link_events",
+  ],
+  {
+    owner: "private native lead link capture",
+    categories: ["lead and deal identifiers, pointer transitions and native transaction evidence"],
+    subjectRelation: "Lead and deal identifiers can refer to people and organizations.",
+    purpose:
+      "Observe raw changes to the source lead's forward deal pointer in the same transaction.",
+    disclosure:
+      "Private proposal with no viewer, route or runtime role access. The source trigger uses its schema owner's privileges.",
+    retention:
+      "Hard-deleted lead or deal endpoints cascade to related evidence. Retained-source erasure can stop the private generation and remove explicit matching keys. Subject resolution, holds, backups and installed retention require separate qualification.",
+    externalEffects:
+      "If installed, the SQL attaches a source trigger and writes private evidence for qualifying pointer changes. The owner-only erasure helper stops capture before deleting matched rows.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const savedPerformanceInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/stats/savedPerformanceReports.ts#e66f90a509a440046b2bf4c34716b538b96a9bffc0bda65c2c92f098fd4c5f94",
