@@ -21,3 +21,57 @@ it("uses cookie preferences for older accounts and a deterministic UTC fallback"
   ).toEqual({ locale: "fa", calendar: "persian", timeZone: "Asia/Tehran" });
   expect(resolveAccountLocalePreferences({ profileTimeZone: null }).timeZone).toBe("UTC");
 });
+
+it("uses the current device zone in browser mode while preserving the saved country and language", () => {
+  const saved = {
+    locale: "fa",
+    calendar: "persian",
+    timeZone: "UTC",
+    timeZoneMode: "browser",
+    country: "IR",
+    numberingSystem: "arabext",
+  } as const;
+  expect(
+    resolveAccountLocalePreferences({
+      saved,
+      profileTimeZone: "UTC",
+      fallback: { timeZone: "Europe/Berlin", country: "DE", locale: "de" },
+    }),
+  ).toEqual({ ...saved, timeZone: "Europe/Berlin" });
+  expect(
+    resolveAccountLocalePreferences({
+      saved: { ...saved, timeZone: "Asia/Tehran" },
+      profileTimeZone: "Europe/London",
+      fallback: { timeZone: "Invalid/Zone" },
+    }).timeZone,
+  ).toBe("Asia/Tehran");
+});
+
+it("preserves explicit manual UTC and legacy non-UTC profile overrides", () => {
+  const saved = {
+    locale: "en",
+    calendar: "gregory",
+    timeZone: "UTC",
+    timeZoneMode: "manual",
+  } as const;
+  expect(
+    resolveAccountLocalePreferences({
+      saved,
+      profileTimeZone: "UTC",
+      fallback: { timeZone: "Asia/Tehran", timeZoneMode: "browser" },
+    }),
+  ).toEqual(saved);
+  expect(
+    resolveAccountLocalePreferences({
+      saved: { locale: "en", calendar: "gregory", timeZone: "Asia/Tehran" },
+      profileTimeZone: "Europe/Berlin",
+      fallback: { timeZone: "America/New_York" },
+    }).timeZone,
+  ).toBe("Europe/Berlin");
+  expect(
+    resolveAccountLocalePreferences({
+      profileTimeZone: "Europe/London",
+      fallback: { timeZone: "Asia/Tehran", timeZoneMode: "browser" },
+    }),
+  ).toEqual({ locale: "en", calendar: "gregory", timeZone: "Europe/London" });
+});

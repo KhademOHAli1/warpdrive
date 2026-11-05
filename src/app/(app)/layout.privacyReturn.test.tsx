@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   preferences: vi.fn(),
   currency: vi.fn(),
-  company: vi.fn(),
+  companyMember: vi.fn(),
   workNavigation: vi.fn(),
   requestHeaders: new Headers(),
   headers: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock("@/features/identity/preferencesForActor", () => ({
 }));
 vi.mock("@/features/settings/readBaseCurrency", () => ({ readBaseCurrency: mocks.currency }));
 vi.mock("@/features/company-profile/repository", () => ({
-  getCompanyMemberProjection: mocks.company,
+  getCompanyMemberProjection: mocks.companyMember,
 }));
 vi.mock("@/features/work-profile/navigation", () => ({ readWorkNavigation: mocks.workNavigation }));
 vi.mock("next/headers", () => ({
@@ -79,7 +79,7 @@ beforeEach(() => {
   mocks.pending.mockResolvedValue(null);
   mocks.preferences.mockResolvedValue({ density: "comfortable", ui: { appearance: "day" } });
   mocks.currency.mockResolvedValue("EUR");
-  mocks.company.mockResolvedValue(brand);
+  mocks.companyMember.mockResolvedValue(brand);
   mocks.workNavigation.mockResolvedValue(navigation);
 });
 afterEach(() => vi.restoreAllMocks());
@@ -104,7 +104,7 @@ async function expectDestination(path: string) {
   });
   expect(mocks.preferences).not.toHaveBeenCalled();
   expect(mocks.currency).not.toHaveBeenCalled();
-  expect(mocks.company).not.toHaveBeenCalled();
+  expect(mocks.companyMember).not.toHaveBeenCalled();
   expect(mocks.workNavigation).not.toHaveBeenCalled();
 }
 
@@ -177,6 +177,6 @@ test("an authenticated actor keeps the existing shell without a return-path redi
   expect(mocks.preferences).toHaveBeenCalledOnce();
   expect(mocks.preferences).toHaveBeenCalledWith(db, actor.id);
   expect(mocks.currency).toHaveBeenCalledWith(db, expect.any(AbortSignal));
-  expect(mocks.company).toHaveBeenCalledWith(db, expect.any(AbortSignal));
+  expect(mocks.companyMember).toHaveBeenCalledWith(db, expect.any(AbortSignal));
   expect(mocks.workNavigation).toHaveBeenCalledWith(db, actor, expect.any(AbortSignal));
 });

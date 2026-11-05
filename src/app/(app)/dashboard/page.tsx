@@ -1,5 +1,6 @@
 import { db } from "@/db/client";
 import { todayInZone } from "@/features/goals/todayInZone";
+import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { can } from "@/features/permissions/can";
 import { loadDashboardConfig } from "@/features/stats/stageNames";
@@ -27,7 +28,11 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
   ]);
   // Resolved here, not in the browser: near UTC midnight a viewer's local date can sit on the
   // other side of a goal period boundary from everyone else looking at the same goal.
-  const today = todayInZone(prefs.timezone, new Date());
+  const reportingPreferences = resolveAccountLocalePreferences({
+    saved: prefs.ui.localePreferences,
+    profileTimeZone: prefs.timezone,
+  });
+  const today = todayInZone(reportingPreferences.timeZone, new Date());
 
   return (
     <main aria-label={S.title}>

@@ -11,9 +11,10 @@ import {
 } from "./localeFormatting";
 
 export function useFormatters() {
-  const { locale, calendar, timeZone, numberingSystem, iranianMoneyUnit } = useLocalePreferences();
+  const { locale, country, calendar, timeZone, numberingSystem, iranianMoneyUnit } =
+    useLocalePreferences();
   return useMemo(() => {
-    const preferences = { locale, calendar, timeZone, numberingSystem, iranianMoneyUnit };
+    const preferences = { locale, country, calendar, timeZone, numberingSystem, iranianMoneyUnit };
     return {
       currency: (value: number | string, currency = "USD"): string =>
         formatCurrency(value, currency, preferences),
@@ -24,5 +25,5 @@ export function useFormatters() {
       dateTime: (value: Date | string | number, options?: DateDisplayOptions): string =>
         formatDateTime(value, preferences, options),
     };
-  }, [locale, calendar, timeZone, numberingSystem, iranianMoneyUnit]);
+  }, [locale, country, calendar, timeZone, numberingSystem, iranianMoneyUnit]);
 }

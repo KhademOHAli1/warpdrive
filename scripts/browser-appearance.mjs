@@ -3,6 +3,11 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createPreferenceProbe } from "./browser-appearance-actions.mjs";
+import {
+  deliverRegionalSave,
+  isRegionalSaveRequest,
+  prepareLocaleThroughUi,
+} from "./browser-locale-preferences.mjs";
 
 // Admission precedes DB/browser imports. Never run against an operator's local session/database.
 if (
@@ -137,12 +142,14 @@ async function login(page) {
   assert.equal(response.status(), 200);
 }
 
-async function visitAuthenticatedAppearance(page, context, locale) {
+async function visitAuthenticatedAppearance(page, context, locale, entry) {
   if (nativeSessions.has(locale)) {
     assert.equal((await page.goto("/settings/appearance")).status(), 200);
     return;
   }
   await login(page);
+  entry.localePreparation = await prepareLocaleThroughUi(page, origin, locale);
+  assert.equal((await page.goto("/settings/appearance")).status(), 200);
   nativeSessions.set(locale, await context.storageState());
   report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
 }
@@ -501,9 +508,12 @@ function watchNetwork(context, page, entry) {
   const errors = [];
   const unexpected = [];
   const postCancellations = [];
+  const regionalCancellations = [];
+  const deliveredRegionalSaves = new WeakSet();
   let preferenceProbe;
   entry.navigationCancellations = [];
   entry.fulfilledResponseCancellations = [];
+  entry.regionalResponseCancellations = [];
   let expectedTransportErrors = 0;
   page.on("requestfailed", (request) => {
     const url = new URL(request.url());
@@ -523,6 +533,10 @@ function watchNetwork(context, page, entry) {
       (detail.navigation || detail.rsc)
     ) {
       entry.navigationCancellations.push(detail);
+      return;
+    }
+    if (detail.failure === "net::ERR_ABORTED" && isRegionalSaveRequest(request, origin)) {
+      regionalCancellations.push({ request, detail });
       return;
     }
     if (
@@ -575,6 +589,8 @@ function watchNetwork(context, page, entry) {
           assert.equal(preferenceProbe.matches(request), true);
           await preferenceProbe.handle(route);
         }
+      } else if (isRegionalSaveRequest(request, origin)) {
+        if (await deliverRegionalSave(route)) deliveredRegionalSaves.add(request);
       } else {
         await route.continue();
       }
@@ -594,6 +610,11 @@ function watchNetwork(context, page, entry) {
       for (const { request, detail } of postCancellations) {
         const delivered = probe.deliveredObservation(request);
         if (delivered) entry.fulfilledResponseCancellations.push({ ...detail, delivered });
+        else errors.push(detail);
+      }
+      for (const { request, detail } of regionalCancellations) {
+        if (deliveredRegionalSaves.has(request))
+          entry.regionalResponseCancellations.push({ ...detail, delivered: true });
         else errors.push(detail);
       }
       entry.expectedTransportErrors = expectedTransportErrors;
@@ -638,8 +659,7 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
     page = await context.newPage();
     network = watchNetwork(context, page, entry);
     await network.ready;
-    await context.addCookies([{ name: "warpdrive_locale", value: locale, url: origin }]);
-    await visitAuthenticatedAppearance(page, context, locale);
+    await visitAuthenticatedAppearance(page, context, locale, entry);
     assert.equal(await page.locator("html").getAttribute("lang"), locale);
     assert.equal(await page.locator("html").getAttribute("dir"), locale === "fa" ? "rtl" : "ltr");
     const L = catalog(`src/features/identity/messages/settings.${locale}.json`);
@@ -717,10 +737,14 @@ try {
         await journey(locale, width, colorScheme, "recovery", recovery);
       }
     }
+    // The same account supplies these sessions. Run its English-only scenarios
+    // before another locale is saved, so the reused session and account agree.
+    if (locale === "en") {
+      await journey(locale, 1280, "light", "transport", transport);
+      await journey(locale, 1280, "light", "ordering-success", (s) => ordering(s, false));
+      await journey(locale, 1280, "dark", "ordering-denial", (s) => ordering(s, true));
+    }
   }
-  await journey("en", 1280, "light", "transport", transport);
-  await journey("en", 1280, "light", "ordering-success", (s) => ordering(s, false));
-  await journey("en", 1280, "dark", "ordering-denial", (s) => ordering(s, true));
   assert.equal(report.nativeLogins.length, 3);
   assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 12);
   if (fatal instanceof Error) throw asError(fatal);

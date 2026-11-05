@@ -16,8 +16,8 @@ import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { goalTargetInput } from "@/features/goals/goalTargetText";
 import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
-import type { Locale } from "@/features/i18n/registry";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { type FormattingLocaleTag, localeTagForFormatting } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { instantCivilDate } from "@/lib/zonedDateTime";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
@@ -58,7 +58,8 @@ export function GoalForm({
 }: Props): React.ReactElement {
   const L = useSettingsMessages();
   const S = L;
-  const { locale, timeZone } = useLocalePreferences();
+  const preferences = useLocalePreferences();
+  const numericLocale = localeTagForFormatting(preferences);
   const format = useFormatters();
   const K = useKpiHubMessages();
   const sales = useAppTranslations("sales");
@@ -75,14 +76,17 @@ export function GoalForm({
   const [activityTypeId, setActivityTypeId] = useState<string>(initial?.activityTypeId ?? ANY);
   const [interval, setInterval] = useState<string>(initial?.interval ?? "monthly");
   const [seedTarget] = useState(initial === undefined ? "" : goalTargetInput(initial.target));
-  const [targetDraft, setTargetDraft] = useState<{ raw: string; locale: Locale } | null>(null);
+  const [targetDraft, setTargetDraft] = useState<{
+    raw: string;
+    locale: FormattingLocaleTag;
+  } | null>(null);
   const target =
     targetDraft?.raw ??
     (seedTarget === ""
       ? ""
       : format.number(seedTarget, { useGrouping: false, maximumFractionDigits: 20 }));
   const [startsOn, setStartsOn] = useState<string>(
-    () => initial?.startsOn ?? instantCivilDate(new Date(), timeZone),
+    () => initial?.startsOn ?? instantCivilDate(new Date(), preferences.timeZone),
   );
   const [endsOn, setEndsOn] = useState<string | null>(initial?.endsOn ?? null);
   const [error, setError] = useState<string | null>(null);
@@ -264,7 +268,7 @@ export function GoalForm({
             value={target}
             onChange={(e) => {
               const raw = e.target.value;
-              setTargetDraft((current) => ({ raw, locale: current?.locale ?? locale }));
+              setTargetDraft((current) => ({ raw, locale: current?.locale ?? numericLocale }));
             }}
           />
           {action === "lost" && (

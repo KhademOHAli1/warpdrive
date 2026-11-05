@@ -44,6 +44,16 @@ async function retainedRows(h: TestDb): Promise<Record<string, string>> {
 
 async function seedRetainedWorkProfile(h: TestDb, ownerId: string, dealId: string) {
   await h.db.insert(schema.companyProfiles).values({
+    detailsCiphertext: "retained-company-details",
+    detailsRevision: 3,
+    detailsProvenance: {
+      kind: "manual",
+      confirmedAt: "2026-11-01T09:00:00.000Z",
+      provider: null,
+      checkedAt: null,
+      checkedFields: [],
+      verification: "self_reported",
+    },
     branding: { iconAssetId: null, logoAssetId: null, accentColor: "#25466E", fit: "contain" },
     brandingRevision: 2,
   });

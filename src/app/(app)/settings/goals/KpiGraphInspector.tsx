@@ -23,7 +23,7 @@ import {
   type KpiStatus,
 } from "@/features/goals/kpiModel";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
-import type { Locale } from "@/features/i18n/registry";
+import { type FormattingLocaleTag, localeTagForFormatting } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { connectGraphInput } from "./KpiGraphModel";
@@ -59,11 +59,13 @@ function DecimalField({
   label: string;
   disabled: boolean;
 }) {
-  const { locale } = useLocalePreferences();
+  const numericLocale = localeTagForFormatting(useLocalePreferences());
   const format = useFormatters();
-  const [draft, setDraft] = useState<{ raw: string; canonical: string; locale: Locale } | null>(
-    null,
-  );
+  const [draft, setDraft] = useState<{
+    raw: string;
+    canonical: string;
+    locale: FormattingLocaleTag;
+  } | null>(null);
   const same = draft !== null && draft.canonical === value;
   const display = same
     ? draft.raw
@@ -77,7 +79,7 @@ function DecimalField({
       inputMode="decimal"
       value={display}
       onChange={(event) => {
-        const authoredLocale = same ? draft.locale : locale;
+        const authoredLocale = same ? draft.locale : numericLocale;
         const raw = event.target.value;
         const canonical = normalizeNumberInput(raw, authoredLocale) ?? raw.trim();
         setDraft({ raw, canonical, locale: authoredLocale });

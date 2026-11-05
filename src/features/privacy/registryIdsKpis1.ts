@@ -11,7 +11,7 @@ export const kpiIds1: string[] = [
   "derived:src/features/goals/kpiSchemas.ts",
   "derived:src/features/stats/ui/KpiPerformance.tsx",
   "sourceReview:drizzle/0107_kpi_scorecards.sql#9f1dd48885eda5057be3c5bebdc9b123c09101d17dec40170b3a52e00d51cb8a",
-  "sourceReview:src/app/(app)/settings/goals/KpiSchemeForm.tsx#142a5c16a8fafe8c585fbd6a6a5e1aaea1e412fcc21b6447206fd9cf1c0605a8",
+  "sourceReview:src/app/(app)/settings/goals/KpiSchemeForm.tsx#c986f678e7f9b0099a611ac8ef3721992708062aa46ed888648fae6a90b64e63",
   "sourceReview:src/db/schema/kpis.ts#c09516b68315f97868568a82ae5a73e4b91010a4c4d2d6f47077f69e632bc6b6",
   "sourceReview:src/features/goals/kpiActions.ts#132cbd82cfcb280edd330ef59a0e3bce98659472d526dbb91c1552e7875ef69b",
   "sourceReview:src/features/goals/kpiEngine.ts#b46544ca5aad88f58890a2d5ed41b9f205a61944b4d3bdf1b4b3442d1fc0a7b4",

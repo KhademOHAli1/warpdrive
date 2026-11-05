@@ -76,12 +76,16 @@ async function journey(name, locale, exercise, viewport) {
   }
 }
 
-async function login(page, email = "browser@example.invalid") {
+async function signIn(page, email = "browser@example.invalid") {
   await page.goto("/login");
   await page.locator('input[name="email"]').fill(email);
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+}
+
+async function login(page, email) {
+  await signIn(page, email);
   await page.getByRole("main", { name: "Board CI Pipeline", exact: true }).waitFor();
 }
 
@@ -233,7 +237,7 @@ try {
   const { runWorkflowDraftSimulationBrowserSmoke } = await import(
     "./workflow-draft-simulation-browser.mjs"
   );
-  await runWorkflowDraftSimulationBrowserSmoke({ journey, login, catalog, origin });
+  await runWorkflowDraftSimulationBrowserSmoke({ journey, signIn, catalog, origin });
 } finally {
   await browser.close();
 }

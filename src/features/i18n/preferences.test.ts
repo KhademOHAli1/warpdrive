@@ -58,4 +58,55 @@ describe("language and regional preferences", () => {
       }),
     ).toEqual({ locale: "de", calendar: "persian", timeZone: "Europe/Berlin" });
   });
+
+  it("round-trips a country and browser time-zone mode independently of language", () => {
+    const preferences = {
+      locale: "en",
+      calendar: "persian",
+      timeZone: "Asia/Tehran",
+      country: "IR",
+      timeZoneMode: "browser",
+      numberingSystem: "latn",
+    } as const;
+    expect(localePreferencesSchema.parse(preferences)).toEqual(preferences);
+    expect(resolveLocalePreferences(preferences)).toEqual(preferences);
+  });
+
+  it("rejects unsupported countries and modes while recovering invalid cookies independently", () => {
+    const base = { locale: "de", calendar: "gregory", timeZone: "Europe/Berlin" } as const;
+    expect(localePreferencesSchema.safeParse({ ...base, country: "ZZ" }).success).toBe(false);
+    expect(localePreferencesSchema.safeParse({ ...base, country: "de" }).success).toBe(false);
+    expect(localePreferencesSchema.safeParse({ ...base, timeZoneMode: "guess" }).success).toBe(
+      false,
+    );
+    expect(resolveLocalePreferences({ ...base, country: "ZZ", timeZoneMode: "guess" })).toEqual(
+      base,
+    );
+  });
+
+  it("uses country-aware defaults without changing explicit calendar or digit choices", () => {
+    expect(resolveLocalePreferences({ locale: "fa", country: "DE" })).toEqual({
+      locale: "fa",
+      country: "DE",
+      calendar: "gregory",
+      numberingSystem: "latn",
+      timeZone: "UTC",
+    });
+    expect(resolveLocalePreferences({ locale: "fa", country: "IR" })).toEqual({
+      locale: "fa",
+      country: "IR",
+      calendar: "persian",
+      numberingSystem: "arabext",
+      timeZone: "UTC",
+    });
+    expect(resolveLocalePreferences({ locale: "en", country: "IR" }).calendar).toBe("gregory");
+    expect(
+      resolveLocalePreferences({
+        locale: "fa",
+        country: "DE",
+        calendar: "persian",
+        numberingSystem: "arabext",
+      }),
+    ).toMatchObject({ calendar: "persian", numberingSystem: "arabext" });
+  });
 });

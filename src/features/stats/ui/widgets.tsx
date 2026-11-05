@@ -85,7 +85,12 @@ export function FunnelWidget({
   return (
     <Panel title={S.widgetFunnelConversion} isEmpty={data.length === 0} emptyText={S.emptyFunnel}>
       {data.length > 0 && (
-        <p className="mb-2 text-xs text-muted-foreground">{funnelBasis(ownerScope, S)}</p>
+        <>
+          <p className="mb-2 text-xs text-muted-foreground">{funnelBasis(ownerScope, S)}</p>
+          <p className="mb-4 text-pretty text-xs leading-relaxed text-muted-foreground">
+            {S.funnelLegacyNotice}
+          </p>
+        </>
       )}
       <div className="space-y-5">
         {data.map((s) => (

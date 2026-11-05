@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { prepareLocaleThroughUi } from "./browser-locale-preferences.mjs";
 import { createPreferenceProbe } from "./browser-workflow-preference-actions.mjs";
 
 // Admit the connection actually used before importing either database or browser clients.
@@ -47,6 +48,7 @@ const report = {
     "Disposable native password login/actions and synthetic preference rows only. No preference relocation, provider effects, human AT, installed, main or release acceptance.",
   journeys: [],
   nativeLogins: [],
+  localePreparations: [],
   unhandledErrors: [],
   cleanup: {
     browserClosed: false,
@@ -333,6 +335,38 @@ async function independentKeys(s) {
   s.entry.databaseChecks.push({ before, firstHeld, bothHeld, exactActions: 2 });
 }
 
+async function prepareBaselineLocale() {
+  const context = await browser.newContext({
+    baseURL: origin,
+    ignoreHTTPSErrors: true,
+    serviceWorkers: "block",
+    viewport: { width: 1280, height: 900 },
+  });
+  context.setDefaultTimeout(15000);
+  try {
+    await context.route("**/*", (route) => {
+      const url = new URL(route.request().url());
+      if (url.origin === origin) return route.continue();
+      return route.abort("blockedbyclient");
+    });
+    await context.routeWebSocket("**/*", (socket) =>
+      socket.close({ code: 1008, reason: "No sockets in locale preparation" }),
+    );
+    const page = await context.newPage();
+    await page.goto("/login");
+    await page.locator('input[name="email"]').fill("browser@example.invalid");
+    await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+    const prepared = await prepareLocaleThroughUi(page, origin, "en");
+    nativeSessions.set("en", await context.storageState());
+    report.localePreparations.push({ locale: "en", ...prepared, baseline: true });
+    report.nativeLogins.push({ locale: "en", method: "password", storage: "memory-only" });
+  } finally {
+    await context.close();
+  }
+}
+
 async function journey(locale, name, exercise) {
   const viewport = locale === "fa" ? { width: 390, height: 844 } : { width: 1280, height: 900 };
   const entry = {
@@ -383,7 +417,6 @@ async function journey(locale, name, exercise) {
       entry.externalRequests.push(new URL(socket.url()).origin);
       socket.close({ code: 1008, reason: "No WebSockets in preference validation" });
     });
-    await context.addCookies([{ name: "warpdrive_locale", value: locale, url: origin }]);
     await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
     page = await context.newPage();
     page.on("pageerror", (error) => entry.browserErrors.push(error.message));
@@ -396,6 +429,8 @@ async function journey(locale, name, exercise) {
       await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
       await page.locator('button[type="submit"]').click();
       await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+      entry.localePreparation = await prepareLocaleThroughUi(page, origin, locale);
+      report.localePreparations.push({ locale, ...entry.localePreparation });
       nativeSessions.set(locale, await context.storageState());
       report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
     }
@@ -468,8 +503,12 @@ try {
     "browser@example.invalid",
   ]);
   assert.equal(admitted.rowCount, 1, "Only the existing disposable browser actor is admitted");
-  baseline = await snapshot();
   browser = await chromium.launch({ headless: true });
+  // Establish the first saved locale through the real regional settings control before capturing
+  // the raw preference baseline. Later locale journeys take their own snapshots after switching
+  // through that same control, so a locale write is never misclassified as a workflow mutation.
+  await prepareBaselineLocale();
+  baseline = await snapshot();
   for (const locale of ["en", "de", "fa"]) {
     await journey(locale, "flag-ordering", (s) =>
       ordering(s, "usPhoneFormat", s.L.interface.usPhoneFormat),
@@ -481,7 +520,9 @@ try {
     await journey(locale, "cross-key-intents", independentKeys);
   }
   assert.equal(report.nativeLogins.length, 3);
-  assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 15);
+  // English signs in during baseline setup, so its six cases all reuse that
+  // session. German and Farsi each sign in during their first case.
+  assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 16);
   assert.equal(report.journeys.length, 18);
   assert.ok(report.journeys.every((entry) => entry.passed));
   if (failure.error) throw failure.error;
@@ -504,7 +545,7 @@ try {
   }
   try {
     if (baseline) {
-      // Fixture cleanup restores exact pre-pack values/timestamp, including unknown UI keys.
+      // Fixture cleanup restores the exact post-setup baseline values/timestamp, including unknown UI keys.
       // This is not an application undo or customer migration capability.
       const restored = await pool.query(
         "UPDATE user_preferences SET timezone=$2,density=$3,ui=$4::jsonb,updated_at=$5::timestamptz WHERE user_id=$1 AND EXISTS(SELECT 1 FROM users WHERE id=$1 AND email=$6)",

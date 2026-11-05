@@ -49,6 +49,7 @@ import {
 } from "@/features/goals/kpiSchemas";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
+import { type FormattingLocaleTag, localeTagForFormatting } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import { instantCivilDate } from "@/lib/zonedDateTime";
@@ -76,7 +77,7 @@ export interface KpiBuilderProps {
 
 interface NumericDraft {
   raw: string;
-  locale: Locale;
+  locale: FormattingLocaleTag;
   canonical?: string;
   authored: boolean;
 }
@@ -350,6 +351,7 @@ function useKpiBuilder({
 }: KpiBuilderProps) {
   const L = useKpiMessages();
   const preferences = useLocalePreferences();
+  const numericLocale = localeTagForFormatting(preferences);
   const format = useFormatters();
   const id = useId();
   const [step, setStep] = useState(definition || assignmentOnly ? 2 : 0);
@@ -397,7 +399,7 @@ function useKpiBuilder({
       raw: "",
       canonical: value,
       authored: false,
-      locale: preferences.locale,
+      locale: numericLocale,
     });
     return {
       target: display(initialCondition?.target ?? "100"),
@@ -531,7 +533,7 @@ function useKpiBuilder({
       [key]: {
         raw,
         authored: true,
-        locale: current[key].authored ? current[key].locale : preferences.locale,
+        locale: current[key].authored ? current[key].locale : numericLocale,
       },
     }));
   }
@@ -1177,6 +1179,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
     definition,
     revision,
     assignmentOnly,
+    id,
     definitionOnly,
     changed,
     setDefinitionOnly,
@@ -1205,11 +1208,11 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
     <>
       {!definition && !revision && !assignmentOnly && (
         <label
-          htmlFor={`${model.id}-definition-only`}
+          htmlFor={`${id}-definition-only`}
           className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted/15 p-4"
         >
           <Checkbox
-            id={`${model.id}-definition-only`}
+            id={`${id}-definition-only`}
             label={L.definitionOnly}
             checked={definitionOnly}
             onCheckedChange={(checked) => {
@@ -1279,7 +1282,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
               value={String(fiscalStartMonth)}
               options={Array.from({ length: 12 }, (_, index) => ({
                 value: String(index + 1),
-                label: new Intl.DateTimeFormat(preferences.locale, {
+                label: new Intl.DateTimeFormat(localeTagForFormatting(preferences), {
                   month: "long",
                   calendar: "gregory",
                   timeZone: "UTC",

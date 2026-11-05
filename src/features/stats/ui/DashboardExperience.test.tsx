@@ -1,14 +1,15 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
 
 const fixture = vi.hoisted(() => ({
   refetch: vi.fn(),
   goalsRefetch: vi.fn(),
   query: vi.fn(),
+  savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
   goalsError: false,
   result: {
@@ -38,6 +39,10 @@ const fixture = vi.hoisted(() => ({
     wonTrend: [{ month: "2026-11", count: 2, value: "12000" }],
     effectiveOwnerScope: { kind: "me" } as const,
   },
+}));
+
+vi.mock("@/features/i18n/actions", () => ({
+  saveLocalePreferencesAction: fixture.savePreferences,
 }));
 
 vi.mock("@/lib/trpc-client", () => ({
@@ -94,11 +99,27 @@ import { Dashboard } from "./Dashboard";
 afterEach(cleanup);
 beforeEach(() => {
   vi.clearAllMocks();
+  fixture.savePreferences.mockReset();
+  fixture.savePreferences.mockResolvedValue({ ok: true });
   fixture.error = false;
   fixture.goalsError = false;
 });
 const mount = () =>
   render(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+
+function ChangeReportTimeZone() {
+  const choose = useSetLocalePreferences();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void choose({ timeZone: "Europe/Berlin" });
+      }}
+    >
+      Change reporting time zone
+    </button>
+  );
+}
 
 describe("Performance report experience", () => {
   it("selects only the requested preset when month and quarter have identical bounds", async () => {
@@ -126,6 +147,7 @@ describe("Performance report experience", () => {
         from: "2026-10-07",
         to: "2026-11-05",
         currency: "USD",
+        timeZoneIdentity: "UTC",
         pipelineId: null,
         ownerScope: { kind: "me" },
       },
@@ -135,6 +157,72 @@ describe("Performance report experience", () => {
       "aria-pressed",
       "true",
     );
+  });
+  it("changes the report cache identity when viewer time zone changes without altering its scope", () => {
+    const dashboard = <Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />;
+    const view = render(<LocaleProvider timeZone="UTC">{dashboard}</LocaleProvider>);
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      {
+        timeZoneIdentity: "UTC",
+        currency: "USD",
+        pipelineId: null,
+        ownerScope: { kind: "me" },
+        from: "2026-01-01",
+        to: "2026-11-05",
+      },
+      { enabled: true },
+    );
+    view.rerender(<LocaleProvider timeZone="Europe/Berlin">{dashboard}</LocaleProvider>);
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      {
+        timeZoneIdentity: "Europe/Berlin",
+        currency: "USD",
+        pipelineId: null,
+        ownerScope: { kind: "me" },
+        from: "2026-01-01",
+        to: "2026-11-05",
+      },
+      { enabled: true },
+    );
+  });
+  it("withholds headline results and disables the optimistic-zone query until its preference save settles", async () => {
+    let finishSave: ((value: { ok: true }) => void) | undefined;
+    const saved = new Promise<{ ok: true }>((resolve) => {
+      finishSave = resolve;
+    });
+    fixture.savePreferences.mockReturnValueOnce(saved);
+    render(
+      <LocaleProvider timeZone="UTC">
+        <ChangeReportTimeZone />
+        <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />
+      </LocaleProvider>,
+    );
+    expect(
+      screen.getByRole("button", { name: "View contributing deals: Value won" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Change reporting time zone" }));
+    expect(fixture.savePreferences).toHaveBeenCalledOnce();
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ timeZoneIdentity: "Europe/Berlin" }),
+      { enabled: false },
+    );
+    expect(screen.queryAllByRole("definition")).toHaveLength(0);
+    expect(
+      screen.queryByRole("button", { name: "View contributing deals: Value won" }),
+    ).not.toBeInTheDocument();
+
+    await act(async () => {
+      if (finishSave === undefined) throw new Error("Preference save was not initialized");
+      finishSave({ ok: true });
+      await saved;
+    });
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ timeZoneIdentity: "Europe/Berlin" }),
+      { enabled: true },
+    );
+    expect(
+      screen.getByRole("button", { name: "View contributing deals: Value won" }),
+    ).toBeInTheDocument();
   });
   it("opens pipeline and activity reports without losing the chosen date range", async () => {
     mount();

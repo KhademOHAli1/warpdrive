@@ -98,9 +98,13 @@ export class BillingCheckoutService {
   }
   private async requireRetiredCheckout(checkout: StripeCheckout, account: BillingAccount) {
     let status: string | null = null;
-    if (checkout.status === "complete" && checkout.subscription !== null) {
+    if (checkout.subscription !== null) {
       const sub = await this.stripe.retrieveSubscription(checkout.subscription);
-      if (sub.customer !== account.customerId || sub.metadata.warpdrive_account_id !== account.id)
+      if (
+        sub.customer !== account.customerId ||
+        sub.metadata.warpdrive_account_id !== account.id ||
+        sub.livemode !== account.livemode
+      )
         throw new BillingError("reconciliation_required");
       status = sub.status;
     }

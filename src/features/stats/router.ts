@@ -4,54 +4,40 @@
 // never reach a user who cannot see that pipeline. That applies to the "All pipelines"
 // aggregate as much as to a single selected pipeline.
 
-import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { listTeams } from "@/features/identity/teams.service";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { activitiesByType } from "@/features/stats/activitiesByType";
 import { activitiesPerformance } from "@/features/stats/activitiesPerformance";
 import { aggregateStageConversion, aggregateStageSums } from "@/features/stats/aggregateStages";
 import { dealPerformance } from "@/features/stats/dealPerformance";
 import { lostReasonBreakdown } from "@/features/stats/lostReasons";
-import { resolveOwnerIds } from "@/features/stats/ownerIds";
-import { ownerScope } from "@/features/stats/ownerScope";
 import { stageConversion } from "@/features/stats/stageConversion";
 import { stageSums } from "@/features/stats/stageSums";
-import { isPipelineVisible, visiblePipelineIds } from "@/features/stats/visiblePipelines";
+import { visiblePipelineIds } from "@/features/stats/visiblePipelines";
 import { winRate } from "@/features/stats/winRate";
 import { wonDealStats } from "@/features/stats/wonDealStats";
 import { wonTrend } from "@/features/stats/wonTrend";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
-import { dashboardInput } from "./schemas";
+import { dealRecords } from "./dealRecords";
+import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "./metricDictionary";
+import { resolveReportScope } from "./resolveReportScope";
+import { dashboardInput, dealRecordsInput } from "./schemas";
 
 // Module-local abort-signal factory: mirrors the pattern in notifications/router.ts.
 const SIG = (): AbortSignal => AbortSignal.timeout(15_000);
 
 export const statsRouter = router({
   dashboard: protectedProcedure.input(dashboardInput).query(async ({ ctx, input }) => {
-    // Trust boundary: the client cannot widen its own owner scope.
-    const effectiveOwnerScope = ownerScope(ctx.actor, input.ownerScope);
     const signal = SIG();
-    const owners = await resolveOwnerIds(ctx.db, ctx.actor, effectiveOwnerScope, signal);
-
+    const { currency, effectiveOwnerScope, filters } = await resolveReportScope(
+      ctx.db,
+      ctx.actor,
+      input,
+      signal,
+    );
     const requested = input.pipelineId;
-    if (requested !== null && !(await isPipelineVisible(ctx.db, ctx.actor, requested, signal))) {
-      throw new AppError(
-        ERROR_IDS.STATS_PIPELINE_NOT_VISIBLE,
-        "requested pipeline not visible to user (restricted or archived)",
-        { pipelineId: requested },
-      );
-    }
-
-    const currency = input.currency ?? (await readBaseCurrency(ctx.db, signal));
-    const filters = {
-      currency,
-      pipelineId: requested,
-      owners,
-      from: input.from,
-      to: input.to,
-    };
+    const owners = filters.owners;
 
     // Stage-based queries are inherently per pipeline: either the one selected, or every
     // visible one merged by stage position for the "All pipelines" view.
@@ -79,6 +65,7 @@ export const statsRouter = router({
 
     return {
       currency,
+      timeZone: filters.timeZone ?? "UTC",
       dealPerformance: dp,
       winRate: winRate(dp.won, dp.lost),
       wonDealStats: wds,
@@ -89,6 +76,26 @@ export const statsRouter = router({
       lostReasons: lrb,
       stageSums: aggregateStageSums(perPipelineSums),
       effectiveOwnerScope,
+    };
+  }),
+
+  records: protectedProcedure.input(dealRecordsInput).query(async ({ ctx, input }) => {
+    const signal = SIG();
+    const { currency, effectiveOwnerScope, filters } = await resolveReportScope(
+      ctx.db,
+      ctx.actor,
+      input,
+      signal,
+    );
+    const result = await dealRecords(ctx.db, ctx.actor, filters, input, signal);
+    return {
+      ...result,
+      currency,
+      effectiveOwnerScope,
+      metric: input.metric,
+      definitionVersion: ANALYTICS_METRIC_DICTIONARY_VERSION,
+      timeZone: filters.timeZone ?? "UTC",
+      generatedAt: new Date().toISOString(),
     };
   }),
 

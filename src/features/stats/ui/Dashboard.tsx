@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import {
+  useAppTranslations,
+  useLocalePreferencePending,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
+import type { DealRecordMetric } from "@/features/stats/metricDictionary";
 import { trpc } from "@/lib/trpc-client";
 import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
@@ -15,6 +20,7 @@ import { useStatsMessages } from "../useStatsMessages";
 import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
 import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
+import { DealRecordsDrawer } from "./DealRecordsDrawer";
 import { presetRange } from "./dateRange";
 import { GoalsWidget } from "./GoalsWidget";
 import { KpiPerformance } from "./KpiPerformance";
@@ -87,10 +93,23 @@ export function Dashboard({
 }: DashboardProps) {
   const S = useStatsMessages();
   const tCurrency = useAppTranslations("sales");
+  const { timeZone } = useLocalePreferences();
+  const preferencePending = useLocalePreferencePending();
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
   const [range, setRange] = useState(() => presetRange("year", today));
   const [selectedPipelineId, setSelectedPipelineId] = useState(ALL_PIPELINES);
+  const [inspection, setInspection] = useState<{
+    metric: DealRecordMetric;
+    trigger: HTMLButtonElement;
+  } | null>(null);
+  const reportScope = {
+    timeZoneIdentity: timeZone,
+    currency: selectedCurrency,
+    pipelineId: selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId,
+    ownerScope,
+    ...range,
+  };
   const validRange = range.from <= range.to;
   const pipelinesQ = trpc.pipeline.list.useQuery();
   const pipelineOptions = [
@@ -100,14 +119,16 @@ export function Dashboard({
   const ownerOptionsQ = trpc.stats.ownerOptions.useQuery(undefined, { enabled: canViewOthers });
   const data = trpc.stats.dashboard.useQuery(
     {
+      timeZoneIdentity: timeZone,
       currency: selectedCurrency,
       pipelineId: selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId,
       ownerScope,
       ...range,
     },
-    { enabled: validRange },
+    { enabled: validRange && !preferencePending },
   );
-  const result = validRange && !data.isLoading && !data.isError ? data.data : undefined;
+  const result =
+    validRange && !preferencePending && !data.isLoading && !data.isError ? data.data : undefined;
   let body: React.ReactNode;
   if (!validRange) {
     body = (
@@ -124,7 +145,7 @@ export function Dashboard({
         onRetry={() => {
           void data.refetch();
         }}
-        retrying={data.isFetching}
+        retrying={preferencePending || data.isFetching}
       />
     );
   } else if (result === undefined) {
@@ -138,6 +159,7 @@ export function Dashboard({
           activities={result.activities}
           winRate={result.winRate}
           currency={result.currency}
+          onInspect={(metric, trigger) => setInspection({ metric, trigger })}
         />
         <TabsContent value="overview" className="space-y-5">
           <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -214,6 +236,11 @@ export function Dashboard({
           <p className="text-xs leading-relaxed text-muted-foreground">
             {tCurrency("currencyNotice")}
           </p>
+          {result !== undefined && result.timeZone !== "" && (
+            <p className="text-xs text-muted-foreground">
+              {S.recordsTimeZone}: <bdi>{result.timeZone}</bdi>
+            </p>
+          )}
           {pipelinesQ.isError && (
             <p role="alert" className="text-sm text-destructive">
               {S.pipelinesUnavailable}{" "}
@@ -266,6 +293,15 @@ export function Dashboard({
           {body}
         </Tabs>
       </div>
+      {inspection !== null && validRange && (
+        <DealRecordsDrawer
+          key={JSON.stringify({ ...reportScope, metric: inspection.metric })}
+          scope={reportScope}
+          metric={inspection.metric}
+          returnFocus={inspection.trigger}
+          onClose={() => setInspection(null)}
+        />
+      )}
     </div>
   );
 }
