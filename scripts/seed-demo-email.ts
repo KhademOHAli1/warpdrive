@@ -177,11 +177,10 @@ export async function seedUserEmails(db: Db, args: UserEmailArgs): Promise<numbe
   const [acct] = await db.q<{ id: string }>(
     `INSERT INTO email_accounts (user_id, email_address, status, last_history_id)
      VALUES ($1, $2, 'connected', '1000')
-     ON CONFLICT (user_id) DO UPDATE SET status = 'connected', updated_at = now()
      RETURNING id`,
     [accountUserId, userEmail],
   );
-  if (!acct) throw new Error(`email_account upsert failed for ${userEmail}`);
+  if (!acct) throw new Error(`email_account insert failed for ${userEmail}`);
 
   let msgIdx = 0;
   let threadIdx = 0;
