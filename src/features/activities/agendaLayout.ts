@@ -6,12 +6,7 @@ import { HOUR_HEIGHT_PX, HOURS } from "./weekAgenda";
 // week so every column's hour grid starts at the same y and a given hour stays level.
 export const ALL_DAY_ROW_HEIGHT_PX = 22;
 
-// Ceilings on how much a column subdivides before a chip stops being readable. A week column is
-// roughly 200px: half of it still fits a subject and part of a record name, a third fits three
-// letters. Past the cap the remainder collapses into a "+N more" chip rather than shrinking every
-// chip in the day. The more-chip itself only has to fit "+12 more", so it takes a narrow slice
-// rather than a whole lane.
-const MAX_TIMED_LANES = 2;
+const WEEK_TIMED_LANES = 3;
 export const MAX_ALL_DAY_ROWS = 3;
 
 // The tallest all-day stack in the week, which is the lane height every column must reserve.
@@ -39,14 +34,12 @@ export interface TimedPlacement {
   widthPct: number;
   resizeStart: boolean;
   resizeEnd: boolean;
-  // This chip shares its row with a more-chip. The renderer gives the more-chip a pixel floor
-  // (a percentage of a narrow column cannot fit "+12 more") and this chip whatever is left.
+  // The renderer can reserve space for the overflow control in this cluster.
   overflowing: boolean;
 }
 
-// The lanes a cluster could not fit, gathered into one block pinned to the right of the column.
-// Clicking it lists what it stands for, so nothing is dropped from the day, only from the grid.
-// Horizontal geometry is the renderer's: the chip needs a pixel floor, not a share of the column.
+// A connected group of hidden events and the vertical range it covers. The renderer positions
+// the overflow control separately from the event lanes.
 export interface TimedOverflow {
   activities: CalendarActivity[];
   topPx: number;
@@ -129,14 +122,13 @@ function assignLanes(cluster: Extent[]): { lanes: number[]; laneCount: number } 
 
 function layoutCluster(
   cluster: Extent[],
+  maxLanes: number,
   placements: TimedPlacement[],
   overflows: TimedOverflow[],
 ): void {
   const { lanes, laneCount } = assignLanes(cluster);
-  // Past the cap one lane is spent on the more-chip. How wide that chip is belongs to the renderer,
-  // which can give it a pixel floor; a percentage of a narrow column cannot fit "+12 more".
-  const overflowing = laneCount > MAX_TIMED_LANES;
-  const shownLanes = overflowing ? MAX_TIMED_LANES - 1 : laneCount;
+  const overflowing = laneCount > maxLanes;
+  const shownLanes = Math.min(laneCount, maxLanes);
   const widthPct = 100 / shownLanes;
   const hidden: Extent[] = [];
   cluster.forEach((e, i) => {
@@ -156,20 +148,24 @@ function layoutCluster(
       overflowing,
     });
   });
-  if (hidden.length === 0) return;
-  const topPx = Math.min(...hidden.map((e) => e.topPx));
-  const endPx = Math.max(...hidden.map((e) => e.endPx));
-  overflows.push({
-    activities: hidden.map((e) => e.activity),
-    topPx,
-    heightPx: endPx - topPx,
-  });
+  // A long visible event can bridge multiple crowded periods. Show a separate count
+  // at each period so an early control does not include hidden events from later on.
+  for (const group of clusters(hidden)) {
+    const topPx = Math.min(...group.map((e) => e.topPx));
+    const endPx = Math.max(...group.map((e) => e.endPx));
+    overflows.push({
+      activities: group.map((e) => e.activity),
+      topPx,
+      heightPx: endPx - topPx,
+    });
+  }
 }
 
 export function layoutTimed(
   items: CalendarActivity[],
   timeZone = "UTC",
   dayIso?: string,
+  maxLanes = WEEK_TIMED_LANES,
 ): {
   placements: TimedPlacement[];
   overflows: TimedOverflow[];
@@ -177,6 +173,6 @@ export function layoutTimed(
   const placements: TimedPlacement[] = [];
   const overflows: TimedOverflow[] = [];
   for (const cluster of clusters(extents(items, timeZone, dayIso)))
-    layoutCluster(cluster, placements, overflows);
+    layoutCluster(cluster, maxLanes, placements, overflows);
   return { placements, overflows };
 }
