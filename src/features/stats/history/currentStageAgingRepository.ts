@@ -5,6 +5,7 @@ import type { Db } from "@/db/client";
 import { teamMembers } from "@/db/schema";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { dealVisibilityPredicate } from "@/features/permissions/sql";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { visibleDealPopulation } from "@/features/stats/dealPopulation";
 import { onlyOwners, resolveOwnerIds } from "@/features/stats/ownerIds";
@@ -24,6 +25,13 @@ import {
 import { foldTransactionHistory, sameHistoryState } from "./fold";
 import { type HistoryInstallation, readHistoryInstallation } from "./repository";
 import {
+  type AuthorizedCurrentStageLabel,
+  projectStageAgingView,
+  type StageAgingObservation,
+  type StageAgingView,
+  type StageAgingViewSource,
+} from "./stageAgingView";
+import {
   deriveStageEpisodes,
   type StageEpisodesResult,
   type StageEpisodeUnavailableReason,
@@ -33,6 +41,9 @@ import { aggregateStageStatistics, type StageStatisticsResult } from "./stageSta
 export const MAX_CURRENT_STAGE_AGING_DEALS = 1_000;
 export const MAX_CURRENT_STAGE_AGING_EVENTS = 5_000;
 const MAX_VARIABLE_HISTORY_BYTES = 8 * 1024 * 1024;
+const MAX_LABEL_NAME_LENGTH = 255;
+const MAX_LABEL_NAME_BYTES = MAX_LABEL_NAME_LENGTH * 4;
+const MAX_LABEL_PAYLOAD_BYTES = 2 * 1024 * 1024;
 
 const uuid = historyUuid.transform((id) => id.toLowerCase());
 const requestSchema = z.strictObject({
@@ -62,7 +73,7 @@ const sourceSchema = z.strictObject({
   scopeLimit: z.boolean(),
   historyLimit: z.boolean(),
   invalidHead: z.boolean(),
-  pipelineGap: z.boolean(),
+  historyPermissionGap: z.boolean(),
   stageGap: z.boolean(),
   events: z.array(z.unknown()).max(MAX_CURRENT_STAGE_AGING_EVENTS),
 });
@@ -71,6 +82,18 @@ const eventRowSchema = z.strictObject({
   tipOrdinal: historyOrdinal,
   event: analyticsHistoryEvent,
 });
+const definitionName = z
+  .string()
+  .max(MAX_LABEL_NAME_LENGTH)
+  .refine((name) => name.trim() !== "");
+const definitionLabels = z.array(
+  z.strictObject({
+    pipelineId: historyUuid,
+    stageId: historyUuid,
+    pipelineName: definitionName,
+    stageName: definitionName,
+  }),
+);
 
 export type CurrentStageAgingRequest = z.input<typeof requestSchema>;
 type Observation = z.output<typeof snapshotSchema>;
@@ -111,7 +134,8 @@ export type CurrentStageAging =
       statistics: Extract<StageStatisticsResult, { ok: true }>;
     };
 
-type Unavailable = Exclude<CurrentStageAging, { state: "available" }>;
+type AvailableAging = Extract<CurrentStageAging, { state: "available" }>;
+type Unavailable = Exclude<CurrentStageAging, AvailableAging>;
 const utcText = (value: SQL) =>
   sql`pg_catalog.to_char(${value} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
 
@@ -211,8 +235,25 @@ async function readSourceContext(
 }
 
 async function readAgingSource(tx: Db, context: SourceContext, signal: AbortSignal) {
-  const { activation, observation, pipelineId, visible } = context;
-  const pipelineAuthority = visiblePipelinePredicate(context.actor) ?? sql`false`;
+  const { activation, actor, observation, pipelineId, visible } = context;
+  const pipelineAuthority = visiblePipelinePredicate(actor) ?? sql`false`;
+  const historicalDealAuthority = dealVisibilityPredicate(
+    {
+      userId: actor.id,
+      isAdmin: actor.type === "admin",
+      isActive: actor.isActive,
+      sessionLive: true,
+      groupIds: Array.from(actor.groupIds),
+      managedUserIds: Array.from(actor.managedUserIds ?? []),
+    },
+    {
+      ownerId: sql`side."ownerId"`,
+      visibilityLevel: sql`side."visibilityLevel"`,
+      visibilityGroupId: sql`side."visibilityGroupId"`,
+      visibleToUserIds: sql`side."visibleToUserIds"`,
+      pipelineVisibilityGroupId: sql`p.visibility_group_id`,
+    },
+  );
   signal.throwIfAborted();
   const result = await tx.execute(sql`
     WITH observation AS MATERIALIZED (
@@ -272,6 +313,12 @@ async function readAgingSource(tx: Db, context: SourceContext, signal: AbortSign
       UNION ALL
       SELECT after_state FROM selected_events
       WHERE after_state IS NOT NULL AND NOT (SELECT exceeded FROM history_budget)
+    ), access_sides AS MATERIALIZED (
+      SELECT fields.* FROM event_states e
+      CROSS JOIN LATERAL pg_catalog.jsonb_to_record(e.state) AS fields(
+        "pipelineId" pg_catalog.uuid, "ownerId" pg_catalog.uuid, "visibilityLevel" pg_catalog.text,
+        "visibilityGroupId" pg_catalog.uuid, "visibleToUserIds" pg_catalog.uuid[]
+      )
     ), definition_refs AS MATERIALIZED (
       SELECT 'pipeline' AS kind, state ->> 'pipelineId' AS id, NULL::text AS parent FROM event_states
       UNION SELECT 'stage', state ->> 'stageId', state ->> 'pipelineId' FROM event_states
@@ -280,16 +327,17 @@ async function readAgingSource(tx: Db, context: SourceContext, signal: AbortSign
         AND NOT (SELECT own_pending FROM observation)
         AND NOT (SELECT present FROM invalid_head) AND NOT (SELECT exceeded FROM history_budget)
     ), current_definitions AS MATERIALIZED (
-      SELECT ref.kind, pipelines.id, ref.parent, public.analytics_project_pipeline(pipelines) AS state
+      SELECT ref.kind, pipelines.id, ref.parent, public.analytics_project_pipeline(pipelines) AS state,
+        pipelines.visibility_group_id
       FROM definition_refs ref JOIN public.pipelines ON pipelines.id = ref.id::uuid
       WHERE ref.kind = 'pipeline' AND pipelines.is_archived = false AND ${pipelineAuthority}
       UNION ALL
-      SELECT ref.kind, s.id, ref.parent, public.analytics_project_stage(s)
+      SELECT ref.kind, s.id, ref.parent, public.analytics_project_stage(s), NULL::pg_catalog.uuid
       FROM definition_refs ref JOIN public.stages s ON s.id = ref.id::uuid
         AND s.pipeline_id = ref.parent::uuid
       WHERE ref.kind = 'stage'
     ), permitted_definitions AS MATERIALIZED (
-      SELECT source.kind, source.id, source.parent
+      SELECT source.kind, source.id, source.parent, source.visibility_group_id
       FROM current_definitions source
       JOIN public.analytics_history_heads h ON h.entity_kind = source.kind AND h.entity_id = source.id
         AND h.active AND h.activation_id = ${activation.activationId}::uuid
@@ -321,14 +369,18 @@ async function readAgingSource(tx: Db, context: SourceContext, signal: AbortSign
       SELECT c.deal_count, o.own_pending, c.deal_count > ${MAX_CURRENT_STAGE_AGING_DEALS} AS scope_limit,
         (SELECT present FROM invalid_head) AS invalid_head,
         (SELECT exceeded FROM history_budget) AS history_limit,
-        EXISTS (SELECT 1 FROM gaps WHERE kind = 'pipeline') AS pipeline_gap,
+        (EXISTS (SELECT 1 FROM gaps WHERE kind = 'pipeline') OR EXISTS (
+          SELECT 1 FROM access_sides side
+          LEFT JOIN permitted_definitions p ON p.kind = 'pipeline' AND p.id = side."pipelineId"
+          WHERE p.id IS NULL OR NOT coalesce(${historicalDealAuthority}, false)
+        )) AS history_permission_gap,
         EXISTS (SELECT 1 FROM gaps WHERE kind = 'stage') AS stage_gap
       FROM cohort_size c CROSS JOIN observation o
     )
     SELECT deal_count AS "dealCount", own_pending AS "ownWritesPending",
       scope_limit AS "scopeLimit", invalid_head AS "invalidHead", history_limit AS "historyLimit",
-      pipeline_gap AS "pipelineGap", stage_gap AS "stageGap",
-      CASE WHEN own_pending OR scope_limit OR invalid_head OR history_limit OR pipeline_gap OR stage_gap
+      history_permission_gap AS "historyPermissionGap", stage_gap AS "stageGap",
+      CASE WHEN own_pending OR scope_limit OR invalid_head OR history_limit OR history_permission_gap OR stage_gap
         THEN '[]'::json
         ELSE (SELECT coalesce(json_agg(json_build_object(
           'startedAt', ${utcText(sql`e.incarnation_started_at`)}, 'tipOrdinal', e.last_event_ordinal::text,
@@ -355,7 +407,8 @@ function sourceFailure(source: Source): Unavailable | null {
   if (source.scopeLimit) return { state: "unavailable", reason: "scope-limit" };
   if (source.historyLimit) return { state: "unavailable", reason: "history-limit" };
   if (source.invalidHead) return { state: "unavailable", reason: "history-invalid" };
-  if (source.pipelineGap) return { state: "unavailable", reason: "history-permission-limited" };
+  if (source.historyPermissionGap)
+    return { state: "unavailable", reason: "history-permission-limited" };
   if (source.stageGap) return { state: "unavailable", reason: "stage-definition-unavailable" };
   return null;
 }
@@ -443,12 +496,18 @@ function derivePopulation(chains: ReadonlyMap<string, DealChain>, cutoff: string
   return { state: "ready", episodes } as const;
 }
 
+type SnapshotCollection = {
+  state: "collected";
+  report: AvailableAging;
+  context: SourceContext;
+};
+
 async function readInSnapshot(
   tx: Db,
   actor: PermSetUser,
   request: z.output<typeof requestSchema>,
   signal: AbortSignal,
-): Promise<CurrentStageAging> {
+): Promise<SnapshotCollection | Unavailable> {
   const context = await readSourceContext(tx, actor, request, signal);
   if (context.state !== "ready") return context;
   const source = await readAgingSource(tx, context, signal);
@@ -470,32 +529,32 @@ async function readInSnapshot(
       reason: statistics.reason === "bounded-limit" ? "history-limit" : "history-invalid",
     };
   return {
-    state: "available",
-    currency,
-    population: {
-      basis: "current-authorized-live-deals",
-      dealCount: source.dealCount,
-      currentOpenDealCount: population.episodes.filter((row) => row.finalObservedStatus === "open")
-        .length,
+    state: "collected",
+    context,
+    report: {
+      state: "available",
+      currency,
+      population: {
+        basis: "current-authorized-live-deals",
+        dealCount: source.dealCount,
+        currentOpenDealCount: population.episodes.filter(
+          (row) => row.finalObservedStatus === "open",
+        ).length,
+      },
+      historyBasis: "observed-stays-of-current-cohort-since-capture",
+      activatedAt: activation.activatedAt,
+      statistics,
     },
-    historyBasis: "observed-stays-of-current-cohort-since-capture",
-    activatedAt: activation.activatedAt,
-    statistics,
   };
 }
 
-// This internal read describes captured stays of the current cohort, including completed stays
-// on still-live closed deals. Current filters select the cohort and do not rewrite old visits.
-// Definition gates also cover raw references eliminated by transaction folding. These gates
-// establish identity and present authority; they do not resolve historical labels or ranks.
-// An authenticated caller supplies the request actor. A retained-record report needs its own
-// authority and cannot reuse this population contract.
-export async function readCurrentStageAging(
+async function inStageAgingSnapshot<Result>(
   db: Db,
   actor: PermSetUser,
   input: CurrentStageAgingRequest,
   signal: AbortSignal,
-): Promise<CurrentStageAging> {
+  collect: (tx: Db, source: SnapshotCollection) => Result | Promise<Result>,
+): Promise<Result | Unavailable> {
   signal.throwIfAborted();
   const request = requestSchema.safeParse(input);
   if (!request.success) return { state: "unavailable", reason: "invalid-request" };
@@ -506,7 +565,10 @@ export async function readCurrentStageAging(
       async (tx) => {
         await tx.execute(sql`SET LOCAL statement_timeout = '5000ms'`);
         await tx.execute(sql`SET LOCAL lock_timeout = '2000ms'`);
-        const result = await readInSnapshot(tx, actor, request.data, signal);
+        const source = await readInSnapshot(tx, actor, request.data, signal);
+        signal.throwIfAborted();
+        if (source.state !== "collected") return source;
+        const result = await collect(tx, source);
         signal.throwIfAborted();
         return result;
       },
@@ -517,4 +579,82 @@ export async function readCurrentStageAging(
     if (error instanceof Error && error.name === "AbortError") throw error;
     return { state: "unavailable", reason: "history-read-failed" };
   }
+}
+
+// This internal read describes captured stays of the current cohort, including completed stays
+// on still-live closed deals. Current filters select the cohort and do not rewrite old visits.
+// Current grants must permit every captured deal side and its referenced current pipeline.
+// The checks include intermediate sides eliminated by transaction folding. A retained-record
+// report needs its own authority.
+export function readCurrentStageAging(
+  db: Db,
+  actor: PermSetUser,
+  input: CurrentStageAgingRequest,
+  signal: AbortSignal,
+): Promise<CurrentStageAging> {
+  return inStageAgingSnapshot(db, actor, input, signal, (_tx, { report }) => report);
+}
+
+async function readDefinitionLabels(
+  tx: Db,
+  source: SnapshotCollection,
+  signal: AbortSignal,
+): Promise<AuthorizedCurrentStageLabel[] | null> {
+  const pairs = source.report.statistics.groups.map(({ pipelineId, stageId }) => ({
+    pipelineId,
+    stageId,
+  }));
+  if (pairs.length === 0) return [];
+  const pipelineAuthority = visiblePipelinePredicate(source.context.actor) ?? sql`false`;
+
+  // The preceding evidence read checked every captured stage and parent reference under
+  // this same RR snapshot. Restrict names to the grouped pairs and reapply parent visibility.
+  signal.throwIfAborted();
+  const result = await tx.execute(sql`
+    WITH labels AS MATERIALIZED (
+      SELECT pipelines.id AS "pipelineId", s.id AS "stageId",
+        pipelines.name AS "pipelineName", s.name AS "stageName"
+      FROM pg_catalog.jsonb_to_recordset(${JSON.stringify(pairs)}::pg_catalog.jsonb)
+        AS ref("pipelineId" pg_catalog.uuid, "stageId" pg_catalog.uuid)
+      JOIN public.pipelines ON pipelines.id = ref."pipelineId"
+      JOIN public.stages s ON s.id = ref."stageId" AND s.pipeline_id = pipelines.id
+      WHERE pipelines.is_archived = false AND ${pipelineAuthority}
+        AND pg_catalog.octet_length(pipelines.name) <= ${MAX_LABEL_NAME_BYTES}
+        AND pg_catalog.octet_length(s.name) <= ${MAX_LABEL_NAME_BYTES}
+    )
+    SELECT "pipelineId", "stageId", "pipelineName", "stageName" FROM labels WHERE (
+      SELECT coalesce(sum(pg_catalog.octet_length("pipelineName") + pg_catalog.octet_length("stageName")), 0)
+      FROM labels
+    ) <= ${MAX_LABEL_PAYLOAD_BYTES}
+  `);
+  signal.throwIfAborted();
+  const labels = definitionLabels.safeParse(result.rows);
+  return labels.success && labels.data.length === pairs.length ? labels.data : null;
+}
+
+/** Internal viewer read. The authenticated request supplies the actor. */
+export async function readCurrentStageAgingView(
+  db: Db,
+  actor: PermSetUser,
+  input: CurrentStageAgingRequest,
+  signal: AbortSignal,
+): Promise<StageAgingView> {
+  const source = await inStageAgingSnapshot<StageAgingViewSource>(
+    db,
+    actor,
+    input,
+    signal,
+    async (tx, collection) => {
+      const { report, context } = collection;
+      const labels = await readDefinitionLabels(tx, collection, signal);
+      if (labels === null) return { state: "unavailable", reason: "stage-definition-unavailable" };
+      const observation: StageAgingObservation = {
+        activationId: context.activation.activationId,
+        observationCutoff: context.observation.cutoff,
+      };
+      return { state: "collected", report, observation, definitions: { observation, labels } };
+    },
+  );
+  signal.throwIfAborted();
+  return projectStageAgingView(source);
 }

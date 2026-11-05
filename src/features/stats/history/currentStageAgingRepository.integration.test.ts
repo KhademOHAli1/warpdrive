@@ -18,6 +18,7 @@ import {
   type CurrentStageAgingRequest,
   MAX_CURRENT_STAGE_AGING_DEALS,
   readCurrentStageAging,
+  readCurrentStageAgingView,
 } from "./currentStageAgingRepository";
 
 type Available = Extract<CurrentStageAging, { state: "available" }>;
@@ -195,6 +196,28 @@ describe("native current-authorized stage aging collector", () => {
         group(visible, destination.pipelineId, destination.stageId).currentOpen.sampleCount,
       ).toBe(1);
 
+      await h.pool.query("UPDATE pipelines SET name=$2 WHERE id=$1", [
+        f.pipelineId,
+        "Current origin pipeline label",
+      ]);
+      await h.pool.query("UPDATE stages SET name=$2 WHERE id=$1", [
+        f.stageId,
+        "Current origin stage label",
+      ]);
+      const readView = () =>
+        readCurrentStageAgingView(h.db, actor, scope, AbortSignal.timeout(10_000));
+      const view = await readView();
+      expect(view.state).toBe("available");
+      if (view.state !== "available") throw new Error("Expected current stage labels");
+      expect(view.dealCount).toBe(1);
+      expect(view.rows).toHaveLength(2);
+      expect(
+        view.rows.find(({ stageName }) => stageName === "Current origin stage label"),
+      ).toMatchObject({
+        pipelineName: "Current origin pipeline label",
+        leftCensored: { completed: { sampleCount: 1 } },
+      });
+
       const groupId = randomUUID();
       await h.pool.query("INSERT INTO visibility_groups(id,name) VALUES($1,$2)", [
         groupId,
@@ -215,6 +238,59 @@ describe("native current-authorized stage aging collector", () => {
         state: "unavailable",
         reason: "history-permission-limited",
       });
+      expect(await readView()).toEqual({ state: "unavailable", reason: "read" });
+    });
+  });
+
+  test("withholds a private closed stay after an owner transfer in the same visible pipeline", async () => {
+    await withCapture(async (h, f, actor) => {
+      const previousOwner = randomUUID();
+      await h.pool.query("INSERT INTO users (id,email,name) VALUES ($1,$2,'Prior aging owner')", [
+        previousOwner,
+        `${previousOwner}@example.test`,
+      ]);
+      const privateDeal = await insertHistoryDeal(h.pool, {
+        ...f,
+        userId: previousOwner,
+        stageId: f.otherStageId,
+      });
+      await h.pool.query("UPDATE deals SET status='won',won_time=clock_timestamp() WHERE id=$1", [
+        privateDeal.id,
+      ]);
+
+      const scope = {
+        currency: "EUR",
+        pipelineId: f.pipelineId,
+        ownerScope: { kind: "me" },
+      } as const;
+      const before = await read(h, actor, scope);
+      requireAvailable(before);
+      expect(before.population.dealCount).toBe(1);
+      expect(before.statistics.groups.map(({ stageId }) => stageId)).toEqual([f.stageId]);
+
+      const transfer = await h.pool.query("UPDATE deals SET owner_id=$2 WHERE id=$1", [
+        privateDeal.id,
+        actor.id,
+      ]);
+      expect(transfer.rowCount).toBe(1);
+      const event = await capturedDealEvent(h.pool, privateDeal.id, -1);
+      expect(event.beforeState).toMatchObject({
+        ownerId: previousOwner,
+        pipelineId: f.pipelineId,
+        visibilityLevel: "owner",
+      });
+      expect(event.afterState).toMatchObject({
+        ownerId: actor.id,
+        pipelineId: f.pipelineId,
+        visibilityLevel: "owner",
+      });
+      expect(await read(h, actor, scope)).toEqual({
+        state: "unavailable",
+        reason: "history-permission-limited",
+      });
+      expect(
+        await readCurrentStageAgingView(h.db, actor, scope, AbortSignal.timeout(10_000)),
+      ).toEqual({ state: "unavailable", reason: "read" });
     });
   });
 
