@@ -36,8 +36,31 @@ const queries = vi.hoisted(() => {
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    useUtils: () => ({ workflows: { runs: { invalidate: vi.fn() } } }),
+    useUtils: () => ({
+      workflows: { runs: { invalidate: vi.fn() }, runsPage: { invalidate: vi.fn() } },
+    }),
     workflows: {
+      // Run setup focus is checked while its authorized review reads are pending.
+      get: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: true,
+          isFetching: true,
+          isError: false,
+          isPlaceholderData: false,
+          refetch: vi.fn().mockResolvedValue({ data: undefined }),
+        }),
+      },
+      version: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: true,
+          isFetching: true,
+          isError: false,
+          isPlaceholderData: false,
+          refetch: vi.fn().mockResolvedValue({ data: undefined }),
+        }),
+      },
       owners: {
         useQuery: () => ({
           data: undefined,
@@ -78,9 +101,9 @@ vi.mock("@/lib/trpc-client", () => ({
           refetch: vi.fn(),
         }),
       },
-      runs: {
+      runsPage: {
         useQuery: () => ({
-          data: queries.rows,
+          data: { items: queries.rows, nextCursor: null },
           isLoading: false,
           isError: false,
           isFetching: false,

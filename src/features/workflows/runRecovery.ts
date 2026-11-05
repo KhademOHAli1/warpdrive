@@ -144,7 +144,9 @@ export async function retryReason(
   if (fixed !== null) return fixed;
   const definition = retryableTaskDefinition(rawDefinition);
   if (definition === null) return "unsupported";
-  if (coherentFailedTask(definition, run, steps) === null) return "inconsistent";
+  const cursor = coherentFailedTask(definition, run, steps);
+  if (cursor === null) return "inconsistent";
+  if (cursor.type === "record.read" && failure?.origin !== "recorded") return "legacy";
   return (await retryTaskReady(db, actor, run.trigger.recordId, signal)) ? "available" : "repair";
 }
 

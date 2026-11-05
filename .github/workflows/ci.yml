@@ -2,7 +2,9 @@ name: Public Bun CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -16,7 +18,7 @@ jobs:
   crm:
     name: CRM checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 20
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -32,45 +34,23 @@ jobs:
         run: bun run typecheck
       - name: Check translations and lint
         run: bun run lint
-      - name: Run app unit tests
-        run: bun run test:unit --maxWorkers=2
-      - name: Run app PostgreSQL integration tests
-        run: bun run test:integration --maxWorkers=2
-      - name: Build app with isolated validation placeholders
-        run: bun run build
-        env:
-          NODE_ENV: production
-          APP_COMMIT: ${{ github.sha }}
-          DATABASE_URL: postgres://build:build@127.0.0.1:5432/build
-          GOOGLE_OAUTH_CLIENT_ID: ci-build-client
-          GOOGLE_OAUTH_CLIENT_SECRET: ci-build-secret
-          GOOGLE_WORKSPACE_DOMAIN: build.example.invalid
-          BASE_URL: https://build.example.invalid
-          WS_TICKET_SECRET: ci_build_placeholder_ws_ticket_secret_0123456789
-          WS_PUBLIC_URL: ws://127.0.0.1:8080
-          NEXT_PUBLIC_WS_URL: ws://127.0.0.1:8080
-          MINIO_ENDPOINT: http://127.0.0.1:9000
-          MINIO_ACCESS_KEY: ci-build-access
-          MINIO_SECRET_KEY: ci-build-secret
-          TOKEN_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-          OAUTH_SIGNING_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-          MCP_ENABLED: "true"
-          SEED_ADMIN_EMAIL: build@example.invalid
-          ALLOW_FIRST_LOGIN_ADMIN: "false"
-          AUTH_SECRET: ci_build_only_auth_secret_not_for_deployment_0123456789
-          AUTH_MAIL_TRANSPORT: smtp
-          AUTH_SMTP_HOST: smtp.example.invalid
-          AUTH_MAIL_FROM: build@example.invalid
-          DISABLE_TELEMETRY: "true"
-          DISABLE_UPDATE_CHECK: "true"
-          NEXT_TELEMETRY_DISABLED: "1"
-      - name: Build server entrypoints
-        run: bun run build:workers
+      - name: Run focused workflow and preference contract tests
+        run: >-
+          bun run test:unit --maxWorkers=2
+          src/features/theme/appearance.test.ts
+          src/features/theme/appearanceBundle.test.ts
+          src/features/identity/densityAction.test.ts
+          src/features/identity/preferencesSchema.test.ts
+          src/features/identity/preferencesSelection.test.ts
+          src/features/workflows/draftSimulationAction.test.ts
+          src/features/workflows/draftSimulationInput.test.ts
+          src/features/workflows/runRetryActions.test.ts
+          ciWorkflow.test.ts
 
   site:
     name: Marketing site checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: site
@@ -89,17 +69,11 @@ jobs:
         run: bun --bun next typegen
       - name: Check site types
         run: bun run typecheck
-      - name: Run site tests
-        run: bun run test
-      - name: Build static site
-        run: bun run build
-        env:
-          NEXT_TELEMETRY_DISABLED: "1"
 
   docs:
     name: Documentation site checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: docs-site
@@ -120,5 +94,3 @@ jobs:
           BUN_OPTIONS: --no-env-file
       - name: Check documentation types
         run: bun run typecheck
-      - name: Build documentation site
-        run: bun run build

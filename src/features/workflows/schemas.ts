@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { boundedConditionConfig } from "./conditionExpressionBudget";
 import { configurationLimits } from "./configurationLimits";
+import { boundedDelayConfig } from "./delayConfig";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
@@ -60,6 +61,7 @@ export const nodeSchema = z.strictObject({
   config: z
     .unknown()
     .refine(boundedConditionConfig, "Condition expression exceeds safe bounds")
+    .refine(boundedDelayConfig, "Fixed instant wait exceeds its reviewed scalar shape")
     .pipe(z.record(z.string(), z.json())),
 });
 

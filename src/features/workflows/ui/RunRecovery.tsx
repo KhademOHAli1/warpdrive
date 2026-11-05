@@ -61,8 +61,9 @@ export function RunRecovery({
     } finally {
       try {
         await Promise.all([
-          utils.workflows.runs.invalidate({ id: workflowId }),
-          utils.workflows.run.invalidate({ id: workflowId, runId }),
+          Promise.resolve().then(() => utils.workflows.runs.invalidate({ id: workflowId })),
+          Promise.resolve().then(() => utils.workflows.runsPage.invalidate({ id: workflowId })),
+          Promise.resolve().then(() => utils.workflows.run.invalidate({ id: workflowId, runId })),
         ]);
       } catch {
         // A read refresh failure cannot change the authoritative retry outcome.

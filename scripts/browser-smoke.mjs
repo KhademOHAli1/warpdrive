@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { chromium } from "../tools/browser-smoke/node_modules/playwright/index.mjs";
 
-// Disposable synthetic data only: no provider requests, mailbox connection or workflow execution.
+// Disposable synthetic data only: no provider requests, mailbox connection or live workflow runs.
 const origin = "https://127.0.0.1:3443";
 const pipeline = "/pipeline/00000000-0000-4000-8000-000000000503";
 const catalog = (path) => JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), "utf8"));
@@ -192,6 +192,10 @@ try {
     await page.reload();
     await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
   });
+  const { runWorkflowDraftSimulationBrowserSmoke } = await import(
+    "./workflow-draft-simulation-browser.mjs"
+  );
+  await runWorkflowDraftSimulationBrowserSmoke({ journey, login, catalog, origin });
 } finally {
   await browser.close();
 }
