@@ -665,20 +665,22 @@ export async function runWorkflowDraftSimulationBrowserSmoke({ journey, login, c
       currentProfile = profile;
       assert.equal(brokenPool, false, "The owned fixture pool reported an idle connection failure");
       const copy = catalog(`src/features/workflows/messages/workflows.${profile.locale}.json`);
-      let observation;
+      /** @type {{ value: Awaited<ReturnType<typeof exerciseDraft>> | undefined }} */
+      const observed = { value: undefined };
       // All contexts begin in EN for login(); the FA exercise changes its own locale afterward.
       await journey(
         profile.name,
         "en",
         async (page) => {
-          observation = await exerciseDraft(page, pool, profile, copy, login, origin);
+          observed.value = await exerciseDraft(page, pool, profile, copy, login, origin);
         },
         profile.viewport,
       );
       assert.ok(
-        observation !== undefined,
+        observed.value !== undefined,
         "Native observation is required before declaring a journey successful",
       );
+      const observation = observed.value;
       const success = {
         case: profile.name,
         status: "passed",

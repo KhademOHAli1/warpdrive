@@ -49,7 +49,9 @@ function plainObject(value: object): boolean {
 
 function dataProperty(value: object, key: string) {
   const descriptor = Object.getOwnPropertyDescriptor(value, key);
-  return descriptor !== undefined && descriptor.enumerable && Object.hasOwn(descriptor, "value")
+  return descriptor !== undefined &&
+    descriptor.enumerable === true &&
+    Object.hasOwn(descriptor, "value")
     ? descriptor
     : null;
 }
