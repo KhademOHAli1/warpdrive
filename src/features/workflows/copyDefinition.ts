@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { activityReminderTimeZone } from "@/features/activities/reminderIntentTypes";
 import { parseConditionConfig } from "./conditionExpression";
 import { copyCustomFieldSettingsSchema } from "./configurationBindings";
 import { boundedDelayConfig } from "./delayConfig";
@@ -77,6 +78,20 @@ const copyNode = z.discriminatedUnion("type", [
       subject: copyBinding.optional(),
       body: copyBinding.optional(),
     }),
+  }),
+  nodeSchema.extend({
+    type: z.literal("calendar.create"),
+    config: z
+      .strictObject({
+        allDay: z.boolean(),
+        timeZone: activityReminderTimeZone,
+        title: copyBinding,
+        startsAt: copyBinding,
+        endsAt: copyBinding,
+        description: copyBinding,
+        location: copyBinding,
+      })
+      .partial(),
   }),
   nodeSchema.extend({
     type: z.literal("ifElse"),

@@ -1,4 +1,9 @@
 {
+  "createCalendarEvent": "Kalendertermin erstellen",
+  "createCalendarEventHint": "Einen Termin im Warpdrive-Kalender hinzufügen.",
+  "publicationCalendarEventStep": "Kann beim Erreichen einen Termin im Warpdrive-Kalender erstellen.",
+  "liveReviewCalendarEvent": "Kalenderschritte können echte Termine in Warpdrive erstellen. Sie versenden keine Einladungen.",
+  "resizeSidePanel": "Breite der Seitenleiste ändern",
   "searchRecords": "Datensätze suchen",
   "pickRecord": "Datensatz auswählen",
   "draftEmail": "E-Mail-Entwurf",

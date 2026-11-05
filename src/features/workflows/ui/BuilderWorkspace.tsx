@@ -1,7 +1,7 @@
 "use client";
 
 import { LayoutGrid, Maximize2, Plus } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Tip } from "@/components/ui/tooltip";
@@ -31,6 +31,7 @@ import type { RevealNode } from "./ResponsiveViewport";
 import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 import { WorkflowPalette } from "./WorkflowPalette";
+import { WorkflowPanelResize, workflowPanelWidth } from "./WorkflowPanelResize";
 import styles from "./workflowEditor.module.css";
 import "./workflowTheme.css";
 
@@ -52,6 +53,10 @@ export function BuilderWorkspace({
   history?: GraphHistoryControls;
 }) {
   const t = useAppTranslations("workflows");
+  const [panelWidth, setPanelWidth] = useState<number>(workflowPanelWidth.initial);
+  const panelStyle: CSSProperties & { "--workflow-panel-width": string } = {
+    "--workflow-panel-width": `${panelWidth}px`,
+  };
   const workspace = useRef<HTMLElement>(null);
   const activeRequest = useRef<object | null>(null);
   const nodeMeasurements = useRef<NodeMeasurements>(new Map());
@@ -241,6 +246,7 @@ export function BuilderWorkspace({
         )}
         <div
           className={styles.builderGrid}
+          style={panelStyle}
           data-panel={palette !== null || node !== undefined || edge !== undefined}
         >
           <div className={styles.canvasColumn}>
@@ -312,67 +318,74 @@ export function BuilderWorkspace({
             />
           </div>
           {(palette !== null || node !== undefined || edge !== undefined) && (
-            <aside className={styles.inspector} aria-label={t("configure")}>
-              {palette !== null ? (
-                <WorkflowPalette
-                  workflowId={workflowId}
-                  read={paletteRead}
-                  definition={definition}
-                  request={pickerRequest()}
-                  editable={editable}
-                  onClose={closePalette}
-                  onChoose={choose}
-                  onCloseAutoFocus={(event) => {
-                    if (focusInsertedStep.current) {
-                      event.preventDefault();
-                      focusAvailable(stepName.current);
-                    } else paletteFocus.restore(event, workspace.current);
-                  }}
-                />
-              ) : null}
-              <div hidden={palette !== null}>
-                <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
-                {edge !== undefined ? (
-                  <EdgeInspector
+            <>
+              <WorkflowPanelResize
+                width={panelWidth}
+                onWidthChange={setPanelWidth}
+                onClose={palette === null ? closeInspector : closePalette}
+              />
+              <aside className={styles.inspector} aria-label={t("configure")}>
+                {palette !== null ? (
+                  <WorkflowPalette
+                    workflowId={workflowId}
+                    read={paletteRead}
                     definition={definition}
-                    edge={edge}
+                    request={pickerRequest()}
                     editable={editable}
-                    onChange={onChange}
-                    onProblem={setProblem}
-                    onClose={closeInspector}
+                    onClose={closePalette}
+                    onChoose={choose}
+                    onCloseAutoFocus={(event) => {
+                      if (focusInsertedStep.current) {
+                        event.preventDefault();
+                        focusAvailable(stepName.current);
+                      } else paletteFocus.restore(event, workspace.current);
+                    }}
                   />
-                ) : node !== undefined ? (
-                  <>
-                    <NodeInspector
-                      workflowId={workflowId}
+                ) : null}
+                <div hidden={palette !== null}>
+                  <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
+                  {edge !== undefined ? (
+                    <EdgeInspector
                       definition={definition}
-                      node={node}
-                      editable={editable}
-                      nameInputRef={stepName}
-                      onClose={closeInspector}
-                      onChange={(changed) =>
-                        onChange((graph) => updateNodeConfiguration(graph, changed))
-                      }
-                      onRemove={() => {
-                        if (!editable || node.type.startsWith("trigger.")) return;
-                        onChange((graph) => removeNode(graph, node.id));
-                        closeInspector();
-                      }}
-                    />
-                    <ConnectionEditor
-                      definition={definition}
-                      node={node}
+                      edge={edge}
                       editable={editable}
                       onChange={onChange}
                       onProblem={setProblem}
-                      onAdd={(output) => openPalette({ output })}
+                      onClose={closeInspector}
                     />
-                  </>
-                ) : (
-                  <p className="p-5 text-sm text-muted-foreground">{t("configureHint")}</p>
-                )}
-              </div>
-            </aside>
+                  ) : node !== undefined ? (
+                    <>
+                      <NodeInspector
+                        workflowId={workflowId}
+                        definition={definition}
+                        node={node}
+                        editable={editable}
+                        nameInputRef={stepName}
+                        onClose={closeInspector}
+                        onChange={(changed) =>
+                          onChange((graph) => updateNodeConfiguration(graph, changed))
+                        }
+                        onRemove={() => {
+                          if (!editable || node.type.startsWith("trigger.")) return;
+                          onChange((graph) => removeNode(graph, node.id));
+                          closeInspector();
+                        }}
+                      />
+                      <ConnectionEditor
+                        definition={definition}
+                        node={node}
+                        editable={editable}
+                        onChange={onChange}
+                        onProblem={setProblem}
+                        onAdd={(output) => openPalette({ output })}
+                      />
+                    </>
+                  ) : (
+                    <p className="p-5 text-sm text-muted-foreground">{t("configureHint")}</p>
+                  )}
+                </div>
+              </aside>
+            </>
           )}
         </div>
       </section>

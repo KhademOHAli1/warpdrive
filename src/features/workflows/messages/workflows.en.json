@@ -1,4 +1,9 @@
 {
+  "createCalendarEvent": "Create Calendar Event",
+  "createCalendarEventHint": "Add an event to Warpdrive Calendar.",
+  "publicationCalendarEventStep": "Can create an event in Warpdrive Calendar when reached.",
+  "liveReviewCalendarEvent": "Calendar steps can create real events in Warpdrive. They send no invitations.",
+  "resizeSidePanel": "Resize side panel",
   "searchRecords": "Search Records",
   "pickRecord": "Pick Record",
   "draftEmail": "Draft Email",

@@ -25,6 +25,7 @@ export function paletteSnapshot(
     "record.search",
     "record.pick",
     "email.draft",
+    "calendar.create",
     "record.read",
     "activity.create",
     "notification",

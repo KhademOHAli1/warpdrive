@@ -41,6 +41,7 @@ interface CatalogDescriptor {
     | "search-records"
     | "pick-record"
     | "draft-email"
+    | "create-calendar-event"
     | "ordered-condition"
     | "scalar-condition"
     | "delay-schedule"
@@ -147,6 +148,16 @@ export const paletteCatalog = [
     labelKey: "draftEmail",
     descriptionKey: "draftEmailHint",
     profile: "draft-email",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "calendar.create",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "createCalendarEvent",
+    descriptionKey: "createCalendarEventHint",
+    profile: "create-calendar-event",
     input: "optional",
   },
   {

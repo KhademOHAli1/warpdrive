@@ -1,4 +1,9 @@
 {
+  "createCalendarEvent": "ایجاد رویداد تقویم",
+  "createCalendarEventHint": "یک رویداد به تقویم وارپ‌درایو اضافه کنید.",
+  "publicationCalendarEventStep": "در صورت اجرا می‌تواند رویدادی در تقویم وارپ‌درایو ایجاد کند.",
+  "liveReviewCalendarEvent": "مرحله تقویم می‌تواند رویداد واقعی در وارپ‌درایو ایجاد کند. دعوت‌نامه‌ای ارسال نمی‌شود.",
+  "resizeSidePanel": "تغییر عرض نوار کناری",
   "searchRecords": "جستجوی رکوردها",
   "pickRecord": "انتخاب رکورد",
   "draftEmail": "پیش‌نویس ایمیل",

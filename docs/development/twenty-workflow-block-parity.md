@@ -57,6 +57,12 @@ The gap tables below preserve the initial audit. Apply these increment notes whe
 
 The composed sidebar retains the separately approved [footer chevron](https://github.com/KhademOHAli1/warpdrive/pull/988). A hosted Chromium run on the previous checkpoint passed the workflow cases for English desktop, Farsi mobile and an archived deal. Its separate appearance pack stopped on an aborted login POST. The new action adapters and forms passed focused checks; PostgreSQL and browser evidence for these new action paths remain pending.
 
+## Fourth increment: native calendar events and resizable inspector
+
+**Create Calendar Event (A15)** writes a timed or all-day event to Warpdrive Calendar through the native activity service. The time zone is seeded from current preferences and kept with the event. Civil dates stay on the chosen calendar day; the end of an all-day event is inclusive. Both simulations roll back the write. The block does not send invitations, schedule reminders or use an external calendar.
+
+The right side panel now defaults to 400px and resizes from 320px to 600px on desktop, including keyboard resizing and mirrored controls in Farsi. Opening the panel still preserves canvas zoom. The prior record action checkpoint passed 210 focused tests and application type checking. The calendar adapter, form and resize interactions passed focused checks; native calendar integration cases are prepared. The isolated webhook and HTTPS helpers have tests and are not in the catalog; activation and approved destinations still need runtime integration.
+
 ## Catalog visibility and configuration gates
 
 The five groups are Data (6), AI (2), Flow (5), Core (5), Human Input (2); installed applications can contribute Other/Logic Function rows. See [the selector](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-front/src/modules/side-panel/pages/workflow/action/components/SidePanelWorkflowSelectAction.tsx).

@@ -27,6 +27,7 @@ import { executeRunNode } from "./runActions";
 import { selectRunBranch } from "./runBranchSelection";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
+import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
 import { createWorkflowRecord } from "./workflowRecordCreate";
 import { mutateWorkflowRecord } from "./workflowRecordMutation";
@@ -176,6 +177,16 @@ async function executeDraftNode(
       actor,
       node,
       { workflowId: context.workflowId, simulation: true },
+      context.signal,
+    );
+  if (node.type === "calendar.create")
+    return createWorkflowCalendarEvent(
+      context.db,
+      actor,
+      node,
+      outputs,
+      context.definition,
+      "draft-simulation",
       context.signal,
     );
   if (node.type === "email.draft")

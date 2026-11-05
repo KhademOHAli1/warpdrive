@@ -59,6 +59,7 @@ const hints = {
   "record.search": undefined,
   "record.pick": undefined,
   "email.draft": undefined,
+  "calendar.create": undefined,
   "activity.create": "taskHint",
   condition: undefined,
   ifElse: undefined,

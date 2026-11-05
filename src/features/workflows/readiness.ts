@@ -35,6 +35,7 @@ export function executableNode(node: WorkflowNode): boolean {
       "record.search",
       "record.pick",
       "email.draft",
+      "calendar.create",
     ].includes(node.type)
   )
     return actionRegistry[node.type].config.safeParse(node.config).success;

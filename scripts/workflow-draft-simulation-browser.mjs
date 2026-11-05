@@ -408,6 +408,29 @@ function nativeSubmission(page, origin, profile) {
     );
   });
 }
+async function captureEditor(page, profile, copy, name) {
+  await name.waitFor();
+  const canvas = page.getByRole("region", { name: copy.canvas, exact: true });
+  await canvas.waitFor();
+  const directory = caseDirectory(profile);
+  mkdirSync(directory, { recursive: true });
+  async function screenshot(file) {
+    const path = new URL(file, directory);
+    assert.equal(existsSync(path), false, "Never overwrite a native editor screenshot");
+    await page.screenshot({ path: fileURLToPath(path), animations: "disabled" });
+    return { file, sha256: sha256(readFileSync(path)) };
+  }
+  const editor = await screenshot("editor.png");
+  const add = canvas.getByRole("button", { name: /Add a step after CI saved draft task/ });
+  await add.click();
+  const picker = page.getByRole("dialog", { name: copy.selectAction, exact: true });
+  await picker.getByRole("button", { name: copy.createRecord, exact: true }).waitFor();
+  const palette = await screenshot("action-picker.png");
+  await picker.getByRole("button", { name: copy.close, exact: true }).click();
+  await picker.waitFor({ state: "hidden" });
+  await add.waitFor();
+  return [editor, palette];
+}
 async function exerciseDraft(page, pool, profile, copy, login, origin) {
   // login() asserts an English board. Set FA only after that real login, then navigate freshly.
   await login(page);
@@ -424,18 +447,7 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
   );
   const name = page.getByRole("textbox", { name: copy.name, exact: true });
   const step = page.getByRole("textbox", { name: copy.stepName, exact: true });
-  let editorImage;
-  if (profile.tag === "EN") {
-    await name.waitFor();
-    const canvas = page.getByRole("region", { name: copy.canvas, exact: true });
-    await canvas.waitFor();
-    const directory = caseDirectory(profile);
-    mkdirSync(directory, { recursive: true });
-    const path = new URL("editor.png", directory);
-    assert.equal(existsSync(path), false, "Never overwrite a native editor screenshot");
-    await page.screenshot({ path: fileURLToPath(path), animations: "disabled" });
-    editorImage = { file: "editor.png", sha256: sha256(readFileSync(path)) };
-  }
+  const editorImages = profile.tag === "EN" ? await captureEditor(page, profile, copy, name) : [];
   await name.fill(profile.unsavedName);
   await page
     .getByRole("navigation", { name: copy.steps, exact: true })
@@ -574,7 +586,7 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
     before,
     afterSimulation,
     afterHistory,
-    files: [beforeFile, afterFile, historyFile, screenshot, ...(editorImage ? [editorImage] : [])],
+    files: [beforeFile, afterFile, historyFile, screenshot, ...editorImages],
     historyEmpty: true,
     focusReturned: true,
   };

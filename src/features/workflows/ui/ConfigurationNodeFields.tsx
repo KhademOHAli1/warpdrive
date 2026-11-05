@@ -8,6 +8,7 @@ import type {
 } from "../configurationTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { BindingField } from "./BindingField";
+import { CalendarEventConfigurationFields } from "./CalendarEventConfigurationFields";
 import { ConditionFields } from "./ConditionFields";
 import { CreateRecordConfigurationFields } from "./CreateRecordConfigurationFields";
 import { type ConfigurationIssueKey, configurationIssueKeys } from "./configurationIssueMessage";
@@ -154,6 +155,8 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
     case "record.update":
     case "record.delete":
       return <RecordMutationConfigurationFields {...props} />;
+    case "calendar.create":
+      return <CalendarEventConfigurationFields {...props} />;
     case "email.draft":
       return <EmailDraftConfigurationFields {...props} />;
     case "record.search":
@@ -162,7 +165,15 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
       return <PickRecordFieldsWithLookup {...props} />;
     case "record.create":
       return <CreateRecordConfigurationFields {...props} />;
-    default:
+    case "activity.create":
+    case "condition":
+    case "delay":
+    case "filter":
+    case "ifElse":
+    case "notification":
+    case "record.read":
+    case "trigger.manual":
+    case "trigger.record":
       return undefined;
   }
 }

@@ -10,6 +10,7 @@ export const draftSimulationNodeTypes = [
   "record.search",
   "record.pick",
   "email.draft",
+  "calendar.create",
   "activity.create",
   "condition",
   "ifElse",

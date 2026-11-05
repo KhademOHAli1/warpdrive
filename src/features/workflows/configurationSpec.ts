@@ -108,6 +108,7 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
   "record.search": { supported: true, fields: [name] },
   "record.pick": { supported: true, fields: [name] },
   "email.draft": { supported: true, fields: [name] },
+  "calendar.create": { supported: true, fields: [name] },
   filter: {
     supported: true,
     fields: [
@@ -225,6 +226,7 @@ export function defaultConfiguration(
   if (type === "ifElse") return newIfElseConfig();
   if (type === "record.create" || type === "record.update") return { fields: {} };
   if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
+  if (type === "calendar.create") return { allDay: false };
   if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
   if (type === "activity.create")
     return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };

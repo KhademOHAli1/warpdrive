@@ -17,6 +17,7 @@ import { parseIfElseConfig } from "./ifElseConfig";
 import { coarseMappingOutputs, mappingOutputContracts } from "./mappingOutputs";
 import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
+import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
@@ -193,6 +194,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     inputs: {},
     outputs: coarseMappingOutputs("email.draft"),
     outputContracts: mappingOutputContracts("email.draft"),
+    effect: "database",
+  },
+  "calendar.create": {
+    configuration: configurationProfiles["calendar.create"],
+    config: workflowCalendarEventConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("calendar.create"),
+    outputContracts: mappingOutputContracts("calendar.create"),
     effect: "database",
   },
   filter: {

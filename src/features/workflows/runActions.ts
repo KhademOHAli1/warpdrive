@@ -22,6 +22,7 @@ import { executableNode } from "./readiness";
 import { stringBinding, uuidBinding } from "./runBindings";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
 import { createWorkflowRecord } from "./workflowRecordCreate";
 import { mutateWorkflowRecord } from "./workflowRecordMutation";
@@ -71,6 +72,8 @@ export async function executeRunNode(
       return scope === undefined
         ? err(ERROR_IDS.WORKFLOW_INVALID)
         : pickWorkflowRecord(db, actor, node, { workflowId: scope.workflowId, simulation }, signal);
+    case "calendar.create":
+      return createWorkflowCalendarEvent(db, actor, node, outputs, definition, mode, signal);
     case "email.draft":
       return scope === undefined
         ? err(ERROR_IDS.WORKFLOW_INVALID)
@@ -91,7 +94,9 @@ export async function executeRunNode(
         : err(ERROR_IDS.WORKFLOW_NOT_READY);
     case "activity.create":
       return createRunActivity(db, actor, node, outputs, simulation, definition, signal);
-    default:
+    case "delay":
+    case "notification":
+    case "trigger.record":
       return err(ERROR_IDS.WORKFLOW_NOT_READY);
   }
 }

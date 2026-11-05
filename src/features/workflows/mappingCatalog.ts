@@ -39,6 +39,7 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
 import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
 import {
   recordCreateEntitySchema,
@@ -324,6 +325,16 @@ function extendedMappingTarget(
         draft.success ? recordSearchBindingTarget(node.id, draft.data, path) : undefined,
       );
     }
+    case "calendar.create": {
+      const field = path.length === 1 ? path[0] : undefined;
+      return extendedTargetResult(
+        node,
+        path,
+        field === undefined
+          ? undefined
+          : workflowCalendarEventFieldTarget(node.id, field, node.config.allDay === true),
+      );
+    }
     case "email.draft": {
       const field = path.length === 1 ? path[0] : undefined;
       return extendedTargetResult(
@@ -332,7 +343,16 @@ function extendedMappingTarget(
         field === undefined ? undefined : workflowEmailDraftFieldTarget(node.id, field),
       );
     }
-    default:
+    case "activity.create":
+    case "condition":
+    case "delay":
+    case "filter":
+    case "ifElse":
+    case "notification":
+    case "record.pick":
+    case "record.read":
+    case "trigger.manual":
+    case "trigger.record":
       return undefined;
   }
 }

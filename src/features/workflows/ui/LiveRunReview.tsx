@@ -58,6 +58,9 @@ export function LiveRunReview({
     ...((review.effects.counts.emailDraft ?? 0) > 0
       ? [{ label: t("draftEmail"), count: review.effects.counts.emailDraft ?? 0 }]
       : []),
+    ...((review.effects.counts.calendarEvent ?? 0) > 0
+      ? [{ label: t("createCalendarEvent"), count: review.effects.counts.calendarEvent ?? 0 }]
+      : []),
     { label: t("delay"), count: review.effects.counts.delay },
   ];
   return (
@@ -89,6 +92,7 @@ export function LiveRunReview({
       {(review.effects.counts.recordUpdate ?? 0) > 0 && <p>{t("liveReviewRecordUpdate")}</p>}
       {(review.effects.counts.recordDelete ?? 0) > 0 && <p>{t("liveReviewRecordDelete")}</p>}
       {(review.effects.counts.emailDraft ?? 0) > 0 && <p>{t("liveReviewEmailDraft")}</p>}
+      {(review.effects.counts.calendarEvent ?? 0) > 0 && <p>{t("liveReviewCalendarEvent")}</p>}
       {review.effects.counts.delay > 0 && <p>{t("liveReviewWait")}</p>}
       <p className="text-muted-foreground">{t("liveReviewPermissions")}</p>
       <p className="text-muted-foreground">{t("liveReviewOmitted")}</p>

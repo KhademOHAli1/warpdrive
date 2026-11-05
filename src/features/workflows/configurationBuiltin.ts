@@ -12,6 +12,10 @@ import { prepareIfElseConfig } from "./ifElse";
 import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
 import { delayScheduleConfigSchema } from "./registry";
 import { bindingSchema, draftBindingSchema, type WorkflowNode } from "./schemas";
+import {
+  workflowCalendarEventConfig,
+  workflowCalendarEventFields,
+} from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
@@ -329,6 +333,17 @@ function validateEmailDraft(
     if (node.config[key] !== undefined) checkBinding(node, key, context, result);
 }
 
+function validateCalendarEvent(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = workflowCalendarEventConfig.safeParse(node.config);
+  if (!parsed.success) return appendSchemaIssues(node, parsed.error.issues, result);
+  for (const { key } of workflowCalendarEventFields)
+    if (node.config[key] !== undefined) checkBinding(node, key, context, result);
+}
+
 function validateIfElse(
   node: WorkflowNode,
   context: ConfigurationContext,
@@ -350,6 +365,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "record.search": validateRecordSearch,
   "record.pick": validateRecordPick,
   "email.draft": validateEmailDraft,
+  "calendar.create": validateCalendarEvent,
   ifElse: validateIfElse,
   condition: validateCondition,
   filter: validateCondition,
@@ -364,6 +380,7 @@ const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   "record.search": ["entity", "filter", "orderBy", "limit", "offset"],
   "record.pick": ["entity", "strategy", "recordIds", "loadBalance"],
   "email.draft": ["accountId", ...workflowEmailDraftFields.map(({ key }) => key)],
+  "calendar.create": ["allDay", "timeZone", ...workflowCalendarEventFields.map(({ key }) => key)],
 };
 
 function allowedKeys(node: WorkflowNode): string[] {
