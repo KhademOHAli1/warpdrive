@@ -55,6 +55,9 @@ jobs:
           src/features/privacy/discoveryCoverage.test.ts
           src/features/privacy/registry.test.ts
           src/app/\(app\)/settings/designSystemConformance.test.ts
+          src/typeScale.test.ts
+          src/paletteTokens.test.ts
+          src/app/\(app\)/layout.privacyReturn.test.tsx
           ciWorkflow.test.ts
 
   site:

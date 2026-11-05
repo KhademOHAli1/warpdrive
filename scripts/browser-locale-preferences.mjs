@@ -45,7 +45,7 @@ export async function deliverRegionalSave(route) {
 
 export async function prepareLocaleThroughUi(page, origin, locale) {
   assert.ok(languageOptions[locale], `Supported browser locale: ${locale}`);
-  const response = await page.goto("/settings/regional", { waitUntil: "domcontentloaded" });
+  const response = await page.goto("/settings/regional", { waitUntil: "load" });
   assert.ok(response, "Regional settings returned a response");
   assert.equal(response.status(), 200, "Regional settings status");
   assert.equal(
@@ -61,10 +61,19 @@ export async function prepareLocaleThroughUi(page, origin, locale) {
         .join(","),
     );
   const selectLocale = async (nextLocale) => {
-    const language = languageSelector();
-    await language.first().waitFor({ state: "visible" });
-    await language.first().click();
+    const language = languageSelector().first();
     const option = page.getByRole("option", { name: languageOptions[nextLocale], exact: true });
+    // An SSR trigger is visible before the picker can open. Require the real
+    // option and allow a bounded retry if the first click preceded hydration.
+    for (let attempt = 0; attempt < 3 && !(await option.isVisible()); attempt += 1) {
+      if ((await language.getAttribute("aria-expanded")) !== "true") await language.click();
+      try {
+        await option.waitFor({ state: "visible", timeout: 1500 });
+      } catch (error) {
+        if (!(error instanceof Error) || error.name !== "TimeoutError" || attempt === 2)
+          throw error;
+      }
+    }
     await option.click();
     // The new document direction is optimistic, and the cookie can arrive with
     // headers. The localized control only becomes enabled again after the app
