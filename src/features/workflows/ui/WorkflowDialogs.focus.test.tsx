@@ -38,6 +38,27 @@ vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     useUtils: () => ({ workflows: { runs: { invalidate: vi.fn() } } }),
     workflows: {
+      // Run setup focus is checked while its authorized review reads are pending.
+      get: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: true,
+          isFetching: true,
+          isError: false,
+          isPlaceholderData: false,
+          refetch: vi.fn().mockResolvedValue({ data: undefined }),
+        }),
+      },
+      version: {
+        useQuery: () => ({
+          data: undefined,
+          isLoading: true,
+          isFetching: true,
+          isError: false,
+          isPlaceholderData: false,
+          refetch: vi.fn().mockResolvedValue({ data: undefined }),
+        }),
+      },
       owners: {
         useQuery: () => ({
           data: undefined,
