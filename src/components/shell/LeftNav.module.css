@@ -58,13 +58,15 @@
 .sidebarTopbarCollapsed {
   width: calc(100% + 1px);
   align-self: flex-start;
+  flex-direction: column;
   justify-content: center;
-  padding: calc((var(--portal-header-height) - 40px) / 2) 10px;
+  gap: 2px;
+  padding: 8px 10px;
 }
 
 .sidebarTopbarCollapsed .logoLink {
   width: 44px;
-  height: 40px;
+  height: 24px;
   justify-content: center;
   padding: 0;
 }
@@ -182,20 +184,22 @@
   position: relative;
   z-index: 2;
   display: flex;
-  width: 44px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
+  border: 1px solid var(--portal-border);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--portal-text) 3%, var(--portal-surface));
   color: var(--portal-muted);
   cursor: pointer;
+  box-shadow: 0 1px 2px rgb(8 12 10 / 3%);
   transition:
-    color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .sidebarToggle svg,
@@ -205,7 +209,9 @@
 }
 
 .sidebarToggle:hover {
+  border-color: color-mix(in srgb, var(--portal-text) 18%, var(--portal-border));
   color: var(--portal-text);
+  box-shadow: 0 2px 5px rgb(8 12 10 / 8%);
 }
 
 .sidebarBody {
@@ -721,12 +727,6 @@
 .sidebar[data-sidebar-state="collapsed"] .utilityNav {
   width: 44px;
 }
-.sidebarToggleAction {
-  flex-shrink: 0;
-  border: 0;
-  cursor: pointer;
-  text-align: start;
-}
 .navItem:lang(fa) {
   font-size: 16px;
   line-height: 24px;
@@ -759,6 +759,7 @@
   line-height: 22px;
 }
 .logoLink:focus-visible,
+.sidebarToggle:focus-visible,
 .navItem:focus-visible,
 .disclosureButton:focus-visible,
 .subnavLink:focus-visible,

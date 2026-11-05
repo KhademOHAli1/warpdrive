@@ -19,7 +19,6 @@ import {
   SettingsIcon,
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
-import { SidebarToggle } from "./SidebarToggle";
 
 const ICONS: Record<NavKey, typeof PipelineIcon> = {
   pipeline: PipelineIcon,
@@ -35,12 +34,10 @@ const ICONS: Record<NavKey, typeof PipelineIcon> = {
 export function SidebarMenu({
   expanded,
   onNavigate,
-  onToggle,
   mobile = false,
 }: {
   expanded: boolean;
   onNavigate?: () => void;
-  onToggle: () => void;
   mobile?: boolean;
 }) {
   const pathname = usePathname();
@@ -131,7 +128,6 @@ export function SidebarMenu({
               {docs}
             </Tip>
           )}
-          {!mobile && <SidebarToggle expanded={expanded} onToggle={onToggle} />}
         </div>
       </nav>
     </div>

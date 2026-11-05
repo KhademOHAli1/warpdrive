@@ -5,13 +5,16 @@ import { APP_NAME } from "@/constants/app";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
+import { SidebarToggle } from "./SidebarToggle";
 
 export function SidebarChrome({
   expanded,
   onNavigate,
+  onToggle,
 }: {
   expanded: boolean;
   onNavigate?: () => void;
+  onToggle?: () => void;
 }) {
   const t = useAppTranslations("shell");
   const logo = (
@@ -39,6 +42,7 @@ export function SidebarChrome({
       >
         {logo}
       </Link>
+      {onToggle !== undefined && <SidebarToggle expanded={expanded} onToggle={onToggle} />}
     </div>
   );
 }

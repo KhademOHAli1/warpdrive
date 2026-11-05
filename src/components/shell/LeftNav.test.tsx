@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { DOCS_SITE_URL } from "@/constants/docs";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { LeftNav } from "./LeftNav";
 import styles from "./LeftNav.module.css";
 
@@ -37,6 +39,8 @@ afterEach(() => {
   cleanup();
   clearNavCookie();
   mediaMatches = true;
+  document.documentElement.lang = "en";
+  document.documentElement.dir = "ltr";
 });
 
 describe("LeftNav", () => {
@@ -75,6 +79,80 @@ describe("LeftNav", () => {
       screen.getByRole("button", { name: expanded ? "Collapse sidebar" : "Expand sidebar" }),
     ).not.toBeNull();
   });
+
+  test.each([true, false])(
+    "keeps the icon-only sidebar control beside the Home link in the header (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(<LeftNav />);
+      const home = screen.getByRole("link", { name: "Warpdrive home" });
+      const header = home.closest(`.${styles.sidebarTopbar}`);
+      const toggle = screen.getByRole("button", {
+        name: expanded ? "Collapse sidebar" : "Expand sidebar",
+      });
+      const navigation = screen.getByRole("navigation", { name: "Primary" });
+      expect(header).not.toBeNull();
+      expect(header?.contains(toggle)).toBe(true);
+      expect(header?.contains(home)).toBe(true);
+      expect(home.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(toggle.textContent?.trim()).toBe("");
+      expect(toggle.getAttribute("type")).toBe("button");
+      expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
+      expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
+      expect(navigation.contains(toggle)).toBe(false);
+      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(false);
+      expect(toggle.querySelector('svg[aria-hidden="true"][focusable="false"]')).not.toBeNull();
+    },
+  );
+
+  test("supports keyboard activation in both directions and persists the header control choice", async () => {
+    const user = userEvent.setup();
+    setViewport(true);
+    const first = render(<LeftNav />);
+    const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
+    collapse.focus();
+    expect(document.activeElement).toBe(collapse);
+    await user.keyboard("{Enter}");
+    const expand = screen.getByRole("button", { name: "Expand sidebar" });
+    expect(expand.getAttribute("aria-expanded")).toBe("false");
+    expect(document.cookie).toContain("wd_nav_expanded=0");
+    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
+    expand.focus();
+    await user.keyboard(" ");
+    expect(
+      screen.getByRole("button", { name: "Collapse sidebar" }).getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(document.cookie).toContain("wd_nav_expanded=1");
+    first.unmount();
+    setViewport(false);
+    render(<LeftNav />);
+    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
+  });
+
+  test.each([true, false])(
+    "keeps the Farsi header control named with a decorative mirrored glyph (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(
+        <LocaleProvider locale="fa">
+          <LeftNav />
+        </LocaleProvider>,
+      );
+      const toggle = screen.getByRole("button", {
+        name: expanded ? "جمع کردن نوار کناری" : "باز کردن نوار کناری",
+      });
+      expect(toggle.textContent?.trim()).toBe("");
+      expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
+      expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
+      const glyph = toggle.querySelector("svg");
+      expect(glyph?.getAttribute("aria-hidden")).toBe("true");
+      expect(glyph?.getAttribute("focusable")).toBe("false");
+      expect(glyph?.getAttribute("data-rtl-mirror")).toBe("true");
+      expect(toggle.closest(`.${styles.sidebarTopbar}`)).not.toBeNull();
+      expect(document.documentElement.dir).toBe("rtl");
+    },
+  );
 
   test("server render honors initialExpanded so the width is correct at first paint (no reload flash)", () => {
     // The flash was caused by the server always rendering collapsed (localStorage is not readable
@@ -249,7 +327,7 @@ describe("LeftNav bracket shortcuts", () => {
     expect(docs.getAttribute("rel")).toContain("noreferrer");
   });
 
-  test("keeps Settings, Help and the collapse control together below daily work", () => {
+  test("keeps only Settings and Help in the utility footer below daily work", () => {
     setViewport(true);
     render(<LeftNav />);
     const navigation = screen.getByRole("navigation", { name: "Primary" });
@@ -260,10 +338,10 @@ describe("LeftNav bracket shortcuts", () => {
         .getAllByRole("link")
         .map((link) => link.textContent),
     ).toEqual(["Settings", "Help & docs"]);
-    const docs = screen.getByRole("link", { name: "Help & docs" });
     const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(footer?.contains(toggle)).toBe(true);
-    expect(docs.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(footer?.contains(toggle)).toBe(false);
+    expect(within(footer as HTMLElement).queryByRole("button")).toBeNull();
+    expect(navigation.contains(toggle)).toBe(false);
   });
 
   test("keeps an accessible name for the docs link on the collapsed rail", () => {
