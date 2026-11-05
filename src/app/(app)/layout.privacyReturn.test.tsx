@@ -31,9 +31,7 @@ vi.mock("@/features/settings/readBaseCurrency", () => ({ readBaseCurrency: mocks
 vi.mock("@/features/company-profile/repository", () => ({
   getCompanyMemberProjection: mocks.companyMember,
 }));
-vi.mock("@/features/work-profile/navigation", () => ({
-  readWorkNavigation: mocks.workNavigation,
-}));
+vi.mock("@/features/work-profile/navigation", () => ({ readWorkNavigation: mocks.workNavigation }));
 vi.mock("next/headers", () => ({
   headers: mocks.headers,
   cookies: () => Promise.resolve(mocks.jar),
@@ -59,6 +57,14 @@ vi.mock("@/features/shortcuts/GlobalShortcuts", () => ({ GlobalShortcuts: () => 
 
 import AppLayout from "./layout";
 
+const brand = {
+  workspaceScope: null,
+  displayName: "Fixture workspace",
+  iconUrl: null,
+  accentColor: null,
+  foregroundColor: "#ffffff",
+};
+const navigation = { modules: ["work"], canViewWork: true };
 const CASE_PATH = "/settings/privacy/requests/a3c8f25e-2b78-4c12-92f7-79c97b7ed913";
 const FORGED_PATH = "/settings/privacy/requests/00000000-0000-4000-8000-000000000032";
 let nextResponseSpy: MockInstance<typeof NextResponse.next>;
@@ -73,14 +79,8 @@ beforeEach(() => {
   mocks.pending.mockResolvedValue(null);
   mocks.preferences.mockResolvedValue({ density: "comfortable", ui: { appearance: "day" } });
   mocks.currency.mockResolvedValue("EUR");
-  mocks.companyMember.mockResolvedValue({
-    workspaceScope: null,
-    displayName: "Warpdrive",
-    iconUrl: null,
-    accentColor: null,
-    foregroundColor: "#ffffff",
-  });
-  mocks.workNavigation.mockResolvedValue({ modules: [], canViewWork: false });
+  mocks.companyMember.mockResolvedValue(brand);
+  mocks.workNavigation.mockResolvedValue(navigation);
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -164,9 +164,8 @@ test("an authenticated actor keeps the existing shell without a return-path redi
       children: {
         type: WorkspaceShellProvider,
         props: {
-          brand: { displayName: "Warpdrive" },
-          modules: [],
-          canViewWork: false,
+          brand,
+          ...navigation,
           children: { type: CurrencyProvider, props: { currency: "EUR" } },
         },
       },

@@ -20,7 +20,8 @@
     "deal_lost": "Eine Verkaufschance, der Sie folgen, wurde verloren",
     "comment_reply": "Neue Antwort auf einen Kommentar",
     "deal_email_received": "Neue E-Mail: {subject}",
-    "emailFallback": "zu einer Verkaufschance"
+    "emailFallback": "zu einer Verkaufschance",
+    "workflow_message": "{title}: {message}"
   },
   "preferences": {
     "pageTitle": "Benachrichtigungseinstellungen",
@@ -38,7 +39,8 @@
       "deal_won": "Verkaufschance gewonnen",
       "deal_lost": "Verkaufschance verloren",
       "comment_reply": "Antworten auf Kommentare",
-      "deal_email_received": "Neue E-Mails zu meinen Verkaufschancen"
+      "deal_email_received": "Neue E-Mails zu meinen Verkaufschancen",
+      "workflow_message": "Workflow-Nachrichten"
     }
   },
   "email": {

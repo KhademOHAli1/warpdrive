@@ -26,6 +26,7 @@ interface Totals {
   count: number;
   value: string;
   missingEventDateCount: number;
+  missingValueCount: number;
 }
 
 async function dealTotals(
@@ -40,11 +41,14 @@ async function dealTotals(
   const { at, state } = dealEvent(goal);
   const inPeriod = sql`${at} >= ${from} AND ${at} < ${toExclusive}`;
   const undated = goal.action === "won" || goal.action === "lost" ? sql`${at} IS NULL` : sql`false`;
+  const missingValue =
+    goal.metric === "value" ? sql`(${inPeriod}) AND d.value IS NULL` : sql`false`;
 
   const result = await db.execute(sql`
     SELECT count(*) FILTER (WHERE ${inPeriod})::int AS "count",
            coalesce(sum(d.value) FILTER (WHERE ${inPeriod}), 0)::text AS "value",
-           count(*) FILTER (WHERE ${undated})::int AS "missingEventDateCount"
+           count(*) FILTER (WHERE ${undated})::int AS "missingEventDateCount",
+           count(*) FILTER (WHERE ${missingValue})::int AS "missingValueCount"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL
@@ -62,6 +66,7 @@ async function dealTotals(
     count: row?.count ?? 0,
     value: canonicalMoney(row?.value ?? "0.00"),
     missingEventDateCount: row?.missingEventDateCount ?? 0,
+    missingValueCount: row?.missingValueCount ?? 0,
   };
 }
 
@@ -102,12 +107,14 @@ async function activityTotals(
     count: row?.count ?? 0,
     value: "0.00",
     missingEventDateCount: row?.missingEventDateCount ?? 0,
+    missingValueCount: 0,
   };
 }
 
 export interface GoalActualQuality {
   actual: string;
   missingMeasurementDateCount: number;
+  missingValueCount: number;
 }
 
 // Known-period totals and undated eligible events share one SQL snapshot and visibility gate.
@@ -126,6 +133,7 @@ export async function goalActualWithQuality(
   return {
     actual: goal.metric === "value" ? totals.value : String(totals.count),
     missingMeasurementDateCount: totals.missingEventDateCount,
+    missingValueCount: totals.missingValueCount,
   };
 }
 

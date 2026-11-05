@@ -12,6 +12,11 @@ export function notificationText(item: NotificationFeedItem, locale: Locale): st
   const isolate = (value: string): string => (locale === "fa" ? `\u2068${value}\u2069` : value);
   const payload = item.payload;
   switch (item.type) {
+    case "workflow_message":
+      return t("workflow_message", {
+        title: isolate(text(payload.title)),
+        message: isolate(text(payload.message)),
+      });
     case "mention": {
       const title = text(payload.title);
       return title === "" ? t("mention") : t("mentionTitle", { title: isolate(title) });

@@ -67,3 +67,6 @@ export * from "./system";
 export * from "./userPreferences";
 export * from "./workflowExecutions";
 export * from "./workflows";
+export * from "./workflowV2";
+export * from "./workflowV2Events";
+export * from "./workflowV2Functions";

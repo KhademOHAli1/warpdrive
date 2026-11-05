@@ -11,7 +11,8 @@ describe("locale-aware formatting", () => {
     const preferences = { locale: "en", country: "DE" } as const;
     expect(localeTagForFormatting(preferences)).toBe("en-DE");
     expect(formatNumber(1234.5, preferences)).toBe("1.234,5");
-    expect(formatDateOnly("2026-03-21", preferences)).toBe("21. Mar 2026");
+    // Bun's locale data can include or omit the period after the day.
+    expect(formatDateOnly("2026-03-21", preferences)).toMatch(/^21\.? Mar 2026$/);
     expect(formatDateOnly("2026-03-21", { ...preferences, country: "US" })).toBe("Mar 21, 2026");
   });
 

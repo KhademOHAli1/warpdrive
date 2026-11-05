@@ -4,7 +4,13 @@ import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 
 const en = {
+  actions: "Actions",
+  customKpi: "Custom KPI",
+  nodes: "nodes",
+  openDesigner: "Open in designer",
+  status: "Status",
   missingDateCount: "Events with an unknown measurement date",
+  missingValueCount: "Records with an unknown value",
   packCreate: "Create scorecard from pack",
   asOf: "As of date",
   trend: "Period-to-date trend",
@@ -150,7 +156,13 @@ const en = {
 };
 type Copy = { [K in keyof typeof en]: K extends "issues" ? Record<string, string> : string };
 const de: Copy = {
+  actions: "Aktionen",
+  customKpi: "Eigene KPI",
+  nodes: "Knoten",
+  openDesigner: "Im Designer öffnen",
+  status: "Status",
   missingDateCount: "Ereignisse ohne bekanntes Messdatum",
+  missingValueCount: "Datensätze ohne bekannten Wert",
   packCreate: "Scorecard aus Paket erstellen",
   asOf: "Stichtag",
   trend: "Trend bis zum Stichtag",
@@ -297,7 +309,13 @@ const de: Copy = {
   },
 };
 const fa: Copy = {
+  actions: "عملیات",
+  customKpi: "شاخص سفارشی",
+  nodes: "گره",
+  openDesigner: "باز کردن در طراح",
+  status: "وضعیت",
   missingDateCount: "رویدادهای بدون تاریخ سنجش مشخص",
+  missingValueCount: "رکوردهای بدون مقدار مشخص",
   packCreate: "ایجاد کارت امتیازی از بسته",
   asOf: "تا تاریخ",
   trend: "روند از آغاز بازه تا این تاریخ",
@@ -520,9 +538,150 @@ const additionalIssues: Record<Locale, Record<string, string>> = {
       "مشاهدات وزن برابر دارند. اندازهٔ نمونه پوشش را نشان می‌دهد و وزن میانگین نیست.",
   },
 };
+const graphIssueGroups: { codes: string[]; copy: Record<Locale, string> }[] = [
+  {
+    codes: ["graph_calculation"],
+    copy: {
+      en: "Calculated from this KPI’s saved node graph.",
+      de: "Aus dem gespeicherten KPI-Graphen berechnet.",
+      fa: "محاسبه بر اساس نمودار ذخیره‌شدهٔ این شاخص.",
+    },
+  },
+  {
+    codes: ["graph_sources_may_overlap"],
+    copy: {
+      en: "Source counts describe inputs and may include the same record more than once.",
+      de: "Quellanzahlen beschreiben Eingänge und können denselben Datensatz mehrfach enthalten.",
+      fa: "تعداد منابع مربوط به ورودی‌هاست و ممکن است یک رکورد را چند بار شامل شود.",
+    },
+  },
+  {
+    codes: ["graph_divide_by_zero"],
+    copy: {
+      en: "A divisor is zero. This calculation is unavailable.",
+      de: "Ein Divisor ist null. Diese Berechnung ist nicht verfügbar.",
+      fa: "مقسوم‌علیه صفر است و این محاسبه در دسترس نیست.",
+    },
+  },
+  {
+    codes: ["graph_overflow"],
+    copy: {
+      en: "A calculation exceeds the supported numeric range.",
+      de: "Eine Berechnung überschreitet den unterstützten Zahlenbereich.",
+      fa: "یک محاسبه از محدودهٔ عددی پشتیبانی‌شده فراتر است.",
+    },
+  },
+  {
+    codes: ["graph_unknown_condition"],
+    copy: {
+      en: "The condition is unknown or incomplete, so no branch can establish success.",
+      de: "Die Bedingung ist unbekannt oder unvollständig; kein Zweig belegt Zielerreichung.",
+      fa: "شرط نامشخص یا ناقص است؛ هیچ شاخه‌ای تحقق هدف را تأیید نمی‌کند.",
+    },
+  },
+  {
+    codes: ["graph_cycle"],
+    copy: {
+      en: "Circular calculations are not allowed. Remove the connection that returns to an earlier input.",
+      de: "Kreisberechnungen sind unzulässig. Entfernen Sie die rückführende Verbindung.",
+      fa: "محاسبهٔ چرخه‌ای مجاز نیست. اتصال بازگشتی به ورودی قبلی را حذف کنید.",
+    },
+  },
+  {
+    codes: ["graph_missing_input", "graph_missing_value"],
+    copy: {
+      en: "Connect every required input to an available value.",
+      de: "Verbinden Sie jeden erforderlichen Eingang mit einem verfügbaren Wert.",
+      fa: "هر ورودی لازم را به یک مقدار در دسترس متصل کنید.",
+    },
+  },
+  {
+    codes: ["graph_type_mismatch", "graph_branch_type"],
+    copy: {
+      en: "This input needs a different type. Conditions use Boolean values; calculations use numbers.",
+      de: "Dieser Eingang benötigt einen anderen Typ. Bedingungen verwenden Wahrheitswerte, Berechnungen Zahlen.",
+      fa: "نوع این ورودی سازگار نیست. شرط‌ها مقدار منطقی و محاسبات عدد می‌خواهند.",
+    },
+  },
+  {
+    codes: ["graph_unit_mismatch", "graph_output_unit"],
+    copy: {
+      en: "The units do not match. Check the connected inputs and result unit.",
+      de: "Die Einheiten passen nicht zusammen. Prüfen Sie Eingänge und Ergebniseinheit.",
+      fa: "واحدها سازگار نیستند. ورودی‌های متصل و واحد نتیجه را بررسی کنید.",
+    },
+  },
+  {
+    codes: ["graph_mixed_currencies"],
+    copy: {
+      en: "Different currencies cannot be combined without an explicit conversion source.",
+      de: "Verschiedene Währungen können ohne explizite Umrechnungsquelle nicht kombiniert werden.",
+      fa: "ارزهای متفاوت بدون منبع تبدیل صریح قابل ترکیب نیستند.",
+    },
+  },
+  {
+    codes: ["graph_duplicate_input", "graph_duplicate_edge", "graph_unexpected_input"],
+    copy: {
+      en: "Each input accepts one valid connection. Remove duplicate or unsupported connections.",
+      de: "Jeder Eingang akzeptiert eine gültige Verbindung. Entfernen Sie doppelte oder unzulässige Verbindungen.",
+      fa: "هر ورودی یک اتصال معتبر می‌پذیرد. اتصال تکراری یا پشتیبانی‌نشده را حذف کنید.",
+    },
+  },
+  {
+    codes: ["graph_unreachable"],
+    copy: {
+      en: "Connect this node to the result or remove it.",
+      de: "Verbinden Sie diesen Knoten mit dem Ergebnis oder entfernen Sie ihn.",
+      fa: "این گره را به نتیجه متصل یا آن را حذف کنید.",
+    },
+  },
+  {
+    codes: ["graph_output_count", "graph_invalid_output"],
+    copy: {
+      en: "The graph needs exactly one numeric result node.",
+      de: "Der Graph benötigt genau einen numerischen Ergebnisknoten.",
+      fa: "نمودار باید دقیقاً یک گرهٔ نتیجهٔ عددی داشته باشد.",
+    },
+  },
+  {
+    codes: ["graph_dangling_edge", "graph_duplicate_node", "graph_invalid"],
+    copy: {
+      en: "A node or connection is invalid. Reconnect it using the current graph.",
+      de: "Ein Knoten oder eine Verbindung ist ungültig. Verbinden Sie ihn im aktuellen Graphen neu.",
+      fa: "یک گره یا اتصال نامعتبر است. آن را در نمودار فعلی دوباره متصل کنید.",
+    },
+  },
+  {
+    codes: ["graph_node_limit", "graph_edge_limit", "graph_metric_limit"],
+    copy: {
+      en: "Keep the calculation within 40 nodes, 80 connections and 8 distinct CRM inputs.",
+      de: "Begrenzen Sie die Berechnung auf 40 Knoten, 80 Verbindungen und 8 unterschiedliche CRM-Eingänge.",
+      fa: "محاسبه را به ۴۰ گره، ۸۰ اتصال و ۸ ورودی متمایز CRM محدود کنید.",
+    },
+  },
+  {
+    codes: ["graph_manual_metric"],
+    copy: {
+      en: "Manual observations use the existing template workflow. Graph inputs currently support deals and activities.",
+      de: "Manuelle Beobachtungen nutzen den bestehenden Vorlagenablauf. Graph-Eingänge unterstützen derzeit Deals und Aktivitäten.",
+      fa: "مشاهدات دستی از روند موجود الگوها استفاده می‌کنند. ورودی نمودار فعلاً معاملات و فعالیت‌هاست.",
+    },
+  },
+  {
+    codes: ["graph_invalid_decimal"],
+    copy: {
+      en: "Enter a number with no more than four decimal places.",
+      de: "Geben Sie eine Zahl mit höchstens vier Nachkommastellen ein.",
+      fa: "عددی با حداکثر چهار رقم اعشار وارد کنید.",
+    },
+  },
+];
 export function kpiHubMessagesForLocale(locale: Locale): Copy {
   const copy = { en, de, fa }[locale];
-  return { ...copy, issues: { ...copy.issues, ...additionalIssues[locale] } };
+  const graphIssues = Object.fromEntries(
+    graphIssueGroups.flatMap((group) => group.codes.map((code) => [code, group.copy[locale]])),
+  );
+  return { ...copy, issues: { ...copy.issues, ...additionalIssues[locale], ...graphIssues } };
 }
 export function useKpiHubMessages(): Copy {
   return kpiHubMessagesForLocale(useLocalePreferences().locale);

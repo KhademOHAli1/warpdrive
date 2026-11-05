@@ -51,13 +51,15 @@ function fallbackTarget(...candidates: (HTMLElement | null)[]): HTMLElement | nu
 export function WorkflowLibrary({
   canCreate,
   initialLocation = "/workflows",
+  allowNew = true,
 }: {
   canCreate: boolean;
   initialLocation?: string;
+  allowNew?: boolean;
 }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
-  const reads = useWorkflowLibraryReads(initialLocation, canCreate);
+  const reads = useWorkflowLibraryReads(initialLocation, canCreate, allowNew);
   const {
     input,
     search,

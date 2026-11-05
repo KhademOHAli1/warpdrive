@@ -23,6 +23,7 @@ import {
   kpiPeriodBounds,
   unavailableKpi,
 } from "./kpiEngine";
+import { evaluateKpiGraph } from "./kpiGraph";
 import type {
   KpiDefinition,
   KpiDefinitionInput,
@@ -51,6 +52,7 @@ async function filtersAvailable(
   actor: PermSetUser,
   definition: KpiDefinitionInput,
 ): Promise<boolean> {
+  if (definition.graph !== undefined) return graphFiltersAvailable(db, actor, definition.graph);
   if (hasKpiId(definition.filters.pipelineId)) {
     const groups = Array.from(actor.groupIds);
     const visibility =
@@ -80,6 +82,17 @@ async function filtersAvailable(
         ),
       );
     if (!row) return false;
+  }
+  return true;
+}
+async function graphFiltersAvailable(
+  db: KpiDb,
+  actor: PermSetUser,
+  graph: NonNullable<KpiDefinitionInput["graph"]>,
+): Promise<boolean> {
+  for (const node of graph.nodes.filter((node) => node.type === "metric")) {
+    if (node.metric.source === "manual" || !(await filtersAvailable(db, actor, node.metric)))
+      return false;
   }
   return true;
 }
@@ -186,6 +199,7 @@ export async function saveKpiScheme(
     const definition = definitions.find((d) => d.id === entry.definitionId)?.definition;
     if (
       definition &&
+      definition.graph === undefined &&
       ["count", "distinct_count"].includes(definition.calculation) &&
       (!Number.isInteger(Number(entry.condition.target)) || Number(entry.condition.target) < 0)
     )
@@ -223,10 +237,12 @@ export async function assignKpiGoal(
   if (!(await kpiScopeExists(db, input))) throw new KpiError("E_KPI_INVALID");
   if (
     input.pacing === "linear" &&
-    !["count", "distinct_count", "sum"].includes(definition.calculation)
+    (definition.graph !== undefined ||
+      !["count", "distinct_count", "sum"].includes(definition.calculation))
   )
     throw new KpiError("E_KPI_INVALID");
   if (
+    definition.graph === undefined &&
     ["count", "distinct_count"].includes(definition.calculation) &&
     (!Number.isInteger(Number(input.condition.target)) || Number(input.condition.target) < 0)
   )
@@ -433,6 +449,17 @@ export async function evaluateKpi(
   if (!(await kpiScopeVisible(db, actor, scope))) throw new KpiError("E_PERM_DENIED");
   if (!(await filtersAvailable(db, actor, definition)))
     return unavailableKpi("source_unavailable", bounds);
+  if (definition.graph !== undefined)
+    return evaluateKpiGraph(
+      definition.graph,
+      (metric) => evaluateKpi(db, actor, metric, scope, period, on, signal, undefined, clock),
+      {
+        period: bounds,
+        unit: definition.unit,
+        currency: definition.currency,
+        customUnit: definition.customUnit,
+      },
+    );
   const timeZone = evaluationTimeZone(clock);
   let records: KpiRecord[];
   switch (definition.source) {
