@@ -151,7 +151,11 @@ process.on("unhandledRejection", () => {
 const exact = (name) => ({ name, exact: true });
 const dashboard = (page, locale) => page.getByRole("main", exact(copy[locale].stats.title));
 
-async function journey(name, exercise, { viewport = desktop, colorScheme = "light" } = {}) {
+async function journey(
+  name,
+  exercise,
+  { viewport = desktop, colorScheme = "light", timezoneId = "UTC" } = {},
+) {
   const entry = {
     name,
     viewport,
@@ -170,7 +174,7 @@ async function journey(name, exercise, { viewport = desktop, colorScheme = "ligh
     serviceWorkers: "block",
     viewport,
     colorScheme,
-    timezoneId: "UTC",
+    timezoneId,
     storageState: session === undefined ? undefined : structuredClone(session),
   });
   context.setDefaultTimeout(5000);
@@ -884,6 +888,79 @@ async function verifyCohortPanel(active) {
   });
 }
 
+async function verifyDeviceReportTimeZone() {
+  const regional = copy.en.regional;
+  const S = copy.en.stats;
+  await journey(
+    "report-browser-zone-enabled",
+    async (page, _context, entry) => {
+      phase(entry, "enable-browser-time-zone");
+      assert.equal(
+        (await page.goto("/settings/regional", { waitUntil: "domcontentloaded" }))?.status(),
+        200,
+      );
+      await csrfReady(page);
+      const toggle = page.getByRole("switch", exact(regional.browserTimeZone));
+      assert.equal(await toggle.getAttribute("aria-checked"), "false");
+      const [response] = await Promise.all([
+        page.waitForResponse(
+          (candidate) =>
+            candidate.url() === `${origin}/settings/regional` &&
+            candidate.request().method() === "POST" &&
+            Boolean(candidate.request().headers()["next-action"]),
+          { timeout: 15000 },
+        ),
+        toggle.click(),
+      ]);
+      assert.equal(response.status(), 200);
+      await toggle.and(page.locator('[aria-checked="true"]:enabled')).waitFor({ timeout: 7000 });
+      const saved = await preferences();
+      assert.equal(saved.timezone, actor.timeZone);
+      assert.equal(saved.ui.localePreferences?.timeZoneMode, "browser");
+      entry.accountTimeZone = saved.timezone;
+    },
+    { timezoneId: actor.timeZone },
+  );
+
+  const deviceTimeZone = "America/Los_Angeles";
+  await journey(
+    "report-current-device-zone",
+    async (page, context, entry) => {
+      phase(entry, "open-report-on-second-device");
+      await context.addCookies([
+        { name: "warpdrive_timezone", value: deviceTimeZone, url: origin },
+        { name: "warpdrive_timezone_mode", value: "browser", url: origin },
+      ]);
+      const dashboardResult = await openDashboard(page, "en", "persian", deviceTimeZone);
+      const cohortResult = await rpcAfter(
+        page,
+        "stats.dealWinCohorts",
+        (input) => input.timeZoneIdentity === deviceTimeZone && input.horizon === "30-days",
+        () => page.getByRole("tab", exact(S.pipelineTab)).click(),
+      );
+      assert.equal(dashboardResult.data.timeZone, deviceTimeZone);
+      assert.equal(cohortResult.data.state, "available");
+      assert.equal(cohortResult.data.timeZone, deviceTimeZone);
+      assert.equal(cohortResult.data.calendar, "persian");
+      await page
+        .getByRole("region", exact(S.cohort.title))
+        .getByText(deviceTimeZone, { exact: true })
+        .waitFor();
+      const saved = await preferences();
+      assert.equal(
+        saved.timezone,
+        actor.timeZone,
+        "Device cookie did not replace the account zone",
+      );
+      assert.equal(saved.ui.localePreferences?.timeZoneMode, "browser");
+      entry.accountTimeZone = saved.timezone;
+      entry.dashboardTimeZone = dashboardResult.data.timeZone;
+      entry.cohortTimeZone = cohortResult.data.timeZone;
+    },
+    { timezoneId: deviceTimeZone },
+  );
+}
+
 try {
   assert.match(report.revision, /^[0-9a-f]{40}$/);
   const readOnly = await pool.query("SHOW default_transaction_read_only");
@@ -1015,6 +1092,7 @@ try {
   await verifyCohortPanel(false);
   await activateSyntheticCohort();
   await verifyCohortPanel(true);
+  await verifyDeviceReportTimeZone();
   assert.equal(report.nativeLogins, 1);
   assert.equal(asynchronousFailure, false);
   report.state = "PASS";

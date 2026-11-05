@@ -7,6 +7,7 @@ import { teamMembers } from "@/db/schema";
 import { startOfCalendarMonth } from "@/features/activities/calendarSystem";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
+import type { LocalePreferenceFallback } from "@/features/i18n/localePreferenceCookies";
 import type { LocalePreferences } from "@/features/i18n/preferences";
 import { getPreferences } from "@/features/identity/preferencesRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -486,6 +487,7 @@ async function readCohortContext(
   actor: PermSetUser,
   request: ObservedDealWinCohortRequest,
   signal: AbortSignal,
+  localeFallback?: LocalePreferenceFallback,
 ): Promise<CohortReadContext | Unavailable> {
   // Acquire the native repeatable-read snapshot with its cutoff before scope reads.
   const observation = await tx.execute(sql`
@@ -510,6 +512,7 @@ async function readCohortContext(
   const locale = resolveAccountLocalePreferences({
     saved: saved.ui.localePreferences,
     profileTimeZone: saved.timezone,
+    fallback: localeFallback,
   });
   const period = reportPeriod({ ...request, timeZone: locale.timeZone });
   const bounds = await tx.execute(sql`
@@ -566,8 +569,9 @@ async function readInSnapshot(
   actor: PermSetUser,
   request: ObservedDealWinCohortRequest,
   signal: AbortSignal,
+  localeFallback?: LocalePreferenceFallback,
 ): Promise<ObservedDealWinCohorts> {
-  const context = await readCohortContext(tx, actor, request, signal);
+  const context = await readCohortContext(tx, actor, request, signal, localeFallback);
   if (context.state !== "ready") return context;
   const subjects = await readCohortSubjects(tx, context, signal);
   if (!Array.isArray(subjects)) return subjects;
@@ -610,6 +614,7 @@ export async function readObservedDealWinCohorts(
   actor: PermSetUser,
   input: ObservedDealWinCohortRequest,
   signal: AbortSignal,
+  localeFallback?: LocalePreferenceFallback,
 ): Promise<ObservedDealWinCohorts> {
   signal.throwIfAborted();
   const request = requestSchema.safeParse(input);
@@ -622,7 +627,7 @@ export async function readObservedDealWinCohorts(
       async (tx) => {
         await tx.execute(sql`SET LOCAL statement_timeout = '5000ms'`);
         await tx.execute(sql`SET LOCAL lock_timeout = '2000ms'`);
-        const result = await readInSnapshot(tx, actor, request.data, signal);
+        const result = await readInSnapshot(tx, actor, request.data, signal, localeFallback);
         signal.throwIfAborted();
         return result;
       },

@@ -35,7 +35,7 @@ export const analyticsComputationInventoryEntry = classifyInventory(
 export const analyticsInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/history/dealCohortRepository.ts",
-    "sourceReview:src/features/stats/history/dealCohortRepository.ts#bcb9a8b70ec1b9d4e4f1d3a30865cda45c281395241365575d5d604d57a8bebd",
+    "sourceReview:src/features/stats/history/dealCohortRepository.ts#2ae1758be41685b62dc80f98973a2af6191cf8c1415b4a653bc8a65d865a69df",
     "writer:src/features/stats/history/dealCohortRepository.ts#execute:sql",
     "derived:src/features/stats/history/equalAgeCohorts.ts",
     "derived:src/features/stats/history/inventorySnapshotRepository.ts",

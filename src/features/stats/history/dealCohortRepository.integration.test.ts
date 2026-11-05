@@ -378,6 +378,34 @@ describe("native current-authorized observed deal win cohorts", () => {
     });
   });
 
+  test("uses a current device fallback for the cohort observation in saved browser mode", async () => {
+    await withCapture(async (h, _fixture, actor) => {
+      await setPreferences(
+        h.db,
+        actor.id,
+        {
+          timezone: "Europe/Berlin",
+          ui: {
+            localePreferences: {
+              locale: "fa",
+              calendar: "persian",
+              timeZone: "Europe/Berlin",
+              timeZoneMode: "browser",
+            },
+          },
+        },
+        signal(),
+      );
+      const report = available(
+        await readObservedDealWinCohorts(h.db, actor, request, signal(), {
+          timeZone: "America/Los_Angeles",
+          calendar: "gregory",
+        }),
+      );
+      expect(report.result).toMatchObject({ timeZone: "America/Los_Angeles", calendar: "persian" });
+    });
+  });
+
   test("returns unavailable when the requested window predates capture or the live scope overflows", async () => {
     await withCapture(async (h, f, actor) => {
       expect(

@@ -12,7 +12,7 @@ const fixture = vi.hoisted(() => ({
   cohortQuery: vi.fn(),
   cohortRefetch: vi.fn(),
   cohortFetching: false,
-  cohortReport: { state: "coverage-not-started" } as DealWinCohortView,
+  cohortReport: vi.fn<() => DealWinCohortView>(),
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
@@ -71,7 +71,7 @@ vi.mock("@/lib/trpc-client", () => ({
         useQuery: (input: unknown, options: unknown) => {
           fixture.cohortQuery(input, options);
           return {
-            data: fixture.cohortReport,
+            data: fixture.cohortReport(),
             isError: false,
             isLoading: false,
             isFetching: fixture.cohortFetching,
@@ -120,7 +120,7 @@ beforeEach(() => {
   fixture.savePreferences.mockResolvedValue({ ok: true });
   fixture.error = false;
   fixture.goalsError = false;
-  fixture.cohortReport = { state: "coverage-not-started" };
+  fixture.cohortReport.mockReturnValue({ state: "coverage-not-started" });
   fixture.cohortFetching = false;
 });
 const mount = () =>
@@ -273,7 +273,7 @@ describe("Performance report experience", () => {
     );
   });
   it("shows clipped cohort coverage and withholds an unknown win rate", async () => {
-    fixture.cohortReport = {
+    fixture.cohortReport.mockReturnValue({
       state: "available",
       definition: "observed-deal-entry-to-win-v1",
       population: "current-authorized-live-deals",
@@ -299,7 +299,7 @@ describe("Performance report experience", () => {
           rate: { state: "unavailable", reason: "mature-outcome-unknown" },
         },
       ],
-    };
+    });
     const page = mount();
     await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
     const panel = screen.getByRole("region", { name: "Deal cohorts by age" });
@@ -312,7 +312,7 @@ describe("Performance report experience", () => {
     page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
     expect(screen.queryByRole("table", { name: "Deal cohorts by age" })).not.toBeInTheDocument();
     fixture.cohortFetching = false;
-    fixture.cohortReport = { state: "unavailable" };
+    fixture.cohortReport.mockReturnValue({ state: "unavailable" });
     page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(fixture.cohortRefetch).toHaveBeenCalledOnce();

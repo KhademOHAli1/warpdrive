@@ -37,6 +37,7 @@ export const statsRouter = router({
       ctx.actor,
       input,
       signal,
+      ctx.localeFallback,
     );
     const requested = input.pipelineId;
     const owners = filters.owners;
@@ -88,6 +89,7 @@ export const statsRouter = router({
       ctx.actor,
       input,
       signal,
+      ctx.localeFallback,
     );
     const result = await dealRecords(ctx.db, ctx.actor, filters, input, signal);
     return {
@@ -108,6 +110,7 @@ export const statsRouter = router({
       ctx.actor,
       { from, to, pipelineId, ownerScope, currency, horizon: dealWinCohortHorizon(horizon) },
       SIG(),
+      ctx.localeFallback,
     );
     return dealWinCohortView(report, horizon);
   }),
