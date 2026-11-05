@@ -129,6 +129,8 @@ jobs:
         run: bun --no-env-file src/entrypoints/migrate.ts
       - name: Create the scoped synthetic browser actor through native auth storage
         run: bun --no-env-file scripts/browser-smoke-seed.mjs
+      - name: Check workflow preference response attribution
+        run: node --test scripts/browser-workflow-preference-actions.test.mjs
       - name: Build normal production application
         run: bun --no-env-file run build
       - name: Exercise actual Chromium without external requests
@@ -156,6 +158,15 @@ jobs:
           done
           test "$ready" = 1
           timeout 300s bun --no-env-file scripts/browser-smoke.mjs
+          timeout 300s bun --no-env-file scripts/browser-workflow-preferences.mjs
+      - name: Preserve workflow preference validation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: workflow-preferences-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/workflow-preferences/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve browser failure traces and screenshots
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
