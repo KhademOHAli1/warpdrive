@@ -65,6 +65,8 @@ function hitTest(x: number, y: number): Element | null {
   return screen.getByTestId("outside");
 }
 
+const hitTestMock = vi.fn(hitTest);
+
 beforeEach(() => {
   captures = new WeakMap();
   frameId = 0;
@@ -94,7 +96,7 @@ beforeEach(() => {
   originalHitTest = Object.getOwnPropertyDescriptor(document, "elementFromPoint");
   Object.defineProperty(document, "elementFromPoint", {
     configurable: true,
-    value: vi.fn(hitTest),
+    value: hitTestMock.mockReset().mockImplementation(hitTest),
   });
 });
 
@@ -231,6 +233,21 @@ function waitForHold(): void {
   act(() => {
     vi.advanceTimersByTime(450);
   });
+}
+
+function makeAgenda(rectangle: DOMRect): HTMLElement {
+  const agenda = screen.getByTestId("root");
+  agenda.dataset.agendaScroll = "";
+  Object.defineProperty(agenda, "clientWidth", { value: rectangle.width });
+  Object.defineProperty(agenda, "scrollWidth", { value: rectangle.width + 250 });
+  vi.spyOn(agenda, "getBoundingClientRect").mockReturnValue(rectangle);
+  return agenda;
+}
+
+function runDragFrame(): void {
+  const frame = vi.mocked(requestAnimationFrame).mock.lastCall?.[0];
+  if (frame === undefined) throw new Error("Expected an active drag frame");
+  act(() => frame(0));
 }
 
 describe("calendar pointer selection", () => {
@@ -438,6 +455,43 @@ describe("calendar touch move", () => {
       }
     },
   );
+});
+
+describe("calendar drag scroll", () => {
+  it("reveals a timed drop target past the right edge of the agenda", () => {
+    const { onMove } = fixture();
+    const agenda = makeAgenda(new DOMRect(0, 100, 100, 560));
+    const chip = screen.getByRole("button", { name: "Meeting chip" });
+    hitTestMock.mockImplementation((x) =>
+      screen.getByTestId(x + agenda.scrollLeft >= 100 ? "time-second" : "time-first"),
+    );
+    pointer(chip, "down", 50, 556);
+    pointer(chip, "move", 95, 556);
+    runDragFrame();
+    expect(agenda.scrollLeft).toBeGreaterThan(0);
+    expect(agenda.scrollTop).toBe(0);
+    expect(screen.getByTestId("preview")).toHaveTextContent("2026-11-06|09:07");
+    pointer(chip, "up", 95, 556);
+    expect(onMove).toHaveBeenCalledExactlyOnceWith(ACTIVITY, { date: "2026-11-06", time: "09:07" });
+  });
+
+  it("scrolls the all-day lane to the left in RTL while keeping its hour scroll fixed", () => {
+    const { onCreate } = fixture();
+    const agenda = makeAgenda(new DOMRect(200, 100, 100, 500));
+    agenda.style.direction = "rtl";
+    agenda.scrollTop = 300;
+    const first = screen.getByTestId("date-first");
+    hitTestMock.mockImplementation((x) =>
+      screen.getByTestId(x + agenda.scrollLeft < 200 ? "date-second" : "date-first"),
+    );
+    pointer(first, "down", 250, 20);
+    pointer(first, "move", 205, 20);
+    runDragFrame();
+    expect(agenda.scrollLeft).toBeLessThan(0);
+    expect(agenda.scrollTop).toBe(300);
+    pointer(first, "up", 205, 20);
+    expect(onCreate).toHaveBeenCalledExactlyOnceWith({ date: "2026-11-05", endDate: "2026-11-08" });
+  });
 });
 
 describe("calendar pointer cancellation", () => {

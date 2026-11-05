@@ -57,6 +57,7 @@ function surface(
 function scroll(parent: HTMLElement, box: Box): HTMLElement {
   const node = element(parent, box);
   node.dataset.agendaScroll = "";
+  Object.defineProperty(node, "clientWidth", { configurable: true, value: box.width });
   return node;
 }
 
@@ -123,6 +124,33 @@ it("keeps the all-day lane visible inside the sticky header instead of clipping 
   surface(header, "2026-11-05", { left: 100, top: 140, width: 200, height: 40 }, "date");
   expect(calendarPreviewBoxes({ date: "2026-11-05", endDate: "2026-11-05" }, host, "date")).toEqual(
     [{ key: "2026-11-05", left: 101, top: 140, width: 198, height: 40 }],
+  );
+});
+
+it("clips a timed preview to the agenda's visible width and sticky left gutter", () => {
+  const host = root();
+  const agenda = scroll(host, { left: 100, top: 100, width: 200, height: 500 });
+  const gutter = element(agenda, { left: 100, top: 100, width: 50, height: 500 });
+  gutter.dataset.agendaGutter = "";
+  surface(agenda, "2026-11-05", { left: 120, top: 100, width: 240, height: 1152 });
+  surface(agenda, "2026-11-05", { left: 310, top: 100, width: 100, height: 1152 });
+  expect(calendarPreviewBoxes(timed("09:00", "10:00"), host, "time")).toEqual([
+    { key: "2026-11-05", left: 150, top: 532, width: 150, height: 48 },
+  ]);
+});
+
+it("clips an RTL all-day preview between the left scrollbar and sticky right gutter", () => {
+  const host = root();
+  const agenda = scroll(host, { left: 100, top: 100, width: 200, height: 500 });
+  agenda.style.direction = "rtl";
+  Object.defineProperty(agenda, "clientLeft", { value: 15 });
+  Object.defineProperty(agenda, "clientWidth", { value: 185 });
+  const header = sticky(agenda, { left: 100, top: 100, width: 200, height: 100 });
+  const gutter = element(header, { left: 250, top: 100, width: 50, height: 100 });
+  gutter.dataset.agendaGutter = "";
+  surface(header, "2026-11-05", { left: 90, top: 140, width: 190, height: 40 }, "date");
+  expect(calendarPreviewBoxes({ date: "2026-11-05", endDate: "2026-11-05" }, host, "date")).toEqual(
+    [{ key: "2026-11-05", left: 115, top: 140, width: 135, height: 40 }],
   );
 });
 

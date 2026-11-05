@@ -11,7 +11,8 @@ export function TimeGutter(): React.ReactNode {
   return (
     <div
       aria-hidden
-      className="relative border-e border-border bg-muted/40"
+      data-agenda-gutter
+      className="sticky start-0 z-20 border-e border-border bg-muted"
       style={{ height: HOURS.length * HOUR_HEIGHT_PX }}
     >
       {/* Midnight is the grid's top edge, so its label would sit half outside the column. */}
