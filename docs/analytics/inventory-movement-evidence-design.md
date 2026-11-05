@@ -73,14 +73,14 @@ Keep the evidence collector private to the service and pass its `InventoryMoveme
 
 ## Native fixture plan
 
-| Fixture | Required result |
-| --- | --- |
-| Unchanged books, open-to-won, exact value change and active authorized transfer | Both stored books match independently reconstructed facts. Exact signed movements reconcile with the original event IDs. |
-| Transaction allocates a low ordinal before opening and commits after opening while a higher ordinal is already visible | Lower ordinal enters the interval only when closing admits its top-level XID. |
-| Net-zero active interval round trip or transient same-transaction state | Whole transaction folds once. Distinct committed interval changes remain represented even when endpoint totals match. |
-| Stable eligible fact omitted from both stored books | Comparison is unavailable after independent boundary enumeration. |
-| Snapshot member disappears through hard delete or becomes inaccessible through archive or restriction | Permission or retained-authority failure. No omitted member, partial total or inferred null. |
-| Reused deal, stage or pipeline UUID and now-public replacement | Original incarnation stays unavailable. |
-| Pipeline archive/restriction or a round trip without a deal write | Membership-change failure unless the collector proves it cannot affect this comparison. |
-| Foreign and missing IDs, stale actor, changed team scope, currency mismatch or reversed native cut | Fail without revealing another creator's snapshot or event count. |
-| Scan, fact, payload or witness cap and capture integrity failure | Whole report unavailable. No partial comparison. |
+| Fixture                                                                                                                | Required result                                                                                                          |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Unchanged books, open-to-won, exact value change and active authorized transfer                                        | Both stored books match independently reconstructed facts. Exact signed movements reconcile with the original event IDs. |
+| Transaction allocates a low ordinal before opening and commits after opening while a higher ordinal is already visible | Lower ordinal enters the interval only when closing admits its top-level XID.                                            |
+| Net-zero active interval round trip or transient same-transaction state                                                | Whole transaction folds once. Distinct committed interval changes remain represented even when endpoint totals match.    |
+| Stable eligible fact omitted from both stored books                                                                    | Comparison is unavailable after independent boundary enumeration.                                                        |
+| Snapshot member disappears through hard delete or becomes inaccessible through archive or restriction                  | Permission or retained-authority failure. No omitted member, partial total or inferred null.                             |
+| Reused deal, stage or pipeline UUID and now-public replacement                                                         | Original incarnation stays unavailable.                                                                                  |
+| Pipeline archive/restriction or a round trip without a deal write                                                      | Membership-change failure unless the collector proves it cannot affect this comparison.                                  |
+| Foreign and missing IDs, stale actor, changed team scope, currency mismatch or reversed native cut                     | Fail without revealing another creator's snapshot or event count.                                                        |
+| Scan, fact, payload or witness cap and capture integrity failure                                                       | Whole report unavailable. No partial comparison.                                                                         |
