@@ -213,7 +213,7 @@ export function KpiWorkspace(props: Props): ReactNode {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">{S.title}</h1>
+        <h1 className="text-display font-semibold tracking-tight">{S.title}</h1>
         <Link href="/dashboard" className={buttonVariants({ variant: "ghost", size: "sm" })}>
           {S.performance}
           <ArrowUpRight aria-hidden className="size-3.5" />

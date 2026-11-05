@@ -42,7 +42,7 @@ export function WorkflowRequestResponse({ request }: { request: Request }) {
         {L.requests}
       </Link>
       <section className="space-y-4 rounded-md border bg-background p-5">
-        <h1 className="text-lg font-semibold">
+        <h1 className="text-display font-semibold">
           {request.kind === "form" ? L.blocks.FORM : L.approval}
         </h1>
         {done ? (
@@ -79,7 +79,7 @@ export function WorkflowRequestList({
       <Link href="/workflows" className="text-xs text-link">
         {L.workflows}
       </Link>
-      <h1 className="text-xl font-semibold">{L.requests}</h1>
+      <h1 className="text-display font-semibold">{L.requests}</h1>
       {error ? (
         <p role="alert" className="text-xs text-destructive">
           {L.failed}

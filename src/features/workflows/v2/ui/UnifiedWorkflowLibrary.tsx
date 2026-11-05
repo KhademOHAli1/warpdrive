@@ -193,7 +193,7 @@ export function UnifiedWorkflowLibrary({
   return (
     <div className="mx-auto max-w-7xl space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{L.workflows}</h1>
+        <h1 className="text-display font-semibold">{L.workflows}</h1>
         <div className="ms-auto flex flex-wrap items-center gap-4">
           <Link href="/workflows/requests" className="text-xs text-link">
             {L.requests}
