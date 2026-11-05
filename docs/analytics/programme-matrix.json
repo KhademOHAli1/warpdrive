@@ -1,0 +1,2366 @@
+{
+  "schemaVersion": 1,
+  "title": "Warpdrive premium marketing and sales analytics programme",
+  "asOf": "2026-11-05",
+  "intent": "Implement the entire requested programme, including every advanced method, as usable production code and reviewable increments. A plan, visual prototype, adapter specification or first slice does not complete the programme. Delivery order expresses dependencies, not scope reduction.",
+  "authority": {
+    "scope": "The implementation instruction and complete feature scope supplied to this chat.",
+    "liveExecution": "Canonical GitHub issues and central Project; this matrix preserves capability coverage and acceptance, not a competing issue-status ledger.",
+    "authoringExclusion": "Settings → Goals, KPI definition and KPI scheme authoring are owned by another chat; consume agreed outputs only.",
+    "excludedWorkspace": "codex/deal-workspace-premium remains uninspected and unchanged.",
+    "publication": "Integration coordinator owns main publication. No merge, release or deployment is implied.",
+    "existingChats": "No authorization to contact or interrupt existing chats."
+  },
+  "baseline": {
+    "remoteMain": {
+      "sha": "3d50ce207c66db1e5414d4128f55aa110fea809e",
+      "observedDate": "2026-11-05"
+    },
+    "referenceCheckpoint": {
+      "sha": "b516c61223d4b9098eb2a437d23ec520c3315437",
+      "localCherryPick": "aa7695b0",
+      "qualification": "Local historical checkpoint only; reference 86 focused tests and synthetic desktop/mobile review do not qualify new code, real backend or release."
+    },
+    "currentIssueObservation": {
+      "date": "2026-11-05",
+      "issues": [595, 596, 598, 599, 600, 601, 609, 635, 638, 641],
+      "state": "open",
+      "assignee": "KhademOHAli1",
+      "comments": 0,
+      "limitation": "Read snapshot only; no competing live analytics ownership claim observed. Recheck before overlapping shared contracts."
+    },
+    "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. No new allocation or prior exception reused.",
+    "latestRemoteObservation": {
+      "sha": "e77991e33616f7a8368ca6f45a1b4c058e7e8e09",
+      "date": "2026-11-05",
+      "change": "Calendar views/settings PR #979; no stats/Goals authoring source overlap observed."
+    }
+  },
+  "statusMeaning": {
+    "remaining": "Included work not established delivered/qualified by this matrix.",
+    "in-progress": "Current I1 implementation; no completion or acceptance claim.",
+    "preserved-local": "Historical local UI checkpoint retained, without new qualification."
+  },
+  "increments": [
+    {
+      "id": "I0",
+      "scope": "Baseline, preserved checkpoint, capability matrix, ownership and evidence boundaries."
+    },
+    {
+      "id": "I1",
+      "scope": "Shared report metric dictionary and current-outcome permission-safe drill-down/backend/UI; status in-progress."
+    },
+    {
+      "id": "I2",
+      "scope": "Reliable history, versioned stages, aging, equal-age cohorts and reconciling pipeline movement."
+    },
+    {
+      "id": "I3",
+      "scope": "Connected acquisition/handoff, source journeys, attribution, forecast scenarios/snapshots, Goals adapter, saved reports and exports."
+    },
+    {
+      "id": "I4",
+      "scope": "Lifecycle economics, qualified source contracts, commercial quality and experiment workspace/analysis."
+    },
+    {
+      "id": "I5",
+      "scope": "Validated survival, attribution comparison, forecast accuracy/calibration, predictive scoring, geo experiments and MMM."
+    }
+  ],
+  "researchReferences": [
+    {
+      "url": "https://mobbin.com/screens/550f90fc-17b6-4203-a470-57344e02f093",
+      "role": "Dashboard hierarchy reference preserved in checkpoint documentation; no asset copying."
+    },
+    {
+      "url": "https://mobbin.com/screens/cec3ccca-064b-447b-b15e-268bc27b1dbf",
+      "role": "Persistent scope/report category reference preserved in checkpoint documentation."
+    },
+    {
+      "url": "https://mobbin.com/blog/what-good-dashboard-design-looks-like",
+      "role": "Dashboard hierarchy/decision context research."
+    },
+    {
+      "url": "https://research.google/pubs/robust-causal-inference-for-incremental-return-on-ad-spend-with-randomized-paired-geo-experiments/",
+      "role": "Required primary method inspection before geo experiment choice; not qualification evidence.",
+      "reviewState": "Primary references inspected by root during programme research; no implementation model/package selected or qualified."
+    },
+    {
+      "url": "https://developers.google.com/meridian/docs/basics/meridian-introduction",
+      "role": "Required primary package/method inspection before MMM choice; not an implemented model.",
+      "reviewState": "Primary references inspected by root during programme research; no implementation model/package selected or qualified."
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "checkpoint",
+      "userItem": 0,
+      "capability": "Preserve the earlier premium dashboard presentation checkpoint",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "docs/performance-dashboard-redesign.md",
+        "src/features/stats/ui/Dashboard.tsx"
+      ],
+      "status": "preserved-local",
+      "dependencies": [],
+      "dataRequirements": [
+        "Reference b516c61223d4b9098eb2a437d23ec520c3315437; cherry-picked locally as aa7695b0."
+      ],
+      "acceptance": [
+        "Preserve shell, token-based hierarchy, scope and localized states without adopting peer Goals authoring.",
+        "Historical 86 focused tests and synthetic visual review apply only to the reference; no new/backend/CI/release acceptance follows."
+      ],
+      "tests": [
+        "Compare checkpoint incorporation at exact revision; retain original handoff provenance."
+      ],
+      "deliveryIncrement": "I0"
+    },
+    {
+      "id": "dictionary",
+      "userItem": 0,
+      "capability": "Shared report metric dictionary, distinct from KPI authoring",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/dealPerformance.ts",
+        "src/features/stats/winRate.ts",
+        "src/features/stats/wonDealStats.ts",
+        "src/features/stats/stageConversion.ts"
+      ],
+      "status": "in-progress",
+      "dependencies": [],
+      "dataRequirements": ["Existing SQL populations and one-currency report contract."],
+      "acceptance": [
+        "Each measure names numerator, denominator, units, date/event/cohort/inventory basis, filters, currency, deduplication, attribution and contributing records.",
+        "Unavailable is distinct from a real zero; dictionary calculations do not implement Settings KPI authoring."
+      ],
+      "tests": ["Hand-calculated denominator, money and date boundary cases."],
+      "deliveryIncrement": "I1"
+    },
+    {
+      "id": "outcome-drilldown",
+      "userItem": 0,
+      "capability": "Permission-safe contributing records for current closed-period outcome measures",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/router.ts", "src/features/deals/visibility.ts"],
+      "status": "in-progress",
+      "dependencies": ["dictionary"],
+      "dataRequirements": ["Visible current deal rows and existing outcome timestamps."],
+      "acceptance": [
+        "Summary and paginated drill-down use the same scope, currency and population; record navigation retains report scope.",
+        "Historical outcomes erased by reopenings are disclosed as a current-state limitation."
+      ],
+      "tests": [
+        "Visibility, archive, currency, paging, empty/zero, outcome date and reconciliation cases; real backend qualification remains required."
+      ],
+      "deliveryIncrement": "I1"
+    },
+    {
+      "id": "funnel-journey",
+      "userItem": 1,
+      "capability": "Business-specific acquisition → qualification → sales acceptance → opportunity → proposal → purchase journey mapping",
+      "canonicalIssues": [
+        {
+          "number": 635,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/635"
+        },
+        {
+          "number": 639,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/639"
+        },
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/db/schema/leads.ts",
+        "src/db/schema/stages.ts",
+        "src/features/leads/leadConvert.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["dictionary", "history-stage-versions"],
+      "dataRequirements": [
+        "Approved stage/qualification mapping; source evidence for each entity/event."
+      ],
+      "acceptance": [
+        "Do not force a universal journey or equate an active deal stage with acquisition awareness.",
+        "Display renewal/repeat stages only when supported by business/source definitions."
+      ],
+      "tests": ["Different business mappings, missing steps and unmapped stages."],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "funnel-measures",
+      "userItem": 1,
+      "capability": "Entrants, consecutive conversion, elapsed time, exits/losses and exact eligible record lists",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 635,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/635"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/stageConversion.ts"],
+      "status": "remaining",
+      "dependencies": ["funnel-journey", "history-exact-events", "outcome-drilldown"],
+      "dataRequirements": ["Observed entry and exit events; explicit observation cutoff."],
+      "acceptance": [
+        "Denominators refer to eligible prior-stage entrants; skips/inferred passage remain separately labelled.",
+        "Every cell reconciles to visible records."
+      ],
+      "tests": ["Skipped, returned, lost and still-open cohorts with traceable denominators."],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "funnel-handoff",
+      "userItem": 1,
+      "capability": "Weak handoff and time-to-first-response reporting",
+      "canonicalIssues": [
+        {
+          "number": 639,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/639"
+        },
+        {
+          "number": 635,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/635"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/leads/leadConvert.ts", "src/db/schema/activities.ts"],
+      "status": "remaining",
+      "dependencies": ["funnel-journey", "history-exact-events"],
+      "dataRequirements": [
+        "Qualified handoff, acceptance/rejection and first-response event definition."
+      ],
+      "acceptance": [
+        "Rejected/returned handoffs retain owner, reason and timestamps.",
+        "Unknown response coverage is not zero response time."
+      ],
+      "tests": ["Repeated handoffs, first response ordering, unresolved evidence and permissions."],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "funnel-identity",
+      "userItem": 1,
+      "capability": "Separate contacts, accounts, opportunities and purchases with stable deduplication",
+      "canonicalIssues": [
+        {
+          "number": 636,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/636"
+        },
+        {
+          "number": 639,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/639"
+        },
+        {
+          "number": 642,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/642"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/db/schema/dealParticipants.ts",
+        "src/db/schema/organizations.ts",
+        "src/db/schema/leads.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["input-contracts"],
+      "dataRequirements": ["Explicit identity mappings and source conversion identity."],
+      "acceptance": [
+        "Multiple contacts in one B2B purchase cannot multiply customer or sales totals.",
+        "Unknown/conflicting identity is explicit; no uncertain automatic merge."
+      ],
+      "tests": [
+        "Multiple participants, duplicate intake/replay, conversion reversal and ambiguous identity."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "funnel-unknown",
+      "userItem": 1,
+      "capability": "Expose incomplete stage and journey evidence",
+      "canonicalIssues": [
+        {
+          "number": 597,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/597"
+        },
+        {
+          "number": 635,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/635"
+        },
+        {
+          "number": 642,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/642"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/stageConversion.ts"],
+      "status": "remaining",
+      "dependencies": ["history-legacy", "funnel-journey"],
+      "dataRequirements": ["Coverage/provenance by record and stage."],
+      "acceptance": [
+        "Observed entry, inferred passage and unknown evidence are separate states and counts."
+      ],
+      "tests": ["Legacy imports, missing transitions, stage deletion and incomplete identity."],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "cohort-equal-age",
+      "userItem": 2,
+      "capability": "Acquisition/created-date cohorts compared at equal elapsed age",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        },
+        {
+          "number": 641,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/641"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/stageConversion.ts"],
+      "status": "remaining",
+      "dependencies": ["dictionary", "history-exact-events", "regional-boundaries"],
+      "dataRequirements": ["Cohort origin, conversion event, cutoff and elapsed-age definition."],
+      "acceptance": [
+        "Compare cohorts at the same observation age; show still-open entrants, horizon and cutoff."
+      ],
+      "tests": ["Immature cohort, unequal month lengths, censoring and late-arriving corrections."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "cohort-tables-curves",
+      "userItem": 2,
+      "capability": "Cohort heatmaps/tables and conversion curves",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/ui/Breakdowns.tsx"],
+      "status": "remaining",
+      "dependencies": ["cohort-equal-age", "accessible-charts"],
+      "dataRequirements": ["Eligible observations by age bucket."],
+      "acceptance": ["Provide accessible exact values and sample counts; color is supplementary."],
+      "tests": ["Keyboard table navigation, mobile, RTL and small-cohort rendering."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "segment-dimensions",
+      "userItem": 2,
+      "capability": "Channel, campaign, industry, size, service, territory, owner/team and supported custom segments",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 641,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/641"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/db/schema/organizations.ts",
+        "src/db/schema/deals.ts",
+        "src/db/schema/customFieldDefs.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["scope-filters", "input-contracts"],
+      "dataRequirements": [
+        "Permission-safe dimension values; qualified service/campaign/territory source or unavailable state."
+      ],
+      "acceptance": [
+        "Only backed dimensions are selectable; linked hidden organization attributes cannot leak through aggregates."
+      ],
+      "tests": [
+        "Custom-field definition changes, unknown categories and linked-record visibility."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "cohort-basis",
+      "userItem": 2,
+      "capability": "Distinguish closed-period win rate, cohort conversion and current inventory",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/winRate.ts",
+        "src/features/stats/dealPerformance.ts",
+        "src/features/stats/stageConversion.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["dictionary"],
+      "dataRequirements": ["Existing independent populations and dates."],
+      "acceptance": [
+        "Metric explanations name each population; an immature cohort is not a final failure."
+      ],
+      "tests": ["Same fixture produces independently correct event/cohort/inventory denominators."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "cohort-uncertainty",
+      "userItem": 2,
+      "capability": "Sample-aware uncertainty and mix-aware comparisons",
+      "canonicalIssues": [
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["cohort-equal-age", "segment-dimensions"],
+      "dataRequirements": ["Qualified sample/unit assumptions and sufficient observations."],
+      "acceptance": [
+        "Show sample counts and suitable uncertainty; disclose sparse cells and multiple comparisons.",
+        "Separate composition change from within-segment performance."
+      ],
+      "tests": [
+        "Small/empty/imbalanced segments, interval coverage and Simpson-style mix-change fixtures."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "aging-distribution",
+      "userItem": 3,
+      "capability": "Stage medians, upper percentiles and completed-stay distributions",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/stageConversion.ts"],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "history-stage-versions"],
+      "dataRequirements": ["Exact visit entry/exit timestamps and duration eligibility."],
+      "acceptance": [
+        "Completed durations and current open age remain separate with their own sample counts."
+      ],
+      "tests": ["Known percentile vectors, no completions, repeats and clock anomalies."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "aging-current",
+      "userItem": 3,
+      "capability": "Current open age, stage-by-team heatmap and unusually old opportunities",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/deals.ts", "src/db/schema/stages.ts"],
+      "status": "remaining",
+      "dependencies": ["scope-filters", "aging-distribution"],
+      "dataRequirements": ["Current stageEnteredAt, team mapping and configurable age policy."],
+      "acceptance": [
+        "Age thresholds explain their source; retained clocks after stage deletion are disclosed until reliable events exist."
+      ],
+      "tests": ["Team transfer, stage deletion, stale clock and boundary-age fixtures."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "aging-visits",
+      "userItem": 3,
+      "capability": "Explicit skips, re-entry, backward movement, reopenings and transfers",
+      "canonicalIssues": [
+        {
+          "number": 596,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/596"
+        },
+        {
+          "number": 597,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/597"
+        },
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/deals/nativeStage.ts",
+        "src/features/deals/statusTransition.ts",
+        "src/features/pipelines/stageActions.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "history-stage-versions"],
+      "dataRequirements": ["Ordered transition identities and versioned stage map."],
+      "acceptance": [
+        "Each repeated visit has defined contribution; skips are not fabricated entries."
+      ],
+      "tests": ["Equal timestamps, backtracking, reopening, stage removal and pipeline transfer."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "aging-overdue",
+      "userItem": 3,
+      "capability": "Overdue next steps beside aging records",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/activities/next-action-queue/readNextActionQueue.ts"],
+      "status": "remaining",
+      "dependencies": ["attention-rules", "scope-filters"],
+      "dataRequirements": ["Canonical next-step/activity evidence."],
+      "acceptance": [
+        "Explain the current overdue or absent-step trigger and link its record action."
+      ],
+      "tests": ["Undated work, DST/all-day cases and linked-record visibility."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "survival-population",
+      "userItem": 3,
+      "capability": "Time-to-close survival analysis with still-open records",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "aging-visits", "cohort-equal-age"],
+      "dataRequirements": [
+        "Sufficient observed origin/outcome/censoring data; explicit inclusion/competing-outcome assumptions."
+      ],
+      "acceptance": [
+        "Lost opportunities are not successful completions; wins and losses have distinct treatment.",
+        "State cutoff, censoring assumptions and population rather than treating completed-only cycles as the full distribution."
+      ],
+      "tests": [
+        "Hand-calculated censoring/competing-outcome fixtures, ties, no wins, all censored and truncation."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "survival-validation",
+      "userItem": 3,
+      "capability": "Validate survival estimates before production claims",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["survival-population", "model-evaluation"],
+      "dataRequirements": ["Suitable outcome history and evaluation partition."],
+      "acceptance": [
+        "Retain assumptions and numerical/model validation; insufficient data yields an honest fallback."
+      ],
+      "tests": [
+        "Reference-estimator comparison, interval behaviour, temporal evaluation and failure fallback."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "movement-inventory",
+      "userItem": 4,
+      "capability": "Historical opening/closing inventory at explicit timestamps",
+      "canonicalIssues": [
+        {
+          "number": 599,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/599"
+        },
+        {
+          "number": 596,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/596"
+        },
+        {
+          "number": 597,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/597"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/changeLogs.ts", "src/features/stats/dealPerformance.ts"],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "history-snapshots"],
+      "dataRequirements": [
+        "Reliable snapshot/event coverage including removed and archived records."
+      ],
+      "acceptance": [
+        "Never infer qualified historical inventory from current state alone; unavailable coverage is explicit."
+      ],
+      "tests": ["Snapshot boundaries, correction/replay, missing baseline and permissions."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "movement-components",
+      "userItem": 4,
+      "capability": "Reconciling waterfall: new, value up/down, wins, losses, reopens, transfers, archive/removal and corrections",
+      "canonicalIssues": [
+        {
+          "number": 599,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/599"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/deals/dealUpdateChangeLog.ts",
+        "src/features/deals/archiveDeal.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["movement-inventory", "money-one-currency"],
+      "dataRequirements": ["Complete event before/after monetary and scope state."],
+      "acceptance": [
+        "Opening plus signed components equals closing under one currency and identical scope."
+      ],
+      "tests": [
+        "Hand-calculated bridges including currency/owner/pipeline transfers and same-time transitions."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "movement-drilldowns",
+      "userItem": 4,
+      "capability": "Permission-safe event/record drill-down for every movement component",
+      "canonicalIssues": [
+        {
+          "number": 599,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/599"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/deals/visibility.ts"],
+      "status": "remaining",
+      "dependencies": ["movement-components", "outcome-drilldown"],
+      "dataRequirements": ["Visible event provenance with removal/retention policy."],
+      "acceptance": [
+        "Component totals reconcile to permitted contributing events; no historical hidden record disclosure."
+      ],
+      "tests": ["Revocation between reads, tombstones, page totals and correction attribution."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "source-quality",
+      "userItem": 5,
+      "capability": "Source/campaign quality: leads, opportunities, conversion, cycle, won value and size",
+      "canonicalIssues": [
+        {
+          "number": 641,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/641"
+        },
+        {
+          "number": 635,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/635"
+        },
+        {
+          "number": 638,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/638"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/deals.ts", "src/db/schema/leads.ts"],
+      "status": "remaining",
+      "dependencies": ["funnel-identity", "cohort-equal-age", "segment-dimensions"],
+      "dataRequirements": ["Qualified source taxonomy and campaign mapping."],
+      "acceptance": [
+        "Use eligible, deduplicated populations and state cohorts/windows; won deal value is labelled accurately."
+      ],
+      "tests": [
+        "Unknown source, source correction, multi-contact purchase and mixed currency exclusion."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "source-cost-retention",
+      "userItem": 5,
+      "capability": "Source CAC/cost and later retention/margin by acquisition cohort",
+      "canonicalIssues": [
+        {
+          "number": 641,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/641"
+        },
+        {
+          "number": 609,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/609"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": [
+        "source-quality",
+        "input-contracts",
+        "lifecycle-renewals",
+        "commercial-profitability"
+      ],
+      "dataRequirements": [
+        "Qualified acquisition cost, purchase, contract and delivery cost sources."
+      ],
+      "acceptance": [
+        "Cost/retention/margin remain unavailable without their required source; no synthetic substitute."
+      ],
+      "tests": [
+        "Missing cost denominator, cost allocation, cohort observation horizon and currency."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "attribution-first-last",
+      "userItem": 5,
+      "capability": "Labelled first-touch and last-touch attribution",
+      "canonicalIssues": [
+        {
+          "number": 638,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/638"
+        },
+        {
+          "number": 642,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/642"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/deals.ts", "src/features/deals/dealUpdateChangeLog.ts"],
+      "status": "remaining",
+      "dependencies": ["touchpoint-input", "funnel-identity"],
+      "dataRequirements": [
+        "Time-bounded qualifying touches and stable purchase/opportunity identity."
+      ],
+      "acceptance": [
+        "Name rules and attribution window; separate direct, unknown and uncaptured states.",
+        "Source corrections preserve original evidence and reproducibility."
+      ],
+      "tests": [
+        "Window endpoints, equal-time ordering, corrections, missing touches and duplicate conversions."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "touchpoint-input",
+      "userItem": 5,
+      "capability": "Recorded campaign, event, referral and sales-interaction journey",
+      "canonicalIssues": [
+        {
+          "number": 636,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/636"
+        },
+        {
+          "number": 642,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/642"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/activities.ts", "src/db/schema/dealParticipants.ts"],
+      "status": "remaining",
+      "dependencies": ["input-contracts", "history-exact-events"],
+      "dataRequirements": [
+        "Governed touchpoint source, explicit account/contact mapping and capture coverage."
+      ],
+      "acceptance": [
+        "Importing a touchpoint does not send or enroll; repeated interactions do not create extra customers."
+      ],
+      "tests": ["Replay/deduplication, suppression, hidden contacts and relationship changes."],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "attribution-multi-touch",
+      "userItem": 5,
+      "capability": "Multi-touch model comparison including justified linear/time-decay alternatives",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        },
+        {
+          "number": 638,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/638"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["attribution-first-last", "touchpoint-input"],
+      "dataRequirements": ["Suitable recorded journeys; explicit model and decay/window versions."],
+      "acceptance": [
+        "Model-dependent credit is distinguishable from causal incremental effect; missing touchpoint capture is visible."
+      ],
+      "tests": [
+        "Credit conservation, duplicate interactions, time-decay limits and model comparison reproducibility."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "forecast-outcome-timing",
+      "userItem": 6,
+      "capability": "Period forecast combines outcome and close-timing assumptions",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        },
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/deals.ts"],
+      "status": "remaining",
+      "dependencies": ["dictionary", "history-exact-events"],
+      "dataRequirements": [
+        "Eligible closes, probability source, timing assumptions and selected period."
+      ],
+      "acceptance": ["Weighted pipeline alone is not presented as guaranteed period revenue."],
+      "tests": [
+        "Beyond-period expected close, no close date, outcome/timing factor boundaries and exact money."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "forecast-scenarios",
+      "userItem": 6,
+      "capability": "Conservative/base/optimistic and conversion/size/cycle what-if scenarios",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["forecast-outcome-timing"],
+      "dataRequirements": ["Versioned assumptions and bounded user scenario inputs."],
+      "acceptance": [
+        "Expose source and assumptions; scenarios do not silently change live opportunities."
+      ],
+      "tests": [
+        "Zero/base/elevated conversion, cycle shift across period boundary and impossible input."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "forecast-target-coverage",
+      "userItem": 6,
+      "capability": "Goals-adapter target gap and same-scope coverage",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        },
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/ui/GoalsWidget.tsx"],
+      "status": "remaining",
+      "dependencies": ["goals-adapter", "forecast-outcome-timing"],
+      "dataRequirements": [
+        "Permitted Goals output matching owner/team, currency and target dates."
+      ],
+      "acceptance": [
+        "Missing/nonpositive remaining target yields unavailable coverage; goal definition authoring stays external."
+      ],
+      "tests": [
+        "Missing/stale target, mismatched currency/period/scope and zero remaining target."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "forecast-slippage",
+      "userItem": 6,
+      "capability": "Close-date slippage, repeated postponements and large-deal concentration",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/deals/dealUpdateChangeLog.ts"],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "forecast-outcome-timing"],
+      "dataRequirements": ["Expected-close revisions and eligible open values at cutoff."],
+      "acceptance": [
+        "Show count/evidence of postponements and concentration rather than invented risk probabilities."
+      ],
+      "tests": ["Earlier/later dates, unset dates, corrections, dominant deal and hidden record."],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "forecast-snapshots",
+      "userItem": 6,
+      "capability": "Immutable saved forecast snapshots",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["forecast-outcome-timing", "report-persistence", "history-snapshots"],
+      "dataRequirements": [
+        "Cutoff, target period, scope, model/version, assumptions and preserved eligible record state."
+      ],
+      "acceptance": [
+        "Later opportunity/model edits cannot rewrite a saved forecast; retain original and corrections."
+      ],
+      "tests": [
+        "Write/retry idempotency, immutability, actor revocation and exact snapshot replay."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "forecast-accuracy",
+      "userItem": 6,
+      "capability": "Saved forecast versus actual error, bias and calibration",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["forecast-snapshots", "model-evaluation"],
+      "dataRequirements": [
+        "Mature target periods and permission-safe actual outcomes under declared restatement policy."
+      ],
+      "acceptance": [
+        "Meaningful error/bias measures handle zero actuals; snapshot cutoff precedes target outcome."
+      ],
+      "tests": [
+        "Zero actual/forecast, under/overprediction, missing actual coverage and temporal leakage."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "forecast-calibrated",
+      "userItem": 6,
+      "capability": "Calibrated predictive probability and uncertainty",
+      "canonicalIssues": [
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["forecast-accuracy", "model-evaluation"],
+      "dataRequirements": ["Sufficient reliable labelled outcomes and temporal evaluation data."],
+      "acceptance": [
+        "Expose sample and evaluation; insufficient outcomes retain documented rule/manual fallback."
+      ],
+      "tests": [
+        "Calibration/reliability bins, out-of-time evaluation, drift, uncertainty and insufficient data."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "winloss-reasons",
+      "userItem": 7,
+      "capability": "Structured competitor, price, capability, timing, qualification and no-decision analysis",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": ["src/db/schema/lostReasons.ts", "src/features/stats/lostReasons.ts"],
+      "status": "remaining",
+      "dependencies": ["dictionary", "segment-dimensions"],
+      "dataRequirements": ["Governed reason taxonomy; offering/fit/market evidence."],
+      "acceptance": [
+        "Preserve original free-text/unknown reasons; segmentation names eligible population and sample."
+      ],
+      "tests": ["Missing/reclassified reason, multi-reason policy, tiny segment and permissions."],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "discount-quality",
+      "userItem": 7,
+      "capability": "Discount/conversion/margin relationship analysis",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["commercial-profitability", "segment-dimensions"],
+      "dataRequirements": ["Reliable list/realized price, discount, outcome and cost definitions."],
+      "acceptance": [
+        "Show definitions/sample; observed association is not causal discount effectiveness."
+      ],
+      "tests": [
+        "Missing/list-price-zero, noncomparable segments, margin denominator and exact money."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "commercial-decomposition",
+      "userItem": 7,
+      "capability": "Volume, size, conversion and segment-mix change decomposition",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["cohort-basis", "segment-dimensions", "dictionary"],
+      "dataRequirements": [
+        "Comparable periods/populations and mathematically defined decomposition."
+      ],
+      "acceptance": [
+        "Components reconcile where decomposition is appropriate; path/order and residual assumptions are explicit."
+      ],
+      "tests": ["Reconciliation, composition-only change, zero baseline and noncomparable scopes."],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "commercial-profitability",
+      "userItem": 7,
+      "capability": "Service-level commercial and delivery profitability",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["input-contracts", "money-one-currency"],
+      "dataRequirements": [
+        "Qualified service/delivery costs, cost allocation, billing/order and financial definitions."
+      ],
+      "acceptance": [
+        "Won value remains distinct from invoiced/collected revenue and profit; unsupported inputs show setup state."
+      ],
+      "tests": [
+        "Partial costs, allocation/reversal, credit/refund and service joins without duplicated value."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "lifecycle-models",
+      "userItem": 8,
+      "capability": "Business-appropriate repeat-purchase and recurring lifecycle definitions",
+      "canonicalIssues": [
+        {
+          "number": 603,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/603"
+        },
+        {
+          "number": 604,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/604"
+        },
+        {
+          "number": 609,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/609"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/organizations.ts", "src/db/schema/deals.ts"],
+      "status": "remaining",
+      "dependencies": ["input-contracts", "dictionary"],
+      "dataRequirements": [
+        "Explicit purchase or qualified contract/billing source and business model."
+      ],
+      "acceptance": [
+        "Non-subscription repeat-purchase remains available; post-sale lifecycle never rewrites acquisition won/lost."
+      ],
+      "tests": ["Separate purchase and recurring cohorts, link integrity and no double counting."],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "lifecycle-renewals",
+      "userItem": 8,
+      "capability": "Renewal, repeat-purchase and retention views",
+      "canonicalIssues": [
+        {
+          "number": 607,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/607"
+        },
+        {
+          "number": 609,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/609"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["lifecycle-models", "regional-boundaries"],
+      "dataRequirements": [
+        "Qualified contract periods/renewal intent or repeated purchase events."
+      ],
+      "acceptance": [
+        "State denominator, horizon, eligible customers and observation maturity; no ARR/MRR/churn without reliable recurring source."
+      ],
+      "tests": [
+        "Cancellation, leap/DST/Iranian boundaries, immature customers and zero eligible renewals."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "lifecycle-expansion",
+      "userItem": 8,
+      "capability": "Expansion/cross-sell linked to accounts and acquisition cohorts",
+      "canonicalIssues": [
+        {
+          "number": 608,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/608"
+        },
+        {
+          "number": 609,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/609"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/organizations.ts", "src/db/schema/organizationRelations.ts"],
+      "status": "remaining",
+      "dependencies": ["lifecycle-models", "segment-dimensions"],
+      "dataRequirements": [
+        "Explicit linked expansion opportunities, offerings and purchase/contract events."
+      ],
+      "acceptance": ["Avoid counting parent/child or acquisition/expansion value twice."],
+      "tests": [
+        "Multiple offers, related accounts, expansion reversal and permission-limited links."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "lifecycle-concentration-profit",
+      "userItem": 8,
+      "capability": "Customer concentration, cohort economics and profitability",
+      "canonicalIssues": [
+        {
+          "number": 609,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/609"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": ["src/db/schema/deals.ts"],
+      "status": "remaining",
+      "dependencies": ["lifecycle-models", "commercial-profitability"],
+      "dataRequirements": ["Stable account identity, qualified value and economic source."],
+      "acceptance": [
+        "Show concentration denominator and observation horizon; profit requires sourced costs."
+      ],
+      "tests": ["Large account, multiple contacts, account merge/correction and hidden accounts."],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "buying-group",
+      "userItem": 8,
+      "capability": "Buying-group roles, engagement and single-contact dependency",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 52,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/52"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [
+        "src/db/schema/dealParticipants.ts",
+        "src/features/deal-workspace/participantsList.ts",
+        "src/db/schema/activities.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["funnel-identity", "scope-permissions"],
+      "dataRequirements": [
+        "Recorded roles, visible contact/account relationships and defined engagement evidence."
+      ],
+      "acceptance": [
+        "Coverage uses actual relationships and explicit unknown roles; no invented enrichment or inferred authority."
+      ],
+      "tests": [
+        "Primary/explicit participant deduplication, hidden contacts, role changes and single-contact evidence."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "experiment-workspace",
+      "userItem": 9,
+      "capability": "Experiment hypothesis, audience/unit, intervention/control, variants/exposure, dates, primary measure and guardrails",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["input-contracts", "dictionary", "scope-permissions"],
+      "dataRequirements": [
+        "User-entered governed design and source-qualified assignment/exposure where available."
+      ],
+      "acceptance": [
+        "Preserve immutable analysis definitions and declared randomization/unit; workspace does not launch campaigns, send messages or spend."
+      ],
+      "tests": [
+        "Invalid design, duplicate units, overlapping dates, missing exposures and edit/version behaviour."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "experiment-ab-holdout",
+      "userItem": 9,
+      "capability": "A/B and holdout analysis with uncertainty",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["experiment-workspace", "model-evaluation"],
+      "dataRequirements": ["Valid assignment/outcome units and eligible analysis population."],
+      "acceptance": [
+        "Show eligibility, effect definition, uncertainty and primary success/guardrail results; missing assignment prevents causal claim."
+      ],
+      "tests": [
+        "Known randomized fixtures, unequal allocation, binary/continuous outcomes, attrition and no observations."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "experiment-peeking",
+      "userItem": 9,
+      "capability": "Multiple-testing, peeking and contamination limitations",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["experiment-ab-holdout"],
+      "dataRequirements": [
+        "Declared analysis schedule, number of comparisons and exposure overlap."
+      ],
+      "acceptance": [
+        "Prespecification and observed deviations remain visible; no unqualified significance label after repeated looks."
+      ],
+      "tests": [
+        "Repeated analysis, many variants, crossover/contamination and post-hoc measure changes."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "experiment-geo",
+      "userItem": 9,
+      "capability": "Geographic experiment and paired-geo analysis",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["experiment-workspace", "input-contracts", "model-evaluation"],
+      "dataRequirements": [
+        "Suitable geo units, intervention assignment, pre/post spend/outcomes and matching evidence."
+      ],
+      "acceptance": [
+        "Use justified primary-source method; disclose eligibility, geo interference, uncertainty and assumptions."
+      ],
+      "tests": [
+        "Paired geo fixtures, imbalance, contamination, outliers and inadequate geo count."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "mmm-inputs-model",
+      "userItem": 9,
+      "capability": "Qualified marketing mix model with seasonality/context and channel contribution",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["input-contracts", "experiment-workspace", "model-evaluation"],
+      "dataRequirements": [
+        "Suitable channel spend/media and outcome time series, geo/context controls and source completeness."
+      ],
+      "acceptance": [
+        "Inspect supported primary packages/sources before implementation; do not use a decorative fit or assert causality without assumptions."
+      ],
+      "tests": [
+        "Data suitability, collinearity, holdout prediction, synthetic recovery and convergence diagnostics."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "mmm-response-uncertainty",
+      "userItem": 9,
+      "capability": "MMM response curves, contribution uncertainty and experimental calibration",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["mmm-inputs-model", "experiment-geo"],
+      "dataRequirements": ["Validated model and calibration evidence where available."],
+      "acceptance": [
+        "Expose model/version, priors/assumptions, uncertainty and experiment calibration; missing calibration is labelled."
+      ],
+      "tests": [
+        "Response monotonicity/limits, posterior diagnostics, calibration and uncertainty coverage."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "mmm-budget-scenarios",
+      "userItem": 9,
+      "capability": "MMM budget scenarios with model-dependent recommendations",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["mmm-response-uncertainty"],
+      "dataRequirements": ["Qualified response model and explicit scenario constraints."],
+      "acceptance": [
+        "Scenarios show uncertainty and extrapolation limits; no automatic spend or campaign change."
+      ],
+      "tests": [
+        "Budget conservation, bounds, zero spend, unsupported range and reproducible scenario."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "attention-rules",
+      "userItem": 10,
+      "capability": "Transparent configurable absent-step, overdue, stage-age, postponement and qualification rules",
+      "canonicalIssues": [
+        {
+          "number": 598,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/598"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [
+        "src/features/activities/next-action-queue/queueTypes.ts",
+        "src/features/activities/next-action-queue/readNextActionQueue.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "qualification-input"],
+      "dataRequirements": ["Canonical activity evidence and versioned thresholds."],
+      "acceptance": [
+        "Each trigger names rule/evidence and a permitted record action; deterministic priority with rule-based fallback."
+      ],
+      "tests": ["Multiple triggers, ordering, equality thresholds, missing data and visibility."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "attention-observations",
+      "userItem": 10,
+      "capability": "Substantiated changes in conversion, stage age, source quality and coverage",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["cohort-equal-age", "source-quality", "data-quality-states"],
+      "dataRequirements": ["Comparable periods/cohorts, samples and contributing records."],
+      "acceptance": [
+        "Every observation states comparison, sample and evidence; significance methods and limitations explicit.",
+        "No causal label for observed associations or invented AI explanation."
+      ],
+      "tests": [
+        "Noise/small sample, mix change, missing coverage, multiple comparisons and contribution reconciliation."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "attention-predictive",
+      "userItem": 10,
+      "capability": "Evaluated predictive scoring with separate fit, engagement and outcome likelihood",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["model-evaluation", "attention-rules", "qualification-input"],
+      "dataRequirements": ["Sufficient labelled outcomes and permitted feature evidence."],
+      "acceptance": [
+        "Only evaluated model outputs are shown; explain actual features and evaluation while retaining rule fallback.",
+        "Separate fit/engagement from outcome likelihood."
+      ],
+      "tests": [
+        "Temporal split, leakage, calibration, drift, feature absence and deterministic fallback."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "history-exact-events",
+      "userItem": 0,
+      "capability": "Reliable analytics history through the shared committed-event contract",
+      "canonicalIssues": [
+        {
+          "number": 596,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/596"
+        },
+        {
+          "number": 588,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/588"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/db/schema/changeLogs.ts",
+        "src/features/collaboration/changeLog.ts",
+        "src/server/realtime/events.ts",
+        "src/server/notify.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["dictionary", "ownership-contracts"],
+      "dataRequirements": [
+        "Atomic mutation/event identity, before/after state, origin/provenance and deterministic sequence."
+      ],
+      "acceptance": [
+        "Rolled-back writes emit no committed history; duplicate delivery cannot inflate events.",
+        "Extend/reuse shared ownership boundaries; pg_notify alone is not an analytics ledger."
+      ],
+      "tests": [
+        "Rollback, duplicate/replay, equal timestamps, concurrent updates and every selected mutation path."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "history-stage-versions",
+      "userItem": 0,
+      "capability": "Preserve stage-definition versions and ordering",
+      "canonicalIssues": [
+        {
+          "number": 596,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/596"
+        },
+        {
+          "number": 597,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/597"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/stages.ts", "src/features/pipelines/stageActions.ts"],
+      "status": "remaining",
+      "dependencies": ["ownership-contracts"],
+      "dataRequirements": ["Immutable stage identity/name/order/version at event time."],
+      "acceptance": [
+        "Rename/reorder/removal cannot rewrite old reports; pipeline positions are not automatically equivalent."
+      ],
+      "tests": ["Reorder/delete/recreate, simultaneous changes and unmapped pipelines."],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "history-snapshots",
+      "userItem": 0,
+      "capability": "Reproducible pipeline snapshots and immutable report/model definitions",
+      "canonicalIssues": [
+        {
+          "number": 599,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/599"
+        },
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "report-persistence"],
+      "dataRequirements": ["Cutoff/scope/version/provenance and correction policy."],
+      "acceptance": [
+        "Retain original events and definitions; label later corrections/restatement rather than overwriting evidence."
+      ],
+      "tests": [
+        "Replay from original snapshot, correction append, version refusal and permission reevaluation."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "history-legacy",
+      "userItem": 0,
+      "capability": "Honest legacy/import adapters and evidence-based optional backfill",
+      "canonicalIssues": [
+        {
+          "number": 597,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/597"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/stageConversion.ts",
+        "src/features/import/commitDeal.history.test.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["dictionary"],
+      "dataRequirements": [
+        "Observed audit coverage, known import provenance and reliable-history start."
+      ],
+      "acceptance": [
+        "Mark inferred versus observed passage; missing past transitions/snapshots are never fabricated."
+      ],
+      "tests": [
+        "Imported current stage without past history, missing audit, deleted stage and contradictory evidence."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "money-one-currency",
+      "userItem": 0,
+      "capability": "Exact money in one reporting currency with preserved originals",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/currencies/reportCurrency.ts",
+        "src/db/schema/money.ts",
+        "src/lib/canonicalMoney.ts"
+      ],
+      "status": "in-progress",
+      "dependencies": [],
+      "dataRequirements": ["Canonical decimal strings and selected record currency."],
+      "acceptance": [
+        "No mixed-currency sum or implicit exchange conversion; regional display units do not alter stored money."
+      ],
+      "tests": [
+        "Fractional precision, negative/correction, large amounts, IRR/toman and currency exclusion."
+      ],
+      "deliveryIncrement": "I1",
+      "currentSourceNote": "Bounded I1 code exists; full capability and native/visual qualification remain open. See definitions-and-records.md."
+    },
+    {
+      "id": "fx-contract",
+      "userItem": 0,
+      "capability": "Consolidated currency only through qualified FX source/policy",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["input-contracts", "money-one-currency"],
+      "dataRequirements": [
+        "Actual FX source, effective dates, rate provenance and conversion/restatement policy."
+      ],
+      "acceptance": [
+        "Preserve original amounts/rates; unavailable FX cannot silently produce a consolidated total."
+      ],
+      "tests": [
+        "Missing/stale rates, effective-date boundaries, reversals and reproducible conversion."
+      ],
+      "deliveryIncrement": "I4"
+    },
+    {
+      "id": "scope-permissions",
+      "userItem": 0,
+      "capability": "Apply current viewer visibility on server to every report surface",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/deals/visibility.ts",
+        "src/features/permissions/canSee.ts",
+        "src/features/stats/activityVisibilitySql.ts"
+      ],
+      "status": "in-progress",
+      "dependencies": ["ownership-contracts"],
+      "dataRequirements": ["Current actor/record/pipeline/linked-entity authority."],
+      "acceptance": [
+        "Summary, records, views, snapshots, exports and caches never disclose creator-broader scope."
+      ],
+      "tests": [
+        "Role/group/revocation, hidden linked contact/org, archived pipeline and cross-viewer cache cases."
+      ],
+      "deliveryIncrement": "I1",
+      "currentSourceNote": "Bounded I1 code exists; full capability and native/visual qualification remain open. See definitions-and-records.md."
+    },
+    {
+      "id": "scope-filters",
+      "userItem": 0,
+      "capability": "Global period/comparison/pipeline/currency/owner-team scope and supported segment filters",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/ui/Dashboard.tsx",
+        "src/features/stats/ui/DateRangeControl.tsx"
+      ],
+      "status": "remaining",
+      "dependencies": ["dictionary", "regional-boundaries"],
+      "dataRequirements": ["Supported owner/team/dimension definitions and explicit comparison."],
+      "acceptance": [
+        "Service/source/campaign/industry/size/territory/custom controls only expose supported values; scope persists across report navigation."
+      ],
+      "tests": [
+        "Filter intersection, reset, unsupported dimension, stale options and server scope resolution."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "scope-navigation",
+      "userItem": 0,
+      "capability": "Preserve scope through chart → records → record → back",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/ui/Dashboard.tsx"],
+      "status": "in-progress",
+      "dependencies": ["outcome-drilldown", "scope-filters"],
+      "dataRequirements": ["Versioned report location and permitted record link."],
+      "acceptance": [
+        "Tab/filter selection, paging and chosen report return intact; accessible keyboard affordances."
+      ],
+      "tests": ["Deep link, browser back, refresh, RTL and revoked record while returning."],
+      "deliveryIncrement": "I1",
+      "currentSourceNote": "Bounded I1 code exists; full capability and native/visual qualification remain open. See definitions-and-records.md."
+    },
+    {
+      "id": "goals-adapter",
+      "userItem": 0,
+      "capability": "Consume agreed Goals/KPI targets and scorecards through an adapter",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 600,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/600"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/ui/GoalsWidget.tsx",
+        "src/features/stats/ui/GoalChart.tsx"
+      ],
+      "status": "in-progress",
+      "dependencies": ["ownership-contracts"],
+      "dataRequirements": [
+        "Stable permitted Goals output: metric identity, target/value/unit/currency, dates, scope, scheme/version and availability."
+      ],
+      "acceptance": [
+        "Settings Goals, KPI-definition and scheme authoring remain exclusively owned by the other chat.",
+        "No second KPI engine; adapter failure/mismatch/staleness is explicit in scorecards, forecasts and exports."
+      ],
+      "tests": [
+        "Compatible output, unknown version/metric, inaccessible target, mismatched period/currency/scope and stale adapter."
+      ],
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "Bounded I1 code exists; full capability and native/visual qualification remain open. See definitions-and-records.md."
+    },
+    {
+      "id": "qualification-input",
+      "userItem": 0,
+      "capability": "Consume qualification evidence without a competing authoring/scoring engine",
+      "canonicalIssues": [
+        {
+          "number": 635,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/635"
+        },
+        {
+          "number": 639,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/639"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [
+        "src/features/sales-qualification/qualificationSchemas.ts",
+        "src/features/sales-qualification/qualificationPreview.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["ownership-contracts", "input-contracts"],
+      "dataRequirements": [
+        "Actual selected framework and recorded evidence; current source largely definitions/previews."
+      ],
+      "acceptance": [
+        "Missing qualification is distinguishable from a negative qualification outcome."
+      ],
+      "tests": [
+        "Unknown framework/version, incomplete evidence, permissions and explicit unknown state."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "report-persistence",
+      "userItem": 0,
+      "capability": "Persist and share permitted report definitions and restore saved views",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/db/schema/savedFilters.ts",
+        "docs/sales-platform/view-compatibility.md"
+      ],
+      "status": "remaining",
+      "dependencies": ["scope-permissions", "dictionary"],
+      "dataRequirements": [
+        "Versioned report definition, ownership/sharing policy and supported fields."
+      ],
+      "acceptance": [
+        "A shared definition grants no data access; recipient reruns under own permissions; unsupported versions remain recoverable."
+      ],
+      "tests": [
+        "Creator/recipient scope mismatch, unknown version, preference restore and permission change."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "report-exports",
+      "userItem": 0,
+      "capability": "Export filtered tables with identical calculations and access rules",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/db/schema/savedFilters.ts"],
+      "status": "remaining",
+      "dependencies": ["outcome-drilldown", "scope-permissions", "regional-formatting"],
+      "dataRequirements": [
+        "Qualified existing export permission/path and current report definition."
+      ],
+      "acceptance": [
+        "Export totals/rows match report scope; export cannot bypass data.export or viewer visibility; headings and units localized."
+      ],
+      "tests": [
+        "Export permission, formula injection, pagination completeness, revocation and decimal precision."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "data-quality-states",
+      "userItem": 0,
+      "capability": "Missing/stale/partial/insufficient/permission-limited/error/zero states and freshness",
+      "canonicalIssues": [
+        {
+          "number": 597,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/597"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/ui/DashboardState.tsx"],
+      "status": "remaining",
+      "dependencies": ["dictionary", "history-legacy"],
+      "dataRequirements": ["Freshness, history coverage, sample and source health metadata."],
+      "acceptance": [
+        "Do not coerce unavailable/error into zero; show measurement explanation and one useful recovery/setup action."
+      ],
+      "tests": ["Every state, stale refresh, partial source, retry and empty eligible population."],
+      "deliveryIncrement": "I1"
+    },
+    {
+      "id": "input-contracts",
+      "userItem": 0,
+      "capability": "Governed input/import/integration contracts for missing business sources",
+      "canonicalIssues": [
+        {
+          "number": 636,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/636"
+        },
+        {
+          "number": 641,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/641"
+        },
+        {
+          "number": 604,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/604"
+        },
+        {
+          "number": 609,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/609"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/db/schema/importBatches.ts",
+        "src/db/schema/importExternalIds.ts",
+        "docs/sales-platform/product-signal-event-contract.md"
+      ],
+      "status": "remaining",
+      "dependencies": ["ownership-contracts", "scope-permissions"],
+      "dataRequirements": [
+        "Named sources/owners for campaign, delivery, cost, billing, contract, order, ticket, time, survey and product events; schema, auth, provenance, retention, correction and dedup policy."
+      ],
+      "acceptance": [
+        "Inspect real owning source before extension; implement persisted bounded intake/import/setup states where absent.",
+        "Draft/synthetic contract is not live source qualification; missing source prerequisites remain delivery scope."
+      ],
+      "tests": [
+        "Native intake validation, replay/conflict, source revocation, correction, identity, bounded payload and database persistence."
+      ],
+      "deliveryIncrement": "I3"
+    },
+    {
+      "id": "regional-boundaries",
+      "userItem": 0,
+      "capability": "Viewer/account timezone and Gregorian/Iranian reporting boundaries",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/i18n/accountPreferences.ts",
+        "src/features/activities/accountTimeZone.ts",
+        "src/features/stats/ui/dateRange.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["dictionary"],
+      "dataRequirements": [
+        "Independent locale/calendar/timezone preferences and canonical instants."
+      ],
+      "acceptance": [
+        "Use true supported Iranian day/month/quarter/year boundaries with half-open instants; changing labels alone is insufficient.",
+        "Civil-date comparison periods of different lengths are explicit."
+      ],
+      "tests": [
+        "Nowruz/leap year, DST gap/fold, near-midnight instants and mismatched account/viewer timezone."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "regional-formatting",
+      "userItem": 0,
+      "capability": "English/German/Farsi, RTL, numbers and currency display",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/messages/stats.en.json",
+        "src/features/stats/messages/stats.de.json",
+        "src/features/stats/messages/stats.fa.json"
+      ],
+      "status": "in-progress",
+      "dependencies": ["regional-boundaries", "money-one-currency"],
+      "dataRequirements": [
+        "Existing catalog/glossary and independent numbering/display-unit settings."
+      ],
+      "acceptance": [
+        "Preserve raw names and canonical currency; intentional chart chronology and logical RTL layout."
+      ],
+      "tests": [
+        "FA/DE/EN, Persian/Latin digits, IRR/toman fractional values and narrow-width truncation."
+      ],
+      "deliveryIncrement": "I1",
+      "currentSourceNote": "Bounded I1 code exists; full capability and native/visual qualification remain open. See definitions-and-records.md."
+    },
+    {
+      "id": "accessible-charts",
+      "userItem": 0,
+      "capability": "Accessible chart tables and full keyboard interaction",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["src/features/stats/ui/TrendWidget.tsx", "src/features/stats/ui/Panel.tsx"],
+      "status": "in-progress",
+      "dependencies": ["regional-formatting"],
+      "dataRequirements": ["Exact chart table values and existing accessible primitives."],
+      "acceptance": [
+        "Color/hover are never sole information; dialog focus and accessible record/table actions work with keyboard."
+      ],
+      "tests": [
+        "Keyboard focus/return, chart-table reconciliation, contrast and human assistive-technology acceptance."
+      ],
+      "deliveryIncrement": "I1",
+      "currentSourceNote": "Bounded I1 code exists; full capability and native/visual qualification remain open. See definitions-and-records.md."
+    },
+    {
+      "id": "premium-visual-review",
+      "userItem": 0,
+      "capability": "Apply UI Skills and Mobbin-informed craft across actual components",
+      "canonicalIssues": [
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "docs/performance-dashboard-redesign.md",
+        "src/features/stats/ui/Dashboard.tsx"
+      ],
+      "status": "remaining",
+      "dependencies": ["accessible-charts", "regional-formatting"],
+      "dataRequirements": [
+        "Supplied interface-design/baseline-ui texts; current Warpdrive theme/shell/components."
+      ],
+      "acceptance": [
+        "Overview focuses results, meaningful changes, bottleneck and actions; Marketing/Pipeline/Forecast/Customers and Activities provide coherent depth.",
+        "Preserve brand tokens, precise tabular typography, restrained semantics, polished filters/tables/drawers and clear states; visually inspect actual rendered desktop/mobile, light/dark and FA/DE/EN RTL."
+      ],
+      "tests": [
+        "Actual component visual evidence for states and keyboard behaviour at exact candidate; synthetic harness is not backend acceptance."
+      ],
+      "deliveryIncrement": "I1"
+    },
+    {
+      "id": "performance",
+      "userItem": 0,
+      "capability": "Bounded aggregation, pagination, lazy loading and measured workloads",
+      "canonicalIssues": [
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "src/features/stats/router.ts",
+        "src/features/activities/next-action-queue/queueSql.ts"
+      ],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "scope-permissions"],
+      "dataRequirements": [
+        "Representative seeded/approved workload and query plans; cache metadata."
+      ],
+      "acceptance": [
+        "Do not fetch complete deal history to browser; constrain jobs and summaries, expose freshness.",
+        "Record dataset size/scope, hardware/runtime, cache state and timings; no invented benchmark claims."
+      ],
+      "tests": [
+        "First/repeat read benchmarks, pagination bounds, cancellation, cache isolation and query plans under allocated heavy slot."
+      ],
+      "deliveryIncrement": "I2"
+    },
+    {
+      "id": "model-evaluation",
+      "userItem": 0,
+      "capability": "Reproducible validation and insufficient-data fallbacks for advanced models",
+      "canonicalIssues": [
+        {
+          "number": 8,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/8"
+        },
+        {
+          "number": 51,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/51"
+        },
+        {
+          "number": 56,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/56"
+        }
+      ],
+      "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
+      "baselineCode": [],
+      "status": "remaining",
+      "dependencies": ["history-exact-events", "input-contracts", "scope-permissions"],
+      "dataRequirements": [
+        "Qualified outcomes, immutable dataset/cutoff/model version and prespecified temporal evaluation."
+      ],
+      "acceptance": [
+        "Prevent leakage; record numerical validation, bias/calibration/uncertainty, limitations and data sufficiency.",
+        "No model output qualifies itself merely because mathematics ran."
+      ],
+      "tests": [
+        "Temporal splits, missing/censored labels, leakage controls, baseline comparison, drift and fallback."
+      ],
+      "deliveryIncrement": "I5"
+    },
+    {
+      "id": "ownership-contracts",
+      "userItem": 0,
+      "capability": "Respect module ownership, shared contracts, peer work and excluded workspace",
+      "canonicalIssues": [
+        {
+          "number": 535,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/535"
+        },
+        {
+          "number": 588,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/588"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": ["AGENTS.md", "docs/delivery/tracking.md"],
+      "status": "remaining",
+      "dependencies": [],
+      "dataRequirements": [
+        "Live issue ownership and stable adapters; no contact with existing chats authorized."
+      ],
+      "acceptance": [
+        "Do not edit Goals authoring or excluded codex/deal-workspace-premium workspace; isolate work and preserve reference/peer files.",
+        "Check live ownership before overlapping shared events/history/marketing/report contracts."
+      ],
+      "tests": ["Scoped diff review and exact source ownership/issue mapping."],
+      "deliveryIncrement": "I0"
+    },
+    {
+      "id": "delivery-gates",
+      "userItem": 0,
+      "capability": "Reviewable canonical-linked increments, exact evidence and integration boundaries",
+      "canonicalIssues": [
+        {
+          "number": 595,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/595"
+        },
+        {
+          "number": 601,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/601"
+        },
+        {
+          "number": 602,
+          "url": "https://github.com/KhademOHAli1/warpdrive/issues/602"
+        }
+      ],
+      "registration": "Existing canonical scope; bounded contribution does not close the issue.",
+      "baselineCode": [
+        "AGENTS.md",
+        "docs/delivery/ci-release-controls.md",
+        "docs/delivery/release-operations.md"
+      ],
+      "status": "remaining",
+      "dependencies": ["ownership-contracts"],
+      "dataRequirements": [
+        "Fresh one-use queue allocation before heavy type/lint/build/database/browser validation."
+      ],
+      "acceptance": [
+        "Clean task-owned commits/PRs with canonical issue mapping; main publication reserved to integration coordinator.",
+        "Source implemented, integrated/CI, accepted, released, deployed and real-source qualified are independent gates.",
+        "Retain all unfinished/advanced scope and actual failures; never infer whole-programme completion from a slice."
+      ],
+      "tests": [
+        "Focused calculations plus allocated real backend/integration tests, UI behaviour and visual review at exact revision; cleanup evidence."
+      ],
+      "deliveryIncrement": "I0"
+    }
+  ],
+  "qualification": {
+    "testsListed": "Planned acceptance checks, not claims that tests exist or passed. Existing baseline code is inspected source, not current installed acceptance.",
+    "newScopeRegistration": "Advanced acceptance not explicitly in original deliverable issues is retained as specification extension under programme issue #8/#56 pending registration. No canonical IDs or closure are invented.",
+    "completionPolicy": "No aggregate completion percentage. Whole programme remains incomplete until all requested implementation and qualification prerequisites are resolved."
+  },
+  "currentIncrementEvidence": {
+    "state": "source implemented, runtime qualification incomplete",
+    "source": [
+      "src/features/stats/metricDictionary.ts",
+      "src/features/stats/dealPopulation.ts",
+      "src/features/stats/dealRecords.ts",
+      "src/features/stats/reportPeriod.ts",
+      "src/features/stats/resolveReportScope.ts",
+      "src/features/stats/ui/DealRecordsDrawer.tsx",
+      "src/features/stats/goalReportAdapter.ts"
+    ],
+    "review": "docs/analytics/source-review.json",
+    "focusedChecks": "Earlier 142 stats unit/component tests passed; affected follow-up source tests pass, inventory maintenance follows independent review. Exact final checks belong in validation.json.",
+    "preparedUnrun": "17 PostgreSQL cases; configured typegen/TSC and typed lint; actual desktop/mobile light/dark EN/DE/FA/RTL browser review.",
+    "remaining": "All broad canonical acceptance and later programme capabilities remain open."
+  }
+}

@@ -12,6 +12,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
 import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, LostReasonCount } from "@/types/stats";
+import { reportPeriod } from "./reportPeriod";
 
 function toSession(actor: PermSetUser) {
   return {
@@ -31,6 +32,7 @@ export async function lostReasonBreakdown(
   signal: AbortSignal,
 ): Promise<LostReasonCount[]> {
   signal.throwIfAborted();
+  const period = reportPeriod(filters);
 
   const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
@@ -51,8 +53,8 @@ export async function lostReasonBreakdown(
       AND d.archived_at IS NULL
       AND p.is_archived = false
       AND d.status = 'lost'
-      AND d.lost_time >= ${filters.from}::date
-      AND d.lost_time < ${filters.to}::date + INTERVAL '1 day'
+      AND d.lost_time >= ${period.from}
+      AND d.lost_time < ${period.toExclusive}
       ${pipelineClause}
       ${ownerClause}
       ${currencyClause}

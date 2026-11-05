@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import type { GoalWithProgress } from "@/features/goals/router";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { adaptGoalReport, type GoalReportScorecard } from "@/features/stats/goalReportAdapter";
 import { useFormatters } from "@/lib/useFormatters";
 import { useStatsMessages } from "../useStatsMessages";
 import { GoalChart } from "./GoalChart";
@@ -16,14 +17,14 @@ function paceTone(pace: number | null): string {
   return pace >= 1 ? "text-emerald-600" : "text-destructive";
 }
 
-function GoalRow({ row }: { row: GoalWithProgress }): React.ReactNode {
+function GoalRow({ row }: { row: GoalReportScorecard }): React.ReactNode {
   const preferences = useLocalePreferences();
 
   const format = useFormatters();
 
   const S = useStatsMessages();
 
-  const { goal, progress, series } = row;
+  const { definition: goal, progress, series } = row;
   const goalCopy = useSettingsMessages();
   const label =
     goal.subject === "activity"
@@ -118,7 +119,7 @@ export function GoalsWidget({
       <p className="mb-2 text-xs text-muted-foreground">{S._extra.goalPeriodNotice}</p>
       <div className="space-y-3">
         {data.map((row) => (
-          <GoalRow key={row.goal.id} row={row} />
+          <GoalRow key={row.goal.id} row={adaptGoalReport(row)} />
         ))}
         {canManage && (
           <Link

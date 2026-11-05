@@ -2,25 +2,13 @@
 // One scan over the same set for both, since "the deals won in this period" is the only
 // population either metric cares about.
 // Windows on won_time (see dealPerformance for why), and applies dealVisibilityClause.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
-import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { ownerFilterClause } from "@/features/stats/ownerIds";
 import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, WonDealStats } from "@/types/stats";
-
-function toSession(actor: PermSetUser) {
-  return {
-    userId: actor.id,
-    isAdmin: actor.type === "admin",
-    isActive: actor.isActive,
-    sessionLive: true,
-    visibilityGroupIds: Array.from(actor.groupIds),
-    managedUserIds: Array.from(actor.managedUserIds ?? []),
-  };
-}
+import { dealMetricPopulation, visibleDealPopulation } from "./dealPopulation";
 
 interface Row {
   avgValue: string | null;
@@ -37,11 +25,8 @@ export async function wonDealStats(
 ): Promise<WonDealStats> {
   signal.throwIfAborted();
 
-  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
-  const visClause = dealVisibilityClause(toSession(actor));
-  const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
-  const pipelineClause =
-    filters.pipelineId !== null ? sql`AND d.pipeline_id = ${filters.pipelineId}` : sql``;
+  const visible = await visibleDealPopulation(db, actor, filters, signal);
+  const won = dealMetricPopulation("won", filters);
 
   // Every aggregate is null over an empty set, which is exactly the distinction the UI needs:
   // "no deals won" must not render as an average of zero.
@@ -59,16 +44,7 @@ export async function wonDealStats(
       ) FILTER (WHERE d.won_time >= d.created_at))::float8 AS "medianCycleDays"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
-    WHERE d.deleted_at IS NULL
-      AND d.archived_at IS NULL
-      AND p.is_archived = false
-      AND d.status = 'won'
-      AND d.won_time >= ${filters.from}::date
-      AND d.won_time < ${filters.to}::date + INTERVAL '1 day'
-      ${pipelineClause}
-      ${ownerClause}
-      ${currencyClause}
-      AND ${visClause}
+    WHERE ${visible} AND (${won})
   `);
 
   signal.throwIfAborted();
