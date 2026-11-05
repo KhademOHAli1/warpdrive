@@ -16,6 +16,7 @@ export const draftSimulationNodeTypes = [
   "condition",
   "ifElse",
   "filter",
+  "iterator",
   "delay",
 ] as const;
 
@@ -30,6 +31,8 @@ export interface DraftSimulationStep {
   port?: WorkflowEdge["port"];
   waitResumeAt?: string;
   recordDeleted?: true;
+  iterationIndex?: number;
+  iteratorSummary?: { processedCount: number; failedCount: number };
 }
 
 // This is a transient draft receipt, not an ordinary persisted run-detail DTO.

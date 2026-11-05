@@ -40,6 +40,9 @@ export function LiveRunReview({
     ...((review.effects.counts.ifElse ?? 0) > 0
       ? [{ label: t("ifElseAction"), count: review.effects.counts.ifElse ?? 0 }]
       : []),
+    ...((review.effects.counts.iterator ?? 0) > 0
+      ? [{ label: t("iterator"), count: review.effects.counts.iterator ?? 0 }]
+      : []),
     ...((review.effects.counts.recordCreate ?? 0) > 0
       ? [{ label: t("createRecord"), count: review.effects.counts.recordCreate ?? 0 }]
       : []),

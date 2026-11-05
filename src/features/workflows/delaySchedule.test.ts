@@ -249,6 +249,7 @@ it("arms once from upstream output and retains the exact deadline across early a
     requestKey: "b7fbd15d-840e-4f3c-b899-68f3e6359169",
     trigger: { recordId: "9a9d7d6e-2184-4764-888d-332cd4a5ad68" },
     nextNodeId: node.id,
+    iteratorFrame: null,
     errorId: null,
     cancelledBy: null,
     cancelledAt: null,

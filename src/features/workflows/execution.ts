@@ -9,14 +9,59 @@ import {
   workflows,
   workflowVersions,
 } from "@/db/schema";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { selectRunBranch } from "./runBranchSelection";
 import { advanceRunStep } from "./runStep";
-import { definitionSchema } from "./schemas";
+import { definitionSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import { workflowIteratorAllowsUnframedNode } from "./workflowIteratorGraph";
+import { advanceWorkflowIteratorRun } from "./workflowIteratorRun";
 
 export { admitManualRun } from "./runAdmission";
+
+async function advanceLockedStep(
+  db: Db,
+  actor: PermSetUser,
+  run: typeof workflowRuns.$inferSelect,
+  node: WorkflowNode,
+  definition: WorkflowDefinition,
+  now: Date,
+  signal: AbortSignal,
+) {
+  if (run.iteratorFrame !== null || node.type === "iterator")
+    return advanceWorkflowIteratorRun({ db, actor, node, run, now, definition, signal });
+  if (!workflowIteratorAllowsUnframedNode(definition, node.id))
+    return err(ERROR_IDS.WORKFLOW_INVALID);
+  const result = await advanceRunStep(db, actor, node, run, now, definition, signal);
+  if (!result.ok) return result;
+  if (result.value.status === "waiting") return ok(result.value);
+  const output = result.value.output;
+  const selected = selectRunBranch(definition, node, output);
+  if (!selected.ok) return selected;
+  const next = selected.value;
+  await db.insert(workflowSteps).values({
+    runId: run.id,
+    nodeId: node.id,
+    simulated: run.mode === "simulation",
+    output,
+    completedAt: now,
+  });
+  const status = next === undefined ? ("succeeded" as const) : ("running" as const);
+  await db
+    .update(workflowRuns)
+    .set({
+      status,
+      resumeAt: null,
+      nextNodeId: next?.to ?? null,
+      outputs: { ...run.outputs, [node.id]: output },
+      updatedAt: now,
+    })
+    .where(eq(workflowRuns.id, run.id));
+  signal.throwIfAborted();
+  return ok({ status });
+}
 
 // Database-only effects and progress share this transaction. A crash rolls both back;
 // competing workers serialize on the run row and re-read the persisted cursor.
@@ -64,36 +109,11 @@ export async function advanceWorkflowRun(
     const definition = parsed.data;
     const node = definition.nodes.find((item) => item.id === run.nextNodeId);
     if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
-    const result = await advanceRunStep(tx, actor, node, run, now, definition, signal);
+    const result = await advanceLockedStep(tx, actor, run, node, definition, now, signal);
     if (!result.ok) return failRun(tx, run, result.error, now, signal);
-    if (result.value.status === "waiting") {
+    if (result.value.status === "waiting")
       wait = { deadline: result.value.armedDeadline, databaseNow: now };
-      return ok("waiting" as const);
-    }
-    const output = result.value.output;
-    const selected = selectRunBranch(definition, node, output);
-    if (!selected.ok) return failRun(tx, run, selected.error, now, signal);
-    const next = selected.value;
-    await tx.insert(workflowSteps).values({
-      runId,
-      nodeId: node.id,
-      simulated: run.mode === "simulation",
-      output,
-      completedAt: now,
-    });
-    const status = next === undefined ? ("succeeded" as const) : ("running" as const);
-    await tx
-      .update(workflowRuns)
-      .set({
-        status,
-        resumeAt: null,
-        nextNodeId: next?.to ?? null,
-        outputs: { ...run.outputs, [node.id]: output },
-        updatedAt: now,
-      })
-      .where(eq(workflowRuns.id, runId));
-    signal.throwIfAborted();
-    return ok(status);
+    return ok(result.value.status);
   });
   if (wait?.deadline !== undefined) await onWaitArmed?.(wait.deadline, wait.databaseNow);
   return progress;
@@ -115,7 +135,7 @@ async function failRun(
   });
   await db
     .update(workflowRuns)
-    .set({ status: "failed", resumeAt: null, errorId, updatedAt: now })
+    .set({ status: "failed", resumeAt: null, iteratorFrame: null, errorId, updatedAt: now })
     .where(eq(workflowRuns.id, run.id));
   signal.throwIfAborted();
   return ok("failed" as const);

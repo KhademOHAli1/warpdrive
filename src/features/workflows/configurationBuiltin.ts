@@ -18,6 +18,7 @@ import {
 } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { validateWorkflowIteratorConfiguration } from "./workflowIteratorConfiguration";
 import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
 import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
@@ -403,6 +404,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "calendar.create": validateCalendarEvent,
   "human.form": validateHumanForm,
   ifElse: validateIfElse,
+  iterator: validateWorkflowIteratorConfiguration,
   condition: validateCondition,
   filter: validateCondition,
   delay: validateWait,
@@ -411,6 +413,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
 const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   "trigger.manual": ["scope"],
   ifElse: ["branches", "fallbackId"],
+  iterator: ["items", "shouldContinueOnIterationFailure"],
   "record.create": ["entity", "fields"],
   "human.form": ["instructions", "fields"],
   "record.update": ["entity", "recordId", "fields"],

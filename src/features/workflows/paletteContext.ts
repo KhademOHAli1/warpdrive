@@ -259,6 +259,21 @@ function validPosition(position: Pick<NodePosition, "x" | "y"> & { anchor?: unkn
   );
 }
 
+function replacementEdges(
+  definition: WorkflowDefinition,
+  previous: WorkflowNode,
+  replacement: WorkflowNode,
+): WorkflowDefinition["edges"] {
+  const ports = portsFor(replacement);
+  return definition.edges.flatMap((edge) => {
+    if (edge.from !== previous.id || ports.includes(edge.port)) return [edge];
+    if (replacement.type === "iterator" && edge.port === "next") return [{ ...edge, port: "done" }];
+    if (previous.type === "iterator" && edge.port === "done" && ports.includes("next"))
+      return [{ ...edge, port: "next" }];
+    return [];
+  });
+}
+
 function insertSelection(
   definition: WorkflowDefinition,
   request: PickerRequest,
@@ -291,9 +306,7 @@ function insertSelection(
       definition: {
         ...definition,
         nodes: definition.nodes.map((item) => (item.id === previous.id ? replacement : item)),
-        edges: definition.edges.filter(
-          (edge) => edge.from !== previous.id || portsFor(replacement).includes(edge.port),
-        ),
+        edges: replacementEdges(definition, previous, replacement),
       },
       selectedId: previous.id,
       changed: true,

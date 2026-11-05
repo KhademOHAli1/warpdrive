@@ -25,6 +25,7 @@ import { orderedWorkflowNodes } from "../nodeOrder";
 import type { NodePosition, WorkflowDefinition, WorkflowNode } from "../schemas";
 import { ConnectionFeedback } from "./ConnectionFeedback";
 import { useConditionPortLabel } from "./conditionPortLabel";
+import { iteratorReturnEdges } from "./iteratorReturnEdges";
 import { ResponsiveViewport, type RevealNode } from "./ResponsiveViewport";
 import { type AddFromOutput, useConnectionGestures } from "./useConnectionGestures";
 import { type WorkflowCanvasEdge, WorkflowDiagramEdge } from "./WorkflowDiagramEdge";
@@ -243,6 +244,7 @@ export function WorkflowCanvas({
           : undefined,
     };
   });
+  edges.push(...iteratorReturnEdges(definition, markerPrefix));
   if (pendingSource !== undefined) {
     edges.push({
       id: pendingEdgeId,
@@ -362,7 +364,7 @@ export function WorkflowCanvas({
           onSelectEdge(null);
         }}
         onEdgeClick={(_, edge) => {
-          if (edge.id !== pendingEdgeId) onSelectEdge(edge.id);
+          if (edge.id !== pendingEdgeId && edge.data?.loopReturn !== true) onSelectEdge(edge.id);
         }}
         onEdgeMouseEnter={(_, edge) => setHoveredEdge(edge.id)}
         onEdgeMouseLeave={() => setHoveredEdge(null)}

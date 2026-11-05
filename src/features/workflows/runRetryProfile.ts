@@ -92,6 +92,9 @@ function validCompletedOutput(node: WorkflowNode, step: Step, run: Run, recordId
   if (
     step.runId !== run.id ||
     step.simulated ||
+    step.iterationIndex !== -1 ||
+    step.outcome !== "succeeded" ||
+    step.errorId !== null ||
     !(step.completedAt instanceof Date) ||
     !Number.isFinite(step.completedAt.getTime()) ||
     !isDeepStrictEqual(step.output, run.outputs[node.id])
@@ -159,7 +162,14 @@ export function coherentFailedTask(
   run: Run,
   steps: Step[],
 ): WorkflowNode | null {
-  if (!z.record(z.string(), z.record(z.string(), z.json())).safeParse(run.outputs).success)
+  if (
+    !z
+      .strictObject({
+        iteratorFrame: z.null(),
+        outputs: z.record(z.string(), z.record(z.string(), z.json())),
+      })
+      .safeParse({ iteratorFrame: run.iteratorFrame, outputs: run.outputs }).success
+  )
     return null;
   const trigger = definition.nodes.find((node) => node.type === "trigger.manual");
   if (trigger === undefined) return null;

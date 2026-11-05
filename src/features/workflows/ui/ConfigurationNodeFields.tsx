@@ -18,6 +18,7 @@ import { DelayScheduleFields } from "./DelayScheduleFields";
 import { EmailDraftConfigurationFields } from "./EmailDraftConfigurationFields";
 import { HumanFormConfigurationFields } from "./HumanFormConfigurationFields";
 import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
+import { IteratorConfigurationFields } from "./IteratorConfigurationFields";
 import { ManualTriggerConfigurationFields } from "./ManualTriggerConfigurationFields";
 import { PersonUpsertConfigurationFields } from "./PersonUpsertConfigurationFields";
 import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
@@ -162,6 +163,8 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
       return <RecordMutationConfigurationFields {...props} />;
     case "human.form":
       return <HumanFormConfigurationFields {...props} />;
+    case "iterator":
+      return <IteratorConfigurationFields {...props} />;
     case "calendar.create":
       return <CalendarEventConfigurationFields {...props} />;
     case "email.draft":

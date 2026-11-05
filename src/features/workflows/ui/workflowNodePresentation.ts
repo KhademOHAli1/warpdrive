@@ -18,6 +18,7 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
   condition: "arrows-split",
   ifElse: "arrows-split",
   filter: "filter",
+  iterator: "repeat",
   delay: "player-pause",
   notification: "send",
 };
@@ -25,7 +26,13 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
 export function workflowNodeCategory(type: WorkflowNode["type"]) {
   if (type.startsWith("trigger.")) return "nodeCategoryTrigger";
   if (type === "human.form") return "nodeCategoryHumanInput";
-  if (type === "condition" || type === "ifElse" || type === "filter" || type === "delay")
+  if (
+    type === "condition" ||
+    type === "ifElse" ||
+    type === "filter" ||
+    type === "delay" ||
+    type === "iterator"
+  )
     return "nodeCategoryFlow";
   return type === "notification" || type === "email.draft" || type === "calendar.create"
     ? "nodeCategoryCore"

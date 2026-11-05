@@ -11,6 +11,7 @@ export interface LiveRunEffects {
     readonly condition: number;
     readonly filter?: number;
     readonly ifElse?: number;
+    readonly iterator?: number;
     readonly recordCreate?: number;
     readonly recordUpdate?: number;
     readonly recordDelete?: number;
@@ -94,6 +95,7 @@ const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["count
   condition: "condition",
   filter: "filter",
   ifElse: "ifElse",
+  iterator: "iterator",
   "record.create": "recordCreate",
   "record.update": "recordUpdate",
   "record.delete": "recordDelete",

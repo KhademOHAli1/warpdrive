@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { sql, TransactionRollbackError } from "drizzle-orm";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -29,6 +29,16 @@ import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
+import { workflowIteratorMaxSteps } from "./workflowIteratorFrameContract";
+import { workflowIteratorGraphReady } from "./workflowIteratorGraph";
+import { workflowIteratorItemVisible, workflowIteratorMaySkipItem } from "./workflowIteratorRun";
+import {
+  advanceWorkflowIteratorRuntime,
+  armWorkflowIteratorRuntime,
+  resumeWorkflowIteratorRuntime,
+  type WorkflowIteratorBodyReceipt,
+  type WorkflowIteratorRuntimePlan,
+} from "./workflowIteratorRuntime";
 import type { WorkflowManualLaunchPayload } from "./workflowManualLaunchContract";
 import { upsertWorkflowPerson } from "./workflowPersonUpsert";
 import { createWorkflowRecord } from "./workflowRecordCreate";
@@ -121,7 +131,8 @@ async function currentDefinition(db: Db, definition: WorkflowDefinition, signal:
       }
     : { status: "complete" as const, defs: [] };
   const checked = validateDefinition(definition, metadata);
-  if (!checked.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
+  if (!checked.ok || !workflowIteratorGraphReady(checked.value))
+    return err(ERROR_IDS.WORKFLOW_INVALID);
   return checked.value.nodes.every(supportedNode)
     ? ok(checked.value)
     : err(ERROR_IDS.WORKFLOW_NOT_READY);
@@ -243,6 +254,159 @@ async function simulateStep(
   });
 }
 
+async function simulateIteratorBody(
+  context: SimulationContext,
+  actor: PermSetUser,
+  node: DraftNode,
+  outputs: RunOutputs,
+): Promise<Result<SuccessfulStep, DraftSimulationStep>> {
+  let failed: DraftSimulationStep | undefined;
+  try {
+    return await context.db.transaction(async (db) => {
+      const step = await simulateStep({ ...context, db }, actor, node, outputs);
+      if (step.ok) return step;
+      failed = step.error;
+      return db.rollback();
+    });
+  } catch (error) {
+    if (failed !== undefined && error instanceof TransactionRollbackError) return err(failed);
+    throw error;
+  }
+}
+
+interface DraftIteratorOccurrence {
+  plan: WorkflowIteratorRuntimePlan | null;
+  receipt: DraftSimulationStep;
+  bodyReceipt?: WorkflowIteratorBodyReceipt;
+}
+
+async function simulateIteratorOccurrence(
+  context: SimulationContext,
+  runId: string,
+  plan: Extract<WorkflowIteratorRuntimePlan, { status: "running" }>,
+  receipts: readonly WorkflowIteratorBodyReceipt[],
+): Promise<Result<DraftIteratorOccurrence, string>> {
+  const { db, actor, workflowId, definition, signal } = context;
+  const resumed = resumeWorkflowIteratorRuntime({ definition, runId, ...plan, receipts });
+  if (!resumed.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const node = definition.nodes.find((item) => item.id === plan.nextNodeId);
+  if (node === undefined || !supportedNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
+  const active = resumed.value;
+  const authority = await currentDraftAuthority(db, actor, workflowId, signal);
+  if (!authority.ok) return authority;
+  const currentActor = authority.value.actor;
+  if (!(await workflowIteratorItemVisible(db, currentActor, active, signal)))
+    return err(ERROR_IDS.WORKFLOW_DENIED);
+  const step = await simulateIteratorBody(context, currentActor, node, active.executionOutputs);
+  const receipt = active.frame.execution;
+  const { iterationIndex } = receipt;
+  if (!step.ok) {
+    const safe =
+      step.error.errorId !== undefined && workflowIteratorMaySkipItem(step.error.errorId);
+    const skipped = safe
+      ? advanceWorkflowIteratorRuntime(active, { status: "itemFailed", receipt })
+      : null;
+    return ok({
+      plan: skipped?.ok === true ? skipped.value : null,
+      receipt: { ...step.error, iterationIndex },
+    });
+  }
+  const next = advanceWorkflowIteratorRuntime(active, {
+    status: "completed",
+    receipt,
+    nextNodeId: step.value.nextId ?? null,
+  });
+  return next.ok
+    ? ok({
+        plan: next.value,
+        receipt: { ...step.value.receipt, iterationIndex },
+        bodyReceipt: { ...receipt, output: step.value.output },
+      })
+    : err(ERROR_IDS.WORKFLOW_INVALID);
+}
+
+type DraftNodeProgress =
+  | { status: "stopped" }
+  | { status: "done"; outputs: RunOutputs; nextId: string | undefined };
+
+async function walkDraftIterator(
+  context: SimulationContext,
+  iteratorNodeId: string,
+  outputs: RunOutputs,
+  receipt: DraftSimulationReceipt,
+): Promise<Result<DraftNodeProgress, string>> {
+  const runId = randomUUID();
+  const armed = armWorkflowIteratorRuntime({
+    definition: context.definition,
+    runId,
+    iteratorNodeId,
+    outputs,
+  });
+  if (!armed.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
+  let plan = armed.value;
+  const receipts: WorkflowIteratorBodyReceipt[] = [];
+  while (plan.status === "running") {
+    context.signal.throwIfAborted();
+    if (receipt.steps.length >= workflowIteratorMaxSteps) return err(ERROR_IDS.WORKFLOW_INVALID);
+    const step = await simulateIteratorOccurrence(context, runId, plan, receipts);
+    if (!step.ok) return step;
+    receipt.steps.push(step.value.receipt);
+    const next = step.value.plan;
+    if (next === null) {
+      receipt.outcome = "failed";
+      return ok({ status: "stopped" });
+    }
+    if (
+      next.status === "running" &&
+      next.iteratorFrame.itemIndex === plan.iteratorFrame.itemIndex &&
+      step.value.bodyReceipt !== undefined
+    ) {
+      receipts.push(step.value.bodyReceipt);
+    } else {
+      receipts.length = 0;
+    }
+    plan = next;
+  }
+  const { processedCount, failedCount } = plan.summary;
+  receipt.steps.push({
+    nodeId: iteratorNodeId,
+    nodeType: "iterator",
+    status: "succeeded",
+    ...(plan.nextNodeId === null ? {} : { port: "done" as const }),
+    iteratorSummary: { processedCount, failedCount },
+  });
+  return ok({
+    status: "done",
+    outputs: { ...plan.outputs, [iteratorNodeId]: plan.summary },
+    nextId: plan.nextNodeId ?? undefined,
+  });
+}
+
+async function walkDraftStep(
+  context: SimulationContext,
+  node: DraftNode,
+  outputs: RunOutputs,
+  receipt: DraftSimulationReceipt,
+): Promise<Result<DraftNodeProgress, string>> {
+  const authority = await currentDraftAuthority(
+    context.db,
+    context.actor,
+    context.workflowId,
+    context.signal,
+  );
+  if (!authority.ok) return authority;
+  if (node.type === "iterator") return walkDraftIterator(context, node.id, outputs, receipt);
+  const step = await simulateStep(context, authority.value.actor, node, outputs);
+  if (!step.ok) {
+    receipt.steps.push(step.error);
+    receipt.outcome = "failed";
+    return ok({ status: "stopped" });
+  }
+  outputs[node.id] = step.value.output;
+  receipt.steps.push(step.value.receipt);
+  return ok({ status: "done", outputs, nextId: step.value.nextId });
+}
+
 async function walkDraft(
   context: SimulationContext,
   receipt: DraftSimulationReceipt,
@@ -251,7 +415,7 @@ async function walkDraft(
   if (start === undefined) return err(ERROR_IDS.WORKFLOW_NOT_READY);
   const nodes = new Map(context.definition.nodes.map((node) => [node.id, node]));
   const visited = new Set<string>();
-  const outputs: RunOutputs = {};
+  let outputs: RunOutputs = {};
   let cursor: string | undefined = start.id;
   while (cursor !== undefined) {
     context.signal.throwIfAborted();
@@ -259,21 +423,10 @@ async function walkDraft(
     visited.add(cursor);
     const node = nodes.get(cursor);
     if (node === undefined || !supportedNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
-    const authority = await currentDraftAuthority(
-      context.db,
-      context.actor,
-      context.workflowId,
-      context.signal,
-    );
-    if (!authority.ok) return authority;
-    const step = await simulateStep(context, authority.value.actor, node, outputs);
-    if (!step.ok) {
-      receipt.steps.push(step.error);
-      receipt.outcome = "failed";
-      return ok(receipt);
-    }
-    outputs[node.id] = step.value.output;
-    receipt.steps.push(step.value.receipt);
+    const step = await walkDraftStep(context, node, outputs, receipt);
+    if (!step.ok) return step;
+    if (step.value.status === "stopped") return ok(receipt);
+    outputs = step.value.outputs;
     cursor = step.value.nextId;
   }
   return ok(receipt);

@@ -27,7 +27,7 @@ function entry(label: string) {
 }
 
 function actionTitles(copy: Copy) {
-  return [copy.read, copy.task, copy.notification, copy.condition, copy.delay];
+  return [copy.read, copy.task, copy.notification, copy.condition, copy.iterator, copy.delay];
 }
 
 function fixture(locale: Locale = "en", read: PaletteRead = readyPaletteRead(), editable = true) {

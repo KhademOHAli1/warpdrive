@@ -16,6 +16,7 @@ export const creatableNodeTypes = [
   "condition",
   "ifElse",
   "filter",
+  "iterator",
   "delay",
 ] as const;
 export type CreatableNodeType = (typeof creatableNodeTypes)[number];

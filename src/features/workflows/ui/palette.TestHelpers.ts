@@ -32,6 +32,7 @@ export function paletteSnapshot(
     "activity.create",
     "notification",
     "condition",
+    "iterator",
     "filter",
     "ifElse",
     "delay",

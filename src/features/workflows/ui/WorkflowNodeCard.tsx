@@ -159,7 +159,7 @@ export function WorkflowNodeCard({
         const branch = ifElseBranchOffset(node, port);
         const label = portLabel(port, node);
         const fraction = (index + 1) / (ports.length + 1);
-        const horizontal = port === "true";
+        const horizontal = port === "true" || port === "loop";
         const connector = horizontal
           ? { width: 56, height: 2, path: "M0 1H28H56" }
           : { width: 2, height: 56, path: "M1 0V28V56" };

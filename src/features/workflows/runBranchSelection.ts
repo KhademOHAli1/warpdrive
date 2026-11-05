@@ -29,6 +29,7 @@ export function selectRunBranch(
   node: WorkflowNode,
   output: StepOutput,
 ): Result<WorkflowEdge | undefined, string> {
+  if (node.type === "iterator") return err(ERROR_IDS.WORKFLOW_INVALID);
   if (node.type === "ifElse") return selectIfElseBranch(definition, node, output);
   if (node.type === "filter") {
     if (

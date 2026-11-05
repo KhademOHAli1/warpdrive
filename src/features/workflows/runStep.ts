@@ -8,7 +8,7 @@ import { validateNodeConfiguration } from "./configurationValidation";
 import { delayScheduleAt } from "./delay";
 import { executableNode } from "./readiness";
 import { executeRunNode } from "./runActions";
-import type { StepOutput } from "./runTypes";
+import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 import { advanceWorkflowHumanForm } from "./workflowHumanFormWait";
 import { readWorkflowManualLaunch } from "./workflowManualLaunchContract";
@@ -17,12 +17,13 @@ type StepProgress =
   | { status: "waiting"; armedDeadline?: Date }
   | { status: "completed"; output: StepOutput };
 
-async function advanceDelayStep(
+async function advanceDelay(
   db: Db,
   node: WorkflowNode,
   run: typeof workflowRuns.$inferSelect,
   now: Date,
   definition: WorkflowDefinition,
+  outputs: RunOutputs,
   signal: AbortSignal,
 ): Promise<Result<StepProgress, string>> {
   if (run.status === "waiting") {
@@ -33,11 +34,7 @@ async function advanceDelayStep(
       ? ok({ status: "waiting" })
       : ok({ status: "completed", output: { resumeAt: deadline.toISOString() } });
   }
-  const deadline = delayScheduleAt(node.config, now, {
-    definition,
-    nodeId: node.id,
-    outputs: run.outputs,
-  });
+  const deadline = delayScheduleAt(node.config, now, { definition, nodeId: node.id, outputs });
   if (!deadline.ok) return deadline;
   if (run.mode === "simulation" || deadline.value.getTime() <= now.getTime())
     return ok({ status: "completed", output: { resumeAt: deadline.value.toISOString() } });
@@ -58,6 +55,7 @@ export async function advanceRunStep(
   now: Date,
   definition: WorkflowDefinition,
   signal: AbortSignal,
+  outputs: RunOutputs = run.outputs,
 ): Promise<Result<StepProgress, string>> {
   if (!executableNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
   const launch = readWorkflowManualLaunch(definition, run.trigger);
@@ -68,13 +66,13 @@ export async function advanceRunStep(
   )
     return err(ERROR_IDS.WORKFLOW_INVALID);
   if (node.type === "human.form") return advanceWorkflowHumanForm(db, run, now, signal);
-  if (node.type === "delay") return advanceDelayStep(db, node, run, now, definition, signal);
+  if (node.type === "delay") return advanceDelay(db, node, run, now, definition, outputs, signal);
   if (run.status === "waiting") return err(ERROR_IDS.WORKFLOW_INVALID);
   const result = await executeRunNode(
     db,
     actor,
     node,
-    run.outputs,
+    outputs,
     launch,
     run.mode === "simulation",
     definition,

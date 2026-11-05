@@ -425,6 +425,9 @@ async function captureEditor(page, profile, copy, name) {
   await add.click();
   const picker = page.getByRole("dialog", { name: copy.selectAction, exact: true });
   await picker.getByRole("button", { name: copy.createRecord, exact: true }).waitFor();
+  const iterator = picker.getByRole("button", { name: copy.iterator, exact: true });
+  await iterator.waitFor();
+  assert.equal(await iterator.isEnabled(), true);
   assert.equal(await canvas.locator(".react-flow__node.selected").count(), 0);
   const palette = await screenshot("action-picker.png");
   await picker.getByRole("button", { name: copy.close, exact: true }).click();

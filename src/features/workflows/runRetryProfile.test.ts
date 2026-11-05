@@ -25,6 +25,7 @@ function fixture() {
     status: "failed",
     trigger: { recordId },
     nextNodeId: "task",
+    iteratorFrame: null,
     resumeAt: null,
     outputs,
     errorId: "E_PERM_001",
@@ -38,6 +39,9 @@ function fixture() {
       id: crypto.randomUUID(),
       runId,
       nodeId,
+      iterationIndex: -1,
+      outcome: "succeeded",
+      errorId: null,
       output,
       simulated: false,
       completedAt: now,
@@ -80,6 +84,8 @@ it.each([
   "duplicate",
   "extraOutput",
   "simulated",
+  "scopedReceipt",
+  "failedReceipt",
   "completedCursor",
   "foreignRun",
   "invalidTime",
@@ -92,6 +98,11 @@ it.each([
   if (cause === "duplicate") f.steps.push({ ...step, id: crypto.randomUUID() });
   if (cause === "extraOutput") f.run.outputs.unrecorded = { id: crypto.randomUUID() };
   if (cause === "simulated") step.simulated = true;
+  if (cause === "scopedReceipt") step.iterationIndex = 0;
+  if (cause === "failedReceipt") {
+    step.outcome = "failed";
+    step.errorId = "E_PERM_001";
+  }
   if (cause === "completedCursor")
     f.steps.push({ ...step, id: crypto.randomUUID(), nodeId: "task" });
   if (cause === "foreignRun") step.runId = crypto.randomUUID();

@@ -42,6 +42,7 @@ import {
 import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
 import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
 import { workflowHumanFormOutputDescriptors } from "./workflowHumanFormContract";
+import { iteratorMappingOutputs, iteratorOutputVisible } from "./workflowIteratorMapping";
 import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 import { workflowPersonUpsertTarget } from "./workflowPersonUpsertContract";
 import {
@@ -70,8 +71,9 @@ function qualifiedSource(node: WorkflowNode): boolean {
   return node.type !== "record.read" || node.config.entity === "deal";
 }
 
-function outputsFor(node: WorkflowNode): MappingOutput[] {
+function outputsFor(definition: WorkflowDefinition, node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
+  if (node.type === "iterator") return iteratorMappingOutputs(definition, node);
   if (node.type === "trigger.manual" && workflowManualLaunchScope(node.config) !== "deal")
     return [];
   if (node.type === "human.form")
@@ -123,7 +125,9 @@ export function mappingOutputForReference(
   const node = nodes[0];
   return node === undefined
     ? undefined
-    : outputsFor(node).find((output) => output.path.join(".") === reference.path.join("."));
+    : outputsFor(definition, node).find(
+        (output) => output.path.join(".") === reference.path.join("."),
+      );
 }
 
 function catalog(
@@ -136,7 +140,13 @@ function catalog(
   const path = mappingPathNodes(definition, nodeId, includeCurrent);
   return {
     state: "ready",
-    outputs: path.nodes.flatMap(outputsFor),
+    outputs: path.nodes.flatMap((node, index) =>
+      outputsFor(definition, node).filter(
+        (output) =>
+          node.type !== "iterator" ||
+          iteratorOutputVisible(definition, output, path.nodes[index + 1]?.id ?? nodeId),
+      ),
+    ),
     ...(path.issue === undefined ? {} : { pathIssue: path.issue }),
   };
 }
@@ -358,6 +368,7 @@ function extendedMappingTarget(
     }
     case "activity.create":
     case "human.form":
+    case "iterator":
     case "condition":
     case "delay":
     case "filter":

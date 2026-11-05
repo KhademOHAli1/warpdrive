@@ -103,6 +103,7 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
     ],
   },
   ifElse: { supported: true, fields: [name] },
+  iterator: { supported: true, fields: [name] },
   "record.create": { supported: true, fields: [name] },
   "record.update": { supported: true, fields: [name] },
   "record.delete": { supported: true, fields: [name] },
@@ -222,6 +223,7 @@ export function conditionSourceDefaults(source: {
 
 function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["config"] | undefined {
   if (type === "ifElse") return newIfElseConfig();
+  if (type === "iterator") return { items: { kind: "literal", itemKind: "text", items: [] } };
   if (type === "record.create" || type === "record.update") return { fields: {} };
   if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
   if (type === "human.form") return { fields: [] };

@@ -4,7 +4,12 @@ import { conditionContainsMismatch, temporalConditionMismatch } from "./configur
 import { delayDurationSettings, delayDurationUnits } from "./delayConfig";
 import { prepareIfElseConfig } from "./ifElse";
 import { mappingPathNodes } from "./mappingAvailability";
-import { describeMappingTarget, inspectMapping, mappingOutputForReference } from "./mappingCatalog";
+import {
+  describeMappingOutputs,
+  describeMappingTarget,
+  inspectMapping,
+  mappingOutputForReference,
+} from "./mappingCatalog";
 import { actionRegistry } from "./registry";
 import {
   type Binding,
@@ -13,6 +18,7 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { iteratorSourceIsUpstream } from "./workflowIteratorConfiguration";
 import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 import { recordSearchBindingEntries, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 
@@ -87,6 +93,14 @@ function structuralReferenceIssue(
   if (source === undefined) return "unavailable_reference";
   if (source.type === "trigger.manual" && workflowManualLaunchScope(source.config) !== "deal")
     return "unknown_output";
+  if (source.type === "iterator") {
+    const outputs = describeMappingOutputs(definition, node.id).outputs;
+    return outputs.some(
+      (output) => output.nodeId === source.id && output.path.join(".") === binding.path.join("."),
+    )
+      ? null
+      : "unknown_output";
+  }
   if (source.type === "human.form")
     return mappingOutputForReference(definition, binding) === undefined ? "unknown_output" : null;
   const key = binding.path.join(".");
@@ -149,6 +163,17 @@ function groupedReferenceIssues(
 export function inspectReferences(definition: WorkflowDefinition): DefinitionIssue[] {
   const issues: DefinitionIssue[] = [];
   for (const node of definition.nodes) {
+    if (node.type === "iterator") {
+      const source = bindingSchema.options[1].safeParse(node.config.items);
+      if (source.success && !iteratorSourceIsUpstream(definition, node, source.data.nodeId))
+        issues.push({
+          code: "unavailable_reference",
+          nodeId: node.id,
+          field: "items",
+          path: ["items"],
+        });
+      continue;
+    }
     const grouped = groupedReferenceIssues(definition, node);
     if (grouped !== null) {
       issues.push(...grouped);

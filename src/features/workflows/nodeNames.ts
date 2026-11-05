@@ -21,6 +21,7 @@ export const nodeLabelKeys = {
   condition: "condition",
   ifElse: "ifElseAction",
   filter: "filter",
+  iterator: "iterator",
   delay: "delay",
   notification: "notification",
 } as const;

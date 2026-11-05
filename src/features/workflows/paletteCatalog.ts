@@ -46,6 +46,7 @@ interface CatalogDescriptor {
     | "human-form"
     | "ordered-condition"
     | "scalar-condition"
+    | "iterator"
     | "delay-schedule"
     | "unavailable";
   input: "deal" | "optional" | "scalar" | "none";
@@ -219,6 +220,16 @@ export const paletteCatalog = [
     descriptionKey: "conditionActionHint",
     profile: "scalar-condition",
     input: "scalar",
+  },
+  {
+    ...insertable,
+    type: "iterator",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "iterator",
+    descriptionKey: "iteratorHint",
+    profile: "iterator",
+    input: "none",
   },
   {
     ...insertable,

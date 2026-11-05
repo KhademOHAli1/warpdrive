@@ -97,7 +97,9 @@ export function positionForNewNode(
         ? -200
         : output.port === "false"
           ? 200
-          : 0;
+          : output.port === "loop"
+            ? COLUMN_SPACING
+            : 0;
   const source =
     output === undefined ? undefined : graph.nodes.find((node) => node.id === output.from);
   const branch =

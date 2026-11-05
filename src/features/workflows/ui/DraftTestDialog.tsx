@@ -28,6 +28,11 @@ import {
 import { portsFor } from "../graphPorts";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
 import { type WorkflowDefinition, type WorkflowNode, workflowPortSchema } from "../schemas";
+import {
+  workflowIteratorMaxItems,
+  workflowIteratorMaxSteps,
+} from "../workflowIteratorFrameContract";
+import { compileWorkflowIteratorGraph } from "../workflowIteratorGraph";
 import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
 import { useConditionPortLabel } from "./conditionPortLabel";
 
@@ -73,6 +78,8 @@ const stepKeys = [
   "port",
   "waitResumeAt",
   "recordDeleted",
+  "iterationIndex",
+  "iteratorSummary",
 ];
 const requiredStepKeys = ["nodeId", "nodeType", "status"];
 const knownErrorIds = Object.values(ERROR_IDS);
@@ -137,6 +144,41 @@ function attachStepDeletion(step: DraftSimulationStep, value: Record<string, unk
   step.recordDeleted = true;
   return true;
 }
+function validIteratorCount(value: unknown, max: number): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= max;
+}
+
+function attachIteratorProgress(
+  step: DraftSimulationStep,
+  value: Record<string, unknown>,
+): boolean {
+  if (Object.hasOwn(value, "iterationIndex")) {
+    if (
+      step.nodeType === "iterator" ||
+      !validIteratorCount(value.iterationIndex, workflowIteratorMaxItems - 1)
+    )
+      return false;
+    step.iterationIndex = value.iterationIndex;
+  }
+  if (!Object.hasOwn(value, "iteratorSummary")) return true;
+  const summary = value.iteratorSummary;
+  if (
+    step.nodeType !== "iterator" ||
+    step.status !== "succeeded" ||
+    !plainRecord(summary) ||
+    !onlyKeys(summary, ["processedCount", "failedCount"])
+  )
+    return false;
+  const { processedCount, failedCount } = summary;
+  if (
+    !validIteratorCount(processedCount, workflowIteratorMaxItems) ||
+    !validIteratorCount(failedCount, processedCount)
+  )
+    return false;
+  step.iteratorSummary = { processedCount, failedCount };
+  return true;
+}
+
 function readStep(
   value: unknown,
   nodes: ReadonlyMap<string, WorkflowNode>,
@@ -158,7 +200,8 @@ function readStep(
   return attachStepError(step, value) &&
     attachStepPort(step, value, node) &&
     attachStepWait(step, value) &&
-    attachStepDeletion(step, value)
+    attachStepDeletion(step, value) &&
+    attachIteratorProgress(step, value)
     ? step
     : null;
 }
@@ -175,24 +218,42 @@ function readSteps(
   snapshot: DraftTestSnapshot,
 ): DraftSimulationStep[] | null {
   const nodes = submittedNodes(snapshot);
-  if (nodes === null || value.length > 100) return null;
+  if (nodes === null || value.length > workflowIteratorMaxSteps) return null;
+  const iterator = snapshot.definition.nodes.find((node) => node.type === "iterator");
+  const loop =
+    iterator === undefined ? null : compileWorkflowIteratorGraph(snapshot.definition, iterator.id);
+  if (loop !== null && !loop.ok) return null;
+  const bodyIds = new Set(loop?.value.body.map((node) => node.id) ?? []);
   const steps: DraftSimulationStep[] = [];
   const seen = new Set<string>();
   for (const raw of value) {
     const step = readStep(raw, nodes);
-    if (step === null || seen.has(step.nodeId)) return null;
-    seen.add(step.nodeId);
+    if (step === null || bodyIds.has(step.nodeId) !== (step.iterationIndex !== undefined))
+      return null;
+    const key = receiptStepKey(step);
+    if (seen.has(key)) return null;
+    seen.add(key);
     steps.push(step);
   }
   return steps;
 }
+function receiptStepKey(step: DraftSimulationStep): string {
+  return `${step.nodeId}:${step.iterationIndex ?? -1}`;
+}
+
 function stepsMatchOutcome(
   steps: readonly DraftSimulationStep[],
   outcome: "completed" | "failed",
+  definition: WorkflowDefinition,
 ): boolean {
   if (steps.length === 0) return false;
-  const failed = steps.findIndex((step) => step.status === "failed");
-  return outcome === "completed" ? failed === -1 : failed === steps.length - 1;
+  const continueOnError = definition.nodes.some(
+    (node) => node.type === "iterator" && node.config.shouldContinueOnIterationFailure === true,
+  );
+  return steps.every((step, index) => {
+    if (index === steps.length - 1 && outcome === "failed") return step.status === "failed";
+    return step.status === "succeeded" || (continueOnError && step.iterationIndex !== undefined);
+  });
 }
 function receiptRecord(value: unknown, snapshot: DraftTestSnapshot): DraftSimulationReceipt | null {
   if (!plainRecord(value) || !onlyKeys(value, receiptKeys)) return null;
@@ -210,7 +271,7 @@ function receiptRecord(value: unknown, snapshot: DraftTestSnapshot): DraftSimula
   if (!Array.isArray(rawSteps)) return null;
   const steps = readSteps(rawSteps, snapshot);
   if (steps === null) return null;
-  if (!stepsMatchOutcome(steps, outcome)) return null;
+  if (!stepsMatchOutcome(steps, outcome, snapshot.definition)) return null;
   return {
     source: "draft",
     mode: "simulation",
@@ -269,7 +330,7 @@ function DraftTestResults({
           const name =
             node === undefined ? t(nodeLabelKeys[step.nodeType]) : displayNodeName(node, locale);
           return (
-            <li key={step.nodeId} className="min-w-0 space-y-1 rounded-md bg-muted/40 p-3">
+            <li key={receiptStepKey(step)} className="min-w-0 space-y-1 rounded-md bg-muted/40 p-3">
               <p dir="auto" className="break-words font-medium [overflow-wrap:anywhere]">
                 {t("draftSimulationStep", { number: fmt.number(index + 1), name })}
               </p>
@@ -291,6 +352,17 @@ function DraftStepDetails({ step, node }: { step: DraftSimulationStep; node?: Wo
     step.status === "succeeded" && step.nodeType === "condition" ? step.port : undefined;
   return (
     <>
+      {step.iterationIndex !== undefined && (
+        <p>{t("iteratorItemNumber", { number: fmt.number(step.iterationIndex + 1) })}</p>
+      )}
+      {step.iteratorSummary !== undefined && (
+        <p>
+          {t("iteratorSummary", {
+            processed: fmt.number(step.iteratorSummary.processedCount),
+            failed: fmt.number(step.iteratorSummary.failedCount),
+          })}
+        </p>
+      )}
       {branch === "true" && <p>{t("draftSimulationBranchTrue")}</p>}
       {branch === "false" && <p>{t("draftSimulationBranchFalse")}</p>}
       {step.recordDeleted === true && <p>{t("recordWouldBeDeleted")}</p>}

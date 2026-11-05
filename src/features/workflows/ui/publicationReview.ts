@@ -71,6 +71,7 @@ const descriptions = {
   "activity.create": "publicationTaskStep",
   condition: "publicationConditionStep",
   ifElse: "publicationIfElseStep",
+  iterator: "publicationIteratorStep",
   filter: "publicationFilterStep",
   delay: "publicationWaitStep",
   notification: "publicationUnavailableStep",

@@ -20,6 +20,7 @@ import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
 import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { workflowIteratorConfig } from "./workflowIteratorRuntimeContract";
 import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
 import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
@@ -222,6 +223,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputs: {},
     outputContracts: {},
     effect: "wait",
+  },
+  iterator: {
+    configuration: configurationProfiles.iterator,
+    config: workflowIteratorConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("iterator"),
+    outputContracts: mappingOutputContracts("iterator"),
+    effect: "none",
   },
   filter: {
     configuration: configurationProfiles.filter,

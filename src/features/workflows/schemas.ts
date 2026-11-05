@@ -5,6 +5,7 @@ import { boundedDelayConfig } from "./delayConfig";
 import { boundedIfElseConfig, branchPortSchema } from "./ifElseBudget";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
 import { boundedWorkflowHumanFormConfig } from "./workflowHumanFormContract";
+import { boundedWorkflowIteratorConfig } from "./workflowIteratorConfiguration";
 import { boundedRecordLookupConfig } from "./workflowRecordQueryBounds";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
@@ -62,6 +63,7 @@ export const nodeTypes = [
   "condition",
   "ifElse",
   "filter",
+  "iterator",
   "delay",
   "notification",
 ] as const;
@@ -84,6 +86,7 @@ export const nodeSchema = z.strictObject({
         ) || boundedIfElseConfig(raw),
       "If/Else routes exceed safe bounds",
     )
+    .refine(boundedWorkflowIteratorConfig, "Iterator settings exceed safe bounds")
     .refine(boundedDelayConfig, "Delay settings exceed safe bounds")
     .refine(boundedRecordLookupConfig, "Record lookup settings exceed safe bounds")
     .refine((raw) => {
@@ -97,7 +100,10 @@ export const nodeSchema = z.strictObject({
     .pipe(z.record(z.string(), z.json())),
 });
 
-export const workflowPortSchema = z.union([z.enum(["next", "true", "false"]), branchPortSchema]);
+export const workflowPortSchema = z.union([
+  z.enum(["next", "true", "false", "loop", "done"]),
+  branchPortSchema,
+]);
 
 export const definitionSchema = z.strictObject({
   schemaVersion: z.literal(1),

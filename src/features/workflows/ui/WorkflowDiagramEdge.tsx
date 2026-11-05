@@ -19,6 +19,7 @@ export type WorkflowCanvasEdge = Edge<{
   markerPrefix?: string;
   hovered?: boolean;
   completed?: boolean;
+  loopReturn?: boolean;
   onInsert?: (position: NodePosition) => void;
   onDisconnect?: () => void;
 }>;
@@ -27,6 +28,19 @@ export type WorkflowCanvasEdge = Edge<{
 // validity and mutations remain owned by graphEditor and the existing palette context.
 function edgeGeometry(props: EdgeProps<WorkflowCanvasEdge>) {
   const { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition } = props;
+  if (props.data?.spec.port === "loop") {
+    const [path, x, y] = getSmoothStepPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+      borderRadius: 16,
+      offset: 40,
+    });
+    return { paths: [path], overlay: { x, y } };
+  }
   if (sourceY < targetY) {
     const [path, x, y] = getBezierPath({
       sourceX,
@@ -38,7 +52,7 @@ function edgeGeometry(props: EdgeProps<WorkflowCanvasEdge>) {
     });
     return { paths: [path], overlay: { x, y } };
   }
-  const x = (sourceX + targetX) / 2;
+  const x = props.data?.loopReturn === true ? sourceX + 200 : (sourceX + targetX) / 2;
   const y = sourceY + 40;
   const [first] = getSmoothStepPath({
     sourceX,

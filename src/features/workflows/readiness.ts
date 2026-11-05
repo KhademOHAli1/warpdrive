@@ -1,6 +1,7 @@
 import { parseConditionConfig } from "./conditionExpression";
 import { actionRegistry } from "./registry";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import { workflowIteratorGraphReady } from "./workflowIteratorGraph";
 
 // ORM JSON types do not validate stored values at runtime.
 // Keep this boundary check strict without relying on the declared literal version types.
@@ -30,6 +31,7 @@ export function executableNode(node: WorkflowNode): boolean {
   if (
     [
       "ifElse",
+      "iterator",
       "record.create",
       "record.update",
       "record.delete",
@@ -61,7 +63,11 @@ export function executableNode(node: WorkflowNode): boolean {
 }
 
 export function executableDefinition(definition: WorkflowDefinition): boolean {
-  return isSupportedVersion(definition.schemaVersion) && definition.nodes.every(executableNode);
+  return (
+    isSupportedVersion(definition.schemaVersion) &&
+    definition.nodes.every(executableNode) &&
+    workflowIteratorGraphReady(definition)
+  );
 }
 
 // Legacy fixed instants retain their existing published-only contract. The
@@ -82,6 +88,8 @@ export function requiresHumanForm(definition: WorkflowDefinition): boolean {
 
 export function draftExecutableDefinition(definition: WorkflowDefinition): boolean {
   return (
-    isSupportedVersion(definition.schemaVersion) && definition.nodes.every(draftExecutableNode)
+    isSupportedVersion(definition.schemaVersion) &&
+    definition.nodes.every(draftExecutableNode) &&
+    workflowIteratorGraphReady(definition)
   );
 }

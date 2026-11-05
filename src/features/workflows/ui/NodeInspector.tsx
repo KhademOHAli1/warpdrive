@@ -65,6 +65,7 @@ const hints = {
   "activity.create": "taskHint",
   condition: undefined,
   ifElse: undefined,
+  iterator: undefined,
   filter: undefined,
   delay: undefined,
   notification: undefined,

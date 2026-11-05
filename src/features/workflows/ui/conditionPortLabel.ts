@@ -21,6 +21,8 @@ export function useConditionPortLabel() {
   return (port: WorkflowEdge["port"], source?: WorkflowNode) => {
     if (port === "next") return t("nextPort");
     if (port === "true") return t("truePort");
+    if (port === "loop") return t("iteratorLoop");
+    if (port === "done") return t("iteratorDone");
     if (port === "false") return t("conditionOtherwise");
     return labelBranch(source?.type === "ifElse" ? ifElsePortDetails(source.config, port) : null);
   };
