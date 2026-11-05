@@ -126,11 +126,20 @@
     "moving": "Termin wird verschoben…",
     "moveSaved": "Termin verschoben.",
     "moveFailed": "Der Termin konnte nicht verschoben werden.",
-    "moveStale": "Dieser Termin wurde geändert. Prüfe seine aktuelle Uhrzeit, bevor du ihn erneut verschiebst.",
-    "moveUnknown": "Das Verschieben konnte nicht bestätigt werden. Aktualisiere den Kalender, um die Uhrzeit zu prüfen.",
-    "moveActorMissing": "Lade den Kalender neu, bevor du einen Termin verschiebst.",
-    "moveRefreshFailed": "Termin verschoben, aber der Kalender konnte nicht aktualisiert werden. Lade ihn neu, um den aktuellen Stand zu sehen.",
-    "moveDenied": "Du hast keine Berechtigung, diesen Termin zu verschieben.",
-    "moveInvalid": "Der Termin kann nicht an diese Stelle verschoben werden. Wähle ein anderes Datum oder eine andere Uhrzeit."
+    "moveStale": "Dieser Termin wurde geändert. Prüfen Sie die aktuelle Zeit und versuchen Sie es erneut.",
+    "moveUnknown": "Die Änderung konnte nicht bestätigt werden. Laden Sie den Kalender neu, um die Zeit zu prüfen.",
+    "moveActorMissing": "Laden Sie den Kalender neu, bevor Sie die Terminzeit ändern.",
+    "moveRefreshFailed": "Die Änderung wurde gespeichert, aber der Kalender konnte nicht aktualisiert werden. Laden Sie die Seite neu, um die aktuelle Zeit zu sehen.",
+    "moveDenied": "Sie haben keine Berechtigung, die Zeit dieses Termins zu ändern.",
+    "moveInvalid": "Wählen Sie ein gültiges Datum und eine gültige Uhrzeit für diesen Termin.",
+    "timedHint": "Ziehen Sie einen Termin, um ihn zu verschieben, oder ziehen Sie am oberen oder unteren Rand, um seine Dauer zu ändern. Ziehen Sie über einen freien Bereich, um einen Termin anzulegen. Mit Esc brechen Sie ab.",
+    "touchHint": "Halten Sie einen Termin gedrückt und ziehen Sie ihn dann auf eine andere Uhrzeit oder ein anderes Datum.",
+    "resizing": "Termindauer wird geändert…",
+    "resizeSaved": "Termindauer geändert.",
+    "resizeFailed": "Die Termindauer konnte nicht geändert werden.",
+    "undo": "Rückgängig",
+    "undoing": "Änderung wird rückgängig gemacht…",
+    "undoSaved": "Änderung rückgängig gemacht.",
+    "undoFailed": "Die Änderung konnte nicht rückgängig gemacht werden."
   }
 }

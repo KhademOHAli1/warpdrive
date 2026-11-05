@@ -1,5 +1,5 @@
 "use client";
-import { Plus } from "lucide-react";
+import { Plus, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -7,7 +7,6 @@ import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
-  type CalendarMoveTarget,
   type CalendarPoint,
   type CalendarSelection,
   movePreviewSelection,
@@ -21,7 +20,10 @@ import {
   weekTitle,
   yearTitle,
 } from "@/features/activities/calendarView";
-import { useCalendarReschedule } from "@/features/activities/useCalendarReschedule";
+import {
+  type CalendarRescheduleTarget,
+  useCalendarReschedule,
+} from "@/features/activities/useCalendarReschedule";
 import { useLocalNow } from "@/features/activities/useLocalNow";
 import { localDayIso } from "@/features/activities/weekAgenda";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
@@ -45,6 +47,12 @@ interface CalendarClientProps {
   empty?: React.ReactNode;
   onChanged?: () => void;
 }
+
+const PENDING_MESSAGE = {
+  move: "interaction.moving",
+  resize: "interaction.resizing",
+  undo: "interaction.undoing",
+} as const;
 
 function tab(active: boolean): string {
   return active
@@ -88,7 +96,9 @@ export function CalendarClient({
   const reschedule = useCalendarReschedule({
     onMoved: display.confirm,
     onRefresh: () => onChanged?.(),
+    onUncertain: display.forget,
   });
+  const pendingLabel = t(PENDING_MESSAGE[reschedule.pendingOperation ?? "move"]);
   const displayed = reschedule.canMove ? display.activities : activities;
   const {
     root: calendarRoot,
@@ -105,28 +115,39 @@ export function CalendarClient({
       setCreate(selection);
     },
     onMove: (activity, target) => {
-      void move(activity, target);
+      void save(
+        activity,
+        target,
+        movePreviewSelection(activity, target, preferences.timeZone),
+        target.time === undefined ? "date" : "time",
+      );
+    },
+    onResize: (activity, target, selection) => {
+      void save(activity, target, selection, "time");
     },
     onInvalidMove: () => setGestureError(t("interaction.moveInvalid")),
   });
 
-  async function move(activity: CalendarActivity, target: CalendarMoveTarget): Promise<void> {
+  async function save(
+    activity: CalendarActivity,
+    target: CalendarRescheduleTarget,
+    selection: CalendarSelection | null,
+    kind: CalendarPoint["kind"],
+  ): Promise<void> {
     setGestureError(null);
-    const selection = movePreviewSelection(activity, target, preferences.timeZone);
     if (selection !== null)
       setSavingPreview({
         scope: scopeKey,
         selection,
         subject: activity.subject,
-        kind: target.time === undefined ? "date" : "time",
+        kind,
       });
     const chips = Array.from(
       calendarRoot.current?.querySelectorAll<HTMLElement>("[data-calendar-event-id]") ?? [],
     ).filter((chip) => chip.dataset.calendarEventId === activity.id);
     for (const chip of chips) chip.setAttribute("data-calendar-pending", "true");
     try {
-      const result = await reschedule.move(activity, target);
-      if (result.kind === "stale" || result.kind === "unknown") display.forget(activity.id);
+      await reschedule.move(activity, target);
     } finally {
       for (const chip of chips) chip.removeAttribute("data-calendar-pending");
       setSavingPreview(null);
@@ -208,7 +229,12 @@ export function CalendarClient({
       </header>
 
       {view !== "year" && (
-        <p className="mb-3 text-xs text-muted-foreground">{t("interaction.hint")}</p>
+        <p className="mb-3 text-xs text-muted-foreground">
+          <span className="pointer-coarse:hidden">
+            {t(view === "day" || view === "week" ? "interaction.timedHint" : "interaction.hint")}
+          </span>
+          <span className="hidden pointer-coarse:inline">{t("interaction.touchHint")}</span>
+        </p>
       )}
       {(gestureError !== null || reschedule.error !== null) && (
         <p
@@ -219,9 +245,24 @@ export function CalendarClient({
         </p>
       )}
       {(reschedule.pending || reschedule.notice !== null) && (
-        <p role="status" className="mb-3 text-sm text-muted-foreground">
-          {reschedule.pending ? t("interaction.moving") : reschedule.notice}
-        </p>
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <p role="status" className="text-sm text-muted-foreground">
+            {reschedule.pending ? pendingLabel : reschedule.notice}
+          </p>
+          {reschedule.undoAvailable && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setGestureError(null);
+                void reschedule.undo();
+              }}
+            >
+              <Undo2 className="size-4" aria-hidden />
+              {t("interaction.undo")}
+            </Button>
+          )}
+        </div>
       )}
       <CalendarGesturePreview preview={pointerPreview} />
       {savingPreview?.scope === scopeKey && (
@@ -230,6 +271,7 @@ export function CalendarClient({
           selection={savingPreview.selection}
           subject={savingPreview.subject}
           kind={savingPreview.kind}
+          label={pendingLabel}
         />
       )}
 

@@ -1,5 +1,7 @@
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { calendarActivityTarget } from "@/features/activities/calendarActivityTarget";
+import type { CalendarResizeEdge } from "@/features/activities/calendarResize";
+import { cn } from "@/lib/utils";
 
 interface ActivityChipProps {
   a: CalendarActivity;
@@ -10,6 +12,8 @@ interface ActivityChipProps {
   // Lets a caller size the chip to its container (the hour grid positions a block absolutely, and
   // any part of that block the chip does not fill swallows the click meant for the slot below).
   className?: string;
+  resizeStart?: boolean;
+  resizeEnd?: boolean;
 }
 
 // Subject plus the record it hangs off. A week of "Email" chips is indistinguishable without the
@@ -32,7 +36,28 @@ function ChipLabel({ a, parent }: { a: CalendarActivity; parent: string | null }
   );
 }
 
-export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): React.ReactNode {
+function ResizeGrip({ edge }: { edge: CalendarResizeEdge }): React.ReactNode {
+  return (
+    <span
+      aria-hidden
+      data-calendar-resize-edge={edge}
+      className={cn(
+        "absolute inset-x-0 hidden h-1.5 max-h-[25%] cursor-ns-resize justify-center pointer-fine:flex",
+        edge === "start" ? "top-0 items-start" : "bottom-0.5 items-center",
+      )}
+    >
+      <span className="h-px w-4 max-w-full rounded-full bg-current opacity-60" />
+    </span>
+  );
+}
+
+export function ActivityChip({
+  a,
+  onOpen,
+  className = "",
+  resizeStart = false,
+  resizeEnd = false,
+}: ActivityChipProps): React.ReactNode {
   // The overdue pair is the app-wide red-50/red-700 convention (12+ sites) and clears AA at 5.9:1;
   // the neutral tone uses the shared tokens rather than the calendar's own gray scale. Red is the
   // one tone without a token, so it carries its own Night pair or the chip stays light on a dark
@@ -54,9 +79,11 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
         onClick={() => onOpen(a)}
         // items-start keeps the text at the top of a block sized to a whole meeting, rather than
         // floating in the middle of it the way a button centres its content by default.
-        className={`flex w-full select-none cursor-grab items-start truncate rounded px-1 my-0.5 text-start text-xs hover:underline data-[calendar-dragging=true]:opacity-40 data-[calendar-pending=true]:opacity-40 ${tone} ${className}`}
+        className={`relative flex w-full select-none [-webkit-touch-callout:none] cursor-grab items-start truncate rounded px-1 my-0.5 text-start text-xs hover:underline data-[calendar-dragging=true]:opacity-40 data-[calendar-pending=true]:opacity-40 ${tone} ${className}`}
       >
         {label}
+        {resizeStart && <ResizeGrip edge="start" />}
+        {resizeEnd && <ResizeGrip edge="end" />}
       </button>
     );
   }
@@ -65,7 +92,7 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
       data-type={a.typeKey}
       data-calendar-event-id={a.id}
       draggable={false}
-      className={`select-none cursor-grab text-xs rounded px-1 my-0.5 truncate data-[calendar-dragging=true]:opacity-40 data-[calendar-pending=true]:opacity-40 ${tone} ${className}`}
+      className={`select-none [-webkit-touch-callout:none] cursor-grab text-xs rounded px-1 my-0.5 truncate data-[calendar-dragging=true]:opacity-40 data-[calendar-pending=true]:opacity-40 ${tone} ${className}`}
     >
       {target.kind === "record" ? (
         <a href={target.href} draggable={false} className="hover:underline">

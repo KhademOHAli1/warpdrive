@@ -165,6 +165,11 @@ export async function updateActivity(
   actor: PermSetUser,
   raw: ActivityUpdateInput,
   signal: AbortSignal,
+  options?: {
+    // Only the calendar command's verified Undo receipt can supply these exact stored values.
+    // A public edit still validates duration and establishes canonical civil dates on change.
+    calendarUndo?: Pick<Activity, "dueDate" | "endDate" | "durationMinutes">;
+  },
 ): Promise<Result<Activity, AppError>> {
   const parsed = activityUpdateInput.safeParse(raw);
   if (!parsed.success) {
@@ -222,11 +227,9 @@ export async function updateActivity(
 
     // A guest/participant-only edit has no scalar columns to write; skip the row UPDATE (Drizzle
     // rejects an empty .set()) and keep the current row for the recompute below.
-    const civilDates = canonicalUpdateDates(
-      current,
-      input,
-      input.authoredTimeZone ?? prefs.timeZone,
-    );
+    const civilDates =
+      options?.calendarUndo ??
+      canonicalUpdateDates(current, input, input.authoredTimeZone ?? prefs.timeZone);
     if (civilEndBeforeStart(civilDates))
       return err(
         new AppError(ERROR_IDS.ACTIVITY_END_BEFORE_START, "activity end is before its start", {

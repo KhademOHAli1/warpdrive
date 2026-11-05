@@ -63,6 +63,52 @@ describe("AgendaDayColumn", () => {
     expect(chip.parentElement?.style.height).toBe(`${HOUR_HEIGHT_PX}px`);
   });
 
+  it("puts resize grips on the actual start and end of a multiday event", () => {
+    const event = {
+      ...mk("multi", new Date("2026-07-15T23:00:00Z"), 1560),
+      endAt: new Date("2026-07-17T01:00:00Z"),
+    };
+    const dates = ["2026-07-15", "2026-07-16", "2026-07-17"];
+    const onOpenActivity = vi.fn();
+    const onOpenSlot = vi.fn();
+    render(
+      dates.map((iso) => (
+        <AgendaDayColumn
+          key={iso}
+          iso={iso}
+          dayLabel={iso}
+          items={[event]}
+          onOpenActivity={onOpenActivity}
+          onOpenSlot={onOpenSlot}
+        />
+      )),
+    );
+    const chips = screen.getAllByRole("button", { name: "Activity multi" });
+    expect(chips.map((chip) => chip.parentElement?.style.height)).toEqual([
+      "48px",
+      "1152px",
+      "48px",
+    ]);
+    expect(chips.map((chip) => chip.parentElement?.style.top)).toEqual(["1104px", "0px", "0px"]);
+    expect(
+      chips.map((chip) =>
+        Array.from(chip.querySelectorAll("[data-calendar-resize-edge]"), (grip) =>
+          grip.getAttribute("data-calendar-resize-edge"),
+        ),
+      ),
+    ).toEqual([["start"], [], ["end"]]);
+  });
+
+  it("leaves a point event clickable and exposes only its end grip", () => {
+    const event = mk("point", new Date("2026-07-15T09:00:00Z"), null);
+    const { onOpenActivity } = renderColumn([event]);
+    const chip = screen.getByRole("button", { name: "Activity point" });
+    expect(chip.querySelector('[data-calendar-resize-edge="start"]')).toBeNull();
+    expect(chip.querySelector('[data-calendar-resize-edge="end"]')).toBeInTheDocument();
+    fireEvent.click(chip);
+    expect(onOpenActivity).toHaveBeenCalledWith(event);
+  });
+
   it("lays two overlapping activities side by side instead of one covering the other", () => {
     renderColumn([
       mk("first", new Date("2026-07-15T09:00:00Z"), 60),
