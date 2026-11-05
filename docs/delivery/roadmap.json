@@ -80034,6 +80034,36 @@
         "Integrate through the existing feature branch with required exact-main CI; apply independent technical acceptance and closure audit.",
         "Release/deployment remain separate gates."
       ]
+    },
+    {
+      "id": "settings/company-billing-2026-11-05",
+      "title": "Company licensee information research and hosted workspace billing",
+      "module": "settings",
+      "kind": "deliverable",
+      "parent": "programme/settings",
+      "source_tasks": [],
+      "acceptance": [
+        "Research company information by purpose and necessity, with collection/confirmation methods, linked primary sources, direct Mobbin workflow evidence and reviewable mechanic/design-studio/IT-consultancy work-profile proposals. Keep workspace, legal entity, Warpdrive payer and CRM invoice issuer distinct.",
+        "Implement administrator-only Stripe workspace subscriptions with optional paid seats for hosted operation, configurable monthly/yearly EUR prices, server-owned customer/price/redirect authority, hosted checkout and payment/profile/cancellation management, and owned invoice/receipt access.",
+        "Validate raw signed webhook bodies, customer and test/live binding, duplicate/reordered delivery, stable durable operations and ambiguous response recovery. Require signed seat previews and explicit confirmation, preserve current capacity while payment is pending, and serialize active-user admission against cooperating public authority writers.",
+        "Generate and qualify the canonical application migration without altering historical SQL/snapshots; exercise real PostgreSQL persistence, populated upgrade, concurrent purchase/current-authority behavior and reviewed privacy inventory alongside meaningful unit/component/type/lint checks.",
+        "Document merchant/pricing/tax/portal/webhook configuration and real sandbox acceptance before activation. Keep billing disabled by default and preserve the MIT installation boundary. Do not claim global paid-access/invitation enforcement, applied industry presets, CRM-client invoice issuance, production payment acceptance, release or deployment from this source increment."
+      ],
+      "dependencies": [],
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/pull/981",
+        "docs/billing/qualification.md",
+        "docs/company-settings/research.md"
+      ],
+      "owner": "KhademOHAli1",
+      "owner_role": "Warpdrive billing maintainer",
+      "observed_status": "in-progress",
+      "observed_stage": "source merged; delivery identity and exact-main qualification in progress",
+      "priority": "P1",
+      "labels": [
+        "type:feature"
+      ],
+      "notes": "New authorized commercial scope tracked in #978, with no borrowed historical source-task binding. Workspace subscription with optional seats, Germany/EU first, operated by Warpdrive. Source integration, full-scope acceptance, real Stripe/merchant activation and release remain separate evidence states. Existing acceptance and publication policies are unchanged."
     }
   ],
   "aliases": {
