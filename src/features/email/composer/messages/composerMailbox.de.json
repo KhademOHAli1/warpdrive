@@ -42,6 +42,7 @@
   "connectFreshAuth": "Bestätigen Sie Ihre Identität erneut und verbinden Sie anschließend Ihr Gmail-Postfach.",
   "connectPermission": "Sie dürfen dieses Postfach nicht verbinden.",
   "connectCancelled": "Die Gmail-Verbindung wurde abgebrochen. Ihre bestehenden Postfächer bleiben unverändert.",
+  "connectSyncUnavailable": "Gmail ist verbunden, aber die erste Synchronisierung konnte nicht gestartet werden. Ihr Postfach ist möglicherweise noch nicht auf dem neuesten Stand.",
   "openConnections": "Postfächer verwalten",
   "verifyIdentity": "Identität bestätigen",
   "alreadySentTitle": "Diese Nachricht wurde bereits angenommen",

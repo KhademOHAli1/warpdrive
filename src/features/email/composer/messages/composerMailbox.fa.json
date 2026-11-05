@@ -42,6 +42,7 @@
   "connectFreshAuth": "هویت خود را دوباره تأیید کنید و سپس صندوق Gmail را متصل کنید.",
   "connectPermission": "اجازهٔ اتصال این صندوق را ندارید.",
   "connectCancelled": "اتصال Gmail لغو شد. صندوق‌های فعلی شما تغییری نکرده‌اند.",
+  "connectSyncUnavailable": "Gmail متصل است، اما همگام‌سازی اولیه شروع نشد. ممکن است صندوق شما هنوز به‌روز نباشد.",
   "openConnections": "مدیریت صندوق‌ها",
   "verifyIdentity": "تأیید هویت",
   "alreadySentTitle": "این پیام قبلاً پذیرفته شده است",
