@@ -182,7 +182,7 @@ export function WorkflowCanvas({
       position: { x: position.x, y: position.y },
       origin: storedPosition.anchor === "center" ? [0.5, 0.5] : [0, 0],
       measured: measurements.get(node.id),
-      selected: selectedEdge === null && selected === node.id,
+      selected: pendingInsert === undefined && selectedEdge === null && selected === node.id,
       deletable: editable && !node.type.startsWith("trigger."),
       ariaLabel: displayNodeName(node, locale),
     };

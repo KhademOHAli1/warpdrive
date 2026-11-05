@@ -58,7 +58,9 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
         {t(detail.mode === "simulation" ? "simulationTraceHint" : "liveTraceHint")}
       </p>
       {detail.status === "waiting" && waitingForForm && (
-        <p className="px-5 text-sm text-muted-foreground">{t("humanFormWaiting")}</p>
+        <p className="px-5 text-sm text-muted-foreground">
+          {t(detail.formExpired === true ? "humanFormExpired" : "humanFormWaiting")}
+        </p>
       )}
       {detail.status === "waiting" && !waitingForForm && (
         <p className="px-5 text-sm text-muted-foreground">

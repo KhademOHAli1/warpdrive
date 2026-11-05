@@ -18,6 +18,7 @@ import {
 } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
 import {
@@ -303,6 +304,18 @@ function validateRecordUpdate(
     checkMapping(node, ["fields", key], value, context, result);
 }
 
+function validateRecordUpsert(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = workflowPersonUpsertConfig.safeParse(node.config);
+  if (!parsed.success) return appendSchemaIssues(node, parsed.error.issues, result);
+  checkBinding(node, "key", context, result);
+  for (const [key, value] of Object.entries(parsed.data.fields))
+    checkMapping(node, ["fields", key], value, context, result);
+}
+
 function validateRecordSearch(
   node: WorkflowNode,
   context: ConfigurationContext,
@@ -373,6 +386,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "record.update": validateRecordUpdate,
   "record.delete": validateRecordDelete,
   "record.search": validateRecordSearch,
+  "record.upsert": validateRecordUpsert,
   "record.pick": validateRecordPick,
   "email.draft": validateEmailDraft,
   "calendar.create": validateCalendarEvent,
@@ -390,6 +404,7 @@ const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   "record.update": ["entity", "recordId", "fields"],
   "record.delete": ["entity", "recordId"],
   "record.search": ["entity", "filter", "orderBy", "limit", "offset"],
+  "record.upsert": ["entity", "key", "fields"],
   "record.pick": ["entity", "strategy", "recordIds", "loadBalance"],
   "email.draft": ["accountId", ...workflowEmailDraftFields.map(({ key }) => key)],
   "calendar.create": ["allDay", "timeZone", ...workflowCalendarEventFields.map(({ key }) => key)],

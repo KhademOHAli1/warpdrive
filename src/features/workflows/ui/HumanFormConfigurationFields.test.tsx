@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import type { DragEndEvent } from "@dnd-kit/core";
+import type * as DndKit from "@dnd-kit/core";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type ComponentProps, useState } from "react";
@@ -13,13 +13,13 @@ import {
 } from "../workflowHumanFormContract";
 import { HumanFormConfigurationFields } from "./HumanFormConfigurationFields";
 
-const drag = vi.hoisted((): { end?: (event: DragEndEvent) => void } => ({}));
+const drag = vi.hoisted((): { end?: (event: DndKit.DragEndEvent) => void } => ({}));
 vi.mock("@dnd-kit/core", async (original) => {
-  const real = await original<typeof import("@dnd-kit/core")>();
+  const real = await original<typeof DndKit>();
   return {
     ...real,
     DndContext: (props: ComponentProps<typeof real.DndContext>) => {
-      drag.end = props.onDragEnd;
+      drag.end = (event) => props.onDragEnd?.(event);
       return <real.DndContext {...props} />;
     },
   };
@@ -125,7 +125,9 @@ it("reorders by field ID and retains the active settings and answer identities",
   render(<Harness initial={{ fields: [first, second] }} onChange={onChange} />);
   await user.click(screen.getByRole("button", { name: "Input settings: Summary" }));
   expect(screen.getByRole("button", { name: "Reorder field: Summary" })).toBeEnabled();
-  act(() => drag.end?.({ active: { id: first.id }, over: { id: second.id } } as DragEndEvent));
+  act(() =>
+    drag.end?.({ active: { id: first.id }, over: { id: second.id } } as DndKit.DragEndEvent),
+  );
   expect(onChange).toHaveBeenLastCalledWith(
     expect.objectContaining({ config: { fields: [second, first] } }),
   );

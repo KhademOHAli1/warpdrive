@@ -8,6 +8,7 @@ export const draftSimulationNodeTypes = [
   "record.update",
   "record.delete",
   "record.search",
+  "record.upsert",
   "record.pick",
   "email.draft",
   "calendar.create",

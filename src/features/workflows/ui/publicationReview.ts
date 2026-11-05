@@ -63,6 +63,7 @@ const descriptions = {
   "record.update": "publicationRecordUpdateStep",
   "record.delete": "publicationRecordDeleteStep",
   "record.search": "publicationRecordSearchStep",
+  "record.upsert": "publicationRecordUpsertStep",
   "record.pick": "publicationRecordPickStep",
   "email.draft": "publicationEmailDraftStep",
   "calendar.create": "publicationCalendarEventStep",

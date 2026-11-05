@@ -1,4 +1,8 @@
 {
+  "upsertRecord": "Create or Update Record",
+  "upsertRecordHint": "Create or update a person using a stable workflow key.",
+  "publicationRecordUpsertStep": "Can create or update a person when reached.",
+  "liveReviewRecordUpsert": "Create or Update Record can create or change a real person record.",
   "humanFormResponse": "Respond to form",
   "humanFormWaiting": "Waiting for a form response",
   "humanFormDeadline": "Respond by {date}",

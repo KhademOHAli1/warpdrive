@@ -23,6 +23,7 @@ export function paletteSnapshot(
     "record.update",
     "record.delete",
     "record.search",
+    "record.upsert",
     "record.pick",
     "email.draft",
     "calendar.create",

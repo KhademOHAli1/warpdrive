@@ -74,8 +74,6 @@ export async function admitManualRun(
     if (version === undefined || trigger?.type !== "trigger.manual")
       return err(ERROR_IDS.WORKFLOW_NOT_READY);
     if (!executableDefinition(version.definition)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
-    if (input.data.mode === "simulation" && requiresHumanForm(version.definition))
-      return err(ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE);
     const key = and(
       eq(workflowRuns.workflowId, workflow.id),
       eq(workflowRuns.actorId, actor.id),
@@ -86,6 +84,8 @@ export async function admitManualRun(
       if (!sameManualCommand(existing, input.data)) return err(ERROR_IDS.WORKFLOW_CONFLICT);
       return ok(existing);
     }
+    if (input.data.mode === "simulation" && requiresHumanForm(version.definition))
+      return err(ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE);
     if (!matchesReviewedVersion(input.data.reviewedVersionId, version.id))
       return err(ERROR_IDS.WORKFLOW_CONFLICT);
     const metadata = version.definition.nodes.some((node) => node.type === "activity.create")

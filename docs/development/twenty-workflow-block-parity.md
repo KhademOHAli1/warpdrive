@@ -69,6 +69,12 @@ The right side panel now defaults to 400px and resizes from 320px to 600px on de
 
 The prior browser build passed all three workflow journeys in Chromium and captured the canvas and picker. A separate appearance journey timed out during login. The Form editor, submission, expiry, mapped output, and retry behavior passed focused tests; native PostgreSQL cases are prepared for competing submissions and expiry.
 
+## Sixth increment: stable-key Person upsert
+
+**Create or Update Record (A4)** accepts a stable workflow key and the built-in Person fields name, first name, last name, and organization. Repeating the key in the same workflow updates the same Person when authorized. A soft-deleted or inaccessible record cannot be recreated using the same key. The action uses native contact authorization; both preview modes roll back the write. This is the first supported object and key profile; other unique-key groups and custom objects remain open.
+
+Form now fences prompts against the database deadline and current record visibility, preserves a retry receipt through transient read or write errors, and sends only fixed error messages to queue storage. The previous Chromium build passed the full browser pack and captured Form in the action picker. The earlier full unit run passed 11,095 tests with nine failures; the regional fixture, palette expectations and Dashboard title fixes are included in this increment.
+
 ## Catalog visibility and configuration gates
 
 The five groups are Data (6), AI (2), Flow (5), Core (5), Human Input (2); installed applications can contribute Other/Logic Function rows. See [the selector](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-front/src/modules/side-panel/pages/workflow/action/components/SidePanelWorkflowSelectAction.tsx).

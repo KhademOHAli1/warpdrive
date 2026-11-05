@@ -90,7 +90,8 @@ function validScope(input: WorkflowConfigurationReferencesInput): boolean {
     return (
       input.type === "record.update" ||
       input.type === "record.delete" ||
-      input.type === "record.pick"
+      input.type === "record.pick" ||
+      (input.type === "record.upsert" && input.selector.entity === "organization")
     );
   return input.selector.name === "recordId"
     ? input.type === "record.read"

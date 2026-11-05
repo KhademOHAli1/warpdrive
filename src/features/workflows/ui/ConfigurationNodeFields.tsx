@@ -18,6 +18,7 @@ import { DelayScheduleFields } from "./DelayScheduleFields";
 import { EmailDraftConfigurationFields } from "./EmailDraftConfigurationFields";
 import { HumanFormConfigurationFields } from "./HumanFormConfigurationFields";
 import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
+import { PersonUpsertConfigurationFields } from "./PersonUpsertConfigurationFields";
 import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
 import { RecordMutationConfigurationFields } from "./RecordMutationConfigurationFields";
 import { SearchRecordConfigurationFields } from "./SearchRecordConfigurationFields";
@@ -164,6 +165,8 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
       return <EmailDraftConfigurationFields {...props} />;
     case "record.search":
       return <SearchRecordConfigurationFields {...props} />;
+    case "record.upsert":
+      return <PersonUpsertConfigurationFields {...props} />;
     case "record.pick":
       return <PickRecordFieldsWithLookup {...props} />;
     case "record.create":

@@ -20,6 +20,7 @@ import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
 import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
 import { recordPickConfig, recordSearchConfig } from "./workflowRecordQueryContract";
@@ -180,6 +181,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputs: coarseMappingOutputs("record.search"),
     outputContracts: mappingOutputContracts("record.search"),
     effect: "none",
+  },
+  "record.upsert": {
+    configuration: configurationProfiles["record.upsert"],
+    config: workflowPersonUpsertConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.upsert"),
+    outputContracts: mappingOutputContracts("record.upsert"),
+    effect: "database",
   },
   "record.pick": {
     configuration: configurationProfiles["record.pick"],

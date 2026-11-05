@@ -24,6 +24,7 @@ const contracts: Record<WorkflowNode["type"], OutputContracts> = {
     firstId: { kind: "text", nullable: true },
     totalCount: { kind: "number", nullable: false },
   },
+  "record.upsert": { id: { kind: "entity", entity: "person", nullable: false } },
   "record.pick": { id: text },
   "email.draft": {},
   "human.form": {},

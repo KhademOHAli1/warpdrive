@@ -34,7 +34,7 @@ export default async function PipelineIndexPage(): Promise<React.ReactNode> {
     return (
       <main aria-label={nav("dashboard")} className="flex h-full flex-col p-4">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold">{nav("dashboard")}</h1>
+          <h1 className="text-display font-semibold">{nav("dashboard")}</h1>
           <DashboardSelect current={null} pipelines={pipelines} canManagePipelines={canManage} />
         </div>
         <div className="grid flex-1 place-items-center p-4">

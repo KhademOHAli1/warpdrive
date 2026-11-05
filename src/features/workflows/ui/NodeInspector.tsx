@@ -57,6 +57,7 @@ const hints = {
   "record.update": undefined,
   "record.delete": undefined,
   "record.search": undefined,
+  "record.upsert": undefined,
   "record.pick": undefined,
   "email.draft": undefined,
   "calendar.create": undefined,

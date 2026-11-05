@@ -85,6 +85,19 @@ export async function reconcileWorkflowRuns(boss: PgBoss, db: Db, signal: AbortS
   }
 }
 
+async function advanceQueuedRun(boss: PgBoss, db: Db, runId: string, signal: AbortSignal) {
+  try {
+    const result = await advanceWorkflowRun(db, runId, signal, async (deadline, now) => {
+      if (deadline.getTime() - now.getTime() <= WAKE_LOOKAHEAD_SECONDS * 1000)
+        await nudge(boss, runId, deadline);
+    });
+    if (result.ok) return result.value;
+  } catch {
+    // pg-boss persists thrown errors. Database error messages can contain private step values.
+  }
+  throw new AppError(ERROR_IDS.WORKFLOW_WRITE_FAILED, "Workflow advance failed");
+}
+
 export async function registerWorkflowJobs(boss: PgBoss, db: Db): Promise<void> {
   await boss.createQueue(PGBOSS_QUEUE_WORKFLOW_RUN);
   await boss.createQueue(PGBOSS_QUEUE_WORKFLOW_RECONCILE);
@@ -92,13 +105,8 @@ export async function registerWorkflowJobs(boss: PgBoss, db: Db): Promise<void> 
     if (job === undefined) return;
     const signal = AbortSignal.any([job.signal, AbortSignal.timeout(45_000)]);
     for (let step = 0; step < 100; step++) {
-      const result = await advanceWorkflowRun(db, job.data.runId, signal, async (deadline, now) => {
-        if (deadline.getTime() - now.getTime() <= WAKE_LOOKAHEAD_SECONDS * 1000)
-          await nudge(boss, job.data.runId, deadline);
-      });
-      if (!result.ok)
-        throw new AppError(ERROR_IDS.WORKFLOW_WRITE_FAILED, "Workflow advance failed");
-      if (result.value !== "running") return;
+      const status = await advanceQueuedRun(boss, db, job.data.runId, signal);
+      if (status !== "running") return;
     }
     // Graphs are bounded to 100 nodes. Remaining cursors are picked up by reconciliation.
   });

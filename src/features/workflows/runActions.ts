@@ -24,6 +24,7 @@ import type { RunOutputs, StepOutput } from "./runTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
+import { upsertWorkflowPerson } from "./workflowPersonUpsert";
 import { createWorkflowRecord } from "./workflowRecordCreate";
 import { mutateWorkflowRecord } from "./workflowRecordMutation";
 import { pickWorkflowRecord } from "./workflowRecordPick";
@@ -68,6 +69,18 @@ export async function executeRunNode(
       return mutateWorkflowRecord(db, actor, node, outputs, definition, mode, signal);
     case "record.search":
       return searchWorkflowRecords(db, actor, node, outputs, definition, signal);
+    case "record.upsert":
+      return scope === undefined
+        ? err(ERROR_IDS.WORKFLOW_INVALID)
+        : upsertWorkflowPerson(
+            db,
+            actor,
+            node,
+            outputs,
+            definition,
+            { workflowId: scope.workflowId, mode },
+            signal,
+          );
     case "record.pick":
       return scope === undefined
         ? err(ERROR_IDS.WORKFLOW_INVALID)

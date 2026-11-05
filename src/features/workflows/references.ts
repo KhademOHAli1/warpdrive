@@ -67,7 +67,9 @@ function nodeBindings(node: WorkflowNode): NodeBinding[] {
   const nested =
     node.type === "delay" && node.config.delayType === "DURATION"
       ? delayBindings(node)
-      : node.type === "record.create" || node.type === "record.update"
+      : node.type === "record.create" ||
+          node.type === "record.update" ||
+          node.type === "record.upsert"
         ? parsedBindings(node.config.fields, "fields")
         : [];
   return [...parsedBindings(node.config), ...nested, ...customBindings(node)];

@@ -42,6 +42,7 @@ import {
 import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
 import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
 import { workflowHumanFormOutputDescriptors } from "./workflowHumanFormContract";
+import { workflowPersonUpsertTarget } from "./workflowPersonUpsertContract";
 import {
   recordCreateEntitySchema,
   recordCreateFieldTarget,
@@ -324,6 +325,8 @@ function extendedMappingTarget(
     case "record.update":
     case "record.delete":
       return extendedTargetResult(node, path, recordFieldMappingTarget(node, path));
+    case "record.upsert":
+      return extendedTargetResult(node, path, workflowPersonUpsertTarget(node.id, path));
     case "record.search": {
       const draft = recordSearchDraftConfig.safeParse(node.config);
       return extendedTargetResult(
@@ -717,7 +720,9 @@ function writeReference(
   if (
     key === "fields" &&
     field !== undefined &&
-    (node.type === "record.create" || node.type === "record.update")
+    (node.type === "record.create" ||
+      node.type === "record.update" ||
+      node.type === "record.upsert")
   )
     return writeRecordMapping(node, field, binding);
   if (key !== "customFields") {
@@ -766,7 +771,9 @@ function currentBinding(
   if (node.type === "delay" && key === "duration" && path[1] !== undefined)
     return delayDurationSettings(node.config.duration)?.[path[1]];
   if (
-    (node.type === "record.create" || node.type === "record.update") &&
+    (node.type === "record.create" ||
+      node.type === "record.update" ||
+      node.type === "record.upsert") &&
     key === "fields" &&
     path[1] !== undefined
   ) {

@@ -106,6 +106,7 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
   "record.update": { supported: true, fields: [name] },
   "record.delete": { supported: true, fields: [name] },
   "record.search": { supported: true, fields: [name] },
+  "record.upsert": { supported: true, fields: [name] },
   "record.pick": { supported: true, fields: [name] },
   "email.draft": { supported: true, fields: [name] },
   "calendar.create": { supported: true, fields: [name] },
@@ -229,6 +230,7 @@ export function defaultConfiguration(
   if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
   if (type === "human.form") return { fields: [] };
   if (type === "calendar.create") return { allDay: false };
+  if (type === "record.upsert") return { entity: "person", fields: {} };
   if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
   if (type === "activity.create")
     return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };

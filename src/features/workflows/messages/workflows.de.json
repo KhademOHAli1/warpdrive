@@ -1,4 +1,8 @@
 {
+  "upsertRecord": "Datensatz erstellen oder aktualisieren",
+  "upsertRecordHint": "Eine Person anhand eines stabilen Workflow-Schlüssels erstellen oder aktualisieren.",
+  "publicationRecordUpsertStep": "Kann beim Erreichen eine Person erstellen oder aktualisieren.",
+  "liveReviewRecordUpsert": "Dieser Schritt kann einen echten Personendatensatz erstellen oder ändern.",
   "humanFormResponse": "Formular beantworten",
   "humanFormWaiting": "Wartet auf eine Formularantwort",
   "humanFormDeadline": "Antwort bis {date}",

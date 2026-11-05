@@ -29,6 +29,7 @@ import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
+import { upsertWorkflowPerson } from "./workflowPersonUpsert";
 import { createWorkflowRecord } from "./workflowRecordCreate";
 import { mutateWorkflowRecord } from "./workflowRecordMutation";
 import { pickWorkflowRecord } from "./workflowRecordPick";
@@ -169,6 +170,16 @@ async function executeDraftNode(
       outputs,
       context.definition,
       "draft-simulation",
+      context.signal,
+    );
+  if (node.type === "record.upsert")
+    return upsertWorkflowPerson(
+      context.db,
+      actor,
+      node,
+      outputs,
+      context.definition,
+      { workflowId: context.workflowId, mode: "draft-simulation" },
       context.signal,
     );
   if (node.type === "record.pick")

@@ -39,6 +39,7 @@ interface CatalogDescriptor {
     | "update-record"
     | "delete-record"
     | "search-records"
+    | "upsert-record"
     | "pick-record"
     | "draft-email"
     | "create-calendar-event"
@@ -129,6 +130,16 @@ export const paletteCatalog = [
     labelKey: "searchRecords",
     descriptionKey: "searchRecordsHint",
     profile: "search-records",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.upsert",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "upsertRecord",
+    descriptionKey: "upsertRecordHint",
+    profile: "upsert-record",
     input: "optional",
   },
   {

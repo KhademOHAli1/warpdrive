@@ -51,12 +51,47 @@ export function toVisibleRecord(row: Person): VisiblePersonOrOrg {
   };
 }
 
-export async function createPerson(
+export function createPerson(
   db: Db,
   actor: ContactActor,
   input: PersonCreateInput,
   signal: AbortSignal,
 ): Promise<Result<Person, AppError>> {
+  return insertPerson(db, actor, input, signal);
+}
+
+// Internal callers derive the ID from a trusted scope. Public create inputs never supply it.
+// A null success is the exact primary-key conflict and never updates the conflicting row.
+export function createPersonAtId(
+  db: Db,
+  actor: ContactActor,
+  input: PersonCreateInput,
+  id: string,
+  signal: AbortSignal,
+): Promise<Result<Person | null, AppError>> {
+  return insertPerson(db, actor, input, signal, id);
+}
+
+function insertPerson(
+  db: Db,
+  actor: ContactActor,
+  input: PersonCreateInput,
+  signal: AbortSignal,
+): Promise<Result<Person, AppError>>;
+function insertPerson(
+  db: Db,
+  actor: ContactActor,
+  input: PersonCreateInput,
+  signal: AbortSignal,
+  id: string,
+): Promise<Result<Person | null, AppError>>;
+async function insertPerson(
+  db: Db,
+  actor: ContactActor,
+  input: PersonCreateInput,
+  signal: AbortSignal,
+  id?: string,
+): Promise<Result<Person | null, AppError>> {
   signal.throwIfAborted();
 
   const cfResult = await validateContactCustomFields(db, "person", input.customFields, signal, {
@@ -88,27 +123,27 @@ export async function createPerson(
     // NULL-first/last state was the root cause of the Finding 1 name-overwrite bug).
     const derivedName = splitName(input.name);
 
-    const [row] = await tx
-      .insert(persons)
-      .values({
-        name: input.name,
-        firstName: input.firstName ?? derivedName.firstName,
-        lastName: input.lastName ?? derivedName.lastName,
-        primaryEmail: derivePrimaryEmail(input.emails),
-        emails: input.emails,
-        phones: input.phones,
-        orgId: input.orgId,
-        ownerId: actor.id,
-        visibilityLevel: level,
-        visibilityGroupId,
-        customFields: cfResult.value,
-      })
-      .returning();
-
-    if (row === undefined) {
-      return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "insert returned no rows", {}));
-    }
-    return ok(row);
+    const insert = tx.insert(persons).values({
+      ...(id === undefined ? {} : { id }),
+      name: input.name,
+      firstName: input.firstName ?? derivedName.firstName,
+      lastName: input.lastName ?? derivedName.lastName,
+      primaryEmail: derivePrimaryEmail(input.emails),
+      emails: input.emails,
+      phones: input.phones,
+      orgId: input.orgId,
+      ownerId: actor.id,
+      visibilityLevel: level,
+      visibilityGroupId,
+      customFields: cfResult.value,
+    });
+    const [row] = await (id === undefined
+      ? insert.returning()
+      : insert.onConflictDoNothing({ target: persons.id }).returning());
+    if (row !== undefined) return ok(row);
+    return id === undefined
+      ? err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "insert returned no rows", {}))
+      : ok(null);
   });
 }
 

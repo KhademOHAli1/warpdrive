@@ -1,4 +1,8 @@
 {
+  "upsertRecord": "ایجاد یا به‌روزرسانی رکورد",
+  "upsertRecordHint": "با کلید ثابت گردش کار یک شخص ایجاد یا به‌روزرسانی کنید.",
+  "publicationRecordUpsertStep": "در صورت اجرا می‌تواند یک شخص ایجاد یا به‌روزرسانی کند.",
+  "liveReviewRecordUpsert": "این مرحله می‌تواند رکورد واقعی یک شخص را ایجاد یا تغییر دهد.",
   "humanFormResponse": "پاسخ به فرم",
   "humanFormWaiting": "در انتظار پاسخ فرم",
   "humanFormDeadline": "پاسخ تا {date}",

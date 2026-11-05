@@ -181,7 +181,8 @@ function namedRecordTarget(
   if (
     input.type !== "record.update" &&
     input.type !== "record.delete" &&
-    input.type !== "record.pick"
+    input.type !== "record.pick" &&
+    !(input.type === "record.upsert" && entity === "organization")
   )
     return err(configurationInvalid());
   if (

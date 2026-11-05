@@ -23,23 +23,26 @@ function Amount() {
 it.each([
   {
     locale: "en",
+    formats: "Customize formats",
     digits: "Number display",
     money: "Display Iranian amounts in",
     rial: "Iranian rial (IRR)",
   },
   {
     locale: "de",
+    formats: "Formate anpassen",
     digits: "Zifferndarstellung",
     money: "Iranische Beträge anzeigen in",
     rial: "Iranischer Rial (IRR)",
   },
 ] as const)(
   "keeps explicit Persian digits independent of toman display in $locale",
-  async ({ locale, digits, money, rial }) => {
+  async ({ locale, formats, digits, money, rial }) => {
     const user = userEvent.setup();
     render(
       <LocaleProvider
         locale={locale}
+        country="IR"
         calendar="persian"
         timeZone="Asia/Tehran"
         numberingSystem="arabext"
@@ -50,6 +53,7 @@ it.each([
         <input aria-label="Draft" defaultValue="C01234 پیگیری" />
       </LocaleProvider>,
     );
+    await user.click(screen.getByRole("button", { name: formats }));
     expect(screen.getByRole("combobox", { name: digits })).toBeVisible();
     expect(screen.getByTestId("amount")).toHaveTextContent(/toman/iu);
     expect(screen.getByTestId("amount")).toHaveTextContent(/[۰-۹]/u);
@@ -60,6 +64,7 @@ it.each([
       expect(save).toHaveBeenCalledExactlyOnceWith(
         {
           locale,
+          country: "IR",
           calendar: "persian",
           timeZone: "Asia/Tehran",
           numberingSystem: "arabext",

@@ -68,6 +68,23 @@ const copyNode = z.discriminatedUnion("type", [
   nodeSchema.extend({ type: z.literal("record.update"), config: copyUpdateRecord }),
   nodeSchema.extend({ type: z.literal("record.delete"), config: copyRecordTarget }),
   nodeSchema.extend({ type: z.literal("record.search"), config: recordSearchDraftConfig }),
+  nodeSchema.extend({
+    type: z.literal("record.upsert"),
+    config: z
+      .strictObject({
+        entity: z.literal("person"),
+        key: copyBinding,
+        fields: z
+          .strictObject({
+            name: copyBinding,
+            firstName: copyBinding,
+            lastName: copyBinding,
+            orgId: copyBinding,
+          })
+          .partial(),
+      })
+      .partial(),
+  }),
   nodeSchema.extend({ type: z.literal("record.pick"), config: recordPickDraftConfig }),
   nodeSchema.extend({
     type: z.literal("email.draft"),

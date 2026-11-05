@@ -1,9 +1,10 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflowRuns, workflowSteps, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
@@ -11,6 +12,28 @@ import { getWorkflow } from "./queries";
 import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 import { definitionSchema } from "./schemas";
 import { pendingWorkflowHumanForm } from "./workflowHumanFormPending";
+
+async function formRecordVisible(
+  db: Db,
+  actor: PermSetUser,
+  recordId: string,
+  signal: AbortSignal,
+) {
+  const visible = await assertReferenceVisible(
+    db,
+    {
+      userId: actor.id,
+      isActive: actor.isActive,
+      isAdmin: actor.type === "admin",
+      sessionLive: true,
+      visibilityGroupIds: [...actor.groupIds],
+      managedUserIds: [...(actor.managedUserIds ?? [])],
+    },
+    { kind: "deal", id: recordId },
+    signal,
+  );
+  return visible.ok;
+}
 
 // Return the historical configuration and execution metadata, never stored CRM outputs.
 export async function readRunDetail(
@@ -32,6 +55,7 @@ export async function readRunDetail(
       status: workflowRuns.status,
       mode: workflowRuns.mode,
       resumeAt: workflowRuns.resumeAt,
+      responseWindowOpen: sql<boolean>`COALESCE(${workflowRuns.resumeAt} > clock_timestamp(), false)`,
       nextNodeId: workflowRuns.nextNodeId,
       errorId: workflowRuns.errorId,
       createdAt: workflowRuns.createdAt,
@@ -73,13 +97,25 @@ export async function readRunDetail(
     };
   });
   const failures = await readFailureHistories(db, [runId], signal);
-  const { stored, ...safeRun } = run;
-  const pendingForm = pendingWorkflowHumanForm(
+  const { stored, responseWindowOpen, ...safeRun } = run;
+  const waitingForForm =
+    run.status === "waiting" &&
+    definition.data.nodes.some((node) => node.id === run.nextNodeId && node.type === "human.form");
+  const responseRecorded = safeSteps.some((step) => step.nodeId === run.nextNodeId);
+  const form = pendingWorkflowHumanForm(
     stored,
     definition.data,
     currentActor.id,
-    workflow.value.archivedAt === null && canWorkflow(currentActor, "run", workflow.value.ownerId),
+    responseWindowOpen &&
+      !responseRecorded &&
+      workflow.value.archivedAt === null &&
+      canWorkflow(currentActor, "run", workflow.value.ownerId),
   );
+  const pendingForm =
+    form !== undefined &&
+    (await formRecordVisible(db, currentActor, stored.trigger.recordId, signal))
+      ? form
+      : undefined;
   const recovery = await describeRunRecovery(
     db,
     currentActor,
@@ -95,6 +131,9 @@ export async function readRunDetail(
     definition: definition.data,
     steps: safeSteps,
     ...(pendingForm === undefined ? {} : { pendingForm }),
+    ...(waitingForForm && !responseWindowOpen && !responseRecorded
+      ? { formExpired: true as const }
+      : {}),
     ...(recovery === null ? {} : { recovery }),
   });
 }

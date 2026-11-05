@@ -292,7 +292,11 @@ export function RunDialog({
     submission === null ? (read.publication?.review ?? null) : submission.review;
   const counts = displayedReview?.effects.counts;
   const changesRecords =
-    (counts?.recordCreate ?? 0) + (counts?.recordUpdate ?? 0) + (counts?.recordDelete ?? 0) > 0;
+    (counts?.recordCreate ?? 0) +
+      (counts?.recordUpdate ?? 0) +
+      (counts?.recordDelete ?? 0) +
+      (counts?.recordUpsert ?? 0) >
+    0;
   async function run() {
     if (inFlight.current || completed.current) return;
     const command = submitted.current ?? nextSubmission;

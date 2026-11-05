@@ -33,6 +33,7 @@ export function executableNode(node: WorkflowNode): boolean {
       "record.update",
       "record.delete",
       "record.search",
+      "record.upsert",
       "record.pick",
       "email.draft",
       "calendar.create",

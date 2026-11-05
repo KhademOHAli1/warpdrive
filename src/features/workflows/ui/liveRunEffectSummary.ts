@@ -15,6 +15,7 @@ export interface LiveRunEffects {
     readonly recordUpdate?: number;
     readonly recordDelete?: number;
     readonly recordSearch?: number;
+    readonly recordUpsert?: number;
     readonly recordPick?: number;
     readonly emailDraft?: number;
     readonly calendarEvent?: number;
@@ -97,6 +98,7 @@ const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["count
   "record.update": "recordUpdate",
   "record.delete": "recordDelete",
   "record.search": "recordSearch",
+  "record.upsert": "recordUpsert",
   "record.pick": "recordPick",
   "email.draft": "emailDraft",
   "calendar.create": "calendarEvent",

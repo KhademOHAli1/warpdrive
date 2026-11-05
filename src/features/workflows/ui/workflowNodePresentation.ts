@@ -9,6 +9,7 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
   "record.update": "reload",
   "record.delete": "trash",
   "record.search": "search",
+  "record.upsert": "pencil-plus",
   "record.pick": "arrows-shuffle",
   "email.draft": "mail-plus",
   "calendar.create": "calendar-event",

@@ -49,6 +49,9 @@ export function LiveRunReview({
     ...((review.effects.counts.recordDelete ?? 0) > 0
       ? [{ label: t("deleteRecord"), count: review.effects.counts.recordDelete ?? 0 }]
       : []),
+    ...((review.effects.counts.recordUpsert ?? 0) > 0
+      ? [{ label: t("upsertRecord"), count: review.effects.counts.recordUpsert ?? 0 }]
+      : []),
     ...((review.effects.counts.recordSearch ?? 0) > 0
       ? [{ label: t("searchRecords"), count: review.effects.counts.recordSearch ?? 0 }]
       : []),
@@ -93,6 +96,7 @@ export function LiveRunReview({
       {review.effects.counts.task > 0 && <p>{t("liveReviewTask")}</p>}
       {(review.effects.counts.recordCreate ?? 0) > 0 && <p>{t("liveReviewRecordCreate")}</p>}
       {(review.effects.counts.recordUpdate ?? 0) > 0 && <p>{t("liveReviewRecordUpdate")}</p>}
+      {(review.effects.counts.recordUpsert ?? 0) > 0 && <p>{t("liveReviewRecordUpsert")}</p>}
       {(review.effects.counts.recordDelete ?? 0) > 0 && <p>{t("liveReviewRecordDelete")}</p>}
       {(review.effects.counts.emailDraft ?? 0) > 0 && <p>{t("liveReviewEmailDraft")}</p>}
       {(review.effects.counts.calendarEvent ?? 0) > 0 && <p>{t("liveReviewCalendarEvent")}</p>}

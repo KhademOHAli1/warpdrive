@@ -12,6 +12,7 @@ export const nodeLabelKeys = {
   "record.update": "updateRecord",
   "record.delete": "deleteRecord",
   "record.search": "searchRecords",
+  "record.upsert": "upsertRecord",
   "record.pick": "pickRecord",
   "email.draft": "draftEmail",
   "calendar.create": "createCalendarEvent",

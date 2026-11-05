@@ -3,6 +3,7 @@
 import { type FormEvent, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -31,11 +32,13 @@ export function RunHumanForm({
   workflowId,
   runId,
   onSubmitted,
+  unavailable = false,
 }: {
   form: PendingWorkflowHumanForm;
   workflowId: string;
   runId: string;
   onSubmitted: () => void;
+  unavailable?: boolean;
 }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
@@ -45,7 +48,7 @@ export function RunHumanForm({
   const inFlight = useRef(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (inFlight.current || state === "submitted") return;
+    if (unavailable || inFlight.current || state === "submitted") return;
     const data = new FormData(event.currentTarget);
     const command = frozen.current ?? {
       workflowId,
@@ -60,6 +63,10 @@ export function RunHumanForm({
     try {
       const result = await submitWorkflowHumanFormAction(command, readCsrfToken());
       if (!result.ok) {
+        if (result.error === ERROR_IDS.WORKFLOW_WRITE_FAILED) {
+          setState("unknown");
+          return;
+        }
         frozen.current = null;
         setState("rejected");
         return;
@@ -73,9 +80,14 @@ export function RunHumanForm({
       inFlight.current = false;
     }
   }
-  const readOnly = state === "pending" || state === "submitted" || state === "unknown";
+  const readOnly =
+    unavailable || state === "pending" || state === "submitted" || state === "unknown";
   return (
-    <section aria-labelledby={heading} className="mx-5 mb-4 space-y-3 rounded-md border p-4">
+    <section
+      aria-labelledby={heading}
+      className="mx-5 mb-4 space-y-3 rounded-md border p-4"
+      hidden={unavailable}
+    >
       <h3 id={heading} className="text-sm font-semibold">
         {t("humanFormResponse")}
       </h3>
@@ -111,7 +123,10 @@ export function RunHumanForm({
         {state === "rejected" && <p role="alert">{t("humanFormRejected")}</p>}
         {state === "unknown" && <p role="alert">{t("humanFormUnconfirmed")}</p>}
         {state === "submitted" && <p role="status">{t("humanFormSubmitted")}</p>}
-        <Button type="submit" disabled={state === "pending" || state === "submitted"}>
+        <Button
+          type="submit"
+          disabled={unavailable || state === "pending" || state === "submitted"}
+        >
           {t(state === "unknown" ? "retry" : "humanFormSubmit")}
         </Button>
       </form>
