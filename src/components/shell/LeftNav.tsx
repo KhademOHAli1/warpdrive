@@ -44,7 +44,7 @@ export function LeftNav({ initialExpanded = false }: { initialExpanded?: boolean
           <SheetTitle className="sr-only">{messages.navigation.primary}</SheetTitle>
           <div className={styles.mobileContents} data-sidebar-state="expanded">
             <SidebarChrome expanded onNavigate={closeMobile} />
-            <SidebarMenu expanded mobile onToggle={sidebar.toggle} onNavigate={closeMobile} />
+            <SidebarMenu expanded mobile onNavigate={closeMobile} />
           </div>
         </SheetContent>
       </Sheet>
