@@ -110,7 +110,7 @@ export function VersionComparison({
       <header className="space-y-1">
         <h3 className="font-semibold">{t("versionCompareTitle")}</h3>
         <p className="text-muted-foreground">
-          {t("versionComparePair", { before: beforeNumber, after: afterNumber })}
+          {t("versionComparePair", { before: String(beforeNumber), after: String(afterNumber) })}
         </p>
       </header>
       {phase === "loading" && <p role="status">{t("loading")}</p>}
