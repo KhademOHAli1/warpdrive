@@ -66,6 +66,7 @@ export * from "./stages";
 export * from "./system";
 export * from "./userPreferences";
 export * from "./workflowExecutions";
+export * from "./workflowExternalEffects";
 export * from "./workflows";
 export * from "./workflowV2";
 export * from "./workflowV2Events";

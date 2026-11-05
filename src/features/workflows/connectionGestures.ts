@@ -31,5 +31,6 @@ export function appendConnectedNode(
   if (inserted === graph) return err("nodeLimit" as const);
   const connected = connectNodes(inserted, { ...output, to: node.id }, previous);
   if (!connected.ok || previous === undefined) return connected;
-  return connectNodes(connected.value, { from: node.id, to: previous.to, port: "next" });
+  const port = node.type === "iterator" ? "done" : "next";
+  return connectNodes(connected.value, { from: node.id, to: previous.to, port });
 }

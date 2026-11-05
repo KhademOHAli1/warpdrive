@@ -18,6 +18,7 @@ import { admitManualRun } from "./runAdmission";
 import { cancelWorkflowRun } from "./runControl";
 import { retryWorkflowRun } from "./runRetry";
 import { nudgeWorkflowRun } from "./worker";
+import { submitWorkflowHumanForm } from "./workflowHumanFormSubmit";
 
 async function authorizedContext(token: string | null) {
   const csrf = await guardCsrf(token);
@@ -100,6 +101,20 @@ export async function retryWorkflowAction(input: unknown, token: string | null) 
   if (ctx === null || ctx.session == null || ctx.session.userId !== ctx.actor.id)
     return err(ERROR_IDS.WORKFLOW_DENIED);
   const result = await retryWorkflowRun(ctx.db, ctx.session, input, AbortSignal.timeout(10_000));
+  if (result.ok) await nudgeWorkflowRun(result.value.id);
+  return result.ok ? { ok: true as const, value: { id: result.value.id } } : result;
+}
+
+export async function submitWorkflowHumanFormAction(input: unknown, token: string | null) {
+  const ctx = await authorizedContext(token);
+  if (ctx === null || ctx.session == null || ctx.session.userId !== ctx.actor.id)
+    return err(ERROR_IDS.WORKFLOW_DENIED);
+  const result = await submitWorkflowHumanForm(
+    ctx.db,
+    ctx.session,
+    input,
+    AbortSignal.timeout(10_000),
+  );
   if (result.ok) await nudgeWorkflowRun(result.value.id);
   return result.ok ? { ok: true as const, value: { id: result.value.id } } : result;
 }

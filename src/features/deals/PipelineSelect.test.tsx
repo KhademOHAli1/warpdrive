@@ -22,12 +22,18 @@ const PIPELINES = [
 ];
 
 describe("PipelineSelect", () => {
-  it("lists every pipeline and switches boards on select", async () => {
+  it("lists every visible pipeline as a board destination and includes Performance", async () => {
     const user = userEvent.setup();
     render(<PipelineSelect pipelineId="p1" pipelines={PIPELINES} canManagePipelines />);
     await user.click(screen.getByRole("button", { name: /Sales/ }));
-    await user.click(screen.getByRole("menuitem", { name: "Partnerships" }));
-    expect(push).toHaveBeenCalledWith("/pipeline/p2");
+    expect(screen.getByRole("menuitem", { name: "Partnerships" })).toHaveAttribute(
+      "href",
+      "/pipeline/p2",
+    );
+    expect(screen.getByRole("menuitem", { name: "Performance" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
   });
 
   it("offers an Add new pipeline item that opens the create dialog", async () => {
@@ -46,7 +52,7 @@ describe("PipelineSelect", () => {
     await user.click(screen.getByRole("button", { name: /Sales/ }));
     expect(screen.getByRole("menuitem", { name: "Partnerships" })).toBeInTheDocument();
     expect(screen.queryByRole("menuitem", { name: "Add new pipeline" })).toBeNull();
-    expect(screen.queryByRole("separator")).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Performance" })).toBeInTheDocument();
   });
 
   it("returns focus to the pipeline selector when the create dialog is dismissed", async () => {

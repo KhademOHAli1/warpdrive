@@ -9,11 +9,22 @@ import {
 describe("locale-aware formatting", () => {
   it("uses the selected country for formats without changing the interface language", () => {
     const preferences = { locale: "en", country: "DE" } as const;
+    const date = new Date("2026-03-21T12:00:00Z");
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      calendar: "gregory",
+      numberingSystem: "latn",
+      timeZone: "UTC",
+    } as const;
     expect(localeTagForFormatting(preferences)).toBe("en-DE");
     expect(formatNumber(1234.5, preferences)).toBe("1.234,5");
-    // Bun's locale data can include or omit the period after the day.
-    expect(formatDateOnly("2026-03-21", preferences)).toMatch(/^21\.? Mar 2026$/);
-    expect(formatDateOnly("2026-03-21", { ...preferences, country: "US" })).toBe("Mar 21, 2026");
+    const germanDate = formatDateOnly("2026-03-21", preferences);
+    const americanDate = formatDateOnly("2026-03-21", { ...preferences, country: "US" });
+    expect(germanDate).toBe(new Intl.DateTimeFormat("en-DE", options).format(date));
+    expect(americanDate).toBe(new Intl.DateTimeFormat("en-US", options).format(date));
+    expect(germanDate).not.toBe(americanDate);
   });
 
   it("keeps explicit calendar and digits when the country differs from the interface language", () => {

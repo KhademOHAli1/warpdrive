@@ -30,6 +30,14 @@
     "expandGroup": "Expand {label} navigation",
     "collapseGroup": "Collapse {label} navigation"
   },
+  "dashboardViews": {
+    "dashboard": "Dashboard",
+    "select": "Select dashboard",
+    "selectCurrent": "Select dashboard: {name}",
+    "pipelines": "Pipelines",
+    "performance": "Performance",
+    "addPipeline": "Add new pipeline"
+  },
   "appearance": {
     "title": "Appearance",
     "day": "Light",

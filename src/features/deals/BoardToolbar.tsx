@@ -99,6 +99,7 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
           <PipelineSelect
             pipelineId={pipelineId}
             pipelines={pipelines}
+            activeView={activeView}
             canManagePipelines={canManagePipelines}
           />
 

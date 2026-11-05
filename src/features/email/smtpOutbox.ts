@@ -28,7 +28,13 @@ async function runSmtpAttempt(
   args: SmtpOutboxArgs,
 ): Promise<Result<SmtpSendOutcome, AppError>> {
   args.signal.throwIfAborted();
-  const attempt = await loadSmtpAttempt(db, args.accountId, args.idempotencyKey, args.signal);
+  const attempt = await loadSmtpAttempt(
+    db,
+    args.accountId,
+    args.idempotencyKey,
+    args.signal,
+    args.workflow,
+  );
   if (attempt === undefined)
     return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "SMTP attempt not found"));
   if (args.runtime.accountId !== args.accountId || args.runtime.ownerId !== attempt.owner_id)
@@ -41,12 +47,14 @@ async function runSmtpAttempt(
   if (receipt?.state === "accepted" || receipt?.state === "partial")
     return repairAcceptedSmtpCopy(db, attempt, args.signal);
   if (attempt.send_started_at !== null) return ok(inProgressOutcome(attempt));
+  if (args.workflow !== undefined && (receipt?.state === "rejected" || attempt.status === "failed"))
+    return ok({ status: "failed", deliveryOutcome: { state: "rejected" } });
   if (
     !(await isMailConnectionCurrent(db, args.runtime, args.signal)) ||
     attempt.connection_generation !== args.runtime.generation
   )
     return err(new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "Mailbox connection changed"));
-  const token = await claimSmtpAttempt(db, attempt.id, args.signal);
+  const token = await claimSmtpAttempt(db, attempt.id, args.signal, args.workflow);
   if (token === null) return ok({ status: "pending" });
   return runLeasedSmtpAttempt(db, args, attempt.id, token);
 }
@@ -58,7 +66,13 @@ async function runLeasedSmtpAttempt(
   token: string,
 ): Promise<Result<SmtpSendOutcome, AppError>> {
   try {
-    const attempt = await loadSmtpAttempt(db, args.accountId, args.idempotencyKey, args.signal);
+    const attempt = await loadSmtpAttempt(
+      db,
+      args.accountId,
+      args.idempotencyKey,
+      args.signal,
+      args.workflow,
+    );
     if (attempt === undefined)
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "Claimed SMTP attempt missing"));
     if (attempt.send_started_at !== null)

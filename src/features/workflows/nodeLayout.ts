@@ -1,7 +1,31 @@
-import type { NodePosition, WorkflowDefinition, WorkflowEdge } from "./schemas";
+import { portsFor } from "./graphPorts";
+import { ifElsePortDetails } from "./ifElseBudget";
+import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
+
+export type NodeMeasurements = ReadonlyMap<string, { width: number; height: number }>;
 
 const COLUMN_SPACING = 360;
-const ROW_SPACING = 260;
+const ROW_SPACING = 150;
+const OUTPUT_X_OFFSETS: Partial<Record<WorkflowEdge["port"], number>> = {
+  true: -200,
+  false: 200,
+  loop: COLUMN_SPACING,
+};
+
+export function ifElseBranchOffset(node: WorkflowNode, port: WorkflowEdge["port"]) {
+  if (node.type !== "ifElse") return null;
+  const branch = ifElsePortDetails(node.config, port);
+  if (branch === null) return null;
+  // Twenty places the initial If/Else pair at ±200 and inserts later routes
+  // at 200px intervals around the parent. Both paths use the 120px drop.
+  const x =
+    branch.count === 2
+      ? branch.index === 0
+        ? -200
+        : 200
+      : (branch.index - (branch.count - 1) / 2) * 200;
+  return { x, y: 120 };
+}
 
 export function positionFor(graph: WorkflowDefinition, id: string): NodePosition {
   return (
@@ -9,6 +33,7 @@ export function positionFor(graph: WorkflowDefinition, id: string): NodePosition
       ? graph.layout[id]
       : undefined) ?? {
       x: 0,
+      anchor: "center",
       y:
         Math.max(
           0,
@@ -17,37 +42,82 @@ export function positionFor(graph: WorkflowDefinition, id: string): NodePosition
     }
   );
 }
+
+function placementPosition(
+  graph: WorkflowDefinition,
+  id: string,
+  measurements?: NodeMeasurements,
+): NodePosition {
+  const position = positionFor(graph, id);
+  const dimensions = measurements?.get(id);
+  if (
+    position.anchor === "center" ||
+    dimensions === undefined ||
+    !Number.isFinite(dimensions.width) ||
+    !Number.isFinite(dimensions.height) ||
+    dimensions.width <= 0 ||
+    dimensions.height <= 0
+  )
+    return position;
+  return {
+    x: position.x + dimensions.width / 2,
+    y: position.y + dimensions.height / 2,
+    anchor: "center",
+  };
+}
+
+function boundedPosition(position: NodePosition): NodePosition {
+  return {
+    ...position,
+    x: Math.max(-100000, Math.min(100000, position.x)),
+    y: Math.max(-100000, Math.min(100000, position.y)),
+  };
+}
+
 export function positionForNewNode(
   graph: WorkflowDefinition,
   selected: string,
   output?: Pick<WorkflowEdge, "from" | "port">,
+  measurements?: NodeMeasurements,
 ): NodePosition {
-  const origin = positionFor(graph, output?.from ?? selected);
+  const origin = placementPosition(graph, output?.from ?? selected, measurements);
   const previous =
     output === undefined
       ? undefined
       : graph.edges.find((edge) => edge.from === output.from && edge.port === output.port);
   if (previous !== undefined) {
-    const target = positionFor(graph, previous.to);
-    return clearPosition(graph, { x: (origin.x + target.x) / 2, y: (origin.y + target.y) / 2 });
+    const target = placementPosition(graph, previous.to, measurements);
+    // Never average a known center with an unmeasured legacy top-left coordinate.
+    if (origin.anchor === target.anchor)
+      return clearPosition(
+        graph,
+        { ...origin, x: (origin.x + target.x) / 2, y: (origin.y + target.y) / 2 },
+        measurements,
+      );
   }
-  const offset =
-    output === undefined
-      ? COLUMN_SPACING
-      : output.port === "true"
-        ? -200
-        : output.port === "false"
-          ? 200
-          : 0;
-  return { x: origin.x + offset, y: origin.y + ROW_SPACING };
+  const offset = output === undefined ? COLUMN_SPACING : (OUTPUT_X_OFFSETS[output.port] ?? 0);
+  const source =
+    output === undefined ? undefined : graph.nodes.find((node) => node.id === output.from);
+  const branch =
+    output === undefined || source === undefined ? null : ifElseBranchOffset(source, output.port);
+  const suggested = boundedPosition({
+    ...origin,
+    x: origin.x + (branch?.x ?? offset),
+    y: origin.y + (branch?.y ?? ROW_SPACING),
+  });
+  return previous === undefined ? suggested : clearPosition(graph, suggested, measurements);
 }
 export function currentLayout(graph: WorkflowDefinition): Record<string, NodePosition> {
   return Object.fromEntries(graph.nodes.map((node) => [node.id, positionFor(graph, node.id)]));
 }
-function clearPosition(graph: WorkflowDefinition, origin: NodePosition): NodePosition {
-  const occupied = Object.values(currentLayout(graph));
+function clearPosition(
+  graph: WorkflowDefinition,
+  origin: NodePosition,
+  measurements?: NodeMeasurements,
+): NodePosition {
+  const occupied = graph.nodes.map((node) => placementPosition(graph, node.id, measurements));
   const direction = origin.x > 0 ? -1 : 1;
-  const position = { ...origin };
+  const position = boundedPosition(origin);
   // Each node blocks at most two columns. Moving toward zero keeps the bounded graph in range.
   while (
     occupied.some(
@@ -63,11 +133,14 @@ function clearPosition(graph: WorkflowDefinition, origin: NodePosition): NodePos
 export function arrangeGraph(graph: WorkflowDefinition): WorkflowDefinition {
   const widths = new Map<string, number>();
   const positions = new Map<string, NodePosition>();
-  const children = (id: string) =>
-    graph.edges
+  function children(id: string) {
+    const node = graph.nodes.find((item) => item.id === id);
+    const ports = node === undefined ? [] : portsFor(node);
+    return graph.edges
       .filter((edge) => edge.from === id)
-      .sort((a, b) => Number(a.port === "false") - Number(b.port === "false"))
+      .sort((a, b) => ports.indexOf(a.port) - ports.indexOf(b.port))
       .map((edge) => edge.to);
+  }
   function width(id: string, active = new Set<string>()): number {
     if (active.has(id)) return 1;
     const cached = widths.get(id);
@@ -85,6 +158,7 @@ export function arrangeGraph(graph: WorkflowDefinition): WorkflowDefinition {
     positions.set(id, {
       x: left + ((width(id) - 1) * COLUMN_SPACING) / 2,
       y: depth * ROW_SPACING,
+      anchor: "center",
     });
     let nextLeft = left;
     for (const next of children(id)) {

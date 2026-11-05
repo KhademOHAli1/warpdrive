@@ -1,6 +1,9 @@
 {
   "schema_version": 1,
   "commit_issues": {
+    "727dcaeb7238a3bfe7a5b4710b4790d9df4d9fcf": [877, 674],
+    "429670bcde06ddc5557562382a716a3e4140907f": [674, 675],
+    "de143d4dd03b746a1f5d39257a11a19f2f41ce93": [674],
     "e77991e33616f7a8368ca6f45a1b4c058e7e8e09": [299, 301],
     "fc5fae837b4b8e532a8bfd89ff303e941bcf1439": [214],
     "3dc7fe76ea9c90b1321754873c349b50caaef3a1": [910],

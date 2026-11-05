@@ -4,12 +4,18 @@ import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import type { SendPayload } from "./outboxClaim";
 import { applyTrackingAndSignature } from "./sendHelpers";
+import { type WorkflowMailDispatch, workflowMailScope } from "./workflowMailFence";
 
 // Preparing the durable snapshot is one transaction. Workers cannot claim it
 // until the signature, tracking tokens and prepared body have all committed.
 export async function prepareEnqueuedSend(
   db: Db,
-  args: { attemptId: string; actorId: string; signal: AbortSignal },
+  args: {
+    attemptId: string;
+    actorId: string;
+    signal: AbortSignal;
+    workflow?: WorkflowMailDispatch;
+  },
 ): Promise<Result<{ body: string; scheduledAt: Date | null }, AppError>> {
   try {
     return await db.transaction(async (tx) => {
@@ -20,6 +26,7 @@ export async function prepareEnqueuedSend(
         FROM email_send_attempts s JOIN email_accounts a ON a.id=s.account_id
         JOIN users u ON u.id=a.user_id
         WHERE s.id=${args.attemptId} AND a.user_id=${args.actorId} AND u.is_active=true AND u.invited_at IS NULL
+        AND ${workflowMailScope(sql`s.payload`, args.workflow)}
         FOR UPDATE OF s
       `)
       ).rows[0] as

@@ -43,7 +43,7 @@ function fixture(priorTask = false, cursor: "read" | "task" = "read") {
   const outputs: RunOutputs = { start: { recordId } };
   if (priorTask) outputs.earlier_task = { id: crypto.randomUUID() };
   if (cursor === "task") outputs.read = { id: recordId };
-  const run: Run = {
+  const run: Run & { trigger: { recordId: string } } = {
     id: runId,
     workflowId: crypto.randomUUID(),
     versionId: crypto.randomUUID(),
@@ -53,6 +53,7 @@ function fixture(priorTask = false, cursor: "read" | "task" = "read") {
     status: "failed",
     trigger: { recordId },
     nextNodeId: cursor,
+    iteratorFrame: null,
     resumeAt: null,
     outputs,
     errorId: ERROR_IDS.DEAL_NOT_FOUND,
@@ -65,6 +66,9 @@ function fixture(priorTask = false, cursor: "read" | "task" = "read") {
     id: crypto.randomUUID(),
     runId,
     nodeId,
+    iterationIndex: -1,
+    outcome: "succeeded",
+    errorId: null,
     output: structuredClone(output),
     simulated: false,
     completedAt: now,
@@ -147,6 +151,9 @@ it.each([false, true])("refuses an already completed read with priorTask=%s", (p
     id: crypto.randomUUID(),
     runId: f.run.id,
     nodeId: "read",
+    iterationIndex: -1,
+    outcome: "succeeded",
+    errorId: null,
     simulated: false,
     output: structuredClone(output),
     completedAt: f.run.updatedAt,

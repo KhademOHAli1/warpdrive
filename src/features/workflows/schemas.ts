@@ -2,7 +2,11 @@ import { z } from "zod";
 import { boundedConditionConfig } from "./conditionExpressionBudget";
 import { configurationLimits } from "./configurationLimits";
 import { boundedDelayConfig } from "./delayConfig";
+import { boundedIfElseConfig, branchPortSchema } from "./ifElseBudget";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
+import { boundedWorkflowHumanFormConfig } from "./workflowHumanFormContract";
+import { boundedWorkflowIteratorConfig } from "./workflowIteratorConfiguration";
+import { boundedRecordLookupConfig } from "./workflowRecordQueryBounds";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
 const property = z
@@ -45,9 +49,24 @@ export type ValueType = "string" | "number" | "boolean" | "decimal" | "date" | "
 export const nodeTypes = [
   "trigger.manual",
   "trigger.record",
+  "trigger.schedule",
+  "trigger.webhook",
   "record.read",
+  "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.upsert",
+  "record.pick",
+  "email.draft",
+  "http.request",
+  "calendar.create",
+  "human.form",
   "activity.create",
   "condition",
+  "ifElse",
+  "filter",
+  "iterator",
   "delay",
   "notification",
 ] as const;
@@ -61,9 +80,33 @@ export const nodeSchema = z.strictObject({
   config: z
     .unknown()
     .refine(boundedConditionConfig, "Condition expression exceeds safe bounds")
-    .refine(boundedDelayConfig, "Fixed instant wait exceeds its reviewed scalar shape")
+    .refine(
+      (raw) =>
+        !(
+          raw !== null &&
+          typeof raw === "object" &&
+          (Object.hasOwn(raw, "branches") || Object.hasOwn(raw, "fallbackId"))
+        ) || boundedIfElseConfig(raw),
+      "If/Else routes exceed safe bounds",
+    )
+    .refine(boundedWorkflowIteratorConfig, "Iterator settings exceed safe bounds")
+    .refine(boundedDelayConfig, "Delay settings exceed safe bounds")
+    .refine(boundedRecordLookupConfig, "Record lookup settings exceed safe bounds")
+    .refine((raw) => {
+      if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return true;
+      const fields: unknown = Reflect.get(raw, "fields");
+      return (
+        !(Object.hasOwn(raw, "instructions") || Array.isArray(fields)) ||
+        boundedWorkflowHumanFormConfig(raw)
+      );
+    }, "Form settings exceed safe bounds")
     .pipe(z.record(z.string(), z.json())),
 });
+
+export const workflowPortSchema = z.union([
+  z.enum(["next", "true", "false", "loop", "done"]),
+  branchPortSchema,
+]);
 
 export const definitionSchema = z.strictObject({
   schemaVersion: z.literal(1),
@@ -73,6 +116,7 @@ export const definitionSchema = z.strictObject({
       z.strictObject({
         x: z.number().finite().min(-100000).max(100000),
         y: z.number().finite().min(-100000).max(100000),
+        anchor: z.literal("center").optional(),
       }),
     )
     .refine((positions) => Object.keys(positions).length <= 100)
@@ -83,7 +127,7 @@ export const definitionSchema = z.strictObject({
       z.strictObject({
         from: identifier,
         to: identifier,
-        port: z.enum(["next", "true", "false"]),
+        port: workflowPortSchema,
       }),
     )
     .max(200),
@@ -95,6 +139,8 @@ export type WorkflowEdge = WorkflowDefinition["edges"][number];
 export interface NodePosition {
   x: number;
   y: number;
+  // Existing stored coordinates without a marker keep their original top-left anchor.
+  anchor?: "center";
 }
 export interface DefinitionIssue {
   code: string;

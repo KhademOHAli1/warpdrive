@@ -25,8 +25,16 @@ import {
   type DraftSimulationStep,
   draftSimulationNodeTypes,
 } from "../draftSimulationReceipt";
+import { portsFor } from "../graphPorts";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
-import type { WorkflowDefinition } from "../schemas";
+import { type WorkflowDefinition, type WorkflowNode, workflowPortSchema } from "../schemas";
+import {
+  workflowIteratorMaxItems,
+  workflowIteratorMaxSteps,
+} from "../workflowIteratorFrameContract";
+import { compileWorkflowIteratorGraph } from "../workflowIteratorGraph";
+import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
+import { useConditionPortLabel } from "./conditionPortLabel";
 
 export interface DraftTestSnapshot {
   readonly cutKey: string;
@@ -37,7 +45,7 @@ export interface DraftTestSnapshot {
 type DealOption = { value: string; label: string };
 interface DraftTestResult {
   readonly receipt: DraftSimulationReceipt;
-  readonly recordLabel: string;
+  readonly recordLabel?: string;
 }
 
 export function captureDraftTestSnapshot(
@@ -62,7 +70,17 @@ const receiptKeys = [
   "outcome",
   "steps",
 ];
-const stepKeys = ["nodeId", "nodeType", "status", "errorId", "port", "waitResumeAt"];
+const stepKeys = [
+  "nodeId",
+  "nodeType",
+  "status",
+  "errorId",
+  "port",
+  "waitResumeAt",
+  "recordDeleted",
+  "iterationIndex",
+  "iteratorSummary",
+];
 const requiredStepKeys = ["nodeId", "nodeType", "status"];
 const knownErrorIds = Object.values(ERROR_IDS);
 
@@ -93,16 +111,21 @@ function attachStepError(step: DraftSimulationStep, value: Record<string, unknow
   step.errorId = value.errorId;
   return true;
 }
-function attachStepPort(step: DraftSimulationStep, value: Record<string, unknown>): boolean {
+function attachStepPort(
+  step: DraftSimulationStep,
+  value: Record<string, unknown>,
+  node: WorkflowNode,
+): boolean {
   if (!Object.hasOwn(value, "port") || value.port === undefined) return true;
-  const port = value.port;
-  if (port !== "next" && port !== "true" && port !== "false") return false;
-  if (step.status === "succeeded" && !successfulPort(step.nodeType, port)) return false;
-  step.port = port;
+  const port = workflowPortSchema.safeParse(value.port);
+  if (!port.success) return false;
+  if (
+    (step.status === "succeeded" || node.type === "ifElse" || port.data.startsWith("branch:")) &&
+    !portsFor(node).includes(port.data)
+  )
+    return false;
+  step.port = port.data;
   return true;
-}
-function successfulPort(type: DraftSimulationNodeType, port: "next" | "true" | "false"): boolean {
-  return type === "condition" ? port !== "next" : port === "next";
 }
 function attachStepWait(step: DraftSimulationStep, value: Record<string, unknown>): boolean {
   if (!Object.hasOwn(value, "waitResumeAt") || value.waitResumeAt === undefined) return true;
@@ -110,9 +133,55 @@ function attachStepWait(step: DraftSimulationStep, value: Record<string, unknown
   step.waitResumeAt = value.waitResumeAt;
   return true;
 }
+function attachStepDeletion(step: DraftSimulationStep, value: Record<string, unknown>): boolean {
+  if (!Object.hasOwn(value, "recordDeleted")) return true;
+  if (
+    step.nodeType !== "record.delete" ||
+    step.status !== "succeeded" ||
+    value.recordDeleted !== true
+  )
+    return false;
+  step.recordDeleted = true;
+  return true;
+}
+function validIteratorCount(value: unknown, max: number): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= max;
+}
+
+function attachIteratorProgress(
+  step: DraftSimulationStep,
+  value: Record<string, unknown>,
+): boolean {
+  if (Object.hasOwn(value, "iterationIndex")) {
+    if (
+      step.nodeType === "iterator" ||
+      !validIteratorCount(value.iterationIndex, workflowIteratorMaxItems - 1)
+    )
+      return false;
+    step.iterationIndex = value.iterationIndex;
+  }
+  if (!Object.hasOwn(value, "iteratorSummary")) return true;
+  const summary = value.iteratorSummary;
+  if (
+    step.nodeType !== "iterator" ||
+    step.status !== "succeeded" ||
+    !plainRecord(summary) ||
+    !onlyKeys(summary, ["processedCount", "failedCount"])
+  )
+    return false;
+  const { processedCount, failedCount } = summary;
+  if (
+    !validIteratorCount(processedCount, workflowIteratorMaxItems) ||
+    !validIteratorCount(failedCount, processedCount)
+  )
+    return false;
+  step.iteratorSummary = { processedCount, failedCount };
+  return true;
+}
+
 function readStep(
   value: unknown,
-  nodes: ReadonlyMap<string, DraftSimulationNodeType>,
+  nodes: ReadonlyMap<string, WorkflowNode>,
 ): DraftSimulationStep | null {
   if (!plainRecord(value) || !onlyKeys(value, stepKeys)) return null;
   if (!requiredStepKeys.every((key) => Object.hasOwn(value, key))) return null;
@@ -125,17 +194,22 @@ function readStep(
   )
     return null;
   if (status !== "succeeded" && status !== "failed") return null;
-  if (nodes.get(nodeId) !== nodeType) return null;
+  const node = nodes.get(nodeId);
+  if (node?.type !== nodeType) return null;
   const step: DraftSimulationStep = { nodeId, nodeType, status };
-  return attachStepError(step, value) && attachStepPort(step, value) && attachStepWait(step, value)
+  return attachStepError(step, value) &&
+    attachStepPort(step, value, node) &&
+    attachStepWait(step, value) &&
+    attachStepDeletion(step, value) &&
+    attachIteratorProgress(step, value)
     ? step
     : null;
 }
-function submittedNodes(snapshot: DraftTestSnapshot): Map<string, DraftSimulationNodeType> | null {
-  const nodes = new Map<string, DraftSimulationNodeType>();
+function submittedNodes(snapshot: DraftTestSnapshot): Map<string, WorkflowNode> | null {
+  const nodes = new Map<string, WorkflowNode>();
   for (const node of snapshot.definition.nodes) {
     if (!draftNodeType(node.type) || nodes.has(node.id)) return null;
-    nodes.set(node.id, node.type);
+    nodes.set(node.id, node);
   }
   return nodes;
 }
@@ -144,24 +218,42 @@ function readSteps(
   snapshot: DraftTestSnapshot,
 ): DraftSimulationStep[] | null {
   const nodes = submittedNodes(snapshot);
-  if (nodes === null || value.length > 100) return null;
+  if (nodes === null || value.length > workflowIteratorMaxSteps) return null;
+  const iterator = snapshot.definition.nodes.find((node) => node.type === "iterator");
+  const loop =
+    iterator === undefined ? null : compileWorkflowIteratorGraph(snapshot.definition, iterator.id);
+  if (loop !== null && !loop.ok) return null;
+  const bodyIds = new Set(loop?.value.body.map((node) => node.id) ?? []);
   const steps: DraftSimulationStep[] = [];
   const seen = new Set<string>();
   for (const raw of value) {
     const step = readStep(raw, nodes);
-    if (step === null || seen.has(step.nodeId)) return null;
-    seen.add(step.nodeId);
+    if (step === null || bodyIds.has(step.nodeId) !== (step.iterationIndex !== undefined))
+      return null;
+    const key = receiptStepKey(step);
+    if (seen.has(key)) return null;
+    seen.add(key);
     steps.push(step);
   }
   return steps;
 }
+function receiptStepKey(step: DraftSimulationStep): string {
+  return `${step.nodeId}:${step.iterationIndex ?? -1}`;
+}
+
 function stepsMatchOutcome(
   steps: readonly DraftSimulationStep[],
   outcome: "completed" | "failed",
+  definition: WorkflowDefinition,
 ): boolean {
   if (steps.length === 0) return false;
-  const failed = steps.findIndex((step) => step.status === "failed");
-  return outcome === "completed" ? failed === -1 : failed === steps.length - 1;
+  const continueOnError = definition.nodes.some(
+    (node) => node.type === "iterator" && node.config.shouldContinueOnIterationFailure === true,
+  );
+  return steps.every((step, index) => {
+    if (index === steps.length - 1 && outcome === "failed") return step.status === "failed";
+    return step.status === "succeeded" || (continueOnError && step.iterationIndex !== undefined);
+  });
 }
 function receiptRecord(value: unknown, snapshot: DraftTestSnapshot): DraftSimulationReceipt | null {
   if (!plainRecord(value) || !onlyKeys(value, receiptKeys)) return null;
@@ -179,7 +271,7 @@ function receiptRecord(value: unknown, snapshot: DraftTestSnapshot): DraftSimula
   if (!Array.isArray(rawSteps)) return null;
   const steps = readSteps(rawSteps, snapshot);
   if (steps === null) return null;
-  if (!stepsMatchOutcome(steps, outcome)) return null;
+  if (!stepsMatchOutcome(steps, outcome, snapshot.definition)) return null;
   return {
     source: "draft",
     mode: "simulation",
@@ -225,7 +317,9 @@ function DraftTestResults({
         {snapshot.name}
       </p>
       <p dir="auto" className="break-words [overflow-wrap:anywhere]">
-        {t("draftSimulationRecord", { name: result.recordLabel })}
+        {result.recordLabel === undefined
+          ? t("manualGlobalRunHint")
+          : t("draftSimulationRecord", { name: result.recordLabel })}
       </p>
       <p className="text-muted-foreground">
         {t("draftSimulationTestedAt", { date: fmt.dateTime(new Date(result.receipt.testedAt)) })}
@@ -236,13 +330,13 @@ function DraftTestResults({
           const name =
             node === undefined ? t(nodeLabelKeys[step.nodeType]) : displayNodeName(node, locale);
           return (
-            <li key={step.nodeId} className="min-w-0 space-y-1 rounded-md bg-muted/40 p-3">
+            <li key={receiptStepKey(step)} className="min-w-0 space-y-1 rounded-md bg-muted/40 p-3">
               <p dir="auto" className="break-words font-medium [overflow-wrap:anywhere]">
                 {t("draftSimulationStep", { number: fmt.number(index + 1), name })}
               </p>
               <p>{t(step.status === "succeeded" ? "status.succeeded" : "status.failed")}</p>
               {step.status === "failed" && <p>{t("draftSimulationStepFailed")}</p>}
-              <DraftStepDetails step={step} />
+              <DraftStepDetails step={step} node={node} />
             </li>
           );
         })}
@@ -250,15 +344,31 @@ function DraftTestResults({
     </section>
   );
 }
-function DraftStepDetails({ step }: { step: DraftSimulationStep }) {
+function DraftStepDetails({ step, node }: { step: DraftSimulationStep; node?: WorkflowNode }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
+  const portLabel = useConditionPortLabel();
   const branch =
     step.status === "succeeded" && step.nodeType === "condition" ? step.port : undefined;
   return (
     <>
+      {step.iterationIndex !== undefined && (
+        <p>{t("iteratorItemNumber", { number: fmt.number(step.iterationIndex + 1) })}</p>
+      )}
+      {step.iteratorSummary !== undefined && (
+        <p>
+          {t("iteratorSummary", {
+            processed: fmt.number(step.iteratorSummary.processedCount),
+            failed: fmt.number(step.iteratorSummary.failedCount),
+          })}
+        </p>
+      )}
       {branch === "true" && <p>{t("draftSimulationBranchTrue")}</p>}
       {branch === "false" && <p>{t("draftSimulationBranchFalse")}</p>}
+      {step.recordDeleted === true && <p>{t("recordWouldBeDeleted")}</p>}
+      {step.status === "succeeded" && step.nodeType === "ifElse" && step.port !== undefined && (
+        <p>{t("ifElseSelectedRoute", { route: portLabel(step.port, node) })}</p>
+      )}
       {step.status === "succeeded" &&
         step.nodeType === "delay" &&
         step.waitResumeAt !== undefined && (
@@ -278,7 +388,10 @@ export function DraftTestDialog({
   onCloseAutoFocus: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
+  const trigger = snapshot.definition.nodes.find((node) => node.type === "trigger.manual");
+  const scope = workflowManualLaunchScope(trigger?.config);
   const [chosen, setChosen] = useState<DealOption | null>(null);
+  const canSimulate = scope === "global" || (scope === "deal" && chosen !== null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const [result, setResult] = useState<DraftTestResult | null>(null);
@@ -293,10 +406,10 @@ export function DraftTestDialog({
     };
   }, []);
   async function simulate() {
-    if (inFlight.current || chosen === null) return;
+    if (inFlight.current || !canSimulate) return;
     inFlight.current = true;
     const target = ++generation.current;
-    const record = chosen;
+    const record = scope === "deal" ? chosen : null;
     setPending(true);
     setError(false);
     setResult(null);
@@ -305,7 +418,7 @@ export function DraftTestDialog({
         {
           workflowId: snapshot.workflowId,
           definition: structuredClone(snapshot.definition),
-          recordId: record.value,
+          ...(record === null ? {} : { recordId: record.value }),
         },
         readCsrfToken(),
       );
@@ -319,7 +432,7 @@ export function DraftTestDialog({
         setError(true);
         return;
       }
-      setResult({ receipt, recordLabel: record.label });
+      setResult({ receipt, ...(record === null ? {} : { recordLabel: record.label }) });
     } catch {
       if (active.current && generation.current === target) setError(true);
     } finally {
@@ -349,8 +462,13 @@ export function DraftTestDialog({
             {snapshot.name}
           </p>
           <p className="text-muted-foreground">{t("draftSimulationCaptured")}</p>
-          <p>{t("draftSimulationRecordInput")}</p>
-          <DraftDealPicker chosen={chosen} onChoose={setChosen} pending={pending} />
+          {scope === "deal" && (
+            <>
+              <p>{t("draftSimulationRecordInput")}</p>
+              <DraftDealPicker chosen={chosen} onChoose={setChosen} pending={pending} />
+            </>
+          )}
+          {scope === "global" && <p>{t("manualGlobalRunHint")}</p>}
           <p className="text-muted-foreground">{t("draftSimulationTaskPreviews")}</p>
           <p className="text-muted-foreground">{t("draftSimulationWaits")}</p>
           <p className="text-muted-foreground">{t("draftSimulationAccess")}</p>
@@ -366,7 +484,7 @@ export function DraftTestDialog({
           <Button variant="outline" onClick={onClose}>
             {t("cancel")}
           </Button>
-          <Button disabled={pending || chosen === null} onClick={() => void simulate()}>
+          <Button disabled={pending || !canSimulate} onClick={() => void simulate()}>
             {t("confirmSimulation")}
           </Button>
         </DialogFooter>

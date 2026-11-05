@@ -8,10 +8,25 @@ import type {
 } from "../configurationTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { BindingField } from "./BindingField";
+import { CalendarEventConfigurationFields } from "./CalendarEventConfigurationFields";
 import { ConditionFields } from "./ConditionFields";
+import { CreateRecordConfigurationFields } from "./CreateRecordConfigurationFields";
 import { type ConfigurationIssueKey, configurationIssueKeys } from "./configurationIssueMessage";
 import { DelayConfigurationFields } from "./DelayConfigurationFields";
 import { DelayFields } from "./DelayFields";
+import { DelayScheduleFields } from "./DelayScheduleFields";
+import { EmailDraftConfigurationFields } from "./EmailDraftConfigurationFields";
+import { HttpRequestConfigurationFields } from "./HttpRequestConfigurationFields";
+import { HumanFormConfigurationFields } from "./HumanFormConfigurationFields";
+import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
+import { IteratorConfigurationFields } from "./IteratorConfigurationFields";
+import { ManualTriggerConfigurationFields } from "./ManualTriggerConfigurationFields";
+import { PersonUpsertConfigurationFields } from "./PersonUpsertConfigurationFields";
+import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
+import { RecordMutationConfigurationFields } from "./RecordMutationConfigurationFields";
+import { ScheduleConfigurationFields } from "./ScheduleConfigurationFields";
+import { SearchRecordConfigurationFields } from "./SearchRecordConfigurationFields";
+import { WebhookConfigurationFields } from "./WebhookConfigurationFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
 
@@ -141,10 +156,68 @@ function ConfigurationField({
     );
   return <BuiltinField {...props} field={field} />;
 }
+function extendedConfigurationFields(props: ConfigurationFieldsProps) {
+  if (props.spec?.supported !== true) return undefined;
+  switch (props.node.type) {
+    case "trigger.manual":
+      return <ManualTriggerConfigurationFields {...props} />;
+    case "trigger.schedule":
+      return <ScheduleConfigurationFields {...props} />;
+    case "trigger.webhook":
+      return <WebhookConfigurationFields {...props} />;
+    case "record.update":
+    case "record.delete":
+      return <RecordMutationConfigurationFields {...props} />;
+    case "human.form":
+      return <HumanFormConfigurationFields {...props} />;
+    case "iterator":
+      return <IteratorConfigurationFields {...props} />;
+    case "calendar.create":
+      return <CalendarEventConfigurationFields {...props} />;
+    case "http.request":
+      return <HttpRequestConfigurationFields {...props} />;
+    case "email.draft":
+      return <EmailDraftConfigurationFields {...props} />;
+    case "record.search":
+      return <SearchRecordConfigurationFields {...props} />;
+    case "record.upsert":
+      return <PersonUpsertConfigurationFields {...props} />;
+    case "record.pick":
+      return <PickRecordFieldsWithLookup {...props} />;
+    case "record.create":
+      return <CreateRecordConfigurationFields {...props} />;
+    case "activity.create":
+    case "condition":
+    case "delay":
+    case "filter":
+    case "ifElse":
+    case "notification":
+    case "record.read":
+    case "trigger.record":
+      return undefined;
+  }
+}
+
 export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
   const t = useAppTranslations("workflows");
   const { spec, definition, node, editable, onChange, validation } = props;
   if (spec === null) return null;
+  const extended = extendedConfigurationFields(props);
+  if (extended !== undefined) return extended;
+  if (node.type === "ifElse" && spec.supported)
+    return (
+      <IfElseConfigurationFields
+        definition={definition}
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        onRemoveConnectedRoute={onChange}
+        metadata={props.metadata}
+        issues={validation.issues}
+      />
+    );
+  if (node.type === "delay" && spec.supported && Object.hasOwn(node.config, "delayType"))
+    return <DelayScheduleFields {...props} />;
   if (node.type === "delay" && spec.supported)
     return (
       <DelayConfigurationFields

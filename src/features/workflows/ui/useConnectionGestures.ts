@@ -4,12 +4,17 @@ import type { Connection, Edge, OnConnectEnd, ReactFlowInstance } from "@xyflow/
 import { type Dispatch, type SetStateAction, useRef } from "react";
 import { drawConnection, type OutputTarget } from "../connectionGestures";
 import { type ConnectionProblem, edgeId } from "../graphEditor";
-import type { NodePosition, WorkflowDefinition, WorkflowEdge } from "../schemas";
+import { portsFor } from "../graphPorts";
+import {
+  type NodePosition,
+  type WorkflowDefinition,
+  type WorkflowEdge,
+  workflowPortSchema,
+} from "../schemas";
 
 function asEdge(connection: Connection | Edge): WorkflowEdge | null {
-  const port = connection.sourceHandle ?? "next";
-  if (!["next", "true", "false"].includes(port)) return null;
-  return { from: connection.source, to: connection.target, port: port as WorkflowEdge["port"] };
+  const port = workflowPortSchema.safeParse(connection.sourceHandle ?? "next");
+  return port.success ? { from: connection.source, to: connection.target, port: port.data } : null;
 }
 export type AddFromOutput = (output: OutputTarget, position?: NodePosition) => void;
 
@@ -48,9 +53,10 @@ export function useConnectionGestures({
   }
   const finish: OnConnectEnd = (event, state) => {
     if (!editable || state.isValid === true || state.fromHandle?.type !== "source") return;
-    const port = state.fromHandle.id;
-    if (port !== "next" && port !== "true" && port !== "false") return;
-    const output: OutputTarget = { from: state.fromHandle.nodeId, port };
+    const port = workflowPortSchema.safeParse(state.fromHandle.id);
+    const source = definition.nodes.find((node) => node.id === state.fromHandle?.nodeId);
+    if (!port.success || source === undefined || !portsFor(source).includes(port.data)) return;
+    const output: OutputTarget = { from: source.id, port: port.data };
     const card =
       event.target instanceof Element
         ? event.target.closest(".react-flow__node")?.getAttribute("data-id")

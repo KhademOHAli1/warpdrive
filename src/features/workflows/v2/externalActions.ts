@@ -1,14 +1,16 @@
 import { eq } from "drizzle-orm";
+import { ERROR_IDS } from "@/constants/errorIds";
 import {
   workflowV2LogicFunctions,
   workflowV2RuntimeSettings,
 } from "@/db/schema/workflowV2Functions";
 import type { BlockOutput, ExternalActionExecutor } from "@/features/blocks/contracts";
-import { assertMailboxOwner } from "@/features/email/mailboxOwnership";
+import { validateResolvedBlockConfig } from "@/features/blocks/schemas";
 import { sendEmail, sendEmailInput } from "@/features/email/send";
 import { resolveSendConnection } from "@/features/email/sendConnection";
-import { readOwnedSendStatus } from "@/features/email/sendStatus";
+import { workflowMailRequestDigest } from "@/features/email/workflowMailFence";
 import { makeStorageClient } from "@/features/files/storage";
+import type { SendEmailOutcome } from "@/types/mail";
 import { err, ok } from "@/types/result";
 import { executeWorkflowAi } from "./aiActions";
 import { runWorkflowCode } from "./codeSandbox";
@@ -87,28 +89,17 @@ async function executeHttp({ db, signal }: ActionContext, config: BlockOutput): 
   return result.ok ? ok({ ...result.value }) : result;
 }
 
-async function executeEmail(context: Parameters<ExternalActionExecutor>[0], config: BlockOutput) {
+async function executeEmail(context: ActionContext, config: BlockOutput): ActionResult {
   const { db, actor, signal } = context;
-  const parsed = sendEmailInput.safeParse({ ...config, idempotencyKey: context.effectKey });
+  const validated = validateResolvedBlockConfig("SEND_EMAIL", config);
+  if (!validated.success) return err({ id: "E_WORKFLOW_EMAIL_INPUT" });
+  const parsed = sendEmailInput.safeParse({
+    ...validated.data,
+    idempotencyKey: context.effectKey,
+    visibility: "private",
+  });
   if (!parsed.success) return err({ id: "E_WORKFLOW_EMAIL_INPUT" });
   const input = parsed.data;
-  const owner = await assertMailboxOwner(db, input.accountId, actor.id, signal);
-  if (!owner.ok) return err({ id: owner.error.id });
-  const receipt = await readOwnedSendStatus(db, {
-    accountId: input.accountId,
-    actorId: actor.id,
-    idempotencyKey: context.effectKey,
-    signal,
-  });
-  if (!receipt.ok) return err({ id: receipt.error.id });
-  if (receipt.value?.outcome.status === "needs_review")
-    return err({ id: "E_WORKFLOW_EMAIL_UNKNOWN", outcome: "unknown" as const });
-  if (receipt.value?.outcome.status === "sent")
-    return ok({
-      status: "sent",
-      attemptId: receipt.value.outcome.attemptId ?? null,
-      messageId: receipt.value.outcome.messageId ?? null,
-    });
   const connection = await resolveSendConnection(db, {
     accountId: input.accountId,
     actorId: actor.id,
@@ -116,21 +107,55 @@ async function executeEmail(context: Parameters<ExternalActionExecutor>[0], conf
     signal,
   });
   if (!connection.ok) return err({ id: connection.error.id });
+  const { mail, gmail, expectedGeneration } = connection.value;
+  const generation = mail?.generation ?? expectedGeneration;
+  if (generation === undefined || (mail === undefined && gmail === undefined))
+    return err({ id: ERROR_IDS.MAIL_CONNECTION_UNAVAILABLE });
   const result = await sendEmail(db, {
     actorId: actor.id,
     actorType: actor.type,
     actorGroupIds: actor.groupIds,
     ...connection.value,
+    workflow: {
+      request: config,
+      purpose: {
+        version: 1,
+        runId: context.runId,
+        executionId: context.executionId,
+        effectKey: context.effectKey,
+        actorId: actor.id,
+        provider: mail === undefined ? "gmail" : "imap_smtp",
+        generation,
+        requestDigest: workflowMailRequestDigest(config),
+      },
+    },
     storage: makeStorageClient(),
     input,
     signal,
   });
-  if (!result.ok) return err({ id: result.error.id, outcome: "unknown" as const });
-  if (result.value.status === "needs_review" || result.value.deliveryOutcome?.state === "unknown")
-    return err({ id: "E_WORKFLOW_EMAIL_UNKNOWN", outcome: "unknown" as const });
-  return ok({
-    status: result.value.status,
-    attemptId: result.value.attemptId ?? null,
-    messageId: result.value.messageId ?? null,
-  });
+  return result.ok
+    ? projectWorkflowMailReceipt(result.value)
+    : err({ id: result.error.id, outcome: "unknown" });
+}
+
+function projectWorkflowMailReceipt(receipt: SendEmailOutcome): Awaited<ActionResult> {
+  switch (receipt.deliveryOutcome?.state) {
+    case "partial":
+      return err({ id: ERROR_IDS.MAIL_WRITE_PARTIAL });
+    case "rejected":
+      return err({ id: ERROR_IDS.MAIL_SEND_REJECTED });
+    case "unknown":
+      return err({ id: "E_WORKFLOW_EMAIL_UNKNOWN", outcome: "unknown" });
+    case "accepted":
+    case undefined:
+      break;
+  }
+  if (receipt.deliveryOutcome?.state === "accepted" || receipt.status === "sent") {
+    return ok({
+      status: "sent",
+      attemptId: receipt.attemptId ?? null,
+      messageId: receipt.messageId ?? null,
+    });
+  }
+  return err({ id: "E_WORKFLOW_EMAIL_UNKNOWN", outcome: "unknown" });
 }

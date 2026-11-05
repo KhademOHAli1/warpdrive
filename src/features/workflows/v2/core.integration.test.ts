@@ -694,6 +694,33 @@ it("matches canonical watched fields and wipes raw outbox snapshots after durabl
   });
 });
 
+it("does not start a publication from a record event queued before it was published", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, { isAdmin: true });
+    const who = actor(user.id);
+    const draft: WorkflowV2Definition = {
+      ...definition(
+        [node("filter", "FILTER", { condition: { left: true, operator: "eq", right: true } })],
+        [],
+      ),
+      trigger: { type: "record.created", config: { objectName: "person" } },
+    };
+    const subscriber = await published(db, who, draft);
+    await db
+      .insert(persons)
+      .values({ name: "Queued before publication", ownerId: user.id, visibilityLevel: "owner" });
+    await published(db, who, draft);
+
+    const [event] = await db.select().from(workflowV2RecordEvents);
+    if (event === undefined) throw new Error("record event fixture missing");
+    const runs = await drainWorkflowV2RecordOutbox(db, adapters, signal());
+    expect(runs).toHaveLength(1);
+    expect(await db.select().from(workflowV2Runs)).toMatchObject([
+      { id: runs[0], workflowId: subscriber.id },
+    ]);
+  });
+});
+
 it("never wakes a recipient on a hidden record event, then resumes for a visible event", async () => {
   await withTestDb(async (db) => {
     const owner = await seedUser(db);
@@ -724,6 +751,64 @@ it("never wakes a recipient on a hidden record event, then resumes for a visible
     expect((await db.select().from(workflowV2Waits))[0]?.output).toMatchObject({
       hasTimedOut: false,
       recordId: visible.id,
+    });
+  });
+});
+
+it.each([
+  { label: "before the deadline", offset: 500, resumes: true },
+  { label: "at the deadline", offset: 1000, resumes: false },
+])("honors the event occurrence window for an update $label", async ({ offset, resumes }) => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, { isAdmin: true });
+    const who = actor(user.id);
+    const [person] = await db
+      .insert(persons)
+      .values({ name: "Before", ownerId: user.id, visibilityLevel: "owner" })
+      .returning();
+    if (person === undefined) throw new Error("person fixture missing");
+    const workflow = await published(
+      db,
+      who,
+      definition(
+        [
+          node("wait", "WAIT_FOR_EVENT", {
+            eventName: "person.updated",
+            recordId: person.id.toUpperCase(),
+            timeoutSeconds: 1,
+          }),
+        ],
+        [],
+      ),
+    );
+    const run = await start(db, who, workflow.id);
+    expect((await advanceWorkflowV2Run(db, run.id, adapters, signal())).status).toBe("waiting");
+    await db.update(persons).set({ name: "After" }).where(eq(persons.id, person.id));
+
+    // Backdate the persisted clocks to exercise delayed delivery without sleeping.
+    const armedAt = new Date("2026-01-01T12:00:00.000Z");
+    const expiresAt = new Date(armedAt.getTime() + 1000);
+    await db
+      .update(workflowV2Waits)
+      .set({ createdAt: armedAt, expiresAt })
+      .where(eq(workflowV2Waits.runId, run.id));
+    await db
+      .update(workflowV2RecordEvents)
+      .set({ createdAt: new Date(armedAt.getTime() + offset) })
+      .where(eq(workflowV2RecordEvents.recordId, person.id));
+
+    expect(await resumeDueWorkflowV2Waits(db, adapters, signal(), expiresAt)).toEqual(
+      resumes ? [] : [run.id],
+    );
+    expect(await drainWorkflowV2RecordOutbox(db, adapters, signal())).toEqual(
+      resumes ? [run.id] : [],
+    );
+    expect(await drainWorkflowV2RecordOutbox(db, adapters, signal())).toEqual([]);
+    expect(await resumeDueWorkflowV2Waits(db, adapters, signal(), expiresAt)).toEqual([]);
+    const [wait] = await db.select().from(workflowV2Waits).where(eq(workflowV2Waits.runId, run.id));
+    expect(wait).toMatchObject({
+      status: resumes ? "resumed" : "expired",
+      output: resumes ? { hasTimedOut: false, recordId: person.id } : { hasTimedOut: true },
     });
   });
 });

@@ -8,7 +8,7 @@ import type { LiveRunEffects } from "./liveRunEffectSummary";
 export interface LiveRunReviewContext {
   readonly publicationName: string;
   readonly publicationNumber: number;
-  readonly recordLabel: string;
+  readonly recordLabel?: string;
   readonly effects: LiveRunEffects;
 }
 
@@ -34,6 +34,45 @@ export function LiveRunReview({
     { label: t("read"), count: review.effects.counts.read },
     { label: t("task"), count: review.effects.counts.task },
     { label: t("condition"), count: review.effects.counts.condition },
+    ...((review.effects.counts.filter ?? 0) > 0
+      ? [{ label: t("filter"), count: review.effects.counts.filter ?? 0 }]
+      : []),
+    ...((review.effects.counts.ifElse ?? 0) > 0
+      ? [{ label: t("ifElseAction"), count: review.effects.counts.ifElse ?? 0 }]
+      : []),
+    ...((review.effects.counts.iterator ?? 0) > 0
+      ? [{ label: t("iterator"), count: review.effects.counts.iterator ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordCreate ?? 0) > 0
+      ? [{ label: t("createRecord"), count: review.effects.counts.recordCreate ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordUpdate ?? 0) > 0
+      ? [{ label: t("updateRecord"), count: review.effects.counts.recordUpdate ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordDelete ?? 0) > 0
+      ? [{ label: t("deleteRecord"), count: review.effects.counts.recordDelete ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordUpsert ?? 0) > 0
+      ? [{ label: t("upsertRecord"), count: review.effects.counts.recordUpsert ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordSearch ?? 0) > 0
+      ? [{ label: t("searchRecords"), count: review.effects.counts.recordSearch ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordPick ?? 0) > 0
+      ? [{ label: t("pickRecord"), count: review.effects.counts.recordPick ?? 0 }]
+      : []),
+    ...((review.effects.counts.emailDraft ?? 0) > 0
+      ? [{ label: t("draftEmail"), count: review.effects.counts.emailDraft ?? 0 }]
+      : []),
+    ...((review.effects.counts.httpRequest ?? 0) > 0
+      ? [{ label: t("httpRequest"), count: review.effects.counts.httpRequest ?? 0 }]
+      : []),
+    ...((review.effects.counts.calendarEvent ?? 0) > 0
+      ? [{ label: t("createCalendarEvent"), count: review.effects.counts.calendarEvent ?? 0 }]
+      : []),
+    ...((review.effects.counts.humanForm ?? 0) > 0
+      ? [{ label: t("humanForm"), count: review.effects.counts.humanForm ?? 0 }]
+      : []),
     { label: t("delay"), count: review.effects.counts.delay },
   ];
   return (
@@ -47,7 +86,9 @@ export function LiveRunReview({
       </p>
       <p>{t("liveReviewVersion", { number: String(review.publicationNumber) })}</p>
       <p dir="auto" className="break-words [overflow-wrap:anywhere]">
-        {t("liveReviewRecord", { name: review.recordLabel })}
+        {review.recordLabel === undefined
+          ? t("manualGlobalRunHint")
+          : t("liveReviewRecord", { name: review.recordLabel })}
       </p>
       <p>{t("liveReviewSteps", { number: String(review.effects.configuredSteps) })}</p>
       <ul className="space-y-1">
@@ -61,6 +102,14 @@ export function LiveRunReview({
       <p className="text-muted-foreground">{t("liveReviewConfigured")}</p>
       {review.effects.counts.read > 0 && <p>{t("liveReviewRead")}</p>}
       {review.effects.counts.task > 0 && <p>{t("liveReviewTask")}</p>}
+      {(review.effects.counts.recordCreate ?? 0) > 0 && <p>{t("liveReviewRecordCreate")}</p>}
+      {(review.effects.counts.recordUpdate ?? 0) > 0 && <p>{t("liveReviewRecordUpdate")}</p>}
+      {(review.effects.counts.recordUpsert ?? 0) > 0 && <p>{t("liveReviewRecordUpsert")}</p>}
+      {(review.effects.counts.recordDelete ?? 0) > 0 && <p>{t("liveReviewRecordDelete")}</p>}
+      {(review.effects.counts.httpRequest ?? 0) > 0 && <p>{t("publicationHttpRequestStep")}</p>}
+      {(review.effects.counts.emailDraft ?? 0) > 0 && <p>{t("liveReviewEmailDraft")}</p>}
+      {(review.effects.counts.calendarEvent ?? 0) > 0 && <p>{t("liveReviewCalendarEvent")}</p>}
+      {(review.effects.counts.humanForm ?? 0) > 0 && <p>{t("liveReviewHumanForm")}</p>}
       {review.effects.counts.delay > 0 && <p>{t("liveReviewWait")}</p>}
       <p className="text-muted-foreground">{t("liveReviewPermissions")}</p>
       <p className="text-muted-foreground">{t("liveReviewOmitted")}</p>

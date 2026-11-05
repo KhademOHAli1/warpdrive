@@ -5,7 +5,7 @@ export interface PaletteEntryState {
   type: WorkflowNode["type"];
   version: 1;
   support: "supported" | "unavailable";
-  supportReason: "handler-unavailable" | null;
+  supportReason: "handler-unavailable" | "http-grant-required" | "webhook-key-required" | null;
   provider: "not-required" | "not-assessed";
   executionReasons: PaletteExecutionReason[];
 }
@@ -33,10 +33,24 @@ interface CatalogDescriptor {
   selection: "insert" | "configure" | "unavailable";
   profile:
     | "manual-trigger"
+    | "scheduled-trigger"
+    | "webhook-trigger"
     | "deal-read"
     | "basic-task"
+    | "create-record"
+    | "update-record"
+    | "delete-record"
+    | "search-records"
+    | "upsert-record"
+    | "pick-record"
+    | "draft-email"
+    | "http-request"
+    | "create-calendar-event"
+    | "human-form"
+    | "ordered-condition"
     | "scalar-condition"
-    | "literal-duration"
+    | "iterator"
+    | "delay-schedule"
     | "unavailable";
   input: "deal" | "optional" | "scalar" | "none";
   support: PaletteEntryState["support"];
@@ -83,6 +97,128 @@ export const paletteCatalog = [
     descriptionKey: "paletteRecordTriggerHint",
   },
   {
+    ...local,
+    type: "trigger.schedule",
+    category: "triggers",
+    categoryKey: "paletteCategoryTriggers",
+    labelKey: "scheduledTrigger",
+    descriptionKey: "scheduledTriggerHint",
+    selection: "configure",
+    profile: "scheduled-trigger",
+    input: "none",
+  },
+  {
+    ...local,
+    type: "trigger.webhook",
+    category: "triggers",
+    categoryKey: "paletteCategoryTriggers",
+    labelKey: "webhookTrigger",
+    descriptionKey: "webhookTriggerHint",
+    selection: "configure",
+    profile: "webhook-trigger",
+    input: "none",
+  },
+  {
+    ...insertable,
+    type: "record.create",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "createRecord",
+    descriptionKey: "createRecordHint",
+    profile: "create-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.update",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "updateRecord",
+    descriptionKey: "updateRecordHint",
+    profile: "update-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.delete",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "deleteRecord",
+    descriptionKey: "deleteRecordHint",
+    profile: "delete-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.search",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "searchRecords",
+    descriptionKey: "searchRecordsHint",
+    profile: "search-records",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.upsert",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "upsertRecord",
+    descriptionKey: "upsertRecordHint",
+    profile: "upsert-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.pick",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "pickRecord",
+    descriptionKey: "pickRecordHint",
+    profile: "pick-record",
+    input: "none",
+  },
+  {
+    ...insertable,
+    type: "email.draft",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "draftEmail",
+    descriptionKey: "draftEmailHint",
+    profile: "draft-email",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "calendar.create",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "createCalendarEvent",
+    descriptionKey: "createCalendarEventHint",
+    profile: "create-calendar-event",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "http.request",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "httpRequest",
+    descriptionKey: "httpRequestHint",
+    profile: "http-request",
+    input: "none",
+  },
+  {
+    ...insertable,
+    type: "human.form",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "humanForm",
+    descriptionKey: "humanFormHint",
+    profile: "human-form",
+    input: "none",
+  },
+  {
     ...insertable,
     type: "record.read",
     category: "crm",
@@ -122,12 +258,42 @@ export const paletteCatalog = [
   },
   {
     ...insertable,
+    type: "iterator",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "iterator",
+    descriptionKey: "iteratorHint",
+    profile: "iterator",
+    input: "none",
+  },
+  {
+    ...insertable,
+    type: "filter",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "filter",
+    descriptionKey: "filterActionHint",
+    profile: "scalar-condition",
+    input: "scalar",
+  },
+  {
+    ...insertable,
+    type: "ifElse",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "ifElseAction",
+    descriptionKey: "ifElseActionHint",
+    profile: "ordered-condition",
+    input: "scalar",
+  },
+  {
+    ...insertable,
     type: "delay",
     category: "timing",
     categoryKey: "paletteCategoryTiming",
     labelKey: "delay",
-    descriptionKey: "delayMinutesHint",
-    profile: "literal-duration",
+    descriptionKey: "delayScheduleHint",
+    profile: "delay-schedule",
     input: "none",
   },
 ] as const satisfies readonly CatalogDescriptor[];

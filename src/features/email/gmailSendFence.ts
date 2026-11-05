@@ -5,7 +5,15 @@ import {
   notificationAdmissionContended,
 } from "@/features/notifications/email/notificationAdmission";
 import { readGmailConnection, withGmailConnection } from "./gmailConnectionFence";
+import type { SendPayload } from "./outboxClaim";
 import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
+import {
+  currentWorkflowMailLease,
+  guardWorkflowMailSubmission,
+  isNotLegacyWorkflowMail,
+  type WorkflowMailDispatch,
+  workflowMailScope,
+} from "./workflowMailFence";
 
 export async function isGmailSendCurrent(
   db: Db,
@@ -25,6 +33,7 @@ export async function stampGmailSend(
   token: string,
   signal: AbortSignal,
   expectedGeneration?: number,
+  workflow?: { dispatch: WorkflowMailDispatch; payload: SendPayload },
 ): Promise<boolean> {
   signal.throwIfAborted();
   const attempt = (
@@ -35,7 +44,9 @@ export async function stampGmailSend(
   if (
     !attempt ||
     attempt.connection_generation === null ||
-    (expectedGeneration !== undefined && expectedGeneration !== attempt.connection_generation)
+    (expectedGeneration !== undefined && expectedGeneration !== attempt.connection_generation) ||
+    (workflow !== undefined &&
+      workflow.dispatch.purpose.generation !== attempt.connection_generation)
   )
     return false;
   try {
@@ -51,10 +62,26 @@ export async function stampGmailSend(
           signal,
         });
         if (admission !== "ordinary" && admission !== "admitted") return false;
+        if (
+          workflow !== undefined &&
+          !(await guardWorkflowMailSubmission(tx, workflow.dispatch, signal))
+        )
+          return false;
+        const workflowAuthority =
+          workflow === undefined
+            ? sql`AND ${isNotLegacyWorkflowMail(sql`s.idempotency_key`)}`
+            : sql`
+          AND a.user_id=${workflow.dispatch.purpose.actorId} AND a.status='connected'
+          AND s.idempotency_key=${workflow.dispatch.purpose.effectKey} AND s.scheduled_at IS NULL
+          AND s.status='sending' AND s.payload=${JSON.stringify(workflow.payload)}::jsonb
+          AND ${currentWorkflowMailLease(workflow.dispatch)}
+        `;
         const stamped = await tx.execute(sql`UPDATE email_send_attempts s SET send_started_at=now()
       FROM email_accounts a WHERE s.id=${attemptId} AND s.claim_token=${token} AND s.send_started_at IS NULL
         AND s.payload_prepared=true AND s.account_id=a.id AND s.connection_generation=a.connection_generation
         AND coalesce((a.capabilities->>'send')::boolean,true)=true
+        AND ${workflowMailScope(sql`s.payload`, workflow?.dispatch)}
+        ${workflowAuthority}
         AND NOT ${privateIntakeBlocksThread(sql`s.account_id`, sql`s.thread_id`)} RETURNING s.id`);
         if (stamped.rows.length === 1)
           await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false

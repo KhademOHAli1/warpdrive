@@ -39,3 +39,29 @@ it.each(["fa", "de"] as const)(
     expect(screen.queryByText(/JSON/)).not.toBeInTheDocument();
   },
 );
+
+it("closes a read-only inspector without changing or removing its node", () => {
+  const definition = initialDefinition({
+    start: "Start",
+    read: "Read",
+    task: "Task",
+    subject: "Call",
+  });
+  const onChange = vi.fn();
+  const onRemove = vi.fn();
+  const onClose = vi.fn();
+  render(
+    <NodeInspector
+      definition={definition}
+      node={definition.nodes[2]!}
+      editable={false}
+      onChange={onChange}
+      onRemove={onRemove}
+      onClose={onClose}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  expect(onChange).not.toHaveBeenCalled();
+  expect(onRemove).not.toHaveBeenCalled();
+});

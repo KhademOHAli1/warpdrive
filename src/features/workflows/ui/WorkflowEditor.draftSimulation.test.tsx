@@ -7,21 +7,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { initialDefinition } from "../editorModel";
+import { branchPort, newIfElseBranch, newIfElseConfig } from "../ifElse";
 import german from "../messages/workflows.de.json";
 import english from "../messages/workflows.en.json";
 import persian from "../messages/workflows.fa.json";
-import type { WorkflowDefinition, WorkflowNode } from "../schemas";
+import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "../schemas";
+import { captureDraftTestSnapshot, DraftTestDialog } from "./DraftTestDialog";
 import type { WorkflowConfigurationRead } from "./useWorkflowConfiguration";
 import type { WorkflowDetail } from "./useWorkflowEditor";
 import { WorkflowEditor } from "./WorkflowEditor";
 
-type DraftInput = { workflowId: string; definition: WorkflowDefinition; recordId: string };
+type DraftInput = { workflowId: string; definition: WorkflowDefinition; recordId?: string };
 type DraftStep = {
   nodeId: string;
   nodeType: WorkflowNode["type"];
   status: "succeeded" | "failed";
   errorId?: string;
-  port?: "next" | "true" | "false";
+  port?: WorkflowEdge["port"];
   waitResumeAt?: string;
 };
 type DraftReceipt = {
@@ -80,7 +82,7 @@ vi.mock("@/lib/trpc-client", () => ({
     workflows: {
       get: {
         useQuery: () => ({
-          data: undefined,
+          data: fixture(),
           isFetching: false,
           isError: false,
           isPlaceholderData: false,
@@ -89,7 +91,12 @@ vi.mock("@/lib/trpc-client", () => ({
       },
       version: {
         useQuery: () => ({
-          data: undefined,
+          data: {
+            id: publishedVersionId,
+            number: 2,
+            name: fixture().name,
+            definition: definition(),
+          },
           isFetching: false,
           isError: false,
           isPlaceholderData: false,
@@ -139,6 +146,7 @@ const workflowId = "161679f3-46c4-4f53-8ad0-31e7604f8bd0";
 const otherWorkflowId = "f51ad946-ab7e-4300-a700-98b6a76f34ee";
 const recordId = "635fc45b-e31c-4887-9b86-bde5f6b604da";
 const persistedRunId = "7dd7142d-b3f8-4bd1-af16-4a74f13290d6";
+const publishedVersionId = "7cb3b1aa-97d4-472e-a673-c397219a4975";
 const recordName = "Acme — authorized existing deal";
 const dirtyName = "Unsaved draft for review";
 const dirtyStep = "Unsaved manual trigger";
@@ -270,6 +278,11 @@ async function editUnsavedDraft(
   messages: Messages = english,
 ) {
   const name = screen.getByRole("textbox", { name: messages.name });
+  const trigger = within(screen.getByRole("navigation", { name: messages.steps })).getAllByRole(
+    "button",
+  )[0];
+  if (trigger === undefined) throw new Error("Draft fixture is missing its trigger step");
+  await user.click(trigger);
   const step = screen.getByRole("textbox", { name: messages.stepName });
   await user.clear(name);
   await user.type(name, dirtyName);
@@ -286,12 +299,17 @@ async function chooseRecord(
   await user.click(within(dialog).getByRole("combobox", { name: messages.deal }));
   await user.click(screen.getByRole("option", { name: recordName }));
 }
+async function openOptions(user: ReturnType<typeof userEvent.setup>, messages: Messages = english) {
+  const opener = screen.getByLabelText(messages.workflowOptions, { selector: "button" });
+  if (screen.queryByRole("menu") === null) await user.click(opener);
+  return opener;
+}
 async function openDraft(
   user: ReturnType<typeof userEvent.setup>,
   copy: (typeof locales)[number] = locales[0],
 ) {
-  const opener = screen.getByRole("button", { name: copy.entry });
-  await user.click(opener);
+  const opener = await openOptions(user, copy.messages);
+  await user.click(screen.getByRole("menuitem", { name: copy.entry }));
   const dialog = screen.getByRole("dialog", { name: copy.entry });
   return { dialog, opener };
 }
@@ -344,7 +362,8 @@ describe("unsaved draft simulation on the actual editor", () => {
     expect(fields.step).toHaveValue(dirtyStep);
     expect(screen.getByText(english.unsaved)).toBeVisible();
     expect(screen.getByRole("button", { name: english.save })).toBeEnabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeEnabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: english.simulation })).toBeEnabled();
     expect(io.simulate).not.toHaveBeenCalled();
     expectNoPersistentCommand();
   });
@@ -368,13 +387,20 @@ describe("unsaved draft simulation on the actual editor", () => {
   it("preserves the existing published simulation and durable-run acknowledgement path", async () => {
     const user = userEvent.setup();
     render(view());
-    await user.click(screen.getByRole("button", { name: english.simulation }));
+    await openOptions(user);
+    await user.click(screen.getByRole("menuitem", { name: english.simulation }));
     const dialog = screen.getByRole("dialog", { name: english.runTitle });
     await chooseRecord(user, dialog);
     await user.click(within(dialog).getByRole("button", { name: english.confirmSimulation }));
 
     expect(io.run).toHaveBeenCalledExactlyOnceWith(
-      { workflowId, requestKey: expect.any(String), recordId, mode: "simulation" },
+      {
+        workflowId,
+        requestKey: expect.any(String),
+        recordId,
+        mode: "simulation",
+        reviewedVersionId: publishedVersionId,
+      },
       "draft-test-csrf",
     );
     await waitFor(() => expect(io.invalidateRuns).toHaveBeenCalledTimes(1));
@@ -384,6 +410,34 @@ describe("unsaved draft simulation on the actual editor", () => {
     );
     expect(screen.getByText(english.runStarted)).toBeVisible();
     expect(io.simulate).not.toHaveBeenCalled();
+  });
+
+  it("simulates a captured Global draft with no deal search or persistent command", async () => {
+    const draft = definition();
+    draft.nodes = draft.nodes.map((node) =>
+      node.type === "trigger.manual" ? { ...node, config: { scope: "global" } } : node,
+    );
+    render(
+      <LocaleProvider locale="en">
+        <DraftTestDialog
+          snapshot={captureDraftTestSnapshot(workflowId, "Global draft", draft)}
+          onClose={vi.fn()}
+          onCloseAutoFocus={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    const dialog = screen.getByRole("dialog", { name: english.draftSimulation });
+    expect(within(dialog).queryByRole("combobox", { name: english.deal })).not.toBeInTheDocument();
+    expect(draftConfirm(dialog)).toBeEnabled();
+    await userEvent.setup().click(draftConfirm(dialog));
+    expect(io.simulate).toHaveBeenCalledExactlyOnceWith(
+      { workflowId, definition: draft },
+      "draft-test-csrf",
+    );
+    expect(
+      within(dialog).getByRole("region", { name: english.draftSimulationResults }),
+    ).toHaveTextContent(english.manualGlobalRunHint);
+    expectNoPersistentCommand();
   });
 
   it.each(locales)(
@@ -419,10 +473,11 @@ describe("unsaved draft simulation on the actual editor", () => {
   it("allows an authorized valid unpublished inactive draft without enabling published runs", async () => {
     const user = userEvent.setup();
     render(view(fixture({ active: false, publishedNumber: null })));
-    const entry = screen.getByRole("button", { name: locales[0].entry });
+    await openOptions(user);
+    const entry = screen.getByRole("menuitem", { name: locales[0].entry });
     expect(entry).toBeEnabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.live })).toBeDisabled();
+    expect(screen.getByRole("menuitem", { name: english.simulation })).toBeDisabled();
+    expect(screen.getByRole("menuitem", { name: english.live })).toBeDisabled();
     const { dialog } = await openDraft(user);
     await chooseRecord(user, dialog);
     await user.click(draftConfirm(dialog));
@@ -436,38 +491,44 @@ describe("unsaved draft simulation on the actual editor", () => {
 
   it.each(["edit denied", "run denied", "archived"] as const)(
     "disables draft simulation when %s",
-    (reason) => {
+    async (reason) => {
+      const user = userEvent.setup();
       const initial = fixture();
       if (reason === "edit denied") initial.capabilities.edit = false;
       else if (reason === "run denied") initial.capabilities.run = false;
       else initial.archivedAt = new Date("2026-11-04T12:00:00Z");
       render(view(initial));
 
-      expect(screen.getByRole("button", { name: locales[0].entry })).toBeDisabled();
+      await openOptions(user);
+      expect(screen.getByRole("menuitem", { name: locales[0].entry })).toBeDisabled();
       expect(io.simulate).not.toHaveBeenCalled();
       expectNoPersistentCommand();
     },
   );
 
-  it("withholds simulation for a locally invalid graph while retaining publication validation", () => {
+  it("withholds simulation for a locally invalid graph while retaining publication validation", async () => {
+    const user = userEvent.setup();
     const initial = fixture();
     initial.draft.edges = [{ from: "start", to: "missing", port: "next" }];
     render(view(initial));
 
-    expect(screen.getByRole("button", { name: locales[0].entry })).toBeDisabled();
     expect(screen.getByRole("button", { name: english.publish })).toBeDisabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: locales[0].entry })).toBeDisabled();
     expect(io.simulate).not.toHaveBeenCalled();
     expectNoPersistentCommand();
   });
 
-  it("keeps fixed-instant waits publishable while withholding the duration-only draft action", () => {
+  it("keeps fixed-instant waits publishable while withholding the duration-only draft action", async () => {
+    const user = userEvent.setup();
     render(view(fixture({ draft: fixedInstantDefinition() })));
 
-    expect(screen.getByRole("button", { name: english.draftSimulation })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeEnabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: english.draftSimulation })).toBeDisabled();
+    expect(screen.getByRole("menuitem", { name: english.simulation })).toBeEnabled();
   });
 
-  it("cancels with Escape and restores the draft-test opener without commands", async () => {
+  it("cancels with Escape and restores Workflow options without commands", async () => {
     const user = userEvent.setup();
     render(view());
     await editUnsavedDraft(user);
@@ -670,6 +731,62 @@ describe("unsaved draft simulation on the actual editor", () => {
       expect(
         within(dialog).queryByRole("region", { name: locales[0].results }),
       ).not.toBeInTheDocument();
+      expectNoPersistentCommand();
+    },
+  );
+
+  it.each([
+    { routeId: "PRIVATE_CONFIGURED_ROUTE", accepted: true },
+    { routeId: "PRIVATE_UNRELATED_ROUTE", accepted: false },
+  ])(
+    "validates the submitted If/Else branch membership before rendering a receipt ($accepted)",
+    async ({ routeId, accepted }) => {
+      const draft = definition();
+      const config = newIfElseConfig();
+      config.branches.push(newIfElseBranch("PRIVATE_CONFIGURED_ROUTE"));
+      draft.nodes.splice(2, 0, {
+        id: "switch",
+        type: "ifElse",
+        version: 1,
+        name: "Choose route",
+        config,
+      });
+      draft.edges.splice(
+        1,
+        1,
+        { from: "read", to: "switch", port: "next" },
+        { from: "switch", to: "wait", port: branchPort("PRIVATE_CONFIGURED_ROUTE") },
+      );
+      const reply = receipt(workflowId, draft);
+      reply.steps = reply.steps.map((step) =>
+        step.nodeId === "switch" ? { ...step, port: branchPort(routeId) } : step,
+      );
+      io.simulate.mockResolvedValueOnce({ ok: true, value: reply });
+      render(
+        <LocaleProvider locale="en">
+          <DraftTestDialog
+            snapshot={captureDraftTestSnapshot(workflowId, "Branch test", draft)}
+            onClose={vi.fn()}
+            onCloseAutoFocus={vi.fn()}
+          />
+        </LocaleProvider>,
+      );
+      const dialog = screen.getByRole("dialog", { name: locales[0].entry });
+      const user = userEvent.setup();
+      await chooseRecord(user, dialog);
+      await user.click(draftConfirm(dialog));
+      if (accepted) {
+        const results = within(dialog).getByRole("region", { name: locales[0].results });
+        expect(results).toHaveTextContent(
+          english.ifElseSelectedRoute.replace("{route}", "Else if 1"),
+        );
+      } else {
+        expect(within(dialog).getByRole("alert")).toHaveTextContent(genericError);
+        expect(
+          within(dialog).queryByRole("region", { name: locales[0].results }),
+        ).not.toBeInTheDocument();
+      }
+      expect(dialog).not.toHaveTextContent(routeId);
       expectNoPersistentCommand();
     },
   );
