@@ -21,7 +21,26 @@ for (const locale of ["fa", "de", "en"] as const)
       "/settings/email-sync",
     );
   });
-for (const reason of ["synthetic-private-provider-response", "__proto__", "constructor"])
+for (const locale of ["fa", "de", "en"] as const)
+  it(`renders the first-sync-unavailable notice in ${locale}`, () => {
+    const L = composerMailboxMessages(locale);
+    render(
+      <LocaleProvider locale={locale}>
+        <GmailConnectionNotice syncStartFailed />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(L.connectSyncUnavailable);
+    expect(screen.getByRole("link", { name: L.openConnections })).toHaveAttribute(
+      "href",
+      "/settings/email-sync",
+    );
+  });
+for (const reason of [
+  "synthetic-private-provider-response",
+  "__proto__",
+  "constructor",
+  "sync_unavailable",
+])
   it(`never renders arbitrary callback reason ${reason}`, () => {
     render(<GmailConnectionNotice reason={reason} />);
     expect(screen.queryByText("synthetic-private-provider-response")).not.toBeInTheDocument();
