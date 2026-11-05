@@ -520,7 +520,9 @@ try {
     await journey(locale, "cross-key-intents", independentKeys);
   }
   assert.equal(report.nativeLogins.length, 3);
-  assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 15);
+  // English signs in during baseline setup, so its six cases all reuse that
+  // session. German and Farsi each sign in during their first case.
+  assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 16);
   assert.equal(report.journeys.length, 18);
   assert.ok(report.journeys.every((entry) => entry.passed));
   if (failure.error) throw failure.error;
