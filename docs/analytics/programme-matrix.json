@@ -1300,7 +1300,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/organizations.ts", "src/db/schema/organizationRelations.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["lifecycle-models", "segment-dimensions"],
       "dataRequirements": [
         "Explicit linked expansion opportunities, offerings and purchase/contract events."

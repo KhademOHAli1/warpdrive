@@ -47,6 +47,27 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
   },
 );
 
+export const currentAccountConcentrationInventoryEntry = classifyInventory(
+  [
+    "sourceReview:src/features/stats/currentAccountConcentrationReport.ts#1ddf99c128fe32df49e0669392be5846eaf862666075e74793e1bb5d1ba2f884",
+    "writer:src/features/stats/currentAccountConcentrationReport.ts#execute:sql",
+  ],
+  {
+    owner: "current linked organization won value",
+    categories: [
+      "visible CRM deals and organization links, nominal won values, currency and current report authority",
+    ],
+    subjectRelation: "Organization links may refer to people and commercial relationships.",
+    purpose:
+      "Count current visible direct links and measure nominal concentration when every eligible win has a visible organization and recorded value.",
+    disclosure:
+      "Read-only aggregate counts and exact nominal amounts. Unlinked, withheld, deleted and dangling organizations share one unresolved outcome. Names, identifiers and individual amounts stay internal.",
+    retention: "No saved report or new store. Existing source lifecycle policies apply.",
+    externalEffects: "Bounded read-only native snapshot. No external request or persistent write.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const nativePeriodForecastInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/stats/nativePeriodForecast.ts#2bda591be7981366436c5c41c7c889d611b9a774383708d58a58c8a8b6e09533",

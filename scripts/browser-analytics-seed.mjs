@@ -62,6 +62,11 @@ export const ANALYTICS_LEADS = {
   old: id(626),
 };
 
+export const ANALYTICS_ORGANIZATIONS = {
+  visible: id(627),
+  private: id(628),
+};
+
 const fixtureChannels = {
   recorded: "referral",
   zero: "referral",
@@ -184,6 +189,20 @@ export async function seedAnalyticsBrowserFixtures(
       ],
     );
   }
+  await client.query(
+    `INSERT INTO organizations(id,name,owner_id,visibility_level)
+     VALUES($1,'CI visible linked organization',$2,'owner'),
+           ($3,'CI withheld linked organization',$4,'owner')`,
+    [ANALYTICS_ORGANIZATIONS.visible, a.actorId, ANALYTICS_ORGANIZATIONS.private, otherOwnerId],
+  );
+  await client.query("UPDATE deals SET org_id=$1 WHERE id=ANY($2::uuid[])", [
+    ANALYTICS_ORGANIZATIONS.visible,
+    [ANALYTICS_DEALS.recorded.id, ANALYTICS_DEALS.zero.id],
+  ]);
+  await client.query("UPDATE deals SET org_id=$1 WHERE id=$2", [
+    ANALYTICS_ORGANIZATIONS.private,
+    ANALYTICS_DEALS.negativeCycle.id,
+  ]);
   const leadFixtures = [
     ["linked", ANALYTICS_DEALS.recorded.id, true],
     ["secondLink", ANALYTICS_DEALS.recorded.id, true],

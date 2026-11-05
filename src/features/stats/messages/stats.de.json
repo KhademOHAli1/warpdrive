@@ -300,5 +300,31 @@
     "expectedCount": "Erwartete gewonnene Deals",
     "expectedValue": "Erwarteter Wert gewonnener Deals",
     "unknown": "Unbekannt"
+  },
+  "currentAccount": {
+    "tab": "Unternehmen",
+    "title": "Wert gewonnener Deals nach verknüpfter Organisation",
+    "definition": "Der Bericht verwendet nominale CRM-Beträge und die aktuelle Organisationsverknüpfung jedes gewonnenen Deals. Beide Datensätze müssen für Sie sichtbar sein. Die Auswertung erfasst Organisationen mit mindestens zwei gewonnenen Deals im gewählten Zeitraum. Bestätigter Mehrverkauf und abgerechnete Finanzwerte brauchen eigene Nachweise.",
+    "wonPeriod": "Zeitraum der gewonnenen Deals",
+    "eligibleWonDeals": "Gewonnene Deals in der Auswahl",
+    "linkedWonDeals": "Gewonnene Deals mit sichtbarer Organisation",
+    "unresolvedWonDeals": "Gewonnene Deals ohne zuordenbare Organisation",
+    "linkedOrganizations": "Sichtbare verknüpfte Organisationen",
+    "multiWonLinkedOrganizations": "Organisationen mit mehreren gewonnenen Deals",
+    "linkedWonDealsWithoutValue": "Verknüpfte gewonnene Deals ohne erfassten Betrag",
+    "linkedKnownNominalNet": "Erfasster nominaler Gesamtwert verknüpfter gewonnener Deals",
+    "noKnownAmount": "Kein Betrag für verknüpfte Deals erfasst",
+    "ownWinsOnly": "Dieser Bericht zeigt Ihre eigenen gewonnenen Deals.",
+    "positiveNetDenominator": "Summe der positiven Salden je Organisation",
+    "largestNetNumerator": "Anteil der größten Organisation",
+    "topFiveNetNumerator": "Anteil der fünf größten Organisationen",
+    "concentrationBasis": "Die Anteile beziehen sich auf die Summe der positiven Salden je Organisation. Jeder Saldo enthält alle erfassten Dealbeträge der Organisation, einschließlich negativer Beträge. Die angezeigten Anteile sind auf eine Nachkommastelle gerundet.",
+    "unresolvedConcentration": "Die Konzentration ist verfügbar, sobald alle ausgewählten gewonnenen Deals mit einer sichtbaren Organisation verknüpft sind.",
+    "missingValueConcentration": "Die Konzentration ist verfügbar, sobald für alle verknüpften gewonnenen Deals ein Betrag erfasst ist.",
+    "noPositiveNet": "In diesem Zeitraum hat keine verknüpfte Organisation einen positiven Saldo aus gewonnenen Deals.",
+    "empty": "In dieser Auswahl wurden im gewählten Zeitraum keine Deals gewonnen.",
+    "permission": "Mit Ihren aktuellen Berechtigungen können Sie diesen Bericht nicht einsehen.",
+    "scopeUnavailable": "Diese Pipeline oder Berichtsauswahl ist nicht verfügbar.",
+    "unavailable": "Der Wert gewonnener Deals nach verknüpfter Organisation ist für diese Filter nicht verfügbar."
   }
 }

@@ -7,6 +7,7 @@ import {
   ANALYTICS_BROWSER as actor,
   ANALYTICS_DEALS as deals,
   ANALYTICS_LEADS as leads,
+  ANALYTICS_ORGANIZATIONS as organizations,
 } from "./browser-analytics-seed.mjs";
 
 // Use the same admission boundary as the existing full browser packs, before loading clients.
@@ -897,6 +898,55 @@ async function verifyLeadHandoff() {
   });
 }
 
+async function verifyAccountConcentration() {
+  await journey("en-current-account-concentration", async (page, _context, entry) => {
+    const S = copy.en.stats.currentAccount;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, {
+      allPipelines: true,
+    });
+    const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
+    const result = await rpcAfter(
+      page,
+      "stats.currentAccountConcentration",
+      (input) =>
+        input.from === filtered.input.from &&
+        input.to === filtered.input.to &&
+        input.pipelineId === null &&
+        input.currency === currency,
+      () => page.getByRole("tab", exact(S.tab)).click(),
+    );
+    assert.equal(result.data.state, "available");
+    assert.equal(result.data.timeZone, actor.timeZone);
+    assert.deepEqual(result.data.coverage, {
+      eligibleWonDeals: 5,
+      linkedWonDeals: 2,
+      unresolvedWonDeals: 3,
+      linkedOrganizations: 1,
+      multiWonLinkedOrganizations: 1,
+      linkedWonDealsWithValue: 2,
+      linkedWonDealsWithoutValue: 0,
+    });
+    assert.equal(result.data.linkedKnownNominalNet, "123.4567");
+    assert.deepEqual(result.data.concentration, {
+      state: "withheld",
+      reason: "unresolved-organization",
+    });
+    const output = JSON.stringify(result.data);
+    assert.ok(Object.values(organizations).every((id) => !output.includes(id)));
+    assert.ok(!output.includes("CI withheld linked organization"));
+    const panel = page.getByRole("region", exact(S.title));
+    await panel.getByText(S.unresolvedConcentration, { exact: true }).waitFor();
+    await panel.getByText(S.multiWonLinkedOrganizations, { exact: true }).waitFor();
+    await panel.scrollIntoViewIfNeeded();
+    await capture(page, "en-current-account-concentration");
+    entry.accountProof = {
+      linkedWonDeals: result.data.coverage.linkedWonDeals,
+      linkedKnownNominalNet: result.data.linkedKnownNominalNet,
+      concentrationWithheld: true,
+    };
+  });
+}
+
 async function verifySavedPerformance() {
   await journey("en-private-saved-performance", async (page, _context, entry) => {
     const S = copy.en.stats;
@@ -1408,6 +1458,7 @@ try {
   await verifyRestrictedPipeline();
   await verifyRecordedDealSources();
   await verifyLeadHandoff();
+  await verifyAccountConcentration();
   await verifySavedPerformance();
   await verifyDealReportDownload();
   await matrix("en", "gregory");

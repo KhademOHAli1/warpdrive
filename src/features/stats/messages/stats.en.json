@@ -300,5 +300,31 @@
     "expectedCount": "Expected wins",
     "expectedValue": "Expected won value",
     "unknown": "Unknown"
+  },
+  "currentAccount": {
+    "tab": "Accounts",
+    "title": "Won value by linked organization",
+    "definition": "This report uses nominal CRM amounts and each won deal’s current organization link. Both records must be visible to you. The multiple-wins count covers organizations with at least two won deals in the selected period. Confirmed expansion and settled financial results require separate evidence.",
+    "wonPeriod": "Won deal period",
+    "eligibleWonDeals": "Won deals in scope",
+    "linkedWonDeals": "Won deals with a visible linked organization",
+    "unresolvedWonDeals": "Won deals without a resolved organization",
+    "linkedOrganizations": "Visible linked organizations",
+    "multiWonLinkedOrganizations": "Organizations with multiple won deals",
+    "linkedWonDealsWithoutValue": "Linked won deals without a recorded amount",
+    "linkedKnownNominalNet": "Recorded nominal total for linked wins",
+    "noKnownAmount": "No linked amount recorded",
+    "ownWinsOnly": "This report covers your own won deals.",
+    "positiveNetDenominator": "Total of positive organization nets",
+    "largestNetNumerator": "Largest organization share",
+    "topFiveNetNumerator": "Top five organization share",
+    "concentrationBasis": "Shares use the total of positive organization nets. Each net adds that organization’s recorded deal amounts, including negatives. Displayed shares are rounded to one decimal place.",
+    "unresolvedConcentration": "Concentration is unavailable until every won deal in scope has a visible linked organization.",
+    "missingValueConcentration": "Concentration is unavailable until every linked won deal has a recorded amount.",
+    "noPositiveNet": "No linked organization has a positive net won value in this period.",
+    "empty": "There are no won deals in this scope and period.",
+    "permission": "Your current access does not allow you to see this report.",
+    "scopeUnavailable": "This pipeline or report scope is unavailable.",
+    "unavailable": "Won value by linked organization is unavailable for these filters."
   }
 }

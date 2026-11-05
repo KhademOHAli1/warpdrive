@@ -12,6 +12,10 @@ import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { analyticsAttentionInput, readAnalyticsAttention } from "./analyticsAttention";
+import {
+  currentAccountConcentrationInput,
+  readCurrentAccountConcentrationReport,
+} from "./currentAccountConcentrationReport";
 import { readCurrentLeadHandoffReport } from "./currentLeadHandoffReport";
 import { calculateDashboardReport } from "./dashboardReport";
 import { dealRecords } from "./dealRecords";
@@ -108,6 +112,18 @@ export const statsRouter = router({
         counts: result.counts,
       };
     }),
+
+  currentAccountConcentration: protectedProcedure
+    .input(currentAccountConcentrationInput)
+    .query(({ ctx, input }) =>
+      readCurrentAccountConcentrationReport(
+        ctx.db,
+        { actor: ctx.actor, session: ctx.session },
+        input,
+        SIG(),
+        ctx.localeFallback,
+      ),
+    ),
 
   periodForecast: protectedProcedure
     .input(

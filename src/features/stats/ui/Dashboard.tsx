@@ -6,6 +6,7 @@ import {
   ChartNoAxesCombined,
   LayoutDashboard,
   SlidersHorizontal,
+  UsersRound,
 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
 import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
+import { CurrentAccountConcentrationPanel } from "./CurrentAccountConcentrationPanel";
 import { CurrentAttentionPanel } from "./CurrentAttentionPanel";
 import { CurrentLeadHandoffPanel } from "./CurrentLeadHandoffPanel";
 import { DashboardError, DashboardLoading } from "./DashboardState";
@@ -335,6 +337,10 @@ export function Dashboard({
               <ChartNoAxesCombined aria-hidden="true" className="me-2 hidden size-4 sm:block" />
               {S.recordedSource.tab}
             </TabsTrigger>
+            <TabsTrigger value="accounts" className={REPORT_TAB}>
+              <UsersRound aria-hidden="true" className="me-2 hidden size-4 sm:block" />
+              {S.currentAccount.tab}
+            </TabsTrigger>
             <TabsTrigger value="forecast" className={REPORT_TAB}>
               <ChartLine aria-hidden="true" className="me-2 hidden size-4 sm:block" />
               {S.forecast.tab}
@@ -358,6 +364,14 @@ export function Dashboard({
               key={`attention-${JSON.stringify(currentScope)}`}
               scope={currentScope}
             />
+          </TabsContent>
+          <TabsContent value="accounts" className="mt-5">
+            {validRange && (
+              <CurrentAccountConcentrationPanel
+                key={JSON.stringify(reportScope)}
+                scope={reportScope}
+              />
+            )}
           </TabsContent>
           <TabsContent value="forecast" className="mt-5">
             <PeriodForecastPanel
