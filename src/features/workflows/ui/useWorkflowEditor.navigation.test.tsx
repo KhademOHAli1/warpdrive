@@ -30,11 +30,13 @@ vi.mock("../actions", () => ({
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    useUtils: () => ({ workflows: { runs: { invalidate: vi.fn() } } }),
+    useUtils: () => ({
+      workflows: { runs: { invalidate: vi.fn() }, runsPage: { invalidate: vi.fn() } },
+    }),
     workflows: {
-      runs: {
+      runsPage: {
         useQuery: () => ({
-          data: [],
+          data: { items: [], nextCursor: null },
           isLoading: false,
           isError: false,
           isFetching: false,

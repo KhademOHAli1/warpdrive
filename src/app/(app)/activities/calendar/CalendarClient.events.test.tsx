@@ -23,8 +23,32 @@ vi.mock("@/features/activities/CalendarEventEditDialog", () => ({
     </div>
   ),
 }));
-vi.mock("./WeekAgendaGrid", () => ({ WeekAgendaGrid: () => null }));
+vi.mock("./WeekAgendaGrid", () => ({ WeekAgendaGrid: () => <div data-testid="agenda" /> }));
 afterEach(cleanup);
+
+it("opens the Day view with daily navigation and a full date heading", () => {
+  render(
+    <CalendarClient
+      view="day"
+      anchorIso="2026-11-05"
+      dayIsos={["2026-11-05"]}
+      activities={[]}
+      empty={<p>Nothing scheduled today</p>}
+    />,
+  );
+  expect(screen.getByRole("link", { name: "Day" })).toHaveAttribute("aria-current", "page");
+  expect(screen.getByTestId("agenda")).toBeInTheDocument();
+  expect(screen.getByText("Nothing scheduled today")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Thursday, November 5, 2026");
+  expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+    "href",
+    "/activities/calendar?view=day&d=2026-11-04",
+  );
+  expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+    "href",
+    "/activities/calendar?view=day&d=2026-11-06",
+  );
+});
 
 const days = monthGridDays(new Date("2027-03-21T00:00:00Z")).map((date) =>
   date.toISOString().slice(0, 10),

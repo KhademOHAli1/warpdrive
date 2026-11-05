@@ -19,6 +19,15 @@ it("renders and pages a Persian month while carrying Gregorian anchor dates in l
     </LocaleProvider>,
   );
   expect(screen.getByText("فروردین ۱۴۰۵")).toBeInTheDocument();
+  expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "روز" })).toHaveAttribute(
+    "href",
+    "/activities/calendar?view=day&d=2026-03-21",
+  );
+  expect(screen.getByRole("link", { name: "سال" })).toHaveAttribute(
+    "href",
+    "/activities/calendar?view=year&d=2026-03-21",
+  );
   expect(screen.getByRole("grid", { name: "ماه" })).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader")[0]).toHaveTextContent("شنبه");
   expect(screen.getByTestId("cell-2026-03-21")).toHaveAttribute("data-adjacent", "false");

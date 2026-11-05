@@ -5,7 +5,7 @@ import { workflowRuns } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import { validateNodeConfiguration } from "./configurationValidation";
-import { delayResumeAt } from "./delay";
+import { delayScheduleAt } from "./delay";
 import { executableNode } from "./readiness";
 import { executeRunNode } from "./runActions";
 import type { StepOutput } from "./runTypes";
@@ -38,9 +38,9 @@ export async function advanceRunStep(
       : ok({ status: "completed", output: { resumeAt: deadline.toISOString() } });
   }
   if (node.type === "delay") {
-    const deadline = delayResumeAt(node.config.minutes, now);
+    const deadline = delayScheduleAt(node.config, now);
     if (!deadline.ok) return deadline;
-    if (run.mode === "simulation")
+    if (run.mode === "simulation" || deadline.value.getTime() <= now.getTime())
       return ok({ status: "completed", output: { resumeAt: deadline.value.toISOString() } });
     await db
       .update(workflowRuns)

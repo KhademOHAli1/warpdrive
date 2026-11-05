@@ -37,7 +37,9 @@ silently selecting a false branch. Binding resolution accepts only own completed
 
 Admissions use a caller-generated request key, pin an immutable published version, and persist the cursor before enqueueing. Reusing a key with different inputs is rejected. A pg-boss worker resumes the persisted cursor; startup and minutely reconciliation recover missed enqueues. Competing workers lock the run row. CRM database effects, step completion, and cursor advancement commit in the same transaction, so failure rolls back the effect as well as progress.
 
-Simulation invokes the same canonical CRM service inside a rolled-back savepoint. It persists run/step evidence while retaining no task mutations. This strategy is restricted to the current database-only task action; future external effects require separate simulation adapters. Runs use published versions, so the current UI requires publication before simulation.
+Published-version run simulation invokes the same canonical CRM service inside a rolled-back savepoint. It persists ordinary run/step evidence while retaining no task mutations and requires publication. This strategy is restricted to the current database-only task action; future external effects require separate simulation adapters.
+
+The separate [transient draft simulation](draft-simulation.md) captures unsaved editor changes and a selected visible deal under current edit/run authority. It needs no publication or activation, rolls back its enclosing writable transaction and returns a finite transient step receipt without creating an ordinary run or history entry.
 
 Cancellation records who cancelled and when, and prevents subsequent steps. It does not undo already committed tasks. Pausing prevents new admission; existing runs continue unless explicitly cancelled. Permission revocation and user deactivation are checked again at every resumed step.
 
@@ -58,7 +60,14 @@ CRM events must be saved in an outbox in the same transaction as each mutation. 
 
 Database-only actions should commit effects with progress where possible. External effects need stable effect identities, provider idempotency where supported, and explicit reconciliation for ambiguous outcomes. Existing email outbox behavior is a reusable boundary; general exactly-once external delivery is not promised.
 
-The current UI is an early-access manual workflow builder, not the complete R1 release. CRM triggers/outbox, grouped conditions, durable waits, notifications, email, richer CRM actions, detailed payload inspection, retention, and operational limits still require implementation and qualification.
+The current UI is an early-access manual workflow builder, not the complete R1 release. CRM triggers/outbox, grouped conditions, notifications, email, richer CRM actions, detailed payload inspection, retention, and operational limits still require implementation and qualification.
+
+Durable literal waits use the existing persisted cursor for whole elapsed minutes or
+an explicitly tagged fixed ISO date/time with Z/UTC offset and exact millisecond
+precision. The bounded fixed-instant increment preserves one stored deadline after
+initial scheduling. Civil-calendar conversion, rescheduling, actual restart/natural-wait
+journeys and broader acceptance remain open; see the
+[fixed-instant contract and qualification limits](../development/workflow-fixed-instant-delay.md).
 
 Primary library references: [React Flow custom nodes](https://reactflow.dev/learn/customization/custom-nodes), [React Flow accessibility](https://reactflow.dev/learn/advanced-use/accessibility), and [pg-boss workers](https://github.com/timgit/pg-boss/blob/master/docs/api/workers.md).
 

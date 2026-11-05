@@ -14,10 +14,11 @@ export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
   if (node.type === "trigger.manual") return true;
   if (node.type === "delay") {
-    const minutes = bindingSchema.safeParse(node.config.minutes);
+    const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
+    const binding = bindingSchema.safeParse(node.config[selected]);
     return (
-      minutes.success &&
-      minutes.data.kind === "value" &&
+      binding.success &&
+      binding.data.kind === "value" &&
       actionRegistry.delay.config.safeParse(node.config).success
     );
   }
@@ -41,4 +42,23 @@ export function executableNode(node: WorkflowNode): boolean {
 
 export function executableDefinition(definition: WorkflowDefinition): boolean {
   return isSupportedVersion(definition.schemaVersion) && definition.nodes.every(executableNode);
+}
+
+// Draft simulation intentionally has a narrower wait contract than published
+// execution. Fixed-instant waits remain executable after publication, but the
+// draft transaction only projects bounded duration waits and must never route an
+// `until` binding through delayResumeAt as if it were a `minutes` binding.
+export function draftExecutableNode(node: WorkflowNode): boolean {
+  if (!executableNode(node)) return false;
+  if (node.type !== "delay") return true;
+  return (
+    !Object.hasOwn(node.config, "until") &&
+    Object.keys(node.config).every((key) => key === "minutes")
+  );
+}
+
+export function draftExecutableDefinition(definition: WorkflowDefinition): boolean {
+  return (
+    isSupportedVersion(definition.schemaVersion) && definition.nodes.every(draftExecutableNode)
+  );
 }

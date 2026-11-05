@@ -58,7 +58,7 @@ function DayCell({
     >
       <div className="mb-0.5 flex items-center justify-between gap-1">
         <a
-          href={calendarHref("week", iso)}
+          href={calendarHref("day", iso)}
           aria-label={isToday ? t("todayLabel", { date: dateLabel }) : dateLabel}
           className="block text-xs font-medium hover:underline mb-0.5 tabular-nums"
         >
@@ -88,7 +88,7 @@ function DayCell({
       ))}
       {overflow > 0 ? (
         <a
-          href={calendarHref("week", iso)}
+          href={calendarHref("day", iso)}
           className="block text-xs text-primary hover:underline mt-0.5 tabular-nums"
         >
           {t("more", { count: overflow })}

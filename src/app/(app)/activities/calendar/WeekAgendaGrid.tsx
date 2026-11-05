@@ -10,7 +10,7 @@ import { calendarActivityTarget } from "@/features/activities/calendarActivityTa
 import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/followUpAfterDone";
 import { useLocalNow } from "@/features/activities/useLocalNow";
 import {
-  AGENDA_GRID_COLS,
+  AGENDA_GUTTER_WIDTH,
   groupByLocalDay,
   HOUR_HEIGHT_PX,
   localDayIso,
@@ -49,6 +49,7 @@ export function WeekAgendaGrid({
   const router = useRouter();
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
+  const gridTemplateColumns = `${AGENDA_GUTTER_WIDTH} repeat(${dayIsos.length}, minmax(0, 1fr))`;
 
   const setPreview = useRecordPreview((s) => s.setPreview);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -129,10 +130,7 @@ export function WeekAgendaGrid({
             anchor adds to the target hour to clear the pinned rows above it. */}
         <div ref={scrollRef} data-agenda-scroll className="relative max-h-[60vh] overflow-y-auto">
           <div className="sticky top-0 z-30 bg-card">
-            <div
-              className="grid border-b border-border"
-              style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
-            >
+            <div className="grid border-b border-border" style={{ gridTemplateColumns }}>
               <div className="bg-muted/40" />
               {dayIsos.map((iso) => (
                 <AgendaDayHeader key={iso} iso={iso} today={iso === todayIso} />
@@ -140,10 +138,7 @@ export function WeekAgendaGrid({
             </div>
 
             {allDayRows > 0 && (
-              <div
-                className="grid border-b border-border"
-                style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
-              >
+              <div className="grid border-b border-border" style={{ gridTemplateColumns }}>
                 <div className="bg-muted/40 px-1.5 py-1 text-end text-[10px] text-muted-foreground">
                   {t("allDay")}
                 </div>
@@ -160,11 +155,7 @@ export function WeekAgendaGrid({
             )}
           </div>
 
-          <div
-            ref={hoursRef}
-            className="relative grid"
-            style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
-          >
+          <div ref={hoursRef} className="relative grid" style={{ gridTemplateColumns }}>
             <TimeGutter />
             {dayIsos.map((iso) => (
               <AgendaDayColumn

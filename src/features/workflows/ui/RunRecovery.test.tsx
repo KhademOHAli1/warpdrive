@@ -25,12 +25,13 @@ vi.mock("@/lib/trpc-client", () => ({
       workflows: {
         run: { invalidate: queries.invalidateRun },
         runs: { invalidate: queries.refetch },
+        runsPage: { invalidate: () => Promise.resolve() },
       },
     }),
     workflows: {
-      runs: {
+      runsPage: {
         useQuery: () => ({
-          data: queries.rows,
+          data: { items: queries.rows, nextCursor: null },
           isLoading: false,
           isError: false,
           isFetching: false,

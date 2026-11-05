@@ -1,22 +1,31 @@
 # Public Bun CI
 
-This fork owns [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). Branch pushes,
-ordinary pull requests and manual runs check all three packages on hosted Ubuntu runners.
+This fork owns [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). Pushes to `main`,
+ordinary pull requests and manual runs perform the light setup and static checks needed for
+fast feedback. These contexts are merge/setup evidence; they are not full unit, PostgreSQL,
+browser, build, release, deployment or customer acceptance.
 
 | Job            | Checks                                                                                                                                                                             |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, unit tests, real PostgreSQL integration tests, Next production build, server-entrypoint build |
-| Marketing site | Frozen install, route type generation, typecheck, tests, static build                                                                                                              |
-| Documentation  | Frozen install, typecheck, Docusaurus build                                                                                                                                        |
+| CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, focused workflow/preference contract tests |
+| Marketing site | Frozen install, route type generation and typecheck |
+| Documentation  | Frozen install, dependency contract check and typecheck |
+
+The full commands remain in [`full-ci.yml`](../.github/workflows/full-ci.yml). That workflow
+has no ordinary push trigger; it runs for an explicit dispatch or when its own definition is
+changed in a pull request. Its jobs are `CRM full checks`, `Marketing site full checks` and
+`Documentation site full checks`, and retain the full unit, PostgreSQL, build and worker/site
+coverage.
 
 The CRM `typecheck` script runs Next type generation before TypeScript. It precedes lint so a
 clean checkout has the route and message declarations needed by type-aware rules. Independent
 packages use their own directories, lockfiles and actual package scripts; the documentation
 package does not currently provide a test script.
 
-The CRM integration suite starts disposable PostgreSQL through Testcontainers on the hosted
-runner's Docker daemon. Fixture databases are reclaimed after closing without forcing live
-external listeners off their connections. Production databases and credentials are not used.
+The full CRM integration suite starts disposable PostgreSQL through Testcontainers on the
+hosted runner's Docker daemon. The light workflow does not start PostgreSQL. Fixture databases
+are reclaimed after closing without forcing live external listeners off their connections.
+Production databases and credentials are not used.
 
 ## Bun and action versions
 
@@ -44,8 +53,8 @@ keys. They do not configure a running service. `APP_COMMIT` receives the checked
 `github.sha`; application/runtime deployment configuration remains an operator responsibility.
 Build outputs with these verification URLs are not production release artifacts.
 
-`ciWorkflow.test.ts` parses the real YAML with Bun's built-in parser and validates the public
-job, command, environment and permission contracts. `Dockerfile.test.ts` independently retains
+`ciWorkflow.test.ts` parses the real YAML with Bun's built-in parser and validates the light
+and full workflow command, environment and permission contracts. `Dockerfile.test.ts` independently retains
 the build-stage stamp, runtime-stage stamp and cache-order checks. A missing public workflow
 fails its tests. No workflow test is silently skipped.
 
@@ -73,7 +82,8 @@ release/deployment feature needs its own reviewed workflow and acceptance eviden
 
 ## Verification boundary
 
-Local workflow contracts do not prove a GitHub Actions run succeeded. Inspect the actual run
-after pushing, including all three jobs. Real PostgreSQL integration tests, Docker runtime,
-service health, external OAuth/Gmail and complete English/Farsi browser acceptance remain
-separate checks; this compilation/unit-test gate does not establish those outcomes.
+Local workflow contracts do not prove a GitHub Actions run succeeded. Inspect the actual light
+run after pushing, and dispatch the full workflows for the selected `main` revision before a
+release gate. Real PostgreSQL integration tests, Docker runtime, service health, external
+OAuth/Gmail and complete English/Farsi browser acceptance remain separate checks; a light
+result does not establish those outcomes.

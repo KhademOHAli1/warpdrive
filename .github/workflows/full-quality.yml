@@ -1,0 +1,148 @@
+name: Full browser qualification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/full-quality.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    name: Full browser smoke checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: smoke
+          POSTGRES_PASSWORD: smoke
+          POSTGRES_DB: warpdrive_browser_smoke_ci
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U smoke -d warpdrive_browser_smoke_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CI: "true"
+      NODE_ENV: production
+      APP_COMMIT: ${{ github.sha }}
+      DATABASE_URL: postgres://smoke:smoke@127.0.0.1:5432/warpdrive_browser_smoke_ci
+      BASE_URL: https://127.0.0.1:3443
+      GOOGLE_OAUTH_CLIENT_ID: ""
+      GOOGLE_OAUTH_CLIENT_SECRET: ""
+      AUTH_GOOGLE_ENABLED: "false"
+      AUTH_ALLOW_PASSWORD: "true"
+      AUTH_ALLOW_PASSKEY: "false"
+      AUTH_SECRET: ci_browser_only_auth_secret_01234567890123456789
+      AUTH_MAIL_TRANSPORT: smtp
+      AUTH_MAIL_FROM: smoke@example.invalid
+      AUTH_SMTP_HOST: 127.0.0.1
+      AUTH_SMTP_PORT: "9"
+      SEED_ADMIN_EMAIL: smoke@example.invalid
+      ALLOW_FIRST_LOGIN_ADMIN: "false"
+      WS_TICKET_SECRET: ci_browser_only_ws_secret_01234567890123456789
+      WS_PUBLIC_URL: ws://127.0.0.1:8080
+      # Persistence journeys do not qualify realtime delivery.
+      NEXT_PUBLIC_WS_URL: ""
+      MINIO_ENDPOINT: http://127.0.0.1:9000
+      MINIO_ACCESS_KEY: ci-browser-access
+      MINIO_SECRET_KEY: ci-browser-secret
+      TOKEN_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      MCP_ENABLED: "false"
+      DISABLE_TELEMETRY: "true"
+      DISABLE_UPDATE_CHECK: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Run browser helper contract tests
+        run: node --test scripts/browser-appearance-actions.test.mjs scripts/browser-workflow-preference-actions.test.mjs
+      - name: Admit only disposable loopback targets
+        run: python3 scripts/delivery/browser_smoke_environment.py
+      - name: Install locked application and isolated browser tooling
+        env:
+          NODE_ENV: development
+        run: |
+          bun --no-env-file install --frozen-lockfile
+          bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
+          bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Apply canonical migrations to disposable database
+        run: bun --no-env-file src/entrypoints/migrate.ts
+      - name: Create the scoped synthetic browser actor through native auth storage
+        run: bun --no-env-file scripts/browser-smoke-seed.mjs
+      - name: Build normal production application
+        run: bun --no-env-file run build
+      - name: Exercise serial browser packs without external requests
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -subj '/CN=127.0.0.1' -addext 'subjectAltName=IP:127.0.0.1' \
+            -keyout "$RUNNER_TEMP/browser.key" -out "$RUNNER_TEMP/browser.crt"
+          bun --no-env-file --bun next start --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/browser-app.log" 2>&1 &
+          app_pid=$!
+          bun --no-env-file scripts/browser-smoke-proxy.mjs "$RUNNER_TEMP/browser.key" "$RUNNER_TEMP/browser.crt" > "$RUNNER_TEMP/browser-proxy.log" 2>&1 &
+          proxy_pid=$!
+          cleanup() {
+            kill "$proxy_pid" "$app_pid" 2>/dev/null || true
+            wait "$proxy_pid" "$app_pid" 2>/dev/null || true
+            cat "$RUNNER_TEMP/browser-app.log" "$RUNNER_TEMP/browser-proxy.log"
+          }
+          trap cleanup EXIT
+          ready=0
+          for _attempt in $(seq 1 60); do
+            if curl --fail --silent --insecure https://127.0.0.1:3443/login > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = 1
+          timeout 300s bun --no-env-file scripts/browser-smoke.mjs
+          timeout 300s bun --no-env-file scripts/browser-appearance.mjs
+          timeout 300s bun --no-env-file scripts/browser-workflow-preferences.mjs
+      - name: Preserve appearance qualification artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: appearance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/appearance/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve draft simulation qualification artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: draft-simulation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-results/browser-smoke/draft-simulation-*/
+            test-results/browser-smoke/*draft*/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve workflow preference qualification artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: workflow-preferences-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/workflow-preferences/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve browser failure traces and screenshots
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/
+          if-no-files-found: warn
+          retention-days: 14
