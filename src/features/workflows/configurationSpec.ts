@@ -220,6 +220,17 @@ export function conditionSourceDefaults(source: {
   return { operator: "equals", right: { kind: "value", value } };
 }
 
+function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["config"] | undefined {
+  if (type === "ifElse") return newIfElseConfig();
+  if (type === "record.create" || type === "record.update") return { fields: {} };
+  if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
+  if (type === "human.form") return { fields: [] };
+  if (type === "calendar.create") return { allDay: false };
+  if (type === "record.upsert") return { entity: "person", fields: {} };
+  if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
+  return undefined;
+}
+
 export function defaultConfiguration(
   type: WorkflowNode["type"],
   source: { trigger?: WorkflowNode; read?: WorkflowNode; subject?: string },
@@ -228,13 +239,8 @@ export function defaultConfiguration(
   const dealAvailable = workflowManualLaunchScope(source.trigger?.config ?? {}) === "deal";
   if (type === "record.read")
     return dealAvailable ? { entity: "deal", recordId } : { entity: "deal" };
-  if (type === "ifElse") return newIfElseConfig();
-  if (type === "record.create" || type === "record.update") return { fields: {} };
-  if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
-  if (type === "human.form") return { fields: [] };
-  if (type === "calendar.create") return { allDay: false };
-  if (type === "record.upsert") return { entity: "person", fields: {} };
-  if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
+  const defaults = fixedNodeConfiguration(type);
+  if (defaults !== undefined) return defaults;
   if (type === "activity.create")
     return {
       subject: { kind: "value", value: source.subject ?? "" },

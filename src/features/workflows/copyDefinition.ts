@@ -112,7 +112,10 @@ const copyNode = z.discriminatedUnion("type", [
       })
       .partial(),
   }),
-  nodeSchema.extend({ type: z.literal("human.form"), config: workflowHumanFormDraftConfig }),
+  nodeSchema.extend({
+    type: z.literal("human.form"),
+    config: z.union([z.strictObject({}), workflowHumanFormDraftConfig]),
+  }),
   nodeSchema.extend({
     type: z.literal("ifElse"),
     config: z.custom<WorkflowDefinition["nodes"][number]["config"]>(

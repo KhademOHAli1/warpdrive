@@ -1,7 +1,7 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "4a2f8180f2d78e909d2cdd5a4963d9c54008ea1b2475b6cde76a426736728c51",
+  "sourceFingerprint": "e6c8d369d98a5b9a3f7ea76a27c86b403923a7f1b4edac17b2916fb0527e173c",
   "sourceFiles": 2589,
   "discoveredCounts": {
     "browserStore": 3,

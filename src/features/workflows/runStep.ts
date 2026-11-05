@@ -17,6 +17,38 @@ type StepProgress =
   | { status: "waiting"; armedDeadline?: Date }
   | { status: "completed"; output: StepOutput };
 
+async function advanceDelayStep(
+  db: Db,
+  node: WorkflowNode,
+  run: typeof workflowRuns.$inferSelect,
+  now: Date,
+  definition: WorkflowDefinition,
+  signal: AbortSignal,
+): Promise<Result<StepProgress, string>> {
+  if (run.status === "waiting") {
+    const deadline = run.resumeAt;
+    if (deadline === null || !Number.isFinite(deadline.getTime()))
+      return err(ERROR_IDS.WORKFLOW_INVALID);
+    return deadline.getTime() > now.getTime()
+      ? ok({ status: "waiting" })
+      : ok({ status: "completed", output: { resumeAt: deadline.toISOString() } });
+  }
+  const deadline = delayScheduleAt(node.config, now, {
+    definition,
+    nodeId: node.id,
+    outputs: run.outputs,
+  });
+  if (!deadline.ok) return deadline;
+  if (run.mode === "simulation" || deadline.value.getTime() <= now.getTime())
+    return ok({ status: "completed", output: { resumeAt: deadline.value.toISOString() } });
+  await db
+    .update(workflowRuns)
+    .set({ status: "waiting", resumeAt: deadline.value, updatedAt: now })
+    .where(eq(workflowRuns.id, run.id));
+  signal.throwIfAborted();
+  return ok({ status: "waiting", armedDeadline: deadline.value });
+}
+
 // The caller holds this run's row lock and has rehydrated its current authority.
 export async function advanceRunStep(
   db: Db,
@@ -36,30 +68,8 @@ export async function advanceRunStep(
   )
     return err(ERROR_IDS.WORKFLOW_INVALID);
   if (node.type === "human.form") return advanceWorkflowHumanForm(db, run, now, signal);
-  if (run.status === "waiting") {
-    const deadline = run.resumeAt;
-    if (node.type !== "delay" || deadline === null || !Number.isFinite(deadline.getTime()))
-      return err(ERROR_IDS.WORKFLOW_INVALID);
-    return deadline.getTime() > now.getTime()
-      ? ok({ status: "waiting" })
-      : ok({ status: "completed", output: { resumeAt: deadline.toISOString() } });
-  }
-  if (node.type === "delay") {
-    const deadline = delayScheduleAt(node.config, now, {
-      definition,
-      nodeId: node.id,
-      outputs: run.outputs,
-    });
-    if (!deadline.ok) return deadline;
-    if (run.mode === "simulation" || deadline.value.getTime() <= now.getTime())
-      return ok({ status: "completed", output: { resumeAt: deadline.value.toISOString() } });
-    await db
-      .update(workflowRuns)
-      .set({ status: "waiting", resumeAt: deadline.value, updatedAt: now })
-      .where(eq(workflowRuns.id, run.id));
-    signal.throwIfAborted();
-    return ok({ status: "waiting", armedDeadline: deadline.value });
-  }
+  if (node.type === "delay") return advanceDelayStep(db, node, run, now, definition, signal);
+  if (run.status === "waiting") return err(ERROR_IDS.WORKFLOW_INVALID);
   const result = await executeRunNode(
     db,
     actor,
