@@ -28,7 +28,7 @@ it("accepts valid view and anchor", () => {
   });
 });
 
-it.each(["day", "week", "month", "year"] as const)(
+it.each(["day", "agenda", "week", "month", "year"] as const)(
   "round-trips the %s view through its URL",
   (view) => {
     const url = new URL(calendarHref(view, "2026-11-05"), "https://warpdrive.test");
@@ -75,6 +75,7 @@ it.each([
   "selectWindow: day %s follows account midnight through daylight-saving changes",
   (iso, from, to) => {
     const { days, range } = selectWindow("day", iso, { timeZone: "Europe/Berlin" });
+    expect(selectWindow("agenda", iso, { timeZone: "Europe/Berlin" })).toEqual({ days, range });
     expect(days.map((day) => day.toISOString().slice(0, 10))).toEqual([iso]);
     expect(range.from.toISOString()).toBe(from);
     expect(range.to.toISOString()).toBe(to);
@@ -102,6 +103,8 @@ it("stepAnchorIso: week steps by 7 days, month by one clamped month", () => {
 it("steps days across year boundaries and years with leap-day clamping", () => {
   expect(stepAnchorIso("day", "2026-12-31", 1)).toBe("2027-01-01");
   expect(stepAnchorIso("day", "2026-01-01", -1)).toBe("2025-12-31");
+  expect(stepAnchorIso("agenda", "2026-12-31", 1)).toBe("2027-01-01");
+  expect(stepAnchorIso("agenda", "2026-01-01", -1)).toBe("2025-12-31");
   expect(stepAnchorIso("year", "2024-02-29", 1)).toBe("2025-02-28");
   expect(stepAnchorIso("year", "2024-02-29", -1)).toBe("2023-02-28");
   expect(stepAnchorIso("year", "2026-11-05", 1)).toBe("2027-11-05");

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { env } from "@/config/env";
 import { db } from "@/db/client";
 import { getActorGmailMailboxStatus } from "@/features/email/mailboxOwnership";
+import { publicMailboxError } from "@/features/email/mailConnectionHttpView";
 import { getAppTranslations } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { IntegrationHub } from "@/features/integrations/IntegrationHub";
@@ -76,8 +77,10 @@ export default async function ConnectionsPage({
                     id: mailbox.id,
                     emailAddress: mailbox.emailAddress,
                     status: mailbox.status,
+                    paused: mailbox.paused,
                     lastSyncAtIso: mailbox.lastSyncAt?.toISOString() ?? null,
-                    lastErrorId: mailbox.lastErrorId,
+                    lastCheckedAtIso: mailbox.lastCheckedAt?.toISOString() ?? null,
+                    errorCode: publicMailboxError(mailbox.lastErrorId, null, mailbox.status),
                   }
             }
           />

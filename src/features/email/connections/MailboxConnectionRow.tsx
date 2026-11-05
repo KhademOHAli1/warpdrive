@@ -1,7 +1,7 @@
 "use client";
 
 import { Mail } from "lucide-react";
-import { useId, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -14,8 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useLocale, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { gmailMailboxDisplayHealth } from "../syncHealth";
 import { MailboxManagement } from "./MailboxManagement";
 import { MailboxSetupFlow } from "./MailboxSetupFlow";
 import { MailboxSyncProgress } from "./MailboxSyncProgress";
@@ -23,11 +24,64 @@ import { mailboxConnectionMessages, mailboxConnectionTranslator } from "./messag
 import type { MailboxConnectionActions, MailboxConnectionView } from "./types";
 import { MailboxConnectionFeedback, useMailboxConnectionTask } from "./useMailboxConnectionTask";
 
-// ICU date text can differ between Bun and the browser even with identical preferences.
-// Keep the shared ISO date through hydration, then display the browser's localized text.
-const subscribeHydration = () => () => undefined;
-const clientSnapshot = () => true;
-const serverSnapshot = () => false;
+function MailboxRowHealth({ mailbox }: { mailbox: MailboxConnectionView }) {
+  const { locale, numberingSystem } = useLocalePreferences();
+  const L = mailboxConnectionMessages(locale);
+  const t = mailboxConnectionTranslator(locale, numberingSystem);
+  const format = useFormatters();
+  const [now, setNow] = useState<Date | null>(null);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- keep timestamps stable through hydration and use the browser clock for staleness
+  useEffect(() => setNow(new Date()), []);
+  const health = mailbox.provider === "gmail" ? gmailMailboxDisplayHealth(mailbox, now) : undefined;
+  const state = {
+    connected: L.connected,
+    paused: L.paused,
+    disconnected: L.disconnected,
+    error: L.error,
+    stalled: L.syncStalled,
+    "authorization-failed": L.gmailAuthorizationRequired,
+  }[health === "stalled" || health === "authorization-failed" ? health : mailbox.status];
+  const badgeVariant =
+    health === "authorization-failed" || mailbox.status === "error"
+      ? "destructive"
+      : mailbox.status === "connected" && health !== "stalled"
+        ? "success"
+        : "secondary";
+  const lastChecked = mailbox.lastCheckedAtIso ?? null;
+  const dateText = (iso: string) => (now === null ? iso : format.dateTime(iso));
+  let healthWarning: string | undefined;
+  if (mailbox.errorCode !== undefined && health !== "paused") {
+    healthWarning =
+      health === "authorization-failed" ? L.gmailAuthorizationHint : L.errors[mailbox.errorCode];
+  }
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <Badge data-health={health} variant={badgeVariant}>
+          {state}
+        </Badge>
+        {mailbox.lastSyncAtIso === null ? (
+          <span>{L.neverSynced}</span>
+        ) : (
+          <time dateTime={mailbox.lastSyncAtIso}>
+            {t("lastSynced", { date: dateText(mailbox.lastSyncAtIso) })}
+          </time>
+        )}
+        {mailbox.provider === "gmail" &&
+          (lastChecked === null ? (
+            <span>{L.neverChecked}</span>
+          ) : (
+            <time dateTime={lastChecked}>{t("lastChecked", { date: dateText(lastChecked) })}</time>
+          ))}
+      </div>
+      <MailboxSyncProgress progress={mailbox.syncProgress} />
+      {healthWarning !== undefined && (
+        <p className="text-xs leading-relaxed text-destructive">{healthWarning}</p>
+      )}
+    </>
+  );
+}
 
 export function MailboxConnectionRow({
   mailbox,
@@ -45,11 +99,7 @@ export function MailboxConnectionRow({
   onRequireFreshAuth?: () => void;
 }) {
   const id = useId();
-  const preferences = useLocalePreferences();
-  const L = mailboxConnectionMessages(preferences.locale);
-  const t = mailboxConnectionTranslator(preferences.locale, preferences.numberingSystem);
-  const format = useFormatters();
-  const hydrated = useSyncExternalStore(subscribeHydration, clientSnapshot, serverSnapshot);
+  const L = mailboxConnectionMessages(useLocale());
   const [open, setOpen] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const gmail = useMailboxConnectionTask();
@@ -57,12 +107,6 @@ export function MailboxConnectionRow({
     setOpen(next);
     if (!next) setReconnecting(false);
   }
-  const state = {
-    connected: L.connected,
-    paused: L.paused,
-    disconnected: L.disconnected,
-    error: L.error,
-  }[mailbox.status];
   return (
     <li className="px-5 py-4">
       <Dialog open={open} onOpenChange={close}>
@@ -80,34 +124,7 @@ export function MailboxConnectionRow({
             <p className="text-xs text-muted-foreground">
               {mailbox.provider === "gmail" ? L.providerGmail : L.providerImap}
             </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-              <Badge
-                variant={
-                  mailbox.status === "connected"
-                    ? "success"
-                    : mailbox.status === "error"
-                      ? "destructive"
-                      : "secondary"
-                }
-              >
-                {state}
-              </Badge>
-              {mailbox.lastSyncAtIso === null ? (
-                <span>{L.neverSynced}</span>
-              ) : (
-                <time dateTime={mailbox.lastSyncAtIso}>
-                  {t("lastSynced", {
-                    date: hydrated ? format.dateTime(mailbox.lastSyncAtIso) : mailbox.lastSyncAtIso,
-                  })}
-                </time>
-              )}
-            </div>
-            <MailboxSyncProgress progress={mailbox.syncProgress} />
-            {mailbox.errorCode !== undefined && (
-              <p className="text-xs leading-relaxed text-destructive">
-                {L.errors[mailbox.errorCode]}
-              </p>
-            )}
+            <MailboxRowHealth mailbox={mailbox} />
           </div>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" aria-describedby={id}>

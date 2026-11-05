@@ -311,11 +311,8 @@ async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth)
   const hiddenIds = await overflowChips.evaluateAll((nodes) =>
     nodes.map((node) => node.dataset.calendarEventId),
   );
-  assert.equal(
-    new Set([...visibleIds, ...hiddenIds]).size,
-    fixture.count,
-    "Each seeded event appears exactly once",
-  );
+  const eventIds = new Set([...visibleIds, ...hiddenIds]);
+  assert.equal(eventIds.size, fixture.count, "Each seeded event appears exactly once");
   const firstHidden = overflowChips.first();
   const title = (await firstHidden.textContent())?.trim();
   assert.ok(title?.startsWith(fixture.titlePrefix));
@@ -331,6 +328,69 @@ async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth)
   await page.keyboard.press("Escape");
   await editor.waitFor({ state: "hidden" });
   if (view === "week") await assertKeyboardReveal(page, host, chips);
+  return eventIds;
+}
+
+async function assertMobileAgenda(page, calendar, eventIds) {
+  const { date: iso, count } = calendarOverlapFixture;
+  const selectedDay = (view) => (url) =>
+    url.pathname === "/activities/calendar" &&
+    url.searchParams.get("view") === view &&
+    url.searchParams.get("d") === iso;
+  await page.getByRole("link", { name: "Agenda", exact: true }).click();
+  await page.waitForURL(selectedDay("agenda"));
+  const agenda = page.locator("[data-calendar-agenda]");
+  const rows = agenda.locator("[data-calendar-event-id]");
+  await rows.last().waitFor();
+  assert.equal(await rows.count(), count, "Agenda renders every event in the selected day");
+  assert.deepEqual(
+    new Set(await rows.evaluateAll((nodes) => nodes.map((node) => node.dataset.calendarEventId))),
+    eventIds,
+    "Agenda includes the same events as Day, including the overflow item",
+  );
+  assert.ok(
+    await agenda.evaluate((list) => {
+      const pageWidth = document.documentElement.clientWidth;
+      return (
+        list.scrollWidth <= list.clientWidth + 1 &&
+        document.documentElement.scrollWidth <= pageWidth + 1
+      );
+    }),
+    "Agenda fits the narrow viewport without horizontal scrolling",
+  );
+  const boxes = await rows.evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { top: box.top, bottom: box.bottom, height: box.height };
+    }),
+  );
+  assert.ok(
+    boxes.every(
+      (box, index) => box.height > 0 && (index === 0 || box.top >= boxes[index - 1].bottom - 1),
+    ),
+    "Agenda renders one vertical list without overlapping event rows",
+  );
+
+  const last = rows.last();
+  const title = (await last.textContent())?.match(/CI overlap event \d+\b/)?.[0];
+  assert.ok(title, "Agenda shows the selected event title");
+  await last.click();
+  const editor = page.getByRole("dialog", { name: calendar.editor.edit, exact: true });
+  await assertSchedule(editor, calendar, iso, "10:00", "11:00");
+  assert.equal(
+    await editor
+      .getByRole("textbox", { name: calendar.editor.eventTitle, exact: true })
+      .inputValue(),
+    title,
+    "Agenda opens the selected event in the calendar editor",
+  );
+  await page.keyboard.press("Escape");
+  await editor.waitFor({ state: "hidden" });
+
+  await page.getByRole("link", { name: calendar.day, exact: true }).click();
+  await page.waitForURL(selectedDay("day"));
+  await surface(page, "time", iso).waitFor();
+  assert.equal(await agenda.count(), 0, "Day restores the time grid for the same date");
 }
 
 export async function runCalendarInteractionsBrowserSmoke({ journey, login, catalog }) {
@@ -513,7 +573,8 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
     async (page) => {
       await login(page);
       await assertOverlapAgenda(page, calendar, "week", 3, 36);
-      await assertOverlapAgenda(page, calendar, "day", 20, 96);
+      const eventIds = await assertOverlapAgenda(page, calendar, "day", 20, 96);
+      await assertMobileAgenda(page, calendar, eventIds);
     },
     { width: 390, height: 844 },
   );

@@ -114,6 +114,7 @@
     "dateConfirmationRequired": "Confirm the displayed date and time zone before setting a reminder on this older all-day event."
   },
   "day": "Day",
+  "agenda": "Agenda",
   "year": "Year",
   "dayActivityCount": "{date}: {count, plural, one {# activity} other {# activities}}",
   "emptyDayTitle": "Nothing scheduled this day",

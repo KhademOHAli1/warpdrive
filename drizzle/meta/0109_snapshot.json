@@ -1,5 +1,5 @@
 {
-  "id": "18a8d1cf-8445-4a83-bcb3-3e4875848522",
+  "id": "0cd9392f-7b68-4843-a3a7-c5baec7dcd5b",
   "prevId": "90d3b213-4edf-4ad3-a9a0-57f23255a59d",
   "version": "7",
   "dialect": "postgresql",
@@ -4547,6 +4547,12 @@
         },
         "last_sync_at": {
           "name": "last_sync_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_checked_at": {
+          "name": "last_checked_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
@@ -14546,159 +14552,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.workflow_external_effects": {
-      "name": "workflow_external_effects",
-      "schema": "",
-      "columns": {
-        "attempt_id": {
-          "name": "attempt_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "run_id": {
-          "name": "run_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "node_id": {
-          "name": "node_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "iteration_index": {
-          "name": "iteration_index",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "request_digest": {
-          "name": "request_digest",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'started'"
-        },
-        "started_at": {
-          "name": "started_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "clock_timestamp()"
-        },
-        "dispatch_authorized_at": {
-          "name": "dispatch_authorized_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "finished_at": {
-          "name": "finished_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "output": {
-          "name": "output",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "error_id": {
-          "name": "error_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "workflow_external_effect_started_idx": {
-          "name": "workflow_external_effect_started_idx",
-          "columns": [
-            {
-              "expression": "started_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "run_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"workflow_external_effects\".\"state\" = 'started'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "workflow_external_effects_run_id_workflow_runs_id_fk": {
-          "name": "workflow_external_effects_run_id_workflow_runs_id_fk",
-          "tableFrom": "workflow_external_effects",
-          "tableTo": "workflow_runs",
-          "columnsFrom": [
-            "run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "workflow_external_effect_identity_uq": {
-          "name": "workflow_external_effect_identity_uq",
-          "nullsNotDistinct": false,
-          "columns": [
-            "run_id",
-            "node_id",
-            "iteration_index",
-            "kind"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "workflow_external_effect_identity_ck": {
-          "name": "workflow_external_effect_identity_ck",
-          "value": "\n      \"workflow_external_effects\".\"node_id\" ~ '^[A-Za-z][A-Za-z0-9_-]{0,63}$' AND \"workflow_external_effects\".\"iteration_index\" BETWEEN -1 AND 99\n      AND length(\"workflow_external_effects\".\"kind\") <= 64 AND \"workflow_external_effects\".\"kind\" ~ '^[a-z][a-z0-9]*([._-][a-z0-9]+)*$'\n      AND \"workflow_external_effects\".\"request_digest\" ~ '^[0-9a-f]{64}$'\n    "
-        },
-        "workflow_external_effect_state_ck": {
-          "name": "workflow_external_effect_state_ck",
-          "value": "\n      (\"workflow_external_effects\".\"state\" = 'started' AND \"workflow_external_effects\".\"finished_at\" IS NULL AND \"workflow_external_effects\".\"output\" IS NULL AND \"workflow_external_effects\".\"error_id\" IS NULL)\n      OR (\"workflow_external_effects\".\"state\" = 'complete' AND \"workflow_external_effects\".\"finished_at\" IS NOT NULL AND \"workflow_external_effects\".\"dispatch_authorized_at\" IS NOT NULL\n        AND ((\"workflow_external_effects\".\"output\" IS NOT NULL AND \"workflow_external_effects\".\"error_id\" IS NULL) OR (\"workflow_external_effects\".\"output\" IS NULL AND \"workflow_external_effects\".\"error_id\" IS NOT NULL)))\n      OR (\"workflow_external_effects\".\"state\" = 'not_sent' AND \"workflow_external_effects\".\"finished_at\" IS NOT NULL AND \"workflow_external_effects\".\"output\" IS NULL AND \"workflow_external_effects\".\"error_id\" IS NOT NULL)\n      OR (\"workflow_external_effects\".\"state\" = 'unknown' AND \"workflow_external_effects\".\"finished_at\" IS NOT NULL AND \"workflow_external_effects\".\"dispatch_authorized_at\" IS NOT NULL\n        AND \"workflow_external_effects\".\"output\" IS NULL AND \"workflow_external_effects\".\"error_id\" IS NOT NULL)\n    "
-        },
-        "workflow_external_effect_times_ck": {
-          "name": "workflow_external_effect_times_ck",
-          "value": "\n      isfinite(\"workflow_external_effects\".\"started_at\")\n      AND (\"workflow_external_effects\".\"dispatch_authorized_at\" IS NULL OR (isfinite(\"workflow_external_effects\".\"dispatch_authorized_at\") AND \"workflow_external_effects\".\"dispatch_authorized_at\" >= \"workflow_external_effects\".\"started_at\"))\n      AND (\"workflow_external_effects\".\"finished_at\" IS NULL OR (isfinite(\"workflow_external_effects\".\"finished_at\") AND \"workflow_external_effects\".\"finished_at\" >= coalesce(\"workflow_external_effects\".\"dispatch_authorized_at\", \"workflow_external_effects\".\"started_at\")))\n    "
-        },
-        "workflow_external_effect_output_ck": {
-          "name": "workflow_external_effect_output_ck",
-          "value": "\n      (\"workflow_external_effects\".\"error_id\" IS NULL OR \"workflow_external_effects\".\"error_id\" ~ '^E_[A-Z0-9_]+$')\n      AND (\"workflow_external_effects\".\"output\" IS NULL OR (jsonb_typeof(\"workflow_external_effects\".\"output\") = 'object'\n        AND octet_length(\"workflow_external_effects\".\"output\"::text) <= 131072))\n    "
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.workflow_run_failures": {
       "name": "workflow_run_failures",
       "schema": "",
@@ -14925,12 +14778,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "iterator_frame": {
-          "name": "iterator_frame",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "resume_at": {
           "name": "resume_at",
           "type": "timestamp with time zone",
@@ -15103,10 +14950,6 @@
         "workflow_runs_mode_ck": {
           "name": "workflow_runs_mode_ck",
           "value": "\"workflow_runs\".\"mode\" IN ('simulation','live')"
-        },
-        "workflow_runs_iterator_frame_ck": {
-          "name": "workflow_runs_iterator_frame_ck",
-          "value": "\"workflow_runs\".\"iterator_frame\" IS NULL OR (\"workflow_runs\".\"status\" IN ('running','waiting') AND \"workflow_runs\".\"next_node_id\" IS NOT NULL AND jsonb_typeof(\"workflow_runs\".\"iterator_frame\") = 'object')"
         }
       },
       "isRLSEnabled": false
@@ -15133,26 +14976,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "iteration_index": {
-          "name": "iteration_index",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true,
-          "default": -1
-        },
-        "outcome": {
-          "name": "outcome",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'succeeded'"
-        },
-        "error_id": {
-          "name": "error_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "simulated": {
           "name": "simulated",
@@ -15197,22 +15020,12 @@
           "nullsNotDistinct": false,
           "columns": [
             "run_id",
-            "node_id",
-            "iteration_index"
+            "node_id"
           ]
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "workflow_steps_iteration_index_ck": {
-          "name": "workflow_steps_iteration_index_ck",
-          "value": "\"workflow_steps\".\"iteration_index\" BETWEEN -1 AND 99"
-        },
-        "workflow_steps_outcome_ck": {
-          "name": "workflow_steps_outcome_ck",
-          "value": "(\"workflow_steps\".\"outcome\" = 'succeeded' AND \"workflow_steps\".\"error_id\" IS NULL) OR\n        (\"workflow_steps\".\"outcome\" = 'failed' AND \"workflow_steps\".\"iteration_index\" >= 0 AND \"workflow_steps\".\"error_id\" IS NOT NULL AND \"workflow_steps\".\"output\" = '{}'::jsonb)"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.workflow_v2_effects": {

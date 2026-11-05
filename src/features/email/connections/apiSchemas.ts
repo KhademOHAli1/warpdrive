@@ -37,6 +37,7 @@ export const mailboxViewSchema: z.ZodType<MailboxConnectionView> = z.object({
   status: z.enum(["connected", "paused", "error", "disconnected"]),
   isDefault: z.boolean(),
   lastSyncAtIso: z.string().datetime({ offset: true }).nullable(),
+  lastCheckedAtIso: z.string().datetime({ offset: true }).nullable().optional(),
   capabilities: capabilitiesSchema,
   errorCode: mailboxConnectionErrorSchema.optional(),
   historyDays: z.number().int().min(1).max(3650).optional(),

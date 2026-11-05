@@ -1,8 +1,8 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "33f3bf89b431d5579f0dd12912305e41749cf23944ee0205367168a98001c047",
-  "sourceFiles": 2936,
+  "sourceFingerprint": "820db1126a9d2a710fbc07995828115ded6eecb90efbf53981c8bb61405b9e8e",
+  "sourceFiles": 2937,
   "discoveredCounts": {
     "browserStore": 4,
     "derived": 412,
@@ -14,7 +14,7 @@
     "table": 141,
     "writer": 953
   },
-  "classifiedDeclarations": 2895,
+  "classifiedDeclarations": 2896,
   "coverage": {
     "ok": true,
     "missing": [],
