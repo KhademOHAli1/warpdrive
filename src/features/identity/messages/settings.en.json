@@ -753,7 +753,13 @@
       "workflow_edit": "Edit own workflow drafts",
       "workflow_publish": "Publish and activate own workflows",
       "workflow_run": "Run own workflows",
-      "workflow_cancel": "Cancel own workflow runs"
+      "workflow_cancel": "Cancel own workflow runs",
+      "company_profile_manage": "Manage company profile",
+      "company_legal_manage": "Manage legal entities and payer details",
+      "work_view": "View operational work",
+      "work_create": "Create operational work",
+      "work_change": "Change visible operational work",
+      "work_manage": "Manage work types and stages"
     },
     "icons": {
       "call": "call",
