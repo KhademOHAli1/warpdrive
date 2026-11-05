@@ -384,7 +384,10 @@ async function assertGuestCookies(context, config) {
     warpdrive_numbering_system: config.numberingSystem,
   };
   for (const [name, value] of Object.entries(expected)) {
-    assert.equal(cookies[name], value, `Guest bootstrap cookie ${name}`);
+    // Chromium reports the serialized cookie; Next reads its decoded value.
+    const raw = cookies[name];
+    const decoded = raw === undefined ? undefined : decodeURIComponent(raw);
+    assert.equal(decoded, value, `Guest bootstrap cookie ${name}`);
   }
   return Object.keys(expected).sort();
 }
@@ -483,12 +486,8 @@ async function exerciseExplicitProfile(page, config, entry) {
   });
   const row = await waitUntil(`${config.key} final database preferences`, async () => {
     const candidate = await readPreference(config.actor.id);
-    try {
-      assertPreferenceRow(candidate, config);
-      return candidate;
-    } catch {
-      return false;
-    }
+    assertPreferenceRow(candidate, config);
+    return candidate;
   });
   await waitForControlEnabled(controls.zoneSwitch, `${config.key} saved browser time zone switch`);
   entry.database = { afterExplicitProfile: row };
@@ -555,13 +554,9 @@ async function freshJourney(config) {
     );
     await statusPage(page, "/login");
     await assertDocument(page, config);
-    const guestCookieNames = await waitUntil(`${config.key} guest regional cookies`, async () => {
-      try {
-        return await assertGuestCookies(context, config);
-      } catch {
-        return false;
-      }
-    });
+    const guestCookieNames = await waitUntil(`${config.key} guest regional cookies`, () =>
+      assertGuestCookies(context, config),
+    );
     await page
       .getByText(settingsMessages(config.locale).saving, { exact: true })
       .waitFor({ state: "detached" });
