@@ -955,6 +955,29 @@ async function verifySavedPerformance() {
   });
 }
 
+async function downloadWonRecords(page, dialog) {
+  const [download] = await Promise.all([
+    page.waitForEvent("download", { timeout: 15000 }),
+    dialog.getByRole("link", exact(copy.en.stats.recordsExport)).click(),
+  ]);
+  assert.equal(download.suggestedFilename(), "deal-report-won.csv");
+  let csv = "";
+  try {
+    const stream = await download.createReadStream();
+    assert.ok(stream, "The authorized download has a readable file");
+    for await (const chunk of stream) {
+      csv += chunk.toString("utf8");
+      assert.ok(csv.length <= 16_384, "The file stays within its byte limit");
+    }
+  } finally {
+    await download.delete();
+  }
+  const lines = csv.split("\r\n");
+  assert.equal(lines.shift(), "deal_id,status,currency,value,created_at_utc,closed_at_utc");
+  assert.equal(lines.pop(), "");
+  return lines.map((line) => line.split(","));
+}
+
 async function verifyDealReportDownload() {
   await journey("en-won-deal-csv", async (page, _context, entry) => {
     const S = copy.en.stats;
@@ -963,26 +986,7 @@ async function verifyDealReportDownload() {
     });
     const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
     const drawer = await openRecords(page, "en", "won", filtered.input, entry, population.won);
-    const [download] = await Promise.all([
-      page.waitForEvent("download", { timeout: 15000 }),
-      drawer.dialog.getByRole("link", exact(S.recordsExport)).click(),
-    ]);
-    assert.equal(download.suggestedFilename(), "deal-report-won.csv");
-    let csv = "";
-    try {
-      const stream = await download.createReadStream();
-      assert.ok(stream, "The authorized download has a readable file");
-      for await (const chunk of stream) {
-        csv += chunk.toString("utf8");
-        assert.ok(csv.length <= 16_384, "The file stays within its byte limit");
-      }
-    } finally {
-      await download.delete();
-    }
-    const lines = csv.split("\r\n");
-    assert.equal(lines.shift(), "deal_id,status,currency,value,created_at_utc,closed_at_utc");
-    assert.equal(lines.pop(), "");
-    const fields = lines.map((line) => line.split(","));
+    const fields = await downloadWonRecords(page, drawer.dialog);
     assert.deepEqual(
       fields.map((row) => row[0]),
       entry.reports[0].ids,
@@ -999,6 +1003,39 @@ async function verifyDealReportDownload() {
     }
     entry.exportProof = { rows: fields.length, exactDecimalValues: true, retainedFile: false };
     await closeRecords(page, drawer);
+
+    const month = filtered.data.wonTrend.find(({ count }) => count > 0);
+    assert.ok(month, "The native trend contains a nonempty month");
+    const trend = page.getByRole("region", exact(S.widgetWonTrend));
+    await trend.getByRole("button", exact(S.showTrendData)).click();
+    const opener = trend.getByRole("table", exact(S.trendTableCaption)).getByRole("button").first();
+    const records = await rpcAfter(
+      page,
+      "stats.records",
+      (input) => input.metric === "won" && input.wonMonth === month.month,
+      () => opener.press("Enter"),
+    );
+    assertScope(records, actor.timeZone, {
+      from: filtered.input.from,
+      to: filtered.input.to,
+      pipelineId: null,
+    });
+    assert.equal(records.data.wonMonth, month.month);
+    assert.equal(records.data.totals.count, month.count);
+    assert.equal(records.data.nextCursor, null);
+    const dialog = page.getByRole("dialog");
+    const monthRows = await downloadWonRecords(page, dialog);
+    assert.deepEqual(
+      monthRows.map(([id]) => id),
+      records.data.rows.map(({ id }) => id),
+    );
+    await closeRecords(page, { dialog, opener });
+    entry.wonMonthProof = {
+      month: month.month,
+      rows: monthRows.length,
+      originalReportScope: true,
+      returnedFocus: true,
+    };
   });
 }
 
