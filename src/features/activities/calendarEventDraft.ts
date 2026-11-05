@@ -12,11 +12,15 @@ import type { ActivityUpdateInput } from "./schemas";
 export function calendarEventDraft({
   date = "",
   time = "",
+  endDate,
+  endTime,
   editing,
   timeZone,
 }: {
   date?: string;
   time?: string;
+  endDate?: string;
+  endTime?: string;
   editing?: EditableActivity;
   timeZone: string;
 }): ActivityDraft {
@@ -40,6 +44,12 @@ export function calendarEventDraft({
     } catch {
       end.time = time;
     }
+  }
+  if (editing === undefined) {
+    // A selected calendar range supplies civil bounds; omitted bounds keep click-to-create's
+    // existing one-hour default. An all-day selection always keeps both clock fields empty.
+    end.date = endDate ?? end.date;
+    end.time = time === "" ? "" : (endTime ?? end.time);
   }
   return {
     typeId: editing?.typeId ?? "",

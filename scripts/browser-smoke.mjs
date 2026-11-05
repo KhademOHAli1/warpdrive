@@ -166,6 +166,11 @@ try {
     await page.getByText("CI persisted event", { exact: true }).first().waitFor();
   });
 
+  const { runCalendarInteractionsBrowserSmoke } = await import(
+    "./calendar-interactions-browser.mjs"
+  );
+  await runCalendarInteractionsBrowserSmoke({ journey, login, catalog });
+
   await journey("mailbox-setup-cancel", "en", async (page) => {
     await login(page);
     await page.goto("/settings/email-sync");

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { monthGridDays } from "@/features/activities/monthGrid";
 import { CalendarClient } from "./CalendarClient";
@@ -171,3 +171,14 @@ it("draws the header label and the adjacent-month tone from theme tokens", () =>
   expect(julyCell).toHaveClass("bg-muted/50", "text-foreground/60");
   expect(julyCell.className).not.toMatch(/-gray-/);
 });
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

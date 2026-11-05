@@ -61,9 +61,11 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
     // biome-ignore lint/a11y/useSemanticElements: a calendar day column is not a form <fieldset>
     <div
       ref={ref}
+      data-calendar-surface="time"
+      data-calendar-date={iso}
       role="group"
       aria-label={dayLabel}
-      className="relative border-s border-border"
+      className="relative select-none border-s border-border"
       style={{ height: COLUMN_HEIGHT_PX }}
     >
       {placements.map(({ activity, topPx, heightPx, leftPct, widthPct, overflowing }) => (

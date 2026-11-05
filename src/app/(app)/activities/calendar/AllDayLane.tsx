@@ -12,11 +12,13 @@ import { MoreActivitiesChip } from "./MoreActivitiesChip";
 // One day's all-day activities. Every lane in the week reserves the same number of rows so the
 // hour grids underneath all start at the same y and a given hour stays level across the week.
 export function AllDayLane({
+  iso,
   dayLabel,
   items,
   rows,
   onOpenActivity,
 }: {
+  iso?: string;
   dayLabel: string;
   items: CalendarActivity[];
   rows: number;
@@ -29,9 +31,11 @@ export function AllDayLane({
     // biome-ignore lint/a11y/useSemanticElements: a calendar lane is not a form <fieldset>
     <div
       data-all-day-lane
+      data-calendar-surface="date"
+      data-calendar-date={iso}
       role="group"
       aria-label={t("allDayLabel", { date: dayLabel })}
-      className="overflow-hidden border-s border-border px-0.5"
+      className="select-none overflow-hidden border-s border-border px-0.5"
       style={{ height: rows * ALL_DAY_ROW_HEIGHT_PX }}
     >
       {visible.map((a) => (
