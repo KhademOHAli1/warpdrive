@@ -32,11 +32,18 @@ export async function goalProgress(
   const period = currentPeriod(goal.interval, goal.startsOn, goal.endsOn, on);
   if (period === null) return null;
 
-  const { actual, missingMeasurementDateCount } = await goalActualWithQuality(db, actor, goal, period, signal);
+  const { actual, missingMeasurementDateCount } = await goalActualWithQuality(
+    db,
+    actor,
+    goal,
+    period,
+    signal,
+  );
   const isLimit = goal.action === "lost";
-  const attained = missingMeasurementDateCount > 0
-    ? null
-    : attainment(actual, goal.target, isLimit ? "at_most" : "at_least");
+  const attained =
+    missingMeasurementDateCount > 0
+      ? null
+      : attainment(actual, goal.target, isLimit ? "at_most" : "at_least");
   return {
     goalId: goal.id,
     periodStart: period.start,

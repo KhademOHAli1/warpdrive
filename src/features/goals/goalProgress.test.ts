@@ -44,19 +44,92 @@ describe("goalProgress", () => {
     const { pipeline, stages } = await seedPipeline(h);
     const stage = stages[0];
     if (stage === undefined) throw new Error("no stage");
-    await seedDeal(h, { title: "Hidden undated loss", status: "lost", lostTime: null, ownerId: bob.id, visibilityLevel: "owner", pipelineId: pipeline.id, stageId: stage.id, currency: "EUR" });
-    await seedDeal(h, { title: "Legitimately open", status: "open", ownerId: alice.id, visibilityLevel: "all", pipelineId: pipeline.id, stageId: stage.id });
-    const goal = await seedGoal({ subject: "deal", action: "lost", metric: "count", pipelineId: pipeline.id, target: "0" });
-    const available = await goalProgress(h.db, toActor(alice), goal, "2026-03-15", new AbortController().signal);
+    await seedDeal(h, {
+      title: "Hidden undated loss",
+      status: "lost",
+      lostTime: null,
+      ownerId: bob.id,
+      visibilityLevel: "owner",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      currency: "EUR",
+    });
+    await seedDeal(h, {
+      title: "Legitimately open",
+      status: "open",
+      ownerId: alice.id,
+      visibilityLevel: "all",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+    });
+    const goal = await seedGoal({
+      subject: "deal",
+      action: "lost",
+      metric: "count",
+      pipelineId: pipeline.id,
+      target: "0",
+    });
+    const available = await goalProgress(
+      h.db,
+      toActor(alice),
+      goal,
+      "2026-03-15",
+      new AbortController().signal,
+    );
     expect(available).toMatchObject({ actual: "0", attainment: 1 });
-    await seedDeal(h, { title: "Visible undated loss", status: "lost", lostTime: null, ownerId: alice.id, visibilityLevel: "all", pipelineId: pipeline.id, stageId: stage.id, currency: "EUR" });
-    const incomplete = await goalProgress(h.db, toActor(alice), goal, "2026-03-15", new AbortController().signal);
+    await seedDeal(h, {
+      title: "Visible undated loss",
+      status: "lost",
+      lostTime: null,
+      ownerId: alice.id,
+      visibilityLevel: "all",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      currency: "EUR",
+    });
+    const incomplete = await goalProgress(
+      h.db,
+      toActor(alice),
+      goal,
+      "2026-03-15",
+      new AbortController().signal,
+    );
     expect(incomplete?.attainment).toBeNull();
-    expect(incomplete).toMatchObject({ actual: "0", attainment: null, pace: null, dataState: "incomplete", missingMeasurementDateCount: 1 });
+    expect(incomplete).toMatchObject({
+      actual: "0",
+      attainment: null,
+      pace: null,
+      dataState: "incomplete",
+      missingMeasurementDateCount: 1,
+    });
     expect(available).toMatchObject({ dataState: "available", missingMeasurementDateCount: 0 });
-    await seedDeal(h, { title: "Different-currency undated loss", status: "lost", lostTime: null, ownerId: alice.id, visibilityLevel: "all", pipelineId: pipeline.id, stageId: stage.id, currency: "USD" });
-    const moneyGoal = await seedGoal({ subject: "deal", action: "lost", metric: "value", pipelineId: pipeline.id, currency: "EUR", target: "0" });
-    expect(await goalProgress(h.db, toActor(alice), moneyGoal, "2026-03-15", new AbortController().signal)).toMatchObject({ dataState: "incomplete", missingMeasurementDateCount: 1, attainment: null });
+    await seedDeal(h, {
+      title: "Different-currency undated loss",
+      status: "lost",
+      lostTime: null,
+      ownerId: alice.id,
+      visibilityLevel: "all",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      currency: "USD",
+    });
+    const moneyGoal = await seedGoal({
+      subject: "deal",
+      action: "lost",
+      metric: "value",
+      pipelineId: pipeline.id,
+      currency: "EUR",
+      target: "0",
+    });
+    expect(
+      await goalProgress(
+        h.db,
+        toActor(alice),
+        moneyGoal,
+        "2026-03-15",
+        new AbortController().signal,
+      ),
+    ).toMatchObject({ dataState: "incomplete", missingMeasurementDateCount: 1, attainment: null });
   });
   it("keeps known activity actuals while neutralising undated completions under parent and assignee visibility", async () => {
     const alice = await seedUser(h);
@@ -65,19 +138,92 @@ describe("goalProgress", () => {
     const { pipeline, stages } = await seedPipeline(h);
     const stage = stages[0];
     if (stage === undefined) throw new Error("no stage");
-    const visible = await seedDeal(h, { title: "Visible parent", ownerId: alice.id, visibilityLevel: "all", pipelineId: pipeline.id, stageId: stage.id });
-    const hidden = await seedDeal(h, { title: "Hidden parent", ownerId: bob.id, visibilityLevel: "owner", pipelineId: pipeline.id, stageId: stage.id });
+    const visible = await seedDeal(h, {
+      title: "Visible parent",
+      ownerId: alice.id,
+      visibilityLevel: "all",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+    });
+    const hidden = await seedDeal(h, {
+      title: "Hidden parent",
+      ownerId: bob.id,
+      visibilityLevel: "owner",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+    });
     await h.db.insert(schema.activities).values([
-      { subject: "Known completion", done: true, doneAt: new Date("2026-03-05T12:00:00Z"), typeId: type.id, ownerId: alice.id, assigneeId: alice.id, dealId: visible.id },
-      { subject: "Visible undated completion", done: true, doneAt: null, typeId: type.id, ownerId: alice.id, assigneeId: alice.id, dealId: visible.id },
-      { subject: "Not completed", done: false, doneAt: null, typeId: type.id, ownerId: alice.id, assigneeId: alice.id, dealId: visible.id },
-      { subject: "Hidden undated completion", done: true, doneAt: null, typeId: type.id, ownerId: bob.id, assigneeId: alice.id, dealId: hidden.id },
-      { subject: "Other assignee", done: true, doneAt: null, typeId: type.id, ownerId: bob.id, assigneeId: bob.id, dealId: visible.id },
+      {
+        subject: "Known completion",
+        done: true,
+        doneAt: new Date("2026-03-05T12:00:00Z"),
+        typeId: type.id,
+        ownerId: alice.id,
+        assigneeId: alice.id,
+        dealId: visible.id,
+      },
+      {
+        subject: "Visible undated completion",
+        done: true,
+        doneAt: null,
+        typeId: type.id,
+        ownerId: alice.id,
+        assigneeId: alice.id,
+        dealId: visible.id,
+      },
+      {
+        subject: "Not completed",
+        done: false,
+        doneAt: null,
+        typeId: type.id,
+        ownerId: alice.id,
+        assigneeId: alice.id,
+        dealId: visible.id,
+      },
+      {
+        subject: "Hidden undated completion",
+        done: true,
+        doneAt: null,
+        typeId: type.id,
+        ownerId: bob.id,
+        assigneeId: alice.id,
+        dealId: hidden.id,
+      },
+      {
+        subject: "Other assignee",
+        done: true,
+        doneAt: null,
+        typeId: type.id,
+        ownerId: bob.id,
+        assigneeId: bob.id,
+        dealId: visible.id,
+      },
     ]);
-    const goal = await seedGoal({ subject: "activity", action: "completed", metric: "count", assigneeKind: "user", assigneeId: alice.id, pipelineId: pipeline.id, activityTypeId: type.id, target: "1" });
-    const incomplete = await goalProgress(h.db, toActor(alice), goal, "2026-03-15", new AbortController().signal);
+    const goal = await seedGoal({
+      subject: "activity",
+      action: "completed",
+      metric: "count",
+      assigneeKind: "user",
+      assigneeId: alice.id,
+      pipelineId: pipeline.id,
+      activityTypeId: type.id,
+      target: "1",
+    });
+    const incomplete = await goalProgress(
+      h.db,
+      toActor(alice),
+      goal,
+      "2026-03-15",
+      new AbortController().signal,
+    );
     expect(incomplete?.attainment).toBeNull();
-    expect(incomplete).toMatchObject({ actual: "1", dataState: "incomplete", missingMeasurementDateCount: 1, attainment: null, pace: null });
+    expect(incomplete).toMatchObject({
+      actual: "1",
+      dataState: "incomplete",
+      missingMeasurementDateCount: 1,
+      attainment: null,
+      pace: null,
+    });
   });
   it("totals the value won by the assignee inside the current period", async () => {
     const user = await seedUser(h, { isAdmin: true });

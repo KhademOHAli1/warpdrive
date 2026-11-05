@@ -16,7 +16,27 @@ const inputSchema = z.strictObject({
   requestKey: z.string().uuid(),
   recordId: z.string().uuid(),
   mode: z.enum(["simulation", "live"]).default("simulation"),
+  reviewedVersionId: z
+    .string()
+    .uuid()
+    .transform((value) => value.toLowerCase())
+    .optional(),
 });
+
+function matchesReviewedVersion(reviewedVersionId: string | undefined, versionId: string) {
+  return reviewedVersionId === undefined || reviewedVersionId === versionId;
+}
+
+function sameManualCommand(
+  existing: typeof workflowRuns.$inferSelect,
+  input: z.infer<typeof inputSchema>,
+) {
+  return (
+    existing.mode === input.mode &&
+    existing.trigger.recordId === input.recordId &&
+    matchesReviewedVersion(input.reviewedVersionId, existing.versionId)
+  );
+}
 
 export async function admitManualRun(
   db: Db,
@@ -61,10 +81,11 @@ export async function admitManualRun(
     );
     const [existing] = await tx.select().from(workflowRuns).where(key);
     if (existing !== undefined) {
-      if (existing.mode !== input.data.mode || existing.trigger.recordId !== input.data.recordId)
-        return err(ERROR_IDS.WORKFLOW_CONFLICT);
+      if (!sameManualCommand(existing, input.data)) return err(ERROR_IDS.WORKFLOW_CONFLICT);
       return ok(existing);
     }
+    if (!matchesReviewedVersion(input.data.reviewedVersionId, version.id))
+      return err(ERROR_IDS.WORKFLOW_CONFLICT);
     const metadata = version.definition.nodes.some((node) => node.type === "activity.create")
       ? {
           status: "complete" as const,

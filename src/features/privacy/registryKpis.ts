@@ -7,14 +7,14 @@ export const kpiInventoryEntry = classifyInventory(kpiIds1, {
     "workforce creator, recorder, viewer and assignment references and current visible scope names",
     "user-authored KPI names, descriptions, filters, conditions and scorecard revisions",
     "manual measurement values, dates, sample sizes and free-text source notes",
-    "viewer-filtered CRM record references, labels, values, selected observation dates, current statuses and derived performance results",
+    "viewer-filtered CRM record references, labels, values, selected observation dates, missing-date quality counts, current statuses and derived performance results",
     "manual period snapshots, preserved definitions, assignments and contributing-note copies",
     "transient browser forms, previews, result trends and request-order state",
   ],
   subjectRelation:
     "A workforce actor, assignee or snapshot viewer is distinct from any person described by a KPI name, source note or contributing CRM record. Company, team and person assignment scope governs ordinary result visibility; it does not establish privacy subject identity, reviewed case scope or authority to disclose an entire scorecard or free-text observation.",
   purpose:
-    "Create append-only KPI and scorecard revisions, assign version-pinned targets, record source-noted manual observations, evaluate visible CRM records and explicitly capture completed manual periods for the requesting viewer. Present bounded previews, cumulative trends and contributing records in Settings and Performance. Canonical migration 0105 declares the five tables, foreign keys, indexes and immutability triggers; source registration alone is not evidence of an installed populated upgrade.",
+    "Create append-only KPI and scorecard revisions, assign version-pinned targets, record source-noted manual observations, evaluate visible CRM records and explicitly capture completed manual periods for the requesting viewer. Present bounded previews, cumulative trends and contributing records in Settings and Performance. Canonical migration 0106 declares the five tables, foreign keys, indexes and immutability triggers; source registration alone is not evidence of an installed populated upgrade.",
   disclosure:
     "Mutating Server Actions require native active-session, CSRF and goals.manage checks. Result reads reauthorize assignment scope; CRM calculations additionally apply current deal or dominant-parent activity visibility. Scope labels project only the current user or team name for already-visible assignments, without directory email or unrelated profile fields. Live contributing records expose the selected observation date and current status under the same record authorization. Company-scoped manual observations are shared with authorized ordinary company-goal viewers; notes may contain third-party or confidential text. Snapshots are viewer-bound, restricted to manual sources and omit contributors when returned. None of these ordinary product permissions grants privacy export, portability or unrestricted disclosure authority.",
   retention:

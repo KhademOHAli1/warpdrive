@@ -1,3 +1,4 @@
+import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
 import { archiveCodecIds1 } from "./registryIdsArchiveCodec1";
@@ -38,6 +39,7 @@ import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
   kpiInventoryEntry,
+  billingInventoryEntry,
   workflowInventoryEntry,
   migrationInventoryEntry,
   ...mailInventoryEntries,

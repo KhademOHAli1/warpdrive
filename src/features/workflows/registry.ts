@@ -7,6 +7,7 @@ import {
 import { customFieldSettingsSchema } from "./configurationBindings";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type { ConfigurationProfile } from "./configurationTypes";
+import { delayUntilDate } from "./delayConfig";
 import { coarseMappingOutputs, mappingOutputContracts } from "./mappingOutputs";
 import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
@@ -91,13 +92,23 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   },
   delay: {
     configuration: configurationProfiles.delay,
-    config: z.strictObject({
-      minutes: bindingSchema.refine(
-        (binding) =>
-          binding.kind === "reference" || delayMinutesSchema.safeParse(binding.value).success,
-      ),
-    }),
-    inputs: { minutes: "number" },
+    config: z.union([
+      z.strictObject({
+        minutes: bindingSchema.refine(
+          (binding) =>
+            binding.kind === "reference" || delayMinutesSchema.safeParse(binding.value).success,
+        ),
+      }),
+      z.strictObject({
+        until: bindingSchema.refine(
+          (binding) =>
+            binding.kind === "value" &&
+            binding.literalType === "instant" &&
+            delayUntilDate(binding.value) !== null,
+        ),
+      }),
+    ]),
+    inputs: { minutes: "number", until: "instant" },
     outputs: coarseMappingOutputs("delay"),
     outputContracts: mappingOutputContracts("delay"),
     effect: "wait",

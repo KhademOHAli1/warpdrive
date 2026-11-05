@@ -96,8 +96,13 @@ async function activityTotals(
       AND ${activityVisibilityPredicate(actor, "a")}
   `);
   signal.throwIfAborted();
-  const row = (result as unknown as { rows: { count: number; missingEventDateCount: number }[] }).rows[0];
-  return { count: row?.count ?? 0, value: "0.00", missingEventDateCount: row?.missingEventDateCount ?? 0 };
+  const row = (result as unknown as { rows: { count: number; missingEventDateCount: number }[] })
+    .rows[0];
+  return {
+    count: row?.count ?? 0,
+    value: "0.00",
+    missingEventDateCount: row?.missingEventDateCount ?? 0,
+  };
 }
 
 export interface GoalActualQuality {

@@ -9,21 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { BuilderWorkspace } from "./BuilderWorkspace";
+import { comparePublishedVersions, type VersionDifference } from "./publishedVersionDiff";
+import { VersionComparison } from "./VersionComparison";
 
-export function VersionsDialog({
-  workflowId,
-  revision,
-  canRestore,
-  pending,
-  error,
-  onRestore,
-  onClose,
-  onCloseAutoFocus,
-}: {
+type Props = {
   workflowId: string;
   revision: number;
   canRestore: boolean;
@@ -32,16 +26,123 @@ export function VersionsDialog({
   onRestore: (versionNumber: number) => void;
   onClose: () => void;
   onCloseAutoFocus: (event: Event) => void;
-}) {
+};
+
+export function VersionsDialog(props: Props) {
+  return <VersionHistory key={props.workflowId} {...props} />;
+}
+
+function getVersionDifference(
+  comparisonLoading: boolean,
+  before: unknown,
+  after: unknown,
+): VersionDifference | null {
+  if (comparisonLoading || before === null || after === null) return null;
+  try {
+    return comparePublishedVersions(before, after);
+  } catch {
+    /* Retained malformed data is reported without its contents. */
+    return null;
+  }
+}
+
+function VersionHistory({
+  workflowId,
+  revision,
+  canRestore,
+  pending,
+  error,
+  onRestore,
+  onClose,
+  onCloseAutoFocus,
+}: Props) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
-  const versions = trpc.workflows.versions.useQuery({ id: workflowId });
+  const versions = trpc.workflows.versions.useQuery(
+    { id: workflowId },
+    {
+      staleTime: 0,
+      refetchOnMount: "always",
+      placeholderData: undefined,
+    },
+  );
   const [selected, setSelected] = useState<number | null>(null);
+  const [compared, setCompared] = useState<number | null>(null);
+  const [selectionGeneration, setSelectionGeneration] = useState(0);
+  const [retryGeneration, setRetryGeneration] = useState<number | null>(null);
+  const retrying = retryGeneration === selectionGeneration;
   const version = trpc.workflows.version.useQuery(
     { id: workflowId, versionNumber: selected ?? 1 },
-    { enabled: selected !== null },
+    {
+      enabled: selected !== null,
+      staleTime: 0,
+      refetchOnMount: "always",
+      placeholderData: undefined,
+    },
   );
-  const current = selected !== null && version.data?.number === selected ? version.data : null;
+  const otherVersion = trpc.workflows.version.useQuery(
+    { id: workflowId, versionNumber: compared ?? 1 },
+    {
+      enabled: compared !== null,
+      staleTime: 0,
+      refetchOnMount: "always",
+      placeholderData: undefined,
+    },
+  );
+  const selectedSummary = versions.data?.find((item) => item.number === selected);
+  const comparedSummary = versions.data?.find((item) => item.number === compared);
+  const currentData = version.data;
+  const otherData = otherVersion.data;
+  const listReady =
+    !versions.isLoading && !versions.isFetching && !versions.isError && !versions.isPlaceholderData;
+  const current =
+    listReady &&
+    selected !== null &&
+    currentData !== undefined &&
+    currentData.number === selected &&
+    currentData.id === selectedSummary?.id &&
+    !version.isFetching &&
+    !version.isError &&
+    !version.isPlaceholderData
+      ? currentData
+      : null;
+  const other =
+    listReady &&
+    compared !== null &&
+    otherData !== undefined &&
+    otherData.number === compared &&
+    otherData.id === comparedSummary?.id &&
+    !otherVersion.isFetching &&
+    !otherVersion.isError &&
+    !otherVersion.isPlaceholderData
+      ? otherData
+      : null;
+  const comparisonLoading =
+    retrying ||
+    versions.isLoading ||
+    versions.isFetching ||
+    versions.isPlaceholderData ||
+    version.isLoading ||
+    version.isFetching ||
+    version.isPlaceholderData ||
+    otherVersion.isLoading ||
+    otherVersion.isFetching ||
+    otherVersion.isPlaceholderData;
+  const difference = getVersionDifference(comparisonLoading, other, current);
+  async function retryComparison() {
+    if (retrying || compared === null) return;
+    const generation = selectionGeneration;
+    setRetryGeneration(generation);
+    try {
+      await Promise.allSettled([
+        Promise.resolve().then(() => versions.refetch()),
+        Promise.resolve().then(() => version.refetch()),
+        Promise.resolve().then(() => otherVersion.refetch()),
+      ]);
+    } finally {
+      setRetryGeneration((active) => (active === generation ? null : active));
+    }
+  }
   return (
     <Dialog
       open
@@ -86,7 +187,11 @@ export function VersionsDialog({
                 variant={selected === item.number ? "default" : "outline"}
                 className="h-auto w-full justify-between whitespace-normal text-start"
                 disabled={pending}
-                onClick={() => setSelected(item.number)}
+                onClick={() => {
+                  setSelected(item.number);
+                  setCompared(null);
+                  setSelectionGeneration((generation) => generation + 1);
+                }}
               >
                 <bdi>{item.name}</bdi>
                 <span>
@@ -99,6 +204,23 @@ export function VersionsDialog({
         )}
         {selected !== null && (
           <div className="space-y-3 border-t pt-4">
+            <Select
+              ariaLabel={t("versionCompareSelector")}
+              value={compared === null ? "" : String(compared)}
+              options={[
+                { value: "", label: t("versionCompareSingle") },
+                ...(versions.data ?? []).map((item) => ({
+                  value: String(item.number),
+                  label: `${t("version", { number: item.number })} · ${item.name}`,
+                })),
+              ]}
+              disabled={pending || versions.isFetching || versions.isError}
+              onChange={(value) => {
+                const choice = versions.data?.find((item) => String(item.number) === value);
+                setCompared(choice?.number ?? null);
+                setSelectionGeneration((generation) => generation + 1);
+              }}
+            />
             {version.isLoading && <p role="status">{t("loading")}</p>}
             {version.isError ? (
               <div>
@@ -114,25 +236,43 @@ export function VersionsDialog({
                     <bdi>{current.name}</bdi>
                   </h3>
                   <p className="text-sm text-muted-foreground">{t("restoreHint")}</p>
-                  <div className="min-h-[420px] overflow-hidden rounded-lg border">
-                    <BuilderWorkspace
-                      key={current.id}
-                      definition={current.definition}
-                      onChange={() => undefined}
-                      editable={false}
-                      issues={[]}
-                    />
-                  </div>
-                  {canRestore && (
-                    <Button
-                      disabled={pending || version.isFetching}
-                      onClick={() => onRestore(current.number)}
-                    >
-                      {t("restoreAsDraft")}
-                    </Button>
+                  {compared === null && (
+                    <div className="min-h-[420px] overflow-hidden rounded-lg border">
+                      <BuilderWorkspace
+                        key={current.id}
+                        definition={current.definition}
+                        onChange={() => undefined}
+                        editable={false}
+                        issues={[]}
+                      />
+                    </div>
                   )}
                 </>
               )
+            )}
+            {compared !== null && (
+              <VersionComparison
+                beforeNumber={compared}
+                afterNumber={selected}
+                phase={
+                  comparisonLoading ? "loading" : difference === null ? "unavailable" : "ready"
+                }
+                difference={difference}
+                retrying={comparisonLoading || pending}
+                onRetry={() => void retryComparison()}
+              />
+            )}
+            {current !== null && canRestore && (
+              <Button
+                disabled={
+                  pending ||
+                  version.isFetching ||
+                  (compared !== null && (comparisonLoading || difference === null))
+                }
+                onClick={() => onRestore(current.number)}
+              >
+                {t("restoreAsDraft")}
+              </Button>
             )}
           </div>
         )}

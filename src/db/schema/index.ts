@@ -1,3 +1,5 @@
+// Billing tables await canonical migration admission before feature activation.
+export * from "@/features/billing/schema";
 export * from "./activities";
 export * from "./activityGuests";
 export * from "./activityParticipants";

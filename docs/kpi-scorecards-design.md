@@ -36,7 +36,7 @@ Definitions and scorecards are reusable revisions. Assigned goals retain the par
 
 ## Measurement and history
 
-KPI definitions and scorecards publish append-only revisions. Each assigned goal pins its exact definition revision, success condition, scope, period and pacing choice. A revised definition or scorecard does not rewrite existing assignments. Database migration `0105_kpi_scorecards` includes the generated schema snapshot, append-only revision/observation/snapshot triggers and pinned-assignment enforcement.
+KPI definitions and scorecards publish append-only revisions. Each assigned goal pins its exact definition revision, success condition, scope, period and pacing choice. A revised definition or scorecard does not rewrite existing assignments. Database migration `0106_kpi_scorecards` includes the generated schema snapshot, append-only revision/observation/snapshot triggers and pinned-assignment enforcement.
 
 CRM calculations use the viewer’s record permissions and the goal’s responsible scope together. Timed event boundaries use the viewer’s timezone; all-day activity dates keep their canonical civil date. Available filters are checked against source visibility. Counts and sums distinguish real zero from missing data; ratios without a denominator are unavailable. Money is not combined across currencies. Aggregation and success comparisons retain four-place decimal precision. A bounded scan that reaches its limit remains incomplete and cannot establish target success.
 
@@ -47,3 +47,13 @@ CRM results use current record state and team membership. The interface states t
 ## Independent validation and integration
 
 Feature owners validate in their own workspace with isolated resources and may merge completed work when authorized. The repository no longer requires coordination-chat or heavy-job queue allocation. Existing exact-revision CI, issue traceability, current-main reconciliation and release/deployment boundaries remain in force.
+
+## Local verification
+
+The combined increment was reconciled with main `0064808` and its Billing migration. The canonical KPI migration is `0106_kpi_scorecards`, generated against the unchanged public `0105_workspace_billing` snapshot; the reviewed KPI SQL body and append-only triggers are retained. The populated upgrade test installs the complete 0105 prefix, preserves existing CRM/goal/preference records, admits 0106 and verifies a second migration run.
+
+Pinned Bun 1.4.4 validation passed: configured whole-application type generation/TSC, scoped type-aware ESLint, 251 unit/component cases across 31 files, and 43 PostgreSQL cases across six files. Independent review found exact-decimal range validation and missing-event-date scoring defects; actual failing regressions were recorded before the fixes. The regressions subsequently passed, including the legacy-goals fallback. Known totals and unknown-date counts now share one SQL snapshot in that fallback.
+
+The actual UI components were rendered with clearly marked synthetic data and memory-only server-action adapters for visual review. Desktop interaction covered guided creation of a zero-loss ceiling, preview evidence, pack creation, and assignment to a named team. The 390px Farsi dark-mode view had a 390px document width, with no horizontal page overflow. English and German controls, period labels, source requirements, unavailable results and contributing-record drilldown were also inspected. This visual fixture is separate from the real PostgreSQL persistence/permission tests; it is not installed-provider or customer acceptance.
+
+Source inventory coverage has no missing or invalid declarations. KPI revisions, observations and snapshots remain explicitly unsupported by privacy export/erasure/retention adapters; this increment does not activate those lifecycle capabilities. Exact PR and resulting-main hosted CI are verified separately at integration.

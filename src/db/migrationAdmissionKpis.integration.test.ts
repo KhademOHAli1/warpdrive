@@ -37,13 +37,13 @@ async function retainedRows(h: TestDb): Promise<Record<string, string>> {
   return snapshot;
 }
 
-it("upgrades the populated 0104 prefix to 0105, preserves legacy CRM/goals/preferences and admits an unchanged rerun", async () => {
+it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/preferences and admits an unchanged rerun", async () => {
   const h = await freshMigrationDb();
   let target: Awaited<ReturnType<typeof migrationFolder>> | undefined;
   try {
-    // Ordinals are zero based: completed 0104 has 105 journal entries; 0105 is entry106.
-    await installPrefix(h, 105);
-    target = await migrationFolder(106);
+    // Ordinals are zero based: completed 0105 has 106 journal entries; 0106 is entry107.
+    await installPrefix(h, 106);
+    target = await migrationFolder(107);
     const owner = await seedUser(h.db, { isAdmin: true });
     const { pipeline, stages } = await seedPipelineWithStages(h.db, ["Retained stage"]);
     const stage = stages[0];
@@ -107,7 +107,7 @@ it("upgrades the populated 0104 prefix to 0105, preserves legacy CRM/goals/prefe
     });
     const before = await retainedRows(h);
     const oldLedger = await ledger(h);
-    expect(oldLedger).toHaveLength(105);
+    expect(oldLedger).toHaveLength(106);
     expect(
       (await h.pool.query("SELECT to_regclass('public.kpi_definitions') AS value")).rows,
     ).toEqual([{ value: null }]);
@@ -117,8 +117,8 @@ it("upgrades the populated 0104 prefix to 0105, preserves legacy CRM/goals/prefe
     });
     expect(await retainedRows(h)).toEqual(before);
     const admittedLedger = await ledger(h);
-    expect(admittedLedger).toHaveLength(106);
-    expect(admittedLedger.slice(0, 105)).toEqual(oldLedger);
+    expect(admittedLedger).toHaveLength(107);
+    expect(admittedLedger.slice(0, 106)).toEqual(oldLedger);
     const names = (
       await h.pool.query<{ table_name: string }>(
         "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('kpi_definitions','kpi_schemes','kpi_goals','kpi_measurements','kpi_snapshots') ORDER BY table_name",

@@ -23,10 +23,16 @@ const queries = vi.hoisted(() => ({
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      workflows: {
+        runs: { invalidate: () => Promise.resolve() },
+        runsPage: { invalidate: () => Promise.resolve() },
+      },
+    }),
     workflows: {
-      runs: {
+      runsPage: {
         useQuery: () => ({
-          data: queries.rows,
+          data: { items: queries.rows, nextCursor: null },
           isLoading: false,
           isError: false,
           isFetching: queries.isFetching,

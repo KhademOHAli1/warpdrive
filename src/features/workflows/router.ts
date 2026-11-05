@@ -24,6 +24,8 @@ import {
   readWorkflowVersions,
 } from "./queries";
 import { readRunDetail } from "./runDetail";
+import { readRunHistoryPage } from "./runHistoryPage";
+import { runHistoryPageInputSchema } from "./runHistoryPageInput";
 
 function unwrap<T>(result: Result<T, string>) {
   if (!result.ok) throw new TRPCError({ code: "NOT_FOUND", message: result.error });
@@ -113,6 +115,13 @@ export const workflowsRouter = router({
     .input(z.strictObject({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) =>
       unwrap(await readRunHistory(ctx.db, ctx.actor, input.id, AbortSignal.timeout(10_000))),
+    ),
+  runsPage: protectedProcedure
+    .input(runHistoryPageInputSchema)
+    .query(async ({ ctx, input }) =>
+      unwrapLibrary(
+        await readRunHistoryPage(ctx.db, ctx.actor, AbortSignal.timeout(10_000), input),
+      ),
     ),
   versions: protectedProcedure
     .input(z.strictObject({ id: z.string().uuid() }))
