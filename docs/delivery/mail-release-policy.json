@@ -15,12 +15,8 @@
   "codeql_workflow_id": "403980173",
   "required_workflows": {
     "403980173": ["Analyze (javascript-typescript)", "Analyze (actions)", "Analyze (python)"],
-    "required-quality.yml": [
-      "Dependency audit",
-      "Workflow validation",
-      "Browser smoke checks",
-      "Release PR validation"
-    ]
+    "full-quality.yml": ["Full browser smoke checks"],
+    "required-quality.yml": ["Dependency audit", "Workflow validation", "Release PR validation"]
   },
   "limits": "Each patch releases exactly one completed mail deliverable and explicitly accepted support scope. The full bootstrap commit ledger remains visible. Incremental task releases disclose all unselected source and broad contributions as unaccepted context, distinguishing historical from newly integrated source without moving the fixed baseline; that context receives no acceptance, completion or publication updates. Full-programme publication retains its complete original scope and existing context restrictions. Existing explicit technical-agent eligibility, independent review, human-only IDs, canonical prerequisites, exact-main CI and provider/installation criteria remain in force. Programme coverage preserves historical milestone membership. Publication does not deploy an installation."
 }

@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { workflowRuns, workflowSteps, workflows, workflowVersions } from "@/db/schema";
+import { workflowRuns, workflows, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
@@ -14,7 +14,7 @@ import {
   workflowCommandSchema,
   workflowRevisionSchema,
 } from "./lifecycleShared";
-import { describeRunRecovery, readFailureHistories } from "./runRecovery";
+import { hydrateRunHistoryRows, runHistorySelection } from "./runHistoryProjection";
 
 export { listWorkflows } from "./library";
 
@@ -56,18 +56,7 @@ export async function readRunHistory(
   const workflow = await getWorkflow(db, currentActor, workflowId, signal);
   if (!workflow.ok) return workflow;
   const rows = await db
-    .select({
-      id: workflowRuns.id,
-      status: workflowRuns.status,
-      mode: workflowRuns.mode,
-      resumeAt: workflowRuns.resumeAt,
-      versionId: workflowRuns.versionId,
-      errorId: workflowRuns.errorId,
-      createdAt: workflowRuns.createdAt,
-      updatedAt: workflowRuns.updatedAt,
-      run: workflowRuns,
-      definition: workflowVersions.definition,
-    })
+    .select(runHistorySelection)
     .from(workflowRuns)
     .leftJoin(
       workflowVersions,
@@ -79,40 +68,7 @@ export async function readRunHistory(
     .where(eq(workflowRuns.workflowId, workflowId))
     .orderBy(desc(workflowRuns.createdAt))
     .limit(50);
-  const failures = await readFailureHistories(
-    db,
-    rows.map((row) => row.id),
-    signal,
-  );
-  const history = await Promise.all(
-    rows.map(async ({ run, definition, ...row }) => {
-      const steps = await db
-        .select()
-        .from(workflowSteps)
-        .where(eq(workflowSteps.runId, row.id))
-        .orderBy(workflowSteps.completedAt);
-      const recovery = await describeRunRecovery(
-        db,
-        currentActor,
-        workflow.value,
-        run,
-        definition,
-        steps,
-        failures.get(row.id) ?? [],
-        signal,
-      );
-      return {
-        ...row,
-        steps: steps.map(({ nodeId, simulated, completedAt }) => ({
-          nodeId,
-          simulated,
-          completedAt,
-        })),
-        ...(recovery === null ? {} : { recovery }),
-      };
-    }),
-  );
-  signal.throwIfAborted();
+  const history = await hydrateRunHistoryRows(db, currentActor, workflow.value, rows, signal);
   return ok(history);
 }
 

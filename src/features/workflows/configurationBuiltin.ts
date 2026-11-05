@@ -7,8 +7,9 @@ import type {
   ConfigurationIssueCode,
   ConfigurationValidation,
 } from "./configurationTypes";
+import { boundedDelayConfig, delayUntilDate } from "./delayConfig";
 import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
-import { bindingSchema, type WorkflowNode } from "./schemas";
+import { bindingSchema, draftBindingSchema, type WorkflowNode } from "./schemas";
 
 export function configurationIssue(
   node: WorkflowNode,
@@ -63,7 +64,44 @@ function validateTask(
   }
 }
 
+function validateUntil(node: WorkflowNode, result: ConfigurationValidation): void {
+  if (!boundedDelayConfig(node.config)) {
+    result.issues.push(configurationIssue(node, ["until"], "invalid_value"));
+    return;
+  }
+  const raw = node.config.until;
+  if (
+    raw !== null &&
+    typeof raw === "object" &&
+    !Array.isArray(raw) &&
+    raw.kind !== "reference" &&
+    !Object.hasOwn(raw, "value")
+  ) {
+    result.issues.push(configurationIssue(node, ["until"], "required"));
+    return;
+  }
+  const binding = draftBindingSchema.safeParse(raw);
+  if (!binding.success) {
+    result.issues.push(configurationIssue(node, ["until"], "invalid_value"));
+    return;
+  }
+  if (binding.data.kind === "reference") {
+    result.issues.push(configurationIssue(node, ["until"], "unsupported_setting"));
+    return;
+  }
+  if (binding.data.literalType !== "instant") {
+    result.issues.push(configurationIssue(node, ["until"], "invalid_type"));
+    return;
+  }
+  if (delayUntilDate(binding.data.value) === null)
+    result.issues.push(configurationIssue(node, ["until"], "literal_instant_invalid"));
+}
+
 function validateWait(node: WorkflowNode, result: ConfigurationValidation): void {
+  if (Object.hasOwn(node.config, "until")) {
+    validateUntil(node, result);
+    return;
+  }
   if (node.config.minutes === undefined) {
     result.issues.push(configurationIssue(node, ["minutes"], "required"));
     return;

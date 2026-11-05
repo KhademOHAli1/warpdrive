@@ -14,6 +14,11 @@ type ReadReply = { isError: boolean };
 type HistoryPoll = {
   refetchInterval: (query: { state: { data?: { status: string }[] } }) => number | false;
 };
+type PagePoll = {
+  refetchInterval: (query: {
+    state: { data?: { items: { status: string }[]; nextCursor: string | null } };
+  }) => number | false;
+};
 
 const queries = vi.hoisted(() => ({
   rows: [] as unknown[],
@@ -27,13 +32,29 @@ const queries = vi.hoisted(() => ({
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      workflows: {
+        runs: { invalidate: () => Promise.resolve() },
+        runsPage: { invalidate: () => Promise.resolve() },
+      },
+    }),
     workflows: {
-      runs: {
-        useQuery: (input: { id: string }, options: HistoryPoll) => {
+      runsPage: {
+        useQuery: (input: { id: string }, options: PagePoll) => {
           queries.input = input;
-          queries.options = options;
+          queries.options = {
+            refetchInterval: (query) =>
+              options.refetchInterval({
+                state: {
+                  data:
+                    query.state.data === undefined
+                      ? undefined
+                      : { items: query.state.data, nextCursor: null },
+                },
+              }),
+          };
           return {
-            data: queries.rows,
+            data: { items: queries.rows, nextCursor: null },
             isLoading: false,
             isError: queries.isError,
             isFetching: queries.isFetching,
@@ -47,7 +68,10 @@ vi.mock("@/lib/trpc-client", () => ({
 vi.mock("../actions", () => ({ cancelWorkflowAction: queries.cancel }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/lib/useFormatters", () => ({
-  useFormatters: () => ({ dateTime: () => "2026-11-01 10:00" }),
+  useFormatters: () => ({
+    dateTime: () => "2026-11-01 10:00",
+    number: (value: number | string) => new Intl.NumberFormat("en-US").format(Number(value)),
+  }),
 }));
 vi.mock("./RunDetailDialog", () => ({ RunDetailDialog: () => null }));
 vi.mock("./RunRecovery", () => ({ RunRecovery: () => null }));

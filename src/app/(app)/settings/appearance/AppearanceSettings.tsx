@@ -166,8 +166,8 @@ export function AppearanceSettings({
           </RadioGroup>
           <p className="mt-3 text-sm text-muted-foreground">{H.saveToApply}</p>
         </SettingsCardBody>
-        <SettingsCardFooter className="flex-wrap">
-          <div className="me-auto min-w-0 flex-1">
+        <SettingsCardFooter className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <div className="w-full min-w-0 sm:me-auto sm:w-auto sm:flex-1">
             <AppearanceSaveFeedback
               status={status}
               label={L.density}
@@ -179,6 +179,7 @@ export function AppearanceSettings({
           <Button
             type="button"
             size="sm"
+            className="self-end sm:self-auto"
             disabled={pending || density === savedDensity}
             onClick={() => void save()}
           >
