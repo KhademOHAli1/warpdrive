@@ -48,6 +48,26 @@ function countGoal(target: string, actual: string): GoalWithProgress {
 afterEach(cleanup);
 
 describe("GoalsWidget", () => {
+  it("explains unknown values without claiming a zero-loss value target is met", () => {
+    const row = countGoal("0", "0");
+    row.goal.subject = "deal";
+    row.goal.action = "lost";
+    row.goal.metric = "value";
+    if (row.progress === null) throw new Error("Progress fixture missing");
+    row.progress = {
+      ...row.progress,
+      dataState: "incomplete",
+      missingMeasurementDateCount: 0,
+      missingValueCount: 1,
+      attainment: null,
+      pace: null,
+    };
+    render(<GoalsWidget data={[row]} currency="USD" canManage={false} />);
+    expect(screen.getByText("Incomplete", { exact: true })).toBeVisible();
+    expect(screen.queryByText("Within limit", { exact: true })).not.toBeInTheDocument();
+    expect(screen.getByText(/Some records are missing the value/)).toBeVisible();
+    expect(screen.queryByText(/Some event dates are missing/)).not.toBeInTheDocument();
+  });
   it("does not label an incomplete zero-loss result as within its limit", () => {
     const row = countGoal("0", "0");
     row.goal.subject = "deal";

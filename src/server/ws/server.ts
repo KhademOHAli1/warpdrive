@@ -11,6 +11,12 @@ import { SocketSession, type WsServerDeps } from "./socketSession";
 
 export type { WsServerDeps } from "./socketSession";
 
+function rawByteLength(raw: RawData): number {
+  return Array.isArray(raw)
+    ? raw.reduce((size, fragment) => size + fragment.byteLength, 0)
+    : raw.byteLength;
+}
+
 // Decode ws RawData (Buffer | ArrayBuffer | Buffer[]) to a UTF-8 string.
 function rawToUtf8(raw: RawData): string {
   if (Buffer.isBuffer(raw)) return raw.toString("utf8");
@@ -30,15 +36,10 @@ export function startWsServer(port: number, deps: WsServerDeps, host?: string): 
   // One PresenceHub per server instance keeps test runs isolated.
   const presenceHub = new PresenceHub();
   const maxConnections = deps.maxConnections ?? WS_MAX_CONNECTIONS;
+  const maxPayload = deps.maxPayloadBytes ?? WS_MAX_PAYLOAD_BYTES;
 
-  // maxPayload is enforced by `ws` itself during frame reassembly: an oversize frame is rejected
-  // and the socket closed with 1009 before any of our code sees the bytes. That is the point,
-  // since the library default is 100 MB buffered on behalf of a peer that has not authenticated.
-  const wss = new WebSocketServer({
-    port,
-    host,
-    maxPayload: deps.maxPayloadBytes ?? WS_MAX_PAYLOAD_BYTES,
-  });
+  // Keep the parser limit so `ws` can reject oversize messages during reassembly.
+  const wss = new WebSocketServer({ port, host, maxPayload });
 
   wss.on("connection", (socket: WebSocket) => {
     // Installed BEFORE any branch, including the capacity rejection below. A ws socket with no
@@ -69,6 +70,11 @@ export function startWsServer(port: number, deps: WsServerDeps, host?: string): 
 
     const session = new SocketSession(socket, deps, presenceHub);
     socket.on("message", (raw) => {
+      // Bun can deliver a message past the parser limit. Check bytes before decoding or dispatch.
+      if (maxPayload > 0 && rawByteLength(raw) > maxPayload) {
+        socket.close(1009);
+        return;
+      }
       void session.dispatch(rawToUtf8(raw));
     });
     socket.on("close", () => {

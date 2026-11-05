@@ -101,7 +101,7 @@ export const crmIds1: string[] = [
   "sourceReview:src/app/(app)/contacts/people/[personId]/PersonSidebar.tsx#1bc9ab560551d53e8484c354e1ef339e4fecf6ed0348dba64db36790bf706fa4",
   "sourceReview:src/app/(app)/contacts/people/page.tsx#92453e7a8de331e1a8f7032afb0df369105e2c230412d0b6e239ffed142e8ee8",
   "sourceReview:src/app/(app)/deals/[dealId]/tabs.tsx#ace4c3cce65664a53615183e48dd746007314e7d10c1e0aa8fdb31fbf4dc647e",
-  "sourceReview:src/app/(app)/settings/goals/GoalsClient.tsx#481f9e4715deddb4206861ac6f86ef2205029553edc445071e09f69e8ad4ebd7",
+  "sourceReview:src/app/(app)/settings/goals/GoalsClient.tsx#aee17b4cb4bac3b55572e4480befbe26129c318666696d2aa8552a7eb660d5e6",
   "sourceReview:src/features/activities/ActivitiesTable.tsx#1f68ad77c61d4d1e437bfc6b414d246e0de21b6fa5c13c00644b1ea834164b02",
   "sourceReview:src/features/activities/ActivityDayGroups.tsx#5ef2f98e4bc5ba2ed950d5a2c5556ecda85441aa1e57726ef84bb97e0a7b9339",
   "sourceReview:src/features/activities/activityDelete.ts#e23d8fdb44a1f6ed4597ba7dcd2927662c80e73865cc0c161dde330943c58647",

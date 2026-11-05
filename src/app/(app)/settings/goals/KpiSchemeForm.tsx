@@ -24,7 +24,7 @@ import type {
   KpiScheme,
 } from "@/features/goals/kpiModel";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
-import type { Locale } from "@/features/i18n/registry";
+import { type FormattingLocaleTag, localeTagForFormatting } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
@@ -91,9 +91,11 @@ export function KpiConditionFields({
 }): ReactNode {
   const S = useKpiHubMessages();
   const format = useFormatters();
-  const { locale } = useLocalePreferences();
+  const numericLocale = localeTagForFormatting(useLocalePreferences());
   const [drafts, setDrafts] = useState<
-    Partial<Record<"target" | "upperTarget" | "baseline", { raw: string; locale: Locale }>>
+    Partial<
+      Record<"target" | "upperTarget" | "baseline", { raw: string; locale: FormattingLocaleTag }>
+    >
   >({});
   const display = (field: "target" | "upperTarget" | "baseline") => {
     const authored = drafts[field]?.raw;
@@ -104,7 +106,7 @@ export function KpiConditionFields({
       : format.number(canonical, { useGrouping: false, maximumFractionDigits: 4 });
   };
   const update = (field: "target" | "upperTarget" | "baseline", raw: string) => {
-    const authoredLocale = drafts[field]?.locale ?? locale;
+    const authoredLocale = drafts[field]?.locale ?? numericLocale;
     setDrafts((current) => ({ ...current, [field]: { raw, locale: authoredLocale } }));
     onChange({ ...condition, [field]: normalizeNumberInput(raw, authoredLocale) ?? raw.trim() });
   };
@@ -294,7 +296,7 @@ export function KpiSchemeAssignForm({
 }: Lifecycle & { scheme: KpiScheme; users: Option[]; teams: Option[]; today: string }): ReactNode {
   const S = useKpiHubMessages();
   const B = useKpiMessages();
-  const { locale } = useLocalePreferences();
+  const localeTag = localeTagForFormatting(useLocalePreferences());
   const deadlineRequired = scheme.entries.some((entry) => entry.condition.kind === "deadline");
   const [scope, setScope] = useState<"company" | "team" | "user">("company");
   const [scopeId, setScopeId] = useState("");
@@ -396,7 +398,7 @@ export function KpiSchemeAssignForm({
               value={String(fiscalStartMonth)}
               options={Array.from({ length: 12 }, (_, index) => ({
                 value: String(index + 1),
-                label: new Intl.DateTimeFormat(locale, {
+                label: new Intl.DateTimeFormat(localeTag, {
                   month: "long",
                   calendar: "gregory",
                   timeZone: "UTC",
@@ -435,13 +437,13 @@ export function KpiMeasurementForm({
   ...lifecycle
 }: Lifecycle & { row: KpiGoalResult; today: string }): ReactNode {
   const S = useKpiHubMessages();
-  const { locale } = useLocalePreferences();
+  const numericLocale = localeTagForFormatting(useLocalePreferences());
   const [value, setValue] = useState("");
-  const [valueLocale, setValueLocale] = useState<Locale | null>(null);
+  const [valueLocale, setValueLocale] = useState<FormattingLocaleTag | null>(null);
   const [measuredOn, setMeasuredOn] = useState(today);
   const [sourceNote, setSourceNote] = useState("");
   const [sampleSize, setSampleSize] = useState("");
-  const [sampleLocale, setSampleLocale] = useState<Locale | null>(null);
+  const [sampleLocale, setSampleLocale] = useState<FormattingLocaleTag | null>(null);
   const { busy, run, footer } = useSave(lifecycle);
   return (
     <form
@@ -453,14 +455,14 @@ export function KpiMeasurementForm({
           recordKpiMeasurementAction(
             {
               goalId: row.goal.id,
-              value: normalizeNumberInput(value, valueLocale ?? locale) ?? value,
+              value: normalizeNumberInput(value, valueLocale ?? numericLocale) ?? value,
               measuredOn,
               sourceNote,
               ...(sampleSize.trim() === ""
                 ? {}
                 : {
                     sampleSize: Number(
-                      normalizeNumberInput(sampleSize, sampleLocale ?? locale) ?? sampleSize,
+                      normalizeNumberInput(sampleSize, sampleLocale ?? numericLocale) ?? sampleSize,
                     ),
                   }),
             },
@@ -479,7 +481,7 @@ export function KpiMeasurementForm({
             value={value}
             onChange={(e) => {
               setValue(e.target.value);
-              setValueLocale((current) => current ?? locale);
+              setValueLocale((current) => current ?? numericLocale);
             }}
           />
         </Field>
@@ -497,7 +499,7 @@ export function KpiMeasurementForm({
             value={sampleSize}
             onChange={(e) => {
               setSampleSize(e.target.value);
-              setSampleLocale((current) => current ?? locale);
+              setSampleLocale((current) => current ?? numericLocale);
             }}
           />
         </Field>

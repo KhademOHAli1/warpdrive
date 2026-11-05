@@ -205,6 +205,7 @@ export async function applyKpiSchemeAction(
       for (const entry of scheme.definition.entries) {
         const definition = await getKpiDefinition(tx, entry.definitionId);
         const linear =
+          definition.graph === undefined &&
           input.pacing === "linear" &&
           ["count", "distinct_count", "sum"].includes(definition.calculation) &&
           entry.condition.kind === "at_least" &&

@@ -159,33 +159,39 @@ describe("GoalForm", () => {
     );
   });
 
-  it("retains an authored German target across language changes and failed retries", async () => {
-    const onSubmit = vi.fn(() => Promise.resolve({ ok: false }));
-    const tree = (locale: Locale) => (
-      <LocaleProvider locale={locale}>
-        <GoalForm
-          users={[]}
-          teams={[]}
-          pipelines={[]}
-          activityTypes={[]}
-          initial={goal}
-          submitLabel="Commit"
-          onSubmit={onSubmit}
-          onDone={vi.fn()}
-        />
-      </LocaleProvider>
-    );
-    const view = render(tree("de"));
-    fireEvent.change(screen.getByLabelText("Zielwert"), { target: { value: "1,234" } });
-    fireEvent.click(screen.getByRole("button", { name: "Commit" }));
-    await screen.findByRole("alert");
-    view.rerender(tree("en"));
-    expect(screen.getByLabelText("Target")).toHaveValue("1,234");
-    fireEvent.click(await screen.findByRole("button", { name: "Commit" }));
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(2));
-    expect(onSubmit).toHaveBeenNthCalledWith(1, expect.objectContaining({ target: "1.234" }));
-    expect(onSubmit).toHaveBeenNthCalledWith(2, expect.objectContaining({ target: "1.234" }));
-  });
+  it.each([
+    { country: "DE", raw: "1,234", nextLocale: "en", nextCountry: "US", nextLabel: "Target" },
+    { country: "CH", raw: "1.234", nextLocale: "de", nextCountry: "DE", nextLabel: "Zielwert" },
+  ] as const)(
+    "retains an authored $country target across locale changes and failed retries",
+    async ({ country, raw, nextLocale, nextCountry, nextLabel }) => {
+      const onSubmit = vi.fn(() => Promise.resolve({ ok: false }));
+      const tree = (locale: Locale, country: string) => (
+        <LocaleProvider locale={locale} country={country}>
+          <GoalForm
+            users={[]}
+            teams={[]}
+            pipelines={[]}
+            activityTypes={[]}
+            initial={goal}
+            submitLabel="Commit"
+            onSubmit={onSubmit}
+            onDone={vi.fn()}
+          />
+        </LocaleProvider>
+      );
+      const view = render(tree("de", country));
+      fireEvent.change(screen.getByLabelText("Zielwert"), { target: { value: raw } });
+      fireEvent.click(screen.getByRole("button", { name: "Commit" }));
+      await screen.findByRole("alert");
+      view.rerender(tree(nextLocale, nextCountry));
+      expect(screen.getByLabelText(nextLabel)).toHaveValue(raw);
+      fireEvent.click(await screen.findByRole("button", { name: "Commit" }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(2));
+      expect(onSubmit).toHaveBeenNthCalledWith(1, expect.objectContaining({ target: "1.234" }));
+      expect(onSubmit).toHaveBeenNthCalledWith(2, expect.objectContaining({ target: "1.234" }));
+    },
+  );
   it("opens an edited count target as the whole number it was entered as", () => {
     render(
       <GoalForm
