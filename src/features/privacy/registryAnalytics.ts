@@ -109,6 +109,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/inventoryMovementEvidenceSource.ts",
     "derived:src/features/stats/history/inventoryMovementRepository.ts",
     "derived:src/features/stats/history/stageAgingView.ts",
+    "sourceReview:docs/analytics/forecast-custody-proposal.sql#b8188bfb71922f154440de3f82a412afbb66c2ae6efd428b78864d764c65f07b",
     "sourceReview:src/features/stats/history/currentStageAgingRepository.ts#6ddea2286f0d5b85cff1535382afdcaf26f59301a57a589f25223c6ab07779b3",
     "sourceReview:src/features/stats/history/stageAgingView.ts#66795afa9e005a183572cd48dafa4d90e8421cb98b85085fd443c459a85cf1f1",
     "sourceReview:src/features/stats/history/inventoryBoundaryEvidence.ts#49120ce8c2a5dd7306698555dc06350dcc32314392537316d0a297b3413866fd",
@@ -163,7 +164,7 @@ export const analyticsInventoryEntry = classifyInventory(
     subjectRelation:
       "Deal projections retain owner/person/organization references and commercial facts. These references are linkable data, not verified data-subject identity. Unknown capture actor/command stays null. Current deal authority does not grant independent contact or retained-deletion authority.",
     purpose:
-      "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions and aging, snapshot inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history and immutable inventory snapshot creation. No schema export, canonical migration or installed storage is established by this classification.",
+      "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions and aging, snapshot inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history, and immutable inventory and forecast custody. No schema export, canonical migration or installed storage is established by this classification.",
     disclosure:
       "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. Cohorts disclose only aggregate counts, scope kind and coverage. The unwired stage-aging projection rechecks captured deal-side access, uses current authorized stage labels from the same observation and withholds all aggregates when evidence is denied or incomplete. Movement remains creator-only and internal: global dependency checks can affect availability. The snapshot writer excludes names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output.",
     retention:

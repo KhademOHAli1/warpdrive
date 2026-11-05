@@ -1026,8 +1026,11 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "docs/analytics/forecast-custody-proposal.sql",
+        "src/features/stats/history/forecastCustody.integration.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["forecast-outcome-timing", "report-persistence", "history-snapshots"],
       "dataRequirements": [
         "Cutoff, target period, scope, model/version, assumptions and preserved eligible record state."
@@ -1038,7 +1041,8 @@
       "tests": [
         "Write/retry idempotency, immutability, actor revocation and exact snapshot replay."
       ],
-      "deliveryIncrement": "I3"
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "Private custody proposal binds exact bytes and native captured roster to a pre-target insertion clock. Native tests, production adapter, writer authority, separate pre-target commit proof and viewer report remain open."
     },
     {
       "id": "forecast-accuracy",
