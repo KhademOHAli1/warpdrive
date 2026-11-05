@@ -54,10 +54,11 @@ export async function readHistoryInstallation(
       ('analytics_history_heads','analytics_heads_truncate_guard','analytics_guard_head_mutation',34),
       ('analytics_history_coverage','analytics_coverage_mutation_guard','analytics_reject_immutable_mutation',27),
       ('analytics_history_coverage','analytics_coverage_truncate_guard','analytics_reject_immutable_mutation',34),
+      ('analytics_report_snapshots','analytics_snapshots_insert_guard','analytics_guard_snapshot_insert',7),
       ('analytics_report_snapshots','analytics_snapshots_mutation_guard','analytics_reject_immutable_mutation',27),
       ('analytics_report_snapshots','analytics_snapshots_truncate_guard','analytics_reject_immutable_mutation',34)
     ), guard_health AS (
-      SELECT count(*) = 15 AS ready FROM required_guard required
+      SELECT count(*) = 16 AS ready FROM required_guard required
       JOIN pg_catalog.pg_trigger installed_trigger ON installed_trigger.tgrelid = to_regclass('public.' || required.relation_name)
         AND installed_trigger.tgname = required.trigger_name AND installed_trigger.tgenabled = 'A'
         AND installed_trigger.tgfoid = to_regprocedure('public.' || required.function_name || '()')

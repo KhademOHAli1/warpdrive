@@ -34,13 +34,25 @@ export const analyticsComputationInventoryEntry = classifyInventory(
 // Independently reviewed source proposal; every lifecycle capability remains unsupported.
 export const analyticsInventoryEntry = classifyInventory(
   [
+    "derived:src/features/stats/history/currentStageAgingRepository.ts",
+    "derived:src/features/stats/history/inventoryBoundaryEvidence.ts",
+    "derived:src/features/stats/history/inventoryMovementEvidenceSource.ts",
+    "derived:src/features/stats/history/inventoryMovementRepository.ts",
+    "sourceReview:src/features/stats/history/currentStageAgingRepository.ts#484504ec0fe8fc47a4c3e0b1eef4df40bf25e2944cefb93d9d98104b1025d96b",
+    "sourceReview:src/features/stats/history/inventoryBoundaryEvidence.ts#49120ce8c2a5dd7306698555dc06350dcc32314392537316d0a297b3413866fd",
+    "sourceReview:src/features/stats/history/inventoryMovementEvidenceSource.ts#db75434cad80179b74662a3b30f361caf7f35aa12160ae3a98ee862feeb61249",
+    "sourceReview:src/features/stats/history/inventoryMovementRepository.ts#c45ec14f1adf5921a8a7cb7ee10691b6297f5aa07bcd8256891eedf93f73865e",
+    "writer:src/features/stats/history/currentStageAgingRepository.ts#execute:sql",
+    "writer:src/features/stats/history/inventoryBoundaryEvidence.ts#delete:key",
+    "writer:src/features/stats/history/inventoryMovementEvidenceSource.ts#delete:key",
+    "writer:src/features/stats/history/inventoryMovementRepository.ts#execute:sql",
     "derived:src/features/stats/history/dealCohortRepository.ts",
     "sourceReview:src/features/stats/history/dealCohortRepository.ts#2ae1758be41685b62dc80f98973a2af6191cf8c1415b4a653bc8a65d865a69df",
     "writer:src/features/stats/history/dealCohortRepository.ts#execute:sql",
     "derived:src/features/stats/history/equalAgeCohorts.ts",
     "derived:src/features/stats/history/inventorySnapshotRepository.ts",
     "sourceReview:src/features/stats/history/equalAgeCohorts.ts#94f4431c6970716663982a3d13f13e16c00764b4683aa19a03f100e4d162f4c9",
-    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#adacb29984d7f063ae5ee1d98446fcb0efddd01f656da84ba0f64e2c1f389978",
+    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#9a978cf8ee0a6a4851eb1289527c00076ddb790c1a667289d90972a4c4af2ad6",
     "writer:src/features/stats/history/inventorySnapshotRepository.ts#execute:sql",
     "derived:src/features/stats/history/inventoryMovement.ts",
     "derived:src/features/stats/history/stageDefinitionRepository.ts",
@@ -58,7 +70,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/repository.ts",
     "sourceReview:src/db/schema/analyticsHistory.ts#ac12a8b33b1141bc08418a31ad45ef57858aaa1ff84c3303c71490c5e666c319",
     "sourceReview:src/features/stats/history/fold.ts#41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b",
-    "sourceReview:src/features/stats/history/repository.ts#24ac35b5333aaa9b80b63457f275537f2464454dc9ad2f62a725e9bcbbb531f0",
+    "sourceReview:src/features/stats/history/repository.ts#570db83c79b942bdb66dd93faba9635000048c67be1cabf7ee5898804e94e5d6",
     "table:analytics_history_coverage",
     "table:analytics_history_events",
     "table:analytics_history_heads",
@@ -78,13 +90,13 @@ export const analyticsInventoryEntry = classifyInventory(
     subjectRelation:
       "Deal projections retain owner/person/organization references and commercial facts. These references are linkable data, not verified data-subject identity. Unknown capture actor/command stays null. Current deal authority does not grant independent contact or retained-deletion authority.",
     purpose:
-      "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions, stage duration, inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history and immutable inventory snapshot creation. No schema export, canonical migration or installed storage is established by this classification.",
+      "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions and aging, snapshot inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history and immutable inventory snapshot creation. No schema export, canonical migration or installed storage is established by this classification.",
     disclosure:
-      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. Cohorts recheck present authority on captured deal sides and disclose only aggregate counts, scope kind and coverage. The snapshot writer rechecks creator scope and excludes names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output; creator authority never transfers to recipients.",
+      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. Cohorts disclose only aggregate counts, scope kind and coverage. Movement remains creator-only and internal: global dependency checks can affect availability. The snapshot writer excludes names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output.",
     retention:
       "The private proposal deliberately retains immutable event/baseline/report rows and physical incarnations after source deletion. Immutability does not authorize indefinite retention. It supplies no retention schedule, erasure adapter or legal-retention determination. Canonical admission must qualify storage, subject scope, restrictions, backups and controlled lifecycle handling separately.",
     externalEffects:
-      "The record, stage and cohort repositories read and set session-local limits. The snapshot writer inserts one immutable row into the proposed storage after a bounded authorized read in its own repeatable-read transaction. Private SQL capture, if installed, writes transactional ledger/head rows. Folding, reconciliation and cohorts use transient Map/Set data; the reconciliation delete retires an in-memory key. No provider call, email, telemetry, file/object export, production CRM mutation or privacy lifecycle operation is authorized by this classification.",
+      "The record, stage, movement and cohort repositories read and set session-local limits. The snapshot writer inserts one immutable row after a bounded authorized read and native witness check in its own repeatable-read transaction. Private SQL capture writes ledger/head rows if installed. Folding and reconciliation use transient Map/Set data; each delete identifier retires an in-memory key. No provider, network export, production CRM mutation or privacy lifecycle operation is authorized here.",
     erasureTask: "DPL-15 / #596 / #597",
   },
 );

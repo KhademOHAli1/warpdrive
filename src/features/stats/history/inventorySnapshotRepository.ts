@@ -137,10 +137,10 @@ async function resolveSnapshotOwners(
 
 async function readObservation(tx: Db, signal: AbortSignal): Promise<Observation | null> {
   signal.throwIfAborted();
-  // The first data read fixes the repeatable-read snapshot and pairs it with this DB clock.
+  // The first data read fixes the repeatable-read snapshot before the wall clock is sampled.
   const result = await tx.execute(sql`
     SELECT pg_catalog.pg_current_snapshot()::text AS "transactionSnapshot",
-      pg_catalog.to_char(pg_catalog.statement_timestamp() AT TIME ZONE 'UTC',
+      pg_catalog.to_char(pg_catalog.clock_timestamp() AT TIME ZONE 'UTC',
         'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS "observedAt"
   `);
   signal.throwIfAborted();

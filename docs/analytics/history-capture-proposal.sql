@@ -91,8 +91,8 @@ CREATE TABLE public.analytics_history_heads (
 );
 CREATE UNIQUE INDEX analytics_history_heads_incarnation_uq ON public.analytics_history_heads (incarnation_id);
 
--- Storage only. A future authenticated writer must pin the facts and this MVCC snapshot
--- in one observation, and reject source writes from its own current transaction.
+-- Snapshot INSERT requires a matching database observation. Deployment must restrict
+-- INSERT to a trusted writer that establishes the fresh cut and validates the facts.
 CREATE TABLE public.analytics_report_snapshots (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   activation_id uuid NOT NULL,
@@ -356,6 +356,32 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+CREATE FUNCTION public.analytics_guard_snapshot_insert() RETURNS trigger
+LANGUAGE plpgsql SET search_path = pg_catalog AS $$
+DECLARE
+  own_xid pg_catalog.xid8 := pg_catalog.pg_current_xact_id_if_assigned();
+BEGIN
+  IF pg_catalog.current_setting('transaction_isolation') <> 'repeatable read' THEN
+    RAISE EXCEPTION 'analytics snapshot insert requires repeatable read' USING ERRCODE = '55000';
+  END IF;
+  -- pg_snapshot has a canonical output format but no native equality operator.
+  IF (NEW.transaction_snapshot::text COLLATE pg_catalog."C")
+       IS DISTINCT FROM (pg_catalog.pg_current_snapshot()::text COLLATE pg_catalog."C") THEN
+    RAISE EXCEPTION 'analytics snapshot witness does not match the current observation' USING ERRCODE = '55000';
+  END IF;
+  IF NEW.cutoff_observed_at < pg_catalog.transaction_timestamp()
+     OR NEW.cutoff_observed_at > pg_catalog.statement_timestamp() THEN
+    RAISE EXCEPTION 'analytics snapshot cutoff is outside its capture transaction' USING ERRCODE = '55000';
+  END IF;
+  -- The active MVCC snapshot cannot represent this transaction's own pending source writes.
+  IF own_xid IS NOT NULL AND EXISTS (
+    SELECT 1 FROM public.analytics_history_events WHERE transaction_id = own_xid::text
+  ) THEN
+    RAISE EXCEPTION 'analytics snapshot insert cannot follow pending source writes' USING ERRCODE = '55000';
+  END IF;
+  RETURN NEW;
+END;
+$$;
 CREATE FUNCTION public.analytics_reject_source_truncate() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog AS $$
 BEGIN
@@ -377,6 +403,8 @@ CREATE TRIGGER analytics_coverage_mutation_guard BEFORE UPDATE OR DELETE ON publ
   FOR EACH ROW EXECUTE FUNCTION public.analytics_reject_immutable_mutation();
 CREATE TRIGGER analytics_coverage_truncate_guard BEFORE TRUNCATE ON public.analytics_history_coverage
   FOR EACH STATEMENT EXECUTE FUNCTION public.analytics_reject_immutable_mutation();
+CREATE TRIGGER analytics_snapshots_insert_guard BEFORE INSERT ON public.analytics_report_snapshots
+  FOR EACH ROW EXECUTE FUNCTION public.analytics_guard_snapshot_insert();
 CREATE TRIGGER analytics_snapshots_mutation_guard BEFORE UPDATE OR DELETE ON public.analytics_report_snapshots
   FOR EACH ROW EXECUTE FUNCTION public.analytics_reject_immutable_mutation();
 CREATE TRIGGER analytics_snapshots_truncate_guard BEFORE TRUNCATE ON public.analytics_report_snapshots
@@ -401,6 +429,7 @@ ALTER TABLE public.analytics_history_heads ENABLE ALWAYS TRIGGER analytics_heads
 ALTER TABLE public.analytics_history_heads ENABLE ALWAYS TRIGGER analytics_heads_truncate_guard;
 ALTER TABLE public.analytics_history_coverage ENABLE ALWAYS TRIGGER analytics_coverage_mutation_guard;
 ALTER TABLE public.analytics_history_coverage ENABLE ALWAYS TRIGGER analytics_coverage_truncate_guard;
+ALTER TABLE public.analytics_report_snapshots ENABLE ALWAYS TRIGGER analytics_snapshots_insert_guard;
 ALTER TABLE public.analytics_report_snapshots ENABLE ALWAYS TRIGGER analytics_snapshots_mutation_guard;
 ALTER TABLE public.analytics_report_snapshots ENABLE ALWAYS TRIGGER analytics_snapshots_truncate_guard;
 ALTER TABLE public.deals ENABLE ALWAYS TRIGGER analytics_deals_capture;
@@ -414,5 +443,6 @@ REVOKE ALL ON public.analytics_history_coverage, public.analytics_history_events
   public.analytics_history_heads, public.analytics_report_snapshots FROM PUBLIC;
 REVOKE ALL ON SEQUENCE public.analytics_history_events_ordinal_seq FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.analytics_capture_row_change() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.analytics_guard_snapshot_insert() FROM PUBLIC;
 
 COMMIT;

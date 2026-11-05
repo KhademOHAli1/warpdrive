@@ -350,6 +350,19 @@ describe("native private inventory snapshot writer", () => {
     });
   });
 
+  test("refuses snapshots when the native insert guard is disabled", async () => {
+    await withCapture(async (h, _f, actor) => {
+      await h.pool.query(
+        "ALTER TABLE public.analytics_report_snapshots DISABLE TRIGGER analytics_snapshots_insert_guard",
+      );
+      expect(await write(h, actor)).toEqual({
+        state: "unavailable",
+        reason: "capture-safety-unavailable",
+      });
+      expect(await snapshotCount(h)).toBe(0);
+    });
+  });
+
   test("refuses unhealthy capture and never drops a visible row with no matching head", async () => {
     await withCapture(async (h, f, actor) => {
       await h.pool.query("ALTER TABLE deals DISABLE TRIGGER analytics_deals_capture");
@@ -413,6 +426,75 @@ describe("native private inventory snapshot writer", () => {
         );
         expect(witness.rows).toEqual([{ original: true, pending: false }]);
       });
+    });
+  });
+
+  test("rejects replaying an older native witness with a fresh cutoff", async () => {
+    await withCapture(async (h, f, actor) => {
+      const opening = await write(h, actor);
+      requireCreated(opening);
+      await h.pool.query("UPDATE deals SET value='10.1234' WHERE id=$1", [f.dealId]);
+      const change = (await readCaptureEvents(h.pool, "deal", f.dealId)).at(-1);
+      if (change === undefined) throw new Error("Expected a committed correction");
+      expect(change.eventKind).toBe("update");
+
+      await withTransaction(h, async (client) => {
+        await client.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+        const witness = await client.query<{ oldVisible: boolean; currentVisible: boolean }>(
+          `SELECT pg_catalog.pg_visible_in_snapshot(e.transaction_id::pg_catalog.xid8,
+              s.transaction_snapshot) AS "oldVisible",
+            pg_catalog.pg_visible_in_snapshot(e.transaction_id::pg_catalog.xid8,
+              pg_catalog.pg_current_snapshot()) AS "currentVisible"
+          FROM public.analytics_report_snapshots s
+          CROSS JOIN public.analytics_history_events e
+          WHERE s.id=$1::uuid AND e.event_id=$2::uuid`,
+          [opening.snapshotId, change.eventId],
+        );
+        expect(witness.rows).toEqual([{ oldVisible: false, currentVisible: true }]);
+
+        await expect(
+          client.query(
+            `INSERT INTO public.analytics_report_snapshots (
+              activation_id,kind,definition_version,report_definition,scope,currency,time_zone,
+              calendar,cutoff_observed_at,transaction_snapshot,records,created_by
+            ) SELECT activation_id,kind,definition_version,report_definition,scope,currency,time_zone,
+              calendar,pg_catalog.statement_timestamp(),transaction_snapshot,records,created_by
+            FROM public.analytics_report_snapshots WHERE id=$1::uuid`,
+            [opening.snapshotId],
+          ),
+        ).rejects.toMatchObject({
+          code: "55000",
+          message: "analytics snapshot witness does not match the current observation",
+        });
+      });
+
+      expect(await snapshotCount(h)).toBe(1);
+    });
+  });
+
+  test("rejects direct snapshot insertion after this transaction wrote a captured deal", async () => {
+    await withCapture(async (h, f, actor) => {
+      const opening = await write(h, actor);
+      requireCreated(opening);
+      await withTransaction(h, async (client) => {
+        await client.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+        await client.query("UPDATE public.deals SET value='10.1234' WHERE id=$1", [f.dealId]);
+        await expect(
+          client.query(
+            `INSERT INTO public.analytics_report_snapshots (
+              activation_id,kind,definition_version,report_definition,scope,currency,time_zone,
+              calendar,cutoff_observed_at,transaction_snapshot,records,created_by
+            ) SELECT activation_id,kind,definition_version,report_definition,scope,currency,time_zone,
+              calendar,pg_catalog.statement_timestamp(),pg_catalog.pg_current_snapshot(),records,created_by
+            FROM public.analytics_report_snapshots WHERE id=$1::uuid`,
+            [opening.snapshotId],
+          ),
+        ).rejects.toMatchObject({
+          code: "55000",
+          message: "analytics snapshot insert cannot follow pending source writes",
+        });
+      });
+      expect(await snapshotCount(h)).toBe(1);
     });
   });
 
