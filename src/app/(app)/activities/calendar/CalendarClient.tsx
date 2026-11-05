@@ -20,6 +20,7 @@ import {
   weekTitle,
   yearTitle,
 } from "@/features/activities/calendarView";
+import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/followUpAfterDone";
 import {
   type CalendarRescheduleTarget,
   useCalendarReschedule,
@@ -28,6 +29,7 @@ import { useLocalNow } from "@/features/activities/useLocalNow";
 import { localDayIso } from "@/features/activities/weekAgenda";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
+import { AgendaList } from "./AgendaList";
 import { CalendarGesturePreview } from "./CalendarGesturePreview";
 import { CalendarSavingPreview } from "./CalendarSavingPreview";
 import { MonthView } from "./MonthView";
@@ -77,6 +79,7 @@ export function CalendarClient({
   const todayIso = now === null ? initialTodayIso : localDayIso(now, preferences.timeZone);
   const label = {
     day: dayTitle(anchorIso, preferences),
+    agenda: dayTitle(anchorIso, preferences),
     week: t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) }),
     month: monthTitle(anchorIso, preferences),
     year: yearTitle(anchorIso, preferences),
@@ -84,6 +87,7 @@ export function CalendarClient({
   const rtl = preferences.locale === "fa";
   const [create, setCreate] = useState<CalendarSelection | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const promptAfterDone = useFollowUpAfterDone();
   const display = useCalendarDisplayedEvents(activities);
   const [gestureError, setGestureError] = useState<string | null>(null);
   const [savingPreview, setSavingPreview] = useState<{
@@ -108,7 +112,7 @@ export function CalendarClient({
     scopeKey,
     activities: displayed,
     timeZone: preferences.timeZone,
-    disabled: reschedule.pending || create !== null || editingId !== null,
+    disabled: view === "agenda" || reschedule.pending || create !== null || editingId !== null,
     onCreate: (selection) => {
       setGestureError(null);
       reschedule.clearFeedback();
@@ -154,6 +158,44 @@ export function CalendarClient({
     }
   }
 
+  function renderView(): React.ReactNode {
+    switch (view) {
+      case "agenda":
+        return (
+          <AgendaList
+            dateIso={anchorIso}
+            activities={displayed}
+            empty={empty}
+            onOpenActivity={(activity) => setEditingId(activity.id)}
+          />
+        );
+      case "day":
+        return <WeekAgendaGrid view="day" dayIsos={dayIsos} activities={displayed} />;
+      case "week":
+        return <WeekAgendaGrid dayIsos={dayIsos} activities={displayed} />;
+      case "month":
+        return (
+          <MonthView
+            anchorIso={anchorIso}
+            dayIsos={dayIsos}
+            activities={displayed}
+            todayIso={todayIso}
+            onCreate={(date) => setCreate({ date, endDate: date })}
+            onEdit={setEditingId}
+          />
+        );
+      case "year":
+        return <YearView anchorIso={anchorIso} activities={displayed} todayIso={todayIso} />;
+    }
+  }
+
+  function handleMarkedDone(id: string): void {
+    if (view !== "agenda") return;
+    const activity = displayed.find((item) => item.id === id);
+    if (activity !== undefined && promptAfterDone(followUpLinksOf(activity), onChanged))
+      setEditingId(null);
+  }
+
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
@@ -185,12 +227,17 @@ export function CalendarClient({
       }}
     >
       <header className="mb-4 flex flex-wrap items-center gap-3">
-        <Button onClick={() => setCreate({ date: todayIso, endDate: todayIso })}>
+        <Button
+          onClick={() => {
+            const date = view === "agenda" ? anchorIso : todayIso;
+            setCreate({ date, endDate: date });
+          }}
+        >
           <Plus className="size-4" aria-hidden />
           {t("editor.create")}
         </Button>
-        <div className="flex gap-1 rounded-md border border-border p-0.5">
-          {(["day", "week", "month", "year"] as const).map((name) => (
+        <div className="flex max-w-full flex-wrap gap-1 rounded-md border border-border p-0.5">
+          {(["day", "agenda", "week", "month", "year"] as const).map((name) => (
             <Link
               key={name}
               aria-current={view === name ? "page" : undefined}
@@ -228,7 +275,7 @@ export function CalendarClient({
         <h2 className="text-sm font-medium text-foreground tabular-nums">{label}</h2>
       </header>
 
-      {view !== "year" && (
+      {view !== "year" && view !== "agenda" && (
         <p className="mb-3 text-xs text-muted-foreground">
           <span className="pointer-coarse:hidden">
             {t(view === "day" || view === "week" ? "interaction.timedHint" : "interaction.hint")}
@@ -275,34 +322,8 @@ export function CalendarClient({
         />
       )}
 
-      {view === "year" ? (
-        <>
-          {displayed.length === 0 && empty}
-          <YearView anchorIso={anchorIso} activities={displayed} todayIso={todayIso} />
-        </>
-      ) : view === "day" ? (
-        <>
-          {displayed.length === 0 && empty}
-          <WeekAgendaGrid view="day" dayIsos={dayIsos} activities={displayed} />
-        </>
-      ) : view === "month" ? (
-        <>
-          {displayed.length === 0 && empty}
-          <MonthView
-            anchorIso={anchorIso}
-            dayIsos={dayIsos}
-            activities={displayed}
-            todayIso={todayIso}
-            onCreate={(date) => setCreate({ date, endDate: date })}
-            onEdit={setEditingId}
-          />
-        </>
-      ) : (
-        <>
-          {displayed.length === 0 && empty}
-          <WeekAgendaGrid dayIsos={dayIsos} activities={displayed} />
-        </>
-      )}
+      {view !== "agenda" && displayed.length === 0 && empty}
+      {renderView()}
       {create !== null && (
         <CalendarEventDialog
           defaultDate={create.date}
@@ -318,6 +339,7 @@ export function CalendarClient({
           id={editingId}
           onClose={() => setEditingId(null)}
           onSaved={() => onChanged?.()}
+          onMarkedDone={handleMarkedDone}
         />
       )}
     </section>

@@ -28,12 +28,14 @@ export function calendarEmptyState({
   const messages = CALENDAR_MESSAGES[locale];
   const titles = {
     day: messages.emptyDayTitle,
+    agenda: messages.emptyDayTitle,
     week: messages.emptyWeekTitle,
     month: messages.emptyMonthTitle,
     year: messages.emptyYearTitle,
   };
   const filteredTitles = {
     day: messages.emptyFilteredDayTitle,
+    agenda: messages.emptyFilteredDayTitle,
     week: messages.emptyFilteredWeekTitle,
     month: messages.emptyFilteredMonthTitle,
     year: messages.emptyFilteredYearTitle,
