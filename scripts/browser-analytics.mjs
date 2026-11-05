@@ -1137,7 +1137,7 @@ async function verifyForecastScenario(active) {
   const name = active ? "en-manual-period-forecast" : "en-forecast-before-capture";
   await journey(name, async (page, _context, entry) => {
     const { forecast: S } = copy.en.stats;
-    await openDashboard(page, "en", "persian", actor.timeZone);
+    await openDashboard(page, "en", "persian", actor.timeZone, { allPipelines: true });
     await page.getByRole("tab", exact(S.tab)).click();
     const panel = page.getByRole("region", exact(S.title));
     const base = panel.getByRole("group", exact(S.base));
@@ -1167,6 +1167,7 @@ async function verifyForecastScenario(active) {
     assert.equal(forecast.rosterBasis, "captured-current-open-deals");
     assert.equal(forecast.basis, "explicit-manual-what-if");
     assert.equal(forecast.openDealCount, 1);
+    assert.deepEqual(forecast.scope, { pipeline: "all-visible", owner: "me" });
     assert.equal(forecast.target.timeZone, actor.timeZone);
     assert.deepEqual(forecast.scenarios.base.expectedWonCount, {
       knownTotal: "0.25",
