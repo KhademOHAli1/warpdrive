@@ -1,9 +1,7 @@
 import type { CalendarActivity } from "./calendar";
-import { placeBlock } from "./weekAgenda";
+import { timedCalendarSegment } from "./calendarResize";
+import { HOUR_HEIGHT_PX, HOURS } from "./weekAgenda";
 
-// Where one timed activity sits in a day column. topPx/heightPx come from placeBlock; leftPct and
-// widthPct are the horizontal lane, so activities sharing a time range sit beside each other
-// instead of one covering the other.
 // Height of one chip in the all-day lane. The lane reserves a whole number of these across the
 // week so every column's hour grid starts at the same y and a given hour stays level.
 export const ALL_DAY_ROW_HEIGHT_PX = 22;
@@ -39,6 +37,8 @@ export interface TimedPlacement {
   heightPx: number;
   leftPct: number;
   widthPct: number;
+  resizeStart: boolean;
+  resizeEnd: boolean;
   // This chip shares its row with a more-chip. The renderer gives the more-chip a pixel floor
   // (a percentage of a narrow column cannot fit "+12 more") and this chip whatever is left.
   overflowing: boolean;
@@ -70,20 +70,28 @@ interface Extent {
   topPx: number;
   heightPx: number;
   endPx: number;
+  resizeStart: boolean;
+  resizeEnd: boolean;
 }
 
 // Overlap is decided on the rendered extent, not the stored duration: a duration-less activity
-// still paints placeBlock's minimum block, so two of them at the same minute do collide on screen.
-function extents(items: CalendarActivity[], timeZone: string): Extent[] {
-  return items
-    .map((activity) => {
-      const { topPx, heightPx } = placeBlock(activity.dueAt, activity.durationMinutes, timeZone);
-      return { activity, topPx, heightPx, endPx: topPx + heightPx };
-    })
-    .sort(
-      (a, b) =>
-        a.topPx - b.topPx || b.endPx - a.endPx || a.activity.id.localeCompare(b.activity.id),
+// still paints a minimum block, so two of them at the same minute do collide on screen.
+function extents(items: CalendarActivity[], timeZone: string, dayIso?: string): Extent[] {
+  const visible: Extent[] = [];
+  for (const activity of items) {
+    const segment = timedCalendarSegment(activity, timeZone, dayIso);
+    if (segment === null) continue;
+    const { startMinute, endMinute, resizeStart, resizeEnd } = segment;
+    const topPx = (startMinute * HOUR_HEIGHT_PX) / 60;
+    const endPx = Math.min(
+      HOURS.length * HOUR_HEIGHT_PX,
+      Math.max(topPx + HOUR_HEIGHT_PX / 2, (endMinute * HOUR_HEIGHT_PX) / 60),
     );
+    visible.push({ activity, topPx, heightPx: endPx - topPx, endPx, resizeStart, resizeEnd });
+  }
+  return visible.sort(
+    (a, b) => a.topPx - b.topPx || b.endPx - a.endPx || a.activity.id.localeCompare(b.activity.id),
+  );
 }
 
 // A cluster is a run of activities connected by overlap: each one starts before everything already
@@ -143,6 +151,8 @@ function layoutCluster(
       heightPx: e.heightPx,
       leftPct: widthPct * lane,
       widthPct,
+      resizeStart: e.resizeStart,
+      resizeEnd: e.resizeEnd,
       overflowing,
     });
   });
@@ -159,13 +169,14 @@ function layoutCluster(
 export function layoutTimed(
   items: CalendarActivity[],
   timeZone = "UTC",
+  dayIso?: string,
 ): {
   placements: TimedPlacement[];
   overflows: TimedOverflow[];
 } {
   const placements: TimedPlacement[] = [];
   const overflows: TimedOverflow[] = [];
-  for (const cluster of clusters(extents(items, timeZone)))
+  for (const cluster of clusters(extents(items, timeZone, dayIso)))
     layoutCluster(cluster, placements, overflows);
   return { placements, overflows };
 }

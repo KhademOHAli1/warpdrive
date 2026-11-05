@@ -14,12 +14,13 @@ const entityCreate = catalog("src/features/entity-create/messages/entityCreate.e
 const mail = catalog("src/features/email/connections/messages/mailConnections.en.json");
 const browser = await chromium.launch({ headless: true });
 
-async function journey(name, locale, exercise, viewport) {
+async function journey(name, locale, exercise, viewport, touch = false) {
   const context = await browser.newContext({
     baseURL: origin,
     ignoreHTTPSErrors: true,
     serviceWorkers: "block",
     ...(viewport ? { viewport } : {}),
+    ...(touch ? { hasTouch: true, isMobile: true } : {}),
   });
   context.setDefaultTimeout(15_000);
   const errors = [];

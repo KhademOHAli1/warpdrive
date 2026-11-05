@@ -69,6 +69,77 @@ it("rejects a nonexistent DST wall time and an impossible civil date", () => {
   expect(() => calendarReschedulePatch(timed, { date: "2027-02-30" }, "UTC")).toThrow(RangeError);
 });
 
+it("resizes a start to the earlier fold while preserving the opposite instant and its milliseconds", () => {
+  expect(
+    calendarReschedulePatch(
+      timed,
+      { edge: "start", date: "2026-10-25", time: "02:15" },
+      "Europe/Berlin",
+    ),
+  ).toEqual({
+    dueAt: "2026-10-25T00:15:00.000Z",
+    endAt: timed.endAt,
+    allDay: false,
+    durationMinutes: 151,
+    authoredTimeZone: "Europe/Berlin",
+  });
+  expect(
+    calendarReschedulePatch(
+      timed,
+      { edge: "start", date: "2026-10-25", time: "02:30" },
+      "Europe/Berlin",
+    ),
+  ).toBeNull();
+});
+
+it("resizes an end without writing the exact original start again", () => {
+  expect(
+    calendarReschedulePatch(
+      timed,
+      { edge: "end", date: "2026-10-25", time: "03:30" },
+      "Europe/Berlin",
+    ),
+  ).toEqual({
+    endAt: "2026-10-25T02:30:00.000Z",
+    durationMinutes: 60,
+    authoredTimeZone: "Europe/Berlin",
+  });
+});
+
+it("materializes a legacy duration endpoint exactly and lets a point gain only an end", () => {
+  const source = { ...timed, endAt: null, durationMinutes: 60 };
+  expect(
+    calendarReschedulePatch(source, { edge: "start", date: "2026-10-25", time: "01:15" }, "UTC"),
+  ).toMatchObject({ dueAt: "2026-10-25T01:15:00.000Z", endAt: "2026-10-25T02:30:29.123Z" });
+  const point = { ...source, durationMinutes: null };
+  expect(() =>
+    calendarReschedulePatch(point, { edge: "start", date: "2026-10-25", time: "01:30" }, "UTC"),
+  ).toThrow(RangeError);
+  expect(
+    calendarReschedulePatch(point, { edge: "end", date: "2026-10-25", time: "02:00" }, "UTC"),
+  ).toMatchObject({ endAt: "2026-10-25T02:00:00.000Z", durationMinutes: 30 });
+});
+
+it("rejects a crossed endpoint, DST gap, and attempts to resize all-day events", () => {
+  expect(() =>
+    calendarReschedulePatch(timed, { edge: "end", date: "2026-10-25", time: "01:30" }, "UTC"),
+  ).toThrow(RangeError);
+  expect(() =>
+    calendarReschedulePatch(
+      timed,
+      { edge: "end", date: "2027-03-28", time: "02:30" },
+      "Europe/Berlin",
+    ),
+  ).toThrow(RangeError);
+  expect(() =>
+    calendarReschedulePatch(
+      { ...timed, allDay: true },
+      { edge: "end", date: "2026-10-25", time: "04:00" },
+      "UTC",
+    ),
+  ).toThrow(RangeError);
+});
+
 it("shifts an all-day inclusive civil span across DST without converting event kind", () => {
   const source = {
     ...timed,
@@ -145,10 +216,27 @@ it("accepts only strict actor-bound temporal move envelopes", () => {
     },
   };
   expect(calendarRescheduleEnvelopeV1.safeParse(envelope).success).toBe(true);
+  for (const target of [
+    { ...envelope.activity.target, edge: "end" },
+    { undo: timed, token: "a".repeat(43) },
+  ]) {
+    expect(
+      calendarRescheduleEnvelopeV1.safeParse({
+        ...envelope,
+        activity: { ...envelope.activity, target },
+      }).success,
+    ).toBe(true);
+  }
   for (const activity of [
     { ...envelope.activity, subject: "Forged replacement" },
     { ...envelope.activity, timeZone: "+03:30" },
     { ...envelope.activity, target: { date: "2026-11-05", time: "24:00" } },
+    { ...envelope.activity, target: { date: "2026-11-05", time: "09:16", edge: "end" } },
+    { ...envelope.activity, target: { undo: timed, token: "invalid" } },
+    {
+      ...envelope.activity,
+      target: { undo: { ...timed, subject: "Forge" }, token: "a".repeat(43) },
+    },
     { ...envelope.activity, expected: { dueAt: timed.dueAt } },
   ])
     expect(calendarRescheduleEnvelopeV1.safeParse({ ...envelope, activity }).success).toBe(false);

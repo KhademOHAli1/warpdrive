@@ -13,6 +13,7 @@ import {
   calendarScheduleSnapshot,
 } from "./calendarReschedulePlan";
 import { type CalendarRescheduleValue, calendarRescheduleInput } from "./calendarRescheduleSchemas";
+import { verifyCalendarUndo } from "./calendarRescheduleUndo";
 import { readActivityReminderView } from "./reminderReadModel";
 import { resolveActivityVisibility } from "./visibility";
 
@@ -27,12 +28,34 @@ export async function rescheduleCalendarEvent(
   actor: PermSetUser,
   raw: unknown,
   signal: AbortSignal,
+  sessionId?: string,
 ): Promise<Result<CalendarRescheduleValue, AppError>> {
   signal.throwIfAborted();
   const parsed = calendarRescheduleInput.safeParse(raw);
   if (!parsed.success)
-    return err(new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar move"));
+    return err(
+      new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar reschedule"),
+    );
   const input = parsed.data;
+  const target = input.target;
+  const undo = "undo" in target ? target.undo : undefined;
+  if (
+    "undo" in target &&
+    (sessionId === undefined ||
+      !verifyCalendarUndo(
+        {
+          actorId: actor.id,
+          sessionId,
+          id: input.id,
+          timeZone: input.timeZone,
+          expected: input.expected,
+          original: target.undo,
+        },
+        target.token,
+      ))
+  ) {
+    return err(new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar undo"));
+  }
   return db.transaction(async (tx) => {
     const [current] = await tx
       .select()
@@ -53,11 +76,19 @@ export async function rescheduleCalendarEvent(
       return err(new AppError(ERROR_IDS.ACTIVITY_SCHEDULE_STALE, "Activity schedule changed"));
     let patch: ReturnType<typeof calendarReschedulePatch>;
     try {
-      patch = calendarReschedulePatch(input.expected, input.target, input.timeZone);
+      patch =
+        "undo" in target
+          ? {
+              dueAt: target.undo.dueAt,
+              endAt: target.undo.endAt,
+              allDay: target.undo.allDay,
+              authoredTimeZone: input.timeZone,
+            }
+          : calendarReschedulePatch(input.expected, target, input.timeZone);
     } catch (error) {
       if (!(error instanceof RangeError)) throw error;
       return err(
-        new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar move target"),
+        new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar reschedule target"),
       );
     }
     if (patch === null) return ok(persistedSchedule(current));
@@ -71,6 +102,15 @@ export async function rescheduleCalendarEvent(
         expectedReminderGeneration: reminder.reminder?.generationId ?? null,
       },
       signal,
+      undo === undefined
+        ? undefined
+        : {
+            calendarUndo: {
+              dueDate: undo.dueDate,
+              endDate: undo.endDate,
+              durationMinutes: undo.durationMinutes,
+            },
+          },
     );
     if (!result.ok) return result;
     return ok(persistedSchedule(result.value));
