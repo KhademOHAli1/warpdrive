@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
+import type { QueryState } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
@@ -12,7 +13,9 @@ type HistoryPoll = {
   refetchInterval: (query: { state: { data: { status: string }[] } }) => number | false;
 };
 type DetailPoll = {
-  refetchInterval: (query: { state: { data: { status: string } } }) => number | false;
+  refetchInterval: (query: {
+    state: Pick<QueryState<{ id: string; status: string }>, "data" | "status">;
+  }) => number | false;
 };
 interface QueryFixtures {
   rows: unknown[];
@@ -171,7 +174,7 @@ it("identifies the armed wait and stored deadline while preserving a later step 
   expect(screen.getByText("Scheduled resume")).toBeVisible();
   expect(document.querySelector(`time[datetime="${resumeAt.toISOString()}"]`)).toBeInTheDocument();
   const interval = queries.detailOptions?.refetchInterval({
-    state: { data: { status: "waiting" } },
+    state: { status: "success", data: { id: runId, status: "waiting" } },
   });
   expect(typeof interval).toBe("number");
   expect(interval).toBeGreaterThan(0);
