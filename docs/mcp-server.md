@@ -150,6 +150,11 @@ Write tools:
 - `add_note`
 - `create_email_draft`, `update_email_draft`, `delete_email_draft`
 
+Pass an optional `fromEmail` to `create_email_draft` to select one of your mailbox addresses,
+for example `team@example.com`. The address is matched without regard to case. An unknown
+address or one belonging to another user fails without creating a draft. Omitting `fromEmail`
+keeps the existing default selection. This only saves an unsent local draft.
+
 ## Permissions and safety
 
 MCP acts as the user who completed OAuth. Existing Warpdrive visibility rules and permission flags apply to every tool call. A user who cannot see a record cannot read it through MCP, and a user without a required edit or create permission receives the same denial through MCP.

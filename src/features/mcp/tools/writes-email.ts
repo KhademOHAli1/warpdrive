@@ -1,7 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/server";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import { emailAccounts } from "@/db/schema/email";
 import { deleteDraft, patchDraft, saveDraft } from "@/features/email/draftRepo";
 import { getActorMailbox } from "@/features/email/mailboxOwnership";
 import { plainTextToParagraphHtml } from "@/features/email/plainText";
@@ -18,6 +20,7 @@ import {
 // Recipients are validated as addresses here, unlike the composer's autosave (which must tolerate
 // a half-typed chip): a tool call has no partial state to preserve.
 const createDraftInput = z.object({
+  fromEmail: z.string().email().optional(),
   to: z.array(z.string().email()).min(1).max(100),
   cc: z.array(z.string().email()).max(100).default([]),
   subject: z.string().max(2000).default(""),
@@ -41,6 +44,25 @@ const updateDraftInput = z.object({
 
 const draftRef = z.object({ draftId: z.string().uuid() });
 
+async function resolveDraftAccountId(
+  db: Db,
+  actorId: string,
+  fromEmail: string | undefined,
+  signal: AbortSignal,
+): Promise<string | null> {
+  if (fromEmail === undefined) return (await getActorMailbox(db, actorId, signal))?.id ?? null;
+  signal.throwIfAborted();
+  // email_address is citext. Resolve only owned mailbox IDs, without reading
+  // connection data; saveDraft rechecks current actor and mailbox ownership.
+  const [selected] = await db
+    .select({ id: emailAccounts.id })
+    .from(emailAccounts)
+    .where(and(eq(emailAccounts.userId, actorId), eq(emailAccounts.emailAddress, fromEmail)))
+    .limit(1);
+  signal.throwIfAborted();
+  return selected?.id ?? null;
+}
+
 export function registerEmailWriteTools(
   server: McpServer,
   registry: ToolRegistry,
@@ -50,18 +72,19 @@ export function registerEmailWriteTools(
   registerTool(server, registry, {
     name: "create_email_draft",
     description:
-      "Create an unsent email draft in the actor's mailbox, optionally linked to a deal and a person. The draft appears in the Drafts folder and on the linked record's Email tab for review before sending.",
+      "Create an unsent email draft, optionally linked to a deal and a person. Set fromEmail to choose one of the actor's mailbox addresses, or omit it to keep the default mailbox selection. The draft appears in Drafts and on the linked record's Email tab for review before sending.",
     inputSchema: createDraftInput,
     run: async (input, signal) => {
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
-      const mailbox = await getActorMailbox(db, actor.value.id, signal);
-      // No mailbox means nowhere to put the draft. Say so rather than inventing an account.
-      if (mailbox === null) {
+      const accountId = await resolveDraftAccountId(db, actor.value.id, input.fromEmail, signal);
+      if (accountId === null) {
+        if (input.fromEmail !== undefined)
+          return toolError(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
         return toolError(
           new AppError(
             ERROR_IDS.GMAIL_GRANT_REVOKED,
-            "no Gmail mailbox is connected for this user",
+            "no mailbox is available for local drafts",
             {},
           ),
         );
@@ -72,7 +95,7 @@ export function registerEmailWriteTools(
           {
             actor: toAuthUser(actor.value),
             draft: {
-              accountId: mailbox.id,
+              accountId,
               subject: input.subject,
               bodyHtml: plainTextToParagraphHtml(input.body),
               toEmails: input.to,
