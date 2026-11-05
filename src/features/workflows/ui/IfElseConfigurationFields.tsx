@@ -104,6 +104,7 @@ export function IfElseConfigurationFields(props: Props) {
   const { node, definition, metadata, onChange, onRemoveConnectedRoute } = props;
   const t = useAppTranslations("workflows");
   const titleId = useId();
+  const { number } = useFormatters();
   const addButton = useRef<HTMLButtonElement>(null);
   const editable = props.editable && metadata?.status !== "denied";
   const parsed = parseIfElseConfig(node.config, "draft");
@@ -182,7 +183,9 @@ export function IfElseConfigurationFields(props: Props) {
             {t("ifElseAddRoute")}
           </Button>
           {branches.length >= ifElseBranchLimit && (
-            <p className={styles.hint}>{t("ifElseRouteLimit", { limit: ifElseBranchLimit })}</p>
+            <p className={styles.hint}>
+              {t("ifElseRouteLimit", { limit: number(ifElseBranchLimit) })}
+            </p>
           )}
         </div>
       )}

@@ -11,7 +11,10 @@ type PathStep =
   | { kind: "parent"; node: WorkflowNode }
   | { kind: "invalid"; issue: MappingAvailability };
 
-function validPort(source: WorkflowNode, port: string): boolean {
+function validPort(
+  source: WorkflowNode,
+  port: WorkflowDefinition["edges"][number]["port"],
+): boolean {
   return portsFor(source).includes(port);
 }
 

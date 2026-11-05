@@ -392,7 +392,7 @@ describe("workflow controlled-dialog keyboard focus return", () => {
       const options = screen.getByRole("button", { name: "Workflow options" });
       await userEvent.setup().click(options);
       await dismissAndExpectFocus(
-        within(screen.getByRole("menu")).getByRole("menuitem", { name: label, exact: true }),
+        within(screen.getByRole("menu")).getByRole("menuitem", { name: label }),
         options,
       );
       expect(queries.run).not.toHaveBeenCalled();
@@ -497,7 +497,7 @@ describe("workflow controlled-dialog keyboard focus return", () => {
     await user.keyboard("{Enter}");
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toContainElement(document.activeElement as HTMLElement);
-    const choice = within(dialog).getByRole("button", { name: "Create task", exact: true });
+    const choice = within(dialog).getByRole("button", { name: "Create task" });
     choice.focus();
     expect(choice).toHaveFocus();
     await user.keyboard("{Enter}");

@@ -30,7 +30,7 @@ it("offers localized action groups in the inline panel and excludes trigger choi
   ]);
   expect(screen.queryByRole("textbox")).toBeNull();
   expect(screen.queryByRole("button", { name: /Manueller/ })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Aufgabe erstellen", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Aufgabe erstellen" }));
   expect(onChoose).toHaveBeenCalledWith({ kind: "insert", type: "activity.create", version: 1 });
 });
 it("keeps unavailable actions disabled and does not grant authoring in read-only mode", () => {
@@ -66,7 +66,7 @@ it("separates trigger replacement from action insertion and preserves dismissal"
     </LocaleProvider>,
   );
   expect(screen.getByRole("heading", { name: "Select Trigger" })).toBeDefined();
-  expect(screen.queryByRole("button", { name: "Create task", exact: true })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Create task" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Close" }));
   expect(onClose).toHaveBeenCalledTimes(1);
 });

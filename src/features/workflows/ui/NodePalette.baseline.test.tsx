@@ -70,9 +70,9 @@ it("keeps action descriptions and source context accessible in the compact picke
   );
   expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   for (const label of [english.read, english.task, english.condition, english.delay]) {
-    expect(within(dialog).getByRole("button", { name: label, exact: true })).toBeVisible();
+    expect(within(dialog).getByRole("button", { name: label })).toBeVisible();
   }
-  const read = within(dialog).getByRole("button", { name: english.read, exact: true });
+  const read = within(dialog).getByRole("button", { name: english.read });
   expect(read).toHaveAccessibleDescription(expect.stringContaining(english.readActionHint));
   expect(handlers.onChoose).not.toHaveBeenCalled();
   await user.click(read);
@@ -88,7 +88,7 @@ it("dismisses with the named close control without inserting a node", async () =
   const handlers = callbacks();
   const user = userEvent.setup();
   render(palette(handlers));
-  await user.click(screen.getByRole("button", { name: english.close, exact: true }));
+  await user.click(screen.getByRole("button", { name: english.close }));
   expect(handlers.onClose).toHaveBeenCalledTimes(1);
   expect(handlers.onChoose).not.toHaveBeenCalled();
 });
@@ -115,7 +115,7 @@ it("groups action choices under Data, Flow and Core while withholding triggers",
     english.nodeCategoryFlow,
     english.nodeCategoryCore,
   ]) {
-    expect(screen.getByRole("heading", { name: category, exact: true })).toBeVisible();
+    expect(screen.getByRole("heading", { name: category })).toBeVisible();
   }
   expect(
     screen.queryByRole("heading", { name: english.nodeCategoryTrigger }),
@@ -131,13 +131,13 @@ it("explains a structural insertion restriction and keeps the safe linear action
   const handlers = callbacks();
   const user = userEvent.setup();
   render(palette(handlers, { occupied: true }));
-  const condition = screen.getByRole("button", { name: english.condition, exact: true });
+  const condition = screen.getByRole("button", { name: english.condition });
   expect(condition).toHaveAttribute("aria-disabled", "true");
   expect(condition).toHaveAccessibleDescription(expect.stringContaining(english.paletteLinearOnly));
   await user.click(condition);
   fireEvent.click(condition);
   expect(handlers.onChoose).not.toHaveBeenCalled();
-  await user.click(screen.getByRole("button", { name: english.delay, exact: true }));
+  await user.click(screen.getByRole("button", { name: english.delay }));
   expect(handlers.onChoose).toHaveBeenCalledExactlyOnceWith({
     kind: "insert",
     type: "delay",
@@ -157,7 +157,7 @@ it.each([
     const dialog = screen.getByRole("dialog", {
       name: trigger ? english.selectTrigger : english.selectAction,
     });
-    const action = within(dialog).getByRole("button", { name: title, exact: true });
+    const action = within(dialog).getByRole("button", { name: title });
     expect(action).toHaveAttribute("aria-disabled", "true");
     expect(action).toHaveAccessibleDescription(expect.stringContaining(english.paletteUnavailable));
     expect(within(action).getByText(`· ${english.paletteUnavailable}`)).toBeVisible();

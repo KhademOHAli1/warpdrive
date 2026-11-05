@@ -23,7 +23,7 @@ type Copy = (typeof paletteLocales)[number]["copy"];
 type Locale = (typeof paletteLocales)[number]["locale"];
 
 function entry(label: string) {
-  return screen.getByRole("button", { name: label, exact: true });
+  return screen.getByRole("button", { name: label });
 }
 
 function actionTitles(copy: Copy) {
@@ -58,7 +58,7 @@ it.each(paletteLocales)(
     render(test.view());
     expect(screen.getByRole("dialog", { name: copy.selectAction })).toBeVisible();
     for (const category of [copy.nodeCategoryData, copy.nodeCategoryFlow, copy.nodeCategoryCore])
-      expect(screen.getByRole("heading", { name: category, exact: true })).toBeVisible();
+      expect(screen.getByRole("heading", { name: category })).toBeVisible();
     for (const label of actionTitles(copy)) expect(entry(label)).toBeVisible();
     expect(entry(copy.read)).toHaveAccessibleDescription(
       expect.stringContaining(copy.readActionHint),
@@ -161,13 +161,11 @@ it.each(paletteLocales)(
     expect(screen.queryByRole("button", { name: copy.paletteManual })).not.toBeInTheDocument();
     mounted.rerender(test.view(undefined, true, true, true));
     expect(screen.getByRole("dialog", { name: copy.selectTrigger })).toBeVisible();
-    expect(
-      screen.getByRole("heading", { name: copy.nodeCategoryTrigger, exact: true }),
-    ).toBeVisible();
+    expect(screen.getByRole("heading", { name: copy.nodeCategoryTrigger })).toBeVisible();
     expect(entry(copy.paletteManual)).toBeVisible();
     expect(entry(copy.paletteRecordTrigger)).toBeVisible();
     for (const label of actionTitles(copy))
-      expect(screen.queryByRole("button", { name: label, exact: true })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: label })).not.toBeInTheDocument();
     await user.click(entry(copy.paletteManual));
     expect(test.onChoose).toHaveBeenCalledExactlyOnceWith({
       kind: "configure",

@@ -85,12 +85,12 @@ it("offers selected-node options that change the node type and delete the actual
   const options = screen.getByRole("button", { name: "Node options" });
   expect(options.textContent).toBe("");
   await user.click(options);
-  await user.click(screen.getByRole("menuitem", { name: "Change node", exact: true }));
+  await user.click(screen.getByRole("menuitem", { name: "Change node" }));
   expect(changeType).toHaveBeenCalledOnce();
   expect(remove).not.toHaveBeenCalled();
   expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   await user.click(options);
-  await user.click(screen.getByRole("menuitem", { name: "Delete node", exact: true }));
+  await user.click(screen.getByRole("menuitem", { name: "Delete node" }));
   expect(remove).toHaveBeenCalledOnce();
   expect(changeType).toHaveBeenCalledOnce();
 });
@@ -120,10 +120,8 @@ it("keeps trigger type selection available without offering trigger removal", as
     <WorkflowNodeCard {...props(trigger, true, { onChangeType: changeType, onRemove: remove })} />,
   );
   await user.click(screen.getByRole("button", { name: "Node options" }));
-  expect(
-    screen.queryByRole("menuitem", { name: "Delete node", exact: true }),
-  ).not.toBeInTheDocument();
-  await user.click(screen.getByRole("menuitem", { name: "Change node", exact: true }));
+  expect(screen.queryByRole("menuitem", { name: "Delete node" })).not.toBeInTheDocument();
+  await user.click(screen.getByRole("menuitem", { name: "Change node" }));
   expect(changeType).toHaveBeenCalledOnce();
   expect(remove).not.toHaveBeenCalled();
 });
@@ -140,9 +138,7 @@ it("keeps Farsi node options named and keyboard accessible", async () => {
   options.focus();
   await user.keyboard("{Enter}");
   const menu = screen.getByRole("menu");
-  expect(
-    within(menu).getByRole("menuitem", { name: "تغییر مرحله", exact: true }),
-  ).toBeInTheDocument();
+  expect(within(menu).getByRole("menuitem", { name: "تغییر مرحله" })).toBeInTheDocument();
   await user.keyboard("{Escape}");
   expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   expect(options).toHaveFocus();
@@ -167,7 +163,7 @@ it("duplicates the selected action through its actual callback without changing 
     />,
   );
   await user.click(screen.getByRole("button", { name: "Node options" }));
-  await user.click(screen.getByRole("menuitem", { name: "Duplicate node", exact: true }));
+  await user.click(screen.getByRole("menuitem", { name: "Duplicate node" }));
   expect(duplicate).toHaveBeenCalledOnce();
   expect(changeType).not.toHaveBeenCalled();
   expect(remove).not.toHaveBeenCalled();
@@ -184,9 +180,7 @@ it("never offers duplication for the required trigger even if a callback is acci
     />,
   );
   await user.click(screen.getByRole("button", { name: "Node options" }));
-  expect(
-    screen.queryByRole("menuitem", { name: "Duplicate node", exact: true }),
-  ).not.toBeInTheDocument();
+  expect(screen.queryByRole("menuitem", { name: "Duplicate node" })).not.toBeInTheDocument();
   expect(duplicate).not.toHaveBeenCalled();
 });
 

@@ -83,7 +83,7 @@ it("adds a route before Else and maps a real upstream value into only that route
   const onChange = vi.fn<(node: WorkflowNode) => void>();
   render(<Editor initial={graph} onChange={onChange} />);
   const user = userEvent.setup();
-  expect(screen.getByRole("region", { name: copy.ifElseIf, exact: true })).toBeVisible();
+  expect(screen.getByRole("region", { name: copy.ifElseIf })).toBeVisible();
   expect(screen.getByText(copy.ifElseFallback)).toBeVisible();
   expect(screen.queryByText(copy.conditionOtherwise)).not.toBeInTheDocument();
   expect(onChange).not.toHaveBeenCalled();

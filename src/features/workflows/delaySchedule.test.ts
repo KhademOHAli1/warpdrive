@@ -243,7 +243,18 @@ it("arms once from upstream output and retains the exact deadline across early a
     status: "running",
     outputs: { read: { value: "5" } },
     resumeAt: null,
-  } as typeof workflowRuns.$inferSelect;
+    workflowId: "cb3fc3c4-bc4f-4840-999f-6a71afe0de33",
+    versionId: "54a3fb46-6e4e-47fb-b54c-47770fbc6609",
+    actorId: "3e265bf8-b75d-4f45-95cd-f77903d8e122",
+    requestKey: "b7fbd15d-840e-4f3c-b899-68f3e6359169",
+    trigger: { recordId: "9a9d7d6e-2184-4764-888d-332cd4a5ad68" },
+    nextNodeId: node.id,
+    errorId: null,
+    cancelledBy: null,
+    cancelledAt: null,
+    createdAt: now,
+    updatedAt: now,
+  } satisfies typeof workflowRuns.$inferSelect;
   const actor = {} as PermSetUser;
   const signal = new AbortController().signal;
   const deadline = new Date(now.getTime() + 5000);

@@ -3,10 +3,12 @@ import type { IranianMoneyUnit } from "./iranianMoney";
 import {
   displayNumberingSystem,
   localeWithNumberingSystem,
+  type NumberedLocale,
   type NumberingSystem,
 } from "./numberingSystem";
 
 export type FormattingLocale = "en" | "fa" | "de";
+export type FormattingLocaleTag = NumberedLocale<`${FormattingLocale}-${Uppercase<string>}`>;
 export type CalendarSystem = "gregory" | "persian";
 
 export interface FormattingPreferences {
@@ -44,14 +46,17 @@ export function resolveFormattingPreferences(
   };
 }
 
-export function localeTagForFormatting(preferences: Partial<FormattingPreferences> = {}): string {
+export function localeTagForFormatting(
+  preferences: Partial<FormattingPreferences> = {},
+): FormattingLocaleTag {
   const tag = LOCALE_TAGS[preferences.locale ?? "en"];
+  // Intl canonicalizes the optional region and preserves the supported language.
   return localeWithNumberingSystem(
     preferences.country === undefined
       ? tag
       : new Intl.Locale(tag, { region: preferences.country }).toString(),
     preferences.numberingSystem,
-  );
+  ) as FormattingLocaleTag;
 }
 
 export function formatNumber(

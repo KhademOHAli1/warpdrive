@@ -424,6 +424,18 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
   );
   const name = page.getByRole("textbox", { name: copy.name, exact: true });
   const step = page.getByRole("textbox", { name: copy.stepName, exact: true });
+  let editorImage;
+  if (profile.tag === "EN") {
+    await name.waitFor();
+    const canvas = page.getByRole("region", { name: copy.canvas, exact: true });
+    await canvas.waitFor();
+    const directory = caseDirectory(profile);
+    mkdirSync(directory, { recursive: true });
+    const path = new URL("editor.png", directory);
+    assert.equal(existsSync(path), false, "Never overwrite a native editor screenshot");
+    await page.screenshot({ path: fileURLToPath(path), animations: "disabled" });
+    editorImage = { file: "editor.png", sha256: sha256(readFileSync(path)) };
+  }
   await name.fill(profile.unsavedName);
   await page
     .getByRole("navigation", { name: copy.steps, exact: true })
@@ -562,7 +574,7 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
     before,
     afterSimulation,
     afterHistory,
-    files: [beforeFile, afterFile, historyFile, screenshot],
+    files: [beforeFile, afterFile, historyFile, screenshot, ...(editorImage ? [editorImage] : [])],
     historyEmpty: true,
     focusReturned: true,
   };

@@ -50,8 +50,8 @@ function Harness({
 }
 
 async function choose(user: ReturnType<typeof userEvent.setup>, label: string, option: string) {
-  await user.click(screen.getByRole("combobox", { name: label, exact: true }));
-  await user.click(screen.getByRole("option", { name: option, exact: true }));
+  await user.click(screen.getByRole("combobox", { name: label }));
+  await user.click(screen.getByRole("option", { name: option }));
 }
 
 it("asks for the object first and clears the previous object's fields on change", async () => {
@@ -60,10 +60,10 @@ it("asks for the object first and clears the previous object's fields on change"
   render(<Harness initial={{ fields: {} }} onChange={onChange} />);
   expect(screen.getAllByRole("combobox")).toHaveLength(1);
   await choose(user, "Object", "People");
-  expect(screen.getByRole("textbox", { name: "Name", exact: true })).toBeVisible();
+  expect(screen.getByRole("textbox", { name: "Name" })).toBeVisible();
   expect(screen.getByRole("combobox", { name: "Primary email source" })).toBeVisible();
-  expect(screen.queryByRole("combobox", { name: "Pipeline", exact: true })).toBeNull();
-  await user.type(screen.getByRole("textbox", { name: "Name", exact: true }), "Sam");
+  expect(screen.queryByRole("combobox", { name: "Pipeline" })).toBeNull();
+  await user.type(screen.getByRole("textbox", { name: "Name" }), "Sam");
   expect(onChange).toHaveBeenLastCalledWith(
     expect.objectContaining({
       config: { entity: "person", fields: { name: { kind: "value", value: "Sam" } } },
@@ -95,12 +95,8 @@ it("shows named pipeline and stage choices and resets the previous stage when th
       onChange={onChange}
     />,
   );
-  expect(screen.getByRole("combobox", { name: "Pipeline", exact: true })).toHaveTextContent(
-    "Enterprise",
-  );
-  expect(screen.getByRole("combobox", { name: "Stage", exact: true })).toHaveTextContent(
-    "Demo scheduled",
-  );
+  expect(screen.getByRole("combobox", { name: "Pipeline" })).toHaveTextContent("Enterprise");
+  expect(screen.getByRole("combobox", { name: "Stage" })).toHaveTextContent("Demo scheduled");
   await choose(user, "Pipeline", "Partners");
   expect(onChange).toHaveBeenLastCalledWith(
     expect.objectContaining({

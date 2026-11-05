@@ -31,7 +31,7 @@ export function WorkflowNodeOptions({
   if (onChangeType === undefined && !canRemove && !canDuplicate) return null;
   return (
     <div className={cn("nodrag nopan", styles.options)}>
-      <DropdownMenu>
+      <DropdownMenu dir={directionForLocale(locale)}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
@@ -48,7 +48,6 @@ export function WorkflowNodeOptions({
           side="right"
           align="start"
           sideOffset={8}
-          dir={directionForLocale(locale)}
           className={cn("workflow-twenty-theme", styles.optionsMenu)}
           onClick={(event) => event.stopPropagation()}
         >

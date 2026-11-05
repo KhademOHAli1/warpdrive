@@ -4,14 +4,17 @@ import { MAX_EMAIL_LEN, MAX_PHONE_LEN } from "@/features/contacts/fieldBounds";
 import { emailPointSchema, phonePointSchema } from "@/features/contacts/schemas";
 import { currencyCode, moneyAmount } from "@/features/currencies/currencySchema";
 import type { MappingTarget, MappingValueContract } from "./mappingTypes";
+import type recordCreateCopy from "./messages/workflows.en.json";
 import { type Binding, bindingSchema } from "./schemas";
 
 export const recordCreateEntities = ["deal", "lead", "person", "organization", "activity"] as const;
 export const recordCreateEntitySchema = z.enum(recordCreateEntities);
 export type RecordCreateEntity = z.infer<typeof recordCreateEntitySchema>;
 
+type RecordCreateFieldKey = keyof (typeof recordCreateCopy)["recordCreateFields"];
+
 export interface RecordCreateField {
-  key: string;
+  key: RecordCreateFieldKey;
   schema: z.ZodType<string | number>;
   required?: boolean;
   maxLength?: number;
@@ -21,14 +24,14 @@ export interface RecordCreateField {
 
 const uuid = z.uuid();
 const text = z.string().trim().min(1).max(255);
-const title = { key: "title", schema: text, required: true, maxLength: 255 };
-const name = { key: "name", schema: text, required: true, maxLength: 255 };
+const title: RecordCreateField = { key: "title", schema: text, required: true, maxLength: 255 };
+const name: RecordCreateField = { key: "name", schema: text, required: true, maxLength: 255 };
 
-function relation(key: string, entity: RecordCreateEntity): RecordCreateField {
+function relation(key: RecordCreateFieldKey, entity: RecordCreateEntity): RecordCreateField {
   return { key, schema: uuid, maxLength: 36, contract: { kind: "entity", entity } };
 }
 
-function textField(key: string, maxLength = 255): RecordCreateField {
+function textField(key: RecordCreateFieldKey, maxLength = 255): RecordCreateField {
   return { key, schema: z.string().trim().min(1).max(maxLength), maxLength };
 }
 

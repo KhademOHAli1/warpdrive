@@ -311,7 +311,7 @@ it("saves country defaults while keeping the chosen language, timezone, money un
     </LocaleProvider>,
   );
   await user.click(screen.getByRole("button", { name: "Country" }));
-  await user.click(screen.getByRole("option", { name: "United Kingdom", exact: true }));
+  await user.click(screen.getByRole("option", { name: "United Kingdom" }));
   await waitFor(() =>
     expect(save).toHaveBeenCalledWith(
       {
@@ -342,7 +342,7 @@ it("restores the country and formats after a failed country save without losing 
     </LocaleProvider>,
   );
   await user.click(screen.getByRole("button", { name: "Country" }));
-  await user.click(screen.getByRole("option", { name: "Iran", exact: true }));
+  await user.click(screen.getByRole("option", { name: "Iran" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("could not be saved");
   expect(screen.getByRole("button", { name: "Country" })).toHaveTextContent("Germany");
   openFormats("en");
@@ -418,7 +418,7 @@ it("allows a manual timezone outside the chosen country while preserving other p
     </LocaleProvider>,
   );
   await user.click(screen.getByRole("combobox", { name: "Time zone" }));
-  await user.click(screen.getByRole("option", { name: "Asia/Tehran", exact: true }));
+  await user.click(screen.getByRole("option", { name: "Asia/Tehran" }));
   await waitFor(() =>
     expect(save).toHaveBeenCalledWith(
       {
@@ -495,7 +495,7 @@ it("adapts recommended formats when an Iranian user changes the interface langua
     </LocaleProvider>,
   );
   await user.click(screen.getByRole("combobox", { name: "Language" }));
-  await user.click(screen.getByRole("option", { name: "فارسی", exact: true }));
+  await user.click(screen.getByRole("option", { name: "فارسی" }));
   await waitFor(() =>
     expect(save).toHaveBeenCalledWith(
       {
