@@ -31,9 +31,9 @@
     },
     "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. Main #990 no longer requires a coordination queue; that policy change does not override the user preference. Use hosted workflows for heavy checks.",
     "latestRemoteObservation": {
-      "sha": "dda4ad111677cbe27820a73526f4c06fd32b7910",
+      "sha": "c71bb66a4fbc90b9960458bf3451c45ee96133f8",
       "date": "2026-11-05",
-      "change": "Preserve dashboard/region/KPI and Main MAIL feedback through PR #995. Canonical migration still ends at 0107_kpi_scorecards; no analytics ordinal reserved."
+      "change": "Preserve current Main through PR #998, including PR #996 mailbox retry and administrator template sharing. Canonical migration still ends at 0107_kpi_scorecards; no analytics ordinal reserved."
     }
   },
   "statusMeaning": {

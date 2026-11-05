@@ -25,7 +25,7 @@ export default async function EmailSettingsPage(): Promise<ReactNode> {
     listTemplatesForSettings(db, { actor: ctx.actor }, signal),
     listSignatures(db, { actor: ctx.actor }, signal),
   ]);
-  const canShare = ctx.actor.flags.has("filter.share");
+  const canShare = ctx.actor.type === "admin" || ctx.actor.flags.has("filter.share");
   return (
     <SettingsPage className="max-w-3xl">
       <SettingsHeading
