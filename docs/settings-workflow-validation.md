@@ -25,7 +25,11 @@ exercise independent per-key application queues with mocked action promises. Nei
 observation is a claim that native server action requests run concurrently.
 
 The pack uses native password login, the production application, real server actions
-and disposable PostgreSQL. A strict probe forwards supported non-mail preference
+and disposable PostgreSQL. One real password login per locale supplies in-memory
+session state for that locale's isolated contexts. State is cloned, never written to a
+file, and cleared during cleanup. This avoids exhausting the existing login budget;
+production rate limits and authentication checks remain enforced. A strict probe
+forwards supported non-mail preference
 requests, decodes only the action result selected by the genuine Flight root and
 holds the actual response. It never manufactures a result. Removing the readable
 CSRF cookie creates a real rejected action; the cookie is restored for recovery.

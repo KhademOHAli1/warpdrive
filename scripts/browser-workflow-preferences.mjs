@@ -46,11 +46,18 @@ const report = {
   limits:
     "Disposable native password login/actions and synthetic preference rows only. No preference relocation, provider effects, human AT, installed, main or release acceptance.",
   journeys: [],
+  nativeLogins: [],
   unhandledErrors: [],
-  cleanup: { browserClosed: false, actorPreferencesRestored: false, databasePoolClosed: false },
+  cleanup: {
+    browserClosed: false,
+    actorPreferencesRestored: false,
+    databasePoolClosed: false,
+    sessionCacheCleared: false,
+  },
 };
 let browser;
 let baseline;
+const nativeSessions = new Map();
 /** @type {{ error?: Error }} */
 const failure = {};
 const saveReport = () =>
@@ -338,6 +345,7 @@ async function journey(locale, name, exercise) {
     externalRequests: [],
     unexpectedActions: [],
     contextClosed: false,
+    sessionReused: nativeSessions.has(locale),
   };
   report.journeys.push(entry);
   const context = await browser.newContext({
@@ -345,6 +353,7 @@ async function journey(locale, name, exercise) {
     viewport,
     ignoreHTTPSErrors: true,
     serviceWorkers: "block",
+    storageState: structuredClone(nativeSessions.get(locale)),
   });
   context.setDefaultTimeout(15000);
   let probe;
@@ -381,11 +390,15 @@ async function journey(locale, name, exercise) {
     page.on("console", (message) => {
       if (message.type() === "error") entry.browserErrors.push(message.text());
     });
-    await page.goto("/login");
-    await page.locator('input[name="email"]').fill("browser@example.invalid");
-    await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+    if (!nativeSessions.has(locale)) {
+      await page.goto("/login");
+      await page.locator('input[name="email"]').fill("browser@example.invalid");
+      await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
+      await page.locator('button[type="submit"]').click();
+      await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+      nativeSessions.set(locale, await context.storageState());
+      report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
+    }
     assert.equal((await page.goto("/settings/workflow")).status(), 200);
     const L = catalog(`src/features/identity/messages/settings.${locale}.json`);
     const shell = catalog(`src/components/shell/messages/shell.${locale}.json`);
@@ -467,6 +480,8 @@ try {
     await journey(locale, "cumulative-details", cumulativeDetails);
     await journey(locale, "cross-key-intents", independentKeys);
   }
+  assert.equal(report.nativeLogins.length, 3);
+  assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 15);
   assert.equal(report.journeys.length, 18);
   assert.ok(report.journeys.every((entry) => entry.passed));
   if (failure.error) throw failure.error;
@@ -509,6 +524,8 @@ try {
   } catch (error) {
     cleanupFailure(error);
   }
+  nativeSessions.clear();
+  report.cleanup.sessionCacheCleared = true;
   try {
     await pool.end();
     report.cleanup.databasePoolClosed = true;
