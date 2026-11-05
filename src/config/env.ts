@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
+import { billingEnvShape, parseBillingConfig } from "@/features/billing/config";
+import { StripeGateway } from "@/features/billing/stripe/gateway";
 import { err, ok, type Result } from "@/types/result";
 import { authEnvShape } from "./authEnv";
 import { mailEnvShape } from "./mailEnv";
@@ -18,6 +20,8 @@ const SECRET_FILE_VARS = [
   "AUTH_MICROSOFT_CLIENT_SECRET",
   "AUTH_OIDC_PROVIDERS",
   "MAIL_INTERNAL_ENDPOINTS",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
 ] as const;
 
 function resolveFileVars(
@@ -38,6 +42,7 @@ const boolFromString = z.enum(["true", "false"]).transform((v) => v === "true");
 const base = z.object({
   ...authEnvShape,
   ...mailEnvShape,
+  ...billingEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
@@ -96,6 +101,17 @@ const base = z.object({
 
 // Production guardrails for the first-run bootstrap (ops spec E6).
 const schema = base.superRefine((v, ctx) => {
+  try {
+    const billing = parseBillingConfig(v, v.BASE_URL);
+    if (billing !== null) new StripeGateway({ ...billing, signal: new AbortController().signal });
+  } catch {
+    ctx.addIssue({
+      code: "custom",
+      path: ["BILLING_ENABLED"],
+      message:
+        "Enabled billing requires valid merchant hosting, Stripe mode, prices, portal, included seats and secrets",
+    });
+  }
   if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
