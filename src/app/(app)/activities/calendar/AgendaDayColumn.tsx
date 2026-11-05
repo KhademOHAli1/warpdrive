@@ -42,7 +42,7 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
   const { timed } = splitAllDay(items);
-  const { placements, overflows } = layoutTimed(timed, preferences.timeZone);
+  const { placements, overflows } = layoutTimed(timed, preferences.timeZone, iso);
   const ref = useRef<HTMLDivElement>(null);
   // Roving tabindex: one lane per column is in the tab order and the arrows walk the rest, so a
   // week costs 7 tab stops instead of 168 before the keyboard reaches anything.
@@ -68,33 +68,38 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
       className="relative select-none border-s border-border"
       style={{ height: COLUMN_HEIGHT_PX }}
     >
-      {placements.map(({ activity, topPx, heightPx, leftPct, widthPct, overflowing }) => (
-        <div
-          key={activity.id}
-          className={cn(
-            "absolute z-10 overflow-hidden px-px",
-            overflowing && CHIP_BESIDE_MORE_CLASS,
-          )}
-          style={{
-            top: topPx,
-            // Clamp to the hours actually remaining in the day: an activity starting late (23:00 +
-            // 120min) would otherwise run past midnight and be clipped by the column instead of
-            // ending visibly at the day boundary.
-            height: Math.min(heightPx, COLUMN_HEIGHT_PX - topPx),
-            insetInlineStart: overflowing ? 0 : `${leftPct}%`,
-            width: overflowing ? undefined : `${widthPct}%`,
-          }}
-        >
-          <ActivityChip a={activity} onOpen={onOpenActivity} className="h-full" />
-        </div>
-      ))}
+      {placements.map(
+        ({ activity, topPx, heightPx, leftPct, widthPct, overflowing, resizeStart, resizeEnd }) => (
+          <div
+            key={activity.id}
+            className={cn(
+              "absolute z-10 overflow-hidden px-px",
+              overflowing && CHIP_BESIDE_MORE_CLASS,
+            )}
+            style={{
+              top: topPx,
+              height: heightPx,
+              insetInlineStart: overflowing ? 0 : `${leftPct}%`,
+              width: overflowing ? undefined : `${widthPct}%`,
+            }}
+          >
+            <ActivityChip
+              a={activity}
+              onOpen={onOpenActivity}
+              className="h-full"
+              resizeStart={resizeStart && heightPx >= 12}
+              resizeEnd={resizeEnd && heightPx >= 12}
+            />
+          </div>
+        ),
+      )}
       {overflows.map(({ activities, topPx, heightPx }) => (
         <div
           key={`more-${activities[0]?.id ?? topPx}`}
           className={cn("absolute end-0 z-10 overflow-hidden px-px", MORE_WIDTH_CLASS)}
           style={{
             top: topPx,
-            height: Math.min(heightPx, COLUMN_HEIGHT_PX - topPx),
+            height: heightPx,
             // The block is as tall as the span it stands for while the chip is one line; the rest
             // lets clicks through to the hour lanes instead of eating them.
             pointerEvents: "none",

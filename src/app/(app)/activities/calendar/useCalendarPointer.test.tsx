@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import type { CalendarMoveTarget, CalendarSelection } from "@/features/activities/calendarGesture";
+import type { CalendarResizeTarget } from "@/features/activities/calendarResize";
 import { useCalendarPointer } from "./useCalendarPointer";
 
 class TestPointerEvent extends MouseEvent {
@@ -99,6 +100,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   if (originalHitTest === undefined) Reflect.deleteProperty(document, "elementFromPoint");
@@ -110,10 +112,22 @@ interface HarnessProps {
   disabled?: boolean;
   onCreate: (selection: CalendarSelection) => void;
   onMove: (activity: CalendarActivity, target: CalendarMoveTarget) => void;
+  onResize: (
+    activity: CalendarActivity,
+    target: CalendarResizeTarget,
+    selection: CalendarSelection,
+  ) => void;
   onClick: () => void;
 }
 
-function Harness({ scopeKey = "week", disabled = false, onCreate, onMove, onClick }: HarnessProps) {
+function Harness({
+  scopeKey = "week",
+  disabled = false,
+  onCreate,
+  onMove,
+  onResize,
+  onClick,
+}: HarnessProps) {
   const { root, preview, bindings } = useCalendarPointer({
     scopeKey,
     disabled,
@@ -121,6 +135,7 @@ function Harness({ scopeKey = "week", disabled = false, onCreate, onMove, onClic
     timeZone: "UTC",
     onCreate,
     onMove,
+    onResize,
   });
   const selection = preview?.selection;
   return (
@@ -132,6 +147,7 @@ function Harness({ scopeKey = "week", disabled = false, onCreate, onMove, onClic
           </button>
           <button type="button" data-calendar-event-id="meeting" onClick={onClick}>
             Meeting chip
+            <span data-testid="resize-end" data-calendar-resize-edge="end" />
           </button>
         </div>
         <div data-testid="time-second" data-calendar-surface="time" data-calendar-date="2026-11-06">
@@ -167,7 +183,7 @@ function Harness({ scopeKey = "week", disabled = false, onCreate, onMove, onClic
 }
 
 function fixture(props: Partial<HarnessProps> = {}) {
-  const callbacks = { onCreate: vi.fn(), onMove: vi.fn(), onClick: vi.fn() };
+  const callbacks = { onCreate: vi.fn(), onMove: vi.fn(), onResize: vi.fn(), onClick: vi.fn() };
   const view = render(<Harness {...callbacks} {...props} />);
   return { ...callbacks, ...view };
 }
@@ -201,6 +217,20 @@ function beginDraw() {
   pointer(slot, "down", 50, 540);
   pointer(slot, "move", 50, 585);
   return slot;
+}
+
+function touchEvent(element: Element, type: "touchstart" | "touchmove", contacts = 1): boolean {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "touches", { value: { length: contacts } });
+  return fireEvent(element, event);
+}
+
+const TOUCH = { pointerType: "touch" } as const;
+
+function waitForHold(): void {
+  act(() => {
+    vi.advanceTimersByTime(450);
+  });
 }
 
 describe("calendar pointer selection", () => {
@@ -253,6 +283,23 @@ describe("calendar pointer selection", () => {
     expect(onCreate).not.toHaveBeenCalled();
     expect(chip).not.toHaveAttribute("data-calendar-dragging");
     fireEvent.click(chip, { detail: 1 });
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("resizes a timed event from a grip and suppresses the trailing chip click", () => {
+    const { onMove, onResize, onClick } = fixture();
+    const grip = screen.getByTestId("resize-end");
+    pointer(grip, "down", 50, 607);
+    pointer(grip, "move", 50, 660);
+    expect(screen.getByTestId("preview")).toHaveTextContent("2026-11-05|09:07|2026-11-05|11:00");
+    pointer(grip, "up", 50, 660);
+    fireEvent.click(grip, { detail: 1 });
+    expect(onResize).toHaveBeenCalledExactlyOnceWith(
+      ACTIVITY,
+      { edge: "end", date: "2026-11-05", time: "11:00" },
+      { date: "2026-11-05", time: "09:07", endDate: "2026-11-05", endTime: "11:00" },
+    );
+    expect(onMove).not.toHaveBeenCalled();
     expect(onClick).not.toHaveBeenCalled();
   });
 
@@ -320,6 +367,77 @@ describe("calendar pointer selection", () => {
     expect(onCreate).not.toHaveBeenCalled();
     expect(screen.getByTestId("preview")).toHaveTextContent("none");
   });
+});
+
+describe("calendar touch move", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  it("keeps quick event taps and disarms a hold when native scrolling begins", () => {
+    const { onClick, onMove } = fixture();
+    const chip = screen.getByRole("button", { name: "Meeting chip" });
+    expect(pointer(chip, "down", 50, 555, TOUCH)).toBe(true);
+    expect(pointer(chip, "up", 50, 555, TOUCH)).toBe(true);
+    fireEvent.click(chip, { detail: 1 });
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(fireEvent.contextMenu(chip)).toBe(true);
+
+    pointer(chip, "down", 50, 555, TOUCH);
+    expect(touchEvent(chip, "touchmove")).toBe(true);
+    waitForHold();
+    pointer(chip, "up", 150, 600, TOUCH);
+    expect(chip.hasPointerCapture(1)).toBe(false);
+    expect(screen.getByTestId("preview")).toHaveTextContent("none");
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("previews a held event, blocks native panning and drops once", () => {
+    const { onCreate, onClick, onMove, onResize } = fixture();
+    const chip = screen.getByRole("button", { name: "Meeting chip" });
+    const grip = screen.getByTestId("resize-end");
+    pointer(grip, "down", 50, 555, TOUCH);
+    expect(screen.getByTestId("preview")).toHaveTextContent("none");
+    waitForHold();
+    expect(chip).toHaveAttribute("data-calendar-dragging", "true");
+    expect(screen.getByTestId("preview")).toHaveTextContent("2026-11-05|09:07|2026-11-05|10:07");
+    expect(fireEvent.contextMenu(chip)).toBe(false);
+    expect(touchEvent(chip, "touchmove")).toBe(false);
+    pointer(chip, "move", 150, 600, TOUCH);
+    pointer(chip, "up", 150, 600, TOUCH);
+    pointer(chip, "up", 150, 600, TOUCH);
+    fireEvent.click(chip, { detail: 1 });
+    expect(onMove).toHaveBeenCalledExactlyOnceWith(ACTIVITY, { date: "2026-11-06", time: "09:52" });
+    expect(onResize).not.toHaveBeenCalled();
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+    expect(screen.getByTestId("preview")).toHaveTextContent("none");
+  });
+
+  it.each(["motion", "multi-touch", "lostpointercapture", "pointercancel", "scope", "overlay"])(
+    "cancels a pending hold on %s",
+    (reason) => {
+      const view = fixture();
+      const chip = screen.getByRole("button", { name: "Meeting chip" });
+      pointer(chip, "down", 50, 555, TOUCH);
+      const overlay = document.createElement("div");
+      overlay.setAttribute("role", "dialog");
+      try {
+        if (reason === "motion") pointer(chip, "move", 50, 575, TOUCH);
+        else if (reason === "multi-touch") touchEvent(document.body, "touchstart", 2);
+        else if (reason === "scope") view.rerender(<Harness {...view} scopeKey="next-week" />);
+        else if (reason === "overlay") document.body.append(overlay);
+        else fireEvent(chip, new TestPointerEvent(reason, { pointerId: 1, bubbles: true }));
+        waitForHold();
+        expect(screen.getByTestId("preview")).toHaveTextContent("none");
+        expect(chip.hasPointerCapture(1)).toBe(false);
+        pointer(chip, "up", 150, 600, TOUCH);
+        expect(view.onMove).not.toHaveBeenCalled();
+      } finally {
+        overlay.remove();
+      }
+    },
+  );
 });
 
 describe("calendar pointer cancellation", () => {

@@ -46,6 +46,21 @@ describe("splitAllDay", () => {
 });
 
 describe("layoutTimed", () => {
+  it("leaves an exact midnight end on the preceding segment", () => {
+    const event = activity({
+      id: "midnight",
+      dueAt: at(23),
+      endAt: at(24),
+    });
+    expect(layoutTimed([event], "UTC", "2026-08-24").placements[0]).toMatchObject({
+      topPx: 23 * 48,
+      heightPx: 48,
+      resizeStart: true,
+      resizeEnd: true,
+    });
+    expect(layoutTimed([event], "UTC", "2026-08-25").placements).toEqual([]);
+  });
+
   it("gives a lone activity the full column width", () => {
     const [p] = layoutTimed([activity({ id: "a", dueAt: at(9) })]).placements;
     expect(p).toMatchObject({ leftPct: 0, widthPct: 100, topPx: 9 * 48, heightPx: 48 });

@@ -7,7 +7,8 @@ import {
   wallTimeToInstant,
 } from "@/lib/zonedDateTime";
 import type {
-  CalendarRescheduleInput,
+  CalendarRescheduleMoveTarget,
+  CalendarRescheduleResizeTarget,
   CalendarScheduleSnapshot,
 } from "./calendarRescheduleSchemas";
 import type { ActivityUpdateInput } from "./schemas";
@@ -50,7 +51,7 @@ export function calendarScheduleMatches(
 
 export type CalendarReschedulePatch = Pick<
   ActivityUpdateInput,
-  "dueAt" | "endAt" | "allDay" | "dueDate" | "endDate" | "authoredTimeZone"
+  "dueAt" | "endAt" | "allDay" | "dueDate" | "endDate" | "durationMinutes" | "authoredTimeZone"
 >;
 
 // A move preserves event kind and stored duration representation. Timed intervals
@@ -58,16 +59,17 @@ export type CalendarReschedulePatch = Pick<
 // Invalid target wall times are rejected instead of shifted through a DST gap.
 export function calendarReschedulePatch(
   source: CalendarScheduleSnapshot,
-  target: CalendarRescheduleInput["target"],
+  target: CalendarRescheduleMoveTarget | CalendarRescheduleResizeTarget,
   timeZone: string,
 ): CalendarReschedulePatch | null {
   Temporal.PlainDate.from(target.date, { overflow: "reject" });
+  if ("edge" in target) return resizeTimed(source, target, timeZone);
   return source.allDay ? moveAllDay(source, target, timeZone) : moveTimed(source, target, timeZone);
 }
 
 function moveAllDay(
   source: CalendarScheduleSnapshot,
-  target: CalendarRescheduleInput["target"],
+  target: CalendarRescheduleMoveTarget,
   timeZone: string,
 ): CalendarReschedulePatch | null {
   if (target.time !== undefined)
@@ -95,7 +97,7 @@ function moveAllDay(
 
 function moveTimed(
   source: CalendarScheduleSnapshot,
-  target: CalendarRescheduleInput["target"],
+  target: CalendarRescheduleMoveTarget,
   timeZone: string,
 ): CalendarReschedulePatch | null {
   const local = instantParts(source.dueAt, timeZone);
@@ -113,6 +115,43 @@ function moveTimed(
     allDay: false,
     dueDate: null,
     endDate: null,
+    authoredTimeZone: timeZone,
+  };
+}
+
+function storedTimedEnd(source: CalendarScheduleSnapshot, start: number): number | null {
+  if (source.endAt !== null) return Date.parse(source.endAt);
+  return source.durationMinutes !== null && source.durationMinutes > 0
+    ? start + source.durationMinutes * 60_000
+    : null;
+}
+
+function resizeTimed(
+  source: CalendarScheduleSnapshot,
+  target: CalendarRescheduleResizeTarget,
+  timeZone: string,
+): CalendarReschedulePatch | null {
+  if (source.allDay) throw new RangeError("Cannot resize an all-day event in the time grid");
+  const previousStart = Date.parse(source.dueAt);
+  const previousEnd = storedTimedEnd(source, previousStart);
+  if (target.edge === "start" && previousEnd === null)
+    throw new RangeError("A point event has no end to preserve");
+  const previousEdge = target.edge === "start" ? previousStart : previousEnd;
+  if (previousEdge !== null) {
+    const local = instantParts(previousEdge, timeZone);
+    if (target.date === local.date && target.time === local.time) return null;
+  }
+  const instant = Date.parse(wallTimeToInstant(target.date, target.time, timeZone).iso);
+  const start = target.edge === "start" ? instant : previousStart;
+  const end = target.edge === "end" ? instant : previousEnd;
+  if (end === null || end <= start) throw new RangeError("Event end must follow its start");
+  const durationMinutes = Math.ceil((end - start) / 60_000);
+  if (durationMinutes > 2_147_483_647) throw new RangeError("Event duration exceeds storage range");
+  return {
+    ...(target.edge === "start" ? { dueAt: new Date(start).toISOString(), allDay: false } : {}),
+    // The opposite instant remains exact, including a duration-only legacy endpoint.
+    endAt: new Date(end).toISOString(),
+    durationMinutes,
     authoredTimeZone: timeZone,
   };
 }

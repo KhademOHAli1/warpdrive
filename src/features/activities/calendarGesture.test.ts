@@ -148,7 +148,7 @@ describe("calendar gesture previews", () => {
     expect(selectionSegments(range, "2026-11-06")).toBeNull();
   });
 
-  it("preserves actual elapsed duration and local end labels across the spring transition", () => {
+  it("renders the preserved elapsed duration through its actual wall-clock endpoints", () => {
     const a = event({
       dueAt: new Date("2026-03-28T00:30:00Z"),
       endAt: new Date("2026-03-28T01:30:00Z"),
@@ -159,11 +159,10 @@ describe("calendar gesture previews", () => {
       time: "01:30",
       endDate: "2026-03-29",
       endTime: "03:30",
-      elapsedMinutes: 60,
     });
     expect(preview === null ? null : selectionSegments(preview, "2026-03-29")).toEqual({
       startMinute: 90,
-      endMinute: 150,
+      endMinute: 210,
     });
   });
 
@@ -176,7 +175,6 @@ describe("calendar gesture previews", () => {
       time: "02:30",
       endDate: "2026-10-25",
       endTime: "03:15",
-      elapsedMinutes: 45,
     });
     const earlier = event({ dueAt: new Date("2026-10-25T00:30:00Z"), durationMinutes: 60 });
     const preview = movePreviewSelection(
@@ -198,8 +196,15 @@ describe("calendar gesture previews", () => {
       time: "10:00",
       endDate: "2026-11-06",
       endTime: "10:30",
-      elapsedMinutes: 30,
     });
+    expect(movePreviewSelection(a, { date: "2026-03-29", time: "01:45" }, "Europe/Berlin")).toEqual(
+      {
+        date: "2026-03-29",
+        time: "01:45",
+        endDate: "2026-03-29",
+        endTime: "02:15",
+      },
+    );
     expect(a.durationMinutes).toBeNull();
     expect(a.endAt).toBeNull();
     expect(selectionSegments({ date: "invalid", endDate: "invalid" }, "2026-11-06")).toBeNull();
@@ -215,7 +220,6 @@ describe("calendar gesture previews", () => {
       time: "09:07",
       endDate: "2026-11-06",
       endTime: "09:08",
-      elapsedMinutes: 29 / 60,
     });
   });
 });

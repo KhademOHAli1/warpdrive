@@ -13,7 +13,7 @@ import { authenticationIds1 } from "./registryIdsAuthentication1";
 import { authenticationIds2 } from "./registryIdsAuthentication2";
 import { candidateDiscoveryIds1 } from "./registryIdsCandidateDiscovery1";
 import { contentIds1 } from "./registryIdsContent1";
-import { crmIds1 } from "./registryIdsCrm1";
+import { calendarUndoIds1, crmIds1 } from "./registryIdsCrm1";
 import { crmIds2 } from "./registryIdsCrm2";
 import { crmIds3 } from "./registryIdsCrm3";
 import { disclosureContractsIds1 } from "./registryIdsDisclosureContracts1";
@@ -61,6 +61,25 @@ export const registryEntries: RegistryEntry[] = [
   classifyInventory([...authenticationIds1, ...authenticationIds2], classifications.authentication),
   classifyInventory([...contentIds1], classifications.content),
   classifyInventory([...crmIds1, ...crmIds2, ...crmIds3], classifications.crm),
+  classifyInventory(calendarUndoIds1, {
+    ...classifications.crm,
+    owner: "calendar schedule undo",
+    categories: [
+      "actor and session identifiers",
+      "activity identifier and schedule values",
+      "signed undo receipt",
+    ],
+    subjectRelation:
+      "The actor and session bind the receipt to the authorized caller. Activity ownership and participant links remain separate from subject identity.",
+    purpose:
+      "Sign and verify an undo receipt for a confirmed calendar change. The existing calendar command checks current session, activity visibility, edit permission and the expected schedule before restoring the previous schedule.",
+    disclosure:
+      "Return an opaque receipt to the authenticated calendar caller. The signing key and raw session identifier stay on the server. Generic subject archives exclude the receipt and signing material.",
+    retention:
+      "Hold the receipt in mounted calendar state until cleared, replaced or unmounted. Schedule and reminder retention continue under their existing CRM classifications.",
+    externalEffects:
+      "The scanner's update writers are in-memory HMAC operations. Signing and verification create no durable receipt store and contact no provider.",
+  }),
   classifyInventory([...emailIds1, ...emailIds2], classifications.email),
   classifyInventory([...enrichmentIds1], classifications.enrichment),
   classifyInventory([...filesIds1], classifications.files),

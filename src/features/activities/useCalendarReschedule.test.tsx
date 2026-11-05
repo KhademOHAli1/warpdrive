@@ -5,6 +5,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import type { CalendarActivity } from "./calendar";
+import { calendarScheduleSnapshot } from "./calendarReschedulePlan";
 import type {
   CalendarRescheduleActionResult,
   CalendarRescheduleValue,
@@ -147,6 +148,65 @@ it("uses a mutex so two drops in the same render cannot dispatch two writes", as
     await first;
   });
   expect(api.onMoved).toHaveBeenCalledTimes(1);
+});
+
+it("undoes a confirmed move once using its exact before and after snapshots", async () => {
+  const original = calendarScheduleSnapshot(activity);
+  const undoToken = "signed-undo";
+  api.move
+    .mockResolvedValueOnce({ ok: true, value: schedule, undoToken })
+    .mockResolvedValueOnce({ ok: true, value: { id: activity.id, ...original } });
+  const { result } = renderMover();
+  expect(result.current.undoAvailable).toBe(false);
+  await act(async () => {
+    await result.current.move(activity, target);
+  });
+  expect(result.current.undoAvailable).toBe(true);
+  await act(async () => {
+    await Promise.all([result.current.undo(), result.current.undo()]);
+  });
+  expect(api.move).toHaveBeenCalledTimes(2);
+  expect(api.move).toHaveBeenLastCalledWith(
+    {
+      v: 1,
+      expectedActorId: firstActor,
+      activity: {
+        id: activity.id,
+        timeZone: "Europe/Berlin",
+        expected: calendarScheduleSnapshot(schedule),
+        target: { undo: original, token: undoToken },
+      },
+    },
+    "csrf",
+  );
+  expect(api.onMoved).toHaveBeenLastCalledWith({ id: activity.id, ...original });
+  expect(result.current.undoAvailable).toBe(false);
+  expect(result.current.notice).toBe("Change undone.");
+});
+
+it("refreshes a stale undo and does not display a restoration or retry", async () => {
+  const onUncertain = vi.fn();
+  api.move
+    .mockResolvedValueOnce({ ok: true, value: schedule, undoToken: "signed-undo" })
+    .mockResolvedValueOnce({ ok: false, error: { id: "E_ACTIVITY_011" } });
+  const { result } = renderHook(
+    () => useCalendarReschedule({ onMoved: api.onMoved, onRefresh: api.onRefresh, onUncertain }),
+    { wrapper },
+  );
+  await act(async () => {
+    await result.current.move(activity, { ...target, edge: "end" });
+  });
+  expect(result.current.notice).toBe("Event resized.");
+  await act(async () => {
+    expect(await result.current.undo()).toEqual({ kind: "stale" });
+  });
+  expect(api.onMoved).toHaveBeenCalledTimes(1);
+  expect(api.onRefresh).toHaveBeenCalledTimes(2);
+  expect(api.move).toHaveBeenCalledTimes(2);
+  expect(onUncertain).toHaveBeenCalledWith(activity.id);
+  expect(result.current.undoAvailable).toBe(false);
+  expect(result.current.notice).toBeNull();
+  expect(result.current.error).toMatch(/changed/i);
 });
 
 it.each(["E_ACTIVITY_011", "E_ACTIVITY_010"])(
