@@ -64,6 +64,15 @@ function scrollHost(element: HTMLElement): HTMLElement | null {
   return document.scrollingElement instanceof HTMLElement ? document.scrollingElement : null;
 }
 
+function scrollStep(host: HTMLElement, y: number): number {
+  const rect =
+    host === document.scrollingElement
+      ? { top: 0, bottom: window.innerHeight }
+      : host.getBoundingClientRect();
+  const pinned = host.querySelector<HTMLElement>(".sticky")?.getBoundingClientRect().height ?? 0;
+  return y < rect.top + pinned + 32 ? -12 : y > rect.bottom - 32 ? 12 : 0;
+}
+
 export function useCalendarPointer({
   scopeKey,
   activities,
@@ -96,7 +105,7 @@ export function useCalendarPointer({
     if (current !== null) {
       if (current.active) suppressClick.current = true;
       current.chip?.removeAttribute("data-calendar-dragging");
-      if (current.capture.hasPointerCapture?.(current.id))
+      if (current.capture.hasPointerCapture(current.id))
         current.capture.releasePointerCapture(current.id);
     }
     setPreview(null);
@@ -157,14 +166,8 @@ export function useCalendarPointer({
     if (current === null || !current.active) return;
     const host = current.scroll;
     if (host !== null) {
-      const rect =
-        host === document.scrollingElement
-          ? { top: 0, bottom: window.innerHeight }
-          : host.getBoundingClientRect();
-      const pinned =
-        host.querySelector<HTMLElement>(".sticky")?.getBoundingClientRect().height ?? 0;
       const y = position.current.y;
-      const step = y < rect.top + pinned + 32 ? -12 : y > rect.bottom - 32 ? 12 : 0;
+      const step = scrollStep(host, y);
       const before = host.scrollTop;
       if (step !== 0) host.scrollTop += step;
       if (host.scrollTop !== before) {
@@ -216,7 +219,7 @@ export function useCalendarPointer({
       scroll: scrollHost(surface),
     };
     position.current = { x: event.clientX, y: event.clientY };
-    capture.setPointerCapture?.(event.pointerId);
+    capture.setPointerCapture(event.pointerId);
   }
 
   function onPointerMoveCapture(event: React.PointerEvent<HTMLElement>): void {

@@ -64,42 +64,42 @@ it("displays chained acknowledgments against the same original incoming list", (
   const incoming = [event()];
   const { result } = renderDisplay(incoming);
   act(() => result.current.confirm(moved(10)));
-  expect(result.current.activities[0].dueAt.toISOString()).toBe(moved(10).dueAt);
+  expect(result.current.activities[0]!.dueAt.toISOString()).toBe(moved(10).dueAt);
   act(() => result.current.confirm(moved(12)));
-  expect(result.current.activities[0].dueAt.toISOString()).toBe(moved(12).dueAt);
-  expect(incoming[0].dueAt.toISOString()).toBe("2026-11-05T08:00:29.123Z");
+  expect(result.current.activities[0]!.dueAt.toISOString()).toBe(moved(12).dueAt);
+  expect(incoming[0]!.dueAt.toISOString()).toBe("2026-11-05T08:00:29.123Z");
 });
 
 it.each([10, 14])("retires the local overlay when server hour %s arrives", (serverHour) => {
   const original = [event()];
   const view = renderDisplay(original);
   act(() => view.result.current.confirm(moved(10)));
-  const incoming = [serverEvent(original[0], moved(serverHour))];
+  const incoming = [serverEvent(original[0]!, moved(serverHour))];
   view.rerender({ events: incoming });
   expect(view.result.current.activities[0]).toBe(incoming[0]);
-  expect(view.result.current.activities[0].dueAt.toISOString()).toBe(moved(serverHour).dueAt);
+  expect(view.result.current.activities[0]!.dueAt.toISOString()).toBe(moved(serverHour).dueAt);
   // Returning even the identical old A list cannot revive the previous A -> B override.
   view.rerender({ events: original });
   expect(view.result.current.activities[0]).toBe(original[0]);
-  expect(view.result.current.activities[0].dueAt.toISOString()).toBe("2026-11-05T08:00:29.123Z");
+  expect(view.result.current.activities[0]!.dueAt.toISOString()).toBe("2026-11-05T08:00:29.123Z");
 });
 
 it("lets a fresh server list retain the original time without applying the old acknowledgment", () => {
   const original = [event()];
   const view = renderDisplay(original);
   act(() => view.result.current.confirm(moved(10)));
-  const incoming = [{ ...original[0], subject: "Updated on the server" }];
+  const incoming = [{ ...original[0]!, subject: "Updated on the server" }];
   view.rerender({ events: incoming });
   expect(view.result.current.activities[0]).toBe(incoming[0]);
-  expect(view.result.current.activities[0].subject).toBe("Updated on the server");
-  expect(view.result.current.activities[0].dueAt).toBe(original[0].dueAt);
+  expect(view.result.current.activities[0]!.subject).toBe("Updated on the server");
+  expect(view.result.current.activities[0]!.dueAt).toBe(original[0]!.dueAt);
 });
 
 it("ignores an acknowledgment callback captured before a newer server list arrived", () => {
   const original = [event()];
   const view = renderDisplay(original);
   const confirmBeforeRefresh = view.result.current.confirm;
-  const incoming = [serverEvent(original[0], moved(14))];
+  const incoming = [serverEvent(original[0]!, moved(14))];
   view.rerender({ events: incoming });
   act(() => confirmBeforeRefresh(moved(10)));
   expect(view.result.current.activities[0]).toBe(incoming[0]);
@@ -114,9 +114,9 @@ it("forgets only the requested event's acknowledgment", () => {
   });
   act(() => result.current.forget("meeting"));
   expect(result.current.activities[0]).toBe(incoming[0]);
-  expect(result.current.activities[1].dueAt.toISOString()).toBe(moved(12).dueAt);
+  expect(result.current.activities[1]!.dueAt.toISOString()).toBe(moved(12).dueAt);
   act(() => result.current.forget("already-absent"));
-  expect(result.current.activities[1].dueAt.toISOString()).toBe(moved(12).dueAt);
+  expect(result.current.activities[1]!.dueAt.toISOString()).toBe(moved(12).dueAt);
 });
 
 it("clones only schedule fields, keeps Date values and metadata, and leaves both inputs untouched", () => {
@@ -131,7 +131,7 @@ it("clones only schedule fields, keeps Date values and metadata, and leaves both
   Object.freeze(schedule);
   const { result } = renderDisplay(incoming);
   act(() => result.current.confirm(schedule));
-  const shown = result.current.activities[0];
+  const shown = result.current.activities[0]!;
   expect(shown).not.toBe(original);
   expect(shown.dueAt).toBeInstanceOf(Date);
   expect(shown.endAt).toBeInstanceOf(Date);
@@ -146,7 +146,7 @@ it("clones only schedule fields, keeps Date values and metadata, and leaves both
 it("preserves nullable and civil schedule fields from an acknowledged all-day move", () => {
   const incoming = [event()];
   const schedule: CalendarRescheduleValue = {
-    id: incoming[0].id,
+    id: incoming[0]!.id,
     dueAt: "2026-11-07T00:00:00.000Z",
     endAt: null,
     allDay: true,
@@ -156,6 +156,6 @@ it("preserves nullable and civil schedule fields from an acknowledged all-day mo
   };
   const { result } = renderDisplay(incoming);
   act(() => result.current.confirm(schedule));
-  expect(result.current.activities[0]).toEqual(serverEvent(incoming[0], schedule));
-  expect(result.current.activities[0].endAt).toBeNull();
+  expect(result.current.activities[0]).toEqual(serverEvent(incoming[0]!, schedule));
+  expect(result.current.activities[0]!.endAt).toBeNull();
 });

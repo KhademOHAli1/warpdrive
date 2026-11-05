@@ -90,7 +90,11 @@ export function CalendarClient({
     onRefresh: () => onChanged?.(),
   });
   const displayed = reschedule.canMove ? display.activities : activities;
-  const pointer = useCalendarPointer({
+  const {
+    root: calendarRoot,
+    preview: pointerPreview,
+    bindings: pointerBindings,
+  } = useCalendarPointer({
     scopeKey,
     activities: displayed,
     timeZone: preferences.timeZone,
@@ -117,7 +121,7 @@ export function CalendarClient({
         kind: target.time === undefined ? "date" : "time",
       });
     const chips = Array.from(
-      pointer.root.current?.querySelectorAll<HTMLElement>("[data-calendar-event-id]") ?? [],
+      calendarRoot.current?.querySelectorAll<HTMLElement>("[data-calendar-event-id]") ?? [],
     ).filter((chip) => chip.dataset.calendarEventId === activity.id);
     for (const chip of chips) chip.setAttribute("data-calendar-pending", "true");
     try {
@@ -133,8 +137,8 @@ export function CalendarClient({
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
     <section
-      ref={pointer.root}
-      {...pointer.bindings}
+      ref={calendarRoot}
+      {...pointerBindings}
       aria-label={t("title")}
       aria-busy={reschedule.pending}
       className="p-4"
@@ -219,10 +223,10 @@ export function CalendarClient({
           {reschedule.pending ? t("interaction.moving") : reschedule.notice}
         </p>
       )}
-      <CalendarGesturePreview preview={pointer.preview} />
+      <CalendarGesturePreview preview={pointerPreview} />
       {savingPreview?.scope === scopeKey && (
         <CalendarSavingPreview
-          root={pointer.root}
+          root={calendarRoot}
           selection={savingPreview.selection}
           subject={savingPreview.subject}
           kind={savingPreview.kind}

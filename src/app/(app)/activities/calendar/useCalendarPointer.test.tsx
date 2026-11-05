@@ -39,7 +39,7 @@ let captures = new WeakMap<Element, Set<number>>();
 let frameId = 0;
 
 function rect(element: HTMLElement): DOMRect {
-  switch (element.dataset.testid) {
+  switch (element.dataset.testid ?? "") {
     case "time-first":
       return new DOMRect(0, 100, 100, 1152);
     case "time-second":
@@ -114,7 +114,7 @@ interface HarnessProps {
 }
 
 function Harness({ scopeKey = "week", disabled = false, onCreate, onMove, onClick }: HarnessProps) {
-  const pointer = useCalendarPointer({
+  const { root, preview, bindings } = useCalendarPointer({
     scopeKey,
     disabled,
     activities: ACTIVITIES,
@@ -122,10 +122,10 @@ function Harness({ scopeKey = "week", disabled = false, onCreate, onMove, onClic
     onCreate,
     onMove,
   });
-  const selection = pointer.preview?.selection;
+  const selection = preview?.selection;
   return (
     <>
-      <section ref={pointer.root} {...pointer.bindings} data-testid="root">
+      <section ref={root} {...bindings} data-testid="root">
         <div data-testid="time-first" data-calendar-surface="time" data-calendar-date="2026-11-05">
           <button type="button" data-hour="9" onClick={onClick}>
             First slot
