@@ -5,11 +5,11 @@ ordinary pull requests and manual runs perform the light setup and static checks
 fast feedback. These contexts are merge/setup evidence; they are not full unit, PostgreSQL,
 browser, build, release, deployment or customer acceptance.
 
-| Job            | Checks                                                                                                                                                                             |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Job            | Checks                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, focused workflow/preference contract tests |
-| Marketing site | Frozen install, route type generation and typecheck |
-| Documentation  | Frozen install, dependency contract check and typecheck |
+| Marketing site | Frozen install, route type generation and typecheck                                                                             |
+| Documentation  | Frozen install, dependency contract check and typecheck                                                                         |
 
 The full commands remain in [`full-ci.yml`](../.github/workflows/full-ci.yml). That workflow
 has no ordinary push trigger; it runs for an explicit dispatch or when its own definition is

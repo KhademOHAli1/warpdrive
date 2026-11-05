@@ -1,4 +1,6 @@
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { envSchema } from "@/config/env";
@@ -48,6 +50,12 @@ const workflow = workflowSchema.parse(
 const fullWorkflow = workflowSchema.parse(
   Bun.YAML.parse(readFileSync(new URL("./.github/workflows/full-ci.yml", import.meta.url), "utf8")),
 );
+const fullQualityDocument = Bun.YAML.parse(
+  readFileSync(new URL("./.github/workflows/full-quality.yml", import.meta.url), "utf8"),
+) as {
+  env?: Record<string, string>;
+  jobs?: Record<string, { env?: Record<string, string> }>;
+};
 
 const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_BUN = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6";
@@ -223,5 +231,20 @@ describe("public Bun CI", () => {
         if (step !== build) expect(step.env).toEqual(toolingEnvironment(name, step.run));
       }
     }
+  });
+
+  it("passes the declared full browser environment through the canonical admission guard", () => {
+    const declaredEnvironment = {
+      ...(fullQualityDocument.env ?? {}),
+      ...(fullQualityDocument.jobs?.browser?.env ?? {}),
+    };
+    const result = spawnSync("python3", ["scripts/delivery/browser_smoke_environment.py"], {
+      cwd: fileURLToPath(new URL(".", import.meta.url)),
+      env: { ...declaredEnvironment, PATH: process.env.PATH ?? "" },
+      encoding: "utf8",
+    });
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("Disposable browser smoke environment admitted");
   });
 });

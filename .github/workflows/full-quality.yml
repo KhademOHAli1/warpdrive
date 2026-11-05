@@ -14,6 +14,9 @@ concurrency:
   group: full-quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  BUN_OPTIONS: --no-env-file
+
 jobs:
   browser:
     name: Full browser smoke checks
