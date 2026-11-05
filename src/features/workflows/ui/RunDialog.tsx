@@ -18,6 +18,7 @@ import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { runWorkflowAction } from "../actions";
 import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
+import { readWorkflowScheduleTrigger } from "../workflowScheduleContract";
 import { LiveRunReview, type LiveRunReviewContext } from "./LiveRunReview";
 import { projectLiveRunEffects } from "./liveRunEffectSummary";
 
@@ -28,7 +29,7 @@ type Version = RouterOutputs["workflows"]["version"];
 type ReadFlags = { isFetching: boolean; isError: boolean; isPlaceholderData: boolean };
 interface LivePublication {
   readonly versionId: string;
-  readonly scope: "deal" | "global";
+  readonly scope: "deal" | "global" | "schedule";
   readonly review: LiveRunReviewContext | null;
 }
 interface RunCommand {
@@ -64,6 +65,8 @@ function currentPublication(
   )
     return null;
   const effects = projectLiveRunEffects(version.definition);
+  if (effects !== null && readWorkflowScheduleTrigger(version.definition) !== null)
+    return { versionId: version.id, scope: "schedule", review: null };
   const trigger = version.definition.nodes.find((node) => node.type === "trigger.manual");
   const scope = workflowManualLaunchScope(trigger?.config);
   if (effects === null || scope === null) return null;
@@ -152,7 +155,7 @@ function prepareSubmission(
   publication: LivePublication | null,
   acknowledged: boolean,
 ): Submission | null {
-  if (publication === null) return null;
+  if (publication === null || publication.scope === "schedule") return null;
   const recordId = publication.scope === "deal" ? chosen?.value : undefined;
   if (publication.scope === "deal" && recordId === undefined) return null;
   const command = Object.freeze({
@@ -385,19 +388,26 @@ export function RunDialog({
               simulation
             />
           )}
-          <RunReviewContent
-            mode={displayMode}
-            review={displayedReview}
-            chosen={launchScope !== "deal" || chosen !== null}
-            loading={read.loading}
-            reloading={read.reloading}
-            reload={read.reload}
-            acknowledged={submission !== null || acknowledgement.acknowledged}
-            changed={acknowledgement.changed}
-            locked={pending || submission !== null}
-            frozen={submission !== null}
-            onAcknowledgedChange={acknowledgement.acknowledge}
-          />
+          {launchScope === "schedule" && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {t("scheduledRunsAutomatically")}
+            </p>
+          )}
+          {launchScope !== "schedule" && (
+            <RunReviewContent
+              mode={displayMode}
+              review={displayedReview}
+              chosen={launchScope !== "deal" || chosen !== null}
+              loading={read.loading}
+              reloading={read.reloading}
+              reload={read.reload}
+              acknowledged={submission !== null || acknowledgement.acknowledged}
+              changed={acknowledgement.changed}
+              locked={pending || submission !== null}
+              frozen={submission !== null}
+              onAcknowledgedChange={acknowledgement.acknowledge}
+            />
+          )}
           {submission !== null && (
             <p className="text-sm text-muted-foreground">{t("testSubmissionFrozen")}</p>
           )}
@@ -409,11 +419,13 @@ export function RunDialog({
           )}
           <DialogFooter>
             <Button variant="outline" onClick={onClose} disabled={pending}>
-              {t("cancel")}
+              {t(launchScope === "schedule" ? "close" : "cancel")}
             </Button>
-            <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
-              {t(submissionLabel(error, displayMode, changesRecords))}
-            </Button>
+            {launchScope !== "schedule" && (
+              <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
+                {t(submissionLabel(error, displayMode, changesRecords))}
+              </Button>
+            )}
           </DialogFooter>
         </div>
       </DialogContent>

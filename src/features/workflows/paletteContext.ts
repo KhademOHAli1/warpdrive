@@ -1,3 +1,4 @@
+import { defaultConfiguration } from "./configurationSpec";
 import { appendConnectedNode, type OutputTarget } from "./connectionGestures";
 import { type ConnectionProblem, insertNode, portsFor } from "./graphEditor";
 import { mappingPathNodes } from "./mappingAvailability";
@@ -24,9 +25,10 @@ export type PickerRequest =
   | { kind: "detached"; position?: NodePosition }
   | { kind: "output"; output: OutputTarget; position?: NodePosition }
   | { kind: "replace"; nodeId: string };
+export type ConfigurableTriggerType = "trigger.manual" | "trigger.schedule";
 export type PickerSelection =
   | { kind: "insert"; type: CreatableNodeType; version: 1 }
-  | { kind: "configure"; type: "trigger.manual"; nodeId: string; version: 1 };
+  | { kind: "configure"; type: ConfigurableTriggerType; nodeId: string; version: 1 };
 export type PickerResult =
   | { ok: true; definition: WorkflowDefinition; selectedId: string; changed: boolean }
   | {
@@ -115,11 +117,13 @@ function availableSources(
   }));
 }
 
-function manualTrigger(definition: WorkflowDefinition): WorkflowNode | undefined {
+export function configurableWorkflowTrigger(
+  definition: WorkflowDefinition,
+): WorkflowNode | undefined {
   const triggers = definition.nodes.filter((node) => node.type.startsWith("trigger."));
   const trigger = triggers[0];
   return triggers.length === 1 &&
-    trigger?.type === "trigger.manual" &&
+    (trigger?.type === "trigger.manual" || trigger?.type === "trigger.schedule") &&
     findPaletteEntry(trigger.type, trigger.version) !== undefined
     ? trigger
     : undefined;
@@ -138,8 +142,14 @@ function entryReason(
     if (replaced.type.startsWith("trigger.") !== descriptor.type.startsWith("trigger."))
       return "unavailable-action";
   }
-  if (descriptor.selection === "configure")
-    return manualTrigger(definition) === undefined ? "unavailable-action" : null;
+  if (descriptor.selection === "configure") {
+    const trigger = configurableWorkflowTrigger(definition);
+    return trigger !== undefined &&
+      (trigger.type === descriptor.type ||
+        (request.kind === "replace" && request.nodeId === trigger.id))
+      ? null
+      : "unavailable-action";
+  }
   if (placement.reason !== null) return placement.reason;
   if (request.kind === "replace") return null;
   if (definition.nodes.length >= 100) return "nodeLimit";
@@ -212,11 +222,11 @@ function parseSelection(raw: unknown): PickerSelection | undefined {
     return { kind: "insert", type: descriptor.type, version: 1 };
   if (
     raw.kind === "configure" &&
-    descriptor.type === "trigger.manual" &&
+    descriptor.selection === "configure" &&
     "nodeId" in raw &&
     typeof raw.nodeId === "string"
   )
-    return { kind: "configure", type: "trigger.manual", nodeId: raw.nodeId, version: 1 };
+    return { kind: "configure", type: descriptor.type, nodeId: raw.nodeId, version: 1 };
   return undefined;
 }
 
@@ -328,6 +338,38 @@ function insertSelection(
     : { ok: true, definition: inserted, selectedId: node.id, changed: true };
 }
 
+function configureTrigger(
+  definition: WorkflowDefinition,
+  request: PickerRequest,
+  selection: Extract<PickerSelection, { kind: "configure" }>,
+): PickerResult {
+  const trigger = configurableWorkflowTrigger(definition);
+  if (trigger?.id !== selection.nodeId) return { ok: false, reason: "unavailable-action" };
+  if (trigger.type === selection.type)
+    return { ok: true, definition, selectedId: trigger.id, changed: false };
+  if (request.kind !== "replace" || request.nodeId !== trigger.id)
+    return { ok: false, reason: "unavailable-action" };
+  const replacement: WorkflowNode = {
+    ...trigger,
+    type: selection.type,
+    name: selection.type === "trigger.schedule" ? "Scheduled" : "Manual Trigger",
+    nameMode: "automatic",
+    config:
+      selection.type === "trigger.schedule"
+        ? defaultConfiguration(selection.type, {})
+        : { scope: "global" },
+  };
+  return {
+    ok: true,
+    selectedId: trigger.id,
+    definition: {
+      ...definition,
+      nodes: definition.nodes.map((node) => (node.id === trigger.id ? replacement : node)),
+    },
+    changed: true,
+  };
+}
+
 export function selectPaletteEntry(
   definition: WorkflowDefinition,
   request: PickerRequest,
@@ -343,9 +385,7 @@ export function selectPaletteEntry(
   if (entry === undefined) return { ok: false, reason: "unavailable-action" };
   if (entry.reason !== null) return { ok: false, reason: entry.reason };
   if (selection.kind === "configure") {
-    if (manualTrigger(definition)?.id !== selection.nodeId)
-      return { ok: false, reason: "unavailable-action" };
-    return { ok: true, definition, selectedId: selection.nodeId, changed: false };
+    return configureTrigger(definition, request, selection);
   }
   return insertSelection(definition, request, selection.type, options);
 }

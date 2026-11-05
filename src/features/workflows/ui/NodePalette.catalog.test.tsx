@@ -166,8 +166,10 @@ it.each(paletteLocales)(
     expect(screen.queryByRole("button", { name: copy.paletteManual })).not.toBeInTheDocument();
     mounted.rerender(test.view(undefined, true, true, true));
     expect(screen.getByRole("dialog", { name: copy.selectTrigger })).toBeVisible();
-    expect(screen.getByRole("heading", { name: copy.nodeCategoryTrigger })).toBeVisible();
+    expect(screen.getByRole("heading", { name: copy.triggerGroupOthers })).toBeVisible();
+    expect(screen.getByRole("heading", { name: copy.nodeCategoryData })).toBeVisible();
     expect(entry(copy.paletteManual)).toBeVisible();
+    expect(entry(copy.scheduledTrigger)).toBeVisible();
     expect(entry(copy.paletteRecordTrigger)).toBeVisible();
     for (const label of actionTitles(copy))
       expect(screen.queryByRole("button", { name: label })).not.toBeInTheDocument();

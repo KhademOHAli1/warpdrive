@@ -19,6 +19,7 @@ export function paletteSnapshot(
   const types = [
     "trigger.manual",
     "trigger.record",
+    "trigger.schedule",
     "record.create",
     "record.update",
     "record.delete",

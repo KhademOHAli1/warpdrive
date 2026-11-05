@@ -27,6 +27,8 @@ export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
   if (node.type === "trigger.manual")
     return actionRegistry["trigger.manual"].config.safeParse(node.config).success;
+  if (node.type === "trigger.schedule")
+    return actionRegistry[node.type].config.safeParse(node.config).success;
   if (node.type === "delay") return executableDelay(node);
   if (
     [
@@ -73,7 +75,8 @@ export function executableDefinition(definition: WorkflowDefinition): boolean {
 // Legacy fixed instants retain their existing published-only contract. The
 // configured schedules share the same deadline projection in both modes.
 export function draftExecutableNode(node: WorkflowNode): boolean {
-  if (node.type === "human.form" || !executableNode(node)) return false;
+  if (node.type === "human.form" || node.type === "trigger.schedule" || !executableNode(node))
+    return false;
   if (node.type !== "delay") return true;
   if (Object.hasOwn(node.config, "delayType")) return true;
   return (

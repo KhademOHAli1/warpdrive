@@ -6,6 +6,7 @@ import {
   type WorkflowPaletteSnapshot,
 } from "../paletteCatalog";
 import {
+  configurableWorkflowTrigger,
   describePaletteContext,
   type PaletteContext,
   type PaletteContextEntry,
@@ -46,14 +47,10 @@ function selectionFor(
 ): PickerSelection | null {
   if (entry.selection === "unavailable") return null;
   if (entry.selection === "insert") return { kind: "insert", type: entry.type, version: 1 };
-  const manual = definition.nodes.filter(
-    (node) =>
-      node.type === "trigger.manual" && findPaletteEntry(node.type, node.version) !== undefined,
-  );
-  const node = manual[0];
-  return manual.length === 1 && node !== undefined
-    ? { kind: "configure", type: "trigger.manual", version: 1, nodeId: node.id }
-    : null;
+  const trigger = configurableWorkflowTrigger(definition);
+  return trigger === undefined
+    ? null
+    : { kind: "configure", type: entry.type, version: 1, nodeId: trigger.id };
 }
 
 function authoringReason(read: PaletteRead, editable: boolean): PaletteView["authoringReason"] {

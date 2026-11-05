@@ -15,7 +15,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { RunOutputs, StepOutput } from "@/features/workflows/runTypes";
 import type { WorkflowIteratorCursor } from "@/features/workflows/workflowIteratorRuntimeContract";
-import type { WorkflowManualLaunchPayload } from "@/features/workflows/workflowManualLaunchContract";
+import type { WorkflowRunLaunchPayload } from "@/features/workflows/workflowRunLaunchContract";
 import { users } from "./identity";
 import { workflows, workflowVersions } from "./workflows";
 
@@ -37,7 +37,7 @@ export const workflowRuns = pgTable(
     })
       .notNull()
       .default("queued"),
-    trigger: jsonb("trigger").$type<WorkflowManualLaunchPayload>().notNull(),
+    trigger: jsonb("trigger").$type<WorkflowRunLaunchPayload>().notNull(),
     nextNodeId: text("next_node_id"),
     iteratorFrame: jsonb("iterator_frame").$type<WorkflowIteratorCursor>(),
     resumeAt: timestamp("resume_at", { withTimezone: true }),

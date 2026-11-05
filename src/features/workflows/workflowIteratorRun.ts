@@ -16,8 +16,8 @@ import {
   type WorkflowIteratorRuntimePlan,
 } from "./workflowIteratorRuntime";
 import { workflowIteratorCursor } from "./workflowIteratorRuntimeContract";
-import { readWorkflowManualLaunch } from "./workflowManualLaunchContract";
 import { visibleWorkflowRecordSource } from "./workflowRecordQuery";
+import { readWorkflowRunLaunch } from "./workflowRunLaunchContract";
 
 interface LockedRun {
   db: Db;
@@ -213,7 +213,7 @@ export async function advanceWorkflowIteratorRun(
     if (
       node.type !== "iterator" ||
       run.status === "waiting" ||
-      readWorkflowManualLaunch(context.definition, run.trigger) === null
+      readWorkflowRunLaunch(context.definition, run.trigger) === null
     )
       return err(ERROR_IDS.WORKFLOW_INVALID);
     const armed = armWorkflowIteratorRuntime({ ...runtimeInput(context), iteratorNodeId: node.id });

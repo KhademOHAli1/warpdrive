@@ -377,6 +377,7 @@ function extendedMappingTarget(
     case "record.pick":
     case "record.read":
     case "trigger.manual":
+    case "trigger.schedule":
     case "trigger.record":
       return undefined;
   }

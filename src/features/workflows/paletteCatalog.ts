@@ -33,6 +33,7 @@ interface CatalogDescriptor {
   selection: "insert" | "configure" | "unavailable";
   profile:
     | "manual-trigger"
+    | "scheduled-trigger"
     | "deal-read"
     | "basic-task"
     | "create-record"
@@ -92,6 +93,17 @@ export const paletteCatalog = [
     categoryKey: "paletteCategoryTriggers",
     labelKey: "paletteRecordTrigger",
     descriptionKey: "paletteRecordTriggerHint",
+  },
+  {
+    ...local,
+    type: "trigger.schedule",
+    category: "triggers",
+    categoryKey: "paletteCategoryTriggers",
+    labelKey: "scheduledTrigger",
+    descriptionKey: "scheduledTriggerHint",
+    selection: "configure",
+    profile: "scheduled-trigger",
+    input: "none",
   },
   {
     ...insertable,

@@ -237,6 +237,36 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("published live-test review", () => {
+  it("explains that a scheduled publication runs automatically and cannot be sent to manual admission", () => {
+    const current = publication();
+    current.definition = {
+      schemaVersion: 1,
+      nodes: [
+        {
+          id: "start",
+          type: "trigger.schedule",
+          version: 1,
+          name: "Scheduled",
+          config: { interval: "hours", hours: 1, minute: 30 },
+        },
+        {
+          id: "task",
+          type: "activity.create",
+          version: 1,
+          name: "Task",
+          config: { subject: { kind: "value", value: "Review pipeline" } },
+        },
+      ],
+      edges: [{ from: "start", to: "task", port: "next" }],
+    };
+    io.versions.set(`${workflowId}:1`, read(current));
+    render(view());
+    expect(screen.getByRole("status")).toHaveTextContent(english.scheduledRunsAutomatically);
+    expect(screen.queryByRole("combobox", { name: english.deal })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: english.confirmLive })).not.toBeInTheDocument();
+    expect(io.run).not.toHaveBeenCalled();
+  });
+
   it.each(locales)(
     "pins the simulation publication without asking for a live review in $locale",
     async ({ locale, messages, acknowledgement }) => {

@@ -1,11 +1,16 @@
 import { and, asc, eq, inArray, lte, notInArray, sql } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { PGBOSS_QUEUE_WORKFLOW_RECONCILE, PGBOSS_QUEUE_WORKFLOW_RUN } from "@/constants/jobNames";
+import {
+  PGBOSS_QUEUE_WORKFLOW_RECONCILE,
+  PGBOSS_QUEUE_WORKFLOW_RUN,
+  PGBOSS_QUEUE_WORKFLOW_SCHEDULE,
+} from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { workflowRuns } from "@/db/schema";
 import { getBoss } from "@/jobs/boss";
 import { advanceWorkflowRun } from "./execution";
+import { dispatchWorkflowSchedules } from "./workflowScheduleWorker";
 
 const JOB_OPTIONS = { retryLimit: 3, expireInSeconds: 60, singletonSeconds: 30 };
 const RECONCILE_BATCH_SIZE = 100;
@@ -101,6 +106,7 @@ async function advanceQueuedRun(boss: PgBoss, db: Db, runId: string, signal: Abo
 export async function registerWorkflowJobs(boss: PgBoss, db: Db): Promise<void> {
   await boss.createQueue(PGBOSS_QUEUE_WORKFLOW_RUN);
   await boss.createQueue(PGBOSS_QUEUE_WORKFLOW_RECONCILE);
+  await boss.createQueue(PGBOSS_QUEUE_WORKFLOW_SCHEDULE);
   await boss.work<{ runId: string }>(PGBOSS_QUEUE_WORKFLOW_RUN, async ([job]) => {
     if (job === undefined) return;
     const signal = AbortSignal.any([job.signal, AbortSignal.timeout(45_000)]);
@@ -119,5 +125,23 @@ export async function registerWorkflowJobs(boss: PgBoss, db: Db): Promise<void> 
     );
   });
   await boss.schedule(PGBOSS_QUEUE_WORKFLOW_RECONCILE, "* * * * *");
+  let scheduleAfterId: string | null = null;
+  await boss.work(PGBOSS_QUEUE_WORKFLOW_SCHEDULE, async ([job]) => {
+    if (job === undefined) return;
+    const signal = AbortSignal.any([job.signal, AbortSignal.timeout(45_000)]);
+    try {
+      scheduleAfterId = await dispatchWorkflowSchedules(
+        db,
+        scheduleAfterId,
+        (runId) => nudge(boss, runId),
+        signal,
+      );
+    } catch {
+      // Queue failures must not retain a database message or a workflow definition.
+      throw new AppError(ERROR_IDS.WORKFLOW_WRITE_FAILED, "Workflow schedule scan failed");
+    }
+  });
+  await boss.schedule(PGBOSS_QUEUE_WORKFLOW_SCHEDULE, "* * * * *");
   await boss.send(PGBOSS_QUEUE_WORKFLOW_RECONCILE);
+  await boss.send(PGBOSS_QUEUE_WORKFLOW_SCHEDULE);
 }

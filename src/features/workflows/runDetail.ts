@@ -13,15 +13,13 @@ import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 import { definitionSchema } from "./schemas";
 import { pendingWorkflowHumanForm } from "./workflowHumanFormPending";
 import { workflowIteratorSummary } from "./workflowIteratorRuntimeContract";
-import {
-  readWorkflowManualLaunch,
-  type WorkflowManualLaunchPayload,
-} from "./workflowManualLaunchContract";
+import { verifyWorkflowRunLaunch } from "./workflowRunLaunch";
+import type { WorkflowRunLaunchPayload } from "./workflowRunLaunchContract";
 
 async function formLaunchVisible(
   db: Db,
   actor: PermSetUser,
-  launch: WorkflowManualLaunchPayload,
+  launch: WorkflowRunLaunchPayload,
   signal: AbortSignal,
 ) {
   if (!("recordId" in launch)) return true;
@@ -98,6 +96,7 @@ export async function readRunDetail(
       createdAt: workflowRuns.createdAt,
       updatedAt: workflowRuns.updatedAt,
       number: workflowVersions.number,
+      publishedAt: workflowVersions.createdAt,
       definition: workflowVersions.definition,
       stored: workflowRuns,
     })
@@ -127,7 +126,7 @@ export async function readRunDetail(
     ),
   );
   const failures = await readFailureHistories(db, [runId], signal);
-  const { stored, responseWindowOpen, ...safeRun } = run;
+  const { stored, responseWindowOpen, publishedAt, ...safeRun } = run;
   const waitingForForm =
     run.status === "waiting" &&
     definition.data.nodes.some((node) => node.id === run.nextNodeId && node.type === "human.form");
@@ -142,9 +141,11 @@ export async function readRunDetail(
       canWorkflow(currentActor, "run", workflow.value.ownerId),
   );
   const launch =
-    form === undefined ? null : readWorkflowManualLaunch(definition.data, stored.trigger);
+    form === undefined
+      ? null
+      : verifyWorkflowRunLaunch(definition.data, stored, workflow.value.ownerId, publishedAt);
   const pendingForm =
-    launch !== null && (await formLaunchVisible(db, currentActor, launch, signal))
+    launch?.ok === true && (await formLaunchVisible(db, currentActor, launch.value, signal))
       ? form
       : undefined;
   const recovery = await describeRunRecovery(

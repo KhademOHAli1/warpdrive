@@ -8,6 +8,7 @@ it("classifies the known version-one entries in deliberate order", () => {
   expect(paletteCatalog.map((entry) => entry.type)).toEqual([
     "trigger.manual",
     "trigger.record",
+    "trigger.schedule",
     "record.create",
     "record.update",
     "record.delete",
@@ -33,7 +34,7 @@ it("classifies the known version-one entries in deliberate order", () => {
   }
 });
 
-it("keeps only factory-supported types insertable and configures the existing manual trigger", () => {
+it("keeps factory actions insertable and replaces the existing trigger in place", () => {
   expect(
     paletteCatalog
       .filter((entry) => entry.selection === "insert")
@@ -42,7 +43,7 @@ it("keeps only factory-supported types insertable and configures the existing ma
   ).toEqual([...creatableNodeTypes].sort());
   expect(
     paletteCatalog.filter((entry) => entry.selection === "configure").map((entry) => entry.type),
-  ).toEqual(["trigger.manual"]);
+  ).toEqual(["trigger.manual", "trigger.schedule"]);
   expect(
     paletteCatalog.filter((entry) => entry.selection === "unavailable").map((entry) => entry.type),
   ).toEqual(["trigger.record", "notification"]);
@@ -53,6 +54,7 @@ it("describes supported runtime subsets without promoting broader schema variant
     paletteCatalog.filter((entry) => entry.support === "supported").map((entry) => entry.profile),
   ).toEqual([
     "manual-trigger",
+    "scheduled-trigger",
     "create-record",
     "update-record",
     "delete-record",

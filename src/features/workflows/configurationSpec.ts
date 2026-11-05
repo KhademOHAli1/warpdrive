@@ -54,6 +54,7 @@ const unavailable = (key: string, type: ConfigurationValueKind) =>
 
 export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationProfile> = {
   "trigger.manual": { supported: true, fields: [name] },
+  "trigger.schedule": { supported: true, fields: [name] },
   "trigger.record": {
     supported: false,
     fields: [name, unavailable("entity", "entity"), unavailable("event", "string")],
@@ -222,6 +223,7 @@ export function conditionSourceDefaults(source: {
 }
 
 function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["config"] | undefined {
+  if (type === "trigger.schedule") return { interval: "days", days: 1, hour: 9, minute: 0 };
   if (type === "ifElse") return newIfElseConfig();
   if (type === "iterator") return { items: { kind: "literal", itemKind: "text", items: [] } };
   if (type === "record.create" || type === "record.update") return { fields: {} };

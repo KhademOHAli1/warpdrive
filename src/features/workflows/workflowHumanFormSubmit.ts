@@ -18,10 +18,8 @@ import {
   type WorkflowHumanFormConfig,
   workflowHumanFormConfig,
 } from "./workflowHumanFormContract";
-import {
-  readWorkflowManualLaunch,
-  type WorkflowManualLaunchPayload,
-} from "./workflowManualLaunchContract";
+import { verifyWorkflowRunLaunch } from "./workflowRunLaunch";
+import type { WorkflowRunLaunchPayload } from "./workflowRunLaunchContract";
 
 const uuid = z.uuid().transform((value) => value.toLowerCase());
 const submissionSchema = z.strictObject({
@@ -41,7 +39,7 @@ interface FormContext {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   config: WorkflowHumanFormConfig;
-  launch: WorkflowManualLaunchPayload;
+  launch: WorkflowRunLaunchPayload;
 }
 
 async function currentFormActor(
@@ -59,7 +57,7 @@ async function currentFormActor(
 async function formLaunchVisible(
   db: Db,
   actor: PermSetUser,
-  launch: WorkflowManualLaunchPayload,
+  launch: WorkflowRunLaunchPayload,
   signal: AbortSignal,
 ) {
   if (!("recordId" in launch)) return true;
@@ -108,17 +106,18 @@ async function lockedForm(
   const actor = await currentFormActor(db, who, workflow.ownerId, signal);
   if (actor === null) return err(ERROR_IDS.WORKFLOW_DENIED);
   const [version] = await db
-    .select({ definition: workflowVersions.definition })
+    .select({ definition: workflowVersions.definition, publishedAt: workflowVersions.createdAt })
     .from(workflowVersions)
     .where(
       and(eq(workflowVersions.id, run.versionId), eq(workflowVersions.workflowId, run.workflowId)),
     );
   const parsed = definitionSchema.safeParse(version?.definition);
-  if (!parsed.success || inspectGraph(parsed.data).length > 0)
+  if (version === undefined || !parsed.success || inspectGraph(parsed.data).length > 0)
     return err(ERROR_IDS.WORKFLOW_INVALID);
-  const launch = readWorkflowManualLaunch(parsed.data, run.trigger);
-  if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
-  if (!(await formLaunchVisible(db, actor, launch, signal))) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const launch = verifyWorkflowRunLaunch(parsed.data, run, workflow.ownerId, version.publishedAt);
+  if (!launch.ok) return launch;
+  if (!(await formLaunchVisible(db, actor, launch.value, signal)))
+    return err(ERROR_IDS.WORKFLOW_DENIED);
   const node = parsed.data.nodes.find((candidate) => candidate.id === input.nodeId);
   if (node?.type !== "human.form") return err(ERROR_IDS.WORKFLOW_CONFLICT);
   const config = workflowHumanFormConfig.safeParse(node.config);
@@ -129,7 +128,7 @@ async function lockedForm(
         definition: parsed.data,
         node,
         config: config.data,
-        launch,
+        launch: launch.value,
       })
     : err(ERROR_IDS.WORKFLOW_INVALID);
 }

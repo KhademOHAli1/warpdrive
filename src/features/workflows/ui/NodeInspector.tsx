@@ -51,6 +51,7 @@ export function NodeInspector(props: Props) {
 }
 const hints = {
   "trigger.manual": "manualLaunchHint",
+  "trigger.schedule": undefined,
   "trigger.record": undefined,
   "record.read": "readHint",
   "record.create": undefined,

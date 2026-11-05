@@ -11,7 +11,7 @@ import { executeRunNode } from "./runActions";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 import { advanceWorkflowHumanForm } from "./workflowHumanFormWait";
-import { readWorkflowManualLaunch } from "./workflowManualLaunchContract";
+import { readWorkflowRunLaunch } from "./workflowRunLaunchContract";
 
 type StepProgress =
   | { status: "waiting"; armedDeadline?: Date }
@@ -58,7 +58,7 @@ export async function advanceRunStep(
   outputs: RunOutputs = run.outputs,
 ): Promise<Result<StepProgress, string>> {
   if (!executableNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
-  const launch = readWorkflowManualLaunch(definition, run.trigger);
+  const launch = readWorkflowRunLaunch(definition, run.trigger);
   if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
   if (
     node.type !== "activity.create" &&

@@ -21,12 +21,17 @@ import styles from "./workflowPalette.module.css";
 import "./workflowTheme.css";
 
 const categoryOrder = [
-  "nodeCategoryTrigger",
   "nodeCategoryData",
   "nodeCategoryFlow",
   "nodeCategoryCore",
   "nodeCategoryHumanInput",
 ] as const;
+
+function pickerCategory(row: PaletteViewEntry, triggerPicker: boolean) {
+  if (triggerPicker)
+    return row.catalog.type === "trigger.record" ? "nodeCategoryData" : "triggerGroupOthers";
+  return workflowNodeCategory(row.catalog.type);
+}
 
 function PaletteRow({
   row,
@@ -165,8 +170,11 @@ export function NodePalette({
   const rows = model.entries.filter(
     (row) => row.catalog.type.startsWith("trigger.") === model.triggerPicker,
   );
-  const categories = categoryOrder.filter((category) =>
-    rows.some((row) => workflowNodeCategory(row.catalog.type) === category),
+  const order = model.triggerPicker
+    ? (["nodeCategoryData", "triggerGroupOthers"] as const)
+    : categoryOrder;
+  const categories = order.filter((category) =>
+    rows.some((row) => pickerCategory(row, model.triggerPicker) === category),
   );
   return (
     <DialogPrimitive.Root
@@ -204,7 +212,7 @@ export function NodePalette({
             <section key={category}>
               <h2 className={styles.category}>{t(category)}</h2>
               {rows
-                .filter((row) => workflowNodeCategory(row.catalog.type) === category)
+                .filter((row) => pickerCategory(row, model.triggerPicker) === category)
                 .map((row) => (
                   <PaletteRow key={row.catalog.type} row={row} onChoose={onChoose} />
                 ))}

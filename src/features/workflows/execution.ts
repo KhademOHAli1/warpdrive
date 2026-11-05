@@ -18,6 +18,7 @@ import { advanceRunStep } from "./runStep";
 import { definitionSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 import { workflowIteratorAllowsUnframedNode } from "./workflowIteratorGraph";
 import { advanceWorkflowIteratorRun } from "./workflowIteratorRun";
+import { verifyWorkflowRunLaunch } from "./workflowRunLaunch";
 
 export { admitManualRun } from "./runAdmission";
 
@@ -107,6 +108,8 @@ export async function advanceWorkflowRun(
     const parsed = definitionSchema.safeParse(version.definition);
     if (!parsed.success) return failRun(tx, run, ERROR_IDS.WORKFLOW_INVALID, now, signal);
     const definition = parsed.data;
+    const launch = verifyWorkflowRunLaunch(definition, run, workflow.ownerId, version.createdAt);
+    if (!launch.ok) return failRun(tx, run, launch.error, now, signal);
     const node = definition.nodes.find((item) => item.id === run.nextNodeId);
     if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
     const result = await advanceLockedStep(tx, actor, run, node, definition, now, signal);

@@ -23,6 +23,7 @@ import { ManualTriggerConfigurationFields } from "./ManualTriggerConfigurationFi
 import { PersonUpsertConfigurationFields } from "./PersonUpsertConfigurationFields";
 import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
 import { RecordMutationConfigurationFields } from "./RecordMutationConfigurationFields";
+import { ScheduleConfigurationFields } from "./ScheduleConfigurationFields";
 import { SearchRecordConfigurationFields } from "./SearchRecordConfigurationFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
@@ -158,6 +159,8 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
   switch (props.node.type) {
     case "trigger.manual":
       return <ManualTriggerConfigurationFields {...props} />;
+    case "trigger.schedule":
+      return <ScheduleConfigurationFields {...props} />;
     case "record.update":
     case "record.delete":
       return <RecordMutationConfigurationFields {...props} />;

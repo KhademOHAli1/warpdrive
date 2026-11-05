@@ -26,6 +26,7 @@ import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
 import { recordPickConfig, recordSearchConfig } from "./workflowRecordQueryContract";
+import { workflowScheduleConfig } from "./workflowScheduleContract";
 
 interface ActionSpec {
   configuration: ConfigurationProfile;
@@ -97,6 +98,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     inputs: {},
     outputs: coarseMappingOutputs("trigger.manual"),
     outputContracts: mappingOutputContracts("trigger.manual"),
+    effect: "none",
+  },
+  "trigger.schedule": {
+    configuration: configurationProfiles["trigger.schedule"],
+    config: workflowScheduleConfig,
+    inputs: {},
+    outputs: {},
+    outputContracts: {},
     effect: "none",
   },
   "trigger.record": {

@@ -296,6 +296,38 @@ it("is pure and fails closed for unavailable, forged, unconfirmed or unauthorize
   expect(graph).toEqual(before);
 });
 
+it("switches the sole trigger to Scheduled in place and back to recordless Manual", () => {
+  const graph = branch();
+  const settings = options();
+  const request = { kind: "replace", nodeId: "start" } as const;
+  const schedule = { kind: "configure", type: "trigger.schedule", nodeId: "start", version: 1 };
+  expect(selectPaletteEntry(graph, { kind: "detached" }, schedule, settings)).toMatchObject({
+    ok: false,
+    reason: "unavailable-action",
+  });
+  const selected = selectPaletteEntry(graph, request, schedule, settings);
+  if (!selected.ok) throw new Error("Expected a scheduled trigger replacement");
+  expect(selected.definition.nodes[0]).toMatchObject({
+    id: "start",
+    type: "trigger.schedule",
+    config: { interval: "days", days: 1, hour: 9, minute: 0 },
+  });
+  expect(selected.definition.edges).toEqual(graph.edges);
+  const restored = selectPaletteEntry(
+    selected.definition,
+    request,
+    { ...schedule, type: "trigger.manual" },
+    settings,
+  );
+  if (!restored.ok) throw new Error("Expected a manual trigger replacement");
+  expect(restored.definition.nodes[0]).toMatchObject({
+    id: "start",
+    type: "trigger.manual",
+    config: { scope: "global" },
+  });
+  expect(restored.definition.edges).toEqual(graph.edges);
+});
+
 it("replaces a step in place, retaining identity, layout, input and compatible output connections", () => {
   const graph = branch();
   graph.layout = { gate: { x: 42, y: 75 } };

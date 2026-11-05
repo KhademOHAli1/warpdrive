@@ -24,15 +24,14 @@ import type { RunOutputs, StepOutput } from "./runTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
-import {
-  matchWorkflowManualLaunch,
-  type WorkflowManualLaunchPayload,
-} from "./workflowManualLaunchContract";
+import { matchWorkflowManualLaunch } from "./workflowManualLaunchContract";
 import { upsertWorkflowPerson } from "./workflowPersonUpsert";
 import { createWorkflowRecord } from "./workflowRecordCreate";
 import { mutateWorkflowRecord } from "./workflowRecordMutation";
 import { pickWorkflowRecord } from "./workflowRecordPick";
 import { searchWorkflowRecords } from "./workflowRecordQuery";
+import type { WorkflowRunLaunchPayload } from "./workflowRunLaunchContract";
+import { readWorkflowScheduleLaunch } from "./workflowScheduleContract";
 
 function referenceActor(actor: PermSetUser) {
   return {
@@ -50,7 +49,7 @@ export async function executeRunNode(
   actor: PermSetUser,
   node: WorkflowNode,
   outputs: RunOutputs,
-  trigger: WorkflowManualLaunchPayload,
+  trigger: WorkflowRunLaunchPayload,
   simulation: boolean,
   definition: WorkflowDefinition,
   signal: AbortSignal,
@@ -66,6 +65,10 @@ export async function executeRunNode(
       const output: StepOutput = "recordId" in launch ? { recordId: launch.recordId } : {};
       return ok(output);
     }
+    case "trigger.schedule":
+      return readWorkflowScheduleLaunch(definition, trigger) === null
+        ? err(ERROR_IDS.WORKFLOW_INVALID)
+        : ok({});
     case "filter":
       return evaluateFilter(node.config, outputs, { definition, nodeId: node.id });
     case "ifElse":

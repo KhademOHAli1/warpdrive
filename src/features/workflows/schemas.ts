@@ -49,6 +49,7 @@ export type ValueType = "string" | "number" | "boolean" | "decimal" | "date" | "
 export const nodeTypes = [
   "trigger.manual",
   "trigger.record",
+  "trigger.schedule",
   "record.read",
   "record.create",
   "record.update",

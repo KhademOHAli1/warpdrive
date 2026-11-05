@@ -28,6 +28,7 @@ import {
   recordSearchBindingEntries,
   recordSearchConfig,
 } from "./workflowRecordQueryContract";
+import { workflowScheduleConfig } from "./workflowScheduleContract";
 
 export function configurationIssue(
   node: WorkflowNode,
@@ -390,8 +391,24 @@ function validateManualTrigger(
     result.issues.push(configurationIssue(node, ["scope"], "invalid_value"));
 }
 
+function validateScheduledTrigger(
+  node: WorkflowNode,
+  _context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = workflowScheduleConfig.safeParse(node.config);
+  if (parsed.success) return;
+  for (const entry of parsed.error.issues) {
+    const key = entry.path[0];
+    result.issues.push(
+      configurationIssue(node, [typeof key === "string" ? key : "interval"], "invalid_value"),
+    );
+  }
+}
+
 const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "trigger.manual": validateManualTrigger,
+  "trigger.schedule": validateScheduledTrigger,
   "record.read": validateRead,
   "activity.create": validateTask,
   "record.create": validateRecordCreate,
@@ -412,6 +429,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
 
 const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   "trigger.manual": ["scope"],
+  "trigger.schedule": ["interval", "days", "hours", "minutes", "hour", "minute", "expression"],
   ifElse: ["branches", "fallbackId"],
   iterator: ["items", "shouldContinueOnIterationFailure"],
   "record.create": ["entity", "fields"],
