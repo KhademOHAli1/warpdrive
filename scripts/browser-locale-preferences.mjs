@@ -10,6 +10,10 @@ const languageOptions = {
   fa: "فارسی",
 };
 
+function languageControl(label) {
+  return `[role="combobox"][aria-label="${label}"]`;
+}
+
 export function isRegionalSaveRequest(request, origin) {
   const url = new URL(request.url());
   return (
@@ -43,76 +47,67 @@ export async function deliverRegionalSave(route) {
   }
 }
 
+async function selectLanguage(page, locale) {
+  const language = page
+    .locator(Object.values(languageLabels).map(languageControl).join(","))
+    .first();
+  const expanded = language.and(page.locator('[aria-expanded="true"]'));
+  const listbox = page.getByRole("listbox");
+  const option = listbox.getByRole("option", { name: languageOptions[locale], exact: true });
+  // A pre-hydration click may focus the SSR trigger without opening it.
+  // Require an expanded trigger, not just an option in a closing portal.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      if ((await language.getAttribute("aria-expanded")) !== "true") {
+        await listbox.waitFor({ state: "hidden", timeout: 1500 });
+        await language.click({ timeout: 1500 });
+      }
+      await expanded.waitFor({ state: "visible", timeout: 1500 });
+      await option.click({ timeout: 1500 });
+      return;
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== "TimeoutError" || attempt === 2) throw error;
+    }
+  }
+}
+
+async function waitForReadyLocale(page, locale, changed) {
+  // Document direction is optimistic. A changed locale must also have its
+  // cookie and an enabled, closed control after the app consumes the response.
+  await page.waitForFunction(
+    ({ expectedLocale, direction, selector, selectedLanguage, changedLocale }) => {
+      const cookies = document.cookie.split("; ").map((value) => value.split("=", 2));
+      const control = document.querySelector(selector);
+      return (
+        document.documentElement.lang === expectedLocale &&
+        document.documentElement.dir === direction &&
+        (!changedLocale ||
+          cookies.some(
+            ([name, value]) => name === "warpdrive_locale" && value === expectedLocale,
+          )) &&
+        control !== null &&
+        control.getAttribute("aria-expanded") === "false" &&
+        !control.matches(':disabled, [aria-disabled="true"]') &&
+        control.textContent?.trim() === selectedLanguage
+      );
+    },
+    {
+      expectedLocale: locale,
+      direction: locale === "fa" ? "rtl" : "ltr",
+      selector: languageControl(languageLabels[locale]),
+      selectedLanguage: languageOptions[locale],
+      changedLocale: changed,
+    },
+  );
+}
+
 export async function prepareLocaleThroughUi(page, origin, locale) {
   assert.ok(languageOptions[locale], `Supported browser locale: ${locale}`);
   const response = await page.goto("/settings/regional", { waitUntil: "load" });
-  assert.ok(response, "Regional settings returned a response");
-  assert.equal(response.status(), 200, "Regional settings status");
-  assert.equal(
-    new URL(page.url()).origin,
-    origin,
-    "Regional settings stays on the admitted origin",
-  );
-
-  const languageSelector = () =>
-    page.locator(
-      Object.values(languageLabels)
-        .map((label) => `[role="combobox"][aria-label="${label}"]`)
-        .join(","),
-    );
-  const selectLocale = async (nextLocale) => {
-    const language = languageSelector().first();
-    const option = page.getByRole("option", { name: languageOptions[nextLocale], exact: true });
-    // An SSR trigger is visible before the picker can open. Require the real
-    // option and allow a bounded retry if the first click preceded hydration.
-    for (let attempt = 0; attempt < 3 && !(await option.isVisible()); attempt += 1) {
-      if ((await language.getAttribute("aria-expanded")) !== "true") await language.click();
-      try {
-        await option.waitFor({ state: "visible", timeout: 1500 });
-      } catch (error) {
-        if (!(error instanceof Error) || error.name !== "TimeoutError" || attempt === 2)
-          throw error;
-      }
-    }
-    await option.click();
-    // The new document direction is optimistic, and the cookie can arrive with
-    // headers. The localized control only becomes enabled again after the app
-    // consumes the action response and clears its pending state.
-    await page.waitForFunction(
-      ({ locale: expectedLocale, direction, cookieName, controlLabel, selectedLanguage }) => {
-        const cookies = document.cookie.split("; ").map((value) => value.split("=", 2));
-        const control = document.querySelector(`[role="combobox"][aria-label="${controlLabel}"]`);
-        return (
-          document.documentElement.lang === expectedLocale &&
-          document.documentElement.dir === direction &&
-          cookies.some(([name, value]) => name === cookieName && value === expectedLocale) &&
-          control !== null &&
-          !control.matches(':disabled, [aria-disabled="true"]') &&
-          control.textContent?.trim() === selectedLanguage
-        );
-      },
-      {
-        locale: nextLocale,
-        direction: nextLocale === "fa" ? "rtl" : "ltr",
-        cookieName: "warpdrive_locale",
-        controlLabel: languageLabels[nextLocale],
-        selectedLanguage: languageOptions[nextLocale],
-      },
-    );
-  };
-
-  const documentLocale = await page.locator("html").getAttribute("lang");
-  const transitions = [];
-  // Selecting an alternate first when the requested locale is already rendered makes this
-  // helper prove an account write even when the initial page came from a cookie-only hint.
-  if (documentLocale === locale) {
-    const alternate = locale === "en" ? "de" : "en";
-    await selectLocale(alternate);
-    transitions.push(alternate);
-  }
-  await selectLocale(locale);
-  transitions.push(locale);
-  assert.equal(await page.locator("html").getAttribute("lang"), locale);
-  assert.equal(await page.locator("html").getAttribute("dir"), locale === "fa" ? "rtl" : "ltr");
-  return { locale, changed: true, transitions, nativeControl: true };
+  assert.equal(response?.status(), 200, "Regional settings status");
+  assert.equal(page.url(), `${origin}/settings/regional`, "Authenticated regional settings URL");
+  const changed = (await page.locator("html").getAttribute("lang")) !== locale;
+  if (changed) await selectLanguage(page, locale);
+  await waitForReadyLocale(page, locale, changed);
+  return { locale, changed, transitions: changed ? [locale] : [], nativeControl: true };
 }
