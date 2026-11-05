@@ -3,30 +3,44 @@ import assert from "node:assert/strict";
 // Keep this helper deliberately small and UI-bound. It is used only after a real native login so
 // account locale state is established through the same Language & region control a user sees;
 // callers must not replace this with a locale cookie or a direct database write.
-const languageLabels = ["Language", "Sprache", "زبان"];
+const languageLabels = { en: "Language", de: "Sprache", fa: "زبان" };
 const languageOptions = {
   en: "English",
   de: "Deutsch",
   fa: "فارسی",
 };
 
-export async function completeRegionalPreferenceSave(page, origin, change) {
-  // Cookie headers and optimistic UI can update before Chromium has read the
-  // response. Observe the actual action finishing before leaving the document.
-  const [request] = await Promise.all([
-    page.waitForEvent("requestfinished", (request) => {
-      const url = new URL(request.url());
-      return (
-        url.origin === origin &&
-        url.pathname === "/settings/regional" &&
-        request.method() === "POST" &&
-        Boolean(request.headers()["next-action"])
-      );
-    }),
-    change(),
-  ]);
-  const response = await request.response();
-  assert.ok(response?.ok(), "Regional preference action completed successfully");
+export function isRegionalSaveRequest(request, origin) {
+  const url = new URL(request.url());
+  return (
+    url.origin === origin &&
+    ["/login", "/settings/regional"].includes(url.pathname) &&
+    request.method() === "POST" &&
+    Boolean(request.headers()["next-action"])
+  );
+}
+
+// Some successful Next action streams are cancelled on the browser side after
+// applying the result. Capture the full, unmodified response from the real server
+// so only that exact delivered request can be distinguished from a failed POST.
+export async function deliverRegionalSave(route) {
+  const response = await route.fetch({ maxRedirects: 0, maxRetries: 0 });
+  try {
+    const saved =
+      response.status() === 200 &&
+      response.headers()["content-type"]?.startsWith("text/x-component") &&
+      response
+        .headersArray()
+        .some(
+          ({ name, value }) =>
+            name.toLowerCase() === "set-cookie" && /^warpdrive_locale=(?:en|de|fa);/.test(value),
+        ) &&
+      (await response.body()).byteLength > 0;
+    await route.fulfill({ response });
+    return saved === true;
+  } finally {
+    await response.dispose();
+  }
 }
 
 export async function prepareLocaleThroughUi(page, origin, locale) {
@@ -42,27 +56,38 @@ export async function prepareLocaleThroughUi(page, origin, locale) {
 
   const languageSelector = () =>
     page.locator(
-      languageLabels.map((label) => `[role="combobox"][aria-label="${label}"]`).join(","),
+      Object.values(languageLabels)
+        .map((label) => `[role="combobox"][aria-label="${label}"]`)
+        .join(","),
     );
   const selectLocale = async (nextLocale) => {
     const language = languageSelector();
     await language.first().waitFor({ state: "visible" });
     await language.first().click();
     const option = page.getByRole("option", { name: languageOptions[nextLocale], exact: true });
-    await completeRegionalPreferenceSave(page, origin, () => option.click());
+    await option.click();
+    // The new document direction is optimistic, and the cookie can arrive with
+    // headers. The localized control only becomes enabled again after the app
+    // consumes the action response and clears its pending state.
     await page.waitForFunction(
-      ({ locale: expectedLocale, direction, cookieName }) => {
+      ({ locale: expectedLocale, direction, cookieName, controlLabel, selectedLanguage }) => {
         const cookies = document.cookie.split("; ").map((value) => value.split("=", 2));
+        const control = document.querySelector(`[role="combobox"][aria-label="${controlLabel}"]`);
         return (
           document.documentElement.lang === expectedLocale &&
           document.documentElement.dir === direction &&
-          cookies.some(([name, value]) => name === cookieName && value === expectedLocale)
+          cookies.some(([name, value]) => name === cookieName && value === expectedLocale) &&
+          control !== null &&
+          !control.matches(':disabled, [aria-disabled="true"]') &&
+          control.textContent?.trim() === selectedLanguage
         );
       },
       {
         locale: nextLocale,
         direction: nextLocale === "fa" ? "rtl" : "ltr",
         cookieName: "warpdrive_locale",
+        controlLabel: languageLabels[nextLocale],
+        selectedLanguage: languageOptions[nextLocale],
       },
     );
   };

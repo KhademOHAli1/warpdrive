@@ -10,6 +10,12 @@ export const GLOBAL_FLAGS = [
   "stats.viewOthers",
   "pipeline.manage",
   "metadata.manage",
+  "company.profile.manage",
+  "company.legal.manage",
+  "work.view",
+  "work.create",
+  "work.change",
+  "work.manage",
   "goals.manage",
   "workflow.view",
   "workflow.create",
@@ -65,11 +71,19 @@ export const PERMISSION_FLAGS = {
   MANAGE: "permissions.manage",
   METADATA_MANAGE: "metadata.manage",
   PIPELINE_MANAGE: "pipeline.manage",
+  COMPANY_PROFILE_MANAGE: "company.profile.manage",
+  COMPANY_LEGAL_MANAGE: "company.legal.manage",
+  WORK_VIEW: "work.view",
+  WORK_CREATE: "work.create",
+  WORK_CHANGE: "work.change",
+  WORK_MANAGE: "work.manage",
 } as const satisfies Record<string, PermissionFlagKey>;
 
 // Granting any of these to a set requires the actor to be an admin (permissions spec 5.2).
 export const HIGH_RISK_FLAGS = [
   "workflow.publish",
+  "company.legal.manage",
+  "work.manage",
   "permissions.manage",
   "pipeline.manage",
   "metadata.manage",

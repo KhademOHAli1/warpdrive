@@ -3,7 +3,11 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createPreferenceProbe } from "./browser-appearance-actions.mjs";
-import { prepareLocaleThroughUi } from "./browser-locale-preferences.mjs";
+import {
+  deliverRegionalSave,
+  isRegionalSaveRequest,
+  prepareLocaleThroughUi,
+} from "./browser-locale-preferences.mjs";
 
 // Admission precedes DB/browser imports. Never run against an operator's local session/database.
 if (
@@ -504,9 +508,12 @@ function watchNetwork(context, page, entry) {
   const errors = [];
   const unexpected = [];
   const postCancellations = [];
+  const regionalCancellations = [];
+  const deliveredRegionalSaves = new WeakSet();
   let preferenceProbe;
   entry.navigationCancellations = [];
   entry.fulfilledResponseCancellations = [];
+  entry.regionalResponseCancellations = [];
   let expectedTransportErrors = 0;
   page.on("requestfailed", (request) => {
     const url = new URL(request.url());
@@ -526,6 +533,10 @@ function watchNetwork(context, page, entry) {
       (detail.navigation || detail.rsc)
     ) {
       entry.navigationCancellations.push(detail);
+      return;
+    }
+    if (detail.failure === "net::ERR_ABORTED" && isRegionalSaveRequest(request, origin)) {
+      regionalCancellations.push({ request, detail });
       return;
     }
     if (
@@ -578,6 +589,8 @@ function watchNetwork(context, page, entry) {
           assert.equal(preferenceProbe.matches(request), true);
           await preferenceProbe.handle(route);
         }
+      } else if (isRegionalSaveRequest(request, origin)) {
+        if (await deliverRegionalSave(route)) deliveredRegionalSaves.add(request);
       } else {
         await route.continue();
       }
@@ -597,6 +610,11 @@ function watchNetwork(context, page, entry) {
       for (const { request, detail } of postCancellations) {
         const delivered = probe.deliveredObservation(request);
         if (delivered) entry.fulfilledResponseCancellations.push({ ...detail, delivered });
+        else errors.push(detail);
+      }
+      for (const { request, detail } of regionalCancellations) {
+        if (deliveredRegionalSaves.has(request))
+          entry.regionalResponseCancellations.push({ ...detail, delivered: true });
         else errors.push(detail);
       }
       entry.expectedTransportErrors = expectedTransportErrors;

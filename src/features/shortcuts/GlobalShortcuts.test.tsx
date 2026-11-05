@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { NAV_ITEMS } from "@/constants/nav";
+import { workspaceNavItems } from "@/constants/workspaceNavigation";
+
+const NAV_ITEMS = workspaceNavItems([], false);
+
 import { GlobalShortcuts } from "./GlobalShortcuts";
 
 // Make a direct router bypass observable through the same URL effect as link navigation.

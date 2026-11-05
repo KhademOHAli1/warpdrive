@@ -24,6 +24,8 @@ const retainedTables = [
   "team_members",
   "goals",
   "user_preferences",
+  "company_profiles",
+  "workspace_work_profiles",
 ] as const;
 async function retainedRows(h: TestDb): Promise<Record<string, string>> {
   const snapshot: Record<string, string> = {};
@@ -37,13 +39,13 @@ async function retainedRows(h: TestDb): Promise<Record<string, string>> {
   return snapshot;
 }
 
-it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/preferences and admits an unchanged rerun", async () => {
+it("upgrades the populated 0106 company prefix to 0107, preserves CRM/company data and admits an unchanged rerun", async () => {
   const h = await freshMigrationDb();
   let target: Awaited<ReturnType<typeof migrationFolder>> | undefined;
   try {
-    // Ordinals are zero based: completed 0105 has 106 journal entries; 0106 is entry107.
-    await installPrefix(h, 106);
-    target = await migrationFolder(107);
+    // Ordinals are zero based: completed 0106 has 107 journal entries; 0107 is entry108.
+    await installPrefix(h, 107);
+    target = await migrationFolder(108);
     const owner = await seedUser(h.db, { isAdmin: true });
     const { pipeline, stages } = await seedPipelineWithStages(h.db, ["Retained stage"]);
     const stage = stages[0];
@@ -105,9 +107,17 @@ it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/prefe
         },
       },
     });
+    await h.pool.query(
+      `INSERT INTO company_profiles (id, details_ciphertext, details_revision, details_provenance)
+       VALUES (true, 'retained-company-details', 3, '{"source":"migration-admission"}'::jsonb)`,
+    );
+    await h.pool.query(
+      `INSERT INTO workspace_work_profiles (id, revision, preferences)
+       VALUES (true, 3, '{"workTypes":["custom"],"primaryWorkType":"custom","modules":[],"primaryGoal":"retained","deliveryModels":[],"customerTypes":[]}'::jsonb)`,
+    );
     const before = await retainedRows(h);
     const oldLedger = await ledger(h);
-    expect(oldLedger).toHaveLength(106);
+    expect(oldLedger).toHaveLength(107);
     expect(
       (await h.pool.query("SELECT to_regclass('public.kpi_definitions') AS value")).rows,
     ).toEqual([{ value: null }]);
@@ -117,8 +127,8 @@ it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/prefe
     });
     expect(await retainedRows(h)).toEqual(before);
     const admittedLedger = await ledger(h);
-    expect(admittedLedger).toHaveLength(107);
-    expect(admittedLedger.slice(0, 106)).toEqual(oldLedger);
+    expect(admittedLedger).toHaveLength(108);
+    expect(admittedLedger.slice(0, 107)).toEqual(oldLedger);
     const names = (
       await h.pool.query<{ table_name: string }>(
         "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('kpi_definitions','kpi_schemes','kpi_goals','kpi_measurements','kpi_snapshots') ORDER BY table_name",

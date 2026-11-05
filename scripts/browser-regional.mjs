@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { completeRegionalPreferenceSave } from "./browser-locale-preferences.mjs";
+import { deliverRegionalSave, isRegionalSaveRequest } from "./browser-locale-preferences.mjs";
 
 // Admission precedes DB/browser imports. This pack is deliberately production-only and must
 // never attach to a developer's local database or browser session.
@@ -261,6 +261,8 @@ function assertPreferenceRow(row, config, options = {}) {
 }
 
 function observePage(context, page, entry) {
+  const deliveredRegionalSaves = new WeakSet();
+  const regionalCancellations = [];
   const state = {
     externalRequests: [],
     unexpectedSockets: [],
@@ -269,6 +271,7 @@ function observePage(context, page, entry) {
     pageErrors: [],
     consoleErrors: [],
     navigationCancellations: [],
+    regionalResponseCancellations: [],
   };
 
   page.on("requestfailed", (request) => {
@@ -281,6 +284,10 @@ function observePage(context, page, entry) {
       (request.isNavigationRequest() || request.headers().rsc === "1")
     ) {
       state.navigationCancellations.push({ path: url.pathname, failure });
+      return;
+    }
+    if (failure === "net::ERR_ABORTED" && isRegionalSaveRequest(request, origin)) {
+      regionalCancellations.push({ request, path: url.pathname, failure });
       return;
     }
     state.requestFailures.push({
@@ -312,7 +319,9 @@ function observePage(context, page, entry) {
       if (request.method() === "POST" && request.headers()["next-action"]) {
         state.actionRequests.push({ path: url.pathname, method: request.method() });
       }
-      await route.continue();
+      if (isRegionalSaveRequest(request, origin)) {
+        if (await deliverRegionalSave(route)) deliveredRegionalSaves.add(request);
+      } else await route.continue();
     }),
     context.routeWebSocket("**/*", (socket) => {
       state.unexpectedSockets.push(new URL(socket.url()).origin);
@@ -324,6 +333,11 @@ function observePage(context, page, entry) {
     state,
     ready: routesReady,
     verify() {
+      for (const { request, path, failure } of regionalCancellations.splice(0)) {
+        if (deliveredRegionalSaves.has(request))
+          state.regionalResponseCancellations.push({ path, failure, delivered: true });
+        else state.requestFailures.push({ path, method: "POST", failure });
+      }
       entry.network = {
         externalRequests: state.externalRequests,
         unexpectedSockets: state.unexpectedSockets,
@@ -332,6 +346,7 @@ function observePage(context, page, entry) {
         pageErrors: state.pageErrors,
         consoleErrors: state.consoleErrors,
         navigationCancellations: state.navigationCancellations,
+        regionalResponseCancellations: state.regionalResponseCancellations,
       };
       assert.deepEqual(state.externalRequests, [], "No external origin requests");
       assert.deepEqual(state.unexpectedSockets, [], "No external WebSockets");
@@ -423,7 +438,7 @@ async function chooseCountry(page, controls, config, country, entry) {
     exact: true,
   });
   await option.waitFor({ state: "visible" });
-  await completeRegionalPreferenceSave(page, origin, () => option.click());
+  await option.click();
   await waitUntil(`${config.key} country UI ${country}`, async () => {
     const text = await controls.country.textContent();
     return text?.trim() === countryName(config.locale, country);
@@ -432,6 +447,7 @@ async function chooseCountry(page, controls, config, country, entry) {
     const row = await readPreference(config.actor.id);
     return row?.ui?.localePreferences?.country === country;
   });
+  await waitForControlEnabled(controls.country, `${config.key} saved country control`);
   entry.explicitCountryChanges ??= [];
   entry.explicitCountryChanges.push(country);
 }
@@ -443,7 +459,7 @@ async function exerciseExplicitProfile(page, config, entry) {
 
   await waitForControlEnabled(controls.zoneSwitch, `${config.key} browser time zone switch`);
   assert.equal(await controls.zoneSwitch.getAttribute("aria-checked"), "true");
-  await completeRegionalPreferenceSave(page, origin, () => controls.zoneSwitch.click());
+  await controls.zoneSwitch.click();
   await waitUntil(`${config.key} manual time zone switch`, async () => {
     return (await controls.zoneSwitch.getAttribute("aria-checked")) === "false";
   });
@@ -452,6 +468,7 @@ async function exerciseExplicitProfile(page, config, entry) {
     return row?.ui?.localePreferences?.timeZoneMode === "manual";
   });
   assertPreferenceRow(await readPreference(config.actor.id), config, { timeZoneMode: "manual" });
+  await waitForControlEnabled(controls.zoneSwitch, `${config.key} saved manual time zone switch`);
 
   await chooseCountry(page, controls, config, config.alternateCountry, entry);
   await chooseCountry(page, controls, config, config.country, entry);
@@ -460,7 +477,7 @@ async function exerciseExplicitProfile(page, config, entry) {
     controls.zoneSwitch,
     `${config.key} browser time zone switch restore`,
   );
-  await completeRegionalPreferenceSave(page, origin, () => controls.zoneSwitch.click());
+  await controls.zoneSwitch.click();
   await waitUntil(`${config.key} browser time zone switch`, async () => {
     return (await controls.zoneSwitch.getAttribute("aria-checked")) === "true";
   });
@@ -473,6 +490,7 @@ async function exerciseExplicitProfile(page, config, entry) {
       return false;
     }
   });
+  await waitForControlEnabled(controls.zoneSwitch, `${config.key} saved browser time zone switch`);
   entry.database = { afterExplicitProfile: row };
   assert.equal(
     entry.explicitCountryChanges.join(","),
@@ -544,6 +562,9 @@ async function freshJourney(config) {
         return false;
       }
     });
+    await page
+      .getByText(settingsMessages(config.locale).saving, { exact: true })
+      .waitFor({ state: "detached" });
     entry.guest = {
       initialCookieNames: initialCookies.map((cookie) => cookie.name).sort(),
       document: { locale: config.locale, direction: config.locale === "fa" ? "rtl" : "ltr" },
@@ -555,6 +576,11 @@ async function freshJourney(config) {
     await statusPage(page, "/settings/regional");
     await assertDocument(page, config);
     await exerciseExplicitProfile(page, config, entry);
+    assert.equal(
+      network.state.actionRequests.filter(({ path }) => path === "/settings/regional").length,
+      4,
+      "The four explicit regional controls each cause exactly one server action",
+    );
     await page.screenshot({
       path: fileURLToPath(new URL(`${entry.key}.png`, evidence)),
       fullPage: true,
