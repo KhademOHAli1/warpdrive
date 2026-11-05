@@ -1322,15 +1322,20 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": ["src/db/schema/deals.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/db/schema/deals.ts",
+        "src/features/stats/lifecycleEconomics.ts",
+        "src/features/stats/lifecycleEconomics.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["lifecycle-models", "commercial-profitability"],
       "dataRequirements": ["Stable account identity, qualified value and economic source."],
       "acceptance": [
         "Show concentration denominator and observation horizon; profit requires sourced costs."
       ],
       "tests": ["Large account, multiple contacts, account merge/correction and hidden accounts."],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private exact account concentration and sourced delivery contribution from a reconciled settled window. Qualified finance/account source, lifecycle collection and viewer result remain open."
     },
     {
       "id": "buying-group",

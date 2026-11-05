@@ -32,6 +32,7 @@ export const analyticsComputationInventoryEntry = classifyInventory(
     "derived:src/features/stats/fixedExperimentReadout.ts",
     "derived:src/features/stats/forecastEvaluation.ts",
     "derived:src/features/stats/history/dealCloseIncidence.ts",
+    "derived:src/features/stats/lifecycleEconomics.ts",
     "derived:src/features/stats/periodForecast.ts",
     "sourceReview:src/features/stats/analyticsInputAdmission.ts#559893ca5917887784666fb30672259f1be3d96ed2823aea15d96b4c7dc21ed3",
     "sourceReview:src/features/stats/attribution.ts#5f6a361893b683967972de619327f39595c784f5fe7070335fe1a417b35d2de7",
@@ -39,6 +40,7 @@ export const analyticsComputationInventoryEntry = classifyInventory(
     "sourceReview:src/features/stats/fixedExperimentReadout.ts#4f4ff4b0d81681ed6d4c2c9d19b5a5a9c1790b2e10c0125c27d427828800f0ed",
     "sourceReview:src/features/stats/forecastEvaluation.ts#93b8623477eb9dfb0d1802ac61aa6e445b32402ffe354d0198cd975ccf339d10",
     "sourceReview:src/features/stats/history/dealCloseIncidence.ts#0ad2c3f82f2b868f682222a470d379347dcfccba1c119085b4c29a06d5b43071",
+    "sourceReview:src/features/stats/lifecycleEconomics.ts#f9173c38f1e2c375e0b5280acd85e1fb4e0fcaf64f7133cab07aefa5f650e542",
     "sourceReview:src/features/stats/periodForecast.ts#500d5c56f006ea39067c741877de1b581de7731142750b431ffbd91cfead2021",
     "writer:src/features/stats/analyticsInputAdmission.ts#update:dynamic",
     "writer:src/features/stats/fixedExperimentReadout.ts#update:payload",
@@ -52,11 +54,12 @@ export const analyticsComputationInventoryEntry = classifyInventory(
       "deal incarnations, observed entry and close facts, and precise elapsed ages",
       "settled segment counts, first wins and exact won deal amounts",
       "saved forecast and settlement references, scoped outcomes, experiment assignments and endpoint evidence",
+      "eligible account and posting references, realized net revenue and attributable delivery costs",
     ],
     subjectRelation:
       "Projections may refer to people, accounts and deals; a source key or fingerprint does not verify subject identity or authorize access.",
     purpose:
-      "Compute an atomic input admission plan and explicitly scoped analytics: attribution, forecast scenarios and error, fixed experiment contrasts, competing outcome incidence and commercial change.",
+      "Compute an atomic input admission plan and explicitly scoped analytics: attribution, forecast scenarios and error, fixed experiment contrasts, competing outcome incidence, commercial change and customer economics.",
     disclosure:
       "Private server-side values. An adapter must prove authorized and complete membership and build a separate disclosure DTO before sharing results. Single-deal steps and precise ages in an incidence curve can identify a contributor and are not viewer output.",
     retention:
