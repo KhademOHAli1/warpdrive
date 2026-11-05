@@ -20,11 +20,11 @@ export function ActivityTypesWidget({ data }: { data: ActivityTypeCount[] }) {
       isEmpty={data.length === 0}
       emptyText={S.emptyActivityTypes}
     >
-      <div className="space-y-2">
+      <div className="space-y-5">
         {data.map((t) => (
           <div key={t.typeId}>
-            <div className="mb-0.5 flex items-center justify-between text-sm">
-              <span className="truncate">{activityTypeName(t, locale)}</span>
+            <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+              <span className="min-w-0 break-words">{activityTypeName(t, locale)}</span>
               <span className="tabular-nums text-muted-foreground">
                 {format.number(t.completed)}
               </span>
@@ -55,16 +55,16 @@ export function LostReasonsWidget({
   const max = Math.max(1, ...data.map((r) => Number(r.value)));
   return (
     <Panel title={S.widgetLostReasons} isEmpty={data.length === 0} emptyText={S.emptyLostReasons}>
-      <div className="space-y-2">
+      <div className="space-y-5">
         {data.map((r) => {
           // A null name means the deal was closed lost with nothing recorded, which is worth
           // seeing as its own row rather than hiding.
           const label = r.name ?? S.lostReasonUnspecified;
           return (
             <div key={r.reasonId ?? `text:${r.name ?? "unspecified"}`}>
-              <div className="mb-0.5 flex items-center justify-between gap-2 text-sm">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span className="flex min-w-0 items-baseline gap-1.5">
-                  <span className="truncate">{label}</span>
+                  <span className="min-w-0 break-words">{label}</span>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     ({format.number(r.count)})
                   </span>
