@@ -4,7 +4,7 @@ import { isTimeZone } from "@/features/i18n/preferences";
 import type { OwnerScope } from "@/types/stats";
 import { DEAL_RECORD_METRICS, type DealRecordMetric } from "./metricDictionary";
 import { fromToken, toToken } from "./ownerScopeToken";
-import { ownerScopeInput } from "./schemas";
+import { ownerScopeInput, validWonMonthScope, wonMonthInput } from "./schemas";
 
 export const DEAL_REPORT_EXPORT_LIMIT = 100;
 const MAX_QUERY_BYTES = 384;
@@ -34,9 +34,11 @@ const query = z
     currency,
     ownerScope: ownerSelector,
     metric: z.enum(DEAL_RECORD_METRICS),
+    wonMonth: wonMonthInput,
     timeZone: exportTimeZone,
   })
-  .refine(({ from, to }) => from <= to);
+  .refine(({ from, to }) => from <= to)
+  .refine(validWonMonthScope);
 
 export interface DealReportExportScope {
   from: string;
@@ -45,6 +47,7 @@ export interface DealReportExportScope {
   currency: string;
   ownerScope: OwnerScope;
   metric: DealRecordMetric;
+  wonMonth?: string;
   timeZone: string;
 }
 
@@ -69,13 +72,16 @@ export function parseDealReportExportRequest(
 
 /** The current report response supplies the effective scope and display time zone. */
 export function dealReportExportHref(scope: DealReportExportScope): string | null {
+  const { wonMonth, ...scopeFields } = scope;
   const fields = {
-    ...scope,
+    ...scopeFields,
     pipelineId: scope.pipelineId ?? "all",
     ownerScope: toToken(scope.ownerScope),
   };
   const params = new URLSearchParams(fields);
-  return query.safeParse(fields).success && params.toString().length < MAX_QUERY_BYTES
+  if (wonMonth !== undefined) params.set("wonMonth", wonMonth);
+  return query.safeParse(Object.fromEntries(params)).success &&
+    params.toString().length < MAX_QUERY_BYTES
     ? `/dashboard/export?${params}`
     : null;
 }

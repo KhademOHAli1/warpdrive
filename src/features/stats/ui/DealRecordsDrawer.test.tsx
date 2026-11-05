@@ -11,12 +11,15 @@ const fixture = vi.hoisted(() => ({
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   loading: false,
   fetching: false,
+  fetchedAfterMount: true,
   error: false,
+  wonTrend: [] as Array<{ month: string; count: number; value: string }>,
   result: {
     currency: "USD",
     timeZone: "Europe/Berlin",
     effectiveOwnerScope: { kind: "me" } as const,
     metric: "won" as const,
+    wonMonth: undefined as string | undefined,
     definitionVersion: "1",
     generatedAt: "2026-11-05T12:00:00.000Z",
     rows: [
@@ -48,6 +51,7 @@ vi.mock("@/lib/trpc-client", () => ({
           isError: false,
           data: {
             currency: "USD",
+            timeZone: "Europe/Berlin",
             dealPerformance: {
               added: { count: 1, value: "0.00" },
               won: { count: 1, value: "0.00" },
@@ -66,7 +70,7 @@ vi.mock("@/lib/trpc-client", () => ({
             funnel: [],
             stageSums: [],
             lostReasons: [],
-            wonTrend: [],
+            wonTrend: fixture.wonTrend,
             effectiveOwnerScope: { kind: "me" },
           },
         }),
@@ -79,6 +83,7 @@ vi.mock("@/lib/trpc-client", () => ({
             data: fixture.result,
             isLoading: fixture.loading,
             isFetching: fixture.fetching,
+            isFetchedAfterMount: fixture.fetchedAfterMount,
             isError: fixture.error,
             refetch: fixture.refetch,
           };
@@ -112,6 +117,10 @@ beforeEach(() => {
   fixture.error = false;
   fixture.loading = false;
   fixture.fetching = false;
+  fixture.fetchedAfterMount = true;
+  fixture.wonTrend = [];
+  fixture.result.wonMonth = undefined;
+  fixture.result.timeZone = "Europe/Berlin";
   fixture.result.rows = [
     {
       id: "00000000-0000-4000-8000-000000000001",
@@ -304,6 +313,69 @@ describe("contributing-deal inspection", () => {
 });
 
 describe("scoreboard record populations", () => {
+  it("opens one exact trend month for records and CSV while keeping the original report open", async () => {
+    fixture.wonTrend = [
+      { month: "2026-10", count: 0, value: "0.00" },
+      { month: "2026-11", count: 1, value: "0.00" },
+    ];
+    fixture.result.wonMonth = "2026-11";
+    fixture.fetchedAfterMount = false;
+    const dashboard = () => (
+      <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} canExport />
+    );
+    const page = render(dashboard());
+    await userEvent.click(screen.getByRole("button", { name: "This quarter" }));
+    expect(
+      screen.queryByRole("button", { name: /View won deals for Nov/ }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Show monthly data" }));
+    expect(
+      screen.queryByRole("button", { name: /View won deals for Oct/ }),
+    ).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: /View won deals for Nov/ });
+    await userEvent.click(trigger);
+    expect(screen.getByRole("dialog", { name: /Won deals in Nov/ })).toBeInTheDocument();
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        from: "2026-10-01",
+        to: "2026-11-05",
+        currency: "USD",
+        ownerScope: { kind: "me" },
+        metric: "won",
+        wonMonth: "2026-11",
+      }),
+      expect.objectContaining({ refetchOnWindowFocus: "always" }),
+    );
+    expect(screen.queryByRole("link", { name: /Acme service agreement/ })).not.toBeInTheDocument();
+    fixture.fetchedAfterMount = true;
+    page.rerender(dashboard());
+    const deal = screen.getByRole("link", { name: /Acme service agreement/ });
+    expect(deal).toHaveAttribute("target", "_blank");
+    expect(deal).toHaveAccessibleName(/this report stays open/);
+    const download = screen.getByRole("link", { name: "Download CSV" });
+    const params = new URL(download.getAttribute("href") ?? "", "https://example.invalid")
+      .searchParams;
+    expect(Object.fromEntries(params)).toMatchObject({
+      from: "2026-10-01",
+      to: "2026-11-05",
+      metric: "won",
+      wonMonth: "2026-11",
+      timeZone: "Europe/Berlin",
+    });
+
+    fixture.result.timeZone = "UTC";
+    page.rerender(dashboard());
+    expect(screen.getByRole("alert")).toHaveTextContent("The original chart scope is unavailable.");
+    expect(screen.queryByRole("link", { name: /Acme service agreement/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.getByRole("button", { name: "This quarter" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   it("exposes exactly the four eligible deal populations", async () => {
     const inspect = vi.fn();
     render(

@@ -60,6 +60,7 @@ export const statsRouter = router({
       currency,
       effectiveOwnerScope,
       metric: input.metric,
+      ...(input.wonMonth === undefined ? {} : { wonMonth: input.wonMonth }),
       definitionVersion: ANALYTICS_METRIC_DICTIONARY_VERSION,
       timeZone: filters.timeZone ?? "UTC",
       generatedAt: new Date().toISOString(),

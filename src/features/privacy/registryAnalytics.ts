@@ -5,8 +5,8 @@ export const dealReportExportInventoryEntry = classifyInventory(
     "derived:src/features/stats/dealReportExportCsv.ts",
     "derived:src/features/stats/dealReportExportRequest.ts",
     "sourceReview:src/app/(app)/dashboard/export/route.ts#beed840079d9b47973e260bc39644014094a3f5212d16a7bb3909e0b5a5a56b7",
-    "sourceReview:src/features/stats/dealReportExportCsv.ts#7096c072639d63feaeaac8d3b8a31c768ab3b9611d92cffc22ad4d4a9a793de9",
-    "sourceReview:src/features/stats/dealReportExportRequest.ts#0234508321d17b428dc7f98df3fd064f56daf4654f5206e470cd038453a79a78",
+    "sourceReview:src/features/stats/dealReportExportCsv.ts#d6b2425354203df692c0a59054d651d8f2ea46587624d2883d889e8125df402f",
+    "sourceReview:src/features/stats/dealReportExportRequest.ts#74fd8c4c71ff4c6573bed22f7562da9b9de8929d01c534adcad65b924674eceb",
   ],
   {
     owner: "authorized performance deal export",

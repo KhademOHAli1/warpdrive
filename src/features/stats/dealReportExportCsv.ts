@@ -11,7 +11,7 @@ import {
   DEAL_RECORD_METRICS,
 } from "./metricDictionary";
 import { toToken } from "./ownerScopeToken";
-import { ownerScopeInput } from "./schemas";
+import { ownerScopeInput, wonMonthInput } from "./schemas";
 
 const MAX_CSV_BYTES = 16_384;
 const HEADER = "deal_id,status,currency,value,created_at_utc,closed_at_utc";
@@ -39,6 +39,7 @@ const rowSchema = z.object({
 });
 const reportSchema = z.object({
   metric: z.enum(DEAL_RECORD_METRICS),
+  wonMonth: wonMonthInput,
   definitionVersion: z.literal(ANALYTICS_METRIC_DICTIONARY_VERSION),
   currency,
   effectiveOwnerScope: ownerScopeInput,
@@ -84,7 +85,10 @@ function readExportRow(input: unknown, scope: Pick<DealReportExportScope, "curre
 /** Only typed ASCII fields enter the CSV. A signed decimal is a numeric literal. */
 export function serializeDealReportExport(
   input: unknown,
-  expected: Pick<DealReportExportScope, "currency" | "ownerScope" | "metric" | "timeZone">,
+  expected: Pick<
+    DealReportExportScope,
+    "currency" | "ownerScope" | "metric" | "timeZone" | "wonMonth"
+  >,
 ): CsvResult {
   const parsed = reportSchema.safeParse(input);
   if (!parsed.success) return { state: "invalid" };
@@ -92,6 +96,7 @@ export function serializeDealReportExport(
   if (
     report.currency !== expected.currency ||
     report.metric !== expected.metric ||
+    report.wonMonth !== expected.wonMonth ||
     report.timeZone !== expected.timeZone ||
     toToken(report.effectiveOwnerScope) !== toToken(expected.ownerScope)
   )

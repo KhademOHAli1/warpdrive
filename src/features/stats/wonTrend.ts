@@ -4,24 +4,28 @@
 
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
-import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { ownerFilterClause } from "@/features/stats/ownerIds";
 import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, WonTrendPoint } from "@/types/stats";
+import { dealMetricPopulation, visibleDealPopulation } from "./dealPopulation";
 import { monthsInRange, windowStart } from "./monthBuckets";
-import { reportPeriod } from "./reportPeriod";
 
-function toSession(actor: PermSetUser) {
-  return {
-    userId: actor.id,
-    isAdmin: actor.type === "admin",
-    isActive: actor.isActive,
-    sessionLive: true,
-    visibilityGroupIds: Array.from(actor.groupIds),
-    managedUserIds: Array.from(actor.managedUserIds ?? []),
-  };
+function trendWindow(filters: DashboardFilters) {
+  const months = monthsInRange(filters.from, filters.to);
+  const from = windowStart(filters.from, months);
+  return from === null ? null : { months, filters: { ...filters, from } };
+}
+
+function wonMonthBucket(timeZone = "UTC") {
+  return sql`to_char(date_trunc('month', d.won_time AT TIME ZONE ${timeZone}), 'YYYY-MM')`;
+}
+
+/** A bucket is the original capped chart window plus the chart's exact local-month group. */
+export function wonTrendMonthPopulation(filters: DashboardFilters, month: string) {
+  const window = trendWindow(filters);
+  if (window === null || !window.months.includes(month)) return sql`false`;
+  return sql`(${dealMetricPopulation("won", window.filters)})
+    AND ${wonMonthBucket(filters.timeZone)} = ${month}`;
 }
 
 interface Row {
@@ -37,35 +41,19 @@ export async function wonTrend(
   signal: AbortSignal,
 ): Promise<WonTrendPoint[]> {
   signal.throwIfAborted();
-  const period = reportPeriod(filters);
-
-  const months = monthsInRange(filters.from, filters.to);
-  const start = windowStart(filters.from, months);
-  if (start === null) return [];
-
-  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
-  const visClause = dealVisibilityClause(toSession(actor));
-  const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
-  const pipelineClause =
-    filters.pipelineId !== null ? sql`AND d.pipeline_id = ${filters.pipelineId}` : sql``;
+  const window = trendWindow(filters);
+  if (window === null) return [];
+  const visible = await visibleDealPopulation(db, actor, window.filters, signal);
+  const population = dealMetricPopulation("won", window.filters);
 
   const result = await db.execute(sql`
     SELECT
-      to_char(date_trunc('month', d.won_time AT TIME ZONE ${filters.timeZone ?? "UTC"}), 'YYYY-MM') AS "month",
+      ${wonMonthBucket(filters.timeZone)} AS "month",
       count(*)::int AS "count",
       coalesce(sum(d.value), 0)::text AS "value"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
-    WHERE d.deleted_at IS NULL
-      AND d.archived_at IS NULL
-      AND p.is_archived = false
-      AND d.status = 'won'
-      AND d.won_time >= ${reportPeriod({ ...filters, from: start }).from}
-      AND d.won_time < ${period.toExclusive}
-      ${pipelineClause}
-      ${ownerClause}
-      ${currencyClause}
-      AND ${visClause}
+    WHERE ${visible} AND (${population})
     GROUP BY 1
   `);
 
@@ -74,7 +62,7 @@ export async function wonTrend(
   const byMonth = new Map<string, Row>();
   for (const row of (result as unknown as { rows: Row[] }).rows) byMonth.set(row.month, row);
 
-  return months.map((month) => {
+  return window.months.map((month) => {
     const row = byMonth.get(month);
     return {
       month,

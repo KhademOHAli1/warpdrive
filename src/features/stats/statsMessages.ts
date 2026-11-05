@@ -34,6 +34,8 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       recordsValueCount: (count: number, total: number) =>
         t("_extra.recordsValueCount", { count, total }),
       recordsPage: (page: number) => t("_extra.recordsPage", { page }),
+      trendInspectMonth: (month: string) => t("_extra.trendInspectMonth", { month }),
+      recordsWonMonth: (month: string) => t("_extra.recordsWonMonth", { month }),
       savedPerformanceReviewNamed: (name: string) =>
         t("savedPerformance.reviewNamed", { name: `\u2068${name}\u2069` }),
       savedPerformanceDeleteNamed: (name: string) =>

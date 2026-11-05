@@ -6,6 +6,7 @@ import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters } from "@/types/stats";
 import { dealMetricPopulation, visibleDealPopulation } from "./dealPopulation";
 import type { DealRecordMetric } from "./metricDictionary";
+import { wonTrendMonthPopulation } from "./wonTrend";
 
 export interface DealRecordsCursor {
   createdAt: string;
@@ -35,11 +36,16 @@ export async function dealRecords(
   db: Db,
   actor: PermSetUser,
   filters: DashboardFilters,
-  input: { metric: DealRecordMetric; limit: number; cursor?: DealRecordsCursor },
+  input: { metric: DealRecordMetric; limit: number; cursor?: DealRecordsCursor; wonMonth?: string },
   signal: AbortSignal,
 ) {
   const visible = await visibleDealPopulation(db, actor, filters, signal);
-  const population = dealMetricPopulation(input.metric, filters);
+  const population =
+    input.wonMonth === undefined
+      ? dealMetricPopulation(input.metric, filters)
+      : input.metric === "won"
+        ? wonTrendMonthPopulation(filters, input.wonMonth)
+        : sql`false`;
   const cursor =
     input.cursor === undefined
       ? sql`true`

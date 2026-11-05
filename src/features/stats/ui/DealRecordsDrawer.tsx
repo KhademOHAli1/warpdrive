@@ -10,11 +10,13 @@ import {
   dealReportExportHref,
 } from "@/features/stats/dealReportExportRequest";
 import type { DealRecordMetric } from "@/features/stats/metricDictionary";
+import { toToken } from "@/features/stats/ownerScopeToken";
 import { useStatsMessages } from "@/features/stats/useStatsMessages";
-import { trpc } from "@/lib/trpc-client";
+import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
+import { monthLabel } from "./Panel";
 
 export interface DealRecordsScope {
   currency: string;
@@ -24,48 +26,115 @@ export interface DealRecordsScope {
   to: string;
 }
 
+export interface WonMonthScope {
+  month: string;
+  timeZone: string;
+}
+
 type Cursor = { createdAt: string; id: string };
+
+function sameWonMonthScope(
+  report: RouterOutputs["stats"]["records"],
+  scope: DealRecordsScope,
+  wonMonth: WonMonthScope,
+): boolean {
+  return (
+    report.metric === "won" &&
+    report.wonMonth === wonMonth.month &&
+    report.timeZone === wonMonth.timeZone &&
+    report.currency === scope.currency &&
+    toToken(report.effectiveOwnerScope) === toToken(scope.ownerScope)
+  );
+}
+
+function RecordsError({
+  scopeChanged,
+  retrying,
+  onClose,
+  onRetry,
+}: {
+  scopeChanged: boolean;
+  retrying: boolean;
+  onClose: () => void;
+  onRetry: () => void;
+}) {
+  const S = useStatsMessages();
+  return (
+    <div className="space-y-4 rounded-lg border p-4">
+      <p role="alert" className="text-pretty text-sm text-destructive">
+        {scopeChanged ? S.recordsScopeChanged : S.recordsUnavailable}
+      </p>
+      <Button
+        variant="outline"
+        className="min-h-10"
+        disabled={retrying}
+        onClick={scopeChanged ? onClose : onRetry}
+      >
+        {scopeChanged ? S.recordsClose : S.retry}
+      </Button>
+    </div>
+  );
+}
 
 export function DealRecordsDrawer({
   metric,
   scope,
+  wonMonth,
   canExport = false,
   onClose,
   returnFocus,
 }: {
   metric: DealRecordMetric;
   scope: DealRecordsScope;
+  wonMonth?: WonMonthScope;
   canExport?: boolean;
   onClose: () => void;
   returnFocus?: HTMLButtonElement;
 }) {
   const S = useStatsMessages();
   const format = useFormatters();
-  const { timeZone } = useLocalePreferences();
+  const preferences = useLocalePreferences();
+  const { timeZone } = preferences;
   const preferencePending = useLocalePreferencePending();
   const descriptionId = useId();
   const [cursors, setCursors] = useState<(Cursor | undefined)[]>([undefined]);
+  const monthInput = wonMonth === undefined ? {} : { wonMonth: wonMonth.month };
   const query = trpc.stats.records.useQuery(
     {
       ...scope,
       timeZoneIdentity: timeZone,
       metric,
+      ...monthInput,
       cursor: cursors[cursors.length - 1],
       limit: 25,
     },
-    { enabled: !preferencePending, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
+    {
+      enabled: !preferencePending,
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnMount: "always",
+      ...(wonMonth === undefined
+        ? {}
+        : { refetchOnWindowFocus: "always" as const, refetchOnReconnect: "always" as const }),
+    },
   );
   // Each opened drawer must finish a current permission-checked read before cached rows
   // appear. A failed refresh must not leave previously permitted records on screen.
-  const result =
+  const candidate =
     !preferencePending &&
     !query.isError &&
     !query.isLoading &&
     !query.isFetching &&
     !query.isPaused &&
-    !query.isPlaceholderData
+    !query.isPlaceholderData &&
+    (wonMonth === undefined || query.isFetchedAfterMount)
       ? query.data
       : undefined;
+  const scopeChanged =
+    wonMonth !== undefined &&
+    candidate !== undefined &&
+    !sameWonMonthScope(candidate, scope, wonMonth);
+  const result = scopeChanged ? undefined : candidate;
   const exportLink =
     canExport && result !== undefined && result.totals.count <= DEAL_REPORT_EXPORT_LIMIT
       ? dealReportExportHref({
@@ -75,6 +144,7 @@ export function DealRecordsDrawer({
           ownerScope: result.effectiveOwnerScope,
           currency: result.currency,
           metric,
+          ...monthInput,
           timeZone: result.timeZone,
         })
       : null;
@@ -97,6 +167,10 @@ export function DealRecordsDrawer({
     wonCycle: S.recordsWonCycleBasis,
   };
   const statuses = { open: S.open, won: S.won, lost: S.lost };
+  const title =
+    wonMonth === undefined
+      ? titles[metric]
+      : S._extra.recordsWonMonth(monthLabel(wonMonth.month, preferences));
 
   return (
     <Sheet
@@ -118,8 +192,9 @@ export function DealRecordsDrawer({
         <div className="space-y-6 px-5 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6">
           <header className="space-y-2 pe-8">
             <p className="text-xs font-medium text-muted-foreground">{S.recordsTitle}</p>
-            <SheetTitle className="text-balance">{titles[metric]}</SheetTitle>
+            <SheetTitle className="text-balance">{title}</SheetTitle>
             <p className="text-pretty text-sm tabular-nums text-muted-foreground">
+              {wonMonth !== undefined && <span>{S.recordsReportPeriod} · </span>}
               {format.dateOnly(scope.from)} {S.rangeSeparator} {format.dateOnly(scope.to)} ·{" "}
               <bdi>{scope.currency}</bdi>
             </p>
@@ -128,22 +203,15 @@ export function DealRecordsDrawer({
             {definitions[metric]}
           </p>
 
-          {query.isError ? (
-            <div className="space-y-4 rounded-lg border p-4">
-              <p role="alert" className="text-pretty text-sm text-destructive">
-                {S.recordsUnavailable}
-              </p>
-              <Button
-                variant="outline"
-                className="min-h-10"
-                disabled={preferencePending || query.isFetching}
-                onClick={() => {
-                  void query.refetch();
-                }}
-              >
-                {S.retry}
-              </Button>
-            </div>
+          {query.isError || scopeChanged ? (
+            <RecordsError
+              scopeChanged={scopeChanged}
+              retrying={preferencePending || query.isFetching}
+              onClose={onClose}
+              onRetry={() => {
+                void query.refetch();
+              }}
+            />
           ) : result === undefined ? (
             <div role="status" aria-label={S.loading} className="space-y-3">
               <span className="sr-only">{S.loading}</span>

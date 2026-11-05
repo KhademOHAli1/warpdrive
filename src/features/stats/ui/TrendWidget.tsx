@@ -31,9 +31,11 @@ const DOTTED_MONTHS = 24;
 export function WonTrendWidget({
   data,
   currency,
+  onInspectMonth,
 }: {
   data: WonTrendPoint[];
   currency: string;
+  onInspectMonth?: (month: string, trigger: HTMLButtonElement) => void;
 }): React.ReactNode {
   const preferences = useLocalePreferences();
 
@@ -41,6 +43,7 @@ export function WonTrendWidget({
 
   const S = useStatsMessages();
   const [showData, setShowData] = useState(false);
+  const showActions = showData && onInspectMonth !== undefined;
   const tableId = useId();
 
   const CONFIG: ChartConfig = {
@@ -116,6 +119,7 @@ export function WonTrendWidget({
                   <th scope="col">{S.trendMonth}</th>
                   <th scope="col">{S.trendCount}</th>
                   <th scope="col">{S.trendValue}</th>
+                  {showActions && <th scope="col">{S.recordsTitle}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -124,6 +128,23 @@ export function WonTrendWidget({
                     <th scope="row">{monthLabel(p.month, preferences)}</th>
                     <td>{format.number(p.count)}</td>
                     <td>{money(p.value, currency, preferences)}</td>
+                    {showActions && (
+                      <td>
+                        {p.count > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            aria-label={S._extra.trendInspectMonth(
+                              monthLabel(p.month, preferences),
+                            )}
+                            onClick={(event) => onInspectMonth?.(p.month, event.currentTarget)}
+                          >
+                            {S.trendInspect}
+                          </Button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -27,7 +27,7 @@ import { CurrentAttentionPanel } from "./CurrentAttentionPanel";
 import { CurrentLeadHandoffPanel } from "./CurrentLeadHandoffPanel";
 import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
-import { DealRecordsDrawer } from "./DealRecordsDrawer";
+import { DealRecordsDrawer, type DealRecordsScope, type WonMonthScope } from "./DealRecordsDrawer";
 import { DealWinCohortPanel } from "./DealWinCohortPanel";
 import { presetRange } from "./dateRange";
 import { GoalsWidget } from "./GoalsWidget";
@@ -115,6 +115,7 @@ export function Dashboard({
   const [inspection, setInspection] = useState<{
     metric: DealRecordMetric;
     trigger: HTMLButtonElement;
+    wonMonth?: WonMonthScope & { scope: DealRecordsScope };
   } | null>(null);
   const currentScope = {
     currency: selectedCurrency,
@@ -127,6 +128,7 @@ export function Dashboard({
     ...range,
   };
   const validRange = range.from <= range.to;
+  const inspectionScope = inspection?.wonMonth?.scope ?? reportScope;
   const pipelinesQ = trpc.pipeline.list.useQuery();
   const pipelineOptions = [
     { value: ALL_PIPELINES, label: S.allPipelines },
@@ -172,7 +174,27 @@ export function Dashboard({
         />
         <TabsContent value="overview" className="space-y-5">
           <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-            <WonTrendWidget data={result.wonTrend} currency={result.currency} />
+            <WonTrendWidget
+              data={result.wonTrend}
+              currency={result.currency}
+              onInspectMonth={(month, trigger) =>
+                setInspection({
+                  metric: "won",
+                  trigger,
+                  wonMonth: {
+                    month,
+                    timeZone: result.timeZone,
+                    scope: {
+                      from: reportScope.from,
+                      to: reportScope.to,
+                      pipelineId: reportScope.pipelineId,
+                      currency: result.currency,
+                      ownerScope: result.effectiveOwnerScope,
+                    },
+                  },
+                })
+              }
+            />
             <DashboardGoals today={today} currency={result.currency} canManage={canManageGoals} />
           </div>
           <KpiPerformance today={today} canManage={canManageGoals} />
@@ -335,9 +357,15 @@ export function Dashboard({
       </div>
       {inspection !== null && validRange && (
         <DealRecordsDrawer
-          key={JSON.stringify({ ...reportScope, metric: inspection.metric })}
-          scope={reportScope}
+          key={JSON.stringify({
+            ...inspectionScope,
+            timeZoneIdentity: timeZone,
+            metric: inspection.metric,
+            wonMonth: inspection.wonMonth?.month,
+          })}
+          scope={inspectionScope}
           metric={inspection.metric}
+          wonMonth={inspection.wonMonth}
           canExport={canExport}
           returnFocus={inspection.trigger}
           onClose={() => setInspection(null)}

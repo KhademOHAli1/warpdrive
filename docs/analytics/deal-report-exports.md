@@ -5,3 +5,5 @@ The contributing-deals drawer offers a CSV to viewers with export permission whe
 One read must account for every row, the recorded-value count and the exact monetary total. The CSV includes deal ID, current status, currency, exact signed nominal value, and UTC creation and close timestamps with microsecond precision. An empty amount represents a missing value. A recorded zero is `0.00`. Typed fields exclude free-text titles and linked identities. Spreadsheet import may apply its own number formatting to these exact CSV strings.
 
 All responses are private and noncacheable. A complete empty result yields the header row. Reports above the limit ask the viewer to narrow the selection. The browser test uses synthetic deals to check row identity, amount precision, dates and exclusion of private and restricted-pipeline records.
+
+The won-trend data table opens contributing records for a nonempty month. The drawer and its CSV use the original civil reporting range and the same local Gregorian month expression and display bound as the chart. The drawer suppresses results after scope drift. Deal links keep the dashboard and drawer open in the original tab.

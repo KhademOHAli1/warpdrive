@@ -48,6 +48,19 @@ function fixture(rows: ReturnType<typeof row>[], value: string, valueCount: numb
 }
 
 describe("bounded deal report CSV", () => {
+  test("binds a won trend bucket and its original dates through the export", () => {
+    const monthScope = { ...scope, from: "2026-02-15", wonMonth: "2026-03" };
+    const href = dealReportExportHref(monthScope);
+    expect(parseDealReportExportRequest(new URL(`${prefix}${href}`))).toEqual(monthScope);
+    expect(dealReportExportHref({ ...monthScope, metric: "lost" })).toBeNull();
+    expect(dealReportExportHref({ ...monthScope, wonMonth: "2026-01" })).toBeNull();
+    const report = fixture([row(1, "1.00")], "1.00", 1);
+    expect(serializeDealReportExport(report, monthScope)).toEqual({ state: "invalid" });
+    expect(
+      serializeDealReportExport({ ...report, wonMonth: monthScope.wonMonth }, monthScope),
+    ).toMatchObject({ state: "ready" });
+  });
+
   test("round trips exact civil dates and the required pipeline and owner selectors", () => {
     const href = dealReportExportHref(scope);
     expect(href).toMatch(/^\/dashboard\/export\?/);
