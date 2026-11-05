@@ -32,6 +32,20 @@ export function VersionsDialog(props: Props) {
   return <VersionHistory key={props.workflowId} {...props} />;
 }
 
+function getVersionDifference(
+  comparisonLoading: boolean,
+  before: unknown,
+  after: unknown,
+): VersionDifference | null {
+  if (comparisonLoading || before === null || after === null) return null;
+  try {
+    return comparePublishedVersions(before, after);
+  } catch {
+    /* Retained malformed data is reported without its contents. */
+    return null;
+  }
+}
+
 function VersionHistory({
   workflowId,
   revision,
@@ -87,7 +101,6 @@ function VersionHistory({
     currentData !== undefined &&
     currentData.number === selected &&
     currentData.id === selectedSummary?.id &&
-    !version.isLoading &&
     !version.isFetching &&
     !version.isError &&
     !version.isPlaceholderData
@@ -99,7 +112,6 @@ function VersionHistory({
     otherData !== undefined &&
     otherData.number === compared &&
     otherData.id === comparedSummary?.id &&
-    !otherVersion.isLoading &&
     !otherVersion.isFetching &&
     !otherVersion.isError &&
     !otherVersion.isPlaceholderData
@@ -116,14 +128,7 @@ function VersionHistory({
     otherVersion.isLoading ||
     otherVersion.isFetching ||
     otherVersion.isPlaceholderData;
-  let difference: VersionDifference | null = null;
-  if (!comparisonLoading && current !== null && other !== null) {
-    try {
-      difference = comparePublishedVersions(other, current);
-    } catch {
-      /* Retained malformed data is reported without its contents. */
-    }
-  }
+  const difference = getVersionDifference(comparisonLoading, other, current);
   async function retryComparison() {
     if (retrying || compared === null) return;
     const generation = selectionGeneration;

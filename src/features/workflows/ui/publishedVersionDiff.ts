@@ -87,6 +87,19 @@ function validLayout(value: unknown): void {
       throw unavailable();
   }
 }
+function queueJsonChildren(current: unknown, pending: unknown[], budget: Budget): void {
+  if (array(current)) {
+    if (current.length + pending.length > budget.remaining) throw unavailable();
+    for (const item of current) pending.push(item);
+    return;
+  }
+  if (!record(current)) throw unavailable();
+  for (const key in current) {
+    if (!Object.hasOwn(current, key)) continue;
+    if (pending.length >= budget.remaining) throw unavailable();
+    pending.push(current[key]);
+  }
+}
 function validJson(value: unknown, budget: Budget): void {
   const pending: unknown[] = [value];
   while (pending.length > 0) {
@@ -94,17 +107,26 @@ function validJson(value: unknown, budget: Budget): void {
     const current = pending.pop();
     if (current === null || typeof current === "string" || typeof current === "boolean") continue;
     if (typeof current === "number" && Number.isFinite(current)) continue;
-    if (array(current)) {
-      if (current.length + pending.length > budget.remaining) throw unavailable();
-      for (const item of current) pending.push(item);
-    } else if (record(current)) {
-      for (const key in current) {
-        if (!Object.hasOwn(current, key)) continue;
-        if (pending.length >= budget.remaining) throw unavailable();
-        pending.push(current[key]);
-      }
-    } else throw unavailable();
+    queueJsonChildren(current, pending, budget);
   }
+}
+function queueComparableChildren(
+  before: unknown,
+  after: unknown,
+  pending: [unknown, unknown][],
+): boolean {
+  if (array(before) && array(after)) {
+    if (before.length !== after.length) return false;
+    for (let index = 0; index < before.length; index++) pending.push([before[index], after[index]]);
+    return true;
+  }
+  if (!record(before) || !record(after)) return false;
+  const keys = Object.keys(before).sort();
+  const otherKeys = Object.keys(after).sort();
+  if (keys.length !== otherKeys.length || keys.some((key, index) => key !== otherKeys[index]))
+    return false;
+  for (const key of keys) pending.push([before[key], after[key]]);
+  return true;
 }
 function jsonEqual(left: unknown, right: unknown, budget: Budget): boolean {
   const pending: [unknown, unknown][] = [[left, right]];
@@ -114,17 +136,7 @@ function jsonEqual(left: unknown, right: unknown, budget: Budget): boolean {
     if (pair === undefined) break;
     const [before, after] = pair;
     if (before === after) continue;
-    if (array(before) && array(after)) {
-      if (before.length !== after.length) return false;
-      for (let index = 0; index < before.length; index++)
-        pending.push([before[index], after[index]]);
-    } else if (record(before) && record(after)) {
-      const keys = Object.keys(before).sort();
-      const otherKeys = Object.keys(after).sort();
-      if (keys.length !== otherKeys.length || keys.some((key, index) => key !== otherKeys[index]))
-        return false;
-      for (const key of keys) pending.push([before[key], after[key]]);
-    } else return false;
+    if (!queueComparableChildren(before, after, pending)) return false;
   }
   return true;
 }

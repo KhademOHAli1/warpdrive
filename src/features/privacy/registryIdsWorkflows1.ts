@@ -3,9 +3,9 @@ export const workflowIds1: string[] = [
   // WF026: local published-version comparison and fresh same-workflow reads.
   // Numeric row ordinals are presentation keys; no raw graph/configuration is projected.
   "derived:src/features/workflows/ui/publishedVersionDiff.ts",
-  "sourceReview:src/features/workflows/ui/publishedVersionDiff.ts#e6b526654359c660001109e44a472134ac5873ddd5787e15dc96192e03d2a095",
+  "sourceReview:src/features/workflows/ui/publishedVersionDiff.ts#059b67f3b1322ff0cb42450762c3875f4dacf1a97375900931c1a9cd2901724b",
   "sourceReview:src/features/workflows/ui/VersionComparison.tsx#539aba9a74b7859f140f950a49dca39d4a22f5be243315986eaf69dece23203c",
-  "sourceReview:src/features/workflows/ui/VersionsDialog.tsx#a65f989b76c6f5def51e938d89105145ce01ce1a59458cc52d8483cf97de9bf6",
+  "sourceReview:src/features/workflows/ui/VersionsDialog.tsx#58f45e3c33341f28d3aeb50d9cc3b26b3c8658803d052f11d3bc8185ae850f85",
 
   // WF022: bounded transient parsing/evaluation and local stable-row edits.
   // These Sets/Maps are per-call/editor derived state, not durable stores.
