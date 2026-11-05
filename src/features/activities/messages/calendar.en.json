@@ -119,5 +119,18 @@
   "emptyDayTitle": "Nothing scheduled this day",
   "emptyYearTitle": "Nothing scheduled this year",
   "emptyFilteredDayTitle": "No activities match these filters this day",
-  "emptyFilteredYearTitle": "No activities match these filters this year"
+  "emptyFilteredYearTitle": "No activities match these filters this year",
+  "interaction": {
+    "hint": "Drag an event to move it. Drag empty space to create an event. Press Esc to cancel.",
+    "range": "{start} – {end}",
+    "moving": "Moving event…",
+    "moveSaved": "Event moved.",
+    "moveFailed": "Event could not be moved.",
+    "moveStale": "This event changed. Check its current time before moving it again.",
+    "moveUnknown": "The move could not be confirmed. Refresh the calendar to check its time.",
+    "moveActorMissing": "Reload the calendar before moving an event.",
+    "moveRefreshFailed": "Event moved, but the calendar could not refresh. Reload to see the latest calendar.",
+    "moveDenied": "You do not have permission to move this event.",
+    "moveInvalid": "This event cannot be moved to that slot. Choose another date or time."
+  }
 }

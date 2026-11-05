@@ -7,6 +7,12 @@ import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
+  type CalendarMoveTarget,
+  type CalendarPoint,
+  type CalendarSelection,
+  movePreviewSelection,
+} from "@/features/activities/calendarGesture";
+import {
   type CalendarViewName,
   calendarHref,
   dayTitle,
@@ -15,11 +21,16 @@ import {
   weekTitle,
   yearTitle,
 } from "@/features/activities/calendarView";
+import { useCalendarReschedule } from "@/features/activities/useCalendarReschedule";
 import { useLocalNow } from "@/features/activities/useLocalNow";
 import { localDayIso } from "@/features/activities/weekAgenda";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
+import { CalendarGesturePreview } from "./CalendarGesturePreview";
+import { CalendarSavingPreview } from "./CalendarSavingPreview";
 import { MonthView } from "./MonthView";
+import { useCalendarDisplayedEvents } from "./useCalendarDisplayedEvents";
+import { useCalendarPointer } from "./useCalendarPointer";
 import { WeekAgendaGrid } from "./WeekAgendaGrid";
 import { YearView } from "./YearView";
 
@@ -29,8 +40,8 @@ interface CalendarClientProps {
   dayIsos: string[];
   activities: CalendarActivity[];
   initialTodayIso?: string;
-  // Shown instead of the grid when the window holds nothing. The caller owns the wording because
-  // only it knows whether a filter is doing the excluding, and an empty grid says nothing at all.
+  // Shown above the empty grid so click/drag creation remains available. The caller owns
+  // the wording because only it knows whether a filter is doing the excluding.
   empty?: React.ReactNode;
   onChanged?: () => void;
 }
@@ -63,14 +74,73 @@ export function CalendarClient({
     year: yearTitle(anchorIso, preferences),
   }[view];
   const rtl = preferences.locale === "fa";
-  const [createDate, setCreateDate] = useState<string | null>(null);
+  const [create, setCreate] = useState<CalendarSelection | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const display = useCalendarDisplayedEvents(activities);
+  const [gestureError, setGestureError] = useState<string | null>(null);
+  const [savingPreview, setSavingPreview] = useState<{
+    scope: string;
+    selection: CalendarSelection;
+    subject: string;
+    kind: CalendarPoint["kind"];
+  } | null>(null);
+  const scopeKey = `${view}:${anchorIso}:${preferences.timeZone}:${preferences.locale}:${preferences.calendar}`;
+  const reschedule = useCalendarReschedule({
+    onMoved: display.confirm,
+    onRefresh: () => onChanged?.(),
+  });
+  const displayed = reschedule.canMove ? display.activities : activities;
+  const {
+    root: calendarRoot,
+    preview: pointerPreview,
+    bindings: pointerBindings,
+  } = useCalendarPointer({
+    scopeKey,
+    activities: displayed,
+    timeZone: preferences.timeZone,
+    disabled: reschedule.pending || create !== null || editingId !== null,
+    onCreate: (selection) => {
+      setGestureError(null);
+      reschedule.clearFeedback();
+      setCreate(selection);
+    },
+    onMove: (activity, target) => {
+      void move(activity, target);
+    },
+    onInvalidMove: () => setGestureError(t("interaction.moveInvalid")),
+  });
+
+  async function move(activity: CalendarActivity, target: CalendarMoveTarget): Promise<void> {
+    setGestureError(null);
+    const selection = movePreviewSelection(activity, target, preferences.timeZone);
+    if (selection !== null)
+      setSavingPreview({
+        scope: scopeKey,
+        selection,
+        subject: activity.subject,
+        kind: target.time === undefined ? "date" : "time",
+      });
+    const chips = Array.from(
+      calendarRoot.current?.querySelectorAll<HTMLElement>("[data-calendar-event-id]") ?? [],
+    ).filter((chip) => chip.dataset.calendarEventId === activity.id);
+    for (const chip of chips) chip.setAttribute("data-calendar-pending", "true");
+    try {
+      const result = await reschedule.move(activity, target);
+      if (result.kind === "stale" || result.kind === "unknown") display.forget(activity.id);
+    } finally {
+      for (const chip of chips) chip.removeAttribute("data-calendar-pending");
+      setSavingPreview(null);
+    }
+  }
 
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
     <section
+      ref={calendarRoot}
+      {...pointerBindings}
       aria-label={t("title")}
+      aria-busy={reschedule.pending}
       className="p-4"
       onKeyDown={(event) => {
         if (
@@ -84,17 +154,17 @@ export function CalendarClient({
           !(event.target instanceof Node) ||
           !event.currentTarget.contains(event.target) ||
           event.key.toLowerCase() !== "c" ||
-          createDate !== null ||
+          create !== null ||
           editingId !== null
         )
           return;
         if (isTypingTarget(event.target) || isOverlayOpen(document)) return;
         event.preventDefault();
-        setCreateDate(anchorIso);
+        setCreate({ date: anchorIso, endDate: anchorIso });
       }}
     >
       <header className="mb-4 flex flex-wrap items-center gap-3">
-        <Button onClick={() => setCreateDate(todayIso)}>
+        <Button onClick={() => setCreate({ date: todayIso, endDate: todayIso })}>
           <Plus className="size-4" aria-hidden />
           {t("editor.create")}
         </Button>
@@ -137,34 +207,67 @@ export function CalendarClient({
         <h2 className="text-sm font-medium text-foreground tabular-nums">{label}</h2>
       </header>
 
+      {view !== "year" && (
+        <p className="mb-3 text-xs text-muted-foreground">{t("interaction.hint")}</p>
+      )}
+      {(gestureError !== null || reschedule.error !== null) && (
+        <p
+          role="alert"
+          className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          {gestureError ?? reschedule.error}
+        </p>
+      )}
+      {(reschedule.pending || reschedule.notice !== null) && (
+        <p role="status" className="mb-3 text-sm text-muted-foreground">
+          {reschedule.pending ? t("interaction.moving") : reschedule.notice}
+        </p>
+      )}
+      <CalendarGesturePreview preview={pointerPreview} />
+      {savingPreview?.scope === scopeKey && (
+        <CalendarSavingPreview
+          root={calendarRoot}
+          selection={savingPreview.selection}
+          subject={savingPreview.subject}
+          kind={savingPreview.kind}
+        />
+      )}
+
       {view === "year" ? (
         <>
-          {activities.length === 0 && empty}
-          <YearView anchorIso={anchorIso} activities={activities} todayIso={todayIso} />
+          {displayed.length === 0 && empty}
+          <YearView anchorIso={anchorIso} activities={displayed} todayIso={todayIso} />
         </>
       ) : view === "day" ? (
         <>
-          {activities.length === 0 && empty}
-          <WeekAgendaGrid dayIsos={dayIsos} activities={activities} />
+          {displayed.length === 0 && empty}
+          <WeekAgendaGrid dayIsos={dayIsos} activities={displayed} />
         </>
-      ) : empty !== undefined && activities.length === 0 ? (
-        empty
       ) : view === "month" ? (
-        <MonthView
-          anchorIso={anchorIso}
-          dayIsos={dayIsos}
-          activities={activities}
-          todayIso={todayIso}
-          onCreate={setCreateDate}
-          onEdit={setEditingId}
-        />
+        <>
+          {displayed.length === 0 && empty}
+          <MonthView
+            anchorIso={anchorIso}
+            dayIsos={dayIsos}
+            activities={displayed}
+            todayIso={todayIso}
+            onCreate={(date) => setCreate({ date, endDate: date })}
+            onEdit={setEditingId}
+          />
+        </>
       ) : (
-        <WeekAgendaGrid dayIsos={dayIsos} activities={activities} />
+        <>
+          {displayed.length === 0 && empty}
+          <WeekAgendaGrid dayIsos={dayIsos} activities={displayed} />
+        </>
       )}
-      {createDate !== null && (
+      {create !== null && (
         <CalendarEventDialog
-          defaultDate={createDate}
-          onClose={() => setCreateDate(null)}
+          defaultDate={create.date}
+          defaultTime={create.time}
+          defaultEndDate={create.endDate}
+          defaultEndTime={create.endTime}
+          onClose={() => setCreate(null)}
           onSaved={onChanged}
         />
       )}

@@ -110,6 +110,7 @@ export const crmIds2: string[] = [
   "table:saved_filters",
   "table:settings",
   "table:stages",
+  "writer:src/app/(app)/activities/calendar/useCalendarPointer.ts#update:dynamic",
   "writer:src/app/(app)/settings/goals/GoalsClient.tsx#update:dynamic",
   "writer:src/features/activities/activityDelete.ts#update:activities",
   "writer:src/features/activities/activityUpdate.ts#delete:activityGuests",

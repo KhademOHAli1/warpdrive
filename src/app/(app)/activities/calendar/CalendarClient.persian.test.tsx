@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { selectWindow } from "@/features/activities/calendarView";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { CalendarClient } from "./CalendarClient";
@@ -40,3 +40,14 @@ it("renders and pages a Persian month while carrying Gregorian anchor dates in l
     "/activities/calendar?view=month&d=2026-04-21",
   );
 });
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

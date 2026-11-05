@@ -242,3 +242,14 @@ it("does not restore focus to a week slot removed while its creation dialog is o
   expect(focus).not.toHaveBeenCalled();
   expectNoCalendarActions();
 });
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

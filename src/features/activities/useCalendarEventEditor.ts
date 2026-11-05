@@ -33,6 +33,8 @@ import { useCalendarReminderEditor } from "./useCalendarReminderEditor";
 export interface CalendarEventDialogProps {
   defaultDate?: string;
   defaultTime?: string;
+  defaultEndDate?: string;
+  defaultEndTime?: string;
   editing?: EditableActivity;
   onClose: () => void;
   onSaved?: () => void;
@@ -42,6 +44,8 @@ export interface CalendarEventDialogProps {
 export function useCalendarEventEditor({
   defaultDate,
   defaultTime = "",
+  defaultEndDate,
+  defaultEndTime,
   editing,
   onClose,
   onSaved,
@@ -64,6 +68,8 @@ export function useCalendarEventEditor({
     calendarEventDraft({
       date: defaultDate ?? instantCivilDate(new Date(), zone),
       time: defaultTime,
+      endDate: defaultEndDate,
+      endTime: defaultEndTime,
       editing,
       timeZone: zone,
     }),
