@@ -32,20 +32,21 @@ export const mailSharedInventoryEntries = [
     owner: "regional interpretation and local text conventions",
     categories: [
       "calendar/time-zone/money display preferences",
+      "browser language/time-zone signals and selected country formats",
       "staged import interpretation",
       "authored phone text and country choice",
       "transient SMS encoding estimates",
     ],
     subjectRelation:
-      "Display preferences identify the viewer's choices; phone parsing does not verify ownership, reachability or identity. Text supplied for estimates can concern third parties.",
+      "Display preferences identify the viewer's choices. Browser settings suggest regional formats, not physical location or jurisdiction; phone parsing does not verify ownership, reachability or identity. Text supplied for estimates can concern third parties.",
     purpose:
-      "Apply explicit import/display conventions, normalize phone metadata locally and estimate SMS encoding/segments without sending.",
+      "Initialize country/language formats and an automatic browser time zone while preserving manual overrides; apply explicit import/display conventions, normalize phone metadata locally and estimate SMS encoding/segments without sending.",
     disclosure:
-      "Cookie removal clears a display preference, not subject data. Normalization retains original authored phone text; estimates supply no disclosure, send or billing authority.",
+      "Country and time-zone mode mirror account display preferences in cookies; cookie removal clears a preference, not subject data. Normalization retains original authored phone text; estimates supply no disclosure, send or billing authority.",
     retention:
-      "Existing preference cookies/rows and import snapshots retain their separate lifecycles. Time-zone/country/character Sets and estimates are transient; no new store or schedule is introduced.",
+      "Country and time-zone mode reuse the existing one-year preference-cookie policy and account preference row. The effective zone remains available to background jobs. Import snapshots retain their separate lifecycle; time-zone/country maps, Sets and estimates are transient. No new lifecycle capability is introduced.",
     externalEffects:
-      "Existing preference/import persistence only. Local phone/SMS helpers make no lookup, network, send or billing call. Provider billing and non-BMP SMS behavior remain unqualified.",
+      "Browser Intl and language settings only, with no geolocation, IP lookup or added network destination. Existing preference/import persistence remains; local phone/SMS helpers make no lookup, send or billing call. Provider billing and non-BMP SMS behavior remain unqualified.",
   }),
   classifyInventory(mailEndpointIds1, {
     ...classifications.infrastructure,

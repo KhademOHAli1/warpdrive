@@ -1,6 +1,7 @@
 // Won deal count and value per month across the dashboard range. The only stats query that
 // answers "which way is this going" rather than "where does it rest right now".
 // Windows on won_time (see dealPerformance for why) and applies dealVisibilityClause.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
@@ -10,6 +11,7 @@ import { ownerFilterClause } from "@/features/stats/ownerIds";
 import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, WonTrendPoint } from "@/types/stats";
 import { monthsInRange, windowStart } from "./monthBuckets";
+import { reportPeriod } from "./reportPeriod";
 
 function toSession(actor: PermSetUser) {
   return {
@@ -35,6 +37,7 @@ export async function wonTrend(
   signal: AbortSignal,
 ): Promise<WonTrendPoint[]> {
   signal.throwIfAborted();
+  const period = reportPeriod(filters);
 
   const months = monthsInRange(filters.from, filters.to);
   const start = windowStart(filters.from, months);
@@ -48,7 +51,7 @@ export async function wonTrend(
 
   const result = await db.execute(sql`
     SELECT
-      to_char(date_trunc('month', d.won_time), 'YYYY-MM') AS "month",
+      to_char(date_trunc('month', d.won_time AT TIME ZONE ${filters.timeZone ?? "UTC"}), 'YYYY-MM') AS "month",
       count(*)::int AS "count",
       coalesce(sum(d.value), 0)::text AS "value"
     FROM deals d
@@ -57,8 +60,8 @@ export async function wonTrend(
       AND d.archived_at IS NULL
       AND p.is_archived = false
       AND d.status = 'won'
-      AND d.won_time >= ${start}::date
-      AND d.won_time < ${filters.to}::date + INTERVAL '1 day'
+      AND d.won_time >= ${reportPeriod({ ...filters, from: start }).from}
+      AND d.won_time < ${period.toExclusive}
       ${pipelineClause}
       ${ownerClause}
       ${currencyClause}

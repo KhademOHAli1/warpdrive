@@ -53,8 +53,9 @@ next, reply and undo using inherited `:dir(rtl)`. Checkmarks, search, calendars,
 sidebar pictograms, editor alignment symbols and vertical arrows keep their original shape.
 A new directional symbol can opt in with `data-rtl-mirror="true"`; do not mirror an entire
 icon family. The policy respects nested LTR content and skips existing shadcn RTL transforms.
-Components that already choose a physical icon from direction, such as the sidebar toggle,
-use `data-rtl-mirror="false"` to avoid a second flip.
+Components that already choose a physical icon from direction use
+`data-rtl-mirror="false"` to avoid a second flip. The sidebar chevron glyphs use
+`data-rtl-mirror="true"` because their icon choice depends on expanded state, not direction.
 
 Collapsible section chevrons use `data-disclosure-chevron` with their open/closed state:
 closed points toward the label (right in LTR, left in RTL), expanded points down. Static

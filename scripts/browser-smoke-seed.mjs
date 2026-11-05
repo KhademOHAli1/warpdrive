@@ -25,6 +25,23 @@ const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
 const group = "00000000-0000-4000-8000-000000000504";
+const regionalActors = [
+  {
+    id: "00000000-0000-4000-8000-000000000506",
+    email: "regional-fa@example.invalid",
+    name: "Regional Farsi",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000507",
+    email: "regional-de@example.invalid",
+    name: "Regional German",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000508",
+    email: "regional-en@example.invalid",
+    name: "Regional English",
+  },
+];
 const granted = new Set(["deal.create", "activity.create", "workflow.view", "workflow.create"]);
 let client;
 try {
@@ -84,6 +101,26 @@ try {
       JSON.stringify({ appearance: "night", winSound: false }),
     ],
   );
+  // Fresh regional actors intentionally have no user_preferences rows or locale cookies. The
+  // production harness proves that browser hints are persisted through the authorized UI.
+  for (const regional of regionalActors) {
+    await client.query(
+      "INSERT INTO users(id,email,name,is_admin,permission_set_id,primary_visibility_group_id) VALUES($1,$2,$3,false,$4,$5)",
+      [regional.id, regional.email, regional.name, permission, group],
+    );
+    await client.query("INSERT INTO visibility_group_members(group_id,user_id) VALUES($1,$2)", [
+      group,
+      regional.id,
+    ]);
+    await client.query(
+      "INSERT INTO auth_users(id,email,name,email_verified) VALUES($1,$2,$3,true)",
+      [regional.id, regional.email, regional.name],
+    );
+    await client.query(
+      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
+      [regional.id, password],
+    );
+  }
   await client.query("COMMIT");
 } catch (error) {
   if (client) await client.query("ROLLBACK");

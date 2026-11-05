@@ -4,13 +4,16 @@ import {
   displayNumberingSystem,
   localeWithNumberingSystem,
   type NumberingSystem,
+  type RegionalNumberedLocale,
 } from "./numberingSystem";
 
 export type FormattingLocale = "en" | "fa" | "de";
+export type FormattingLocaleTag = RegionalNumberedLocale<FormattingLocale>;
 export type CalendarSystem = "gregory" | "persian";
 
 export interface FormattingPreferences {
   locale: FormattingLocale;
+  country?: string;
   calendar: CalendarSystem;
   timeZone: string;
   numberingSystem?: NumberingSystem;
@@ -22,7 +25,11 @@ export type DateDisplayOptions = Omit<
   "calendar" | "numberingSystem" | "timeZone"
 >;
 
-const LOCALE_TAGS: Record<FormattingLocale, string> = { en: "en-US", fa: "fa-IR", de: "de-DE" };
+const LOCALE_TAGS: Record<FormattingLocale, `${FormattingLocale}-${string}`> = {
+  en: "en-US",
+  fa: "fa-IR",
+  de: "de-DE",
+};
 const MEDIUM_DATE: DateDisplayOptions = { year: "numeric", month: "short", day: "numeric" };
 
 export function resolveFormattingPreferences(
@@ -33,6 +40,7 @@ export function resolveFormattingPreferences(
     locale,
     calendar: preferences.calendar ?? (locale === "fa" ? "persian" : "gregory"),
     timeZone: preferences.timeZone ?? "UTC",
+    ...(preferences.country === undefined ? {} : { country: preferences.country }),
     ...(preferences.iranianMoneyUnit === undefined
       ? {}
       : { iranianMoneyUnit: preferences.iranianMoneyUnit }),
@@ -42,11 +50,13 @@ export function resolveFormattingPreferences(
   };
 }
 
-export function localeTagForFormatting(preferences: Partial<FormattingPreferences> = {}): string {
-  return localeWithNumberingSystem(
-    LOCALE_TAGS[preferences.locale ?? "en"],
-    preferences.numberingSystem,
-  );
+export function localeTagForFormatting(
+  preferences: Partial<FormattingPreferences> = {},
+): FormattingLocaleTag {
+  const locale = preferences.locale ?? "en";
+  const tag: `${FormattingLocale}-${string}` =
+    preferences.country === undefined ? LOCALE_TAGS[locale] : `${locale}-${preferences.country}`;
+  return localeWithNumberingSystem(tag, preferences.numberingSystem);
 }
 
 export function formatNumber(
@@ -66,7 +76,7 @@ function dateFormatter(
   civilDate: boolean,
 ): Intl.DateTimeFormat {
   const resolved = resolveFormattingPreferences(preferences);
-  return new Intl.DateTimeFormat(LOCALE_TAGS[resolved.locale], {
+  return new Intl.DateTimeFormat(localeTagForFormatting(resolved), {
     ...options,
     calendar: resolved.calendar,
     numberingSystem: displayNumberingSystem(resolved),

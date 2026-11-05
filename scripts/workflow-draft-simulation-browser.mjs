@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { prepareLocaleThroughUi } from "./browser-locale-preferences.mjs";
 
 // This pack runs serially after the original nine smoke journeys. Its 6821xx/6822xx/6823xx
 // fixture IDs are independent of the appearance, delay and history packs. Each pack must restore
@@ -409,13 +410,10 @@ function nativeSubmission(page, origin, profile) {
   });
 }
 async function exerciseDraft(page, pool, profile, copy, login, origin) {
-  // login() asserts an English board. Set FA only after that real login, then navigate freshly.
+  // login() asserts the real native board. Establish the requested locale through the account
+  // control before navigating to the draft; cookies alone are not authoritative for this actor.
   await login(page);
-  if (profile.locale !== "en") {
-    await page
-      .context()
-      .addCookies([{ name: "warpdrive_locale", value: profile.locale, url: origin }]);
-  }
+  const localePreparation = await prepareLocaleThroughUi(page, origin, profile.locale);
   await page.goto(`/workflows/${profile.workflowId}`);
   assert.equal(await page.locator("html").getAttribute("lang"), profile.locale);
   assert.equal(
@@ -523,6 +521,7 @@ async function exerciseDraft(page, pool, profile, copy, login, origin) {
   const dom = {
     language: profile.locale,
     direction: profile.locale === "fa" ? "rtl" : "ltr",
+    localePreparation,
     viewport: profile.viewport,
     outcome: profile.failed ? "failed" : "completed",
     rowText: await rows.allInnerTexts(),

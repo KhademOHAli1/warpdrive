@@ -21,6 +21,10 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       percent: (count: number) => t("_extra.percent", { count }),
       durationDays: (count: number) => t("_extra.durationDays", { count }),
       trendDeals: (amount: string, count: number) => t("_extra.trendDeals", { amount, count }),
+      recordsCount: (count: number) => t("_extra.recordsCount", { count }),
+      recordsValueCount: (count: number, total: number) =>
+        t("_extra.recordsValueCount", { count, total }),
+      recordsPage: (page: number) => t("_extra.recordsPage", { page }),
     },
   };
 }

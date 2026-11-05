@@ -3,12 +3,14 @@
 // "no meetings booked this month" is a finding, and an absent row hides it.
 // Visibility follows the dominant parent (deal > person > org > parentless), shared with
 // activitiesPerformance and the goal totals.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
 import type { ActivityTypeCount, DashboardFilters } from "@/types/stats";
 import { activityVisibilityPredicate } from "./activityVisibilitySql";
+import { reportPeriod } from "./reportPeriod";
 
 export async function activitiesByType(
   db: Db,
@@ -17,6 +19,7 @@ export async function activitiesByType(
   signal: AbortSignal,
 ): Promise<ActivityTypeCount[]> {
   signal.throwIfAborted();
+  const period = reportPeriod(filters);
 
   const ownerClause = ownerFilterClause(sql`a.assignee_id`, filters.owners);
   const pipelineClause =
@@ -39,8 +42,8 @@ export async function activitiesByType(
       ON a.type_id = t.id
       AND a.deleted_at IS NULL
       AND a.done = true
-      AND a.done_at >= ${filters.from}::date
-      AND a.done_at < ${filters.to}::date + INTERVAL '1 day'
+      AND a.done_at >= ${period.from}
+      AND a.done_at < ${period.toExclusive}
       AND ${activityVisibilityPredicate(actor, "a")}
       ${ownerClause}
       ${pipelineClause}

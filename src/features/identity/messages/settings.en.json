@@ -799,7 +799,7 @@
     "profile": "Profile",
     "profileDescription": "Manage your photo, display name, and account email.",
     "regional": "Language & region",
-    "regionalDescription": "Choose your language, calendar, time zone, and number display.",
+    "regionalDescription": "Choose your country and language. Time zone and formats adapt automatically.",
     "appearance": "Appearance",
     "appearanceDescription": "Choose the theme and spacing that feel comfortable to you.",
     "workflow": "Workflow preferences",

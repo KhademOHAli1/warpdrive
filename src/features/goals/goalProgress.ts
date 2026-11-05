@@ -3,7 +3,7 @@
 import type { Db } from "@/db/client";
 import type { Goal } from "@/db/schema/goals";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { goalActual } from "./goalActual";
+import { goalActualWithQuality } from "./goalActual";
 import { attainment, pace } from "./goalMath";
 import { currentPeriod, elapsedFraction } from "./goalPeriod";
 
@@ -15,6 +15,8 @@ export interface GoalProgress {
   target: string;
   attainment: number | null;
   pace: number | null;
+  dataState?: "available" | "incomplete";
+  missingMeasurementDateCount?: number;
 }
 
 // Null when `on` falls outside the goal's life: a goal that has not started or has ended has
@@ -30,8 +32,18 @@ export async function goalProgress(
   const period = currentPeriod(goal.interval, goal.startsOn, goal.endsOn, on);
   if (period === null) return null;
 
-  const actual = await goalActual(db, actor, goal, period, signal);
-  const attained = attainment(actual, goal.target);
+  const { actual, missingMeasurementDateCount } = await goalActualWithQuality(
+    db,
+    actor,
+    goal,
+    period,
+    signal,
+  );
+  const isLimit = goal.action === "lost";
+  const attained =
+    missingMeasurementDateCount > 0
+      ? null
+      : attainment(actual, goal.target, isLimit ? "at_most" : "at_least");
   return {
     goalId: goal.id,
     periodStart: period.start,
@@ -39,6 +51,8 @@ export async function goalProgress(
     actual,
     target: goal.target,
     attainment: attained,
-    pace: pace(attained, elapsedFraction(period, on)),
+    pace: isLimit ? null : pace(attained, elapsedFraction(period, on)),
+    dataState: missingMeasurementDateCount > 0 ? "incomplete" : "available",
+    missingMeasurementDateCount,
   };
 }

@@ -34,6 +34,7 @@ export * from "./importBatches";
 export * from "./importExternalIds";
 export * from "./importRows";
 export * from "./integrations";
+export * from "./kpis";
 export * from "./labels";
 export * from "./leads";
 export * from "./lostReasons";

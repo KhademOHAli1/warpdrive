@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createPreferenceProbe } from "./browser-appearance-actions.mjs";
+import { prepareLocaleThroughUi } from "./browser-locale-preferences.mjs";
 
 // Admission precedes DB/browser imports. Never run against an operator's local session/database.
 if (
@@ -137,12 +138,14 @@ async function login(page) {
   assert.equal(response.status(), 200);
 }
 
-async function visitAuthenticatedAppearance(page, context, locale) {
+async function visitAuthenticatedAppearance(page, context, locale, entry) {
   if (nativeSessions.has(locale)) {
     assert.equal((await page.goto("/settings/appearance")).status(), 200);
     return;
   }
   await login(page);
+  entry.localePreparation = await prepareLocaleThroughUi(page, origin, locale);
+  assert.equal((await page.goto("/settings/appearance")).status(), 200);
   nativeSessions.set(locale, await context.storageState());
   report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
 }
@@ -638,8 +641,7 @@ async function journey(locale, width, colorScheme, scenario, exercise) {
     page = await context.newPage();
     network = watchNetwork(context, page, entry);
     await network.ready;
-    await context.addCookies([{ name: "warpdrive_locale", value: locale, url: origin }]);
-    await visitAuthenticatedAppearance(page, context, locale);
+    await visitAuthenticatedAppearance(page, context, locale, entry);
     assert.equal(await page.locator("html").getAttribute("lang"), locale);
     assert.equal(await page.locator("html").getAttribute("dir"), locale === "fa" ? "rtl" : "ltr");
     const L = catalog(`src/features/identity/messages/settings.${locale}.json`);

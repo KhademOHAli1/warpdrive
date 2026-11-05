@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "candidateSource": "d747926f92f52297db70d870047103448ea09ddb",
+  "base": "cd7a964a4d7f992299d846c34e397396c6a268ab",
+  "programmeComplete": false,
+  "qualification": "Draft source increment; no integration, installed acceptance, release or deployment claim.",
+  "runtime": "Bun 1.4.4, declared shared dependencies used read only, clean synthetic environment, BUN_OPTIONS=--no-env-file, Vite envDir:false, one worker.",
+  "checks": [
+    {
+      "name": "Earlier stats unit/component suite",
+      "result": "passed",
+      "files": 20,
+      "tests": 142,
+      "seconds": 11.869,
+      "limit": "Earlier source cut; later timezone/source amendments have their own affected evidence."
+    },
+    {
+      "name": "Affected stats UI/schema plus privacy suites",
+      "result": "71 passed; 1 inventory failure",
+      "seconds": 8.884,
+      "limitation": "All selected stats cases passed. Registry found concurrently introduced unclassified input-contract source; preserved failure, resolved after independent source review and narrow declarations."
+    },
+    {
+      "name": "Final contract and registry suites",
+      "result": "passed",
+      "files": 3,
+      "tests": 35,
+      "seconds": 2.904,
+      "includes": "15 amended input-contract tests plus existing registry and validity suites."
+    },
+    {
+      "name": "Translation audit after rebase",
+      "result": "passed",
+      "catalogIssues": 0,
+      "seconds": 1.023
+    },
+    {
+      "name": "Unmodified privacy inventory after rebase",
+      "result": "passed",
+      "missing": [],
+      "invalid": [],
+      "seconds": 0.82,
+      "report": "docs/privacy-inventory-report.json"
+    },
+    {
+      "name": "Independent source reviews",
+      "result": "completed within declared source scope",
+      "reports": ["docs/analytics/source-review.json", "docs/analytics/input-contract-review.json"]
+    },
+    {
+      "name": "Affected lint-amendment unit/component cases",
+      "result": "passed",
+      "files": 5,
+      "tests": 52,
+      "seconds": 7.418,
+      "limitation": "Container-free cases only; real database and rendered browser remain queued."
+    }
+  ],
+  "retainedDiagnostics": [
+    "Initial i18n failure: German unchanged Deal label and Farsi plural argument mismatch; corrected and audit passed.",
+    "Expected exact-query test assertions needed timezone cache identity; updated with regressions, affected stats tests passed.",
+    "Initial inventory missing nine reviewed changed source bindings/new SELECT; narrowed maintenance after independent review.",
+    "Later registry missing new contract derived/source binding while parallel source work completed; narrowed maintenance after separate independent review.",
+    "Final Biome detected one Markdown table formatting mismatch; formatter-only correction preserved."
+  ],
+  "heavyValidation": {
+    "state": "queued by explicit user choice",
+    "allocation": "none; prior exceptions not reused",
+    "notRun": [
+      "declared Next typegen/configured whole-app TSC",
+      "configured type-aware ESLint",
+      "17 prepared real PostgreSQL cases and affected existing DB suites",
+      "actual desktop/mobile light/dark EN/DE/FA/RTL browser and keyboard review",
+      "app/worker production build",
+      "representative analytics benchmark"
+    ],
+    "uiHarness": "Prepared locally using actual components and explicit synthetic query fixtures; not launched.",
+    "cleanup": "No task database/server/browser launched; port 3119 has no listener. No shared service changed."
+  },
+  "resourceEvidence": {
+    "observedPressureLevel": 1,
+    "observedAvailableMemoryPercent": "58–60 at focused entry checks",
+    "disk": "More than 8 GiB available",
+    "peakOwnedRSS": "unmeasured; no peak/conformance claim"
+  },
+  "remainingScope": "All later rows of programme-matrix.json, including reliable history, source adapters, snapshots, cohorts, attribution, forecasts, customer economics, experiments, survival, calibration, predictive scoring and MMM remain included.",
+  "rebaseNote": "Source hashes retained after reconciliation with latest workflow/settings main. Global inventory regenerated; no new local heavy check. Automatic CI is now light and cannot qualify database/build/browser acceptance.",
+  "hostedStaticEvidence": [
+    {
+      "head": "d8278952a9329046b5bc0de4ab56b824dcb419c5",
+      "mergeCandidate": "ae3cc13985ce53d7b68b73cb5c560176fabb84db",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42067606975",
+      "result": "CRM type generation passed; TSC failed TS18048 in the new test seed closure. Lint/focused hosted tests skipped. Other sites passed.",
+      "correction": "Capture the validated stage.id before entering the async seed closure; test fixture only. Later exact-head check required."
+    },
+    {
+      "head": "c63f3f25dde44838358e67114ab78eabcb0e77da",
+      "mergeCandidate": "6a92c06ed5f5a1303915353d392ba031f133dd07",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42068053466",
+      "result": "Configured Next typegen/TSC passed. Typed lint found 9 owned errors; hosted focused tests skipped. Other required light checks passed.",
+      "correction": "Use AppError(DB_READ_FAILED), a valid optional source-ID predicate, explicit nullable guards/nonnullable currency, remove three test assertions, and extract optional metric-handler binding. Independent amended source review retained. No lint configuration/suppression changes."
+    }
+  ]
+}

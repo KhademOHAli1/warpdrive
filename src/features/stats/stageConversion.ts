@@ -4,6 +4,7 @@
 //
 // Windowed on created_at: a conversion rate is only meaningful over a cohort, so the range
 // selects which deals started in the period, then measures how far that cohort progressed.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
@@ -11,6 +12,7 @@ import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
 import type { DashboardFilters, StageConversionRow } from "@/types/stats";
+import { reportPeriod } from "./reportPeriod";
 
 function toSession(actor: PermSetUser) {
   return {
@@ -38,6 +40,7 @@ export async function stageConversion(
   signal: AbortSignal,
 ): Promise<StageConversionRow[]> {
   signal.throwIfAborted();
+  const period = reportPeriod(filters);
 
   const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
@@ -53,8 +56,8 @@ export async function stageConversion(
         AND d.archived_at IS NULL
         AND p.is_archived = false
         AND d.pipeline_id = ${filters.pipelineId}
-        AND d.created_at >= ${filters.from}::date
-        AND d.created_at < ${filters.to}::date + INTERVAL '1 day'
+        AND d.created_at >= ${period.from}
+        AND d.created_at < ${period.toExclusive}
         ${ownerClause}
         ${currencyClause}
       AND ${visClause}

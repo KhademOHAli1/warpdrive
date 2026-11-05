@@ -34,6 +34,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Actor-linked native deal creation receipts and intent fingerprints require a dedicated provenance and retention adapter. Deal visibility, a deleted-deal tombstone and account administration do not establish subject disclosure or erasure authority. Actor deletion remains restricted until a coordinated lifecycle is reviewed.",
   ),
   ...group(
+    ["kpi_definitions", "kpi_schemes", "kpi_goals", "kpi_measurements", "kpi_snapshots"],
+    "unsupported",
+    "KPI definitions, version-pinned scorecard revisions, workforce assignments, manual observations and viewer-bound snapshots require a dedicated subject/provenance and lifecycle adapter. A creator, assignee, CRM contributor or snapshot viewer is not by itself a reviewed privacy subject or disclosure authority. Append-only triggers and goal archiving are product behavior, not erasure, export, rectification, restriction or retention execution. These tables are excluded from candidate discovery and no generic lifecycle capability is granted.",
+  ),
+  ...group(
     DISCOVERY_ADAPTER_TABLES,
     "supported",
     "Version-bound candidate IDs and explicit relationships only; content and exact approved scope require further review.",
