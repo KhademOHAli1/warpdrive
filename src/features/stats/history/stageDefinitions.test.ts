@@ -38,7 +38,7 @@ function row(
     entityId: scope.stageId,
     incarnationId: scope.authorizedIncarnationId,
     eventKind: beforeState === null ? "insert" : afterState === null ? "delete" : "update",
-    schemaVersion: 1,
+    schemaVersion: 2,
     transactionId: String(200 + sequence),
     observationSnapshot: "200:700:500",
     observedAt: "2026-11-05T12:00:00.123456Z",
@@ -264,15 +264,16 @@ describe("stage definitions selected from authoritative anchor membership", () =
     });
   });
 
-  test.each([{ activationId: uuid(9) }, { entityId: uuid(9) }, { entityKind: "pipeline" }])(
-    "rejects unexpected event scope %j",
-    (patch) => {
-      expect(selectStageDefinition([row(1, null, definition(), patch)], scope)).toEqual({
-        ok: false,
-        reason: "incompatible-event-scope",
-      });
-    },
-  );
+  test.each([
+    { activationId: uuid(9) },
+    { entityId: uuid(9) },
+    { entityKind: "pipeline", afterState: { isArchived: false, visibilityGroupId: null } },
+  ])("rejects unexpected event scope %j", (patch) => {
+    expect(selectStageDefinition([row(1, null, definition(), patch)], scope)).toEqual({
+      ok: false,
+      reason: "incompatible-event-scope",
+    });
+  });
 
   test.each(invalidProjections)("rejects malformed stage projection %j", (patch) => {
     expect(selectStageDefinition([baseline(definition(patch))], scope)).toEqual({

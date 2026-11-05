@@ -10,13 +10,20 @@ const uuid = (value: number) => `00000000-0000-4000-8000-${String(value).padStar
 
 function state(patch: Record<string, unknown> = {}) {
   return {
-    title: "Observed opportunity",
     status: "open",
     value: "99999999999999.1234",
     currency: "IRR",
     pipelineId: uuid(10),
     stageId: uuid(11),
     ownerId: uuid(12),
+    wonTime: null,
+    lostTime: null,
+    expectedCloseDate: null,
+    archivedAt: null,
+    deletedAt: null,
+    visibilityLevel: "owner",
+    visibilityGroupId: null,
+    visibleToUserIds: [],
     ...patch,
   };
 }
@@ -30,7 +37,7 @@ function event(patch: Record<string, unknown> = {}) {
     entityId: uuid(3),
     incarnationId: uuid(4),
     eventKind: "insert",
-    schemaVersion: 1,
+    schemaVersion: 2,
     transactionId: "100",
     observationSnapshot: "100:200:150,175",
     observedAt: "2026-11-05T12:00:00.123456Z",
@@ -219,6 +226,31 @@ describe("lossless analytics history envelope", () => {
     );
   });
 
+  test.each([
+    "title",
+    "personId",
+    "orgId",
+    "lostReason",
+    "sourceChannelId",
+    "createdAt",
+    "stageEnteredAt",
+  ])("rejects excluded version 2 deal key %s rather than dropping it silently", (key) => {
+    expect(
+      analyticsHistoryEvent.safeParse(event({ afterState: state({ [key]: uuid(30) }) })).success,
+    ).toBe(false);
+  });
+
+  test("requires historical visibility fields and the expected-close fact", () => {
+    const incomplete = state();
+    delete (incomplete as Record<string, unknown>).visibleToUserIds;
+    expect(analyticsHistoryEvent.safeParse(event({ afterState: incomplete })).success).toBe(false);
+    expect(
+      analyticsHistoryEvent.safeParse(
+        event({ afterState: state({ expectedCloseDate: "unknown" }) }),
+      ).success,
+    ).toBe(false);
+  });
+
   test("does not infer actor or command from recorded owner or write UUID", () => {
     const parsed = analyticsHistoryEvent.parse(event());
     expect(parsed.afterState?.ownerId).toBe(uuid(12));
@@ -269,7 +301,7 @@ describe("lossless analytics history envelope", () => {
   });
 
   test.each([
-    { schemaVersion: 2 },
+    { schemaVersion: 1 },
     { entityKind: "contact" },
     { eventKind: "inferred-stage-entry" },
     { observedAt: "2026-11-05" },
@@ -289,11 +321,12 @@ describe("lossless analytics history envelope", () => {
   test("validates activation as a current database observation, without a creation/stage event", () => {
     const activation = {
       activationId: uuid(2),
-      schemaVersion: 1,
+      schemaVersion: 2,
       activatedAt: "2026-11-05T12:00:00.123456Z",
       captureSemantics: "database-row-observation-v1",
     };
     expect(historyActivation.parse(activation)).toEqual(activation);
+    expect(historyActivation.safeParse({ ...activation, schemaVersion: 1 }).success).toBe(false);
     expect(
       historyActivation.safeParse({ ...activation, createdAt: "2010-01-01T00:00:00Z" }).success,
     ).toBe(false);

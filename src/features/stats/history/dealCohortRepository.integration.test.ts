@@ -125,14 +125,12 @@ describe("native current-authorized observed deal win cohorts", () => {
         signal(),
       );
       const deal = await insertHistoryDeal(h.pool, f, {
-        title: "Do not disclose this captured title",
+        title: "Do not disclose this CRM title",
         createdAt: "1998-01-02T03:04:05.123456Z",
       });
       await transaction(h, async (client) => {
         await markWon(client, deal.id);
-        await client.query("UPDATE deals SET title='Final transaction witness' WHERE id=$1", [
-          deal.id,
-        ]);
+        await client.query("UPDATE deals SET value='12.0001' WHERE id=$1", [deal.id]);
         await client.query("COMMIT");
       });
       await h.pool.query("UPDATE deals SET status='open',won_time=NULL WHERE id=$1", [deal.id]);
@@ -145,7 +143,7 @@ describe("native current-authorized observed deal win cohorts", () => {
           "Expected entry and winning transaction evidence",
         );
       expect(transition.transactionId).toBe(final.transactionId);
-      expect(entry.afterState?.createdAt).not.toBe(entry.observedAt);
+      expect(entry.afterState).not.toHaveProperty("createdAt");
       expect(transition.afterState?.wonTime).not.toBe(transition.observedAt);
 
       const scopedRequest = {
@@ -432,10 +430,13 @@ describe("native current-authorized observed deal win cohorts", () => {
   test("withholds every cohort when its history payload would be truncated", async () => {
     await withCapture(async (h, f, actor) => {
       const deal = await insertHistoryDeal(h.pool, f);
-      await h.pool.query("UPDATE deals SET title=repeat('private evidence ',300000) WHERE id=$1", [
+      await h.pool.query(
+        "UPDATE deals SET visible_to_user_ids=array_fill(owner_id,ARRAY[230000]) WHERE id=$1",
+        [deal.id],
+      );
+      await h.pool.query("UPDATE deals SET visible_to_user_ids='{}'::uuid[] WHERE id=$1", [
         deal.id,
       ]);
-      await h.pool.query("UPDATE deals SET title='Restored short title' WHERE id=$1", [deal.id]);
       expect(await readObservedDealWinCohorts(h.db, actor, request, signal())).toEqual({
         state: "unavailable",
         reason: "history-limit",

@@ -187,10 +187,13 @@ describe("native creator-owned inventory movement comparison", () => {
     await withCapture(async (h, f, actor) => {
       const opening = await pin(h, actor, f.pipelineId);
       const closing = await pin(h, actor, f.pipelineId);
-      await h.pool.query("UPDATE deals SET title=repeat('outside cut ',400000) WHERE id=$1", [
+      await h.pool.query(
+        "UPDATE deals SET visible_to_user_ids=array_fill(owner_id,ARRAY[230000]) WHERE id=$1",
+        [f.dealId],
+      );
+      await h.pool.query("UPDATE deals SET visible_to_user_ids='{}'::uuid[] WHERE id=$1", [
         f.dealId,
       ]);
-      await h.pool.query("UPDATE deals SET title='Restored current title' WHERE id=$1", [f.dealId]);
       expect(await compare(h, actor, opening, closing)).toMatchObject({
         state: "available",
         result: { netMovement: { count: 0, knownValue: "0.0000" }, movements: [] },

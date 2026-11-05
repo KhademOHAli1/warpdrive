@@ -188,9 +188,7 @@ describe("native current-deal stage definition repository", () => {
           version: { membership: "snapshot-visible" },
         });
 
-        await h.pool.query("UPDATE deals SET title='After the committed rename' WHERE id=$1", [
-          inserted.id,
-        ]);
+        await h.pool.query("UPDATE deals SET value='42.0001' WHERE id=$1", [inserted.id]);
         const subsequent = await eventAt(h.pool, "deal", inserted.id, -1);
         expect(
           await readCurrentDealStageDefinition(
@@ -219,7 +217,7 @@ describe("native current-deal stage definition repository", () => {
         await client.query("UPDATE stages SET name='Intermediate definition' WHERE id=$1", [
           f.stageId,
         ]);
-        await client.query("UPDATE deals SET title='Definition anchor' WHERE id=$1", [f.dealId]);
+        await client.query("UPDATE deals SET value='37.0001' WHERE id=$1", [f.dealId]);
         await client.query(`UPDATE stages SET name='Final definition',"order"=5 WHERE id=$1`, [
           f.stageId,
         ]);

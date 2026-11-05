@@ -19,7 +19,7 @@ LOCK TABLE public.pipelines, public.stages, public.deals IN SHARE ROW EXCLUSIVE 
 CREATE TABLE public.analytics_history_coverage (
   id boolean PRIMARY KEY DEFAULT true,
   activation_id uuid NOT NULL DEFAULT gen_random_uuid(),
-  schema_version smallint NOT NULL DEFAULT 1,
+  schema_version smallint NOT NULL DEFAULT 2,
   activated_at timestamptz NOT NULL,
   activation_transaction_id text NOT NULL,
   baseline_snapshot pg_catalog.pg_snapshot NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE public.analytics_history_coverage (
   baseline_pipeline_count bigint NOT NULL,
   capture_semantics text NOT NULL DEFAULT 'database-row-observation-v1',
   CONSTRAINT analytics_history_coverage_singleton_ck CHECK (id),
-  CONSTRAINT analytics_history_coverage_version_ck CHECK (schema_version = 1),
+  CONSTRAINT analytics_history_coverage_version_ck CHECK (schema_version = 2),
   CONSTRAINT analytics_history_coverage_transaction_ck CHECK (activation_transaction_id ~ '^[0-9]{1,20}$'),
   CONSTRAINT analytics_history_coverage_counts_ck CHECK (baseline_deal_count >= 0 AND baseline_stage_count >= 0 AND baseline_pipeline_count >= 0),
   CONSTRAINT analytics_history_coverage_semantics_ck CHECK (capture_semantics = 'database-row-observation-v1')
@@ -43,7 +43,7 @@ CREATE TABLE public.analytics_history_events (
   entity_id uuid NOT NULL,
   incarnation_id uuid NOT NULL,
   event_kind text NOT NULL,
-  schema_version smallint NOT NULL DEFAULT 1,
+  schema_version smallint NOT NULL DEFAULT 2,
   transaction_id text NOT NULL,
   observed_at timestamptz NOT NULL,
   observation_snapshot pg_catalog.pg_snapshot NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE public.analytics_history_events (
   CONSTRAINT analytics_history_events_ordinal_ck CHECK (ordinal > 0),
   CONSTRAINT analytics_history_events_entity_ck CHECK (entity_kind IN ('deal','stage','pipeline')),
   CONSTRAINT analytics_history_events_kind_ck CHECK (event_kind IN ('baseline','insert','update','delete')),
-  CONSTRAINT analytics_history_events_version_ck CHECK (schema_version = 1),
+  CONSTRAINT analytics_history_events_version_ck CHECK (schema_version = 2),
   CONSTRAINT analytics_history_events_transaction_ck CHECK (transaction_id ~ '^[0-9]{1,20}$'),
   CONSTRAINT analytics_history_events_projection_ck CHECK (
     (before_state IS NULL OR jsonb_typeof(before_state) = 'object') AND
@@ -141,28 +141,21 @@ SET search_path = pg_catalog AS $$
   SELECT pg_catalog.to_char(p_value AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
 $$;
 
--- Typed projections avoid copying unrestricted custom_fields into intermediate JSON.
+-- Version 2 records the fields required for observed sales history and current
+-- authority. Deal labels, contact pointers and source/loss text stay in their own stores.
 CREATE FUNCTION public.analytics_project_deal(p_row public.deals) RETURNS jsonb
 LANGUAGE sql IMMUTABLE PARALLEL SAFE RETURNS NULL ON NULL INPUT
 SET search_path = pg_catalog AS $$
   SELECT pg_catalog.jsonb_build_object(
-    'title', (p_row).title, 'status', (p_row).status::text,
-    'value', (p_row).value::text, 'currency', (p_row).currency,
+    'status', (p_row).status::text, 'value', (p_row).value::text, 'currency', (p_row).currency,
     'ownerId', (p_row).owner_id, 'pipelineId', (p_row).pipeline_id, 'stageId', (p_row).stage_id,
-    'createdAt', public.analytics_history_utc((p_row).created_at),
     'wonTime', public.analytics_history_utc((p_row).won_time),
     'lostTime', public.analytics_history_utc((p_row).lost_time),
-    'stageEnteredAt', public.analytics_history_utc((p_row).stage_entered_at),
     'expectedCloseDate', pg_catalog.to_char((p_row).expected_close_date, 'YYYY-MM-DD'),
     'archivedAt', public.analytics_history_utc((p_row).archived_at),
     'deletedAt', public.analytics_history_utc((p_row).deleted_at),
-    'personId', (p_row).person_id, 'orgId', (p_row).org_id,
-    'sourceChannel', (p_row).source_channel, 'sourceChannelId', (p_row).source_channel_id,
     'visibilityLevel', (p_row).visibility_level::text,
-    'visibilityGroupId', (p_row).visibility_group_id, 'visibleToUserIds', (p_row).visible_to_user_ids,
-    'lostReason', (p_row).lost_reason, 'lostReasonId', (p_row).lost_reason_id,
-    'lastActivityAt', public.analytics_history_utc((p_row).last_activity_at),
-    'nextActivityAt', public.analytics_history_utc((p_row).next_activity_at)
+    'visibilityGroupId', (p_row).visibility_group_id, 'visibleToUserIds', (p_row).visible_to_user_ids
   )
 $$;
 
@@ -176,8 +169,9 @@ $$;
 CREATE FUNCTION public.analytics_project_pipeline(p_row public.pipelines) RETURNS jsonb
 LANGUAGE sql IMMUTABLE PARALLEL SAFE RETURNS NULL ON NULL INPUT
 SET search_path = pg_catalog AS $$
-  SELECT pg_catalog.jsonb_build_object('name', (p_row).name, 'order', (p_row)."order",
-    'visibilityGroupId', (p_row).visibility_group_id, 'isArchived', (p_row).is_archived)
+  SELECT pg_catalog.jsonb_build_object(
+    'visibilityGroupId', (p_row).visibility_group_id, 'isArchived', (p_row).is_archived
+  )
 $$;
 
 CREATE FUNCTION public.analytics_capture_row_change() RETURNS trigger
@@ -262,7 +256,7 @@ BEGIN
     before_write_version, after_write_version, actor_id, command_id
   ) VALUES (
     coverage.activation_id, entity_kind_value, entity_id_value, incarnation, pg_catalog.lower(TG_OP),
-    1, pg_catalog.pg_current_xact_id()::text, pg_catalog.clock_timestamp(), pg_catalog.pg_current_snapshot(), before_projection, after_projection,
+    coverage.schema_version, pg_catalog.pg_current_xact_id()::text, pg_catalog.clock_timestamp(), pg_catalog.pg_current_snapshot(), before_projection, after_projection,
     before_version, after_version, NULL, NULL
   ) RETURNING ordinal, observed_at INTO event_ordinal, observation_at;
   IF TG_OP = 'INSERT' THEN started_at := observation_at; END IF;

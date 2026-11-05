@@ -10,7 +10,6 @@ import {
   historySourceRows,
   insertHistoryDeal,
   LEGACY_CREATED_AT,
-  LEGACY_STAGE_ENTERED_AT,
   prepareHistoryCapture,
   readCaptureEvents,
   readCaptureHead,
@@ -100,7 +99,7 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
         String(events.filter((event) => event.entityKind === "pipeline").length),
       );
       const legacy = eventAt(await readCaptureEvents(h.pool, "deal", f.dealId), 0);
-      expect(legacy.afterState?.createdAt).toBe(LEGACY_CREATED_AT);
+      expect(legacy.afterState).not.toHaveProperty("createdAt");
       expect(legacy.observedAt).not.toBe(LEGACY_CREATED_AT);
       expect(await readCaptureHead(h.pool, "deal", f.dealId)).toMatchObject({
         active: true,
@@ -120,15 +119,28 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
       expect(baseline.afterState).toMatchObject({
         value: EXACT_LEGACY_VALUE,
         currency: "EUR",
-        createdAt: LEGACY_CREATED_AT,
-        stageEnteredAt: LEGACY_STAGE_ENTERED_AT,
         ownerId: f.userId,
         stageId: f.stageId,
         pipelineId: f.pipelineId,
       });
       expect(baseline.afterState).not.toHaveProperty("customFields");
       expect(baseline.afterState).not.toHaveProperty("custom_fields");
-      expect(baseline.afterState).not.toHaveProperty("boardPosition");
+      expect(Object.keys(baseline.afterState ?? {}).sort()).toEqual([
+        "archivedAt",
+        "currency",
+        "deletedAt",
+        "expectedCloseDate",
+        "lostTime",
+        "ownerId",
+        "pipelineId",
+        "stageId",
+        "status",
+        "value",
+        "visibilityGroupId",
+        "visibilityLevel",
+        "visibleToUserIds",
+        "wonTime",
+      ]);
       expect(JSON.stringify(baseline.afterState)).not.toContain("do-not-copy-into-analytics");
       expect(baseline.beforeWriteVersion).toBeNull();
       expect(baseline.afterWriteVersion).toBe(source.rows[0]?.version);
@@ -160,7 +172,6 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
       expect(second.afterWriteVersion).not.toBe(first.afterWriteVersion);
       expect(second.afterState).toMatchObject({
         stageId: f.otherStageId,
-        stageEnteredAt: "2030-01-02T03:04:05.000001Z",
         value: "0.0001",
       });
       expect(second.incarnationId).toBe(first.incarnationId);
@@ -192,8 +203,8 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
       expect(eventAt(events, 2).afterState).toMatchObject({
         lostTime: "2030-06-02T12:00:00.654321Z",
         wonTime: null,
-        lostReason: "No decision",
       });
+      expect(eventAt(events, 2).afterState).not.toHaveProperty("lostReason");
       expect(eventAt(events, 3).beforeState?.lostTime).toBe("2030-06-02T12:00:00.654321Z");
       expect(eventAt(events, 3).afterState).toMatchObject({ wonTime: null, lostTime: null });
     });
@@ -229,25 +240,33 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
     });
   });
 
-  test("suppresses board ordering, update-clock and revision-only writes without losing the next material token", async () => {
+  test("suppresses metadata, free text and contact-only writes without losing the next material token", async () => {
     await withCapture(async (h, f) => {
       const before = await readCaptureEvents(h.pool, "deal", f.dealId);
       const head = await readCaptureHead(h.pool, "deal", f.dealId);
       const ignored = await h.pool.query<{ version: string }>(
-        `UPDATE deals SET board_position=board_position+1,updated_at=clock_timestamp(),write_version=gen_random_uuid()
+        `UPDATE deals SET board_position=board_position+1,updated_at=clock_timestamp(),write_version=gen_random_uuid(),
+           title='Private title sentinel',lost_reason='Private loss sentinel',
+           person_id=gen_random_uuid(),org_id=gen_random_uuid(),
+           source_channel='Private channel sentinel',source_channel_id='Private channel key sentinel',
+           created_at='1990-01-01T00:00:00Z',stage_entered_at='1995-01-01T00:00:00Z',
+           last_activity_at='2000-01-01T00:00:00Z',next_activity_at='2010-01-01T00:00:00Z'
          WHERE id=$1 RETURNING write_version::text AS version`,
         [f.dealId],
       );
       expect(await readCaptureEvents(h.pool, "deal", f.dealId)).toEqual(before);
       expect(await readCaptureHead(h.pool, "deal", f.dealId)).toEqual(head);
       expect(ignored.rows[0]?.version).not.toBe(head.lastWriteVersion);
-      await h.pool.query("UPDATE deals SET title='Material edit after ignored write' WHERE id=$1", [
+      await h.pool.query("UPDATE deals SET expected_close_date='2030-02-03' WHERE id=$1", [
         f.dealId,
       ]);
       const updated = eventAt(await readCaptureEvents(h.pool, "deal", f.dealId), 1);
       expect(updated.beforeWriteVersion).toBe(ignored.rows[0]?.version);
       expect(updated.beforeState).toEqual(eventAt(before, 0).afterState);
-      expect(updated.afterState?.title).toBe("Material edit after ignored write");
+      expect(updated.afterState?.expectedCloseDate).toBe("2030-02-03");
+      expect(JSON.stringify(updated)).not.toContain("sentinel");
+      expect(updated.afterState).not.toHaveProperty("personId");
+      expect(updated.afterState).not.toHaveProperty("orgId");
     });
   });
 
@@ -280,7 +299,7 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
       try {
         client = await h.pool.connect();
         await beginHistoryTransaction(client);
-        await client.query("UPDATE deals SET title='Retained outer edit' WHERE id=$1", [f.dealId]);
+        await client.query("UPDATE deals SET value='12.0001' WHERE id=$1", [f.dealId]);
         await client.query("SAVEPOINT abandoned_currency");
         await client.query("UPDATE deals SET currency='USD' WHERE id=$1", [f.dealId]);
         expect(await readCaptureEvents(client, "deal", f.dealId)).toHaveLength(3);
@@ -290,7 +309,7 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
         const events = await readCaptureEvents(h.pool, "deal", f.dealId);
         expect(events).toHaveLength(2);
         expect(eventAt(events, 1).afterState).toMatchObject({
-          title: "Retained outer edit",
+          value: "12.0001",
           currency: "EUR",
         });
         expect(await readCaptureHead(h.pool, "deal", f.dealId)).toMatchObject({
@@ -439,6 +458,7 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
   test("retains definition versions and folds successive rename and reorder observations in one transaction", async () => {
     await withCapture(async (h, f) => {
       const original = eventAt(await readCaptureEvents(h.pool, "stage", f.stageId), 0);
+      const pipelineBefore = await readCaptureEvents(h.pool, "pipeline", f.pipelineId);
       let client: PoolClient | undefined;
       try {
         client = await h.pool.connect();
@@ -454,6 +474,11 @@ describe("private analytics row-capture proposal on real PostgreSQL", () => {
         await client.query("COMMIT");
         const stages = await readCaptureEvents(h.pool, "stage", f.stageId);
         expect(eventAt(stages, 0)).toEqual(original);
+        expect(await readCaptureEvents(h.pool, "pipeline", f.pipelineId)).toEqual(pipelineBefore);
+        expect(eventAt(pipelineBefore, 0).afterState).toEqual({
+          isArchived: false,
+          visibilityGroupId: null,
+        });
         expect(eventAt(stages, 1).afterState).toMatchObject({
           name: "Renamed qualification",
           order: 0,

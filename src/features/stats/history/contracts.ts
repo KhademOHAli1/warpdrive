@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ANALYTICS_HISTORY_SCHEMA_VERSION = 1;
+export const ANALYTICS_HISTORY_SCHEMA_VERSION = 2;
 export const HISTORY_OBSERVATION_BASIS = "database-row-observation-v1";
 const MAX_PG_BIGINT = 9_223_372_036_854_775_807n;
 const MAX_PG_XID8 = 18_446_744_073_709_551_615n;
@@ -61,28 +61,43 @@ export const historyEventKind = z.enum(["baseline", "insert", "update", "delete"
 export const historyState = z.record(z.string(), z.json());
 export type HistoryState = z.infer<typeof historyState>;
 
-function dealStateIssues(state: HistoryState): { field: string; message: string }[] {
-  const issues: { field: string; message: string }[] = [];
-  if (
-    state.value !== null &&
-    (typeof state.value !== "string" || !/^-?\d{1,14}(\.\d{1,4})?$/.test(state.value))
-  ) {
-    issues.push({
-      field: "value",
-      message: "Recorded money must remain an exact decimal string or null",
-    });
-  }
-  if (state.status !== "open" && state.status !== "won" && state.status !== "lost") {
-    issues.push({ field: "status", message: "Unsupported recorded deal status" });
-  }
-  for (const field of ["pipelineId", "stageId", "ownerId"] as const) {
-    if (!historyUuid.safeParse(state[field]).success)
-      issues.push({ field, message: "Recorded deal relation must be a UUID" });
-  }
-  if (typeof state.currency !== "string" || state.currency.length === 0)
-    issues.push({ field: "currency", message: "Recorded currency is missing" });
-  return issues;
-}
+const pgInt = z.number().int().min(-2_147_483_648).max(2_147_483_647);
+const capturedDealProjection = z.strictObject({
+  status: z.enum(["open", "won", "lost"]),
+  value: z
+    .string()
+    .regex(/^-?\d{1,14}(\.\d{1,4})?$/)
+    .nullable(),
+  currency: z.string().min(1),
+  ownerId: historyUuid,
+  pipelineId: historyUuid,
+  stageId: historyUuid,
+  wonTime: instant.nullable(),
+  lostTime: instant.nullable(),
+  expectedCloseDate: z.iso.date().nullable(),
+  archivedAt: instant.nullable(),
+  deletedAt: instant.nullable(),
+  visibilityLevel: z.enum(["owner", "group", "all"]),
+  visibilityGroupId: historyUuid.nullable(),
+  visibleToUserIds: z.array(historyUuid),
+});
+
+// Names are part of the historical stage definition required for exact replay.
+export const capturedStageProjection = z.strictObject({
+  name: z.string(),
+  order: pgInt,
+  pipelineId: historyUuid,
+  rottingDays: pgInt.nullable(),
+});
+
+const projectionByEntity = {
+  deal: capturedDealProjection,
+  stage: capturedStageProjection,
+  pipeline: z.strictObject({
+    visibilityGroupId: historyUuid.nullable(),
+    isArchived: z.boolean(),
+  }),
+};
 
 export const analyticsHistoryEvent = z
   .strictObject({
@@ -118,14 +133,19 @@ export const analyticsHistoryEvent = z
         message: "Event/state shape mismatch",
       });
     }
-    if (event.entityKind !== "deal") return;
+    const projection = projectionByEntity[event.entityKind];
     for (const [key, state] of [
       ["beforeState", event.beforeState],
       ["afterState", event.afterState],
     ] as const) {
       if (state === null) continue;
-      for (const issue of dealStateIssues(state))
-        context.addIssue({ code: "custom", path: [key, issue.field], message: issue.message });
+      const parsed = projection.safeParse(state);
+      if (!parsed.success)
+        context.addIssue({
+          code: "custom",
+          path: [key],
+          message: "Unsupported history projection",
+        });
     }
   });
 

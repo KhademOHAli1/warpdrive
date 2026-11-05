@@ -118,6 +118,7 @@ test("keeps the populated canonical prefix dormant until a separate admitted act
       ]);
       expect(await readHistoryInstallation(drizzle(client, { schema }), signal())).toMatchObject({
         state: "installed",
+        activation: { schemaVersion: 2 },
       });
       expect(
         (await readCaptureEvents(client, "deal", existing.id)).map(({ eventKind }) => eventKind),

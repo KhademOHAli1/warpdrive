@@ -167,7 +167,7 @@ export const savedPerformanceInventoryEntry = classifyInventory(
 
 export const analyticsForecastCommitInventoryEntry = classifyInventory(
   [
-    "sourceReview:src/features/stats/history/forecastCommitQualification.ts#56fbc23b26cd57ad0211060810b4b70ddbe18d3ea8ca1435715341f02bcaa90b",
+    "sourceReview:src/features/stats/history/forecastCommitQualification.ts#29ecfac652288f84698dfa25f729a71ca10c25d25517cea10b91226298bcf280",
     "writer:src/features/stats/history/forecastCommitQualification.ts#query:BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY",
     "writer:src/features/stats/history/forecastCommitQualification.ts#query:ROLLBACK",
     "writer:src/features/stats/history/forecastCommitQualification.ts#query:SET LOCAL search_path = pg_catalog, pg_temp; SET LOCAL statement_timeout = '5000ms'; SET LOCAL lock_timeout = '2000ms'",
@@ -329,9 +329,10 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/stageAgingView.ts",
     "derived:src/features/stats/ui/StageAgingPanel.tsx",
     "sourceReview:src/features/stats/ui/StageAgingPanel.tsx#47394710d463d54d78e8dd7e30e80234e6f05fae3de842408950097cd682037f",
-    "sourceReview:docs/analytics/history-activate-locked.sql#9cd17639a69a5840471a10fa8c6f1919cc756b486a5a017bafeadd61fa1be860",
-    "sourceReview:docs/analytics/history-storage-dormant.sql#c00f1e659c5f7d80be4560fb5c34e0b011bdf4ba15286f70af89b2c22dc06943",
-    "sourceReview:docs/analytics/forecast-custody-proposal.sql#b8188bfb71922f154440de3f82a412afbb66c2ae6efd428b78864d764c65f07b",
+    "sourceReview:docs/analytics/history-capture-proposal.sql#83b04546ed45ed1d2b27497cdb0f087afd623ee7343b1ceb477c428654fbe3f6",
+    "sourceReview:docs/analytics/history-activate-locked.sql#139459667dd68f52ed8001ae321774f0d599fb45174334a98f8ca03fc1a2ffa4",
+    "sourceReview:docs/analytics/history-storage-dormant.sql#cc7d6a1044943e0a7bbdc3a270d9fb8560fd2a0999eb90e773eb2ff4d0295195",
+    "sourceReview:docs/analytics/forecast-custody-proposal.sql#a958d068047f654532b3fcf91e2b2312003d5012512a2436df31eaf26f888457",
     "sourceReview:src/features/stats/history/currentStageAgingRepository.ts#7f9d1f3d4f1b5f1a8a5879e256db498ef12bc233b0c0dd4d21f8abcc33d7aa6c",
     "sourceReview:src/features/stats/history/stageAgingView.ts#6994bca1d8ccf9ed59fbe071682b067c99cd1fdcb3650d460d34cd05c53ff34c",
     "sourceReview:src/features/stats/history/inventoryBoundaryEvidence.ts#49120ce8c2a5dd7306698555dc06350dcc32314392537316d0a297b3413866fd",
@@ -355,7 +356,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/stageDefinitions.ts",
     "sourceReview:src/features/stats/history/inventoryMovement.ts#d915bb99c0564e25986f2bc82d2b1625412f7b489e252eee645568a40edba087",
     "sourceReview:src/features/stats/history/stageDefinitionRepository.ts#7c4a5e0b384b3f9959e4191ab4f4688e8ff96b4675143bcf875238e8b01b1327",
-    "sourceReview:src/features/stats/history/stageDefinitions.ts#900c123dd4f40e0c3bb0d0d9604056532b48331028220b7b46a327328097bf48",
+    "sourceReview:src/features/stats/history/stageDefinitions.ts#6db2ab360c19724deefff98032e5f73ab3969d28305d99d38c6612509ffcf856",
     "writer:src/features/stats/history/inventoryMovement.ts#delete:dynamic",
     "writer:src/features/stats/history/stageDefinitionRepository.ts#execute:sql",
     "derived:src/features/stats/history/stageStatistics.ts",
@@ -364,7 +365,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "sourceReview:src/features/stats/history/stageEpisodes.ts#3cd1d2944db399dc5c676b6c074f505f7d694e66f810b7a3845b1840054ecad6",
     "derived:src/features/stats/history/fold.ts",
     "derived:src/features/stats/history/repository.ts",
-    "sourceReview:src/db/schema/analyticsHistory.ts#ac12a8b33b1141bc08418a31ad45ef57858aaa1ff84c3303c71490c5e666c319",
+    "sourceReview:src/db/schema/analyticsHistory.ts#679f60e47c6bcf35f7d347ba3be8e2847ed37faf1d1f49c995472bc3c613100f",
     "sourceReview:src/features/stats/history/fold.ts#41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b",
     "sourceReview:src/features/stats/history/repository.ts#03db5b664a78535ecd399cb777f870c88a43c430d8b6b8f89d7c2b5ec9008bf3",
     "table:analytics_history_coverage",
@@ -377,14 +378,14 @@ export const analyticsInventoryEntry = classifyInventory(
     owner: "sales analytics history",
     categories: [
       "CRM opportunity and workforce identifiers",
-      "title and loss free text",
+      "historical stage names",
       "exact commercial values",
       "recorded pipeline/stage definitions",
       "observed changes and report facts",
       "visibility controls and transaction/snapshot metadata",
     ],
     subjectRelation:
-      "Deal projections retain owner/person/organization references and commercial facts. These references are linkable data, not verified data-subject identity. Unknown capture actor/command stays null. Current deal authority does not grant independent contact or retained-deletion authority.",
+      "Deal projections retain workforce and scoped opportunity references, exact commercial facts and capture witnesses. These can link to people. Historical stage names can contain personal data. Current deal access does not authorize independent contact or retained-deletion access.",
     purpose:
       "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions and aging, snapshot inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history, and immutable inventory and forecast custody. No schema export, canonical migration or installed storage is established by this classification.",
     disclosure:

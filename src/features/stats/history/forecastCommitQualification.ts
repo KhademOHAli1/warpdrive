@@ -3,7 +3,12 @@ import { z } from "zod";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import { isTimeZone } from "@/features/i18n/preferences";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { analyticsHistoryEvent, historyUuid, historyVisibilitySnapshot } from "./contracts";
+import {
+  ANALYTICS_HISTORY_SCHEMA_VERSION,
+  analyticsHistoryEvent,
+  historyUuid,
+  historyVisibilitySnapshot,
+} from "./contracts";
 
 const MAX_WITNESS_BYTES = 1_048_576;
 const MAX_CHECKOUT_MS = 5_000;
@@ -109,6 +114,7 @@ async function readReceipt(
        FROM public.analytics_report_snapshots s
        JOIN public.users u ON u.id = s.created_by AND u.is_active
        JOIN public.analytics_history_coverage c ON c.id AND c.activation_id = s.activation_id
+         AND c.schema_version = ${ANALYTICS_HISTORY_SCHEMA_VERSION}
        CROSS JOIN observation o
        WHERE s.id = $1::uuid AND s.created_by = $2::uuid AND s.activation_id = $3::uuid
          AND s.kind = 'forecast' AND s.definition_version = 1

@@ -14,17 +14,20 @@ const state = (
   status: "open" | "won" | "lost" = "open",
   patch: HistoryState = {},
 ): HistoryState => ({
-  title: "Observed opportunity",
   status,
   value: "100.0000",
   currency: "EUR",
   pipelineId: uuid(10),
   stageId: uuid(stage),
   ownerId: uuid(12),
-  createdAt: "1990-01-01T00:00:00Z",
-  stageEnteredAt: "1995-01-01T00:00:00Z",
-  deletedAt: null,
+  wonTime: null,
+  lostTime: null,
+  expectedCloseDate: null,
   archivedAt: null,
+  deletedAt: null,
+  visibilityLevel: "owner",
+  visibilityGroupId: null,
+  visibleToUserIds: [],
   ...patch,
 });
 
@@ -42,7 +45,7 @@ function event(
     entityId: uuid(3),
     incarnationId: uuid(4),
     eventKind: beforeState === null ? "insert" : afterState === null ? "delete" : "update",
-    schemaVersion: 1,
+    schemaVersion: 2,
     transactionId: String(100 + sequence),
     observationSnapshot: "100:1000:",
     observedAt: time(sequence),
@@ -347,12 +350,11 @@ describe("bounded observed stage episodes", () => {
     expect(result.currentOpenStage).toBeNull();
   });
 
-  test("value, owner and imported timestamp changes do not reset stage age", () => {
+  test("value, owner and expected-close changes do not reset stage age", () => {
     const edited = state(20, "open", {
       value: "0.0001",
       ownerId: uuid(55),
-      stageEnteredAt: time(4),
-      nextActivityAt: time(8),
+      expectedCloseDate: "2026-12-01",
     });
     const result = deriveStageEpisodes(
       changes([event(1, null, state(20)), event(3, state(20), edited)]),

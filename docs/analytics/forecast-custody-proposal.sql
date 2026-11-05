@@ -144,7 +144,8 @@ BEGIN
     OR NEW.cutoff_observed_at > NEW.created_at OR NEW.created_at >= NEW.forecast_target_start
     OR NOT EXISTS (
       SELECT 1 FROM public.analytics_history_coverage c
-      WHERE c.id AND c.activation_id = NEW.activation_id AND c.activated_at <= NEW.cutoff_observed_at
+      WHERE c.id AND c.activation_id = NEW.activation_id AND c.schema_version = 2
+        AND c.activated_at <= NEW.cutoff_observed_at
     )
   THEN
     RAISE EXCEPTION 'forecast cutoff and save must precede a valid target' USING ERRCODE = '23514';

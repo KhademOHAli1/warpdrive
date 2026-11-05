@@ -1,5 +1,5 @@
 -- PRIVATE UNNUMBERED ACTIVATION REHEARSAL. Do not run on an installed system.
--- Requires history-storage-dormant.sql in a fresh disposable canonical-prefix
+-- Requires version 2 history-storage-dormant.sql in a fresh disposable canonical-prefix
 -- database and a caller-owned, fresh session. Before BEGIN the fixture supplies
 -- nonzero lock, statement and idle transaction timeouts and session row budgets:
 -- warpdrive.analytics_activation_max_{pipelines,stages,deals}.
@@ -101,26 +101,26 @@ ALTER TABLE public.analytics_history_heads DISABLE TRIGGER analytics_heads_mutat
 
 -- Existing row assertions are observations at activation, not past stage entries.
 INSERT INTO public.analytics_history_coverage (
-  id, activated_at, activation_transaction_id, baseline_snapshot,
+  id, schema_version, activated_at, activation_transaction_id, baseline_snapshot,
   baseline_deal_count, baseline_stage_count, baseline_pipeline_count
-) SELECT true, pg_catalog.clock_timestamp(), pg_catalog.pg_current_xact_id()::text,
+) SELECT true, 2, pg_catalog.clock_timestamp(), pg_catalog.pg_current_xact_id()::text,
   pg_catalog.pg_current_snapshot(),
   (SELECT count(*) FROM public.deals), (SELECT count(*) FROM public.stages), (SELECT count(*) FROM public.pipelines);
 
 INSERT INTO public.analytics_history_events (
-  activation_id, entity_kind, entity_id, incarnation_id, event_kind, transaction_id, observed_at, observation_snapshot, after_state
+  activation_id, entity_kind, entity_id, incarnation_id, event_kind, schema_version, transaction_id, observed_at, observation_snapshot, after_state
 ) SELECT c.activation_id, 'pipeline', p.id, pg_catalog.gen_random_uuid(), 'baseline',
-  c.activation_transaction_id, c.activated_at, c.baseline_snapshot, public.analytics_project_pipeline(p)
+  c.schema_version, c.activation_transaction_id, c.activated_at, c.baseline_snapshot, public.analytics_project_pipeline(p)
   FROM public.pipelines p CROSS JOIN public.analytics_history_coverage c WHERE c.id ORDER BY p.id;
 INSERT INTO public.analytics_history_events (
-  activation_id, entity_kind, entity_id, incarnation_id, event_kind, transaction_id, observed_at, observation_snapshot, after_state
+  activation_id, entity_kind, entity_id, incarnation_id, event_kind, schema_version, transaction_id, observed_at, observation_snapshot, after_state
 ) SELECT c.activation_id, 'stage', s.id, pg_catalog.gen_random_uuid(), 'baseline',
-  c.activation_transaction_id, c.activated_at, c.baseline_snapshot, public.analytics_project_stage(s)
+  c.schema_version, c.activation_transaction_id, c.activated_at, c.baseline_snapshot, public.analytics_project_stage(s)
   FROM public.stages s CROSS JOIN public.analytics_history_coverage c WHERE c.id ORDER BY s.id;
 INSERT INTO public.analytics_history_events (
-  activation_id, entity_kind, entity_id, incarnation_id, event_kind, transaction_id, observed_at, observation_snapshot, after_state, after_write_version
+  activation_id, entity_kind, entity_id, incarnation_id, event_kind, schema_version, transaction_id, observed_at, observation_snapshot, after_state, after_write_version
 ) SELECT c.activation_id, 'deal', d.id, pg_catalog.gen_random_uuid(), 'baseline',
-  c.activation_transaction_id, c.activated_at, c.baseline_snapshot, public.analytics_project_deal(d), d.write_version
+  c.schema_version, c.activation_transaction_id, c.activated_at, c.baseline_snapshot, public.analytics_project_deal(d), d.write_version
   FROM public.deals d CROSS JOIN public.analytics_history_coverage c WHERE c.id ORDER BY d.id;
 INSERT INTO public.analytics_history_heads (
   entity_kind, entity_id, activation_id, incarnation_id, active, last_event_ordinal,

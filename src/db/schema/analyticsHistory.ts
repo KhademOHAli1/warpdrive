@@ -36,7 +36,7 @@ export const analyticsHistoryCoverage = pgTable(
   {
     id: boolean("id").primaryKey().default(true),
     activationId: uuid("activation_id").notNull().defaultRandom(),
-    schemaVersion: smallint("schema_version").notNull().default(1),
+    schemaVersion: smallint("schema_version").notNull().default(2),
     activatedAt: timestamp("activated_at", { withTimezone: true, mode: "string" }).notNull(),
     activationTransactionId: text("activation_transaction_id").notNull(),
     baselineSnapshot: pgSnapshot("baseline_snapshot").notNull(),
@@ -48,7 +48,7 @@ export const analyticsHistoryCoverage = pgTable(
   (t) => [
     uniqueIndex("analytics_history_coverage_activation_uq").on(t.activationId),
     check("analytics_history_coverage_singleton_ck", sql`${t.id}`),
-    check("analytics_history_coverage_version_ck", sql`${t.schemaVersion} = 1`),
+    check("analytics_history_coverage_version_ck", sql`${t.schemaVersion} = 2`),
     check(
       "analytics_history_coverage_transaction_ck",
       sql`${t.activationTransactionId} ~ '^[0-9]{1,20}$'`,
@@ -76,7 +76,7 @@ export const analyticsHistoryEvents = pgTable(
     entityId: uuid("entity_id").notNull(),
     incarnationId: uuid("incarnation_id").notNull(),
     eventKind: text("event_kind").$type<AnalyticsHistoryEventKind>().notNull(),
-    schemaVersion: smallint("schema_version").notNull().default(1),
+    schemaVersion: smallint("schema_version").notNull().default(2),
     transactionId: text("transaction_id").notNull(),
     observedAt: timestamp("observed_at", { withTimezone: true, mode: "string" }).notNull(),
     observationSnapshot: pgSnapshot("observation_snapshot").notNull(),
@@ -84,7 +84,7 @@ export const analyticsHistoryEvents = pgTable(
     afterState: jsonb("after_state").$type<AnalyticsCapturedState>(),
     beforeWriteVersion: uuid("before_write_version"),
     afterWriteVersion: uuid("after_write_version"),
-    // Version 1 capture always leaves these unknown. Owner is never actor provenance.
+    // Database-row capture leaves these unknown. Owner is never actor provenance.
     actorId: uuid("actor_id"),
     commandId: text("command_id"),
   },
@@ -112,7 +112,7 @@ export const analyticsHistoryEvents = pgTable(
       "analytics_history_events_kind_ck",
       sql`${t.eventKind} IN ('baseline','insert','update','delete')`,
     ),
-    check("analytics_history_events_version_ck", sql`${t.schemaVersion} = 1`),
+    check("analytics_history_events_version_ck", sql`${t.schemaVersion} = 2`),
     check("analytics_history_events_transaction_ck", sql`${t.transactionId} ~ '^[0-9]{1,20}$'`),
     check(
       "analytics_history_events_projection_ck",

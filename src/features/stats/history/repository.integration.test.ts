@@ -238,7 +238,7 @@ describe("native current-deal history repository", () => {
       expect(result.events[0]).toMatchObject({
         eventKind: "insert",
         beforeState: null,
-        afterState: { title: "Reinserted opportunity", value: "0.0001" },
+        afterState: { value: "0.0001" },
       });
       expect(
         result.events.every((event) => event.incarnationId === result.current.incarnationId),
@@ -276,9 +276,7 @@ describe("native current-deal history repository", () => {
           client = await h.pool.connect();
           await beginHistoryTransaction(client);
           if (entity === "deal") {
-            await client.query("UPDATE deals SET title='Pending source write' WHERE id=$1", [
-              f.dealId,
-            ]);
+            await client.query("UPDATE deals SET value='0.1234' WHERE id=$1", [f.dealId]);
           } else {
             await client.query("UPDATE stages SET name='Pending definition write' WHERE id=$1", [
               f.stageId,
@@ -292,7 +290,7 @@ describe("native current-deal history repository", () => {
           const outside = await readCurrentDealHistory(h.db, actor, filters, f.dealId, signal());
           requireAvailable(outside);
           expect(outside.events).toHaveLength(1);
-          expect(outside.events[0]?.afterState?.title).toBe("Populated legacy opportunity");
+          expect(outside.events[0]?.afterState?.value).toBe(EXACT_LEGACY_VALUE);
         } finally {
           await releaseTransaction(client);
         }
@@ -342,9 +340,7 @@ describe("native current-deal history repository", () => {
   test("does not turn re-enabling a guard into proof that an uncaptured edit has history", async () => {
     await withHistory(async (h, f, actor) => {
       await h.pool.query("ALTER TABLE deals DISABLE TRIGGER analytics_deals_capture");
-      await h.pool.query("UPDATE deals SET title='Uncaptured material change' WHERE id=$1", [
-        f.dealId,
-      ]);
+      await h.pool.query("UPDATE deals SET value='123.0001' WHERE id=$1", [f.dealId]);
       await h.pool.query("ALTER TABLE deals ENABLE ALWAYS TRIGGER analytics_deals_capture");
       expect((await readHistoryInstallation(h.db, signal())).state).toBe("installed");
       expect(await readCurrentDealHistory(h.db, actor, filters, f.dealId, signal())).toEqual({
@@ -454,7 +450,7 @@ describe("native current-deal history repository", () => {
         await client.query(
           `DO $$ DECLARE i integer; BEGIN
              FOR i IN 1..${MAX_DEAL_HISTORY_EVENTS} LOOP
-               UPDATE deals SET title='Bounded history revision ' || i WHERE id='${f.dealId}'::uuid;
+               UPDATE deals SET value=i::numeric WHERE id='${f.dealId}'::uuid;
              END LOOP;
            END $$`,
         );

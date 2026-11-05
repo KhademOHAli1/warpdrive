@@ -3,13 +3,20 @@ import { foldTransactionHistory, sameHistoryState } from "./fold";
 
 const uuid = (value: number) => `00000000-0000-4000-8000-${String(value).padStart(12, "0")}`;
 const state = (stage: number, value = "100.0000") => ({
-  title: "Observed opportunity",
   status: "open",
   value,
   currency: "EUR",
   pipelineId: uuid(10),
   stageId: uuid(stage),
   ownerId: uuid(12),
+  wonTime: null,
+  lostTime: null,
+  expectedCloseDate: null,
+  archivedAt: null,
+  deletedAt: null,
+  visibilityLevel: "owner",
+  visibilityGroupId: null,
+  visibleToUserIds: [],
 });
 
 function event(patch: Record<string, unknown> = {}) {
@@ -21,7 +28,7 @@ function event(patch: Record<string, unknown> = {}) {
     entityId: uuid(3),
     incarnationId: uuid(4),
     eventKind: "update",
-    schemaVersion: 1,
+    schemaVersion: 2,
     transactionId: "100",
     observationSnapshot: "100:200:150,175",
     observedAt: "2026-11-05T12:00:00.123456Z",
@@ -158,13 +165,20 @@ describe("snapshot-input transaction history folding", () => {
     const reordered = {
       ...input,
       beforeState: {
+        visibleToUserIds: [],
+        visibilityGroupId: null,
+        visibilityLevel: "owner",
+        deletedAt: null,
+        archivedAt: null,
+        expectedCloseDate: null,
+        lostTime: null,
+        wonTime: null,
         ownerId: uuid(12),
         stageId: uuid(20),
         pipelineId: uuid(10),
         currency: "EUR",
         value: "100.0000",
         status: "open",
-        title: "Observed opportunity",
       },
     };
     const result = foldTransactionHistory([input, reordered]);
@@ -208,7 +222,7 @@ describe("snapshot-input transaction history folding", () => {
   });
 
   test("fails closed rather than relabeling an unsupported or malformed event", () => {
-    expect(foldTransactionHistory([event({ schemaVersion: 2 })])).toEqual({
+    expect(foldTransactionHistory([event({ schemaVersion: 1 })])).toEqual({
       ok: false,
       reason: "invalid-event",
     });
@@ -244,8 +258,8 @@ describe("snapshot-input transaction history folding", () => {
       eventId: uuid(5),
       ordinal: "2",
       entityKind: "pipeline",
-      beforeState: { name: "Old", order: 1 },
-      afterState: { name: "New", order: 1 },
+      beforeState: { isArchived: false, visibilityGroupId: null },
+      afterState: { isArchived: true, visibilityGroupId: null },
     });
     const result = foldTransactionHistory([event(), next]);
     expect(result.ok).toBe(true);

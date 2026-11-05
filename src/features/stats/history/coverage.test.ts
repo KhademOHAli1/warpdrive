@@ -4,7 +4,7 @@ import { assessHistoryCoverage } from "./coverage";
 
 const ACTIVATION: HistoryActivation = {
   activationId: "00000000-0000-4000-8000-000000000001",
-  schemaVersion: 1,
+  schemaVersion: 2,
   activatedAt: "2026-11-05T12:00:00.000001Z",
   captureSemantics: "database-row-observation-v1",
 };

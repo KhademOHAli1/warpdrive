@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { type AnalyticsHistoryEvent, analyticsHistoryEvent, historyUuid } from "./contracts";
+import {
+  type AnalyticsHistoryEvent,
+  analyticsHistoryEvent,
+  historyUuid,
+  capturedStageProjection as stageProjection,
+} from "./contracts";
 import {
   foldTransactionHistory,
   type HistoryFoldResult,
@@ -9,7 +14,6 @@ import {
 
 export const MAX_STAGE_DEFINITION_EVENTS = 5_000;
 
-const pgInt = z.number().int().min(-2_147_483_648).max(2_147_483_647);
 const xid8 = z
   .string()
   .refine(
@@ -18,14 +22,6 @@ const xid8 = z
       /^[1-9]\d*$/.test(value) &&
       BigInt(value) <= 18_446_744_073_709_551_615n,
   );
-
-// Keep the state shape aligned with analytics_project_stage, including signed database integers.
-const stageProjection = z.strictObject({
-  name: z.string(),
-  order: pgInt,
-  pipelineId: historyUuid,
-  rottingDays: pgInt.nullable(),
-});
 
 const stageDefinitionScope = z.strictObject({
   activationId: historyUuid,
@@ -79,15 +75,7 @@ function isExpectedStage(event: AnalyticsHistoryEvent, scope: StageDefinitionSco
   );
 }
 
-function hasValidProjection(event: AnalyticsHistoryEvent): boolean {
-  return (
-    (event.beforeState === null || stageProjection.safeParse(event.beforeState).success) &&
-    (event.afterState === null || stageProjection.safeParse(event.afterState).success)
-  );
-}
-
-// Fold can join null→state after state→null in a single transaction. Capture must give that
-// reinsert a new incarnation. Count distinct origin events before folding to enforce the rule.
+// A reused UUID must have a distinct incarnation even when deletion and insertion share a transaction.
 function recordOrigin(event: AnalyticsHistoryEvent, origins: Map<string, string>): boolean {
   if (event.eventKind !== "baseline" && event.eventKind !== "insert") return true;
   const previous = origins.get(event.incarnationId);
@@ -104,7 +92,15 @@ function prepareEvents(
   const events: AnalyticsHistoryEvent[] = [];
   for (const row of rows) {
     const parsed = analyticsHistoryEvent.safeParse(row);
-    if (!parsed.success) return { ok: false, reason: "invalid-event" };
+    if (!parsed.success) {
+      const invalidProjection = parsed.error.issues.every(
+        (issue) => issue.path[0] === "beforeState" || issue.path[0] === "afterState",
+      );
+      return {
+        ok: false,
+        reason: invalidProjection ? "invalid-stage-projection" : "invalid-event",
+      };
+    }
     const event = parsed.data;
     if (!isExpectedStage(event, scope)) return { ok: false, reason: "incompatible-event-scope" };
     if (
@@ -112,7 +108,6 @@ function prepareEvents(
       scope.ownTransactionPolicy === "exclude-own-transaction"
     )
       continue;
-    if (!hasValidProjection(event)) return { ok: false, reason: "invalid-stage-projection" };
     if (!recordOrigin(event, origins)) return { ok: false, reason: "incomplete-chain" };
     events.push(event);
   }
