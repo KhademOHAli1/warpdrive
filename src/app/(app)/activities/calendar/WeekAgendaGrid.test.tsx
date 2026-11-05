@@ -292,3 +292,18 @@ describe("WeekAgendaGrid", () => {
     expect(screen.queryByTestId("add-modal")).toBeNull();
   });
 });
+
+it("uses the full agenda width for a day and creates events in that day", () => {
+  render(<WeekAgendaGrid dayIsos={["2026-07-15"]} activities={[]} />);
+  const grids = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter(
+    (element) => element.style.gridTemplateColumns !== "",
+  );
+  expect(grids.length).toBeGreaterThanOrEqual(2);
+  for (const grid of grids) {
+    expect(grid.style.gridTemplateColumns).toBe("3.25rem repeat(1, minmax(0, 1fr))");
+  }
+  expect(screen.getAllByRole("button", { name: /Add activity on/ })).toHaveLength(24);
+  fireEvent.click(screen.getByRole("button", { name: "Add activity on 2026-07-15 at 14:00" }));
+  expect(screen.getByTestId("add-modal-date")).toHaveTextContent("2026-07-15");
+  expect(screen.getByTestId("add-modal-time")).toHaveTextContent("14:00");
+});

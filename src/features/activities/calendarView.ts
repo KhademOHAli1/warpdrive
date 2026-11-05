@@ -5,15 +5,17 @@ import { addCivilDays, civilDateRange, instantCivilDate } from "@/lib/zonedDateT
 // civil-date containers; fetched timestamp bounds use the explicit account timezone.
 import {
   addCalendarMonths,
+  addCalendarYears,
   type CalendarOptions,
   calendarDateParts,
   formatCalendarDate,
   startOfCalendarMonth,
   startOfCalendarWeek,
+  startOfCalendarYear,
 } from "./calendarSystem";
 import { addDaysUtc } from "./monthGrid";
 
-export type CalendarViewName = "week" | "month";
+export type CalendarViewName = "day" | "week" | "month" | "year";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -34,7 +36,8 @@ export function parseCalendarParams(
   today: Date = new Date(),
   timeZone = "UTC",
 ): { view: CalendarViewName; anchorIso: string } {
-  const view: CalendarViewName = raw.view === "month" ? "month" : "week";
+  const view: CalendarViewName =
+    raw.view === "day" || raw.view === "month" || raw.view === "year" ? raw.view : "week";
   const anchorIso =
     raw.d !== undefined && isValidIsoDate(raw.d) ? raw.d : instantCivilDate(today, timeZone);
   return { view, anchorIso };
@@ -46,6 +49,25 @@ export function selectWindow(
   options: CalendarOptions & { timeZone?: string } = {},
 ): { days: Date[]; range: { from: Date; to: Date } } {
   const anchor = anchorDate(anchorIso);
+  if (view === "day") {
+    return {
+      days: [anchor],
+      range: civilDateRange(anchorIso, addCivilDays(anchorIso, 1), options.timeZone),
+    };
+  }
+  if (view === "year") {
+    const start = startOfCalendarYear(anchor, options);
+    const end = addCalendarYears(start, 1, options);
+    const length = Math.round((end.getTime() - start.getTime()) / 86_400_000);
+    return {
+      days: Array.from({ length }, (_, i) => addDaysUtc(start, i)),
+      range: civilDateRange(
+        start.toISOString().slice(0, 10),
+        end.toISOString().slice(0, 10),
+        options.timeZone,
+      ),
+    };
+  }
   if (view === "month") {
     const start = startOfCalendarWeek(startOfCalendarMonth(anchor, options), options);
     const days = Array.from({ length: 42 }, (_, i) => addDaysUtc(start, i));
@@ -78,9 +100,34 @@ export function stepAnchorIso(
   options: CalendarOptions = {},
 ): string {
   const anchor = anchorDate(anchorIso);
-  const next =
-    view === "month" ? addCalendarMonths(anchor, dir, options) : addDaysUtc(anchor, 7 * dir);
+  let next: Date;
+  switch (view) {
+    case "day":
+      next = addDaysUtc(anchor, dir);
+      break;
+    case "month":
+      next = addCalendarMonths(anchor, dir, options);
+      break;
+    case "year":
+      next = addCalendarYears(anchor, dir, options);
+      break;
+    default:
+      next = addDaysUtc(anchor, 7 * dir);
+  }
   return next.toISOString().slice(0, 10);
+}
+
+export function dayTitle(anchorIso: string, options: CalendarOptions = {}): string {
+  return formatCalendarDate(anchorDate(anchorIso), options, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function yearTitle(anchorIso: string, options: CalendarOptions = {}): string {
+  return formatCalendarDate(anchorDate(anchorIso), options, { year: "numeric" });
 }
 
 export function monthTitle(anchorIso: string, options: CalendarOptions = {}): string {

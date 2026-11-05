@@ -31,7 +31,7 @@ describe("calendarEmptyState", () => {
   });
 
   it("gives every state a title, a sentence and an action", () => {
-    for (const view of ["week", "month"] as const) {
+    for (const view of ["day", "week", "month", "year"] as const) {
       for (const hasFilter of [true, false]) {
         for (const hasUnfilteredActivities of [true, false]) {
           const state = calendarEmptyState({ view, hasFilter, hasUnfilteredActivities });

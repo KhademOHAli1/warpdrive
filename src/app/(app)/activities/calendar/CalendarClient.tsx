@@ -3,27 +3,25 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
   type CalendarViewName,
   calendarHref,
+  dayTitle,
   monthTitle,
   stepAnchorIso,
   weekTitle,
+  yearTitle,
 } from "@/features/activities/calendarView";
 import { useLocalNow } from "@/features/activities/useLocalNow";
 import { localDayIso } from "@/features/activities/weekAgenda";
-import {
-  useAppTranslations,
-  useLocalePreferences,
-  useSetLocalePreferences,
-} from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
 import { MonthView } from "./MonthView";
 import { WeekAgendaGrid } from "./WeekAgendaGrid";
+import { YearView } from "./YearView";
 
 interface CalendarClientProps {
   view: CalendarViewName;
@@ -53,16 +51,17 @@ export function CalendarClient({
   onChanged,
 }: CalendarClientProps): React.ReactNode {
   const preferences = useLocalePreferences();
-  const setPreferences = useSetLocalePreferences();
   const t = useAppTranslations("calendar");
   const prevIso = stepAnchorIso(view, anchorIso, -1, preferences);
   const nextIso = stepAnchorIso(view, anchorIso, 1, preferences);
   const now = useLocalNow();
   const todayIso = now === null ? initialTodayIso : localDayIso(now, preferences.timeZone);
-  const label =
-    view === "month"
-      ? monthTitle(anchorIso, preferences)
-      : t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) });
+  const label = {
+    day: dayTitle(anchorIso, preferences),
+    week: t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) }),
+    month: monthTitle(anchorIso, preferences),
+    year: yearTitle(anchorIso, preferences),
+  }[view];
   const rtl = preferences.locale === "fa";
   const [createDate, setCreateDate] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -100,20 +99,16 @@ export function CalendarClient({
           {t("editor.create")}
         </Button>
         <div className="flex gap-1 rounded-md border border-border p-0.5">
-          <Link
-            aria-current={view === "week" ? "page" : undefined}
-            href={calendarHref("week", anchorIso)}
-            className={tab(view === "week")}
-          >
-            {t("week")}
-          </Link>
-          <Link
-            aria-current={view === "month" ? "page" : undefined}
-            href={calendarHref("month", anchorIso)}
-            className={tab(view === "month")}
-          >
-            {t("month")}
-          </Link>
+          {(["day", "week", "month", "year"] as const).map((name) => (
+            <Link
+              key={name}
+              aria-current={view === name ? "page" : undefined}
+              href={calendarHref(name, anchorIso)}
+              className={tab(view === name)}
+            >
+              {t(name)}
+            </Link>
+          ))}
         </div>
         <div className="flex items-center gap-1">
           <Link
@@ -140,21 +135,19 @@ export function CalendarClient({
         {/* The heading for the window being shown; the page had no heading of any level under
             its h1 for a screen reader to move between. */}
         <h2 className="text-sm font-medium text-foreground tabular-nums">{label}</h2>
-        <Select
-          ariaLabel={t("calendarSystem")}
-          triggerClassName="w-40"
-          value={preferences.calendar}
-          options={[
-            { value: "gregory", label: t("gregory") },
-            { value: "persian", label: t("persian") },
-          ]}
-          onChange={(calendar) => {
-            if (calendar === "gregory" || calendar === "persian") void setPreferences({ calendar });
-          }}
-        />
       </header>
 
-      {empty !== undefined && activities.length === 0 ? (
+      {view === "year" ? (
+        <>
+          {activities.length === 0 && empty}
+          <YearView anchorIso={anchorIso} activities={activities} todayIso={todayIso} />
+        </>
+      ) : view === "day" ? (
+        <>
+          {activities.length === 0 && empty}
+          <WeekAgendaGrid dayIsos={dayIsos} activities={activities} />
+        </>
+      ) : empty !== undefined && activities.length === 0 ? (
         empty
       ) : view === "month" ? (
         <MonthView
