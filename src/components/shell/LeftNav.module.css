@@ -731,6 +731,30 @@
   font-size: 15px;
   line-height: 26px;
 }
+.utilityNav .navItem {
+  height: 28px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.utilityNav .navRowCollapsed {
+  height: 28px;
+}
+.utilityNav .navIconFrame {
+  height: 24px;
+  transform: scale(0.7);
+}
+.utilityNav .navItemActive {
+  background: transparent;
+  color: var(--portal-muted);
+}
+.utilityNav .navIconActive {
+  color: var(--portal-muted);
+}
+.utilityNav .navItemActive::before {
+  width: 2px;
+  height: 12px;
+}
 .subnavLink:lang(fa) {
   line-height: 22px;
 }

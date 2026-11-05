@@ -16,8 +16,16 @@ export const mailNotificationsIds1: string[] = [
 ];
 export const mailRegionalIds1: string[] = [
   "derived:src/app/(app)/settings/import/ImportDateOptions.tsx",
+  "derived:src/app/(app)/settings/profile/BrowserTimeZoneSetting.tsx",
+  "derived:src/features/i18n/regionalContext.ts",
+  "derived:src/features/i18n/regionalCountries.ts",
   "sourceReview:src/app/(app)/settings/import/ImportDateOptions.tsx#42c286dcf2cb90b599540736af041c6167a29e2160dc975431418859c4cefb86",
+  "sourceReview:src/app/(app)/settings/profile/BrowserTimeZoneSetting.tsx#bdd340cff7705d28ecb62a5a985185ed306c4de9d6353e59bdd850ada893f3f4",
+  "sourceReview:src/features/i18n/regionalContext.ts#01ada760cf72378b8669b1b9cc2612c47ba0638f44d200399f7db6d09b29d036",
+  "sourceReview:src/features/i18n/regionalCountries.ts#701ac5efe6168008a62e684080e4efa68043403897e0db8647bba9be9e7bdcf2",
+  "writer:src/features/i18n/actions.ts#delete:COUNTRY_COOKIE",
   "writer:src/features/i18n/actions.ts#delete:IRANIAN_MONEY_UNIT_COOKIE",
+  "writer:src/features/i18n/actions.ts#delete:TIME_ZONE_MODE_COOKIE",
 ];
 export const mailEndpointIds1: string[] = [
   "derived:src/features/connections/endpointPolicyHost.ts",

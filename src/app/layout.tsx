@@ -77,7 +77,7 @@ export default async function RootLayout({
           }}
         >
           <WebVitalsReporter />
-          <LocaleProvider {...preferences}>
+          <LocaleProvider {...preferences} detectBrowserContext>
             <Providers>{children}</Providers>
           </LocaleProvider>
         </TelemetryProvider>

@@ -4,11 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import { DirectionProvider } from "@/components/ui/direction";
 import type { IranianMoneyUnit } from "@/lib/iranianMoney";
-import {
-  displayNumberingSystem,
-  localeWithNumberingSystem,
-  type NumberingSystem,
-} from "@/lib/numberingSystem";
+import { localeTagForFormatting } from "@/lib/localeFormatting";
+import { displayNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
 import { type AppNamespace, createAppTranslator, messagesForLocale } from "./catalog";
 import {
   type CalendarSystem,
@@ -16,6 +13,7 @@ import {
   resolveLocalePreferences,
 } from "./preferences";
 import { directionForLocale, type Locale } from "./registry";
+import { useBrowserRegionalContext } from "./useBrowserRegionalContext";
 import { usePreferencePersistence } from "./usePreferencePersistence";
 
 const DEFAULT_PREFERENCES = resolveLocalePreferences({});
@@ -33,29 +31,55 @@ export function LocaleProvider({
   locale = "en",
   calendar,
   timeZone,
+  country,
+  timeZoneMode,
   numberingSystem,
   iranianMoneyUnit,
+  detectBrowserContext = false,
+  inferBrowserLanguage = false,
+  inferBrowserFormats = false,
   children,
 }: {
   locale?: Locale;
   calendar?: CalendarSystem;
   timeZone?: string;
+  country?: string;
+  timeZoneMode?: "browser" | "manual";
   numberingSystem?: NumberingSystem;
   iranianMoneyUnit?: IranianMoneyUnit;
+  detectBrowserContext?: boolean;
+  inferBrowserLanguage?: boolean;
+  inferBrowserFormats?: boolean;
   children: ReactNode;
 }): ReactNode {
   const stored = useMemo(
     () =>
-      resolveLocalePreferences({ locale, calendar, timeZone, numberingSystem, iranianMoneyUnit }),
-    [locale, calendar, timeZone, numberingSystem, iranianMoneyUnit],
+      resolveLocalePreferences({
+        locale,
+        calendar,
+        timeZone,
+        country,
+        timeZoneMode,
+        numberingSystem,
+        iranianMoneyUnit,
+      }),
+    [locale, calendar, timeZone, country, timeZoneMode, numberingSystem, iranianMoneyUnit],
   );
   const choice = usePreferencePersistence(stored);
+  useBrowserRegionalContext({
+    enabled: detectBrowserContext,
+    inferBrowserLanguage,
+    inferBrowserFormats,
+    preferences: choice.preferences,
+    pending: choice.pending,
+    choose: choice.choose,
+  });
   const preferences = choice.preferences;
   const messages = messagesForLocale(preferences.locale);
   return (
     <LocaleContext.Provider value={{ preferences, pending: choice.pending, choose: choice.choose }}>
       <NextIntlClientProvider
-        locale={localeWithNumberingSystem(preferences.locale, preferences.numberingSystem)}
+        locale={localeTagForFormatting(preferences)}
         timeZone={preferences.timeZone}
         messages={messages}
       >
@@ -106,10 +130,10 @@ export function useMessages(): ReturnType<typeof messagesForLocale> {
 }
 
 export function useAppTranslations<Namespace extends AppNamespace>(namespace: Namespace) {
-  const { locale, numberingSystem } = useLocalePreferences();
+  const { locale, numberingSystem, country } = useLocalePreferences();
   return useMemo(
-    () => createAppTranslator(locale, namespace, numberingSystem),
-    [locale, namespace, numberingSystem],
+    () => createAppTranslator(locale, namespace, numberingSystem, country),
+    [locale, namespace, numberingSystem, country],
   );
 }
 

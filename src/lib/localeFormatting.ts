@@ -11,6 +11,7 @@ export type CalendarSystem = "gregory" | "persian";
 
 export interface FormattingPreferences {
   locale: FormattingLocale;
+  country?: string;
   calendar: CalendarSystem;
   timeZone: string;
   numberingSystem?: NumberingSystem;
@@ -33,6 +34,7 @@ export function resolveFormattingPreferences(
     locale,
     calendar: preferences.calendar ?? (locale === "fa" ? "persian" : "gregory"),
     timeZone: preferences.timeZone ?? "UTC",
+    ...(preferences.country === undefined ? {} : { country: preferences.country }),
     ...(preferences.iranianMoneyUnit === undefined
       ? {}
       : { iranianMoneyUnit: preferences.iranianMoneyUnit }),
@@ -43,8 +45,11 @@ export function resolveFormattingPreferences(
 }
 
 export function localeTagForFormatting(preferences: Partial<FormattingPreferences> = {}): string {
+  const tag = LOCALE_TAGS[preferences.locale ?? "en"];
   return localeWithNumberingSystem(
-    LOCALE_TAGS[preferences.locale ?? "en"],
+    preferences.country === undefined
+      ? tag
+      : new Intl.Locale(tag, { region: preferences.country }).toString(),
     preferences.numberingSystem,
   );
 }
@@ -66,7 +71,7 @@ function dateFormatter(
   civilDate: boolean,
 ): Intl.DateTimeFormat {
   const resolved = resolveFormattingPreferences(preferences);
-  return new Intl.DateTimeFormat(LOCALE_TAGS[resolved.locale], {
+  return new Intl.DateTimeFormat(localeTagForFormatting(resolved), {
     ...options,
     calendar: resolved.calendar,
     numberingSystem: displayNumberingSystem(resolved),
