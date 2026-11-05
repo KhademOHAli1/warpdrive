@@ -14,7 +14,7 @@ import editorStyles from "@/features/workflows/ui/workflowEditor.module.css";
 import inspectorStyles from "@/features/workflows/ui/workflowInspector.module.css";
 import "@/features/workflows/ui/workflowTheme.css";
 import { useFormatters } from "@/lib/useFormatters";
-import { StudioActionPicker } from "./StudioActionPicker";
+import { StudioActionPicker, type StudioActionRequest } from "./StudioActionPicker";
 import { StudioConnections } from "./StudioConnections";
 import { StudioLiveDialog } from "./StudioLiveDialog";
 import { StudioOutput } from "./StudioOutput";
@@ -258,14 +258,12 @@ function StudioPanelHeader({
 
 function StudioSidebar({
   model,
-  palettePort,
-  paletteEdge,
+  request,
   onClose,
   onAdd,
 }: {
   model: WorkflowStudioModel;
-  palettePort?: string;
-  paletteEdge?: string;
+  request?: StudioActionRequest;
   onClose: () => void;
   onAdd: (port: string) => void;
 }) {
@@ -339,9 +337,7 @@ function StudioSidebar({
       </div>
     );
   if (model.tab === "palette")
-    return (
-      <StudioActionPicker model={model} port={palettePort} edgeId={paletteEdge} onClose={onClose} />
-    );
+    return <StudioActionPicker model={model} request={request} onClose={onClose} />;
   return (
     <>
       {model.selected === "$trigger" ? (
@@ -393,7 +389,7 @@ export function WorkflowStudio({
   const { locale } = useLocalePreferences();
   const [live, setLive] = useState<WorkflowStudioModel["manualLaunch"]>(null);
   const [archive, setArchive] = useState(false);
-  const [insertion, setInsertion] = useState<{ port: string; edgeId?: string }>();
+  const [request, setRequest] = useState<StudioActionRequest>();
   const configureButton = useRef<HTMLButtonElement>(null);
   const leave = useStudioLeaveGuard(model.dirty, model.pending);
   const [historyOpened, setHistoryOpened] = useState(false);
@@ -408,6 +404,7 @@ export function WorkflowStudio({
     test: model.L.syntheticTest,
   }[model.tab ?? "configure"];
   function closePanel() {
+    setRequest(undefined);
     model.setTab(null);
     configureButton.current?.focus();
   }
@@ -425,7 +422,7 @@ export function WorkflowStudio({
           onArchive={() => setArchive(true)}
           configureButton={configureButton}
           onPalette={() => {
-            setInsertion(undefined);
+            setRequest(undefined);
             model.setTab(model.tab === "palette" ? "configure" : "palette");
           }}
         />
@@ -457,12 +454,20 @@ export function WorkflowStudio({
               onClearSelection={() => model.setTab(null)}
               onInsert={(source, port, edgeId) => {
                 model.select(source);
-                setInsertion({ port, edgeId });
+                setRequest({ kind: "insert", port, edgeId });
                 model.setTab("palette");
               }}
+              onChangeType={(id) => {
+                model.select(id);
+                setRequest({ kind: "replace", id });
+                model.setTab("palette");
+              }}
+              onDuplicate={model.duplicate}
               pending={
-                model.tab === "palette" && insertion?.edgeId === undefined
-                  ? { source: model.selected, port: insertion?.port ?? "next" }
+                model.tab === "palette" &&
+                request?.kind !== "replace" &&
+                request?.edgeId === undefined
+                  ? { source: model.selected, port: request?.port ?? "next" }
                   : undefined
               }
               onChange={model.edit}
@@ -479,11 +484,10 @@ export function WorkflowStudio({
               )}
               <StudioSidebar
                 model={model}
-                palettePort={insertion?.port}
-                paletteEdge={insertion?.edgeId}
+                request={request}
                 onClose={closePanel}
                 onAdd={(port) => {
-                  setInsertion({ port });
+                  setRequest({ kind: "insert", port });
                   model.setTab("palette");
                 }}
               />

@@ -90,17 +90,19 @@ async function login(page, email) {
   await page.getByRole("main", { name: "Board CI Pipeline", exact: true }).waitFor();
 }
 
-async function exerciseWorkflowStudioSplit(page) {
+function captureWorkflowStudio(page, name) {
   const evidence = new URL(
     "../test-results/browser-smoke/workflow-draft-persistence/",
     import.meta.url,
   );
   mkdirSync(evidence, { recursive: true });
-  const screenshot = (name) =>
-    page.screenshot({
-      path: fileURLToPath(new URL(name, evidence)),
-      animations: "disabled",
-    });
+  return page.screenshot({
+    path: fileURLToPath(new URL(name, evidence)),
+    animations: "disabled",
+  });
+}
+
+async function exerciseWorkflowStudioSplit(page) {
   const inspector = page.getByRole("complementary", { name: "Configure", exact: true });
   const handle = page.getByRole("separator", { name: "Resize side panel", exact: true });
   const canvas = page.locator(".workflow-canvas");
@@ -109,7 +111,7 @@ async function exerciseWorkflowStudioSplit(page) {
   const boundary = await handle.boundingBox();
   assert.ok(opened !== null && boundary !== null, "Studio canvas and resize edge must be visible");
   assert.equal((await inspector.boundingBox())?.width, 400);
-  await screenshot("inspector-open.png");
+  await captureWorkflowStudio(page, "inspector-open.png");
 
   const x = boundary.x + boundary.width / 2;
   const y = boundary.y + boundary.height / 2;
@@ -125,7 +127,7 @@ async function exerciseWorkflowStudioSplit(page) {
   assert.equal(narrow?.width, opened.width + 80, "Canvas must grow during the drag");
   assert.equal((await inspector.boundingBox())?.width, 320);
   await page.mouse.up();
-  await screenshot("inspector-narrow.png");
+  await captureWorkflowStudio(page, "inspector-narrow.png");
 
   await inspector.getByRole("button", { name: "Close", exact: true }).click();
   await inspector.waitFor({ state: "hidden" });
@@ -133,7 +135,7 @@ async function exerciseWorkflowStudioSplit(page) {
     (width) => document.querySelector(".workflow-canvas")?.getBoundingClientRect().width === width,
     opened.width + 400,
   );
-  await screenshot("inspector-closed.png");
+  await captureWorkflowStudio(page, "inspector-closed.png");
   await page.getByRole("button", { name: "Configure", exact: true }).click();
   await handle.waitFor();
   assert.equal(
@@ -255,7 +257,14 @@ try {
       await page.waitForURL(/\/workflows\/[0-9a-f-]+$/);
       await exerciseWorkflowStudioSplit(page);
       await page.getByRole("button", { name: "Add step", exact: true }).first().click();
-      await page.getByRole("button", { name: "Code", exact: true }).click();
+      const codeAction = page.getByRole("button", { name: "Code", exact: true });
+      await codeAction.waitFor();
+      assert.equal(
+        await page.getByRole("button", { name: "Send to inbox", exact: true }).count(),
+        0,
+      );
+      await captureWorkflowStudio(page, "action-picker.png");
+      await codeAction.click();
       await page
         .getByRole("textbox", { name: "Source code", exact: true })
         .fill("export function main(): { calculated: number } { return { calculated: 42 }; }");

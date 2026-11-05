@@ -23,11 +23,13 @@ import {
 import {
   arrangeStudio,
   connectStudioNodes,
+  duplicateStudioNode,
   freshId,
   initialConfig,
   insertStudioNodeOnEdge,
   portsForNode,
   removeStudioNode,
+  replaceStudioNode,
 } from "./studioModel";
 
 type Simulation = Extract<
@@ -163,6 +165,29 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
     select(id);
     setTab("configure");
     setLayoutRevision((value) => value + 1);
+  }
+  function replace(id: string, type: ActionBlockKind) {
+    if (disabled || lock.current) return;
+    const draft = replaceStudioNode(document.draft, id, type, L.blocks[type] ?? type);
+    if (draft === null || (draft !== document.draft && !parseWorkflowV2Draft(draft).ok)) {
+      setError(L.invalid);
+      return;
+    }
+    if (draft !== document.draft) edit(draft);
+    select(id);
+    setTab("configure");
+  }
+  function duplicate(id: string) {
+    if (disabled || lock.current) return;
+    const copyId = freshId();
+    const draft = duplicateStudioNode(document.draft, id, copyId);
+    if (draft === null || !parseWorkflowV2Draft(draft).ok) {
+      setError(L.invalid);
+      return;
+    }
+    edit(draft);
+    select(copyId);
+    setTab("configure");
   }
   function undo(direction: "undo" | "redo") {
     if (disabled || lock.current) return;
@@ -343,6 +368,8 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
     setTab,
     edit,
     add,
+    replace,
+    duplicate,
     undo,
     past,
     future,

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/db/client";
+import type { BlockOutput } from "@/features/blocks/contracts";
 import { ok } from "@/types/result";
 import { executeWorkflowAi } from "./aiActions";
 import { safeWorkflowHttpRequest } from "./httpTransport";
@@ -68,7 +69,7 @@ describe("workflow AI execution boundary", () => {
   });
 
   it("projects Boolean, choice, and score answers and rejects a mismatched response", async () => {
-    const config = {
+    const config: BlockOutput = {
       input: "Sample response",
       questions: [
         { key: "qualified", type: "boolean", instructions: "Meets criteria?" },

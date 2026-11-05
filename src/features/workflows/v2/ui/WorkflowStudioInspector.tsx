@@ -53,12 +53,6 @@ export function WorkflowStudioInspector(
   return (
     <div className="flex min-h-full flex-col">
       <div className={styles.content}>
-        <div>
-          <p className={styles.stepKind}>{L.blocks[props.node.type]}</p>
-          <h2 className={styles.stepTitle} dir="auto">
-            {props.node.name}
-          </h2>
-        </div>
         <BlockField label={L.fields.name ?? ""}>
           <Input
             aria-label={L.fields.name}

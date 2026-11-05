@@ -11,6 +11,7 @@ import { type CSSProperties, useId, useRef, useState } from "react";
 import type { WorkflowV2Definition } from "@/features/blocks/contracts";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { WorkflowEdge } from "@/features/workflows/schemas";
 import { ResponsiveViewport } from "@/features/workflows/ui/ResponsiveViewport";
 import {
   type WorkflowCanvasEdge,
@@ -36,6 +37,10 @@ type DiagramNode = StudioNode | PendingCanvasNode;
 const nodeTypes = { studio: StudioDiagramNode, pendingWorkflowStep: WorkflowPendingStep };
 type PendingOutput = { source: string; port: string };
 
+function diagramPort(port: string): WorkflowEdge["port"] {
+  return port === "next" || port === "loop" || port === "done" ? port : `branch:${port}`;
+}
+
 function canShowPending(
   definition: WorkflowV2Definition,
   pending: PendingOutput,
@@ -60,6 +65,8 @@ export function WorkflowStudioCanvas({
   onChange,
   onClearSelection,
   onInsert,
+  onChangeType,
+  onDuplicate,
   pending,
   onFocusPicker,
   reveal,
@@ -72,6 +79,8 @@ export function WorkflowStudioCanvas({
   onChange: (definition: WorkflowV2Definition) => void;
   onClearSelection?: () => void;
   onInsert?: (source: string, port: string, edgeId?: string) => void;
+  onChangeType?: (id: string) => void;
+  onDuplicate?: (id: string) => void;
   pending?: PendingOutput;
   onFocusPicker?: () => void;
   reveal?: { id: string; nonce: number };
@@ -113,6 +122,17 @@ export function WorkflowStudioCanvas({
         ...(pendingOutput?.source === spec.id ? [pendingOutput.port] : []),
       ]),
       onAdd: disabled || onInsert === undefined ? undefined : (port) => onInsert(spec.id, port),
+      onChangeType:
+        disabled || spec.node === undefined || onChangeType === undefined
+          ? undefined
+          : () => onChangeType(spec.id),
+      onDuplicate:
+        disabled ||
+        spec.node === undefined ||
+        definition.nodes.length >= 100 ||
+        onDuplicate === undefined
+          ? undefined
+          : () => onDuplicate(spec.id),
       onRemove:
         disabled || spec.node === undefined
           ? undefined
@@ -144,7 +164,7 @@ export function WorkflowStudioCanvas({
       spec: {
         from: source,
         to: target,
-        port: ["next", "loop", "done"].includes(sourcePort) ? sourcePort : `branch:${sourcePort}`,
+        port: diagramPort(sourcePort),
       },
       markerPrefix,
       hovered: id === hoveredEdge,
@@ -190,7 +210,7 @@ export function WorkflowStudioCanvas({
       type: "twenty",
       selectable: false,
       deletable: false,
-      data: { spec: { from: source, to: pendingStepId, port }, markerPrefix },
+      data: { spec: { from: source, to: pendingStepId, port: diagramPort(port) }, markerPrefix },
     });
   }
   function applyPosition(

@@ -20,6 +20,8 @@ export type StudioNode = Node<
     trigger: TriggerBlockKind;
     connectedPorts: ReadonlySet<string>;
     onAdd?: (port: string) => void;
+    onChangeType?: () => void;
+    onDuplicate?: () => void;
     onRemove?: () => void;
   },
   "studio"
@@ -156,7 +158,14 @@ export function StudioDiagramNode({ data, selected, isConnectable }: NodeProps<S
           );
         })}
       </div>
-      {selected && <WorkflowNodeOptions trigger={node === undefined} onRemove={data.onRemove} />}
+      {selected && (
+        <WorkflowNodeOptions
+          trigger={node === undefined}
+          onChangeType={data.onChangeType}
+          onDuplicate={data.onDuplicate}
+          onRemove={data.onRemove}
+        />
+      )}
       {onAdd !== undefined &&
         ports
           .filter((port) => !data.connectedPorts.has(port))

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkflowV2Document, WorkflowV2Studio } from "@/features/blocks/contracts";
 import { WorkflowStudio } from "./WorkflowStudio";
@@ -27,7 +28,19 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("./WorkflowStudioCanvas", async (importOriginal) => ({
   ...(await importOriginal<typeof CanvasModule>()),
-  WorkflowStudioCanvas: () => <div>Canvas</div>,
+  WorkflowStudioCanvas: ({
+    onChangeType,
+    onDuplicate,
+  }: ComponentProps<typeof CanvasModule.WorkflowStudioCanvas>) => (
+    <>
+      <button type="button" onClick={() => onChangeType?.("delay")}>
+        Change diagram step
+      </button>
+      <button type="button" onClick={() => onDuplicate?.("delay")}>
+        Duplicate diagram step
+      </button>
+    </>
+  ),
 }));
 vi.mock("@/components/ui/Select", () => ({
   Select: ({
@@ -104,6 +117,42 @@ afterEach(() => {
 });
 
 describe("workflow studio persistence and authority", () => {
+  it("changes the selected node in place and saves a detached copy of its new configuration", async () => {
+    actions.saveWorkflowV2Action.mockImplementationOnce(async ({ definition }) => ({
+      ok: true,
+      value: { ...initial, draft: definition, revision: 3 },
+    }));
+    render(<WorkflowStudio initial={initial} />);
+    await screen.findByRole("combobox", { name: "Change trigger" });
+    fireEvent.click(screen.getByRole("button", { name: "Change diagram step" }));
+    await screen.findByRole("heading", { name: "Select Action" });
+    fireEvent.click(screen.getByRole("button", { name: "Code", exact: true }));
+    expect(await screen.findByRole("heading", { name: "Code" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Duplicate diagram step" }));
+    expect(await screen.findByRole("heading", { name: "Code (Duplicate)" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save draft" }));
+    await waitFor(() => expect(actions.saveWorkflowV2Action).toHaveBeenCalledOnce());
+    expect(actions.saveWorkflowV2Action).toHaveBeenCalledWith(
+      {
+        id,
+        expectedRevision: 2,
+        name: initial.name,
+        definition: expect.objectContaining({
+          nodes: [
+            expect.objectContaining({ id: "delay", type: "CODE", name: "Code" }),
+            expect.objectContaining({
+              id: expect.not.stringMatching(/^delay$/),
+              type: "CODE",
+              name: "Code (Duplicate)",
+            }),
+          ],
+          entryNodeIds: ["delay"],
+          edges: [],
+        }),
+      },
+      "csrf",
+    );
+  });
   it("collapses the inspector and restores its chosen width when Configure reopens it", async () => {
     render(<WorkflowStudio initial={initial} />);
     await screen.findByRole("combobox", { name: "Change trigger" });

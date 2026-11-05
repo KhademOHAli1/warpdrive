@@ -7,15 +7,17 @@ import { studioSetupHref } from "./studioModel";
 import { studioActionChoices, studioActionGroups, studioActions } from "./studioPresentation";
 import type { WorkflowStudioModel } from "./useWorkflowStudio";
 
+export type StudioActionRequest =
+  | { kind: "insert"; port: string; edgeId?: string }
+  | { kind: "replace"; id: string };
+
 export function StudioActionPicker({
   model,
-  port,
-  edgeId,
+  request,
   onClose,
 }: {
   model: WorkflowStudioModel;
-  port?: string;
-  edgeId?: string;
+  request?: StudioActionRequest;
   onClose: () => void;
 }) {
   const { L, studio } = model;
@@ -24,7 +26,7 @@ export function StudioActionPicker({
   return (
     <div className={styles.panel} data-studio-action-picker>
       <div className={styles.header}>
-        <h2>{t("addAnAction")}</h2>
+        <h2>{t(request?.kind === "replace" ? "selectAction" : "addAnAction")}</h2>
         <button type="button" className={styles.close} aria-label={L.close} onClick={onClose}>
           <WorkflowReferenceIcon name="x" />
         </button>
@@ -65,7 +67,10 @@ export function StudioActionPicker({
                     disabled={
                       model.disabled || state === "forbidden" || state === "unsupported_in_context"
                     }
-                    onClick={() => model.add(type, port, edgeId)}
+                    onClick={() => {
+                      if (request?.kind === "replace") model.replace(request.id, type);
+                      else model.add(type, request?.port, request?.edgeId);
+                    }}
                   >
                     {body}
                   </button>

@@ -15,7 +15,7 @@ import type { NodePosition, WorkflowEdge } from "../schemas";
 import { WorkflowReferenceIcon } from "./WorkflowReferenceIcon";
 
 export type WorkflowCanvasEdge = Edge<{
-  spec: Omit<WorkflowEdge, "port"> & { port: string };
+  spec: WorkflowEdge;
   markerPrefix?: string;
   hovered?: boolean;
   completed?: boolean;

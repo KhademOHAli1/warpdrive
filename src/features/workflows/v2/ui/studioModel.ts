@@ -150,6 +150,58 @@ export function updateStudioNode(
     edges: definition.edges.filter((edge) => edge.source !== node.id || ports.has(edge.sourcePort)),
   };
 }
+export function replaceStudioNode(
+  definition: WorkflowV2Definition,
+  id: string,
+  type: ActionBlockKind,
+  name: string,
+): WorkflowV2Definition | null {
+  const previous = definition.nodes.find((node) => node.id === id);
+  if (previous === undefined) return null;
+  if (previous.type === type) return definition;
+  const node: WorkflowV2Node = { id, type, version: 1, name, config: initialConfig(type) };
+  const from = previous.type === "ITERATOR" ? "done" : "next";
+  const to = type === "ITERATOR" ? "done" : "next";
+  return {
+    ...definition,
+    nodes: definition.nodes.map((current) => (current.id === id ? node : current)),
+    edges: definition.edges.flatMap((edge) => {
+      if (edge.source !== id) return [edge];
+      if (previous.type === "IF_ELSE" || type === "IF_ELSE" || edge.sourcePort !== from) return [];
+      return [{ ...edge, sourcePort: to }];
+    }),
+  };
+}
+
+export function duplicateStudioNode(
+  definition: WorkflowV2Definition,
+  id: string,
+  copyId: string,
+): WorkflowV2Definition | null {
+  const source = definition.nodes.find((node) => node.id === id);
+  if (
+    source === undefined ||
+    definition.nodes.length >= 100 ||
+    definition.nodes.some((node) => node.id === copyId)
+  )
+    return null;
+  const suffix = " (Duplicate)";
+  const layout = definition.layout ?? arrangeStudio(definition).layout;
+  const position = layout?.[id] ?? { x: 0, y: 0 };
+  return {
+    ...definition,
+    nodes: [
+      ...definition.nodes,
+      {
+        ...structuredClone(source),
+        id: copyId,
+        name: source.name.slice(0, 100 - suffix.length).trimEnd() + suffix,
+      },
+    ],
+    layout: { ...layout, [copyId]: { x: position.x + 50, y: position.y + 50 } },
+  };
+}
+
 export function removeStudioNode(
   definition: WorkflowV2Definition,
   id: string,
