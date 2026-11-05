@@ -1,5 +1,6 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds2: string[] = [
+  "derived:src/features/stats/analyticsInputContracts.ts",
   "sourceReview:src/features/realtime/wsMultiplexer.ts#548410e96afd6613932f10df54a1e06ffeb7660e5b17af3c0b8c2c6e9f668733",
   "sourceReview:src/features/release/constants.ts#61beb82d1c4406f396858787f3edf95829372b14d15329ad9c62b51e4bad4555",
   "sourceReview:src/features/release/githubReleases.ts#e06d3b7d940680409ca6f8a90566cd8287a28029bec92be0ec08c4d3ee4b5936",
@@ -17,6 +18,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/stats/activitiesByType.ts#92ee248a222a146b045675b7572e4a8522c8b302cdc790c76441776744000e93",
   "sourceReview:src/features/stats/activitiesPerformance.ts#c881e05d236cf9605be7f76cc5b25325c554d5623229dff73de26027c89aa84c",
   "sourceReview:src/features/stats/aggregateStages.ts#b32dfae88c9c104612b0c1f4612984403611575568850afbbfde567e5c66aa7c",
+  "sourceReview:src/features/stats/analyticsInputContracts.ts#34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
   "sourceReview:src/features/stats/dealPerformance.ts#1a5db860e28bb74a1da63c2438ec1d4a1a5286a8978f6311375f203ad2512f56",
   "sourceReview:src/features/stats/funnel.ts#aa69de4eb7cd9eacfee9762f8a41b7c61d576242c09ce0dc00697d02b1ff1d00",
   "sourceReview:src/features/stats/dealRecords.ts#9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",

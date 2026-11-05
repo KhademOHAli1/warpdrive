@@ -2072,7 +2072,7 @@
         "src/db/schema/importExternalIds.ts",
         "docs/sales-platform/product-signal-event-contract.md"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["ownership-contracts", "scope-permissions"],
       "dataRequirements": [
         "Named sources/owners for campaign, delivery, cost, billing, contract, order, ticket, time, survey and product events; schema, auth, provenance, retention, correction and dedup policy."
@@ -2084,7 +2084,8 @@
       "tests": [
         "Native intake validation, replay/conflict, source revocation, correction, identity, bounded payload and database persistence."
       ],
-      "deliveryIncrement": "I3"
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "Versioned Zod/Temporal payload validators and independent review implemented. Authenticated ingest, persistence, persistent dedup/corrections, source adapters and real source qualification remain unimplemented. See governed-inputs.md."
     },
     {
       "id": "regional-boundaries",
@@ -2361,6 +2362,7 @@
     "review": "docs/analytics/source-review.json",
     "focusedChecks": "Earlier 142 stats unit/component tests passed; affected follow-up source tests pass, inventory maintenance follows independent review. Exact final checks belong in validation.json.",
     "preparedUnrun": "17 PostgreSQL cases; configured typegen/TSC and typed lint; actual desktop/mobile light/dark EN/DE/FA/RTL browser review.",
-    "remaining": "All broad canonical acceptance and later programme capabilities remain open."
+    "remaining": "All broad canonical acceptance and later programme capabilities remain open.",
+    "inputContractReview": "docs/analytics/input-contract-review.json"
   }
 }
