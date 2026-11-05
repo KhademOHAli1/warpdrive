@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
-  "generated_at": "2026-11-04T09:23:31+00:00",
+  "generated_at": "2026-11-05T18:52:25+00:00",
   "issues": {
     "programme/integrations": {
       "number": 7,
@@ -5450,6 +5450,18 @@
       "id": 6199407568,
       "node_id": "I_kwDOVcNfnM8AAAABcYNz0A",
       "url": "https://github.com/KhademOHAli1/warpdrive/issues/962"
+    },
+    "settings/company-billing-2026-11-05": {
+      "number": 978,
+      "id": 6226042107,
+      "node_id": "I_kwDOVcNfnM8AAAABcxnc-w",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/978"
+    },
+    "settings/company-work-profile-2026-11-05": {
+      "number": 989,
+      "id": 6229197220,
+      "node_id": "I_kwDOVcNfnM8AAAABc0oBpA",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/989"
     }
   },
   "sources": [

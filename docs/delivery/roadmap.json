@@ -80064,6 +80064,37 @@
         "type:feature"
       ],
       "notes": "New authorized commercial scope tracked in #978, with no borrowed historical source-task binding. Workspace subscription with optional seats, Germany/EU first, operated by Warpdrive. Source integration, full-scope acceptance, real Stripe/merchant activation and release remain separate evidence states. Existing acceptance and publication policies are unchanged."
+    },
+    {
+      "id": "settings/company-work-profile-2026-11-05",
+      "title": "Company identity, branding and usable work profiles",
+      "module": "settings",
+      "kind": "deliverable",
+      "parent": "programme/settings",
+      "source_tasks": [],
+      "acceptance": [
+        "Persist revisioned company details, optional industry/size/contacts and provenance, legal entities and private issuer/payer preferences; enforce current permissions and explicit confirmation, without automatic Stripe or historical invoice changes.",
+        "Implement owned sanitized branding assets, separate icon/document logo, crop/remove/previews and member-safe shell identity in desktop/mobile and English/German/Persian.",
+        "Provide distinct work preferences and versioned mechanic/design/IT presets with selectable preview, atomic idempotent installation, actual native sales configuration and separate usable operational-work entities, editable stages/fields, preserved existing records and safe undo.",
+        "Deliver operational work board/list/search/filter/create/edit/status/archive with current owner/group visibility, visible CRM references, typed values and revision conflict handling. No silent permission grants, automation publication or invoice issuance.",
+        "Offer explicit company lookup and EU VAT checks with bounded provider calls, honest coverage/errors, user-confirmed proposals and source/time attribution; retain manual entry.",
+        "Qualify canonical populated upgrade, real PostgreSQL atomicity/replay/visibility/concurrency, meaningful failing-first and passing tests, desktop/mobile localized browser journeys, privacy inventory, exact-head and exact-main CI/CodeQL. Production provider acceptance, release and deployment remain separate."
+      ],
+      "dependencies": [],
+      "evidence": [
+        "docs/company-settings/research.md",
+        "docs/company-settings/fields.csv",
+        "docs/company-settings/implementation.md"
+      ],
+      "owner": "KhademOHAli1",
+      "owner_role": "Warpdrive company and work-profile maintainer",
+      "observed_status": "in-progress",
+      "observed_stage": "implementation in progress",
+      "priority": "P1",
+      "labels": [
+        "type:feature"
+      ],
+      "notes": "Explicit user-requested implementation of prior research; independent integration authorized. Does not expand into native CRM-client invoice issuance or production Stripe activation."
     }
   ],
   "aliases": {
