@@ -117,8 +117,8 @@ try {
       [regional.id, regional.email, regional.name],
     );
     await client.query(
-      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-      [regional.id, password],
+      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+      [regional.id, regional.id, password],
     );
   }
   await client.query("COMMIT");
