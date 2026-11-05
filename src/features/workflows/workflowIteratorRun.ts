@@ -225,7 +225,7 @@ export async function advanceWorkflowIteratorRun(
     return err(ERROR_IDS.WORKFLOW_DENIED);
   const step = await applyBody(context, active.value);
   if (!step.ok) return failedOccurrence(context, active.value, step.error);
-  if (step.value.status === "waiting") return step;
+  if (step.value.status === "waiting") return ok(step.value);
   const execution = active.value.frame.execution;
   await db.insert(workflowSteps).values({
     runId: run.id,
