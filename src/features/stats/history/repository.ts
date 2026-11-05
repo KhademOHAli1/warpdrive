@@ -30,15 +30,27 @@ export async function readHistoryInstallation(
 ): Promise<HistoryInstallation> {
   signal.throwIfAborted();
   const presence = await db.execute(sql`
-    SELECT to_regclass('public.analytics_history_coverage') IS NOT NULL
-       AND to_regclass('public.analytics_history_events') IS NOT NULL
-       AND to_regclass('public.analytics_history_heads') IS NOT NULL AS installed
+    WITH history_relations AS (
+      SELECT pg_catalog.to_regclass('public.analytics_history_coverage') AS coverage,
+        pg_catalog.to_regclass('public.analytics_history_events') AS events,
+        pg_catalog.to_regclass('public.analytics_history_heads') AS heads
+    )
+    SELECT coverage IS NOT NULL AND events IS NOT NULL AND heads IS NOT NULL AS installed,
+      COALESCE(
+        pg_catalog.has_table_privilege(coverage, 'SELECT')
+          AND pg_catalog.has_table_privilege(events, 'SELECT')
+          AND pg_catalog.has_table_privilege(heads, 'SELECT'),
+        false
+      ) AS readable
+    FROM history_relations
   `);
   signal.throwIfAborted();
-  const ready = (presence as unknown as { rows: { installed: boolean }[] }).rows[0];
+  const ready = (presence as unknown as { rows: { installed: boolean; readable: boolean }[] })
+    .rows[0];
   if (ready === undefined)
     throw new AppError(ERROR_IDS.DB_READ_FAILED, "History presence read returned no row");
   if (!ready.installed) return { state: "missing", reason: "capture-not-installed" };
+  if (!ready.readable) return { state: "unavailable", reason: "capture-safety-unavailable" };
   const result = await db.execute(sql`
     WITH required_guard(relation_name, trigger_name, function_name, trigger_type) AS (VALUES
       ('deals','analytics_deals_capture','analytics_capture_row_change',29),
