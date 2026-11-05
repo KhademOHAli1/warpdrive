@@ -114,6 +114,7 @@
     "dateConfirmationRequired": "Bestätige das angezeigte Datum und die Zeitzone, bevor du für diesen älteren ganztägigen Termin eine Erinnerung einrichtest."
   },
   "day": "Tag",
+  "agenda": "Tagesliste",
   "year": "Jahr",
   "dayActivityCount": "{date}: {count, plural, one {# Aktivität} other {# Aktivitäten}}",
   "emptyDayTitle": "Keine Aktivitäten an diesem Tag",

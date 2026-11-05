@@ -6,6 +6,7 @@ import { filterCalendarActivities, NO_CALENDAR_FILTER } from "@/features/activit
 import type { CalendarViewName } from "@/features/activities/calendarView";
 import { useLocalePreferencePending, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
+import { agendaDay } from "./AgendaList";
 import { CalendarClient } from "./CalendarClient";
 import { CalendarEmpty } from "./CalendarEmpty";
 import { CalendarFilterBar } from "./CalendarFilterBar";
@@ -62,6 +63,10 @@ export function FilterableCalendar({
     () => filterCalendarActivities(activities, filter),
     [activities, filter],
   );
+  const hasUnfilteredActivities =
+    view === "agenda" && hasFilter
+      ? agendaDay(activities, anchorIso, preferences.timeZone).items.length > 0
+      : activities.length > 0;
 
   return (
     <div className="flex flex-col">
@@ -81,7 +86,7 @@ export function FilterableCalendar({
             hasFilter={hasFilter}
             // `activities` is the whole window as the server returned it; `filtered` is what the
             // filter bar left of it. Only the first can answer "was there anything to exclude".
-            hasUnfilteredActivities={activities.length > 0}
+            hasUnfilteredActivities={hasUnfilteredActivities}
             dateIso={anchorIso}
             onClearFilters={() => setFilter(NO_CALENDAR_FILTER)}
             onCreated={() => router.refresh()}

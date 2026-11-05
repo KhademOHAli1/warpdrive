@@ -35,6 +35,7 @@ describe.each([
   {
     locale: "fa",
     week: "هفته",
+    agenda: "برنامهٔ روز",
     month: "ماه",
     name: "تقویم",
     previous: "بازهٔ قبل",
@@ -44,6 +45,7 @@ describe.each([
   {
     locale: "de",
     week: "Woche",
+    agenda: "Tagesliste",
     month: "Monat",
     name: "Kalender",
     previous: "Vorheriger Zeitraum",
@@ -53,6 +55,7 @@ describe.each([
   {
     locale: "en",
     week: "Week",
+    agenda: "Agenda",
     month: "Month",
     name: "Calendar",
     previous: "Previous",
@@ -61,7 +64,7 @@ describe.each([
   },
 ] as const)(
   "canonical navigation in $locale",
-  ({ locale, week, month, name, previous, next, create }) => {
+  ({ locale, week, agenda, month, name, previous, next, create }) => {
     it("preserves week/month links, seven-day navigation and the explicit creation action", () => {
       render(
         <LocaleProvider locale={locale} calendar="gregory" timeZone="Asia/Tehran">
@@ -76,6 +79,10 @@ describe.each([
       );
       expect(screen.getByRole("region", { name })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: week })).toHaveAttribute("aria-current", "page");
+      expect(screen.getByRole("link", { name: agenda })).toHaveAttribute(
+        "href",
+        "/activities/calendar?view=agenda&d=2027-03-22",
+      );
       expect(screen.getByRole("link", { name: month })).toHaveAttribute(
         "href",
         "/activities/calendar?view=month&d=2027-03-22",
