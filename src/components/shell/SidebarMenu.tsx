@@ -2,10 +2,9 @@
 
 import { GitBranch } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Tip } from "@/components/ui/tooltip";
 import { DOCS_SITE_URL } from "@/constants/docs";
 import { NAV_ITEMS, type NavKey } from "@/constants/nav";
-import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
 import {
@@ -40,14 +39,13 @@ export function SidebarMenu({
 }: {
   expanded: boolean;
   onNavigate?: () => void;
-  onToggle: () => void;
+  onToggle?: () => void;
   mobile?: boolean;
 }) {
   const pathname = usePathname();
   const messages = useMessages();
   const t = useAppTranslations("shell.sidebar");
   const activities = useAppTranslations("activities");
-  const rtl = useLocale() === "fa";
   function children(key: NavKey): SidebarChild[] | undefined {
     if (key === "contacts")
       return [
@@ -113,25 +111,24 @@ export function SidebarMenu({
             {t("section")}
           </p>
           <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
-            {NAV_ITEMS.filter((item) => item.key !== "settings").map(menuItem)}
+            {NAV_ITEMS.filter((item) => item.key !== "settings" && item.key !== "workflows").map(
+              menuItem,
+            )}
           </div>
         </div>
         <div className={styles.utilityNav}>
-          {NAV_ITEMS.filter((item) => item.key === "settings").map(menuItem)}
-          {expanded ? (
-            docs
-          ) : (
-            <Tip
-              label={messages.nav.docs}
-              side={rtl ? "left" : "right"}
-              className={styles.tooltip}
-              delayDuration={0}
-              sideOffset={10}
-            >
+          {expanded && (
+            <>
+              {NAV_ITEMS.filter((item) => item.key === "settings").map(menuItem)}
+              {NAV_ITEMS.filter((item) => item.key === "workflows").map(menuItem)}
               {docs}
-            </Tip>
+            </>
           )}
-          {!mobile && <SidebarToggle expanded={expanded} onToggle={onToggle} />}
+          {!mobile && onToggle !== undefined && (
+            <div className={styles.sidebarToggleDock}>
+              <SidebarToggle expanded={expanded} onToggle={onToggle} />
+            </div>
+          )}
         </div>
       </nav>
     </div>

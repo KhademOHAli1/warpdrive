@@ -18,7 +18,7 @@
 }
 .sidebar {
   display: flex;
-  width: 250px;
+  width: 220px;
   height: 100%;
   min-height: 0;
   flex: 0 0 auto;
@@ -50,7 +50,7 @@
   overflow: hidden;
   border-bottom: 1px solid var(--portal-border);
   padding-block: 0;
-  padding-inline: 18px 16px;
+  padding-inline: 12px;
   transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width;
 }
@@ -182,8 +182,8 @@
   position: relative;
   z-index: 2;
   display: flex;
-  width: 44px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -192,10 +192,10 @@
   background: transparent;
   color: var(--portal-muted);
   cursor: pointer;
+  padding: 0;
   transition:
-    color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
 .sidebarToggle svg,
@@ -208,6 +208,18 @@
   color: var(--portal-text);
 }
 
+.sidebarToggleDock {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  margin-block-start: 8px;
+}
+
+.sidebarBodyCollapsed .sidebarToggleDock {
+  justify-content: center;
+  margin-block-start: 0;
+}
+
 .sidebarBody {
   display: flex;
   min-height: 0;
@@ -215,8 +227,8 @@
   flex: 1;
   flex-direction: column;
   overflow: hidden;
-  padding-block: 14px 12px;
-  padding-inline: 18px 15px;
+  padding-block: 10px 8px;
+  padding-inline: 12px;
   scrollbar-width: none;
 }
 
@@ -252,10 +264,10 @@
   max-height: 22px;
   overflow: hidden;
   color: var(--portal-muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 22px;
-  margin: 0 0 8px;
+  line-height: 18px;
+  margin: 0 0 4px;
   opacity: 1;
   padding: 0;
   transition:
@@ -276,7 +288,7 @@
 .menuList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .menuListCollapsed {
@@ -311,7 +323,7 @@
   overflow: hidden;
   border-radius: 8px;
   font-size: 16px;
-  line-height: 24px;
+  line-height: 22px;
   transition:
     color 200ms ease,
     background-color 200ms ease,
@@ -329,9 +341,9 @@
 
 .navItemOpen {
   width: 100%;
-  height: 40px;
+  height: 36px;
   align-self: stretch;
-  gap: 4px;
+  gap: 2px;
   padding: 0 6px;
 }
 
@@ -510,7 +522,7 @@
 
 .subnav[data-expanded="true"] {
   max-height: 240px;
-  margin-block: 4px;
+  margin-block: 2px;
   margin-inline: 18px 0;
   opacity: 1;
   pointer-events: auto;
@@ -699,7 +711,7 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .workspaceNav {
   min-height: 0;
@@ -714,27 +726,48 @@
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   border-top: 1px solid var(--portal-border);
-  padding-top: 12px;
+  padding-top: 8px;
 }
 .sidebar[data-sidebar-state="collapsed"] .utilityNav {
   width: 44px;
-}
-.sidebarToggleAction {
-  flex-shrink: 0;
-  border: 0;
-  cursor: pointer;
-  text-align: start;
+  border-top: 0;
+  padding-top: 0;
 }
 .navItem:lang(fa) {
-  font-size: 15px;
-  line-height: 26px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.utilityNav .navItem {
+  height: 28px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.utilityNav .navRowCollapsed {
+  height: 28px;
+}
+.utilityNav .navIconFrame {
+  height: 24px;
+  transform: scale(0.7);
+}
+.utilityNav .navItemActive {
+  background: transparent;
+  color: var(--portal-muted);
+}
+.utilityNav .navIconActive {
+  color: var(--portal-muted);
+}
+.utilityNav .navItemActive::before {
+  width: 2px;
+  height: 12px;
 }
 .subnavLink:lang(fa) {
   line-height: 22px;
 }
 .logoLink:focus-visible,
+.sidebarToggle:focus-visible,
 .navItem:focus-visible,
 .disclosureButton:focus-visible,
 .subnavLink:focus-visible,
