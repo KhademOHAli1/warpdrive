@@ -189,4 +189,13 @@ jobs:
       - name: Validate pre-merge release proposal and source review coherence
         env:
           BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: python3 scripts/delivery/release_pr.py --base "$BASE_REVISION"
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          args=(--base "$BASE_REVISION")
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == refs/heads/* &&
+                "$GITHUB_REF" != "refs/heads/${DEFAULT_BRANCH}" ]]; then
+            test -n "$DEFAULT_BRANCH"
+            integration_revision="$(git rev-parse --verify --end-of-options "refs/remotes/origin/${DEFAULT_BRANCH}^{commit}")"
+            args+=(--integration-revision "$integration_revision")
+          fi
+          python3 scripts/delivery/release_pr.py "${args[@]}"
