@@ -1,4 +1,5 @@
 import type React from "react";
+import { useId } from "react";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { type FormattingPreferences, localeTagForFormatting } from "@/lib/localeFormatting";
 import { statsMessagesForLocale } from "../statsMessages";
@@ -16,10 +17,20 @@ export function Panel({
   emptyText: string;
   children: React.ReactNode;
 }): React.ReactNode {
+  const headingId = useId();
   return (
-    <section className="rounded-lg border p-4">
-      <h2 className="mb-2 text-balance text-sm font-medium text-muted-foreground">{title}</h2>
-      {isEmpty && <p className="text-sm text-muted-foreground">{emptyText}</p>}
+    <section
+      aria-labelledby={headingId}
+      className="h-full min-w-0 rounded-xl border bg-card p-5 sm:p-6"
+    >
+      <h2 id={headingId} className="mb-5 text-balance text-base font-semibold text-foreground">
+        {title}
+      </h2>
+      {isEmpty && (
+        <p className="rounded-xl bg-muted/40 px-4 py-6 text-pretty text-sm leading-relaxed text-muted-foreground">
+          {emptyText}
+        </p>
+      )}
       {/* Rendered in both states: an empty panel may still carry an action, and swallowing
           children here made the "set up goals" link unreachable exactly when it was needed. */}
       {children}
@@ -38,9 +49,9 @@ export function Bar({ label, pct }: { label: string; pct: number }): React.React
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}
-      className="h-2 w-full overflow-hidden rounded bg-muted"
+      className="h-2 w-full overflow-hidden rounded-full bg-muted"
     >
-      <div className="h-full rounded bg-primary" style={{ width: `${clamped}%` }} />
+      <div className="h-full rounded-full bg-link/80" style={{ width: `${clamped}%` }} />
     </div>
   );
 }

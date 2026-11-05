@@ -25,6 +25,7 @@ import {
 interface Totals {
   count: number;
   value: string;
+  missingEventDateCount: number;
 }
 
 async function dealTotals(
@@ -37,17 +38,19 @@ async function dealTotals(
   const from = sql`${period.start}::date`;
   const toExclusive = sql`${period.end}::date + INTERVAL '1 day'`;
   const { at, state } = dealEvent(goal);
-  const windowClause = sql`${state} ${at} >= ${from} AND ${at} < ${toExclusive}`;
+  const inPeriod = sql`${at} >= ${from} AND ${at} < ${toExclusive}`;
+  const undated = goal.action === "won" || goal.action === "lost" ? sql`${at} IS NULL` : sql`false`;
 
   const result = await db.execute(sql`
-    SELECT count(*)::int AS "count",
-           coalesce(sum(d.value), 0)::text AS "value"
+    SELECT count(*) FILTER (WHERE ${inPeriod})::int AS "count",
+           coalesce(sum(d.value) FILTER (WHERE ${inPeriod}), 0)::text AS "value",
+           count(*) FILTER (WHERE ${undated})::int AS "missingEventDateCount"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL
       AND d.archived_at IS NULL
       AND p.is_archived = false
-      AND ${windowClause}
+      AND ${state} ((${inPeriod}) OR (${undated}))
       ${goal.metric === "value" ? sql`AND d.currency = ${goal.currency}` : sql``}
       ${pipelineClause(goal, sql`d.pipeline_id`)}
       ${assigneeClause(goal, sql`d.owner_id`)}
@@ -55,7 +58,11 @@ async function dealTotals(
   `);
   signal.throwIfAborted();
   const row = (result as unknown as { rows: Totals[] }).rows[0];
-  return { count: row?.count ?? 0, value: canonicalMoney(row?.value ?? "0.00") };
+  return {
+    count: row?.count ?? 0,
+    value: canonicalMoney(row?.value ?? "0.00"),
+    missingEventDateCount: row?.missingEventDateCount ?? 0,
+  };
 }
 
 async function activityTotals(
@@ -68,7 +75,8 @@ async function activityTotals(
   const from = sql`${period.start}::date`;
   const toExclusive = sql`${period.end}::date + INTERVAL '1 day'`;
   const { at, state } = activityEvent(goal);
-  const windowClause = sql`${state} ${at} >= ${from} AND ${at} < ${toExclusive}`;
+  const inPeriod = sql`${at} >= ${from} AND ${at} < ${toExclusive}`;
+  const undated = goal.action === "completed" ? sql`${at} IS NULL` : sql`false`;
   const dealPipelineClause =
     goal.pipelineId !== null
       ? sql`AND EXISTS (
@@ -77,21 +85,51 @@ async function activityTotals(
       : sql``;
 
   const result = await db.execute(sql`
-    SELECT count(*)::int AS "count"
+    SELECT count(*) FILTER (WHERE ${inPeriod})::int AS "count",
+           count(*) FILTER (WHERE ${undated})::int AS "missingEventDateCount"
     FROM activities a
     WHERE a.deleted_at IS NULL
-      AND ${windowClause}
+      AND ${state} ((${inPeriod}) OR (${undated}))
       ${activityTypeClause(goal)}
       ${dealPipelineClause}
       ${assigneeClause(goal, sql`a.assignee_id`)}
       AND ${activityVisibilityPredicate(actor, "a")}
   `);
   signal.throwIfAborted();
-  const row = (result as unknown as { rows: { count: number }[] }).rows[0];
-  return { count: row?.count ?? 0, value: "0.00" };
+  const row = (result as unknown as { rows: { count: number; missingEventDateCount: number }[] })
+    .rows[0];
+  return {
+    count: row?.count ?? 0,
+    value: "0.00",
+    missingEventDateCount: row?.missingEventDateCount ?? 0,
+  };
 }
 
-// The booked figure for one goal in one period, as a decimal string in the goal's own metric.
+export interface GoalActualQuality {
+  actual: string;
+  missingMeasurementDateCount: number;
+}
+
+// Known-period totals and undated eligible events share one SQL snapshot and visibility gate.
+export async function goalActualWithQuality(
+  db: Db,
+  actor: PermSetUser,
+  goal: Goal,
+  period: GoalPeriod,
+  signal: AbortSignal,
+): Promise<GoalActualQuality> {
+  signal.throwIfAborted();
+  const totals =
+    goal.subject === "deal"
+      ? await dealTotals(db, actor, goal, period, signal)
+      : await activityTotals(db, actor, goal, period, signal);
+  return {
+    actual: goal.metric === "value" ? totals.value : String(totals.count),
+    missingMeasurementDateCount: totals.missingEventDateCount,
+  };
+}
+
+// Preserve the decimal-string contract used by reports and existing callers.
 export async function goalActual(
   db: Db,
   actor: PermSetUser,
@@ -99,10 +137,5 @@ export async function goalActual(
   period: GoalPeriod,
   signal: AbortSignal,
 ): Promise<string> {
-  signal.throwIfAborted();
-  const totals =
-    goal.subject === "deal"
-      ? await dealTotals(db, actor, goal, period, signal)
-      : await activityTotals(db, actor, goal, period, signal);
-  return goal.metric === "value" ? totals.value : String(totals.count);
+  return (await goalActualWithQuality(db, actor, goal, period, signal)).actual;
 }

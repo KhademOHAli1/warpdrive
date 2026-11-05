@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-11-05",
+  "reviewer": {
+    "kind": "Independent Codex team source review",
+    "agent": "/root/history_sources",
+    "limitation": "Separate source review by a collaborating agent; not human acceptance, an authenticated external reviewer or installation evidence."
+  },
+  "scope": "Narrow first analytics increment and maintenance of reviewed privacy source bindings. Full programme and broad privacy lifecycle acceptance are outside this review.",
+  "baselineHead": "aa7695b045443efe81f130deb62122714e77a68f",
+  "reviewState": "Narrow source and lint-amendment review complete; no remaining actionable finding in reviewed increment. Runtime qualification remains pending.",
+  "canonicalIssues": [595, 601, 602],
+  "reviewedSources": [
+    {
+      "path": "src/features/stats/activitiesByType.ts",
+      "sha256": "92ee248a222a146b045675b7572e4a8522c8b302cdc790c76441776744000e93",
+      "sourceReviewId": "sourceReview:src/features/stats/activitiesByType.ts#92ee248a222a146b045675b7572e4a8522c8b302cdc790c76441776744000e93",
+      "previousSourceReviewId": "sourceReview:src/features/stats/activitiesByType.ts#1151c7fff3ec2c2b5561b3f4dd1aa8f43abbf8544527e60a63eef29825fc911f",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "SELECT aggregate",
+      "conclusion": "Reads non-archived activity type metadata and counts currently completed activities. All activity predicates remain in the LEFT JOIN so zero-type rows survive. Dominant-parent visibility, current assignee scope, optional pipeline scope and explicit viewer-zone completion bounds remain applied.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/activitiesPerformance.ts",
+      "sha256": "c881e05d236cf9605be7f76cc5b25325c554d5623229dff73de26027c89aa84c",
+      "sourceReviewId": "sourceReview:src/features/stats/activitiesPerformance.ts#c881e05d236cf9605be7f76cc5b25325c554d5623229dff73de26027c89aa84c",
+      "previousSourceReviewId": "sourceReview:src/features/stats/activitiesPerformance.ts#0d85f791cd74598c4d474e6e66aebb4ad07ebc7d24d81b643acdf24b00f822eb",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "SELECT aggregate",
+      "conclusion": "Reads activity counts only. Canonical all-day due_date is compared as a civil date; timed/legacy anchors project in the resolved zone. Creation/completion use explicit instants. Current visibility/assignee/pipeline gates remain. No activity mutation or scheduling effect.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/dealPerformance.ts",
+      "sha256": "1a5db860e28bb74a1da63c2438ec1d4a1a5286a8978f6311375f203ad2512f56",
+      "sourceReviewId": "sourceReview:src/features/stats/dealPerformance.ts#1a5db860e28bb74a1da63c2438ec1d4a1a5286a8978f6311375f203ad2512f56",
+      "previousSourceReviewId": "sourceReview:src/features/stats/dealPerformance.ts#ae137d78896acd02c13cd310168399b56f3853a3f053fe9ad5326953b85aea5d",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "SELECT aggregate",
+      "conclusion": "Reads current eligible deals through shared visibleDealPopulation and metric-specific current created/won/lost/open populations. Deleted/archived records and archived pipelines excluded; current viewer visibility, server-resolved owner ceiling and one stored currency applied. Decimal sums remain text.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/dealRecords.ts",
+      "sha256": "662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+      "sourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+      "previousSourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+      "bindingAction": "Replace only the previously reviewed source digest after this lint amendment review.",
+      "operation": "WITH SELECT aggregate and bounded page",
+      "conclusion": "Reads only the same visible/current metric population as outcome summaries. Output is deal ID/title/status/current value/currency/creation and current close timestamps plus aggregate count/sum/valueCount. One SQL statement supplies page and totals in one MVCC snapshot; page fetch is limit+1 and ordered by created_at,id. Values cast to text before JSON; cursor retains PostgreSQL microseconds. No stored result IDs, exports, contacts, new tables or writes. Lint amendment changes only the impossible missing-aggregate-row error to the established AppError(ERROR_IDS.DB_READ_FAILED); SQL, eligibility, output and cursor are unchanged.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file.",
+      "reviewHistory": [
+        {
+          "reviewPhase": "I1 original source review",
+          "sha256": "9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+          "sourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+          "previousSourceReviewId": null,
+          "conclusion": "Reads only the same visible/current metric population as outcome summaries. Output is deal ID/title/status/current value/currency/creation and current close timestamps plus aggregate count/sum/valueCount. One SQL statement supplies page and totals in one MVCC snapshot; page fetch is limit+1 and ordered by created_at,id. Values cast to text before JSON; cursor retains PostgreSQL microseconds. No stored result IDs, exports, contacts, new tables or writes."
+        }
+      ]
+    },
+    {
+      "path": "src/features/stats/lostReasons.ts",
+      "sha256": "6d4fce2536e0d780028ae13d7b7877ab97c1a0bf814b2093b6bacfbb2bbbdc11",
+      "sourceReviewId": "sourceReview:src/features/stats/lostReasons.ts#6d4fce2536e0d780028ae13d7b7877ab97c1a0bf814b2093b6bacfbb2bbbdc11",
+      "previousSourceReviewId": "sourceReview:src/features/stats/lostReasons.ts#677236570420a5468b0e9d11fe376a897ebbd532759cf9200047dd772cbd2b0e",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "SELECT aggregate",
+      "conclusion": "Reads current lost-deal reason ID/resolved name/free-text fallback plus count/current value. Same current deal/pipeline visibility, current owner scope, one currency and explicit viewer-zone loss bounds remain. Existing missing-reason grouping is retained.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/router.ts",
+      "sha256": "1c55cb8d0f75e4108c7ec516e62e363f9c26e50dfac5b31817f11df81c089195",
+      "sourceReviewId": "sourceReview:src/features/stats/router.ts#1c55cb8d0f75e4108c7ec516e62e363f9c26e50dfac5b31817f11df81c089195",
+      "previousSourceReviewId": "sourceReview:src/features/stats/router.ts#085bda76fc9a94152c1568fe3ad1380c13b5c8d4bf2b7faab0e3b2e0cdc3876e",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "Protected read RPC delegation",
+      "conclusion": "Dashboard and records are protectedProcedure query handlers. Server resolveReportScope applies stats.viewOthers ceiling, pipeline visibility, currency and persisted actor timezone. Client timeZoneIdentity is a cache partition only and never authorizes or chooses SQL scope. Selected stage requests retain visiblePipelineIds gating. Owner options retain stats.viewOthers gate. No mutation handler or provider effect.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/stageConversion.ts",
+      "sha256": "5df35cff59852ca03107c03032b166a2c041434b221df636f59b26ca177363b5",
+      "sourceReviewId": "sourceReview:src/features/stats/stageConversion.ts#5df35cff59852ca03107c03032b166a2c041434b221df636f59b26ca177363b5",
+      "previousSourceReviewId": "sourceReview:src/features/stats/stageConversion.ts#4dff2a6aeac9c6a7b0358b880f4336fbbd2a4ff7fe5ddd4a5b9593d53c380df5",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "WITH SELECT aggregate",
+      "conclusion": "Visible current deal cohort is filtered before audit-log joins. Current deal/pipeline visibility, current owner scope, one currency and explicit created-date bounds retained. Existing current-stage ordering/inferred passage and mixed open/completed interval limitations remain explicitly documented; no reliable-history or survival acceptance inferred.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/wonDealStats.ts",
+      "sha256": "d330e92a715fe6d670069e77520ed8fc5eb92689b2239cc33d107c252793e516",
+      "sourceReviewId": "sourceReview:src/features/stats/wonDealStats.ts#d330e92a715fe6d670069e77520ed8fc5eb92689b2239cc33d107c252793e516",
+      "previousSourceReviewId": "sourceReview:src/features/stats/wonDealStats.ts#9b3719ca18febea41fbc89cf1e8a871adde9584c9d0fdf344d1718905d98195b",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "SELECT aggregate",
+      "conclusion": "Reads eligible current won deals through shared visibility/population. Monetary mean/median preserve numeric/text handling; non-null values define size sample and nonnegative creation-to-win duration defines cycle sample. No outcome write or source expansion.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    },
+    {
+      "path": "src/features/stats/wonTrend.ts",
+      "sha256": "7f3c11a144d385b9407d4916b38261dd26fb57e2cf139429abab78137eaf7619",
+      "sourceReviewId": "sourceReview:src/features/stats/wonTrend.ts#7f3c11a144d385b9407d4916b38261dd26fb57e2cf139429abab78137eaf7619",
+      "previousSourceReviewId": "sourceReview:src/features/stats/wonTrend.ts#d32e97aeb35a5b7e471b2444ff03cfbf91dfd7c4b7ceac662152fe77ad3bb2e0",
+      "bindingAction": "replace exact old digest binding only",
+      "operation": "SELECT aggregate",
+      "conclusion": "Reads current eligible wins in one currency and current visibility/owner/pipeline scope. Explicit viewer-zone bounds and Gregorian month projection replace session-zone dependence; displayed/query window remains bounded to existing 60-month series. No future snapshots or predictive model.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+    }
+  ],
+  "supportingSources": [
+    {
+      "path": "src/features/stats/dealPopulation.ts",
+      "sha256": "4759ac68b2821eb33d29bae9d17b53569a6e81d9eb9894cbeb4be4be3fc33e8f"
+    },
+    {
+      "path": "src/features/stats/resolveReportScope.ts",
+      "sha256": "09f75b16f90796e89d65abed9b5f0ed162f7a13540f8b5ac5be0dba6bd07eb62"
+    },
+    {
+      "path": "src/features/stats/reportPeriod.ts",
+      "sha256": "f7d7db29f64a95af3e915edd91fb63d21734bb26dc5f15dbba7cd170bb0d9d81"
+    },
+    {
+      "path": "src/features/stats/schemas.ts",
+      "sha256": "6496a262d14709b4c66aeff9980f0f66ca60948ee45c8e5a11710bd0985d561b"
+    },
+    {
+      "path": "src/features/stats/goalReportAdapter.ts",
+      "sha256": "6099b73189b88fd7bd0bce7269051adfbb726074caeb335af7cf164c96ba314f"
+    },
+    {
+      "path": "src/features/stats/ui/Dashboard.tsx",
+      "sha256": "1d5e54578aa894afabad3ed631ea95dbc8199514f24299d883015abe6311345d"
+    },
+    {
+      "path": "src/features/stats/ui/DealRecordsDrawer.tsx",
+      "sha256": "700eb1880c80be4e2069304d2fa981eceb81b4fda73dd4663cc48504d44c8a5b"
+    },
+    {
+      "path": "src/app/(app)/dashboard/page.tsx",
+      "sha256": "8558be4984e8e8469b586ca864f9d83846f1c1eaae22e0fa89b37f39db5fbc5d"
+    },
+    {
+      "path": "src/features/activities/activityDateSql.ts",
+      "sha256": "28cacaf2ba148e7a0338738ada551d3e0a91b886e0ec9b158a0de9475c934608"
+    },
+    {
+      "path": "src/features/stats/activityVisibilitySql.ts",
+      "sha256": "cbf456565229f9122abff75a81b072e0c82d87448aa14cd64a3fd75a690b933c"
+    },
+    {
+      "path": "src/features/deals/visibility.ts",
+      "sha256": "4a566955c4c344e4552ef93c26771b59af5ac40012910bfa662488b12805354e"
+    },
+    {
+      "path": "src/features/permissions/sql.ts",
+      "sha256": "4f56d024c07e4c88b7061b9d657510cfcc325659fcfd0e51b62310a81c2dace9"
+    },
+    {
+      "path": "src/features/currencies/reportCurrency.ts",
+      "sha256": "62223e3adc83779ab9f2bda3dd729e8fe7b63d84e2f7d57189817bef0a643d38"
+    },
+    {
+      "path": "src/features/i18n/accountPreferences.ts",
+      "sha256": "c35e3be4d17218c07c549bf8e6a1d7cacaa86355ab2aacb4d4d79a3d7a25e3f5"
+    },
+    {
+      "path": "src/features/i18n/usePreferencePersistence.ts",
+      "sha256": "d866ccbf25946c796125f93e41c7afec60c098d4eaba864e75977b0d4b525574"
+    },
+    {
+      "path": "src/features/stats/ui/Scoreboard.tsx",
+      "sha256": "92b551f4a91aadaf5e2c826d5fd916178e6f271fe240dd841854ea610ad7a91c"
+    }
+  ],
+  "newScannerBoundary": {
+    "id": "writer:src/features/stats/dealRecords.ts#execute:sql",
+    "sourcePath": "src/features/stats/dealRecords.ts",
+    "sourceSha256": "662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+    "actualOperation": "PostgreSQL WITH/SELECT only; scanner labels execute(sql) as a writer boundary.",
+    "data": "Current permission-scoped deal fields and report aggregates returned to the authenticated viewer.",
+    "effects": "No database INSERT/UPDATE/DELETE, durable snapshot, filesystem/object write, campaign/message/send or provider request.",
+    "classificationBoundary": "Derived reporting view inherits current reviewed CRM record/pipeline visibility. Actor and owner keys are access context, not subject identity or independent disclosure authority. All existing lifecycle adapter capabilities remain unsupported.",
+    "bindingAction": "Root may maintain only this reviewed execute identifier and the nine exact reviewed source digest bindings. No broad source acceptance or lifecycle capabilities change is established."
+  },
+  "resolvedFindings": [
+    {
+      "id": "R1",
+      "topic": "All-day scheduled count uses canonical civil date",
+      "sourcePath": "src/features/stats/activitiesPerformance.ts",
+      "result": "Source amendment confirmed: CASE selects canonical all_day+due_date, otherwise explicit viewer-zone due_at civil date. No runtime qualification claimed."
+    },
+    {
+      "id": "R2",
+      "topic": "Timezone cache identity and SSR preset resolution",
+      "sourcePaths": [
+        "src/features/stats/schemas.ts",
+        "src/features/stats/ui/Dashboard.tsx",
+        "src/features/stats/ui/DealRecordsDrawer.tsx",
+        "src/features/stats/resolveReportScope.ts",
+        "src/app/(app)/dashboard/page.tsx"
+      ],
+      "result": "Source amendment confirmed: optional cache-only timeZoneIdentity partitions query keys/remount, server ignores it for authoritative persisted scope, response reports actual zone, and SSR today uses the same persisted account resolver. Cookie-only global-zone fallback intentionally does not override report scope. Both analytics queries are disabled and result rows/figures suppressed while useLocalePreferencePending is true; retry controls also remain disabled, preventing imperative refetch from bypassing the gate before persistence."
+    },
+    {
+      "id": "R2-race",
+      "topic": "Optimistic timezone preference-save and manual retry ordering",
+      "sourcePaths": [
+        "src/features/i18n/usePreferencePersistence.ts",
+        "src/features/stats/ui/Dashboard.tsx",
+        "src/features/stats/ui/DealRecordsDrawer.tsx"
+      ],
+      "result": "Source correction confirmed after re-reading exact UI: enabled requires no pending preference save; cached figures/rows are suppressed while pending. DashboardError retrying and Drawer retry disabled conditions also include preferencePending. The post-save enabled read uses persisted server timezone. Source review only; regression tests/runtime proof remain separate."
+    }
+  ],
+  "openFindings": [],
+  "retainedLimitations": [
+    "Source review only; no SQL execution, native database, browser, typecheck, lint or build was run by this reviewer.",
+    "Local heavy validation remains queued under the explicit user instruction; this review does not allocate or perform those jobs.",
+    "Live current-state reports can restate history after reopen/archive/correction/ownership/visibility changes; no immutable event history is implemented by this slice.",
+    "Legacy stage inference/timestamp-ordering/definition-evolution limitations remain in the programme matrix; this review does not qualify their future replacement.",
+    "Goals adapter remains a read-only remapping of owner-computed outputs; Goals/KPI authoring was not edited.",
+    "No hosted CI, integrated/main, human visual/accessibility, performance, real-source, release or deployment acceptance is established."
+  ],
+  "registryMutationPerformedByReviewer": false,
+  "sourceConclusion": {
+    "sqlOperations": "Eight direct execute(sql) SELECT-only paths and one protected read-RPC router; no SQL mutation found.",
+    "boundaryReview": "Existing current actor/pipeline/record visibility and server owner ceiling retained; new deal rows share current metric populations and a single-currency policy.",
+    "exactness": "Monetary values are text before JSON; UTC cursor strings preserve PostgreSQL microseconds, with deterministic created_at/id keyset ordering.",
+    "goals": "Read-only owner-computed output adapter; no Goals/KPI authoring mutation.",
+    "limitedResult": "Eligible for narrow reviewed source inventory binding maintenance at these digests, not a runtime/security/installation/programme completion certificate."
+  },
+  "lintAmendments": [
+    {
+      "id": "hosted-lint-amendment-1",
+      "reviewDate": "2026-11-05",
+      "candidateParent": "c63f3f25dde44838358e67114ab78eabcb0e77da",
+      "trigger": "Root supplied hosted typed-lint findings; this reviewer performed source review only. Earlier source review and actual failed/passing validation remain separately preserved.",
+      "changedReviewedSource": {
+        "path": "src/features/stats/dealRecords.ts",
+        "previousSha256": "9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+        "sha256": "662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+        "reason": "Use established AppError and DB_READ_FAILED for a missing aggregate row; no SQL/population/money/cursor change."
+      },
+      "supportingSourceChanges": [
+        {
+          "path": "src/features/stats/ui/Dashboard.tsx",
+          "previousSha256": "0b1ca2012bc7b100819e58beb219664ce2b6d45296a930af111d9f6e81b6fed7",
+          "sha256": "1d5e54578aa894afabad3ed631ea95dbc8199514f24299d883015abe6311345d"
+        },
+        {
+          "path": "src/features/stats/ui/DealRecordsDrawer.tsx",
+          "previousSha256": "a57049d7c33cfb80a0e31747d7a089b73df305e04b816a4cf085836a1ad8f61f",
+          "sha256": "700eb1880c80be4e2069304d2fa981eceb81b4fda73dd4663cc48504d44c8a5b"
+        },
+        {
+          "path": "src/features/stats/ui/Scoreboard.tsx",
+          "previousSha256": null,
+          "sha256": "92b551f4a91aadaf5e2c826d5fd916178e6f271fe240dd841854ea610ad7a91c",
+          "note": "New supporting source pin for separately reviewed metric inspection callback helper."
+        }
+      ],
+      "uiConclusion": "Explicit nullable checks preserve declared behavior; row currency is non-null by the server record contract, so impossible fallback removal does not change valid displays. bindMetricInspection preserves the same four metric/callback bindings while reducing component complexity. Preference pending query/result/retry gates and focus return remain intact.",
+      "validation": "No tests, typecheck, lint, build, database, browser or other heavy jobs executed by this reviewer.",
+      "result": "No actionable flaw found in the narrow lint amendment; exact bindings may be maintained without broad acceptance."
+    }
+  ]
+}

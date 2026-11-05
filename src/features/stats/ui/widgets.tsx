@@ -37,13 +37,17 @@ export function DealPerformanceWidget({
     <Panel title={S.widgetDealPerformance} isEmpty={false} emptyText="">
       {/* Both numeric columns are their own grid track, so counts and money each line up on a
           single right edge instead of floating wherever justify-between put them. */}
+      <p className="mb-4 text-xs leading-relaxed text-muted-foreground">{S.pipelineExplanation}</p>
       {rows.map(([label, b]) => (
-        <div key={label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-4 py-1">
+        <div
+          key={label}
+          className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-3 border-b py-3 text-sm last:border-0 sm:gap-4"
+        >
           <span className="truncate">{label}</span>
           <span className="min-w-8 text-end tabular-nums text-muted-foreground">
             {format.number(b.count)}
           </span>
-          <span className="min-w-24 text-end font-medium tabular-nums text-foreground">
+          <span className="break-all text-end font-medium tabular-nums text-foreground">
             {money(b.value, currency, preferences)}
           </span>
         </div>
@@ -81,14 +85,19 @@ export function FunnelWidget({
   return (
     <Panel title={S.widgetFunnelConversion} isEmpty={data.length === 0} emptyText={S.emptyFunnel}>
       {data.length > 0 && (
-        <p className="mb-2 text-xs text-muted-foreground">{funnelBasis(ownerScope, S)}</p>
+        <>
+          <p className="mb-2 text-xs text-muted-foreground">{funnelBasis(ownerScope, S)}</p>
+          <p className="mb-4 text-pretty text-xs leading-relaxed text-muted-foreground">
+            {S.funnelLegacyNotice}
+          </p>
+        </>
       )}
-      <div className="space-y-2">
+      <div className="space-y-5">
         {data.map((s) => (
           <div key={s.stageId}>
-            <div className="mb-0.5 flex items-center justify-between text-sm">
-              <span className="truncate">{s.name}</span>
-              <span className="tabular-nums text-muted-foreground">
+            <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+              <span className="min-w-0 break-words">{s.name}</span>
+              <span className="shrink-0 tabular-nums text-muted-foreground">
                 {format.number(s.reached)} · {S._extra.percent(Math.round(s.conversion * 100))}
               </span>
             </div>
@@ -112,16 +121,26 @@ export function ActivitiesWidget({ data }: { data: ActivityCounters }) {
 
   return (
     <Panel title={S.widgetActivities} isEmpty={false} emptyText="">
-      <p className="tabular-nums">
-        {S.completed} {format.number(data.completed)} / {S.scheduled}{" "}
-        {format.number(data.scheduled)}
-        {data.undated > 0 && (
-          <span className="text-muted-foreground">
-            {" "}
-            ({S.undated} {format.number(data.undated)})
-          </span>
-        )}
-      </p>
+      <p className="mb-5 text-xs leading-relaxed text-muted-foreground">{S.activityExplanation}</p>
+      <dl className="grid gap-3 sm:grid-cols-3">
+        {[
+          [S.completed, data.completed],
+          [S.scheduled, data.scheduled],
+          [S.activityAdded, data.added],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-xl bg-muted/40 p-4">
+            <dt className="text-xs text-muted-foreground">{label}</dt>
+            <dd className="mt-2 text-2xl font-semibold tabular-nums">
+              {format.number(Number(value))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {data.undated > 0 && (
+        <p className="mt-4 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
+          {S.undated} {format.number(data.undated)}
+        </p>
+      )}
     </Panel>
   );
 }
@@ -134,14 +153,13 @@ export function StageSumsWidget({ data, currency }: { data: StageSum[]; currency
   const max = Math.max(1, ...data.map((s) => Number(s.total)));
   return (
     <Panel title={S.widgetStageSums} isEmpty={data.length === 0} emptyText={S.emptyStageSums}>
-      <div className="space-y-2">
+      <p className="mb-4 text-xs leading-relaxed text-muted-foreground">{S.snapshotNotice}</p>
+      <div className="space-y-5">
         {data.map((s) => (
           <div key={s.stageId}>
-            <div className="mb-0.5 flex items-center justify-between text-sm">
-              <span className="truncate">{s.name}</span>
-              <span className="tabular-nums text-muted-foreground">
-                {money(s.total, currency, preferences)}
-              </span>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span className="min-w-0 break-words">{s.name}</span>
+              <span className="tabular-nums">{money(s.total, currency, preferences)}</span>
             </div>
             <Bar label={s.name} pct={(Number(s.total) / max) * 100} />
           </div>

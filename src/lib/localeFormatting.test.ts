@@ -1,7 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { formatDateOnly, formatDateTime, formatNumber } from "./localeFormatting";
+import {
+  formatDateOnly,
+  formatDateTime,
+  formatNumber,
+  localeTagForFormatting,
+} from "./localeFormatting";
 
 describe("locale-aware formatting", () => {
+  it("uses the selected country for formats without changing the interface language", () => {
+    const preferences = { locale: "en", country: "DE" } as const;
+    expect(localeTagForFormatting(preferences)).toBe("en-DE");
+    expect(formatNumber(1234.5, preferences)).toBe("1.234,5");
+    expect(formatDateOnly("2026-03-21", preferences)).toBe("21. Mar 2026");
+    expect(formatDateOnly("2026-03-21", { ...preferences, country: "US" })).toBe("Mar 21, 2026");
+  });
+
+  it("keeps explicit calendar and digits when the country differs from the interface language", () => {
+    const preferences = {
+      locale: "fa",
+      country: "DE",
+      calendar: "persian",
+      numberingSystem: "latn",
+    } as const;
+    expect(localeTagForFormatting(preferences)).toBe("fa-DE-u-nu-latn");
+    expect(formatDateOnly("2026-03-21", preferences)).toContain("1405");
+    expect(formatNumber(1234.5, preferences)).toBe("1,234.5");
+  });
+
   it("formats Iranian civil dates without shifting them into the viewer's time zone", () => {
     const preferences = {
       locale: "fa",

@@ -26,12 +26,13 @@ function Amounts() {
 it("selects toman in Farsi and keeps that independent choice when switching to German", async () => {
   const user = userEvent.setup();
   render(
-    <LocaleProvider locale="fa">
+    <LocaleProvider locale="fa" country="IR">
       <LanguageSettings />
       <Amounts />
       <input aria-label="Draft" defaultValue="یادداشت ناتمام" />
     </LocaleProvider>,
   );
+  await user.click(screen.getByRole("button", { name: "سفارشی‌سازی قالب‌ها" }));
   await user.click(screen.getByRole("combobox", { name: "واحد نمایش مبلغ‌های ریالی" }));
   await user.click(screen.getByRole("option", { name: "تومان (۱۰ ریال)" }));
   expect(screen.getByTestId("irr").textContent).toBe("۱۲۳٬۴۵۶ تومان");
@@ -52,11 +53,12 @@ it("restores the saved rial display when persisting the new unit fails", async (
   save.mockResolvedValueOnce({ ok: false });
   const user = userEvent.setup();
   render(
-    <LocaleProvider locale="de">
+    <LocaleProvider locale="de" country="IR">
       <LanguageSettings />
       <Amounts />
     </LocaleProvider>,
   );
+  await user.click(screen.getByRole("button", { name: "Formate anpassen" }));
   await user.click(screen.getByRole("combobox", { name: "Iranische Beträge anzeigen in" }));
   await user.click(screen.getByRole("option", { name: "Toman (10 Rial)" }));
   expect(await screen.findByRole("alert")).toBeInTheDocument();

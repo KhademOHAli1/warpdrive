@@ -80,6 +80,12 @@ describe("goalInput", () => {
     expect(goalInput.safeParse({ ...base, target: "0" }).success).toBe(false);
   });
 
+  test("accepts a zero lost-deal ceiling", () => {
+    expect(
+      goalInput.safeParse({ ...base, action: "lost", metric: "count", target: "0" }).success,
+    ).toBe(true);
+  });
+
   test("rejects a negative target", () => {
     expect(goalInput.safeParse({ ...base, target: "-5" }).success).toBe(false);
   });

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-11-05",
+  "reviewer": {
+    "kind": "Independent Codex team source review",
+    "agent": "/root/history_sources",
+    "limitation": "A collaborating agent reviewed the source independently of its author. This is not authenticated external review, human acceptance or installation evidence."
+  },
+  "scope": "Pure, strict analytics payload contracts and the narrow derived/sourceReview privacy inventory boundaries. No ingestion, persistence, financial source, experiment result or analytics model is qualified by this review.",
+  "reviewState": "Narrow source and lint-amendment review complete; no remaining actionable finding at the pinned source bytes.",
+  "source": {
+    "path": "src/features/stats/analyticsInputContracts.ts",
+    "sha256": "12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
+    "operation": "Pure Zod schema construction/refinement with Temporal instant comparison; caller-supplied values are validated in memory.",
+    "importedDependencies": [
+      "@js-temporal/polyfill Temporal",
+      "zod",
+      "shared currencyCode and moneyAmount schemas",
+      "shared isTimeZone helper"
+    ]
+  },
+  "supportingTestSource": {
+    "path": "src/features/stats/analyticsInputContracts.test.ts",
+    "sha256": "e352a7589e02e3feccc0c30ad417c89dd19657334bd2e712b6399c726a6b78fa",
+    "evidence": "Test definitions inspected as source only. This reviewer ran no tests; root retains earlier and subsequent actual execution evidence separately."
+  },
+  "inventoryBindings": [
+    {
+      "id": "derived:src/features/stats/analyticsInputContracts.ts",
+      "purpose": "In-memory derived payload validation metadata; no runtime source, retained store or lifecycle adapter is created."
+    },
+    {
+      "id": "sourceReview:src/features/stats/analyticsInputContracts.ts#12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
+      "purpose": "Exact source provenance binding for the independently reviewed validator."
+    }
+  ],
+  "classificationRecommendation": {
+    "classification": "Existing infrastructure source-inventory class only",
+    "inheritance": "Potential source identifiers, relationship references, financial values and experiment metadata remain untrusted input. A declared producer or entity ID is not authenticated authority, a verified CRM link or the identified privacy subject.",
+    "capabilities": "Keep all existing disclosure/export/rectification/restriction/erasure/retention adapter capabilities unsupported. Do not activate a lifecycle or privacy operation from schema parsing.",
+    "newSqlOrProviderBoundary": false,
+    "registryMutationPerformedByReviewer": false,
+    "permittedMaintenance": "Root may add only the reviewed derived identifier and exact sourceReview digest. No broad automatic source acceptance, capabilities expansion, retention policy or source activation follows."
+  },
+  "semanticReview": [
+    {
+      "area": "Strict envelope and bounds",
+      "conclusion": "Contract version is literal 1; batch and each event family reject unknown keys. Batch count is 1–500; source identifiers have bounded lengths and reject blank input; correction reason is bounded and nonblank. No free-form payload or executable expression field is introduced."
+    },
+    {
+      "area": "Producer namespace and duplicate keys",
+      "conclusion": "Batch event identities are keyed by serialized [producer,eventId]. Source-record revisions are separately keyed by [producer,sourceRecordId,revision]. Equal local event IDs from different producers do not collide. Persistent cross-batch uniqueness is explicitly outstanding."
+    },
+    {
+      "area": "Corrections",
+      "conclusion": "Initial revisions cannot supersede; later revisions require a distinct event at an earlier revision and nonblank reason. A correction target present in the batch must match producer/source record/event family/declared prior revision. Originals are preserved in the input batch. Missing cross-batch targets, chain freshness and authenticated source ownership remain adapter checks."
+    },
+    {
+      "area": "Identity and funnel interpretation",
+      "conclusion": "Person/account/opportunity/purchase IDs remain separate, producer-scoped source references. Recorded touchpoint identity requires at least one explicit ID; unresolved identity cannot carry claimed recorded links. The validator performs no CRM lookup, fuzzy merge, customer deduplication or count/value aggregation."
+    },
+    {
+      "area": "Money and physical quantities",
+      "conclusion": "Money accepts nonnegative bounded decimal strings through the existing 14-integer/4-fractional-digit storage constraint and rejects JSON numeric monetary amounts. Currency and currency-major unit are explicit. It performs no FX conversion or equivalence between order/purchase/invoice/payment/cost/profit. Commerce quantity is a safe nonnegative integer; delivery quantity is finite/nonnegative with hours/units declared. Actual signed-source conventions, allocation, recognition and source mapping still require qualified adapters."
+    },
+    {
+      "area": "Calendars and precision",
+      "conclusion": "Offset instants are checked by Temporal rather than JavaScript Date, retaining submillisecond ordering up to nanoseconds. Instant/civil-day windows are distinct and require a later exclusive end. Storage declares Gregorian ISO dates while calendar provenance can be Gregorian/Persian; an adapter must still verify actual calendar/timezone period boundaries. Declared timezone uses the existing shared validator and does not select a SQL report scope here."
+    },
+    {
+      "area": "Experiment and geo evidence",
+      "conclusion": "Assignment method explicitly distinguishes randomized/observational/unknown; exposure references an assignment event and unit without claiming authenticated linkage. Geo unit counts are bounded safe nonnegative integers; exposed/converted units cannot exceed eligible units. Control conversions are correctly permitted without exposure. Assignment/exposure linkage, eligibility, randomization, unit deduplication, contamination, causal analysis and uncertainty are not implemented by these schemas."
+    },
+    {
+      "area": "Runtime and privacy effects",
+      "conclusion": "No database client, HTTP transport, provider SDK, file/object store, ingestion route, credential, queue, marketing send, campaign mutation or persistent cache is used. The schema advertises unqualified payload validation only. No existing Goals/KPI authoring source is touched."
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "id": "IC1",
+      "topic": "Producer-scoped event and correction keys",
+      "originalIssue": "The first draft keyed event lookup by eventId alone, falsely colliding independent producer namespaces and misresolving same-batch supersedes.",
+      "resolution": "Final source uses sourceEventKey(producer,eventId) for both duplicate detection and correction lookup; source namespace meaning is explicit."
+    },
+    {
+      "id": "IC2",
+      "topic": "Nonblank correction reasons",
+      "originalIssue": "min(1) alone admitted whitespace-only correction reasons.",
+      "resolution": "Final source also requires a non-whitespace character while preserving original supplied text."
+    }
+  ],
+  "openFindings": [],
+  "remainingQualification": [
+    "Authenticated/authorized producer registration and source-purpose governance; source retention/suppression/deletion obligations remain unqualified.",
+    "Persisted originals and event/source-revision uniqueness, correction chains and cross-batch reconciliation; actual database migrations/intake/API/import runtime are not implemented here.",
+    "Verified account/contact/opportunity/purchase mappings, assignment/exposure reference consistency and privacy-safe report/export/cache projections.",
+    "Real campaign, commerce, billing/contract, delivery/time, survey/ticket and experiment feeds, source-specific sign/unit/period semantics and real-provider qualification.",
+    "Any experiment causal result, attribution estimate, customer retention/profitability, calibrated forecast, predictive scoring, survival or MMM remains separate implementation/evaluation scope.",
+    "No test, heavy type/lint/build/database/browser, performance, hosted CI, integration/main, human journey, installation, release or deployment acceptance is asserted by this source review. Root preserves actual execution evidence separately; local heavy validation remains queued under the user instruction."
+  ],
+  "lintAmendments": [
+    {
+      "id": "hosted-lint-amendment-1",
+      "reviewDate": "2026-11-05",
+      "candidateParent": "c63f3f25dde44838358e67114ab78eabcb0e77da",
+      "previousSource": {
+        "path": "src/features/stats/analyticsInputContracts.ts",
+        "sha256": "34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
+        "operation": "Pure Zod schema construction/refinement with Temporal instant comparison; caller-supplied values are validated in memory.",
+        "importedDependencies": [
+          "@js-temporal/polyfill Temporal",
+          "zod",
+          "shared currencyCode and moneyAmount schemas",
+          "shared isTimeZone helper"
+        ]
+      },
+      "sourceSha256": "12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
+      "previousSourceReviewId": "sourceReview:src/features/stats/analyticsInputContracts.ts#34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
+      "reason": "Replace Object.values(identity).some(id => id !== undefined) with some(Boolean) for configured lint.",
+      "semanticReview": "Validated identity values are nonempty strings or undefined. For those values Boolean(id) and id !== undefined are equivalent; invalid empty strings are already rejected by sourceId. Namespace/correction/window/money/experiment schemas and unqualified no-ingest boundary are unchanged.",
+      "validation": "Independent source review only; no test/lint/type/build/native/browser or other heavy job run by reviewer. Root preserves actual hosted/local evidence separately.",
+      "result": "No actionable flaw found at the pinned amended validator bytes."
+    }
+  ]
+}

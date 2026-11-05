@@ -31,6 +31,11 @@ describe("goalChartPoints", () => {
     expect(points.map((p) => p.target)).toEqual([2, 4, 6, 8]);
   });
 
+  it("draws an upper limit as a constant threshold", () => {
+    expect(goalChartPoints(PERIOD, [], "5", "none").map((p) => p.target)).toEqual([5, 5, 5, 5]);
+    expect(goalChartPoints(PERIOD, [], "0", "none").every((p) => p.target === 0)).toBe(true);
+  });
+
   it("puts the target line where pace measures it, so a line above it is behind", () => {
     const points = goalChartPoints(PERIOD, [{ day: "2026-03-01", actual: "2" }], "8");
     expect(points[0]?.target).toBe(2);

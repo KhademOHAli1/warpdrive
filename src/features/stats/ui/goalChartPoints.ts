@@ -11,6 +11,7 @@ export function goalChartPoints(
   period: GoalPeriod,
   series: GoalSeriesPoint[],
   target: string,
+  pacing: "linear" | "none" = "linear",
 ): GoalChartPoint[] {
   const days = periodDays(period);
   const booked = new Map(series.map((p) => [p.day, Number(p.actual)]));
@@ -18,6 +19,6 @@ export function goalChartPoints(
   return days.map((day, i) => ({
     day,
     actual: booked.get(day) ?? null,
-    target: (total * (i + 1)) / days.length,
+    target: pacing === "none" ? total : (total * (i + 1)) / days.length,
   }));
 }

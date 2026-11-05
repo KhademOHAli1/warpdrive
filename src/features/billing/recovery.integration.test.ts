@@ -101,6 +101,7 @@ type BillingGateway = ConstructorParameters<typeof BillingService>[1];
 function gateway(input: {
   customer: StripeCustomer;
   subscriptions?: StripeSubscription[];
+  retrievedSubscriptions?: StripeSubscription[];
   checkouts?: StripeCheckout[];
   replacementCustomers?: StripeCustomer[];
 }) {
@@ -109,6 +110,14 @@ function gateway(input: {
   const api = {
     validatePrices: vi.fn().mockResolvedValue(undefined),
     retrieveCustomer: vi.fn().mockResolvedValue(input.customer),
+    retrieveSubscription: vi.fn((id: string) => {
+      const found = (input.retrievedSubscriptions ?? input.subscriptions ?? []).find(
+        (item) => item.id === id,
+      );
+      return found === undefined
+        ? Promise.reject(new Error(`missing synthetic subscription ${id}`))
+        : Promise.resolve(found);
+    }),
     listSubscriptions: vi.fn().mockResolvedValue({
       data: input.subscriptions ?? [],
       has_more: false,
@@ -130,6 +139,80 @@ function gateway(input: {
     createCustomer,
   } as unknown as BillingGateway;
   return { api, createCheckout, createCustomer };
+}
+
+async function expectExpiredSubscriptionOwnershipRejected(
+  mutate: (sub: StripeSubscription) => void,
+) {
+  const expiredCheckoutId = "cs_expired_foreign";
+  const oldOperation: BillingOperation = {
+    id: "88888888-8888-4888-8888-888888888888",
+    accountId,
+    kind: "checkout",
+    requestKey: "old-checkout",
+    fingerprint: "o".repeat(64),
+    startedAt: new Date(),
+    resourceId: expiredCheckoutId,
+  };
+  await seedAccount({
+    id: accountId,
+    livemode: false,
+    customerId: "cus_synthetic",
+    checkoutOperationId: oldOperation.id,
+    seatOperationId: null,
+    subscription: null,
+    syncState: "never",
+    syncedAt: null,
+  });
+  await seedOperation(oldOperation);
+  const foreign = subscription();
+  foreign.status = "canceled";
+  mutate(foreign);
+  const expired: StripeCheckout = {
+    ...checkout(oldOperation.id, foreign.id),
+    id: expiredCheckoutId,
+    status: "expired",
+    subscription: foreign.id,
+  };
+  const provider = gateway({
+    customer: customer("cus_synthetic"),
+    subscriptions: [],
+    retrievedSubscriptions: [foreign],
+    checkouts: [expired],
+  });
+  provider.createCheckout.mockResolvedValue({
+    id: "cs_new_purchase",
+    object: "checkout.session",
+    livemode: false,
+    customer: "cus_synthetic",
+    subscription: null,
+    client_reference_id: accountId,
+    mode: "subscription",
+    status: "open",
+    payment_status: "unpaid",
+    url: "https://checkout.stripe.com/c/new-purchase",
+    expires_at: 2_000_000_000,
+    metadata: { warpdrive_account_id: accountId },
+  });
+  const store = new DrizzleBillingStore(h.db, signal);
+  const service = new BillingService(store, provider.api, config);
+
+  await expect(service.checkout(checkoutInput, actor)).rejects.toMatchObject({
+    code: "reconciliation_required",
+  });
+  expect(provider.createCheckout).not.toHaveBeenCalled();
+  expect(await store.readAccount(false)).toMatchObject({
+    id: accountId,
+    checkoutOperationId: oldOperation.id,
+  });
+  const row = await h.pool.query<{ request_key: string; resource_id: string | null }>(
+    "SELECT request_key, resource_id FROM billing_operations WHERE id = $1",
+    [oldOperation.id],
+  );
+  expect(row.rows[0]).toEqual({
+    request_key: oldOperation.requestKey,
+    resource_id: oldOperation.resourceId,
+  });
 }
 
 describe("billing recovery against PostgreSQL", () => {
@@ -259,5 +342,17 @@ describe("billing recovery against PostgreSQL", () => {
       [operation.id],
     );
     expect(row.rows[0]?.resource_id).toBe(replacement.id);
+  });
+
+  it("rejects an expired checkout carrying a foreign subscription before a new purchase", async () => {
+    await expectExpiredSubscriptionOwnershipRejected((foreign) => {
+      foreign.customer = "cus_other_workspace";
+    });
+  });
+
+  it("rejects an expired checkout carrying a wrong-mode subscription before a new purchase", async () => {
+    await expectExpiredSubscriptionOwnershipRejected((foreign) => {
+      foreign.livemode = true;
+    });
   });
 });

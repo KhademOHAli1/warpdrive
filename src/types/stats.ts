@@ -29,8 +29,9 @@ export interface FunnelStage {
   conversion: number;
 }
 
-// completed windows on done_at, added on created_at, scheduled on due_at. undated counts
-// open activities with no due date, which no window can contain and which must not vanish.
+// completed windows on done_at, added on created_at, scheduled on the canonical due day.
+// All-day dates stay civil; timed/legacy instants use the viewer zone. Undated counts open
+// activities with neither a canonical civil date nor a due instant.
 export interface ActivityCounters {
   completed: number;
   added: number;
@@ -92,6 +93,8 @@ export type OwnerScope =
 export type OwnerIdFilter = { everyone: true } | { everyone: false; ids: string[] };
 
 export interface DashboardFilters {
+  // Resolved from the authenticated viewer's regional preferences; direct helpers default UTC.
+  timeZone?: string;
   currency?: string;
   pipelineId: string | null;
   owners: OwnerIdFilter;

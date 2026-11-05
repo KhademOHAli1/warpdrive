@@ -3,6 +3,13 @@ import { createAppTranslator } from "./catalog";
 import { mergeMessages } from "./mergeMessages";
 
 describe("message catalogs", () => {
+  it("formats translated numbers for the chosen country while keeping English text", () => {
+    const germanRegion = createAppTranslator("en", "preferences", "latn", "DE");
+    const americanRegion = createAppTranslator("en", "preferences", "latn", "US");
+    expect(germanRegion("numberPreview", { value: 1234.5 })).toBe("Preview: 1.234,5");
+    expect(americanRegion("numberPreview", { value: 1234.5 })).toBe("Preview: 1,234.5");
+  });
+
   it("falls back to English for missing or empty translations without losing valid translations", () => {
     expect(
       mergeMessages(
