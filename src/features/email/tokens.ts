@@ -34,7 +34,11 @@ async function finishRefresh(
   accountId: string,
   snapshot: TokenSnapshot,
   refreshed: Result<RefreshedToken, AppError>,
-  { signal, eligibleStatus }: { signal: AbortSignal; eligibleStatus: SQL },
+  {
+    signal,
+    eligibleStatus,
+    recordCheck,
+  }: { signal: AbortSignal; eligibleStatus: SQL; recordCheck: boolean },
 ): Promise<Result<number, AppError>> {
   return db.transaction(async (tx) => {
     // A short commit phase fences HTTP work against suspension and reconnect.
@@ -46,15 +50,21 @@ async function finishRefresh(
     ).rows[0] as { is_active: boolean; invited_at: Date | null } | undefined;
     signal.throwIfAborted();
     if (owner === undefined || !owner.is_active || owner.invited_at !== null) return unavailable();
+    const currentGrant = sql`a.id=${accountId} AND a.user_id=${snapshot.user_id} AND a.provider='gmail'
+        AND ${eligibleStatus} AND NOT a.paused AND a.connection_generation=${snapshot.connection_generation}
+        AND a.credential_version=${snapshot.credential_version} AND a.refresh_token_enc=${snapshot.refresh_token_enc}`;
+    const checkedAt = sql`last_checked_at=greatest(a.last_checked_at, clock_timestamp())`;
+    const checkUpdate = recordCheck ? sql`, ${checkedAt}` : sql``;
     if (!refreshed.ok) {
       if (refreshed.error.id === "E_GMAIL_002")
         await tx.execute(sql`
         UPDATE email_accounts AS a SET status='disconnected',last_error_id='E_GMAIL_002',
           refresh_token_enc=NULL,connection_generation=connection_generation+1,credential_version=credential_version+1,updated_at=now()
-        WHERE id=${accountId} AND user_id=${snapshot.user_id} AND provider='gmail'
-          AND ${eligibleStatus} AND NOT paused AND connection_generation=${snapshot.connection_generation}
-          AND credential_version=${snapshot.credential_version} AND refresh_token_enc=${snapshot.refresh_token_enc}
+          ${checkUpdate}
+        WHERE ${currentGrant}
       `);
+      else if (recordCheck)
+        await tx.execute(sql`UPDATE email_accounts AS a SET ${checkedAt} WHERE ${currentGrant}`);
       signal.throwIfAborted();
       return refreshed;
     }
@@ -64,9 +74,8 @@ async function finishRefresh(
       await tx.execute(sql`
       UPDATE email_accounts AS a SET refresh_token_enc=${token},
         credential_version=credential_version+${rotated === undefined ? 0 : 1},updated_at=now()
-      WHERE id=${accountId} AND user_id=${snapshot.user_id} AND provider='gmail'
-        AND ${eligibleStatus} AND NOT paused AND connection_generation=${snapshot.connection_generation}
-        AND credential_version=${snapshot.credential_version} AND refresh_token_enc=${snapshot.refresh_token_enc}
+        ${checkUpdate}
+      WHERE ${currentGrant}
       RETURNING credential_version
     `)
     ).rows[0] as { credential_version: number } | undefined;
@@ -91,10 +100,11 @@ export async function ensureAccessToken(
 ): Promise<Result<AccessToken, AppError>> {
   const { signal } = args;
   signal.throwIfAborted();
-  const eligibleStatus =
-    args.syncGeneration === undefined
-      ? sql`a.status='connected'`
-      : sql`a.status IN ('connected','error')`;
+  // A background sync refresh is a provider check even when it cannot move the sync cursor.
+  const recordCheck = args.syncGeneration !== undefined;
+  const eligibleStatus = recordCheck
+    ? sql`a.status IN ('connected','error')`
+    : sql`a.status='connected'`;
   const generationCheck =
     args.syncGeneration === undefined
       ? sql``
@@ -125,12 +135,15 @@ export async function ensureAccessToken(
   } catch (error) {
     signal.throwIfAborted();
     if (error instanceof Error && error.name === "AbortError") throw error;
-    return err(new AppError("E_GMAIL_001", "gmail refresh unavailable", {}));
+    const unavailableRefresh = err(new AppError("E_GMAIL_001", "gmail refresh unavailable", {}));
+    if (!recordCheck) return unavailableRefresh;
+    refreshed = unavailableRefresh;
   }
   signal.throwIfAborted();
   const committed = await finishRefresh(db, args.accountId, snapshot, refreshed, {
     signal,
     eligibleStatus,
+    recordCheck,
   });
   if (!committed.ok) return committed;
   if (!refreshed.ok) return refreshed;

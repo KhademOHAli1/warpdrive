@@ -22,6 +22,7 @@ interface MailboxRow {
   paused: boolean;
   is_default: boolean;
   last_sync_at: Date | string | null;
+  last_checked_at: Date | string | null;
   capabilities: unknown;
   progress: unknown;
   history_days: number;
@@ -41,7 +42,7 @@ export async function listActorMailboxes(
   const rows = (
     await db.execute(sql`
     SELECT a.id, a.email_address, a.provider, a.display_name, a.status, a.paused, a.is_default,
-      a.last_sync_at, a.capabilities, a.history_days, a.folder_paths, a.connection_settings,
+      a.last_sync_at, a.last_checked_at, a.capabilities, a.history_days, a.folder_paths, a.connection_settings,
       r.status AS revocation_status, a.last_error_id, f.last_error_kind AS folder_error_kind,p.progress
     FROM email_accounts a LEFT JOIN auth_integration_revocations r
       ON r.id::text=a.connection_settings->>'remoteRevocationId' AND r.user_id=a.user_id AND r.provider='google'
@@ -74,6 +75,12 @@ export async function listActorMailboxes(
     errorCode: publicMailboxError(row.last_error_id, row.folder_error_kind, row.status),
     isDefault: row.is_default,
     lastSyncAtIso: row.last_sync_at === null ? null : new Date(row.last_sync_at).toISOString(),
+    ...(row.provider === "gmail"
+      ? {
+          lastCheckedAtIso:
+            row.last_checked_at === null ? null : new Date(row.last_checked_at).toISOString(),
+        }
+      : {}),
     capabilities: publicMailboxCapabilities(row.capabilities),
     ...(row.provider === "imap_smtp" ? { syncProgress: publicMailboxProgress(row.progress) } : {}),
     historyDays: row.history_days,

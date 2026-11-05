@@ -49,6 +49,7 @@ it("retries expired history coverage with the retained Gmail grant", async () =>
         await db.execute(sql`
           SELECT status, last_history_id, last_error_id,
             last_sync_at > ${lastSyncAt.toISOString()}::timestamptz AS sync_advanced,
+            last_checked_at IS NOT NULL AS checked,
             refresh_token_enc IS NOT NULL AS grant_retained
           FROM email_accounts WHERE id=${accountId}
         `)
@@ -64,6 +65,7 @@ it("retries expired history coverage with the retained Gmail grant", async () =>
       last_history_id: "100",
       last_error_id: "E_GMAIL_001",
       sync_advanced: false,
+      checked: true,
       grant_retained: true,
     });
     expect(await countMessages(db, accountId)).toBe(0);
@@ -83,6 +85,7 @@ it("retries expired history coverage with the retained Gmail grant", async () =>
       last_history_id: "999",
       last_error_id: null,
       sync_advanced: true,
+      checked: true,
       grant_retained: true,
     });
     expect(await countMessages(db, accountId)).toBe(1);
