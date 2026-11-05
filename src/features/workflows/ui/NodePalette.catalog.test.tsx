@@ -57,7 +57,12 @@ it.each(paletteLocales)(
     const test = fixture(locale);
     render(test.view());
     expect(screen.getByRole("dialog", { name: copy.selectAction })).toBeVisible();
-    for (const category of [copy.nodeCategoryData, copy.nodeCategoryFlow, copy.nodeCategoryCore])
+    for (const category of [
+      copy.nodeCategoryData,
+      copy.nodeCategoryFlow,
+      copy.nodeCategoryCore,
+      copy.nodeCategoryHumanInput,
+    ])
       expect(screen.getByRole("heading", { name: category })).toBeVisible();
     for (const label of actionTitles(copy)) expect(entry(label)).toBeVisible();
     expect(entry(copy.read)).toHaveAccessibleDescription(

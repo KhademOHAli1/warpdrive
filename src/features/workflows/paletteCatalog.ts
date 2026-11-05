@@ -42,6 +42,7 @@ interface CatalogDescriptor {
     | "pick-record"
     | "draft-email"
     | "create-calendar-event"
+    | "human-form"
     | "ordered-condition"
     | "scalar-condition"
     | "delay-schedule"
@@ -159,6 +160,16 @@ export const paletteCatalog = [
     descriptionKey: "createCalendarEventHint",
     profile: "create-calendar-event",
     input: "optional",
+  },
+  {
+    ...insertable,
+    type: "human.form",
+    category: "logic",
+    categoryKey: "paletteCategoryLogic",
+    labelKey: "humanForm",
+    descriptionKey: "humanFormHint",
+    profile: "human-form",
+    input: "none",
   },
   {
     ...insertable,

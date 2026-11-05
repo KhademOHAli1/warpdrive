@@ -87,7 +87,7 @@ export function mappingSourceView(
   const order = orderedWorkflowNodes(model.definition);
   return {
     name: displayNodeName(node, locale),
-    field: fields[source.field] ?? "",
+    field: source.label ?? fields[source.field] ?? "",
     number: formatNumber(order.findIndex((item) => item.id === node.id) + 1),
     kind: source.contract.kind,
   };

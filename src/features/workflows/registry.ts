@@ -19,6 +19,7 @@ import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
 import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
+import { workflowHumanFormConfig } from "./workflowHumanFormContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
 import { recordPickConfig, recordSearchConfig } from "./workflowRecordQueryContract";
@@ -203,6 +204,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputs: coarseMappingOutputs("calendar.create"),
     outputContracts: mappingOutputContracts("calendar.create"),
     effect: "database",
+  },
+  "human.form": {
+    configuration: configurationProfiles["human.form"],
+    config: workflowHumanFormConfig,
+    inputs: {},
+    outputs: {},
+    outputContracts: {},
+    effect: "wait",
   },
   filter: {
     configuration: configurationProfiles.filter,

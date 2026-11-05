@@ -25,6 +25,7 @@ const categoryOrder = [
   "nodeCategoryData",
   "nodeCategoryFlow",
   "nodeCategoryCore",
+  "nodeCategoryHumanInput",
 ] as const;
 
 function PaletteRow({

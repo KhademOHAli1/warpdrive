@@ -27,6 +27,7 @@ it("offers localized action groups in the inline panel and excludes trigger choi
     "Daten",
     "Ablauf",
     "Kern",
+    "Manuelle Eingabe",
   ]);
   expect(screen.queryByRole("textbox")).toBeNull();
   expect(screen.queryByRole("button", { name: /Manueller/ })).toBeNull();

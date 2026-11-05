@@ -18,6 +18,7 @@ export interface LiveRunEffects {
     readonly recordPick?: number;
     readonly emailDraft?: number;
     readonly calendarEvent?: number;
+    readonly humanForm?: number;
     readonly delay: number;
   };
 }
@@ -99,6 +100,7 @@ const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["count
   "record.pick": "recordPick",
   "email.draft": "emailDraft",
   "calendar.create": "calendarEvent",
+  "human.form": "humanForm",
   delay: "delay",
 };
 

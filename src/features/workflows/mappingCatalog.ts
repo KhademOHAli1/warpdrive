@@ -41,6 +41,7 @@ import {
 } from "./schemas";
 import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
 import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
+import { workflowHumanFormOutputDescriptors } from "./workflowHumanFormContract";
 import {
   recordCreateEntitySchema,
   recordCreateFieldTarget,
@@ -69,6 +70,12 @@ function qualifiedSource(node: WorkflowNode): boolean {
 
 function outputsFor(node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
+  if (node.type === "human.form")
+    return workflowHumanFormOutputDescriptors(node.config).map((output) => ({
+      ...output,
+      nodeId: node.id,
+      field: "formAnswer" as const,
+    }));
   const needsConfiguration = !actionRegistry[node.type].config.safeParse(node.config).success;
   const entity =
     node.type === "record.create" ||
@@ -344,6 +351,7 @@ function extendedMappingTarget(
       );
     }
     case "activity.create":
+    case "human.form":
     case "condition":
     case "delay":
     case "filter":

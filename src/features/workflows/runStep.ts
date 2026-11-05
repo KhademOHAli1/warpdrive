@@ -10,6 +10,7 @@ import { executableNode } from "./readiness";
 import { executeRunNode } from "./runActions";
 import type { StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
+import { advanceWorkflowHumanForm } from "./workflowHumanFormWait";
 
 type StepProgress =
   | { status: "waiting"; armedDeadline?: Date }
@@ -31,6 +32,7 @@ export async function advanceRunStep(
     validateNodeConfiguration(node, { definition }).status !== "valid"
   )
     return err(ERROR_IDS.WORKFLOW_INVALID);
+  if (node.type === "human.form") return advanceWorkflowHumanForm(db, run, now, signal);
   if (run.status === "waiting") {
     const deadline = run.resumeAt;
     if (node.type !== "delay" || deadline === null || !Number.isFinite(deadline.getTime()))

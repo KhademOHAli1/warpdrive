@@ -33,6 +33,7 @@ export type MappingFieldKey =
   | "value"
   | "currency"
   | "result"
+  | "formAnswer"
   | "deleted"
   | "firstId"
   | "totalCount"
@@ -57,6 +58,7 @@ export interface MappingOutput {
   path: readonly string[];
   contract: MappingValueContract;
   field: MappingFieldKey;
+  label?: string;
   needsConfiguration?: true;
 }
 

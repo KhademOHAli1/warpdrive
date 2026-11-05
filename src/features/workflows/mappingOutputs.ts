@@ -26,6 +26,7 @@ const contracts: Record<WorkflowNode["type"], OutputContracts> = {
   },
   "record.pick": { id: text },
   "email.draft": {},
+  "human.form": {},
   "calendar.create": { id: { kind: "entity", entity: "activity", nullable: false } },
   "activity.create": { id: { kind: "entity", entity: "activity", nullable: false } },
   condition: { result: { kind: "boolean", nullable: false } },

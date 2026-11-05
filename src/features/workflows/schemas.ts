@@ -4,6 +4,7 @@ import { configurationLimits } from "./configurationLimits";
 import { boundedDelayConfig } from "./delayConfig";
 import { boundedIfElseConfig, branchPortSchema } from "./ifElseBudget";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
+import { boundedWorkflowHumanFormConfig } from "./workflowHumanFormContract";
 import { boundedRecordLookupConfig } from "./workflowRecordQueryBounds";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
@@ -55,6 +56,7 @@ export const nodeTypes = [
   "record.pick",
   "email.draft",
   "calendar.create",
+  "human.form",
   "activity.create",
   "condition",
   "ifElse",
@@ -83,6 +85,14 @@ export const nodeSchema = z.strictObject({
     )
     .refine(boundedDelayConfig, "Delay settings exceed safe bounds")
     .refine(boundedRecordLookupConfig, "Record lookup settings exceed safe bounds")
+    .refine((raw) => {
+      if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return true;
+      const fields: unknown = Reflect.get(raw, "fields");
+      return (
+        !(Object.hasOwn(raw, "instructions") || Array.isArray(fields)) ||
+        boundedWorkflowHumanFormConfig(raw)
+      );
+    }, "Form settings exceed safe bounds")
     .pipe(z.record(z.string(), z.json())),
 });
 

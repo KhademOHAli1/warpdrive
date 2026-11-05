@@ -4,6 +4,7 @@ import { Check, Circle } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
@@ -28,6 +29,9 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
   const [reveal, setReveal] = useState<RevealNode>();
   const completed = new Set(detail.steps.map((step) => step.nodeId));
   const node = detail.definition.nodes.find((item) => item.id === selected);
+  const waitingForForm = detail.definition.nodes.some(
+    (item) => item.id === detail.nextNodeId && item.type === "human.form",
+  );
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3 px-5">
@@ -53,7 +57,10 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
       <p className="px-5 text-xs leading-5 text-muted-foreground">
         {t(detail.mode === "simulation" ? "simulationTraceHint" : "liveTraceHint")}
       </p>
-      {detail.status === "waiting" && (
+      {detail.status === "waiting" && waitingForForm && (
+        <p className="px-5 text-sm text-muted-foreground">{t("humanFormWaiting")}</p>
+      )}
+      {detail.status === "waiting" && !waitingForForm && (
         <p className="px-5 text-sm text-muted-foreground">
           <WaitTimestamp value={detail.resumeAt} label={t("scheduledResume")} />
           <span className="mt-1 block text-xs">{t("waitRecoveryHint")}</span>
@@ -61,7 +68,13 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
       )}
       {detail.status === "failed" && (
         <p role="alert" className="px-5 text-sm text-destructive">
-          {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>
+          {detail.errorId === ERROR_IDS.WORKFLOW_FORM_EXPIRED ? (
+            t("humanFormExpired")
+          ) : (
+            <>
+              {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>
+            </>
+          )}
         </p>
       )}
       {workflowId !== undefined && detail.recovery !== undefined && (

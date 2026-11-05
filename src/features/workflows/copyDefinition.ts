@@ -11,6 +11,7 @@ import {
   nodeSchema,
   type WorkflowDefinition,
 } from "./schemas";
+import { workflowHumanFormDraftConfig } from "./workflowHumanFormContract";
 import { recordCreateEntitySchema, recordCreateFields } from "./workflowRecordCreateContract";
 import { recordUpdateFields } from "./workflowRecordMutationContract";
 import { recordPickDraftConfig, recordSearchDraftConfig } from "./workflowRecordQueryContract";
@@ -93,6 +94,7 @@ const copyNode = z.discriminatedUnion("type", [
       })
       .partial(),
   }),
+  nodeSchema.extend({ type: z.literal("human.form"), config: workflowHumanFormDraftConfig }),
   nodeSchema.extend({
     type: z.literal("ifElse"),
     config: z.custom<WorkflowDefinition["nodes"][number]["config"]>(

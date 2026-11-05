@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -255,6 +256,7 @@ export function RunDialog({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [formRequiresLive, setFormRequiresLive] = useState(false);
   const [submission, setSubmission] = useState<Submission | null>(null);
   const submitted = useRef<Submission | null>(null);
   const inFlight = useRef(false);
@@ -285,7 +287,7 @@ export function RunDialog({
     read.publication,
     acknowledgement.acknowledged,
   );
-  const canSubmit = submission !== null || nextSubmission !== null;
+  const canSubmit = !formRequiresLive && (submission !== null || nextSubmission !== null);
   const displayedReview =
     submission === null ? (read.publication?.review ?? null) : submission.review;
   const counts = displayedReview?.effects.counts;
@@ -303,7 +305,8 @@ export function RunDialog({
     try {
       const result = await runWorkflowAction(command.command, readCsrfToken());
       if (!result.ok) {
-        setError(true);
+        if (result.error === ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE) setFormRequiresLive(true);
+        else setError(true);
         return;
       }
       completed.current = true;
@@ -361,6 +364,7 @@ export function RunDialog({
           {submission !== null && (
             <p className="text-sm text-muted-foreground">{t("testSubmissionFrozen")}</p>
           )}
+          {formRequiresLive && <p role="alert">{t("humanFormRequiresLive")}</p>}
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {t("testSubmissionError")}

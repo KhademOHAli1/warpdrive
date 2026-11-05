@@ -107,13 +107,14 @@ it("retains controlled open and real shared-dialog Escape close behavior", async
   expect(handlers.onChoose).not.toHaveBeenCalled();
 });
 
-it("groups action choices under Data, Flow and Core while withholding triggers", () => {
+it("groups action choices and withholds triggers", () => {
   const handlers = callbacks();
   render(palette(handlers));
   for (const category of [
     english.nodeCategoryData,
     english.nodeCategoryFlow,
     english.nodeCategoryCore,
+    english.nodeCategoryHumanInput,
   ]) {
     expect(screen.getByRole("heading", { name: category })).toBeVisible();
   }

@@ -94,6 +94,9 @@
 .icon[data-category="nodeCategoryCore"] {
   color: var(--workflow-notification-icon);
 }
+.icon[data-category="nodeCategoryHumanInput"] {
+  color: var(--workflow-human-input-icon);
+}
 
 .restriction {
   min-width: 0;

@@ -82,6 +82,8 @@ function structuralReferenceIssue(
   if (!path.nodes.some((entry) => entry.id === binding.nodeId)) return "unavailable_reference";
   const source = definition.nodes.find((entry) => entry.id === binding.nodeId);
   if (source === undefined) return "unavailable_reference";
+  if (source.type === "human.form")
+    return mappingOutputForReference(definition, binding) === undefined ? "unknown_output" : null;
   const key = binding.path.join(".");
   return Object.hasOwn(actionRegistry[source.type].outputs, key) ? null : "unknown_output";
 }

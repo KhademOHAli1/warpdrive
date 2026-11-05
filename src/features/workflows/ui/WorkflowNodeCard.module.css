@@ -92,8 +92,13 @@
   color: var(--workflow-flow-icon);
 }
 
-.icon[data-node-type="notification"] {
+.icon[data-node-type="notification"],
+.icon[data-node-type="email.draft"],
+.icon[data-node-type="calendar.create"] {
   color: var(--workflow-notification-icon);
+}
+.icon[data-node-type="human.form"] {
+  color: var(--workflow-human-input-icon);
 }
 
 .rightPart {

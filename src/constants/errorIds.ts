@@ -235,6 +235,8 @@ export const ERROR_IDS = {
   WORKFLOW_WRITE_FAILED: "E_WORKFLOW_004", // insert returned no persisted row
   WORKFLOW_NOT_READY: "E_WORKFLOW_005", // action contract has no qualified execution handler
   WORKFLOW_BINDING_MISSING: "E_WORKFLOW_006", // referenced value is unavailable at execution
+  WORKFLOW_FORM_REQUIRES_LIVE: "E_WORKFLOW_008", // simulation cannot collect a human response
+  WORKFLOW_FORM_EXPIRED: "E_WORKFLOW_007", // form response window ended
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

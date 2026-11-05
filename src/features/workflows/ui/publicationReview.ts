@@ -66,6 +66,7 @@ const descriptions = {
   "record.pick": "publicationRecordPickStep",
   "email.draft": "publicationEmailDraftStep",
   "calendar.create": "publicationCalendarEventStep",
+  "human.form": "publicationHumanFormStep",
   "activity.create": "publicationTaskStep",
   condition: "publicationConditionStep",
   ifElse: "publicationIfElseStep",

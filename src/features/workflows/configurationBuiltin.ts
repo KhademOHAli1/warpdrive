@@ -17,6 +17,7 @@ import {
   workflowCalendarEventFields,
 } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
+import { workflowHumanFormConfig } from "./workflowHumanFormContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
 import {
@@ -344,6 +345,15 @@ function validateCalendarEvent(
     if (node.config[key] !== undefined) checkBinding(node, key, context, result);
 }
 
+function validateHumanForm(
+  node: WorkflowNode,
+  _context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = workflowHumanFormConfig.safeParse(node.config);
+  if (!parsed.success) appendSchemaIssues(node, parsed.error.issues, result);
+}
+
 function validateIfElse(
   node: WorkflowNode,
   context: ConfigurationContext,
@@ -366,6 +376,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "record.pick": validateRecordPick,
   "email.draft": validateEmailDraft,
   "calendar.create": validateCalendarEvent,
+  "human.form": validateHumanForm,
   ifElse: validateIfElse,
   condition: validateCondition,
   filter: validateCondition,
@@ -375,6 +386,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
 const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   ifElse: ["branches", "fallbackId"],
   "record.create": ["entity", "fields"],
+  "human.form": ["instructions", "fields"],
   "record.update": ["entity", "recordId", "fields"],
   "record.delete": ["entity", "recordId"],
   "record.search": ["entity", "filter", "orderBy", "limit", "offset"],

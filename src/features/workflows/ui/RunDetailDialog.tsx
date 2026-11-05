@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
+import { RunHumanForm } from "./RunHumanForm";
 import { RunTrace } from "./RunTrace";
 
 export function RunDetailDialog({
@@ -105,6 +106,17 @@ function RunDetailRead({ workflowId, runId }: { workflowId: string; runId: strin
         </div>
       )}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {visibleDetail?.pendingForm !== undefined && (
+          <RunHumanForm
+            key={visibleDetail.pendingForm.nodeId}
+            form={visibleDetail.pendingForm}
+            workflowId={workflowId}
+            runId={runId}
+            onSubmitted={() => {
+              void retryRead();
+            }}
+          />
+        )}
         {visibleDetail !== undefined && (
           <RunTrace key={visibleDetail.id} detail={visibleDetail} workflowId={workflowId} />
         )}

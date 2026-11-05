@@ -95,6 +95,7 @@ export async function executeRunNode(
     case "activity.create":
       return createRunActivity(db, actor, node, outputs, simulation, definition, signal);
     case "delay":
+    case "human.form":
     case "notification":
     case "trigger.record":
       return err(ERROR_IDS.WORKFLOW_NOT_READY);

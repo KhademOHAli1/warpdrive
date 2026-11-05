@@ -10,6 +10,7 @@ export const creatableNodeTypes = [
   "record.pick",
   "email.draft",
   "calendar.create",
+  "human.form",
   "activity.create",
   "condition",
   "ifElse",

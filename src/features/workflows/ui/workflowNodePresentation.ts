@@ -12,6 +12,7 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
   "record.pick": "arrows-shuffle",
   "email.draft": "mail-plus",
   "calendar.create": "calendar-event",
+  "human.form": "forms",
   "activity.create": "plus",
   condition: "arrows-split",
   ifElse: "arrows-split",
@@ -22,6 +23,7 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
 
 export function workflowNodeCategory(type: WorkflowNode["type"]) {
   if (type.startsWith("trigger.")) return "nodeCategoryTrigger";
+  if (type === "human.form") return "nodeCategoryHumanInput";
   if (type === "condition" || type === "ifElse" || type === "filter" || type === "delay")
     return "nodeCategoryFlow";
   return type === "notification" || type === "email.draft" || type === "calendar.create"

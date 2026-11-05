@@ -15,6 +15,7 @@ export const nodeLabelKeys = {
   "record.pick": "pickRecord",
   "email.draft": "draftEmail",
   "calendar.create": "createCalendarEvent",
+  "human.form": "humanForm",
   "activity.create": "task",
   condition: "condition",
   ifElse: "ifElseAction",

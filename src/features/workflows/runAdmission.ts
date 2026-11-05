@@ -9,7 +9,7 @@ import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { validateDefinition } from "./definition";
-import { executableDefinition } from "./readiness";
+import { executableDefinition, requiresHumanForm } from "./readiness";
 
 const inputSchema = z.strictObject({
   workflowId: z.string().uuid(),
@@ -74,6 +74,8 @@ export async function admitManualRun(
     if (version === undefined || trigger?.type !== "trigger.manual")
       return err(ERROR_IDS.WORKFLOW_NOT_READY);
     if (!executableDefinition(version.definition)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
+    if (input.data.mode === "simulation" && requiresHumanForm(version.definition))
+      return err(ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE);
     const key = and(
       eq(workflowRuns.workflowId, workflow.id),
       eq(workflowRuns.actorId, actor.id),

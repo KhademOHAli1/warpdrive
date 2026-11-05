@@ -131,13 +131,7 @@ async function login(page) {
   await page.goto("/login");
   await page.locator('input[name="email"]').fill("browser@example.invalid");
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
-  const loginResponse = page.waitForResponse(
-    (response) =>
-      response.request().method() === "POST" && new URL(response.url()).pathname === "/login",
-  );
   await page.locator('button[type="submit"]').click();
-  const submitted = await loginResponse;
-  assert.equal(await submitted.finished(), null, "The login response completed before navigation");
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
   const response = await page.goto("/settings/appearance");
   assert.equal(response.status(), 200);

@@ -6,9 +6,11 @@ import { workflowRuns, workflowSteps, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
+import { canWorkflow } from "./access";
 import { getWorkflow } from "./queries";
 import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 import { definitionSchema } from "./schemas";
+import { pendingWorkflowHumanForm } from "./workflowHumanFormPending";
 
 // Return the historical configuration and execution metadata, never stored CRM outputs.
 export async function readRunDetail(
@@ -72,6 +74,12 @@ export async function readRunDetail(
   });
   const failures = await readFailureHistories(db, [runId], signal);
   const { stored, ...safeRun } = run;
+  const pendingForm = pendingWorkflowHumanForm(
+    stored,
+    definition.data,
+    currentActor.id,
+    workflow.value.archivedAt === null && canWorkflow(currentActor, "run", workflow.value.ownerId),
+  );
   const recovery = await describeRunRecovery(
     db,
     currentActor,
@@ -86,6 +94,7 @@ export async function readRunDetail(
     ...safeRun,
     definition: definition.data,
     steps: safeSteps,
+    ...(pendingForm === undefined ? {} : { pendingForm }),
     ...(recovery === null ? {} : { recovery }),
   });
 }

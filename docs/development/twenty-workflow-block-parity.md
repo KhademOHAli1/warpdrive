@@ -63,6 +63,12 @@ The composed sidebar retains the separately approved [footer chevron](https://gi
 
 The right side panel now defaults to 400px and resizes from 320px to 600px on desktop, including keyboard resizing and mirrored controls in Farsi. Opening the panel still preserves canvas zoom. The prior record action checkpoint passed 210 focused tests and application type checking. The calendar adapter, form and resize interactions passed focused checks; native calendar integration cases are prepared. The isolated webhook and HTTPS helpers have tests and are not in the catalog; activation and approved destinations still need runtime integration.
 
+## Fifth increment: authenticated Form
+
+**Form (A19)** supports up to eight text, number, and civil date fields. Stable IDs keep downstream answer mappings intact when a field is renamed or reordered. A live run waits up to seven days for its signed-in initiator. A successful response advances the run in the same transaction as the receipt. Resending the same response cannot advance it twice. The run detail omits submitted answers and replay keys. Both preview modes reject workflows with Form until sample input is supported. Record and select fields remain open.
+
+The prior browser build passed all three workflow journeys in Chromium and captured the canvas and picker. A separate appearance journey timed out during login. The Form editor, submission, expiry, mapped output, and retry behavior passed focused tests; native PostgreSQL cases are prepared for competing submissions and expiry.
+
 ## Catalog visibility and configuration gates
 
 The five groups are Data (6), AI (2), Flow (5), Core (5), Human Input (2); installed applications can contribute Other/Logic Function rows. See [the selector](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-front/src/modules/side-panel/pages/workflow/action/components/SidePanelWorkflowSelectAction.tsx).
