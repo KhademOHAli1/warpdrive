@@ -18,6 +18,12 @@ describe("Stripe billing transport", () => {
       expect(body.get("metadata[warpdrive_operation_key]")).toBe("operation-1");
       expect(body.get("billing_address_collection")).toBe("required");
       expect(body.get("automatic_tax[enabled]")).toBe("true");
+      expect(body.get("success_url")).toBe(
+        "https://app.example.com/settings/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}",
+      );
+      expect(body.get("cancel_url")).toBe(
+        "https://app.example.com/settings/billing?checkout=canceled",
+      );
       return stripeJson(checkoutFixture);
     });
     await new StripeGateway(stripeConfig(fetcher)).createCheckout(

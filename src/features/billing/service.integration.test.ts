@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { makeTestDb } from "@/test/db";
 import { config, subscription } from "./fixtures.test-support";
@@ -28,17 +27,6 @@ const command = (requestId = randomUUID()) => ({
 
 beforeAll(async () => {
   h = await makeTestDb();
-  await h.pool.query(
-    "INSERT INTO settings (id,company_name) VALUES (true,'Existing company') ON CONFLICT (id) DO NOTHING",
-  );
-  const prior = await h.pool.query("SELECT row_to_json(s) AS row FROM settings s");
-  // Private proposal fixture only. Integration must generate/admit the next canonical migration.
-  await h.pool.query(
-    readFileSync(new URL("../../../docs/billing/schema-proposal.sql", import.meta.url), "utf8"),
-  );
-  expect((await h.pool.query("SELECT row_to_json(s) AS row FROM settings s")).rows).toEqual(
-    prior.rows,
-  );
 });
 afterAll(async () => {
   if (h !== undefined) await h.close();

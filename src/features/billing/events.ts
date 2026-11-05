@@ -21,10 +21,17 @@ export async function processBillingEvent(
   const account = await store.readAccount(mode);
   if (account?.customerId == null || customerId !== account.customerId) return { ignored: true };
   return store.withAccount(mode, async (tx) => {
+    // The initial read only admits the event to the account lock. Recheck the binding after
+    // waiting, so a late deletion event cannot clear a replacement customer bound meanwhile.
+    if (tx.account.customerId == null || customerId !== tx.account.customerId)
+      return { ignored: true };
     if (await tx.hasEvent(event.id)) return { duplicate: true };
     // Re-fetch current Stripe state under the account lock; event delivery order is not state order.
     if (event.type === "customer.deleted") {
       await tx.saveAccount({
+        customerId: null,
+        checkoutOperationId: null,
+        seatOperationId: null,
         subscription: null,
         syncState: "needs_review",
         syncedAt: now(),

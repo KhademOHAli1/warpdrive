@@ -47,6 +47,8 @@ export const billingHttp = createBillingHttp({
     if (!initial.user.isAdmin) return billingJson({ ok: false, error: { code: "forbidden" } }, 403);
     if (!(await enforceAuthRateLimit(db, request.headers, "/billing", initial.user.id, signal)))
       return billingJson({ ok: false, error: { code: "rate_limited" } }, 429);
+    // Hold the shared fence across capacity reads AND provider writes. Public user
+    // invitation/reactivation writers take its exclusive side before changing users.
     return withCurrentAuthority(db, "read", signal, async (authorityDb) => {
       const authorize = async () => {
         signal.throwIfAborted();

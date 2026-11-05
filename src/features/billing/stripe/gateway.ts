@@ -120,8 +120,8 @@ export class StripeGateway extends StripeDocumentGateway {
       "tax_id_collection[enabled]": "true",
       "customer_update[address]": "auto",
       "customer_update[name]": "auto",
-      success_url: `${this.appOrigin}/settings/company?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${this.appOrigin}/settings/company?checkout=canceled`,
+      success_url: `${this.appOrigin}/settings/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${this.appOrigin}/settings/billing?checkout=canceled`,
     });
     const paidSeats = Math.max(0, seats - this.includedSeats);
     if (paidSeats > 0) {
@@ -181,7 +181,7 @@ export class StripeGateway extends StripeDocumentGateway {
   ) {
     const customer = input(customerIdSchema, customerId);
     input(z.enum(["overview", "payment_methods", "cancel"]), intent);
-    const returnUrl = `${this.appOrigin}/settings/company`;
+    const returnUrl = `${this.appOrigin}/settings/billing`;
     const parameters = new URLSearchParams({
       customer,
       configuration: this.portalConfigurationId,
