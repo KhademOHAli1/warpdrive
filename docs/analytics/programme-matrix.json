@@ -1044,8 +1044,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/forecastEvaluation.ts",
+        "src/features/stats/forecastEvaluation.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["forecast-snapshots", "model-evaluation"],
       "dataRequirements": [
         "Mature target periods and permission-safe actual outcomes under declared restatement policy."
@@ -1056,7 +1059,8 @@
       "tests": [
         "Zero actual/forecast, under/overprediction, missing actual coverage and temporal leakage."
       ],
-      "deliveryIncrement": "I5"
+      "deliveryIncrement": "I5",
+      "currentSourceNote": "Private exact saved-cohort evaluation passes deterministic fixtures. Immutable forecast and actual custody, reader, statistical qualification and viewer result remain open."
     },
     {
       "id": "forecast-calibrated",
@@ -1390,8 +1394,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/fixedExperimentReadout.ts",
+        "src/features/stats/fixedExperimentReadout.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["experiment-workspace", "model-evaluation"],
       "dataRequirements": ["Valid assignment/outcome units and eligible analysis population."],
       "acceptance": [
@@ -1400,7 +1407,8 @@
       "tests": [
         "Known randomized fixtures, unequal allocation, binary/continuous outcomes, attrition and no observations."
       ],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private two-arm intention-to-treat risk differences and conservative simultaneous fixed-look intervals pass deterministic fixtures. Freeze, qualified unit evidence and viewer result remain open."
     },
     {
       "id": "experiment-peeking",
@@ -1417,8 +1425,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/fixedExperimentReadout.ts",
+        "src/features/stats/fixedExperimentReadout.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["experiment-ab-holdout"],
       "dataRequirements": [
         "Declared analysis schedule, number of comparisons and exposure overlap."
@@ -1429,7 +1440,8 @@
       "tests": [
         "Repeated analysis, many variants, crossover/contamination and post-hoc measure changes."
       ],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private method refuses an unverified look history and limits coverage to two endpoints at one fixed look. Native freeze, look custody and contamination evidence remain open."
     },
     {
       "id": "experiment-geo",
