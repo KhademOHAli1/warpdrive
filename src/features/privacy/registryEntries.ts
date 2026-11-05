@@ -7,6 +7,7 @@ import {
   currentLeadHandoffInventoryEntry,
   dealReportExportInventoryEntry,
   recordedDealSourceInventoryEntry,
+  savedPerformanceInventoryEntry,
 } from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
@@ -57,6 +58,7 @@ export const registryEntries: RegistryEntry[] = [
   currentLeadHandoffInventoryEntry,
   dealReportExportInventoryEntry,
   recordedDealSourceInventoryEntry,
+  savedPerformanceInventoryEntry,
   analyticsAttentionInventoryEntry,
   analyticsComputationInventoryEntry,
   analyticsForecastCommitInventoryEntry,

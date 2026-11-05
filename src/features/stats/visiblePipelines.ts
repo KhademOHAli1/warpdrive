@@ -39,13 +39,15 @@ export async function visiblePipelineIds(
   db: Db,
   actor: PermSetUser,
   signal: AbortSignal,
+  limit?: number,
 ): Promise<string[]> {
   signal.throwIfAborted();
-  const rows = await db
+  const query = db
     .select({ id: pipelines.id })
     .from(pipelines)
     .where(and(eq(pipelines.isArchived, false), visiblePipelinePredicate(actor)))
     .orderBy(pipelines.order);
+  const rows = limit === undefined ? await query : await query.limit(limit);
   return rows.map((r) => r.id);
 }
 

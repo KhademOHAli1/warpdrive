@@ -22,9 +22,10 @@ export async function resolveReportScope(
   },
   signal: AbortSignal,
   localeFallback?: LocalePreferenceFallback,
+  teamMemberLimit?: number,
 ) {
   const effectiveOwnerScope = ownerScope(actor, input.ownerScope);
-  const owners = await resolveOwnerIds(db, actor, effectiveOwnerScope, signal);
+  const owners = await resolveOwnerIds(db, actor, effectiveOwnerScope, signal, teamMemberLimit);
   if (
     input.pipelineId !== null &&
     !(await isPipelineVisible(db, actor, input.pipelineId, signal))

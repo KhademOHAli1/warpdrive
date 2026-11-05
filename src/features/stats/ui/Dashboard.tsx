@@ -35,6 +35,7 @@ import { KpiPerformance } from "./KpiPerformance";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
 import { Panel } from "./Panel";
 import { RecordedDealSourcePanel } from "./RecordedDealSourcePanel";
+import { SavedPerformanceControl } from "./SavedPerformanceControl";
 import { Scoreboard } from "./Scoreboard";
 import { StageAgingReport } from "./StageAgingReport";
 import { WonTrendWidget } from "./TrendWidget";
@@ -243,6 +244,13 @@ export function Dashboard({
             </div>
           </div>
           <DateRangeControl today={today} from={range.from} to={range.to} onChange={setRange} />
+          <SavedPerformanceControl
+            scope={{ ...currentScope, ...range }}
+            canSave={validRange && !preferencePending}
+            pipelineOptions={pipelineOptions}
+            ownerUsers={ownerOptionsQ.data?.users ?? []}
+            ownerTeams={ownerOptionsQ.data?.teams ?? []}
+          />
           <p className="text-xs leading-relaxed text-muted-foreground">
             {tCurrency("currencyNotice")}
           </p>

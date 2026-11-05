@@ -47,6 +47,35 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
   },
 );
 
+export const savedPerformanceInventoryEntry = classifyInventory(
+  [
+    "sourceReview:src/features/stats/savedPerformanceReports.ts#e66f90a509a440046b2bf4c34716b538b96a9bffc0bda65c2c92f098fd4c5f94",
+    "sourceReview:src/features/stats/savedPerformanceRerun.ts#81fbd8dbaeed73531210b18ef7a1d48050a9f21e0205f924cc363a40279fc430",
+    "sourceReview:src/features/stats/savedPerformanceRouter.ts#4b610f2524687da7476adb1c9a8fbf5b4c7392609ad831b9f3d0755fa9765c64",
+    "writer:src/features/stats/savedPerformanceReports.ts#delete:savedFilters",
+    "writer:src/features/stats/savedPerformanceReports.ts#execute:sql",
+    "writer:src/features/stats/savedPerformanceReports.ts#insert:savedFilters",
+    "writer:src/features/stats/savedPerformanceRerun.ts#execute:sql",
+    "writer:src/features/stats/savedPerformanceRouter.ts#query:dynamic",
+  ],
+  {
+    owner: "private saved Performance reports",
+    categories: [
+      "owner and saved definition identifiers, authored report name, pipeline and owner or team selector, currency and civil date range",
+    ],
+    subjectRelation:
+      "Report definitions belong to authenticated users and may refer to users and teams.",
+    purpose:
+      "Persist, review, remove and rerun the owner's exact private Performance scope under current authority.",
+    disclosure:
+      "The owner can read their private definition. Reruns use one authorized read cut and share the existing dashboard metric calculations. Generic saved filters cannot mutate Performance definitions.",
+    retention:
+      "The definition remains in saved filters until its owner removes it or a separately qualified lifecycle action applies. Revocation or deactivation blocks access. Rerun metrics are transient.",
+    externalEffects: "Protected database reads and CSRF-guarded saved definition writes.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const analyticsForecastCommitInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/stats/history/forecastCommitQualification.ts#56fbc23b26cd57ad0211060810b4b70ddbe18d3ea8ca1435715341f02bcaa90b",
@@ -97,7 +126,7 @@ export const currentLeadHandoffInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/hydrateReportActor.ts",
     "sourceReview:src/features/stats/currentLeadHandoffReport.ts#d74f1f114ea4f75639e4a50d8d675cf1453b185146d602fd9a4c9d3e5445416d",
-    "sourceReview:src/features/stats/hydrateReportActor.ts#cc1a43a053f20aaa3ba8c1b3183baf21f8adfd914a2b27a96c6dc278aac3c7cd",
+    "sourceReview:src/features/stats/hydrateReportActor.ts#c38265294f87b00171dcab442aaf9e0708bea2b21ce1e9ef74be62607dae8994",
     "writer:src/features/stats/currentLeadHandoffReport.ts#execute:sql",
   ],
   {

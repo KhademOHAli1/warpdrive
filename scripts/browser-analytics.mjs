@@ -897,6 +897,64 @@ async function verifyLeadHandoff() {
   });
 }
 
+async function verifySavedPerformance() {
+  await journey("en-private-saved-performance", async (page, _context, entry) => {
+    const S = copy.en.stats;
+    const copySaved = S.savedPerformance;
+    const name = "CI fixed performance filters";
+    const displayName = `\u2068${name}\u2069`;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, {
+      allPipelines: true,
+    });
+    const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
+    const toggle = page.getByRole("button", exact(copySaved.title));
+    const panel = page.getByRole("region", exact(copySaved.title));
+    await toggle.click();
+    await panel.getByRole("textbox", exact(copySaved.name)).fill(name);
+    await panel.getByRole("button", exact(copySaved.save)).click();
+    await panel.getByText(copySaved.saved, { exact: true }).waitFor();
+    await openDashboard(page, "en", "gregory", actor.timeZone);
+    await toggle.click();
+
+    const run = panel.getByRole("button", exact(copySaved.runNamed.replace("{name}", displayName)));
+    const rerun = await rpcAfter(
+      page,
+      "stats.savedPerformanceRerun",
+      (input) => typeof input.id === "string",
+      () => run.click(),
+    );
+    assert.deepEqual(Object.keys(rerun.input), ["id"]);
+    assert.equal(rerun.data.state, "available");
+    assert.deepEqual(rerun.data.definition, {
+      version: 1,
+      from: filtered.input.from,
+      to: filtered.input.to,
+      pipelineId: null,
+      currency,
+      ownerScope: { kind: "me" },
+    });
+    assert.deepEqual(rerun.data.dashboard.dealPerformance, filtered.data.dealPerformance);
+    assert.equal(rerun.data.dashboard.timeZone, actor.timeZone);
+    await panel.getByText(copySaved.runResult, { exact: true }).waitFor();
+    await panel.scrollIntoViewIfNeeded();
+    await capture(page, "en-private-saved-performance");
+
+    await panel
+      .getByRole("button", exact(copySaved.deleteNamed.replace("{name}", displayName)))
+      .click();
+    const confirm = page.getByRole("dialog", exact(copySaved.deleteTitle));
+    await confirm.getByRole("button", exact(copySaved.deleteConfirm)).click();
+    await panel.getByText(copySaved.deleted, { exact: true }).waitFor();
+    await panel.getByText(copySaved.empty, { exact: true }).waitFor();
+    entry.savedPerformanceProof = {
+      restoredAfterNavigation: true,
+      exactDefinition: true,
+      matchesAdHocCalculation: true,
+      removed: true,
+    };
+  });
+}
+
 async function verifyDealReportDownload() {
   await journey("en-won-deal-csv", async (page, _context, entry) => {
     const S = copy.en.stats;
@@ -1259,6 +1317,7 @@ try {
   await verifyRestrictedPipeline();
   await verifyRecordedDealSources();
   await verifyLeadHandoff();
+  await verifySavedPerformance();
   await verifyDealReportDownload();
   await matrix("en", "gregory");
   await setRegional("en", "timeZone", "UTC", {

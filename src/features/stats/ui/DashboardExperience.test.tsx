@@ -4,10 +4,14 @@ import { act, cleanup, fireEvent, render, screen, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { RouterOutputs } from "@/lib/trpc-client";
 import type { CurrentLeadHandoffReport } from "../currentLeadHandoffReport";
 import type { DealWinCohortView } from "../history/dealWinCohortView";
 import type { StageAgingView } from "../history/stageAgingView";
 import type { RecordedDealSourceReport } from "../recordedDealSourceReport";
+
+type SavedRoutes = RouterOutputs["stats"]["savedPerformance"];
+type SavedRun = RouterOutputs["stats"]["savedPerformanceRerun"];
 
 const fixture = vi.hoisted(() => ({
   refetch: vi.fn(),
@@ -30,6 +34,12 @@ const fixture = vi.hoisted(() => ({
   handoffQuery: vi.fn(),
   handoffReport: vi.fn<() => CurrentLeadHandoffReport>(),
   handoffFetching: false,
+  savedList: vi.fn<() => SavedRoutes["list"]>(),
+  savedReview: vi.fn<() => SavedRoutes["load"]>(),
+  savedCreate: vi.fn(),
+  savedRemove: vi.fn(),
+  savedRun: vi.fn<() => SavedRun>(),
+  savedRunQuery: vi.fn(),
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
@@ -67,6 +77,8 @@ vi.mock("@/features/i18n/actions", () => ({
   saveLocalePreferencesAction: fixture.savePreferences,
 }));
 
+vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "saved-report-csrf" }));
+
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     pipeline: { list: { useQuery: () => ({ data: [{ id: "p1", name: "Sales" }] }) } },
@@ -84,6 +96,44 @@ vi.mock("@/lib/trpc-client", () => ({
         },
       },
       ownerOptions: { useQuery: () => ({ data: { users: [], teams: [] } }) },
+      savedPerformance: {
+        list: {
+          useQuery: () => ({
+            data: fixture.savedList(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: false,
+            isPaused: false,
+            isPlaceholderData: false,
+            refetch: vi.fn(),
+          }),
+        },
+        load: {
+          useQuery: () => ({
+            data: fixture.savedReview(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: false,
+            isPaused: false,
+            isPlaceholderData: false,
+          }),
+        },
+        create: { useMutation: () => ({ isPending: false, mutateAsync: fixture.savedCreate }) },
+        remove: { useMutation: () => ({ isPending: false, mutateAsync: fixture.savedRemove }) },
+      },
+      savedPerformanceRerun: {
+        useQuery: (input: unknown) => {
+          fixture.savedRunQuery(input);
+          return {
+            data: fixture.savedRun(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: false,
+            isPaused: false,
+            isPlaceholderData: false,
+          };
+        },
+      },
       recordedDealSource: {
         useQuery: (input: unknown, options: unknown) => {
           fixture.recordedSourceQuery(input, options);
@@ -195,6 +245,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   fixture.savePreferences.mockReset();
   fixture.savePreferences.mockResolvedValue({ ok: true });
+  fixture.savedList.mockReturnValue({ state: "listed", reports: [], truncated: false });
+  fixture.savedReview.mockReturnValue({ state: "unavailable", reason: "not-found" });
+  fixture.savedCreate.mockResolvedValue({ state: "created", id: "created-definition" });
+  fixture.savedRemove.mockResolvedValue({ state: "removed" });
+  fixture.savedRun.mockReturnValue({ state: "unavailable", reason: "not-found" });
   fixture.error = false;
   fixture.goalsError = false;
   fixture.cohortReport.mockReturnValue({ state: "coverage-not-started" });
@@ -266,6 +321,148 @@ function ChangeReportTimeZone() {
 }
 
 describe("Performance report experience", () => {
+  it("runs only the native saved scope and removes results when scope is lost", async () => {
+    const report = {
+      id: "shared-scope",
+      name: "Earlier quarter",
+      definitionState: "version-1",
+    } as const;
+    fixture.savedList.mockReturnValue({ state: "listed", reports: [report], truncated: false });
+    const result: Extract<SavedRun, { state: "available" }> = {
+      state: "available",
+      report,
+      definition: {
+        version: 1,
+        currency: "EUR",
+        pipelineId: null,
+        ownerScope: { kind: "all" },
+        from: "2026-07-01",
+        to: "2026-09-30",
+      },
+      dashboard: {
+        ...fixture.result,
+        currency: "EUR",
+        timeZone: "Europe/Berlin",
+        effectiveOwnerScope: { kind: "all" },
+      },
+    };
+    fixture.savedRun.mockReturnValue(result);
+    const page = mount();
+    const rerender = () =>
+      page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    await userEvent.click(screen.getByRole("button", { name: "Saved Performance reports" }));
+    const panel = screen.getByRole("region", { name: "Saved Performance reports" });
+    await userEvent.click(
+      within(panel).getByRole("button", { name: /Run saved report.*Earlier quarter/ }),
+    );
+    expect(fixture.savedRunQuery).toHaveBeenLastCalledWith({ id: report.id });
+    expect(within(panel).getByText("Current results for the saved filters")).toBeInTheDocument();
+    expect(within(panel).getByText("Europe/Berlin")).toBeInTheDocument();
+    expect(screen.getByLabelText("Range start")).toHaveValue("2026-01-01");
+
+    fixture.savedRun.mockReturnValue({
+      ...result,
+      dashboard: { ...result.dashboard, effectiveOwnerScope: { kind: "me" } },
+    });
+    rerender();
+    expect(within(panel).getByRole("alert")).toHaveTextContent(
+      "This exact scope is no longer available.",
+    );
+    expect(
+      within(panel).queryByText("Current results for the saved filters"),
+    ).not.toBeInTheDocument();
+
+    fixture.savedRun.mockReturnValue({ state: "unavailable", reason: "scope-unavailable" });
+    rerender();
+    expect(within(panel).getByRole("alert")).toHaveTextContent(
+      "This exact scope is no longer available.",
+    );
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ currency: "USD", ownerScope: { kind: "me" }, from: "2026-01-01" }),
+      { enabled: true },
+    );
+  });
+
+  it("saves controlled filters and reviews or deletes private definitions without running another scope", async () => {
+    const earlier = {
+      id: "earlier-definition",
+      name: "Earlier quarter",
+      definitionState: "version-1",
+    } as const;
+    fixture.savedList.mockReturnValue({
+      state: "listed",
+      reports: [
+        earlier,
+        {
+          id: "future-definition",
+          name: "Future definition",
+          definitionState: "unsupported-version",
+        },
+      ],
+      truncated: false,
+    });
+    fixture.savedReview.mockReturnValue({
+      state: "loaded",
+      report: earlier,
+      definition: {
+        version: 1,
+        currency: "EUR",
+        pipelineId: null,
+        ownerScope: { kind: "all" },
+        from: "2026-07-01",
+        to: "2026-09-30",
+      },
+    });
+    const page = mount();
+    expect(fixture.savedList).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Last 30 days" }));
+    await userEvent.click(screen.getByRole("button", { name: "Saved Performance reports" }));
+    const panel = screen.getByRole("region", { name: "Saved Performance reports" });
+    await userEvent.type(within(panel).getByRole("textbox", { name: "Report name" }), "Last 30");
+    await userEvent.click(within(panel).getByRole("button", { name: "Save current filters" }));
+    expect(fixture.savedCreate).toHaveBeenCalledWith({
+      name: "Last 30",
+      definition: {
+        version: 1,
+        currency: "USD",
+        pipelineId: null,
+        ownerScope: { kind: "me" },
+        from: "2026-10-07",
+        to: "2026-11-05",
+      },
+      csrfToken: "saved-report-csrf",
+    });
+    await userEvent.click(
+      within(panel).getByRole("button", { name: /Review filters for.*Earlier quarter/ }),
+    );
+    expect(within(panel).getByText("EUR")).toBeInTheDocument();
+    expect(screen.getByLabelText("Range start")).toHaveValue("2026-10-07");
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ currency: "USD", ownerScope: { kind: "me" } }),
+      { enabled: true },
+    );
+
+    fixture.savedReview.mockReturnValue({ state: "unavailable", reason: "scope-unavailable" });
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(within(panel).getByRole("alert")).toHaveTextContent(
+      "This exact scope is no longer available.",
+    );
+    expect(within(panel).queryByText("EUR")).not.toBeInTheDocument();
+    expect(
+      within(panel).getByText("This saved definition uses an unsupported version."),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("button", { name: /Review filters for.*Future definition/ }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(within(panel).getByRole("button", { name: /Delete.*Future definition/ }));
+    const confirmation = screen.getByRole("alertdialog", { name: "Delete saved definition?" });
+    await userEvent.click(within(confirmation).getByRole("button", { name: "Delete definition" }));
+    expect(fixture.savedRemove).toHaveBeenCalledWith({
+      id: "future-definition",
+      csrfToken: "saved-report-csrf",
+    });
+  });
+
   it("loads a scoped Acquisition read and keeps its outcome samples and refresh states separate", async () => {
     fixture.recordedSourceFresh = false;
     fixture.recordedSourceReport.mockReturnValue({

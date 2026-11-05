@@ -34,6 +34,12 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       recordsValueCount: (count: number, total: number) =>
         t("_extra.recordsValueCount", { count, total }),
       recordsPage: (page: number) => t("_extra.recordsPage", { page }),
+      savedPerformanceReviewNamed: (name: string) =>
+        t("savedPerformance.reviewNamed", { name: `\u2068${name}\u2069` }),
+      savedPerformanceDeleteNamed: (name: string) =>
+        t("savedPerformance.deleteNamed", { name: `\u2068${name}\u2069` }),
+      savedPerformanceRunNamed: (name: string) =>
+        t("savedPerformance.runNamed", { name: `\u2068${name}\u2069` }),
       recordsExportLimit: (count: number) => t("recordsExportLimit", { count }),
       recordedSourceSamples: (count: number, total: number) =>
         t("recordedSource.samples", { count, total }),
