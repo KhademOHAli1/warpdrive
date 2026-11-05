@@ -329,5 +329,30 @@
     "permission": "Mit Ihren aktuellen Berechtigungen können Sie diesen Bericht nicht einsehen.",
     "scopeUnavailable": "Diese Pipeline oder Berichtsauswahl ist nicht verfügbar.",
     "unavailable": "Der Wert gewonnener Deals nach verknüpfter Organisation ist für diese Filter nicht verfügbar."
+  },
+  "forecastGoal": {
+    "openPicker": "KPI-Ziel auswählen",
+    "selectGoal": "KPI-Ziel für die Prognose",
+    "pickerHelp": "Optional. Vergleichen Sie die Prognose mit einem bestehenden KPI-Ziel für den Wert gewonnener Deals in dieser Auswahl und diesem Zeitraum.",
+    "chooseDates": "Wählen Sie gültige Daten in der Zukunft aus, um KPI-Ziele zu sehen.",
+    "optionsUnavailable": "Für diese Auswahl und Zeitzone sind keine KPI-Ziele verfügbar.",
+    "optionLimit": "Für diese Auswahl gibt es zu viele KPI-Zuordnungen, um sie vollständig anzuzeigen.",
+    "noOptions": "Für diese Auswahl und diesen Zeitraum ist kein passendes KPI-Ziel verfügbar.",
+    "noGoal": "Prognose ohne KPI-Ziel",
+    "selectionUnavailable": "Das gewählte KPI-Ziel ist nicht verfügbar und wird bei diesem Lauf ausgelassen.",
+    "clearGoal": "Nicht verfügbares Ziel entfernen",
+    "coverageTitle": "Abdeckung des KPI-Ziels",
+    "targetUnavailable": "Das gewählte KPI-Ziel ist mit Ihren aktuellen Berechtigungen nicht verfügbar.",
+    "scopeMismatch": "KPI-Ziel und Prognose müssen dieselbe Währung, Pipeline und Zuständigkeit verwenden.",
+    "periodMismatch": "KPI-Ziel und Prognose müssen exakt dieselben Daten und dieselbe Berichtszeitzone verwenden.",
+    "bookedUnavailable": "Der aktuell erfasste Wert gewonnener Deals ließ sich für den gewählten zukünftigen Zeitraum nicht feststellen.",
+    "nominalBasis": "Die Beträge sind nominale CRM-Werte. Die aktuelle Ziellücke berücksichtigt den bereits erfassten Wert. Jedes Szenario zeigt seinen erwarteten Beitrag zur Lücke.",
+    "bookedNominalValue": "Erfasster Wert gewonnener Deals",
+    "targetNominalValue": "KPI-Ziel",
+    "remainingNominalValue": "Aktuelle Ziellücke",
+    "noPositiveGap": "Die verbleibende Ziellücke beträgt null. Eine Abdeckungsquote ist daher nicht verfügbar.",
+    "incompleteScenario": "Die Abdeckung ist nicht verfügbar, weil bei diesem Szenario Beiträge fehlen.",
+    "coverageFraction": "Erwarteter Wert im Verhältnis zur aktuellen Lücke",
+    "afterScenario": "Verbleibende Lücke nach diesem Szenario"
   }
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "vitest";
+import { assignKpiGoal, saveKpiDefinition } from "@/features/goals/kpiRepo";
 import { setPreferences } from "@/features/identity/preferencesRepo";
 import { hydrateActor } from "@/server/hydrateActor";
 import { makeTestDb, type TestDb } from "@/test/db";
@@ -11,6 +12,7 @@ import {
 import {
   type NativePeriodForecastRequest,
   nativePeriodForecastInput,
+  readNativeForecastGoalOptions,
   readNativePeriodForecast,
 } from "./nativePeriodForecast";
 
@@ -210,5 +212,92 @@ test("requires declared factors and a target whose whole civil period is in the 
         signal(),
       ),
     ).toEqual({ state: "unavailable", reason: "scope-unavailable" });
+  });
+});
+
+test("compares scenarios to an existing exactly scoped KPI assignment in the same native cut", async () => {
+  await withForecastDb(async (h) => {
+    const fixture = await prepareHistoryCapture(h);
+    const viewer = await principal(h, fixture.userId);
+    await setPreferences(
+      h.db,
+      fixture.userId,
+      {
+        timezone: "Europe/Berlin",
+        ui: { localePreferences: { locale: "en", calendar: "gregory", timeZone: "Europe/Berlin" } },
+      },
+      signal(),
+    );
+    await h.pool.query("UPDATE public.deals SET value=40 WHERE id=$1", [fixture.dealId]);
+    const scope = {
+      pipelineId: fixture.pipelineId,
+      ownerScope: { kind: "me" } as const,
+      currency: "EUR",
+      ...(await dates(h)),
+    };
+    const definition = await saveKpiDefinition(
+      h.db,
+      viewer.actor,
+      {
+        name: "Native fixture won value",
+        description: "",
+        source: "deals",
+        calculation: "sum",
+        unit: "money",
+        currency: "EUR",
+        dateField: "closed",
+        valueField: "value",
+        filters: { status: "won", pipelineId: fixture.pipelineId },
+      },
+      {},
+    );
+    const goal = await assignKpiGoal(h.db, viewer.actor, {
+      definitionId: definition.id,
+      name: "Exact future fixture target",
+      scope: "user",
+      scopeId: fixture.userId,
+      condition: { kind: "at_least", target: "100.00" },
+      period: { kind: "one_off", interval: "yearly", startsOn: scope.from, endsOn: scope.to },
+      pacing: "none",
+    });
+    expect(await readNativeForecastGoalOptions(h.db, viewer, scope, signal())).toEqual({
+      state: "available",
+      options: [{ id: goal.id, label: "Exact future fixture target" }],
+    });
+    const input = { ...scope, policyVersion: 1, scenarios, goalId: goal.id } as const;
+    const result = await readNativePeriodForecast(h.db, viewer, input, signal());
+    expect(result).toMatchObject({
+      state: "available",
+      goalCoverage: {
+        state: "available",
+        bookedNominalValue: "0.00",
+        targetNominalValue: "100.00",
+        remainingNominalValue: "100.00",
+        coverage: {
+          state: "available",
+          scenarios: {
+            base: {
+              state: "available",
+              numerator: "20.00",
+              denominator: "100.00",
+              remainingAfterScenario: "80.00",
+            },
+            upside: { state: "unavailable", reason: "incomplete-forecast" },
+          },
+        },
+      },
+    });
+    expect(
+      await readNativeForecastGoalOptions(h.db, viewer, { ...scope, pipelineId: null }, signal()),
+    ).toEqual({
+      state: "available",
+      options: [],
+    });
+    expect(
+      await readNativePeriodForecast(h.db, viewer, { ...input, pipelineId: null }, signal()),
+    ).toMatchObject({
+      state: "available",
+      goalCoverage: { state: "unavailable", reason: "scope-mismatch" },
+    });
   });
 });

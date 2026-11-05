@@ -981,7 +981,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/ui/GoalsWidget.tsx"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["goals-adapter", "forecast-outcome-timing"],
       "dataRequirements": [
         "Permitted Goals output matching owner/team, currency and target dates."

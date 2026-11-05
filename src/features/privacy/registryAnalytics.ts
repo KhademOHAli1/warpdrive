@@ -93,19 +93,21 @@ export const currentAccountConcentrationInventoryEntry = classifyInventory(
 
 export const nativePeriodForecastInventoryEntry = classifyInventory(
   [
-    "sourceReview:src/features/stats/nativePeriodForecast.ts#108611f3e5c87f63f8df3eef094c79116e546289127a38f3c5c7ed89641cff97",
+    "sourceReview:src/features/stats/nativePeriodForecast.ts#f2b831e0b5c8633bd8d8caa4f21f219512bbca5fae85763f78a889836a270d65",
+    "sourceReview:src/features/stats/forecastGoalCoverage.ts#96ac9165e05e92875eb4f9eab9e81f9ea3afeef92a5c8f5de1e5649895880864",
+    "writer:src/features/stats/forecastGoalCoverage.ts#execute:sql",
     "writer:src/features/stats/nativePeriodForecast.ts#execute:sql",
   ],
   {
     owner: "native period forecast scenarios",
     categories: [
-      "workspace session authority, captured deal and workforce references, exact nominal values, explicit scenario factors and scoped projections",
+      "workspace session authority, captured deal and workforce references, exact nominal values, explicit scenario factors, scoped projections and authorized KPI assignments",
     ],
     subjectRelation: "Captured deal records may refer to people, organizations and CRM owners.",
     purpose:
       "Apply explicitly authored factors to one complete authorized open-deal roster in a fixed future target period.",
     disclosure:
-      "The protected POST returns aggregate counts and values, assumption coverage and the observed cutoff. Contributor identities and capture witnesses remain internal.",
+      "The protected POST returns aggregate counts and values, assumption coverage and the observed cutoff. Optional goal coverage uses an exact same-cut authorized assignment. The picker returns only bounded matching goal IDs and names. Contributor identities and capture witnesses remain internal.",
     retention:
       "Transient scenario. Source history and native sessions follow their own lifecycle controls.",
     externalEffects:

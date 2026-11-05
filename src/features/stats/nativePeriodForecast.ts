@@ -13,6 +13,12 @@ import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { OwnerScope } from "@/types/stats";
 import {
+  type ForecastGoalCoverage,
+  type ForecastGoalOptions,
+  readForecastGoalCoverageInSnapshot,
+  readForecastGoalOptionsInSnapshot,
+} from "./forecastGoalCoverage";
+import {
   readCapturedOpenForecastRoster,
   readCurrentInventoryObservation,
 } from "./history/inventorySnapshotRepository";
@@ -44,9 +50,8 @@ const manualScenario = z.strictObject({
   sizeMultiplier: periodForecastSizeMultiplier.optional(),
 });
 
-export const nativePeriodForecastInput = z
+export const nativeForecastGoalOptionsInput = z
   .strictObject({
-    policyVersion: z.literal(NATIVE_FORECAST_SCENARIO_POLICY_VERSION),
     currency: z
       .string()
       .regex(/^[A-Z]{3}$/u)
@@ -58,11 +63,6 @@ export const nativePeriodForecastInput = z
     ownerScope: ownerScopeInput,
     from: civilDate,
     to: civilDate,
-    scenarios: z.strictObject({
-      conservative: manualScenario,
-      base: manualScenario,
-      upside: manualScenario,
-    }),
   })
   .refine(
     ({ from, to }) => {
@@ -72,6 +72,17 @@ export const nativePeriodForecastInput = z
     { path: ["to"], message: "The target must cover at most 366 inclusive civil days" },
   );
 
+export const nativePeriodForecastInput = nativeForecastGoalOptionsInput.safeExtend({
+  policyVersion: z.literal(NATIVE_FORECAST_SCENARIO_POLICY_VERSION),
+  goalId: z.uuid().optional(),
+  scenarios: z.strictObject({
+    conservative: manualScenario,
+    base: manualScenario,
+    upside: manualScenario,
+  }),
+});
+
+type ScopeRequest = z.output<typeof nativeForecastGoalOptionsInput>;
 type Request = z.output<typeof nativePeriodForecastInput>;
 type KernelReport = Extract<PeriodForecastResult, { ok: true }>;
 type KernelScenario = KernelReport["scenarios"]["base"];
@@ -113,7 +124,9 @@ export type NativePeriodForecast =
       openDealCount: number;
       recordedOpenValue: KernelReport["recordedOpenValue"];
       scenarios: Record<keyof KernelReport["scenarios"], ScenarioSummary>;
+      goalCoverage?: ForecastGoalCoverage;
     };
+type AvailableForecast = Extract<NativePeriodForecast, { state: "available" }>;
 
 function unavailable(
   reason: Extract<NativePeriodForecast, { state: "unavailable" }>["reason"],
@@ -152,7 +165,7 @@ const boundsSchema = z.strictObject({ from: utcInstant, toExclusive: utcInstant 
 async function resolveTarget(
   tx: Db,
   actor: PermSetUser,
-  request: Request,
+  request: ScopeRequest,
   signal: AbortSignal,
   localeFallback?: LocalePreferenceFallback,
 ): Promise<ForecastTarget | null> {
@@ -212,7 +225,14 @@ function summarizeScenario(scenario: KernelScenario): ScenarioSummary {
   };
 }
 
-function summarize(result: KernelReport, input: Request): NativePeriodForecast {
+function forecastScope(input: ScopeRequest): AvailableForecast["scope"] {
+  return {
+    pipeline: input.pipelineId === null ? "all-visible" : "selected",
+    owner: input.ownerScope.kind,
+  };
+}
+
+function summarize(result: KernelReport, input: Request): AvailableForecast {
   const { conservative, base, upside } = result.scenarios;
   return {
     state: "available",
@@ -224,10 +244,7 @@ function summarize(result: KernelReport, input: Request): NativePeriodForecast {
     cutoffObservedAt: result.cutoffObservedAt,
     target: result.target,
     targetDates: { from: input.from, to: input.to },
-    scope: {
-      pipeline: input.pipelineId === null ? "all-visible" : "selected",
-      owner: input.ownerScope.kind,
-    },
+    scope: forecastScope(input),
     assumptions: input.scenarios,
     openDealCount: result.openDealCount,
     recordedOpenValue: result.recordedOpenValue,
@@ -280,6 +297,12 @@ function rosterFailure(
   return unavailable("source-unavailable");
 }
 
+async function configureNativeForecastRead(tx: Db): Promise<void> {
+  await tx.execute(sql`SET LOCAL search_path = pg_catalog, public, pg_temp`);
+  await tx.execute(sql`SET LOCAL statement_timeout = '5000ms'`);
+  await tx.execute(sql`SET LOCAL lock_timeout = '2000ms'`);
+}
+
 async function readInSnapshot(
   tx: Db,
   principal: ServerPrincipal,
@@ -287,9 +310,7 @@ async function readInSnapshot(
   signal: AbortSignal,
   localeFallback?: LocalePreferenceFallback,
 ): Promise<NativePeriodForecast> {
-  await tx.execute(sql`SET LOCAL search_path = pg_catalog, public, pg_temp`);
-  await tx.execute(sql`SET LOCAL statement_timeout = '5000ms'`);
-  await tx.execute(sql`SET LOCAL lock_timeout = '2000ms'`);
+  await configureNativeForecastRead(tx);
   const observation = await readCurrentInventoryObservation(tx, signal);
   if (observation === null) return unavailable("source-unavailable");
   const live = await currentNativeReadActor(tx, principal.session, signal);
@@ -336,31 +357,47 @@ async function readInSnapshot(
   });
   signal.throwIfAborted();
   if (!result.ok) return unavailable("roster-unqualified");
+  const forecast = summarize(result, input);
+  const goalCoverage =
+    input.goalId === undefined
+      ? undefined
+      : await readForecastGoalCoverageInSnapshot(
+          tx,
+          actor,
+          {
+            forecast,
+            viewerId: actor.id,
+            pipelineId: input.pipelineId,
+            ownerScope: input.ownerScope,
+            transactionSnapshot: observation.transactionSnapshot,
+          },
+          input.goalId,
+          signal,
+        );
   if ((await currentNativeReadActor(tx, principal.session, signal)) === null)
     return unavailable("permission");
-  return summarize(result, input);
+  return goalCoverage === undefined ? forecast : { ...forecast, goalCoverage };
 }
 
-async function readOnFreshClient(
+async function readOnFreshClient<T>(
   pool: Pool,
-  principal: ServerPrincipal,
-  input: Request,
   signal: AbortSignal,
-  localeFallback?: LocalePreferenceFallback,
-): Promise<NativePeriodForecast> {
+  fallback: T,
+  read: (tx: Db) => Promise<T>,
+): Promise<T> {
   const client = await pool.connect();
   let reusable = false;
   try {
     signal.throwIfAborted();
-    if (client.getTransactionStatus() !== "I") return unavailable("source-unavailable");
+    if (client.getTransactionStatus() !== "I") return fallback;
     const bound = drizzle(client, { schema });
-    const result = await bound.transaction(
-      (tx) => readInSnapshot(tx, principal, input, signal, localeFallback),
-      { isolationLevel: "repeatable read", accessMode: "read only" },
-    );
+    const result = await bound.transaction(read, {
+      isolationLevel: "repeatable read",
+      accessMode: "read only",
+    });
     reusable = client.getTransactionStatus() === "I";
     signal.throwIfAborted();
-    return reusable ? result : unavailable("source-unavailable");
+    return reusable ? result : fallback;
   } finally {
     client.release(!reusable);
   }
@@ -385,9 +422,77 @@ export async function readNativePeriodForecast(
   if (!parsed.success) return unavailable("invalid-input");
   if (!("$client" in db) || !(db.$client instanceof Pool)) return unavailable("source-unavailable");
   try {
-    return await readOnFreshClient(db.$client, principal, parsed.data, signal, localeFallback);
+    return await readOnFreshClient(db.$client, signal, unavailable("source-unavailable"), (tx) =>
+      readInSnapshot(tx, principal, parsed.data, signal, localeFallback),
+    );
   } catch {
     signal.throwIfAborted();
     return unavailable("source-unavailable");
+  }
+}
+
+async function readOptionsInSnapshot(
+  tx: Db,
+  principal: ServerPrincipal,
+  input: ScopeRequest,
+  signal: AbortSignal,
+  localeFallback?: LocalePreferenceFallback,
+): Promise<ForecastGoalOptions> {
+  await configureNativeForecastRead(tx);
+  const observation = await readCurrentInventoryObservation(tx, signal);
+  if (observation === null) return { state: "unavailable" };
+  const current = await currentNativeReadActor(tx, principal.session, signal);
+  const actor = restrictReportActor(principal.actor, current?.actor ?? null);
+  if (actor === null || !(await ownerAvailable(tx, actor, input.ownerScope, signal)))
+    return { state: "unavailable" };
+  if (input.pipelineId !== null && !(await isPipelineVisible(tx, actor, input.pipelineId, signal)))
+    return { state: "unavailable" };
+  const target = await resolveTarget(tx, actor, input, signal, localeFallback);
+  if (target === null || observation.observedAt >= target.from) return { state: "unavailable" };
+  const options = await readForecastGoalOptionsInSnapshot(
+    tx,
+    actor,
+    {
+      forecast: {
+        currency: input.currency,
+        cutoffObservedAt: observation.observedAt,
+        target,
+        targetDates: { from: input.from, to: input.to },
+        scope: forecastScope(input),
+      },
+      viewerId: actor.id,
+      pipelineId: input.pipelineId,
+      ownerScope: input.ownerScope,
+    },
+    signal,
+  );
+  return (await currentNativeReadActor(tx, principal.session, signal)) === null
+    ? { state: "unavailable" }
+    : options;
+}
+
+export async function readNativeForecastGoalOptions(
+  db: Db,
+  principal: ServerPrincipal,
+  input: z.input<typeof nativeForecastGoalOptionsInput>,
+  signal: AbortSignal,
+  localeFallback?: LocalePreferenceFallback,
+): Promise<ForecastGoalOptions> {
+  signal.throwIfAborted();
+  if (!principal.actor.isActive || principal.actor.id !== principal.session.userId)
+    return { state: "unavailable" };
+  const parsed = nativeForecastGoalOptionsInput.safeParse(input);
+  if (!parsed.success || !("$client" in db) || !(db.$client instanceof Pool))
+    return { state: "unavailable" };
+  try {
+    return await readOnFreshClient<ForecastGoalOptions>(
+      db.$client,
+      signal,
+      { state: "unavailable" },
+      (tx) => readOptionsInSnapshot(tx, principal, parsed.data, signal, localeFallback),
+    );
+  } catch {
+    signal.throwIfAborted();
+    return { state: "unavailable" };
   }
 }

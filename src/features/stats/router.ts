@@ -24,7 +24,12 @@ import { readCurrentStageAgingView } from "./history/currentStageAgingRepository
 import { readObservedDealWinCohorts } from "./history/dealCohortRepository";
 import { dealWinCohortHorizon, dealWinCohortView } from "./history/dealWinCohortView";
 import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "./metricDictionary";
-import { nativePeriodForecastInput, readNativePeriodForecast } from "./nativePeriodForecast";
+import {
+  nativeForecastGoalOptionsInput,
+  nativePeriodForecastInput,
+  readNativeForecastGoalOptions,
+  readNativePeriodForecast,
+} from "./nativePeriodForecast";
 import { readRecordedDealSourceReport } from "./recordedDealSourceReport";
 import { resolveReportScope } from "./resolveReportScope";
 import { rerunSavedPerformanceReport, savedPerformanceRerunInput } from "./savedPerformanceRerun";
@@ -129,6 +134,18 @@ export const statsRouter = router({
     .input(currentAccountConcentrationInput)
     .query(({ ctx, input }) =>
       readCurrentAccountConcentrationReport(
+        ctx.db,
+        { actor: ctx.actor, session: ctx.session },
+        input,
+        SIG(),
+        ctx.localeFallback,
+      ),
+    ),
+
+  periodForecastGoals: protectedProcedure
+    .input(nativeForecastGoalOptionsInput)
+    .query(({ ctx, input }) =>
+      readNativeForecastGoalOptions(
         ctx.db,
         { actor: ctx.actor, session: ctx.session },
         input,

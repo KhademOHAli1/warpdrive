@@ -12,6 +12,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import type { NativePeriodForecast, NativePeriodForecastRequest } from "../nativePeriodForecast";
 import { PERIOD_FORECAST_SCENARIOS } from "../periodForecast";
 import { useStatsMessages } from "../useStatsMessages";
+import { ForecastGoalCoverageResult, ForecastGoalPicker } from "./ForecastGoalCoveragePanel";
 import { Panel } from "./Panel";
 import { readForecastFactor } from "./periodForecastForm";
 
@@ -166,12 +167,20 @@ function targetDates(today: string) {
   };
 }
 
+function validTargetDates(target: ReturnType<typeof targetDates>, today: string): boolean {
+  const days =
+    (Date.parse(`${target.to}T00:00:00Z`) - Date.parse(`${target.from}T00:00:00Z`)) / 86_400_000;
+  return target.from > today && days >= 0 && days < 366;
+}
+
 export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: string }) {
-  const { forecast: S } = useStatsMessages();
+  const { forecast: S, forecastGoal } = useStatsMessages();
   const preferences = useLocalePreferences();
   const changingPreferences = useLocalePreferencePending();
   const forecast = trpc.stats.periodForecast.useMutation();
   const [target, setTarget] = useState(() => targetDates(today));
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
+  const [goalId, setGoalId] = useState("");
   const [invalid, setInvalid] = useState(false);
   const disabled = forecast.isPending || changingPreferences;
   const report = changingPreferences ? undefined : forecast.data;
@@ -185,14 +194,13 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
     event.preventDefault();
     if (disabled) return;
     const form = new FormData(event.currentTarget);
+    const selectedGoal = form.get("forecastGoalId");
     const locale = localeTagForFormatting(preferences);
     const conservative = readScenario(form, "conservative", locale);
     const base = readScenario(form, "base", locale);
     const upside = readScenario(form, "upside", locale);
     clearResult();
-    const days =
-      (Date.parse(`${target.to}T00:00:00Z`) - Date.parse(`${target.from}T00:00:00Z`)) / 86_400_000;
-    if (!conservative || !base || !upside || target.from <= today || !(days >= 0 && days < 366)) {
+    if (!conservative || !base || !upside || !validTargetDates(target, today)) {
       setInvalid(true);
       return;
     }
@@ -201,6 +209,9 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
         ...scope,
         ...target,
         policyVersion: 1,
+        ...(typeof selectedGoal === "string" && selectedGoal !== ""
+          ? { goalId: selectedGoal }
+          : {}),
         scenarios: { conservative, base, upside },
       },
       csrfToken: readCsrfToken(),
@@ -221,6 +232,7 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
                 onChange={(value) => {
                   if (value === null || disabled) return;
                   setTarget({ ...target, from: value });
+                  setGoalId("");
                   clearResult();
                 }}
               />
@@ -230,12 +242,37 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
                 onChange={(value) => {
                   if (value === null || disabled) return;
                   setTarget({ ...target, to: value });
+                  setGoalId("");
                   clearResult();
                 }}
               />
               <span className="text-sm text-muted-foreground">
                 {S.scopeCurrency} <bdi>{scope.currency}</bdi>
               </span>
+            </div>
+            <div className="space-y-2">
+              {showGoalPicker ? (
+                <ForecastGoalPicker
+                  scope={{ ...scope, ...target }}
+                  selected={goalId}
+                  onChange={(value) => {
+                    setGoalId(value);
+                    clearResult();
+                  }}
+                  disabled={disabled}
+                  enabled={!changingPreferences && validTargetDates(target, today)}
+                />
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={disabled}
+                  onClick={() => setShowGoalPicker(true)}
+                >
+                  {forecastGoal.openPicker}
+                </Button>
+              )}
+              <p className="text-sm text-muted-foreground">{forecastGoal.pickerHelp}</p>
             </div>
             <p className="text-sm text-muted-foreground">{S.assumptionsHelp}</p>
             <div className="grid gap-3 lg:grid-cols-3">
@@ -270,6 +307,9 @@ export function PeriodForecastPanel({ scope, today }: { scope: Scope; today: str
           </p>
         )}
         {report?.state === "available" && <ForecastResults report={report} />}
+        {report?.state === "available" && report.goalCoverage !== undefined && (
+          <ForecastGoalCoverageResult report={report.goalCoverage} />
+        )}
       </div>
     </Panel>
   );

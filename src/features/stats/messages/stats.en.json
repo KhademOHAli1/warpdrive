@@ -329,5 +329,30 @@
     "permission": "Your current access does not allow you to see this report.",
     "scopeUnavailable": "This pipeline or report scope is unavailable.",
     "unavailable": "Won value by linked organization is unavailable for these filters."
+  },
+  "forecastGoal": {
+    "openPicker": "Choose a KPI target",
+    "selectGoal": "KPI target for the forecast",
+    "pickerHelp": "Optional. Compare the forecast with an existing won-deal-value KPI goal for this scope and period.",
+    "chooseDates": "Choose valid future dates to see KPI targets.",
+    "optionsUnavailable": "KPI targets are unavailable for the selected scope and time zone.",
+    "optionLimit": "There are too many KPI assignments to list for this selection.",
+    "noOptions": "No available KPI goal matches this scope and period.",
+    "noGoal": "Run without a KPI target",
+    "selectionUnavailable": "The selected KPI target is unavailable and will be omitted from this run.",
+    "clearGoal": "Clear unavailable target",
+    "coverageTitle": "KPI target coverage",
+    "targetUnavailable": "The selected KPI target is unavailable with your current access.",
+    "scopeMismatch": "The KPI target must use the same currency, pipeline and owner scope as the forecast.",
+    "periodMismatch": "The KPI target must match the exact dates and reporting time zone of the forecast.",
+    "bookedUnavailable": "Current booked value could not be established for the selected future period.",
+    "nominalBasis": "These are nominal CRM amounts. The gap uses the current booked value, and each scenario shows its expected contribution to that gap.",
+    "bookedNominalValue": "Booked won value",
+    "targetNominalValue": "KPI target",
+    "remainingNominalValue": "Current gap",
+    "noPositiveGap": "The remaining target is zero. There is no positive gap for a coverage ratio.",
+    "incompleteScenario": "Coverage is unavailable because this scenario has unknown contributions.",
+    "coverageFraction": "Expected value over current gap",
+    "afterScenario": "Remaining gap after this scenario"
   }
 }
