@@ -64,7 +64,14 @@ export async function submitClaimedSmtpAttempt(
     raw: mime.value,
     signal: args.signal,
     beforeSubmission: (signal) =>
-      stampSmtpSubmission(db, { attempt, token, runtime: args.runtime, receipt: prepared, signal }),
+      stampSmtpSubmission(db, {
+        attempt,
+        token,
+        runtime: args.runtime,
+        receipt: prepared,
+        signal,
+        workflow: args.workflow,
+      }),
   });
   if (!sent.ok) {
     const rejected: SmtpReceipt = {
@@ -103,6 +110,7 @@ export async function submitClaimedSmtpAttempt(
     raw: mime.value,
     runtime: args.runtime,
     idempotencyKey: args.idempotencyKey,
+    workflow: args.workflow,
     signal: args.signal,
   });
 }

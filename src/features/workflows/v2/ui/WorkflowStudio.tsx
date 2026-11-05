@@ -1,56 +1,74 @@
 "use client";
 import { ArrowLeft, LayoutGrid, Plus, Redo2, Undo2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { type RefObject, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { ACTION_BLOCK_KINDS, type WorkflowV2Document } from "@/features/blocks/contracts";
-import { BlockPalette } from "@/features/blocks/ui/BlockPalette";
+import type { WorkflowV2Document } from "@/features/blocks/contracts";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { WorkflowEditorSplit } from "@/features/workflows/ui/WorkflowEditorSplit";
+import { WorkflowReferenceIcon } from "@/features/workflows/ui/WorkflowReferenceIcon";
+import editorStyles from "@/features/workflows/ui/workflowEditor.module.css";
+import inspectorStyles from "@/features/workflows/ui/workflowInspector.module.css";
+import "@/features/workflows/ui/workflowTheme.css";
 import { useFormatters } from "@/lib/useFormatters";
+import { StudioActionPicker } from "./StudioActionPicker";
 import { StudioConnections } from "./StudioConnections";
 import { StudioLiveDialog } from "./StudioLiveDialog";
 import { StudioOutput } from "./StudioOutput";
 import { StudioTrigger } from "./StudioTrigger";
-import { studioSetupHref, updateStudioNode } from "./studioModel";
+import { updateStudioNode } from "./studioModel";
+import { studioActions, studioTriggers } from "./studioPresentation";
 import { useStudioLeaveGuard } from "./useStudioLeaveGuard";
 import { useWorkflowStudio, type WorkflowStudioModel } from "./useWorkflowStudio";
 import { WorkflowRunPanel } from "./WorkflowRunPanel";
-import { studioCategory, studioIcons, WorkflowStudioCanvas } from "./WorkflowStudioCanvas";
+import { WorkflowStudioCanvas } from "./WorkflowStudioCanvas";
 import { WorkflowStudioInspector } from "./WorkflowStudioInspector";
 
 function StudioToolbar({
   model,
+  returnTo,
   onLive,
   onArchive,
   onPalette,
+  configureButton,
 }: {
   model: WorkflowStudioModel;
+  returnTo: string;
   onLive: () => void;
   onArchive: () => void;
   onPalette: () => void;
+  configureButton: RefObject<HTMLButtonElement | null>;
 }) {
   const { L } = model;
   const format = useFormatters();
   return (
-    <header className="shrink-0 border-b bg-background px-4 py-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          aria-label={L.name}
-          value={model.document.name}
-          maxLength={120}
-          disabled={model.disabled}
-          onChange={(event) => model.name(event.target.value)}
-          className="h-8 min-w-40 max-w-80 flex-1 border-transparent px-2 text-sm font-medium shadow-none hover:border-border"
-        />
-        <span className="text-[10px] text-muted-foreground">
-          {model.archived ? L.archive : model.document.active ? L.active : L.draft} · {L.revision}{" "}
-          {format.number(model.document.revision)}
-          {model.dirty ? ` · ${L.unsaved}` : ""}
-        </span>
-        <div className="ms-auto flex flex-wrap gap-1.5">
+    <header className="shrink-0">
+      <div className={`${editorStyles.header} ${editorStyles.studioPrimary}`}>
+        <Link
+          href={returnTo.startsWith("/workflows") ? returnTo : "/workflows"}
+          className={editorStyles.studioBack}
+        >
+          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+          {L.back}
+        </Link>
+        <div className={editorStyles.name}>
+          <Input
+            aria-label={L.name}
+            value={model.document.name}
+            maxLength={120}
+            disabled={model.disabled}
+            onChange={(event) => model.name(event.target.value)}
+          />
+          <span className={editorStyles.metadata}>
+            {model.archived ? L.archive : model.document.active ? L.active : L.draft} · {L.revision}{" "}
+            {format.number(model.document.revision)}
+            {model.dirty ? ` · ${L.unsaved}` : ""}
+          </span>
+        </div>
+        <div className={editorStyles.actions}>
           <Button
             size="sm"
             variant="ghost"
@@ -125,7 +143,7 @@ function StudioToolbar({
           </Button>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+      <div className={`${editorStyles.viewbar} ${editorStyles.studioControls}`}>
         <Button
           size="sm"
           variant={model.tab === "palette" ? "outline" : "ghost"}
@@ -144,7 +162,7 @@ function StudioToolbar({
         >
           <LayoutGrid className="size-3.5" aria-hidden />
         </Button>
-        <div className="min-w-40 max-w-64">
+        <div className="min-w-32 max-w-64">
           <Select
             ariaLabel={L.selectStep}
             value={model.selected}
@@ -159,10 +177,11 @@ function StudioToolbar({
               model.select(id, true);
               model.setTab("configure");
             }}
-            triggerClassName="h-8 text-xs"
+            triggerClassName="text-xs"
           />
         </div>
         <Button
+          ref={configureButton}
           size="sm"
           variant={model.tab === "configure" ? "outline" : "ghost"}
           onClick={() => model.setTab("configure")}
@@ -180,13 +199,74 @@ function StudioToolbar({
     </header>
   );
 }
+
+function StudioPanelHeader({
+  model,
+  title,
+  onClose,
+}: {
+  model: WorkflowStudioModel;
+  title: string;
+  onClose: () => void;
+}) {
+  const { L, tab, selected, document } = model;
+  const node =
+    tab === "configure" ? document.draft.nodes.find((item) => item.id === selected) : undefined;
+  const triggerType = document.draft.trigger.type;
+  const trigger =
+    tab === "configure" && selected === "$trigger" ? studioTriggers[triggerType] : undefined;
+  const appearance = node === undefined ? undefined : studioActions[node.type];
+  const icon = appearance?.icon ?? trigger?.icon;
+  const category = appearance === undefined ? L.trigger : L.groups[appearance.group];
+  return (
+    <header className={`${inspectorStyles.header} sticky top-0 z-10`}>
+      {icon !== undefined && (
+        <span
+          className={inspectorStyles.icon}
+          data-studio-category={appearance?.group}
+          data-node-type={
+            trigger === undefined
+              ? undefined
+              : triggerType.startsWith("record.")
+                ? "trigger.record"
+                : "trigger.manual"
+          }
+        >
+          <WorkflowReferenceIcon name={icon} stroke={appearance?.stroke} />
+        </span>
+      )}
+      <div className={inspectorStyles.heading}>
+        <h2 dir="auto" className={inspectorStyles.title}>
+          {node?.name ?? (trigger === undefined ? title : (L.triggers[trigger.key] ?? title))}
+        </h2>
+        {icon !== undefined && <span className={inspectorStyles.category}>{category}</span>}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        static
+        className={inspectorStyles.close}
+        aria-label={L.close}
+        onClick={onClose}
+      >
+        <WorkflowReferenceIcon name="x" />
+      </Button>
+    </header>
+  );
+}
+
 function StudioSidebar({
   model,
   palettePort,
+  paletteEdge,
+  onClose,
   onAdd,
 }: {
   model: WorkflowStudioModel;
   palettePort?: string;
+  paletteEdge?: string;
+  onClose: () => void;
   onAdd: (port: string) => void;
 }) {
   const { L, studio } = model;
@@ -202,7 +282,6 @@ function StudioSidebar({
   if (model.tab === "test")
     return (
       <div className="space-y-4 p-4">
-        <h2 className="text-sm font-medium">{L.syntheticTest}</h2>
         <p className="text-xs leading-relaxed text-muted-foreground">{L.syntheticHint}</p>
         {model.pending && (
           <p role="status" className="text-xs text-muted-foreground">
@@ -261,35 +340,7 @@ function StudioSidebar({
     );
   if (model.tab === "palette")
     return (
-      <BlockPalette
-        categories={L.groups}
-        disabled={model.disabled}
-        rows={ACTION_BLOCK_KINDS.map((type) => {
-          const readiness = studio.readiness[type];
-          const Icon = studioIcons[type];
-          return {
-            id: type,
-            label: L.blocks[type] ?? type,
-            category: studioCategory(type),
-            icon: <Icon className="size-3.5 text-muted-foreground" aria-hidden />,
-            state:
-              readiness?.state === "forbidden"
-                ? "denied"
-                : readiness?.state === "unsupported_in_context"
-                  ? "unavailable"
-                  : readiness?.state === "needs_connection"
-                    ? "needs-setup"
-                    : "ready",
-            ...(readiness?.state === "needs_connection"
-              ? { setupHref: studioSetupHref(type) }
-              : {}),
-          };
-        })}
-        onChoose={(id) => {
-          const type = ACTION_BLOCK_KINDS.find((kind) => kind === id);
-          if (type !== undefined) model.add(type, palettePort);
-        }}
-      />
+      <StudioActionPicker model={model} port={palettePort} edgeId={paletteEdge} onClose={onClose} />
     );
   return (
     <>
@@ -342,35 +393,39 @@ export function WorkflowStudio({
   const { locale } = useLocalePreferences();
   const [live, setLive] = useState<WorkflowStudioModel["manualLaunch"]>(null);
   const [archive, setArchive] = useState(false);
-  const [palettePort, setPalettePort] = useState<string>();
+  const [insertion, setInsertion] = useState<{ port: string; edgeId?: string }>();
+  const configureButton = useRef<HTMLButtonElement>(null);
   const leave = useStudioLeaveGuard(model.dirty, model.pending);
   const [historyOpened, setHistoryOpened] = useState(false);
   if (initialHistory && !historyOpened) {
     setHistoryOpened(true);
     model.setTab("runs");
   }
+  const panelTitle = {
+    configure: model.L.configure,
+    palette: model.L.add,
+    runs: model.L.history,
+    test: model.L.syntheticTest,
+  }[model.tab ?? "configure"];
+  function closePanel() {
+    model.setTab(null);
+    configureButton.current?.focus();
+  }
   return (
     <div
       dir={locale === "fa" ? "rtl" : "ltr"}
-      className="flex h-[calc(100dvh-100px)] min-h-[680px] flex-col gap-3"
+      className={`workflow-twenty-theme ${editorStyles.editor}`}
+      data-workflow-editor
     >
-      <div className="flex shrink-0 items-center gap-2">
-        <Link
-          href={returnTo.startsWith("/workflows") ? returnTo : "/workflows"}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5 rtl:rotate-180" aria-hidden />
-          {model.L.back}
-        </Link>
-        <span className="ms-auto text-[10px] text-muted-foreground">{model.L.title}</span>
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-background">
+      <div className={editorStyles.body}>
         <StudioToolbar
           model={model}
+          returnTo={returnTo}
           onLive={() => setLive(model.manualLaunch)}
           onArchive={() => setArchive(true)}
+          configureButton={configureButton}
           onPalette={() => {
-            setPalettePort(undefined);
+            setInsertion(undefined);
             model.setTab(model.tab === "palette" ? "configure" : "palette");
           }}
         />
@@ -387,30 +442,54 @@ export function WorkflowStudio({
             {model.notice}
           </p>
         )}
-        <div className="grid min-h-0 flex-1 grid-rows-[minmax(280px,1fr)_minmax(220px,44%)] lg:grid-cols-[minmax(0,1fr)_350px] lg:grid-rows-1">
-          <WorkflowStudioCanvas
-            definition={model.document.draft}
-            selected={model.selected}
-            onSelect={(id) => {
-              model.select(id);
-              model.setTab("configure");
-            }}
-            onChange={model.edit}
-            disabled={model.disabled}
-            reveal={model.reveal}
-            layoutRevision={model.layoutRevision}
-          />
-          <aside className="min-h-0 overflow-y-auto border-t bg-background lg:border-s lg:border-t-0">
-            <StudioSidebar
-              model={model}
-              palettePort={palettePort}
-              onAdd={(port) => {
-                setPalettePort(port);
+        <WorkflowEditorSplit
+          open={model.tab !== null}
+          panelLabel={panelTitle}
+          onClose={closePanel}
+          canvas={
+            <WorkflowStudioCanvas
+              definition={model.document.draft}
+              selected={model.tab === null ? "" : model.selected}
+              onSelect={(id) => {
+                model.select(id);
+                model.setTab("configure");
+              }}
+              onClearSelection={() => model.setTab(null)}
+              onInsert={(source, port, edgeId) => {
+                model.select(source);
+                setInsertion({ port, edgeId });
                 model.setTab("palette");
               }}
+              pending={
+                model.tab === "palette" && insertion?.edgeId === undefined
+                  ? { source: model.selected, port: insertion?.port ?? "next" }
+                  : undefined
+              }
+              onChange={model.edit}
+              disabled={model.disabled}
+              reveal={model.reveal}
+              layoutRevision={model.layoutRevision}
             />
-          </aside>
-        </div>
+          }
+        >
+          {model.tab !== null && (
+            <>
+              {(model.tab !== "palette" || model.studio === null) && (
+                <StudioPanelHeader model={model} title={panelTitle} onClose={closePanel} />
+              )}
+              <StudioSidebar
+                model={model}
+                palettePort={insertion?.port}
+                paletteEdge={insertion?.edgeId}
+                onClose={closePanel}
+                onAdd={(port) => {
+                  setInsertion({ port });
+                  model.setTab("palette");
+                }}
+              />
+            </>
+          )}
+        </WorkflowEditorSplit>
       </div>
       {live !== null && (
         <StudioLiveDialog launch={live} model={model} onClose={() => setLive(null)} />

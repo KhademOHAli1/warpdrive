@@ -1,0 +1,86 @@
+.split {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+.canvas {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.canvas > section {
+  flex: 1;
+  min-height: 0;
+}
+.resize {
+  position: relative;
+  z-index: 7;
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  align-self: stretch;
+  inline-size: 0;
+  margin: 0 -4px;
+  padding: 0 4px;
+  border: 0;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+}
+.resize:focus-visible {
+  outline: 2px solid var(--workflow-accent);
+  outline-offset: 1px;
+}
+.drawer {
+  flex: 0 0 auto;
+  min-width: 0;
+  inline-size: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition:
+    inline-size 300ms ease,
+    visibility 0s linear 300ms;
+}
+.drawer[data-open="true"] {
+  inline-size: var(--workflow-panel-width);
+  visibility: visible;
+  transition-delay: 0s;
+}
+.drawer[data-resizing="true"] {
+  transition: none;
+}
+.panel {
+  box-sizing: border-box;
+  inline-size: var(--workflow-panel-width);
+  block-size: 100%;
+  overflow-y: auto;
+  border-inline-start: 1px solid var(--workflow-border-medium);
+  background: var(--workflow-panel-surface);
+}
+
+@media (max-width: 768px) {
+  .resize {
+    display: none;
+  }
+  .drawer,
+  .drawer[data-open="true"] {
+    position: absolute;
+    z-index: 6;
+    inset: 0;
+    inline-size: 100%;
+    transition: none;
+  }
+  .panel {
+    inline-size: 100%;
+    border-inline-start: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    transition: none;
+  }
+}

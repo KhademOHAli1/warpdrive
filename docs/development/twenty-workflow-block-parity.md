@@ -2,6 +2,8 @@
 
 Audit date: 2026-11-05. Public reference: [Twenty v2.55.0](https://github.com/twentyhq/twenty/releases/tag/twenty/v2.55.0), commit **b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5**. Warpdrive inspected checkout: base **49044ca4f1a1bbbf507ab9a333e703688d0ad60a**, with concurrent editor presentation changes. This document records source contracts and missing implementation. A catalog label, icon, schema member, or passing presentation test is not functional support.
 
+> This audit follows the original V1 increment. New workflows now use V2. See [current Workflow Studio coverage](../workflow-blocks.md) for the runtime and authoring differences that apply to new workflows.
+
 ## Evidence boundary
 
 The pinned [action type union](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-shared/src/workflow/types/WorkflowActionType.ts), [server factory](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-server/src/modules/workflow/workflow-executor/factories/workflow-action.factory.ts), five action-group constants, settings schemas, action executors and configuration components were inspected. Their exact paths are indexed below. The fixed picker has **20 functional actions**; application-provided Logic Function adds a dynamic twenty-first action type. EMPTY is an authoring placeholder, not an extra working block. Four trigger kinds appear as seven picker entries because database events have created/updated/deleted/upserted variants.

@@ -214,6 +214,7 @@ export async function listOutbox(
              s.status, s.scheduled_at, s.error_id, s.created_at
       FROM email_send_attempts s JOIN email_accounts a ON a.id = s.account_id
       WHERE a.user_id = ${actor.id}
+        AND NOT (s.payload ? 'workflowPurpose')
         AND (
           s.status IN ('pending', 'sending', 'needs_review')
           OR (s.scheduled_at IS NOT NULL AND s.scheduled_at > now())

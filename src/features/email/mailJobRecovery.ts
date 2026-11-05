@@ -9,6 +9,7 @@ import {
 import type { Db } from "@/db/client";
 import { recoverNotificationMailJobs } from "./mailNotificationRecovery";
 import { MAIL_RECEIPT_REPAIR_LIMIT, MAIL_RECOVERY_BATCH_SIZE } from "./mailRecoveryPolicy";
+import { isNotLegacyWorkflowMail } from "./workflowMailFence";
 
 type Queue = Pick<PgBoss, "send">;
 interface SendCandidate {
@@ -51,6 +52,7 @@ export async function recoverMailJobs(
       s.delivery_outcome->>'state' IN ('accepted','partial') AS repair
       FROM email_send_attempts s JOIN email_accounts a ON a.id=s.account_id JOIN users u ON u.id=a.user_id
       WHERE u.is_active AND u.invited_at IS NULL AND a.provider IN ('gmail','imap_smtp')
+        AND NOT (s.payload ? 'workflowPurpose') AND ${isNotLegacyWorkflowMail(sql`s.idempotency_key`)}
         AND NOT (s.payload ? 'systemPurpose') AND s.notification_suppressed_at IS NULL
         AND NOT EXISTS(SELECT 1 FROM pgboss.job j WHERE j.name=${PGBOSS_QUEUE_EMAIL_SEND}
           AND j.state IN ('created','retry','active') AND j.data->>'accountId'=s.account_id::text

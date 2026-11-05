@@ -15,6 +15,7 @@ import { ensureLocalCopyForReplay } from "./sendReplayRepair";
 import { enqueueScheduledSendJob, isFutureScheduledSend } from "./sendScheduling";
 import { disableTokens } from "./tracking";
 import { performWorkerSendCrm } from "./workerSendCrm";
+import type { WorkflowMailDispatch } from "./workflowMailFence";
 
 export interface SendDeliveryArgs {
   accountId: string;
@@ -27,6 +28,7 @@ export interface SendDeliveryArgs {
   gmail?: GmailClient;
   mail?: ImapConnectionRuntime;
   expectedGeneration?: number;
+  workflow?: WorkflowMailDispatch;
 }
 
 function acceptedReview(
@@ -57,7 +59,7 @@ export async function deliverQueuedSend(
     return err(
       new AppError(ERROR_IDS.MAIL_CONNECTION_UNAVAILABLE, "mailbox transport unavailable"),
     );
-  const existing = await loadAttempt(db, args.accountId, args.idempotencyKey);
+  const existing = await loadAttempt(db, args.accountId, args.idempotencyKey, args.workflow);
   if (existing?.status === "sent") {
     try {
       const repaired = await ensureLocalCopyForReplay(db, { ...args, gmail: args.gmail });
@@ -85,8 +87,11 @@ export async function deliverQueuedSend(
       existing?.connection_generation ?? args.expectedGeneration,
     );
   }
-  const current = await loadAttempt(db, args.accountId, args.idempotencyKey);
-  if (current?.send_started_at != null || outcome.value.status === "needs_review")
+  const current = await loadAttempt(db, args.accountId, args.idempotencyKey, args.workflow);
+  if (
+    current?.delivery_state !== "rejected" &&
+    (current?.send_started_at != null || outcome.value.status === "needs_review")
+  )
     return acceptedReview(args);
   await disableTokens(db, args.attemptId, args.signal);
   return ok({

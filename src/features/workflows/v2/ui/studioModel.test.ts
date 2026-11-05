@@ -11,6 +11,7 @@ import {
   asObject,
   connectStudioNodes,
   initialConfig,
+  insertStudioNodeOnEdge,
   studioVariables,
   textValue,
   updateStudioNode,
@@ -62,6 +63,33 @@ describe("workflow studio graph authoring", () => {
     expect(validateWorkflowV2(graph).ok).toBe(true);
     expect(connectStudioNodes(graph, "work", "iterator", "next")).toBeNull();
     expect(arrangeStudio(graph).layout?.work?.y).toBe(arrangeStudio(graph).layout?.done?.y);
+  });
+  it("inserts on a specific connection without stealing the sibling branch or iterator loop", () => {
+    const graph: WorkflowV2Definition = {
+      schemaVersion: 2,
+      trigger: { type: "manual", config: {} },
+      nodes: [node("loop", "ITERATOR"), node("process", "CODE"), node("finish", "DELAY")],
+      edges: [
+        { id: "branch", source: "loop", target: "process", sourcePort: "loop" },
+        { id: "complete", source: "loop", target: "finish", sourcePort: "done" },
+      ],
+      entryNodeIds: ["loop"],
+    };
+    const prepare = node("prepare", "CODE");
+    const inserted = insertStudioNodeOnEdge(graph, prepare, "branch");
+    expect(inserted?.edges).toEqual([
+      { id: "branch", source: "loop", target: "prepare", sourcePort: "loop" },
+      { id: "complete", source: "loop", target: "finish", sourcePort: "done" },
+      expect.objectContaining({ source: "prepare", target: "process", sourcePort: "next" }),
+    ]);
+    expect(inserted !== null && validateWorkflowV2(inserted).ok).toBe(true);
+    expect(insertStudioNodeOnEdge(graph, prepare, "stale")).toBeNull();
+    expect(insertStudioNodeOnEdge(graph, prepare, "$trigger:loop")).toMatchObject({
+      entryNodeIds: ["prepare"],
+      edges: expect.arrayContaining([
+        expect.objectContaining({ source: "prepare", target: "loop", sourcePort: "next" }),
+      ]),
+    });
   });
   it("offers only upstream records and arrays with the exact persisted binding path", () => {
     const graph: WorkflowV2Definition = {

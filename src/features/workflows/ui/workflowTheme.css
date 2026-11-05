@@ -104,3 +104,19 @@
     padding: 0;
   }
 }
+
+.workflow-twenty-theme [data-studio-category="ai"] {
+  color: color(display-p3 0.775 0.297 0.61);
+}
+
+.workflow-twenty-theme [data-studio-category="flow"] {
+  color: var(--workflow-flow-icon);
+}
+
+.workflow-twenty-theme [data-studio-category="core"] {
+  color: var(--workflow-notification-icon);
+}
+
+.workflow-twenty-theme [data-studio-category="human"] {
+  color: var(--workflow-human-input-icon);
+}

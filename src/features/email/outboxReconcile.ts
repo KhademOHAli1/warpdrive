@@ -14,6 +14,7 @@ export interface AttemptRow {
   claim_token: string | null;
   gmail_message_id: string | null;
   connection_generation?: number | null;
+  delivery_state?: string | null;
 }
 
 export type SendOutcome = { status: "sent" | "failed" | "needs_review"; gmailMessageId?: string };

@@ -2,166 +2,66 @@
 import {
   Background,
   type Connection,
-  ConnectionLineType,
   Controls,
   type EdgeChange,
-  Handle,
-  type Node,
   type NodeChange,
-  type NodeProps,
-  Position,
   ReactFlow,
 } from "@xyflow/react";
-import {
-  CirclePlay,
-  Clock,
-  Code2,
-  Database,
-  GitBranch,
-  ListFilter,
-  Mail,
-  Sparkles,
-} from "lucide-react";
-import { useState } from "react";
-import type {
-  ActionBlockKind,
-  WorkflowV2Definition,
-  WorkflowV2Node,
-} from "@/features/blocks/contracts";
+import { type CSSProperties, useId, useRef, useState } from "react";
+import type { WorkflowV2Definition } from "@/features/blocks/contracts";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
-import { BlockCard } from "@/features/blocks/ui/BlockCard";
-import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { ResponsiveViewport } from "@/features/workflows/ui/ResponsiveViewport";
 import {
-  arrangeStudio,
-  asArray,
-  asObject,
-  connectStudioNodes,
-  portsForNode,
-  removeStudioNode,
-  textValue,
-} from "./studioModel";
+  type WorkflowCanvasEdge,
+  WorkflowDiagramEdge,
+} from "@/features/workflows/ui/WorkflowDiagramEdge";
+import {
+  WorkflowConnectionLine,
+  WorkflowEdgeMarkers,
+} from "@/features/workflows/ui/WorkflowEdgeMarkers";
+import {
+  type PendingCanvasNode,
+  WorkflowPendingStep,
+} from "@/features/workflows/ui/WorkflowPendingStep";
+import { pendingEdgeId, pendingStepId } from "@/features/workflows/ui/workflowPendingInsertion";
+import { StudioDiagramNode, type StudioNode, studioPortLabel } from "./StudioDiagramNode";
+import styles from "./studioDiagram.module.css";
+import { arrangeStudio, connectStudioNodes, portsForNode, removeStudioNode } from "./studioModel";
 import "@xyflow/react/dist/style.css";
 import "@/features/workflows/ui/workflowCanvas.css";
+import "@/features/workflows/ui/workflowTheme.css";
 
-export const studioIcons = {
-  $trigger: CirclePlay,
-  CREATE_RECORD: Database,
-  UPDATE_RECORD: Database,
-  DELETE_RECORD: Database,
-  UPSERT_RECORD: Database,
-  FIND_RECORDS: Database,
-  PICK_RECORD: Database,
-  FORM: ListFilter,
-  FILTER: ListFilter,
-  ITERATOR: ListFilter,
-  IF_ELSE: GitBranch,
-  DELAY: Clock,
-  WAIT_FOR_EVENT: Clock,
-  CODE: Code2,
-  LOGIC_FUNCTION: Code2,
-  HTTP_REQUEST: Code2,
-  AI_AGENT: Sparkles,
-  CLASSIFY: Sparkles,
-  SEND_EMAIL: Mail,
-  DRAFT_EMAIL: Mail,
-  SEND_CHAT_MESSAGE: Mail,
-  CREATE_CALENDAR_EVENT: Mail,
-} as const;
-export function studioCategory(type: ActionBlockKind) {
-  if (
-    [
-      "CREATE_RECORD",
-      "UPDATE_RECORD",
-      "DELETE_RECORD",
-      "UPSERT_RECORD",
-      "FIND_RECORDS",
-      "PICK_RECORD",
-    ].includes(type)
-  )
-    return "data";
-  if (["AI_AGENT", "CLASSIFY"].includes(type)) return "ai";
-  if (["FILTER", "ITERATOR", "IF_ELSE", "DELAY", "WAIT_FOR_EVENT"].includes(type)) return "flow";
-  if (["FORM", "SEND_CHAT_MESSAGE"].includes(type)) return "human";
-  return "core";
-}
-type CanvasData = { node?: WorkflowV2Node; trigger: string; invalid: boolean };
-type StudioNode = Node<CanvasData, "studio">;
-function StudioNodeView({ data, selected, isConnectable }: NodeProps<StudioNode>) {
-  const L = useSharedBlocksMessages();
-  const { locale } = useLocalePreferences();
-  const node = data.node;
-  const Icon = studioIcons[node?.type ?? "$trigger"];
-  const ports = node === undefined ? ["next"] : portsForNode(node);
-  const branches = asArray(node?.config.branches).map(asObject);
+type DiagramNode = StudioNode | PendingCanvasNode;
+const nodeTypes = { studio: StudioDiagramNode, pendingWorkflowStep: WorkflowPendingStep };
+type PendingOutput = { source: string; port: string };
+
+function canShowPending(
+  definition: WorkflowV2Definition,
+  pending: PendingOutput,
+  connections: WorkflowV2Definition["edges"],
+) {
+  const source = definition.nodes.find((node) => node.id === pending.source);
+  const ports =
+    source === undefined ? (pending.source === "$trigger" ? ["next"] : []) : portsForNode(source);
   return (
-    <div dir={locale === "fa" ? "rtl" : "ltr"}>
-      <BlockCard
-        selected={selected}
-        invalid={data.invalid}
-        icon={<Icon className="size-3.5" aria-hidden />}
-        label={node === undefined ? L.trigger : (L.blocks[node.type] ?? node.type)}
-        title={node?.name ?? data.trigger}
-        summary={node === undefined ? undefined : textValue(node.config.objectName) || undefined}
-      >
-        {node !== undefined && (
-          <Handle
-            id="in"
-            type="target"
-            position={Position.Top}
-            isConnectable={isConnectable}
-            aria-label={L.inputs}
-          />
-        )}
-        {ports.map((port, index) => (
-          <Handle
-            key={port}
-            id={port}
-            type="source"
-            position={Position.Bottom}
-            style={{ left: `${((index + 1) * 100) / (ports.length + 1)}%` }}
-            isConnectable={isConnectable}
-            aria-label={
-              port === "loop"
-                ? L.loop
-                : port === "done"
-                  ? L.done
-                  : port === "next"
-                    ? L.next
-                    : textValue(branches.find((branch) => branch.id === port)?.label) ||
-                      (branches.find((branch) => branch.id === port)?.condition === undefined
-                        ? L.elseRoute
-                        : `${L.fields.routeName} ${index + 1}`)
-            }
-          />
-        ))}
-      </BlockCard>
-      {ports.length > 1 && (
-        <div className="mt-1 flex justify-around gap-1 text-[9px] text-muted-foreground">
-          {ports.map((port, index) => (
-            <span key={port}>
-              {port === "loop"
-                ? L.loop
-                : port === "done"
-                  ? L.done
-                  : textValue(branches.find((branch) => branch.id === port)?.label) ||
-                    (branches.find((branch) => branch.id === port)?.condition === undefined
-                      ? L.elseRoute
-                      : `${L.fields.routeName} ${index + 1}`)}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
+    ports.includes(pending.port) &&
+    !connections.some((edge) => edge.source === pending.source && edge.sourcePort === pending.port)
   );
 }
-const nodeTypes = { studio: StudioNodeView };
+
+const edgeTypes = { twenty: WorkflowDiagramEdge };
+
 export function WorkflowStudioCanvas({
   definition,
   selected,
   disabled,
   onSelect,
   onChange,
+  onClearSelection,
+  onInsert,
+  pending,
+  onFocusPicker,
   reveal,
   layoutRevision,
 }: {
@@ -170,72 +70,163 @@ export function WorkflowStudioCanvas({
   disabled: boolean;
   onSelect: (id: string) => void;
   onChange: (definition: WorkflowV2Definition) => void;
+  onClearSelection?: () => void;
+  onInsert?: (source: string, port: string, edgeId?: string) => void;
+  pending?: PendingOutput;
+  onFocusPicker?: () => void;
   reveal?: { id: string; nonce: number };
   layoutRevision: number;
 }) {
   const L = useSharedBlocksMessages();
+  const t = useAppTranslations("workflows");
+  const canvasRef = useRef<HTMLElement>(null);
+  const markerPrefix = `studio-arrow-${useId().replaceAll(":", "")}`;
+  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
   const [sizes, setSizes] = useState(new Map<string, { width: number; height: number }>());
   const [positions, setPositions] = useState(new Map<string, { x: number; y: number }>());
   const layout = definition.layout ?? arrangeStudio(definition).layout ?? {};
-  const triggerKey =
-    definition.trigger.type === "record.created_or_updated"
-      ? "upserted"
-      : definition.trigger.type.startsWith("record.")
-        ? definition.trigger.type.slice(7)
-        : definition.trigger.type === "schedule"
-          ? "cron"
-          : definition.trigger.type;
   const specs = [
     { id: "$trigger", node: undefined },
     ...definition.nodes.map((node) => ({ id: node.id, node })),
   ];
-  const nodes: StudioNode[] = specs.map((spec) => ({
-    id: spec.id,
-    type: "studio",
-    position: positions.get(spec.id) ?? layout[spec.id] ?? { x: 0, y: 0 },
-    measured: sizes.get(spec.id),
-    data: { node: spec.node, trigger: L.triggers[triggerKey] ?? L.trigger, invalid: false },
-    selected: selected === spec.id,
-    deletable: !disabled && spec.id !== "$trigger",
-    ariaLabel: spec.node?.name ?? L.trigger,
-  }));
-  const edges = [
-    ...definition.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      sourceHandle: edge.sourcePort,
-      targetHandle: "in",
-      type: "smoothstep",
-    })),
+  const connections = [
+    ...definition.edges,
     ...definition.entryNodeIds.map((id) => ({
       id: `$trigger:${id}`,
       source: "$trigger",
       target: id,
-      sourceHandle: "next",
-      targetHandle: "in",
-      type: "smoothstep",
+      sourcePort: "next",
     })),
   ];
-  function changes(values: NodeChange<StudioNode>[]) {
+  const pendingOutput =
+    pending !== undefined && canShowPending(definition, pending, connections) ? pending : undefined;
+  const nodes: DiagramNode[] = specs.map((spec) => ({
+    id: spec.id,
+    type: "studio",
+    position: positions.get(spec.id) ?? layout[spec.id] ?? { x: 0, y: 0 },
+    measured: sizes.get(spec.id),
+    data: {
+      node: spec.node,
+      trigger: definition.trigger.type,
+      connectedPorts: new Set([
+        ...connections.filter((edge) => edge.source === spec.id).map((edge) => edge.sourcePort),
+        ...(pendingOutput?.source === spec.id ? [pendingOutput.port] : []),
+      ]),
+      onAdd: disabled || onInsert === undefined ? undefined : (port) => onInsert(spec.id, port),
+      onRemove:
+        disabled || spec.node === undefined
+          ? undefined
+          : () => {
+              onChange(removeStudioNode(definition, spec.id));
+              onClearSelection?.();
+            },
+    },
+    selected: pendingOutput === undefined && selected === spec.id,
+    deletable: !disabled && spec.id !== "$trigger",
+    ariaLabel: spec.node?.name ?? L.trigger,
+  }));
+  const edges: WorkflowCanvasEdge[] = connections.map(({ id, source, target, sourcePort }) => ({
+    id,
+    source,
+    target,
+    sourceHandle: sourcePort,
+    targetHandle: "in",
+    type: "twenty",
+    label:
+      sourcePort === "next"
+        ? undefined
+        : studioPortLabel(
+            L,
+            definition.nodes.find((node) => node.id === source),
+            sourcePort,
+          ),
+    data: {
+      spec: {
+        from: source,
+        to: target,
+        port: ["next", "loop", "done"].includes(sourcePort) ? sourcePort : `branch:${sourcePort}`,
+      },
+      markerPrefix,
+      hovered: id === hoveredEdge,
+      onInsert:
+        disabled || onInsert === undefined ? undefined : () => onInsert(source, sourcePort, id),
+      onDisconnect: disabled ? undefined : () => edgeChanges([{ id, type: "remove" }]),
+    },
+  }));
+  if (pendingOutput !== undefined) {
+    const { source, port } = pendingOutput;
+    const origin = positions.get(source) ?? layout[source] ?? { x: 0, y: 0 };
+    const position =
+      port === "loop"
+        ? { x: origin.x + 200, y: origin.y + 150 }
+        : { x: origin.x, y: origin.y + 150 };
+    nodes.push({
+      id: pendingStepId,
+      type: "pendingWorkflowStep",
+      position,
+      measured: sizes.get(pendingStepId),
+      ariaLabel: t("addAnAction"),
+      draggable: false,
+      selectable: false,
+      deletable: false,
+      data: {
+        focusPicker:
+          onFocusPicker ??
+          (() => {
+            canvasRef.current?.parentElement?.parentElement
+              ?.querySelector<HTMLElement>(
+                "[data-studio-action-picker] button:not(:disabled), [data-studio-action-picker] a",
+              )
+              ?.focus();
+          }),
+      },
+    });
+    edges.push({
+      id: pendingEdgeId,
+      source,
+      target: pendingStepId,
+      sourceHandle: port,
+      targetHandle: "in",
+      type: "twenty",
+      selectable: false,
+      deletable: false,
+      data: { spec: { from: source, to: pendingStepId, port }, markerPrefix },
+    });
+  }
+  function applyPosition(
+    current: WorkflowV2Definition,
+    change: Extract<NodeChange<DiagramNode>, { type: "position" }>,
+  ) {
+    const { id, position } = change;
+    if (position === undefined || id === pendingStepId) return current;
+    setPositions((previous) => {
+      const result = new Map(previous);
+      if (change.dragging === true) result.set(id, position);
+      else result.delete(id);
+      return result;
+    });
+    return change.dragging === true
+      ? current
+      : { ...current, layout: { ...(current.layout ?? layout), [id]: position } };
+  }
+  function changes(values: NodeChange<DiagramNode>[]) {
     let next = definition;
     for (const change of values) {
-      if (change.type === "dimensions" && change.dimensions !== undefined) {
-        const dimensions = change.dimensions;
-        setSizes((current) => new Map(current).set(change.id, dimensions));
-      }
-      if (disabled) continue;
-      if (change.type === "remove") next = removeStudioNode(next, change.id);
-      if (change.type === "position" && change.position !== undefined) {
-        const position = change.position;
-        setPositions((current) => {
-          const result = new Map(current);
-          if (change.dragging === true) result.set(change.id, position);
-          else result.delete(change.id);
-          return result;
-        });
-        if (change.dragging !== true)
-          next = { ...next, layout: { ...(next.layout ?? layout), [change.id]: position } };
+      switch (change.type) {
+        case "dimensions": {
+          const dimensions = change.dimensions;
+          if (dimensions !== undefined)
+            setSizes((current) => new Map(current).set(change.id, dimensions));
+          break;
+        }
+        case "remove":
+          if (!disabled && change.id !== pendingStepId) next = removeStudioNode(next, change.id);
+          break;
+        case "position":
+          if (!disabled) next = applyPosition(next, change);
+          break;
+        default:
+          break;
       }
     }
     if (next !== definition) onChange(next);
@@ -253,6 +244,7 @@ export function WorkflowStudioCanvas({
     });
   }
   function connect(connection: Connection) {
+    if (connection.source === pendingStepId || connection.target === pendingStepId) return;
     const next = connectStudioNodes(
       definition,
       connection.source,
@@ -263,28 +255,46 @@ export function WorkflowStudioCanvas({
   }
   return (
     <section
+      ref={canvasRef}
       aria-label={L.title}
       dir="ltr"
-      className="workflow-canvas min-h-[340px] min-w-0 bg-muted/15"
+      className={`workflow-twenty-theme workflow-canvas ${styles.diagram}`}
+      data-editable={!disabled}
+      style={{ "--workflow-connection-marker": `url(#${markerPrefix}-selected)` } as CSSProperties}
       onKeyDownCapture={(event) => {
         if (event.key !== "Enter" && event.key !== " ") return;
         if (!(event.target instanceof HTMLElement)) return;
         const node = event.target.closest<HTMLElement>(".react-flow__node");
-        if (node !== null && event.target === node && node.dataset.id !== undefined)
+        if (
+          node !== null &&
+          event.target === node &&
+          node.dataset.id !== undefined &&
+          node.dataset.id !== pendingStepId
+        )
           onSelect(node.dataset.id);
       }}
     >
+      <WorkflowEdgeMarkers prefix={markerPrefix} />
       <ReactFlow
         key={layoutRevision}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        nodeOrigin={[0.5, 0.5]}
+        onEdgeMouseEnter={(_, edge) => setHoveredEdge(edge.id)}
+        onEdgeMouseLeave={() => setHoveredEdge(null)}
+        proOptions={{ hideAttribution: true }}
         onNodesChange={changes}
         onEdgesChange={edgeChanges}
-        onNodeClick={(_, node) => onSelect(node.id)}
-        onPaneClick={() => onSelect("$trigger")}
+        onNodeClick={(_, node) => {
+          if (node.id !== pendingStepId) onSelect(node.id);
+        }}
+        onPaneClick={onClearSelection}
         onConnect={connect}
         isValidConnection={(connection) =>
+          connection.source !== pendingStepId &&
+          connection.target !== pendingStepId &&
           connectStudioNodes(
             definition,
             connection.source,
@@ -300,10 +310,10 @@ export function WorkflowStudioCanvas({
         fitViewOptions={{ padding: 0.3, maxZoom: 1.05 }}
         minZoom={0.15}
         maxZoom={1.8}
-        connectionLineType={ConnectionLineType.SmoothStep}
+        connectionLineComponent={WorkflowConnectionLine}
       >
         <ResponsiveViewport reveal={reveal} />
-        <Background gap={20} size={1} />
+        <Background color="var(--workflow-border-medium)" size={2} />
         <Controls showInteractive={false} />
       </ReactFlow>
     </section>

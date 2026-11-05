@@ -1,7 +1,7 @@
 "use client";
 
 import { LayoutGrid, Maximize2, Plus } from "lucide-react";
-import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Tip } from "@/components/ui/tooltip";
@@ -30,8 +30,8 @@ import type { PaletteRead } from "./paletteView";
 import type { RevealNode } from "./ResponsiveViewport";
 import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
+import { WorkflowEditorSplit } from "./WorkflowEditorSplit";
 import { WorkflowPalette } from "./WorkflowPalette";
-import { WorkflowPanelResize, workflowPanelWidth } from "./WorkflowPanelResize";
 import styles from "./workflowEditor.module.css";
 import "./workflowTheme.css";
 
@@ -53,10 +53,6 @@ export function BuilderWorkspace({
   history?: GraphHistoryControls;
 }) {
   const t = useAppTranslations("workflows");
-  const [panelWidth, setPanelWidth] = useState<number>(workflowPanelWidth.initial);
-  const panelStyle: CSSProperties & { "--workflow-panel-width": string } = {
-    "--workflow-panel-width": `${panelWidth}px`,
-  };
   const workspace = useRef<HTMLElement>(null);
   const activeRequest = useRef<object | null>(null);
   const nodeMeasurements = useRef<NodeMeasurements>(new Map());
@@ -244,150 +240,152 @@ export function BuilderWorkspace({
             {t(`connectionErrors.${problem}`)}
           </p>
         )}
-        <div
-          className={styles.builderGrid}
-          style={panelStyle}
-          data-panel={palette !== null || node !== undefined || edge !== undefined}
-        >
-          <div className={styles.canvasColumn}>
-            {palette === null && node === undefined && edge === undefined && issues.length > 0 && (
-              <div className={styles.canvasIssues}>
-                <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
-              </div>
-            )}
-            <nav aria-label={t("steps")} className={styles.stepNavigation}>
-              {orderedWorkflowNodes(definition).map((item, index) => (
-                <Button
-                  key={item.id}
-                  variant={selected === item.id && selectedEdge === null ? "outline" : "ghost"}
-                  size="sm"
-                  aria-pressed={selected === item.id && selectedEdge === null}
-                  onClick={() => revealStep(item.id)}
-                  title={displayNodeName(item, locale)}
-                >
-                  <bdi className="text-muted-foreground">{fmt.number(index + 1)}</bdi>
-                  <bdi className="block max-w-36 truncate">{displayNodeName(item, locale)}</bdi>
-                </Button>
-              ))}
-            </nav>
-            <WorkflowCanvas
-              definition={definition}
-              selected={selected}
-              selectedEdge={selectedEdge}
-              onSelect={selectCanvasNode}
-              onSelectEdge={selectCanvasEdge}
-              onClearSelection={clearCanvasSelection}
-              onChange={onChange}
-              onNodeMeasurements={(value) => {
-                nodeMeasurements.current = value;
-              }}
-              onProblem={setProblem}
-              onChangeType={(nodeId) => {
-                select(nodeId);
-                openPalette({ replacementId: nodeId });
-              }}
-              onDuplicate={(nodeId) => {
-                if (!editable) return;
-                const newId = `node_${crypto.randomUUID().slice(0, 8)}`;
-                const result = duplicateNode(definition, nodeId, newId);
-                if (!result.ok) {
-                  if (result.error === "nodeLimit") setProblem("nodeLimit");
-                  return;
+        <WorkflowEditorSplit
+          panelLabel={t("configure")}
+          open={palette !== null || node !== undefined || edge !== undefined}
+          onClose={palette === null ? closeInspector : closePalette}
+          canvas={
+            <>
+              {palette === null &&
+                node === undefined &&
+                edge === undefined &&
+                issues.length > 0 && (
+                  <div className={styles.canvasIssues}>
+                    <DefinitionIssues
+                      definition={definition}
+                      issues={issues}
+                      onSelect={revealStep}
+                    />
+                  </div>
+                )}
+              <nav aria-label={t("steps")} className={styles.stepNavigation}>
+                {orderedWorkflowNodes(definition).map((item, index) => (
+                  <Button
+                    key={item.id}
+                    variant={selected === item.id && selectedEdge === null ? "outline" : "ghost"}
+                    size="sm"
+                    aria-pressed={selected === item.id && selectedEdge === null}
+                    onClick={() => revealStep(item.id)}
+                    title={displayNodeName(item, locale)}
+                  >
+                    <bdi className="text-muted-foreground">{fmt.number(index + 1)}</bdi>
+                    <bdi className="block max-w-36 truncate">{displayNodeName(item, locale)}</bdi>
+                  </Button>
+                ))}
+              </nav>
+              <WorkflowCanvas
+                definition={definition}
+                selected={selected}
+                selectedEdge={selectedEdge}
+                onSelect={selectCanvasNode}
+                onSelectEdge={selectCanvasEdge}
+                onClearSelection={clearCanvasSelection}
+                onChange={onChange}
+                onNodeMeasurements={(value) => {
+                  nodeMeasurements.current = value;
+                }}
+                onProblem={setProblem}
+                onChangeType={(nodeId) => {
+                  select(nodeId);
+                  openPalette({ replacementId: nodeId });
+                }}
+                onDuplicate={(nodeId) => {
+                  if (!editable) return;
+                  const newId = `node_${crypto.randomUUID().slice(0, 8)}`;
+                  const result = duplicateNode(definition, nodeId, newId);
+                  if (!result.ok) {
+                    if (result.error === "nodeLimit") setProblem("nodeLimit");
+                    return;
+                  }
+                  onChange(result.value);
+                  setProblem(null);
+                  select(newId);
+                }}
+                pendingInsert={
+                  palette !== null && palette.replacementId === undefined
+                    ? {
+                        output: palette.output,
+                        position: palette.position,
+                        focusPicker: focusPalette,
+                      }
+                    : undefined
                 }
-                onChange(result.value);
-                setProblem(null);
-                select(newId);
-              }}
-              pendingInsert={
-                palette !== null && palette.replacementId === undefined
-                  ? {
-                      output: palette.output,
-                      position: palette.position,
-                      focusPicker: focusPalette,
-                    }
-                  : undefined
-              }
-              editable={editable}
-              invalidNodes={invalidNodes}
-              layoutRevision={layoutRevision}
-              reveal={reveal}
-              onAdd={(output, position) => {
-                select(output.from);
-                openPalette({ output, position });
-              }}
-            />
-          </div>
+                editable={editable}
+                invalidNodes={invalidNodes}
+                layoutRevision={layoutRevision}
+                reveal={reveal}
+                onAdd={(output, position) => {
+                  select(output.from);
+                  openPalette({ output, position });
+                }}
+              />
+            </>
+          }
+        >
           {(palette !== null || node !== undefined || edge !== undefined) && (
             <>
-              <WorkflowPanelResize
-                width={panelWidth}
-                onWidthChange={setPanelWidth}
-                onClose={palette === null ? closeInspector : closePalette}
-              />
-              <aside className={styles.inspector} aria-label={t("configure")}>
-                {palette !== null ? (
-                  <WorkflowPalette
-                    workflowId={workflowId}
-                    read={paletteRead}
+              {palette !== null ? (
+                <WorkflowPalette
+                  workflowId={workflowId}
+                  read={paletteRead}
+                  definition={definition}
+                  request={pickerRequest()}
+                  editable={editable}
+                  onClose={closePalette}
+                  onChoose={choose}
+                  onCloseAutoFocus={(event) => {
+                    if (focusInsertedStep.current) {
+                      event.preventDefault();
+                      focusAvailable(stepName.current);
+                    } else paletteFocus.restore(event, workspace.current);
+                  }}
+                />
+              ) : null}
+              <div hidden={palette !== null}>
+                <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
+                {edge !== undefined ? (
+                  <EdgeInspector
                     definition={definition}
-                    request={pickerRequest()}
+                    edge={edge}
                     editable={editable}
-                    onClose={closePalette}
-                    onChoose={choose}
-                    onCloseAutoFocus={(event) => {
-                      if (focusInsertedStep.current) {
-                        event.preventDefault();
-                        focusAvailable(stepName.current);
-                      } else paletteFocus.restore(event, workspace.current);
-                    }}
+                    onChange={onChange}
+                    onProblem={setProblem}
+                    onClose={closeInspector}
                   />
-                ) : null}
-                <div hidden={palette !== null}>
-                  <DefinitionIssues definition={definition} issues={issues} onSelect={revealStep} />
-                  {edge !== undefined ? (
-                    <EdgeInspector
+                ) : node !== undefined ? (
+                  <>
+                    <NodeInspector
+                      workflowId={workflowId}
                       definition={definition}
-                      edge={edge}
+                      node={node}
+                      editable={editable}
+                      nameInputRef={stepName}
+                      onClose={closeInspector}
+                      onChange={(changed) =>
+                        onChange((graph) => updateNodeConfiguration(graph, changed))
+                      }
+                      onRemove={() => {
+                        if (!editable || node.type.startsWith("trigger.")) return;
+                        onChange((graph) => removeNode(graph, node.id));
+                        closeInspector();
+                      }}
+                    />
+                    <ConnectionEditor
+                      definition={definition}
+                      node={node}
                       editable={editable}
                       onChange={onChange}
                       onProblem={setProblem}
-                      onClose={closeInspector}
+                      onAdd={(output) => openPalette({ output })}
                     />
-                  ) : node !== undefined ? (
-                    <>
-                      <NodeInspector
-                        workflowId={workflowId}
-                        definition={definition}
-                        node={node}
-                        editable={editable}
-                        nameInputRef={stepName}
-                        onClose={closeInspector}
-                        onChange={(changed) =>
-                          onChange((graph) => updateNodeConfiguration(graph, changed))
-                        }
-                        onRemove={() => {
-                          if (!editable || node.type.startsWith("trigger.")) return;
-                          onChange((graph) => removeNode(graph, node.id));
-                          closeInspector();
-                        }}
-                      />
-                      <ConnectionEditor
-                        definition={definition}
-                        node={node}
-                        editable={editable}
-                        onChange={onChange}
-                        onProblem={setProblem}
-                        onAdd={(output) => openPalette({ output })}
-                      />
-                    </>
-                  ) : (
-                    <p className="p-5 text-sm text-muted-foreground">{t("configureHint")}</p>
-                  )}
-                </div>
-              </aside>
+                  </>
+                ) : (
+                  <p className="p-5 text-sm text-muted-foreground">{t("configureHint")}</p>
+                )}
+              </div>
             </>
           )}
-        </div>
+        </WorkflowEditorSplit>
       </section>
     </BuilderFrame>
   );

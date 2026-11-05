@@ -7,6 +7,7 @@ import { checkpointSmtpReceipt, loadSmtpAttempt } from "./smtpOutboxRepo";
 import type { SmtpAttempt, SmtpReceipt, SmtpSendOutcome } from "./smtpOutboxTypes";
 import { storeSmtpOutboundCopy } from "./smtpStore";
 import { appendSmtpSentCopy } from "./smtpStoreSentCopy";
+import type { WorkflowMailDispatch } from "./workflowMailFence";
 
 export async function recordAcceptedSmtpSend(
   db: Db,
@@ -17,6 +18,7 @@ export async function recordAcceptedSmtpSend(
     raw: Buffer;
     runtime: ImapConnectionRuntime;
     idempotencyKey: string;
+    workflow?: WorkflowMailDispatch;
     signal: AbortSignal;
   },
 ) {
@@ -34,6 +36,7 @@ export async function recordAcceptedSmtpSend(
       args.runtime.accountId,
       args.idempotencyKey,
       args.signal,
+      args.workflow,
     );
     if (recorded === undefined) return review(args.attempt, args.receipt);
     const stored = await storeSmtpOutboundCopy(db, recorded, args.signal);
@@ -53,6 +56,7 @@ export async function recordAcceptedSmtpSend(
       args.runtime.accountId,
       args.idempotencyKey,
       args.signal,
+      args.workflow,
     );
     return ok(smtpAttemptOutcome(final ?? recorded, messageId));
   } catch {

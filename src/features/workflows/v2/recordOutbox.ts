@@ -61,7 +61,7 @@ async function deliver(
     changedFields: row.changedFields,
     payload: {},
     originRunId: row.originRunId,
-    occurredAt: row.createdAt.toISOString(),
+    occurredAt: row.createdAt,
   };
   const project: EventProjection = (tx, actor, _event, innerSignal) =>
     projectNativeEvent(

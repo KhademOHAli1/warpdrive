@@ -104,6 +104,27 @@ afterEach(() => {
 });
 
 describe("workflow studio persistence and authority", () => {
+  it("collapses the inspector and restores its chosen width when Configure reopens it", async () => {
+    render(<WorkflowStudio initial={initial} />);
+    await screen.findByRole("combobox", { name: "Change trigger" });
+    const handle = screen.getByRole("separator", { name: "Resize side panel" });
+    const panel = screen.getByRole("complementary", { name: "Configure" });
+    expect(handle).toHaveAttribute("aria-controls", panel.id);
+    fireEvent.keyDown(handle, { key: "Home" });
+    expect(handle).toHaveAttribute("aria-valuenow", "320");
+
+    fireEvent.click(within(panel).getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("complementary", { name: "Configure" })).toBeNull();
+    expect(screen.queryByRole("separator", { name: "Resize side panel" })).toBeNull();
+    const configure = screen.getByRole("button", { name: "Configure" });
+    expect(configure).toHaveFocus();
+    fireEvent.click(configure);
+    expect(screen.getByRole("separator", { name: "Resize side panel" })).toHaveAttribute(
+      "aria-valuenow",
+      "320",
+    );
+  });
+
   it("saves disconnected work in progress while refusing to test it as executable", async () => {
     const draft = { ...initial.draft, entryNodeIds: [] };
     actions.saveWorkflowV2Action.mockResolvedValueOnce({

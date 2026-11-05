@@ -196,6 +196,34 @@ export function connectStudioNodes(
     ],
   };
 }
+export function insertStudioNodeOnEdge(
+  definition: WorkflowV2Definition,
+  node: WorkflowV2Node,
+  edgeId: string,
+): WorkflowV2Definition | null {
+  if (definition.nodes.some((current) => current.id === node.id)) return null;
+  const entry = definition.entryNodeIds.find((id) => `$trigger:${id}` === edgeId);
+  const edge = definition.edges.find((current) => current.id === edgeId);
+  if (entry === undefined && edge === undefined) return null;
+  const exit = portsForNode(node).find((port) => port === "done") ?? portsForNode(node)[0];
+  if (exit === undefined) return null;
+  const target = entry ?? edge?.target;
+  if (target === undefined || !definition.nodes.some((current) => current.id === target))
+    return null;
+  const draft = {
+    ...definition,
+    nodes: [...definition.nodes, node],
+    entryNodeIds:
+      entry === undefined
+        ? definition.entryNodeIds
+        : definition.entryNodeIds.map((id) => (id === entry ? node.id : id)),
+    edges: definition.edges.map((current) =>
+      current.id === edgeId ? { ...current, target: node.id } : current,
+    ),
+  };
+  return connectStudioNodes(draft, node.id, target, exit);
+}
+
 export function arrangeStudio(definition: WorkflowV2Definition): WorkflowV2Definition {
   const layout: NonNullable<WorkflowV2Definition["layout"]> = { $trigger: { x: 0, y: 0 } };
   const rows = new Map<number, number>();
@@ -203,7 +231,7 @@ export function arrangeStudio(definition: WorkflowV2Definition): WorkflowV2Defin
     if (layout[id] !== undefined) return;
     const column = rows.get(depth) ?? 0;
     rows.set(depth, column + 1);
-    layout[id] = { x: column * 285, y: depth * 190 };
+    layout[id] = { x: column * 285, y: depth * 150 };
     for (const edge of definition.edges) if (edge.source === id) place(edge.target, depth + 1);
   }
   for (const id of definition.entryNodeIds) place(id, 1);

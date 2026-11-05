@@ -11,6 +11,7 @@ import { StudioHumanFields } from "./StudioHumanFields";
 import { StudioIntegrationFields } from "./StudioIntegrationFields";
 import { StudioNativeFields } from "./StudioNativeFields";
 import type { StudioFormProps } from "./studioFormTypes";
+import styles from "./studioInspector.module.css";
 import { studioSetupHref } from "./studioModel";
 
 export function WorkflowStudioInspector(
@@ -51,13 +52,13 @@ export function WorkflowStudioInspector(
   }
   return (
     <div className="flex min-h-full flex-col">
-      <div className="border-b px-4 py-3">
-        <p className="text-[10px] text-muted-foreground">{L.blocks[props.node.type]}</p>
-        <h2 className="mt-1 text-sm font-medium" dir="auto">
-          {props.node.name}
-        </h2>
-      </div>
-      <div className="space-y-4 p-4">
+      <div className={styles.content}>
+        <div>
+          <p className={styles.stepKind}>{L.blocks[props.node.type]}</p>
+          <h2 className={styles.stepTitle} dir="auto">
+            {props.node.name}
+          </h2>
+        </div>
         <BlockField label={L.fields.name ?? ""}>
           <Input
             aria-label={L.fields.name}
@@ -82,7 +83,7 @@ export function WorkflowStudioInspector(
           )}
         {fields()}
       </div>
-      <div className="mt-auto border-t p-3">
+      <div className={styles.footer}>
         <Button
           variant="ghost"
           size="sm"
