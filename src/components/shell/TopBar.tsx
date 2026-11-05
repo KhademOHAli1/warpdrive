@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 import { APP_NAME } from "@/constants/app";
@@ -15,25 +16,39 @@ export async function TopBar({
   userName,
   avatarUrl,
   appearance,
+  workspaceBrand,
 }: {
   userId: string;
   userName?: string;
   avatarUrl?: string | null;
   appearance?: Appearance;
+  workspaceBrand?: { displayName: string; iconUrl: string | null };
 }): Promise<React.ReactNode> {
   const t = await getAppTranslations("shell");
+  const name = workspaceBrand?.displayName ?? APP_NAME;
   return (
     <header className={styles.header}>
       <div className={styles.brandArea}>
         <MobileNavTrigger />
-        <Link href="/pipeline" aria-label={t("home", { app: APP_NAME })} className={styles.brand}>
-          <span aria-hidden="true" className={styles.mark} dir="ltr">
-            <i />
-            <i />
-            <i />
-          </span>
+        <Link href="/pipeline" aria-label={t("home", { app: name })} className={styles.brand}>
+          {workspaceBrand !== undefined && workspaceBrand.iconUrl !== null ? (
+            <Image
+              src={workspaceBrand.iconUrl}
+              alt=""
+              width={28}
+              height={28}
+              unoptimized
+              className="size-7 shrink-0 rounded object-contain"
+            />
+          ) : (
+            <span aria-hidden="true" className={styles.mark} dir="ltr">
+              <i />
+              <i />
+              <i />
+            </span>
+          )}
           <bdi dir="ltr" className={styles.wordmark}>
-            {APP_NAME}
+            {name}
           </bdi>
         </Link>
       </div>

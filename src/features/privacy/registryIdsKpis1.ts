@@ -10,7 +10,7 @@ export const kpiIds1: string[] = [
   "derived:src/features/goals/kpiRepo.ts",
   "derived:src/features/goals/kpiSchemas.ts",
   "derived:src/features/stats/ui/KpiPerformance.tsx",
-  "sourceReview:drizzle/0106_kpi_scorecards.sql#9f1dd48885eda5057be3c5bebdc9b123c09101d17dec40170b3a52e00d51cb8a",
+  "sourceReview:drizzle/0107_kpi_scorecards.sql#9f1dd48885eda5057be3c5bebdc9b123c09101d17dec40170b3a52e00d51cb8a",
   "sourceReview:src/app/(app)/settings/goals/KpiSchemeForm.tsx#142a5c16a8fafe8c585fbd6a6a5e1aaea1e412fcc21b6447206fd9cf1c0605a8",
   "sourceReview:src/db/schema/kpis.ts#c09516b68315f97868568a82ae5a73e4b91010a4c4d2d6f47077f69e632bc6b6",
   "sourceReview:src/features/goals/kpiActions.ts#132cbd82cfcb280edd330ef59a0e3bce98659472d526dbb91c1552e7875ef69b",

@@ -2,6 +2,7 @@
 // shortcuts (which index into it), so 1..N always addresses what the rail actually shows.
 export const NAV_ITEMS = [
   { href: "/pipeline", key: "pipeline", section: "/pipeline" },
+  { href: "/work", key: "work", section: "/work" },
   { href: "/activities", key: "activities", section: "/activities" },
   { href: "/inbox", key: "inbox", section: "/inbox" },
   { href: "/leads", key: "leads", section: "/leads" },

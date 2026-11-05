@@ -1,5 +1,7 @@
-// Billing tables await canonical migration admission before feature activation.
+// Installation-scoped subscription, company and operational-work tables.
 export * from "@/features/billing/schema";
+export * from "@/features/company-profile/schema";
+export * from "@/features/work-profile/schema";
 export * from "./activities";
 export * from "./activityGuests";
 export * from "./activityParticipants";

@@ -24,6 +24,11 @@ const retainedTables = [
   "team_members",
   "goals",
   "user_preferences",
+  "company_profiles",
+  "workspace_work_profiles",
+  "work_types",
+  "work_stages",
+  "work_items",
 ] as const;
 async function retainedRows(h: TestDb): Promise<Record<string, string>> {
   const snapshot: Record<string, string> = {};
@@ -37,13 +42,64 @@ async function retainedRows(h: TestDb): Promise<Record<string, string>> {
   return snapshot;
 }
 
-it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/preferences and admits an unchanged rerun", async () => {
+async function seedRetainedWorkProfile(h: TestDb, ownerId: string, dealId: string) {
+  await h.db.insert(schema.companyProfiles).values({
+    branding: { iconAssetId: null, logoAssetId: null, accentColor: "#25466E", fit: "contain" },
+    brandingRevision: 2,
+  });
+  await h.db.insert(schema.workspaceWorkProfiles).values({
+    revision: 3,
+    preferences: {
+      workTypes: ["it_consulting"],
+      primaryWorkType: "it_consulting",
+      modules: ["sales", "work"],
+      primaryGoal: "Deliver retained consulting projects",
+      deliveryModels: ["Fixed scope"],
+      customerTypes: ["Business"],
+    },
+  });
+  const [type] = await h.db
+    .insert(schema.workTypes)
+    .values({
+      key: "consulting_delivery",
+      name: "Retained consulting delivery",
+      kind: "it_consulting",
+      fields: [
+        { key: "hours", label: "Planned hours", type: "number", options: [], required: true },
+      ],
+    })
+    .returning();
+  if (type === undefined) throw new Error("Work type fixture missing");
+  const [stage] = await h.db
+    .insert(schema.workStages)
+    .values({
+      typeId: type.id,
+      key: "planned",
+      name: "Planned",
+      bucket: "open",
+      order: 0,
+    })
+    .returning();
+  if (stage === undefined) throw new Error("Work stage fixture missing");
+  await h.db.insert(schema.workItems).values({
+    typeId: type.id,
+    stageId: stage.id,
+    title: "Retained work linked to CRM",
+    ownerId,
+    dealId,
+    dueDate: "2026-11-12",
+    visibility: "owner",
+    values: { hours: 12.5 },
+  });
+}
+
+it("upgrades populated 0106 to 0107, preserving CRM, Goals and Company Work data across reruns", async () => {
+  const prefix = 107;
   const h = await freshMigrationDb();
   let target: Awaited<ReturnType<typeof migrationFolder>> | undefined;
   try {
-    // Ordinals are zero based: completed 0105 has 106 journal entries; 0106 is entry107.
-    await installPrefix(h, 106);
-    target = await migrationFolder(107);
+    await installPrefix(h, prefix);
+    target = await migrationFolder(prefix + 1);
     const owner = await seedUser(h.db, { isAdmin: true });
     const { pipeline, stages } = await seedPipelineWithStages(h.db, ["Retained stage"]);
     const stage = stages[0];
@@ -105,9 +161,10 @@ it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/prefe
         },
       },
     });
+    await seedRetainedWorkProfile(h, owner.id, deal.id);
     const before = await retainedRows(h);
     const oldLedger = await ledger(h);
-    expect(oldLedger).toHaveLength(106);
+    expect(oldLedger).toHaveLength(prefix);
     expect(
       (await h.pool.query("SELECT to_regclass('public.kpi_definitions') AS value")).rows,
     ).toEqual([{ value: null }]);
@@ -117,8 +174,8 @@ it("upgrades the populated 0105 prefix to 0106, preserves legacy CRM/goals/prefe
     });
     expect(await retainedRows(h)).toEqual(before);
     const admittedLedger = await ledger(h);
-    expect(admittedLedger).toHaveLength(107);
-    expect(admittedLedger.slice(0, 106)).toEqual(oldLedger);
+    expect(admittedLedger).toHaveLength(prefix + 1);
+    expect(admittedLedger.slice(0, prefix)).toEqual(oldLedger);
     const names = (
       await h.pool.query<{ table_name: string }>(
         "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('kpi_definitions','kpi_schemes','kpi_goals','kpi_measurements','kpi_snapshots') ORDER BY table_name",

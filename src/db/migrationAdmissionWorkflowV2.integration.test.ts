@@ -12,11 +12,12 @@ import {
   migrationFolder,
 } from "./migrationAdmission.test-helpers";
 
-it("upgrades a populated 0106 prefix without touching legacy workflows and installs guarded record events", async () => {
+it("upgrades populated 0107 to 0108, preserving legacy workflows and installing guarded record events", async () => {
+  const prefix = 108;
   const h = await freshMigrationDb();
-  const target = await migrationFolder(108);
+  const target = await migrationFolder(prefix + 1);
   try {
-    await installPrefix(h, 107);
+    await installPrefix(h, prefix);
     const owner = await seedUser(h.db, { isAdmin: true });
     const [legacy] = await h.db
       .insert(schema.workflows)
@@ -44,13 +45,15 @@ it("upgrades a populated 0106 prefix without touching legacy workflows and insta
       .where(eq(schema.workflows.id, legacy.id))
       .returning();
     const oldLedger = await ledger(h);
+    expect(oldLedger).toHaveLength(prefix);
     const signal = AbortSignal.timeout(30_000);
     expect(await applyMigrations(h.db, signal, target.folder)).toEqual({
       ok: true,
       value: { applied: true },
     });
-    expect(await ledger(h)).toHaveLength(108);
-    expect((await ledger(h)).slice(0, 107)).toEqual(oldLedger);
+    const admitted = await ledger(h);
+    expect(admitted).toHaveLength(prefix + 1);
+    expect(admitted.slice(0, prefix)).toEqual(oldLedger);
     expect(
       await h.db.select().from(schema.workflows).where(eq(schema.workflows.id, legacy.id)),
     ).toEqual([retained]);
@@ -109,7 +112,6 @@ it("upgrades a populated 0106 prefix without touching legacy workflows and insta
         .set({ name: "Rewrite" })
         .where(eq(schema.workflowV2Versions.id, version.id)),
     ).rejects.toThrow();
-    const admitted = await ledger(h);
     expect(await applyMigrations(h.db, signal, target.folder)).toEqual({
       ok: true,
       value: { applied: true },

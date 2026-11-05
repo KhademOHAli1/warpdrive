@@ -35,6 +35,22 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Authored KPI names, calculation graphs and filters, responsible workforce links, manual source notes and viewer-bound evaluated snapshots require a dedicated subject/provenance and lifecycle adapter. Current record visibility, goal responsibility or administrator status does not establish disclosure, erasure or retention authority. This declaration enables no lifecycle execution capability.",
   ),
   ...group(
+    [
+      "company_profiles",
+      "company_legal_entities",
+      "company_operations",
+      "company_assets",
+      "workspace_work_profiles",
+      "work_types",
+      "work_stages",
+      "work_items",
+      "work_operations",
+      "work_installations",
+    ],
+    "unsupported",
+    "Company/role/legal/payer data, encrypted receipts and branding bytes, plus workforce/CRM-linked operational records and preset snapshots, require dedicated subject/provenance and safe-projection adapters. Management, ownership, current CRM visibility and provider matches do not establish data-subject identity. Archive, pointer removal and guarded preset undo are not personal-data erasure. Provider copies, physical objects, historical receipts and backups require separate lifecycle qualification; no generic discovery, export, erasure or retention adapter is enabled.",
+  ),
+  ...group(
     ["billing_accounts", "billing_operations", "billing_webhook_receipts", "billing_audit_events"],
     "unsupported",
     "Merchant billing bindings, linkable operation fingerprints, provider event receipts and administrator audit references require a dedicated subject/provenance and finance-retention adapter. A payer may be a legal person, sole trader or finance contact; workspace administration does not establish data-subject identity. This declaration enables no generic export, erasure or provider deletion.",
