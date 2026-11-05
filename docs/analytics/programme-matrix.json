@@ -31,9 +31,9 @@
     },
     "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. No new allocation or prior exception reused.",
     "latestRemoteObservation": {
-      "sha": "e77991e33616f7a8368ca6f45a1b4c058e7e8e09",
+      "sha": "cd7a964a4d7f992299d846c34e397396c6a268ab",
       "date": "2026-11-05",
-      "change": "Calendar views/settings PR #979; no stats/Goals authoring source overlap observed."
+      "change": "Workflow/settings and light CI PR #980; no stats/Goals authoring source overlap. Global inventory regenerated."
     }
   },
   "statusMeaning": {
