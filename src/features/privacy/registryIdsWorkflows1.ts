@@ -2,7 +2,7 @@
 export const workflowIds1: string[] = [
   // WF025: bounded configured-effect review and transient original-command retry context.
   "derived:src/features/workflows/ui/liveRunEffectSummary.ts",
-  "sourceReview:src/features/workflows/ui/RunDialog.tsx#54da4ef339f43a62b57471c894ee299cd7301e229fd5e16d89e05ff6c9850c00",
+  "sourceReview:src/features/workflows/ui/RunDialog.tsx#99eca93acb1962392155c2b2727135c48db83172d72d515dac135e57fd68e83b",
   "sourceReview:src/features/workflows/ui/LiveRunReview.tsx#385899199e9b4298997a2b0a59941f5f34ee0765d117c4d625ea7f7263a49224",
   "sourceReview:src/features/workflows/ui/liveRunEffectSummary.ts#33291aba70c48ccf427e96673b524f218c38c89226f32618df039092682d8add",
 

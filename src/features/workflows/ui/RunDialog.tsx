@@ -128,7 +128,7 @@ function useLiveAcknowledgement(cut: string | null) {
   return {
     acknowledged: current && review.acknowledged,
     changed: review.changed || (!current && review.acknowledged),
-    acknowledge(checked: boolean) {
+    acknowledge: (checked: boolean) => {
       if (cut !== null) setReview({ cut, acknowledged: checked, changed: false });
     },
   };
