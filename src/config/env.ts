@@ -22,6 +22,7 @@ const SECRET_FILE_VARS = [
   "MAIL_INTERNAL_ENDPOINTS",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
+  "WORKFLOW_HTTP_GRANTS",
 ] as const;
 
 function resolveFileVars(
@@ -44,6 +45,7 @@ const base = z.object({
   ...mailEnvShape,
   ...billingEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  WORKFLOW_HTTP_GRANTS: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
   SLACK_CLIENT_ID: z.string().trim().default(""),

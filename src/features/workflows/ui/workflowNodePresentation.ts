@@ -13,6 +13,7 @@ export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName>
   "record.upsert": "pencil-plus",
   "record.pick": "arrows-shuffle",
   "email.draft": "mail-plus",
+  "http.request": "world",
   "calendar.create": "calendar-event",
   "human.form": "forms",
   "activity.create": "plus",
@@ -35,7 +36,10 @@ export function workflowNodeCategory(type: WorkflowNode["type"]) {
     type === "iterator"
   )
     return "nodeCategoryFlow";
-  return type === "notification" || type === "email.draft" || type === "calendar.create"
+  return type === "notification" ||
+    type === "email.draft" ||
+    type === "calendar.create" ||
+    type === "http.request"
     ? "nodeCategoryCore"
     : "nodeCategoryData";
 }

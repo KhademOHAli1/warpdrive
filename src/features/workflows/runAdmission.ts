@@ -9,7 +9,7 @@ import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { validateDefinition } from "./definition";
-import { executableDefinition, requiresHumanForm } from "./readiness";
+import { executableDefinition, requiresExternalHttp, requiresHumanForm } from "./readiness";
 import { definitionSchema } from "./schemas";
 import {
   prepareWorkflowManualLaunch,
@@ -69,6 +69,8 @@ async function sameManualCommand(
 function prepareNewLaunch(input: ManualRunInput, version: Publication, triggerConfig: unknown) {
   if (input.mode === "simulation" && requiresHumanForm(version.definition))
     return err(ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE);
+  if (input.mode === "simulation" && requiresExternalHttp(version.definition))
+    return err(ERROR_IDS.WORKFLOW_NOT_READY);
   if (!matchesReviewedVersion(input.reviewedVersionId, version.id))
     return err(ERROR_IDS.WORKFLOW_CONFLICT);
   const launch = prepareWorkflowManualLaunch(triggerConfig, input.recordId);

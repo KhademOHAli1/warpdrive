@@ -1,4 +1,11 @@
 {
+  "httpRequest": "HTTP-Anfrage",
+  "httpRequestUrl": "Ziel-URL",
+  "httpRequestHint": "Eine Anfrage an einen zugelassenen HTTPS-Endpunkt senden.",
+  "httpRequestNeedsGrant": "Administratorrechte und ein zugelassener Endpunkt sind erforderlich.",
+  "httpRequestLiveOnly": "Dieser Workflow sendet eine HTTP-Anfrage. Verwenden Sie dafür die Live-Ausführung.",
+  "httpRequestOutcomeUnknown": "Der Endpunkt hat diese Anfrage möglicherweise erhalten. Prüfen Sie das Ergebnis vor einer neuen Ausführung.",
+  "publicationHttpRequestStep": "Sendet beim Erreichen des Schritts eine HTTP-Anfrage an einen zugelassenen Endpunkt.",
   "scheduledTrigger": "Zeitgesteuert",
   "scheduledTriggerHint": "Den Workflow automatisch nach Zeitplan starten.",
   "triggerGroupOthers": "Weitere Auslöser",
@@ -354,6 +361,8 @@
   "exists": "Ist vorhanden",
   "falsePort": "Trifft nicht zu",
   "fields": {
+    "httpStatus": "HTTP-Statuscode",
+    "httpResult": "Antwortwert",
     "currentItem": "Aktuelles Element",
     "currentItemIndex": "Elementindex",
     "processedCount": "Verarbeitete Elemente",

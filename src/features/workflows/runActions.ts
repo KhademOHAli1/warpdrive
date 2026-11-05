@@ -44,6 +44,20 @@ function referenceActor(actor: PermSetUser) {
   };
 }
 
+function executeTriggerStep(
+  node: WorkflowNode,
+  definition: WorkflowDefinition,
+  trigger: WorkflowRunLaunchPayload,
+): Result<StepOutput, string> {
+  if (node.type === "trigger.schedule")
+    return readWorkflowScheduleLaunch(definition, trigger) === null
+      ? err(ERROR_IDS.WORKFLOW_INVALID)
+      : ok({});
+  const launch = matchWorkflowManualLaunch(node.config, trigger);
+  if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  return ok("recordId" in launch ? { recordId: launch.recordId } : {});
+}
+
 export async function executeRunNode(
   db: Db,
   actor: PermSetUser,
@@ -59,16 +73,9 @@ export async function executeRunNode(
   if (!executableNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
   const mode = simulation ? "simulation" : "live";
   switch (node.type) {
-    case "trigger.manual": {
-      const launch = matchWorkflowManualLaunch(node.config, trigger);
-      if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
-      const output: StepOutput = "recordId" in launch ? { recordId: launch.recordId } : {};
-      return ok(output);
-    }
+    case "trigger.manual":
     case "trigger.schedule":
-      return readWorkflowScheduleLaunch(definition, trigger) === null
-        ? err(ERROR_IDS.WORKFLOW_INVALID)
-        : ok({});
+      return executeTriggerStep(node, definition, trigger);
     case "filter":
       return evaluateFilter(node.config, outputs, { definition, nodeId: node.id });
     case "ifElse":
@@ -118,6 +125,7 @@ export async function executeRunNode(
         : err(ERROR_IDS.WORKFLOW_NOT_READY);
     case "activity.create":
       return createRunActivity(db, actor, node, outputs, simulation, definition, signal);
+    case "http.request":
     case "delay":
     case "iterator":
     case "human.form":

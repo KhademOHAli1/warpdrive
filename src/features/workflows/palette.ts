@@ -14,6 +14,7 @@ import {
   paletteCatalog,
   type WorkflowPaletteSnapshot,
 } from "./paletteCatalog";
+import { hasWorkflowHttpOperatorGrant } from "./workflowHttpOperatorPolicy";
 
 function authoringState(
   actor: PermSetUser,
@@ -25,12 +26,13 @@ function authoringState(
   return { allowed: true, reason: null };
 }
 
-function entryStates(reasons: PaletteExecutionReason[]): PaletteEntryState[] {
+function entryStates(reasons: PaletteExecutionReason[], httpGranted: boolean): PaletteEntryState[] {
   return paletteCatalog.map((entry) => ({
     type: entry.type,
     version: entry.version,
-    support: entry.support,
-    supportReason: entry.supportReason,
+    support: entry.type === "http.request" && !httpGranted ? "unavailable" : entry.support,
+    supportReason:
+      entry.type === "http.request" && !httpGranted ? "http-grant-required" : entry.supportReason,
     provider: entry.provider,
     executionReasons: entry.type === "activity.create" ? [...reasons] : [],
   }));
@@ -76,7 +78,10 @@ export async function readWorkflowPalette(
       workflowId: workflow.id,
       revision: workflow.revision,
       authoring: authoringState(currentActor, workflow),
-      entries: entryStates(reasons),
+      entries: entryStates(
+        reasons,
+        currentActor.type === "admin" && hasWorkflowHttpOperatorGrant(workflow.id),
+      ),
     });
   } catch (error) {
     signal.throwIfAborted();

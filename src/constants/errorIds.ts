@@ -238,6 +238,7 @@ export const ERROR_IDS = {
   WORKFLOW_BINDING_MISSING: "E_WORKFLOW_006", // referenced value is unavailable at execution
   WORKFLOW_FORM_REQUIRES_LIVE: "E_WORKFLOW_008", // simulation cannot collect a human response
   WORKFLOW_FORM_EXPIRED: "E_WORKFLOW_007", // form response window ended
+  WORKFLOW_HTTP_OUTCOME_UNKNOWN: "E_WORKFLOW_009", // transport may have sent the request
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

@@ -34,6 +34,8 @@ export type MappingFieldKey =
   | "currency"
   | "result"
   | "formAnswer"
+  | "httpStatus"
+  | "httpResult"
   | "currentItem"
   | "currentItemIndex"
   | "processedCount"

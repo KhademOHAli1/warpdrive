@@ -19,6 +19,7 @@ import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
 import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
+import { workflowHttpRequestConfig } from "./workflowHttpRequestContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
 import { workflowIteratorConfig } from "./workflowIteratorRuntimeContract";
 import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
@@ -34,7 +35,7 @@ interface ActionSpec {
   inputs: Record<string, ValueType>;
   outputs: Record<string, ValueType>;
   outputContracts: Record<string, MappingValueContract>;
-  effect: "none" | "database" | "wait";
+  effect: "none" | "database" | "wait" | "external";
 }
 const entity = z.enum(["deal", "lead", "person", "organization"]);
 export const delayMinutesSchema = z
@@ -208,6 +209,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputs: coarseMappingOutputs("record.pick"),
     outputContracts: mappingOutputContracts("record.pick"),
     effect: "none",
+  },
+  "http.request": {
+    configuration: configurationProfiles["http.request"],
+    config: workflowHttpRequestConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("http.request"),
+    outputContracts: mappingOutputContracts("http.request"),
+    effect: "external",
   },
   "email.draft": {
     configuration: configurationProfiles["email.draft"],

@@ -41,6 +41,10 @@ import {
 } from "./schemas";
 import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
 import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
+import {
+  workflowHttpRequestConfig,
+  workflowHttpRequestTarget,
+} from "./workflowHttpRequestContract";
 import { workflowHumanFormOutputDescriptors } from "./workflowHumanFormContract";
 import { iteratorMappingOutputs, iteratorOutputVisible } from "./workflowIteratorMapping";
 import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
@@ -71,9 +75,32 @@ function qualifiedSource(node: WorkflowNode): boolean {
   return node.type !== "record.read" || node.config.entity === "deal";
 }
 
+function httpMappingOutputs(node: WorkflowNode): MappingOutput[] {
+  const parsed = workflowHttpRequestConfig.safeParse(node.config);
+  if (!parsed.success) return [];
+  return [
+    {
+      nodeId: node.id,
+      path: ["status"],
+      field: "httpStatus",
+      contract: { kind: "number", nullable: false },
+    },
+    ...(parsed.data.response ?? []).map(
+      (field): MappingOutput => ({
+        nodeId: node.id,
+        path: ["result", field.name],
+        field: "httpResult",
+        label: field.name,
+        contract: { kind: field.type, nullable: field.nullable === true },
+      }),
+    ),
+  ];
+}
+
 function outputsFor(definition: WorkflowDefinition, node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
   if (node.type === "iterator") return iteratorMappingOutputs(definition, node);
+  if (node.type === "http.request") return httpMappingOutputs(node);
   if (node.type === "trigger.manual" && workflowManualLaunchScope(node.config) !== "deal")
     return [];
   if (node.type === "human.form")
@@ -358,6 +385,8 @@ function extendedMappingTarget(
           : workflowCalendarEventFieldTarget(node.id, field, node.config.allDay === true),
       );
     }
+    case "http.request":
+      return extendedTargetResult(node, path, workflowHttpRequestTarget(node.id, path));
     case "email.draft": {
       const field = path.length === 1 ? path[0] : undefined;
       return extendedTargetResult(

@@ -31,6 +31,7 @@ interface LivePublication {
   readonly versionId: string;
   readonly scope: "deal" | "global" | "schedule";
   readonly review: LiveRunReviewContext | null;
+  readonly liveOnly?: boolean;
 }
 interface RunCommand {
   readonly workflowId: string;
@@ -74,6 +75,7 @@ function currentPublication(
   return {
     versionId: version.id,
     scope,
+    liveOnly: (effects.counts.httpRequest ?? 0) > 0,
     review:
       scope === "deal" && recordLabel === undefined
         ? null
@@ -155,7 +157,12 @@ function prepareSubmission(
   publication: LivePublication | null,
   acknowledged: boolean,
 ): Submission | null {
-  if (publication === null || publication.scope === "schedule") return null;
+  if (
+    publication === null ||
+    publication.scope === "schedule" ||
+    (mode === "simulation" && publication.liveOnly === true)
+  )
+    return null;
   const recordId = publication.scope === "deal" ? chosen?.value : undefined;
   if (publication.scope === "deal" && recordId === undefined) return null;
   const command = Object.freeze({
@@ -290,6 +297,8 @@ export function RunDialog({
       : submission.command.recordId === undefined
         ? "global"
         : "deal";
+  const externalSimulationBlocked =
+    displayMode === "simulation" && read.publication?.liveOnly === true;
   const cut =
     read.publication === null
       ? null
@@ -369,16 +378,18 @@ export function RunDialog({
           <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
             {t("publishedHint")}
           </p>
-          {launchScope === "deal" && (
+          {launchScope === "deal" && !externalSimulationBlocked && (
             <RunDealPicker
               chosen={chosen}
               onChoose={setChosen}
               locked={pending || submission !== null}
             />
           )}
-          {launchScope === "global" && displayMode === "simulation" && (
-            <p className="text-sm text-muted-foreground">{t("manualGlobalRunHint")}</p>
-          )}
+          {launchScope === "global" &&
+            displayMode === "simulation" &&
+            !externalSimulationBlocked && (
+              <p className="text-sm text-muted-foreground">{t("manualGlobalRunHint")}</p>
+            )}
           {launchScope === undefined && displayMode === "simulation" && (
             <LiveReviewReadState
               chosen
@@ -388,6 +399,7 @@ export function RunDialog({
               simulation
             />
           )}
+          {externalSimulationBlocked && <p role="status">{t("httpRequestLiveOnly")}</p>}
           {launchScope === "schedule" && (
             <p role="status" className="text-sm text-muted-foreground">
               {t("scheduledRunsAutomatically")}
@@ -421,7 +433,7 @@ export function RunDialog({
             <Button variant="outline" onClick={onClose} disabled={pending}>
               {t(launchScope === "schedule" ? "close" : "cancel")}
             </Button>
-            {launchScope !== "schedule" && (
+            {launchScope !== "schedule" && !externalSimulationBlocked && (
               <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
                 {t(submissionLabel(error, displayMode, changesRecords))}
               </Button>

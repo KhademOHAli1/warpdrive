@@ -5,7 +5,7 @@ export interface PaletteEntryState {
   type: WorkflowNode["type"];
   version: 1;
   support: "supported" | "unavailable";
-  supportReason: "handler-unavailable" | null;
+  supportReason: "handler-unavailable" | "http-grant-required" | null;
   provider: "not-required" | "not-assessed";
   executionReasons: PaletteExecutionReason[];
 }
@@ -43,6 +43,7 @@ interface CatalogDescriptor {
     | "upsert-record"
     | "pick-record"
     | "draft-email"
+    | "http-request"
     | "create-calendar-event"
     | "human-form"
     | "ordered-condition"
@@ -184,6 +185,16 @@ export const paletteCatalog = [
     descriptionKey: "createCalendarEventHint",
     profile: "create-calendar-event",
     input: "optional",
+  },
+  {
+    ...insertable,
+    type: "http.request",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "httpRequest",
+    descriptionKey: "httpRequestHint",
+    profile: "http-request",
+    input: "none",
   },
   {
     ...insertable,

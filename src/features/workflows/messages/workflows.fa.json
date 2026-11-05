@@ -1,4 +1,11 @@
 {
+  "httpRequest": "درخواست اچ‌تی‌تی‌پی",
+  "httpRequestUrl": "نشانی وب",
+  "httpRequestHint": "به یک نشانی تأییدشدهٔ HTTPS درخواست بفرستید.",
+  "httpRequestNeedsGrant": "دسترسی مدیر و یک نشانی تأییدشده لازم است.",
+  "httpRequestLiveOnly": "این گردش‌کار یک درخواست HTTP می‌فرستد. برای ارسال درخواست آن را به‌صورت واقعی اجرا کنید.",
+  "httpRequestOutcomeUnknown": "ممکن است مقصد این درخواست را دریافت کرده باشد. پیش از اجرای دوباره، نتیجه را بررسی کنید.",
+  "publicationHttpRequestStep": "پس از رسیدن به این مرحله یک درخواست HTTP به نشانی تأییدشده می‌فرستد.",
   "scheduledTrigger": "زمان‌بندی‌شده",
   "scheduledTriggerHint": "گردش‌کار را به‌طور خودکار طبق زمان‌بندی آغاز کنید.",
   "triggerGroupOthers": "سایر آغازگرها",
@@ -354,6 +361,8 @@
   "exists": "وجود دارد",
   "falsePort": "شرط برقرار نیست",
   "fields": {
+    "httpStatus": "وضعیت HTTP",
+    "httpResult": "مقدار پاسخ",
     "currentItem": "مورد کنونی",
     "currentItemIndex": "شمارهٔ مورد",
     "processedCount": "موارد پردازش‌شده",

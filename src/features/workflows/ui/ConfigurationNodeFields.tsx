@@ -16,6 +16,7 @@ import { DelayConfigurationFields } from "./DelayConfigurationFields";
 import { DelayFields } from "./DelayFields";
 import { DelayScheduleFields } from "./DelayScheduleFields";
 import { EmailDraftConfigurationFields } from "./EmailDraftConfigurationFields";
+import { HttpRequestConfigurationFields } from "./HttpRequestConfigurationFields";
 import { HumanFormConfigurationFields } from "./HumanFormConfigurationFields";
 import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
 import { IteratorConfigurationFields } from "./IteratorConfigurationFields";
@@ -170,6 +171,8 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
       return <IteratorConfigurationFields {...props} />;
     case "calendar.create":
       return <CalendarEventConfigurationFields {...props} />;
+    case "http.request":
+      return <HttpRequestConfigurationFields {...props} />;
     case "email.draft":
       return <EmailDraftConfigurationFields {...props} />;
     case "record.search":

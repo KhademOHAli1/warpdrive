@@ -64,6 +64,9 @@ export function LiveRunReview({
     ...((review.effects.counts.emailDraft ?? 0) > 0
       ? [{ label: t("draftEmail"), count: review.effects.counts.emailDraft ?? 0 }]
       : []),
+    ...((review.effects.counts.httpRequest ?? 0) > 0
+      ? [{ label: t("httpRequest"), count: review.effects.counts.httpRequest ?? 0 }]
+      : []),
     ...((review.effects.counts.calendarEvent ?? 0) > 0
       ? [{ label: t("createCalendarEvent"), count: review.effects.counts.calendarEvent ?? 0 }]
       : []),
@@ -103,6 +106,7 @@ export function LiveRunReview({
       {(review.effects.counts.recordUpdate ?? 0) > 0 && <p>{t("liveReviewRecordUpdate")}</p>}
       {(review.effects.counts.recordUpsert ?? 0) > 0 && <p>{t("liveReviewRecordUpsert")}</p>}
       {(review.effects.counts.recordDelete ?? 0) > 0 && <p>{t("liveReviewRecordDelete")}</p>}
+      {(review.effects.counts.httpRequest ?? 0) > 0 && <p>{t("publicationHttpRequestStep")}</p>}
       {(review.effects.counts.emailDraft ?? 0) > 0 && <p>{t("liveReviewEmailDraft")}</p>}
       {(review.effects.counts.calendarEvent ?? 0) > 0 && <p>{t("liveReviewCalendarEvent")}</p>}
       {(review.effects.counts.humanForm ?? 0) > 0 && <p>{t("liveReviewHumanForm")}</p>}

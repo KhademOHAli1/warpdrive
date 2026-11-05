@@ -126,6 +126,8 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
         <p role="alert" className="px-5 text-sm text-destructive">
           {detail.errorId === ERROR_IDS.WORKFLOW_FORM_EXPIRED ? (
             t("humanFormExpired")
+          ) : detail.errorId === ERROR_IDS.WORKFLOW_HTTP_OUTCOME_UNKNOWN ? (
+            t("httpRequestOutcomeUnknown")
           ) : (
             <>
               {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>

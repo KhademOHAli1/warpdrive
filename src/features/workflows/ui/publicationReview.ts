@@ -67,6 +67,7 @@ const descriptions = {
   "record.upsert": "publicationRecordUpsertStep",
   "record.pick": "publicationRecordPickStep",
   "email.draft": "publicationEmailDraftStep",
+  "http.request": "publicationHttpRequestStep",
   "calendar.create": "publicationCalendarEventStep",
   "human.form": "publicationHumanFormStep",
   "activity.create": "publicationTaskStep",

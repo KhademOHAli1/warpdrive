@@ -17,6 +17,7 @@ import {
   workflowCalendarEventFields,
 } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
+import { workflowHttpRequestConfig } from "./workflowHttpRequestContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
 import { validateWorkflowIteratorConfiguration } from "./workflowIteratorConfiguration";
 import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
@@ -406,9 +407,25 @@ function validateScheduledTrigger(
   }
 }
 
+function validateHttpRequest(
+  node: WorkflowNode,
+  _context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = workflowHttpRequestConfig.safeParse(node.config);
+  if (parsed.success) return;
+  for (const entry of parsed.error.issues) {
+    const key = entry.path[0];
+    result.issues.push(
+      configurationIssue(node, [typeof key === "string" ? key : "url"], "invalid_value"),
+    );
+  }
+}
+
 const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "trigger.manual": validateManualTrigger,
   "trigger.schedule": validateScheduledTrigger,
+  "http.request": validateHttpRequest,
   "record.read": validateRead,
   "activity.create": validateTask,
   "record.create": validateRecordCreate,
@@ -429,6 +446,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
 
 const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   "trigger.manual": ["scope"],
+  "http.request": ["url", "method", "headers", "body", "response"],
   "trigger.schedule": ["interval", "days", "hours", "minutes", "hour", "minute", "expression"],
   ifElse: ["branches", "fallbackId"],
   iterator: ["items", "shouldContinueOnIterationFailure"],

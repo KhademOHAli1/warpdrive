@@ -58,6 +58,7 @@ export const nodeTypes = [
   "record.upsert",
   "record.pick",
   "email.draft",
+  "http.request",
   "calendar.create",
   "human.form",
   "activity.create",

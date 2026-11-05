@@ -41,6 +41,7 @@ export function executableNode(node: WorkflowNode): boolean {
       "record.upsert",
       "record.pick",
       "email.draft",
+      "http.request",
       "calendar.create",
       "human.form",
     ].includes(node.type)
@@ -75,7 +76,12 @@ export function executableDefinition(definition: WorkflowDefinition): boolean {
 // Legacy fixed instants retain their existing published-only contract. The
 // configured schedules share the same deadline projection in both modes.
 export function draftExecutableNode(node: WorkflowNode): boolean {
-  if (node.type === "human.form" || node.type === "trigger.schedule" || !executableNode(node))
+  if (
+    node.type === "human.form" ||
+    node.type === "trigger.schedule" ||
+    node.type === "http.request" ||
+    !executableNode(node)
+  )
     return false;
   if (node.type !== "delay") return true;
   if (Object.hasOwn(node.config, "delayType")) return true;
@@ -83,6 +89,10 @@ export function draftExecutableNode(node: WorkflowNode): boolean {
     !Object.hasOwn(node.config, "until") &&
     Object.keys(node.config).every((key) => key === "minutes")
   );
+}
+
+export function requiresExternalHttp(definition: WorkflowDefinition): boolean {
+  return definition.nodes.some((node) => node.type === "http.request");
 }
 
 export function requiresHumanForm(definition: WorkflowDefinition): boolean {

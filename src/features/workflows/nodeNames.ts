@@ -16,6 +16,7 @@ export const nodeLabelKeys = {
   "record.upsert": "upsertRecord",
   "record.pick": "pickRecord",
   "email.draft": "draftEmail",
+  "http.request": "httpRequest",
   "calendar.create": "createCalendarEvent",
   "human.form": "humanForm",
   "activity.create": "task",

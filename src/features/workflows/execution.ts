@@ -15,30 +15,54 @@ import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { selectRunBranch } from "./runBranchSelection";
 import { advanceRunStep } from "./runStep";
+import type { StepOutput } from "./runTypes";
 import { definitionSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import type {
+  WorkflowExternalEffectClaim,
+  WorkflowExternalEffectTx,
+} from "./workflowExternalEffect";
+import { projectWorkflowHttpStep } from "./workflowHttpExecution";
+import { workflowHttpOperatorServices } from "./workflowHttpOperatorPolicy";
+import { dispatchClaimedWorkflowHttpRequest } from "./workflowHttpRequestWorker";
 import { workflowIteratorAllowsUnframedNode } from "./workflowIteratorGraph";
 import { advanceWorkflowIteratorRun } from "./workflowIteratorRun";
 import { verifyWorkflowRunLaunch } from "./workflowRunLaunch";
 
 export { admitManualRun } from "./runAdmission";
 
-async function advanceLockedStep(
-  db: Db,
-  actor: PermSetUser,
-  run: typeof workflowRuns.$inferSelect,
-  node: WorkflowNode,
-  definition: WorkflowDefinition,
-  now: Date,
-  signal: AbortSignal,
-) {
+interface LockedWorkflowStep {
+  db: WorkflowExternalEffectTx;
+  actor: PermSetUser;
+  workflowOwnerId: string;
+  run: typeof workflowRuns.$inferSelect;
+  node: WorkflowNode;
+  definition: WorkflowDefinition;
+  now: Date;
+  signal: AbortSignal;
+}
+
+async function advanceLockedStep(context: LockedWorkflowStep) {
+  const { db, actor, workflowOwnerId, run, node, definition, now, signal } = context;
   if (run.iteratorFrame !== null || node.type === "iterator")
     return advanceWorkflowIteratorRun({ db, actor, node, run, now, definition, signal });
   if (!workflowIteratorAllowsUnframedNode(definition, node.id))
     return err(ERROR_IDS.WORKFLOW_INVALID);
-  const result = await advanceRunStep(db, actor, node, run, now, definition, signal);
+  const result =
+    node.type === "http.request"
+      ? await projectWorkflowHttpStep(
+          { tx: db, actor, workflowOwnerId, run, node, definition },
+          signal,
+        )
+      : await advanceRunStep(db, actor, node, run, now, definition, signal);
   if (!result.ok) return result;
-  if (result.value.status === "waiting") return ok(result.value);
-  const output = result.value.output;
+  if (result.value.status !== "completed") return ok(result.value);
+  return writeStepReceipt(context, result.value.output);
+}
+
+async function writeStepReceipt(
+  { db, run, node, definition, now, signal }: LockedWorkflowStep,
+  output: StepOutput,
+) {
   const selected = selectRunBranch(definition, node, output);
   if (!selected.ok) return selected;
   const next = selected.value;
@@ -74,6 +98,7 @@ export async function advanceWorkflowRun(
 ) {
   if (!z.string().uuid().safeParse(runId).success) return err(ERROR_IDS.WORKFLOW_INVALID);
   let wait: { deadline: Date | undefined; databaseNow: Date } | undefined;
+  let dispatch: WorkflowExternalEffectClaim | undefined;
   const progress = await db.transaction(async (tx) => {
     const [run] = await tx
       .select()
@@ -112,12 +137,36 @@ export async function advanceWorkflowRun(
     if (!launch.ok) return failRun(tx, run, launch.error, now, signal);
     const node = definition.nodes.find((item) => item.id === run.nextNodeId);
     if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
-    const result = await advanceLockedStep(tx, actor, run, node, definition, now, signal);
+    const result = await advanceLockedStep({
+      db: tx,
+      actor,
+      workflowOwnerId: workflow.ownerId,
+      run,
+      node,
+      definition,
+      now,
+      signal,
+    });
     if (!result.ok) return failRun(tx, run, result.error, now, signal);
     if (result.value.status === "waiting")
       wait = { deadline: result.value.armedDeadline, databaseNow: now };
+    if (result.value.status === "external-pending") {
+      dispatch = result.value.claim;
+      return ok("waiting" as const);
+    }
     return ok(result.value.status);
   });
+  if (dispatch !== undefined) {
+    const outcome = await dispatchClaimedWorkflowHttpRequest(
+      db,
+      dispatch,
+      workflowHttpOperatorServices,
+      signal,
+    );
+    return ok(
+      outcome.ok && outcome.value.state !== "started" ? ("running" as const) : ("waiting" as const),
+    );
+  }
   if (wait?.deadline !== undefined) await onWaitArmed?.(wait.deadline, wait.databaseNow);
   return progress;
 }

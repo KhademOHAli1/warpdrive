@@ -61,6 +61,7 @@ const hints = {
   "record.upsert": undefined,
   "record.pick": undefined,
   "email.draft": undefined,
+  "http.request": undefined,
   "calendar.create": undefined,
   "human.form": undefined,
   "activity.create": "taskHint",

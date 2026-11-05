@@ -11,6 +11,7 @@ import {
   nodeSchema,
   type WorkflowDefinition,
 } from "./schemas";
+import { workflowHttpRequestConfig } from "./workflowHttpRequestContract";
 import { workflowHumanFormDraftConfig } from "./workflowHumanFormContract";
 import { workflowIteratorDraftCopyConfig } from "./workflowIteratorConfiguration";
 import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
@@ -93,6 +94,10 @@ const copyNode = z.discriminatedUnion("type", [
       .partial(),
   }),
   nodeSchema.extend({ type: z.literal("record.pick"), config: recordPickDraftConfig }),
+  nodeSchema.extend({
+    type: z.literal("http.request"),
+    config: z.union([z.strictObject({}), workflowHttpRequestConfig]),
+  }),
   nodeSchema.extend({
     type: z.literal("email.draft"),
     config: z.strictObject({

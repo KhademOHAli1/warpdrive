@@ -7,6 +7,7 @@ import type { Db } from "@/db/client";
 import { workflowRuns, workflows, workflowVersions } from "@/db/schema";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
+import type * as WorkflowSchemas from "./schemas";
 import {
   admitScheduledWorkflowOccurrence,
   type InsertScheduledWorkflowRun,
@@ -22,7 +23,7 @@ const shared = vi.hoisted(() => ({
 }));
 vi.mock("@/server/hydrateActor", () => ({ hydrateActor: shared.hydrate }));
 vi.mock("./schemas", async (original) => ({
-  ...(await original<typeof import("./schemas")>()),
+  ...(await original<typeof WorkflowSchemas>()),
   definitionSchema: { safeParse: shared.parse },
 }));
 vi.mock("./readiness", () => ({ executableDefinition: shared.executable }));
@@ -103,7 +104,7 @@ function database({
         },
       }),
     }),
-    execute: vi.fn(async () => ({ rows: [{ milliseconds: databaseTime }] })),
+    execute: vi.fn(() => Promise.resolve({ rows: [{ milliseconds: databaseTime }] })),
   };
   const db = {
     transaction: (execute: (value: typeof tx) => Promise<unknown>) => execute(tx),
@@ -235,8 +236,10 @@ it("discovers only due publications and returns a keyset cursor even when most r
     publishedAt: index === 0 ? publishedAt : new Date(nowMs),
     nowMs,
   }));
-  const limit = vi.fn(async () => rows);
-  const where = vi.fn((_filter: SQL) => ({ orderBy: () => ({ limit }) }));
+  const limit = vi.fn(() => Promise.resolve(rows));
+  const where = vi
+    .fn<(filter: SQL) => { orderBy: () => { limit: typeof limit } }>()
+    .mockReturnValue({ orderBy: () => ({ limit }) });
   const select = () => ({ from: () => ({ innerJoin: () => ({ where }) }) });
   const db = { select } as unknown as Db;
   expect(await readDueScheduledWorkflowPage(db, afterId, signal)).toEqual({

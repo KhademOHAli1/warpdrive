@@ -112,6 +112,7 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
   "record.upsert": { supported: true, fields: [name] },
   "record.pick": { supported: true, fields: [name] },
   "email.draft": { supported: true, fields: [name] },
+  "http.request": { supported: true, fields: [name] },
   "calendar.create": { supported: true, fields: [name] },
   "human.form": { supported: true, fields: [name] },
   filter: {
@@ -230,6 +231,7 @@ function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["confi
   if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
   if (type === "human.form") return { fields: [] };
   if (type === "calendar.create") return { allDay: false };
+  if (type === "http.request") return { method: "GET", url: { kind: "value", value: "" } };
   if (type === "record.upsert") return { entity: "person", fields: {} };
   if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
   return undefined;

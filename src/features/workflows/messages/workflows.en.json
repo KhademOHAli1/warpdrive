@@ -1,4 +1,11 @@
 {
+  "httpRequest": "HTTP Request",
+  "httpRequestUrl": "URL",
+  "httpRequestHint": "Make a request to an approved HTTPS endpoint.",
+  "httpRequestNeedsGrant": "An administrator and an approved endpoint are required.",
+  "httpRequestLiveOnly": "This workflow sends an HTTP request. Run it live to send the request.",
+  "httpRequestOutcomeUnknown": "The endpoint may have received this request. Check its outcome before starting another run.",
+  "publicationHttpRequestStep": "Sends an HTTP request to an approved endpoint when reached.",
   "scheduledTrigger": "Scheduled",
   "scheduledTriggerHint": "Start the workflow automatically on a schedule.",
   "triggerGroupOthers": "Others",
@@ -354,6 +361,8 @@
   "exists": "Is present",
   "falsePort": "Does not match",
   "fields": {
+    "httpStatus": "HTTP status",
+    "httpResult": "Response value",
     "currentItem": "Current item",
     "currentItemIndex": "Item index",
     "processedCount": "Items processed",

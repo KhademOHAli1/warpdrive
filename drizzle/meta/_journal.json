@@ -764,6 +764,13 @@
       "when": 1793913731569,
       "tag": "0108_workflow_iterator_occurrences",
       "breakpoints": true
+    },
+    {
+      "idx": 109,
+      "version": "7",
+      "when": 1793916060741,
+      "tag": "0109_workflow_external_effect_receipts",
+      "breakpoints": true
     }
   ]
 }

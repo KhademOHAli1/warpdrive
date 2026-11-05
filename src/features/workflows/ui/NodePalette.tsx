@@ -45,18 +45,20 @@ function PaletteRow({
   const descriptionId = useId();
   const structural = row.context.reason;
   const restriction =
-    row.state.support === "unavailable"
-      ? t("paletteUnavailable")
-      : structural === "unavailable-action"
-        ? t("paletteManualUnavailable")
-        : structural !== null
-          ? t(
-              (row.catalog.type === "condition" || row.catalog.type === "ifElse") &&
-                structural === "invalidPort"
-                ? "paletteLinearOnly"
-                : `connectionErrors.${structural}`,
-            )
-          : null;
+    row.state.supportReason === "http-grant-required"
+      ? t("httpRequestNeedsGrant")
+      : row.state.support === "unavailable"
+        ? t("paletteUnavailable")
+        : structural === "unavailable-action"
+          ? t("paletteManualUnavailable")
+          : structural !== null
+            ? t(
+                (row.catalog.type === "condition" || row.catalog.type === "ifElse") &&
+                  structural === "invalidPort"
+                  ? "paletteLinearOnly"
+                  : `connectionErrors.${structural}`,
+              )
+            : null;
   const actionDescription =
     row.catalog.type === "delay"
       ? t(row.catalog.descriptionKey, { days: format.number(maxDelayDays) })

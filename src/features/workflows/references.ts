@@ -18,6 +18,7 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { workflowHttpRequestConfig } from "./workflowHttpRequestContract";
 import { iteratorSourceIsUpstream } from "./workflowIteratorConfiguration";
 import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 import { recordSearchBindingEntries, recordSearchDraftConfig } from "./workflowRecordQueryContract";
@@ -69,7 +70,29 @@ function customBindings(node: WorkflowNode): NodeBinding[] {
   });
 }
 
+function httpBindings(node: WorkflowNode): NodeBinding[] {
+  const parsed = workflowHttpRequestConfig.safeParse(node.config);
+  if (!parsed.success) return [];
+  const { url, headers, body } = parsed.data;
+  const make = (path: string[], binding: Binding): NodeBinding => ({
+    path,
+    field: path.join("."),
+    binding,
+  });
+  const inputs = [
+    make(["url"], url),
+    ...(headers ?? []).map(({ value }, i) => make(["headers", String(i), "value"], value)),
+  ];
+  if (body?.kind === "text") inputs.push(make(["body", "value"], body.value));
+  if (body?.kind === "json")
+    inputs.push(
+      ...body.fields.map(({ value }, i) => make(["body", "fields", String(i), "value"], value)),
+    );
+  return inputs;
+}
+
 function nodeBindings(node: WorkflowNode): NodeBinding[] {
+  if (node.type === "http.request") return httpBindings(node);
   if (node.type === "record.search") return searchBindings(node);
   const nested =
     node.type === "delay" && node.config.delayType === "DURATION"
@@ -101,7 +124,7 @@ function structuralReferenceIssue(
       ? null
       : "unknown_output";
   }
-  if (source.type === "human.form")
+  if (source.type === "human.form" || source.type === "http.request")
     return mappingOutputForReference(definition, binding) === undefined ? "unknown_output" : null;
   const key = binding.path.join(".");
   return Object.hasOwn(actionRegistry[source.type].outputs, key) ? null : "unknown_output";

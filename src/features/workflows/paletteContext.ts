@@ -129,6 +129,18 @@ export function configurableWorkflowTrigger(
     : undefined;
 }
 
+function triggerConfigurationReason(
+  definition: WorkflowDefinition,
+  type: WorkflowNode["type"],
+  request: PickerRequest,
+): PaletteContextEntry["reason"] {
+  const trigger = configurableWorkflowTrigger(definition);
+  return trigger !== undefined &&
+    (trigger.type === type || (request.kind === "replace" && request.nodeId === trigger.id))
+    ? null
+    : "unavailable-action";
+}
+
 function entryReason(
   definition: WorkflowDefinition,
   descriptor: PaletteCatalogEntry,
@@ -142,14 +154,8 @@ function entryReason(
     if (replaced.type.startsWith("trigger.") !== descriptor.type.startsWith("trigger."))
       return "unavailable-action";
   }
-  if (descriptor.selection === "configure") {
-    const trigger = configurableWorkflowTrigger(definition);
-    return trigger !== undefined &&
-      (trigger.type === descriptor.type ||
-        (request.kind === "replace" && request.nodeId === trigger.id))
-      ? null
-      : "unavailable-action";
-  }
+  if (descriptor.selection === "configure")
+    return triggerConfigurationReason(definition, descriptor.type, request);
   if (placement.reason !== null) return placement.reason;
   if (request.kind === "replace") return null;
   if (definition.nodes.length >= 100) return "nodeLimit";
