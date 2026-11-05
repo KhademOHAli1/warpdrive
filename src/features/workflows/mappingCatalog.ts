@@ -280,6 +280,63 @@ function delayScheduleTarget(node: WorkflowNode, path: readonly string[]): Mappi
   };
 }
 
+function extendedTargetResult(
+  node: WorkflowNode,
+  path: readonly string[],
+  target?: MappingTarget,
+): MappingTargetResult {
+  return target === undefined
+    ? unavailableTarget(node.id, path, "unknown-output", "unsupported_setting")
+    : { state: "ready", target };
+}
+
+function recordFieldMappingTarget(
+  node: WorkflowNode,
+  path: readonly string[],
+): MappingTarget | undefined {
+  const entity = recordCreateEntitySchema.safeParse(node.config.entity);
+  if (!entity.success) return undefined;
+  if (node.type === "record.create") {
+    const [section, field] = path;
+    return section === "fields" && path.length === 2 && field !== undefined
+      ? recordCreateFieldTarget(node.id, entity.data, field)
+      : undefined;
+  }
+  return node.type === "record.update" || path[0] === "recordId"
+    ? recordMutationTarget(node.id, entity.data, path)
+    : undefined;
+}
+
+function extendedMappingTarget(
+  node: WorkflowNode,
+  path: readonly string[],
+): MappingTargetResult | undefined {
+  switch (node.type) {
+    case "record.create":
+    case "record.update":
+    case "record.delete":
+      return extendedTargetResult(node, path, recordFieldMappingTarget(node, path));
+    case "record.search": {
+      const draft = recordSearchDraftConfig.safeParse(node.config);
+      return extendedTargetResult(
+        node,
+        path,
+        draft.success ? recordSearchBindingTarget(node.id, draft.data, path) : undefined,
+      );
+    }
+    case "email.draft": {
+      const field = path.length === 1 ? path[0] : undefined;
+      return extendedTargetResult(
+        node,
+        path,
+        field === undefined ? undefined : workflowEmailDraftFieldTarget(node.id, field),
+      );
+    }
+    default:
+      return undefined;
+  }
+}
+
 export function describeMappingTarget(
   definition: WorkflowDefinition,
   nodeId: string,
@@ -290,40 +347,8 @@ export function describeMappingTarget(
   const node = nodes[0];
   if (nodes.length !== 1 || node === undefined)
     return unavailableTarget(nodeId, path, "source-missing", "reference_missing");
-  if (node.type === "record.create") {
-    const entity = recordCreateEntitySchema.safeParse(node.config.entity);
-    const target =
-      entity.success && path[0] === "fields" && path.length === 2 && path[1] !== undefined
-        ? recordCreateFieldTarget(node.id, entity.data, path[1])
-        : undefined;
-    return target === undefined
-      ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
-      : { state: "ready", target };
-  }
-  if (node.type === "record.search" || node.type === "email.draft") {
-    const draft = recordSearchDraftConfig.safeParse(node.config);
-    const target =
-      node.type === "record.search"
-        ? draft.success
-          ? recordSearchBindingTarget(node.id, draft.data, path)
-          : undefined
-        : path.length === 1 && path[0] !== undefined
-          ? workflowEmailDraftFieldTarget(node.id, path[0])
-          : undefined;
-    return target === undefined
-      ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
-      : { state: "ready", target };
-  }
-  if (node.type === "record.update" || node.type === "record.delete") {
-    const entity = recordCreateEntitySchema.safeParse(node.config.entity);
-    const target =
-      entity.success && (node.type === "record.update" || path[0] === "recordId")
-        ? recordMutationTarget(node.id, entity.data, path)
-        : undefined;
-    return target === undefined
-      ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
-      : { state: "ready", target };
-  }
+  const extended = extendedMappingTarget(node, path);
+  if (extended !== undefined) return extended;
   if (node.type === "delay" && Object.hasOwn(node.config, "delayType"))
     return delayScheduleTarget(node, path);
   if ((node.type === "condition" || node.type === "filter") && path[0] === "expression")

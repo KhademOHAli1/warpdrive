@@ -358,8 +358,10 @@ function SearchOptions({
   const copy = useRecordQueryCopy();
   const { draft, node, definition, metadata, editable, errorFor } = context;
   function setFilter(filter: RecordSearchFilterGroup | undefined) {
-    const { filter: _previous, ...rest } = draft;
-    change(filter === undefined ? rest : { ...rest, filter });
+    const next = { ...draft };
+    if (filter === undefined) delete next.filter;
+    else next.filter = filter;
+    change(next);
   }
   return (
     <>

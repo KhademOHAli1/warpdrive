@@ -159,6 +159,10 @@ export function WorkflowNodeCard({
         const branch = ifElseBranchOffset(node, port);
         const label = portLabel(port, node);
         const fraction = (index + 1) / (ports.length + 1);
+        const horizontal = port === "true";
+        const connector = horizontal
+          ? { width: 56, height: 2, path: "M0 1H28H56" }
+          : { width: 2, height: 56, path: "M1 0V28V56" };
         const addButton =
           data.onAdd !== undefined && data.outputs?.includes(port) !== true ? (
             <Button
@@ -194,24 +198,20 @@ export function WorkflowNodeCard({
                   className={cn(
                     "nodrag nopan",
                     styles.freeOutput,
-                    port === "true" && styles.freeOutputRight,
+                    horizontal && styles.freeOutputRight,
                   )}
                 >
                   <div className={styles.connector} aria-hidden="true">
                     {/* eslint-disable-next-line no-restricted-syntax -- The dashed path connects this graph port to the add-step control. */}
                     <svg
-                      width={port === "true" ? "56" : "2"}
-                      height={port === "true" ? "2" : "56"}
-                      viewBox={port === "true" ? "0 0 56 2" : "0 0 2 56"}
+                      width={connector.width}
+                      height={connector.height}
+                      viewBox={`0 0 ${connector.width} ${connector.height}`}
                       fill="none"
                       aria-hidden="true"
                       focusable="false"
                     >
-                      <path
-                        d={port === "true" ? "M0 1H28H56" : "M1 0V28V56"}
-                        stroke="currentColor"
-                        strokeDasharray="3 3"
-                      />
+                      <path d={connector.path} stroke="currentColor" strokeDasharray="3 3" />
                     </svg>
                   </div>
                   {ports.length > 1 && (
@@ -225,7 +225,7 @@ export function WorkflowNodeCard({
             <Handle
               id={port}
               type="source"
-              position={port === "true" ? Position.Right : Position.Bottom}
+              position={horizontal ? Position.Right : Position.Bottom}
               isConnectable={isConnectable}
               aria-label={label}
               className={branch === null ? undefined : styles.branchHandle}

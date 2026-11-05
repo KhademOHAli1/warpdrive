@@ -148,62 +148,31 @@ function ConfigurationField({
     );
   return <BuiltinField {...props} field={field} />;
 }
+function extendedConfigurationFields(props: ConfigurationFieldsProps) {
+  if (props.spec?.supported !== true) return undefined;
+  switch (props.node.type) {
+    case "record.update":
+    case "record.delete":
+      return <RecordMutationConfigurationFields {...props} />;
+    case "email.draft":
+      return <EmailDraftConfigurationFields {...props} />;
+    case "record.search":
+      return <SearchRecordConfigurationFields {...props} />;
+    case "record.pick":
+      return <PickRecordFieldsWithLookup {...props} />;
+    case "record.create":
+      return <CreateRecordConfigurationFields {...props} />;
+    default:
+      return undefined;
+  }
+}
+
 export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
   const t = useAppTranslations("workflows");
   const { spec, definition, node, editable, onChange, validation } = props;
   if (spec === null) return null;
-  if ((node.type === "record.update" || node.type === "record.delete") && spec.supported)
-    return (
-      <RecordMutationConfigurationFields
-        definition={definition}
-        node={node}
-        editable={editable}
-        onChange={onChange}
-        validation={validation}
-        workflowId={props.workflowId}
-      />
-    );
-  if (spec.supported && node.type === "email.draft")
-    return (
-      <EmailDraftConfigurationFields
-        definition={definition}
-        node={node}
-        editable={editable}
-        onChange={onChange}
-        validation={validation}
-      />
-    );
-  if (spec.supported && node.type === "record.search")
-    return (
-      <SearchRecordConfigurationFields
-        definition={definition}
-        node={node}
-        editable={editable}
-        onChange={onChange}
-        validation={validation}
-        metadata={props.metadata}
-      />
-    );
-  if (spec.supported && node.type === "record.pick")
-    return (
-      <PickRecordFieldsWithLookup
-        node={node}
-        editable={editable}
-        onChange={onChange}
-        validation={validation}
-        workflowId={props.workflowId}
-      />
-    );
-  if (node.type === "record.create" && spec.supported)
-    return (
-      <CreateRecordConfigurationFields
-        definition={definition}
-        node={node}
-        editable={editable}
-        onChange={onChange}
-        validation={validation}
-      />
-    );
+  const extended = extendedConfigurationFields(props);
+  if (extended !== undefined) return extended;
   if (node.type === "ifElse" && spec.supported)
     return (
       <IfElseConfigurationFields

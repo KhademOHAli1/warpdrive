@@ -72,7 +72,7 @@ function database(rows: unknown[] = [{ id: recordId, updatedAt }], contained = f
     throw new TransactionRollbackError();
   });
   const lock = vi.fn(() => Promise.resolve(rows));
-  const where = vi.fn((_conditions: SQL) => ({ for: lock }));
+  const where = vi.fn<(conditions: SQL) => { for: typeof lock }>(() => ({ for: lock }));
   const query = { from: () => query, innerJoin: () => query, where };
   const tx = { rollback, select: () => query } as unknown as Db;
   const transaction = vi.fn((work: (tx: Db) => Promise<unknown>) => work(tx));

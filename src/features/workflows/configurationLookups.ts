@@ -173,6 +173,26 @@ export async function readWorkflowConfigurationOptions(
   );
 }
 
+function namedRecordTarget(
+  input: ReferenceInput,
+  current: ConfigurationSnapshot,
+  entity: Extract<ConfigurationReferenceSelector, { kind: "record" }>["entity"],
+): Result<ReferenceTarget, AppError> {
+  if (
+    input.type !== "record.update" &&
+    input.type !== "record.delete" &&
+    input.type !== "record.pick"
+  )
+    return err(configurationInvalid());
+  if (
+    input.mode === "search" &&
+    (current.workflow.archivedAt !== null ||
+      !canWorkflow(current.actor, "edit", current.workflow.ownerId))
+  )
+    return err(configurationDenied());
+  return ok(entity);
+}
+
 function targetFor(
   input: ReferenceInput,
   current: ConfigurationSnapshot,
@@ -186,21 +206,7 @@ function targetFor(
       return ok("deal");
     return err(configurationInvalid());
   }
-  if (field.kind === "record") {
-    if (
-      input.type !== "record.update" &&
-      input.type !== "record.delete" &&
-      input.type !== "record.pick"
-    )
-      return err(configurationInvalid());
-    if (
-      input.mode === "search" &&
-      (current.workflow.archivedAt !== null ||
-        !canWorkflow(current.actor, "edit", current.workflow.ownerId))
-    )
-      return err(configurationDenied());
-    return ok(field.entity);
-  }
+  if (field.kind === "record") return namedRecordTarget(input, current, field.entity);
   if (input.type !== "activity.create") return err(configurationInvalid());
   const def = current.defs.find((item) => item.id === field.fieldId);
   if (def === undefined) return err(configurationDenied());

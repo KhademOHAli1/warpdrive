@@ -57,7 +57,6 @@ function ReadonlyRecordChoice({
     data.mode === "selected" &&
     data.workflowId === workflowId &&
     data.type === type &&
-    data.version === 1 &&
     data.field.kind === "record" &&
     data.field.entity === entity
       ? data.items.find((item) => item.id === id)

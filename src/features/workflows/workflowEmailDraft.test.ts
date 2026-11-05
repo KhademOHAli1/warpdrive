@@ -58,7 +58,9 @@ function run(
 
 beforeEach(() => {
   vi.resetAllMocks();
-  native.saveDraft.mockImplementation(async (_db, { draft }) => ok({ id: draft.createId }));
+  native.saveDraft.mockImplementation((_db, { draft }) =>
+    Promise.resolve(ok({ id: draft.createId })),
+  );
 });
 
 describe("workflow email draft contract", () => {

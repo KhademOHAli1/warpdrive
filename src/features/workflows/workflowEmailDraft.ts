@@ -91,16 +91,16 @@ async function previewDraft(
   signal: AbortSignal,
 ): Promise<DraftResult> {
   let result: DraftResult = err(ERROR_IDS.WORKFLOW_WRITE_FAILED);
-  let rollbackRequested = false;
+  const rollback = { requested: false };
   try {
     await db.transaction(async (tx) => {
       result = await writeDraft(tx, actor, draft, signal);
-      rollbackRequested = true;
+      rollback.requested = true;
       tx.rollback();
     });
   } catch (error) {
     signal.throwIfAborted();
-    if (!rollbackRequested || !(error instanceof TransactionRollbackError)) throw error;
+    if (!rollback.requested || !(error instanceof TransactionRollbackError)) throw error;
   }
   return result;
 }

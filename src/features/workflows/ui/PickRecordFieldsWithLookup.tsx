@@ -35,7 +35,7 @@ function usePickSelected(workflowId: string, entity: RecordLookupEntity, ids: st
   const matching =
     data.type === "record.pick" &&
     data.workflowId === workflowId &&
-    data.version === 1 &&
+    z.literal(1).safeParse(data.version).success &&
     data.mode === "selected" &&
     data.query === "" &&
     data.field.kind === "record" &&
