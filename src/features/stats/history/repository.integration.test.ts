@@ -142,6 +142,25 @@ describe("native current-deal history repository", () => {
     });
   });
 
+  test("uses native snapshot visibility with a public schema shadow type", async () => {
+    await withHistory(async (h, f, actor) => {
+      await h.pool.query("CREATE DOMAIN public.pg_snapshot AS pg_catalog.text");
+      let client: PoolClient | undefined;
+      try {
+        client = await h.pool.connect();
+        await beginHistoryTransaction(client);
+        await client.query("SET LOCAL search_path = public, pg_catalog");
+        const scopedDb = drizzle(client, { schema });
+        const result = await readCurrentDealHistory(scopedDb, actor, filters, f.dealId, signal());
+        requireAvailable(result);
+        expect(result.events).toHaveLength(1);
+        expect(result.events[0]?.eventKind).toBe("baseline");
+      } finally {
+        await releaseTransaction(client);
+      }
+    });
+  });
+
   test("reapplies the view-others ceiling even when caller filters request every owner", async () => {
     await withHistory(async (h, f, actor) => {
       const otherOwner = randomUUID();

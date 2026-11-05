@@ -107,6 +107,17 @@
   }
 }
 
+/* Both logo previews stay fixed when the surrounding app switches themes. */
+@layer components {
+  [data-company-branding-preview="day"] {
+    @apply bg-white text-slate-950;
+  }
+
+  [data-company-branding-preview="night"] {
+    @apply bg-slate-950 text-white;
+  }
+}
+
 @keyframes enrich-row-in {
   from {
     opacity: 0;

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { ANALYTICS_BROWSER as actor, ANALYTICS_DEALS as deals } from "./browser-analytics-seed.mjs";
 
@@ -82,6 +83,34 @@ const report = {
   cleanup: { browserClosed: false, databasePoolClosed: false, sessionCleared: false },
 };
 const save = () => writeFileSync(file("receipt.json"), `${JSON.stringify(report, null, 2)}\n`);
+const started = performance.now();
+const elapsed = () => Math.round(performance.now() - started);
+const csrfReady = (page) =>
+  page.waitForFunction(
+    () => document.cookie.split("; ").some((cookie) => cookie.startsWith("wd_csrf=")),
+    undefined,
+    { timeout: 7000 },
+  );
+
+function phase(entry, name) {
+  entry.phase = name;
+  entry.phases.push({ name, elapsedMs: elapsed() });
+  save();
+}
+
+async function bounded(label, operation, milliseconds) {
+  const timer = new AbortController();
+  try {
+    return await Promise.race([
+      operation(),
+      delay(milliseconds, undefined, { signal: timer.signal }).then(() => {
+        assert.fail(`${label} exceeded ${milliseconds}ms`);
+      }),
+    ]);
+  } finally {
+    timer.abort();
+  }
+}
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   max: 1,
@@ -119,10 +148,13 @@ async function journey(name, exercise, { viewport = desktop, colorScheme = "ligh
     viewport,
     colorScheme,
     state: "RUNNING",
+    startedMs: elapsed(),
+    phases: [],
     contextClosed: false,
     reports: [],
   };
   report.journeys.push(entry);
+  phase(entry, "create-context");
   const context = await browser.newContext({
     baseURL: origin,
     ignoreHTTPSErrors: true,
@@ -156,7 +188,8 @@ async function journey(name, exercise, { viewport = desktop, colorScheme = "ligh
       return socket.close({ code: 1008, reason: "No sockets in analytics browser qualification" });
     });
     page = await context.newPage();
-    await exercise(page, context, entry);
+    phase(entry, "exercise");
+    await bounded(name, () => exercise(page, context, entry), 45_000);
     assert.deepEqual(unexpected, [], "No unexpected origins or sockets");
     assert.deepEqual(errors, [], "No browser errors");
     entry.state = "PASS";
@@ -177,6 +210,7 @@ async function journey(name, exercise, { viewport = desktop, colorScheme = "ligh
       entry.state = "FAIL";
       entry.cleanupError = safeError(error);
     } finally {
+      entry.finishedMs = elapsed();
       save();
     }
   }
@@ -208,7 +242,7 @@ async function rpcAfter(page, procedure, matches, action) {
   ]);
   assert.equal(response.status(), 200, `${procedure}: HTTP status`);
   const request = rpcRequest(response.url(), procedure);
-  const payload = await response.json();
+  const payload = await bounded(`${procedure} response body`, () => response.json(), 7000);
   const packet = request.batch ? payload[request.index] : payload;
   assert.ok(packet?.result?.data, `${procedure}: actual application result`);
   return { input: request.input, data: superjson.deserialize(packet.result.data) };
@@ -229,17 +263,22 @@ async function preferences() {
 }
 
 async function setRegional(currentLocale, key, option, expected) {
+  const labelKey = key === "locale" ? "language" : key;
   const name = `regional-${key}-${option === languages.fa ? "fa" : expected[key]}`.replaceAll(
     /[^a-zA-Z0-9-]/g,
     "-",
   );
-  await journey(name, async (page) => {
-    assert.equal((await page.goto("/settings/regional"))?.status(), 200);
+  await journey(name, async (page, _context, entry) => {
+    phase(entry, "open-regional-settings");
+    assert.equal(
+      (await page.goto("/settings/regional", { waitUntil: "domcontentloaded" }))?.status(),
+      200,
+    );
     assert.equal(new URL(page.url()).pathname, "/settings/regional");
     assert.equal(await page.locator("html").getAttribute("lang"), currentLocale);
-    await page.waitForFunction(() =>
-      document.cookie.split("; ").some((cookie) => cookie.startsWith("wd_csrf=")),
-    );
+    phase(entry, "wait-for-csrf");
+    await csrfReady(page);
+    phase(entry, "choose-and-observe-action");
     const [response] = await Promise.all([
       page.waitForResponse(
         (candidate) =>
@@ -248,15 +287,41 @@ async function setRegional(currentLocale, key, option, expected) {
           Boolean(candidate.request().headers()["next-action"]),
         { timeout: 15000 },
       ),
-      choose(page, copy[currentLocale].regional[key === "locale" ? "language" : key], option),
+      choose(page, copy[currentLocale].regional[labelKey], option),
     ]);
     assert.equal(response.status(), 200, "Regional server action responded");
-    assert.equal(await response.finished(), null);
-    const stored = await preferences();
+    phase(entry, "verify-persisted-preferences");
+    const stored = await bounded(
+      "Regional preference persistence",
+      async () => {
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          const actual = await preferences();
+          if (
+            actual.timezone === expected.timeZone &&
+            Object.entries(expected).every(
+              ([field, value]) => actual.ui.localePreferences?.[field] === value,
+            )
+          )
+            return actual;
+          await delay(250);
+        }
+        assert.fail("Regional settings did not persist the requested values");
+      },
+      7000,
+    );
     assert.equal(stored.timezone, expected.timeZone);
     for (const [field, value] of Object.entries(expected)) {
       assert.equal(stored.ui.localePreferences?.[field], value, `Persisted ${field}`);
     }
+    phase(entry, "verify-regional-ui-settled");
+    const regional = copy[expected.locale].regional;
+    await page
+      .getByRole("combobox", exact(regional[labelKey]))
+      .and(page.locator(":enabled"))
+      .filter({ hasText: option })
+      .waitFor({ timeout: 7000 });
+    assert.equal(await page.locator("html").getAttribute("lang"), expected.locale);
+    assert.equal(await page.getByRole("alert").filter({ hasText: regional.saveError }).count(), 0);
     report.preferenceChanges.push(expected);
   });
 }
@@ -558,6 +623,7 @@ async function matrix(locale, calendar) {
         name,
         async (page, _context, entry) => {
           Object.assign(entry, { locale, calendar, zone: actor.timeZone });
+          phase(entry, "open-dashboard");
           const initial = await openDashboard(page, locale, calendar, actor.timeZone);
           entry.initialRange = { from: initial.input.from, to: initial.input.to };
           const current = await selectPreset(page, locale, calendar, initial, "last30");
@@ -579,10 +645,15 @@ async function matrix(locale, calendar) {
             .getByText(copy[locale].format("_extra.percent", { count: 83 }), { exact: true })
             .waitFor();
           await verifyRender(page, locale, colorScheme, viewport);
-          await page.evaluate(() => document.fonts.ready.then(() => undefined));
+          await bounded(
+            "Dashboard font readiness",
+            () => page.evaluate(() => document.fonts.ready.then(() => undefined)),
+            5000,
+          );
           await assertHeadlineUnbroken(scoreboard);
           await main.getByRole("heading", exact(S.title)).scrollIntoViewIfNeeded();
           await capture(page, `${name}-dashboard`);
+          phase(entry, "open-and-measure-drawer");
           const opened = await openRecords(
             page,
             locale,
@@ -595,8 +666,9 @@ async function matrix(locale, calendar) {
           await capture(page, `${name}-drawer`);
           entry.accessibility = await opened.dialog.ariaSnapshot();
           if (locale === "en" && viewport === desktop && colorScheme === "light") {
+            phase(entry, "open-record-in-new-tab");
             const [popup] = await Promise.all([
-              page.waitForEvent("popup"),
+              page.waitForEvent("popup", { timeout: 7000 }),
               opened.dialog
                 .getByRole("link", exact(`${deals.recorded.title} ${S.recordsOpenNewTab}`))
                 .click(),
@@ -613,6 +685,7 @@ async function matrix(locale, calendar) {
           }
           await closeRecords(page, opened);
           if (locale === "en" && viewport === desktop && colorScheme === "light") {
+            phase(entry, "verify-other-record-populations");
             for (const metric of ["won", "wonValue", "wonCycle"]) {
               await closeRecords(
                 page,
@@ -734,8 +807,12 @@ try {
     await page.locator('input[name="password"]').fill(actor.password);
     await page.locator('button[type="submit"]').click();
     await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
-    assert.equal((await page.goto("/settings/regional"))?.status(), 200);
+    assert.equal(
+      (await page.goto("/settings/regional", { waitUntil: "domcontentloaded" }))?.status(),
+      200,
+    );
     assert.equal(new URL(page.url()).pathname, "/settings/regional");
+    await csrfReady(page);
     session = await context.storageState();
     report.nativeLogins += 1;
   });

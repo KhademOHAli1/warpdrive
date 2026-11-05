@@ -169,14 +169,14 @@ export function DealRecordsDrawer({
                     <tbody className="divide-y">
                       {result.rows.map((row) => (
                         <tr key={row.id}>
-                          <th scope="row" className="px-4 py-3 text-start font-medium">
+                          <th scope="row" className="min-w-36 px-4 py-3 text-start font-medium">
                             <a
                               href={`/deals/${row.id}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex min-h-10 items-center gap-2 rounded-sm text-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                              <span className="line-clamp-2 break-words">{row.title}</span>
+                              <span className="wrap-anywhere">{row.title}</span>
                               <ExternalLink aria-hidden="true" className="size-3.5 shrink-0" />
                               <span className="sr-only">{S.recordsOpenNewTab}</span>
                             </a>

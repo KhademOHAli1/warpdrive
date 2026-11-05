@@ -177,8 +177,8 @@ export async function readCurrentDealHistory(
   const pipelineAuthority = visiblePipelinePredicate(actor) ?? sql`false`;
   const result = await db.execute(sql`
     WITH observation AS MATERIALIZED (
-      SELECT pg_current_snapshot()::text AS snapshot,
-        pg_current_xact_id_if_assigned()::text AS own_transaction,
+      SELECT pg_catalog.pg_current_snapshot()::text AS snapshot,
+        pg_catalog.pg_current_xact_id_if_assigned()::text AS own_transaction,
         to_char(statement_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS observed_at
     ), permitted_pipelines AS MATERIALIZED (
       SELECT pipelines.id FROM pipelines
@@ -211,7 +211,9 @@ export async function readCurrentDealHistory(
       JOIN current_record r ON e.entity_kind = 'deal' AND e.entity_id = r.id
         AND e.incarnation_id = r.incarnation_id AND e.activation_id = r.activation_id
       CROSS JOIN observation o
-      WHERE pg_visible_in_snapshot(e.transaction_id::xid8, o.snapshot::pg_snapshot)
+      WHERE pg_catalog.pg_visible_in_snapshot(
+        e.transaction_id::pg_catalog.xid8, o.snapshot::pg_catalog.pg_snapshot
+      )
       ORDER BY e.ordinal ASC LIMIT ${MAX_DEAL_HISTORY_EVENTS + 1}
     )
     SELECT o.snapshot AS "databaseSnapshot", o.observed_at AS "observedAt",

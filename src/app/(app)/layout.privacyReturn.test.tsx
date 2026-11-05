@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import { isValidElement } from "react";
 import { afterEach, beforeEach, expect, type MockInstance, test, vi } from "vitest";
+import { WorkspaceShellProvider } from "@/components/shell/WorkspaceShellProvider";
 import { db } from "@/db/client";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
@@ -14,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   preferences: vi.fn(),
   currency: vi.fn(),
+  companyProjection: vi.fn(),
+  workNavigation: vi.fn(),
   requestHeaders: new Headers(),
   headers: vi.fn(),
   jar: new Map<string, { value: string }>(),
@@ -25,6 +28,12 @@ vi.mock("@/features/identity/preferencesForActor", () => ({
   getPreferencesForActor: mocks.preferences,
 }));
 vi.mock("@/features/settings/readBaseCurrency", () => ({ readBaseCurrency: mocks.currency }));
+vi.mock("@/features/company-profile/repository", () => ({
+  getCompanyMemberProjection: mocks.companyProjection,
+}));
+vi.mock("@/features/work-profile/navigation", () => ({
+  readWorkNavigation: mocks.workNavigation,
+}));
 vi.mock("next/headers", () => ({
   headers: mocks.headers,
   cookies: () => Promise.resolve(mocks.jar),
@@ -52,6 +61,14 @@ import AppLayout from "./layout";
 
 const CASE_PATH = "/settings/privacy/requests/a3c8f25e-2b78-4c12-92f7-79c97b7ed913";
 const FORGED_PATH = "/settings/privacy/requests/00000000-0000-4000-8000-000000000032";
+const brand = {
+  workspaceScope: null,
+  displayName: "Example workspace",
+  iconUrl: null,
+  accentColor: null,
+  foregroundColor: "#ffffff",
+};
+const navigation = { modules: ["sales"], canViewWork: false };
 let nextResponseSpy: MockInstance<typeof NextResponse.next>;
 
 beforeEach(() => {
@@ -64,6 +81,8 @@ beforeEach(() => {
   mocks.pending.mockResolvedValue(null);
   mocks.preferences.mockResolvedValue({ density: "comfortable", ui: { appearance: "day" } });
   mocks.currency.mockResolvedValue("EUR");
+  mocks.companyProjection.mockResolvedValue(brand);
+  mocks.workNavigation.mockResolvedValue(navigation);
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -87,6 +106,8 @@ async function expectDestination(path: string) {
   });
   expect(mocks.preferences).not.toHaveBeenCalled();
   expect(mocks.currency).not.toHaveBeenCalled();
+  expect(mocks.companyProjection).not.toHaveBeenCalled();
+  expect(mocks.workNavigation).not.toHaveBeenCalled();
 }
 
 test.each([
@@ -142,7 +163,14 @@ test("an authenticated actor keeps the existing shell without a return-path redi
     key: actor.id,
     props: {
       actorId: actor.id,
-      children: { type: CurrencyProvider, props: { currency: "EUR" } },
+      children: {
+        type: WorkspaceShellProvider,
+        props: {
+          brand,
+          ...navigation,
+          children: { type: CurrencyProvider, props: { currency: "EUR" } },
+        },
+      },
     },
   });
   expect(redirect).not.toHaveBeenCalled();
@@ -151,4 +179,6 @@ test("an authenticated actor keeps the existing shell without a return-path redi
   expect(mocks.preferences).toHaveBeenCalledOnce();
   expect(mocks.preferences).toHaveBeenCalledWith(db, actor.id);
   expect(mocks.currency).toHaveBeenCalledWith(db, expect.any(AbortSignal));
+  expect(mocks.companyProjection).toHaveBeenCalledWith(db, expect.any(AbortSignal));
+  expect(mocks.workNavigation).toHaveBeenCalledWith(db, actor, expect.any(AbortSignal));
 });

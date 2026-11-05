@@ -119,7 +119,8 @@ export function BrandingEditor({
         {[false, true].map((dark) => (
           <div
             key={String(dark)}
-            className={`space-y-4 rounded-lg border p-5 ${dark ? "bg-slate-950 text-white" : "bg-white text-slate-950"}`}
+            className="space-y-4 rounded-lg border p-5"
+            data-company-branding-preview={dark ? "night" : "day"}
           >
             <p className="text-sm font-medium">{dark ? m.darkPreview : m.lightPreview}</p>
             <div className="flex items-center gap-3">

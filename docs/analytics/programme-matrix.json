@@ -359,7 +359,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/stageConversion.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary", "history-exact-events", "regional-boundaries"],
       "dataRequirements": ["Cohort origin, conversion event, cutoff and elapsed-age definition."],
       "acceptance": [
@@ -448,7 +448,7 @@
         "src/features/stats/dealPerformance.ts",
         "src/features/stats/stageConversion.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary"],
       "dataRequirements": ["Existing independent populations and dates."],
       "acceptance": [
@@ -1704,7 +1704,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "report-persistence"],
       "dataRequirements": ["Cutoff/scope/version/provenance and correction policy."],
       "acceptance": [

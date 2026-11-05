@@ -3,6 +3,14 @@ import { classifyInventory } from "./registryClassification";
 // Independently reviewed source proposal; every lifecycle capability remains unsupported.
 export const analyticsInventoryEntry = classifyInventory(
   [
+    "derived:src/features/stats/history/dealCohortRepository.ts",
+    "sourceReview:src/features/stats/history/dealCohortRepository.ts#07ef16dc05a14a329d784f26f57de8860a3e2aa39f5f3472b7c01e6e3ff6b9a7",
+    "writer:src/features/stats/history/dealCohortRepository.ts#execute:sql",
+    "derived:src/features/stats/history/equalAgeCohorts.ts",
+    "derived:src/features/stats/history/inventorySnapshotRepository.ts",
+    "sourceReview:src/features/stats/history/equalAgeCohorts.ts#94f4431c6970716663982a3d13f13e16c00764b4683aa19a03f100e4d162f4c9",
+    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#48c248eeb2633ee17a2a07620f062abfe7d81574cdfd924612dd110ad600bb65",
+    "writer:src/features/stats/history/inventorySnapshotRepository.ts#execute:sql",
     "derived:src/features/stats/history/inventoryMovement.ts",
     "derived:src/features/stats/history/stageDefinitionRepository.ts",
     "derived:src/features/stats/history/stageDefinitions.ts",
@@ -19,7 +27,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/repository.ts",
     "sourceReview:src/db/schema/analyticsHistory.ts#ac12a8b33b1141bc08418a31ad45ef57858aaa1ff84c3303c71490c5e666c319",
     "sourceReview:src/features/stats/history/fold.ts#41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b",
-    "sourceReview:src/features/stats/history/repository.ts#f797f21fe9de3b9db911f58e1580e6df8208140e8505f1837b2e250fedd41461",
+    "sourceReview:src/features/stats/history/repository.ts#24ac35b5333aaa9b80b63457f275537f2464454dc9ad2f62a725e9bcbbb531f0",
     "table:analytics_history_coverage",
     "table:analytics_history_events",
     "table:analytics_history_heads",
@@ -39,13 +47,13 @@ export const analyticsInventoryEntry = classifyInventory(
     subjectRelation:
       "Deal projections retain owner/person/organization references and commercial facts. These references are linkable data, not verified data-subject identity. Unknown capture actor/command stays null. Current deal authority does not grant independent contact or retained-deletion authority.",
     purpose:
-      "Private source proposal for activation baselines, row observations, physical incarnations, transaction folding, stage-definition reads, stage-episode/quantile and inventory reconciliation calculations, immutable report storage and an internal bounded current-deal history read. No schema export, canonical migration, report writer or installed storage is established by this classification.",
+      "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions, stage duration, inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history and immutable inventory snapshot creation. No schema export, canonical migration or installed storage is established by this classification.",
     disclosure:
-      "Internal reader reapplies live deal/report scope and historical pipeline visibility in one database observation; reused pipeline IDs are conservatively denied. Global baseline counts, unrestricted custom fields and labels are excluded from viewer output. Raw history/snapshots and linked contact identifiers require a separately scoped browser/export DTO; creator authority never transfers to recipients.",
+      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. The snapshot writer rechecks creator scope and records minimal facts for the selected currency, excluding names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output; creator authority never transfers to recipients.",
     retention:
       "The private proposal deliberately retains immutable event/baseline/report rows and physical incarnations after source deletion. Immutability does not authorize indefinite retention. It supplies no retention schedule, erasure adapter or legal-retention determination. Canonical admission must qualify storage, subject scope, restrictions, backups and controlled lifecycle handling separately.",
     externalEffects:
-      "Source-only PostgreSQL table/trigger declarations and an internal SELECT reader; the scanner's execute:sql identifier is a read, not a SQL mutation. Folding, definition selection and reconciliation use transient Map/Set data. The inventory delete identifier retires a key in an in-memory map, not a database row. Stage definition reads use an owned read-only repeatable-read transaction and local query timeouts. Private SQL capture, if installed, performs transactional ledger/head writes; it has not been locally executed. No provider, email, telemetry, file/object export, production source mutation or lifecycle operation is performed by classification.",
+      "The record, stage and cohort repositories read and set session-local limits. The snapshot writer inserts one immutable row into the proposed storage after a bounded authorized read in its own repeatable-read transaction. Private SQL capture, if installed, writes transactional ledger/head rows. Folding, reconciliation and cohorts use transient Map/Set data; the reconciliation delete retires an in-memory key. No provider call, email, telemetry, file/object export, production CRM mutation or privacy lifecycle operation is authorized by this classification.",
     erasureTask: "DPL-15 / #596 / #597",
   },
 );
