@@ -418,7 +418,9 @@ async function nativeLogin(page, context, config, entry) {
 
 async function waitForSettingsControls(page, config) {
   const messages = settingsMessages(config.locale);
-  const country = page.getByRole("combobox", { name: messages.country, exact: true });
+  // The country control opens a searchable popover from a labelled button.
+  // Its input is the combobox once the popover is open.
+  const country = page.getByRole("button", { name: messages.country, exact: true });
   const zoneSwitch = page.getByRole("switch", { name: messages.browserTimeZone, exact: true });
   await country.waitFor({ state: "visible" });
   await zoneSwitch.waitFor({ state: "visible" });
