@@ -151,6 +151,16 @@ export function workflowHttpsUrl(input: string): URL | null {
     return null;
   }
 }
+function requestHeaders(input: WorkflowHttpInput): Record<string, string> {
+  const headers = { ...input.headers };
+  if (
+    input.body !== undefined &&
+    typeof input.body !== "string" &&
+    !Object.keys(headers).some((key) => key.toLowerCase() === "content-type")
+  )
+    headers["content-type"] = "application/json";
+  return headers;
+}
 export async function safeWorkflowHttpRequest(
   input: WorkflowHttpInput,
   parentSignal: AbortSignal,
@@ -163,13 +173,7 @@ export async function safeWorkflowHttpRequest(
     !["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].includes(input.method)
   )
     return err({ id: "E_WORKFLOW_HTTP_URL" });
-  const headers = { ...input.headers };
-  if (
-    input.body !== undefined &&
-    typeof input.body !== "string" &&
-    !Object.keys(headers).some((key) => key.toLowerCase() === "content-type")
-  )
-    headers["content-type"] = "application/json";
+  const headers = requestHeaders(input);
   if (!validHeaders(headers)) return err({ id: "E_WORKFLOW_HTTP_HEADERS" });
   const body =
     input.body === undefined
