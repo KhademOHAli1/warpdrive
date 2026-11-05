@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "scope": "Apply one request/account locale policy to the dashboard civil date, report range, drill-down and observed deal cohorts.",
+  "base": "c7e80db23493375c1254ee43fa78af9e8ccadca2",
+  "sources": [
+    {
+      "path": "src/features/i18n/localePreferenceCookies.ts",
+      "sha256": "2af8e0c6ef33bb894d70926e9dc17ef58358efaec08c913c2b05fe4162637e41"
+    },
+    {
+      "path": "src/features/i18n/server.ts",
+      "sha256": "b5495d6d94cd017bd119a2aa7dd05c634b77889ffcf846b61ee923c2a09db0c1"
+    },
+    {
+      "path": "src/server/trpc/context.ts",
+      "sha256": "f60a326dc982bc9d3a65a06a6df2abf9fc10c59781fa71d305586fed86ba41b3"
+    },
+    {
+      "path": "src/app/(app)/dashboard/page.tsx",
+      "sha256": "b9784e5b2ebfe8e70f8716c1500b7db1d6a15eb62014f1afb9dc235f3ea9227e"
+    },
+    {
+      "path": "src/features/stats/resolveReportScope.ts",
+      "sha256": "ec003486158d019cf30fab6f852fb747584564862724f1a5082641e2e7177841"
+    },
+    {
+      "path": "src/features/stats/router.ts",
+      "sha256": "5542ed01e9e10f6119935ef73087a4080131503c58a50882fee2d33817ed5bfd"
+    },
+    {
+      "path": "src/features/stats/router.test.ts",
+      "sha256": "28c17d2568dc967ae16643e2bed4f284c39b9a8c42827d9959f81af02fae526c"
+    },
+    {
+      "path": "src/features/stats/history/dealCohortRepository.ts",
+      "sha256": "2ae1758be41685b62dc80f98973a2af6191cf8c1415b4a653bc8a65d865a69df"
+    },
+    {
+      "path": "src/features/stats/history/dealCohortRepository.integration.test.ts",
+      "sha256": "a2eed2bf995a511dd568a0d3a1707b1721bac705e19ec3f9dfdf9eb683bf8df3"
+    },
+    {
+      "path": "src/features/stats/ui/DashboardExperience.test.tsx",
+      "sha256": "2675b199c96f855489a2de3e49ad9cbd326e0b467554cc4a7c82c4bc6023aacd"
+    },
+    {
+      "path": "scripts/browser-analytics.mjs",
+      "sha256": "f59aef4c504036ee1e65ac0478a3c0632a311350b3e3092dcc2635b2db1dcfa1"
+    }
+  ],
+  "focused": {
+    "localeAndCohortCases": 30,
+    "amendedFixtureAndRegistryCases": 44,
+    "coverage": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    },
+    "localHeavy": "Queued by user; no compiler, database, browser or build run locally."
+  },
+  "priorStatic": {
+    "revision": "0bcd68d7e599c56d70f0c5d97827947c51ba3846",
+    "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42106997626",
+    "result": "Typegen and TSC passed; typed lint flagged the unnecessary cohort mock assertion. The fixture now uses a typed function mock."
+  },
+  "prepared": [
+    "Native fixed UTC boundary compares dashboard totals and contributing rows with browser and manual preferences.",
+    "Native observed cohort uses the effective device zone while retaining a saved Persian calendar.",
+    "Hosted browser switches to browser mode and checks both reports from a second device without overwriting the account zone."
+  ],
+  "limits": "Prepared native/browser cases require execution. The user still controls preference cookies; they are never used as authority or record scope. No installation, programme, main or release acceptance."
+}

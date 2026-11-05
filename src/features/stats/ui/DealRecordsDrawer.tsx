@@ -1,15 +1,22 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { useId, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useLocalePreferencePending, useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import {
+  DEAL_REPORT_EXPORT_LIMIT,
+  dealReportExportHref,
+} from "@/features/stats/dealReportExportRequest";
 import type { DealRecordMetric } from "@/features/stats/metricDictionary";
+import { toToken } from "@/features/stats/ownerScopeToken";
 import { useStatsMessages } from "@/features/stats/useStatsMessages";
-import { trpc } from "@/lib/trpc-client";
+import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
+import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
+import { monthLabel } from "./Panel";
 
 export interface DealRecordsScope {
   currency: string;
@@ -19,41 +26,153 @@ export interface DealRecordsScope {
   to: string;
 }
 
+export type RecordChartSelection =
+  | { kind: "won-month"; month: string; timeZone: string }
+  | { kind: "lost-reason"; selector: string; label: string; timeZone: string };
+
 type Cursor = { createdAt: string; id: string };
+
+function chartRecordInput(chart: RecordChartSelection | undefined) {
+  switch (chart?.kind) {
+    case "won-month":
+      return { wonMonth: chart.month };
+    case "lost-reason":
+      return { lostReason: chart.selector };
+    default:
+      return {};
+  }
+}
+
+function chartTitle(
+  chart: RecordChartSelection,
+  S: ReturnType<typeof useStatsMessages>,
+  preferences: ReturnType<typeof useLocalePreferences>,
+): string {
+  return chart.kind === "won-month"
+    ? S._extra.recordsWonMonth(monthLabel(chart.month, preferences))
+    : S._extra.recordsLostReason(chart.label);
+}
+
+function sameChartScope(
+  report: RouterOutputs["stats"]["records"],
+  scope: DealRecordsScope,
+  chart: RecordChartSelection,
+): boolean {
+  const matchesSelection =
+    chart.kind === "won-month"
+      ? report.metric === "won" && report.wonMonth === chart.month
+      : report.metric === "lost" && report.lostReason === chart.selector;
+  return (
+    matchesSelection &&
+    report.timeZone === chart.timeZone &&
+    report.currency === scope.currency &&
+    toToken(report.effectiveOwnerScope) === toToken(scope.ownerScope)
+  );
+}
+
+function RecordsError({
+  scopeChanged,
+  retrying,
+  onClose,
+  onRetry,
+}: {
+  scopeChanged: boolean;
+  retrying: boolean;
+  onClose: () => void;
+  onRetry: () => void;
+}) {
+  const S = useStatsMessages();
+  return (
+    <div className="space-y-4 rounded-lg border p-4">
+      <p role="alert" className="text-pretty text-sm text-destructive">
+        {scopeChanged ? S.recordsScopeChanged : S.recordsUnavailable}
+      </p>
+      <Button
+        variant="outline"
+        className="min-h-10"
+        disabled={retrying}
+        onClick={scopeChanged ? onClose : onRetry}
+      >
+        {scopeChanged ? S.recordsClose : S.retry}
+      </Button>
+    </div>
+  );
+}
 
 export function DealRecordsDrawer({
   metric,
   scope,
+  chart,
+  canExport = false,
   onClose,
+  onScopeInvalidated,
   returnFocus,
 }: {
   metric: DealRecordMetric;
   scope: DealRecordsScope;
+  chart?: RecordChartSelection;
+  canExport?: boolean;
   onClose: () => void;
+  onScopeInvalidated?: () => void;
   returnFocus?: HTMLButtonElement;
 }) {
   const S = useStatsMessages();
   const format = useFormatters();
-  const { timeZone } = useLocalePreferences();
+  const preferences = useLocalePreferences();
+  const { timeZone } = preferences;
   const preferencePending = useLocalePreferencePending();
   const descriptionId = useId();
   const [cursors, setCursors] = useState<(Cursor | undefined)[]>([undefined]);
+  const chartInput = chartRecordInput(chart);
   const query = trpc.stats.records.useQuery(
     {
       ...scope,
       timeZoneIdentity: timeZone,
       metric,
+      ...chartInput,
       cursor: cursors[cursors.length - 1],
       limit: 25,
     },
-    { enabled: !preferencePending, staleTime: 0, refetchOnMount: "always" },
+    {
+      enabled: !preferencePending,
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnMount: "always",
+      ...(chart === undefined
+        ? {}
+        : { refetchOnWindowFocus: "always" as const, refetchOnReconnect: "always" as const }),
+    },
   );
   // Each opened drawer must finish a current permission-checked read before cached rows
   // appear. A failed refresh must not leave previously permitted records on screen.
-  const result =
-    !preferencePending && !query.isError && !query.isLoading && !query.isFetching
+  const candidate =
+    !preferencePending &&
+    !query.isError &&
+    !query.isLoading &&
+    !query.isFetching &&
+    !query.isPaused &&
+    !query.isPlaceholderData &&
+    (chart === undefined || query.isFetchedAfterMount)
       ? query.data
       : undefined;
+  const scopeChanged =
+    chart !== undefined &&
+    ((candidate !== undefined && !sameChartScope(candidate, scope, chart)) ||
+      (query.isError && query.error.data?.code === "PRECONDITION_FAILED"));
+  const result = scopeChanged ? undefined : candidate;
+  const exportLink =
+    canExport && result !== undefined && result.totals.count <= DEAL_REPORT_EXPORT_LIMIT
+      ? dealReportExportHref({
+          from: scope.from,
+          to: scope.to,
+          pipelineId: scope.pipelineId,
+          ownerScope: result.effectiveOwnerScope,
+          currency: result.currency,
+          metric,
+          ...chartInput,
+          timeZone: result.timeZone,
+        })
+      : null;
   const titles: Record<DealRecordMetric, string> = {
     added: S.added,
     won: S.trendValue,
@@ -73,6 +192,7 @@ export function DealRecordsDrawer({
     wonCycle: S.recordsWonCycleBasis,
   };
   const statuses = { open: S.open, won: S.won, lost: S.lost };
+  const title = chart === undefined ? titles[metric] : chartTitle(chart, S, preferences);
 
   return (
     <Sheet
@@ -94,8 +214,9 @@ export function DealRecordsDrawer({
         <div className="space-y-6 px-5 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6">
           <header className="space-y-2 pe-8">
             <p className="text-xs font-medium text-muted-foreground">{S.recordsTitle}</p>
-            <SheetTitle className="text-balance">{titles[metric]}</SheetTitle>
+            <SheetTitle className="text-balance">{title}</SheetTitle>
             <p className="text-pretty text-sm tabular-nums text-muted-foreground">
+              {chart !== undefined && <span>{S.recordsReportPeriod} · </span>}
               {format.dateOnly(scope.from)} {S.rangeSeparator} {format.dateOnly(scope.to)} ·{" "}
               <bdi>{scope.currency}</bdi>
             </p>
@@ -104,22 +225,18 @@ export function DealRecordsDrawer({
             {definitions[metric]}
           </p>
 
-          {query.isError ? (
-            <div className="space-y-4 rounded-lg border p-4">
-              <p role="alert" className="text-pretty text-sm text-destructive">
-                {S.recordsUnavailable}
-              </p>
-              <Button
-                variant="outline"
-                className="min-h-10"
-                disabled={preferencePending || query.isFetching}
-                onClick={() => {
-                  void query.refetch();
-                }}
-              >
-                {S.retry}
-              </Button>
-            </div>
+          {query.isError || scopeChanged ? (
+            <RecordsError
+              scopeChanged={scopeChanged}
+              retrying={preferencePending || query.isFetching}
+              onClose={() => {
+                onClose();
+                onScopeInvalidated?.();
+              }}
+              onRetry={() => {
+                void query.refetch();
+              }}
+            />
           ) : result === undefined ? (
             <div role="status" aria-label={S.loading} className="space-y-3">
               <span className="sr-only">{S.loading}</span>
@@ -137,6 +254,22 @@ export function DealRecordsDrawer({
                   {S._extra.recordsValueCount(result.totals.valueCount, result.totals.count)}
                 </p>
               </div>
+              {exportLink !== null && (
+                <a
+                  className={cn(buttonVariants({ variant: "outline" }), "min-h-10")}
+                  href={exportLink}
+                  download
+                  referrerPolicy="no-referrer"
+                >
+                  <Download aria-hidden="true" className="size-4" />
+                  {S.recordsExport}
+                </a>
+              )}
+              {canExport && result.totals.count > DEAL_REPORT_EXPORT_LIMIT && (
+                <p className="text-pretty text-sm text-muted-foreground">
+                  {S._extra.recordsExportLimit(DEAL_REPORT_EXPORT_LIMIT)}
+                </p>
+              )}
               {result.rows.length === 0 ? (
                 <div className="space-y-4 rounded-lg bg-muted/40 p-5">
                   <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
@@ -169,14 +302,14 @@ export function DealRecordsDrawer({
                     <tbody className="divide-y">
                       {result.rows.map((row) => (
                         <tr key={row.id}>
-                          <th scope="row" className="px-4 py-3 text-start font-medium">
+                          <th scope="row" className="min-w-36 px-4 py-3 text-start font-medium">
                             <a
                               href={`/deals/${row.id}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex min-h-10 items-center gap-2 rounded-sm text-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                              <span className="line-clamp-2 break-words">{row.title}</span>
+                              <span className="wrap-anywhere">{row.title}</span>
                               <ExternalLink aria-hidden="true" className="size-3.5 shrink-0" />
                               <span className="sr-only">{S.recordsOpenNewTab}</span>
                             </a>

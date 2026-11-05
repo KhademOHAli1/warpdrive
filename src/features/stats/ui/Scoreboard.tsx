@@ -24,6 +24,7 @@ function Metric({
   value,
   detail,
   primary = false,
+  embedded = false,
   onInspect,
   inspectLabel,
 }: {
@@ -31,6 +32,7 @@ function Metric({
   value: string;
   detail: string;
   primary?: boolean;
+  embedded?: boolean;
   onInspect?: (trigger: HTMLButtonElement) => void;
   inspectLabel?: string;
 }) {
@@ -38,15 +40,18 @@ function Metric({
     <div
       className={cn(
         "min-w-0",
+        primary && "border-b pb-5",
         primary &&
-          "col-span-2 border-b pb-5 xl:col-span-1 xl:border-b-0 xl:border-e xl:pe-5 xl:pb-0",
+          (embedded
+            ? "col-span-full"
+            : "col-span-2 xl:col-span-1 xl:border-b-0 xl:border-e xl:pe-5 xl:pb-0"),
       )}
     >
       <dt className="text-pretty text-sm font-medium text-muted-foreground">{label}</dt>
       <dd
         className={cn(
           "mt-3 break-words font-semibold tabular-nums",
-          primary ? "text-4xl" : "text-2xl",
+          primary ? "text-4xl xl:text-3xl 2xl:text-4xl" : "text-2xl",
         )}
       >
         {value}
@@ -77,6 +82,7 @@ export function Scoreboard({
   winRate,
   currency,
   onInspect,
+  embedded = false,
 }: {
   deals: DealCounters;
   won: WonDealStats;
@@ -84,6 +90,7 @@ export function Scoreboard({
   winRate: number | null;
   currency: string;
   onInspect?: InspectDealRecords;
+  embedded?: boolean;
 }) {
   const preferences = useLocalePreferences();
   const format = useFormatters();
@@ -91,10 +98,14 @@ export function Scoreboard({
   return (
     <dl
       aria-label={S.widgetScoreboard}
-      className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border bg-card p-5 xl:grid-cols-5"
+      className={cn(
+        "grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border bg-card p-5",
+        embedded ? "lg:grid-cols-4" : "xl:grid-cols-[minmax(0,1.45fr)_repeat(4,minmax(0,1fr))]",
+      )}
     >
       <Metric
         primary
+        embedded={embedded}
         label={S.trendValue}
         value={money(deals.won.value, currency, preferences)}
         detail={`${S.scoreWon}: ${format.number(deals.won.count)}`}

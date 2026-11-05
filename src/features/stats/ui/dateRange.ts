@@ -1,22 +1,46 @@
+import {
+  calendarYearMonths,
+  startOfCalendarMonth,
+  startOfCalendarYear,
+} from "@/features/activities/calendarSystem";
+import { addDaysUtc } from "@/features/activities/monthGrid";
+import type { CalendarSystem } from "@/features/i18n/preferences";
+
 export type DatePreset = "month" | "quarter" | "year" | "last30";
 
-// Arithmetic on the viewer's server-resolved civil date, independent of browser timezone.
-export function presetRange(preset: DatePreset, today: string): { from: string; to: string } {
-  const year = today.slice(0, 4);
-  const month = Number(today.slice(5, 7));
+function startOfCalendarQuarter(day: Date, calendar: CalendarSystem): Date {
+  let start = startOfCalendarYear(day, { calendar });
+  // Quarters begin with months 1, 4, 7 and 10 of the selected calendar. The canonical
+  // calendar helper supplies real civil boundaries, including the Iranian leap year.
+  for (const [index, month] of calendarYearMonths(day, { calendar }).entries()) {
+    if (index % 3 === 0 && month.getTime() <= day.getTime()) start = month;
+  }
+  return start;
+}
+
+// `today` is the viewer's server-resolved Gregorian ISO civil date. UTC is only
+// an arithmetic container here; the reporting query resolves the actual zoned midnights.
+// Calendar selection is independent of language, and existing callers default to Gregorian.
+export function presetRange(
+  preset: DatePreset,
+  today: string,
+  calendar: CalendarSystem = "gregory",
+): { from: string; to: string } {
+  const day = new Date(`${today}T00:00:00Z`);
+  let start: Date;
   switch (preset) {
     case "month":
-      return { from: `${year}-${today.slice(5, 7)}-01`, to: today };
-    case "quarter": {
-      const first = String(Math.floor((month - 1) / 3) * 3 + 1).padStart(2, "0");
-      return { from: `${year}-${first}-01`, to: today };
-    }
-    case "last30": {
-      const from = new Date(`${today}T00:00:00Z`);
-      from.setUTCDate(from.getUTCDate() - 29);
-      return { from: from.toISOString().slice(0, 10), to: today };
-    }
+      start = startOfCalendarMonth(day, { calendar });
+      break;
+    case "quarter":
+      start = startOfCalendarQuarter(day, calendar);
+      break;
+    case "last30":
+      start = addDaysUtc(day, -29);
+      break;
     case "year":
-      return { from: `${year}-01-01`, to: today };
+      start = startOfCalendarYear(day, { calendar });
+      break;
   }
+  return { from: start.toISOString().slice(0, 10), to: today };
 }

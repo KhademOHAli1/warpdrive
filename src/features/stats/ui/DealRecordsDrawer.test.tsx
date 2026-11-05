@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { LostReasonCount } from "@/types/stats";
 
 const fixture = vi.hoisted(() => ({
   query: vi.fn(),
@@ -11,19 +12,25 @@ const fixture = vi.hoisted(() => ({
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   loading: false,
   fetching: false,
+  fetchedAfterMount: true,
   error: false,
+  errorCode: "INTERNAL_SERVER_ERROR",
+  wonTrend: [] as Array<{ month: string; count: number; value: string }>,
+  lostReasons: [] as LostReasonCount[],
   result: {
     currency: "USD",
     timeZone: "Europe/Berlin",
     effectiveOwnerScope: { kind: "me" } as const,
-    metric: "won" as const,
+    metric: "won" as "won" | "lost",
+    wonMonth: undefined as string | undefined,
+    lostReason: undefined as string | undefined,
     definitionVersion: "1",
     generatedAt: "2026-11-05T12:00:00.000Z",
     rows: [
       {
         id: "00000000-0000-4000-8000-000000000001",
         title: "Acme service agreement",
-        status: "won" as const,
+        status: "won" as "won" | "lost",
         value: "0.00",
         currency: "USD",
         createdAt: "2026-10-01T08:00:00.000Z",
@@ -48,6 +55,7 @@ vi.mock("@/lib/trpc-client", () => ({
           isError: false,
           data: {
             currency: "USD",
+            timeZone: "Europe/Berlin",
             dealPerformance: {
               added: { count: 1, value: "0.00" },
               won: { count: 1, value: "0.00" },
@@ -65,13 +73,22 @@ vi.mock("@/lib/trpc-client", () => ({
             activitiesByType: [],
             funnel: [],
             stageSums: [],
-            lostReasons: [],
-            wonTrend: [],
+            lostReasons: fixture.lostReasons,
+            wonTrend: fixture.wonTrend,
             effectiveOwnerScope: { kind: "me" },
           },
         }),
       },
       ownerOptions: { useQuery: () => ({ data: { users: [], teams: [] } }) },
+      dealWinCohorts: {
+        useQuery: () => ({
+          data: { state: "coverage-not-started" },
+          isLoading: false,
+          isFetching: false,
+        }),
+      },
+      stageAging: { useQuery: () => ({ isFetchedAfterMount: false }) },
+      currentAttention: { useQuery: () => ({ isFetchedAfterMount: false }) },
       records: {
         useQuery: (input: unknown, options: unknown) => {
           fixture.query(input, options);
@@ -79,7 +96,9 @@ vi.mock("@/lib/trpc-client", () => ({
             data: fixture.result,
             isLoading: fixture.loading,
             isFetching: fixture.fetching,
+            isFetchedAfterMount: fixture.fetchedAfterMount,
             isError: fixture.error,
+            error: fixture.error ? { data: { code: fixture.errorCode } } : null,
             refetch: fixture.refetch,
           };
         },
@@ -110,8 +129,16 @@ beforeEach(() => {
   fixture.savePreferences.mockReset();
   fixture.savePreferences.mockResolvedValue({ ok: true });
   fixture.error = false;
+  fixture.errorCode = "INTERNAL_SERVER_ERROR";
   fixture.loading = false;
   fixture.fetching = false;
+  fixture.fetchedAfterMount = true;
+  fixture.wonTrend = [];
+  fixture.lostReasons = [];
+  fixture.result.metric = "won";
+  fixture.result.wonMonth = undefined;
+  fixture.result.lostReason = undefined;
+  fixture.result.timeZone = "Europe/Berlin";
   fixture.result.rows = [
     {
       id: "00000000-0000-4000-8000-000000000001",
@@ -147,7 +174,7 @@ describe("contributing-deal inspection", () => {
     mount("wonValue");
     expect(fixture.query).toHaveBeenLastCalledWith(
       { ...scope, timeZoneIdentity: "UTC", metric: "wonValue", cursor: undefined, limit: 25 },
-      { enabled: true, staleTime: 0, refetchOnMount: "always" },
+      { enabled: true, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
     );
     expect(screen.getByRole("table", { name: "Eligible deals in this report" })).toHaveTextContent(
       "$0",
@@ -164,6 +191,32 @@ describe("contributing-deal inspection", () => {
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
     expect(link).toHaveAccessibleName(/this report stays open/);
+  });
+
+  it("links a fresh complete population to the permission-checked export", () => {
+    const drawer = () => (
+      <DealRecordsDrawer metric="won" scope={scope} onClose={vi.fn()} canExport />
+    );
+    const page = render(drawer());
+    const link = screen.getByRole("link", { name: "Download CSV" });
+    const params = new URL(link.getAttribute("href") ?? "", "https://example.invalid").searchParams;
+    expect(Object.fromEntries(params)).toEqual({
+      from: scope.from,
+      to: scope.to,
+      currency: "USD",
+      pipelineId: "all",
+      ownerScope: "me",
+      metric: "won",
+      timeZone: "Europe/Berlin",
+    });
+    fixture.fetching = true;
+    page.rerender(drawer());
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
+    fixture.fetching = false;
+    fixture.result.totals.count = 101;
+    page.rerender(drawer());
+    expect(screen.getByText(/Narrow the report to download up to 100 deals/)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
   });
 
   it("explains the win-rate numerator and denominator rather than using only wins", () => {
@@ -204,7 +257,7 @@ describe("contributing-deal inspection", () => {
     await waitFor(() => expect(fixture.savePreferences).toHaveBeenCalledOnce());
     expect(fixture.query).toHaveBeenLastCalledWith(
       expect.objectContaining({ timeZoneIdentity: "Europe/Berlin" }),
-      { enabled: false, staleTime: 0, refetchOnMount: "always" },
+      { enabled: false, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
     );
     expect(screen.queryByRole("link", { name: /Acme service agreement/ })).not.toBeInTheDocument();
     expect(screen.getByRole("status", { name: "Loading..." })).toBeInTheDocument();
@@ -216,7 +269,7 @@ describe("contributing-deal inspection", () => {
     });
     expect(fixture.query).toHaveBeenLastCalledWith(
       expect.objectContaining({ timeZoneIdentity: "Europe/Berlin" }),
-      { enabled: true, staleTime: 0, refetchOnMount: "always" },
+      { enabled: true, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
     );
     expect(screen.getByRole("link", { name: /Acme service agreement/ })).toBeInTheDocument();
   });
@@ -277,7 +330,123 @@ describe("contributing-deal inspection", () => {
   });
 });
 
-describe("scoreboard record populations", () => {
+describe("dashboard record populations", () => {
+  it("opens the selected legacy loss group and exports its opaque selector only", async () => {
+    const selector = `legacy-v1.${"a".repeat(80)}`;
+    const privateLabel = "Competitor =A1";
+    fixture.lostReasons = [
+      { reasonId: null, name: privateLabel, count: 1, value: "0.00", selector },
+      { reasonId: "unresolvable", name: "Unresolvable group", count: 1, value: "0.00" },
+    ];
+    fixture.result.metric = "lost";
+    fixture.result.lostReason = selector;
+    fixture.result.rows = fixture.result.rows.map((row) => ({ ...row, status: "lost" as const }));
+    const dashboard = () => (
+      <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} canExport />
+    );
+    const page = render(dashboard());
+    await userEvent.click(screen.getByRole("button", { name: "This quarter" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    expect(
+      screen.queryByRole("button", { name: /View lost deals for.*Unresolvable group/ }),
+    ).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: /View lost deals for.*Competitor/ });
+    await userEvent.click(trigger);
+    expect(screen.getByRole("dialog", { name: /Lost deals for.*Competitor/ })).toBeInTheDocument();
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        from: "2026-10-01",
+        to: "2026-11-05",
+        metric: "lost",
+        lostReason: selector,
+      }),
+      expect.objectContaining({ refetchOnWindowFocus: "always" }),
+    );
+    const href = screen.getByRole("link", { name: "Download CSV" }).getAttribute("href") ?? "";
+    expect(href).not.toContain(encodeURIComponent(privateLabel));
+    expect(new URL(href, "https://example.invalid").searchParams.get("lostReason")).toBe(selector);
+    expect(screen.getByRole("link", { name: /Acme service agreement/ })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+
+    fixture.result.lostReason = "missing";
+    page.rerender(dashboard());
+    expect(screen.getByRole("alert")).toHaveTextContent("The original chart scope is unavailable.");
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
+    fixture.error = true;
+    fixture.errorCode = "PRECONDITION_FAILED";
+    page.rerender(dashboard());
+    expect(screen.getByRole("alert")).toHaveTextContent("The original chart scope is unavailable.");
+    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.getByRole("tab", { name: "Pipeline" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("opens one exact trend month for records and CSV while keeping the original report open", async () => {
+    fixture.wonTrend = [
+      { month: "2026-10", count: 0, value: "0.00" },
+      { month: "2026-11", count: 1, value: "0.00" },
+    ];
+    fixture.result.wonMonth = "2026-11";
+    fixture.fetchedAfterMount = false;
+    const dashboard = () => (
+      <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} canExport />
+    );
+    const page = render(dashboard());
+    await userEvent.click(screen.getByRole("button", { name: "This quarter" }));
+    expect(
+      screen.queryByRole("button", { name: /View won deals for Nov/ }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Show monthly data" }));
+    expect(
+      screen.queryByRole("button", { name: /View won deals for Oct/ }),
+    ).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: /View won deals for Nov/ });
+    await userEvent.click(trigger);
+    expect(screen.getByRole("dialog", { name: /Won deals in Nov/ })).toBeInTheDocument();
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        from: "2026-10-01",
+        to: "2026-11-05",
+        currency: "USD",
+        ownerScope: { kind: "me" },
+        metric: "won",
+        wonMonth: "2026-11",
+      }),
+      expect.objectContaining({ refetchOnWindowFocus: "always" }),
+    );
+    expect(screen.queryByRole("link", { name: /Acme service agreement/ })).not.toBeInTheDocument();
+    fixture.fetchedAfterMount = true;
+    page.rerender(dashboard());
+    const deal = screen.getByRole("link", { name: /Acme service agreement/ });
+    expect(deal).toHaveAttribute("target", "_blank");
+    expect(deal).toHaveAccessibleName(/this report stays open/);
+    const download = screen.getByRole("link", { name: "Download CSV" });
+    const params = new URL(download.getAttribute("href") ?? "", "https://example.invalid")
+      .searchParams;
+    expect(Object.fromEntries(params)).toMatchObject({
+      from: "2026-10-01",
+      to: "2026-11-05",
+      metric: "won",
+      wonMonth: "2026-11",
+      timeZone: "Europe/Berlin",
+    });
+
+    fixture.result.timeZone = "UTC";
+    page.rerender(dashboard());
+    expect(screen.getByRole("alert")).toHaveTextContent("The original chart scope is unavailable.");
+    expect(screen.queryByRole("link", { name: /Acme service agreement/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.getByRole("button", { name: "This quarter" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   it("exposes exactly the four eligible deal populations", async () => {
     const inspect = vi.fn();
     render(

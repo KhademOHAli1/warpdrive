@@ -1,3 +1,18 @@
+import {
+  analyticsAttentionInventoryEntry,
+  analyticsComputationInventoryEntry,
+  analyticsForecastCommitInventoryEntry,
+  analyticsGovernedCustodyInventoryEntry,
+  analyticsInventoryEntry,
+  currentAccountConcentrationInventoryEntry,
+  currentLeadHandoffInventoryEntry,
+  dealReportExportInventoryEntry,
+  leadLinkCaptureInventoryEntry,
+  lostReasonSelectionInventoryEntry,
+  nativePeriodForecastInventoryEntry,
+  recordedDealSourceInventoryEntry,
+  savedPerformanceInventoryEntry,
+} from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
@@ -43,6 +58,19 @@ import {
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
+  analyticsInventoryEntry,
+  currentAccountConcentrationInventoryEntry,
+  currentLeadHandoffInventoryEntry,
+  dealReportExportInventoryEntry,
+  leadLinkCaptureInventoryEntry,
+  lostReasonSelectionInventoryEntry,
+  nativePeriodForecastInventoryEntry,
+  recordedDealSourceInventoryEntry,
+  savedPerformanceInventoryEntry,
+  analyticsAttentionInventoryEntry,
+  analyticsComputationInventoryEntry,
+  analyticsForecastCommitInventoryEntry,
+  analyticsGovernedCustodyInventoryEntry,
   kpiInventoryEntry,
   billingInventoryEntry,
   companyWorkInventoryEntry,

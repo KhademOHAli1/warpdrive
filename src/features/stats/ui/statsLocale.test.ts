@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { currentPeriod } from "@/features/goals/goalPeriod";
+import { statsMessagesForLocale } from "../statsMessages";
 import { durationDays, monthLabel } from "./Panel";
 import { trendTooltipValue } from "./trendTooltip";
 
@@ -35,5 +36,7 @@ describe("German statistics and independent numbering preferences", () => {
     expect(monthLabel("2026-03", preferences)).toContain("2026");
     expect(durationDays(3, preferences)).toBe("3 روز");
     expect(trendTooltipValue(1500, { count: 12 }, "USD", preferences)).toContain("12 فرصت فروش");
+    expect(statsMessagesForLocale("fa", "latn")._extra.cohortHorizonDays(30)).toContain("30");
+    expect(statsMessagesForLocale("fa", "arabext")._extra.cohortHorizonDays(30)).toContain("۳۰");
   });
 });

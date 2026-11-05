@@ -8,6 +8,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { setPreferences } from "@/features/identity/preferencesRepo";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { createCaller } from "@/server/trpc/root";
 
@@ -363,6 +364,61 @@ describe("stats tRPC router", () => {
       const out = await caller.stats.ownerOptions();
       expect(out.users).toEqual([]);
       expect(out.teams).toEqual([]);
+    });
+  });
+
+  it("uses the current device zone only for browser mode in aggregates and contributing deals", async () => {
+    await withTestDb(async (db) => {
+      const user = await seedUser(db, { isAdmin: false });
+      const { pipeline, stages } = await seedPipelineWithStages(db, ["Qualify"]);
+      const stage = stages[0];
+      expect(stage).toBeDefined();
+      if (stage === undefined) return;
+      await db.execute(sql`
+        INSERT INTO deals (title,pipeline_id,stage_id,owner_id,visibility_level,status,won_time,currency)
+        VALUES ('Device civil-day sentinel', ${pipeline.id}, ${stage.id}, ${user.id}, 'owner',
+          'won', '2026-11-05T00:30:00Z'::timestamptz, 'EUR')
+      `);
+      const caller = createCaller({
+        db,
+        session: { userId: user.id, sessionId: "regional-report-session" },
+        actor: makeActor(user),
+        localeFallback: { timeZone: "America/Los_Angeles" },
+      });
+      const input = {
+        from: "2026-11-05",
+        to: "2026-11-05",
+        pipelineId: pipeline.id,
+        currency: "EUR",
+        timeZoneIdentity: "Asia/Tokyo",
+      };
+      for (const [timeZoneMode, zone, count] of [
+        ["browser", "America/Los_Angeles", 0],
+        ["manual", "Europe/Berlin", 1],
+      ] as const) {
+        await setPreferences(
+          db,
+          user.id,
+          {
+            timezone: "Europe/Berlin",
+            ui: {
+              localePreferences: {
+                locale: "en",
+                calendar: "gregory",
+                timeZone: "Europe/Berlin",
+                timeZoneMode,
+              },
+            },
+          },
+          AbortSignal.timeout(5000),
+        );
+        const dashboard = await caller.stats.dashboard(input);
+        const records = await caller.stats.records({ ...input, metric: "won" });
+        expect(dashboard.timeZone).toBe(zone);
+        expect(dashboard.dealPerformance.won.count).toBe(count);
+        expect(records.timeZone).toBe(zone);
+        expect(records.rows).toHaveLength(count);
+      }
     });
   });
 });

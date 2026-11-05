@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "scope": "Source candidate for #598, #599, #600 and #602, plus exact follow-up to hosted full and browser failures.",
+  "base": "56f137fe4858127b9b66a9f8ca485165edb29c54",
+  "sources": [
+    {
+      "path": "docs/analytics/history-capture-proposal.sql",
+      "sha256": "c10005cd4fcca2df8882000f376f17f08ce774491987f7e2ae6bd2806698d30c"
+    },
+    {
+      "path": "src/features/stats/history/repository.ts",
+      "sha256": "24ac35b5333aaa9b80b63457f275537f2464454dc9ad2f62a725e9bcbbb531f0"
+    },
+    {
+      "path": "src/features/stats/history/repository.integration.test.ts",
+      "sha256": "cf5802def4f11537268ed84dd50cee46a5d6ab268f1ee086e3e20c2a0d537d6b"
+    },
+    {
+      "path": "src/features/stats/history/inventorySnapshotRepository.ts",
+      "sha256": "48c248eeb2633ee17a2a07620f062abfe7d81574cdfd924612dd110ad600bb65"
+    },
+    {
+      "path": "src/features/stats/history/inventorySnapshotRepository.integration.test.ts",
+      "sha256": "dee8c06f8f106fb531f2ed626147e0108913247664ce4fe5ca430534b4a18bea"
+    },
+    {
+      "path": "src/features/stats/history/historyMigrationRehearsal.integration.test.ts",
+      "sha256": "7446c3b929a2153a282eacb9205353d1937cd8ac20a498666e78f0381f25179a"
+    },
+    {
+      "path": "src/features/stats/history/equalAgeCohorts.ts",
+      "sha256": "94f4431c6970716663982a3d13f13e16c00764b4683aa19a03f100e4d162f4c9"
+    },
+    {
+      "path": "src/features/stats/history/equalAgeCohorts.test.ts",
+      "sha256": "c1bd0c8685f26b90727e174efb1c5a6df4f97077d7f6b2bf6e7d2ea7aef94666"
+    },
+    {
+      "path": "src/features/stats/history/dealCohortRepository.ts",
+      "sha256": "07ef16dc05a14a329d784f26f57de8860a3e2aa39f5f3472b7c01e6e3ff6b9a7"
+    },
+    {
+      "path": "src/features/stats/history/dealCohortRepository.integration.test.ts",
+      "sha256": "870d039b4afafd8cdcadf2dad7cc8375772a9511265e4b4c5b70833279573da4"
+    },
+    {
+      "path": "src/features/stats/ui/DealRecordsDrawer.tsx",
+      "sha256": "a74f681e317ddca7a434ec13cf5b3094be3af9bcbd84e003205579a36c30b294"
+    },
+    {
+      "path": "scripts/browser-analytics.mjs",
+      "sha256": "d05c13cf925d480caaf875f63998cc1eeaf79bcf1579d05b5112e27ce8096a67"
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "37d90aa98863636ccdb330c3522b2b4c3a6103623e3fc16a33f2939757b4f145"
+    },
+    {
+      "path": "src/features/company-profile/ui/BrandingEditor.tsx",
+      "sha256": "cbb1b18d65c6d2f8924b2edba2ccd155f720c538a234989aed17b0d124958eff"
+    },
+    {
+      "path": "src/features/work-profile/ui/WorkHub.tsx",
+      "sha256": "1391812692d5777a2b1e2ad1cd8c9e5fcd14eb54f876f52567c78798cbfab246"
+    },
+    {
+      "path": "src/app/(app)/layout.privacyReturn.test.tsx",
+      "sha256": "43b8cec63a25fd136c8c6e2dfad3c7d79b212be58335ce31a1cdd3eb42f38cd3"
+    }
+  ],
+  "sourceReview": [
+    {
+      "reviewer": "/root/history_kernel_tests",
+      "scope": "Catalog qualification and genuine-prefix runner rehearsal",
+      "result": "No definite native blocker found by inspection. Preserve catalog qualification in future canonical SQL."
+    },
+    {
+      "reviewer": "/root/history_kernel_tests",
+      "scope": "Snapshot writer and cohort collector",
+      "result": "Qualified catalog types, checked persisted default currency, required latest visible tips and bounded team expansion. Kept lost-to-won corrections unknown without a prior qualifying win. Confirmed follow-up and removed unbound Temporal method reference."
+    },
+    {
+      "reviewer": "/root/records_ui",
+      "scope": "Hosted browser timeout",
+      "result": "Observed 300-second timeout in first regional journey; unbounded Playwright response completion wait was the strongest source match. New harness bounds persistence and UI settlement and records elapsed phases."
+    }
+  ],
+  "focused": {
+    "files": 9,
+    "testsPassed": 80,
+    "vitestSeconds": 4.22,
+    "equalAgeCases": 22,
+    "drawerCases": 14,
+    "coverage": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    },
+    "limits": "Pressure level 1; 56% available memory; 111 GiB disk; one unit worker and 55-second ceiling. No local typed lint, app build, native database or browser. Aggregate RSS unmeasured."
+  },
+  "preparedNative": {
+    "snapshotWriter": 9,
+    "currentAuthorizedCohorts": 7,
+    "genuinePrefixRehearsal": 2,
+    "catalogShadowReader": 1,
+    "state": "Source only; fresh hosted PostgreSQL execution required."
+  },
+  "priorFull": {
+    "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42096570452",
+    "revision": "a740e51343e702c724112d4419a48a842a21f5e0",
+    "result": "Both sites, configured types and lint passed. App unit 11399 passed, 3 failed, 3 skipped. PostgreSQL and app/entrypoint builds skipped.",
+    "affected": "Three Company and Work Profiles reconciliation failures: unmocked shell services, unnamed page-title size, and fixed preview palette. Corrections preserve fixed day/night preview swatches and all test assertions; each focused case passes now."
+  },
+  "priorBrowser": {
+    "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42095649958",
+    "candidate": "2c4ccacf2ddaf76a1f3054b8e3fd89385f5b34ca",
+    "result": "Native login, restricted pipeline and four English layout pairs passed. 300-second deadline expired during first UTC preference journey. No complete matrix or regional persistence result."
+  },
+  "open": [
+    "No admitted production migration ordinal, installed storage or lifecycle capability.",
+    "No archived/deleted cohort authority, qualified acquisition-source collector, historical entitlements, snapshot reader, scheduled persistence or user-facing historical report.",
+    "No full hosted pass, human acceptance, main merge or release."
+  ]
+}
