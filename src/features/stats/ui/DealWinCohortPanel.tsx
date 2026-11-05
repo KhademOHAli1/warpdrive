@@ -23,6 +23,9 @@ import { Panel } from "./Panel";
 
 type Report = Extract<DealWinCohortView, { state: "available" }>;
 type Row = Report["rows"][number];
+const PERCENT_OPTIONS: Intl.NumberFormatOptions = { style: "percent", maximumFractionDigits: 1 };
+const TENTHS_OF_PERCENT_PER_UNIT = 1000;
+
 interface Scope {
   pipelineId: string | null;
   ownerScope: OwnerScope;
@@ -32,15 +35,28 @@ interface Scope {
 }
 
 function CohortRate({ row }: { row: Row }) {
-  const { cohort } = useStatsMessages();
+  const { cohort, _extra } = useStatsMessages();
   const format = useFormatters();
   if (row.rate.state === "available") {
-    return format.number(row.rate.wins / row.rate.mature, {
-      style: "percent",
-      maximumFractionDigits: 1,
-    });
+    return format.number(row.rate.wins / row.rate.mature, PERCENT_OPTIONS);
   }
-  return row.rate.reason === "no-mature-deals" ? cohort.notMature : cohort.unknownRate;
+  if (row.rate.reason === "no-mature-deals") return cohort.notMature;
+
+  // Round outward at display precision so the shown endpoints contain the exact ratios.
+  const scale = TENTHS_OF_PERCENT_PER_UNIT;
+  const lower = Math.floor((row.confirmedWins * scale) / row.mature) / scale;
+  const upper = Math.ceil(((row.confirmedWins + row.unknownOutcomes) * scale) / row.mature) / scale;
+  return (
+    <>
+      <span className="block text-xs text-muted-foreground">{cohort.outcomeRangeLabel}</span>
+      <bdi className="whitespace-nowrap">
+        {_extra.cohortOutcomeRange(
+          format.number(lower, PERCENT_OPTIONS),
+          format.number(upper, PERCENT_OPTIONS),
+        )}
+      </bdi>
+    </>
+  );
 }
 
 function CohortRows({ report }: { report: Report }) {
@@ -160,6 +176,9 @@ function CohortEvidence({ report }: { report: Report }) {
         <p className="text-sm text-muted-foreground">{S.cohort.empty}</p>
       ) : (
         <CohortRows report={report} />
+      )}
+      {report.rows.some((row) => row.unknownOutcomes > 0) && (
+        <p className="max-w-prose text-sm text-muted-foreground">{S.cohort.outcomeRangeBasis}</p>
       )}
     </div>
   );
