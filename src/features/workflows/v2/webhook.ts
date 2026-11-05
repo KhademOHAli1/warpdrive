@@ -1,4 +1,3 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
@@ -14,6 +13,7 @@ import { publishedWorkflowV2 } from "./persistence";
 import { workflowV2Readiness } from "./readiness";
 import { matchesResponseSchema } from "./responseSchema";
 import { authorizedWorkflow, documentDto, V2_ERROR } from "./shared";
+import { createWebhookCredential, verifyWebhookCredential } from "./webhookCredential";
 
 export function canonicalBlockJson(value: BlockJson): string {
   if (Array.isArray(value)) return `[${value.map(canonicalBlockJson).join(",")}]`;
@@ -23,9 +23,6 @@ export function canonicalBlockJson(value: BlockJson): string {
       .map((key) => `${JSON.stringify(key)}:${canonicalBlockJson(value[key] ?? null)}`)
       .join(",")}}`;
   return JSON.stringify(value);
-}
-function sha256(value: string) {
-  return createHash("sha256").update(value).digest("hex");
 }
 export async function rotateWorkflowV2Webhook(
   db: Db,
@@ -44,7 +41,8 @@ export async function rotateWorkflowV2Webhook(
     if (workflow.revision !== input.data.expectedRevision) return err(V2_ERROR.conflict);
     if (workflow.archivedAt !== null || workflow.draft.trigger.type !== "webhook")
       return err(V2_ERROR.invalid);
-    const apiKey = randomBytes(32).toString("base64url");
+    const { apiKey, apiKeyHash } = await createWebhookCredential();
+    signal.throwIfAborted();
     const [row] = await tx
       .update(workflowsV2)
       .set({
@@ -55,7 +53,7 @@ export async function rotateWorkflowV2Webhook(
             config: {
               ...workflow.draft.trigger.config,
               authentication: "api_key",
-              apiKeyHash: sha256(apiKey),
+              apiKeyHash,
             },
           },
         },
@@ -67,6 +65,28 @@ export async function rotateWorkflowV2Webhook(
     return row === undefined ? err(V2_ERROR.write) : ok({ document: documentDto(row), apiKey });
   });
 }
+
+async function activeWebhookWorkflow(db: Db, id: string, lock = false) {
+  const query = db
+    .select({
+      ownerId: workflowsV2.ownerId,
+      active: workflowsV2.active,
+      archivedAt: workflowsV2.archivedAt,
+      publishedNumber: workflowsV2.publishedNumber,
+    })
+    .from(workflowsV2)
+    .where(eq(workflowsV2.id, id));
+  const [workflow] = lock ? await query.for("update") : await query;
+  if (
+    workflow === undefined ||
+    !workflow.active ||
+    workflow.archivedAt !== null ||
+    workflow.publishedNumber === null
+  )
+    return null;
+  return { ownerId: workflow.ownerId, publishedNumber: workflow.publishedNumber };
+}
+
 export async function admitWorkflowV2Webhook(
   db: Db,
   id: string,
@@ -81,41 +101,29 @@ export async function admitWorkflowV2Webhook(
     JSON.stringify(raw.payload).length > 128_000
   )
     return err(V2_ERROR.invalid);
+  const initial = await activeWebhookWorkflow(db, id);
+  if (initial === null) return err(V2_ERROR.denied);
+  const version = await publishedWorkflowV2(db, id, initial.publishedNumber);
+  if (version === null || version.definition.trigger.type !== "webhook")
+    return err(V2_ERROR.denied);
+  const config = version.definition.trigger.config;
+  const authorized =
+    config.authentication === "api_key"
+      ? await verifyWebhookCredential(raw.apiKey, config.apiKeyHash)
+      : config.authentication === "none";
+  if (!authorized) return err(V2_ERROR.denied);
+  signal.throwIfAborted();
+  if (
+    config.responseSchema !== undefined &&
+    !matchesResponseSchema(config.responseSchema, raw.payload)
+  )
+    return err(V2_ERROR.invalid);
+
   return db.transaction(async (tx) => {
-    const [workflow] = await tx
-      .select()
-      .from(workflowsV2)
-      .where(eq(workflowsV2.id, id))
-      .for("update");
-    if (
-      workflow === undefined ||
-      !workflow.active ||
-      workflow.archivedAt !== null ||
-      workflow.publishedNumber === null
-    )
+    // Verify the credential outside the row lock, then pin the authenticated revision.
+    const workflow = await activeWebhookWorkflow(tx, id, true);
+    if (workflow === null || workflow.publishedNumber !== version.number)
       return err(V2_ERROR.denied);
-    const version = await publishedWorkflowV2(tx, id, workflow.publishedNumber);
-    if (version === null || version.definition.trigger.type !== "webhook")
-      return err(V2_ERROR.denied);
-    const config = version.definition.trigger.config;
-    if (config.authentication === "api_key") {
-      if (
-        typeof config.apiKeyHash !== "string" ||
-        !/^[a-f0-9]{64}$/.test(config.apiKeyHash) ||
-        typeof raw.apiKey !== "string" ||
-        raw.apiKey.length > 200 ||
-        !timingSafeEqual(
-          Buffer.from(config.apiKeyHash, "hex"),
-          Buffer.from(sha256(raw.apiKey), "hex"),
-        )
-      )
-        return err(V2_ERROR.denied);
-    } else if (config.authentication !== "none") return err(V2_ERROR.denied);
-    if (
-      config.responseSchema !== undefined &&
-      !matchesResponseSchema(config.responseSchema, raw.payload)
-    )
-      return err(V2_ERROR.invalid);
     const actor = await hydrateActor(tx, workflow.ownerId, signal);
     if (actor === null || !canWorkflow(actor, "run", workflow.ownerId)) return err(V2_ERROR.denied);
     const eventKey = `webhook:${raw.requestKey}`;

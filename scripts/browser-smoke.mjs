@@ -76,9 +76,9 @@ async function journey(name, locale, exercise, viewport) {
   }
 }
 
-async function login(page) {
+async function login(page, email = "browser@example.invalid") {
   await page.goto("/login");
-  await page.locator('input[name="email"]').fill("browser@example.invalid");
+  await page.locator('input[name="email"]').fill(email);
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
@@ -183,7 +183,7 @@ try {
   });
 
   await journey("workflow-draft-persistence", "en", async (page) => {
-    await login(page);
+    await login(page, "studio-browser@example.invalid");
     await page.goto("/workflows");
     await page.getByRole("button", { name: workflows.new, exact: true }).first().click();
     const dialog = page.getByRole("dialog");
@@ -210,7 +210,7 @@ try {
     await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
   });
   await journey("goals-list-and-custom-kpi", "en", async (page) => {
-    await login(page);
+    await login(page, "studio-browser@example.invalid");
     await page.goto("/settings/goals");
     await page.getByRole("heading", { name: "Goals & KPIs", exact: true }).waitFor();
     await page.getByRole("button", { name: "New goal", exact: true }).click();

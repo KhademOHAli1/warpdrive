@@ -1,8 +1,8 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "5e0184d902de30bb3f4bf099902c7a87c0b59a3c37e47217626cf0ec75c3b741",
-  "sourceFiles": 2746,
+  "sourceFingerprint": "b852fb1e7bf3326fbdb19186308a7d8fe22e7a3b8c621c957c75378340d1f981",
+  "sourceFiles": 2747,
   "discoveredCounts": {
     "browserStore": 3,
     "derived": 378,
@@ -12,7 +12,7 @@
     "queue": 19,
     "sourceReview": 890,
     "table": 130,
-    "writer": 865
+    "writer": 864
   },
   "classifiedDeclarations": 2635,
   "coverage": {

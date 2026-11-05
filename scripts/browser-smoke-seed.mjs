@@ -25,15 +25,18 @@ const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
 const group = "00000000-0000-4000-8000-000000000504";
-const granted = new Set([
-  "deal.create",
-  "activity.create",
+const granted = new Set(["deal.create", "activity.create", "workflow.view", "workflow.create"]);
+const studioGranted = new Set([
   "goals.manage",
   "workflow.view",
   "workflow.create",
   "workflow.edit",
   "workflow.run",
 ]);
+const studioId = "00000000-0000-4000-8000-000000000506";
+const studioPermission = "00000000-0000-4000-8000-000000000507";
+const permissionFlags = (grants) =>
+  JSON.stringify(Object.fromEntries(ALL_PERMISSION_FLAG_KEYS.map((key) => [key, grants.has(key)])));
 let client;
 try {
   const auth = createBetterAuth(db);
@@ -42,12 +45,7 @@ try {
   await client.query("BEGIN");
   await client.query(
     "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI browser permissions',$2)",
-    [
-      permission,
-      JSON.stringify(
-        Object.fromEntries(ALL_PERMISSION_FLAG_KEYS.map((key) => [key, granted.has(key)])),
-      ),
-    ],
+    [permission, permissionFlags(granted)],
   );
   await client.query("INSERT INTO visibility_groups(id,name) VALUES($1,'CI browser group')", [
     group,
@@ -91,6 +89,27 @@ try {
       "00000000-0000-4000-8000-000000000505",
       JSON.stringify({ appearance: "night", winSound: false }),
     ],
+  );
+  // Preserve the original actor's denied edit/run baseline for the temporary-grant packs.
+  await client.query(
+    "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI studio permissions',$2)",
+    [studioPermission, permissionFlags(studioGranted)],
+  );
+  await client.query(
+    "INSERT INTO users(id,email,name,is_admin,permission_set_id,primary_visibility_group_id) VALUES($1,'studio-browser@example.invalid','CI Studio Browser',false,$2,$3)",
+    [studioId, studioPermission, group],
+  );
+  await client.query("INSERT INTO visibility_group_members(group_id,user_id) VALUES($1,$2)", [
+    group,
+    studioId,
+  ]);
+  await client.query(
+    "INSERT INTO auth_users(id,email,name,email_verified) VALUES($1,'studio-browser@example.invalid','CI Studio Browser',true)",
+    [studioId],
+  );
+  await client.query(
+    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
+    [studioId, password],
   );
   await client.query("COMMIT");
 } catch (error) {

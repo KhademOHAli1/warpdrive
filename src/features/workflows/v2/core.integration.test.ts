@@ -326,7 +326,10 @@ it("authenticates published webhooks and rejects idempotency key reuse for diffe
         [node("filter", "FILTER", { condition: { left: true, operator: "eq", right: true } })],
         [],
       ),
-      trigger: { type: "webhook" as const, config: { authentication: "api_key" } },
+      trigger: {
+        type: "webhook" as const,
+        config: { authentication: "api_key", apiKeyHash: "0".repeat(64) },
+      },
     };
     const created = await createWorkflowV2(
       db,
@@ -335,6 +338,17 @@ it("authenticates published webhooks and rejects idempotency key reuse for diffe
       signal(),
     );
     if (!created.ok) throw new Error(created.error);
+    expect(
+      (
+        await publishWorkflowV2(
+          db,
+          who,
+          { id: created.value.id, expectedRevision: created.value.revision },
+          adapters,
+          signal(),
+        )
+      ).ok,
+    ).toBe(false);
     const rotated = await rotateWorkflowV2Webhook(
       db,
       who,
@@ -343,28 +357,29 @@ it("authenticates published webhooks and rejects idempotency key reuse for diffe
     );
     if (!rotated.ok) throw new Error(rotated.error);
     expect(JSON.stringify(rotated.value.document)).not.toContain(rotated.value.apiKey);
-    expect(
-      (
-        await publishWorkflowV2(
-          db,
-          who,
-          { id: created.value.id, expectedRevision: rotated.value.document.revision },
-          adapters,
-          signal(),
-        )
-      ).ok,
-    ).toBe(true);
+    const firstDigest = rotated.value.document.draft.trigger.config.apiKeyHash;
+    if (typeof firstDigest !== "string") throw new Error("Missing webhook credential digest");
+    expect(firstDigest).toMatch(/^scrypt-v1\$[0-9a-f]{32}\$[0-9a-f]{64}$/);
+    const published = await publishWorkflowV2(
+      db,
+      who,
+      { id: created.value.id, expectedRevision: rotated.value.document.revision },
+      adapters,
+      signal(),
+    );
+    if (!published.ok) throw new Error(published.error);
     const request = {
       requestKey: randomUUID(),
       apiKey: rotated.value.apiKey,
       payload: { a: 1, b: 2 },
     };
+    const wrongKey = `${request.apiKey.startsWith("A") ? "B" : "A"}${request.apiKey.slice(1)}`;
     expect(
       (
         await admitWorkflowV2Webhook(
           db,
           created.value.id,
-          { ...request, apiKey: "wrong" },
+          { ...request, apiKey: wrongKey },
           adapters,
           signal(),
         )
@@ -392,6 +407,39 @@ it("authenticates published webhooks and rejects idempotency key reuse for diffe
         )
       ).ok,
     ).toBe(false);
+    const nextKey = await rotateWorkflowV2Webhook(
+      db,
+      who,
+      { id: created.value.id, expectedRevision: published.value.document.revision },
+      signal(),
+    );
+    if (!nextKey.ok) throw new Error(nextKey.error);
+    const nextDigest = nextKey.value.document.draft.trigger.config.apiKeyHash;
+    if (typeof nextDigest !== "string") throw new Error("Missing rotated credential digest");
+    expect(nextDigest.split("$")[1]).not.toBe(firstDigest.split("$")[1]);
+    expect(
+      (
+        await publishWorkflowV2(
+          db,
+          who,
+          { id: created.value.id, expectedRevision: nextKey.value.document.revision },
+          adapters,
+          signal(),
+        )
+      ).ok,
+    ).toBe(true);
+    expect(
+      (await admitWorkflowV2Webhook(db, created.value.id, request, adapters, signal())).ok,
+    ).toBe(false);
+    expect(
+      await admitWorkflowV2Webhook(
+        db,
+        created.value.id,
+        { ...request, apiKey: nextKey.value.apiKey },
+        adapters,
+        signal(),
+      ),
+    ).toEqual({ ok: false, error: "E_WORKFLOW_V2_CONFLICT" });
   });
 });
 

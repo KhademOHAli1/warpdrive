@@ -13,6 +13,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 
 import { validSchedule } from "./cron";
 import { validResponseSchema } from "./responseSchema";
+import { isWebhookCredentialDigest } from "./webhookCredential";
 
 const nativeObjects = new Set(["deal", "lead", "person", "organization", "activity"]);
 function validNativeObject(value: unknown) {
@@ -23,9 +24,7 @@ export function validWorkflowV2Trigger(trigger: WorkflowV2Trigger): boolean {
   if (type === "schedule") return validSchedule(config);
   if (type === "webhook") {
     const authenticated =
-      config.authentication === "api_key" &&
-      typeof config.apiKeyHash === "string" &&
-      /^[a-f0-9]{64}$/.test(config.apiKeyHash);
+      config.authentication === "api_key" && isWebhookCredentialDigest(config.apiKeyHash);
     return (
       (authenticated || config.authentication === "none") &&
       (config.responseSchema === undefined || validResponseSchema(config.responseSchema))
