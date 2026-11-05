@@ -492,19 +492,37 @@ async function verifyRender(page, locale, colorScheme, viewport, dialog) {
     await page.locator("html").evaluate((node) => node.classList.contains("dark")),
     colorScheme === "dark",
   );
-  assert.equal(
-    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1),
-    true,
-  );
   if (dialog) {
     assert.equal(await dialog.getAttribute("dir"), rtl ? "rtl" : "ltr");
     assert.equal(await dialog.getAttribute("data-side"), rtl ? "left" : "right");
+    // The sheet is visible while translating in from the edge. Measure settled layout.
+    await page.waitForFunction(
+      (element) => element.getAnimations().every((animation) => animation.playState !== "running"),
+      await dialog.elementHandle(),
+      { timeout: 5000 },
+    );
     const box = await dialog.boundingBox();
     assert.ok(
       box && box.x >= -1 && box.x + box.width <= viewport.width + 1,
       "Drawer fits viewport",
     );
   }
+  assert.equal(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1),
+    true,
+  );
+}
+
+async function assertHeadlineUnbroken(scoreboard) {
+  const lineCount = await scoreboard
+    .locator("dd")
+    .first()
+    .evaluate((element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top))).size;
+    });
+  assert.equal(lineCount, 1, "The exact won-value headline fits on one line");
 }
 
 async function exercisePresets(page, locale, calendar, current, entry) {
@@ -562,6 +580,7 @@ async function matrix(locale, calendar) {
             .waitFor();
           await verifyRender(page, locale, colorScheme, viewport);
           await page.evaluate(() => document.fonts.ready.then(() => undefined));
+          await assertHeadlineUnbroken(scoreboard);
           await main.getByRole("heading", exact(S.title)).scrollIntoViewIfNeeded();
           await capture(page, `${name}-dashboard`);
           const opened = await openRecords(

@@ -46,7 +46,7 @@ function Metric({
       <dd
         className={cn(
           "mt-3 break-words font-semibold tabular-nums",
-          primary ? "text-4xl" : "text-2xl",
+          primary ? "text-4xl xl:text-3xl 2xl:text-4xl" : "text-2xl",
         )}
       >
         {value}
@@ -91,7 +91,7 @@ export function Scoreboard({
   return (
     <dl
       aria-label={S.widgetScoreboard}
-      className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border bg-card p-5 xl:grid-cols-5"
+      className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border bg-card p-5 xl:grid-cols-[minmax(0,1.45fr)_repeat(4,minmax(0,1fr))]"
     >
       <Metric
         primary
