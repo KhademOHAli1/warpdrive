@@ -1,6 +1,12 @@
 "use client";
 import { useComposerMailboxMessages } from "./useComposerMailboxMessages";
-export function GmailConnectionNotice({ reason }: { reason?: string }): React.ReactNode {
+export function GmailConnectionNotice({
+  reason,
+  syncStartFailed = false,
+}: {
+  reason?: string;
+  syncStartFailed?: boolean;
+}): React.ReactNode {
   const L = useComposerMailboxMessages();
   const descriptions: Record<string, string> = {
     fresh_auth_required: L.connectFreshAuth,
@@ -8,10 +14,11 @@ export function GmailConnectionNotice({ reason }: { reason?: string }): React.Re
     stale_state: L.connectExpired,
     revocation_pending: L.connectRevocation,
   };
-  const description =
+  const connectionError =
     reason !== undefined && Object.hasOwn(descriptions, reason)
       ? descriptions[reason]
       : L.connectFailed;
+  const description = syncStartFailed ? L.connectSyncUnavailable : connectionError;
   return (
     <div role="alert" className="shrink-0 border-b border-border bg-muted/30 px-4 py-3 text-sm">
       <p className="text-pretty text-foreground">{description}</p>
