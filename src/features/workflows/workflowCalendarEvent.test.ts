@@ -43,7 +43,7 @@ function fixture(types: Array<{ id: string }> = [{ id: typeId }]) {
   const rollback = vi.fn(() => {
     throw new TransactionRollbackError();
   });
-  const lock = vi.fn(async () => types);
+  const lock = vi.fn(() => Promise.resolve(types));
   const select = vi.fn(() => ({ from: () => ({ where: () => ({ for: lock }) }) }));
   const savepoint = { rollback, select } as unknown as Db;
   const transaction = vi.fn(async (work: (tx: Db) => Promise<unknown>) => work(savepoint));
