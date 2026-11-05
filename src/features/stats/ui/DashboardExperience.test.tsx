@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
@@ -272,7 +272,7 @@ describe("Performance report experience", () => {
       { enabled: true },
     );
   });
-  it("shows clipped cohort coverage and withholds an unknown win rate", async () => {
+  it("shows clipped coverage and bounds the win rate using only mature outcomes", async () => {
     fixture.cohortReport.mockReturnValue({
       state: "available",
       definition: "observed-deal-entry-to-win-v1",
@@ -291,9 +291,9 @@ describe("Performance report experience", () => {
       rows: [
         {
           calendarMonthStart: "2026-09-23",
-          entered: 3,
-          mature: 2,
-          immature: 1,
+          entered: 8,
+          mature: 6,
+          immature: 2,
           confirmedWins: 1,
           unknownOutcomes: 1,
           rate: { state: "unavailable", reason: "mature-outcome-unknown" },
@@ -306,8 +306,12 @@ describe("Performance report experience", () => {
     expect(panel).toHaveTextContent("Only part of the selected range is covered");
     expect(panel).toHaveTextContent("Solar Hijri (Iranian)");
     expect(panel).toHaveTextContent("Asia/Tehran");
-    expect(screen.getByRole("row", { name: /Mehr/ })).toHaveTextContent("Unknown outcomes");
-    expect(panel).not.toHaveTextContent("50%");
+    const table = within(panel).getByRole("table", { name: "Deal cohorts by age" });
+    expect(within(table).getAllByRole("columnheader")).toHaveLength(7);
+    const row = within(table).getByRole("row", { name: /Mehr/ });
+    const rate = within(row).getAllByRole("cell").at(-1);
+    expect(rate).toHaveTextContent(/^Range from missing outcomes\s*16\.6% to 33\.4%$/);
+    expect(panel).toHaveTextContent("The range is rounded outward.");
     fixture.cohortFetching = true;
     page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
     expect(screen.queryByRole("table", { name: "Deal cohorts by age" })).not.toBeInTheDocument();

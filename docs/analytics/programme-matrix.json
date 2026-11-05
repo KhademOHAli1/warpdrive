@@ -472,8 +472,12 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/ui/DealWinCohortPanel.tsx",
+        "src/features/stats/ui/DashboardExperience.test.tsx",
+        "src/features/stats/commercialDecomposition.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["cohort-equal-age", "segment-dimensions"],
       "dataRequirements": ["Qualified sample/unit assumptions and sufficient observations."],
       "acceptance": [
@@ -483,7 +487,8 @@
       "tests": [
         "Small/empty/imbalanced segments, interval coverage and Simpson-style mix-change fixtures."
       ],
-      "deliveryIncrement": "I5"
+      "deliveryIncrement": "I5",
+      "currentSourceNote": "Viewer shows missing-mature-outcome bounds with explicit partial coverage; exact private ordered mix decomposition is available in source. Validated sampling intervals, qualified segments and comparisons remain open."
     },
     {
       "id": "aging-distribution",
