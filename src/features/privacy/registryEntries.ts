@@ -7,6 +7,7 @@ import {
   currentLeadHandoffInventoryEntry,
   dealReportExportInventoryEntry,
   leadLinkCaptureInventoryEntry,
+  nativePeriodForecastInventoryEntry,
   recordedDealSourceInventoryEntry,
   savedPerformanceInventoryEntry,
 } from "./registryAnalytics";
@@ -59,6 +60,7 @@ export const registryEntries: RegistryEntry[] = [
   currentLeadHandoffInventoryEntry,
   dealReportExportInventoryEntry,
   leadLinkCaptureInventoryEntry,
+  nativePeriodForecastInventoryEntry,
   recordedDealSourceInventoryEntry,
   savedPerformanceInventoryEntry,
   analyticsAttentionInventoryEntry,

@@ -142,3 +142,5 @@ I3 adds the Acquisition view for [recorded deal sources](recorded-deal-source-re
 Pipeline shows [current deal next-action counts](analytics-attention.md) using the two canonical activity queue rules and the account time zone. Configurable rules, scoped record navigation, stage-age and response signals remain open.
 
 [Private saved Performance reports](saved-performance-reports.md) preserve fixed scope and rerun current data with the same calculations and native authority. Sharing and further report types remain open.
+
+The [period forecast view](native-period-forecast.md) applies explicit manual assumptions to the captured current open-deal roster. It keeps unknown factors and values visible through coverage counts. Installed capture admission, same-scope target coverage and forecast calibration remain open.

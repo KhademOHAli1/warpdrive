@@ -62,6 +62,7 @@
   "funnelBasisUser": "Berücksichtigt nur Verkaufschancen der ausgewählten Person, die in diesem Zeitraum erstellt wurden.",
   "funnelBasisTeam": "Berücksichtigt nur Verkaufschancen des ausgewählten Teams, die in diesem Zeitraum erstellt wurden.",
   "_extra": {
+    "forecastCoverage": "{known, number} von {total, number} berücksichtigten Deals",
     "trendInspectMonth": "Gewonnene Deals im {month} anzeigen",
     "recordsWonMonth": "Gewonnene Deals im {month}",
     "unauthorized": "Melden Sie sich an, um die Leistungsübersicht anzusehen.",
@@ -271,5 +272,33 @@
     "deleteFailed": "Die Definition konnte nicht gelöscht werden.",
     "saved": "Definition gespeichert.",
     "deleted": "Definition gelöscht."
+  },
+  "forecast": {
+    "tab": "Prognose",
+    "title": "Prognoseszenarien für einen Zeitraum",
+    "definition": "Berechnen Sie Szenarien mit eigenen Annahmen für die aktuelle Pipeline, Zuständigkeit und Währung. Dieselben Annahmen gelten für alle berücksichtigten offenen Deals. Die Ergebnisse zeigen, was unter diesen Annahmen möglich wäre.",
+    "inputs": "Prognoseeingaben",
+    "targetFrom": "Beginn des Zielzeitraums",
+    "targetTo": "Ende des Zielzeitraums",
+    "scopeCurrency": "Währung",
+    "assumptionsHelp": "Geben Sie Wahrscheinlichkeiten von 0 bis 100 Prozent ein. Die zeitliche Wahrscheinlichkeit beschreibt einen Abschluss im Zielzeitraum unter der Bedingung, dass der Deal gewonnen wird. Lassen Sie unbekannte Wahrscheinlichkeiten frei. Ohne Eingabe gilt der Wertfaktor 1.",
+    "conservative": "Konservativ",
+    "base": "Basis",
+    "upside": "Optimistisch",
+    "winProbability": "Wahrscheinlichkeit eines späteren Gewinns (%)",
+    "timingProbability": "Abschluss im Zeitraum bei Gewinn (%)",
+    "sizeMultiplier": "Wertfaktor (0–10)",
+    "run": "Szenarien berechnen",
+    "running": "Wird berechnet …",
+    "invalid": "Wählen Sie einen zukünftigen Zeitraum von bis zu 366 Tagen, Wahrscheinlichkeiten von 0 bis 100 und Wertfaktoren von 0 bis 10.",
+    "unavailable": "Für diese Auswahl ist keine Prognose verfügbar.",
+    "captureUnavailable": "Für die Prognose ist eine Erfassung der Deal-Historie erforderlich. Diese ist derzeit nicht verfügbar.",
+    "results": "Szenarioergebnisse",
+    "observedAt": "Erfasst am",
+    "eligibleDeals": "Berücksichtigte offene Deals",
+    "recordedValue": "Erfasster Wert offener Deals",
+    "expectedCount": "Erwartete gewonnene Deals",
+    "expectedValue": "Erwarteter Wert gewonnener Deals",
+    "unknown": "Unbekannt"
   }
 }

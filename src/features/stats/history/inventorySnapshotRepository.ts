@@ -58,6 +58,11 @@ const factSchema = z.strictObject({
     .nullable(),
 });
 
+const openForecastFactSchema = factSchema.extend({
+  status: z.literal("open"),
+  expectedCloseDate: z.iso.date().nullable(),
+});
+
 const inventoryReadSchema = z.strictObject({
   ownWritesPending: z.boolean(),
   overLimit: z.boolean(),
@@ -135,7 +140,10 @@ async function resolveSnapshotOwners(
   return onlyOwners(members.map(({ userId }) => userId));
 }
 
-async function readObservation(tx: Db, signal: AbortSignal): Promise<Observation | null> {
+export async function readCurrentInventoryObservation(
+  tx: Db,
+  signal: AbortSignal,
+): Promise<Observation | null> {
   signal.throwIfAborted();
   // The first data read fixes the repeatable-read snapshot before the wall clock is sampled.
   const result = await tx.execute(sql`
@@ -156,6 +164,7 @@ async function readInventoryFacts(
   activationId: string,
   observation: Observation,
   signal: AbortSignal,
+  openForecast = false,
 ): Promise<InventoryRead | null> {
   // The shared live visibility predicate ignores dates. The observed day only fills the shared
   // filter type and does not define a historical period or get written into snapshot scope.
@@ -166,12 +175,23 @@ async function readInventoryFacts(
     { currency, pipelineId: scope.pipelineId, owners: scope.owners, from: day, to: day },
     signal,
   );
+  const openOnly = openForecast ? sql`AND d.status = 'open'` : sql``;
+  const forecastColumn = openForecast ? sql`, d.expected_close_date` : sql``;
+  const forecastField = openForecast
+    ? sql`, 'expectedCloseDate', pg_catalog.to_char(c.expected_close_date, 'YYYY-MM-DD')`
+    : sql``;
+  const tipFence = openForecast
+    ? sql`
+    AND tip.observed_at = h.last_observed_at
+    AND tip.observed_at <= ${observation.observedAt}::timestamptz
+  `
+    : sql``;
   const result = await tx.execute(sql`
     WITH candidates AS MATERIALIZED (
       SELECT d.id, d.pipeline_id, d.stage_id, d.owner_id, d.status, d.currency,
-        d.value::text AS value
+        d.value::text AS value ${forecastColumn}
       FROM public.deals d JOIN public.pipelines p ON p.id = d.pipeline_id
-      WHERE ${visible}
+      WHERE (${visible}) ${openOnly}
       ORDER BY d.id LIMIT ${MAX_INVENTORY_SNAPSHOT_FACTS + 1}
     ), population_bound AS MATERIALIZED (
       SELECT count(*) > ${MAX_INVENTORY_SNAPSHOT_FACTS} AS too_large FROM candidates
@@ -199,7 +219,7 @@ async function readInventoryFacts(
       JOIN public.analytics_history_events tip ON tip.ordinal = h.last_event_ordinal
         AND tip.entity_kind = h.entity_kind AND tip.entity_id = h.entity_id
         AND tip.activation_id = h.activation_id AND tip.incarnation_id = h.incarnation_id
-      WHERE tip.after_state = source.state
+      WHERE tip.after_state = source.state ${tipFence}
         AND pg_catalog.pg_visible_in_snapshot(tip.transaction_id::pg_catalog.xid8,
           ${observation.transactionSnapshot}::pg_catalog.pg_snapshot)
         AND NOT EXISTS (
@@ -222,7 +242,7 @@ async function readInventoryFacts(
         'entityId', c.id, 'incarnationId', deal.incarnation_id,
         'tipOrdinal', deal.last_event_ordinal::text, 'pipelineId', c.pipeline_id,
         'stageId', c.stage_id, 'ownerId', c.owner_id, 'status', c.status,
-        'currency', c.currency, 'value', c.value
+        'currency', c.currency, 'value', c.value ${forecastField}
       ) ORDER BY c.id), '[]'::jsonb) AS records
     FROM admitted c
     LEFT JOIN qualified_tips deal ON deal.kind = 'deal' AND deal.id = c.id
@@ -234,24 +254,52 @@ async function readInventoryFacts(
   return parsed.success ? parsed.data : null;
 }
 
-function validateFacts(
+function validateFacts<Fact extends InventoryFact>(
   read: InventoryRead | null,
   currency: string,
-): Unavailable | { state: "ready"; records: InventoryFact[] } {
+  schema: z.ZodType<Fact>,
+): Unavailable | { state: "ready"; records: Fact[] } {
   if (read === null) return { state: "unavailable", reason: "snapshot-write-failed" };
   if (read.ownWritesPending) return { state: "unavailable", reason: "source-writes-pending" };
   if (read.overLimit || read.records.length > MAX_INVENTORY_SNAPSHOT_FACTS)
     return { state: "unavailable", reason: "snapshot-fact-limit" };
   if (!read.complete || !read.selectedPipelineCaptured)
     return { state: "unavailable", reason: "snapshot-capture-incomplete" };
-  const records: InventoryFact[] = [];
+  const records: Fact[] = [];
   for (const row of read.records) {
-    const parsed = factSchema.safeParse(row);
+    const parsed = schema.safeParse(row);
     if (!parsed.success || parsed.data.currency !== currency)
       return { state: "unavailable", reason: "snapshot-capture-incomplete" };
     records.push(parsed.data);
   }
   return { state: "ready", records };
+}
+
+/**
+ * Internal use inside the authorized caller's own repeatable-read transaction.
+ * A forecast caller supplies the exact scoped owners, installation and first-read
+ * observation. This does not grant scope access or persist a roster.
+ */
+export async function readCapturedOpenForecastRoster(
+  tx: Db,
+  actor: PermSetUser,
+  scope: SnapshotScope,
+  currency: string,
+  activationId: string,
+  observation: Observation,
+  signal: AbortSignal,
+) {
+  const read = await readInventoryFacts(
+    tx,
+    actor,
+    scope,
+    currency,
+    activationId,
+    observation,
+    signal,
+    true,
+  );
+  return validateFacts(read, currency, openForecastFactSchema);
 }
 
 interface SnapshotInsert {
@@ -292,7 +340,7 @@ async function writeInSnapshot(
   input: z.output<typeof inputSchema>,
   signal: AbortSignal,
 ): Promise<InventorySnapshotWrite> {
-  const observation = await readObservation(tx, signal);
+  const observation = await readCurrentInventoryObservation(tx, signal);
   if (observation === null) return { state: "unavailable", reason: "snapshot-write-failed" };
   const actor = await currentActor(tx, requestActor, signal);
   if (actor === null) return { state: "unavailable", reason: "snapshot-scope-unavailable" };
@@ -323,7 +371,7 @@ async function writeInSnapshot(
     observation,
     signal,
   );
-  const validated = validateFacts(read, currency);
+  const validated = validateFacts(read, currency, factSchema);
   if (validated.state !== "ready") return validated;
   const snapshotId = await insertSnapshot(
     tx,

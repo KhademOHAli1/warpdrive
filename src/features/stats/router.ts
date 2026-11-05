@@ -4,6 +4,9 @@
 // never reach a user who cannot see that pipeline. That applies to the "All pipelines"
 // aggregate as much as to a single selected pipeline.
 
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { guardCsrf } from "@/features/identity/actions/shared";
 import { listTeams } from "@/features/identity/teams.service";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
@@ -16,6 +19,7 @@ import { readCurrentStageAgingView } from "./history/currentStageAgingRepository
 import { readObservedDealWinCohorts } from "./history/dealCohortRepository";
 import { dealWinCohortHorizon, dealWinCohortView } from "./history/dealWinCohortView";
 import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "./metricDictionary";
+import { nativePeriodForecastInput, readNativePeriodForecast } from "./nativePeriodForecast";
 import { readRecordedDealSourceReport } from "./recordedDealSourceReport";
 import { resolveReportScope } from "./resolveReportScope";
 import { rerunSavedPerformanceReport, savedPerformanceRerunInput } from "./savedPerformanceRerun";
@@ -103,6 +107,24 @@ export const statsRouter = router({
         observedAt: result.observedAt,
         counts: result.counts,
       };
+    }),
+
+  periodForecast: protectedProcedure
+    .input(
+      z.strictObject({
+        scenario: nativePeriodForecastInput,
+        csrfToken: z.string().max(128).nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+      return readNativePeriodForecast(
+        ctx.db,
+        { actor: ctx.actor, session: ctx.session },
+        input.scenario,
+        SIG(),
+        ctx.localeFallback,
+      );
     }),
 
   stageAging: protectedProcedure

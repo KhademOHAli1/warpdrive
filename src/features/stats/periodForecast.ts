@@ -31,12 +31,18 @@ const evidenceSchema = z.strictObject({
   observedAt: instant,
 });
 
-const probability = z.string().regex(/^(?:0(?:\.\d{1,6})?|1(?:\.0{1,6})?)$/);
-const probabilitySchema = z.strictObject({ probability, evidence: evidenceSchema });
+export const periodForecastProbability = z.string().regex(/^(?:0(?:\.\d{1,6})?|1(?:\.0{1,6})?)$/);
+const probabilitySchema = z.strictObject({
+  probability: periodForecastProbability,
+  evidence: evidenceSchema,
+});
 const timingSchema = probabilitySchema.extend({ target: targetSchema });
+// Version 1 permits a size assumption from zero to ten times the observed deal value.
+export const periodForecastSizeMultiplier = z
+  .string()
+  .regex(/^(?:[0-9](?:\.\d{1,6})?|10(?:\.0{1,6})?)$/);
 const sizeSchema = z.strictObject({
-  // Version 1 permits a size assumption from zero to ten times the observed deal value.
-  multiplier: z.string().regex(/^(?:[0-9](?:\.\d{1,6})?|10(?:\.0{1,6})?)$/),
+  multiplier: periodForecastSizeMultiplier,
   evidence: evidenceSchema,
 });
 

@@ -47,6 +47,29 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
   },
 );
 
+export const nativePeriodForecastInventoryEntry = classifyInventory(
+  [
+    "sourceReview:src/features/stats/nativePeriodForecast.ts#2bda591be7981366436c5c41c7c889d611b9a774383708d58a58c8a8b6e09533",
+    "writer:src/features/stats/nativePeriodForecast.ts#execute:sql",
+  ],
+  {
+    owner: "native period forecast scenarios",
+    categories: [
+      "workspace session authority, captured deal and workforce references, exact nominal values, explicit scenario factors and scoped projections",
+    ],
+    subjectRelation: "Captured deal records may refer to people, organizations and CRM owners.",
+    purpose:
+      "Apply explicitly authored factors to one complete authorized open-deal roster in a fixed future target period.",
+    disclosure:
+      "The protected POST returns aggregate counts and values, assumption coverage and the observed cutoff. Contributor identities and capture witnesses remain internal.",
+    retention:
+      "Transient scenario. Source history and native sessions follow their own lifecycle controls.",
+    externalEffects:
+      "Bounded read-only primary snapshot and CSRF-guarded request. No persistent write or provider call.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const leadLinkCaptureInventoryEntry = classifyInventory(
   [
     "sourceReview:docs/analytics/lead-link-capture-proposal.sql#5df2df514d7dc6c27baf6abcfa5ab5bd406ab3314ba30c333fa84011f8b509a5",
@@ -71,7 +94,7 @@ export const leadLinkCaptureInventoryEntry = classifyInventory(
 
 export const savedPerformanceInventoryEntry = classifyInventory(
   [
-    "sourceReview:src/features/stats/savedPerformanceReports.ts#e66f90a509a440046b2bf4c34716b538b96a9bffc0bda65c2c92f098fd4c5f94",
+    "sourceReview:src/features/stats/savedPerformanceReports.ts#7c04352d88920954c290e40c038255284da29559e2100b3909dca41195b73842",
     "sourceReview:src/features/stats/savedPerformanceRerun.ts#81fbd8dbaeed73531210b18ef7a1d48050a9f21e0205f924cc363a40279fc430",
     "sourceReview:src/features/stats/savedPerformanceRouter.ts#4b610f2524687da7476adb1c9a8fbf5b4c7392609ad831b9f3d0755fa9765c64",
     "writer:src/features/stats/savedPerformanceReports.ts#delete:savedFilters",
@@ -186,7 +209,7 @@ export const analyticsComputationInventoryEntry = classifyInventory(
     "sourceReview:src/features/stats/forecastEvaluation.ts#93b8623477eb9dfb0d1802ac61aa6e445b32402ffe354d0198cd975ccf339d10",
     "sourceReview:src/features/stats/history/dealCloseIncidence.ts#0ad2c3f82f2b868f682222a470d379347dcfccba1c119085b4c29a06d5b43071",
     "sourceReview:src/features/stats/lifecycleEconomics.ts#f9173c38f1e2c375e0b5280acd85e1fb4e0fcaf64f7133cab07aefa5f650e542",
-    "sourceReview:src/features/stats/periodForecast.ts#500d5c56f006ea39067c741877de1b581de7731142750b431ffbd91cfead2021",
+    "sourceReview:src/features/stats/periodForecast.ts#15b312bcb1dd3c067e1cfe1c59fce9b0591f92ecd215c1d4ab2d9e545a8d9af0",
     "writer:src/features/stats/analyticsInputAdmission.ts#update:dynamic",
     "writer:src/features/stats/fixedExperimentReadout.ts#update:payload",
   ],
@@ -276,7 +299,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/equalAgeCohorts.ts",
     "derived:src/features/stats/history/inventorySnapshotRepository.ts",
     "sourceReview:src/features/stats/history/equalAgeCohorts.ts#94f4431c6970716663982a3d13f13e16c00764b4683aa19a03f100e4d162f4c9",
-    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#9a978cf8ee0a6a4851eb1289527c00076ddb790c1a667289d90972a4c4af2ad6",
+    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#5550b7e9c2d18e1d39e59d6633680662432d3904399ce11d560bc0fea6c6d09c",
     "writer:src/features/stats/history/inventorySnapshotRepository.ts#execute:sql",
     "derived:src/features/stats/history/inventoryMovement.ts",
     "derived:src/features/stats/history/stageDefinitionRepository.ts",

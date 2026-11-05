@@ -33,6 +33,8 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       recordsCount: (count: number) => t("_extra.recordsCount", { count }),
       recordsValueCount: (count: number, total: number) =>
         t("_extra.recordsValueCount", { count, total }),
+      forecastCoverage: (known: number, total: number) =>
+        t("_extra.forecastCoverage", { known, total }),
       recordsPage: (page: number) => t("_extra.recordsPage", { page }),
       trendInspectMonth: (month: string) => t("_extra.trendInspectMonth", { month }),
       recordsWonMonth: (month: string) => t("_extra.recordsWonMonth", { month }),

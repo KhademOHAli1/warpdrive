@@ -128,7 +128,7 @@ function summary(row: { id: string; name: string; versionOne: boolean }): Report
 }
 
 type AuthorityFailure = Unavailable<"authentication-required" | "source-unavailable">;
-const AUTHORITY_EXPIRED = Symbol("saved Performance authority expired");
+const AUTHORITY_EXPIRED = new Error("Saved Performance authority expired");
 
 async function withActor<T>(
   db: Db,

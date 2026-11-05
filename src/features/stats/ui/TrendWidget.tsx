@@ -138,7 +138,7 @@ export function WonTrendWidget({
                             aria-label={S._extra.trendInspectMonth(
                               monthLabel(p.month, preferences),
                             )}
-                            onClick={(event) => onInspectMonth?.(p.month, event.currentTarget)}
+                            onClick={(event) => onInspectMonth(p.month, event.currentTarget)}
                           >
                             {S.trendInspect}
                           </Button>

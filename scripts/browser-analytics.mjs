@@ -942,7 +942,7 @@ async function verifySavedPerformance() {
     await panel
       .getByRole("button", exact(copySaved.deleteNamed.replace("{name}", displayName)))
       .click();
-    const confirm = page.getByRole("dialog", exact(copySaved.deleteTitle));
+    const confirm = page.getByRole("alertdialog", exact(copySaved.deleteTitle));
     await confirm.getByRole("button", exact(copySaved.deleteConfirm)).click();
     await panel.getByText(copySaved.deleted, { exact: true }).waitFor();
     await panel.getByText(copySaved.empty, { exact: true }).waitFor();
@@ -1035,6 +1035,60 @@ async function verifyDealReportDownload() {
       rows: monthRows.length,
       originalReportScope: true,
       returnedFocus: true,
+    };
+  });
+}
+
+async function verifyForecastScenario(active) {
+  const name = active ? "en-manual-period-forecast" : "en-forecast-before-capture";
+  await journey(name, async (page, _context, entry) => {
+    const { forecast: S } = copy.en.stats;
+    await openDashboard(page, "en", "persian", actor.timeZone);
+    await page.getByRole("tab", exact(S.tab)).click();
+    const panel = page.getByRole("region", exact(S.title));
+    const base = panel.getByRole("group", exact(S.base));
+    await base.getByLabel(S.winProbability, { exact: true }).fill("50");
+    await base.getByLabel(S.timingProbability, { exact: true }).fill("50");
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (candidate) =>
+          candidate.request().method() === "POST" &&
+          new URL(candidate.url()).pathname.endsWith("/stats.periodForecast"),
+        { timeout: 15000 },
+      ),
+      panel.getByRole("button", exact(S.run)).click(),
+    ]);
+    assert.equal(response.status(), 200);
+    const payload = await response.json();
+    const packet = Array.isArray(payload) ? payload[0] : payload;
+    assert.ok(packet?.result?.data, "Native forecast response");
+    const forecast = superjson.deserialize(packet.result.data);
+    if (!active) {
+      assert.deepEqual(forecast, { state: "unavailable", reason: "capture-not-installed" });
+      await panel.getByRole("alert").getByText(S.captureUnavailable, { exact: true }).waitFor();
+      entry.forecastState = forecast.state;
+      return;
+    }
+    assert.equal(forecast.state, "available");
+    assert.equal(forecast.rosterBasis, "captured-current-open-deals");
+    assert.equal(forecast.basis, "explicit-manual-what-if");
+    assert.equal(forecast.openDealCount, 1);
+    assert.equal(forecast.target.timeZone, actor.timeZone);
+    assert.deepEqual(forecast.scenarios.base.expectedWonCount, {
+      knownTotal: "0.25",
+      knownDealCount: 1,
+      missingDealCount: 0,
+    });
+    assert.equal(forecast.scenarios.base.expectedWonValue.knownTotal, null);
+    assert.ok(!JSON.stringify(forecast).includes(cohortFixture.id));
+    await panel.getByRole("heading", exact(S.results)).waitFor();
+    await panel.getByText(/^0[,.]25$/u).waitFor();
+    await panel.scrollIntoViewIfNeeded();
+    await capture(page, name);
+    entry.forecastProof = {
+      openDealCount: forecast.openDealCount,
+      manualWinSubtotal: forecast.scenarios.base.expectedWonCount.knownTotal,
+      valueUnknown: true,
     };
   });
 }
@@ -1409,8 +1463,10 @@ try {
     await exercisePresets(page, "en", "persian", current, entry);
   });
   await verifyCohortPanel(false);
+  await verifyForecastScenario(false);
   await activateSyntheticCohort();
   await verifyCohortPanel(true);
+  await verifyForecastScenario(true);
   await verifyDeviceReportTimeZone();
   assert.equal(report.nativeLogins, 1);
   assert.equal(asynchronousFailure, false);

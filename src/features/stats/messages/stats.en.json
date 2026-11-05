@@ -62,6 +62,7 @@
   "funnelBasisUser": "Counts only deals the selected person owns that were created in this range.",
   "funnelBasisTeam": "Counts only deals the selected team owns that were created in this range.",
   "_extra": {
+    "forecastCoverage": "{known, number} of {total, number} eligible deals",
     "unauthorized": "Sign in to view performance.",
     "percent": "{count, number}%",
     "durationDays": "{count, plural, one {# day} other {# days}}",
@@ -271,5 +272,33 @@
     "deleteFailed": "The definition could not be deleted.",
     "saved": "Definition saved.",
     "deleted": "Definition deleted."
+  },
+  "forecast": {
+    "tab": "Forecast",
+    "title": "Period forecast scenarios",
+    "definition": "Run manual scenarios for the current pipeline, owner and currency. The same assumptions apply to each eligible open deal. The results show what could happen under those assumptions.",
+    "inputs": "Forecast inputs",
+    "targetFrom": "Target start",
+    "targetTo": "Target end",
+    "scopeCurrency": "Currency",
+    "assumptionsHelp": "Enter probabilities from 0 to 100 percent. Timing is the chance of closing during the target period given a win. Leave a probability blank if unknown. The size multiplier defaults to 1 when blank.",
+    "conservative": "Conservative",
+    "base": "Base",
+    "upside": "Upside",
+    "winProbability": "Chance of winning eventually (%)",
+    "timingProbability": "Chance of closing in the period if won (%)",
+    "sizeMultiplier": "Deal value multiplier (0–10)",
+    "run": "Run scenarios",
+    "running": "Running…",
+    "invalid": "Choose a future period of up to 366 days, probabilities from 0 to 100, and multipliers from 0 to 10.",
+    "unavailable": "The forecast is unavailable for this scope.",
+    "captureUnavailable": "Deal history capture is required for the forecast and is currently unavailable.",
+    "results": "Scenario results",
+    "observedAt": "Observed at",
+    "eligibleDeals": "Eligible open deals",
+    "recordedValue": "Recorded open value",
+    "expectedCount": "Expected wins",
+    "expectedValue": "Expected won value",
+    "unknown": "Unknown"
   }
 }

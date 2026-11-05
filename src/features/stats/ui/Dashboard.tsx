@@ -2,6 +2,7 @@
 
 import {
   CalendarDays,
+  ChartLine,
   ChartNoAxesCombined,
   LayoutDashboard,
   SlidersHorizontal,
@@ -34,6 +35,7 @@ import { GoalsWidget } from "./GoalsWidget";
 import { KpiPerformance } from "./KpiPerformance";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
 import { Panel } from "./Panel";
+import { PeriodForecastPanel } from "./PeriodForecastPanel";
 import { RecordedDealSourcePanel } from "./RecordedDealSourcePanel";
 import { SavedPerformanceControl } from "./SavedPerformanceControl";
 import { Scoreboard } from "./Scoreboard";
@@ -106,7 +108,7 @@ export function Dashboard({
 }: DashboardProps) {
   const S = useStatsMessages();
   const tCurrency = useAppTranslations("sales");
-  const { timeZone, calendar } = useLocalePreferences();
+  const { timeZone, calendar, locale, country, numberingSystem } = useLocalePreferences();
   const preferencePending = useLocalePreferencePending();
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
@@ -333,6 +335,10 @@ export function Dashboard({
               <ChartNoAxesCombined aria-hidden="true" className="me-2 hidden size-4 sm:block" />
               {S.recordedSource.tab}
             </TabsTrigger>
+            <TabsTrigger value="forecast" className={REPORT_TAB}>
+              <ChartLine aria-hidden="true" className="me-2 hidden size-4 sm:block" />
+              {S.forecast.tab}
+            </TabsTrigger>
           </TabsList>
           {body}
           <TabsContent value="pipeline" className="mt-5 space-y-5">
@@ -351,6 +357,21 @@ export function Dashboard({
             <CurrentAttentionPanel
               key={`attention-${JSON.stringify(currentScope)}`}
               scope={currentScope}
+            />
+          </TabsContent>
+          <TabsContent value="forecast" className="mt-5">
+            <PeriodForecastPanel
+              key={JSON.stringify({
+                currentScope,
+                today,
+                timeZone,
+                calendar,
+                locale,
+                country,
+                numberingSystem,
+              })}
+              scope={currentScope}
+              today={today}
             />
           </TabsContent>
         </Tabs>
