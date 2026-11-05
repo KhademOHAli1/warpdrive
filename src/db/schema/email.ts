@@ -81,6 +81,7 @@ export const emailAccounts = pgTable(
     watchExpiresAt: timestamp("watch_expires_at", { withTimezone: true }),
     status: emailAccountStatus("status").notNull().default("connected"),
     lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
     lastErrorId: text("last_error_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

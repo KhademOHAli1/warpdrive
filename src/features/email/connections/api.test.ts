@@ -181,6 +181,20 @@ it("refreshes the actor's mailbox list without a mutation token and discards unk
   );
 });
 
+it("keeps distinct successful sync and check timestamps in Gmail list responses", async () => {
+  const gmail = {
+    ...view,
+    provider: "gmail",
+    lastSyncAtIso: "2026-07-01T10:00:00.000Z",
+    lastCheckedAtIso: "2026-07-01T10:12:00.000Z",
+  };
+  response({ ok: true, value: [gmail, { ...gmail, lastCheckedAtIso: null }] });
+  expect(await listMailboxConnections(new AbortController().signal)).toEqual({
+    ok: true,
+    value: [gmail, { ...gmail, lastCheckedAtIso: null }],
+  });
+});
+
 it("keeps reconnect endpoint metadata while removing nested passwords from the client view", async () => {
   const metadata = {
     host: "mail.example.com",

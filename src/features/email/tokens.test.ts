@@ -75,6 +75,10 @@ describe("ensureAccessToken", () => {
         expect(r.value.token).toBe("new-at");
         expect(r.value.expiresAt).toBe(1_000_000 + 3600 * 1000);
       }
+      const check = await db.execute(
+        sql`SELECT last_checked_at FROM email_accounts WHERE id=${id}`,
+      );
+      expect(check.rows[0]).toEqual({ last_checked_at: null });
     });
   });
 
@@ -125,6 +129,37 @@ describe("ensureAccessToken", () => {
       expect(row.refresh_token_enc).not.toBeNull();
     });
   });
+
+  it.each([
+    {
+      outcome: "rate limit",
+      refresh: () => Promise.resolve(err(new AppError("E_GMAIL_001", "rate limited"))),
+    },
+    { outcome: "network error", refresh: () => Promise.reject(new Error("unavailable")) },
+  ])(
+    "records a sync grant check after a $outcome without advancing synchronization",
+    async ({ refresh }) => {
+      await withTestDb(async (db) => {
+        const accountId = await seedAccount(db);
+        await db.execute(
+          sql`UPDATE email_accounts SET last_sync_at='2026-01-01T00:00:00Z' WHERE id=${accountId}`,
+        );
+        const result = await ensureAccessToken(db, {
+          accountId,
+          signal: AbortSignal.timeout(5_000),
+          syncGeneration: 1,
+          deps: { refresh },
+        });
+        expect(result).toMatchObject({ ok: false, error: { id: "E_GMAIL_001" } });
+        const check = await db.execute(sql`
+        SELECT status, last_checked_at > last_sync_at AS checked,
+          last_sync_at = '2026-01-01T00:00:00Z' AS sync_unchanged
+        FROM email_accounts WHERE id=${accountId}
+      `);
+        expect(check.rows[0]).toEqual({ status: "connected", checked: true, sync_unchanged: true });
+      });
+    },
+  );
 
   it("propagates a decrypt failure WITHOUT disconnecting (server-side key/data error, not revocation)", async () => {
     await withTestDb(async (db) => {
@@ -228,13 +263,14 @@ describe("ensureAccessToken", () => {
       expect(result).toMatchObject({ ok: false, error: { id: "E_GMAIL_002" } });
       expect(refresh).toHaveBeenCalledWith("refresh-1", expect.any(AbortSignal));
       const row = (
-        await db.execute(sql`SELECT status, last_error_id, refresh_token_enc,
+        await db.execute(sql`SELECT status, last_error_id, refresh_token_enc, last_checked_at IS NOT NULL AS checked,
           connection_generation, credential_version FROM email_accounts WHERE id=${accountId}`)
       ).rows[0];
       expect(row).toMatchObject({
         status: "disconnected",
         last_error_id: "E_GMAIL_002",
         refresh_token_enc: null,
+        checked: true,
         connection_generation: 2,
         credential_version: 2,
       });
@@ -268,13 +304,14 @@ describe("ensureAccessToken", () => {
       expect(result).toMatchObject({ ok: false, error: { id: "E_GMAIL_002" } });
       expect(refresh).toHaveBeenCalledWith("refresh-1", expect.any(AbortSignal));
       const row = (
-        await db.execute(sql`SELECT status, connection_generation, credential_version
+        await db.execute(sql`SELECT status, connection_generation, credential_version, last_checked_at
           FROM email_accounts WHERE id=${accountId}`)
       ).rows[0];
       expect(row).toMatchObject({
         status: "error",
         connection_generation: 2,
         credential_version: 1,
+        last_checked_at: null,
       });
     });
   });

@@ -108,12 +108,12 @@ describe("getActorGmailMailboxStatus", () => {
         const gmail = randomUUID();
         const lastErrorId = status === "connected" ? null : "E_GMAIL_002";
         await db.execute(sql`
-          INSERT INTO email_accounts (id,user_id,email_address,provider,is_default,created_at)
-          VALUES (${imap},${owner.id},'default@imap.test','imap_smtp',true,'2020-01-01T00:00:00Z')
+          INSERT INTO email_accounts (id,user_id,email_address,provider,is_default,created_at,last_checked_at)
+          VALUES (${imap},${owner.id},'default@imap.test','imap_smtp',true,'2020-01-01T00:00:00Z','2026-07-01T11:00:00Z')
         `);
         await db.execute(sql`
-          INSERT INTO email_accounts (id,user_id,email_address,provider,is_default,status,last_sync_at,last_error_id,created_at)
-          VALUES (${gmail},${owner.id},'own@gmail.test','gmail',false,${status},'2026-07-01T10:00:00Z',${lastErrorId},'2021-01-01T00:00:00Z')
+          INSERT INTO email_accounts (id,user_id,email_address,provider,is_default,status,paused,last_sync_at,last_checked_at,last_error_id,created_at)
+          VALUES (${gmail},${owner.id},'own@gmail.test','gmail',false,${status},${status === "connected"},'2026-07-01T10:00:00Z','2026-07-01T10:12:00Z',${lastErrorId},'2021-01-01T00:00:00Z')
         `);
         const signal = AbortSignal.timeout(5_000);
         expect(await getActorMailbox(db, owner.id, signal)).toEqual({
@@ -123,11 +123,18 @@ describe("getActorGmailMailboxStatus", () => {
         const managed = await listActorMailboxes(db, owner.id, signal);
         expect(managed.map((row) => row.id)).toEqual([imap, gmail]);
         expect(managed[0]).toMatchObject({ provider: "imap_smtp", isDefault: true });
+        expect(managed[0]).not.toHaveProperty("lastCheckedAtIso");
+        expect(managed[1]).toMatchObject({
+          lastSyncAtIso: "2026-07-01T10:00:00.000Z",
+          lastCheckedAtIso: "2026-07-01T10:12:00.000Z",
+        });
         expect(await getActorGmailMailboxStatus(db, owner.id, signal)).toEqual({
           id: gmail,
           emailAddress: "own@gmail.test",
           status,
+          paused: status === "connected",
           lastSyncAt: new Date("2026-07-01T10:00:00Z"),
+          lastCheckedAt: new Date("2026-07-01T10:12:00Z"),
           lastErrorId,
         });
       });
@@ -168,6 +175,7 @@ describe("getActorGmailMailboxStatus", () => {
       expect(box?.emailAddress).toBe("rep@example.com");
       expect(box?.status).toBe("connected");
       expect(box?.lastSyncAt?.toISOString()).toBe("2026-07-01T10:00:00.000Z");
+      expect(box?.lastCheckedAt).toBeNull();
       expect(box?.lastErrorId).toBeNull();
     });
   });

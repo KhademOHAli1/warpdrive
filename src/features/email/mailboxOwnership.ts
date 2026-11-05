@@ -33,7 +33,9 @@ export interface ActorMailboxStatus {
   id: string;
   emailAddress: string;
   status: MailboxStatus;
+  paused: boolean;
   lastSyncAt: Date | null;
+  lastCheckedAt: Date | null;
   lastErrorId: string | null;
 }
 
@@ -48,7 +50,7 @@ export async function getActorGmailMailboxStatus(
   signal.throwIfAborted();
   const row = (
     await db.execute(sql`
-      SELECT id, email_address, status, last_sync_at, last_error_id
+      SELECT id, email_address, status, paused, last_sync_at, last_checked_at, last_error_id
       FROM email_accounts WHERE user_id=${actorId} AND provider='gmail'
       ORDER BY is_default DESC, created_at, id LIMIT 1
     `)
@@ -57,7 +59,9 @@ export async function getActorGmailMailboxStatus(
         id: string;
         email_address: string;
         status: MailboxStatus;
+        paused: boolean;
         last_sync_at: string | Date | null;
+        last_checked_at: string | Date | null;
         last_error_id: string | null;
       }
     | undefined;
@@ -69,7 +73,9 @@ export async function getActorGmailMailboxStatus(
     id: row.id,
     emailAddress: row.email_address,
     status: row.status,
+    paused: row.paused,
     lastSyncAt,
+    lastCheckedAt: row.last_checked_at === null ? null : new Date(row.last_checked_at),
     lastErrorId: row.last_error_id,
   };
 }

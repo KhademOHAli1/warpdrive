@@ -7,8 +7,13 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { connectGmailStart, disconnectMailboxAction } from "@/features/email/actions";
 import { mailboxDisconnectDescription } from "@/features/email/connections/disconnectCopy";
-import { mailboxConnectionMessages } from "@/features/email/connections/messages";
-import { useLocale } from "@/features/i18n/LocaleProvider";
+import {
+  mailboxConnectionMessages,
+  mailboxConnectionTranslator,
+} from "@/features/email/connections/messages";
+import type { MailboxConnectionError } from "@/features/email/connections/types";
+import type { GmailMailboxDisplayHealth } from "@/features/email/syncHealth";
+import { useLocale, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -24,19 +29,88 @@ export interface MailboxView {
   id: string;
   emailAddress: string;
   status: "connected" | "disconnected" | "error";
+  paused?: boolean;
   lastSyncAtIso: string | null;
-  lastErrorId: string | null;
+  lastCheckedAtIso?: string | null;
+  errorCode?: MailboxConnectionError;
+}
+
+function GmailConnectionSummary({
+  mailbox,
+  health,
+  now,
+}: {
+  mailbox: MailboxView | null;
+  health: GmailMailboxDisplayHealth;
+  now: Date | null;
+}) {
+  const { locale, numberingSystem } = useLocalePreferences();
+  const mailboxCopy = mailboxConnectionMessages(locale);
+  const t = mailboxConnectionTranslator(locale, numberingSystem);
+  const format = useFormatters();
+  const S = useSettingsMessages()._emailSync;
+  const lastSync = mailbox?.lastSyncAtIso ?? null;
+  const lastChecked = mailbox?.lastCheckedAtIso ?? null;
+  const dateText = (iso: string) => (now === null ? iso : format.dateTime(iso));
+  let healthWarning: string | undefined;
+  if (mailbox?.errorCode !== undefined && health !== "paused") {
+    healthWarning =
+      health === "authorization-failed"
+        ? mailboxCopy.gmailAuthorizationHint
+        : mailboxCopy.errors[mailbox.errorCode];
+  }
+
+  return (
+    <SettingsCardBody>
+      <div className="mb-1 flex items-center gap-2">
+        <span
+          data-status={mailbox?.status ?? "none"}
+          data-health={health}
+          className={`inline-block h-2 w-2 rounded-full ${mailboxDotClass(health)}`}
+        />
+        <span className="text-sm font-medium">
+          {mailboxStatusLabel(mailbox, now, S, mailboxCopy)}
+        </span>
+      </div>
+      {mailbox !== null ? (
+        <>
+          <p className="text-sm text-muted-foreground">{S.connectedAs(mailbox.emailAddress)}</p>
+          <p className="text-sm text-muted-foreground">
+            {lastSync === null ? (
+              S.neverSynced
+            ) : (
+              <time dateTime={lastSync}>{S.lastSynced(dateText(lastSync))}</time>
+            )}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {lastChecked === null ? (
+              mailboxCopy.neverChecked
+            ) : (
+              <time dateTime={lastChecked}>
+                {t("lastChecked", { date: dateText(lastChecked) })}
+              </time>
+            )}
+          </p>
+          {health === "stalled" ? (
+            <p className="rounded-md border border-warning/40 bg-warning/10 p-2 text-sm">
+              {S.stalledHint}
+            </p>
+          ) : null}
+          {healthWarning !== undefined ? (
+            <p className="text-sm text-destructive">{healthWarning}</p>
+          ) : null}
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">{S.notConnected}</p>
+      )}
+    </SettingsCardBody>
+  );
 }
 
 export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): React.ReactNode {
   const L = useSettingsMessages();
   const mailboxCopy = mailboxConnectionMessages(useLocale());
-  const format = useFormatters();
   const S = L._emailSync;
-  function formatSync(iso: string | null): string {
-    if (iso === null) return S.neverSynced;
-    return S.lastSynced(format.dateTime(iso));
-  }
 
   const router = useRouter();
   const [now, setNow] = useState<Date | null>(null);
@@ -45,8 +119,10 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
   const [pending, setPending] = useState(false);
   const [disconnectAccountId, setDisconnectAccountId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const connected = mailbox !== null && mailbox.status === "connected";
   const health = mailboxDisplayHealth(mailbox, now);
+  const connected =
+    health === "paused" || (mailbox?.status === "connected" && health !== "authorization-failed");
+  const connectLabel = mailbox === null ? S.connect : S.reconnect;
 
   // Connect a fresh mailbox or reconnect a disconnected/error one: both mint a consent URL
   // server-side (which also sets the single-use OAuth state cookie) and hand off to Google.
@@ -87,34 +163,7 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
         title={L._extra.gmail_connection}
         description={L._extra.connect_one_mailbox_to_sync_messages_and_activity}
       />
-      <SettingsCardBody>
-        <div className="mb-1 flex items-center gap-2">
-          <span
-            data-status={mailbox?.status ?? "none"}
-            data-health={health}
-            className={`inline-block h-2 w-2 rounded-full ${mailboxDotClass(health)}`}
-          />
-          <span className="text-sm font-medium">{mailboxStatusLabel(mailbox, now, S)}</span>
-        </div>
-        {mailbox !== null ? (
-          <>
-            <p className="text-sm text-muted-foreground">{S.connectedAs(mailbox.emailAddress)}</p>
-            <p className="text-sm text-muted-foreground">{formatSync(mailbox.lastSyncAtIso)}</p>
-            {health === "stalled" ? (
-              <p className="rounded-md border border-warning/40 bg-warning/10 p-2 text-sm">
-                {S.stalledHint}
-              </p>
-            ) : null}
-            {mailbox.lastErrorId !== null ? (
-              <p className="text-sm text-red-600">
-                {S.lastErrorLabel}: {mailbox.lastErrorId}
-              </p>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground">{S.notConnected}</p>
-        )}
-      </SettingsCardBody>
+      <GmailConnectionSummary mailbox={mailbox} health={health} now={now} />
 
       <SettingsCardFooter>
         {error !== null ? (
@@ -122,7 +171,7 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
             {error}
           </span>
         ) : null}
-        {connected ? (
+        {mailbox !== null && connected ? (
           <Button
             type="button"
             variant="outline"
@@ -133,7 +182,7 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
           </Button>
         ) : (
           <Button type="button" disabled={pending} onClick={() => void startConnect()}>
-            {pending ? S.connecting : mailbox === null ? S.connect : S.reconnect}
+            {pending ? S.connecting : connectLabel}
           </Button>
         )}
       </SettingsCardFooter>
