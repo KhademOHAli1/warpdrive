@@ -112,6 +112,8 @@
   "recordsClosed": "Closed",
   "recordsEmpty": "No visible deals meet this measure’s eligibility rules in the selected scope.",
   "recordsUnavailable": "Contributing deals could not be loaded. Your report scope is still selected.",
+  "recordsExport": "Download CSV",
+  "recordsExportLimit": "Narrow the report to download up to {count, number} deals.",
   "recordsClose": "Return to report",
   "recordsNext": "Next page",
   "recordsPrevious": "Previous page",

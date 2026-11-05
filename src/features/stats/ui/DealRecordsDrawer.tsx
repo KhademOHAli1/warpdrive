@@ -1,14 +1,19 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { useId, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useLocalePreferencePending, useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import {
+  DEAL_REPORT_EXPORT_LIMIT,
+  dealReportExportHref,
+} from "@/features/stats/dealReportExportRequest";
 import type { DealRecordMetric } from "@/features/stats/metricDictionary";
 import { useStatsMessages } from "@/features/stats/useStatsMessages";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
+import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
 
 export interface DealRecordsScope {
@@ -24,11 +29,13 @@ type Cursor = { createdAt: string; id: string };
 export function DealRecordsDrawer({
   metric,
   scope,
+  canExport = false,
   onClose,
   returnFocus,
 }: {
   metric: DealRecordMetric;
   scope: DealRecordsScope;
+  canExport?: boolean;
   onClose: () => void;
   returnFocus?: HTMLButtonElement;
 }) {
@@ -46,14 +53,31 @@ export function DealRecordsDrawer({
       cursor: cursors[cursors.length - 1],
       limit: 25,
     },
-    { enabled: !preferencePending, staleTime: 0, refetchOnMount: "always" },
+    { enabled: !preferencePending, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
   );
   // Each opened drawer must finish a current permission-checked read before cached rows
   // appear. A failed refresh must not leave previously permitted records on screen.
   const result =
-    !preferencePending && !query.isError && !query.isLoading && !query.isFetching
+    !preferencePending &&
+    !query.isError &&
+    !query.isLoading &&
+    !query.isFetching &&
+    !query.isPaused &&
+    !query.isPlaceholderData
       ? query.data
       : undefined;
+  const exportLink =
+    canExport && result !== undefined && result.totals.count <= DEAL_REPORT_EXPORT_LIMIT
+      ? dealReportExportHref({
+          from: scope.from,
+          to: scope.to,
+          pipelineId: scope.pipelineId,
+          ownerScope: result.effectiveOwnerScope,
+          currency: result.currency,
+          metric,
+          timeZone: result.timeZone,
+        })
+      : null;
   const titles: Record<DealRecordMetric, string> = {
     added: S.added,
     won: S.trendValue,
@@ -137,6 +161,22 @@ export function DealRecordsDrawer({
                   {S._extra.recordsValueCount(result.totals.valueCount, result.totals.count)}
                 </p>
               </div>
+              {exportLink !== null && (
+                <a
+                  className={cn(buttonVariants({ variant: "outline" }), "min-h-10")}
+                  href={exportLink}
+                  download
+                  referrerPolicy="no-referrer"
+                >
+                  <Download aria-hidden="true" className="size-4" />
+                  {S.recordsExport}
+                </a>
+              )}
+              {canExport && result.totals.count > DEAL_REPORT_EXPORT_LIMIT && (
+                <p className="text-pretty text-sm text-muted-foreground">
+                  {S._extra.recordsExportLimit(DEAL_REPORT_EXPORT_LIMIT)}
+                </p>
+              )}
               {result.rows.length === 0 ? (
                 <div className="space-y-4 rounded-lg bg-muted/40 p-5">
                   <p className="text-pretty text-sm leading-relaxed text-muted-foreground">

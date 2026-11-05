@@ -147,7 +147,7 @@ describe("contributing-deal inspection", () => {
     mount("wonValue");
     expect(fixture.query).toHaveBeenLastCalledWith(
       { ...scope, timeZoneIdentity: "UTC", metric: "wonValue", cursor: undefined, limit: 25 },
-      { enabled: true, staleTime: 0, refetchOnMount: "always" },
+      { enabled: true, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
     );
     expect(screen.getByRole("table", { name: "Eligible deals in this report" })).toHaveTextContent(
       "$0",
@@ -164,6 +164,32 @@ describe("contributing-deal inspection", () => {
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
     expect(link).toHaveAccessibleName(/this report stays open/);
+  });
+
+  it("links a fresh complete population to the permission-checked export", () => {
+    const drawer = () => (
+      <DealRecordsDrawer metric="won" scope={scope} onClose={vi.fn()} canExport />
+    );
+    const page = render(drawer());
+    const link = screen.getByRole("link", { name: "Download CSV" });
+    const params = new URL(link.getAttribute("href") ?? "", "https://example.invalid").searchParams;
+    expect(Object.fromEntries(params)).toEqual({
+      from: scope.from,
+      to: scope.to,
+      currency: "USD",
+      pipelineId: "all",
+      ownerScope: "me",
+      metric: "won",
+      timeZone: "Europe/Berlin",
+    });
+    fixture.fetching = true;
+    page.rerender(drawer());
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
+    fixture.fetching = false;
+    fixture.result.totals.count = 101;
+    page.rerender(drawer());
+    expect(screen.getByText(/Narrow the report to download up to 100 deals/)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
   });
 
   it("explains the win-rate numerator and denominator rather than using only wins", () => {
@@ -204,7 +230,7 @@ describe("contributing-deal inspection", () => {
     await waitFor(() => expect(fixture.savePreferences).toHaveBeenCalledOnce());
     expect(fixture.query).toHaveBeenLastCalledWith(
       expect.objectContaining({ timeZoneIdentity: "Europe/Berlin" }),
-      { enabled: false, staleTime: 0, refetchOnMount: "always" },
+      { enabled: false, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
     );
     expect(screen.queryByRole("link", { name: /Acme service agreement/ })).not.toBeInTheDocument();
     expect(screen.getByRole("status", { name: "Loading..." })).toBeInTheDocument();
@@ -216,7 +242,7 @@ describe("contributing-deal inspection", () => {
     });
     expect(fixture.query).toHaveBeenLastCalledWith(
       expect.objectContaining({ timeZoneIdentity: "Europe/Berlin" }),
-      { enabled: true, staleTime: 0, refetchOnMount: "always" },
+      { enabled: true, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
     );
     expect(screen.getByRole("link", { name: /Acme service agreement/ })).toBeInTheDocument();
   });

@@ -2040,8 +2040,12 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": ["src/db/schema/savedFilters.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/db/schema/savedFilters.ts",
+        "src/app/(app)/dashboard/export/route.ts",
+        "src/features/stats/dealReportExportCsv.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["outcome-drilldown", "scope-permissions", "regional-formatting"],
       "dataRequirements": [
         "Qualified existing export permission/path and current report definition."
@@ -2052,7 +2056,8 @@
       "tests": [
         "Export permission, formula injection, pagination completeness, revocation and decimal precision."
       ],
-      "deliveryIncrement": "I3"
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "All contributing-deal metric tables have a permission-checked complete CSV download with a 100-row cap. Hosted qualification and export for the remaining report families are pending."
     },
     {
       "id": "data-quality-states",

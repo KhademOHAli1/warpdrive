@@ -1,5 +1,28 @@
 import { classifyInventory } from "./registryClassification";
 
+export const dealReportExportInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/dealReportExportCsv.ts",
+    "derived:src/features/stats/dealReportExportRequest.ts",
+    "sourceReview:src/app/(app)/dashboard/export/route.ts#beed840079d9b47973e260bc39644014094a3f5212d16a7bb3909e0b5a5a56b7",
+    "sourceReview:src/features/stats/dealReportExportCsv.ts#7096c072639d63feaeaac8d3b8a31c768ab3b9611d92cffc22ad4d4a9a793de9",
+    "sourceReview:src/features/stats/dealReportExportRequest.ts#0234508321d17b428dc7f98df3fd064f56daf4654f5206e470cd038453a79a78",
+  ],
+  {
+    owner: "authorized performance deal export",
+    categories: ["CRM deal identifiers, recorded status, nominal values and UTC record clocks"],
+    subjectRelation: "Deal identifiers may refer to records concerning people and organizations.",
+    purpose: "Download a complete bounded set for a currently authorized contributing-deal report.",
+    disclosure:
+      "An authenticated actor with data.export gets only the current records procedure's matching population after a fresh check. CSV cells use fixed types and omit titles, source labels, owner identities and linked contacts.",
+    retention:
+      "No server artifact or cache. The download creates a user-controlled copy outside the application.",
+    externalEffects:
+      "A private HTTP response to the authenticated requester. No CRM write or provider call.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
 export const recordedDealSourceInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/recordedDealSourceReport.ts",
@@ -112,6 +135,8 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/inventoryMovementEvidenceSource.ts",
     "derived:src/features/stats/history/inventoryMovementRepository.ts",
     "derived:src/features/stats/history/stageAgingView.ts",
+    "derived:src/features/stats/ui/StageAgingPanel.tsx",
+    "sourceReview:src/features/stats/ui/StageAgingPanel.tsx#47394710d463d54d78e8dd7e30e80234e6f05fae3de842408950097cd682037f",
     "sourceReview:docs/analytics/forecast-custody-proposal.sql#b8188bfb71922f154440de3f82a412afbb66c2ae6efd428b78864d764c65f07b",
     "sourceReview:src/features/stats/history/currentStageAgingRepository.ts#7f9d1f3d4f1b5f1a8a5879e256db498ef12bc233b0c0dd4d21f8abcc33d7aa6c",
     "sourceReview:src/features/stats/history/stageAgingView.ts#6994bca1d8ccf9ed59fbe071682b067c99cd1fdcb3650d460d34cd05c53ff34c",

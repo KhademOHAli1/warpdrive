@@ -112,6 +112,8 @@
   "recordsClosed": "Abgeschlossen",
   "recordsEmpty": "Keine sichtbaren Deals erfüllen die Kriterien dieser Kennzahl im gewählten Berichtsbereich.",
   "recordsUnavailable": "Die zugehörigen Deals konnten nicht geladen werden. Ihre Berichtsauswahl bleibt erhalten.",
+  "recordsExport": "CSV herunterladen",
+  "recordsExportLimit": "Grenzen Sie den Bericht ein, um bis zu {count, number} Deals herunterzuladen.",
   "recordsClose": "Zurück zum Bericht",
   "recordsNext": "Nächste Seite",
   "recordsPrevious": "Vorherige Seite",

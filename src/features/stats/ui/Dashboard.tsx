@@ -48,6 +48,7 @@ const REPORT_TAB = cn(
 interface DashboardProps {
   canViewOthers: boolean;
   canManageGoals?: boolean;
+  canExport?: boolean;
   today: string;
   currency: string;
   defaultPipelineId?: string | null;
@@ -96,6 +97,7 @@ function DashboardGoals({
 export function Dashboard({
   canViewOthers,
   canManageGoals = false,
+  canExport = false,
   currency,
   today,
 }: DashboardProps) {
@@ -315,6 +317,7 @@ export function Dashboard({
           key={JSON.stringify({ ...reportScope, metric: inspection.metric })}
           scope={reportScope}
           metric={inspection.metric}
+          canExport={canExport}
           returnFocus={inspection.trigger}
           onClose={() => setInspection(null)}
         />

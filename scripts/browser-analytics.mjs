@@ -836,6 +836,53 @@ async function verifyRecordedDealSources() {
   });
 }
 
+async function verifyDealReportDownload() {
+  await journey("en-won-deal-csv", async (page, _context, entry) => {
+    const S = copy.en.stats;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, {
+      allPipelines: true,
+    });
+    const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
+    const drawer = await openRecords(page, "en", "won", filtered.input, entry, population.won);
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 15000 }),
+      drawer.dialog.getByRole("link", exact(S.recordsExport)).click(),
+    ]);
+    assert.equal(download.suggestedFilename(), "deal-report-won.csv");
+    let csv = "";
+    try {
+      const stream = await download.createReadStream();
+      assert.ok(stream, "The authorized download has a readable file");
+      for await (const chunk of stream) {
+        csv += chunk.toString("utf8");
+        assert.ok(csv.length <= 16_384, "The file stays within its byte limit");
+      }
+    } finally {
+      await download.delete();
+    }
+    const lines = csv.split("\r\n");
+    assert.equal(lines.shift(), "deal_id,status,currency,value,created_at_utc,closed_at_utc");
+    assert.equal(lines.pop(), "");
+    const fields = lines.map((line) => line.split(","));
+    assert.deepEqual(
+      fields.map((row) => row[0]),
+      entry.reports[0].ids,
+    );
+    for (const [id, status, unit, value, createdAt, closedAt] of fields) {
+      assert.equal(status, "won");
+      assert.equal(unit, currency);
+      assert.ok(!forbidden.includes(id));
+      assert.match(createdAt, /\.\d{6}Z$/);
+      assert.match(closedAt, /\.\d{6}Z$/);
+      const deal = Object.values(deals).find((row) => row.id === id);
+      assert.ok(deal, "Each row identifies an authorized fixture");
+      assert.equal(value, deal.value ?? "");
+    }
+    entry.exportProof = { rows: fields.length, exactDecimalValues: true, retainedFile: false };
+    await closeRecords(page, drawer);
+  });
+}
+
 // The entry point has already admitted the disposable hosted database. Run the private
 // proposal only after the existing I1 assertions have finished against the canonical prefix.
 async function activateSyntheticCohort() {
@@ -1125,6 +1172,7 @@ try {
 
   await verifyRestrictedPipeline();
   await verifyRecordedDealSources();
+  await verifyDealReportDownload();
   await matrix("en", "gregory");
   await setRegional("en", "timeZone", "UTC", {
     locale: "en",

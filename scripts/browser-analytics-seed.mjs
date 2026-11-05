@@ -17,6 +17,7 @@ export const ANALYTICS_BROWSER = {
   restrictedGroupId: id(604),
   restrictedPipelineId: id(605),
   restrictedStageId: id(606),
+  permissionSetId: id(607),
   timeZone: "Europe/Berlin",
   regional: {
     locale: "en",
@@ -64,13 +65,17 @@ const fixtureChannels = {
 
 export async function seedAnalyticsBrowserFixtures(
   client,
-  { passwordHash, permissionSetId, groupId, otherOwnerId },
+  { passwordHash, groupId, otherOwnerId },
 ) {
   const a = ANALYTICS_BROWSER;
   await client.query(
+    "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI analytics viewer',$2)",
+    [a.permissionSetId, JSON.stringify({ "data.export": true })],
+  );
+  await client.query(
     `INSERT INTO users(id,email,name,is_admin,permission_set_id,primary_visibility_group_id)
      VALUES($1,$2,$3,false,$4,$5)`,
-    [a.actorId, a.email, a.actorName, permissionSetId, groupId],
+    [a.actorId, a.email, a.actorName, a.permissionSetId, groupId],
   );
   await client.query("INSERT INTO visibility_group_members(group_id,user_id) VALUES($1,$2)", [
     groupId,
@@ -195,7 +200,6 @@ async function seedOnHostedRunner() {
     );
     await seedAnalyticsBrowserFixtures(client, {
       passwordHash,
-      permissionSetId: id(502),
       groupId: id(504),
       otherOwnerId: id(505),
     });
