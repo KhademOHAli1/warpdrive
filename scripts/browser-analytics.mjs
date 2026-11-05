@@ -316,7 +316,8 @@ function trigger(page, locale, metric) {
   );
 }
 
-async function openDashboard(page, locale, calendar, zone, pipelineId = actor.pipelineId) {
+async function openDashboard(page, locale, calendar, zone, { allPipelines = false } = {}) {
+  const pipelineId = allPipelines ? null : actor.pipelineId;
   const S = copy[locale].stats;
   let premature = 0;
   const beforeOpen = (request) => {
@@ -357,15 +358,14 @@ async function openDashboard(page, locale, calendar, zone, pipelineId = actor.pi
     "true",
   );
   assert.equal(await main.getByRole("button", exact(S.ownerScopeLabel)).isDisabled(), true);
-  const selected =
-    pipelineId === null
-      ? initial
-      : await rpcAfter(
-          page,
-          "stats.dashboard",
-          (input) => input.pipelineId === pipelineId,
-          () => choose(page, S.pipelineLabel, actor.pipelineName, main),
-        );
+  const selected = allPipelines
+    ? initial
+    : await rpcAfter(
+        page,
+        "stats.dashboard",
+        (input) => input.pipelineId === pipelineId,
+        () => choose(page, S.pipelineLabel, actor.pipelineName, main),
+      );
   assertScope(selected, zone, { from, to: today, pipelineId });
   await trigger(page, locale, "closed").waitFor();
   assert.equal(premature, 0, "No contributing deal fetch before opening the drawer");
@@ -647,7 +647,9 @@ async function verifyZoneBoundary(zone, day, included) {
 async function verifyRestrictedPipeline() {
   await journey("restricted-pipeline", async (page, _context, entry) => {
     const S = copy.en.stats;
-    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, null);
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, {
+      allPipelines: true,
+    });
     const all = await selectPreset(page, "en", "gregory", initial, "last30");
     assert.deepEqual(all.data.dealPerformance.won, { count: 5, value: "140.7067" });
     await dashboard(page, "en").getByText(`${S.scoreWon}: 5`, { exact: true }).waitFor();

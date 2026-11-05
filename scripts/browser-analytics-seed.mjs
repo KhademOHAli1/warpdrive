@@ -63,8 +63,8 @@ export async function seedAnalyticsBrowserFixtures(
     a.actorName,
   ]);
   await client.query(
-    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-    [a.actorId, passwordHash],
+    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+    [a.actorId, a.actorId, passwordHash],
   );
   await client.query(
     "INSERT INTO user_preferences(user_id,timezone,density,ui) VALUES($1,$2,'comfortable',$3)",
