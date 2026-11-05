@@ -7,6 +7,7 @@ const deal: MappingValueContract = { kind: "entity", entity: "deal", nullable: f
 const contracts: Record<WorkflowNode["type"], OutputContracts> = {
   "trigger.manual": { recordId: deal },
   "trigger.schedule": {},
+  "trigger.webhook": { recordId: deal },
   "trigger.record": { recordId: deal, eventId: text },
   "record.read": {
     id: deal,

@@ -27,6 +27,27 @@ function field(type: CustomFieldDef["type"]): CustomFieldDef {
 }
 const metadata = { status: "complete", defs: [] } as const;
 
+it("preselects a Deal binding only for triggers that actually provide one", () => {
+  const start = { id: "start", version: 1, name: "Trigger" } as const;
+  const task = (trigger: WorkflowDefinition["nodes"][number]) =>
+    defaultConfiguration("activity.create", { trigger, subject: "Follow up" });
+  const signed = { authentication: "HMAC_SHA256" } as const;
+  expect(
+    task({ ...start, type: "trigger.manual", config: { scope: "global" } }),
+  ).not.toHaveProperty("dealId");
+  expect(
+    task({ ...start, type: "trigger.schedule", config: { interval: "minutes", minutes: 15 } }),
+  ).not.toHaveProperty("dealId");
+  expect(
+    task({ ...start, type: "trigger.webhook", config: { ...signed, httpMethod: "GET" } }),
+  ).not.toHaveProperty("dealId");
+  expect(
+    task({ ...start, type: "trigger.webhook", config: { ...signed, httpMethod: "POST" } }),
+  ).toMatchObject({
+    dealId: { kind: "reference", nodeId: "start", path: ["recordId"] },
+  });
+});
+
 describe("shared configuration profile descriptors", () => {
   it("covers exactly the finite registry and rejects unknown action/version inputs", () => {
     for (const type of nodeTypes) expect(getConfigurationSpec(type, 1, metadata)?.type).toBe(type);

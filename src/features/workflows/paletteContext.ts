@@ -25,7 +25,7 @@ export type PickerRequest =
   | { kind: "detached"; position?: NodePosition }
   | { kind: "output"; output: OutputTarget; position?: NodePosition }
   | { kind: "replace"; nodeId: string };
-export type ConfigurableTriggerType = "trigger.manual" | "trigger.schedule";
+export type ConfigurableTriggerType = "trigger.manual" | "trigger.schedule" | "trigger.webhook";
 export type PickerSelection =
   | { kind: "insert"; type: CreatableNodeType; version: 1 }
   | { kind: "configure"; type: ConfigurableTriggerType; nodeId: string; version: 1 };
@@ -123,7 +123,9 @@ export function configurableWorkflowTrigger(
   const triggers = definition.nodes.filter((node) => node.type.startsWith("trigger."));
   const trigger = triggers[0];
   return triggers.length === 1 &&
-    (trigger?.type === "trigger.manual" || trigger?.type === "trigger.schedule") &&
+    (trigger?.type === "trigger.manual" ||
+      trigger?.type === "trigger.schedule" ||
+      trigger?.type === "trigger.webhook") &&
     findPaletteEntry(trigger.type, trigger.version) !== undefined
     ? trigger
     : undefined;
@@ -355,15 +357,21 @@ function configureTrigger(
     return { ok: true, definition, selectedId: trigger.id, changed: false };
   if (request.kind !== "replace" || request.nodeId !== trigger.id)
     return { ok: false, reason: "unavailable-action" };
+  const name =
+    selection.type === "trigger.schedule"
+      ? "Scheduled"
+      : selection.type === "trigger.webhook"
+        ? "Webhook"
+        : "Manual Trigger";
   const replacement: WorkflowNode = {
     ...trigger,
     type: selection.type,
-    name: selection.type === "trigger.schedule" ? "Scheduled" : "Manual Trigger",
+    name,
     nameMode: "automatic",
     config:
-      selection.type === "trigger.schedule"
-        ? defaultConfiguration(selection.type, {})
-        : { scope: "global" },
+      selection.type === "trigger.manual"
+        ? { scope: "global" }
+        : defaultConfiguration(selection.type, {}),
   };
   return {
     ok: true,

@@ -5,7 +5,7 @@ export interface PaletteEntryState {
   type: WorkflowNode["type"];
   version: 1;
   support: "supported" | "unavailable";
-  supportReason: "handler-unavailable" | "http-grant-required" | null;
+  supportReason: "handler-unavailable" | "http-grant-required" | "webhook-key-required" | null;
   provider: "not-required" | "not-assessed";
   executionReasons: PaletteExecutionReason[];
 }
@@ -34,6 +34,7 @@ interface CatalogDescriptor {
   profile:
     | "manual-trigger"
     | "scheduled-trigger"
+    | "webhook-trigger"
     | "deal-read"
     | "basic-task"
     | "create-record"
@@ -104,6 +105,17 @@ export const paletteCatalog = [
     descriptionKey: "scheduledTriggerHint",
     selection: "configure",
     profile: "scheduled-trigger",
+    input: "none",
+  },
+  {
+    ...local,
+    type: "trigger.webhook",
+    category: "triggers",
+    categoryKey: "paletteCategoryTriggers",
+    labelKey: "webhookTrigger",
+    descriptionKey: "webhookTriggerHint",
+    selection: "configure",
+    profile: "webhook-trigger",
     input: "none",
   },
   {

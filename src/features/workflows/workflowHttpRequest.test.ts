@@ -82,7 +82,9 @@ function fixture({
   const resolver = vi.fn<EndpointResolver>().mockResolvedValue([{ address: "8.8.8.8", family: 4 }]);
   const response = Object.assign(new PassThrough(), { statusCode: status, headers });
   const destroy = vi.fn();
-  const end = vi.fn((_body?: string) => response.end(payload));
+  const end = vi.fn<(body?: string) => void>(() => {
+    response.end(payload);
+  });
   const transport = vi.fn<WorkflowHttpsTransport>((_options, receive) => ({
     once: vi.fn(),
     destroy,

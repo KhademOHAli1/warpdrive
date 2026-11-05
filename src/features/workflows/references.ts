@@ -124,7 +124,11 @@ function structuralReferenceIssue(
       ? null
       : "unknown_output";
   }
-  if (source.type === "human.form" || source.type === "http.request")
+  if (
+    source.type === "human.form" ||
+    source.type === "http.request" ||
+    source.type === "trigger.webhook"
+  )
     return mappingOutputForReference(definition, binding) === undefined ? "unknown_output" : null;
   const key = binding.path.join(".");
   return Object.hasOwn(actionRegistry[source.type].outputs, key) ? null : "unknown_output";

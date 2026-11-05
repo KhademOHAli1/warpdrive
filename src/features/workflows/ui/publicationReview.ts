@@ -58,6 +58,7 @@ export function publicationReviewCurrent(
 const descriptions = {
   "trigger.manual": "publicationManualStep",
   "trigger.schedule": "publicationScheduledStep",
+  "trigger.webhook": "publicationWebhookStep",
   "trigger.record": "publicationUnavailableStep",
   "record.read": "publicationReadStep",
   "record.create": "publicationRecordCreateStep",

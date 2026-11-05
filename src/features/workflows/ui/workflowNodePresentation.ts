@@ -4,6 +4,7 @@ import type { WorkflowReferenceIconName } from "./WorkflowReferenceIcon";
 export const NODE_ICONS: Record<WorkflowNode["type"], WorkflowReferenceIconName> = {
   "trigger.manual": "hand-move",
   "trigger.schedule": "clock",
+  "trigger.webhook": "webhook",
   "trigger.record": "playlist-add",
   "record.read": "search",
   "record.create": "plus",

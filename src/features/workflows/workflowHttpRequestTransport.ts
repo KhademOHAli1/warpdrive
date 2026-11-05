@@ -197,6 +197,7 @@ function exchangePinned<T, Failure>(
       // Opening a request may write bytes before its factory returns. Treat all
       // errors from this point until HTTP response headers as ambiguous delivery.
       disposition = "unknown";
+      const isSettled = () => settled;
       outgoing = transport(options, (response) => {
         if (settled) {
           response.destroy();
@@ -204,10 +205,10 @@ function exchangePinned<T, Failure>(
         }
         disposition = "response-received";
         incoming = response;
-        collectResponse(response, policy, () => settled, finish);
+        collectResponse(response, policy, isSettled, finish);
       });
       outgoing.once("error", () => finish(err(policy.failure("unavailable"))));
-      if (settled) outgoing.destroy();
+      if (isSettled()) outgoing.destroy();
       else if (body === undefined) outgoing.end();
       else outgoing.end(body);
     } catch {

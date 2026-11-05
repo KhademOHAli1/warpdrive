@@ -55,6 +55,7 @@ const unavailable = (key: string, type: ConfigurationValueKind) =>
 export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationProfile> = {
   "trigger.manual": { supported: true, fields: [name] },
   "trigger.schedule": { supported: true, fields: [name] },
+  "trigger.webhook": { supported: true, fields: [name] },
   "trigger.record": {
     supported: false,
     fields: [name, unavailable("entity", "entity"), unavailable("event", "string")],
@@ -224,6 +225,7 @@ export function conditionSourceDefaults(source: {
 }
 
 function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["config"] | undefined {
+  if (type === "trigger.webhook") return { httpMethod: "POST", authentication: "HMAC_SHA256" };
   if (type === "trigger.schedule") return { interval: "days", days: 1, hour: 9, minute: 0 };
   if (type === "ifElse") return newIfElseConfig();
   if (type === "iterator") return { items: { kind: "literal", itemKind: "text", items: [] } };
@@ -237,12 +239,18 @@ function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["confi
   return undefined;
 }
 
+function triggerProvidesDeal(trigger: WorkflowNode | undefined): boolean {
+  if (trigger === undefined) return true;
+  if (trigger.type === "trigger.webhook") return trigger.config.httpMethod === "POST";
+  return trigger.type === "trigger.manual" && workflowManualLaunchScope(trigger.config) === "deal";
+}
+
 export function defaultConfiguration(
   type: WorkflowNode["type"],
   source: { trigger?: WorkflowNode; read?: WorkflowNode; subject?: string },
 ): WorkflowNode["config"] {
   const recordId = { kind: "reference", nodeId: source.trigger?.id ?? "start", path: ["recordId"] };
-  const dealAvailable = workflowManualLaunchScope(source.trigger?.config ?? {}) === "deal";
+  const dealAvailable = triggerProvidesDeal(source.trigger);
   if (type === "record.read")
     return dealAvailable ? { entity: "deal", recordId } : { entity: "deal" };
   const defaults = fixedNodeConfiguration(type);

@@ -92,6 +92,7 @@ function boundedJson(input: unknown): boolean {
 const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["counts"]>> = {
   "trigger.manual": "start",
   "trigger.schedule": "start",
+  "trigger.webhook": "start",
   "record.read": "read",
   "activity.create": "task",
   condition: "condition",

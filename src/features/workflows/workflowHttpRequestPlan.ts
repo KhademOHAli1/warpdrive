@@ -53,6 +53,13 @@ export function workflowHttpFailure(
     case "unexpected_status":
       id = ERROR_IDS.WORKFLOW_NOT_READY;
       break;
+    case "invalid_budget":
+    case "invalid_claim":
+    case "invalid_config":
+    case "invalid_response":
+    case "redirect_denied":
+    case "response_limit":
+      break;
   }
   return status === undefined ? { id, reason } : { id, reason, status };
 }

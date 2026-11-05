@@ -3,6 +3,7 @@ import { err, ok, type Result } from "@/types/result";
 import type { WorkflowDefinition } from "./schemas";
 import { readWorkflowRunLaunch, type WorkflowRunLaunchPayload } from "./workflowRunLaunchContract";
 import { workflowScheduleRequestKey } from "./workflowScheduleAdmission";
+import { workflowWebhookRequestKey } from "./workflowWebhookAuth";
 
 interface LaunchIdentity {
   readonly actorId: string;
@@ -23,8 +24,13 @@ export function verifyWorkflowRunLaunch(
 ): Result<WorkflowRunLaunchPayload, string> {
   const launch = readWorkflowRunLaunch(definition, run.trigger);
   if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
-  if (!("scope" in launch) || launch.scope !== "schedule") return ok(launch);
+  if (!("scope" in launch) || launch.scope === "global") return ok(launch);
   if (run.actorId !== ownerId) return err(ERROR_IDS.WORKFLOW_DENIED);
+  if (launch.scope === "webhook")
+    return run.mode === "live" &&
+      run.requestKey === workflowWebhookRequestKey(run.workflowId, launch.eventId)
+      ? ok(launch)
+      : err(ERROR_IDS.WORKFLOW_INVALID);
   const publishedMs = publishedAt.getTime();
   if (
     run.mode !== "live" ||

@@ -30,6 +30,7 @@ import {
   recordSearchConfig,
 } from "./workflowRecordQueryContract";
 import { workflowScheduleConfig } from "./workflowScheduleContract";
+import { workflowWebhookTriggerConfigSchema } from "./workflowWebhookContract";
 
 export function configurationIssue(
   node: WorkflowNode,
@@ -422,9 +423,19 @@ function validateHttpRequest(
   }
 }
 
+function validateWebhookTrigger(
+  node: WorkflowNode,
+  _context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  if (!workflowWebhookTriggerConfigSchema.safeParse(node.config).success)
+    result.issues.push(configurationIssue(node, ["httpMethod"], "invalid_value"));
+}
+
 const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
   "trigger.manual": validateManualTrigger,
   "trigger.schedule": validateScheduledTrigger,
+  "trigger.webhook": validateWebhookTrigger,
   "http.request": validateHttpRequest,
   "record.read": validateRead,
   "activity.create": validateTask,
@@ -446,6 +457,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
 
 const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
   "trigger.manual": ["scope"],
+  "trigger.webhook": ["httpMethod", "authentication"],
   "http.request": ["url", "method", "headers", "body", "response"],
   "trigger.schedule": ["interval", "days", "hours", "minutes", "hour", "minute", "expression"],
   ifElse: ["branches", "fallbackId"],

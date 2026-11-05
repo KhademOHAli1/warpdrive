@@ -19,6 +19,7 @@ import { recordCreateEntitySchema, recordCreateFields } from "./workflowRecordCr
 import { recordUpdateFields } from "./workflowRecordMutationContract";
 import { recordPickDraftConfig, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 import { workflowScheduleConfig } from "./workflowScheduleContract";
+import { workflowWebhookTriggerConfigSchema } from "./workflowWebhookContract";
 
 // Keep the reviewed v1 binding keys explicit while reusing their scalar and path guards.
 // A missing selection is copyable; mixed branches and undeclared fields are not.
@@ -58,6 +59,10 @@ const copyUpdateRecord = copyRecordTarget
 // be incomplete, but new actions, versions, credentials, and identity fields need review.
 const copyNode = z.discriminatedUnion("type", [
   nodeSchema.extend({ type: z.literal("trigger.manual"), config: workflowManualLaunchConfig }),
+  nodeSchema.extend({
+    type: z.literal("trigger.webhook"),
+    config: workflowWebhookTriggerConfigSchema.partial(),
+  }),
   nodeSchema.extend({
     type: z.literal("trigger.schedule"),
     config: z.union([z.strictObject({}), workflowScheduleConfig]),

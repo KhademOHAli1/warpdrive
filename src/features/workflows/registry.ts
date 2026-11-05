@@ -28,6 +28,7 @@ import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
 import { recordPickConfig, recordSearchConfig } from "./workflowRecordQueryContract";
 import { workflowScheduleConfig } from "./workflowScheduleContract";
+import { workflowWebhookTriggerConfigSchema } from "./workflowWebhookContract";
 
 interface ActionSpec {
   configuration: ConfigurationProfile;
@@ -99,6 +100,14 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     inputs: {},
     outputs: coarseMappingOutputs("trigger.manual"),
     outputContracts: mappingOutputContracts("trigger.manual"),
+    effect: "none",
+  },
+  "trigger.webhook": {
+    configuration: configurationProfiles["trigger.webhook"],
+    config: workflowWebhookTriggerConfigSchema,
+    inputs: {},
+    outputs: coarseMappingOutputs("trigger.webhook"),
+    outputContracts: mappingOutputContracts("trigger.webhook"),
     effect: "none",
   },
   "trigger.schedule": {

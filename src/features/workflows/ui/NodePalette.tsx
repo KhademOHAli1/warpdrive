@@ -33,6 +33,21 @@ function pickerCategory(row: PaletteViewEntry, triggerPicker: boolean) {
   return workflowNodeCategory(row.catalog.type);
 }
 
+function paletteRestrictionKey(row: PaletteViewEntry) {
+  if (row.state.supportReason === "http-grant-required") return "httpRequestNeedsGrant";
+  if (row.state.supportReason === "webhook-key-required") return "webhookKeyRequired";
+  if (row.state.support === "unavailable") return "paletteUnavailable";
+  const structural = row.context.reason;
+  if (structural === null) return null;
+  if (structural === "unavailable-action") return "paletteManualUnavailable";
+  if (
+    structural === "invalidPort" &&
+    (row.catalog.type === "condition" || row.catalog.type === "ifElse")
+  )
+    return "paletteLinearOnly";
+  return `connectionErrors.${structural}` as const;
+}
+
 function PaletteRow({
   row,
   onChoose,
@@ -43,22 +58,8 @@ function PaletteRow({
   const t = useAppTranslations("workflows");
   const format = useFormatters();
   const descriptionId = useId();
-  const structural = row.context.reason;
-  const restriction =
-    row.state.supportReason === "http-grant-required"
-      ? t("httpRequestNeedsGrant")
-      : row.state.support === "unavailable"
-        ? t("paletteUnavailable")
-        : structural === "unavailable-action"
-          ? t("paletteManualUnavailable")
-          : structural !== null
-            ? t(
-                (row.catalog.type === "condition" || row.catalog.type === "ifElse") &&
-                  structural === "invalidPort"
-                  ? "paletteLinearOnly"
-                  : `connectionErrors.${structural}`,
-              )
-            : null;
+  const restrictionKey = paletteRestrictionKey(row);
+  const restriction = restrictionKey === null ? null : t(restrictionKey);
   const actionDescription =
     row.catalog.type === "delay"
       ? t(row.catalog.descriptionKey, { days: format.number(maxDelayDays) })

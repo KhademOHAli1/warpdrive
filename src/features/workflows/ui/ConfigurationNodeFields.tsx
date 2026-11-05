@@ -26,6 +26,7 @@ import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
 import { RecordMutationConfigurationFields } from "./RecordMutationConfigurationFields";
 import { ScheduleConfigurationFields } from "./ScheduleConfigurationFields";
 import { SearchRecordConfigurationFields } from "./SearchRecordConfigurationFields";
+import { WebhookConfigurationFields } from "./WebhookConfigurationFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
 
@@ -162,6 +163,8 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
       return <ManualTriggerConfigurationFields {...props} />;
     case "trigger.schedule":
       return <ScheduleConfigurationFields {...props} />;
+    case "trigger.webhook":
+      return <WebhookConfigurationFields {...props} />;
     case "record.update":
     case "record.delete":
       return <RecordMutationConfigurationFields {...props} />;

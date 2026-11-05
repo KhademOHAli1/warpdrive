@@ -13,6 +13,7 @@ import {
   type WorkflowExternalEffectDispatch,
   type WorkflowExternalEffectTx,
 } from "./workflowExternalEffect";
+import type * as WorkflowHttpRequestModule from "./workflowHttpRequest";
 import {
   invokeWorkflowHttpRequest,
   type WorkflowHttpRequestGrant,
@@ -32,7 +33,7 @@ vi.mock("./workflowExternalEffect", () => ({
   recoverWorkflowExternalEffect: vi.fn(),
 }));
 vi.mock("./workflowHttpRequest", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("./workflowHttpRequest")>()),
+  ...(await importOriginal<typeof WorkflowHttpRequestModule>()),
   invokeWorkflowHttpRequest: vi.fn(),
 }));
 

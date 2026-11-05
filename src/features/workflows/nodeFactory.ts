@@ -31,7 +31,7 @@ export function makeNode(
 ): WorkflowNode {
   const available =
     sourceId === undefined ? undefined : new Set([...ancestors(graph, sourceId), sourceId]);
-  const trigger = graph.nodes.find((node) => node.type === "trigger.manual");
+  const trigger = graph.nodes.find((node) => node.type.startsWith("trigger."));
   const read = [...graph.nodes]
     .reverse()
     .find(

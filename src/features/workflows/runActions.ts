@@ -32,6 +32,7 @@ import { pickWorkflowRecord } from "./workflowRecordPick";
 import { searchWorkflowRecords } from "./workflowRecordQuery";
 import type { WorkflowRunLaunchPayload } from "./workflowRunLaunchContract";
 import { readWorkflowScheduleLaunch } from "./workflowScheduleContract";
+import { projectWorkflowWebhookLaunch, readWorkflowWebhookLaunch } from "./workflowWebhookContract";
 
 function referenceActor(actor: PermSetUser) {
   return {
@@ -77,6 +78,8 @@ export async function executeRunNode(
     case "trigger.manual":
     case "trigger.schedule":
       return executeTriggerStep(node, definition, trigger);
+    case "trigger.webhook":
+      return executeWebhookTrigger(db, actor, definition, trigger, signal);
     case "filter":
       return evaluateFilter(node.config, outputs, { definition, nodeId: node.id });
     case "ifElse":
@@ -134,6 +137,27 @@ export async function executeRunNode(
     case "trigger.record":
       return err(ERROR_IDS.WORKFLOW_NOT_READY);
   }
+}
+
+async function executeWebhookTrigger(
+  db: Db,
+  actor: PermSetUser,
+  definition: WorkflowDefinition,
+  raw: unknown,
+  signal: AbortSignal,
+): Promise<Result<StepOutput, string>> {
+  const launch = readWorkflowWebhookLaunch(definition, raw);
+  if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  if (launch.httpMethod === "POST") {
+    const allowed = await assertReferenceVisible(
+      db,
+      referenceActor(actor),
+      { kind: "deal", id: launch.recordId },
+      signal,
+    );
+    if (!allowed.ok) return err(allowed.error.id);
+  }
+  return ok(projectWorkflowWebhookLaunch(launch));
 }
 
 async function readRunDeal(

@@ -26,7 +26,9 @@ function uniqueNode(definition: WorkflowDefinition, id: string): WorkflowNode | 
 function previousStep(definition: WorkflowDefinition, current: WorkflowNode): PathStep {
   const incoming = definition.edges.filter((edge) => edge.to === current.id);
   if (incoming.length === 0)
-    return current.type === "trigger.manual" || current.type === "trigger.schedule"
+    return current.type === "trigger.manual" ||
+      current.type === "trigger.schedule" ||
+      current.type === "trigger.webhook"
       ? { kind: "root" }
       : { kind: "invalid", issue: "not-upstream" };
   if (incoming.length !== 1 || current.type.startsWith("trigger."))

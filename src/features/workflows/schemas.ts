@@ -50,6 +50,7 @@ export const nodeTypes = [
   "trigger.manual",
   "trigger.record",
   "trigger.schedule",
+  "trigger.webhook",
   "record.read",
   "record.create",
   "record.update",

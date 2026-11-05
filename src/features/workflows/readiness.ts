@@ -27,7 +27,7 @@ export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
   if (node.type === "trigger.manual")
     return actionRegistry["trigger.manual"].config.safeParse(node.config).success;
-  if (node.type === "trigger.schedule")
+  if (node.type === "trigger.schedule" || node.type === "trigger.webhook")
     return actionRegistry[node.type].config.safeParse(node.config).success;
   if (node.type === "delay") return executableDelay(node);
   if (
@@ -79,6 +79,7 @@ export function draftExecutableNode(node: WorkflowNode): boolean {
   if (
     node.type === "human.form" ||
     node.type === "trigger.schedule" ||
+    node.type === "trigger.webhook" ||
     node.type === "http.request" ||
     !executableNode(node)
   )

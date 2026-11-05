@@ -19,6 +19,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { runWorkflowAction } from "../actions";
 import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
 import { readWorkflowScheduleTrigger } from "../workflowScheduleContract";
+import { readWorkflowWebhookTrigger } from "../workflowWebhookContract";
 import { LiveRunReview, type LiveRunReviewContext } from "./LiveRunReview";
 import { projectLiveRunEffects } from "./liveRunEffectSummary";
 
@@ -29,7 +30,7 @@ type Version = RouterOutputs["workflows"]["version"];
 type ReadFlags = { isFetching: boolean; isError: boolean; isPlaceholderData: boolean };
 interface LivePublication {
   readonly versionId: string;
-  readonly scope: "deal" | "global" | "schedule";
+  readonly scope: "deal" | "global" | "schedule" | "webhook";
   readonly review: LiveRunReviewContext | null;
   readonly liveOnly?: boolean;
 }
@@ -49,6 +50,11 @@ function freshRead(read: ReadFlags): boolean {
   return !read.isFetching && !read.isError && !read.isPlaceholderData;
 }
 
+function automaticLaunchScope(definition: Version["definition"]): "schedule" | "webhook" | null {
+  if (readWorkflowScheduleTrigger(definition) !== null) return "schedule";
+  return readWorkflowWebhookTrigger(definition) === null ? null : "webhook";
+}
+
 function currentPublication(
   workflowId: string,
   chosen: DealOption | null,
@@ -66,8 +72,10 @@ function currentPublication(
   )
     return null;
   const effects = projectLiveRunEffects(version.definition);
-  if (effects !== null && readWorkflowScheduleTrigger(version.definition) !== null)
-    return { versionId: version.id, scope: "schedule", review: null };
+  if (effects !== null) {
+    const automatic = automaticLaunchScope(version.definition);
+    if (automatic !== null) return { versionId: version.id, scope: automatic, review: null };
+  }
   const trigger = version.definition.nodes.find((node) => node.type === "trigger.manual");
   const scope = workflowManualLaunchScope(trigger?.config);
   if (effects === null || scope === null) return null;
@@ -160,6 +168,7 @@ function prepareSubmission(
   if (
     publication === null ||
     publication.scope === "schedule" ||
+    publication.scope === "webhook" ||
     (mode === "simulation" && publication.liveOnly === true)
   )
     return null;
@@ -297,6 +306,7 @@ export function RunDialog({
       : submission.command.recordId === undefined
         ? "global"
         : "deal";
+  const automated = launchScope === "schedule" || launchScope === "webhook";
   const externalSimulationBlocked =
     displayMode === "simulation" && read.publication?.liveOnly === true;
   const cut =
@@ -400,12 +410,12 @@ export function RunDialog({
             />
           )}
           {externalSimulationBlocked && <p role="status">{t("httpRequestLiveOnly")}</p>}
-          {launchScope === "schedule" && (
+          {automated && (
             <p role="status" className="text-sm text-muted-foreground">
-              {t("scheduledRunsAutomatically")}
+              {t(launchScope === "webhook" ? "webhookRunsOnRequest" : "scheduledRunsAutomatically")}
             </p>
           )}
-          {launchScope !== "schedule" && (
+          {!automated && (
             <RunReviewContent
               mode={displayMode}
               review={displayedReview}
@@ -431,9 +441,9 @@ export function RunDialog({
           )}
           <DialogFooter>
             <Button variant="outline" onClick={onClose} disabled={pending}>
-              {t(launchScope === "schedule" ? "close" : "cancel")}
+              {t(automated ? "close" : "cancel")}
             </Button>
-            {launchScope !== "schedule" && !externalSimulationBlocked && (
+            {!automated && !externalSimulationBlocked && (
               <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
                 {t(submissionLabel(error, displayMode, changesRecords))}
               </Button>

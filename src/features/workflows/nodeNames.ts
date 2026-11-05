@@ -7,6 +7,7 @@ import type { WorkflowNode } from "./schemas";
 export const nodeLabelKeys = {
   "trigger.manual": "start",
   "trigger.schedule": "scheduledTrigger",
+  "trigger.webhook": "webhookTrigger",
   "trigger.record": "start",
   "record.read": "read",
   "record.create": "createRecord",

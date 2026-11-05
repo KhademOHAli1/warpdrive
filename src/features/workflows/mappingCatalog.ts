@@ -101,6 +101,7 @@ function outputsFor(definition: WorkflowDefinition, node: WorkflowNode): Mapping
   if (!qualifiedSource(node)) return [];
   if (node.type === "iterator") return iteratorMappingOutputs(definition, node);
   if (node.type === "http.request") return httpMappingOutputs(node);
+  if (node.type === "trigger.webhook" && node.config.httpMethod !== "POST") return [];
   if (node.type === "trigger.manual" && workflowManualLaunchScope(node.config) !== "deal")
     return [];
   if (node.type === "human.form")
@@ -407,6 +408,7 @@ function extendedMappingTarget(
     case "record.read":
     case "trigger.manual":
     case "trigger.schedule":
+    case "trigger.webhook":
     case "trigger.record":
       return undefined;
   }

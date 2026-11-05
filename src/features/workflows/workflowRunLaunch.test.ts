@@ -3,6 +3,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { WorkflowDefinition } from "./schemas";
 import { verifyWorkflowRunLaunch } from "./workflowRunLaunch";
 import { workflowScheduleRequestKey } from "./workflowScheduleAdmission";
+import { workflowWebhookRequestKey } from "./workflowWebhookAuth";
 
 const workflowId = "ba16acb7-ae4f-4e12-a3b3-08b7f6ff8a36";
 const ownerId = "34354034-f846-49c3-95d0-4b4c2d8dcd27";
@@ -11,7 +12,7 @@ const scheduledAt = "2026-11-02T09:05:00.000Z";
 const publishedAt = new Date("2026-11-02T08:00:00.000Z");
 
 function definition(
-  type: "trigger.manual" | "trigger.schedule",
+  type: "trigger.manual" | "trigger.schedule" | "trigger.webhook",
   config: WorkflowDefinition["nodes"][number]["config"],
 ): WorkflowDefinition {
   return {
@@ -62,6 +63,34 @@ it("rejects a scheduled payload from before its pinned publication", () => {
   expect(
     verifyWorkflowRunLaunch(schedule, run, ownerId, new Date("2026-11-02T09:05:00.001Z")),
   ).toEqual({ ok: false, error: ERROR_IDS.WORKFLOW_INVALID });
+});
+
+it("accepts only a live webhook receipt bound to its owner, method and exact event key", () => {
+  const eventId = "18930e2b-ec2d-4aba-9381-9017154a8f21";
+  const webhook = definition("trigger.webhook", {
+    httpMethod: "POST",
+    authentication: "HMAC_SHA256",
+  });
+  const trigger = { scope: "webhook", httpMethod: "POST", eventId, recordId };
+  const requestKey = workflowWebhookRequestKey(workflowId, eventId);
+  const delivery = { ...run, trigger, requestKey };
+  expect(verifyWorkflowRunLaunch(webhook, delivery, ownerId, publishedAt)).toEqual({
+    ok: true,
+    value: trigger,
+  });
+  expect(verifyWorkflowRunLaunch(webhook, delivery, recordId, publishedAt)).toMatchObject({
+    ok: false,
+    error: ERROR_IDS.WORKFLOW_DENIED,
+  });
+  for (const candidate of [
+    { ...delivery, mode: "simulation" as const },
+    { ...delivery, requestKey: recordId },
+    { ...delivery, trigger: { scope: "webhook", httpMethod: "GET", eventId } },
+  ])
+    expect(verifyWorkflowRunLaunch(webhook, candidate, ownerId, publishedAt)).toMatchObject({
+      ok: false,
+      error: ERROR_IDS.WORKFLOW_INVALID,
+    });
 });
 
 it("keeps the existing Deal and Global manual payload boundaries", () => {

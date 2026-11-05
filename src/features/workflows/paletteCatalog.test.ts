@@ -9,6 +9,7 @@ it("classifies the known version-one entries in deliberate order", () => {
     "trigger.manual",
     "trigger.record",
     "trigger.schedule",
+    "trigger.webhook",
     "record.create",
     "record.update",
     "record.delete",
@@ -44,7 +45,7 @@ it("keeps factory actions insertable and replaces the existing trigger in place"
   ).toEqual([...creatableNodeTypes].sort());
   expect(
     paletteCatalog.filter((entry) => entry.selection === "configure").map((entry) => entry.type),
-  ).toEqual(["trigger.manual", "trigger.schedule"]);
+  ).toEqual(["trigger.manual", "trigger.schedule", "trigger.webhook"]);
   expect(
     paletteCatalog.filter((entry) => entry.selection === "unavailable").map((entry) => entry.type),
   ).toEqual(["trigger.record", "notification"]);
@@ -56,6 +57,7 @@ it("describes supported runtime subsets without promoting broader schema variant
   ).toEqual([
     "manual-trigger",
     "scheduled-trigger",
+    "webhook-trigger",
     "create-record",
     "update-record",
     "delete-record",
