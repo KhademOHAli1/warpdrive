@@ -6,7 +6,7 @@
   "sources": [
     {
       "path": "src/features/stats/history/contracts.ts",
-      "sha256": "f2e39240d24d46cbf883af37ee2ee3b5a69294bbbdda34e9573ca7d138cb9a79"
+      "sha256": "a132b6e2508f6931a38c0793c167da8ce813af8bbf60197429ac66212ec9fdfa"
     },
     {
       "path": "src/features/stats/history/fold.ts",
@@ -139,6 +139,15 @@
         "invalid": []
       },
       "log": "work/i2-registry-lint-fix.log"
+    },
+    {
+      "name": "Legacy UUID parity, anchored stage selection and stock reconciliation",
+      "result": "passed",
+      "tests": 164,
+      "files": 3,
+      "vitestSeconds": 0.235,
+      "report": "docs/analytics/stage-movement-validation.json",
+      "limitation": "Focused pure cases. Native eight new stage reader cases and cascade rerun remain pending."
     }
   ],
   "resourceEvidence": {

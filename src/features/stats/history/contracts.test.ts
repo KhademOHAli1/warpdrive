@@ -45,6 +45,14 @@ function event(patch: Record<string, unknown> = {}) {
 }
 
 describe("lossless analytics history envelope", () => {
+  test("retains canonical PostgreSQL IDs with legacy non-RFC variant bits", () => {
+    const legacy = "00000000-0000-0000-0000-000000000001";
+    expect(
+      analyticsHistoryEvent.parse(
+        event({ entityId: legacy, afterState: state({ pipelineId: legacy }) }),
+      ),
+    ).toMatchObject({ entityId: legacy, afterState: { pipelineId: legacy } });
+  });
   test.each(["9007199254740993", "9223372036854775807", 9007199254740993n])(
     "retains the exact ordinal %s without a JavaScript number",
     (ordinal) => {

@@ -130,6 +130,18 @@ describe("native current-deal history repository", () => {
     });
   });
 
+  test("reads a current deal whose stored UUID uses legacy variant bits", async () => {
+    await withHistory(async (h, f, actor) => {
+      const legacyId = "00000000-0000-0000-0000-0000f00d0001";
+      await insertHistoryDeal(h.pool, f, { id: legacyId, title: "Legacy identifier opportunity" });
+      const result = await readCurrentDealHistory(h.db, actor, filters, legacyId, signal());
+      requireAvailable(result);
+      expect(result.current.id).toBe(legacyId);
+      expect(result.events).toHaveLength(1);
+      expect(result.events[0]).toMatchObject({ entityId: legacyId, eventKind: "insert" });
+    });
+  });
+
   test("reapplies the view-others ceiling even when caller filters request every owner", async () => {
     await withHistory(async (h, f, actor) => {
       const otherOwner = randomUUID();

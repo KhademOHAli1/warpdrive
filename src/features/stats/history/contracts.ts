@@ -4,7 +4,8 @@ export const ANALYTICS_HISTORY_SCHEMA_VERSION = 1;
 export const HISTORY_OBSERVATION_BASIS = "database-row-observation-v1";
 const MAX_PG_BIGINT = 9_223_372_036_854_775_807n;
 const MAX_PG_XID8 = 18_446_744_073_709_551_615n;
-const uuid = z.string().uuid();
+// PostgreSQL emits canonical UUID text even when a legacy value has non-RFC variant bits.
+export const historyUuid = z.guid();
 const instant = z.string().datetime({ offset: true });
 
 function isBoundedPositiveInteger(value: string, maximum: bigint): boolean {
@@ -75,7 +76,7 @@ function dealStateIssues(state: HistoryState): { field: string; message: string 
     issues.push({ field: "status", message: "Unsupported recorded deal status" });
   }
   for (const field of ["pipelineId", "stageId", "ownerId"] as const) {
-    if (!uuid.safeParse(state[field]).success)
+    if (!historyUuid.safeParse(state[field]).success)
       issues.push({ field, message: "Recorded deal relation must be a UUID" });
   }
   if (typeof state.currency !== "string" || state.currency.length === 0)
@@ -85,12 +86,12 @@ function dealStateIssues(state: HistoryState): { field: string; message: string 
 
 export const analyticsHistoryEvent = z
   .strictObject({
-    eventId: uuid,
+    eventId: historyUuid,
     ordinal: historyOrdinal,
-    activationId: uuid,
+    activationId: historyUuid,
     entityKind: historyEntityKind,
-    entityId: uuid,
-    incarnationId: uuid,
+    entityId: historyUuid,
+    incarnationId: historyUuid,
     eventKind: historyEventKind,
     schemaVersion: z.literal(ANALYTICS_HISTORY_SCHEMA_VERSION),
     transactionId: z.string().refine((value) => isBoundedPositiveInteger(value, MAX_PG_XID8)),
@@ -99,9 +100,9 @@ export const analyticsHistoryEvent = z
     observedAt: instant,
     beforeState: historyState.nullable(),
     afterState: historyState.nullable(),
-    beforeWriteVersion: uuid.nullable(),
-    afterWriteVersion: uuid.nullable(),
-    actorId: uuid.nullable(),
+    beforeWriteVersion: historyUuid.nullable(),
+    afterWriteVersion: historyUuid.nullable(),
+    actorId: historyUuid.nullable(),
     commandId: z.string().min(1).nullable(),
   })
   .superRefine((event, context) => {
@@ -131,7 +132,7 @@ export const analyticsHistoryEvent = z
 export type AnalyticsHistoryEvent = z.infer<typeof analyticsHistoryEvent>;
 
 export const historyActivation = z.strictObject({
-  activationId: uuid,
+  activationId: historyUuid,
   schemaVersion: z.literal(ANALYTICS_HISTORY_SCHEMA_VERSION),
   activatedAt: instant,
   captureSemantics: z.literal(HISTORY_OBSERVATION_BASIS),

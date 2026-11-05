@@ -31,9 +31,9 @@
     },
     "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. No new allocation or prior exception reused.",
     "latestRemoteObservation": {
-      "sha": "02b1563e8ee4125959bbd53d0e6a646529337025",
+      "sha": "56f137fe4858127b9b66a9f8ca485165edb29c54",
       "date": "2026-11-05",
-      "change": "Calendar interaction and approved sidebar/delivery updates reconciled through task merge 581f83b; peer source preserved. Canonical migration still ends at0105."
+      "change": "Company and work profiles PR #989 preserved through task merge 875f086e; canonical migration now ends at 0106_company_work_profile. No analytics ordinal reserved. Work profiles are potential delivery source, not qualified CRM delivery/cost evidence."
     }
   },
   "statusMeaning": {
@@ -670,7 +670,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/changeLogs.ts", "src/features/stats/dealPerformance.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "history-snapshots"],
       "dataRequirements": [
         "Reliable snapshot/event coverage including removed and archived records."
@@ -700,7 +700,7 @@
         "src/features/deals/dealUpdateChangeLog.ts",
         "src/features/deals/archiveDeal.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["movement-inventory", "money-one-currency"],
       "dataRequirements": ["Complete event before/after monetary and scope state."],
       "acceptance": [
@@ -2376,10 +2376,13 @@
       "src/features/stats/history/repository.ts",
       "src/features/stats/history/stageEpisodes.ts",
       "src/features/stats/history/currentStageEpisodes.ts",
-      "src/features/stats/history/stageStatistics.ts"
+      "src/features/stats/history/stageStatistics.ts",
+      "src/features/stats/history/stageDefinitions.ts",
+      "src/features/stats/history/stageDefinitionRepository.ts",
+      "src/features/stats/history/inventoryMovement.ts"
     ],
     "capture": "Database-observed row changes with activation baseline, top-level transaction/snapshot witness and record incarnations; observed times and ordinals are not commit times.",
     "reader": "Bounded internal current-deal reader, shared current authority and same-observation historical pipeline gate; reused pipeline IDs conservatively denied. No retained-deletion authority or browser DTO.",
-    "remaining": "Canonical admission/populated upgrade, native cases, authenticated actor/command adapter, historical stage definition selection, production report services/UI, workload measurement, snapshot writer and all later capabilities remain open."
+    "remaining": "Canonical admission/populated upgrade, amended native rerun, authenticated actor/command capture, snapshot writer and collection, integrated report services/UI, workload measurement and all later capabilities remain open."
   }
 }

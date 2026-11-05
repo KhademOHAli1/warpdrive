@@ -150,9 +150,9 @@ export async function readCaptureEvents(
        before_write_version::text AS "beforeWriteVersion",
        after_write_version::text AS "afterWriteVersion", actor_id::text AS "actorId",
        command_id AS "commandId"
-     FROM public.analytics_history_events
-     WHERE ($1::text IS NULL OR entity_kind=$1) AND ($2::uuid IS NULL OR entity_id=$2)
-     ORDER BY ordinal`,
+     FROM public.analytics_history_events e
+     WHERE ($1::text IS NULL OR e.entity_kind=$1) AND ($2::uuid IS NULL OR e.entity_id=$2)
+     ORDER BY e.ordinal`,
     [entityKind ?? null, entityId ?? null],
   );
   return result.rows.map((row: unknown) => analyticsHistoryEvent.parse(row));

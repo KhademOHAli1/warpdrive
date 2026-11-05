@@ -19,7 +19,7 @@
     },
     {
       "path": "src/features/stats/history/contracts.ts",
-      "sha256": "f2e39240d24d46cbf883af37ee2ee3b5a69294bbbdda34e9573ca7d138cb9a79"
+      "sha256": "a132b6e2508f6931a38c0793c167da8ce813af8bbf60197429ac66212ec9fdfa"
     },
     {
       "path": "src/features/stats/history/fold.ts",
@@ -39,7 +39,7 @@
     },
     {
       "path": "src/features/stats/history/capture.test-helpers.ts",
-      "sha256": "f6acb0e8cd05aa40d317774ce229c129dddbedfe32c54081ebc4bced11687d09"
+      "sha256": "d49a14192ed38df3360889e5909a5994212775ccf45401b3be054d2bc214765b"
     },
     {
       "path": "src/features/stats/history/capture.integration.test.ts",
@@ -47,7 +47,7 @@
     },
     {
       "path": "src/features/stats/history/repository.integration.test.ts",
-      "sha256": "b9c3c4ed804aa8876f79bd0be3da3bab573a7accadcc8c11d66c33877b9470d8"
+      "sha256": "c786da4d797d87032709fd1172183e5434f2a954c4587c5e331f8fe1ca4a7038"
     },
     {
       "path": "src/features/stats/history/stageEpisodes.ts",
@@ -166,6 +166,29 @@
         }
       ],
       "correction": "Use DB_INSERT_FAILED/DB_READ_FAILED AppErrors for impossible fixture results; return JSON.stringify for parsed JSON with no fallback. Independent inspection confirms valid JSON equality and data boundaries unchanged; no configuration/suppression/lifecycle change."
+    },
+    {
+      "trigger": "Stage/movement source review found legacy native UUID narrowing; hosted cascade assertion exposed text ordering in the native fixture helper.",
+      "sources": [
+        {
+          "path": "src/features/stats/history/contracts.ts",
+          "previousSha256": "f2e39240d24d46cbf883af37ee2ee3b5a69294bbbdda34e9573ca7d138cb9a79",
+          "sha256": "a132b6e2508f6931a38c0793c167da8ce813af8bbf60197429ac66212ec9fdfa"
+        },
+        {
+          "path": "src/features/stats/history/capture.test-helpers.ts",
+          "previousSha256": "f6acb0e8cd05aa40d317774ce229c129dddbedfe32c54081ebc4bced11687d09",
+          "sha256": "d49a14192ed38df3360889e5909a5994212775ccf45401b3be054d2bc214765b"
+        }
+      ],
+      "correction": "Match canonical PostgreSQL UUID shape without RFC variant restriction. Qualify fixture ORDER BY e.ordinal as native bigint; preserve exact text transport and all cascade assertions. See stage-movement-validation.json for scope, evidence and primary PostgreSQL reference."
+    },
+    {
+      "path": "src/features/stats/history/repository.integration.test.ts",
+      "previousSha256": "b9c3c4ed804aa8876f79bd0be3da3bab573a7accadcc8c11d66c33877b9470d8",
+      "sha256": "c786da4d797d87032709fd1172183e5434f2a954c4587c5e331f8fe1ca4a7038",
+      "trigger": "Add a native stored PostgreSQL legacy UUID read case.",
+      "result": "Test definition only; no production change in this file and no local native execution."
     }
   ]
 }
