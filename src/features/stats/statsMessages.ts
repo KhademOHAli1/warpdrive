@@ -20,6 +20,7 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       ...copy._extra,
       percent: (count: number) => t("_extra.percent", { count }),
       durationDays: (count: number) => t("_extra.durationDays", { count }),
+      cohortHorizonDays: (count: number) => t("_extra.cohortHorizonDays", { count }),
       trendDeals: (amount: string, count: number) => t("_extra.trendDeals", { amount, count }),
       recordsCount: (count: number) => t("_extra.recordsCount", { count }),
       recordsValueCount: (count: number, total: number) =>

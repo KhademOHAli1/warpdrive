@@ -38,7 +38,7 @@
   },
   "statusMeaning": {
     "remaining": "Included work not established delivered/qualified by this matrix.",
-    "in-progress": "Source implementation underway in I1/I2; no completion or acceptance claim.",
+    "in-progress": "Source implementation underway; no completion or acceptance claim.",
     "preserved-local": "Historical local UI checkpoint retained, without new qualification."
   },
   "increments": [
@@ -384,7 +384,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/ui/Breakdowns.tsx"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["cohort-equal-age", "accessible-charts"],
       "dataRequirements": ["Eligible observations by age bucket."],
       "acceptance": ["Provide accessible exact values and sample counts; color is supplementary."],
@@ -825,7 +825,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/deals.ts", "src/features/deals/dealUpdateChangeLog.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["touchpoint-input", "funnel-identity"],
       "dataRequirements": [
         "Time-bounded qualifying touches and stable purchase/opportunity identity."
@@ -886,7 +886,7 @@
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["attribution-first-last", "touchpoint-input"],
       "dataRequirements": ["Suitable recorded journeys; explicit model and decay/window versions."],
       "acceptance": [
@@ -913,7 +913,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/deals.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary", "history-exact-events"],
       "dataRequirements": [
         "Eligible closes, probability source, timing assumptions and selected period."
@@ -936,7 +936,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["forecast-outcome-timing"],
       "dataRequirements": ["Versioned assumptions and bounded user scenario inputs."],
       "acceptance": [

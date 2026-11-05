@@ -70,7 +70,8 @@
     "goalPeriodNotice": "Zielzeiträume beginnen am Startdatum des jeweiligen Ziels. Monats-, Quartals- und Jahreszeiträume werden nach dem gregorianischen Kalender berechnet.",
     "recordsCount": "{count, plural, one {# berücksichtigter Deal} other {# berücksichtigte Deals}}",
     "recordsValueCount": "Erfasste Werte: {count, number} von {total, number}",
-    "recordsPage": "Seite {page, number}"
+    "recordsPage": "Seite {page, number}",
+    "cohortHorizonDays": "{count, number} verstrichene Tage"
   },
   "subtitle": "Vertriebsergebnisse, Pipeline und Aktivitäten im Überblick.",
   "filtersLabel": "Berichtsfilter",
@@ -127,5 +128,29 @@
   "recordsWonCycleBasis": "Aktuell gewonnene Deals mit Abschluss in diesem Zeitraum, deren Gewinndatum nicht vor der Erstellung liegt. Jeder aufgeführte Deal trägt eine Dauer von der Erstellung bis zum Gewinn zum Median bei.",
   "funnelLegacyNotice": "Enthält abgeleitete Durchgänge durch frühere Phasen anhand der aktuellen Reihenfolge. Die verstrichene Zeit verbindet abgeschlossene Aufenthalte und das Alter offener Vorgänge. Bei allen Pipelines werden Phasenpositionen zusammengeführt.",
   "presetCalendarGregorian": "Die Schnellwahl für Monat, Quartal und Jahr folgt dem gregorianischen Kalender und reicht bis heute.",
-  "presetCalendarPersian": "Die Schnellwahl für Monat, Quartal und Jahr folgt dem iranischen Sonnenkalender und reicht bis heute."
+  "presetCalendarPersian": "Die Schnellwahl für Monat, Quartal und Jahr folgt dem iranischen Sonnenkalender und reicht bis heute.",
+  "cohort": {
+    "title": "Verkaufschancen nach Kohortenalter",
+    "definition": "Verglichen werden weiterhin im CRM vorhandene und für Sie sichtbare Verkaufschancen, auch abgeschlossene. Jede Monatsgruppe enthält nur beobachtete Neuanlagen. Alle Gruppen werden beim gleichen verstrichenen Alter gemessen. Die gewählten Daten begrenzen die Neuanlagen pro Monat.",
+    "horizon": "Alter beim Vergleich",
+    "month": "Startmonat",
+    "entries": "Aufgenommen",
+    "mature": "Alter erreicht",
+    "immature": "Alter noch nicht erreicht",
+    "wins": "Bestätigte Gewinne",
+    "unknown": "Unbekannte Ergebnisse",
+    "rate": "Gewinnquote in diesem Alter",
+    "notMature": "Noch nicht vergleichbar",
+    "unknownRate": "Unbekannte Ergebnisse",
+    "observedThrough": "Beobachtungsstichtag",
+    "coveredFrom": "Erfasste Eintritte ab",
+    "coveredThrough": "Erfasste Eintritte bis einschließlich",
+    "coveredBefore": "Erfasste Eintritte vor",
+    "partial": "Nur ein Teil des gewählten Zeitraums ist erfasst. Ein angezeigter Monat kann weniger als alle seine Tage umfassen.",
+    "empty": "Im erfassten Zeitraum wurden keine passenden Neuanlagen beobachtet.",
+    "noCapture": "Die Erfassung des Verlaufs hat noch nicht begonnen. Frühere Neuanlagen lassen sich aus den heutigen Einträgen nicht rekonstruieren.",
+    "noPeriod": "Der ausgewählte Zeitraum überschneidet sich nicht mit dem erfassten Verlauf.",
+    "unavailable": "Für diese Filter sind keine Kohortenergebnisse verfügbar.",
+    "ownDealsOnly": "Dieser Bericht zeigt nur Ihre eigenen Verkaufschancen."
+  }
 }

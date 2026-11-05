@@ -66,6 +66,10 @@ const forbidden = [
   deals.hidden.id,
   deals.restricted.id,
 ];
+const cohortFixture = {
+  id: "00000000-0000-4000-8000-000000000620",
+  title: "CI private cohort witness",
+};
 
 mkdirSync(evidence, { recursive: true });
 const report = {
@@ -74,9 +78,9 @@ const report = {
   buildId: readFileSync(new URL("../.next/BUILD_ID", import.meta.url), "utf8").trim(),
   browser: "Chromium",
   criteria:
-    "I1 live CRM deal drill-down, viewer civil periods, regional presets and responsive rendering",
+    "Live CRM drill-down, viewer civil periods and rendering; synthetic cohort read against the private capture proposal",
   limits:
-    "Disposable synthetic CRM records and hosted Chromium viewports. The actor is limited to their own reports. No history, provider, human accessibility, installed or release acceptance.",
+    "Disposable synthetic CRM records and hosted Chromium viewports. The actor is limited to their own reports. Cohort capture uses the unnumbered proposal. No installed history, provider, human accessibility or release acceptance.",
   nativeLogins: 0,
   journeys: [],
   preferenceChanges: [],
@@ -752,6 +756,114 @@ async function verifyRestrictedPipeline() {
   });
 }
 
+// The entry point has already admitted the disposable hosted database. Run the private
+// proposal only after the existing I1 assertions have finished against the canonical prefix.
+async function activateSyntheticCohort() {
+  const fixturePool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 1,
+    connectionTimeoutMillis: 5000,
+    query_timeout: 8000,
+    statement_timeout: 5000,
+  });
+  report.cleanup.historyFixturePoolClosed = false;
+  try {
+    await fixturePool.query(
+      readFileSync(
+        new URL("../docs/analytics/history-capture-proposal.sql", import.meta.url),
+        "utf8",
+      ),
+    );
+    await fixturePool.query(
+      `INSERT INTO public.deals (id,title,owner_id,pipeline_id,stage_id,currency,visibility_level,created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,'owner',pg_catalog.transaction_timestamp() - interval '45 days')`,
+      [
+        cohortFixture.id,
+        cohortFixture.title,
+        actor.actorId,
+        actor.pipelineId,
+        actor.stageId,
+        currency,
+      ],
+    );
+    report.syntheticCohortFixture =
+      "private-proposal-with-legacy-baselines-and-one-observed-insert";
+  } finally {
+    await fixturePool.end();
+    report.cleanup.historyFixturePoolClosed = true;
+    save();
+  }
+}
+
+async function verifyCohortPanel(active) {
+  const name = active ? "en-persian-observed-cohort" : "en-persian-cohort-no-capture";
+  await journey(name, async (page, _context, entry) => {
+    const S = copy.en.stats;
+    await openDashboard(page, "en", "persian", actor.timeZone);
+    const panel = page.getByRole("region", exact(S.cohort.title));
+    const cohortAfter = (horizon, action) =>
+      rpcAfter(
+        page,
+        "stats.dealWinCohorts",
+        (input) =>
+          input.horizon === horizon &&
+          input.pipelineId === actor.pipelineId &&
+          input.currency === currency &&
+          input.calendarIdentity === "persian" &&
+          input.timeZoneIdentity === actor.timeZone,
+        action,
+      );
+    const first = await cohortAfter("30-days", () =>
+      page.getByRole("tab", exact(S.pipelineTab)).click(),
+    );
+    assert.deepEqual(first.input.ownerScope, { kind: "me" });
+    if (!active) {
+      assert.deepEqual(first.data, { state: "coverage-not-started" });
+      await panel.getByText(S.cohort.noCapture, { exact: true }).waitFor();
+      entry.cohortState = first.data.state;
+      return;
+    }
+
+    assert.equal(first.data.state, "available");
+    assert.equal(first.data.population, "current-authorized-live-deals");
+    assert.equal(first.data.effectiveOwnerScope, "me");
+    assert.equal(first.data.calendar, "persian");
+    assert.equal(first.data.timeZone, actor.timeZone);
+    assert.equal(first.data.horizonDays, 30);
+    assert.equal(first.data.covered.state, "partial");
+    assert.equal(first.data.rows.length, 1, "Activation baselines do not create cohort entrants");
+    const { calendarMonthStart, ...row } = first.data.rows[0];
+    assert.match(calendarMonthStart, /^\d{4}-\d{2}-\d{2}$/);
+    assert.deepEqual(row, {
+      entered: 1,
+      mature: 0,
+      immature: 1,
+      confirmedWins: 0,
+      unknownOutcomes: 0,
+      rate: { state: "unavailable", reason: "no-mature-deals" },
+    });
+    const payload = JSON.stringify(first.data);
+    assert.ok(!payload.includes(cohortFixture.id) && !payload.includes(cohortFixture.title));
+    await panel.getByText(S.cohort.notMature, { exact: true }).waitFor();
+    await panel.scrollIntoViewIfNeeded();
+    await capture(page, name);
+    const second = await cohortAfter("60-days", () =>
+      choose(
+        page,
+        S.cohort.horizon,
+        copy.en.format("_extra.cohortHorizonDays", { count: 60 }),
+        panel,
+      ),
+    );
+    assert.equal(second.data.state, "available");
+    assert.equal(second.data.horizonDays, 60);
+    assert.deepEqual(second.data.rows, first.data.rows);
+    await panel.getByText(S.cohort.notMature, { exact: true }).waitFor();
+    entry.cohortState = first.data.state;
+    entry.cohortProof = { row, calendarMonthStart, horizons: [30, 60] };
+  });
+}
+
 try {
   assert.match(report.revision, /^[0-9a-f]{40}$/);
   const readOnly = await pool.query("SHOW default_transaction_read_only");
@@ -870,6 +982,9 @@ try {
     const current = await openDashboard(page, "en", "persian", actor.timeZone);
     await exercisePresets(page, "en", "persian", current, entry);
   });
+  await verifyCohortPanel(false);
+  await activateSyntheticCohort();
+  await verifyCohortPanel(true);
   assert.equal(report.nativeLogins, 1);
   assert.equal(asynchronousFailure, false);
   report.state = "PASS";

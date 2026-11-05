@@ -10,7 +10,6 @@ import { getPreferences } from "@/features/identity/preferencesRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { visibleDealPopulation } from "@/features/stats/dealPopulation";
-import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "@/features/stats/metricDictionary";
 import { onlyOwners, resolveOwnerIds } from "@/features/stats/ownerIds";
 import { ownerScope } from "@/features/stats/ownerScope";
 import { ownerScopeInput } from "@/features/stats/schemas";
@@ -18,19 +17,13 @@ import { isPipelineVisible } from "@/features/stats/visiblePipelines";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { OwnerIdFilter, OwnerScope } from "@/types/stats";
 import { historyOrdinal, historyVisibilitySnapshot } from "./contracts";
+import {
+  INVENTORY_SNAPSHOT_DEFINITION,
+  INVENTORY_SNAPSHOT_DEFINITION_VERSION,
+} from "./inventorySnapshotDefinition";
 import { type HistoryInstallation, readHistoryInstallation } from "./repository";
 
 export const MAX_INVENTORY_SNAPSHOT_FACTS = 5_000;
-const DEFINITION_VERSION = 1;
-const REPORT_DEFINITION = {
-  id: "current-pipeline-inventory",
-  metricDictionaryVersion: ANALYTICS_METRIC_DICTIONARY_VERSION,
-  source: "authorized-live-deals-with-capture-tip",
-  factMembership: "active-deals-in-selected-currency",
-  stockStatus: "open",
-  cutoffBasis: "native-database-snapshot",
-  absentKey: "no-physical-absence-inference",
-} as const;
 
 const inputSchema = z.strictObject({
   pipelineId: z
@@ -279,8 +272,8 @@ async function insertSnapshot(tx: Db, data: SnapshotInsert, signal: AbortSignal)
       activation_id, kind, definition_version, report_definition, scope, currency,
       time_zone, calendar, cutoff_observed_at, transaction_snapshot, records, created_by
     ) VALUES (
-      ${data.activationId}::uuid, 'pipeline-inventory', ${DEFINITION_VERSION},
-      ${JSON.stringify(REPORT_DEFINITION)}::jsonb, ${JSON.stringify(data.scope)}::jsonb,
+      ${data.activationId}::uuid, 'pipeline-inventory', ${INVENTORY_SNAPSHOT_DEFINITION_VERSION},
+      ${JSON.stringify(INVENTORY_SNAPSHOT_DEFINITION)}::jsonb, ${JSON.stringify(data.scope)}::jsonb,
       ${data.currency}, ${data.timeZone}, ${data.calendar}, ${data.observation.observedAt}::timestamptz,
       ${data.observation.transactionSnapshot}::pg_catalog.pg_snapshot,
       ${JSON.stringify(data.records)}::jsonb,

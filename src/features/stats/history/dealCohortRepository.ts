@@ -10,6 +10,7 @@ import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferen
 import type { LocalePreferences } from "@/features/i18n/preferences";
 import { getPreferences } from "@/features/identity/preferencesRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { dealVisibilityPredicate } from "@/features/permissions/sql";
 import { visibleDealPopulation } from "@/features/stats/dealPopulation";
 import { onlyOwners, resolveOwnerIds } from "@/features/stats/ownerIds";
 import { ownerScope } from "@/features/stats/ownerScope";
@@ -97,6 +98,7 @@ export type ObservedDealWinCohorts =
   | {
       state: "available";
       population: "current-authorized-live-deals";
+      effectiveOwnerScope: OwnerScope["kind"];
       baseline: "excluded";
       bucketMembership: "entries-within-covered-interval";
       coverage: Coverage;
@@ -196,6 +198,23 @@ async function readCohortSource(
   signal: AbortSignal,
 ): Promise<SourceRow | undefined> {
   const pipelineAuthority = visiblePipelinePredicate(actor) ?? sql`false`;
+  const historicalDealAuthority = dealVisibilityPredicate(
+    {
+      userId: actor.id,
+      isAdmin: actor.type === "admin",
+      isActive: actor.isActive,
+      sessionLive: true,
+      groupIds: Array.from(actor.groupIds),
+      managedUserIds: Array.from(actor.managedUserIds ?? []),
+    },
+    {
+      ownerId: sql`side."ownerId"`,
+      visibilityLevel: sql`side."visibilityLevel"`,
+      visibilityGroupId: sql`side."visibilityGroupId"`,
+      visibleToUserIds: sql`side."visibleToUserIds"`,
+      pipelineVisibilityGroupId: sql`p.visibility_group_id`,
+    },
+  );
   const upperBound =
     coverage.covered.upperBound === "inclusive"
       ? sql`origin.observed_at <= ${coverage.covered.to}::timestamptz`
@@ -261,15 +280,21 @@ async function readCohortSource(
         + octet_length(observation_snapshot::text) + coalesce(octet_length(command_id), 0)
       ), 0) > ${MAX_HISTORY_PAYLOAD_BYTES} AS exceeded
       FROM selected_events
+    ), event_sides AS MATERIALIZED (
+      SELECT v.state FROM selected_events e
+      CROSS JOIN LATERAL (VALUES (e.before_state), (e.after_state)) AS v(state)
+      WHERE v.state IS NOT NULL AND NOT (SELECT exceeded FROM history_budget)
+    ), access_sides AS MATERIALIZED (
+      SELECT fields.* FROM event_sides s
+      CROSS JOIN LATERAL pg_catalog.jsonb_to_record(s.state) AS fields(
+        "pipelineId" pg_catalog.uuid, "ownerId" pg_catalog.uuid, "visibilityLevel" pg_catalog.text,
+        "visibilityGroupId" pg_catalog.uuid, "visibleToUserIds" pg_catalog.uuid[]
+      )
     ), event_pipelines AS MATERIALIZED (
-      SELECT before_state ->> 'pipelineId' AS id FROM selected_events WHERE before_state IS NOT NULL
-        AND NOT (SELECT exceeded FROM history_budget)
-      UNION
-      SELECT after_state ->> 'pipelineId' AS id FROM selected_events WHERE after_state IS NOT NULL
-        AND NOT (SELECT exceeded FROM history_budget)
+      SELECT DISTINCT side."pipelineId" AS id FROM access_sides side
     ), permitted_pipelines AS MATERIALIZED (
-      SELECT pipelines.id FROM event_pipelines referenced
-      JOIN public.pipelines ON pipelines.id = referenced.id::uuid
+      SELECT pipelines.id, pipelines.visibility_group_id FROM event_pipelines referenced
+      JOIN public.pipelines ON pipelines.id = referenced.id
       JOIN public.analytics_history_heads h ON h.entity_kind = 'pipeline' AND h.entity_id = pipelines.id
         AND h.active AND h.activation_id = ${activation.activationId}::uuid
       JOIN public.analytics_history_events tip ON tip.ordinal = h.last_event_ordinal
@@ -292,9 +317,9 @@ async function readCohortSource(
         EXISTS (SELECT 1 FROM origins WHERE NOT valid) AS invalid_origin,
         (SELECT exceeded FROM history_budget) AS history_limit,
         EXISTS (
-          SELECT 1 FROM event_pipelines referenced
-          LEFT JOIN permitted_pipelines p ON p.id = referenced.id::uuid
-          WHERE p.id IS NULL
+          SELECT 1 FROM access_sides side
+          LEFT JOIN permitted_pipelines p ON p.id = side."pipelineId"
+          WHERE p.id IS NULL OR NOT coalesce(${historicalDealAuthority}, false)
         ) AS permission_gap
     )
     SELECT health.scope_limit AS "scopeLimit", health.invalid_origin AS "invalidOrigin",
@@ -452,6 +477,7 @@ interface CohortReadContext {
   snapshot: string;
   locale: LocaleScope;
   coverage: Coverage;
+  effectiveOwnerScope: OwnerScope["kind"];
   visible: SQL;
 }
 
@@ -500,7 +526,8 @@ async function readCohortContext(
   if (coverage === null)
     return { state: "unavailable", reason: "period-outside-capture", coverage: coverageBounds };
 
-  const owners = await resolveCohortOwners(tx, live, ownerScope(live, request.ownerScope), signal);
+  const selectedOwners = ownerScope(live, request.ownerScope);
+  const owners = await resolveCohortOwners(tx, live, selectedOwners, signal);
   if (owners === null) return { state: "unavailable", reason: "scope-limit" };
   const visible = await visibleDealPopulation(tx, live, { ...request, owners }, signal);
   return {
@@ -510,6 +537,7 @@ async function readCohortContext(
     snapshot,
     locale,
     coverage,
+    effectiveOwnerScope: selectedOwners.kind,
     visible,
   };
 }
@@ -566,6 +594,7 @@ async function readInSnapshot(
   return {
     state: "available",
     population: "current-authorized-live-deals",
+    effectiveOwnerScope: context.effectiveOwnerScope,
     baseline: "excluded",
     bucketMembership: "entries-within-covered-interval",
     coverage,
@@ -573,7 +602,8 @@ async function readInSnapshot(
   };
 }
 
-// Internal report collector. Current deal authorization and all captured facts are
+// Internal report collector. Current authority covers the live deal and each retained
+// side used for the cohort. It does not attest historical actor entitlements. Facts are
 // established together. A borrowed client or nested transaction cannot prove that scope.
 export async function readObservedDealWinCohorts(
   db: Db,

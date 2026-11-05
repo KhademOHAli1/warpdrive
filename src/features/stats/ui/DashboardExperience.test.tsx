@@ -4,10 +4,15 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { DealWinCohortView } from "../history/dealWinCohortView";
 
 const fixture = vi.hoisted(() => ({
   refetch: vi.fn(),
   goalsRefetch: vi.fn(),
+  cohortQuery: vi.fn(),
+  cohortRefetch: vi.fn(),
+  cohortFetching: false,
+  cohortReport: { state: "coverage-not-started" } as DealWinCohortView,
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
@@ -62,6 +67,18 @@ vi.mock("@/lib/trpc-client", () => ({
         },
       },
       ownerOptions: { useQuery: () => ({ data: { users: [], teams: [] } }) },
+      dealWinCohorts: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.cohortQuery(input, options);
+          return {
+            data: fixture.cohortReport,
+            isError: false,
+            isLoading: false,
+            isFetching: fixture.cohortFetching,
+            refetch: fixture.cohortRefetch,
+          };
+        },
+      },
     },
     goals: {
       list: {
@@ -103,6 +120,8 @@ beforeEach(() => {
   fixture.savePreferences.mockResolvedValue({ ok: true });
   fixture.error = false;
   fixture.goalsError = false;
+  fixture.cohortReport = { state: "coverage-not-started" };
+  fixture.cohortFetching = false;
 });
 const mount = () =>
   render(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
@@ -230,6 +249,20 @@ describe("Performance report experience", () => {
     await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
     expect(screen.getByRole("tabpanel", { name: "Pipeline" })).toHaveTextContent("Proposal");
     expect(screen.getByRole("tabpanel", { name: "Pipeline" })).toHaveTextContent("Timing");
+    expect(screen.getByRole("tabpanel", { name: "Pipeline" })).toHaveTextContent(
+      "Deal history capture has not started",
+    );
+    expect(fixture.cohortQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        from: "2026-10-01",
+        to: "2026-11-05",
+        currency: "USD",
+        pipelineId: null,
+        ownerScope: { kind: "me" },
+        horizon: "30-days",
+      }),
+      { enabled: true, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
+    );
     expect(screen.queryByRole("heading", { name: "Won value over time" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("tab", { name: "Activities" }));
     expect(screen.getByRole("tabpanel", { name: "Activities" })).toHaveTextContent("Activity mix");
@@ -238,6 +271,51 @@ describe("Performance report experience", () => {
       expect.objectContaining({ from: "2026-10-01", to: "2026-11-05" }),
       { enabled: true },
     );
+  });
+  it("shows clipped cohort coverage and withholds an unknown win rate", async () => {
+    fixture.cohortReport = {
+      state: "available",
+      definition: "observed-deal-entry-to-win-v1",
+      population: "current-authorized-live-deals",
+      effectiveOwnerScope: "me",
+      calendar: "persian",
+      timeZone: "Asia/Tehran",
+      observationCutoff: "2026-11-05T16:00:00Z",
+      horizonDays: 30,
+      covered: {
+        state: "partial",
+        fromInclusive: "2026-10-03T00:00:00Z",
+        to: "2026-11-05T16:00:00Z",
+        upperBound: "inclusive",
+      },
+      rows: [
+        {
+          calendarMonthStart: "2026-09-23",
+          entered: 3,
+          mature: 2,
+          immature: 1,
+          confirmedWins: 1,
+          unknownOutcomes: 1,
+          rate: { state: "unavailable", reason: "mature-outcome-unknown" },
+        },
+      ],
+    };
+    const page = mount();
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    const panel = screen.getByRole("region", { name: "Deal cohorts by age" });
+    expect(panel).toHaveTextContent("Only part of the selected range is covered");
+    expect(panel).toHaveTextContent("Solar Hijri (Iranian)");
+    expect(panel).toHaveTextContent("Asia/Tehran");
+    expect(screen.getByRole("row", { name: /Mehr/ })).toHaveTextContent("Unknown outcomes");
+    expect(panel).not.toHaveTextContent("50%");
+    fixture.cohortFetching = true;
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(screen.queryByRole("table", { name: "Deal cohorts by age" })).not.toBeInTheDocument();
+    fixture.cohortFetching = false;
+    fixture.cohortReport = { state: "unavailable" };
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(fixture.cohortRefetch).toHaveBeenCalledOnce();
   });
   it("supports keyboard movement and selection in the report tabs", async () => {
     mount();

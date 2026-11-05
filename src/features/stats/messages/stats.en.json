@@ -70,7 +70,8 @@
     "goalPeriodNotice": "Goal periods start from each goal's start date. Monthly, quarterly and yearly periods use Gregorian calendar arithmetic.",
     "recordsCount": "{count, plural, one {# eligible deal} other {# eligible deals}}",
     "recordsValueCount": "Recorded values: {count, number} of {total, number}",
-    "recordsPage": "Page {page, number}"
+    "recordsPage": "Page {page, number}",
+    "cohortHorizonDays": "{count, number} elapsed days"
   },
   "subtitle": "Your sales results, pipeline and team activity.",
   "filtersLabel": "Report filters",
@@ -127,5 +128,29 @@
   "recordsWonCycleBasis": "Currently won deals closed in this period whose win date is on or after creation. Each listed deal contributes one creation-to-win duration to the median.",
   "funnelLegacyNotice": "Includes inferred passage through earlier stages using the current stage order. Elapsed time combines completed stays and current open age. All-pipeline results combine stage positions.",
   "presetCalendarGregorian": "Month, quarter and year presets follow the Gregorian calendar and end today.",
-  "presetCalendarPersian": "Month, quarter and year presets follow the Iranian Solar Hijri calendar and end today."
+  "presetCalendarPersian": "Month, quarter and year presets follow the Iranian Solar Hijri calendar and end today.",
+  "cohort": {
+    "title": "Deal cohorts by age",
+    "definition": "Compare deals still in the CRM and visible to you, including closed deals. Each monthly group includes only observed deal starts. Every group is measured at the same elapsed age. The selected dates limit which starts count in each month.",
+    "horizon": "Age at comparison",
+    "month": "Start month",
+    "entries": "Entered",
+    "mature": "Reached this age",
+    "immature": "Not yet at this age",
+    "wins": "Confirmed wins",
+    "unknown": "Unknown outcomes",
+    "rate": "Win rate at this age",
+    "notMature": "Not yet comparable",
+    "unknownRate": "Unknown outcomes",
+    "observedThrough": "Observation cutoff",
+    "coveredFrom": "Captured entries from",
+    "coveredThrough": "Captured entries through",
+    "coveredBefore": "Captured entries before",
+    "partial": "Only part of the selected range is covered. A displayed month can include fewer than all its days.",
+    "empty": "No eligible deal starts were recorded in the covered range.",
+    "noCapture": "Deal history capture has not started. Earlier deal starts cannot be reconstructed from current records.",
+    "noPeriod": "The selected dates do not overlap the captured deal history.",
+    "unavailable": "Deal cohort results are unavailable for these filters.",
+    "ownDealsOnly": "This report is limited to your own deals."
+  }
 }

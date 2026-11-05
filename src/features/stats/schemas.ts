@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { currencyCode } from "@/features/currencies/currencySchema";
+import { DEAL_WIN_COHORT_HORIZONS } from "./history/dealWinCohortView";
 import { DEAL_RECORD_METRICS } from "./metricDictionary";
 
 // Boundary validation for the dashboard procedure input.
@@ -32,4 +33,10 @@ export const dealRecordsInput = dashboardInput.safeExtend({
   cursor: z
     .object({ createdAt: z.string().datetime({ offset: true }), id: z.string().uuid() })
     .optional(),
+});
+
+export const dealWinCohortsInput = dashboardInput.safeExtend({
+  // Cache identity only. The reader independently loads the viewer's saved calendar.
+  calendarIdentity: z.enum(["gregory", "persian"]).optional(),
+  horizon: z.enum(DEAL_WIN_COHORT_HORIZONS),
 });

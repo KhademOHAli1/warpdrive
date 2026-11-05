@@ -1,15 +1,46 @@
 import { classifyInventory } from "./registryClassification";
 
+export const analyticsComputationInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/analyticsInputAdmission.ts",
+    "derived:src/features/stats/attribution.ts",
+    "derived:src/features/stats/periodForecast.ts",
+    "sourceReview:src/features/stats/analyticsInputAdmission.ts#674093beb290f925d774c58d0992657351fa8ae1a85f7a21886dbe04ddba482f",
+    "sourceReview:src/features/stats/attribution.ts#5f6a361893b683967972de619327f39595c784f5fe7070335fe1a417b35d2de7",
+    "sourceReview:src/features/stats/periodForecast.ts#500d5c56f006ea39067c741877de1b581de7731142750b431ffbd91cfead2021",
+    "writer:src/features/stats/analyticsInputAdmission.ts#update:dynamic",
+  ],
+  {
+    owner: "marketing and sales analytics computations",
+    categories: [
+      "source producer, event, identity and correction references",
+      "interaction classifications and descriptive credit",
+      "CRM deal identifiers, amounts and forecast assumptions",
+    ],
+    subjectRelation:
+      "Projections may refer to people, accounts and deals; a source key or fingerprint does not verify subject identity or authorize access.",
+    purpose:
+      "Compute an atomic input admission plan, descriptive attribution and exact forecast scenarios from explicitly scoped facts.",
+    disclosure:
+      "Private server-side values. An adapter must prove authorized and complete membership and build a separate disclosure DTO before sharing results.",
+    retention:
+      "Transient computation only. Immutable source receipts, correction policy, subject restrictions and deletion require separately qualified storage and lifecycle behavior.",
+    externalEffects:
+      "No database, file, provider or network calls. The update identifier feeds bytes to an in-memory SHA-256 hash; it does not persist, amend or transmit an event.",
+    erasureTask: "DPL-15 / #596 / #597",
+  },
+);
+
 // Independently reviewed source proposal; every lifecycle capability remains unsupported.
 export const analyticsInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/history/dealCohortRepository.ts",
-    "sourceReview:src/features/stats/history/dealCohortRepository.ts#07ef16dc05a14a329d784f26f57de8860a3e2aa39f5f3472b7c01e6e3ff6b9a7",
+    "sourceReview:src/features/stats/history/dealCohortRepository.ts#bcb9a8b70ec1b9d4e4f1d3a30865cda45c281395241365575d5d604d57a8bebd",
     "writer:src/features/stats/history/dealCohortRepository.ts#execute:sql",
     "derived:src/features/stats/history/equalAgeCohorts.ts",
     "derived:src/features/stats/history/inventorySnapshotRepository.ts",
     "sourceReview:src/features/stats/history/equalAgeCohorts.ts#94f4431c6970716663982a3d13f13e16c00764b4683aa19a03f100e4d162f4c9",
-    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#48c248eeb2633ee17a2a07620f062abfe7d81574cdfd924612dd110ad600bb65",
+    "sourceReview:src/features/stats/history/inventorySnapshotRepository.ts#adacb29984d7f063ae5ee1d98446fcb0efddd01f656da84ba0f64e2c1f389978",
     "writer:src/features/stats/history/inventorySnapshotRepository.ts#execute:sql",
     "derived:src/features/stats/history/inventoryMovement.ts",
     "derived:src/features/stats/history/stageDefinitionRepository.ts",
@@ -49,7 +80,7 @@ export const analyticsInventoryEntry = classifyInventory(
     purpose:
       "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions, stage duration, inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history and immutable inventory snapshot creation. No schema export, canonical migration or installed storage is established by this classification.",
     disclosure:
-      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. The snapshot writer rechecks creator scope and records minimal facts for the selected currency, excluding names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output; creator authority never transfers to recipients.",
+      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. Cohorts recheck present authority on captured deal sides and disclose only aggregate counts, scope kind and coverage. The snapshot writer rechecks creator scope and excludes names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output; creator authority never transfers to recipients.",
     retention:
       "The private proposal deliberately retains immutable event/baseline/report rows and physical incarnations after source deletion. Immutability does not authorize indefinite retention. It supplies no retention schedule, erasure adapter or legal-retention determination. Canonical admission must qualify storage, subject scope, restrictions, backups and controlled lifecycle handling separately.",
     externalEffects:

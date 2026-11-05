@@ -23,7 +23,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/stats/funnel.ts#aa69de4eb7cd9eacfee9762f8a41b7c61d576242c09ce0dc00697d02b1ff1d00",
   "sourceReview:src/features/stats/dealRecords.ts#662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
   "sourceReview:src/features/stats/lostReasons.ts#6d4fce2536e0d780028ae13d7b7877ab97c1a0bf814b2093b6bacfbb2bbbdc11",
-  "sourceReview:src/features/stats/router.ts#1c55cb8d0f75e4108c7ec516e62e363f9c26e50dfac5b31817f11df81c089195",
+  "sourceReview:src/features/stats/router.ts#1ab1953667de8a1f172534219e8344926b42edd94b6c19a8a793c067c14138bd",
   "sourceReview:src/features/stats/stageConversion.ts#5df35cff59852ca03107c03032b166a2c041434b221df636f59b26ca177363b5",
   "sourceReview:src/features/stats/stageSums.ts#e2a9d24efdcd1df312835315b1fe1b95e16356a218b753391b66b9c865f293e6",
   "sourceReview:src/features/stats/ui/goalChartPoints.ts#d360b81d02210447782144d40dd21b1030a90faef15f78c3f54b2324a4784e4f",

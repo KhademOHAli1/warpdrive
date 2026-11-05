@@ -358,6 +358,26 @@ describe("native current-authorized observed deal win cohorts", () => {
     });
   });
 
+  test("refuses a previously private deal even after transfer makes its current row visible", async () => {
+    await withCapture(async (h, f, actor) => {
+      const previousOwner = randomUUID();
+      await h.pool.query("INSERT INTO users (id,email,name) VALUES ($1,$2,'Previous owner')", [
+        previousOwner,
+        `${previousOwner}@example.test`,
+      ]);
+      const deal = await insertHistoryDeal(h.pool, { ...f, userId: previousOwner });
+      await markWon(h.pool, deal.id);
+      await h.pool.query("UPDATE deals SET owner_id=$2 WHERE id=$1", [deal.id, actor.id]);
+      const result = await readObservedDealWinCohorts(
+        h.db,
+        actor,
+        { ...request, pipelineId: f.pipelineId, ownerScope: { kind: "me" } },
+        signal(),
+      );
+      expect(result).toEqual({ state: "unavailable", reason: "history-permission-limited" });
+    });
+  });
+
   test("returns unavailable when the requested window predates capture or the live scope overflows", async () => {
     await withCapture(async (h, f, actor) => {
       expect(

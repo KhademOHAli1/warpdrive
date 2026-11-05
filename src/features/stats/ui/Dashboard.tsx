@@ -21,6 +21,7 @@ import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
 import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
 import { DealRecordsDrawer } from "./DealRecordsDrawer";
+import { DealWinCohortPanel } from "./DealWinCohortPanel";
 import { presetRange } from "./dateRange";
 import { GoalsWidget } from "./GoalsWidget";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
@@ -177,6 +178,7 @@ export function Dashboard({
             <StageSumsWidget data={result.stageSums} currency={result.currency} />
             <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
           </div>
+          <DealWinCohortPanel scope={reportScope} />
         </TabsContent>
         <TabsContent value="activities" className="space-y-5">
           <div className="grid gap-5 lg:grid-cols-2">

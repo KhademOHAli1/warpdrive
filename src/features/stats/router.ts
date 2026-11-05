@@ -20,9 +20,11 @@ import { wonDealStats } from "@/features/stats/wonDealStats";
 import { wonTrend } from "@/features/stats/wonTrend";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { dealRecords } from "./dealRecords";
+import { readObservedDealWinCohorts } from "./history/dealCohortRepository";
+import { dealWinCohortHorizon, dealWinCohortView } from "./history/dealWinCohortView";
 import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "./metricDictionary";
 import { resolveReportScope } from "./resolveReportScope";
-import { dashboardInput, dealRecordsInput } from "./schemas";
+import { dashboardInput, dealRecordsInput, dealWinCohortsInput } from "./schemas";
 
 // Module-local abort-signal factory: mirrors the pattern in notifications/router.ts.
 const SIG = (): AbortSignal => AbortSignal.timeout(15_000);
@@ -97,6 +99,17 @@ export const statsRouter = router({
       timeZone: filters.timeZone ?? "UTC",
       generatedAt: new Date().toISOString(),
     };
+  }),
+
+  dealWinCohorts: protectedProcedure.input(dealWinCohortsInput).query(async ({ ctx, input }) => {
+    const { from, to, pipelineId, ownerScope, currency, horizon } = input;
+    const report = await readObservedDealWinCohorts(
+      ctx.db,
+      ctx.actor,
+      { from, to, pipelineId, ownerScope, currency, horizon: dealWinCohortHorizon(horizon) },
+      SIG(),
+    );
+    return dealWinCohortView(report, horizon);
   }),
 
   ownerOptions: protectedProcedure.query(async ({ ctx }) => {
