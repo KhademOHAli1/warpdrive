@@ -8,7 +8,7 @@
   },
   "scope": "Narrow first analytics increment and maintenance of reviewed privacy source bindings. Full programme and broad privacy lifecycle acceptance are outside this review.",
   "baselineHead": "aa7695b045443efe81f130deb62122714e77a68f",
-  "reviewState": "Narrow source review complete; no remaining actionable finding in reviewed increment. Runtime qualification remains pending.",
+  "reviewState": "Narrow source and lint-amendment review complete; no remaining actionable finding in reviewed increment. Runtime qualification remains pending.",
   "canonicalIssues": [595, 601, 602],
   "reviewedSources": [
     {
@@ -43,13 +43,22 @@
     },
     {
       "path": "src/features/stats/dealRecords.ts",
-      "sha256": "9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
-      "sourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
-      "previousSourceReviewId": null,
-      "bindingAction": "add reviewed source binding",
+      "sha256": "662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+      "sourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+      "previousSourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+      "bindingAction": "Replace only the previously reviewed source digest after this lint amendment review.",
       "operation": "WITH SELECT aggregate and bounded page",
-      "conclusion": "Reads only the same visible/current metric population as outcome summaries. Output is deal ID/title/status/current value/currency/creation and current close timestamps plus aggregate count/sum/valueCount. One SQL statement supplies page and totals in one MVCC snapshot; page fetch is limit+1 and ordered by created_at,id. Values cast to text before JSON; cursor retains PostgreSQL microseconds. No stored result IDs, exports, contacts, new tables or writes.",
-      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file."
+      "conclusion": "Reads only the same visible/current metric population as outcome summaries. Output is deal ID/title/status/current value/currency/creation and current close timestamps plus aggregate count/sum/valueCount. One SQL statement supplies page and totals in one MVCC snapshot; page fetch is limit+1 and ordered by created_at,id. Values cast to text before JSON; cursor retains PostgreSQL microseconds. No stored result IDs, exports, contacts, new tables or writes. Lint amendment changes only the impossible missing-aggregate-row error to the established AppError(ERROR_IDS.DB_READ_FAILED); SQL, eligibility, output and cursor are unchanged.",
+      "sourceReviewResult": "No new SQL write, external provider I/O, independent disclosure/erasure authority or durable result store observed in this file.",
+      "reviewHistory": [
+        {
+          "reviewPhase": "I1 original source review",
+          "sha256": "9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+          "sourceReviewId": "sourceReview:src/features/stats/dealRecords.ts#9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+          "previousSourceReviewId": null,
+          "conclusion": "Reads only the same visible/current metric population as outcome summaries. Output is deal ID/title/status/current value/currency/creation and current close timestamps plus aggregate count/sum/valueCount. One SQL statement supplies page and totals in one MVCC snapshot; page fetch is limit+1 and ordered by created_at,id. Values cast to text before JSON; cursor retains PostgreSQL microseconds. No stored result IDs, exports, contacts, new tables or writes."
+        }
+      ]
     },
     {
       "path": "src/features/stats/lostReasons.ts",
@@ -125,11 +134,11 @@
     },
     {
       "path": "src/features/stats/ui/Dashboard.tsx",
-      "sha256": "0b1ca2012bc7b100819e58beb219664ce2b6d45296a930af111d9f6e81b6fed7"
+      "sha256": "1d5e54578aa894afabad3ed631ea95dbc8199514f24299d883015abe6311345d"
     },
     {
       "path": "src/features/stats/ui/DealRecordsDrawer.tsx",
-      "sha256": "a57049d7c33cfb80a0e31747d7a089b73df305e04b816a4cf085836a1ad8f61f"
+      "sha256": "700eb1880c80be4e2069304d2fa981eceb81b4fda73dd4663cc48504d44c8a5b"
     },
     {
       "path": "src/app/(app)/dashboard/page.tsx",
@@ -162,12 +171,16 @@
     {
       "path": "src/features/i18n/usePreferencePersistence.ts",
       "sha256": "d866ccbf25946c796125f93e41c7afec60c098d4eaba864e75977b0d4b525574"
+    },
+    {
+      "path": "src/features/stats/ui/Scoreboard.tsx",
+      "sha256": "92b551f4a91aadaf5e2c826d5fd916178e6f271fe240dd841854ea610ad7a91c"
     }
   ],
   "newScannerBoundary": {
     "id": "writer:src/features/stats/dealRecords.ts#execute:sql",
     "sourcePath": "src/features/stats/dealRecords.ts",
-    "sourceSha256": "9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+    "sourceSha256": "662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
     "actualOperation": "PostgreSQL WITH/SELECT only; scanner labels execute(sql) as a writer boundary.",
     "data": "Current permission-scoped deal fields and report aggregates returned to the authenticated viewer.",
     "effects": "No database INSERT/UPDATE/DELETE, durable snapshot, filesystem/object write, campaign/message/send or provider request.",
@@ -220,5 +233,40 @@
     "exactness": "Monetary values are text before JSON; UTC cursor strings preserve PostgreSQL microseconds, with deterministic created_at/id keyset ordering.",
     "goals": "Read-only owner-computed output adapter; no Goals/KPI authoring mutation.",
     "limitedResult": "Eligible for narrow reviewed source inventory binding maintenance at these digests, not a runtime/security/installation/programme completion certificate."
-  }
+  },
+  "lintAmendments": [
+    {
+      "id": "hosted-lint-amendment-1",
+      "reviewDate": "2026-11-05",
+      "candidateParent": "c63f3f25dde44838358e67114ab78eabcb0e77da",
+      "trigger": "Root supplied hosted typed-lint findings; this reviewer performed source review only. Earlier source review and actual failed/passing validation remain separately preserved.",
+      "changedReviewedSource": {
+        "path": "src/features/stats/dealRecords.ts",
+        "previousSha256": "9b833f249f1f5d2bf074d5f3ea5534b26a3521e2e548a4b1000999e23b09dba1",
+        "sha256": "662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
+        "reason": "Use established AppError and DB_READ_FAILED for a missing aggregate row; no SQL/population/money/cursor change."
+      },
+      "supportingSourceChanges": [
+        {
+          "path": "src/features/stats/ui/Dashboard.tsx",
+          "previousSha256": "0b1ca2012bc7b100819e58beb219664ce2b6d45296a930af111d9f6e81b6fed7",
+          "sha256": "1d5e54578aa894afabad3ed631ea95dbc8199514f24299d883015abe6311345d"
+        },
+        {
+          "path": "src/features/stats/ui/DealRecordsDrawer.tsx",
+          "previousSha256": "a57049d7c33cfb80a0e31747d7a089b73df305e04b816a4cf085836a1ad8f61f",
+          "sha256": "700eb1880c80be4e2069304d2fa981eceb81b4fda73dd4663cc48504d44c8a5b"
+        },
+        {
+          "path": "src/features/stats/ui/Scoreboard.tsx",
+          "previousSha256": null,
+          "sha256": "92b551f4a91aadaf5e2c826d5fd916178e6f271fe240dd841854ea610ad7a91c",
+          "note": "New supporting source pin for separately reviewed metric inspection callback helper."
+        }
+      ],
+      "uiConclusion": "Explicit nullable checks preserve declared behavior; row currency is non-null by the server record contract, so impossible fallback removal does not change valid displays. bindMetricInspection preserves the same four metric/callback bindings while reducing component complexity. Preference pending query/result/retry gates and focus return remain intact.",
+      "validation": "No tests, typecheck, lint, build, database, browser or other heavy jobs executed by this reviewer.",
+      "result": "No actionable flaw found in the narrow lint amendment; exact bindings may be maintained without broad acceptance."
+    }
+  ]
 }

@@ -85,7 +85,7 @@ export function DealRecordsDrawer({
         aria-describedby={descriptionId}
         className="max-w-3xl animate-none transition-none"
         onCloseAutoFocus={(event) => {
-          if (returnFocus?.isConnected) {
+          if (returnFocus?.isConnected === true) {
             event.preventDefault();
             returnFocus.focus();
           }
@@ -188,7 +188,7 @@ export function DealRecordsDrawer({
                           <td className="whitespace-nowrap px-4 py-3 text-end tabular-nums">
                             {row.value === null
                               ? S.noValue
-                              : format.currency(row.value, row.currency ?? result.currency)}
+                              : format.currency(row.value, row.currency)}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-xs tabular-nums text-muted-foreground">
                             {row.closedAt === null ? S.noValue : format.dateTime(row.closedAt)}

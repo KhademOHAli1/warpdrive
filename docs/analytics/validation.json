@@ -47,6 +47,14 @@
       "name": "Independent source reviews",
       "result": "completed within declared source scope",
       "reports": ["docs/analytics/source-review.json", "docs/analytics/input-contract-review.json"]
+    },
+    {
+      "name": "Affected lint-amendment unit/component cases",
+      "result": "passed",
+      "files": 5,
+      "tests": 52,
+      "seconds": 7.418,
+      "limitation": "Container-free cases only; real database and rendered browser remain queued."
     }
   ],
   "retainedDiagnostics": [
@@ -85,6 +93,13 @@
       "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42067606975",
       "result": "CRM type generation passed; TSC failed TS18048 in the new test seed closure. Lint/focused hosted tests skipped. Other sites passed.",
       "correction": "Capture the validated stage.id before entering the async seed closure; test fixture only. Later exact-head check required."
+    },
+    {
+      "head": "c63f3f25dde44838358e67114ab78eabcb0e77da",
+      "mergeCandidate": "6a92c06ed5f5a1303915353d392ba031f133dd07",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42068053466",
+      "result": "Configured Next typegen/TSC passed. Typed lint found 9 owned errors; hosted focused tests skipped. Other required light checks passed.",
+      "correction": "Use AppError(DB_READ_FAILED), a valid optional source-ID predicate, explicit nullable guards/nonnullable currency, remove three test assertions, and extract optional metric-handler binding. Independent amended source review retained. No lint configuration/suppression changes."
     }
   ]
 }

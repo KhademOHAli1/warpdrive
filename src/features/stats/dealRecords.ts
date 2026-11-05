@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { canonicalMoney } from "@/lib/canonicalMoney";
@@ -65,7 +66,8 @@ export async function dealRecords(
   `);
   signal.throwIfAborted();
   const row = (result as unknown as { rows: QueryRow[] }).rows[0];
-  if (row === undefined) throw new Error("Deal report aggregate returned no row");
+  if (row === undefined)
+    throw new AppError(ERROR_IDS.DB_READ_FAILED, "Deal report aggregate returned no row");
   const rows = row.rows.slice(0, input.limit).map((record) => ({
     ...record,
     value: record.value === null ? null : canonicalMoney(record.value),

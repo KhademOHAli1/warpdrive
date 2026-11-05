@@ -9,6 +9,16 @@ import type { ActivityCounters, DealCounters, WonDealStats } from "@/types/stats
 import { useStatsMessages } from "../useStatsMessages";
 import { durationDays, money } from "./Panel";
 
+type InspectDealRecords = (metric: DealRecordMetric, trigger: HTMLButtonElement) => void;
+
+function bindMetricInspection(
+  onInspect: InspectDealRecords | undefined,
+  metric: DealRecordMetric,
+): ((trigger: HTMLButtonElement) => void) | undefined {
+  if (onInspect === undefined) return undefined;
+  return (trigger) => onInspect(metric, trigger);
+}
+
 function Metric({
   label,
   value,
@@ -73,7 +83,7 @@ export function Scoreboard({
   activities: ActivityCounters;
   winRate: number | null;
   currency: string;
-  onInspect?: (metric: DealRecordMetric, trigger: HTMLButtonElement) => void;
+  onInspect?: InspectDealRecords;
 }) {
   const preferences = useLocalePreferences();
   const format = useFormatters();
@@ -89,21 +99,21 @@ export function Scoreboard({
         value={money(deals.won.value, currency, preferences)}
         detail={`${S.scoreWon}: ${format.number(deals.won.count)}`}
         inspectLabel={S.recordsView}
-        onInspect={onInspect ? (trigger) => onInspect("won", trigger) : undefined}
+        onInspect={bindMetricInspection(onInspect, "won")}
       />
       <Metric
         label={S.scoreWinRate}
         value={winRate === null ? S.noValue : S._extra.percent(Math.round(winRate * 100))}
         detail={S.winRateDefinition}
         inspectLabel={S.recordsView}
-        onInspect={onInspect ? (trigger) => onInspect("closed", trigger) : undefined}
+        onInspect={bindMetricInspection(onInspect, "closed")}
       />
       <Metric
         label={S.scoreAvgDeal}
         value={won.avgValue === null ? S.noValue : money(won.avgValue, currency, preferences)}
         detail={S.wonBasis}
         inspectLabel={S.recordsView}
-        onInspect={onInspect ? (trigger) => onInspect("wonValue", trigger) : undefined}
+        onInspect={bindMetricInspection(onInspect, "wonValue")}
       />
       <Metric
         label={S.scoreCycle}
@@ -112,7 +122,7 @@ export function Scoreboard({
         }
         detail={S.cycleDefinition}
         inspectLabel={S.recordsView}
-        onInspect={onInspect ? (trigger) => onInspect("wonCycle", trigger) : undefined}
+        onInspect={bindMetricInspection(onInspect, "wonCycle")}
       />
       <Metric
         label={S.scoreActivities}

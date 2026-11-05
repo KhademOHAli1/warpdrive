@@ -7,10 +7,10 @@
     "limitation": "A collaborating agent reviewed the source independently of its author. This is not authenticated external review, human acceptance or installation evidence."
   },
   "scope": "Pure, strict analytics payload contracts and the narrow derived/sourceReview privacy inventory boundaries. No ingestion, persistence, financial source, experiment result or analytics model is qualified by this review.",
-  "reviewState": "Narrow source review complete; no remaining actionable finding at the pinned source bytes.",
+  "reviewState": "Narrow source and lint-amendment review complete; no remaining actionable finding at the pinned source bytes.",
   "source": {
     "path": "src/features/stats/analyticsInputContracts.ts",
-    "sha256": "34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
+    "sha256": "12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
     "operation": "Pure Zod schema construction/refinement with Temporal instant comparison; caller-supplied values are validated in memory.",
     "importedDependencies": [
       "@js-temporal/polyfill Temporal",
@@ -30,7 +30,7 @@
       "purpose": "In-memory derived payload validation metadata; no runtime source, retained store or lifecycle adapter is created."
     },
     {
-      "id": "sourceReview:src/features/stats/analyticsInputContracts.ts#34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
+      "id": "sourceReview:src/features/stats/analyticsInputContracts.ts#12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
       "purpose": "Exact source provenance binding for the independently reviewed validator."
     }
   ],
@@ -98,5 +98,29 @@
     "Real campaign, commerce, billing/contract, delivery/time, survey/ticket and experiment feeds, source-specific sign/unit/period semantics and real-provider qualification.",
     "Any experiment causal result, attribution estimate, customer retention/profitability, calibrated forecast, predictive scoring, survival or MMM remains separate implementation/evaluation scope.",
     "No test, heavy type/lint/build/database/browser, performance, hosted CI, integration/main, human journey, installation, release or deployment acceptance is asserted by this source review. Root preserves actual execution evidence separately; local heavy validation remains queued under the user instruction."
+  ],
+  "lintAmendments": [
+    {
+      "id": "hosted-lint-amendment-1",
+      "reviewDate": "2026-11-05",
+      "candidateParent": "c63f3f25dde44838358e67114ab78eabcb0e77da",
+      "previousSource": {
+        "path": "src/features/stats/analyticsInputContracts.ts",
+        "sha256": "34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
+        "operation": "Pure Zod schema construction/refinement with Temporal instant comparison; caller-supplied values are validated in memory.",
+        "importedDependencies": [
+          "@js-temporal/polyfill Temporal",
+          "zod",
+          "shared currencyCode and moneyAmount schemas",
+          "shared isTimeZone helper"
+        ]
+      },
+      "sourceSha256": "12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
+      "previousSourceReviewId": "sourceReview:src/features/stats/analyticsInputContracts.ts#34398e140610601b33c36ea1b9c203b0480b2d52cddbddd89274726a0afc5cc4",
+      "reason": "Replace Object.values(identity).some(id => id !== undefined) with some(Boolean) for configured lint.",
+      "semanticReview": "Validated identity values are nonempty strings or undefined. For those values Boolean(id) and id !== undefined are equivalent; invalid empty strings are already rejected by sourceId. Namespace/correction/window/money/experiment schemas and unqualified no-ingest boundary are unchanged.",
+      "validation": "Independent source review only; no test/lint/type/build/native/browser or other heavy job run by reviewer. Root preserves actual hosted/local evidence separately.",
+      "result": "No actionable flaw found at the pinned amended validator bytes."
+    }
   ]
 }

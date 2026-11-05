@@ -157,7 +157,7 @@ const touchpoint = z
     interaction: z.enum(["campaign", "event", "referral", "sales", "other"]),
   })
   .superRefine((event, ctx) => {
-    const linked = Object.values(event.identity).some((id) => id !== undefined);
+    const linked = Object.values(event.identity).some(Boolean);
     if (event.identityState === "recorded" && !linked) {
       ctx.addIssue({
         code: "custom",

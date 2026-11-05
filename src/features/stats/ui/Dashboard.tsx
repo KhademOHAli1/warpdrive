@@ -234,7 +234,7 @@ export function Dashboard({
           <p className="text-xs leading-relaxed text-muted-foreground">
             {tCurrency("currencyNotice")}
           </p>
-          {result?.timeZone && (
+          {result !== undefined && result.timeZone !== "" && (
             <p className="text-xs text-muted-foreground">
               {S.recordsTimeZone}: <bdi>{result.timeZone}</bdi>
             </p>
