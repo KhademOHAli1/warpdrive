@@ -23,7 +23,7 @@
     },
     {
       "path": "src/features/stats/history/fold.ts",
-      "sha256": "8797d4e5b1db270a9d71be587749a53d30eee1e22d692161f9e93514bdde6652"
+      "sha256": "41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b"
     },
     {
       "path": "src/features/stats/history/coverage.ts",
@@ -39,7 +39,7 @@
     },
     {
       "path": "src/features/stats/history/capture.test-helpers.ts",
-      "sha256": "5c820b678f276c2c9afaffe34d113e0d2c03afe897506c91b407db1f1ddafa93"
+      "sha256": "f6acb0e8cd05aa40d317774ce229c129dddbedfe32c54081ebc4bced11687d09"
     },
     {
       "path": "src/features/stats/history/capture.integration.test.ts",
@@ -149,6 +149,23 @@
       "trigger": "Hosted TSC TS2322 at the negative state guard.",
       "correction": "Use explicit missing/unavailable early returns with no assertions or casts. Runtime states and partial/incomplete gate unchanged.",
       "review": "Independent source inspection found no new correctness/privacy issue; no reviewer execution."
+    },
+    {
+      "reviewer": "/root/history_sources",
+      "trigger": "Hosted typed lint found three issues: two raw fixture Errors, one redundant canonical JSON fallback.",
+      "sources": [
+        {
+          "path": "src/features/stats/history/fold.ts",
+          "previousSha256": "8797d4e5b1db270a9d71be587749a53d30eee1e22d692161f9e93514bdde6652",
+          "sha256": "41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b"
+        },
+        {
+          "path": "src/features/stats/history/capture.test-helpers.ts",
+          "previousSha256": "5c820b678f276c2c9afaffe34d113e0d2c03afe897506c91b407db1f1ddafa93",
+          "sha256": "f6acb0e8cd05aa40d317774ce229c129dddbedfe32c54081ebc4bced11687d09"
+        }
+      ],
+      "correction": "Use DB_INSERT_FAILED/DB_READ_FAILED AppErrors for impossible fixture results; return JSON.stringify for parsed JSON with no fallback. Independent inspection confirms valid JSON equality and data boundaries unchanged; no configuration/suppression/lifecycle change."
     }
   ]
 }

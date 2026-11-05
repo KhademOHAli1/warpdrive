@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import type { Pool, PoolClient } from "pg";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { TestDb } from "@/test/db";
 import { type AnalyticsHistoryEvent, analyticsHistoryEvent } from "./contracts";
 
@@ -80,7 +81,8 @@ export async function insertHistoryDeal(
     ],
   );
   const row = result.rows[0];
-  if (row === undefined) throw new Error("History fixture deal insert returned no row");
+  if (row === undefined)
+    throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "History fixture deal insert returned no row");
   return row;
 }
 
@@ -169,7 +171,8 @@ export async function readCaptureHead(sql: SqlConnection, entityKind: string, en
     [entityKind, entityId],
   );
   const row = result.rows[0];
-  if (row === undefined) throw new Error("History fixture expected a captured head");
+  if (row === undefined)
+    throw new AppError(ERROR_IDS.DB_READ_FAILED, "History fixture expected a captured head");
   return row;
 }
 

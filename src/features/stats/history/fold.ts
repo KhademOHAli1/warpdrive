@@ -39,7 +39,7 @@ function canonicalJson(value: unknown): string {
       .map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`)
       .join(",")}}`;
   }
-  return JSON.stringify(value) ?? "null";
+  return JSON.stringify(value);
 }
 
 export function sameHistoryState(left: HistoryState | null, right: HistoryState | null): boolean {

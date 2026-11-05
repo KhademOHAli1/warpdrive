@@ -23,4 +23,6 @@ All 76 capability rows in `programme-matrix.json` remain included. No first incr
 
 - Main advanced to `02b1563e8ee4125959bbd53d0e6a646529337025` with Calendar interactions, sidebar and billing delivery tracking. Task merge `581f83b` preserves those changes. No analytics/runtime helper overlap or new canonical migration was observed; regenerate the global inventory from the combined source.
 
-- Hosted I2 static run42086116816 passed type generation but failed TSC TS2322 in the completeness adapter's negative union-state guard. Explicit positive missing/unavailable returns preserve behavior; independent amendment review and ten affected cases pass. Lint/native/build remain unqualified pending fresh hosted results.
+- Hosted I2 static run `42086116816` passed type generation but failed TSC TS2322 in the completeness adapter's negative union-state guard. Explicit positive missing/unavailable returns preserve behavior; independent amendment review and ten affected cases pass. Lint/native/build remain unqualified pending fresh hosted results.
+
+- Hosted run `42086810612` passed configured typegen/TSC; typed lint found three owned issues in JSON folding and the native fixture helper. The narrow correction preserves valid JSON behavior, uses established AppError IDs, and passes 72 affected focused cases. No lint gate or database behavior was bypassed.

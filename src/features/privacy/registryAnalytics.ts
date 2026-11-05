@@ -10,7 +10,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/fold.ts",
     "derived:src/features/stats/history/repository.ts",
     "sourceReview:src/db/schema/analyticsHistory.ts#ac12a8b33b1141bc08418a31ad45ef57858aaa1ff84c3303c71490c5e666c319",
-    "sourceReview:src/features/stats/history/fold.ts#8797d4e5b1db270a9d71be587749a53d30eee1e22d692161f9e93514bdde6652",
+    "sourceReview:src/features/stats/history/fold.ts#41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b",
     "sourceReview:src/features/stats/history/repository.ts#f797f21fe9de3b9db911f58e1580e6df8208140e8505f1837b2e250fedd41461",
     "table:analytics_history_coverage",
     "table:analytics_history_events",

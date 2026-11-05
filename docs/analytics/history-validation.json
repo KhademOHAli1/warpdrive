@@ -10,7 +10,7 @@
     },
     {
       "path": "src/features/stats/history/fold.ts",
-      "sha256": "8797d4e5b1db270a9d71be587749a53d30eee1e22d692161f9e93514bdde6652"
+      "sha256": "41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b"
     },
     {
       "path": "src/features/stats/history/coverage.ts",
@@ -117,6 +117,28 @@
       "vitestSeconds": 0.444,
       "log": "work/i2-adapter-type-fix-unit.log",
       "limitation": "Container-free behavior checks; no local compiler/typed lint run."
+    },
+    {
+      "name": "Affected folding/episode/adapter cases after lint amendment",
+      "result": "passed",
+      "tests": 72,
+      "files": 3,
+      "vitestSeconds": 0.435,
+      "log": "work/i2-lint-amendment-unit.log",
+      "limitation": "No local compiler/typed lint/native execution."
+    },
+    {
+      "name": "Inventory and registry after reviewed lint amendment",
+      "result": "passed",
+      "tests": 20,
+      "files": 2,
+      "vitestSeconds": 1.18,
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "log": "work/i2-registry-lint-fix.log"
     }
   ],
   "resourceEvidence": {
@@ -147,6 +169,13 @@
       "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42086116816",
       "result": "Next type generation passed; TSC failed TS2322 at currentStageEpisodes.ts negative union-state guard. Lint and focused hosted tests skipped. Marketing/documentation, required quality and delivery checks passed.",
       "correction": "Explicit positive missing/unavailable early returns preserve behavior and remove the narrowing error. Fresh hosted type/lint evidence remains required."
+    },
+    {
+      "source": "9e8749a0c6c2805ce9d249c88893378e2ff971c7",
+      "mergeCandidate": "b49fb216b20237d96e7819e897327e40acb7707f",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42086810612",
+      "result": "Configured Next typegen/TSC passed. Typed lint found three owned errors: capture.test-helpers.ts raw Errors twice; fold.ts unnecessary JSON.stringify nullish fallback. Focused hosted tests skipped. Other required light checks passed.",
+      "correction": "Use established fixture AppError IDs and remove unreachable fallback for valid parsed JSON. Independent amendment source review retained; fresh hosted static/native evidence remains required."
     }
   ]
 }
