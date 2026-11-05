@@ -94,5 +94,9 @@
     "Snapshot writer privilege and source-DML separation are still required for installed custody.",
     "Read-only comparison uses a bounded low-volume activation corpus; relevant hidden, archived/deleted or replaced identities and ambiguous pipeline membership fail closed.",
     "No admitted migration ordinal or installed history, qualified provider or human acceptance, main merge or release."
-  ]
+  ],
+  "reconciledBase": {
+    "revision": "0047318c23acc43f16500d72227b99642eeccf14",
+    "limitation": "PR #994 changes MCP email draft selection and its tests and inventory. Focused analytics sources are unchanged, the combined inventory is regenerated, and the exact hosted candidate still needs qualification."
+  }
 }
