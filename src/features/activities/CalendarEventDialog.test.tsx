@@ -221,6 +221,73 @@ describe.each(["fa", "de", "en"] as Locale[])("calendar event workflow in %s", (
   });
 });
 
+it.each([
+  ["fa", "2027-03-20T19:45:00.000Z", "2027-03-20T21:15:00.000Z"],
+  ["de", "2027-03-20T22:15:00.000Z", "2027-03-20T23:45:00.000Z"],
+  ["en", "2027-03-20T23:15:00.000Z", "2027-03-21T00:45:00.000Z"],
+] as const)(
+  "prefills a drawn range without saving until confirmed in %s",
+  async (locale, dueAt, endAt) => {
+    const l = labels[locale];
+    actions.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+    render(
+      <LocaleProvider locale={locale} timeZone={l.zone}>
+        <CalendarEventDialog
+          defaultDate="2027-03-20"
+          defaultTime="23:15"
+          defaultEndDate="2027-03-21"
+          defaultEndTime="00:45"
+          onClose={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    expect(screen.getByLabelText(l.start)).toHaveValue(locale === "fa" ? "۲۳:۱۵" : "23:15");
+    expect(screen.getByLabelText(l.end)).toHaveValue(locale === "fa" ? "۰۰:۴۵" : "00:45");
+    expect(actions.createCalendarEventAction).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText(l.title), {
+      target: { value: "Selected interval / بازه" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: l.more }));
+    fireEvent.click(screen.getByRole("button", { name: l.fewer }));
+    expect(screen.getByLabelText(l.end)).toHaveValue(locale === "fa" ? "۰۰:۴۵" : "00:45");
+    fireEvent.click(screen.getByRole("button", { name: l.save }));
+    await waitFor(() =>
+      expect(actions.createCalendarEventAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          activity: expect.objectContaining({ dueAt, endAt, allDay: false, durationMinutes: 90 }),
+        }),
+        "csrf",
+      ),
+    );
+  },
+);
+
+it("prefills the selected all-day range with canonical dates in the Farsi editor", async () => {
+  actions.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+  render(
+    <LocaleProvider locale="fa" timeZone="Asia/Tehran">
+      <CalendarEventDialog defaultDate="2027-03-20" defaultEndDate="2027-03-22" onClose={vi.fn()} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("checkbox", { name: labels.fa.allDay })).toBeChecked();
+  expect(actions.createCalendarEventAction).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText(labels.fa.title), { target: { value: "برنامهٔ نوروز" } });
+  fireEvent.click(screen.getByRole("button", { name: labels.fa.save }));
+  await waitFor(() =>
+    expect(actions.createCalendarEventAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activity: expect.objectContaining({
+          allDay: true,
+          dueDate: "2027-03-20",
+          endDate: "2027-03-22",
+          authoredTimeZone: "Asia/Tehran",
+        }),
+      }),
+      "csrf",
+    ),
+  );
+});
+
 it("accepts Persian clock digits and moves the end without changing duration", async () => {
   actions.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   render(

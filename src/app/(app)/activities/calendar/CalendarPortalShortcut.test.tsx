@@ -273,3 +273,14 @@ describe("shared shortcut admission inside the calendar", () => {
     expectShortcutIgnored(target);
   });
 });
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

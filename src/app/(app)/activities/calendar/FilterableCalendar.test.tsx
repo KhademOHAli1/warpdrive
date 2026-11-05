@@ -81,3 +81,14 @@ it("does not claim an empty window holds activities just because a filter is on"
   expect(empty).not.toHaveTextContent(STRINGS.calendar.emptyFilteredBody);
   expect(empty).toHaveTextContent(STRINGS.calendar.emptyBody);
 });
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

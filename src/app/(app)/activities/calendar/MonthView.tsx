@@ -51,10 +51,12 @@ function DayCell({
     // biome-ignore lint/a11y/useFocusableInteractive: static read-only calendar grid
     <div
       role="gridcell"
+      data-calendar-surface="date"
+      data-calendar-date={iso}
       data-testid={`cell-${iso}`}
       data-adjacent={adjacent}
       data-today={isToday}
-      className={`border border-border rounded-md p-1 min-h-24 ${cellTone} ${todayRing}`}
+      className={`select-none border border-border rounded-md p-1 min-h-24 ${cellTone} ${todayRing}`}
     >
       <div className="mb-0.5 flex items-center justify-between gap-1">
         <a
