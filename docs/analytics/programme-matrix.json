@@ -29,11 +29,11 @@
       "comments": 0,
       "limitation": "Read snapshot only; no competing live analytics ownership claim observed. Recheck before overlapping shared contracts."
     },
-    "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. No new allocation or prior exception reused.",
+    "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. Main #990 no longer requires a coordination queue; that policy change does not override the user preference. Use hosted workflows for heavy checks.",
     "latestRemoteObservation": {
-      "sha": "56f137fe4858127b9b66a9f8ca485165edb29c54",
+      "sha": "e8399c9c046e6334e88215491e7205fbab5df5ed",
       "date": "2026-11-05",
-      "change": "Company and work profiles PR #989 preserved through task merge 875f086e; canonical migration now ends at 0106_company_work_profile. No analytics ordinal reserved. Work profiles are potential delivery source, not qualified CRM delivery/cost evidence."
+      "change": "PR #990 merged the earlier dashboard, regional preferences and KPI increments. Canonical migration ends at 0107_kpi_scorecards; no analytics ordinal was reserved. KPI authoring, schema and canonical history are preserved verbatim."
     }
   },
   "statusMeaning": {

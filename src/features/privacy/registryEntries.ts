@@ -30,6 +30,7 @@ import { requestServicesIds1 } from "./registryIdsRequestServices1";
 import { scopeDraftIds1 } from "./registryIdsScopeDraft1";
 import { stagingQualificationIds1 } from "./registryIdsStagingQualification1";
 import { toolingIds1 } from "./registryIdsTooling1";
+import { kpiInventoryEntry } from "./registryKpis";
 import { mailInventoryEntries } from "./registryMail";
 import { mailSharedInventoryEntries } from "./registryMailShared";
 import { migrationInventoryEntry } from "./registryMigrations";
@@ -41,6 +42,7 @@ import { workflowInventoryEntry } from "./registryWorkflows";
 export const registryEntries: RegistryEntry[] = [
   analyticsInventoryEntry,
   analyticsComputationInventoryEntry,
+  kpiInventoryEntry,
   billingInventoryEntry,
   companyWorkInventoryEntry,
   workflowInventoryEntry,

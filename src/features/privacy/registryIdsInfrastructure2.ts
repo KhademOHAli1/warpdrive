@@ -26,7 +26,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/stats/router.ts#1ab1953667de8a1f172534219e8344926b42edd94b6c19a8a793c067c14138bd",
   "sourceReview:src/features/stats/stageConversion.ts#5df35cff59852ca03107c03032b166a2c041434b221df636f59b26ca177363b5",
   "sourceReview:src/features/stats/stageSums.ts#e2a9d24efdcd1df312835315b1fe1b95e16356a218b753391b66b9c865f293e6",
-  "sourceReview:src/features/stats/ui/goalChartPoints.ts#d360b81d02210447782144d40dd21b1030a90faef15f78c3f54b2324a4784e4f",
+  "sourceReview:src/features/stats/ui/goalChartPoints.ts#1d53f601a1f6df7b7d8010d8c14a73555dc719c6b96cac07454f6f5d4fd85da9",
   "sourceReview:src/features/stats/wonDealStats.ts#d330e92a715fe6d670069e77520ed8fc5eb92689b2239cc33d107c252793e516",
   "sourceReview:src/features/stats/wonTrend.ts#7f3c11a144d385b9407d4916b38261dd26fb57e2cf139429abab78137eaf7619",
   "sourceReview:src/instrumentation.node.ts#1ba9753ddf51847fe367540f92d73ad82f093dbbc8428abab195fc9687b9111a",

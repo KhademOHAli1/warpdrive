@@ -750,6 +750,13 @@
       "when": 1793903417078,
       "tag": "0106_company_work_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1793906965219,
+      "tag": "0107_kpi_scorecards",
+      "breakpoints": true
     }
   ]
 }

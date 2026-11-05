@@ -81,7 +81,8 @@ import statsPersian from "@/features/stats/messages/stats.fa.json";
 import workflowsGerman from "@/features/workflows/messages/workflows.de.json";
 import workflowsEnglish from "@/features/workflows/messages/workflows.en.json";
 import workflowsPersian from "@/features/workflows/messages/workflows.fa.json";
-import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
+import { localeTagForFormatting } from "@/lib/localeFormatting";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 import { mergeMessages } from "./mergeMessages";
 import boundaryGerman from "./messages/boundary.de.json";
 import boundaryEnglish from "./messages/boundary.en.json";
@@ -205,9 +206,10 @@ export function createAppTranslator<Namespace extends AppNamespace>(
   locale: Locale,
   namespace: Namespace,
   numberingSystem?: NumberingSystem,
+  country?: string,
 ) {
   return createTranslator({
-    locale: localeWithNumberingSystem(locale, numberingSystem),
+    locale: localeTagForFormatting({ locale, numberingSystem, country }),
     messages: messagesForLocale(locale),
     namespace,
   });

@@ -10,6 +10,7 @@ import {
 import type { Goal } from "@/db/schema/goals";
 import type { GoalPeriod } from "@/features/goals/goalPeriod";
 import type { GoalSeriesPoint } from "@/features/goals/goalSeries";
+import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { useStatsMessages } from "../useStatsMessages";
@@ -25,27 +26,33 @@ export function GoalChart({
   target,
   metric,
   currency,
+  pacing = "linear",
 }: {
   period: GoalPeriod;
   series: GoalSeriesPoint[];
   target: string;
   metric: Goal["metric"];
   currency: string;
+  pacing?: "linear" | "none";
 }): React.ReactNode {
   const preferences = useLocalePreferences();
 
   const format = useFormatters();
 
   const S = useStatsMessages();
+  const K = useKpiHubMessages();
 
   const CONFIG: ChartConfig = {
     [ACTUAL]: { label: S.goalBooked, color: "var(--link)" },
-    [TARGET]: { label: S.goalTargetPace, color: "hsl(var(--muted-foreground))" },
+    [TARGET]: {
+      label: pacing === "none" ? K.at_most : S.goalTargetPace,
+      color: "hsl(var(--muted-foreground))",
+    },
   };
 
   const dayLabel = (day: string) => format.dateOnly(day, { month: "short", day: "numeric" });
 
-  const points = goalChartPoints(period, series, target);
+  const points = goalChartPoints(period, series, target, pacing);
   const fmt = (v: number): string =>
     metric === "value" ? money(String(v), currency, preferences) : format.number(Math.round(v));
 

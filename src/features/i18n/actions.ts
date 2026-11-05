@@ -8,12 +8,14 @@ import { setPreferences } from "@/features/identity/preferencesRepo";
 import { createContext } from "@/server/trpc/context";
 import {
   CALENDAR_COOKIE,
+  COUNTRY_COOKIE,
   IRANIAN_MONEY_UNIT_COOKIE,
   LOCALE_COOKIE,
   localePreferencesSchema,
   NUMBERING_SYSTEM_COOKIE,
   PREFERENCE_COOKIE_MAX_AGE,
   TIME_ZONE_COOKIE,
+  TIME_ZONE_MODE_COOKIE,
 } from "./preferences";
 
 export type PreferenceSaveResult =
@@ -49,6 +51,10 @@ export async function saveLocalePreferencesAction(
     jar.set(LOCALE_COOKIE, preferences.locale, options);
     jar.set(CALENDAR_COOKIE, preferences.calendar, options);
     jar.set(TIME_ZONE_COOKIE, preferences.timeZone, options);
+    if (preferences.country === undefined) jar.delete(COUNTRY_COOKIE);
+    else jar.set(COUNTRY_COOKIE, preferences.country, options);
+    if (preferences.timeZoneMode === undefined) jar.delete(TIME_ZONE_MODE_COOKIE);
+    else jar.set(TIME_ZONE_MODE_COOKIE, preferences.timeZoneMode, options);
     if (preferences.iranianMoneyUnit === undefined) jar.delete(IRANIAN_MONEY_UNIT_COOKIE);
     else jar.set(IRANIAN_MONEY_UNIT_COOKIE, preferences.iranianMoneyUnit, options);
     if (preferences.numberingSystem === undefined) jar.delete(NUMBERING_SYSTEM_COOKIE);

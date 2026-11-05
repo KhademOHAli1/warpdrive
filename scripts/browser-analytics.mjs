@@ -32,7 +32,12 @@ const copy = Object.fromEntries(
       locale,
       {
         stats,
-        format: createTranslator({ locale, messages: stats }),
+        format: createTranslator({
+          locale: new Intl.Locale(locale, {
+            numberingSystem: actor.regional.numberingSystem,
+          }).toString(),
+          messages: stats,
+        }),
         regional: catalog(`src/features/i18n/messages/${locale}.json`).preferences,
       },
     ];
@@ -268,6 +273,7 @@ async function preferences() {
 
 async function setRegional(currentLocale, key, option, expected) {
   const labelKey = key === "locale" ? "language" : key;
+  const expectedProfile = { ...actor.regional, ...expected };
   const name = `regional-${key}-${option === languages.fa ? "fa" : expected[key]}`.replaceAll(
     /[^a-zA-Z0-9-]/g,
     "-",
@@ -282,6 +288,10 @@ async function setRegional(currentLocale, key, option, expected) {
     assert.equal(await page.locator("html").getAttribute("lang"), currentLocale);
     phase(entry, "wait-for-csrf");
     await csrfReady(page);
+    if (key === "calendar") {
+      phase(entry, "open-regional-formats");
+      await expandRegionalFormats(page, currentLocale);
+    }
     phase(entry, "choose-and-observe-action");
     const [response] = await Promise.all([
       page.waitForResponse(
@@ -302,7 +312,7 @@ async function setRegional(currentLocale, key, option, expected) {
           const actual = await preferences();
           if (
             actual.timezone === expected.timeZone &&
-            Object.entries(expected).every(
+            Object.entries(expectedProfile).every(
               ([field, value]) => actual.ui.localePreferences?.[field] === value,
             )
           )
@@ -314,11 +324,12 @@ async function setRegional(currentLocale, key, option, expected) {
       7000,
     );
     assert.equal(stored.timezone, expected.timeZone);
-    for (const [field, value] of Object.entries(expected)) {
+    for (const [field, value] of Object.entries(expectedProfile)) {
       assert.equal(stored.ui.localePreferences?.[field], value, `Persisted ${field}`);
     }
     phase(entry, "verify-regional-ui-settled");
     const regional = copy[expected.locale].regional;
+    if (key === "calendar") await expandRegionalFormats(page, expected.locale);
     await page
       .getByRole("combobox", exact(regional[labelKey]))
       .and(page.locator(":enabled"))
@@ -326,8 +337,13 @@ async function setRegional(currentLocale, key, option, expected) {
       .waitFor({ timeout: 7000 });
     assert.equal(await page.locator("html").getAttribute("lang"), expected.locale);
     assert.equal(await page.getByRole("alert").filter({ hasText: regional.saveError }).count(), 0);
-    report.preferenceChanges.push(expected);
+    report.preferenceChanges.push(expectedProfile);
   });
+}
+
+async function expandRegionalFormats(page, locale) {
+  const button = page.getByRole("button", exact(copy[locale].regional.customizeFormats));
+  if ((await button.getAttribute("aria-expanded")) !== "true") await button.click();
 }
 
 function shiftDay(iso, days) {
@@ -522,8 +538,12 @@ async function openRecords(page, locale, metric, scope, entry, expected) {
       assert.ok(value, "Recorded value cell has text");
       if (row.value === null) assert.equal(value, S.noValue);
       else assert.notEqual(value, S.noValue);
-      if (row.id === deals.zero.id)
-        assert.ok(value.includes(new Intl.NumberFormat(locale).format(0)));
+      if (row.id === deals.zero.id) {
+        const digits = new Intl.Locale(locale, {
+          numberingSystem: actor.regional.numberingSystem,
+        }).toString();
+        assert.ok(value.includes(new Intl.NumberFormat(digits).format(0)));
+      }
     }
   } else {
     await dialog.getByText(S.recordsEmpty, { exact: true }).waitFor();
@@ -870,10 +890,10 @@ try {
   assert.equal(readOnly.rows[0].default_transaction_read_only, "on");
   const original = await preferences();
   assert.equal(original.timezone, actor.timeZone);
-  assert.equal(
+  assert.deepEqual(
     original.ui.localePreferences,
-    undefined,
-    "Regional settings start from the real defaults",
+    actor.regional,
+    "The synthetic analytics actor starts from a stable manual regional profile",
   );
   const { rows: seeded } = await pool.query(
     `SELECT d.id,d.currency,d.owner_id,d.visibility_level,d.pipeline_id,
@@ -913,7 +933,17 @@ try {
   browser = await chromium.launch({ headless: true });
   report.browserVersion = browser.version();
   await journey("native-login", async (page, context) => {
-    await context.addCookies([{ name: "warpdrive_locale", value: "en", url: origin }]);
+    const regional = actor.regional;
+    await context.addCookies(
+      Object.entries({
+        warpdrive_locale: regional.locale,
+        warpdrive_calendar: regional.calendar,
+        warpdrive_timezone: regional.timeZone,
+        warpdrive_country: regional.country,
+        warpdrive_timezone_mode: regional.timeZoneMode,
+        warpdrive_numbering_system: regional.numberingSystem,
+      }).map(([name, value]) => ({ name, value, url: origin })),
+    );
     await page.goto("/login");
     await page.locator('input[name="email"]').fill(actor.email);
     await page.locator('input[name="password"]').fill(actor.password);

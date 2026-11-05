@@ -3,10 +3,10 @@ import Link from "next/link";
 import type React from "react";
 import { buttonVariants } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import type { GoalWithProgress } from "@/features/goals/router";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { adaptGoalReport, type GoalReportScorecard } from "@/features/stats/goalReportAdapter";
 import { useFormatters } from "@/lib/useFormatters";
 import { useStatsMessages } from "../useStatsMessages";
 import { GoalChart } from "./GoalChart";
@@ -17,15 +17,17 @@ function paceTone(pace: number | null): string {
   return pace >= 1 ? "text-emerald-600" : "text-destructive";
 }
 
-function GoalRow({ row }: { row: GoalReportScorecard }): React.ReactNode {
+function GoalRow({ row }: { row: GoalWithProgress }): React.ReactNode {
   const preferences = useLocalePreferences();
 
   const format = useFormatters();
 
   const S = useStatsMessages();
 
-  const { definition: goal, progress, series } = row;
+  const { goal, progress, series } = row;
   const goalCopy = useSettingsMessages();
+  const K = useKpiHubMessages();
+  const isLimit = goal.action === "lost";
   const label =
     goal.subject === "activity"
       ? goalCopy._extra.activityGoalDisplayLabel(
@@ -38,6 +40,7 @@ function GoalRow({ row }: { row: GoalReportScorecard }): React.ReactNode {
           goalCopy._extra.goalIntervals[goal.interval],
         );
   const isValue = goal.metric === "value";
+  const incomplete = progress?.dataState === "incomplete";
   const fmt = (v: string) =>
     isValue
       ? money(v, goal.currency, preferences)
@@ -59,7 +62,8 @@ function GoalRow({ row }: { row: GoalReportScorecard }): React.ReactNode {
       <div className="mb-0.5 flex items-center justify-between text-sm">
         <span className="truncate">{label}</span>
         <span className="tabular-nums text-muted-foreground">
-          {fmt(progress.actual)} / {fmt(progress.target)}
+          {fmt(progress.actual)} / {isLimit ? `${K.at_most} ` : ""}
+          {fmt(progress.target)}
         </span>
       </div>
       <GoalChart
@@ -68,6 +72,7 @@ function GoalRow({ row }: { row: GoalReportScorecard }): React.ReactNode {
         target={progress.target}
         metric={goal.metric}
         currency={goal.currency}
+        pacing={isLimit ? "none" : "linear"}
       />
       <p className="mt-0.5 flex justify-between text-xs text-muted-foreground tabular-nums">
         <span>
@@ -79,7 +84,27 @@ function GoalRow({ row }: { row: GoalReportScorecard }): React.ReactNode {
             {S.goalPace} {S._extra.percent(Math.round(progress.pace * 100))}
           </span>
         )}
+        {!incomplete && isLimit && (
+          <span
+            className={
+              Number(progress.actual) <= Number(progress.target)
+                ? "text-emerald-700 dark:text-emerald-400"
+                : "text-destructive"
+            }
+          >
+            {Number(progress.actual) <= Number(progress.target)
+              ? K.thresholdMet
+              : K.thresholdExceeded}
+          </span>
+        )}
       </p>
+      {incomplete && (
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          <span className="font-medium">{K.incomplete}</span> · {K.missingDateCount}:{" "}
+          {format.number(progress.missingMeasurementDateCount ?? 0)}.{" "}
+          {K.issues.missing_measurement_dates}
+        </p>
+      )}
     </div>
   );
 }
@@ -119,7 +144,7 @@ export function GoalsWidget({
       <p className="mb-2 text-xs text-muted-foreground">{S._extra.goalPeriodNotice}</p>
       <div className="space-y-3">
         {data.map((row) => (
-          <GoalRow key={row.goal.id} row={adaptGoalReport(row)} />
+          <GoalRow key={row.goal.id} row={row} />
         ))}
         {canManage && (
           <Link

@@ -18,6 +18,14 @@ export const ANALYTICS_BROWSER = {
   restrictedPipelineId: id(605),
   restrictedStageId: id(606),
   timeZone: "Europe/Berlin",
+  regional: {
+    locale: "en",
+    calendar: "gregory",
+    country: "DE",
+    timeZone: "Europe/Berlin",
+    timeZoneMode: "manual",
+    numberingSystem: "latn",
+  },
 };
 
 export const ANALYTICS_DEALS = {
@@ -68,7 +76,11 @@ export async function seedAnalyticsBrowserFixtures(
   );
   await client.query(
     "INSERT INTO user_preferences(user_id,timezone,density,ui) VALUES($1,$2,'comfortable',$3)",
-    [a.actorId, a.timeZone, JSON.stringify({ appearance: "system" })],
+    [
+      a.actorId,
+      a.timeZone,
+      JSON.stringify({ appearance: "system", localePreferences: a.regional }),
+    ],
   );
   await client.query('INSERT INTO pipelines(id,name,"order") VALUES($1,$2,100)', [
     a.pipelineId,

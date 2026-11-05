@@ -40,6 +40,7 @@ export const companyWorkIds: string[] = [
   "sourceReview:src/features/company-profile/service.ts#058e13e590154a23615438fde3c70cb5cf3c57b686f3001cfd73d34a40f7303a",
   "sourceReview:src/features/company-profile/storageDeadline.ts#e15ec25b5e3ada1ca3a23fd4f4a9e6824e4ac6ee82662feb29fc14c9a2943ac4",
   "sourceReview:src/features/company-profile/ui/AssetChooser.tsx#f49979189e016b88bea602a94d26016ceb95de7636dc576802beb0426065de41",
+  "sourceReview:src/features/company-profile/ui/BrandingEditor.tsx#b7083b5ad16d0fffa495ca4f1505b3129a58e3c8810ec1328d7ae7539182ebe0",
   "sourceReview:src/features/company-profile/ui/BusinessHours.tsx#32bf9fa756cd50a7d728d9ef99ac5cd060c5cdc9ae04117817923b0cf401d4f1",
   "sourceReview:src/features/company-profile/ui/ContactRows.tsx#115d447ff70c49653a7521172396431fca9eef9dfb98eb6fff4af64777286f64",
   "sourceReview:src/features/company-profile/ui/LegalManager.tsx#fb4fab2fbbcdae02a8eef85009343f4321787f36552018db896114a4f9f4cc8b",

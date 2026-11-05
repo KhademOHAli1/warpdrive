@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "scope": "Observed deal cohort presentation and authorized source; private input admission, attribution and period forecast computations. No installed analytics history or release.",
+  "base": "e8399c9c046e6334e88215491e7205fbab5df5ed",
+  "canonicalJournalTip": "0107_kpi_scorecards",
+  "sources": [
+    {
+      "path": "scripts/browser-analytics.mjs",
+      "sha256": "834c3a19f7e2580446419f10ec2897c2b3bb5d473ddcbfc1260e47df589b3359"
+    },
+    {
+      "path": "scripts/browser-analytics-seed.mjs",
+      "sha256": "3ef029160392cbb0c3406cacb2e66c2dd6c17ae4115329eafaf3e6de627bf36b"
+    },
+    {
+      "path": ".github/workflows/full-quality.yml",
+      "sha256": "f6ff11bb12d1842e7ad88bf0e582b9d8129de4300a9517e8435903d0bf0cbc2c"
+    },
+    {
+      "path": "src/features/stats/history/dealCohortRepository.ts",
+      "sha256": "bcb9a8b70ec1b9d4e4f1d3a30865cda45c281395241365575d5d604d57a8bebd"
+    },
+    {
+      "path": "src/features/stats/history/dealCohortRepository.integration.test.ts",
+      "sha256": "7193e1a027c0da8f755ce7b1c074be32b92187a8911ec4b04e6be40a34beeb2e"
+    },
+    {
+      "path": "src/features/stats/history/dealWinCohortView.ts",
+      "sha256": "e4794ecc479400c56a9cad5942317cb476d217e5700622cb06b206ffb98319f6"
+    },
+    {
+      "path": "src/features/stats/history/dealWinCohortView.test.ts",
+      "sha256": "8c6b7ec6a609827af20e361b0bfeee3389101169de52772bcd5a51fb3db7c795"
+    },
+    {
+      "path": "src/features/stats/history/inventorySnapshotDefinition.ts",
+      "sha256": "5199444b931093fc51ccd24bdec3fdba619a1b9fe1309b4f6806c3b14a595ee9"
+    },
+    {
+      "path": "src/features/stats/history/inventorySnapshotRepository.ts",
+      "sha256": "adacb29984d7f063ae5ee1d98446fcb0efddd01f656da84ba0f64e2c1f389978"
+    },
+    {
+      "path": "src/features/stats/router.ts",
+      "sha256": "1ab1953667de8a1f172534219e8344926b42edd94b6c19a8a793c067c14138bd"
+    },
+    {
+      "path": "src/features/stats/schemas.ts",
+      "sha256": "62e77d276125dd46a1c9dc4af8c7e3eba5b05f0cfcf4baa9039456613c6e745f"
+    },
+    {
+      "path": "src/features/stats/ui/Dashboard.tsx",
+      "sha256": "8d91d7483ba93159b202543e2ff7489b4e7f6ee3d8ef16f0769371cd2e6887ea"
+    },
+    {
+      "path": "src/features/stats/ui/DealWinCohortPanel.tsx",
+      "sha256": "4f1d21f211cf5e871fc549efd76aeea8a9f423163ce95aef2f46b8e5485de408"
+    },
+    {
+      "path": "src/features/stats/ui/DashboardExperience.test.tsx",
+      "sha256": "5cc2342734b4aa399cae256d6bd38e03c91c425f97c9d6f30741701f0cc171d4"
+    },
+    {
+      "path": "src/features/stats/analyticsInputAdmission.ts",
+      "sha256": "674093beb290f925d774c58d0992657351fa8ae1a85f7a21886dbe04ddba482f"
+    },
+    {
+      "path": "src/features/stats/analyticsInputAdmission.test.ts",
+      "sha256": "7311843d1f8c7bb0574ecf7331b924945b539b75756e1134a0cdc1f7bc490575"
+    },
+    {
+      "path": "src/features/stats/attribution.ts",
+      "sha256": "5f6a361893b683967972de619327f39595c784f5fe7070335fe1a417b35d2de7"
+    },
+    {
+      "path": "src/features/stats/attribution.test.ts",
+      "sha256": "fd0065bec7bf4450d5a92002a3e4192d0b3c4b4ed936a3d42687f837ef2efcdd"
+    },
+    {
+      "path": "src/features/stats/periodForecast.ts",
+      "sha256": "500d5c56f006ea39067c741877de1b581de7731142750b431ffbd91cfead2021"
+    },
+    {
+      "path": "src/features/stats/periodForecast.test.ts",
+      "sha256": "d94e0b3e690eacf7b2fc42eaf8260e5001074863ab7013e1ea9aba5bda3aa00f"
+    }
+  ],
+  "review": [
+    {
+      "area": "Cohort privacy, availability and UI",
+      "result": "Independent review prompted fresh-on-mount cache behavior, retry for typed unavailability, authoritative calendar/zone formatting and owner scope label. Public DTO withholds raw identifiers and reasons. Shared predicate rechecks captured deal-side and current pipeline access."
+    },
+    {
+      "area": "Synthetic browser setup",
+      "result": "Independent review verified disjoint actor IDs and guarded loopback fixture. Retained prior browser packs and used explicit manual zone/country/number system under the new regional preferences."
+    },
+    {
+      "area": "Attribution and forecast",
+      "result": "Independent review checked exact weights and products, coverage and temporal limits, missing assumptions and cutoff conditioning. Caller still qualifies inputs."
+    }
+  ],
+  "focused": {
+    "tests": 143,
+    "files": 14,
+    "vitestSeconds": 8.9,
+    "inventoryMissing": 0,
+    "inventoryInvalid": 0,
+    "translationFindings": 0,
+    "lightLocalOnly": true,
+    "preflight": "Pressure 1, 57% memory free, 106 GiB disk. One worker; 55-second cap. Peak RSS unmeasured."
+  },
+  "priorFullNative": {
+    "revision": "163421953cfc4d02d3cfa19bd0b5499ffc325ef2",
+    "base": "56f137fe4858127b9b66a9f8ca485165edb29c54",
+    "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42102701424",
+    "appUnit": {
+      "passed": 11424,
+      "skipped": 3
+    },
+    "postgres": {
+      "passed": 3997
+    },
+    "nativeAnalytics": {
+      "capture": 18,
+      "currentDealReader": 21,
+      "stageDefinition": 8,
+      "snapshotWriter": 9,
+      "cohortReader": 7,
+      "populatedUpgradeRehearsal": 2
+    },
+    "result": "Passed configured types, lint, both sites, app units, PostgreSQL, production app and entrypoint builds."
+  },
+  "priorBrowser": {
+    "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42102691839",
+    "renderedRevision": "82707653179973edd9a3f779ece36f31e09295fb",
+    "journeysPassed": 25,
+    "screenshots": 24
+  },
+  "pending": [
+    "Fresh native/browser/static checks for this integrated candidate. New private-proposal cohort browser journey and old-private-deal authorization fixture have not run.",
+    "Canonical migration admission and writer-only snapshot custody. Direct database owner authority is not solved by source metadata.",
+    "Current reports in browser-mode on multiple devices, cohort curves, source ingestion, model evaluation, retained-history policy and broader programme.",
+    "No exact-main qualification of this increment, human acceptance, merge or release."
+  ]
+}
