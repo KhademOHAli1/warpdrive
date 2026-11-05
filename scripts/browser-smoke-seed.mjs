@@ -108,8 +108,8 @@ try {
     [studioId],
   );
   await client.query(
-    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-    [studioId, password],
+    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+    [studioId, studioId, password],
   );
   await client.query("COMMIT");
 } catch (error) {
