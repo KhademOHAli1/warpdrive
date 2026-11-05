@@ -1,6 +1,8 @@
 "use client";
 import type React from "react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { useId, useState } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Button } from "@/components/ui/Button";
 import {
   type ChartConfig,
   ChartContainer,
@@ -9,6 +11,7 @@ import {
 } from "@/components/ui/chart";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { cn } from "@/lib/utils";
 import type { WonTrendPoint } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
 import { money, monthLabel, Panel } from "./Panel";
@@ -37,9 +40,11 @@ export function WonTrendWidget({
   const format = useFormatters();
 
   const S = useStatsMessages();
+  const [showData, setShowData] = useState(false);
+  const tableId = useId();
 
   const CONFIG: ChartConfig = {
-    [SERIES]: { label: S.trendValue, color: "hsl(var(--primary))" },
+    [SERIES]: { label: S.trendValue, color: "var(--link)" },
   };
 
   const hasWins = data.some((p) => p.count > 0);
@@ -53,8 +58,8 @@ export function WonTrendWidget({
       {hasWins && (
         <>
           {/* The SVG restates the table below it, so it is hidden rather than read twice. */}
-          <ChartContainer config={CONFIG} aria-hidden="true" className="h-48">
-            <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+          <ChartContainer config={CONFIG} aria-hidden="true" className="h-64 w-full">
+            <AreaChart data={points} margin={{ top: 16, right: 12, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="month"
@@ -64,7 +69,7 @@ export function WonTrendWidget({
                 minTickGap={16}
               />
               <YAxis
-                width={64}
+                width={80}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v: number) => money(String(v), currency, preferences)}
@@ -81,34 +86,49 @@ export function WonTrendWidget({
               />
               {/* Straight segments and a visible sample per month. A spline through one spike
                   draws a smooth hill, which reads as revenue in the zero months either side. */}
-              <Line
+              <Area
                 type="linear"
                 dataKey={SERIES}
                 stroke={`var(--color-${SERIES})`}
                 strokeWidth={2}
+                fill={`var(--color-${SERIES})`}
+                fillOpacity={0.08}
+                isAnimationActive={false}
                 dot={points.length <= DOTTED_MONTHS && { r: 2.5 }}
               />
-            </LineChart>
+            </AreaChart>
           </ChartContainer>
-          <table className="sr-only">
-            <caption>{S.trendTableCaption}</caption>
-            <thead>
-              <tr>
-                <th scope="col">{S.trendMonth}</th>
-                <th scope="col">{S.trendCount}</th>
-                <th scope="col">{S.trendValue}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((p) => (
-                <tr key={p.month}>
-                  <th scope="row">{monthLabel(p.month, preferences)}</th>
-                  <td>{format.number(p.count)}</td>
-                  <td>{money(p.value, currency, preferences)}</td>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-3"
+            aria-expanded={showData}
+            aria-controls={tableId}
+            onClick={() => setShowData(!showData)}
+          >
+            {showData ? S.hideTrendData : S.showTrendData}
+          </Button>
+          <div id={tableId} className={cn(showData ? "mt-4 overflow-x-auto" : "sr-only")}>
+            <table className="w-full text-start text-sm [&_td]:px-3 [&_td]:py-2 [&_td]:text-end [&_td]:tabular-nums [&_th]:px-3 [&_th]:py-2 [&_th]:text-start [&_tr]:border-b">
+              <caption>{S.trendTableCaption}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{S.trendMonth}</th>
+                  <th scope="col">{S.trendCount}</th>
+                  <th scope="col">{S.trendValue}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((p) => (
+                  <tr key={p.month}>
+                    <th scope="row">{monthLabel(p.month, preferences)}</th>
+                    <td>{format.number(p.count)}</td>
+                    <td>{money(p.value, currency, preferences)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </Panel>

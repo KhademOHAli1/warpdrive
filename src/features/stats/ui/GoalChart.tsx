@@ -39,7 +39,7 @@ export function GoalChart({
   const S = useStatsMessages();
 
   const CONFIG: ChartConfig = {
-    [ACTUAL]: { label: S.goalBooked, color: "hsl(var(--primary))" },
+    [ACTUAL]: { label: S.goalBooked, color: "var(--link)" },
     [TARGET]: { label: S.goalTargetPace, color: "hsl(var(--muted-foreground))" },
   };
 
@@ -60,7 +60,7 @@ export function GoalChart({
           axisLine={false}
           minTickGap={32}
         />
-        <YAxis width={56} tickLine={false} axisLine={false} tickCount={3} tickFormatter={fmt} />
+        <YAxis width={80} tickLine={false} axisLine={false} tickCount={3} tickFormatter={fmt} />
         <ChartTooltip
           content={
             <ChartTooltipContent
@@ -76,6 +76,7 @@ export function GoalChart({
           strokeWidth={1.5}
           strokeDasharray="4 4"
           dot={false}
+          isAnimationActive={false}
         />
         <Line
           type="linear"
@@ -83,6 +84,7 @@ export function GoalChart({
           stroke={`var(--color-${ACTUAL})`}
           strokeWidth={2}
           dot={false}
+          isAnimationActive={false}
           connectNulls={false}
         />
       </LineChart>

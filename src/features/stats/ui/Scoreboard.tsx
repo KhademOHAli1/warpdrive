@@ -1,18 +1,41 @@
 "use client";
+
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { cn } from "@/lib/utils";
 import type { ActivityCounters, DealCounters, WonDealStats } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
 import { durationDays, money } from "./Panel";
 
-// Pipedrive's scoreboard view: the handful of numbers a manager reads first, above the charts.
-// A metric with no data renders a dash, never a zero. "Nobody closed anything" and "everybody
-// lost" must not look identical.
-function Tile({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  detail,
+  primary = false,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  primary?: boolean;
+}) {
   return (
-    <div className="rounded-lg border p-4">
-      <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-medium tabular-nums">{value}</p>
+    <div
+      className={cn(
+        "min-w-0",
+        primary &&
+          "col-span-2 border-b pb-5 xl:col-span-1 xl:border-b-0 xl:border-e xl:pe-5 xl:pb-0",
+      )}
+    >
+      <dt className="text-pretty text-sm font-medium text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "mt-3 break-words font-semibold tabular-nums",
+          primary ? "text-4xl" : "text-2xl",
+        )}
+      >
+        {value}
+      </dd>
+      <dd className="mt-2 text-pretty text-xs leading-relaxed text-muted-foreground">{detail}</dd>
     </div>
   );
 }
@@ -31,26 +54,41 @@ export function Scoreboard({
   currency: string;
 }) {
   const preferences = useLocalePreferences();
-
   const format = useFormatters();
-
   const S = useStatsMessages();
-
-  const cycle =
-    won.medianCycleDays === null ? S.noValue : durationDays(won.medianCycleDays, preferences);
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      <Tile label={S.scoreWon} value={format.number(deals.won.count)} />
-      <Tile
+    <dl
+      aria-label={S.widgetScoreboard}
+      className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border bg-card p-5 xl:grid-cols-5"
+    >
+      <Metric
+        primary
+        label={S.trendValue}
+        value={money(deals.won.value, currency, preferences)}
+        detail={`${S.scoreWon}: ${format.number(deals.won.count)}`}
+      />
+      <Metric
         label={S.scoreWinRate}
         value={winRate === null ? S.noValue : S._extra.percent(Math.round(winRate * 100))}
+        detail={S.winRateDefinition}
       />
-      <Tile
+      <Metric
         label={S.scoreAvgDeal}
         value={won.avgValue === null ? S.noValue : money(won.avgValue, currency, preferences)}
+        detail={S.wonBasis}
       />
-      <Tile label={S.scoreCycle} value={cycle} />
-      <Tile label={S.scoreActivities} value={format.number(activities.completed)} />
-    </div>
+      <Metric
+        label={S.scoreCycle}
+        value={
+          won.medianCycleDays === null ? S.noValue : durationDays(won.medianCycleDays, preferences)
+        }
+        detail={S.cycleDefinition}
+      />
+      <Metric
+        label={S.scoreActivities}
+        value={format.number(activities.completed)}
+        detail={S.activityDefinition}
+      />
+    </dl>
   );
 }

@@ -96,6 +96,7 @@ export function GoalsWidget({
   if (data.length === 0) {
     return (
       <Panel title={S.widgetGoals} isEmpty={false} emptyText="">
+        <p className="text-xs leading-relaxed text-muted-foreground">{S.goalsScopeNotice}</p>
         <EmptyState
           title={S.emptyGoals}
           body={S.emptyGoalsBody}
@@ -113,6 +114,7 @@ export function GoalsWidget({
   }
   return (
     <Panel title={S.widgetGoals} isEmpty={false} emptyText="">
+      <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{S.goalsScopeNotice}</p>
       <p className="mb-2 text-xs text-muted-foreground">{S._extra.goalPeriodNotice}</p>
       <div className="space-y-3">
         {data.map((row) => (

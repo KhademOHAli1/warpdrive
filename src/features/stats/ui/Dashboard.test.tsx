@@ -58,10 +58,9 @@ describe("Dashboard heading", () => {
 describe("Dashboard date range", () => {
   it("passes a from/to range into the stats query and updates it when a date is picked", async () => {
     render(<Dashboard today="2026-03-01" canViewOthers currency="USD" />);
-    // Default range is the current calendar year.
-    const year = new Date().getFullYear();
+    // Default range is year to date in the viewer's server-resolved reporting date.
     expect(useQuery).toHaveBeenLastCalledWith(
-      expect.objectContaining({ from: `${year}-01-01`, to: `${year}-12-31` }),
+      expect.objectContaining({ from: "2026-01-01", to: "2026-03-01" }),
     );
     fireEvent.click(screen.getByLabelText("Range start"));
     // Day buttons carry the full date as their aria-label (e.g. "Thursday,
