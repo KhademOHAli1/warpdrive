@@ -14,8 +14,8 @@ export interface CalendarSelection {
   time?: string;
   endDate: string;
   endTime?: string;
-  // Move previews follow the agenda's elapsed-duration height, even when a DST fold
-  // projects the actual end to an earlier wall clock. This is never mutation input.
+  // Positive fallback height when a repeated hour puts the end at or before the start
+  // on the wall-clock grid. This is never mutation input.
   elapsedMinutes?: number;
 }
 
@@ -176,12 +176,12 @@ export function selectionSegments(
   }
 }
 
-function previewDuration(activity: CalendarActivity): number {
+function previewDuration(activity: CalendarActivity): number | null {
   const explicit = activity.endAt == null ? 0 : activity.endAt.getTime() - activity.dueAt.getTime();
   if (explicit > 0) return explicit;
   return activity.durationMinutes !== null && activity.durationMinutes > 0
     ? activity.durationMinutes * 60_000
-    : 30 * 60_000;
+    : null;
 }
 
 export function movePreviewSelection(
@@ -209,8 +209,17 @@ export function movePreviewSelection(
             .iso,
         );
     const duration = previewDuration(activity);
+    if (duration === null) {
+      const local = Temporal.PlainDateTime.from(`${start.date}T${start.time}`);
+      const remaining = DAY_MINUTES - (local.hour * 60 + local.minute);
+      const end = dateTimeParts(local.add({ minutes: Math.min(30, remaining) }));
+      return { ...start, endDate: end.date, endTime: end.time };
+    }
     const end = instantParts(at + duration, timeZone);
-    return { ...start, endDate: end.date, endTime: end.time, elapsedMinutes: duration / 60_000 };
+    const selection: CalendarSelection = { ...start, endDate: end.date, endTime: end.time };
+    if (end.date < start.date || (end.date === start.date && end.time <= start.time))
+      selection.elapsedMinutes = duration / 60_000;
+    return selection;
   } catch {
     return null;
   }

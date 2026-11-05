@@ -92,7 +92,7 @@ export const crmIds1: string[] = [
   "queue:activity.reminder",
   "queue:activity.reminder.native.v1",
   "queue:activity.reminder.reconcile.v1",
-  "sourceReview:src/app/(app)/activities/calendar/useCalendarPointer.ts#f37d2ad08abd5b38e7ded98673669eb1e2e30ffb6c3fa277872dc23d07667e2d",
+  "sourceReview:src/app/(app)/activities/calendar/useCalendarPointer.ts#ec2098436d0d3e7f70ded21448d2f9089557e398d83aa252a6b6ff5e2972358f",
   "sourceReview:src/app/(app)/activities/calendar/WeekAgendaGrid.tsx#7253c4abd9cb66faeba6e1ae6d0b55912051b223e1057e4037da7846339fb814",
   "sourceReview:src/app/(app)/contacts/ContactOverviewSection.tsx#fbe58edc67eb832035b8a3db0a2f3debe1aadea64a5ee06d23e12990b8803f35",
   "sourceReview:src/app/(app)/contacts/orgs/[orgId]/OrgFirmographicsPanel.tsx#3095abd7254a40a6446b17535dfaf4341acc79dea4d47fd18cd22d3410b60201",
@@ -106,7 +106,7 @@ export const crmIds1: string[] = [
   "sourceReview:src/features/activities/ActivityDayGroups.tsx#5ef2f98e4bc5ba2ed950d5a2c5556ecda85441aa1e57726ef84bb97e0a7b9339",
   "sourceReview:src/features/activities/activityDelete.ts#e23d8fdb44a1f6ed4597ba7dcd2927662c80e73865cc0c161dde330943c58647",
   "sourceReview:src/features/activities/ActivityList.tsx#33ddc049bdb7070b3a47a7c4e5a9f8277ab9406838273dfc1662954e171c77cc",
-  "sourceReview:src/features/activities/activityUpdate.ts#2a169e98546c2fea74dc67d06f560db9327a5ee4d481cb6f481e8cbebd31decf",
+  "sourceReview:src/features/activities/activityUpdate.ts#9e5edaee16525eb52f2ea78ed34c8279f2f9fa42f27c0e49490eb9893076daed",
   "sourceReview:src/features/activities/calendarAfterCommit.ts#8d986a7fd0750f2f97121a5c6514fc7481ee1f7028a06aa84b03c071e2643e9b",
   "sourceReview:src/features/activities/isBlankHtml.ts#f0ddf220c4ba92bf79bdb0ab652fd41b3661ccdfcd5ebe0c7b69dd50344a0266",
   "sourceReview:src/features/activities/nextActivity.ts#974f5ff8733af6a7dbd7fe49a11c06c4a26dfbb013a7b9143efc59b903887b1a",
@@ -156,4 +156,10 @@ export const crmIds1: string[] = [
   "sourceReview:src/app/(app)/settings/company/labels/useLabelCatalog.ts#400e9599821af3cdda7d6d92ce42294f52ec39c89543b3b0377c31a0db08664f",
   "derived:src/features/deal-workspace/history/customFieldOptions.ts",
   "sourceReview:src/features/deal-workspace/history/customFieldOptions.ts#954942aa4fff5859a28c8bfc764fd0a0eec52396e587fcca42109de787476c90",
+];
+
+export const calendarUndoIds1: string[] = [
+  "sourceReview:src/features/activities/calendarRescheduleUndo.ts#58c225e294eeafbc6e40977aba72042a62482c3b66c2482a10d0d900c0d2b603",
+  "writer:src/features/activities/calendarRescheduleUndo.ts#update:payload",
+  "writer:src/features/activities/calendarRescheduleUndo.ts#update:warpdrive-calendar-undo-v1",
 ];

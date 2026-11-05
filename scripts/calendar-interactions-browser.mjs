@@ -23,8 +23,8 @@ async function painted(page) {
 
 // Set up stable scroll geometry only. The gestures below use Chromium's actual mouse events;
 // they do not dispatch DOM events, call application handlers, or replace network responses.
-async function parkTimedRange(page, firstMinute, lastMinute) {
-  const column = surface(page, "time", date);
+async function parkTimedRange(page, firstMinute, lastMinute, iso = date) {
+  const column = surface(page, "time", iso);
   await column.waitFor();
   await page.locator("[data-agenda-scroll]").scrollIntoViewIfNeeded();
   await column.evaluate(
@@ -91,11 +91,12 @@ async function assertSchedule(dialog, calendar, iso, start, end) {
   );
 }
 
-async function checkPersistedEvent(page, calendar, id, iso, start, end) {
+async function checkPersistedEvent(page, calendar, id, iso, start, end, touch = false) {
   await page.reload();
   const chip = page.locator(`[data-calendar-event-id="${id}"]`);
   await chip.waitFor();
-  await chip.click();
+  if (touch) await chip.tap();
+  else await chip.click();
   const dialog = page.getByRole("dialog");
   await assertSchedule(dialog, calendar, iso, start, end);
   assert.equal(
@@ -106,6 +107,71 @@ async function checkPersistedEvent(page, calendar, id, iso, start, end) {
   );
   await page.keyboard.press("Escape");
   await dialog.waitFor({ state: "hidden" });
+}
+
+async function shiftDayEvent(page, id, minutes, edge) {
+  await parkTimedRange(page, 600, 825);
+  const chip = page.locator(`[data-calendar-event-id="${id}"]`);
+  const handle = edge === undefined ? chip : chip.locator(`[data-calendar-resize-edge="${edge}"]`);
+  const box = await bounds(handle, "Event chip or resize grip");
+  const column = await bounds(surface(page, "time", date), "Day surface");
+  const from = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await drag(page, from, { x: from.x, y: from.y + (column.height * minutes) / 1440 });
+}
+
+async function assertTouchMove(page, calendar) {
+  await page.goto(`/activities/calendar?view=day&d=${nextDate}`);
+  const chip = page.locator("[data-calendar-event-id]").filter({ hasText: subject });
+  await chip.waitFor();
+  const id = await chip.getAttribute("data-calendar-event-id");
+  assert.ok(id, "The event moved on desktop is available on touch");
+  await checkPersistedEvent(page, calendar, id, nextDate, "12:15", "13:30", true);
+
+  const session = await page.context().newCDPSession(page);
+  const touch = (type, point) =>
+    session.send("Input.dispatchTouchEvent", {
+      type,
+      touchPoints: point === undefined ? [] : [{ ...point, id: 1 }],
+    });
+  try {
+    await parkTimedRange(page, 735, 885, nextDate);
+    const box = await bounds(chip, "Event chip before quick swipe");
+    const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const scroll = page.locator("[data-agenda-scroll]");
+    const before = await scroll.evaluate((node) => node.scrollTop);
+    await touch("touchStart", start);
+    await touch("touchMove", { x: start.x, y: start.y - 18 });
+    await touch("touchMove", { x: start.x, y: start.y - 75 });
+    await touch("touchEnd");
+    await page.waitForFunction(
+      (previous) => (document.querySelector("[data-agenda-scroll]")?.scrollTop ?? 0) > previous + 5,
+      before,
+    );
+    assert.equal(await page.getByRole("dialog").count(), 0, "A swipe still scrolls the agenda");
+    await checkPersistedEvent(page, calendar, id, nextDate, "12:15", "13:30", true);
+
+    const column = await parkTimedRange(page, 735, 885, nextDate);
+    const day = await bounds(column, "Touch day surface");
+    const event = await bounds(chip, "Event chip before long press");
+    const from = { x: event.x + event.width / 2, y: event.y + event.height / 2 };
+    await touch("touchStart", from);
+    try {
+      await chip.and(page.locator('[data-calendar-dragging="true"]')).waitFor();
+      await touch("touchMove", { x: from.x, y: from.y + (day.height * 60) / 1440 });
+      await painted(page);
+    } finally {
+      await touch("touchEnd");
+    }
+    await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
+    assert.equal(
+      await page.getByRole("dialog").count(),
+      0,
+      "A touch drop does not open the editor",
+    );
+    await checkPersistedEvent(page, calendar, id, nextDate, "13:15", "14:30", true);
+  } finally {
+    await session.detach();
+  }
 }
 
 export async function runCalendarInteractionsBrowserSmoke({ journey, login, catalog }) {
@@ -140,21 +206,27 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
       assert.ok(id, "The drawn event receives a persisted ID");
       await checkPersistedEvent(page, calendar, id, date, "10:00", "11:00");
 
-      await parkTimedRange(page, 600, 780);
-      const chipBox = await bounds(
-        page.locator(`[data-calendar-event-id="${id}"]`),
-        "Saved event chip",
-      );
-      const fullDay = await bounds(surface(page, "time", date), "Day surface for time move");
-      const from = { x: chipBox.x + chipBox.width * 0.65, y: chipBox.y + 6 };
-      await drag(page, from, { x: from.x, y: from.y + (fullDay.height * 120) / 1440 });
+      await shiftDayEvent(page, id, 120);
       await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
       assert.equal(
         await page.getByRole("dialog").count(),
         0,
         "Trailing drag click does not open the editor",
       );
+      await page.getByRole("button", { name: calendar.interaction.undo, exact: true }).click();
+      await page.getByText(calendar.interaction.undoSaved, { exact: true }).waitFor();
+      await checkPersistedEvent(page, calendar, id, date, "10:00", "11:00");
+
+      await shiftDayEvent(page, id, 120);
+      await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
       await checkPersistedEvent(page, calendar, id, date, "12:00", "13:00");
+
+      await shiftDayEvent(page, id, 15, "start");
+      await page.getByText(calendar.interaction.resizeSaved, { exact: true }).waitFor();
+      await checkPersistedEvent(page, calendar, id, date, "12:15", "13:00");
+      await shiftDayEvent(page, id, 30, "end");
+      await page.getByText(calendar.interaction.resizeSaved, { exact: true }).waitFor();
+      await checkPersistedEvent(page, calendar, id, date, "12:15", "13:30");
 
       // A cancelled active drag must neither invoke a server action nor change stored time.
       await parkTimedRange(page, 720, 900);
@@ -171,7 +243,7 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
           "Chip for cancellation",
         );
         const day = await bounds(surface(page, "time", date), "Day for cancellation");
-        const origin = { x: current.x + current.width * 0.65, y: current.y + 6 };
+        const origin = { x: current.x + current.width * 0.65, y: current.y + current.height / 2 };
         await drag(
           page,
           origin,
@@ -193,7 +265,7 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
       } finally {
         page.off("request", recordAction);
       }
-      await checkPersistedEvent(page, calendar, id, date, "12:00", "13:00");
+      await checkPersistedEvent(page, calendar, id, date, "12:15", "13:30");
 
       await page.goto(`/activities/calendar?view=month&d=${date}`);
       const nextCell = surface(page, "date", nextDate);
@@ -209,7 +281,7 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
         { x: destination.x + destination.width / 2, y: destination.y + destination.height - 12 },
       );
       await page.getByText(calendar.interaction.moveSaved, { exact: true }).waitFor();
-      await checkPersistedEvent(page, calendar, id, nextDate, "12:00", "13:00");
+      await checkPersistedEvent(page, calendar, id, nextDate, "12:15", "13:30");
       assert.equal(
         await surface(page, "date", date).locator(`[data-calendar-event-id="${id}"]`).count(),
         0,
@@ -265,5 +337,15 @@ export async function runCalendarInteractionsBrowserSmoke({ journey, login, cata
       );
     },
     { width: 1440, height: 1100 },
+  );
+  await journey(
+    "calendar-touch-interactions",
+    "en",
+    async (page) => {
+      await login(page);
+      await assertTouchMove(page, calendar);
+    },
+    { width: 390, height: 844 },
+    true,
   );
 }

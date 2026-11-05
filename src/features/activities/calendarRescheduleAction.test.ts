@@ -2,6 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { rescheduleCalendarEventAction } from "./calendarRescheduleAction";
 import type { CalendarRescheduleActionResult } from "./calendarRescheduleSchemas";
+import { verifyCalendarUndo } from "./calendarRescheduleUndo";
 
 const deps = vi.hoisted(() => ({
   csrf: vi.fn(),
@@ -73,7 +74,7 @@ it("requires an actual cookie-bound session", async () => {
   expect(deps.authority).not.toHaveBeenCalled();
 });
 
-it("binds expected actor through the native authority fence and returns only confirmed stored timing", async () => {
+it("binds the confirmed timing receipt to the actor, session, event and both stored schedules", async () => {
   const who = { userId: actorId, sessionId: id };
   const actor = { id: actorId };
   const tx = {};
@@ -89,7 +90,27 @@ it("binds expected actor through the native authority fence and returns only con
       apply: (transaction: object, currentActor: object) => Promise<CalendarRescheduleActionResult>,
     ) => apply(tx, actor),
   );
-  expect(await rescheduleCalendarEventAction(input, "csrf")).toEqual({ ok: true, value });
+  const result = await rescheduleCalendarEventAction(input, "csrf");
+  expect(result).toEqual({ ok: true, value, undoToken: expect.stringMatching(/^[\w-]{43}$/) });
+  if (!result.ok || result.undoToken === undefined) throw new Error("Missing undo receipt");
+  const binding = {
+    actorId,
+    sessionId: who.sessionId,
+    id,
+    timeZone: "UTC",
+    expected: value,
+    original: source,
+  };
+  expect(verifyCalendarUndo(binding, result.undoToken)).toBe(true);
+  for (const changed of [
+    { ...binding, actorId: id },
+    { ...binding, sessionId: actorId },
+    { ...binding, id: actorId },
+    { ...binding, timeZone: "Europe/Berlin" },
+    { ...binding, original: { ...source, durationMinutes: null } },
+    { ...binding, expected: { ...value, endAt: "2026-11-06T10:15:00.000Z" } },
+  ])
+    expect(verifyCalendarUndo(changed, result.undoToken)).toBe(false);
   expect(deps.authority).toHaveBeenCalledWith(
     {},
     who,
@@ -97,8 +118,34 @@ it("binds expected actor through the native authority fence and returns only con
     expect.any(AbortSignal),
     expect.any(Function),
   );
-  expect(deps.move).toHaveBeenCalledWith(tx, actor, input.activity, expect.any(AbortSignal));
+  expect(deps.move).toHaveBeenCalledWith(
+    tx,
+    actor,
+    input.activity,
+    expect.any(AbortSignal),
+    who.sessionId,
+  );
   expect(deps.after).toHaveBeenCalledWith(id);
+});
+
+it("does not issue another receipt for a no-op or acknowledged undo", async () => {
+  deps.session.mockResolvedValue({ userId: actorId, sessionId: id });
+  const value = { id, ...source };
+  deps.authority.mockResolvedValue({ ok: true, value });
+  expect(await rescheduleCalendarEventAction(input, "csrf")).toEqual({ ok: true, value });
+  expect(
+    await rescheduleCalendarEventAction(
+      {
+        ...input,
+        activity: {
+          ...input.activity,
+          expected: { ...source, dueAt: "2026-11-06T09:15:00.000Z" },
+          target: { undo: source, token: "a".repeat(43) },
+        },
+      },
+      "csrf",
+    ),
+  ).toEqual({ ok: true, value });
 });
 
 it("does not nudge reminders after an authority or stale-source denial", async () => {

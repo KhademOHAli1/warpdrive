@@ -8,7 +8,12 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { rescheduleCalendarEvent } from "./calendarReschedule";
 import { calendarScheduleSnapshot } from "./calendarReschedulePlan";
-import type { CalendarRescheduleInput } from "./calendarRescheduleSchemas";
+import type {
+  CalendarRescheduleInput,
+  CalendarRescheduleValue,
+  CalendarScheduleSnapshot,
+} from "./calendarRescheduleSchemas";
+import { signCalendarUndo } from "./calendarRescheduleUndo";
 import { createActivity } from "./repo";
 
 const {
@@ -100,6 +105,25 @@ function input(
   target: CalendarRescheduleInput["target"],
 ): CalendarRescheduleInput {
   return { id: f.activity.id, expected: f.expected, timeZone: "Europe/Berlin", target };
+}
+
+const undoSessionId = "00000000-0000-4000-8000-000000000001";
+function undoInput(
+  f: Awaited<ReturnType<typeof fixture>>,
+  acknowledged: CalendarRescheduleValue,
+  original: CalendarScheduleSnapshot = f.expected,
+): CalendarRescheduleInput {
+  const expected = calendarScheduleSnapshot(acknowledged);
+  const timeZone = "Europe/Berlin";
+  const token = signCalendarUndo({
+    actorId: f.actor.id,
+    sessionId: undoSessionId,
+    id: f.activity.id,
+    timeZone,
+    expected,
+    original,
+  });
+  return { id: f.activity.id, expected, timeZone, target: { undo: original, token } };
 }
 
 it("moves only temporal fields, returns persisted timing and reschedules the current reminder", async () => {
@@ -201,6 +225,146 @@ it("preserves point and duration-only representations on a date-only move", asyn
       value: { dueAt: "2027-03-28T07:15:29.123Z", endAt: null, durationMinutes },
     });
   }
+});
+
+it("undoes to the exact later-fold instant and legacy duration representation, rebuilding reminders", async () => {
+  const f = await fixture();
+  const original = {
+    ...f.expected,
+    dueAt: "2027-10-31T01:30:29.123Z",
+    endAt: null,
+    durationMinutes: 60,
+  };
+  await h.db
+    .update(activities)
+    .set({ dueAt: new Date(original.dueAt), endAt: null, durationMinutes: 60 })
+    .where(eq(activities.id, f.activity.id));
+  const moved = await rescheduleCalendarEvent(
+    h.db,
+    f.actor,
+    {
+      ...input(f, { date: "2027-11-01", time: "09:00" }),
+      expected: original,
+    },
+    signal(),
+  );
+  if (!moved.ok) throw moved.error;
+  const movedReminder = await reminder(f.activity.id);
+  const undo = undoInput(f, moved.value, original);
+  expect(await rescheduleCalendarEvent(h.db, f.actor, undo, signal(), undoSessionId)).toEqual({
+    ok: true,
+    value: { id: f.activity.id, ...original },
+  });
+  const restoredReminder = await reminder(f.activity.id);
+  expect(restoredReminder.selection).toEqual(movedReminder.selection);
+  expect(restoredReminder.generationId).not.toBe(movedReminder.generationId);
+  expect(restoredReminder.fireAt?.toISOString()).toBe("2027-10-31T01:20:29.123Z");
+  expect(await row(f.activity.id)).toMatchObject({
+    dueAt: new Date(original.dueAt),
+    endAt: null,
+    durationMinutes: 60,
+  });
+});
+
+it("restores null legacy all-day civil columns after an ordinary move canonicalizes them", async () => {
+  const f = await fixture(true);
+  const original = {
+    ...f.expected,
+    dueAt: "2027-03-26T23:27:59.125Z",
+    endAt: null,
+    dueDate: null,
+    endDate: null,
+    durationMinutes: null,
+  };
+  await h.db
+    .update(activities)
+    .set({ ...original, dueAt: new Date(original.dueAt) })
+    .where(eq(activities.id, f.activity.id));
+  const moved = await rescheduleCalendarEvent(
+    h.db,
+    f.actor,
+    {
+      ...input(f, { date: "2027-04-01" }),
+      expected: original,
+    },
+    signal(),
+  );
+  if (!moved.ok) throw moved.error;
+  expect(moved.value.dueDate).toBe("2027-04-01");
+  expect(
+    await rescheduleCalendarEvent(
+      h.db,
+      f.actor,
+      undoInput(f, moved.value, original),
+      signal(),
+      undoSessionId,
+    ),
+  ).toEqual({ ok: true, value: { id: f.activity.id, ...original } });
+  expect(await row(f.activity.id)).toMatchObject({ ...original, dueAt: new Date(original.dueAt) });
+});
+
+it("resizes a stored endpoint, preserves the other exactly and supports undoing the resize", async () => {
+  const f = await fixture();
+  const resized = await rescheduleCalendarEvent(
+    h.db,
+    f.actor,
+    input(f, { edge: "start", date: "2027-03-27", time: "08:45" }),
+    signal(),
+  );
+  if (!resized.ok) throw resized.error;
+  expect(resized.value).toEqual({
+    id: f.activity.id,
+    ...f.expected,
+    dueAt: "2027-03-27T07:45:00.000Z",
+    durationMinutes: 106,
+  });
+  expect((await reminder(f.activity.id)).fireAt?.toISOString()).toBe("2027-03-27T07:35:00.000Z");
+  expect(
+    await rescheduleCalendarEvent(
+      h.db,
+      f.actor,
+      undoInput(f, resized.value),
+      signal(),
+      undoSessionId,
+    ),
+  ).toEqual({ ok: true, value: { id: f.activity.id, ...f.expected } });
+  expect((await reminder(f.activity.id)).fireAt?.toISOString()).toBe("2027-03-27T08:05:29.123Z");
+});
+
+it("rejects a forged undo and leaves an intervening schedule and reminder unchanged", async () => {
+  const f = await fixture();
+  const moved = await rescheduleCalendarEvent(
+    h.db,
+    f.actor,
+    input(f, { date: "2027-04-01", time: "09:00" }),
+    signal(),
+  );
+  if (!moved.ok) throw moved.error;
+  const undo = undoInput(f, moved.value);
+  expect(await rescheduleCalendarEvent(h.db, f.actor, undo, signal(), f.actor.id)).toMatchObject({
+    ok: false,
+    error: { id: ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID },
+  });
+  const next = await rescheduleCalendarEvent(
+    h.db,
+    f.actor,
+    {
+      ...input(f, { edge: "end", date: "2027-04-01", time: "11:30" }),
+      expected: undo.expected,
+    },
+    signal(),
+  );
+  if (!next.ok) throw next.error;
+  const after = await row(f.activity.id);
+  const afterReminder = await reminder(f.activity.id);
+  expect(await rescheduleCalendarEvent(h.db, f.actor, undo, signal(), undoSessionId)).toMatchObject(
+    {
+      ok: false,
+      error: { id: ERROR_IDS.ACTIVITY_SCHEDULE_STALE },
+    },
+  );
+  expect(await row(f.activity.id)).toEqual(after);
+  expect(await reminder(f.activity.id)).toEqual(afterReminder);
 });
 
 it("denies a visible but non-editable event and hides an invisible event before comparing stale timing", async () => {
