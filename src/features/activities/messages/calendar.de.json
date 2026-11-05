@@ -119,5 +119,18 @@
   "emptyDayTitle": "Keine Aktivitäten an diesem Tag",
   "emptyYearTitle": "Keine Aktivitäten in diesem Jahr",
   "emptyFilteredDayTitle": "Keine Aktivitäten entsprechen diesen Filtern an diesem Tag",
-  "emptyFilteredYearTitle": "Keine Aktivitäten entsprechen diesen Filtern in diesem Jahr"
+  "emptyFilteredYearTitle": "Keine Aktivitäten entsprechen diesen Filtern in diesem Jahr",
+  "interaction": {
+    "hint": "Ziehe einen Termin, um ihn zu verschieben. Ziehe über einen freien Bereich, um einen Termin anzulegen. Esc bricht ab.",
+    "range": "{start} – {end}",
+    "moving": "Termin wird verschoben…",
+    "moveSaved": "Termin verschoben.",
+    "moveFailed": "Der Termin konnte nicht verschoben werden.",
+    "moveStale": "Dieser Termin wurde geändert. Prüfe seine aktuelle Uhrzeit, bevor du ihn erneut verschiebst.",
+    "moveUnknown": "Das Verschieben konnte nicht bestätigt werden. Aktualisiere den Kalender, um die Uhrzeit zu prüfen.",
+    "moveActorMissing": "Lade den Kalender neu, bevor du einen Termin verschiebst.",
+    "moveRefreshFailed": "Termin verschoben, aber der Kalender konnte nicht aktualisiert werden. Lade ihn neu, um den aktuellen Stand zu sehen.",
+    "moveDenied": "Du hast keine Berechtigung, diesen Termin zu verschieben.",
+    "moveInvalid": "Der Termin kann nicht an diese Stelle verschoben werden. Wähle ein anderes Datum oder eine andere Uhrzeit."
+  }
 }

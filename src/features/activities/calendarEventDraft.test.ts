@@ -54,6 +54,68 @@ describe("calendar event drafts", () => {
     });
   });
 
+  it("keeps the explicit drawn time span across midnight", () => {
+    const d = calendarEventDraft({
+      date: "2027-03-20",
+      time: "23:15",
+      endDate: "2027-03-21",
+      endTime: "00:45",
+      timeZone: "Asia/Tehran",
+    });
+    expect(d).toMatchObject({
+      startDate: "2027-03-20",
+      startTime: "23:15",
+      endDate: "2027-03-21",
+      endTime: "00:45",
+    });
+  });
+
+  it("keeps an explicit all-day range as inclusive civil dates across Nowruz", () => {
+    const d = calendarEventDraft({
+      date: "2027-03-20",
+      endDate: "2027-03-22",
+      timeZone: "Asia/Tehran",
+    });
+    expect(d).toMatchObject({
+      startDate: "2027-03-20",
+      startTime: "",
+      endDate: "2027-03-22",
+      endTime: "",
+    });
+  });
+
+  it("retains selected wall-clock bounds through DST and leaves validation authoritative", () => {
+    const d = calendarEventDraft({
+      date: "2027-03-28",
+      time: "02:15",
+      endDate: "2027-03-28",
+      endTime: "03:45",
+      timeZone: "Europe/Berlin",
+    });
+    expect(d).toMatchObject({ startTime: "02:15", endTime: "03:45" });
+    d.typeId = stored.typeId;
+    d.subject = "Besprechung";
+    expect(calendarEventIssue(d, "Europe/Berlin")).toBe("invalidWallTime");
+  });
+
+  it("never replaces a stored event's bounds with creation defaults", () => {
+    const d = calendarEventDraft({
+      date: "2027-03-20",
+      time: "09:00",
+      endDate: "2027-03-23",
+      endTime: "17:00",
+      editing: stored,
+      timeZone: "Europe/Berlin",
+    });
+    expect(d).toMatchObject({
+      startDate: "2026-10-25",
+      startTime: "02:30",
+      endDate: "2026-10-25",
+      endTime: "03:30",
+    });
+    expect(calendarEventPatch(stored, d, "Europe/Berlin")).toBeNull();
+  });
+
   it("reopens a same-day duration and preserves notes, guests and meeting URL", () => {
     const d = calendarEventDraft({ editing: stored, timeZone: "Europe/Berlin" });
     expect(d).toMatchObject({

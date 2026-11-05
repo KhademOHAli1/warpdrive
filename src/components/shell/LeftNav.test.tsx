@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { DOCS_SITE_URL } from "@/constants/docs";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { LeftNav } from "./LeftNav";
 import styles from "./LeftNav.module.css";
 
@@ -37,6 +39,8 @@ afterEach(() => {
   cleanup();
   clearNavCookie();
   mediaMatches = true;
+  document.documentElement.lang = "en";
+  document.documentElement.dir = "ltr";
 });
 
 describe("LeftNav", () => {
@@ -57,9 +61,7 @@ describe("LeftNav", () => {
         "/leads",
         "/contacts/people",
         "/dashboard",
-        "/workflows",
-        "/settings",
-        DOCS_SITE_URL,
+        ...(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []),
       ]);
     },
   );
@@ -75,6 +77,98 @@ describe("LeftNav", () => {
       screen.getByRole("button", { name: expanded ? "Collapse sidebar" : "Expand sidebar" }),
     ).not.toBeNull();
   });
+
+  test.each([true, false])(
+    "keeps the refined footer toggle below the links, separate from the Home header (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(<LeftNav />);
+      const home = screen.getByRole("link", { name: "Warpdrive home" });
+      const header = home.closest(`.${styles.sidebarTopbar}`);
+      const toggle = screen.getByRole("button", {
+        name: expanded ? "Collapse sidebar" : "Expand sidebar",
+      });
+      const navigation = screen.getByRole("navigation", { name: "Primary" });
+      expect(header).not.toBeNull();
+      expect(header?.contains(toggle)).toBe(false);
+      expect(header?.contains(home)).toBe(true);
+      expect(home.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(toggle.textContent?.trim()).toBe("");
+      expect(toggle.querySelector("kbd")).toBeNull();
+      expect(toggle.getAttribute("type")).toBe("button");
+      expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
+      expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
+      expect(navigation.contains(toggle)).toBe(true);
+      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(true);
+      if (expanded) {
+        const docs = screen.getByRole("link", { name: "Help & docs" });
+        expect(
+          docs.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      }
+      expect(toggle.querySelector('svg[aria-hidden="true"][focusable="false"]')).not.toBeNull();
+    },
+  );
+
+  test("supports keyboard activation in both directions and persists the footer control choice", async () => {
+    const user = userEvent.setup();
+    setViewport(true);
+    const first = render(<LeftNav />);
+    const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
+    collapse.focus();
+    expect(document.activeElement).toBe(collapse);
+    await user.keyboard("{Enter}");
+    const expand = screen.getByRole("button", { name: "Expand sidebar" });
+    expect(expand.getAttribute("aria-expanded")).toBe("false");
+    expect(document.cookie).toContain("wd_nav_expanded=0");
+    expect(
+      screen
+        .getByRole("navigation", { name: "Primary" })
+        .querySelector('a[href="/pipeline"] [data-sidebar-copy-state]')
+        ?.getAttribute("aria-hidden"),
+    ).toBe("true");
+    expand.focus();
+    await user.keyboard(" ");
+    expect(
+      screen.getByRole("button", { name: "Collapse sidebar" }).getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(document.cookie).toContain("wd_nav_expanded=1");
+    first.unmount();
+    setViewport(false);
+    render(<LeftNav />);
+    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(
+      screen
+        .getByRole("navigation", { name: "Primary" })
+        .querySelector('a[href="/pipeline"] [data-sidebar-copy-state]')
+        ?.getAttribute("aria-hidden"),
+    ).toBe("false");
+  });
+
+  test.each([true, false])(
+    "keeps the Farsi footer toggle named with a decorative mirrored glyph (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(
+        <LocaleProvider locale="fa">
+          <LeftNav />
+        </LocaleProvider>,
+      );
+      const toggle = screen.getByRole("button", {
+        name: expanded ? "جمع کردن نوار کناری" : "باز کردن نوار کناری",
+      });
+      expect(toggle.textContent?.trim()).toBe("");
+      expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
+      expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
+      const glyph = toggle.querySelector("svg");
+      expect(glyph?.getAttribute("aria-hidden")).toBe("true");
+      expect(glyph?.getAttribute("focusable")).toBe("false");
+      expect(glyph?.getAttribute("data-rtl-mirror")).toBe("true");
+      expect(toggle.closest(`.${styles.sidebarTopbar}`)).toBeNull();
+      expect(toggle.closest(`.${styles.utilityNav}`)).not.toBeNull();
+      expect(document.documentElement.dir).toBe("rtl");
+    },
+  );
 
   test("server render honors initialExpanded so the width is correct at first paint (no reload flash)", () => {
     // The flash was caused by the server always rendering collapsed (localStorage is not readable
@@ -170,7 +264,7 @@ describe("LeftNav", () => {
 
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 
   test("keeps collapsed destinations named while hiding their duplicate inline labels", () => {
@@ -249,7 +343,7 @@ describe("LeftNav bracket shortcuts", () => {
     expect(docs.getAttribute("rel")).toContain("noreferrer");
   });
 
-  test("keeps Settings, Help and the collapse control together below daily work", () => {
+  test("keeps only Settings, Workflows and Help in the utility footer below daily work", () => {
     setViewport(true);
     render(<LeftNav />);
     const navigation = screen.getByRole("navigation", { name: "Primary" });
@@ -259,17 +353,35 @@ describe("LeftNav bracket shortcuts", () => {
       within(footer as HTMLElement)
         .getAllByRole("link")
         .map((link) => link.textContent),
-    ).toEqual(["Settings", "Help & docs"]);
-    const docs = screen.getByRole("link", { name: "Help & docs" });
+    ).toEqual(["Settings", "Workflows", "Help & docs"]);
     const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
     expect(footer?.contains(toggle)).toBe(true);
-    expect(docs.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(footer as HTMLElement).getAllByRole("button")).toHaveLength(1);
+    expect(navigation.contains(toggle)).toBe(true);
   });
 
-  test("keeps an accessible name for the docs link on the collapsed rail", () => {
+  test("removes utility links from the collapsed rail and restores them when opened", async () => {
+    const user = userEvent.setup();
     setViewport(false);
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Help & docs" })).not.toBeNull();
+    const footer = screen
+      .getByRole("navigation", { name: "Primary" })
+      .querySelector(`.${styles.utilityNav}`) as HTMLElement;
+    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    const opener = within(footer).getByRole("button", { name: "Expand sidebar" });
+    opener.focus();
+    await user.keyboard("{Enter}");
+    expect(
+      within(footer)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Settings", "Workflows", "Help & docs"]);
+    expect(document.activeElement).toBe(
+      within(footer).getByRole("button", { name: "Collapse sidebar" }),
+    );
+    await user.keyboard("{Enter}");
+    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    expect(document.activeElement).toBe(opener);
   });
 });
 

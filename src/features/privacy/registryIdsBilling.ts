@@ -11,7 +11,7 @@ export const billingIds: string[] = [
   "external:src/features/billing/ui/api.ts#fetch",
   "sourceReview:src/app/(app)/settings/billing/page.tsx#bada766ca689f0bd8045f381b52ff4f922018b825375eebf207e417e56edb927",
   "sourceReview:src/app/(app)/settings/layout.tsx#eb3ebe1bea4d068e8839d0b09bb2ddca7324908e0f2bead21224b77aed6f2cdb",
-  "sourceReview:src/app/(app)/settings/settingsNavSections.ts#76942c6a11f7108c43c4b04d32b82beecbc9c89417d3b9233e2e8e2bc87b6121",
+  "sourceReview:src/app/(app)/settings/settingsNavSections.ts#892080e6b201d9d85544ca21de3998ddc4c7161fab8bf70a36761f02f3e409ab",
   "sourceReview:src/app/api/billing/[[...path]]/route.ts#80de1a7ad06982e645e9a1caa205aa5d4ffb21a22939e6fae4c17a8f108f1ec0",
   "sourceReview:src/app/api/billing/stripe/webhook/route.ts#a87efb90cb4d50fca7eceaaeaa05eee79e562ed444bba8e79e165f5495373aed",
   "sourceReview:src/features/billing/checkoutPolicy.ts#6a39193e481017e80805d2a2e8b9b8fa4d180bc25b25573f84bee8104c8afa2b",

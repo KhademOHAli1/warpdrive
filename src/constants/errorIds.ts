@@ -143,6 +143,7 @@ export const ERROR_IDS = {
   ACTIVITY_COMPLETE_INPUT_INVALID: "E_ACTIVITY_008", // complete action input failed strict Zod validation
   ACTIVITY_NATIVE_INPUT_INVALID: "E_ACTIVITY_009", // strict native event/reminder envelope input
   ACTIVITY_REMINDER_STALE: "E_ACTIVITY_010", // managed generation changed; refresh before saving
+  ACTIVITY_SCHEDULE_STALE: "E_ACTIVITY_011", // calendar source timing changed; refresh before moving
   // LABEL
   LABEL_NOT_FOUND: "E_LABEL_001", // label not found (rename/recolor/delete targeted a missing label)
   LABEL_IN_USE: "E_LABEL_002", // delete blocked: label still applied to one or more records

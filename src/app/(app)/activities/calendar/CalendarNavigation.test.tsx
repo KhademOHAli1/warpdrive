@@ -94,3 +94,14 @@ describe.each([
     });
   },
 );
+
+vi.mock("@/features/activities/useCalendarReschedule", () => ({
+  useCalendarReschedule: () => ({
+    pending: false,
+    error: null,
+    notice: null,
+    canMove: true,
+    move: vi.fn(),
+    clearFeedback: vi.fn(),
+  }),
+}));

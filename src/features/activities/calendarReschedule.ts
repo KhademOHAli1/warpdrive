@@ -1,0 +1,78 @@
+import { and, eq, isNull } from "drizzle-orm";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import type { Db } from "@/db/client";
+import { type Activity, activities } from "@/db/schema/activities";
+import { can } from "@/features/permissions/can";
+import { canSee } from "@/features/permissions/canSee";
+import type { PermSetUser } from "@/features/permissions/effective";
+import { err, ok, type Result } from "@/types/result";
+import { updateActivity } from "./activityUpdate";
+import {
+  calendarReschedulePatch,
+  calendarScheduleMatches,
+  calendarScheduleSnapshot,
+} from "./calendarReschedulePlan";
+import { type CalendarRescheduleValue, calendarRescheduleInput } from "./calendarRescheduleSchemas";
+import { readActivityReminderView } from "./reminderReadModel";
+import { resolveActivityVisibility } from "./visibility";
+
+function persistedSchedule(current: Activity): CalendarRescheduleValue {
+  if (current.dueAt === null)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Moved event lost its date");
+  return { id: current.id, ...calendarScheduleSnapshot({ ...current, dueAt: current.dueAt }) };
+}
+
+export async function rescheduleCalendarEvent(
+  db: Db,
+  actor: PermSetUser,
+  raw: unknown,
+  signal: AbortSignal,
+): Promise<Result<CalendarRescheduleValue, AppError>> {
+  signal.throwIfAborted();
+  const parsed = calendarRescheduleInput.safeParse(raw);
+  if (!parsed.success)
+    return err(new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar move"));
+  const input = parsed.data;
+  return db.transaction(async (tx) => {
+    const [current] = await tx
+      .select()
+      .from(activities)
+      .where(and(eq(activities.id, input.id), isNull(activities.deletedAt)))
+      .for("update");
+    signal.throwIfAborted();
+    if (current === undefined)
+      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "Activity not found"));
+    const visibility = await resolveActivityVisibility(tx, current, signal);
+    if (visibility === null || !canSee(actor, visibility))
+      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "Activity not found"));
+    if (!can(actor, "activity.edit", visibility))
+      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "Activity edit forbidden"));
+    // Keep this comparison inside the row lock. Calling updateActivity alone after
+    // an unlocked read would let a later drop overwrite an intervening move.
+    if (!calendarScheduleMatches(current, input.expected))
+      return err(new AppError(ERROR_IDS.ACTIVITY_SCHEDULE_STALE, "Activity schedule changed"));
+    let patch: ReturnType<typeof calendarReschedulePatch>;
+    try {
+      patch = calendarReschedulePatch(input.expected, input.target, input.timeZone);
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+      return err(
+        new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Invalid calendar move target"),
+      );
+    }
+    if (patch === null) return ok(persistedSchedule(current));
+    const reminder = await readActivityReminderView(tx, current.id, signal);
+    const result = await updateActivity(
+      tx,
+      actor,
+      {
+        id: current.id,
+        ...patch,
+        expectedReminderGeneration: reminder.reminder?.generationId ?? null,
+      },
+      signal,
+    );
+    if (!result.ok) return result;
+    return ok(persistedSchedule(result.value));
+  });
+}
