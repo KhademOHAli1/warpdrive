@@ -1,5 +1,9 @@
 // Reviewed Workflow boundary identifiers. New or changed source requires review.
 export const workflowIds1: string[] = [
+  // WF027: unavailable inspector views and bounded readonly recovery.
+  // Existing authorized payloads may remain in the query cache after hiding.
+  "sourceReview:src/features/workflows/ui/RunDetailDialog.tsx#3059da32f1374c63d7975ab82262753e09a21d04c067af64e9478905a687a0ff",
+
   // WF022: bounded transient parsing/evaluation and local stable-row edits.
   // These Sets/Maps are per-call/editor derived state, not durable stores.
   "derived:src/features/workflows/conditionExpressionBudget.ts",
