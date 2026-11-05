@@ -2,11 +2,11 @@
 
 These controls retain the evidence requirements established during PR952's completed consolidation and the current release policies. They describe required evidence and operator actions; a committed document or workflow is not evidence that a check passed or that GitHub protection settings exist.
 
-## Branch ownership and serialized main integration
+## Branch ownership and independent integration
 
 The one-off consolidation from frozen base `68e9e55890dd1ceedfbfe0853019673bf79105e4` completed through PR952 at `86201a96522f22607df3710d809a1391f562b940`; its integration branch was closed. That freeze and branch are historical, not a permanent integration-branch model.
 
-Feature owners retain their module boundaries. Make implementation and documentation commits on work branches and integrate completed increments through reviewed pull requests. The existing integration coordinator serializes main merges and owns the shared heavy-job allocation. Qualify the complete increment at its exact commit before merging, then verify the actual resulting main revision independently; branch or merge-candidate results do not establish exact-main CI. If any required gate fails, retain that result and hold integration/release claims and publication until the failure is resolved within the user's authorized scope. Do not commit or push directly to main. Close a completed branch only after its work is preserved; retain unfinished work.
+Feature owners retain their module boundaries. Make implementation and documentation commits on work branches and integrate completed increments through reviewed pull requests. Feature owners may validate and merge their own completed increments independently when the user has authorized integration. Shared contracts, current main and isolated resource ownership must be checked before integration; another chat or queue allocation is not a prerequisite. Qualify the complete increment at its exact commit before merging, then verify the actual resulting main revision independently; branch or merge-candidate results do not establish exact-main CI. If any required gate fails, retain that result and hold integration/release claims and publication until the failure is resolved within the user's authorized scope. Do not commit or push directly to main. Close a completed branch only after its work is preserved; retain unfinished work.
 
 Every included commit keeps canonical issue traceability through its genuine message reference or committed `docs/delivery/commit-links.json` mapping. A PR number alone is insufficient. Combining branches does not complete broad issues, accept unfinished scope, assign a version or publish a release.
 

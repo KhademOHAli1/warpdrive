@@ -17,6 +17,7 @@ import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
 import { presetRange } from "./dateRange";
 import { GoalsWidget } from "./GoalsWidget";
+import { KpiPerformance } from "./KpiPerformance";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
 import { Panel } from "./Panel";
 import { Scoreboard } from "./Scoreboard";
@@ -143,6 +144,7 @@ export function Dashboard({
             <WonTrendWidget data={result.wonTrend} currency={result.currency} />
             <DashboardGoals today={today} currency={result.currency} canManage={canManageGoals} />
           </div>
+          <KpiPerformance today={today} canManage={canManageGoals} />
           <div className="grid gap-5 lg:grid-cols-2">
             <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
             <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />

@@ -94,48 +94,91 @@ it("saves English digits while keeping Farsi text and unfinished input", async (
 });
 
 it.each<{
-  locale: Locale;
   calendar: CalendarSystem;
-  label: string;
   selected: string;
 }>([
-  { locale: "en", calendar: "persian", label: "Calendar", selected: "Solar Hijri (Iranian)" },
-  { locale: "fa", calendar: "gregory", label: "تقویم", selected: "میلادی" },
+  { calendar: "persian", selected: "هجری شمسی (ایران)" },
+  { calendar: "gregory", selected: "میلادی" },
+])("shows the saved $calendar calendar in Farsi settings", ({ calendar, selected }) => {
+  render(
+    <LocaleProvider locale="fa" calendar={calendar}>
+      <LanguageSettings />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("combobox", { name: "تقویم" })).toHaveTextContent(selected);
+  expect(save).not.toHaveBeenCalled();
+});
+
+it.each<{ locale: Locale; label: string }>([
+  { locale: "en", label: "Calendar" },
+  { locale: "de", label: "Kalender" },
 ])(
-  "shows the saved $calendar calendar independently of $locale text",
-  ({ locale, calendar, label, selected }) => {
+  "hides the calendar choice in $locale without resetting the saved calendar",
+  ({ locale, label }) => {
     render(
-      <LocaleProvider locale={locale} calendar={calendar}>
+      <LocaleProvider locale={locale} calendar="persian" numberingSystem="latn">
         <LanguageSettings />
+        <Preview />
       </LocaleProvider>,
     );
-    expect(screen.getByRole("combobox", { name: label })).toHaveTextContent(selected);
+    expect(screen.queryByRole("combobox", { name: label })).not.toBeInTheDocument();
+    expect(screen.getByTestId("date")).toHaveTextContent("1405");
     expect(save).not.toHaveBeenCalled();
   },
 );
 
-it("saves the Iranian calendar while keeping English text, number style, zone and a draft", async () => {
+it("saves the Iranian calendar while keeping Farsi text, number style, zone and a draft", async () => {
   const user = userEvent.setup();
   render(
-    <LocaleProvider locale="en" calendar="gregory" numberingSystem="latn" timeZone="Asia/Tehran">
+    <LocaleProvider locale="fa" calendar="gregory" numberingSystem="latn" timeZone="Asia/Tehran">
       <LanguageSettings />
       <Preview />
       <input aria-label="draft" defaultValue="Keep this draft" />
     </LocaleProvider>,
   );
   expect(screen.getByTestId("date")).toHaveTextContent("2026");
-  await user.click(screen.getByRole("combobox", { name: "Calendar" }));
-  await user.click(screen.getByRole("option", { name: "Solar Hijri (Iranian)" }));
+  await user.click(screen.getByRole("combobox", { name: "تقویم" }));
+  await user.click(screen.getByRole("option", { name: "هجری شمسی (ایران)" }));
   await waitFor(() =>
     expect(save).toHaveBeenCalledWith(
-      { locale: "en", calendar: "persian", numberingSystem: "latn", timeZone: "Asia/Tehran" },
+      { locale: "fa", calendar: "persian", numberingSystem: "latn", timeZone: "Asia/Tehran" },
       "test-csrf",
     ),
   );
-  expect(screen.getByRole("combobox", { name: "Language" })).toHaveTextContent("English");
+  expect(screen.getByRole("combobox", { name: "زبان" })).toHaveTextContent("فارسی");
   expect(screen.getByTestId("date")).toHaveTextContent("1405");
   expect(screen.getByTestId("number")).toHaveTextContent("1,234.5");
   expect(screen.getByLabelText("draft")).toHaveValue("Keep this draft");
+});
+
+it("reveals the saved calendar only while switching the workspace language to Farsi", async () => {
+  const user = userEvent.setup();
+  render(
+    <LocaleProvider locale="en" calendar="persian" numberingSystem="latn" timeZone="Asia/Tehran">
+      <LanguageSettings />
+      <Preview />
+    </LocaleProvider>,
+  );
+  expect(screen.queryByRole("combobox", { name: "Calendar" })).not.toBeInTheDocument();
+  await user.click(screen.getByRole("combobox", { name: "Language" }));
+  await user.click(screen.getByRole("option", { name: "فارسی" }));
+  await waitFor(() => expect(screen.getByRole("combobox", { name: "زبان" })).toBeEnabled());
+  expect(screen.getByRole("combobox", { name: "تقویم" })).toHaveTextContent("هجری شمسی (ایران)");
+  expect(save).toHaveBeenNthCalledWith(
+    1,
+    { locale: "fa", calendar: "persian", numberingSystem: "latn", timeZone: "Asia/Tehran" },
+    "test-csrf",
+  );
+  await user.click(screen.getByRole("combobox", { name: "زبان" }));
+  await user.click(screen.getByRole("option", { name: "English" }));
+  await waitFor(() => expect(screen.getByRole("combobox", { name: "Language" })).toBeEnabled());
+  expect(screen.queryByRole("combobox", { name: "Calendar" })).not.toBeInTheDocument();
+  expect(save).toHaveBeenNthCalledWith(
+    2,
+    { locale: "en", calendar: "persian", numberingSystem: "latn", timeZone: "Asia/Tehran" },
+    "test-csrf",
+  );
+  expect(screen.getByTestId("date")).toHaveTextContent("1405");
 });
 
 it("announces the calendar save and disables all preference choices while it is pending", async () => {

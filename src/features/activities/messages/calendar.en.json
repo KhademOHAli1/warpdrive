@@ -23,7 +23,7 @@
   "showMore": "{count, plural, one {Show one more activity} other {Show # more activities}}",
   "emptyWeekTitle": "Nothing scheduled this week",
   "emptyMonthTitle": "Nothing scheduled this month",
-  "emptyBody": "Only activities due in this window appear here. Step to another week or month to see the rest.",
+  "emptyBody": "Only activities due in this window appear here. Move to another date to see the rest.",
   "emptyAction": "Add activity",
   "emptyFilteredWeekTitle": "No activities match these filters this week",
   "emptyFilteredMonthTitle": "No activities match these filters this month",
@@ -112,5 +112,12 @@
     "invalid": "Check the reminder time and event schedule. This local time may not exist in the selected time zone.",
     "authorDate": "Save the displayed date as this event’s date in {zone}.",
     "dateConfirmationRequired": "Confirm the displayed date and time zone before setting a reminder on this older all-day event."
-  }
+  },
+  "day": "Day",
+  "year": "Year",
+  "dayActivityCount": "{date}: {count, plural, one {# activity} other {# activities}}",
+  "emptyDayTitle": "Nothing scheduled this day",
+  "emptyYearTitle": "Nothing scheduled this year",
+  "emptyFilteredDayTitle": "No activities match these filters this day",
+  "emptyFilteredYearTitle": "No activities match these filters this year"
 }

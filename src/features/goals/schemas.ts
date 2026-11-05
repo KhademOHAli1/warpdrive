@@ -18,7 +18,7 @@ const target = z
   .refine((v) => moneyAmount.safeParse(v).success, {
     message: "target exceeds supported money precision",
   })
-  .refine((v) => Number(v) > 0, { message: "target must be greater than zero" });
+  .refine((v) => Number(v) >= 0, { message: "target must be non-negative" });
 
 const shape = z.object({
   currency: currencyCode.optional(),
@@ -38,6 +38,10 @@ const shape = z.object({
 // Not every combination of the enums describes a real goal, and the database cannot express
 // the dependency between two columns' values. The boundary is where they are rejected.
 export const goalInput = shape
+  .refine((g) => Number(g.target) > 0 || g.action === "lost", {
+    message: "only an upper-limit goal supports a zero target",
+    path: ["target"],
+  })
   .refine((g) => (g.subject === "deal" ? DEAL_ACTIONS.includes(g.action) : true), {
     message: "a deal goal counts deals added, won or lost",
     path: ["action"],

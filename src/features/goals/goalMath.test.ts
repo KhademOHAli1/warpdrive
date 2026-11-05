@@ -24,6 +24,22 @@ describe("attainment", () => {
   test("is null when the target is zero", () => {
     expect(attainment("10", "0")).toBeNull();
   });
+
+  test("exceeding an upper limit reduces attainment", () => {
+    expect(attainment("10", "5", "at_most")).toBe(0.5);
+    expect(attainment("3", "5", "at_most")).toBe(1);
+  });
+
+  test("a zero ceiling is met only by zero actual", () => {
+    expect(attainment("0", "0", "at_most")).toBe(1);
+    expect(attainment("1", "0", "at_most")).toBe(0);
+  });
+
+  test("invalid or infinite inputs are unavailable", () => {
+    expect(attainment("Infinity", "100")).toBeNull();
+    expect(attainment("4", "NaN")).toBeNull();
+    expect(attainment("-2", "5", "at_most")).toBeNull();
+  });
 });
 
 describe("pace", () => {

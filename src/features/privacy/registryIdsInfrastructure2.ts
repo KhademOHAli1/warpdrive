@@ -23,7 +23,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/stats/router.ts#085bda76fc9a94152c1568fe3ad1380c13b5c8d4bf2b7faab0e3b2e0cdc3876e",
   "sourceReview:src/features/stats/stageConversion.ts#4dff2a6aeac9c6a7b0358b880f4336fbbd2a4ff7fe5ddd4a5b9593d53c380df5",
   "sourceReview:src/features/stats/stageSums.ts#e2a9d24efdcd1df312835315b1fe1b95e16356a218b753391b66b9c865f293e6",
-  "sourceReview:src/features/stats/ui/goalChartPoints.ts#d360b81d02210447782144d40dd21b1030a90faef15f78c3f54b2324a4784e4f",
+  "sourceReview:src/features/stats/ui/goalChartPoints.ts#1d53f601a1f6df7b7d8010d8c14a73555dc719c6b96cac07454f6f5d4fd85da9",
   "sourceReview:src/features/stats/wonDealStats.ts#9b3719ca18febea41fbc89cf1e8a871adde9584c9d0fdf344d1718905d98195b",
   "sourceReview:src/features/stats/wonTrend.ts#d32e97aeb35a5b7e471b2444ff03cfbf91dfd7c4b7ceac662152fe77ad3bb2e0",
   "sourceReview:src/instrumentation.node.ts#1ba9753ddf51847fe367540f92d73ad82f093dbbc8428abab195fc9687b9111a",

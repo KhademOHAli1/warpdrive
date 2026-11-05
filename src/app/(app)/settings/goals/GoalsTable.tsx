@@ -4,6 +4,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import type { Goal } from "@/db/schema/goals";
 import { deleteGoalAction } from "@/features/goals/actions";
+import { useKpiHubMessages } from "@/features/goals/kpiHubMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -19,6 +20,7 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
   const L = useSettingsMessages();
   const S = L;
   const format = useFormatters();
+  const K = useKpiHubMessages();
   function goalLabel(g: Goal): string {
     if (g.subject === "activity")
       return L._extra.activityGoalDisplayLabel(g.action, L._extra.goalIntervals[g.interval]);
@@ -115,6 +117,7 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
               <div>
                 <dt className="text-xs text-muted-foreground">{S.goalTarget}</dt>
                 <dd className="mt-1 tabular-nums">
+                  {g.action === "lost" ? `${K.at_most} ` : ""}
                   {format.number(Number(g.target), {
                     maximumFractionDigits: g.metric === "count" ? 0 : 4,
                   })}

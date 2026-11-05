@@ -273,7 +273,7 @@ export const STRINGS = {
   calendar: {
     emptyTitle: (view: string) => `Nothing scheduled this ${view}`,
     emptyBody:
-      "Only activities due in this window appear here. Step to another week or month to see the rest.",
+      "Only activities due in this window appear here. Move to another date to see the rest.",
     emptyAction: "Add activity",
     emptyFilteredTitle: (view: string) => `No activities match these filters this ${view}`,
     emptyFilteredBody: "This window does have activities. The filters above exclude all of them.",

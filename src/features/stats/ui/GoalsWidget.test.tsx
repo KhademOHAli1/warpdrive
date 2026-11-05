@@ -48,6 +48,16 @@ function countGoal(target: string, actual: string): GoalWithProgress {
 afterEach(cleanup);
 
 describe("GoalsWidget", () => {
+  it("does not label an incomplete zero-loss result as within its limit", () => {
+    const row=countGoal("0","0");
+    row.goal.subject="deal"; row.goal.action="lost";
+    if(row.progress === null) throw new Error("Progress fixture missing");
+    row.progress={...row.progress,dataState:"incomplete",missingMeasurementDateCount:1,attainment:null,pace:null};
+    render(<GoalsWidget data={[row]} currency="USD" canManage={false} />);
+    expect(screen.getByText("Incomplete",{exact:true})).toBeVisible();
+    expect(screen.queryByText("Within limit",{exact:true})).not.toBeInTheDocument();
+    expect(screen.getByText(/Some event dates are missing/)).toBeVisible();
+  });
   // The link is most useful exactly when there are no goals, so an empty state that swallows
   // it leaves an admin with nowhere to go.
   it("still offers the setup link when there are no goals", () => {
