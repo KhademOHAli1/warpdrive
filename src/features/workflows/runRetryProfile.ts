@@ -110,6 +110,40 @@ function completedPort(node: WorkflowNode, step: Step) {
   return step.output.result === true ? "true" : "false";
 }
 
+// A failed trigger-deal read can resume only directly before its qualified,
+// same-deal literal task. Other failed cursors retain their existing boundary.
+function failedReadBeforeTask(
+  node: WorkflowNode,
+  definition: WorkflowDefinition,
+  triggerId: string,
+): boolean {
+  if (
+    node.type !== "record.read" ||
+    node.config.entity !== "deal" ||
+    !references(node.config.recordId, triggerId, "recordId")
+  )
+    return false;
+  const edge = definition.edges.find((item) => item.from === node.id && item.port === "next");
+  const task = definition.nodes.find((item) => item.id === edge?.to);
+  return (
+    task?.type === "activity.create" &&
+    taskConfiguration(task, definition, triggerId) &&
+    (references(task.config.dealId, triggerId, "recordId") ||
+      references(task.config.dealId, node.id, "id"))
+  );
+}
+
+function failedRetryNode(
+  definition: WorkflowDefinition,
+  nodeId: string | null,
+  triggerId: string,
+): WorkflowNode | null {
+  const node = definition.nodes.find((item) => item.id === nodeId);
+  if (node?.type === "activity.create") return node;
+  if (node === undefined || !failedReadBeforeTask(node, definition, triggerId)) return null;
+  return node;
+}
+
 // Completed effects/outputs are an inseparable prefix of the pinned path. Do not
 // delete, synthesize or replay them to repair a malformed stored execution.
 export function coherentFailedTask(
@@ -126,21 +160,17 @@ export function coherentFailedTask(
       .safeParse({ trigger: run.trigger, outputs: run.outputs }).success
   )
     return null;
-  const task = definition.nodes.find((node) => node.id === run.nextNodeId);
   const trigger = definition.nodes.find((node) => node.type === "trigger.manual");
-  if (
-    task?.type !== "activity.create" ||
-    trigger === undefined ||
-    !z.uuid().safeParse(run.trigger.recordId).success
-  )
-    return null;
+  if (trigger === undefined || !z.uuid().safeParse(run.trigger.recordId).success) return null;
+  const failed = failedRetryNode(definition, run.nextNodeId, trigger.id);
+  if (failed === null) return null;
   const completed = new Map(steps.map((step) => [step.nodeId, step]));
   const visited = new Set<string>();
-  if (completed.size !== steps.length || completed.has(task.id)) return null;
+  if (completed.size !== steps.length || completed.has(failed.id)) return null;
   let current: string = trigger.id;
   for (let count = 0; count <= definition.nodes.length; count++) {
-    if (current === task.id) {
-      return exactOutputPrefix(run, visited, completed.size) ? task : null;
+    if (current === failed.id) {
+      return exactOutputPrefix(run, visited, completed.size) ? failed : null;
     }
     const node = definition.nodes.find((item) => item.id === current);
     const step = completed.get(current);

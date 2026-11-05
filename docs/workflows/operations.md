@@ -43,6 +43,11 @@ transaction and then prevents subsequent steps.
 
 Terminal validation/permission failures retain an opaque failure generation. The original
 runner can select **Retry failed step** after repairing an eligible database task failure.
+A recorded failed trigger-deal read is also eligible when its immediate successor is a
+supported task with a literal subject and an explicit binding to that same deal. The read
+must reference the manual trigger record, and completed progress must match the pinned
+execution path. See [failed-read retry contract](read-retry.md)
+for the supported recovery boundary.
 The server checks the live native session, current workflow permissions, active/unarchived
 workflow, pinned graph, completed progress and current deal/task access. Recovery keeps the
 same run, version, actor, cursor, completed steps and outputs. Completed tasks are not replayed.
@@ -56,6 +61,8 @@ update timestamp is shown as a snapshot time, not an invented historical attempt
 Stop old application/worker writers before applying this migration and start the new
 application and workers together afterward. An old worker failing after the backfill
 snapshot cannot record a generation; mixed-version failure writing is unsupported.
+Eligible legacy task snapshots retain their existing retry support. Legacy read snapshots
+remain unavailable for retry; the new read path requires origin `recorded`.
 Malformed progress, unsupported graphs/versions, simulations and failed waits remain
 ineligible. In particular, an old failed wait has lost its deadline; retry never starts its
 duration again. New wait failures retain their original deadline as history only.
