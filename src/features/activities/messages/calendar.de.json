@@ -23,7 +23,7 @@
   "showMore": "{count, plural, one {Eine weitere Aktivität anzeigen} other {# weitere Aktivitäten anzeigen}}",
   "emptyWeekTitle": "Für diese Woche sind keine Aktivitäten geplant",
   "emptyMonthTitle": "Für diesen Monat sind keine Aktivitäten geplant",
-  "emptyBody": "Hier erscheinen nur Aktivitäten in diesem Zeitraum. Wählen Sie eine andere Woche oder einen anderen Monat, um weitere Aktivitäten zu sehen.",
+  "emptyBody": "Hier erscheinen nur Aktivitäten, die in diesem Zeitraum fällig sind. Wähle ein anderes Datum, um weitere zu sehen.",
   "emptyAction": "Aktivität hinzufügen",
   "emptyFilteredWeekTitle": "Diese Woche entsprechen keine Aktivitäten den gewählten Filtern",
   "emptyFilteredMonthTitle": "Diesen Monat entsprechen keine Aktivitäten den gewählten Filtern",
@@ -112,5 +112,12 @@
     "invalid": "Prüfe die Erinnerungszeit und den Termin. Diese Ortszeit existiert möglicherweise nicht in der gewählten Zeitzone.",
     "authorDate": "Das angezeigte Datum als Termindatum in {zone} speichern.",
     "dateConfirmationRequired": "Bestätige das angezeigte Datum und die Zeitzone, bevor du für diesen älteren ganztägigen Termin eine Erinnerung einrichtest."
-  }
+  },
+  "day": "Tag",
+  "year": "Jahr",
+  "dayActivityCount": "{date}: {count, plural, one {# Aktivität} other {# Aktivitäten}}",
+  "emptyDayTitle": "Keine Aktivitäten an diesem Tag",
+  "emptyYearTitle": "Keine Aktivitäten in diesem Jahr",
+  "emptyFilteredDayTitle": "Keine Aktivitäten entsprechen diesen Filtern an diesem Tag",
+  "emptyFilteredYearTitle": "Keine Aktivitäten entsprechen diesen Filtern in diesem Jahr"
 }

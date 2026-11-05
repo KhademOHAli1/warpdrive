@@ -45,13 +45,13 @@ it("groups cells into rows so the ARIA grid is well-formed (header + 6 weeks)", 
   expect(screen.getAllByRole("row")).toHaveLength(7);
 });
 
-it("shows +N more linking to that day's week view when a cell exceeds 3 activities", () => {
+it("shows +N more linking to the day view when a cell exceeds 3 activities", () => {
   const acts = ["a", "b", "c", "d", "e"].map((id) => mk(id, "2026-06-15T10:00:00Z"));
   render(
     <MonthView anchorIso="2026-06-15" dayIsos={dayIsos} activities={acts} todayIso="2026-06-01" />,
   );
   const more = screen.getByRole("link", { name: /\+2 more/ });
-  expect(more).toHaveAttribute("href", "/activities/calendar?view=week&d=2026-06-15");
+  expect(more).toHaveAttribute("href", "/activities/calendar?view=day&d=2026-06-15");
 });
 
 it("de-emphasizes adjacent-month cells and marks today", () => {
@@ -80,6 +80,41 @@ it("toggle + prev/next/today render as links carrying the right params", () => {
     "/activities/calendar?view=month&d=2026-07-15",
   );
   expect(screen.getByText("June 2026")).toBeInTheDocument();
+  for (const [name, view] of [
+    ["Day", "day"],
+    ["Month", "month"],
+    ["Year", "year"],
+  ]) {
+    expect(screen.getByRole("link", { name })).toHaveAttribute(
+      "href",
+      `/activities/calendar?view=${view}&d=2026-06-15`,
+    );
+  }
+  expect(screen.queryByRole("combobox", { name: "Calendar system" })).not.toBeInTheDocument();
+});
+
+it("keeps a blank year navigable with all twelve months", () => {
+  render(
+    <CalendarClient
+      view="year"
+      anchorIso="2026-06-15"
+      dayIsos={[]}
+      activities={[]}
+      empty={<p>Nothing scheduled</p>}
+    />,
+  );
+  expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("2026");
+  expect(screen.getAllByRole("table")).toHaveLength(12);
+  expect(screen.getByText("Nothing scheduled")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+    "href",
+    "/activities/calendar?view=year&d=2025-06-15",
+  );
+  expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+    "href",
+    "/activities/calendar?view=year&d=2027-06-15",
+  );
+  expect(screen.getByRole("link", { name: "Year" })).toHaveAttribute("aria-current", "page");
 });
 
 // An empty week rendered as a blank grid with no message at all.
