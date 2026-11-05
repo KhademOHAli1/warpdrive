@@ -719,10 +719,14 @@ try {
         await journey(locale, width, colorScheme, "recovery", recovery);
       }
     }
+    // The same account supplies these sessions. Run its English-only scenarios
+    // before another locale is saved, so the reused session and account agree.
+    if (locale === "en") {
+      await journey(locale, 1280, "light", "transport", transport);
+      await journey(locale, 1280, "light", "ordering-success", (s) => ordering(s, false));
+      await journey(locale, 1280, "dark", "ordering-denial", (s) => ordering(s, true));
+    }
   }
-  await journey("en", 1280, "light", "transport", transport);
-  await journey("en", 1280, "light", "ordering-success", (s) => ordering(s, false));
-  await journey("en", 1280, "dark", "ordering-denial", (s) => ordering(s, true));
   assert.equal(report.nativeLogins.length, 3);
   assert.equal(report.journeys.filter((entry) => entry.sessionReused).length, 12);
   if (fatal instanceof Error) throw asError(fatal);

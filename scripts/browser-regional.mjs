@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { completeRegionalPreferenceSave } from "./browser-locale-preferences.mjs";
 
 // Admission precedes DB/browser imports. This pack is deliberately production-only and must
 // never attach to a developer's local database or browser session.
@@ -422,7 +423,7 @@ async function chooseCountry(page, controls, config, country, entry) {
     exact: true,
   });
   await option.waitFor({ state: "visible" });
-  await option.click();
+  await completeRegionalPreferenceSave(page, origin, () => option.click());
   await waitUntil(`${config.key} country UI ${country}`, async () => {
     const text = await controls.country.textContent();
     return text?.trim() === countryName(config.locale, country);
@@ -442,7 +443,7 @@ async function exerciseExplicitProfile(page, config, entry) {
 
   await waitForControlEnabled(controls.zoneSwitch, `${config.key} browser time zone switch`);
   assert.equal(await controls.zoneSwitch.getAttribute("aria-checked"), "true");
-  await controls.zoneSwitch.click();
+  await completeRegionalPreferenceSave(page, origin, () => controls.zoneSwitch.click());
   await waitUntil(`${config.key} manual time zone switch`, async () => {
     return (await controls.zoneSwitch.getAttribute("aria-checked")) === "false";
   });
@@ -459,7 +460,7 @@ async function exerciseExplicitProfile(page, config, entry) {
     controls.zoneSwitch,
     `${config.key} browser time zone switch restore`,
   );
-  await controls.zoneSwitch.click();
+  await completeRegionalPreferenceSave(page, origin, () => controls.zoneSwitch.click());
   await waitUntil(`${config.key} browser time zone switch`, async () => {
     return (await controls.zoneSwitch.getAttribute("aria-checked")) === "true";
   });

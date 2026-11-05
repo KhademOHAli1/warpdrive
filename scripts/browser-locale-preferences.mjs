@@ -10,6 +10,25 @@ const languageOptions = {
   fa: "فارسی",
 };
 
+export async function completeRegionalPreferenceSave(page, origin, change) {
+  // Cookie headers and optimistic UI can update before Chromium has read the
+  // response. Observe the actual action finishing before leaving the document.
+  const [request] = await Promise.all([
+    page.waitForEvent("requestfinished", (request) => {
+      const url = new URL(request.url());
+      return (
+        url.origin === origin &&
+        url.pathname === "/settings/regional" &&
+        request.method() === "POST" &&
+        Boolean(request.headers()["next-action"])
+      );
+    }),
+    change(),
+  ]);
+  const response = await request.response();
+  assert.ok(response?.ok(), "Regional preference action completed successfully");
+}
+
 export async function prepareLocaleThroughUi(page, origin, locale) {
   assert.ok(languageOptions[locale], `Supported browser locale: ${locale}`);
   const response = await page.goto("/settings/regional", { waitUntil: "domcontentloaded" });
@@ -29,7 +48,8 @@ export async function prepareLocaleThroughUi(page, origin, locale) {
     const language = languageSelector();
     await language.first().waitFor({ state: "visible" });
     await language.first().click();
-    await page.getByRole("option", { name: languageOptions[nextLocale], exact: true }).click();
+    const option = page.getByRole("option", { name: languageOptions[nextLocale], exact: true });
+    await completeRegionalPreferenceSave(page, origin, () => option.click());
     await page.waitForFunction(
       ({ locale: expectedLocale, direction, cookieName }) => {
         const cookies = document.cookie.split("; ").map((value) => value.split("=", 2));
