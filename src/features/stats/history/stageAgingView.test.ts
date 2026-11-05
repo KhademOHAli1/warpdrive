@@ -73,6 +73,7 @@ function collected(): Extract<StageAgingViewSource, { state: "collected" }> {
   };
   return {
     state: "collected",
+    effectiveOwnerScope: "me",
     observation,
     report: {
       state: "available",
@@ -103,6 +104,7 @@ describe("stage aging viewer projection", () => {
     expect(projectStageAgingView(collected())).toEqual({
       state: "available",
       currency: "EUR",
+      effectiveOwnerScope: "me",
       dealCount: 5,
       currentOpenDealCount: 1,
       activatedAt: captureStart,

@@ -113,8 +113,8 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/inventoryMovementRepository.ts",
     "derived:src/features/stats/history/stageAgingView.ts",
     "sourceReview:docs/analytics/forecast-custody-proposal.sql#b8188bfb71922f154440de3f82a412afbb66c2ae6efd428b78864d764c65f07b",
-    "sourceReview:src/features/stats/history/currentStageAgingRepository.ts#6ddea2286f0d5b85cff1535382afdcaf26f59301a57a589f25223c6ab07779b3",
-    "sourceReview:src/features/stats/history/stageAgingView.ts#66795afa9e005a183572cd48dafa4d90e8421cb98b85085fd443c459a85cf1f1",
+    "sourceReview:src/features/stats/history/currentStageAgingRepository.ts#7f9d1f3d4f1b5f1a8a5879e256db498ef12bc233b0c0dd4d21f8abcc33d7aa6c",
+    "sourceReview:src/features/stats/history/stageAgingView.ts#6994bca1d8ccf9ed59fbe071682b067c99cd1fdcb3650d460d34cd05c53ff34c",
     "sourceReview:src/features/stats/history/inventoryBoundaryEvidence.ts#49120ce8c2a5dd7306698555dc06350dcc32314392537316d0a297b3413866fd",
     "sourceReview:src/features/stats/history/inventoryMovementEvidenceSource.ts#c9e8b45f148a08672702b8b60cef45485ede5a920b2b5b496b875ae52484fd63",
     "sourceReview:src/features/stats/history/inventoryMovementRepository.ts#375c6e2dde6ba2deb862bed3e270950d72de90d32600e4d11b39bace28e717e4",
@@ -169,7 +169,7 @@ export const analyticsInventoryEntry = classifyInventory(
     purpose:
       "Private source for activation baselines, row observations, physical incarnations, transaction folding, stage definitions and aging, snapshot inventory reconciliation, observed equal-age deal cohorts, bounded current-deal history, and immutable inventory and forecast custody. No schema export, canonical migration or installed storage is established by this classification.",
     disclosure:
-      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. Cohorts disclose only aggregate counts, scope kind and coverage. The unwired stage-aging projection rechecks captured deal-side access, uses current authorized stage labels from the same observation and withholds all aggregates when evidence is denied or incomplete. Movement remains creator-only and internal: global dependency checks can affect availability. The snapshot writer excludes names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output.",
+      "Internal readers reapply live deal/report scope and historical pipeline visibility in one database observation. Cohorts disclose only aggregate counts, scope kind and coverage. The stage-aging report rechecks captured deal-side access, uses current authorized stage labels from the same observation and withholds all aggregates when evidence is denied or incomplete. Movement remains creator-only and internal: global dependency checks can affect availability. The snapshot writer excludes names and independent contact identifiers. Global baseline counts, unrestricted custom fields and raw history/snapshots have no viewer output.",
     retention:
       "The private proposal deliberately retains immutable event/baseline/report rows and physical incarnations after source deletion. Immutability does not authorize indefinite retention. It supplies no retention schedule, erasure adapter or legal-retention determination. Canonical admission must qualify storage, subject scope, restrictions, backups and controlled lifecycle handling separately.",
     externalEffects:

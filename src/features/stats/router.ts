@@ -20,11 +20,12 @@ import { wonDealStats } from "@/features/stats/wonDealStats";
 import { wonTrend } from "@/features/stats/wonTrend";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { dealRecords } from "./dealRecords";
+import { readCurrentStageAgingView } from "./history/currentStageAgingRepository";
 import { readObservedDealWinCohorts } from "./history/dealCohortRepository";
 import { dealWinCohortHorizon, dealWinCohortView } from "./history/dealWinCohortView";
 import { ANALYTICS_METRIC_DICTIONARY_VERSION } from "./metricDictionary";
 import { resolveReportScope } from "./resolveReportScope";
-import { dashboardInput, dealRecordsInput, dealWinCohortsInput } from "./schemas";
+import { dashboardInput, dealRecordsInput, dealWinCohortsInput, stageAgingInput } from "./schemas";
 
 // Module-local abort-signal factory: mirrors the pattern in notifications/router.ts.
 const SIG = (): AbortSignal => AbortSignal.timeout(15_000);
@@ -114,6 +115,10 @@ export const statsRouter = router({
     );
     return dealWinCohortView(report, horizon);
   }),
+
+  stageAging: protectedProcedure
+    .input(stageAgingInput)
+    .query(({ ctx, input }) => readCurrentStageAgingView(ctx.db, ctx.actor, input, SIG())),
 
   ownerOptions: protectedProcedure.query(async ({ ctx }) => {
     if (!can(ctx.actor, "stats.viewOthers")) return { users: [], teams: [] };

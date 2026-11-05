@@ -16,6 +16,12 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
   });
   return {
     ...copy,
+    stageAging: {
+      ...copy.stageAging,
+      percentile: (value: number) => t("stageAging.percentile", { value }),
+      durationRange: (minimum: string, maximum: string) =>
+        t("stageAging.durationRange", { minimum, maximum }),
+    },
     _extra: {
       ...copy._extra,
       percent: (count: number) => t("_extra.percent", { count }),

@@ -40,3 +40,9 @@ export const dealWinCohortsInput = dashboardInput.safeExtend({
   calendarIdentity: z.enum(["gregory", "persian"]).optional(),
   horizon: z.enum(DEAL_WIN_COHORT_HORIZONS),
 });
+
+export const stageAgingInput = z.strictObject({
+  currency: currencyCode.optional(),
+  pipelineId: z.string().uuid().nullable().default(null),
+  ownerScope: ownerScopeInput.default({ kind: "me" }),
+});

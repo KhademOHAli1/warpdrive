@@ -1,3 +1,4 @@
+import type { OwnerScope } from "@/types/stats";
 import type { CurrentStageAging } from "./currentStageAgingRepository";
 
 type AvailableAging = Extract<CurrentStageAging, { state: "available" }>;
@@ -24,6 +25,7 @@ export type StageAgingViewSource =
   | {
       state: "collected";
       report: AvailableAging;
+      effectiveOwnerScope: OwnerScope["kind"];
       observation: StageAgingObservation;
       definitions: {
         observation: StageAgingObservation;
@@ -67,6 +69,7 @@ export type StageAgingView =
   | {
       state: "available";
       currency: string;
+      effectiveOwnerScope: OwnerScope["kind"];
       dealCount: number;
       currentOpenDealCount: number;
       activatedAt: string;
@@ -220,6 +223,7 @@ export function projectStageAgingView(source: StageAgingViewSource): StageAgingV
   return {
     state: "available",
     currency: report.currency,
+    effectiveOwnerScope: source.effectiveOwnerScope,
     dealCount: report.population.dealCount,
     currentOpenDealCount: report.population.currentOpenDealCount,
     activatedAt: report.activatedAt,

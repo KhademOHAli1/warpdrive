@@ -177,6 +177,7 @@ interface SourceContext {
   actor: PermSetUser;
   pipelineId: string | null;
   currency: string;
+  effectiveOwnerScope: OwnerScope["kind"];
   visible: SQL;
   activation: HistoryActivation;
   observation: Observation;
@@ -208,7 +209,8 @@ async function readSourceContext(
   if (installation.activation.activatedAt > observation.data.cutoff)
     return { state: "unavailable", reason: "history-invalid" };
 
-  const owners = await boundedOwners(tx, actor, ownerScope(actor, request.ownerScope), signal);
+  const effectiveScope = ownerScope(actor, request.ownerScope);
+  const owners = await boundedOwners(tx, actor, effectiveScope, signal);
   if (owners === null) return { state: "unavailable", reason: "scope-limit" };
   const currency = request.currency ?? (await readBaseCurrency(tx, signal));
   const supported = currencyCode.safeParse(currency);
@@ -228,6 +230,7 @@ async function readSourceContext(
     actor,
     pipelineId: request.pipelineId,
     currency,
+    effectiveOwnerScope: effectiveScope.kind,
     visible,
     activation: installation.activation,
     observation: observation.data,
@@ -652,7 +655,13 @@ export async function readCurrentStageAgingView(
         activationId: context.activation.activationId,
         observationCutoff: context.observation.cutoff,
       };
-      return { state: "collected", report, observation, definitions: { observation, labels } };
+      return {
+        state: "collected",
+        report,
+        observation,
+        effectiveOwnerScope: context.effectiveOwnerScope,
+        definitions: { observation, labels },
+      };
     },
   );
   signal.throwIfAborted();

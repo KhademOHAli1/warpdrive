@@ -28,6 +28,7 @@ import { KpiPerformance } from "./KpiPerformance";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
 import { Panel } from "./Panel";
 import { Scoreboard } from "./Scoreboard";
+import { StageAgingReport } from "./StageAgingReport";
 import { WonTrendWidget } from "./TrendWidget";
 import { ActivitiesWidget, DealPerformanceWidget, FunnelWidget, StageSumsWidget } from "./widgets";
 
@@ -104,11 +105,14 @@ export function Dashboard({
     metric: DealRecordMetric;
     trigger: HTMLButtonElement;
   } | null>(null);
-  const reportScope = {
-    timeZoneIdentity: timeZone,
+  const currentScope = {
     currency: selectedCurrency,
     pipelineId: selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId,
-    ownerScope,
+    ownerScope: canViewOthers ? ownerScope : ME_SCOPE,
+  };
+  const reportScope = {
+    timeZoneIdentity: timeZone,
+    ...currentScope,
     ...range,
   };
   const validRange = range.from <= range.to;
@@ -118,16 +122,9 @@ export function Dashboard({
     ...(pipelinesQ.data ?? []).map((p) => ({ value: p.id, label: p.name })),
   ];
   const ownerOptionsQ = trpc.stats.ownerOptions.useQuery(undefined, { enabled: canViewOthers });
-  const data = trpc.stats.dashboard.useQuery(
-    {
-      timeZoneIdentity: timeZone,
-      currency: selectedCurrency,
-      pipelineId: selectedPipelineId === ALL_PIPELINES ? null : selectedPipelineId,
-      ownerScope,
-      ...range,
-    },
-    { enabled: validRange && !preferencePending },
-  );
+  const data = trpc.stats.dashboard.useQuery(reportScope, {
+    enabled: validRange && !preferencePending,
+  });
   const result =
     validRange && !preferencePending && !data.isLoading && !data.isError ? data.data : undefined;
   let body: React.ReactNode;
@@ -173,15 +170,6 @@ export function Dashboard({
             <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
           </div>
         </TabsContent>
-        <TabsContent value="pipeline" className="space-y-5">
-          <div className="grid gap-5 lg:grid-cols-2">
-            <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
-            <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
-            <StageSumsWidget data={result.stageSums} currency={result.currency} />
-            <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
-          </div>
-          <DealWinCohortPanel scope={reportScope} />
-        </TabsContent>
         <TabsContent value="activities" className="space-y-5">
           <div className="grid gap-5 lg:grid-cols-2">
             <ActivitiesWidget data={result.activities} />
@@ -222,7 +210,7 @@ export function Dashboard({
             <div className="min-w-0 space-y-2 [&_button]:w-full">
               <p className="text-xs font-medium text-muted-foreground">{S.ownerScopeLabel}</p>
               <OwnerScopeSelect
-                value={result?.effectiveOwnerScope ?? ownerScope}
+                value={result?.effectiveOwnerScope ?? currentScope.ownerScope}
                 onChange={setOwnerScope}
                 canViewOthers={canViewOthers}
                 users={ownerOptionsQ.data?.users ?? []}
@@ -293,6 +281,20 @@ export function Dashboard({
             </TabsTrigger>
           </TabsList>
           {body}
+          <TabsContent value="pipeline" className="mt-5 space-y-5">
+            {result !== undefined && (
+              <>
+                <div className="grid gap-5 lg:grid-cols-2">
+                  <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
+                  <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
+                  <StageSumsWidget data={result.stageSums} currency={result.currency} />
+                  <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
+                </div>
+                <DealWinCohortPanel scope={reportScope} />
+              </>
+            )}
+            <StageAgingReport key={JSON.stringify(currentScope)} scope={currentScope} />
+          </TabsContent>
         </Tabs>
       </div>
       {inspection !== null && validRange && (

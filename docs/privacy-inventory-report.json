@@ -1,23 +1,27 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "b2bc5c607c7f1bf274c0d18ff37c19e0ca53137288e28e6cbf7898f92a59a5e1",
-  "sourceFiles": 2762,
+  "sourceFingerprint": "7a197bb1d32ac8b5301d550fd35a325d5e8f496cc6aac723e7bfef27f40e09ff",
+  "sourceFiles": 2764,
   "discoveredCounts": {
     "browserStore": 4,
-    "derived": 388,
+    "derived": 389,
     "external": 38,
     "log": 50,
     "objectNamespace": 23,
     "queue": 17,
-    "sourceReview": 905,
+    "sourceReview": 906,
     "table": 134,
     "writer": 889
   },
   "classifiedDeclarations": 2682,
   "coverage": {
-    "ok": true,
-    "missing": [],
+    "ok": false,
+    "missing": [
+      "derived:src/features/stats/ui/StageAgingPanel.tsx",
+      "sourceReview:src/features/stats/router.ts#eede2c20ea9f4909709fa1a29c6490acfa0ade9649b05a6f48efa5be17679489",
+      "sourceReview:src/features/stats/ui/StageAgingPanel.tsx#47394710d463d54d78e8dd7e30e80234e6f05fae3de842408950097cd682037f"
+    ],
     "invalid": []
   },
   "installationGates": "OPEN: physical storage, provider contracts/receipts, production logs and backup destinations require separate acceptance."

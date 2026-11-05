@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { DealWinCohortView } from "../history/dealWinCohortView";
+import type { StageAgingView } from "../history/stageAgingView";
 
 const fixture = vi.hoisted(() => ({
   refetch: vi.fn(),
@@ -13,6 +14,12 @@ const fixture = vi.hoisted(() => ({
   cohortRefetch: vi.fn(),
   cohortFetching: false,
   cohortReport: vi.fn<() => DealWinCohortView>(),
+  agingQuery: vi.fn(),
+  agingReport: vi.fn<() => StageAgingView>(),
+  agingFetched: true,
+  agingFetching: false,
+  agingPlaceholder: false,
+  agingError: false,
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
@@ -79,6 +86,21 @@ vi.mock("@/lib/trpc-client", () => ({
           };
         },
       },
+      stageAging: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.agingQuery(input, options);
+          return {
+            data: fixture.agingReport(),
+            isFetchedAfterMount: fixture.agingFetched,
+            isFetching: fixture.agingFetching,
+            isPaused: false,
+            isPlaceholderData: fixture.agingPlaceholder,
+            isError: fixture.agingError,
+            error: fixture.agingError ? { data: { code: "FORBIDDEN" } } : null,
+            refetch: vi.fn(),
+          };
+        },
+      },
     },
     goals: {
       list: {
@@ -122,9 +144,52 @@ beforeEach(() => {
   fixture.goalsError = false;
   fixture.cohortReport.mockReturnValue({ state: "coverage-not-started" });
   fixture.cohortFetching = false;
+  fixture.agingReport.mockReturnValue({ state: "unavailable", reason: "capture" });
+  fixture.agingFetched = true;
+  fixture.agingFetching = false;
+  fixture.agingPlaceholder = false;
+  fixture.agingError = false;
 });
 const mount = () =>
   render(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+
+const noQuantiles = {
+  sampleCount: 0,
+  distinctDeals: 0,
+  medianNanoseconds: null,
+  p75Nanoseconds: null,
+  p90Nanoseconds: null,
+};
+const noLowerBounds = {
+  sampleCount: 0,
+  distinctDeals: 0,
+  minimumNanoseconds: null,
+  maximumNanoseconds: null,
+};
+const availableAging: StageAgingView = {
+  state: "available",
+  currency: "USD",
+  effectiveOwnerScope: "me",
+  dealCount: 1,
+  currentOpenDealCount: 1,
+  activatedAt: "2026-11-01T12:00:00.000000Z",
+  observedAt: "2026-11-05T16:00:00.000000Z",
+  rows: [
+    {
+      pipelineName: "Sales",
+      stageName: "Aging fixture stage",
+      completed: noQuantiles,
+      currentOpen: {
+        sampleCount: 1,
+        distinctDeals: 1,
+        medianNanoseconds: "3600000000000",
+        p75Nanoseconds: "3600000000000",
+        p90Nanoseconds: "3600000000000",
+      },
+      leftCensored: { completed: noLowerBounds, currentOpen: noLowerBounds },
+    },
+  ],
+};
 
 function ChangeReportTimeZone() {
   const choose = useSetLocalePreferences();
@@ -320,6 +385,71 @@ describe("Performance report experience", () => {
     page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(fixture.cohortRefetch).toHaveBeenCalledOnce();
+  });
+  it("loads stage aging only on the Pipeline tab and keeps it independent of the date range", async () => {
+    fixture.agingReport.mockReturnValue(availableAging);
+    mount();
+    expect(fixture.agingQuery).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    expect(fixture.agingQuery).toHaveBeenLastCalledWith(
+      { pipelineId: null, currency: "USD", ownerScope: { kind: "me" } },
+      expect.objectContaining({ gcTime: 0, refetchOnMount: "always" }),
+    );
+    const aging = screen.getByRole("region", { name: "Stage aging" });
+    expect(aging).toHaveTextContent("Dashboard dates apply to the period-based reports");
+    expect(aging).toHaveTextContent("As of");
+    expect(aging.querySelector('time[datetime="2026-11-05T16:00:00.000000Z"]')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Range start"), { target: { value: "2027-01-01" } });
+    expect(screen.queryByRole("region", { name: "Deal cohorts by age" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Aging fixture stage" })).toBeInTheDocument();
+    expect(fixture.agingQuery).toHaveBeenLastCalledWith(
+      { pipelineId: null, currency: "USD", ownerScope: { kind: "me" } },
+      expect.anything(),
+    );
+  });
+  it("withholds cached stage rows on mount, refetch, scope change and permission failure", async () => {
+    fixture.agingReport.mockReturnValue(availableAging);
+    fixture.agingFetched = false;
+    const page = mount();
+    const rerender = () =>
+      page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    const stage = () => screen.queryByRole("heading", { name: "Aging fixture stage" });
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    expect(stage()).not.toBeInTheDocument();
+    expect(screen.getByText("Loading stage aging…")).toBeInTheDocument();
+
+    fixture.agingFetched = true;
+    rerender();
+    expect(stage()).toBeInTheDocument();
+    fixture.agingFetching = true;
+    rerender();
+    expect(stage()).not.toBeInTheDocument();
+    fixture.agingFetching = false;
+    fixture.agingPlaceholder = true;
+    rerender();
+    expect(stage()).not.toBeInTheDocument();
+    fixture.agingPlaceholder = false;
+
+    fixture.agingFetched = false;
+    await userEvent.click(screen.getByLabelText("Owner"));
+    await userEvent.click(screen.getByRole("option", { name: "Everyone" }));
+    expect(fixture.agingQuery).toHaveBeenLastCalledWith(
+      { pipelineId: null, currency: "USD", ownerScope: { kind: "all" } },
+      expect.anything(),
+    );
+    expect(stage()).not.toBeInTheDocument();
+    fixture.agingFetched = true;
+    rerender();
+    expect(stage()).toBeInTheDocument();
+    expect(screen.getByText("This report covers your own deals.")).toBeInTheDocument();
+
+    fixture.agingError = true;
+    rerender();
+    expect(stage()).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Your current permissions do not allow you to view this report."),
+    ).toBeInTheDocument();
   });
   it("supports keyboard movement and selection in the report tabs", async () => {
     mount();
