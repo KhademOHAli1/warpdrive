@@ -183,7 +183,9 @@ function completion(outcome: WorkflowHttpRequestOutcome): WorkflowExternalEffect
   }
   const errorId = safeError(outcome.result.error.id, ERROR_IDS.WORKFLOW_WRITE_FAILED);
   if (outcome.disposition === "unknown") return { state: "unknown", errorId };
-  return { state: outcome.disposition === "not-sent" ? "not_sent" : "complete", errorId };
+  return outcome.disposition === "not-sent"
+    ? { state: "not_sent", errorId }
+    : { state: "complete", errorId };
 }
 
 async function receiptForClaim(

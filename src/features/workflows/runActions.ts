@@ -55,7 +55,8 @@ function executeTriggerStep(
       : ok({});
   const launch = matchWorkflowManualLaunch(node.config, trigger);
   if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
-  return ok("recordId" in launch ? { recordId: launch.recordId } : {});
+  const output: StepOutput = "recordId" in launch ? { recordId: launch.recordId } : {};
+  return ok(output);
 }
 
 export async function executeRunNode(

@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
-import type { PeerCertificate } from "node:tls";
+import type { DetailedPeerCertificate } from "node:tls";
 import { describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { EndpointResolver } from "@/features/connections/connectionEndpoint";
@@ -115,7 +115,8 @@ describe("readWorkflowHttp", () => {
       expect.any(Function),
     );
     const verify = transport.mock.calls[0]?.[0].checkServerIdentity;
-    const certificate = (host: string) => ({ subjectaltname: `DNS:${host}` }) as PeerCertificate;
+    const certificate = (host: string) =>
+      ({ subjectaltname: `DNS:${host}` }) as DetailedPeerCertificate;
     expect(verify?.("8.8.8.8", certificate(releaseApi.hostname))).toBeUndefined();
     expect(verify?.("spoof.invalid", certificate("spoof.invalid"))).toMatchObject({
       code: "ERR_TLS_CERT_ALTNAME_INVALID",
