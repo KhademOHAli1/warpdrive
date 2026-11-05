@@ -1,0 +1,809 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { ANALYTICS_BROWSER as actor, ANALYTICS_DEALS as deals } from "./browser-analytics-seed.mjs";
+
+// Use the same admission boundary as the existing full browser packs, before loading clients.
+assert.equal(process.env.GITHUB_ACTIONS, "true", "Requires the disposable hosted runner");
+assert.equal(process.env.CI, "true");
+assert.equal(process.env.NODE_ENV, "production");
+const admission = spawnSync(
+  "python3",
+  [fileURLToPath(new URL("./delivery/browser_smoke_environment.py", import.meta.url))],
+  { env: process.env, stdio: "inherit", timeout: 5000 },
+);
+assert.equal(admission.status, 0, "Disposable environment admission");
+assert.equal(admission.error, undefined);
+
+const { chromium } = await import("../tools/browser-smoke/node_modules/playwright/index.mjs");
+const { default: pg } = await import("pg");
+const { default: superjson } = await import("superjson");
+const { createTranslator } = await import("next-intl");
+const origin = process.env.BASE_URL;
+const evidence = new URL("../test-results/browser-smoke/analytics/", import.meta.url);
+const file = (name) => fileURLToPath(new URL(name, evidence));
+const catalog = (path) => JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), "utf8"));
+const copy = Object.fromEntries(
+  ["en", "de", "fa"].map((locale) => {
+    const stats = catalog(`src/features/stats/messages/stats.${locale}.json`);
+    return [
+      locale,
+      {
+        stats,
+        format: createTranslator({ locale, messages: stats }),
+        regional: catalog(`src/features/i18n/messages/${locale}.json`).preferences,
+      },
+    ];
+  }),
+);
+const languages = { en: "English", de: "Deutsch", fa: "فارسی" };
+const desktop = { width: 1280, height: 900 };
+const mobile = { width: 390, height: 844 };
+const labels = {
+  won: "trendValue",
+  closed: "scoreWinRate",
+  wonValue: "scoreAvgDeal",
+  wonCycle: "scoreCycle",
+};
+const presets = {
+  last30: "last30Days",
+  month: "thisMonth",
+  quarter: "thisQuarter",
+  year: "thisYear",
+};
+const won = ["recorded", "zero", "missing", "negativeCycle", "boundary"];
+const population = {
+  won: [won, "140.7067", 4],
+  closed: [[...won, "lost"], "200.7067", 5],
+  wonValue: [["recorded", "zero", "negativeCycle", "boundary"], "140.7067", 4],
+  wonCycle: [["recorded", "zero", "missing", "boundary"], "130.7067", 3],
+};
+const forbidden = [
+  deals.otherCurrency.id,
+  deals.otherOwner.id,
+  deals.hidden.id,
+  deals.restricted.id,
+];
+
+mkdirSync(evidence, { recursive: true });
+const report = {
+  state: "RUNNING",
+  revision: process.env.APP_COMMIT,
+  buildId: readFileSync(new URL("../.next/BUILD_ID", import.meta.url), "utf8").trim(),
+  browser: "Chromium",
+  criteria:
+    "I1 live CRM deal drill-down, viewer civil periods, regional presets and responsive rendering",
+  limits:
+    "Disposable synthetic CRM records and hosted Chromium viewports. The actor is limited to their own reports. No history, provider, human accessibility, installed or release acceptance.",
+  nativeLogins: 0,
+  journeys: [],
+  preferenceChanges: [],
+  cleanup: { browserClosed: false, databasePoolClosed: false, sessionCleared: false },
+};
+const save = () => writeFileSync(file("receipt.json"), `${JSON.stringify(report, null, 2)}\n`);
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 1,
+  connectionTimeoutMillis: 5000,
+  query_timeout: 5000,
+  statement_timeout: 5000,
+  options: "-c default_transaction_read_only=on",
+});
+let browser;
+let session;
+let currency;
+let asynchronousFailure = false;
+
+function safeError(error) {
+  return (error instanceof Error ? error.message : String(error))
+    .replaceAll(actor.password, "[redacted]")
+    .replaceAll(actor.email, "[redacted]")
+    .slice(0, 3500);
+}
+
+process.on("unhandledRejection", () => {
+  asynchronousFailure = true;
+  report.state = "FAIL";
+  report.error = "Unhandled asynchronous browser harness rejection";
+  process.exitCode = 1;
+  save();
+});
+
+const exact = (name) => ({ name, exact: true });
+const dashboard = (page, locale) => page.getByRole("main", exact(copy[locale].stats.title));
+
+async function journey(name, exercise, { viewport = desktop, colorScheme = "light" } = {}) {
+  const entry = {
+    name,
+    viewport,
+    colorScheme,
+    state: "RUNNING",
+    contextClosed: false,
+    reports: [],
+  };
+  report.journeys.push(entry);
+  const context = await browser.newContext({
+    baseURL: origin,
+    ignoreHTTPSErrors: true,
+    serviceWorkers: "block",
+    viewport,
+    colorScheme,
+    timezoneId: "UTC",
+    storageState: session === undefined ? undefined : structuredClone(session),
+  });
+  context.setDefaultTimeout(5000);
+  context.setDefaultNavigationTimeout(15000);
+  const unexpected = [];
+  const errors = [];
+  const failures = [];
+  context.on("page", (opened) => {
+    opened.on("pageerror", (error) => errors.push(safeError(error)));
+    opened.on("console", (message) => {
+      if (message.type() === "error") errors.push(safeError(message.text()));
+    });
+  });
+  let page;
+  try {
+    await context.route("**/*", (route) => {
+      const url = new URL(route.request().url());
+      if (url.origin === origin) return route.continue();
+      unexpected.push(url.origin);
+      return route.abort("blockedbyclient");
+    });
+    await context.routeWebSocket("**/*", (socket) => {
+      unexpected.push(new URL(socket.url()).origin);
+      return socket.close({ code: 1008, reason: "No sockets in analytics browser qualification" });
+    });
+    page = await context.newPage();
+    await exercise(page, context, entry);
+    assert.deepEqual(unexpected, [], "No unexpected origins or sockets");
+    assert.deepEqual(errors, [], "No browser errors");
+    entry.state = "PASS";
+  } catch (error) {
+    failures.push(error);
+    entry.state = "FAIL";
+    entry.error = safeError(error);
+    // Never retain login or settings captures, request bodies, headers, traces or storage state.
+    if (page && new URL(page.url()).pathname === "/dashboard") {
+      await page.screenshot({ path: file(`${name}-failure.png`), timeout: 5000 }).catch(() => {});
+    }
+  } finally {
+    try {
+      await context.close();
+      entry.contextClosed = true;
+    } catch (error) {
+      failures.push(error);
+      entry.state = "FAIL";
+      entry.cleanupError = safeError(error);
+    } finally {
+      save();
+    }
+  }
+  if (failures.length > 0) throw failures[0];
+}
+
+function rpcRequest(raw, procedure) {
+  const url = new URL(raw);
+  if (url.origin !== origin || !url.pathname.startsWith("/api/trpc/")) return null;
+  const index = decodeURIComponent(url.pathname.slice("/api/trpc/".length))
+    .split(",")
+    .indexOf(procedure);
+  if (index === -1) return null;
+  const batch = url.searchParams.get("batch") === "1";
+  const input = JSON.parse(url.searchParams.get("input") ?? "null");
+  return { batch, index, input: (batch ? input?.[index] : input)?.json };
+}
+
+async function rpcAfter(page, procedure, matches, action) {
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (candidate) => {
+        const call = rpcRequest(candidate.url(), procedure);
+        return call?.input !== undefined && matches(call.input);
+      },
+      { timeout: 15000 },
+    ),
+    action(),
+  ]);
+  assert.equal(response.status(), 200, `${procedure}: HTTP status`);
+  const request = rpcRequest(response.url(), procedure);
+  const payload = await response.json();
+  const packet = request.batch ? payload[request.index] : payload;
+  assert.ok(packet?.result?.data, `${procedure}: actual application result`);
+  return { input: request.input, data: superjson.deserialize(packet.result.data) };
+}
+
+async function choose(page, label, option, scope = page) {
+  await scope.getByRole("combobox", exact(label)).click();
+  await page.getByRole("option", exact(option)).click();
+}
+
+async function preferences() {
+  const { rows } = await pool.query("SELECT timezone,ui FROM user_preferences WHERE user_id=$1", [
+    actor.actorId,
+  ]);
+  assert.equal(rows.length, 1, "One persisted analytics preference row");
+  assert.equal(rows[0].ui.appearance, "system");
+  return rows[0];
+}
+
+async function setRegional(currentLocale, key, option, expected) {
+  const name = `regional-${key}-${option === languages.fa ? "fa" : expected[key]}`.replaceAll(
+    /[^a-zA-Z0-9-]/g,
+    "-",
+  );
+  await journey(name, async (page) => {
+    assert.equal((await page.goto("/settings/regional"))?.status(), 200);
+    assert.equal(new URL(page.url()).pathname, "/settings/regional");
+    assert.equal(await page.locator("html").getAttribute("lang"), currentLocale);
+    await page.waitForFunction(() =>
+      document.cookie.split("; ").some((cookie) => cookie.startsWith("wd_csrf=")),
+    );
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (candidate) =>
+          candidate.url() === `${origin}/settings/regional` &&
+          candidate.request().method() === "POST" &&
+          Boolean(candidate.request().headers()["next-action"]),
+        { timeout: 15000 },
+      ),
+      choose(page, copy[currentLocale].regional[key === "locale" ? "language" : key], option),
+    ]);
+    assert.equal(response.status(), 200, "Regional server action responded");
+    assert.equal(await response.finished(), null);
+    const stored = await preferences();
+    assert.equal(stored.timezone, expected.timeZone);
+    for (const [field, value] of Object.entries(expected)) {
+      assert.equal(stored.ui.localePreferences?.[field], value, `Persisted ${field}`);
+    }
+    report.preferenceChanges.push(expected);
+  });
+}
+
+function shiftDay(iso, days) {
+  const value = new Date(`${iso}T00:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+function expectedStart(preset, today, calendar) {
+  if (preset === "last30") return shiftDay(today, -29);
+  const formatter = new Intl.DateTimeFormat(`en-u-ca-${calendar}-nu-latn`, {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+  const parts = (iso) =>
+    Object.fromEntries(
+      formatter
+        .formatToParts(new Date(`${iso}T00:00:00Z`))
+        .map(({ type, value }) => [type, Number(value)]),
+    );
+  const current = parts(today);
+  const month =
+    preset === "month"
+      ? current.month
+      : preset === "quarter"
+        ? 1 + 3 * Math.floor((current.month - 1) / 3)
+        : 1;
+  // Independent civil-date oracle: find day 1 of the expected calendar month by scanning ISO days.
+  for (let offset = 0; offset < 366; offset += 1) {
+    const iso = shiftDay(today, -offset);
+    const candidate = parts(iso);
+    if (candidate.year === current.year && candidate.month === month && candidate.day === 1)
+      return iso;
+  }
+  throw new Error(`Could not identify ${calendar} ${preset} start`);
+}
+
+function assertScope({ input, data }, zone, expected) {
+  assert.equal(input.currency, currency);
+  assert.equal(input.timeZoneIdentity, zone);
+  assert.deepEqual(input.ownerScope, { kind: "me" });
+  assert.equal(data.currency, currency);
+  assert.deepEqual(data.effectiveOwnerScope, { kind: "me" });
+  assert.equal(data.timeZone, zone, "Server uses the saved viewer zone");
+  for (const [key, value] of Object.entries(expected)) assert.equal(input[key], value, key);
+}
+
+function trigger(page, locale, metric) {
+  const S = copy[locale].stats;
+  return dashboard(page, locale).getByRole(
+    "button",
+    exact(`${S.recordsView}: ${S[labels[metric]]}`),
+  );
+}
+
+async function openDashboard(page, locale, calendar, zone, pipelineId = actor.pipelineId) {
+  const S = copy[locale].stats;
+  let premature = 0;
+  const beforeOpen = (request) => {
+    if (rpcRequest(request.url(), "stats.records")) premature += 1;
+  };
+  page.on("request", beforeOpen);
+  const clock = () =>
+    pool.query("SELECT to_char(now() AT TIME ZONE $1, 'YYYY-MM-DD') AS today", [zone]);
+  const before = await clock();
+  const initial = await rpcAfter(
+    page,
+    "stats.dashboard",
+    (input) => input.pipelineId === null,
+    async () => {
+      assert.equal((await page.goto("/dashboard"))?.status(), 200);
+      assert.equal(new URL(page.url()).pathname, "/dashboard");
+    },
+  );
+  const today = initial.input.to;
+  assert.match(today, /^\d{4}-\d{2}-\d{2}$/);
+  const after = await clock();
+  assert.ok(
+    [before.rows[0].today, after.rows[0].today].includes(today),
+    "Dashboard civil date agrees with the real viewer-zone clock",
+  );
+  const from = expectedStart("year", today, calendar);
+  assertScope(initial, zone, { from, to: today, pipelineId: null });
+  const main = dashboard(page, locale);
+  await main.getByRole("heading", exact(S.title)).waitFor();
+  await main
+    .getByText(calendar === "persian" ? S.presetCalendarPersian : S.presetCalendarGregorian, {
+      exact: true,
+    })
+    .waitFor();
+  await main.getByText(S._extra.bucketNotice, { exact: true }).waitFor();
+  assert.equal(
+    await main.getByRole("button", exact(S.thisYear)).getAttribute("aria-pressed"),
+    "true",
+  );
+  assert.equal(await main.getByRole("button", exact(S.ownerScopeLabel)).isDisabled(), true);
+  const selected =
+    pipelineId === null
+      ? initial
+      : await rpcAfter(
+          page,
+          "stats.dashboard",
+          (input) => input.pipelineId === pipelineId,
+          () => choose(page, S.pipelineLabel, actor.pipelineName, main),
+        );
+  assertScope(selected, zone, { from, to: today, pipelineId });
+  await trigger(page, locale, "closed").waitFor();
+  assert.equal(premature, 0, "No contributing deal fetch before opening the drawer");
+  page.off("request", beforeOpen);
+  return selected;
+}
+
+async function selectPreset(page, locale, calendar, report, preset) {
+  const { from: previousFrom, to, pipelineId, timeZoneIdentity: zone } = report.input;
+  const from = expectedStart(preset, to, calendar);
+  const button = dashboard(page, locale).getByRole(
+    "button",
+    exact(copy[locale].stats[presets[preset]]),
+  );
+  let selected = report;
+  if (from === previousFrom) await button.click();
+  else
+    selected = await rpcAfter(
+      page,
+      "stats.dashboard",
+      (input) => input.from === from && input.to === to && input.pipelineId === pipelineId,
+      () => button.click(),
+    );
+  await trigger(page, locale, "closed").waitFor();
+  assert.equal(await button.getAttribute("aria-pressed"), "true");
+  assertScope(selected, zone, { from, to, pipelineId });
+  return selected;
+}
+
+function assertPopulation(result, [keys, value, valueCount]) {
+  assert.deepEqual(result.totals, { count: keys.length, value, valueCount });
+  assert.deepEqual(
+    result.rows.map((row) => row.id).sort(),
+    keys.map((key) => deals[key].id).sort(),
+  );
+  for (const key of keys) {
+    const fixture = deals[key];
+    const row = result.rows.find((item) => item.id === fixture.id);
+    assert.equal(row.title, fixture.title);
+    assert.equal(row.value, fixture.value);
+    assert.equal(row.status, fixture.status);
+  }
+}
+
+async function openRecords(page, locale, metric, scope, entry, expected) {
+  const { stats: S, format } = copy[locale];
+  const opener = trigger(page, locale, metric);
+  const { from, to, pipelineId, timeZoneIdentity: zone } = scope;
+  const records = await rpcAfter(
+    page,
+    "stats.records",
+    (input) => input.metric === metric,
+    () => opener.press("Enter"),
+  );
+  assertScope(records, zone, { from, to, pipelineId });
+  const { data } = records;
+  assert.equal(data.metric, metric);
+  assert.equal(data.nextCursor, null);
+  assert.equal(data.rows.length, data.totals.count);
+  assert.ok(data.definitionVersion);
+  assert.ok(Number.isFinite(Date.parse(data.generatedAt)));
+  assert.ok(
+    data.rows.every((row) => !forbidden.includes(row.id)),
+    "Excluded fixture rows stay out",
+  );
+  if (expected) assertPopulation(data, expected);
+  const dialog = page.getByRole("dialog", exact(S[labels[metric]]));
+  await dialog.getByText(S.recordsLiveNotice, { exact: true }).waitFor();
+  const count = format("_extra.recordsCount", { count: data.totals.count });
+  const status = dialog.getByRole("status").filter({ hasText: count });
+  assert.equal((await status.textContent())?.trim(), count);
+  await dialog.getByText(`${S.recordsTimeZone}: ${zone}`, { exact: false }).waitFor();
+  if (data.rows.length > 0) {
+    const table = dialog.getByRole("table", exact(S.recordsTable));
+    await table.waitFor();
+    assert.equal(await table.getByRole("row").count(), data.rows.length + 1);
+    for (const row of data.rows) {
+      const name = exact(`${row.title} ${S.recordsOpenNewTab}`);
+      const link = table.getByRole("link", name);
+      assert.equal(await link.getAttribute("href"), `/deals/${row.id}`);
+      assert.equal(await link.getAttribute("target"), "_blank");
+      const line = table.getByRole("row").filter({ has: page.getByRole("link", name) });
+      assert.equal((await line.getByRole("cell").nth(0).textContent())?.trim(), S[row.status]);
+      const value = (await line.getByRole("cell").nth(1).textContent())?.trim();
+      assert.ok(value, "Recorded value cell has text");
+      if (row.value === null) assert.equal(value, S.noValue);
+      else assert.notEqual(value, S.noValue);
+      if (row.id === deals.zero.id)
+        assert.ok(value.includes(new Intl.NumberFormat(locale).format(0)));
+    }
+  } else {
+    await dialog.getByText(S.recordsEmpty, { exact: true }).waitFor();
+    assert.equal(await dialog.getByRole("table").count(), 0);
+  }
+  entry.reports.push({
+    metric,
+    from,
+    to,
+    zone,
+    currency,
+    pipelineId,
+    definitionVersion: data.definitionVersion,
+    totals: data.totals,
+    ids: data.rows.map((row) => row.id),
+  });
+  return { dialog, opener };
+}
+
+async function closeRecords(page, { dialog, opener }) {
+  await page.keyboard.press("Escape");
+  await dialog.waitFor({ state: "hidden" });
+  await opener.and(page.locator(":focus")).waitFor();
+}
+
+async function capture(page, name) {
+  await page.screenshot({ path: file(`${name}.png`), animations: "disabled", timeout: 5000 });
+}
+
+async function verifyRender(page, locale, colorScheme, viewport, dialog) {
+  const rtl = locale === "fa";
+  assert.equal(await page.locator("html").getAttribute("lang"), locale);
+  assert.equal(await page.locator("html").getAttribute("dir"), rtl ? "rtl" : "ltr");
+  assert.equal(
+    await page.locator("html").evaluate((node) => node.classList.contains("dark")),
+    colorScheme === "dark",
+  );
+  assert.equal(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1),
+    true,
+  );
+  if (dialog) {
+    assert.equal(await dialog.getAttribute("dir"), rtl ? "rtl" : "ltr");
+    assert.equal(await dialog.getAttribute("data-side"), rtl ? "left" : "right");
+    const box = await dialog.boundingBox();
+    assert.ok(
+      box && box.x >= -1 && box.x + box.width <= viewport.width + 1,
+      "Drawer fits viewport",
+    );
+  }
+}
+
+async function exercisePresets(page, locale, calendar, current, entry) {
+  const proof = { year: [current.input.from, current.input.to] };
+  for (const [preset, metric] of [
+    ["month", "won"],
+    ["quarter", "closed"],
+    ["year", "wonValue"],
+    ["last30", "wonCycle"],
+  ]) {
+    // A coincident boundary may reuse a dashboard cache key. An opened drawer performs a fresh
+    // native request and independently proves the range passed from the selected button.
+    const target = expectedStart(preset, current.input.to, calendar);
+    const button = dashboard(page, locale).getByRole(
+      "button",
+      exact(copy[locale].stats[presets[preset]]),
+    );
+    await button.click();
+    assert.equal(await button.getAttribute("aria-pressed"), "true");
+    const scope = { ...current.input, from: target };
+    await closeRecords(page, await openRecords(page, locale, metric, scope, entry));
+    proof[preset] = [target, current.input.to];
+  }
+  entry.presets = { calendar, ranges: proof };
+}
+
+async function matrix(locale, calendar) {
+  const S = copy[locale].stats;
+  for (const viewport of [desktop, mobile]) {
+    for (const colorScheme of ["light", "dark"]) {
+      const name = `${locale}-${calendar}-${colorScheme}-${viewport.width}`;
+      await journey(
+        name,
+        async (page, _context, entry) => {
+          Object.assign(entry, { locale, calendar, zone: actor.timeZone });
+          const initial = await openDashboard(page, locale, calendar, actor.timeZone);
+          entry.initialRange = { from: initial.input.from, to: initial.input.to };
+          const current = await selectPreset(page, locale, calendar, initial, "last30");
+          assert.deepEqual(current.data.dealPerformance.won, { count: 5, value: "140.7067" });
+          assert.equal(current.data.dealPerformance.lost.count, 1);
+          assert.equal(current.data.winRate, 5 / 6);
+          assert.equal(current.data.wonDealStats.avgValue, "35.1767");
+          assert.equal(current.data.wonDealStats.medianCycleDays, 2.5);
+          entry.scoreboard = {
+            won: current.data.dealPerformance.won,
+            lost: current.data.dealPerformance.lost,
+            winRate: current.data.winRate,
+            averageWonValue: current.data.wonDealStats.avgValue,
+            medianCycleDays: current.data.wonDealStats.medianCycleDays,
+          };
+          const main = dashboard(page, locale);
+          const scoreboard = main.locator("dl").filter({ hasText: S.scoreWinRate });
+          await scoreboard
+            .getByText(copy[locale].format("_extra.percent", { count: 83 }), { exact: true })
+            .waitFor();
+          await verifyRender(page, locale, colorScheme, viewport);
+          await page.evaluate(() => document.fonts.ready.then(() => undefined));
+          await main.getByRole("heading", exact(S.title)).scrollIntoViewIfNeeded();
+          await capture(page, `${name}-dashboard`);
+          const opened = await openRecords(
+            page,
+            locale,
+            "closed",
+            current.input,
+            entry,
+            population.closed,
+          );
+          await verifyRender(page, locale, colorScheme, viewport, opened.dialog);
+          await capture(page, `${name}-drawer`);
+          entry.accessibility = await opened.dialog.ariaSnapshot();
+          if (locale === "en" && viewport === desktop && colorScheme === "light") {
+            const [popup] = await Promise.all([
+              page.waitForEvent("popup"),
+              opened.dialog
+                .getByRole("link", exact(`${deals.recorded.title} ${S.recordsOpenNewTab}`))
+                .click(),
+            ]);
+            // If an assertion fails, journey() closes the context and this popup without
+            // letting a cleanup error replace the initial failure.
+            await popup.waitForURL(`${origin}/deals/${deals.recorded.id}`);
+            await popup.getByText(deals.recorded.title, { exact: true }).first().waitFor();
+            await opened.dialog.waitFor();
+            assert.equal(new URL(page.url()).pathname, "/dashboard");
+            entry.recordOpenedInNewTab = true;
+            await popup.close();
+            await page.bringToFront();
+          }
+          await closeRecords(page, opened);
+          if (locale === "en" && viewport === desktop && colorScheme === "light") {
+            for (const metric of ["won", "wonValue", "wonCycle"]) {
+              await closeRecords(
+                page,
+                await openRecords(page, locale, metric, current.input, entry, population[metric]),
+              );
+            }
+          }
+        },
+        { viewport, colorScheme },
+      );
+    }
+  }
+}
+
+async function pickDay(page, label, iso) {
+  const control = dashboard(page, "en").getByRole("button", exact(label));
+  await control.click();
+  const year = page.getByRole("combobox", exact("Choose the Year"));
+  const month = page.getByRole("combobox", exact("Choose the Month"));
+  const [y, m] = iso.split("-");
+  if ((await year.inputValue()) !== y) await year.selectOption(y);
+  const monthIndex = String(Number(m) - 1);
+  if ((await month.inputValue()) !== monthIndex) await month.selectOption(monthIndex);
+  const cell = page.locator(`[role="gridcell"][data-day="${iso}"]:not([data-outside])`);
+  if ((await cell.getAttribute("aria-selected")) === "true") await page.keyboard.press("Escape");
+  else await cell.getByRole("button").click();
+  await year.waitFor({ state: "hidden" });
+}
+
+async function verifyZoneBoundary(zone, day, included) {
+  await journey(`boundary-${included ? "utc" : "los-angeles"}`, async (page, _context, entry) => {
+    const S = copy.en.stats;
+    await openDashboard(page, "en", "gregory", zone);
+    await pickDay(page, S.rangeStartLabel, day);
+    const oneDay = await rpcAfter(
+      page,
+      "stats.dashboard",
+      (input) => input.from === day && input.to === day,
+      () => pickDay(page, S.rangeEndLabel, day),
+    );
+    assertScope(oneDay, zone, { from: day, to: day, pipelineId: actor.pipelineId });
+    const expected = included ? [["boundary"], "7.25", 1] : [[], "0.00", 0];
+    assert.deepEqual(oneDay.data.dealPerformance.won, {
+      count: expected[0].length,
+      value: expected[1],
+    });
+    await closeRecords(page, await openRecords(page, "en", "won", oneDay.input, entry, expected));
+  });
+}
+
+async function verifyRestrictedPipeline() {
+  await journey("restricted-pipeline", async (page, _context, entry) => {
+    const S = copy.en.stats;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone, null);
+    const all = await selectPreset(page, "en", "gregory", initial, "last30");
+    assert.deepEqual(all.data.dealPerformance.won, { count: 5, value: "140.7067" });
+    await dashboard(page, "en").getByText(`${S.scoreWon}: 5`, { exact: true }).waitFor();
+    await closeRecords(
+      page,
+      await openRecords(page, "en", "won", all.input, entry, population.won),
+    );
+  });
+}
+
+try {
+  assert.match(report.revision, /^[0-9a-f]{40}$/);
+  const readOnly = await pool.query("SHOW default_transaction_read_only");
+  assert.equal(readOnly.rows[0].default_transaction_read_only, "on");
+  const original = await preferences();
+  assert.equal(original.timezone, actor.timeZone);
+  assert.equal(
+    original.ui.localePreferences,
+    undefined,
+    "Regional settings start from the real defaults",
+  );
+  const { rows: seeded } = await pool.query(
+    `SELECT d.id,d.currency,d.owner_id,d.visibility_level,d.pipeline_id,
+            p.visibility_group_id,p.is_archived,
+            to_char(d.won_time AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day,
+            EXISTS (SELECT 1 FROM visibility_group_members m
+                     WHERE m.group_id=p.visibility_group_id AND m.user_id=$2) AS group_member
+       FROM deals d JOIN pipelines p ON p.id=d.pipeline_id
+       WHERE d.pipeline_id=ANY($1::uuid[]) ORDER BY d.id`,
+    [[actor.pipelineId, actor.restrictedPipelineId], actor.actorId],
+  );
+  assert.deepEqual(
+    seeded.map((row) => row.id),
+    Object.values(deals)
+      .map((row) => row.id)
+      .sort(),
+  );
+  const find = (key) => seeded.find((row) => row.id === deals[key].id);
+  const boundary = find("boundary");
+  currency = boundary.currency;
+  assert.equal(currency, "EUR", "Uses the hosted seed's EUR report currency");
+  assert.equal(boundary.owner_id, actor.actorId);
+  assert.notEqual(find("otherCurrency").currency, currency);
+  assert.notEqual(find("otherOwner").owner_id, actor.actorId);
+  assert.equal(find("otherOwner").visibility_level, "all");
+  assert.notEqual(find("hidden").owner_id, actor.actorId);
+  assert.equal(find("hidden").visibility_level, "owner");
+  const restricted = find("restricted");
+  assert.equal(restricted.owner_id, actor.actorId);
+  assert.equal(restricted.currency, currency);
+  assert.equal(restricted.day, find("recorded").day);
+  assert.equal(restricted.pipeline_id, actor.restrictedPipelineId);
+  assert.equal(restricted.visibility_group_id, actor.restrictedGroupId);
+  assert.equal(restricted.is_archived, false);
+  assert.equal(restricted.group_member, false);
+
+  browser = await chromium.launch({ headless: true });
+  report.browserVersion = browser.version();
+  await journey("native-login", async (page, context) => {
+    await context.addCookies([{ name: "warpdrive_locale", value: "en", url: origin }]);
+    await page.goto("/login");
+    await page.locator('input[name="email"]').fill(actor.email);
+    await page.locator('input[name="password"]').fill(actor.password);
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
+    assert.equal((await page.goto("/settings/regional"))?.status(), 200);
+    assert.equal(new URL(page.url()).pathname, "/settings/regional");
+    session = await context.storageState();
+    report.nativeLogins += 1;
+  });
+
+  await verifyRestrictedPipeline();
+  await matrix("en", "gregory");
+  await setRegional("en", "timeZone", "UTC", {
+    locale: "en",
+    calendar: "gregory",
+    timeZone: "UTC",
+  });
+  await verifyZoneBoundary("UTC", boundary.day, true);
+  await setRegional("en", "timeZone", "America/Los_Angeles", {
+    locale: "en",
+    calendar: "gregory",
+    timeZone: "America/Los_Angeles",
+  });
+  await verifyZoneBoundary("America/Los_Angeles", boundary.day, false);
+  await setRegional("en", "timeZone", actor.timeZone, {
+    locale: "en",
+    calendar: "gregory",
+    timeZone: actor.timeZone,
+  });
+  await setRegional("en", "locale", languages.de, {
+    locale: "de",
+    calendar: "gregory",
+    timeZone: actor.timeZone,
+  });
+  await matrix("de", "gregory");
+  await setRegional("de", "locale", languages.fa, {
+    locale: "fa",
+    calendar: "gregory",
+    timeZone: actor.timeZone,
+  });
+  await journey(
+    "fa-gregorian-presets",
+    async (page, _context, entry) => {
+      const current = await openDashboard(page, "fa", "gregory", actor.timeZone);
+      await exercisePresets(page, "fa", "gregory", current, entry);
+    },
+    { viewport: mobile },
+  );
+  await setRegional("fa", "calendar", copy.fa.regional.persianCalendar, {
+    locale: "fa",
+    calendar: "persian",
+    timeZone: actor.timeZone,
+  });
+  await matrix("fa", "persian");
+  await setRegional("fa", "locale", languages.en, {
+    locale: "en",
+    calendar: "persian",
+    timeZone: actor.timeZone,
+  });
+  await journey("en-persian-presets", async (page, _context, entry) => {
+    const current = await openDashboard(page, "en", "persian", actor.timeZone);
+    await exercisePresets(page, "en", "persian", current, entry);
+  });
+  assert.equal(report.nativeLogins, 1);
+  assert.equal(asynchronousFailure, false);
+  report.state = "PASS";
+} catch (error) {
+  report.state = "FAIL";
+  report.error = safeError(error);
+  process.exitCode = 1;
+} finally {
+  session = undefined;
+  report.cleanup.sessionCleared = true;
+  try {
+    if (browser) await browser.close();
+    report.cleanup.browserClosed = true;
+  } catch (error) {
+    report.state = "FAIL";
+    report.cleanup.browserError = safeError(error);
+    process.exitCode = 1;
+  } finally {
+    try {
+      await pool.end();
+      report.cleanup.databasePoolClosed = true;
+    } catch (error) {
+      report.state = "FAIL";
+      report.cleanup.databaseError = safeError(error);
+      process.exitCode = 1;
+    } finally {
+      save();
+    }
+  }
+}
+if (report.state === "PASS") console.log("Analytics browser qualification passed");
+else
+  console.error(
+    `Analytics browser qualification failed; inspect the receipt at ${file("receipt.json")}`,
+  );

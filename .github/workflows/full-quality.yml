@@ -115,6 +115,8 @@ jobs:
           timeout 300s bun --no-env-file scripts/browser-smoke.mjs
           timeout 300s bun --no-env-file scripts/browser-appearance.mjs
           timeout 300s bun --no-env-file scripts/browser-workflow-preferences.mjs
+          timeout 30s bun --no-env-file scripts/browser-analytics-seed.mjs
+          timeout 300s bun --no-env-file scripts/browser-analytics.mjs
       - name: Preserve appearance qualification artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -139,6 +141,14 @@ jobs:
         with:
           name: workflow-preferences-${{ github.run_id }}-${{ github.run_attempt }}
           path: test-results/browser-smoke/workflow-preferences/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve analytics qualification artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: analytics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/analytics/
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve browser failure traces and screenshots
