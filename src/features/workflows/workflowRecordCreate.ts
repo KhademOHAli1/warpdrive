@@ -18,7 +18,7 @@ import type { EntityCreateSession } from "@/features/permissions/entityCreate";
 import { err, ok, type Result } from "@/types/result";
 import { resolveRunBinding } from "./runBindings";
 import type { RunOutputs, StepOutput } from "./runTypes";
-import type { WorkflowDefinition, WorkflowNode } from "./schemas";
+import { nodeSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
 import {
   type RecordCreateConfig,
   type RecordCreateEntity,
@@ -160,6 +160,36 @@ async function writeRecord(
   }
 }
 
+export async function withRecordWriteTransaction(
+  db: Db,
+  mode: RecordCreateMode,
+  signal: AbortSignal,
+  write: (tx: Db) => Promise<RecordResult>,
+): Promise<RecordResult> {
+  if (mode === "draft-simulation" && !("rollback" in db))
+    return err(ERROR_IDS.WORKFLOW_WRITE_FAILED);
+
+  const rollback: { result?: RecordResult } = {};
+  try {
+    return await db.transaction(async (tx) => {
+      const result = await write(tx);
+      signal.throwIfAborted();
+      // Failed writes and published previews must leave no CRM effects. Draft
+      // tests can read test records before their enclosing transaction rolls back.
+      if (!result.ok || mode === "simulation") {
+        rollback.result = result;
+        tx.rollback();
+      }
+      return result;
+    });
+  } catch (error) {
+    signal.throwIfAborted();
+    if (rollback.result !== undefined && error instanceof TransactionRollbackError)
+      return rollback.result;
+    throw error;
+  }
+}
+
 export async function createWorkflowRecord(
   db: Db,
   actor: PermSetUser,
@@ -170,9 +200,8 @@ export async function createWorkflowRecord(
   signal: AbortSignal,
 ): Promise<RecordResult> {
   signal.throwIfAborted();
-  if (node.type !== "record.create" || node.version !== 1) return err(ERROR_IDS.WORKFLOW_NOT_READY);
-  if (mode === "draft-simulation" && !("rollback" in db))
-    return err(ERROR_IDS.WORKFLOW_WRITE_FAILED);
+  if (node.type !== "record.create" || !nodeSchema.shape.version.safeParse(node.version).success)
+    return err(ERROR_IDS.WORKFLOW_NOT_READY);
   const parsed = recordCreateConfig.safeParse(node.config);
   if (!parsed.success) return err(ERROR_IDS.WORKFLOW_INVALID);
   const { entity } = parsed.data;
@@ -180,23 +209,7 @@ export async function createWorkflowRecord(
   const fields = resolveFields(parsed.data, definition, node.id, outputs);
   if (!fields.ok) return fields;
 
-  let result: RecordResult = err(ERROR_IDS.WORKFLOW_WRITE_FAILED);
-  let rollbackRequested = false;
-  try {
-    await db.transaction(async (tx) => {
-      result = await writeRecord(tx, actor, entity, fields.value, signal);
-      signal.throwIfAborted();
-      // Failed writes and published previews must leave no CRM row or database
-      // notifications. Draft tests have an enclosing transaction that always
-      // rolls back and can temporarily read a record created by an earlier step.
-      if (!result.ok || mode === "simulation") {
-        rollbackRequested = true;
-        tx.rollback();
-      }
-    });
-  } catch (error) {
-    signal.throwIfAborted();
-    if (!rollbackRequested || !(error instanceof TransactionRollbackError)) throw error;
-  }
-  return result;
+  return withRecordWriteTransaction(db, mode, signal, (tx) =>
+    writeRecord(tx, actor, entity, fields.value, signal),
+  );
 }

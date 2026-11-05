@@ -63,24 +63,32 @@ function edgeGeometry(props: EdgeProps<WorkflowCanvasEdge>) {
   return { paths: [first, second], overlay: { x, y } };
 }
 
+const edgeColors = {
+  completed: "var(--workflow-success)",
+  selected: "var(--workflow-accent)",
+  hover: "var(--workflow-light-text)",
+  default: "var(--workflow-border-strong)",
+};
+
 export function WorkflowDiagramEdge(props: EdgeProps<WorkflowCanvasEdge>) {
   const t = useAppTranslations("workflows");
   const { data, selected, style, interactionWidth = 28, markerEnd } = props;
   const geometry = edgeGeometry(props);
   const hovered = data?.hovered === true;
   const state =
-    data?.completed === true ? "completed" : selected ? "selected" : hovered ? "hover" : "default";
-  const color =
-    state === "completed"
-      ? "var(--workflow-success)"
-      : state === "selected"
-        ? "var(--workflow-accent)"
-        : state === "hover"
-          ? "var(--workflow-light-text)"
-          : "var(--workflow-border-strong)";
+    data?.completed === true
+      ? "completed"
+      : selected === true
+        ? "selected"
+        : hovered
+          ? "hover"
+          : "default";
+  const color = edgeColors[state];
   const arrow =
     data?.markerPrefix === undefined ? markerEnd : `url(#${data.markerPrefix}-${state})`;
-  const mutable = data?.onInsert !== undefined || data?.onDisconnect !== undefined;
+  const onInsert = data?.onInsert;
+  const onDisconnect = data?.onDisconnect;
+  const mutable = onInsert !== undefined || onDisconnect !== undefined;
   const labelTransform =
     data?.spec.port.startsWith("branch:") === true
       ? `translate(-50%, -50%) translate(${geometry.overlay.x}px, ${geometry.overlay.y}px)`
@@ -116,7 +124,7 @@ export function WorkflowDiagramEdge(props: EdgeProps<WorkflowCanvasEdge>) {
             }}
           >
             <fieldset aria-label={t("connections")} className="workflow-edge-control-group">
-              {data?.onInsert !== undefined && (
+              {onInsert !== undefined && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -126,13 +134,13 @@ export function WorkflowDiagramEdge(props: EdgeProps<WorkflowCanvasEdge>) {
                   aria-label={t("insertConnectedStep")}
                   onClick={(event) => {
                     event.stopPropagation();
-                    data.onInsert?.(geometry.overlay);
+                    onInsert(geometry.overlay);
                   }}
                 >
                   <WorkflowReferenceIcon name="plus" size={14} />
                 </Button>
               )}
-              {data?.onDisconnect !== undefined && (
+              {onDisconnect !== undefined && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -142,7 +150,7 @@ export function WorkflowDiagramEdge(props: EdgeProps<WorkflowCanvasEdge>) {
                   aria-label={t("removeConnection")}
                   onClick={(event) => {
                     event.stopPropagation();
-                    data.onDisconnect?.();
+                    onDisconnect();
                   }}
                 >
                   <WorkflowReferenceIcon name="trash" size={14} />

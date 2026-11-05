@@ -72,7 +72,7 @@ function configuredDurationSummary(
   const parsed = delayScheduleConfigSchema.safeParse(config);
   if (!parsed.success || parsed.data.delayType !== "DURATION") return t("setupRequired");
   const { duration } = parsed.data;
-  if (Object.values(duration).some((binding) => binding?.kind === "reference"))
+  if (delayDurationUnits.some((unit) => duration[unit]?.kind === "reference"))
     return t("delayMappedDuration");
   const amounts = delayDurationUnits.flatMap((unit) => {
     const binding = duration[unit];

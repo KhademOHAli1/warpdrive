@@ -8,23 +8,35 @@ function isSupportedVersion(value: unknown): boolean {
   return value === 1;
 }
 
+function executableDelay(node: WorkflowNode): boolean {
+  if (Object.hasOwn(node.config, "delayType"))
+    return actionRegistry.delay.config.safeParse(node.config).success;
+  const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
+  const binding = bindingSchema.safeParse(node.config[selected]);
+  return (
+    binding.success &&
+    binding.data.kind === "value" &&
+    actionRegistry.delay.config.safeParse(node.config).success
+  );
+}
+
 // Contracts can be authored before every handler exists. Publication and execution
 // fail closed until an action's complete configuration has a qualified handler.
 export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
   if (node.type === "trigger.manual") return true;
-  if (node.type === "delay") {
-    if (Object.hasOwn(node.config, "delayType"))
-      return actionRegistry.delay.config.safeParse(node.config).success;
-    const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
-    const binding = bindingSchema.safeParse(node.config[selected]);
-    return (
-      binding.success &&
-      binding.data.kind === "value" &&
-      actionRegistry.delay.config.safeParse(node.config).success
-    );
-  }
-  if (node.type === "ifElse" || node.type === "record.create")
+  if (node.type === "delay") return executableDelay(node);
+  if (
+    [
+      "ifElse",
+      "record.create",
+      "record.update",
+      "record.delete",
+      "record.search",
+      "record.pick",
+      "email.draft",
+    ].includes(node.type)
+  )
     return actionRegistry[node.type].config.safeParse(node.config).success;
   if (node.type === "condition" || node.type === "filter") {
     if (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort")) {

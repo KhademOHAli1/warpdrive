@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type * as XYFlow from "@xyflow/react";
 import { Position } from "@xyflow/react";
 import type { ReactNode } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { WorkflowDiagramEdge } from "./WorkflowDiagramEdge";
 
 vi.mock("@xyflow/react", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@xyflow/react")>()),
+  ...(await importOriginal<typeof XYFlow>()),
   BaseEdge: () => null,
   EdgeLabelRenderer: ({ children }: { children: ReactNode }) => children,
 }));

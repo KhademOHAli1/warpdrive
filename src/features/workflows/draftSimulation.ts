@@ -27,7 +27,10 @@ import { executeRunNode } from "./runActions";
 import { selectRunBranch } from "./runBranchSelection";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
+import { createWorkflowEmailDraft } from "./workflowEmailDraft";
 import { createWorkflowRecord } from "./workflowRecordCreate";
+import { mutateWorkflowRecord } from "./workflowRecordMutation";
+import { pickWorkflowRecord } from "./workflowRecordPick";
 
 type DraftNode = WorkflowNode & { type: DraftSimulationNodeType };
 interface SimulationContext {
@@ -76,6 +79,7 @@ function succeededStep(
     status: "succeeded",
   };
   if (next !== undefined) receipt.port = next.port;
+  if (node.type === "record.delete" && output.deleted === true) receipt.recordDeleted = true;
   if (node.type === "delay" && typeof output.resumeAt === "string")
     receipt.waitResumeAt = output.resumeAt;
   return receipt;
@@ -154,6 +158,34 @@ async function executeDraftNode(
       outputs,
       context.definition,
       "draft-simulation",
+      context.signal,
+    );
+  if (node.type === "record.update" || node.type === "record.delete")
+    return mutateWorkflowRecord(
+      context.db,
+      actor,
+      node,
+      outputs,
+      context.definition,
+      "draft-simulation",
+      context.signal,
+    );
+  if (node.type === "record.pick")
+    return pickWorkflowRecord(
+      context.db,
+      actor,
+      node,
+      { workflowId: context.workflowId, simulation: true },
+      context.signal,
+    );
+  if (node.type === "email.draft")
+    return createWorkflowEmailDraft(
+      context.db,
+      actor,
+      node,
+      outputs,
+      context.definition,
+      { mode: "draft-simulation" },
       context.signal,
     );
   return executeRunNode(

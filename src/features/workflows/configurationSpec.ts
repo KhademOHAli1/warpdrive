@@ -103,6 +103,11 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
   },
   ifElse: { supported: true, fields: [name] },
   "record.create": { supported: true, fields: [name] },
+  "record.update": { supported: true, fields: [name] },
+  "record.delete": { supported: true, fields: [name] },
+  "record.search": { supported: true, fields: [name] },
+  "record.pick": { supported: true, fields: [name] },
+  "email.draft": { supported: true, fields: [name] },
   filter: {
     supported: true,
     fields: [
@@ -218,7 +223,9 @@ export function defaultConfiguration(
   const recordId = { kind: "reference", nodeId: source.trigger?.id ?? "start", path: ["recordId"] };
   if (type === "record.read") return { entity: "deal", recordId };
   if (type === "ifElse") return newIfElseConfig();
-  if (type === "record.create") return { fields: {} };
+  if (type === "record.create" || type === "record.update") return { fields: {} };
+  if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
+  if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
   if (type === "activity.create")
     return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };
   if (type === "delay")

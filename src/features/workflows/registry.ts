@@ -17,7 +17,10 @@ import { parseIfElseConfig } from "./ifElseConfig";
 import { coarseMappingOutputs, mappingOutputContracts } from "./mappingOutputs";
 import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
+import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
+import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
+import { recordPickConfig, recordSearchConfig } from "./workflowRecordQueryContract";
 
 interface ActionSpec {
   configuration: ConfigurationProfile;
@@ -150,6 +153,46 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     inputs: {},
     outputs: coarseMappingOutputs("record.create"),
     outputContracts: mappingOutputContracts("record.create"),
+    effect: "database",
+  },
+  "record.update": {
+    configuration: configurationProfiles["record.update"],
+    config: recordUpdateConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.update"),
+    outputContracts: mappingOutputContracts("record.update"),
+    effect: "database",
+  },
+  "record.delete": {
+    configuration: configurationProfiles["record.delete"],
+    config: recordDeleteConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.delete"),
+    outputContracts: mappingOutputContracts("record.delete"),
+    effect: "database",
+  },
+  "record.search": {
+    configuration: configurationProfiles["record.search"],
+    config: recordSearchConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.search"),
+    outputContracts: mappingOutputContracts("record.search"),
+    effect: "none",
+  },
+  "record.pick": {
+    configuration: configurationProfiles["record.pick"],
+    config: recordPickConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.pick"),
+    outputContracts: mappingOutputContracts("record.pick"),
+    effect: "none",
+  },
+  "email.draft": {
+    configuration: configurationProfiles["email.draft"],
+    config: workflowEmailDraftConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("email.draft"),
+    outputContracts: mappingOutputContracts("email.draft"),
     effect: "database",
   },
   filter: {

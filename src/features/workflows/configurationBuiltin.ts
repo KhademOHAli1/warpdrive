@@ -12,7 +12,14 @@ import { prepareIfElseConfig } from "./ifElse";
 import { describeMappingTarget, inspectMapping } from "./mappingCatalog";
 import { delayScheduleConfigSchema } from "./registry";
 import { bindingSchema, draftBindingSchema, type WorkflowNode } from "./schemas";
+import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
+import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
+import {
+  recordPickConfig,
+  recordSearchBindingEntries,
+  recordSearchConfig,
+} from "./workflowRecordQueryContract";
 
 export function configurationIssue(
   node: WorkflowNode,
@@ -250,9 +257,110 @@ function validateRecordCreate(
     checkMapping(node, ["fields", key], binding, context, result);
 }
 
+function appendSchemaIssues(
+  node: WorkflowNode,
+  issues: readonly { path: readonly PropertyKey[]; message: string }[],
+  result: ConfigurationValidation,
+) {
+  for (const issue of issues) {
+    const path = issue.path.map(String);
+    const message = issue.message;
+    const key = path[0];
+    const code =
+      message === "required" || message === "out_of_range" || message === "unknown_setting"
+        ? message
+        : path.length === 1 && key !== undefined && node.config[key] === undefined
+          ? "required"
+          : "invalid_value";
+    result.issues.push(configurationIssue(node, path, code));
+  }
+}
+
+function validateRecordMutation(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const schema = node.type === "record.update" ? recordUpdateConfig : recordDeleteConfig;
+  const parsed = schema.safeParse(node.config);
+  if (!parsed.success) return appendSchemaIssues(node, parsed.error.issues, result);
+  checkMapping(node, ["recordId"], parsed.data.recordId, context, result);
+  if ("fields" in parsed.data)
+    for (const [key, value] of Object.entries(parsed.data.fields))
+      checkMapping(node, ["fields", key], value, context, result);
+}
+
+function validateRecordSearch(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const search = recordSearchConfig.safeParse(node.config);
+  if (!search.success) return appendSchemaIssues(node, search.error.issues, result);
+  for (const { path, value } of recordSearchBindingEntries(search.data))
+    checkMapping(node, path, value, context, result);
+}
+
+function validateRecordPick(
+  node: WorkflowNode,
+  _context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const pick = recordPickConfig.safeParse(node.config);
+  if (!pick.success) appendSchemaIssues(node, pick.error.issues, result);
+}
+
+function validateEmailDraft(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const parsed = workflowEmailDraftConfig.safeParse(node.config);
+  if (!parsed.success) return appendSchemaIssues(node, parsed.error.issues, result);
+  for (const { key } of workflowEmailDraftFields)
+    if (node.config[key] !== undefined) checkBinding(node, key, context, result);
+}
+
+function validateIfElse(
+  node: WorkflowNode,
+  context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  const checked = prepareIfElseConfig(node.config, {
+    definition: context.definition,
+    nodeId: node.id,
+  });
+  if (!checked.ok) result.issues.push(...checked.error);
+}
+
+const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
+  "record.read": validateRead,
+  "activity.create": validateTask,
+  "record.create": validateRecordCreate,
+  "record.update": validateRecordMutation,
+  "record.delete": validateRecordMutation,
+  "record.search": validateRecordSearch,
+  "record.pick": validateRecordPick,
+  "email.draft": validateEmailDraft,
+  ifElse: validateIfElse,
+  condition: validateCondition,
+  filter: validateCondition,
+  delay: validateWait,
+};
+
+const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
+  ifElse: ["branches", "fallbackId"],
+  "record.create": ["entity", "fields"],
+  "record.update": ["entity", "recordId", "fields"],
+  "record.delete": ["entity", "recordId"],
+  "record.search": ["entity", "filter", "orderBy", "limit", "offset"],
+  "record.pick": ["entity", "strategy", "recordIds", "loadBalance"],
+  "email.draft": ["accountId", ...workflowEmailDraftFields.map(({ key }) => key)],
+};
+
 function allowedKeys(node: WorkflowNode): string[] {
-  if (node.type === "ifElse") return ["branches", "fallbackId"];
-  if (node.type === "record.create") return ["entity", "fields"];
+  const fixed = fixedKeys[node.type];
+  if (fixed !== undefined) return fixed;
   if (node.type === "delay" && Object.hasOwn(node.config, "delayType"))
     return ["delayType", node.config.delayType === "DURATION" ? "duration" : "scheduledDateTime"];
   if (
@@ -282,18 +390,8 @@ export function validateBuiltinConfiguration(
     result.issues.push(configurationIssue(node, ["name"], "required"));
   if (node.name.trim().length > configurationLimits.nameMax)
     result.issues.push(configurationIssue(node, ["name"], "too_long"));
-  if (node.type === "record.read") validateRead(node, context, result);
-  else if (node.type === "activity.create") validateTask(node, context, result);
-  else if (node.type === "record.create") validateRecordCreate(node, context, result);
-  else if (node.type === "ifElse") {
-    const checked = prepareIfElseConfig(node.config, {
-      definition: context.definition,
-      nodeId: node.id,
-    });
-    if (!checked.ok) result.issues.push(...checked.error);
-  } else if (node.type === "condition" || node.type === "filter")
-    validateCondition(node, context, result);
-  else if (node.type === "delay") validateWait(node, context, result);
+  const validate = validators[node.type];
+  if (validate !== undefined) validate(node, context, result);
   else if (node.type !== "trigger.manual")
     result.issues.push(configurationIssue(node, [], "unsupported_setting"));
 }

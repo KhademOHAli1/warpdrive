@@ -4,6 +4,7 @@ import { configurationLimits } from "./configurationLimits";
 import { boundedDelayConfig } from "./delayConfig";
 import { boundedIfElseConfig, branchPortSchema } from "./ifElseBudget";
 import { scalarLiteralTypes, validateLiteralIntent } from "./mappingLiteralIntent";
+import { boundedRecordLookupConfig } from "./workflowRecordQueryBounds";
 
 const identifier = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
 const property = z
@@ -48,6 +49,11 @@ export const nodeTypes = [
   "trigger.record",
   "record.read",
   "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.pick",
+  "email.draft",
   "activity.create",
   "condition",
   "ifElse",
@@ -75,6 +81,7 @@ export const nodeSchema = z.strictObject({
       "If/Else routes exceed safe bounds",
     )
     .refine(boundedDelayConfig, "Delay settings exceed safe bounds")
+    .refine(boundedRecordLookupConfig, "Record lookup settings exceed safe bounds")
     .pipe(z.record(z.string(), z.json())),
 });
 

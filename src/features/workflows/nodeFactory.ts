@@ -4,6 +4,11 @@ import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 export const creatableNodeTypes = [
   "record.read",
   "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.pick",
+  "email.draft",
   "activity.create",
   "condition",
   "ifElse",

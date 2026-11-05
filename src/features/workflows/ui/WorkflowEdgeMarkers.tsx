@@ -14,6 +14,7 @@ const MARKERS = [
 
 export function WorkflowEdgeMarkers({ prefix }: { prefix: string }) {
   return (
+    // eslint-disable-next-line no-restricted-syntax -- XYFlow edges reference these SVG marker definitions by ID.
     <svg className="workflow-edge-markers" aria-hidden="true" focusable="false">
       <defs>
         {MARKERS.map(([state, stroke]) => (

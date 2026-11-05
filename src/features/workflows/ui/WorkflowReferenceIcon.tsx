@@ -45,6 +45,19 @@ const PATHS = {
     "M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12",
     "M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12",
   ],
+  "arrows-shuffle": [
+    "M18 4l3 3l-3 3",
+    "M18 20l3 -3l-3 -3",
+    "M3 7h3a5 5 0 0 1 5 5a5 5 0 0 0 5 5h5",
+    "M21 7h-5a4.978 4.978 0 0 0 -3 1m-4 8a4.984 4.984 0 0 1 -3 1h-3",
+  ],
+  "mail-plus": [
+    "M12 19h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v5.5",
+    "M16 19h6",
+    "M19 16v6",
+    "M3 7l9 6l9 -6",
+  ],
+  reload: ["M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747", "M20 4v5h-5"],
   plus: ["M12 5l0 14", "M5 12l14 0"],
   send: [
     "M10 14l11 -11",
@@ -89,6 +102,7 @@ export function WorkflowReferenceIcon({
   className?: string;
 }) {
   return (
+    // eslint-disable-next-line no-restricted-syntax -- Render the exact licensed Tabler paths pinned to the Twenty workflow reference.
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={size}

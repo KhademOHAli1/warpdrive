@@ -64,6 +64,9 @@ export async function readRunDetail(
       nodeId,
       simulated,
       completedAt,
+      ...(node?.type === "record.delete" && output.deleted === true
+        ? { recordDeleted: true as const }
+        : {}),
       ...(deadline?.success === true ? { waitResumeAt: new Date(deadline.data) } : {}),
     };
   });

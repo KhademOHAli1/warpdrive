@@ -14,7 +14,11 @@ import { type ConfigurationIssueKey, configurationIssueKeys } from "./configurat
 import { DelayConfigurationFields } from "./DelayConfigurationFields";
 import { DelayFields } from "./DelayFields";
 import { DelayScheduleFields } from "./DelayScheduleFields";
+import { EmailDraftConfigurationFields } from "./EmailDraftConfigurationFields";
 import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
+import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
+import { RecordMutationConfigurationFields } from "./RecordMutationConfigurationFields";
+import { SearchRecordConfigurationFields } from "./SearchRecordConfigurationFields";
 import { WorkflowCustomBinding } from "./WorkflowCustomBinding";
 import { WorkflowRecordChoice } from "./WorkflowRecordChoice";
 
@@ -148,6 +152,48 @@ export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
   const t = useAppTranslations("workflows");
   const { spec, definition, node, editable, onChange, validation } = props;
   if (spec === null) return null;
+  if ((node.type === "record.update" || node.type === "record.delete") && spec.supported)
+    return (
+      <RecordMutationConfigurationFields
+        definition={definition}
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        validation={validation}
+        workflowId={props.workflowId}
+      />
+    );
+  if (spec.supported && node.type === "email.draft")
+    return (
+      <EmailDraftConfigurationFields
+        definition={definition}
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        validation={validation}
+      />
+    );
+  if (spec.supported && node.type === "record.search")
+    return (
+      <SearchRecordConfigurationFields
+        definition={definition}
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        validation={validation}
+        metadata={props.metadata}
+      />
+    );
+  if (spec.supported && node.type === "record.pick")
+    return (
+      <PickRecordFieldsWithLookup
+        node={node}
+        editable={editable}
+        onChange={onChange}
+        validation={validation}
+        workflowId={props.workflowId}
+      />
+    );
   if (node.type === "record.create" && spec.supported)
     return (
       <CreateRecordConfigurationFields

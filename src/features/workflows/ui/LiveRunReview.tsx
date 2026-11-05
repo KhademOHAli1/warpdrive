@@ -43,6 +43,21 @@ export function LiveRunReview({
     ...((review.effects.counts.recordCreate ?? 0) > 0
       ? [{ label: t("createRecord"), count: review.effects.counts.recordCreate ?? 0 }]
       : []),
+    ...((review.effects.counts.recordUpdate ?? 0) > 0
+      ? [{ label: t("updateRecord"), count: review.effects.counts.recordUpdate ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordDelete ?? 0) > 0
+      ? [{ label: t("deleteRecord"), count: review.effects.counts.recordDelete ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordSearch ?? 0) > 0
+      ? [{ label: t("searchRecords"), count: review.effects.counts.recordSearch ?? 0 }]
+      : []),
+    ...((review.effects.counts.recordPick ?? 0) > 0
+      ? [{ label: t("pickRecord"), count: review.effects.counts.recordPick ?? 0 }]
+      : []),
+    ...((review.effects.counts.emailDraft ?? 0) > 0
+      ? [{ label: t("draftEmail"), count: review.effects.counts.emailDraft ?? 0 }]
+      : []),
     { label: t("delay"), count: review.effects.counts.delay },
   ];
   return (
@@ -71,6 +86,9 @@ export function LiveRunReview({
       {review.effects.counts.read > 0 && <p>{t("liveReviewRead")}</p>}
       {review.effects.counts.task > 0 && <p>{t("liveReviewTask")}</p>}
       {(review.effects.counts.recordCreate ?? 0) > 0 && <p>{t("liveReviewRecordCreate")}</p>}
+      {(review.effects.counts.recordUpdate ?? 0) > 0 && <p>{t("liveReviewRecordUpdate")}</p>}
+      {(review.effects.counts.recordDelete ?? 0) > 0 && <p>{t("liveReviewRecordDelete")}</p>}
+      {(review.effects.counts.emailDraft ?? 0) > 0 && <p>{t("liveReviewEmailDraft")}</p>}
       {review.effects.counts.delay > 0 && <p>{t("liveReviewWait")}</p>}
       <p className="text-muted-foreground">{t("liveReviewPermissions")}</p>
       <p className="text-muted-foreground">{t("liveReviewOmitted")}</p>

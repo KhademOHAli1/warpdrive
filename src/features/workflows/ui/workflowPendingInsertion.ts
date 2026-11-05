@@ -22,7 +22,8 @@ export function pendingInsertionPosition(
     // Insertion between existing steps retains its original connection until a block is chosen.
     if (definition.edges.some((edge) => edge.from === from && edge.port === port)) return null;
   }
-  const origin = selected || definition.nodes[0]?.id || "start";
+  const first = definition.nodes[0]?.id ?? "";
+  const origin = selected !== "" ? selected : first === "" ? "start" : first;
   const position =
     pending.position ?? positionForNewNode(definition, origin, pending.output, measurements);
   return Number.isFinite(position.x) &&

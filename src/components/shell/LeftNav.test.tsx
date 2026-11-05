@@ -62,9 +62,7 @@ describe("LeftNav", () => {
         "/leads",
         "/inbox",
         "/contacts/people",
-        "/settings",
-        "/workflows",
-        DOCS_SITE_URL,
+        ...(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []),
       ]);
     },
   );
@@ -82,7 +80,7 @@ describe("LeftNav", () => {
   });
 
   test.each([true, false])(
-    "keeps the icon-only sidebar control beside the Home link in the header (expanded: %s)",
+    "keeps the refined footer toggle below the links, separate from the Home header (expanded: %s)",
     (expanded) => {
       setViewport(expanded);
       render(<LeftNav />);
@@ -93,20 +91,27 @@ describe("LeftNav", () => {
       });
       const navigation = screen.getByRole("navigation", { name: "Primary" });
       expect(header).not.toBeNull();
-      expect(header?.contains(toggle)).toBe(true);
+      expect(header?.contains(toggle)).toBe(false);
       expect(header?.contains(home)).toBe(true);
       expect(home.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(toggle.textContent?.trim()).toBe("");
+      expect(toggle.querySelector("kbd")).toBeNull();
       expect(toggle.getAttribute("type")).toBe("button");
       expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
       expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
-      expect(navigation.contains(toggle)).toBe(false);
-      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(false);
+      expect(navigation.contains(toggle)).toBe(true);
+      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(true);
+      if (expanded) {
+        const docs = screen.getByRole("link", { name: "Help & docs" });
+        expect(
+          docs.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      }
       expect(toggle.querySelector('svg[aria-hidden="true"][focusable="false"]')).not.toBeNull();
     },
   );
 
-  test("supports keyboard activation in both directions and persists the header control choice", async () => {
+  test("supports keyboard activation in both directions and persists the footer control choice", async () => {
     const user = userEvent.setup();
     setViewport(true);
     const first = render(<LeftNav />);
@@ -142,7 +147,7 @@ describe("LeftNav", () => {
   });
 
   test.each([true, false])(
-    "keeps the Farsi header control named with a decorative mirrored glyph (expanded: %s)",
+    "keeps the Farsi footer toggle named with a decorative mirrored glyph (expanded: %s)",
     (expanded) => {
       setViewport(expanded);
       render(
@@ -160,7 +165,8 @@ describe("LeftNav", () => {
       expect(glyph?.getAttribute("aria-hidden")).toBe("true");
       expect(glyph?.getAttribute("focusable")).toBe("false");
       expect(glyph?.getAttribute("data-rtl-mirror")).toBe("true");
-      expect(toggle.closest(`.${styles.sidebarTopbar}`)).not.toBeNull();
+      expect(toggle.closest(`.${styles.sidebarTopbar}`)).toBeNull();
+      expect(toggle.closest(`.${styles.utilityNav}`)).not.toBeNull();
       expect(document.documentElement.dir).toBe("rtl");
     },
   );
@@ -228,9 +234,9 @@ describe("LeftNav", () => {
       ).toEqual(["/pipeline", "/activities", "/leads", "/inbox", "/contacts/people"]);
       expect(
         within(footer as HTMLElement)
-          .getAllByRole("link")
+          .queryAllByRole("link")
           .map((link) => link.getAttribute("href")),
-      ).toEqual(["/settings", "/workflows", DOCS_SITE_URL]);
+      ).toEqual(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []);
     },
   );
 
@@ -306,7 +312,7 @@ describe("LeftNav", () => {
 
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 
   test("keeps collapsed destinations named while hiding their duplicate inline labels", () => {
@@ -397,15 +403,33 @@ describe("LeftNav bracket shortcuts", () => {
         .map((link) => link.textContent),
     ).toEqual(["Settings", "Workflows", "Help & docs"]);
     const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(footer?.contains(toggle)).toBe(false);
-    expect(within(footer as HTMLElement).queryByRole("button")).toBeNull();
-    expect(navigation.contains(toggle)).toBe(false);
+    expect(footer?.contains(toggle)).toBe(true);
+    expect(within(footer as HTMLElement).getAllByRole("button")).toHaveLength(1);
+    expect(navigation.contains(toggle)).toBe(true);
   });
 
-  test("keeps an accessible name for the docs link on the collapsed rail", () => {
+  test("removes utility links from the collapsed rail and restores them when opened", async () => {
+    const user = userEvent.setup();
     setViewport(false);
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Help & docs" })).not.toBeNull();
+    const footer = screen
+      .getByRole("navigation", { name: "Primary" })
+      .querySelector(`.${styles.utilityNav}`) as HTMLElement;
+    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    const opener = within(footer).getByRole("button", { name: "Expand sidebar" });
+    opener.focus();
+    await user.keyboard("{Enter}");
+    expect(
+      within(footer)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Settings", "Workflows", "Help & docs"]);
+    expect(document.activeElement).toBe(
+      within(footer).getByRole("button", { name: "Collapse sidebar" }),
+    );
+    await user.keyboard("{Enter}");
+    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    expect(document.activeElement).toBe(opener);
   });
 });
 

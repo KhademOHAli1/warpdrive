@@ -57,6 +57,7 @@ function FreeBranchOutput({
   const bend = endY / 2;
   return (
     <>
+      {/* eslint-disable-next-line no-restricted-syntax -- This path draws the actual unconnected branch using measured node geometry. */}
       <svg
         width={1}
         height={1}
@@ -158,25 +159,26 @@ export function WorkflowNodeCard({
         const branch = ifElseBranchOffset(node, port);
         const label = portLabel(port, node);
         const fraction = (index + 1) / (ports.length + 1);
-        const addButton = data.onAdd !== undefined && data.outputs?.includes(port) !== true && (
-          <Button
-            variant="ghost"
-            size="icon"
-            static
-            dir={directionForLocale(locale)}
-            className={styles.addButton}
-            aria-label={t("addAfter", { name: displayNodeName(node, locale), port: label })}
-            onClick={(event) => {
-              event.stopPropagation();
-              data.onAdd?.({ from: node.id, port });
-            }}
-          >
-            <WorkflowReferenceIcon name="plus" />
-          </Button>
-        );
+        const addButton =
+          data.onAdd !== undefined && data.outputs?.includes(port) !== true ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              static
+              dir={directionForLocale(locale)}
+              className={styles.addButton}
+              aria-label={t("addAfter", { name: displayNodeName(node, locale), port: label })}
+              onClick={(event) => {
+                event.stopPropagation();
+                data.onAdd?.({ from: node.id, port });
+              }}
+            >
+              <WorkflowReferenceIcon name="plus" />
+            </Button>
+          ) : null;
         return (
           <div key={port}>
-            {addButton &&
+            {addButton !== null &&
               (branch !== null ? (
                 <FreeBranchOutput
                   offset={branch}
@@ -196,6 +198,7 @@ export function WorkflowNodeCard({
                   )}
                 >
                   <div className={styles.connector} aria-hidden="true">
+                    {/* eslint-disable-next-line no-restricted-syntax -- The dashed path connects this graph port to the add-step control. */}
                     <svg
                       width={port === "true" ? "56" : "2"}
                       height={port === "true" ? "2" : "56"}

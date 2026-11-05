@@ -20,8 +20,8 @@ export function LeftNav({ initialExpanded = false }: { initialExpanded?: boolean
         className={styles.sidebar}
         data-sidebar-state={sidebar.expanded ? "expanded" : "collapsed"}
       >
-        <SidebarChrome expanded={sidebar.expanded} onToggle={sidebar.toggle} />
-        <SidebarMenu expanded={sidebar.expanded} />
+        <SidebarChrome expanded={sidebar.expanded} />
+        <SidebarMenu expanded={sidebar.expanded} onToggle={sidebar.toggle} />
       </aside>
       <Sheet open={sidebar.mobileOpen} onOpenChange={sidebar.setMobileOpen}>
         <SheetContent

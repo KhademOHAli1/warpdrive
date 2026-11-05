@@ -5,6 +5,11 @@ export const draftSimulationNodeTypes = [
   "trigger.manual",
   "record.read",
   "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.pick",
+  "email.draft",
   "activity.create",
   "condition",
   "ifElse",
@@ -22,6 +27,7 @@ export interface DraftSimulationStep {
   errorId?: DraftSimulationErrorId;
   port?: WorkflowEdge["port"];
   waitResumeAt?: string;
+  recordDeleted?: true;
 }
 
 // This is a transient draft receipt, not an ordinary persisted run-detail DTO.

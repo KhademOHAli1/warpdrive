@@ -2,7 +2,6 @@
 
 import { GitBranch, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Tip } from "@/components/ui/tooltip";
 import { DOCS_SITE_URL } from "@/constants/docs";
 import {
   type NAV_ITEMS,
@@ -10,7 +9,7 @@ import {
   UTILITY_NAV_ITEMS,
   WORKSPACE_NAV_ITEMS,
 } from "@/constants/nav";
-import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
 import {
@@ -22,6 +21,7 @@ import {
   SettingsIcon,
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
+import { SidebarToggle } from "./SidebarToggle";
 
 const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   leads: LeadsIcon,
@@ -36,17 +36,18 @@ const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
 export function SidebarMenu({
   expanded,
   onNavigate,
+  onToggle,
   mobile = false,
 }: {
   expanded: boolean;
   onNavigate?: () => void;
+  onToggle?: () => void;
   mobile?: boolean;
 }) {
   const pathname = usePathname();
   const messages = useMessages();
   const t = useAppTranslations("shell.sidebar");
   const activities = useAppTranslations("activities");
-  const rtl = useLocale() === "fa";
   function children(key: NavKey): SidebarChild[] | undefined {
     if (key === "contacts")
       return [
@@ -116,19 +117,16 @@ export function SidebarMenu({
           </div>
         </div>
         <div className={styles.utilityNav}>
-          {UTILITY_NAV_ITEMS.map(menuItem)}
-          {expanded ? (
-            docs
-          ) : (
-            <Tip
-              label={messages.nav.docs}
-              side={rtl ? "left" : "right"}
-              className={styles.tooltip}
-              delayDuration={0}
-              sideOffset={10}
-            >
+          {expanded && (
+            <>
+              {UTILITY_NAV_ITEMS.map(menuItem)}
               {docs}
-            </Tip>
+            </>
+          )}
+          {!mobile && onToggle !== undefined && (
+            <div className={styles.sidebarToggleDock}>
+              <SidebarToggle expanded={expanded} onToggle={onToggle} />
+            </div>
           )}
         </div>
       </nav>

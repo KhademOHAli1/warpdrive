@@ -2,6 +2,7 @@ import { TransactionRollbackError } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type * as ContactActorAdapters from "@/features/contacts/actorAdapters";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok } from "@/types/result";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
@@ -22,7 +23,7 @@ vi.mock("@/features/leads/leadActions", () => ({ createLead: native.createLead }
 vi.mock("@/features/contacts/orgsRepo", () => ({ createOrg: native.createOrg }));
 vi.mock("@/features/contacts/personsRepo", () => ({ createPerson: native.createPerson }));
 vi.mock("@/features/contacts/actorAdapters", async (original) => ({
-  ...(await original<typeof import("@/features/contacts/actorAdapters")>()),
+  ...(await original<typeof ContactActorAdapters>()),
   loadContactActor: native.loadContactActor,
 }));
 
@@ -54,10 +55,12 @@ function fixture(contained = false) {
     throw new TransactionRollbackError();
   });
   const select = vi.fn(() => ({
-    from: () => ({ where: async () => [{ id: "52f6b244-2ea8-400a-92c9-b584c9385632" }] }),
+    from: () => ({
+      where: () => Promise.resolve([{ id: "52f6b244-2ea8-400a-92c9-b584c9385632" }]),
+    }),
   }));
   const tx = { rollback, select } as unknown as Db;
-  const transaction = vi.fn(async (work: (tx: Db) => Promise<unknown>) => work(tx));
+  const transaction = vi.fn((work: (tx: Db) => Promise<unknown>) => work(tx));
   const db = { transaction, ...(contained ? { rollback: vi.fn() } : {}) } as unknown as Db;
   return { db, tx, transaction, rollback, select };
 }

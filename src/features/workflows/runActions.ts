@@ -22,7 +22,11 @@ import { executableNode } from "./readiness";
 import { stringBinding, uuidBinding } from "./runBindings";
 import type { RunOutputs, StepOutput } from "./runTypes";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import { createWorkflowEmailDraft } from "./workflowEmailDraft";
 import { createWorkflowRecord } from "./workflowRecordCreate";
+import { mutateWorkflowRecord } from "./workflowRecordMutation";
+import { pickWorkflowRecord } from "./workflowRecordPick";
+import { searchWorkflowRecords } from "./workflowRecordQuery";
 
 function referenceActor(actor: PermSetUser) {
   return {
@@ -44,6 +48,7 @@ export async function executeRunNode(
   simulation: boolean,
   definition: WorkflowDefinition,
   signal: AbortSignal,
+  scope?: { runId: string; workflowId: string },
 ): Promise<Result<StepOutput, string>> {
   signal.throwIfAborted();
   if (!executableNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
@@ -62,6 +67,34 @@ export async function executeRunNode(
       simulation ? "simulation" : "live",
       signal,
     );
+  if (node.type === "record.update" || node.type === "record.delete")
+    return mutateWorkflowRecord(
+      db,
+      actor,
+      node,
+      outputs,
+      definition,
+      simulation ? "simulation" : "live",
+      signal,
+    );
+  if (node.type === "record.search")
+    return searchWorkflowRecords(db, actor, node, outputs, definition, signal);
+  if (node.type === "record.pick")
+    return scope === undefined
+      ? err(ERROR_IDS.WORKFLOW_INVALID)
+      : pickWorkflowRecord(db, actor, node, { workflowId: scope.workflowId, simulation }, signal);
+  if (node.type === "email.draft")
+    return scope === undefined
+      ? err(ERROR_IDS.WORKFLOW_INVALID)
+      : createWorkflowEmailDraft(
+          db,
+          actor,
+          node,
+          outputs,
+          definition,
+          { mode: simulation ? "simulation" : "live", runId: scope.runId },
+          signal,
+        );
   if (node.type === "condition")
     return evaluateCondition(node.config, outputs, { definition, nodeId: node.id });
   if (node.type === "record.read" && node.config.entity === "deal")

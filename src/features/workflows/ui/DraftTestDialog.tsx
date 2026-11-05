@@ -64,7 +64,15 @@ const receiptKeys = [
   "outcome",
   "steps",
 ];
-const stepKeys = ["nodeId", "nodeType", "status", "errorId", "port", "waitResumeAt"];
+const stepKeys = [
+  "nodeId",
+  "nodeType",
+  "status",
+  "errorId",
+  "port",
+  "waitResumeAt",
+  "recordDeleted",
+];
 const requiredStepKeys = ["nodeId", "nodeType", "status"];
 const knownErrorIds = Object.values(ERROR_IDS);
 
@@ -117,6 +125,17 @@ function attachStepWait(step: DraftSimulationStep, value: Record<string, unknown
   step.waitResumeAt = value.waitResumeAt;
   return true;
 }
+function attachStepDeletion(step: DraftSimulationStep, value: Record<string, unknown>): boolean {
+  if (!Object.hasOwn(value, "recordDeleted")) return true;
+  if (
+    step.nodeType !== "record.delete" ||
+    step.status !== "succeeded" ||
+    value.recordDeleted !== true
+  )
+    return false;
+  step.recordDeleted = true;
+  return true;
+}
 function readStep(
   value: unknown,
   nodes: ReadonlyMap<string, WorkflowNode>,
@@ -137,7 +156,8 @@ function readStep(
   const step: DraftSimulationStep = { nodeId, nodeType, status };
   return attachStepError(step, value) &&
     attachStepPort(step, value, node) &&
-    attachStepWait(step, value)
+    attachStepWait(step, value) &&
+    attachStepDeletion(step, value)
     ? step
     : null;
 }
@@ -270,6 +290,7 @@ function DraftStepDetails({ step, node }: { step: DraftSimulationStep; node?: Wo
     <>
       {branch === "true" && <p>{t("draftSimulationBranchTrue")}</p>}
       {branch === "false" && <p>{t("draftSimulationBranchFalse")}</p>}
+      {step.recordDeleted === true && <p>{t("recordWouldBeDeleted")}</p>}
       {step.status === "succeeded" && step.nodeType === "ifElse" && step.port !== undefined && (
         <p>{t("ifElseSelectedRoute", { route: portLabel(step.port, node) })}</p>
       )}

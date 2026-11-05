@@ -78,7 +78,7 @@ function LiteralSelect({
         value={value}
         options={options}
         disabled={disabled}
-        placeholder={t(unavailable ? "unavailableValue" : "chooseValue")}
+        placeholder={t(unavailable === true ? "unavailableValue" : "chooseValue")}
         onChange={onChange}
       />
       {error !== undefined && (

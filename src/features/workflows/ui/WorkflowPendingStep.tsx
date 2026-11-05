@@ -27,6 +27,7 @@ export function WorkflowPendingStep({ data }: NodeProps<PendingCanvasNode>) {
       </div>
       <div dir="ltr" className={cn("nodrag nopan", styles.freeOutput)}>
         <div className={styles.connector} aria-hidden="true">
+          {/* eslint-disable-next-line no-restricted-syntax -- This is the dashed canvas connector from the pending step to its add control. */}
           <svg
             width="2"
             height="56"

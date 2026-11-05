@@ -11,6 +11,8 @@ import {
   type WorkflowDefinition,
 } from "./schemas";
 import { recordCreateEntitySchema, recordCreateFields } from "./workflowRecordCreateContract";
+import { recordUpdateFields } from "./workflowRecordMutationContract";
+import { recordPickDraftConfig, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 
 // Keep the reviewed v1 binding keys explicit while reusing their scalar and path guards.
 // A missing selection is copyable; mixed branches and undeclared fields are not.
@@ -30,6 +32,22 @@ const copyCreateRecord = z
     ),
   );
 
+const copyRecordTarget = z.strictObject({
+  entity: recordCreateEntitySchema.optional(),
+  recordId: copyBinding.optional(),
+});
+const copyUpdateRecord = copyRecordTarget
+  .extend({
+    fields: z.record(z.string().min(1).max(32), copyBinding).optional(),
+  })
+  .refine((config) =>
+    Object.keys(config.fields ?? {}).every(
+      (key) =>
+        config.entity !== undefined &&
+        recordUpdateFields[config.entity].some((field) => field.key === key),
+    ),
+  );
+
 // These are copy shapes, not publication requirements. Every known config field may
 // be incomplete, but new actions, versions, credentials, and identity fields need review.
 const copyNode = z.discriminatedUnion("type", [
@@ -45,6 +63,21 @@ const copyNode = z.discriminatedUnion("type", [
     config: z.strictObject({ entity, recordId: copyBinding }).partial(),
   }),
   nodeSchema.extend({ type: z.literal("record.create"), config: copyCreateRecord }),
+  nodeSchema.extend({ type: z.literal("record.update"), config: copyUpdateRecord }),
+  nodeSchema.extend({ type: z.literal("record.delete"), config: copyRecordTarget }),
+  nodeSchema.extend({ type: z.literal("record.search"), config: recordSearchDraftConfig }),
+  nodeSchema.extend({ type: z.literal("record.pick"), config: recordPickDraftConfig }),
+  nodeSchema.extend({
+    type: z.literal("email.draft"),
+    config: z.strictObject({
+      accountId: z.uuid().optional(),
+      to: copyBinding.optional(),
+      cc: copyBinding.optional(),
+      bcc: copyBinding.optional(),
+      subject: copyBinding.optional(),
+      body: copyBinding.optional(),
+    }),
+  }),
   nodeSchema.extend({
     type: z.literal("ifElse"),
     config: z.custom<WorkflowDefinition["nodes"][number]["config"]>(

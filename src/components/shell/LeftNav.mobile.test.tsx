@@ -38,6 +38,9 @@ it.each(["Contacts", "Activities"])(
     expect(
       within(dialog).queryByRole("button", { name: "Expand sidebar" }),
     ).not.toBeInTheDocument();
+    for (const utility of ["Settings", "Workflows", "Help & docs"]) {
+      expect(within(dialog).getByRole("link", { name: utility })).toBeVisible();
+    }
     document.addEventListener("click", (event) => event.preventDefault(), { once: true });
     await user.click(within(dialog).getByRole("link", { name: label }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

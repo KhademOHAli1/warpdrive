@@ -22,7 +22,7 @@ import { ifElsePorts } from "../ifElseBudget";
 import { type NodeMeasurements, positionFor, positionForNewNode } from "../nodeLayout";
 import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
-import type { NodePosition, WorkflowDefinition } from "../schemas";
+import type { NodePosition, WorkflowDefinition, WorkflowNode } from "../schemas";
 import { ConnectionFeedback } from "./ConnectionFeedback";
 import { useConditionPortLabel } from "./conditionPortLabel";
 import { ResponsiveViewport, type RevealNode } from "./ResponsiveViewport";
@@ -136,6 +136,22 @@ export function WorkflowCanvas({
     const node = definition.nodes.find((item) => item.id === id);
     return node === undefined ? t("unavailableValue") : displayNodeName(node, locale);
   }
+  function actionsFor(node: WorkflowNode) {
+    const canRemove = editable && !node.type.startsWith("trigger.");
+    return {
+      onAdd: editable && onAdd !== undefined ? openOutput : undefined,
+      onChangeType:
+        editable && onChangeType !== undefined ? () => onChangeType(node.id) : undefined,
+      onDuplicate: canRemove && onDuplicate !== undefined ? () => onDuplicate(node.id) : undefined,
+      onConfigure: editable
+        ? () => {
+            onSelect(node.id);
+            onSelectEdge(null);
+          }
+        : undefined,
+      onRemove: canRemove ? () => removeCanvasNode(node.id) : undefined,
+    };
+  }
   const nodeIndices = new Map(
     orderedWorkflowNodes(definition).map((node, index) => [node.id, index]),
   );
@@ -157,23 +173,7 @@ export function WorkflowCanvas({
         invalid: invalidNodes.has(node.id),
         index: uniqueIds ? (nodeIndices.get(node.id) ?? index) : index,
         completed: completedNodes?.has(node.id) === true,
-        onAdd: editable && onAdd !== undefined ? openOutput : undefined,
-        onChangeType:
-          editable && onChangeType !== undefined ? () => onChangeType(node.id) : undefined,
-        onDuplicate:
-          editable && !node.type.startsWith("trigger.") && onDuplicate !== undefined
-            ? () => onDuplicate(node.id)
-            : undefined,
-        onConfigure: editable
-          ? () => {
-              onSelect(node.id);
-              onSelectEdge(null);
-            }
-          : undefined,
-        onRemove:
-          editable && !node.type.startsWith("trigger.")
-            ? () => removeCanvasNode(node.id)
-            : undefined,
+        ...actionsFor(node),
         outputs: [
           ...definition.edges.filter((edge) => edge.from === node.id).map((edge) => edge.port),
           ...(pendingSource?.from === node.id ? [pendingSource.port] : []),
@@ -372,6 +372,7 @@ export function WorkflowCanvas({
         }}
         onNodeDragStart={() => setDragging(true)}
         onNodeDragStop={() => setDragging(false)}
+        proOptions={{ hideAttribution: true }}
         multiSelectionKeyCode={null}
         selectionKeyCode={null}
         deleteKeyCode={editable ? ["Backspace", "Delete"] : null}

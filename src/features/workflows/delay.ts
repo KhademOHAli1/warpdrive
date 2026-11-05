@@ -37,24 +37,27 @@ function delayBinding(
   return resolved.state === "value" ? ok(resolved.value) : err(ERROR_IDS.WORKFLOW_BINDING_MISSING);
 }
 
+function scheduledDateAt(binding: Binding, now: Date, context: DelayMappingContext | undefined) {
+  const resolved = delayBinding(binding, ["scheduledDateTime"], context);
+  if (!resolved.ok) return resolved;
+  const requested = delayUntilDate(
+    binding.kind === "reference" && isMappingDate(resolved.value)
+      ? `${resolved.value}T00:00:00.000Z`
+      : resolved.value,
+  );
+  if (requested === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const elapsed = requested.getTime() - now.getTime();
+  return elapsed >= 0 && elapsed <= maxDelayMilliseconds
+    ? ok(requested)
+    : err(ERROR_IDS.WORKFLOW_INVALID);
+}
+
 function configuredScheduleAt(raw: unknown, now: Date, context?: DelayMappingContext) {
   const parsed = delayScheduleConfigSchema.safeParse(raw);
   if (!parsed.success) return err(ERROR_IDS.WORKFLOW_INVALID);
   const config = parsed.data;
-  if (config.delayType === "SCHEDULED_DATE") {
-    const resolved = delayBinding(config.scheduledDateTime, ["scheduledDateTime"], context);
-    if (!resolved.ok) return resolved;
-    const requested = delayUntilDate(
-      config.scheduledDateTime.kind === "reference" && isMappingDate(resolved.value)
-        ? `${resolved.value}T00:00:00.000Z`
-        : resolved.value,
-    );
-    if (requested === null) return err(ERROR_IDS.WORKFLOW_INVALID);
-    const elapsed = requested.getTime() - now.getTime();
-    return elapsed >= 0 && elapsed <= maxDelayMilliseconds
-      ? ok(requested)
-      : err(ERROR_IDS.WORKFLOW_INVALID);
-  }
+  if (config.delayType === "SCHEDULED_DATE")
+    return scheduledDateAt(config.scheduledDateTime, now, context);
   const amounts: Partial<Record<DelayDurationUnit, unknown>> = {};
   for (const unit of delayDurationUnits) {
     const binding = config.duration[unit];

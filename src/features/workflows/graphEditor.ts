@@ -1,7 +1,13 @@
 import { err, ok } from "@/types/result";
 import { portsFor } from "./graphPorts";
 import { currentLayout, positionFor } from "./nodeLayout";
-import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
+import {
+  type NodePosition,
+  nodeSchema,
+  type WorkflowDefinition,
+  type WorkflowEdge,
+  type WorkflowNode,
+} from "./schemas";
 
 export type ConnectionProblem =
   | "nodeLimit"
@@ -61,7 +67,12 @@ export function updateNodeConfiguration(
   node: WorkflowNode,
 ): WorkflowDefinition {
   const current = graph.nodes.find((item) => item.id === node.id);
-  if (current?.type !== node.type || current.version !== node.version) return graph;
+  if (
+    current?.type !== node.type ||
+    !nodeSchema.shape.version.safeParse(current.version).success ||
+    !nodeSchema.shape.version.safeParse(node.version).success
+  )
+    return graph;
   const ports = portsFor(node);
   return {
     ...graph,

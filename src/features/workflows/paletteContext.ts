@@ -249,7 +249,7 @@ function nodePosition(
   );
 }
 
-function validPosition(position: NodePosition): boolean {
+function validPosition(position: Pick<NodePosition, "x" | "y"> & { anchor?: unknown }): boolean {
   return (
     Number.isFinite(position.x) &&
     Number.isFinite(position.y) &&

@@ -288,6 +288,9 @@ export function RunDialog({
   const canSubmit = submission !== null || nextSubmission !== null;
   const displayedReview =
     submission === null ? (read.publication?.review ?? null) : submission.review;
+  const counts = displayedReview?.effects.counts;
+  const changesRecords =
+    (counts?.recordCreate ?? 0) + (counts?.recordUpdate ?? 0) + (counts?.recordDelete ?? 0) > 0;
   async function run() {
     if (inFlight.current || completed.current) return;
     const command = submitted.current ?? nextSubmission;
@@ -327,7 +330,7 @@ export function RunDialog({
             {t(
               displayMode === "simulation"
                 ? "simulationHint"
-                : (displayedReview?.effects.counts.recordCreate ?? 0) > 0
+                : changesRecords
                   ? "liveRecordsHint"
                   : "liveHint",
             )}
@@ -368,13 +371,7 @@ export function RunDialog({
               {t("cancel")}
             </Button>
             <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
-              {t(
-                submissionLabel(
-                  error,
-                  displayMode,
-                  (displayedReview?.effects.counts.recordCreate ?? 0) > 0,
-                ),
-              )}
+              {t(submissionLabel(error, displayMode, changesRecords))}
             </Button>
           </DialogFooter>
         </div>

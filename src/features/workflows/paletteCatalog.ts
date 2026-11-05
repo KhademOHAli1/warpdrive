@@ -36,6 +36,11 @@ interface CatalogDescriptor {
     | "deal-read"
     | "basic-task"
     | "create-record"
+    | "update-record"
+    | "delete-record"
+    | "search-records"
+    | "pick-record"
+    | "draft-email"
     | "ordered-condition"
     | "scalar-condition"
     | "delay-schedule"
@@ -92,6 +97,56 @@ export const paletteCatalog = [
     labelKey: "createRecord",
     descriptionKey: "createRecordHint",
     profile: "create-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.update",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "updateRecord",
+    descriptionKey: "updateRecordHint",
+    profile: "update-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.delete",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "deleteRecord",
+    descriptionKey: "deleteRecordHint",
+    profile: "delete-record",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.search",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "searchRecords",
+    descriptionKey: "searchRecordsHint",
+    profile: "search-records",
+    input: "optional",
+  },
+  {
+    ...insertable,
+    type: "record.pick",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "pickRecord",
+    descriptionKey: "pickRecordHint",
+    profile: "pick-record",
+    input: "none",
+  },
+  {
+    ...insertable,
+    type: "email.draft",
+    category: "crm",
+    categoryKey: "paletteCategoryCrm",
+    labelKey: "draftEmail",
+    descriptionKey: "draftEmailHint",
+    profile: "draft-email",
     input: "optional",
   },
   {

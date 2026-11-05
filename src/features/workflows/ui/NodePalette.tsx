@@ -3,6 +3,7 @@
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { maxDelayDays } from "../delayConfig";
@@ -67,35 +68,36 @@ function PaletteRow({
     .filter(Boolean)
     .join(" ");
   return (
-    <button
-      type="button"
-      data-workflow-palette-choice
-      className={styles.row}
-      aria-disabled={!row.canChoose}
-      aria-label={t(row.catalog.labelKey)}
-      aria-describedby={descriptionId}
-      title={description}
-      onClick={() => {
-        if (row.canChoose && row.selection !== null) onChoose(row.selection);
-      }}
-    >
-      <span className={styles.icon} data-category={workflowNodeCategory(row.catalog.type)}>
-        <WorkflowReferenceIcon
-          name={NODE_ICONS[row.catalog.type]}
-          size={16}
-          stroke={workflowNodeStrokeWidth(row.catalog.type)}
-        />
-      </span>
-      <span>{t(row.catalog.labelKey)}</span>
-      {restriction !== null && (
-        <span className={styles.restriction} aria-hidden="true">
-          · {restriction}
+    <Tip label={description}>
+      <button
+        type="button"
+        data-workflow-palette-choice
+        className={styles.row}
+        aria-disabled={!row.canChoose}
+        aria-label={t(row.catalog.labelKey)}
+        aria-describedby={descriptionId}
+        onClick={() => {
+          if (row.canChoose && row.selection !== null) onChoose(row.selection);
+        }}
+      >
+        <span className={styles.icon} data-category={workflowNodeCategory(row.catalog.type)}>
+          <WorkflowReferenceIcon
+            name={NODE_ICONS[row.catalog.type]}
+            size={16}
+            stroke={workflowNodeStrokeWidth(row.catalog.type)}
+          />
         </span>
-      )}
-      <span id={descriptionId} className="sr-only">
-        {description}
-      </span>
-    </button>
+        <span>{t(row.catalog.labelKey)}</span>
+        {restriction !== null && (
+          <span className={styles.restriction} aria-hidden="true">
+            · {restriction}
+          </span>
+        )}
+        <span id={descriptionId} className="sr-only">
+          {description}
+        </span>
+      </button>
+    </Tip>
   );
 }
 

@@ -64,6 +64,7 @@ export async function advanceRunStep(
     run.mode === "simulation",
     definition,
     signal,
+    { runId: run.id, workflowId: run.workflowId },
   );
   return result.ok ? ok({ status: "completed", output: result.value }) : result;
 }

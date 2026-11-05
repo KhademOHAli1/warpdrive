@@ -134,6 +134,9 @@ it("explains a structural insertion restriction and keeps the safe linear action
   const condition = screen.getByRole("button", { name: english.condition });
   expect(condition).toHaveAttribute("aria-disabled", "true");
   expect(condition).toHaveAccessibleDescription(expect.stringContaining(english.paletteLinearOnly));
+  await user.hover(condition);
+  expect(await screen.findByRole("tooltip")).toHaveTextContent(english.paletteLinearOnly);
+  expect(condition).toHaveAccessibleDescription(expect.stringContaining(english.paletteLinearOnly));
   await user.click(condition);
   fireEvent.click(condition);
   expect(handlers.onChoose).not.toHaveBeenCalled();

@@ -13,46 +13,64 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { recordSearchBindingEntries, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 
-function nodeBindings(node: WorkflowNode) {
-  const bindings: { field: string; binding: Binding; path?: readonly string[] }[] = [];
-  for (const [field, value] of Object.entries(node.config)) {
+interface NodeBinding {
+  field: string;
+  binding: Binding;
+  path?: readonly string[];
+}
+
+function parsedBindings(raw: unknown, parent?: string): NodeBinding[] {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return [];
+  return Object.entries(raw).flatMap(([field, value]) => {
     const parsed = bindingSchema.safeParse(value);
-    if (parsed.success) bindings.push({ field, binding: parsed.data });
-  }
-  if (node.type === "delay" && node.config.delayType === "DURATION") {
-    const duration = delayDurationSettings(node.config.duration);
-    for (const unit of delayDurationUnits) {
-      const parsed = bindingSchema.options[1].safeParse(duration?.[unit]);
-      if (parsed.success)
-        bindings.push({
-          field: `duration.${unit}`,
-          path: ["duration", unit],
-          binding: parsed.data,
-        });
-    }
-  }
-  const fields = node.config.fields;
-  if (
-    node.type === "record.create" &&
-    fields !== null &&
-    typeof fields === "object" &&
-    !Array.isArray(fields)
-  ) {
-    for (const [key, value] of Object.entries(fields)) {
-      const parsed = bindingSchema.safeParse(value);
-      if (parsed.success)
-        bindings.push({ field: `fields.${key}`, path: ["fields", key], binding: parsed.data });
-    }
-  }
+    if (!parsed.success) return [];
+    return parent === undefined
+      ? [{ field, binding: parsed.data }]
+      : [{ field: `${parent}.${field}`, path: [parent, field], binding: parsed.data }];
+  });
+}
+
+function delayBindings(node: WorkflowNode): NodeBinding[] {
+  const duration = delayDurationSettings(node.config.duration);
+  return delayDurationUnits.flatMap((unit) => {
+    const parsed = bindingSchema.options[1].safeParse(duration?.[unit]);
+    return parsed.success
+      ? [{ field: `duration.${unit}`, path: ["duration", unit], binding: parsed.data }]
+      : [];
+  });
+}
+
+function searchBindings(node: WorkflowNode): NodeBinding[] {
+  const parsed = recordSearchDraftConfig.safeParse(node.config);
+  if (!parsed.success) return [];
+  return recordSearchBindingEntries(parsed.data).flatMap(({ path, value }) => {
+    const binding = bindingSchema.safeParse(value);
+    return binding.success ? [{ field: path.join("."), binding: binding.data, path }] : [];
+  });
+}
+
+function customBindings(node: WorkflowNode): NodeBinding[] {
   const custom = node.config.customFields;
-  if (custom === null || typeof custom !== "object" || Array.isArray(custom)) return bindings;
-  for (const [id, value] of Object.entries(custom)) {
+  if (custom === null || typeof custom !== "object" || Array.isArray(custom)) return [];
+  return Object.entries(custom).flatMap(([id, value]) => {
     const parsed = customFieldBindingSchema.safeParse(value);
-    if (parsed.success && parsed.data.kind === "reference")
-      bindings.push({ field: `customFields.${id}`, binding: parsed.data });
-  }
-  return bindings;
+    return parsed.success && parsed.data.kind === "reference"
+      ? [{ field: `customFields.${id}`, binding: parsed.data }]
+      : [];
+  });
+}
+
+function nodeBindings(node: WorkflowNode): NodeBinding[] {
+  if (node.type === "record.search") return searchBindings(node);
+  const nested =
+    node.type === "delay" && node.config.delayType === "DURATION"
+      ? delayBindings(node)
+      : node.type === "record.create" || node.type === "record.update"
+        ? parsedBindings(node.config.fields, "fields")
+        : [];
+  return [...parsedBindings(node.config), ...nested, ...customBindings(node)];
 }
 
 function structuralReferenceIssue(

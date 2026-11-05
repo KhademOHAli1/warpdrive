@@ -12,6 +12,11 @@ export interface LiveRunEffects {
     readonly filter?: number;
     readonly ifElse?: number;
     readonly recordCreate?: number;
+    readonly recordUpdate?: number;
+    readonly recordDelete?: number;
+    readonly recordSearch?: number;
+    readonly recordPick?: number;
+    readonly emailDraft?: number;
     readonly delay: number;
   };
 }
@@ -87,6 +92,11 @@ const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["count
   filter: "filter",
   ifElse: "ifElse",
   "record.create": "recordCreate",
+  "record.update": "recordUpdate",
+  "record.delete": "recordDelete",
+  "record.search": "recordSearch",
+  "record.pick": "recordPick",
+  "email.draft": "emailDraft",
   delay: "delay",
 };
 

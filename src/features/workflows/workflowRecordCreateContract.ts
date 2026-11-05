@@ -128,6 +128,10 @@ function validLiteral(field: RecordCreateField, binding: Extract<Binding, { kind
   return field.schema.safeParse(binding.value).success;
 }
 
+function hasLiteralRecord(binding: Binding | undefined): boolean {
+  return binding?.kind === "value" && binding.value !== null;
+}
+
 const maximumFieldCount = Math.max(
   ...Object.values(recordCreateFields).map((fields) => fields.length),
 );
@@ -165,16 +169,12 @@ export const recordCreateConfig = z
         context.addIssue({ code: "custom", path, message: "invalid_value" });
       }
     }
-    if (config.entity === "activity") {
-      const { dealId, leadId } = config.fields;
-      if (
-        dealId?.kind === "value" &&
-        dealId.value !== null &&
-        leadId?.kind === "value" &&
-        leadId.value !== null
-      ) {
-        context.addIssue({ code: "custom", path: ["fields", "leadId"], message: "invalid_value" });
-      }
+    if (
+      config.entity === "activity" &&
+      hasLiteralRecord(config.fields.dealId) &&
+      hasLiteralRecord(config.fields.leadId)
+    ) {
+      context.addIssue({ code: "custom", path: ["fields", "leadId"], message: "invalid_value" });
     }
   });
 

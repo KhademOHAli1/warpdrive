@@ -136,6 +136,11 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
                             ? t("stepSimulated")
                             : t("stepCompleted")}
                       </span>
+                      {item.type === "record.delete" && step?.recordDeleted === true && (
+                        <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
+                          {t(step.simulated ? "recordWouldBeDeleted" : "recordWasDeleted")}
+                        </span>
+                      )}
                       {item.type === "delay" && step?.simulated === true && (
                         <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
                           {t("simulatedWait")}

@@ -6,6 +6,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { buildUuidArray, dealVisibilityPredicate } from "@/features/permissions/sql";
 import type { CustomFieldOption } from "@/types/customFields";
 import { err, ok, type Result } from "@/types/result";
+import { canWorkflow } from "./access";
 import {
   type ConfigurationSnapshot,
   type ConfigurationStale,
@@ -22,6 +23,8 @@ import {
 } from "./configurationMetadata";
 import { librarySubstringPattern } from "./libraryInput";
 import type { WorkflowNode } from "./schemas";
+import { visibleWorkflowRecordSource } from "./workflowRecordQuery";
+import { recordLookupEntitySchema, recordSearchPrimary } from "./workflowRecordQueryContract";
 
 const querySchema = z.string().trim().max(200).default("");
 export const configurationOptionsInputSchema = configurationProfileSchema.extend({
@@ -49,6 +52,7 @@ export type ConfigurationOptionsPage =
 const selectorSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("builtin"), name: z.enum(["recordId", "dealId"]) }),
   z.strictObject({ kind: z.literal("custom"), fieldId: z.string().uuid() }),
+  z.strictObject({ kind: z.literal("record"), entity: recordLookupEntitySchema }),
 ]);
 export type ConfigurationReferenceSelector = z.infer<typeof selectorSchema>;
 const referenceBase = configurationProfileSchema.extend({
@@ -92,7 +96,7 @@ export type ConfigurationReferencesPage =
       nextCursor: string | null;
     };
 type ReferenceInput = z.infer<typeof configurationReferencesInputSchema>;
-type ReferenceTarget = "deal" | "person" | "organization" | "user";
+type ReferenceTarget = "deal" | "lead" | "person" | "organization" | "activity" | "user";
 
 function optionPresentation(option: CustomFieldOption) {
   return option.color === undefined
@@ -182,6 +186,21 @@ function targetFor(
       return ok("deal");
     return err(configurationInvalid());
   }
+  if (field.kind === "record") {
+    if (
+      input.type !== "record.update" &&
+      input.type !== "record.delete" &&
+      input.type !== "record.pick"
+    )
+      return err(configurationInvalid());
+    if (
+      input.mode === "search" &&
+      (current.workflow.archivedAt !== null ||
+        !canWorkflow(current.actor, "edit", current.workflow.ownerId))
+    )
+      return err(configurationDenied());
+    return ok(field.entity);
+  }
   if (input.type !== "activity.create") return err(configurationInvalid());
   const def = current.defs.find((item) => item.id === field.fieldId);
   if (def === undefined) return err(configurationDenied());
@@ -227,17 +246,27 @@ async function referenceRows(
   target: ReferenceTarget,
   after?: string,
 ) {
-  const label = target === "deal" ? sql`r.title` : sql`r.name`;
-  const conditions = [referenceVisibility(current.actor, target)];
-  if (input.mode === "selected") conditions.push(sql`r.id = ANY(${buildUuidArray(input.ids)})`);
+  const source =
+    input.field.kind === "record" && target !== "user"
+      ? visibleWorkflowRecordSource(target, current.actor)
+      : undefined;
+  const label =
+    source !== undefined && target !== "user"
+      ? source.field(recordSearchPrimary[target])
+      : target === "deal"
+        ? sql`r.title`
+        : sql`r.name`;
+  const id = source?.field("id") ?? sql`r.id`;
+  const conditions = [source?.visible ?? referenceVisibility(current.actor, target)];
+  if (input.mode === "selected") conditions.push(sql`${id} = ANY(${buildUuidArray(input.ids)})`);
   else {
     if (input.query !== "")
       conditions.push(sql`${label} ILIKE ${librarySubstringPattern(input.query)} ESCAPE E'\\\\'`);
-    if (after !== undefined) conditions.push(sql`r.id > ${after}::uuid`);
+    if (after !== undefined) conditions.push(sql`${id} > ${after}::uuid`);
   }
   const limit = input.mode === "selected" ? input.ids.length : input.limit + 1;
   const result = await db.execute<{ id: string; label: string }>(
-    sql`SELECT r.id, ${label} AS label FROM ${sourceFor(target)} WHERE ${sql.join(conditions, sql` AND `)} ORDER BY r.id ASC LIMIT ${limit}`,
+    sql`SELECT ${id} AS id, ${label} AS label FROM ${source?.from ?? sourceFor(target)} WHERE ${sql.join(conditions, sql` AND `)} ORDER BY ${id} ASC LIMIT ${limit}`,
   );
   return result.rows;
 }

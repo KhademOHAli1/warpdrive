@@ -1,9 +1,9 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import type { Preferences } from "@/features/identity/preferencesSchema";
 
-const h = vi.hoisted(() => ({
-  values: {} as Record<string, string>,
-  preferences: { timezone: null, density: "comfortable", ui: {} } as Preferences,
+const h = vi.hoisted((): { values: Record<string, string>; preferences: Preferences } => ({
+  values: {},
+  preferences: { timezone: null, density: "comfortable", ui: {} },
 }));
 vi.mock("next/headers", () => ({
   cookies: () =>

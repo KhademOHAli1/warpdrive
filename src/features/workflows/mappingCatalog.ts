@@ -29,6 +29,7 @@ import type {
   MappingTargetResult,
   MappingValueContract,
 } from "./mappingTypes";
+import { applyRecordSearchMapping, currentRecordSearchMapping } from "./recordSearchMapping";
 import { actionRegistry } from "./registry";
 import {
   bindingSchema,
@@ -38,11 +39,14 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
 import {
   recordCreateEntitySchema,
   recordCreateFieldTarget,
   recordCreateOutputContract,
 } from "./workflowRecordCreateContract";
+import { recordMutationTarget } from "./workflowRecordMutationContract";
+import { recordSearchBindingTarget, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 
 function issue(
   nodeId: string,
@@ -66,13 +70,21 @@ function outputsFor(node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
   const needsConfiguration = !actionRegistry[node.type].config.safeParse(node.config).success;
   const entity =
-    node.type === "record.create"
+    node.type === "record.create" ||
+    node.type === "record.update" ||
+    node.type === "record.search" ||
+    node.type === "record.pick"
       ? recordCreateEntitySchema.safeParse(node.config.entity)
       : undefined;
   if (entity !== undefined && !entity.success) return [];
   const contracts =
     entity?.success === true
-      ? { id: recordCreateOutputContract(entity.data) }
+      ? node.type === "record.search"
+        ? {
+            firstId: { ...recordCreateOutputContract(entity.data), nullable: true },
+            totalCount: { kind: "number" as const, nullable: false },
+          }
+        : { id: recordCreateOutputContract(entity.data) }
       : actionRegistry[node.type].outputContracts;
   return Object.entries(contracts).flatMap(([field, contract]) =>
     isMappingFieldKey(field)
@@ -283,6 +295,30 @@ export function describeMappingTarget(
     const target =
       entity.success && path[0] === "fields" && path.length === 2 && path[1] !== undefined
         ? recordCreateFieldTarget(node.id, entity.data, path[1])
+        : undefined;
+    return target === undefined
+      ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
+      : { state: "ready", target };
+  }
+  if (node.type === "record.search" || node.type === "email.draft") {
+    const draft = recordSearchDraftConfig.safeParse(node.config);
+    const target =
+      node.type === "record.search"
+        ? draft.success
+          ? recordSearchBindingTarget(node.id, draft.data, path)
+          : undefined
+        : path.length === 1 && path[0] !== undefined
+          ? workflowEmailDraftFieldTarget(node.id, path[0])
+          : undefined;
+    return target === undefined
+      ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
+      : { state: "ready", target };
+  }
+  if (node.type === "record.update" || node.type === "record.delete") {
+    const entity = recordCreateEntitySchema.safeParse(node.config.entity);
+    const target =
+      entity.success && (node.type === "record.update" || path[0] === "recordId")
+        ? recordMutationTarget(node.id, entity.data, path)
         : undefined;
     return target === undefined
       ? unavailableTarget(nodeId, path, "unknown-output", "unsupported_setting")
@@ -597,6 +633,49 @@ export function inspectMapping(
   return literalInspection(definition, nodeId, target, raw, metadata);
 }
 
+function writeDelayMapping(node: WorkflowNode, unit: string, binding: ReferenceBinding): boolean {
+  const previous = node.config.duration;
+  const settings = delayDurationSettings(previous);
+  if (previous !== undefined && settings === undefined) return false;
+  node.config.duration = { ...settings, [unit]: binding };
+  return true;
+}
+
+function writeRecordMapping(node: WorkflowNode, field: string, binding: ReferenceBinding): boolean {
+  const current = node.config.fields;
+  if (current === null || typeof current !== "object" || Array.isArray(current)) return false;
+  node.config.fields = { ...current, [field]: binding };
+  return true;
+}
+
+function writeReference(
+  node: WorkflowNode,
+  path: readonly string[],
+  binding: ReferenceBinding,
+): boolean {
+  const [key, field] = path;
+  if (key === undefined) return false;
+  if (node.type === "record.search") return applyRecordSearchMapping(node, path, binding);
+  if (key === "duration" && field !== undefined && node.type === "delay")
+    return writeDelayMapping(node, field, binding);
+  if (
+    key === "fields" &&
+    field !== undefined &&
+    (node.type === "record.create" || node.type === "record.update")
+  )
+    return writeRecordMapping(node, field, binding);
+  if (key !== "customFields") {
+    node.config[key] = binding;
+    return true;
+  }
+  if (field === undefined) return false;
+  const previous = node.config.customFields;
+  const settings =
+    previous !== null && typeof previous === "object" && !Array.isArray(previous) ? previous : {};
+  node.config.customFields = { ...settings, [field]: binding };
+  return true;
+}
+
 function applyReference(
   definition: WorkflowDefinition,
   nodeId: string,
@@ -605,34 +684,7 @@ function applyReference(
 ): WorkflowDefinition | undefined {
   const copy = structuredClone(definition);
   const node = copy.nodes.find((entry) => entry.id === nodeId);
-  const key = path[0];
-  if (node === undefined || key === undefined) return undefined;
-  if (node.type === "delay" && key === "duration" && path[1] !== undefined) {
-    const previous = node.config.duration;
-    if (previous !== undefined && delayDurationSettings(previous) === undefined) return undefined;
-    node.config.duration = {
-      ...(previous !== null && typeof previous === "object" ? previous : {}),
-      [path[1]]: binding,
-    };
-    return copy;
-  }
-  if (node.type === "record.create" && key === "fields" && path[1] !== undefined) {
-    const current = node.config.fields;
-    if (current === null || typeof current !== "object" || Array.isArray(current)) return undefined;
-    node.config.fields = { ...current, [path[1]]: binding };
-    return copy;
-  }
-  if (key !== "customFields") {
-    node.config[key] = binding;
-    return copy;
-  }
-  const id = path[1];
-  if (id === undefined) return undefined;
-  const previous = node.config.customFields;
-  const settings =
-    previous !== null && typeof previous === "object" && !Array.isArray(previous) ? previous : {};
-  node.config.customFields = { ...settings, [id]: binding };
-  return copy;
+  return node !== undefined && writeReference(node, path, binding) ? copy : undefined;
 }
 
 export function sameMappingReference(left: unknown, right: unknown): boolean {
@@ -654,9 +706,14 @@ function currentBinding(
   const node = definition.nodes.find((entry) => entry.id === nodeId);
   const key = path[0];
   if (node === undefined || key === undefined) return undefined;
+  if (node.type === "record.search") return currentRecordSearchMapping(node, path);
   if (node.type === "delay" && key === "duration" && path[1] !== undefined)
     return delayDurationSettings(node.config.duration)?.[path[1]];
-  if (node.type === "record.create" && key === "fields" && path[1] !== undefined) {
+  if (
+    (node.type === "record.create" || node.type === "record.update") &&
+    key === "fields" &&
+    path[1] !== undefined
+  ) {
     const fields = node.config.fields;
     return fields !== null && typeof fields === "object" && !Array.isArray(fields)
       ? fields[path[1]]

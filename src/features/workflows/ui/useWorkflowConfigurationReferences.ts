@@ -86,6 +86,12 @@ function validScope(input: WorkflowConfigurationReferencesInput): boolean {
       uuid.safeParse(input.selector.fieldId).success &&
       input.fingerprint !== undefined
     );
+  if (input.selector.kind === "record")
+    return (
+      input.type === "record.update" ||
+      input.type === "record.delete" ||
+      input.type === "record.pick"
+    );
   return input.selector.name === "recordId"
     ? input.type === "record.read"
     : input.type === "activity.create";
@@ -104,6 +110,7 @@ function sameSelector(
   right: ConfigurationReferenceSelector,
 ): boolean {
   if (left.kind === "builtin") return right.kind === "builtin" && left.name === right.name;
+  if (left.kind === "record") return right.kind === "record" && left.entity === right.entity;
   return right.kind === "custom" && left.fieldId === right.fieldId;
 }
 

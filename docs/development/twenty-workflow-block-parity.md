@@ -48,6 +48,15 @@ Verification: 568 focused tests across 33 files passed, including branch selecti
 
 The gap tables below preserve the initial audit. Apply these increment notes when reading their statuses.
 
+## Third increment: record updates, soft deletes, search, pick and email drafts
+
+- **Update Record (A2)** changes selected built-in fields. **Delete Record (A3)** uses native soft deletion. Both use the run actor's current permissions and visible named record selection. Update provides a typed record ID. Delete exposes a boolean outcome and omits the deleted record ID from the run detail.
+- **Search Records (A5)** uses bounded filters, sorting and pagination over visible deals, leads, people, organizations and tasks. The author can map the first record ID and total count. The runtime stores bounded snapshots; typed list mappings and Iterator consumption are still open.
+- **Pick Record (A6)** supports random, round robin and load balanced selection across visible candidates. Round robin counts only committed live effects in the same workflow step. The picker and run results omit unneeded private fields.
+- **Draft Email (A14)** writes an unsent private draft to an actor-owned mailbox through the native draft service. Both simulation modes roll back the write. Sends, attachments, aliases, reply-to and external delivery remain open.
+
+The composed sidebar retains the separately approved [footer chevron](https://github.com/KhademOHAli1/warpdrive/pull/988). A hosted Chromium run on the previous checkpoint passed the workflow cases for English desktop, Farsi mobile and an archived deal. Its separate appearance pack stopped on an aborted login POST. The new action adapters and forms passed focused checks; PostgreSQL and browser evidence for these new action paths remain pending.
+
 ## Catalog visibility and configuration gates
 
 The five groups are Data (6), AI (2), Flow (5), Core (5), Human Input (2); installed applications can contribute Other/Logic Function rows. See [the selector](https://github.com/twentyhq/twenty/blob/b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5/packages/twenty-front/src/modules/side-panel/pages/workflow/action/components/SidePanelWorkflowSelectAction.tsx).
