@@ -7,6 +7,7 @@ import {
   ANALYTICS_BROWSER as actor,
   ANALYTICS_DEALS as deals,
   ANALYTICS_LEADS as leads,
+  ANALYTICS_LEGACY_LOSS as legacyLoss,
   ANALYTICS_ORGANIZATIONS as organizations,
 } from "./browser-analytics-seed.mjs";
 
@@ -1005,12 +1006,12 @@ async function verifySavedPerformance() {
   });
 }
 
-async function downloadWonRecords(page, dialog) {
+async function downloadDealRecords(page, dialog, metric) {
   const [download] = await Promise.all([
     page.waitForEvent("download", { timeout: 15000 }),
     dialog.getByRole("link", exact(copy.en.stats.recordsExport)).click(),
   ]);
-  assert.equal(download.suggestedFilename(), "deal-report-won.csv");
+  assert.equal(download.suggestedFilename(), `deal-report-${metric}.csv`);
   let csv = "";
   try {
     const stream = await download.createReadStream();
@@ -1036,7 +1037,7 @@ async function verifyDealReportDownload() {
     });
     const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
     const drawer = await openRecords(page, "en", "won", filtered.input, entry, population.won);
-    const fields = await downloadWonRecords(page, drawer.dialog);
+    const fields = await downloadDealRecords(page, drawer.dialog, "won");
     assert.deepEqual(
       fields.map((row) => row[0]),
       entry.reports[0].ids,
@@ -1074,7 +1075,7 @@ async function verifyDealReportDownload() {
     assert.equal(records.data.totals.count, month.count);
     assert.equal(records.data.nextCursor, null);
     const dialog = page.getByRole("dialog");
-    const monthRows = await downloadWonRecords(page, dialog);
+    const monthRows = await downloadDealRecords(page, dialog, "won");
     assert.deepEqual(
       monthRows.map(([id]) => id),
       records.data.rows.map(({ id }) => id),
@@ -1086,6 +1087,49 @@ async function verifyDealReportDownload() {
       originalReportScope: true,
       returnedFocus: true,
     };
+  });
+}
+
+async function verifyLostReasonDrillThrough() {
+  await journey("en-lost-reason-records", async (page, _context, entry) => {
+    const S = copy.en.stats;
+    const initial = await openDashboard(page, "en", "gregory", actor.timeZone);
+    const filtered = await selectPreset(page, "en", "gregory", initial, "last30");
+    await page.getByRole("tab", exact(S.pipelineTab)).click();
+    const panel = page.getByRole("region", exact(S.widgetLostReasons));
+    const opener = panel.getByRole(
+      "button",
+      exact(S._extra.lostReasonInspect.replace("{reason}", `\u2068${legacyLoss}\u2069`)),
+    );
+    const records = await rpcAfter(
+      page,
+      "stats.records",
+      (input) => input.metric === "lost" && typeof input.lostReason === "string",
+      () => opener.press("Enter"),
+    );
+    assertScope(records, actor.timeZone, {
+      from: filtered.input.from,
+      to: filtered.input.to,
+      pipelineId: actor.pipelineId,
+    });
+    assert.ok(!records.input.lostReason.includes(legacyLoss));
+    assert.equal(records.data.lostReason, records.input.lostReason);
+    assert.equal(records.data.totals.count, 1);
+    assert.deepEqual(
+      records.data.rows.map(({ id }) => id),
+      [deals.lost.id],
+    );
+    const dialog = page.getByRole("dialog");
+    const link = dialog.getByRole("link", exact(S.recordsExport));
+    assert.ok(!(await link.getAttribute("href"))?.includes(legacyLoss));
+    const rows = await downloadDealRecords(page, dialog, "lost");
+    assert.deepEqual(
+      rows.map(([id]) => id),
+      [deals.lost.id],
+    );
+    assert.ok(!JSON.stringify(rows).includes(legacyLoss));
+    await closeRecords(page, { dialog, opener });
+    entry.lostReasonProof = { records: 1, originalReportScope: true, labelAbsentFromExport: true };
   });
 }
 
@@ -1461,6 +1505,7 @@ try {
   await verifyAccountConcentration();
   await verifySavedPerformance();
   await verifyDealReportDownload();
+  await verifyLostReasonDrillThrough();
   await matrix("en", "gregory");
   await setRegional("en", "timeZone", "UTC", {
     locale: "en",

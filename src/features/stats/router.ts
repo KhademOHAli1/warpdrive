@@ -6,6 +6,7 @@
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { listTeams } from "@/features/identity/teams.service";
 import { listAssignableUsers } from "@/features/identity/users.service";
@@ -62,13 +63,24 @@ export const statsRouter = router({
       signal,
       ctx.localeFallback,
     );
-    const result = await dealRecords(ctx.db, ctx.actor, filters, input, signal);
+    const result = await dealRecords(ctx.db, ctx.actor, filters, input, signal).catch(
+      (error: unknown) => {
+        if (
+          input.lostReason !== undefined &&
+          error instanceof AppError &&
+          error.id === ERROR_IDS.DEAL_FILTER_INVALID
+        )
+          throw new TRPCError({ code: "PRECONDITION_FAILED" });
+        throw error;
+      },
+    );
     return {
       ...result,
       currency,
       effectiveOwnerScope,
       metric: input.metric,
       ...(input.wonMonth === undefined ? {} : { wonMonth: input.wonMonth }),
+      ...(input.lostReason === undefined ? {} : { lostReason: input.lostReason }),
       definitionVersion: ANALYTICS_METRIC_DICTIONARY_VERSION,
       timeZone: filters.timeZone ?? "UTC",
       generatedAt: new Date().toISOString(),

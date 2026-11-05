@@ -30,7 +30,11 @@ import { CurrentAttentionPanel } from "./CurrentAttentionPanel";
 import { CurrentLeadHandoffPanel } from "./CurrentLeadHandoffPanel";
 import { DashboardError, DashboardLoading } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
-import { DealRecordsDrawer, type DealRecordsScope, type WonMonthScope } from "./DealRecordsDrawer";
+import {
+  DealRecordsDrawer,
+  type DealRecordsScope,
+  type RecordChartSelection,
+} from "./DealRecordsDrawer";
 import { DealWinCohortPanel } from "./DealWinCohortPanel";
 import { presetRange } from "./dateRange";
 import { GoalsWidget } from "./GoalsWidget";
@@ -119,7 +123,7 @@ export function Dashboard({
   const [inspection, setInspection] = useState<{
     metric: DealRecordMetric;
     trigger: HTMLButtonElement;
-    wonMonth?: WonMonthScope & { scope: DealRecordsScope };
+    chart?: RecordChartSelection & { scope: DealRecordsScope };
   } | null>(null);
   const currentScope = {
     currency: selectedCurrency,
@@ -132,7 +136,29 @@ export function Dashboard({
     ...range,
   };
   const validRange = range.from <= range.to;
-  const inspectionScope = inspection?.wonMonth?.scope ?? reportScope;
+  const inspectionScope = inspection?.chart?.scope ?? reportScope;
+  const chart = inspection?.chart;
+  const chartSelector = chart?.kind === "won-month" ? chart.month : chart?.selector;
+  function inspectChart(
+    selection: RecordChartSelection,
+    trigger: HTMLButtonElement,
+    resultScope: { currency: string; effectiveOwnerScope: OwnerScope },
+  ) {
+    setInspection({
+      metric: selection.kind === "won-month" ? "won" : "lost",
+      trigger,
+      chart: {
+        ...selection,
+        scope: {
+          from: reportScope.from,
+          to: reportScope.to,
+          pipelineId: reportScope.pipelineId,
+          currency: resultScope.currency,
+          ownerScope: resultScope.effectiveOwnerScope,
+        },
+      },
+    });
+  }
   const pipelinesQ = trpc.pipeline.list.useQuery();
   const pipelineOptions = [
     { value: ALL_PIPELINES, label: S.allPipelines },
@@ -182,21 +208,11 @@ export function Dashboard({
               data={result.wonTrend}
               currency={result.currency}
               onInspectMonth={(month, trigger) =>
-                setInspection({
-                  metric: "won",
+                inspectChart(
+                  { kind: "won-month", month, timeZone: result.timeZone },
                   trigger,
-                  wonMonth: {
-                    month,
-                    timeZone: result.timeZone,
-                    scope: {
-                      from: reportScope.from,
-                      to: reportScope.to,
-                      pipelineId: reportScope.pipelineId,
-                      currency: result.currency,
-                      ownerScope: result.effectiveOwnerScope,
-                    },
-                  },
-                })
+                  result,
+                )
               }
             />
             <DashboardGoals today={today} currency={result.currency} canManage={canManageGoals} />
@@ -354,7 +370,17 @@ export function Dashboard({
                   <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
                   <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
                   <StageSumsWidget data={result.stageSums} currency={result.currency} />
-                  <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
+                  <LostReasonsWidget
+                    data={result.lostReasons}
+                    currency={result.currency}
+                    onInspectReason={(selector, label, trigger) =>
+                      inspectChart(
+                        { kind: "lost-reason", selector, label, timeZone: result.timeZone },
+                        trigger,
+                        result,
+                      )
+                    }
+                  />
                 </div>
                 <DealWinCohortPanel scope={reportScope} />
               </>
@@ -396,13 +422,16 @@ export function Dashboard({
             ...inspectionScope,
             timeZoneIdentity: timeZone,
             metric: inspection.metric,
-            wonMonth: inspection.wonMonth?.month,
+            chartSelector,
           })}
           scope={inspectionScope}
           metric={inspection.metric}
-          wonMonth={inspection.wonMonth}
+          chart={chart}
           canExport={canExport}
           returnFocus={inspection.trigger}
+          onScopeInvalidated={() => {
+            void data.refetch();
+          }}
           onClose={() => setInspection(null)}
         />
       )}

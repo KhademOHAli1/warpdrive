@@ -48,6 +48,28 @@ function fixture(rows: ReturnType<typeof row>[], value: string, valueCount: numb
 }
 
 describe("bounded deal report CSV", () => {
+  test("accepts only opaque lost-group selectors for lost records and reconciles the echoed selector", () => {
+    const lostScope = {
+      ...scope,
+      metric: "lost",
+      lostReason: `legacy-v1.${"a".repeat(80)}`,
+    } as const;
+    const href = dealReportExportHref(lostScope);
+    expect(parseDealReportExportRequest(new URL(`${prefix}${href}`))).toEqual(lostScope);
+    expect(dealReportExportHref({ ...lostScope, lostReason: "=raw private reason" })).toBeNull();
+    expect(dealReportExportHref({ ...lostScope, metric: "won" })).toBeNull();
+    expect(dealReportExportHref({ ...lostScope, wonMonth: "2026-03" })).toBeNull();
+    const report = {
+      ...fixture([{ ...row(1, "1.00"), status: "lost" }], "1.00", 1),
+      metric: "lost",
+      lostReason: lostScope.lostReason,
+    };
+    expect(serializeDealReportExport(report, lostScope)).toMatchObject({ state: "ready" });
+    expect(serializeDealReportExport({ ...report, lostReason: "missing" }, lostScope)).toEqual({
+      state: "invalid",
+    });
+  });
+
   test("binds a won trend bucket and its original dates through the export", () => {
     const monthScope = { ...scope, from: "2026-02-15", wonMonth: "2026-03" };
     const href = dealReportExportHref(monthScope);

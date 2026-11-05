@@ -26,22 +26,45 @@ export interface DealRecordsScope {
   to: string;
 }
 
-export interface WonMonthScope {
-  month: string;
-  timeZone: string;
-}
+export type RecordChartSelection =
+  | { kind: "won-month"; month: string; timeZone: string }
+  | { kind: "lost-reason"; selector: string; label: string; timeZone: string };
 
 type Cursor = { createdAt: string; id: string };
 
-function sameWonMonthScope(
+function chartRecordInput(chart: RecordChartSelection | undefined) {
+  switch (chart?.kind) {
+    case "won-month":
+      return { wonMonth: chart.month };
+    case "lost-reason":
+      return { lostReason: chart.selector };
+    default:
+      return {};
+  }
+}
+
+function chartTitle(
+  chart: RecordChartSelection,
+  S: ReturnType<typeof useStatsMessages>,
+  preferences: ReturnType<typeof useLocalePreferences>,
+): string {
+  return chart.kind === "won-month"
+    ? S._extra.recordsWonMonth(monthLabel(chart.month, preferences))
+    : S._extra.recordsLostReason(chart.label);
+}
+
+function sameChartScope(
   report: RouterOutputs["stats"]["records"],
   scope: DealRecordsScope,
-  wonMonth: WonMonthScope,
+  chart: RecordChartSelection,
 ): boolean {
+  const matchesSelection =
+    chart.kind === "won-month"
+      ? report.metric === "won" && report.wonMonth === chart.month
+      : report.metric === "lost" && report.lostReason === chart.selector;
   return (
-    report.metric === "won" &&
-    report.wonMonth === wonMonth.month &&
-    report.timeZone === wonMonth.timeZone &&
+    matchesSelection &&
+    report.timeZone === chart.timeZone &&
     report.currency === scope.currency &&
     toToken(report.effectiveOwnerScope) === toToken(scope.ownerScope)
   );
@@ -79,16 +102,18 @@ function RecordsError({
 export function DealRecordsDrawer({
   metric,
   scope,
-  wonMonth,
+  chart,
   canExport = false,
   onClose,
+  onScopeInvalidated,
   returnFocus,
 }: {
   metric: DealRecordMetric;
   scope: DealRecordsScope;
-  wonMonth?: WonMonthScope;
+  chart?: RecordChartSelection;
   canExport?: boolean;
   onClose: () => void;
+  onScopeInvalidated?: () => void;
   returnFocus?: HTMLButtonElement;
 }) {
   const S = useStatsMessages();
@@ -98,13 +123,13 @@ export function DealRecordsDrawer({
   const preferencePending = useLocalePreferencePending();
   const descriptionId = useId();
   const [cursors, setCursors] = useState<(Cursor | undefined)[]>([undefined]);
-  const monthInput = wonMonth === undefined ? {} : { wonMonth: wonMonth.month };
+  const chartInput = chartRecordInput(chart);
   const query = trpc.stats.records.useQuery(
     {
       ...scope,
       timeZoneIdentity: timeZone,
       metric,
-      ...monthInput,
+      ...chartInput,
       cursor: cursors[cursors.length - 1],
       limit: 25,
     },
@@ -113,7 +138,7 @@ export function DealRecordsDrawer({
       staleTime: 0,
       gcTime: 0,
       refetchOnMount: "always",
-      ...(wonMonth === undefined
+      ...(chart === undefined
         ? {}
         : { refetchOnWindowFocus: "always" as const, refetchOnReconnect: "always" as const }),
     },
@@ -127,13 +152,13 @@ export function DealRecordsDrawer({
     !query.isFetching &&
     !query.isPaused &&
     !query.isPlaceholderData &&
-    (wonMonth === undefined || query.isFetchedAfterMount)
+    (chart === undefined || query.isFetchedAfterMount)
       ? query.data
       : undefined;
   const scopeChanged =
-    wonMonth !== undefined &&
-    candidate !== undefined &&
-    !sameWonMonthScope(candidate, scope, wonMonth);
+    chart !== undefined &&
+    ((candidate !== undefined && !sameChartScope(candidate, scope, chart)) ||
+      (query.isError && query.error.data?.code === "PRECONDITION_FAILED"));
   const result = scopeChanged ? undefined : candidate;
   const exportLink =
     canExport && result !== undefined && result.totals.count <= DEAL_REPORT_EXPORT_LIMIT
@@ -144,7 +169,7 @@ export function DealRecordsDrawer({
           ownerScope: result.effectiveOwnerScope,
           currency: result.currency,
           metric,
-          ...monthInput,
+          ...chartInput,
           timeZone: result.timeZone,
         })
       : null;
@@ -167,10 +192,7 @@ export function DealRecordsDrawer({
     wonCycle: S.recordsWonCycleBasis,
   };
   const statuses = { open: S.open, won: S.won, lost: S.lost };
-  const title =
-    wonMonth === undefined
-      ? titles[metric]
-      : S._extra.recordsWonMonth(monthLabel(wonMonth.month, preferences));
+  const title = chart === undefined ? titles[metric] : chartTitle(chart, S, preferences);
 
   return (
     <Sheet
@@ -194,7 +216,7 @@ export function DealRecordsDrawer({
             <p className="text-xs font-medium text-muted-foreground">{S.recordsTitle}</p>
             <SheetTitle className="text-balance">{title}</SheetTitle>
             <p className="text-pretty text-sm tabular-nums text-muted-foreground">
-              {wonMonth !== undefined && <span>{S.recordsReportPeriod} · </span>}
+              {chart !== undefined && <span>{S.recordsReportPeriod} · </span>}
               {format.dateOnly(scope.from)} {S.rangeSeparator} {format.dateOnly(scope.to)} ·{" "}
               <bdi>{scope.currency}</bdi>
             </p>
@@ -207,7 +229,10 @@ export function DealRecordsDrawer({
             <RecordsError
               scopeChanged={scopeChanged}
               retrying={preferencePending || query.isFetching}
-              onClose={onClose}
+              onClose={() => {
+                onClose();
+                onScopeInvalidated?.();
+              }}
               onRetry={() => {
                 void query.refetch();
               }}

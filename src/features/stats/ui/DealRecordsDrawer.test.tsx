@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { LostReasonCount } from "@/types/stats";
 
 const fixture = vi.hoisted(() => ({
   query: vi.fn(),
@@ -13,20 +14,23 @@ const fixture = vi.hoisted(() => ({
   fetching: false,
   fetchedAfterMount: true,
   error: false,
+  errorCode: "INTERNAL_SERVER_ERROR",
   wonTrend: [] as Array<{ month: string; count: number; value: string }>,
+  lostReasons: [] as LostReasonCount[],
   result: {
     currency: "USD",
     timeZone: "Europe/Berlin",
     effectiveOwnerScope: { kind: "me" } as const,
-    metric: "won" as const,
+    metric: "won" as "won" | "lost",
     wonMonth: undefined as string | undefined,
+    lostReason: undefined as string | undefined,
     definitionVersion: "1",
     generatedAt: "2026-11-05T12:00:00.000Z",
     rows: [
       {
         id: "00000000-0000-4000-8000-000000000001",
         title: "Acme service agreement",
-        status: "won" as const,
+        status: "won" as "won" | "lost",
         value: "0.00",
         currency: "USD",
         createdAt: "2026-10-01T08:00:00.000Z",
@@ -69,13 +73,22 @@ vi.mock("@/lib/trpc-client", () => ({
             activitiesByType: [],
             funnel: [],
             stageSums: [],
-            lostReasons: [],
+            lostReasons: fixture.lostReasons,
             wonTrend: fixture.wonTrend,
             effectiveOwnerScope: { kind: "me" },
           },
         }),
       },
       ownerOptions: { useQuery: () => ({ data: { users: [], teams: [] } }) },
+      dealWinCohorts: {
+        useQuery: () => ({
+          data: { state: "coverage-not-started" },
+          isLoading: false,
+          isFetching: false,
+        }),
+      },
+      stageAging: { useQuery: () => ({ isFetchedAfterMount: false }) },
+      currentAttention: { useQuery: () => ({ isFetchedAfterMount: false }) },
       records: {
         useQuery: (input: unknown, options: unknown) => {
           fixture.query(input, options);
@@ -85,6 +98,7 @@ vi.mock("@/lib/trpc-client", () => ({
             isFetching: fixture.fetching,
             isFetchedAfterMount: fixture.fetchedAfterMount,
             isError: fixture.error,
+            error: fixture.error ? { data: { code: fixture.errorCode } } : null,
             refetch: fixture.refetch,
           };
         },
@@ -115,11 +129,15 @@ beforeEach(() => {
   fixture.savePreferences.mockReset();
   fixture.savePreferences.mockResolvedValue({ ok: true });
   fixture.error = false;
+  fixture.errorCode = "INTERNAL_SERVER_ERROR";
   fixture.loading = false;
   fixture.fetching = false;
   fixture.fetchedAfterMount = true;
   fixture.wonTrend = [];
+  fixture.lostReasons = [];
+  fixture.result.metric = "won";
   fixture.result.wonMonth = undefined;
+  fixture.result.lostReason = undefined;
   fixture.result.timeZone = "Europe/Berlin";
   fixture.result.rows = [
     {
@@ -312,7 +330,60 @@ describe("contributing-deal inspection", () => {
   });
 });
 
-describe("scoreboard record populations", () => {
+describe("dashboard record populations", () => {
+  it("opens the selected legacy loss group and exports its opaque selector only", async () => {
+    const selector = `legacy-v1.${"a".repeat(80)}`;
+    const privateLabel = "Competitor =A1";
+    fixture.lostReasons = [
+      { reasonId: null, name: privateLabel, count: 1, value: "0.00", selector },
+      { reasonId: "unresolvable", name: "Unresolvable group", count: 1, value: "0.00" },
+    ];
+    fixture.result.metric = "lost";
+    fixture.result.lostReason = selector;
+    fixture.result.rows = fixture.result.rows.map((row) => ({ ...row, status: "lost" as const }));
+    const dashboard = () => (
+      <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} canExport />
+    );
+    const page = render(dashboard());
+    await userEvent.click(screen.getByRole("button", { name: "This quarter" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    expect(
+      screen.queryByRole("button", { name: /View lost deals for.*Unresolvable group/ }),
+    ).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: /View lost deals for.*Competitor/ });
+    await userEvent.click(trigger);
+    expect(screen.getByRole("dialog", { name: /Lost deals for.*Competitor/ })).toBeInTheDocument();
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        from: "2026-10-01",
+        to: "2026-11-05",
+        metric: "lost",
+        lostReason: selector,
+      }),
+      expect.objectContaining({ refetchOnWindowFocus: "always" }),
+    );
+    const href = screen.getByRole("link", { name: "Download CSV" }).getAttribute("href") ?? "";
+    expect(href).not.toContain(encodeURIComponent(privateLabel));
+    expect(new URL(href, "https://example.invalid").searchParams.get("lostReason")).toBe(selector);
+    expect(screen.getByRole("link", { name: /Acme service agreement/ })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+
+    fixture.result.lostReason = "missing";
+    page.rerender(dashboard());
+    expect(screen.getByRole("alert")).toHaveTextContent("The original chart scope is unavailable.");
+    expect(screen.queryByRole("link", { name: "Download CSV" })).not.toBeInTheDocument();
+    fixture.error = true;
+    fixture.errorCode = "PRECONDITION_FAILED";
+    page.rerender(dashboard());
+    expect(screen.getByRole("alert")).toHaveTextContent("The original chart scope is unavailable.");
+    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.getByRole("tab", { name: "Pipeline" })).toHaveAttribute("aria-selected", "true");
+  });
+
   it("opens one exact trend month for records and CSV while keeping the original report open", async () => {
     fixture.wonTrend = [
       { month: "2026-10", count: 0, value: "0.00" },

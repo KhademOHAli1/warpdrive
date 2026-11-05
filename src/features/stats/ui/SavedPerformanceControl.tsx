@@ -202,6 +202,7 @@ function SavedScopeRun({ id, labels }: { id: string; labels: Labels }) {
         {S.recordsTimeZone} <bdi>{dashboard.timeZone}</bdi>
       </p>
       <Scoreboard
+        embedded
         deals={dashboard.dealPerformance}
         won={dashboard.wonDealStats}
         activities={dashboard.activities}

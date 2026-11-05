@@ -5,8 +5,8 @@ export const dealReportExportInventoryEntry = classifyInventory(
     "derived:src/features/stats/dealReportExportCsv.ts",
     "derived:src/features/stats/dealReportExportRequest.ts",
     "sourceReview:src/app/(app)/dashboard/export/route.ts#beed840079d9b47973e260bc39644014094a3f5212d16a7bb3909e0b5a5a56b7",
-    "sourceReview:src/features/stats/dealReportExportCsv.ts#d6b2425354203df692c0a59054d651d8f2ea46587624d2883d889e8125df402f",
-    "sourceReview:src/features/stats/dealReportExportRequest.ts#74fd8c4c71ff4c6573bed22f7562da9b9de8929d01c534adcad65b924674eceb",
+    "sourceReview:src/features/stats/dealReportExportCsv.ts#5897a3dcb83b68bcbd43e93f2b33c32baec97dd8740d68dcf4959b326045a514",
+    "sourceReview:src/features/stats/dealReportExportRequest.ts#2731186382f832df7a0d6a9eea8af83e83f29eeda0884451d39dc358bb627dae",
   ],
   {
     owner: "authorized performance deal export",
@@ -43,6 +43,29 @@ export const recordedDealSourceInventoryEntry = classifyInventory(
     retention: "Read only, no new storage. Source records retain their existing lifecycle policy.",
     externalEffects:
       "An authenticated server caller can request a read-only repeatable-read observation. Transaction-local settings bound query time. No provider, export or CRM write.",
+    erasureTask: "DPL-15 / #714",
+  },
+);
+
+export const lostReasonSelectionInventoryEntry = classifyInventory(
+  [
+    "derived:src/features/stats/lostReasonSelection.ts",
+    "sourceReview:src/features/stats/lostReasonSelection.ts#946d4cc96efaab0f08d6ef18e1e3f6e24d7a22f472d36290501dc4074442f6d8",
+    "writer:src/features/stats/lostReasonSelection.ts#update:digest",
+    "writer:src/features/stats/lostReasonSelection.ts#update:dynamic",
+  ],
+  {
+    owner: "lost reason report chart selection",
+    categories: ["CRM loss reason, exact report scope, actor and effective owner references"],
+    subjectRelation: "Legacy reason text can refer to people or organizations.",
+    purpose:
+      "Narrow the same authorized lost-deal population to a chart group without placing its raw label in export URLs.",
+    disclosure:
+      "The authorized chart can show its source label. Legacy record links carry a scope-bound sealed digest. The contributing records and CSV omit reason text and still reapply native report access.",
+    retention:
+      "Transient selector and no additional server store. The export follows the existing CSV lifecycle.",
+    externalEffects:
+      "In-memory hash and authenticated encryption updates. No provider or persistent write.",
     erasureTask: "DPL-15 / #714",
   },
 );

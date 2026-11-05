@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import { DEAL_WIN_COHORT_HORIZONS } from "./history/dealWinCohortView";
+import { lostReasonSelector } from "./lostReasonSelector";
 import { DEAL_RECORD_METRICS, type DealRecordMetric } from "./metricDictionary";
 import { monthsInRange } from "./monthBuckets";
 
@@ -47,6 +48,16 @@ export function validWonMonthScope({
   return wonMonth === undefined || (metric === "won" && monthsInRange(from, to).includes(wonMonth));
 }
 
+export function validLostReasonScope(input: {
+  metric: DealRecordMetric;
+  wonMonth?: string;
+  lostReason?: string;
+}): boolean {
+  return (
+    input.lostReason === undefined || (input.metric === "lost" && input.wonMonth === undefined)
+  );
+}
+
 export const dealRecordsInput = dashboardInput
   .safeExtend({
     metric: z.enum(DEAL_RECORD_METRICS),
@@ -55,11 +66,13 @@ export const dealRecordsInput = dashboardInput
       .object({ createdAt: z.string().datetime({ offset: true }), id: z.string().uuid() })
       .optional(),
     wonMonth: wonMonthInput,
+    lostReason: lostReasonSelector.optional(),
   })
   .refine(validWonMonthScope, {
     path: ["wonMonth"],
     message: "Select a displayed won trend month",
-  });
+  })
+  .refine(validLostReasonScope, { path: ["lostReason"], message: "Select a lost reason group" });
 
 export const dealWinCohortsInput = dashboardInput.safeExtend({
   // Cache identity only. The reader independently loads the viewer's saved calendar.

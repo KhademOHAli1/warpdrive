@@ -62,6 +62,8 @@ export const ANALYTICS_LEADS = {
   old: id(626),
 };
 
+export const ANALYTICS_LEGACY_LOSS = "CI typed reason witness";
+
 export const ANALYTICS_ORGANIZATIONS = {
   visible: id(627),
   private: id(628),
@@ -202,6 +204,10 @@ export async function seedAnalyticsBrowserFixtures(
   await client.query("UPDATE deals SET org_id=$1 WHERE id=$2", [
     ANALYTICS_ORGANIZATIONS.private,
     ANALYTICS_DEALS.negativeCycle.id,
+  ]);
+  await client.query("UPDATE deals SET lost_reason=$1 WHERE id=$2", [
+    ANALYTICS_LEGACY_LOSS,
+    ANALYTICS_DEALS.lost.id,
   ]);
   const leadFixtures = [
     ["linked", ANALYTICS_DEALS.recorded.id, true],

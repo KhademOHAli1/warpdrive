@@ -38,6 +38,10 @@ export function statsMessagesForLocale(locale: Locale, numberingSystem?: Numberi
       recordsPage: (page: number) => t("_extra.recordsPage", { page }),
       trendInspectMonth: (month: string) => t("_extra.trendInspectMonth", { month }),
       recordsWonMonth: (month: string) => t("_extra.recordsWonMonth", { month }),
+      lostReasonInspect: (reason: string) =>
+        t("_extra.lostReasonInspect", { reason: `\u2068${reason}\u2069` }),
+      recordsLostReason: (reason: string) =>
+        t("_extra.recordsLostReason", { reason: `\u2068${reason}\u2069` }),
       savedPerformanceReviewNamed: (name: string) =>
         t("savedPerformance.reviewNamed", { name: `\u2068${name}\u2069` }),
       savedPerformanceDeleteNamed: (name: string) =>

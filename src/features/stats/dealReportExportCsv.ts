@@ -5,6 +5,7 @@ import {
   type DealReportExportScope,
   exportTimeZone,
 } from "./dealReportExportRequest";
+import { lostReasonSelector } from "./lostReasonSelector";
 import {
   ANALYTICS_METRIC_DICTIONARY_VERSION,
   DEAL_RECORD_METRIC_DICTIONARY,
@@ -40,6 +41,7 @@ const rowSchema = z.object({
 const reportSchema = z.object({
   metric: z.enum(DEAL_RECORD_METRICS),
   wonMonth: wonMonthInput,
+  lostReason: lostReasonSelector.optional(),
   definitionVersion: z.literal(ANALYTICS_METRIC_DICTIONARY_VERSION),
   currency,
   effectiveOwnerScope: ownerScopeInput,
@@ -87,7 +89,7 @@ export function serializeDealReportExport(
   input: unknown,
   expected: Pick<
     DealReportExportScope,
-    "currency" | "ownerScope" | "metric" | "timeZone" | "wonMonth"
+    "currency" | "ownerScope" | "metric" | "timeZone" | "wonMonth" | "lostReason"
   >,
 ): CsvResult {
   const parsed = reportSchema.safeParse(input);
@@ -97,6 +99,7 @@ export function serializeDealReportExport(
     report.currency !== expected.currency ||
     report.metric !== expected.metric ||
     report.wonMonth !== expected.wonMonth ||
+    report.lostReason !== expected.lostReason ||
     report.timeZone !== expected.timeZone ||
     toToken(report.effectiveOwnerScope) !== toToken(expected.ownerScope)
   )

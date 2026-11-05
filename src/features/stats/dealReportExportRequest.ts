@@ -2,9 +2,15 @@ import { z } from "zod";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import { isTimeZone } from "@/features/i18n/preferences";
 import type { OwnerScope } from "@/types/stats";
+import { lostReasonSelector } from "./lostReasonSelector";
 import { DEAL_RECORD_METRICS, type DealRecordMetric } from "./metricDictionary";
 import { fromToken, toToken } from "./ownerScopeToken";
-import { ownerScopeInput, validWonMonthScope, wonMonthInput } from "./schemas";
+import {
+  ownerScopeInput,
+  validLostReasonScope,
+  validWonMonthScope,
+  wonMonthInput,
+} from "./schemas";
 
 export const DEAL_REPORT_EXPORT_LIMIT = 100;
 const MAX_QUERY_BYTES = 384;
@@ -35,10 +41,12 @@ const query = z
     ownerScope: ownerSelector,
     metric: z.enum(DEAL_RECORD_METRICS),
     wonMonth: wonMonthInput,
+    lostReason: lostReasonSelector.optional(),
     timeZone: exportTimeZone,
   })
   .refine(({ from, to }) => from <= to)
-  .refine(validWonMonthScope);
+  .refine(validWonMonthScope)
+  .refine(validLostReasonScope);
 
 export interface DealReportExportScope {
   from: string;
@@ -48,6 +56,7 @@ export interface DealReportExportScope {
   ownerScope: OwnerScope;
   metric: DealRecordMetric;
   wonMonth?: string;
+  lostReason?: string;
   timeZone: string;
 }
 
@@ -72,7 +81,7 @@ export function parseDealReportExportRequest(
 
 /** The current report response supplies the effective scope and display time zone. */
 export function dealReportExportHref(scope: DealReportExportScope): string | null {
-  const { wonMonth, ...scopeFields } = scope;
+  const { wonMonth, lostReason, ...scopeFields } = scope;
   const fields = {
     ...scopeFields,
     pipelineId: scope.pipelineId ?? "all",
@@ -80,6 +89,7 @@ export function dealReportExportHref(scope: DealReportExportScope): string | nul
   };
   const params = new URLSearchParams(fields);
   if (wonMonth !== undefined) params.set("wonMonth", wonMonth);
+  if (lostReason !== undefined) params.set("lostReason", lostReason);
   return query.safeParse(Object.fromEntries(params)).success &&
     params.toString().length < MAX_QUERY_BYTES
     ? `/dashboard/export?${params}`
