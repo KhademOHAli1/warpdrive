@@ -269,7 +269,10 @@ describe("publication review on the actual editor", () => {
     await user.dblClick(confirm);
     expect(io.publish).toHaveBeenCalledTimes(1);
     expect(io.save).not.toHaveBeenCalled();
-    await act(async () => response.resolve(publication()));
+    await act(async () => {
+      response.resolve(publication());
+      await response.promise;
+    });
     expect(await screen.findByRole("status")).toHaveTextContent(english.published);
   });
 
