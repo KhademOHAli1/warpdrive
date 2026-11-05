@@ -451,7 +451,11 @@ function evidenceFailure({ reason }: EvidenceFailure): Failure {
     case "retained-history-authority-unavailable":
     case "unmodeled-membership-change":
       return unavailable(reason);
-    default:
+    case "conflicting-incarnation":
+    case "duplicate-evidence":
+    case "history-incomplete":
+    case "invalid-chain":
+    case "invalid-evidence":
       return unavailable("history-incomplete");
   }
 }

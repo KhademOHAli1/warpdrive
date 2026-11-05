@@ -472,6 +472,26 @@ function resolveDependencies(
   return { pipelines, stages, permittedPipelines };
 }
 
+function appendSelectedDeals(
+  deals: ReadonlyMap<string, CorpusRow[]>,
+  pinnedKeys: Set<string>,
+  selection: ReportSelection,
+  work: Preparation,
+): EvidenceFailure | null {
+  for (const [key, rows] of deals) {
+    const history = parseDealHistory(rows);
+    if (history === null) return incomplete;
+    const pinned = pinnedKeys.delete(key);
+    // A malformed history cannot prove exclusion. Only a coherent chain with no exact
+    // selected currency on any captured side can bypass the stricter report evidence decoder.
+    if (!pinned && !containsCurrency(history, selection.currency)) continue;
+    if (!pinned && !touchesReport(history, selection, work.dependencies)) continue;
+    const failure = appendDeal(history, work);
+    if (failure !== null) return failure;
+  }
+  return pinnedKeys.size === 0 ? null : incomplete;
+}
+
 export function prepareMovementEvidence(
   corpus: readonly CorpusRow[],
   opening: CapturedBoundary,
@@ -500,18 +520,8 @@ export function prepareMovementEvidence(
     owners: opening.scope.owners.everyone ? null : new Set(opening.scope.owners.ids),
   };
 
-  for (const [key, rows] of groups.deals) {
-    const history = parseDealHistory(rows);
-    if (history === null) return incomplete;
-    const pinned = keys.delete(key);
-    // A malformed history cannot prove exclusion. Only a coherent chain with no exact
-    // selected currency on any captured side can bypass the stricter report evidence decoder.
-    if (!pinned && !containsCurrency(history, selection.currency)) continue;
-    if (!pinned && !touchesReport(history, selection, work.dependencies)) continue;
-    const failure = appendDeal(history, work);
-    if (failure !== null) return failure;
-  }
-  if (keys.size > 0) return incomplete;
+  const failure = appendSelectedDeals(groups.deals, keys, selection, work);
+  if (failure !== null) return failure;
 
   const definitionId = "current-pipeline-inventory-v1";
   return {

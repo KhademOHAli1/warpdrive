@@ -98,5 +98,28 @@
   "reconciledBase": {
     "revision": "0047318c23acc43f16500d72227b99642eeccf14",
     "limitation": "PR #994 changes MCP email draft selection and its tests and inventory. Focused analytics sources are unchanged, the combined inventory is regenerated, and the exact hosted candidate still needs qualification."
+  },
+  "lintAmendment": {
+    "reportedRun": 42109766058,
+    "changes": "Extract corpus assembly and explicitly map all failure reasons without changing report outcomes.",
+    "sources": [
+      {
+        "path": "src/features/stats/history/inventoryMovementEvidenceSource.ts",
+        "sha256": "c9e8b45f148a08672702b8b60cef45485ede5a920b2b5b496b875ae52484fd63"
+      },
+      {
+        "path": "src/features/stats/history/inventoryMovementRepository.ts",
+        "sha256": "375c6e2dde6ba2deb862bed3e270950d72de90d32600e4d11b39bace28e717e4"
+      }
+    ],
+    "focused": {
+      "cases": 71,
+      "files": 6,
+      "movementCases": 40,
+      "registryCases": 31,
+      "seconds": 4.74,
+      "inventoryMissing": [],
+      "inventoryInvalid": []
+    }
   }
 }
