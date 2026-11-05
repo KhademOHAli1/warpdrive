@@ -1,5 +1,11 @@
 // Reviewed Workflow boundary identifiers. New or changed source requires review.
 export const workflowIds1: string[] = [
+  // WF025: bounded configured-effect review and transient original-command retry context.
+  "derived:src/features/workflows/ui/liveRunEffectSummary.ts",
+  "sourceReview:src/features/workflows/ui/RunDialog.tsx#54da4ef339f43a62b57471c894ee299cd7301e229fd5e16d89e05ff6c9850c00",
+  "sourceReview:src/features/workflows/ui/LiveRunReview.tsx#385899199e9b4298997a2b0a59941f5f34ee0765d117c4d625ea7f7263a49224",
+  "sourceReview:src/features/workflows/ui/liveRunEffectSummary.ts#33291aba70c48ccf427e96673b524f218c38c89226f32618df039092682d8add",
+
   // WF022: bounded transient parsing/evaluation and local stable-row edits.
   // These Sets/Maps are per-call/editor derived state, not durable stores.
   "derived:src/features/workflows/conditionExpressionBudget.ts",
@@ -141,7 +147,7 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/persistence.ts#78159991a3cfbe38071e98651fa1892f6784e0e4dfef4054a43738d5d44c8bb3",
   "sourceReview:src/features/workflows/queries.ts#5c4b47a3c273908c76e1ed55c012bc4c5ee83aa15e1c2f6976e73c3b48aaa9e7",
   "sourceReview:src/features/workflows/router.ts#cc8c620d02300d2f07047422d3aaffd2ac4b78a6c4951ac3d9d8fd10129b7564",
-  "sourceReview:src/features/workflows/runAdmission.ts#c1a01c737cebe979c939110f08d4b6fb9b8f73ebb9506c35dc43d098ea455f32",
+  "sourceReview:src/features/workflows/runAdmission.ts#041e0cd3787eb4cafd2fec84990057866d388ba197bac5590a29f2af64e99b1d",
   "sourceReview:src/features/workflows/runControl.ts#f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057",
   "sourceReview:src/features/workflows/runDetail.ts#85f804b234bb799c7ef374e2f7449f1f5b13de2f9fcda2336a6a7759a2e8aae9",
   "sourceReview:src/features/workflows/runStep.ts#e65822da544c3e0947b20145abebd892edf1b6546ed83d26d1c9388e4f9d4457",

@@ -453,5 +453,22 @@
   "isEmpty": "Is empty text",
   "conditionCount": "{number} conditions",
   "conditionCountOne": "{number} condition",
-  "conditionFragment": "Text fragment"
+  "conditionFragment": "Text fragment",
+  "liveReviewTitle": "Review live effects",
+  "liveReviewAcknowledgement": "I have reviewed this live test.",
+  "liveReviewVersion": "Published version {number}",
+  "liveReviewRecord": "Selected deal: {name}",
+  "liveReviewSteps": "Configured steps: {number}",
+  "liveReviewConfigured": "These are configured step counts, not a predicted execution path.",
+  "liveReviewRead": "Reached read steps may read linked deals using current access.",
+  "liveReviewTask": "Reached task steps may create real tasks, including configured task fields.",
+  "liveReviewWait": "Reached delays may wait before later effects.",
+  "liveReviewPermissions": "Permissions, current task fields and linked records are checked when the test runs.",
+  "liveReviewOmitted": "Configuration values and record identifiers are omitted from this summary.",
+  "liveReviewChanged": "The review changed. Check the current publication and acknowledge it again.",
+  "liveReviewChooseRecord": "Choose a deal to review the live test.",
+  "liveReviewUnavailable": "The current publication could not be reviewed. Reload it before starting a live test.",
+  "liveReviewReload": "Reload review",
+  "testSubmissionError": "The test submission could not be confirmed. Retry keeps the original record and test settings.",
+  "testSubmissionFrozen": "Retry keeps the original record and test settings. Submission does not mean the run completed."
 }

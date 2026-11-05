@@ -453,5 +453,22 @@
   "isEmpty": "Ist leerer Text",
   "conditionCount": "{number} Bedingungen",
   "conditionCountOne": "{number} Bedingung",
-  "conditionFragment": "Textausschnitt"
+  "conditionFragment": "Textausschnitt",
+  "liveReviewTitle": "Live-Auswirkungen prüfen",
+  "liveReviewAcknowledgement": "Ich habe diesen Live-Test geprüft.",
+  "liveReviewVersion": "Veröffentlichte Version {number}",
+  "liveReviewRecord": "Ausgewählter Deal: {name}",
+  "liveReviewSteps": "Konfigurierte Schritte: {number}",
+  "liveReviewConfigured": "Dies sind Anzahlen konfigurierter Schritte, kein vorhergesagter Ausführungspfad.",
+  "liveReviewRead": "Erreichte Leseschritte können verknüpfte Deals mit den aktuellen Zugriffsrechten lesen.",
+  "liveReviewTask": "Erreichte Aufgabenschritte können echte Aufgaben einschließlich konfigurierter Aufgabenfelder anlegen.",
+  "liveReviewWait": "Erreichte Verzögerungen können spätere Auswirkungen aufschieben.",
+  "liveReviewPermissions": "Berechtigungen, aktuelle Aufgabenfelder und verknüpfte Datensätze werden bei der Testausführung geprüft.",
+  "liveReviewOmitted": "Konfigurationswerte und Datensatzkennungen werden in dieser Übersicht ausgelassen.",
+  "liveReviewChanged": "Die Prüfung hat sich geändert. Prüfen und bestätigen Sie die aktuelle Veröffentlichung erneut.",
+  "liveReviewChooseRecord": "Wählen Sie einen Deal aus, um den Live-Test zu prüfen.",
+  "liveReviewUnavailable": "Die aktuelle Veröffentlichung konnte nicht geprüft werden. Laden Sie sie vor einem Live-Test erneut.",
+  "liveReviewReload": "Prüfung neu laden",
+  "testSubmissionError": "Die Testübermittlung konnte nicht bestätigt werden. Ein erneuter Versuch verwendet den ursprünglichen Datensatz und dieselben Testeinstellungen.",
+  "testSubmissionFrozen": "Ein erneuter Versuch verwendet den ursprünglichen Datensatz und dieselben Testeinstellungen. Die Übermittlung bestätigt keinen abgeschlossenen Lauf."
 }
