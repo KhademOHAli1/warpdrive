@@ -91,7 +91,9 @@ it.each(["connected", "disconnected", "error"] as const)(
       id: "owned-gmail",
       emailAddress: "own@gmail.test",
       status,
+      paused: status === "connected",
       lastSyncAt: new Date("2026-07-01T10:00:00Z"),
+      lastCheckedAt: new Date("2026-07-01T10:12:00Z"),
       lastErrorId: status === "connected" ? null : "E_GMAIL_002",
     };
     defaultMailbox.mockResolvedValue({
@@ -108,8 +110,10 @@ it.each(["connected", "disconnected", "error"] as const)(
       id: gmail.id,
       emailAddress: gmail.emailAddress,
       status,
+      paused: gmail.paused,
       lastSyncAtIso: "2026-07-01T10:00:00.000Z",
-      lastErrorId: gmail.lastErrorId,
+      lastCheckedAtIso: "2026-07-01T10:12:00.000Z",
+      errorCode: status === "connected" ? undefined : "authentication",
     });
     expect(screen.getByTestId("gmail-connection")).toHaveTextContent("own@gmail.test");
   },

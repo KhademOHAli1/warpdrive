@@ -18,6 +18,7 @@ vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf-token" }));
 import { EmailSyncClient, type MailboxView } from "@/app/(app)/settings/email-sync/EmailSyncClient";
 import { mailboxConnectionMessages } from "@/features/email/connections/messages";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
 
 const originalLocation = window.location;
 
@@ -26,7 +27,6 @@ const connected: MailboxView = {
   emailAddress: "rep@example.com",
   status: "connected",
   lastSyncAtIso: "2026-07-01T10:00:00.000Z",
-  lastErrorId: null,
 };
 
 beforeEach(() => {
@@ -119,15 +119,49 @@ describe("EmailSyncClient", () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
-  it("shows Reconnect and the last error for a disconnected mailbox", () => {
-    render(
-      <EmailSyncClient
-        mailbox={{ ...connected, status: "disconnected", lastErrorId: "E_GMAIL_002" }}
-      />,
-    );
-    expect(screen.getByRole("button", { name: "Reconnect" })).toBeInTheDocument();
-    expect(screen.getByText(/E_GMAIL_002/)).toBeInTheDocument();
-  });
+  it.each(["en", "de", "fa"] as const)(
+    "distinguishes Gmail freshness, stale sync, authorization failure, and pause in %s",
+    (locale) => {
+      const copy = mailboxConnectionMessages(locale);
+      const settings = settingsMessagesForLocale(locale)._emailSync;
+      const lastCheckedAtIso = new Date().toISOString();
+      const staleSync = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+      const recentSync = new Date(Date.now() - 60 * 1000).toISOString();
+      const view = (mailbox: MailboxView) => (
+        <LocaleProvider locale={locale}>
+          <EmailSyncClient mailbox={mailbox} />
+        </LocaleProvider>
+      );
+      const { container, rerender } = render(
+        view({ ...connected, lastSyncAtIso: null, lastCheckedAtIso: null }),
+      );
+      expect(screen.getByText(settings.neverSynced)).toBeVisible();
+      expect(screen.getByText(copy.neverChecked)).toBeVisible();
+      expect(container.querySelectorAll("time")).toHaveLength(0);
+
+      const healthy = { ...connected, lastSyncAtIso: recentSync, lastCheckedAtIso };
+      rerender(view(healthy));
+      expect(container.querySelector('[data-health="syncing"]')).toBeInTheDocument();
+      const stale = { ...healthy, lastSyncAtIso: staleSync };
+      rerender(view(stale));
+      expect(screen.getByText(settings.statusStalled)).toBeVisible();
+      expect(Array.from(container.querySelectorAll("time"), (time) => time.dateTime)).toEqual([
+        staleSync,
+        lastCheckedAtIso,
+      ]);
+
+      rerender(view({ ...stale, status: "disconnected", errorCode: "authentication" }));
+      expect(screen.getByText(copy.gmailAuthorizationRequired)).toBeVisible();
+      expect(screen.getByText(copy.gmailAuthorizationHint)).toBeVisible();
+      expect(screen.getByRole("button", { name: settings.reconnect })).toBeEnabled();
+      expect(screen.queryByText(settings.statusStalled)).not.toBeInTheDocument();
+      expect(screen.queryByText(/E_GMAIL_002/)).not.toBeInTheDocument();
+
+      rerender(view({ ...stale, paused: true }));
+      expect(screen.getByText(copy.paused)).toBeVisible();
+      expect(screen.queryByText(settings.statusStalled)).not.toBeInTheDocument();
+    },
+  );
 
   it("fills the disconnected status dot from a token so it shows on a dark card", () => {
     const { container } = render(<EmailSyncClient mailbox={null} />);

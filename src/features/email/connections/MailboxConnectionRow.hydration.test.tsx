@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { hydrateRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, expect, it, vi } from "vitest";
@@ -168,3 +168,65 @@ for (const locale of ["en", "fa", "de"] as const) {
     }
   });
 }
+
+it.each(["en", "fa", "de"] as const)(
+  "shows Gmail check and sync independently and separates authorization from a stale sync in %s",
+  (locale) => {
+    const L = mailboxConnectionMessages(locale);
+    const t = mailboxConnectionTranslator(locale);
+    const connectGmail = vi.fn().mockResolvedValue({ ok: true, value: undefined });
+    const actions = { ...facade(), connectGmail };
+    const view = (row: MailboxConnectionView) => (
+      <LocaleProvider locale={locale} timeZone="UTC">
+        <ul>
+          <MailboxConnectionRow
+            mailbox={row}
+            actions={actions}
+            gmailAvailable
+            onChanged={vi.fn()}
+            onNotice={vi.fn()}
+          />
+        </ul>
+      </LocaleProvider>
+    );
+    const gmail = { ...mailbox, provider: "gmail" } as const;
+    const { container, rerender } = render(
+      view({ ...gmail, lastSyncAtIso: null, lastCheckedAtIso: null }),
+    );
+    expect(screen.getByText(L.neverSynced)).toBeVisible();
+    expect(screen.getByText(L.neverChecked)).toBeVisible();
+
+    const lastCheckedAtIso = new Date().toISOString();
+    const staleSync = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+    const recentSync = new Date(Date.now() - 60 * 1000).toISOString();
+    const healthy = { ...gmail, lastSyncAtIso: recentSync, lastCheckedAtIso };
+    rerender(view(healthy));
+    expect(container.querySelector('[data-health="syncing"]')).toBeInTheDocument();
+
+    const stale = { ...healthy, lastSyncAtIso: staleSync };
+    rerender(view(stale));
+    expect(screen.getByText(L.syncStalled)).toBeVisible();
+    const timestamps = Array.from(container.querySelectorAll("time"));
+    expect(timestamps.map((time) => time.dateTime)).toEqual([staleSync, lastCheckedAtIso]);
+    expect(timestamps[1]).toHaveTextContent(
+      t("lastChecked", {
+        date: formatDateTime(lastCheckedAtIso, {
+          locale,
+          calendar: locale === "fa" ? "persian" : "gregory",
+          timeZone: "UTC",
+        }),
+      }),
+    );
+
+    rerender(view({ ...stale, status: "paused" }));
+    expect(screen.getByText(L.paused)).toBeVisible();
+    expect(screen.queryByText(L.syncStalled)).not.toBeInTheDocument();
+
+    rerender(view({ ...stale, status: "disconnected", errorCode: "authentication" }));
+    expect(screen.getByText(L.gmailAuthorizationRequired)).toBeVisible();
+    expect(screen.getByText(L.gmailAuthorizationHint)).toBeVisible();
+    expect(screen.queryByText(L.syncStalled)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: L.manage }));
+    expect(screen.getByRole("button", { name: L.reconnect })).toBeEnabled();
+  },
+);

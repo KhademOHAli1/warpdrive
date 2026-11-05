@@ -33,6 +33,7 @@ export interface MailboxConnectionView {
   status: "connected" | "paused" | "error" | "disconnected";
   isDefault: boolean;
   lastSyncAtIso: string | null;
+  lastCheckedAtIso?: string | null;
   capabilities: MailboxCapabilities;
   errorCode?: MailboxConnectionError;
   historyDays?: number;
