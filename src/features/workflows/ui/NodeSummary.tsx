@@ -6,9 +6,11 @@ import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { directionForLocale } from "@/features/i18n/registry";
 import { useFormatters } from "@/lib/useFormatters";
+import { delayUntilDate } from "../delayConfig";
 import { delayMinutesSchema } from "../registry";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "../schemas";
 import { conditionSummary } from "./conditionSummary";
+import { WaitTimestamp } from "./WaitTimestamp";
 
 function describeDelay(
   raw: unknown,
@@ -21,6 +23,44 @@ function describeDelay(
   if (binding.data.kind === "reference") return mapped;
   const minutes = delayMinutesSchema.safeParse(binding.data.value);
   return minutes.success ? format(minutes.data) : invalid;
+}
+
+function FixedInstantDelaySummary({ config }: { config: WorkflowNode["config"] }) {
+  const t = useAppTranslations("workflows");
+  const binding = bindingSchema.safeParse(config.until);
+  const raw =
+    binding.success && binding.data.kind === "value" && binding.data.literalType === "instant"
+      ? binding.data.value
+      : null;
+  const date = Object.keys(config).length === 1 ? delayUntilDate(raw) : null;
+  if (date !== null && typeof raw === "string")
+    return (
+      <p
+        dir="auto"
+        className="mt-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
+      >
+        <WaitTimestamp
+          value={date}
+          label={t("delayUntilSummary")}
+          precision="millisecond"
+          exactValue={raw}
+        />
+      </p>
+    );
+  const invalid =
+    binding.success && binding.data.kind === "reference"
+      ? t("delayUntilLiteralRequired")
+      : t("setupRequired");
+  return (
+    <Tip label={invalid}>
+      <p
+        dir="auto"
+        className="mt-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
+      >
+        {invalid}
+      </p>
+    </Tip>
+  );
 }
 
 function ConditionSummary({
@@ -98,6 +138,8 @@ export function NodeSummary({
   const fmt = useFormatters();
   const fields: Record<string, string> = useMessages().workflows.fields;
   if (node.type === "condition") return <ConditionSummary node={node} definition={definition} />;
+  if (node.type === "delay" && Object.hasOwn(node.config, "until"))
+    return <FixedInstantDelaySummary config={node.config} />;
   function value(input: unknown, status = false): string {
     const parsed = bindingSchema.safeParse(input);
     if (!parsed.success) return t("setupRequired");

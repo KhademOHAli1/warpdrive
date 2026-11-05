@@ -1,4 +1,6 @@
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { envSchema } from "@/config/env";
@@ -18,7 +20,7 @@ const stepSchema = z
   .refine((step) => (step.uses === undefined) !== (step.run === undefined), {
     message: "a CI step must contain exactly one of uses or run",
   });
-const workflow = z
+const workflowSchema = z
   .object({
     name: z.string(),
     on: z.record(z.string(), z.unknown()),
@@ -40,10 +42,20 @@ const workflow = z
         .strict(),
     ),
   })
-  .strict()
-  .parse(
-    Bun.YAML.parse(readFileSync(new URL("./.github/workflows/ci.yml", import.meta.url), "utf8")),
-  );
+  .strict();
+
+const workflow = workflowSchema.parse(
+  Bun.YAML.parse(readFileSync(new URL("./.github/workflows/ci.yml", import.meta.url), "utf8")),
+);
+const fullWorkflow = workflowSchema.parse(
+  Bun.YAML.parse(readFileSync(new URL("./.github/workflows/full-ci.yml", import.meta.url), "utf8")),
+);
+const fullQualityDocument = Bun.YAML.parse(
+  readFileSync(new URL("./.github/workflows/full-quality.yml", import.meta.url), "utf8"),
+) as {
+  env?: Record<string, string>;
+  jobs?: Record<string, { env?: Record<string, string> }>;
+};
 
 const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_BUN = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6";
@@ -59,6 +71,14 @@ function job(name: keyof typeof PACKAGES) {
 function commands(name: keyof typeof PACKAGES): string[] {
   return job(name).steps.flatMap((step) => (step.run === undefined ? [] : [step.run]));
 }
+function fullJob(name: keyof typeof PACKAGES) {
+  const found = fullWorkflow.jobs[name];
+  if (found === undefined) throw new Error(`missing full CI job: ${name}`);
+  return found;
+}
+function fullCommands(name: keyof typeof PACKAGES): string[] {
+  return fullJob(name).steps.flatMap((step) => (step.run === undefined ? [] : [step.run]));
+}
 
 function toolingEnvironment(name: string, command: string | undefined) {
   if (name === "docs" && command === DOCS_DEPENDENCY_CONTRACT) {
@@ -71,17 +91,32 @@ function toolingEnvironment(name: string, command: string | undefined) {
 }
 
 describe("public Bun CI", () => {
-  it("checks every branch push, ordinary pull requests and manual runs with a read-only token", () => {
-    expect(workflow.on).toEqual({ push: null, pull_request: null, workflow_dispatch: null });
+  it("checks main pushes, ordinary main pull requests and manual runs with a read-only token", () => {
+    expect(workflow.on).toEqual({
+      push: { branches: ["main"] },
+      pull_request: { branches: ["main"] },
+      workflow_dispatch: null,
+    });
     expect(workflow.permissions).toEqual({ contents: "read" });
     expect(workflow.concurrency.group).toContain("github.workflow");
     expect(workflow.concurrency.group).toContain("github.ref");
+    expect(fullWorkflow.permissions).toEqual({ contents: "read" });
+    expect(fullWorkflow.concurrency.group).toContain("github.workflow");
+    expect(fullWorkflow.concurrency.group).toContain("github.ref");
   });
 
   it("contains only the three public check jobs and no deployment/publishing job", () => {
     expect(Object.keys(workflow.jobs).sort()).toEqual(["crm", "docs", "site"]);
     for (const name of Object.keys(PACKAGES) as (keyof typeof PACKAGES)[]) {
       const check = job(name);
+      expect(check["timeout-minutes"]).toBe(name === "crm" ? 20 : 15);
+      expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual([
+        CHECKOUT,
+        SETUP_BUN,
+      ]);
+    }
+    for (const name of Object.keys(PACKAGES) as (keyof typeof PACKAGES)[]) {
+      const check = fullJob(name);
       expect(check["timeout-minutes"]).toBe(name === "crm" ? 40 : 20);
       expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual([
         CHECKOUT,
@@ -95,6 +130,9 @@ describe("public Bun CI", () => {
       const steps = job(name as keyof typeof PACKAGES).steps;
       expect(steps[0]?.with).toEqual({ "persist-credentials": false });
       expect(steps[1]?.with).toEqual({ "bun-version-file": path });
+      const fullSteps = fullJob(name as keyof typeof PACKAGES).steps;
+      expect(fullSteps[0]?.with).toEqual({ "persist-credentials": false });
+      expect(fullSteps[1]?.with).toEqual({ "bun-version-file": path });
       const metadata = JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as {
         packageManager: string;
       };
@@ -102,16 +140,14 @@ describe("public Bun CI", () => {
     }
   });
 
-  it("generates and checks app types before lint, then gates unit tests and both build outputs", () => {
+  it("keeps ordinary CRM checks light and excludes unit, PostgreSQL and build campaigns", () => {
     expect(commands("crm")).toEqual([
       "bun install --frozen-lockfile",
       "bun run typecheck",
       "bun run lint",
-      "bun run test:unit --maxWorkers=2",
-      "bun run test:integration --maxWorkers=2",
-      "bun run build",
-      "bun run build:workers",
+      "bun run test:unit --maxWorkers=2 src/features/theme/appearance.test.ts src/features/theme/appearanceBundle.test.ts src/features/identity/densityAction.test.ts src/features/identity/preferencesSchema.test.ts src/features/identity/preferencesSelection.test.ts src/features/workflows/draftSimulationAction.test.ts src/features/workflows/draftSimulationInput.test.ts src/features/workflows/runRetryActions.test.ts ciWorkflow.test.ts",
     ]);
+    expect(commands("crm").join("\n")).not.toMatch(/test:integration|build:workers|bun run build/);
     const metadata = JSON.parse(
       readFileSync(new URL("./package.json", import.meta.url), "utf8"),
     ) as { scripts: Record<string, string> };
@@ -124,15 +160,12 @@ describe("public Bun CI", () => {
       "bun install --frozen-lockfile",
       "bun --bun next typegen",
       "bun run typecheck",
-      "bun run test",
-      "bun run build",
     ]);
     expect(job("docs").defaults?.run["working-directory"]).toBe("docs-site");
     expect(commands("docs")).toEqual([
       "bun install --frozen-lockfile",
       DOCS_DEPENDENCY_CONTRACT,
       "bun run typecheck",
-      "bun run build",
     ]);
     for (const [name, path] of Object.entries(PACKAGES)) {
       const metadata = JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as {
@@ -145,8 +178,32 @@ describe("public Bun CI", () => {
     }
   });
 
-  it("keeps schema-valid, fake app configuration on the app build step and stamps its checked commit", () => {
-    const build = job("crm").steps.find((step) => step.run === "bun run build");
+  it("keeps the full workflow explicit and preserves the heavy command contract", () => {
+    expect(fullWorkflow.on).toEqual({
+      pull_request: { branches: ["main"], paths: [".github/workflows/full-ci.yml"] },
+      workflow_dispatch: null,
+    });
+    expect(
+      Object.values(fullWorkflow.jobs)
+        .map((check) => check.name)
+        .sort(),
+    ).toEqual(["CRM full checks", "Documentation site full checks", "Marketing site full checks"]);
+    expect(fullCommands("crm")).toEqual([
+      "bun install --frozen-lockfile",
+      "bun run typecheck",
+      "bun run lint",
+      "bun run test:unit --maxWorkers=2",
+      "bun run test:integration --maxWorkers=2",
+      "bun run build",
+      "bun run build:workers",
+    ]);
+    expect(fullCommands("site")).toContain("bun run test");
+    expect(fullCommands("site")).toContain("bun run build");
+    expect(fullCommands("docs")).toContain("bun run build");
+  });
+
+  it("keeps schema-valid, fake app configuration on the full app build step and stamps its checked commit", () => {
+    const build = fullJob("crm").steps.find((step) => step.run === "bun run build");
     expect(build?.env).toBeDefined();
     const env = build?.env ?? {};
     expect(envSchema.safeParse(env).success).toBe(true);
@@ -169,10 +226,28 @@ describe("public Bun CI", () => {
     for (const [key, value] of Object.entries(env)) {
       if (key !== "APP_COMMIT") expect(value).not.toContain("${{");
     }
-    for (const [name, check] of Object.entries(workflow.jobs)) {
+    for (const [name, check] of Object.entries(fullWorkflow.jobs)) {
       for (const step of check.steps) {
         if (step !== build) expect(step.env).toEqual(toolingEnvironment(name, step.run));
       }
     }
+  });
+
+  it("passes the declared full browser environment through the canonical admission guard", () => {
+    const declaredEnvironment = z
+      .object({ NODE_ENV: z.literal("production") })
+      .catchall(z.string())
+      .parse({
+        ...(fullQualityDocument.env ?? {}),
+        ...(fullQualityDocument.jobs?.browser?.env ?? {}),
+      });
+    const result = spawnSync("python3", ["scripts/delivery/browser_smoke_environment.py"], {
+      cwd: fileURLToPath(new URL(".", import.meta.url)),
+      env: { ...declaredEnvironment, PATH: "/usr/bin:/bin" },
+      encoding: "utf8",
+    });
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("Disposable browser smoke environment admitted");
   });
 });
