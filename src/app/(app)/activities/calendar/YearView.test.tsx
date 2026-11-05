@@ -13,7 +13,7 @@ it("shows each day of a leap year once and links into month and day views", () =
   expect(screen.getAllByRole("table")).toHaveLength(12);
   const dayLinks = screen
     .getAllByRole("link")
-    .filter((link) => link.getAttribute("href")?.includes("view=day"));
+    .filter((link) => link.getAttribute("href")?.includes("view=day") === true);
   expect(dayLinks).toHaveLength(366);
   expect(new Set(dayLinks.map((link) => link.getAttribute("href"))).size).toBe(366);
   expect(screen.getByRole("link", { name: "February 2024" })).toHaveAttribute(
@@ -87,6 +87,8 @@ it("renders the Persian year from Nowruz with Farsi month/day labels", () => {
     "/activities/calendar?view=day&d=2026-03-21",
   );
   expect(
-    screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.includes("view=day")),
+    screen
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("href")?.includes("view=day") === true),
   ).toHaveLength(365);
 });

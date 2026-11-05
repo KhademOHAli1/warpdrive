@@ -111,8 +111,9 @@ export function stepAnchorIso(
     case "year":
       next = addCalendarYears(anchor, dir, options);
       break;
-    default:
+    case "week":
       next = addDaysUtc(anchor, 7 * dir);
+      break;
   }
   return next.toISOString().slice(0, 10);
 }
