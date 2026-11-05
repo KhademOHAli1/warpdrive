@@ -51,17 +51,24 @@ const report = {
 };
 let browser;
 let baseline;
-let fatal;
+/** @type {{ error?: Error }} */
+const failure = {};
 const saveReport = () =>
   writeFileSync(new URL("receipt.json", evidence), `${JSON.stringify(report, null, 2)}\n`);
 process.on("unhandledRejection", () => {
-  fatal ??= new Error("Unhandled asynchronous workflow preference harness rejection");
-  report.unhandledErrors.push(fatal.message);
+  failure.error ??= new Error("Unhandled asynchronous workflow preference harness rejection");
+  report.unhandledErrors.push(failure.error.message);
   report.state = "FAIL";
   process.exitCode = 1;
   saveReport();
 });
 const catalog = (path) => JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), "utf8"));
+
+function asError(value) {
+  return value instanceof Error
+    ? value
+    : new Error("Workflow preference validation failed with a non-Error", { cause: value });
+}
 
 async function snapshot() {
   const { rows } = await pool.query(
@@ -76,6 +83,7 @@ async function snapshot() {
   return { own, other: rows.filter((row) => row.user_id !== actor) };
 }
 
+/** @param {Record<string, unknown> | null} [changes] */
 function verify(before, after, changes = null) {
   assert.deepEqual(after.other, before.other, "Other actors retain every preference and timestamp");
   if (changes === null) {
@@ -192,13 +200,17 @@ async function latestFailure(s) {
     verify(acknowledged, await snapshot());
     await restore();
     await finish(failed);
-    await state(s.page, checked(s.page, label), !initial);
     const dialog = s.page.getByRole("dialog");
     await dialog.getByRole("heading", { name: s.shell.errors.csrf.title, exact: true }).waitFor();
     await dialog.getByText(s.shell.errors.csrf.body, { exact: true }).waitFor();
     s.entry.errorDialog = await dialog.ariaSnapshot();
+    await s.page.screenshot({
+      path: fileURLToPath(new URL(`${s.entry.locale}-${s.entry.name}-denied.png`, evidence)),
+      fullPage: true,
+    });
     await s.page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
+    await state(s.page, checked(s.page, label), !initial);
   });
   const retry = await toggle(s, label, key, initial);
   const final = await snapshot();
@@ -337,6 +349,7 @@ async function journey(locale, name, exercise) {
   context.setDefaultTimeout(15000);
   let probe;
   let page;
+  /** @type {Error | undefined} */
   let problem;
   try {
     await context.route("**/*", (route) => {
@@ -412,19 +425,19 @@ async function journey(locale, name, exercise) {
     await context.tracing
       .stop({ path: fileURLToPath(new URL(`${locale}-${name}-trace.zip`, evidence)) })
       .catch(() => {});
-    problem = error;
+    problem = asError(error);
   } finally {
     try {
       await probe?.close();
     } catch (error) {
-      problem ??= error;
+      problem ??= asError(error);
       entry.passed = false;
     }
     try {
       await context.close();
       entry.contextClosed = true;
     } catch (error) {
-      problem ??= error;
+      problem ??= asError(error);
       entry.passed = false;
     }
     entry.actions = probe?.actions ?? [];
@@ -456,15 +469,15 @@ try {
   }
   assert.equal(report.journeys.length, 18);
   assert.ok(report.journeys.every((entry) => entry.passed));
-  if (fatal) throw fatal;
+  if (failure.error) throw failure.error;
   report.state = "PASS";
 } catch (error) {
-  fatal ??= error;
+  failure.error ??= asError(error);
   report.state = "FAIL";
   process.exitCode = 1;
 } finally {
   const cleanupFailure = (error) => {
-    fatal ??= error;
+    failure.error ??= asError(error);
     report.state = "FAIL";
     process.exitCode = 1;
   };
@@ -502,6 +515,6 @@ try {
   } catch (error) {
     cleanupFailure(error);
   }
-  report.error = fatal instanceof Error ? fatal.message : undefined;
+  report.error = failure.error?.message;
   saveReport();
 }

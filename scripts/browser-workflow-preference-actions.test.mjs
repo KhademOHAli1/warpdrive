@@ -220,13 +220,15 @@ await test("transport abort never fetches upstream or qualifies as fulfilled", a
   }
 });
 
-for (const [input, kind, value] of [
+/** @type {Array<[unknown, string, boolean | string]>} */
+const supportedInputs = [
   [{ key: "usPhoneFormat", value: false }, "usPhoneFormat", false],
   [{ key: "winSound", value: true }, "winSound", true],
   [{ key: "scheduleFollowUpAfterDone", value: true }, "scheduleFollowUpAfterDone", true],
   [{ enabled: false }, "won", false],
   [{ leadDeal: true, person: false, org: true }, "details", "[true,false,true]"],
-]) {
+];
+for (const [input, kind, value] of supportedInputs) {
   await test(`admits the exact supported ${kind} shape before observing its genuine result`, async () => {
     const f = probeFixture({ input });
     const hold = f.probe.expect({ kind, value, ok: true });
@@ -248,7 +250,8 @@ for (const [input, kind, value] of [
   });
 }
 
-for (const [name, input] of [
+/** @type {Array<[string, unknown]>} */
+const refusedInputs = [
   ["mail flag", { key: "emailLinksNewTab", value: true }],
   ["unknown flag", { key: "arbitrary", value: true }],
   ["textual Boolean", { key: "winSound", value: "true" }],
@@ -258,7 +261,8 @@ for (const [name, input] of [
   ["textual detail", { leadDeal: true, person: "false", org: true }],
   ["extra detail", { leadDeal: true, person: false, org: true, extra: true }],
   ["array input", [true, false, true]],
-]) {
+];
+for (const [name, input] of refusedInputs) {
   await test(`blocks ${name} before any upstream request`, async () => {
     const f = probeFixture({ input });
     const hold = f.probe.expect({ kind: "won", value: true, ok: true });
