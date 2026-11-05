@@ -18,6 +18,7 @@ import { DelayScheduleFields } from "./DelayScheduleFields";
 import { EmailDraftConfigurationFields } from "./EmailDraftConfigurationFields";
 import { HumanFormConfigurationFields } from "./HumanFormConfigurationFields";
 import { IfElseConfigurationFields } from "./IfElseConfigurationFields";
+import { ManualTriggerConfigurationFields } from "./ManualTriggerConfigurationFields";
 import { PersonUpsertConfigurationFields } from "./PersonUpsertConfigurationFields";
 import { PickRecordFieldsWithLookup } from "./PickRecordFieldsWithLookup";
 import { RecordMutationConfigurationFields } from "./RecordMutationConfigurationFields";
@@ -154,6 +155,8 @@ function ConfigurationField({
 function extendedConfigurationFields(props: ConfigurationFieldsProps) {
   if (props.spec?.supported !== true) return undefined;
   switch (props.node.type) {
+    case "trigger.manual":
+      return <ManualTriggerConfigurationFields {...props} />;
     case "record.update":
     case "record.delete":
       return <RecordMutationConfigurationFields {...props} />;
@@ -178,7 +181,6 @@ function extendedConfigurationFields(props: ConfigurationFieldsProps) {
     case "ifElse":
     case "notification":
     case "record.read":
-    case "trigger.manual":
     case "trigger.record":
       return undefined;
   }

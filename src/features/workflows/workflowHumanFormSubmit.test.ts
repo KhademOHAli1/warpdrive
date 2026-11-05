@@ -109,14 +109,16 @@ beforeEach(() => {
 function database({
   run = waitingRun,
   step,
+  pinnedDefinition = definition,
 }: {
   run?: Run | null;
   step?: { output: StepOutput; simulated: boolean };
+  pinnedDefinition?: WorkflowDefinition;
 } = {}) {
   const rows = new Map<object, unknown[]>([
     [workflowRuns, run === null ? [] : [run]],
     [workflows, [{ ownerId: who.userId, archivedAt: null, active: false }]],
-    [workflowVersions, [{ definition }]],
+    [workflowVersions, [{ definition: pinnedDefinition }]],
     [workflowSteps, step === undefined ? [] : [step]],
   ]);
   const locked = vi.fn<(table: object, mode: string) => void>();
@@ -163,6 +165,32 @@ function database({
     rollback,
   };
 }
+
+it("checks the live session twice and uses no Deal lookup for a pinned Global form", async () => {
+  const test = database({
+    run: { ...waitingRun, trigger: { scope: "global" } },
+    pinnedDefinition: {
+      ...definition,
+      nodes: definition.nodes.map((node) =>
+        node.type === "trigger.manual" ? { ...node, config: { scope: "global" } } : node,
+      ),
+    },
+  });
+  expect(await submitWorkflowHumanForm(test.db, who, input, signal)).toEqual(
+    ok({ id: runId, replayed: false }),
+  );
+  expect(access.sessionActor).toHaveBeenCalledTimes(2);
+  expect(access.referenceVisible).not.toHaveBeenCalled();
+});
+
+it("does not treat a Global-shaped payload as recordless on a pinned Deal form", async () => {
+  const test = database({ run: { ...waitingRun, trigger: { scope: "global" } } });
+  expect(await submitWorkflowHumanForm(test.db, who, input, signal)).toEqual(
+    err(ERROR_IDS.WORKFLOW_INVALID),
+  );
+  expect(test.set).not.toHaveBeenCalled();
+  expect(test.insert).not.toHaveBeenCalled();
+});
 
 it("uses the locked run and database deadline, advancing once with a private replay receipt", async () => {
   const test = database();

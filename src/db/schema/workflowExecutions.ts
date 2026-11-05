@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import type { RunOutputs, StepOutput } from "@/features/workflows/runTypes";
+import type { WorkflowManualLaunchPayload } from "@/features/workflows/workflowManualLaunchContract";
 import { users } from "./identity";
 import { workflows, workflowVersions } from "./workflows";
 
@@ -34,7 +35,7 @@ export const workflowRuns = pgTable(
     })
       .notNull()
       .default("queued"),
-    trigger: jsonb("trigger").$type<{ recordId: string }>().notNull(),
+    trigger: jsonb("trigger").$type<WorkflowManualLaunchPayload>().notNull(),
     nextNodeId: text("next_node_id"),
     resumeAt: timestamp("resume_at", { withTimezone: true }),
     outputs: jsonb("outputs").$type<RunOutputs>().notNull().default(sql`'{}'::jsonb`),

@@ -28,6 +28,7 @@ import {
 import { portsFor } from "../graphPorts";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
 import { type WorkflowDefinition, type WorkflowNode, workflowPortSchema } from "../schemas";
+import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
 import { useConditionPortLabel } from "./conditionPortLabel";
 
 export interface DraftTestSnapshot {
@@ -39,7 +40,7 @@ export interface DraftTestSnapshot {
 type DealOption = { value: string; label: string };
 interface DraftTestResult {
   readonly receipt: DraftSimulationReceipt;
-  readonly recordLabel: string;
+  readonly recordLabel?: string;
 }
 
 export function captureDraftTestSnapshot(
@@ -255,7 +256,9 @@ function DraftTestResults({
         {snapshot.name}
       </p>
       <p dir="auto" className="break-words [overflow-wrap:anywhere]">
-        {t("draftSimulationRecord", { name: result.recordLabel })}
+        {result.recordLabel === undefined
+          ? t("manualGlobalRunHint")
+          : t("draftSimulationRecord", { name: result.recordLabel })}
       </p>
       <p className="text-muted-foreground">
         {t("draftSimulationTestedAt", { date: fmt.dateTime(new Date(result.receipt.testedAt)) })}
@@ -313,7 +316,10 @@ export function DraftTestDialog({
   onCloseAutoFocus: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
+  const trigger = snapshot.definition.nodes.find((node) => node.type === "trigger.manual");
+  const scope = workflowManualLaunchScope(trigger?.config);
   const [chosen, setChosen] = useState<DealOption | null>(null);
+  const canSimulate = scope === "global" || (scope === "deal" && chosen !== null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const [result, setResult] = useState<DraftTestResult | null>(null);
@@ -328,10 +334,10 @@ export function DraftTestDialog({
     };
   }, []);
   async function simulate() {
-    if (inFlight.current || chosen === null) return;
+    if (inFlight.current || !canSimulate) return;
     inFlight.current = true;
     const target = ++generation.current;
-    const record = chosen;
+    const record = scope === "deal" ? chosen : null;
     setPending(true);
     setError(false);
     setResult(null);
@@ -340,7 +346,7 @@ export function DraftTestDialog({
         {
           workflowId: snapshot.workflowId,
           definition: structuredClone(snapshot.definition),
-          recordId: record.value,
+          ...(record === null ? {} : { recordId: record.value }),
         },
         readCsrfToken(),
       );
@@ -354,7 +360,7 @@ export function DraftTestDialog({
         setError(true);
         return;
       }
-      setResult({ receipt, recordLabel: record.label });
+      setResult({ receipt, ...(record === null ? {} : { recordLabel: record.label }) });
     } catch {
       if (active.current && generation.current === target) setError(true);
     } finally {
@@ -384,8 +390,13 @@ export function DraftTestDialog({
             {snapshot.name}
           </p>
           <p className="text-muted-foreground">{t("draftSimulationCaptured")}</p>
-          <p>{t("draftSimulationRecordInput")}</p>
-          <DraftDealPicker chosen={chosen} onChoose={setChosen} pending={pending} />
+          {scope === "deal" && (
+            <>
+              <p>{t("draftSimulationRecordInput")}</p>
+              <DraftDealPicker chosen={chosen} onChoose={setChosen} pending={pending} />
+            </>
+          )}
+          {scope === "global" && <p>{t("manualGlobalRunHint")}</p>}
           <p className="text-muted-foreground">{t("draftSimulationTaskPreviews")}</p>
           <p className="text-muted-foreground">{t("draftSimulationWaits")}</p>
           <p className="text-muted-foreground">{t("draftSimulationAccess")}</p>
@@ -401,7 +412,7 @@ export function DraftTestDialog({
           <Button variant="outline" onClick={onClose}>
             {t("cancel")}
           </Button>
-          <Button disabled={pending || chosen === null} onClick={() => void simulate()}>
+          <Button disabled={pending || !canSimulate} onClick={() => void simulate()}>
             {t("confirmSimulation")}
           </Button>
         </DialogFooter>

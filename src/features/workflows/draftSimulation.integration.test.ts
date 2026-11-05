@@ -739,6 +739,63 @@ it("refuses a selected deal from an archived pipeline before executing a trigger
   }
 });
 
+it("simulates a Global manual draft without a Deal and rolls back its native effect", async () => {
+  const test = await setup();
+  try {
+    await test.db
+      .update(pipelines)
+      .set({ isArchived: true })
+      .where(eq(pipelines.id, test.pipeline.id));
+    const privateName = "PRIVATE_GLOBAL_PREVIEW_PERSON";
+    const definition: WorkflowDefinition = {
+      schemaVersion: 1,
+      nodes: [
+        {
+          id: "start",
+          type: "trigger.manual",
+          version: 1,
+          name: "Start",
+          config: { scope: "global" },
+        },
+        {
+          id: "create_person",
+          type: "record.create",
+          version: 1,
+          name: "Create person",
+          config: { entity: "person", fields: { name: { kind: "value", value: privateName } } },
+        },
+      ],
+      edges: [{ from: "start", to: "create_person", port: "next" }],
+    };
+    const before = await durableSnapshot(test);
+    const people = await test.db.select().from(persons).orderBy(persons.id);
+    const result = await simulateWorkflowDraft(
+      test.db,
+      test.actor,
+      { workflowId: test.workflow.id, definition },
+      signal,
+    );
+    assert(result.ok, JSON.stringify(result));
+    expectSafeReceipt(result.value, test, definition);
+    expect(result.value.outcome).toBe("completed");
+    expect(result.value.steps).toEqual([
+      { nodeId: "start", nodeType: "trigger.manual", status: "succeeded", port: "next" },
+      { nodeId: "create_person", nodeType: "record.create", status: "succeeded" },
+    ]);
+    expect(JSON.stringify(result.value)).not.toContain(privateName);
+    expect(
+      await simulateWorkflowDraft(test.db, test.actor, input(test, definition), signal),
+    ).toEqual({
+      ok: false,
+      error: ERROR_IDS.WORKFLOW_INVALID,
+    });
+    expect(await durableSnapshot(test)).toEqual(before);
+    expect(await test.db.select().from(persons).orderBy(persons.id)).toEqual(people);
+  } finally {
+    await test.close();
+  }
+});
+
 it("rejects a declared notification profile instead of executing it as a draft simulation", async () => {
   const test = await setup();
   try {

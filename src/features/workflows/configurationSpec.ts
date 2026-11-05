@@ -10,6 +10,7 @@ import type {
 import { delayDurationUnits } from "./delayConfig";
 import { newIfElseConfig } from "./ifElseConfig";
 import type { ValueType, WorkflowNode } from "./schemas";
+import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 
 export { configurationLimits } from "./configurationLimits";
 
@@ -224,7 +225,9 @@ export function defaultConfiguration(
   source: { trigger?: WorkflowNode; read?: WorkflowNode; subject?: string },
 ): WorkflowNode["config"] {
   const recordId = { kind: "reference", nodeId: source.trigger?.id ?? "start", path: ["recordId"] };
-  if (type === "record.read") return { entity: "deal", recordId };
+  const dealAvailable = workflowManualLaunchScope(source.trigger?.config ?? {}) === "deal";
+  if (type === "record.read")
+    return dealAvailable ? { entity: "deal", recordId } : { entity: "deal" };
   if (type === "ifElse") return newIfElseConfig();
   if (type === "record.create" || type === "record.update") return { fields: {} };
   if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
@@ -233,7 +236,10 @@ export function defaultConfiguration(
   if (type === "record.upsert") return { entity: "person", fields: {} };
   if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
   if (type === "activity.create")
-    return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };
+    return {
+      subject: { kind: "value", value: source.subject ?? "" },
+      ...(dealAvailable ? { dealId: recordId } : {}),
+    };
   if (type === "delay")
     return {
       delayType: "DURATION",
@@ -241,6 +247,7 @@ export function defaultConfiguration(
     };
   if (type !== "condition" && type !== "filter") return {};
   const read = source.read;
+  if (read === undefined && !dealAvailable) return { operator: "exists" };
   return {
     left: {
       kind: "reference",

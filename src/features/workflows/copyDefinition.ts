@@ -12,6 +12,7 @@ import {
   type WorkflowDefinition,
 } from "./schemas";
 import { workflowHumanFormDraftConfig } from "./workflowHumanFormContract";
+import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
 import { recordCreateEntitySchema, recordCreateFields } from "./workflowRecordCreateContract";
 import { recordUpdateFields } from "./workflowRecordMutationContract";
 import { recordPickDraftConfig, recordSearchDraftConfig } from "./workflowRecordQueryContract";
@@ -53,7 +54,7 @@ const copyUpdateRecord = copyRecordTarget
 // These are copy shapes, not publication requirements. Every known config field may
 // be incomplete, but new actions, versions, credentials, and identity fields need review.
 const copyNode = z.discriminatedUnion("type", [
-  nodeSchema.extend({ type: z.literal("trigger.manual"), config: z.strictObject({}) }),
+  nodeSchema.extend({ type: z.literal("trigger.manual"), config: workflowManualLaunchConfig }),
   nodeSchema.extend({
     type: z.literal("trigger.record"),
     config: z

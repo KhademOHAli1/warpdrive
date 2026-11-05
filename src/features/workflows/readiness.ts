@@ -24,7 +24,8 @@ function executableDelay(node: WorkflowNode): boolean {
 // fail closed until an action's complete configuration has a qualified handler.
 export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
-  if (node.type === "trigger.manual") return true;
+  if (node.type === "trigger.manual")
+    return actionRegistry["trigger.manual"].config.safeParse(node.config).success;
   if (node.type === "delay") return executableDelay(node);
   if (
     [

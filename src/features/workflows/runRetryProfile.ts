@@ -4,6 +4,10 @@ import type { workflowRuns, workflowSteps } from "@/db/schema";
 import { validateDefinition } from "./definition";
 import { executableDefinition } from "./readiness";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import {
+  matchWorkflowManualLaunch,
+  workflowManualLaunchScope,
+} from "./workflowManualLaunchContract";
 
 type Run = typeof workflowRuns.$inferSelect;
 type Step = typeof workflowSteps.$inferSelect;
@@ -74,7 +78,7 @@ export function retryableTaskDefinition(raw: unknown): WorkflowDefinition | null
   // intent or new historical output fields in the older failed-task profile.
   if (definition.nodes.some(usesNewMappingContract)) return null;
   const trigger = definition.nodes.find((node) => node.type === "trigger.manual");
-  if (trigger === undefined) return null;
+  if (trigger === undefined || workflowManualLaunchScope(trigger.config) !== "deal") return null;
   const safe = definition.nodes.every((node) => {
     if (node.type === "record.read")
       return references(node.config.recordId, trigger.id, "recordId");
@@ -84,7 +88,7 @@ export function retryableTaskDefinition(raw: unknown): WorkflowDefinition | null
   return safe ? definition : null;
 }
 
-function validCompletedOutput(node: WorkflowNode, step: Step, run: Run): boolean {
+function validCompletedOutput(node: WorkflowNode, step: Step, run: Run, recordId: string): boolean {
   if (
     step.runId !== run.id ||
     step.simulated ||
@@ -93,8 +97,8 @@ function validCompletedOutput(node: WorkflowNode, step: Step, run: Run): boolean
     !isDeepStrictEqual(step.output, run.outputs[node.id])
   )
     return false;
-  if (node.type === "trigger.manual") return step.output.recordId === run.trigger.recordId;
-  if (node.type === "record.read") return step.output.id === run.trigger.recordId;
+  if (node.type === "trigger.manual") return step.output.recordId === recordId;
+  if (node.type === "record.read") return step.output.id === recordId;
   if (node.type === "condition") return typeof step.output.result === "boolean";
   if (node.type === "activity.create") return z.uuid().safeParse(step.output.id).success;
   return node.type === "delay" && z.iso.datetime().safeParse(step.output.resumeAt).success;
@@ -155,17 +159,12 @@ export function coherentFailedTask(
   run: Run,
   steps: Step[],
 ): WorkflowNode | null {
-  if (
-    !z
-      .strictObject({
-        trigger: z.strictObject({ recordId: z.uuid() }),
-        outputs: z.record(z.string(), z.record(z.string(), z.json())),
-      })
-      .safeParse({ trigger: run.trigger, outputs: run.outputs }).success
-  )
+  if (!z.record(z.string(), z.record(z.string(), z.json())).safeParse(run.outputs).success)
     return null;
   const trigger = definition.nodes.find((node) => node.type === "trigger.manual");
-  if (trigger === undefined || !z.uuid().safeParse(run.trigger.recordId).success) return null;
+  if (trigger === undefined) return null;
+  const launch = matchWorkflowManualLaunch(trigger.config, run.trigger);
+  if (launch === null || !("recordId" in launch)) return null;
   const failed = failedRetryNode(definition, run.nextNodeId, trigger.id);
   if (failed === null) return null;
   const completed = new Map(steps.map((step) => [step.nodeId, step]));
@@ -182,7 +181,7 @@ export function coherentFailedTask(
       node === undefined ||
       step === undefined ||
       visited.has(current) ||
-      !validCompletedOutput(node, step, run)
+      !validCompletedOutput(node, step, run, launch.recordId)
     )
       return null;
     visited.add(current);

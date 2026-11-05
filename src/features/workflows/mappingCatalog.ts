@@ -42,6 +42,7 @@ import {
 import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
 import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
 import { workflowHumanFormOutputDescriptors } from "./workflowHumanFormContract";
+import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 import { workflowPersonUpsertTarget } from "./workflowPersonUpsertContract";
 import {
   recordCreateEntitySchema,
@@ -71,6 +72,8 @@ function qualifiedSource(node: WorkflowNode): boolean {
 
 function outputsFor(node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
+  if (node.type === "trigger.manual" && workflowManualLaunchScope(node.config) !== "deal")
+    return [];
   if (node.type === "human.form")
     return workflowHumanFormOutputDescriptors(node.config).map((output) => ({
       ...output,

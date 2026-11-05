@@ -20,6 +20,7 @@ import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
 import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
 import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
@@ -91,7 +92,7 @@ export const conditionConfigSchema = z.unknown().transform((raw, context) => {
 export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   "trigger.manual": {
     configuration: configurationProfiles["trigger.manual"],
-    config: z.strictObject({}),
+    config: workflowManualLaunchConfig,
     inputs: {},
     outputs: coarseMappingOutputs("trigger.manual"),
     outputContracts: mappingOutputContracts("trigger.manual"),

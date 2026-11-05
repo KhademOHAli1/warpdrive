@@ -12,13 +12,18 @@ import { getWorkflow } from "./queries";
 import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 import { definitionSchema } from "./schemas";
 import { pendingWorkflowHumanForm } from "./workflowHumanFormPending";
+import {
+  readWorkflowManualLaunch,
+  type WorkflowManualLaunchPayload,
+} from "./workflowManualLaunchContract";
 
-async function formRecordVisible(
+async function formLaunchVisible(
   db: Db,
   actor: PermSetUser,
-  recordId: string,
+  launch: WorkflowManualLaunchPayload,
   signal: AbortSignal,
 ) {
+  if (!("recordId" in launch)) return true;
   const visible = await assertReferenceVisible(
     db,
     {
@@ -29,7 +34,7 @@ async function formRecordVisible(
       visibilityGroupIds: [...actor.groupIds],
       managedUserIds: [...(actor.managedUserIds ?? [])],
     },
-    { kind: "deal", id: recordId },
+    { kind: "deal", id: launch.recordId },
     signal,
   );
   return visible.ok;
@@ -111,9 +116,10 @@ export async function readRunDetail(
       workflow.value.archivedAt === null &&
       canWorkflow(currentActor, "run", workflow.value.ownerId),
   );
+  const launch =
+    form === undefined ? null : readWorkflowManualLaunch(definition.data, stored.trigger);
   const pendingForm =
-    form !== undefined &&
-    (await formRecordVisible(db, currentActor, stored.trigger.recordId, signal))
+    launch !== null && (await formLaunchVisible(db, currentActor, launch, signal))
       ? form
       : undefined;
   const recovery = await describeRunRecovery(

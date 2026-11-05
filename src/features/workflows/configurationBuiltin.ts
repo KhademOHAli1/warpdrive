@@ -18,6 +18,7 @@ import {
 } from "./workflowCalendarEventContract";
 import { workflowEmailDraftConfig, workflowEmailDraftFields } from "./workflowEmailDraftContract";
 import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
 import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
 import { recordCreateConfig } from "./workflowRecordCreateContract";
 import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
@@ -379,7 +380,17 @@ function validateIfElse(
   if (!checked.ok) result.issues.push(...checked.error);
 }
 
+function validateManualTrigger(
+  node: WorkflowNode,
+  _context: ConfigurationContext,
+  result: ConfigurationValidation,
+) {
+  if (!workflowManualLaunchConfig.safeParse(node.config).success)
+    result.issues.push(configurationIssue(node, ["scope"], "invalid_value"));
+}
+
 const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
+  "trigger.manual": validateManualTrigger,
   "record.read": validateRead,
   "activity.create": validateTask,
   "record.create": validateRecordCreate,
@@ -398,6 +409,7 @@ const validators: Partial<Record<WorkflowNode["type"], typeof validateRead>> = {
 };
 
 const fixedKeys: Partial<Record<WorkflowNode["type"], string[]>> = {
+  "trigger.manual": ["scope"],
   ifElse: ["branches", "fallbackId"],
   "record.create": ["entity", "fields"],
   "human.form": ["instructions", "fields"],

@@ -8,7 +8,7 @@ import type { LiveRunEffects } from "./liveRunEffectSummary";
 export interface LiveRunReviewContext {
   readonly publicationName: string;
   readonly publicationNumber: number;
-  readonly recordLabel: string;
+  readonly recordLabel?: string;
   readonly effects: LiveRunEffects;
 }
 
@@ -80,7 +80,9 @@ export function LiveRunReview({
       </p>
       <p>{t("liveReviewVersion", { number: String(review.publicationNumber) })}</p>
       <p dir="auto" className="break-words [overflow-wrap:anywhere]">
-        {t("liveReviewRecord", { name: review.recordLabel })}
+        {review.recordLabel === undefined
+          ? t("manualGlobalRunHint")
+          : t("liveReviewRecord", { name: review.recordLabel })}
       </p>
       <p>{t("liveReviewSteps", { number: String(review.effects.configuredSteps) })}</p>
       <ul className="space-y-1">

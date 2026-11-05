@@ -1,4 +1,12 @@
 {
+  "manualAvailability": "Availability",
+  "manualGlobal": "Global",
+  "manualOnDeal": "From a deal",
+  "manualLaunchHint": "Choose where people can launch this workflow.",
+  "manualGlobalRunHint": "This workflow starts without a deal.",
+  "manualPublicationLoading": "Loading the published trigger…",
+  "manualPublicationReload": "Reload published trigger",
+  "manualPublicationUnavailable": "The published trigger could not be loaded.",
   "upsertRecord": "Create or Update Record",
   "upsertRecordHint": "Create or update a person using a stable workflow key.",
   "publicationRecordUpsertStep": "Can create or update a person when reached.",

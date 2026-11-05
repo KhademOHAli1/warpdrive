@@ -29,6 +29,7 @@ import type { RunOutputs, StepOutput } from "./runTypes";
 import type { WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 import { createWorkflowCalendarEvent } from "./workflowCalendarEvent";
 import { createWorkflowEmailDraft } from "./workflowEmailDraft";
+import type { WorkflowManualLaunchPayload } from "./workflowManualLaunchContract";
 import { upsertWorkflowPerson } from "./workflowPersonUpsert";
 import { createWorkflowRecord } from "./workflowRecordCreate";
 import { mutateWorkflowRecord } from "./workflowRecordMutation";
@@ -39,7 +40,7 @@ interface SimulationContext {
   db: Db;
   actor: PermSetUser;
   workflowId: string;
-  recordId: string;
+  launch: WorkflowManualLaunchPayload;
   definition: WorkflowDefinition;
   signal: AbortSignal;
 }
@@ -215,7 +216,7 @@ async function executeDraftNode(
     actor,
     node,
     outputs,
-    { recordId: context.recordId },
+    context.launch,
     true,
     context.definition,
     context.signal,
@@ -286,13 +287,15 @@ async function simulateInTransaction(
 ): Promise<Result<DraftSimulationReceipt, string>> {
   const authority = await currentDraftAuthority(db, actor, input.workflowId, signal);
   if (!authority.ok) return authority;
-  const selected = await assertReferenceVisible(
-    db,
-    referenceActor(authority.value.actor),
-    { kind: "deal", id: input.recordId },
-    signal,
-  );
-  if (!selected.ok) return err(safeErrorId(selected.error.id));
+  if ("recordId" in input.launch) {
+    const selected = await assertReferenceVisible(
+      db,
+      referenceActor(authority.value.actor),
+      { kind: "deal", id: input.launch.recordId },
+      signal,
+    );
+    if (!selected.ok) return err(safeErrorId(selected.error.id));
+  }
   const definition = await currentDefinition(db, input.definition, signal);
   if (!definition.ok) return definition;
   const authoredJson = JSON.stringify(input.authoredDefinition);
@@ -314,7 +317,7 @@ async function simulateInTransaction(
       db,
       actor,
       workflowId: input.workflowId,
-      recordId: input.recordId,
+      launch: input.launch,
       definition: definition.value,
       signal,
     },

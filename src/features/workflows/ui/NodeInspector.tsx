@@ -50,7 +50,7 @@ export function NodeInspector(props: Props) {
   );
 }
 const hints = {
-  "trigger.manual": "triggerHint",
+  "trigger.manual": "manualLaunchHint",
   "trigger.record": undefined,
   "record.read": "readHint",
   "record.create": undefined,

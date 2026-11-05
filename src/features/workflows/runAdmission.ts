@@ -10,11 +10,16 @@ import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { validateDefinition } from "./definition";
 import { executableDefinition, requiresHumanForm } from "./readiness";
+import { definitionSchema } from "./schemas";
+import {
+  prepareWorkflowManualLaunch,
+  readWorkflowManualLaunch,
+} from "./workflowManualLaunchContract";
 
 const inputSchema = z.strictObject({
   workflowId: z.string().uuid(),
   requestKey: z.string().uuid(),
-  recordId: z.string().uuid(),
+  recordId: z.uuid().optional(),
   mode: z.enum(["simulation", "live"]).default("simulation"),
   reviewedVersionId: z
     .string()
@@ -22,20 +27,52 @@ const inputSchema = z.strictObject({
     .transform((value) => value.toLowerCase())
     .optional(),
 });
+type ManualRunInput = z.infer<typeof inputSchema>;
+type Publication = typeof workflowVersions.$inferSelect;
 
 function matchesReviewedVersion(reviewedVersionId: string | undefined, versionId: string) {
   return reviewedVersionId === undefined || reviewedVersionId === versionId;
 }
 
-function sameManualCommand(
+async function sameManualCommand(
+  db: Db,
   existing: typeof workflowRuns.$inferSelect,
-  input: z.infer<typeof inputSchema>,
+  input: ManualRunInput,
+  published: Publication,
 ) {
-  return (
-    existing.mode === input.mode &&
-    existing.trigger.recordId === input.recordId &&
-    matchesReviewedVersion(input.reviewedVersionId, existing.versionId)
-  );
+  if (
+    existing.mode !== input.mode ||
+    !matchesReviewedVersion(input.reviewedVersionId, existing.versionId)
+  )
+    return false;
+  const pinned =
+    existing.versionId === published.id
+      ? published
+      : (
+          await db
+            .select()
+            .from(workflowVersions)
+            .where(
+              and(
+                eq(workflowVersions.id, existing.versionId),
+                eq(workflowVersions.workflowId, existing.workflowId),
+              ),
+            )
+        )[0];
+  const definition = definitionSchema.safeParse(pinned?.definition);
+  if (!definition.success) return false;
+  const launch = readWorkflowManualLaunch(definition.data, existing.trigger);
+  if (launch === null) return false;
+  return "recordId" in launch ? launch.recordId === input.recordId : input.recordId === undefined;
+}
+
+function prepareNewLaunch(input: ManualRunInput, version: Publication, triggerConfig: unknown) {
+  if (input.mode === "simulation" && requiresHumanForm(version.definition))
+    return err(ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE);
+  if (!matchesReviewedVersion(input.reviewedVersionId, version.id))
+    return err(ERROR_IDS.WORKFLOW_CONFLICT);
+  const launch = prepareWorkflowManualLaunch(triggerConfig, input.recordId);
+  return launch === null ? err(ERROR_IDS.WORKFLOW_INVALID) : ok(launch);
 }
 
 export async function admitManualRun(
@@ -81,13 +118,12 @@ export async function admitManualRun(
     );
     const [existing] = await tx.select().from(workflowRuns).where(key);
     if (existing !== undefined) {
-      if (!sameManualCommand(existing, input.data)) return err(ERROR_IDS.WORKFLOW_CONFLICT);
+      if (!(await sameManualCommand(tx, existing, input.data, version)))
+        return err(ERROR_IDS.WORKFLOW_CONFLICT);
       return ok(existing);
     }
-    if (input.data.mode === "simulation" && requiresHumanForm(version.definition))
-      return err(ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE);
-    if (!matchesReviewedVersion(input.data.reviewedVersionId, version.id))
-      return err(ERROR_IDS.WORKFLOW_CONFLICT);
+    const launch = prepareNewLaunch(input.data, version, trigger.config);
+    if (!launch.ok) return launch;
     const metadata = version.definition.nodes.some((node) => node.type === "activity.create")
       ? {
           status: "complete" as const,
@@ -104,7 +140,7 @@ export async function admitManualRun(
         actorId: actor.id,
         requestKey: input.data.requestKey,
         mode: input.data.mode,
-        trigger: { recordId: input.data.recordId },
+        trigger: launch.value,
         nextNodeId: trigger.id,
       })
       .returning();

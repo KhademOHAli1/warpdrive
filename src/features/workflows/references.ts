@@ -13,6 +13,7 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 import { recordSearchBindingEntries, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 
 interface NodeBinding {
@@ -84,6 +85,8 @@ function structuralReferenceIssue(
   if (!path.nodes.some((entry) => entry.id === binding.nodeId)) return "unavailable_reference";
   const source = definition.nodes.find((entry) => entry.id === binding.nodeId);
   if (source === undefined) return "unavailable_reference";
+  if (source.type === "trigger.manual" && workflowManualLaunchScope(source.config) !== "deal")
+    return "unknown_output";
   if (source.type === "human.form")
     return mappingOutputForReference(definition, binding) === undefined ? "unknown_output" : null;
   const key = binding.path.join(".");

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflowRuns, workflowSteps, workflows, workflowVersions } from "@/db/schema";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { err, ok, type Result } from "@/types/result";
 import { canWorkflow } from "./access";
@@ -17,6 +18,10 @@ import {
   type WorkflowHumanFormConfig,
   workflowHumanFormConfig,
 } from "./workflowHumanFormContract";
+import {
+  readWorkflowManualLaunch,
+  type WorkflowManualLaunchPayload,
+} from "./workflowManualLaunchContract";
 
 const uuid = z.uuid().transform((value) => value.toLowerCase());
 const submissionSchema = z.strictObject({
@@ -36,18 +41,28 @@ interface FormContext {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   config: WorkflowHumanFormConfig;
+  launch: WorkflowManualLaunchPayload;
 }
 
-async function canSubmit(
+async function currentFormActor(
   db: Db,
   who: RetrySessionRef,
   ownerId: string,
-  recordId: string,
   signal: AbortSignal,
 ) {
   const actor = await currentRetryActor(db, who, signal);
-  if (actor === null || !canWorkflow(actor, "view", ownerId) || !canWorkflow(actor, "run", ownerId))
-    return false;
+  return actor !== null && canWorkflow(actor, "view", ownerId) && canWorkflow(actor, "run", ownerId)
+    ? actor
+    : null;
+}
+
+async function formLaunchVisible(
+  db: Db,
+  actor: PermSetUser,
+  launch: WorkflowManualLaunchPayload,
+  signal: AbortSignal,
+) {
+  if (!("recordId" in launch)) return true;
   const visible = await assertReferenceVisible(
     db,
     {
@@ -58,7 +73,7 @@ async function canSubmit(
       visibilityGroupIds: [...actor.groupIds],
       managedUserIds: [...(actor.managedUserIds ?? [])],
     },
-    { kind: "deal", id: recordId },
+    { kind: "deal", id: launch.recordId },
     signal,
   );
   return visible.ok;
@@ -89,12 +104,9 @@ async function lockedForm(
     .from(workflows)
     .where(eq(workflows.id, run.workflowId))
     .for("share");
-  if (
-    workflow === undefined ||
-    workflow.archivedAt !== null ||
-    !(await canSubmit(db, who, workflow.ownerId, run.trigger.recordId, signal))
-  )
-    return err(ERROR_IDS.WORKFLOW_DENIED);
+  if (workflow === undefined || workflow.archivedAt !== null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const actor = await currentFormActor(db, who, workflow.ownerId, signal);
+  if (actor === null) return err(ERROR_IDS.WORKFLOW_DENIED);
   const [version] = await db
     .select({ definition: workflowVersions.definition })
     .from(workflowVersions)
@@ -102,17 +114,23 @@ async function lockedForm(
       and(eq(workflowVersions.id, run.versionId), eq(workflowVersions.workflowId, run.workflowId)),
     );
   const parsed = definitionSchema.safeParse(version?.definition);
-  if (
-    !parsed.success ||
-    !parsed.data.nodes.some((node) => node.type === "trigger.manual") ||
-    inspectGraph(parsed.data).length > 0
-  )
+  if (!parsed.success || inspectGraph(parsed.data).length > 0)
     return err(ERROR_IDS.WORKFLOW_INVALID);
+  const launch = readWorkflowManualLaunch(parsed.data, run.trigger);
+  if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  if (!(await formLaunchVisible(db, actor, launch, signal))) return err(ERROR_IDS.WORKFLOW_DENIED);
   const node = parsed.data.nodes.find((candidate) => candidate.id === input.nodeId);
   if (node?.type !== "human.form") return err(ERROR_IDS.WORKFLOW_CONFLICT);
   const config = workflowHumanFormConfig.safeParse(node.config);
   return config.success
-    ? ok({ run, ownerId: workflow.ownerId, definition: parsed.data, node, config: config.data })
+    ? ok({
+        run,
+        ownerId: workflow.ownerId,
+        definition: parsed.data,
+        node,
+        config: config.data,
+        launch,
+      })
     : err(ERROR_IDS.WORKFLOW_INVALID);
 }
 
@@ -209,8 +227,9 @@ export async function submitWorkflowHumanForm(
         if (!context.ok) return context;
         const result = await submitLockedForm(tx, context.value, input.data, signal);
         if (!result.ok) return result;
-        const { ownerId, run } = context.value;
-        if (!(await canSubmit(tx, who, ownerId, run.trigger.recordId, signal))) {
+        const { ownerId, launch } = context.value;
+        const actor = await currentFormActor(tx, who, ownerId, signal);
+        if (actor === null || !(await formLaunchVisible(tx, actor, launch, signal))) {
           state.authorityLost = true;
           tx.rollback();
         }

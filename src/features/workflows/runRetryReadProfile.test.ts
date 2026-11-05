@@ -43,7 +43,7 @@ function fixture(priorTask = false, cursor: "read" | "task" = "read") {
   const outputs: RunOutputs = { start: { recordId } };
   if (priorTask) outputs.earlier_task = { id: crypto.randomUUID() };
   if (cursor === "task") outputs.read = { id: recordId };
-  const run: Run = {
+  const run: Run & { trigger: { recordId: string } } = {
     id: runId,
     workflowId: crypto.randomUUID(),
     versionId: crypto.randomUUID(),

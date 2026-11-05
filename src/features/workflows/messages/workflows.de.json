@@ -1,4 +1,12 @@
 {
+  "manualAvailability": "Verfügbarkeit",
+  "manualGlobal": "Überall",
+  "manualOnDeal": "Aus einem Deal",
+  "manualLaunchHint": "Wähle, wo Personen diesen Workflow starten können.",
+  "manualGlobalRunHint": "Dieser Workflow startet ohne einen Deal.",
+  "manualPublicationLoading": "Der veröffentlichte Auslöser wird geladen …",
+  "manualPublicationReload": "Veröffentlichten Auslöser neu laden",
+  "manualPublicationUnavailable": "Der veröffentlichte Auslöser konnte nicht geladen werden.",
   "upsertRecord": "Datensatz erstellen oder aktualisieren",
   "upsertRecordHint": "Eine Person anhand eines stabilen Workflow-Schlüssels erstellen oder aktualisieren.",
   "publicationRecordUpsertStep": "Kann beim Erreichen eine Person erstellen oder aktualisieren.",

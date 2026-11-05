@@ -3,6 +3,8 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type * as ContactActorAdapters from "@/features/contacts/actorAdapters";
+import type * as PersonsRepo from "@/features/contacts/personsRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok } from "@/types/result";
 import type { WorkflowDefinition } from "./schemas";
@@ -18,11 +20,11 @@ const native = vi.hoisted(() => ({
   resolveRunBinding: vi.fn(),
 }));
 vi.mock("@/features/contacts/personsRepo", async (original) => ({
-  ...(await original<typeof import("@/features/contacts/personsRepo")>()),
+  ...(await original<typeof PersonsRepo>()),
   createPersonAtId: native.createPersonAtId,
 }));
 vi.mock("@/features/contacts/actorAdapters", async (original) => ({
-  ...(await original<typeof import("@/features/contacts/actorAdapters")>()),
+  ...(await original<typeof ContactActorAdapters>()),
   loadContactActor: native.loadContactActor,
 }));
 vi.mock("@/server/hydrateActor", () => ({ hydrateActor: native.hydrateActor }));

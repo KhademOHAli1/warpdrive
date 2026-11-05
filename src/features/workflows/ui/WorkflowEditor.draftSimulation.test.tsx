@@ -17,7 +17,7 @@ import type { WorkflowConfigurationRead } from "./useWorkflowConfiguration";
 import type { WorkflowDetail } from "./useWorkflowEditor";
 import { WorkflowEditor } from "./WorkflowEditor";
 
-type DraftInput = { workflowId: string; definition: WorkflowDefinition; recordId: string };
+type DraftInput = { workflowId: string; definition: WorkflowDefinition; recordId?: string };
 type DraftStep = {
   nodeId: string;
   nodeType: WorkflowNode["type"];
@@ -82,7 +82,7 @@ vi.mock("@/lib/trpc-client", () => ({
     workflows: {
       get: {
         useQuery: () => ({
-          data: undefined,
+          data: fixture(),
           isFetching: false,
           isError: false,
           isPlaceholderData: false,
@@ -91,7 +91,12 @@ vi.mock("@/lib/trpc-client", () => ({
       },
       version: {
         useQuery: () => ({
-          data: undefined,
+          data: {
+            id: publishedVersionId,
+            number: 2,
+            name: fixture().name,
+            definition: definition(),
+          },
           isFetching: false,
           isError: false,
           isPlaceholderData: false,
@@ -141,6 +146,7 @@ const workflowId = "161679f3-46c4-4f53-8ad0-31e7604f8bd0";
 const otherWorkflowId = "f51ad946-ab7e-4300-a700-98b6a76f34ee";
 const recordId = "635fc45b-e31c-4887-9b86-bde5f6b604da";
 const persistedRunId = "7dd7142d-b3f8-4bd1-af16-4a74f13290d6";
+const publishedVersionId = "7cb3b1aa-97d4-472e-a673-c397219a4975";
 const recordName = "Acme — authorized existing deal";
 const dirtyName = "Unsaved draft for review";
 const dirtyStep = "Unsaved manual trigger";
@@ -388,7 +394,13 @@ describe("unsaved draft simulation on the actual editor", () => {
     await user.click(within(dialog).getByRole("button", { name: english.confirmSimulation }));
 
     expect(io.run).toHaveBeenCalledExactlyOnceWith(
-      { workflowId, requestKey: expect.any(String), recordId, mode: "simulation" },
+      {
+        workflowId,
+        requestKey: expect.any(String),
+        recordId,
+        mode: "simulation",
+        reviewedVersionId: publishedVersionId,
+      },
       "draft-test-csrf",
     );
     await waitFor(() => expect(io.invalidateRuns).toHaveBeenCalledTimes(1));
@@ -398,6 +410,34 @@ describe("unsaved draft simulation on the actual editor", () => {
     );
     expect(screen.getByText(english.runStarted)).toBeVisible();
     expect(io.simulate).not.toHaveBeenCalled();
+  });
+
+  it("simulates a captured Global draft with no deal search or persistent command", async () => {
+    const draft = definition();
+    draft.nodes = draft.nodes.map((node) =>
+      node.type === "trigger.manual" ? { ...node, config: { scope: "global" } } : node,
+    );
+    render(
+      <LocaleProvider locale="en">
+        <DraftTestDialog
+          snapshot={captureDraftTestSnapshot(workflowId, "Global draft", draft)}
+          onClose={vi.fn()}
+          onCloseAutoFocus={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    const dialog = screen.getByRole("dialog", { name: english.draftSimulation });
+    expect(within(dialog).queryByRole("combobox", { name: english.deal })).not.toBeInTheDocument();
+    expect(draftConfirm(dialog)).toBeEnabled();
+    await userEvent.setup().click(draftConfirm(dialog));
+    expect(io.simulate).toHaveBeenCalledExactlyOnceWith(
+      { workflowId, definition: draft },
+      "draft-test-csrf",
+    );
+    expect(
+      within(dialog).getByRole("region", { name: english.draftSimulationResults }),
+    ).toHaveTextContent(english.manualGlobalRunHint);
+    expectNoPersistentCommand();
   });
 
   it.each(locales)(
