@@ -11,7 +11,24 @@ describe("locale-aware formatting", () => {
     const preferences = { locale: "en", country: "DE" } as const;
     expect(localeTagForFormatting(preferences)).toBe("en-DE");
     expect(formatNumber(1234.5, preferences)).toBe("1.234,5");
-    expect(formatDateOnly("2026-03-21", preferences)).toBe("21. Mar 2026");
+    // en-DE punctuation varies across ICU data versions. Keep the exact runtime
+    // rendering and pin the country-specific order and English month independently.
+    const germanRegionDate = new Intl.DateTimeFormat("en-DE", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      calendar: "gregory",
+      numberingSystem: "latn",
+      timeZone: "UTC",
+    });
+    const civilDate = new Date(Date.UTC(2026, 2, 21, 12));
+    expect(
+      germanRegionDate
+        .formatToParts(civilDate)
+        .filter(({ type }) => type !== "literal")
+        .map(({ value }) => value),
+    ).toEqual(["21", "Mar", "2026"]);
+    expect(formatDateOnly("2026-03-21", preferences)).toBe(germanRegionDate.format(civilDate));
     expect(formatDateOnly("2026-03-21", { ...preferences, country: "US" })).toBe("Mar 21, 2026");
   });
 

@@ -32,6 +32,7 @@ function Preview() {
 it.each([
   {
     locale: "fa",
+    customize: "سفارشی‌سازی قالب‌ها",
     calendar: "gregory",
     label: "نمایش اعداد",
     persian: "اعداد فارسی (۱۲۳)",
@@ -40,6 +41,7 @@ it.each([
   },
   {
     locale: "de",
+    customize: "Formate anpassen",
     calendar: "persian",
     label: "Zifferndarstellung",
     persian: "Persische Ziffern (۱۲۳)",
@@ -48,6 +50,7 @@ it.each([
   },
   {
     locale: "en",
+    customize: "Customize formats",
     calendar: "gregory",
     label: "Number display",
     persian: "Persian digits (۱۲۳)",
@@ -56,11 +59,12 @@ it.each([
   },
 ] as const)(
   "saves both digit choices in $locale without changing calendar, zone or a raw draft",
-  async ({ locale, calendar, label, persian, latin, year }) => {
+  async ({ locale, customize, calendar, label, persian, latin, year }) => {
     const user = userEvent.setup();
     render(
       <LocaleProvider
         locale={locale}
+        country="IR"
         calendar={calendar}
         numberingSystem="latn"
         timeZone="Europe/Berlin"
@@ -71,6 +75,10 @@ it.each([
       </LocaleProvider>,
     );
     fireEvent.change(screen.getByLabelText("draft"), { target: { value: "C01234 پیگیری" } });
+    const formats = screen.getByRole("button", { name: customize });
+    expect(formats).toHaveAttribute("aria-expanded", "false");
+    await user.click(formats);
+    expect(formats).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("combobox", { name: label })).toHaveTextContent(latin);
     expect(save).not.toHaveBeenCalled();
     await user.click(screen.getByRole("combobox", { name: label }));
@@ -78,7 +86,13 @@ it.each([
     await waitFor(() =>
       expect(save).toHaveBeenNthCalledWith(
         1,
-        { locale, calendar, numberingSystem: "arabext", timeZone: "Europe/Berlin" },
+        {
+          locale,
+          country: "IR",
+          calendar,
+          numberingSystem: "arabext",
+          timeZone: "Europe/Berlin",
+        },
         "test-csrf",
       ),
     );
@@ -92,7 +106,13 @@ it.each([
     await waitFor(() =>
       expect(save).toHaveBeenNthCalledWith(
         2,
-        { locale, calendar, numberingSystem: "latn", timeZone: "Europe/Berlin" },
+        {
+          locale,
+          country: "IR",
+          calendar,
+          numberingSystem: "latn",
+          timeZone: "Europe/Berlin",
+        },
         "test-csrf",
       ),
     );
