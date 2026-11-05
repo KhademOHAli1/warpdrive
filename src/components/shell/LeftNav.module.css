@@ -18,7 +18,7 @@
 }
 .sidebar {
   display: flex;
-  width: 250px;
+  width: 220px;
   height: 100%;
   min-height: 0;
   flex: 0 0 auto;
@@ -50,7 +50,7 @@
   overflow: hidden;
   border-bottom: 1px solid var(--portal-border);
   padding-block: 0;
-  padding-inline: 18px 16px;
+  padding-inline: 12px;
   transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width;
 }
@@ -215,8 +215,8 @@
   flex: 1;
   flex-direction: column;
   overflow: hidden;
-  padding-block: 14px 12px;
-  padding-inline: 18px 15px;
+  padding-block: 10px 8px;
+  padding-inline: 12px;
   scrollbar-width: none;
 }
 
@@ -252,10 +252,10 @@
   max-height: 22px;
   overflow: hidden;
   color: var(--portal-muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 22px;
-  margin: 0 0 8px;
+  line-height: 18px;
+  margin: 0 0 4px;
   opacity: 1;
   padding: 0;
   transition:
@@ -276,7 +276,7 @@
 .menuList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .menuListCollapsed {
@@ -311,7 +311,7 @@
   overflow: hidden;
   border-radius: 8px;
   font-size: 16px;
-  line-height: 24px;
+  line-height: 22px;
   transition:
     color 200ms ease,
     background-color 200ms ease,
@@ -329,9 +329,9 @@
 
 .navItemOpen {
   width: 100%;
-  height: 40px;
+  height: 36px;
   align-self: stretch;
-  gap: 4px;
+  gap: 2px;
   padding: 0 6px;
 }
 
@@ -510,7 +510,7 @@
 
 .subnav[data-expanded="true"] {
   max-height: 240px;
-  margin-block: 4px;
+  margin-block: 2px;
   margin-inline: 18px 0;
   opacity: 1;
   pointer-events: auto;
@@ -699,7 +699,7 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .workspaceNav {
   min-height: 0;
@@ -714,9 +714,9 @@
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   border-top: 1px solid var(--portal-border);
-  padding-top: 12px;
+  padding-top: 8px;
 }
 .sidebar[data-sidebar-state="collapsed"] .utilityNav {
   width: 44px;
@@ -728,8 +728,8 @@
   text-align: start;
 }
 .navItem:lang(fa) {
-  font-size: 15px;
-  line-height: 26px;
+  font-size: 16px;
+  line-height: 24px;
 }
 .utilityNav .navItem {
   height: 28px;
