@@ -2,6 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { WorkflowV2Context, WorkflowV2Node } from "@/features/blocks/contracts";
+import type * as SendModule from "@/features/email/send";
 import { ok } from "@/types/result";
 import { executeExternalAction } from "./externalActions";
 
@@ -13,7 +14,7 @@ vi.mock("@/features/email/sendConnection", () => ({
   resolveSendConnection: seam.resolveConnection,
 }));
 vi.mock("@/features/email/send", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/features/email/send")>()),
+  ...(await importOriginal<typeof SendModule>()),
   sendEmail: seam.send,
 }));
 vi.mock("@/features/files/storage", () => ({ makeStorageClient: () => ({}) }));

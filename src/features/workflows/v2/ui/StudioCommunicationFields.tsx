@@ -2,6 +2,7 @@
 import { Variable } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import type { BlockJson } from "@/features/blocks/contracts";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { BlockField } from "@/features/blocks/ui/BlockField";
 import { BlockVariablePicker } from "@/features/blocks/ui/BlockVariablePicker";
@@ -78,6 +79,11 @@ function EmailBody(props: StudioFormProps) {
     </BlockField>
   );
 }
+// Keep existing provider-only fields editable so legacy drafts can clear them.
+function hasCalendarProviderInput(value: BlockJson | undefined): boolean {
+  return value !== undefined && value !== false && (!Array.isArray(value) || value.length > 0);
+}
+
 export function StudioCommunicationFields(
   props: StudioFormProps & {
     kind: "SEND_EMAIL" | "DRAFT_EMAIL" | "CREATE_CALENDAR_EVENT" | "SEND_CHAT_MESSAGE";
@@ -123,9 +129,15 @@ export function StudioCommunicationFields(
           <StudioBound {...props} name="description" multiline />
           <StudioBound {...props} name="location" />
           <StudioBound {...props} name="timeZone" />
-          <StudioBound {...props} name="attendeeEmails" label={L.fields.attendees} type="array" />
-          <StudioToggle {...props} name="sendInvitations" />
-          <StudioToggle {...props} name="createConference" label={L.fields.addConferencing} />
+          {hasCalendarProviderInput(props.node.config.attendeeEmails) && (
+            <StudioBound {...props} name="attendeeEmails" label={L.fields.attendees} type="array" />
+          )}
+          {hasCalendarProviderInput(props.node.config.sendInvitations) && (
+            <StudioToggle {...props} name="sendInvitations" />
+          )}
+          {hasCalendarProviderInput(props.node.config.createConference) && (
+            <StudioToggle {...props} name="createConference" label={L.fields.addConferencing} />
+          )}
         </>
       );
     case "SEND_CHAT_MESSAGE":

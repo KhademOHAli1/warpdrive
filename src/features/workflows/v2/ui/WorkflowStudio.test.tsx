@@ -118,10 +118,9 @@ afterEach(() => {
 
 describe("workflow studio persistence and authority", () => {
   it("changes the selected node in place and saves a detached copy of its new configuration", async () => {
-    actions.saveWorkflowV2Action.mockImplementationOnce(async ({ definition }) => ({
-      ok: true,
-      value: { ...initial, draft: definition, revision: 3 },
-    }));
+    actions.saveWorkflowV2Action.mockImplementationOnce(({ definition }) =>
+      Promise.resolve({ ok: true, value: { ...initial, draft: definition, revision: 3 } }),
+    );
     render(<WorkflowStudio initial={initial} />);
     await screen.findByRole("combobox", { name: "Change trigger" });
     fireEvent.click(screen.getByRole("button", { name: "Change diagram step" }));

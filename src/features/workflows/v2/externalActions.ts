@@ -146,6 +146,9 @@ function projectWorkflowMailReceipt(receipt: SendEmailOutcome): Awaited<ActionRe
       return err({ id: ERROR_IDS.MAIL_SEND_REJECTED });
     case "unknown":
       return err({ id: "E_WORKFLOW_EMAIL_UNKNOWN", outcome: "unknown" });
+    case "accepted":
+    case undefined:
+      break;
   }
   if (receipt.deliveryOutcome?.state === "accepted" || receipt.status === "sent") {
     return ok({

@@ -44,6 +44,10 @@ function keyWidth(key: string, width: number, direction: -1 | 1): number | undef
   }
 }
 
+type CaptureMethods = Partial<
+  Pick<HTMLHRElement, "hasPointerCapture" | "setPointerCapture" | "releasePointerCapture">
+>;
+
 export function WorkflowPanelResize({
   panelId,
   width,
@@ -62,8 +66,9 @@ export function WorkflowPanelResize({
     if (active === null) return;
     drag.current = null;
     active.abort.abort();
-    if (active.target.hasPointerCapture?.(active.pointerId)) {
-      active.target.releasePointerCapture(active.pointerId);
+    const target: CaptureMethods = active.target;
+    if (target.hasPointerCapture?.(active.pointerId) === true) {
+      target.releasePointerCapture?.(active.pointerId);
     }
     if (active.moved) {
       if (cancelled) onWidthChange(active.startWidth);
@@ -82,7 +87,8 @@ export function WorkflowPanelResize({
       target: event.currentTarget,
       abort,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const target: CaptureMethods = event.currentTarget;
+    target.setPointerCapture?.(event.pointerId);
     window.addEventListener(
       "keydown",
       (event) => {

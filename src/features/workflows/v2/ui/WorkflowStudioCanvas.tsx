@@ -245,7 +245,9 @@ export function WorkflowStudioCanvas({
         case "position":
           if (!disabled) next = applyPosition(next, change);
           break;
-        default:
+        case "add":
+        case "replace":
+        case "select":
           break;
       }
     }
