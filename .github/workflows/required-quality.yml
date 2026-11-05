@@ -165,6 +165,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Preserve draft simulation browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: workflow-draft-simulation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/browser-smoke/draft-simulation-*/
+          if-no-files-found: warn
+          retention-days: 14
+
   release-pr:
     if: github.event_name != 'schedule'
     name: Release PR validation

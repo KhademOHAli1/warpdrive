@@ -11,7 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LanguageSwitcher, useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { trpc } from "@/lib/trpc-client";
+import { executableDefinition } from "../readiness";
 import { BuilderWorkspace } from "./BuilderWorkspace";
+import {
+  captureDraftTestSnapshot,
+  DraftTestDialog,
+  type DraftTestSnapshot,
+} from "./DraftTestDialog";
 import { EditorDuplicateDialog } from "./EditorDuplicateDialog";
 import { type EditorLifecycleRequest, EditorLifecycleReview } from "./EditorLifecycleReview";
 import { EditorRecovery } from "./EditorRecovery";
@@ -29,6 +35,19 @@ function editorStatus(
   if (editor.archivedAt !== null) return "archived";
   if (editor.number === null) return "draft";
   return editor.active ? "active" : "paused";
+}
+
+function draftSimulationAllowed(editor: ReturnType<typeof useWorkflowEditor>): boolean {
+  return (
+    editor.available &&
+    editor.archivedAt === null &&
+    editor.capabilities.edit &&
+    editor.capabilities.run &&
+    !editor.pending &&
+    editor.name.trim() !== "" &&
+    editor.issues.length === 0 &&
+    executableDefinition(editor.definition)
+  );
 }
 
 export function WorkflowEditor({
@@ -61,12 +80,15 @@ export function WorkflowEditor({
   }
   const [tab, setTab] = useState("configure");
   const [runMode, setRunMode] = useState<"simulation" | "live" | null>(null);
+  const [draftTest, setDraftTest] = useState<DraftTestSnapshot | null>(null);
+  const draftTestFocus = useDialogFocus();
   const fieldId = useId();
   const runFocus = useDialogFocus();
   const runsTab = useRef<HTMLButtonElement>(null);
   const editable = editor.archivedAt === null && editor.capabilities.edit && !editor.pending;
   const runnable =
     editor.archivedAt === null && editor.capabilities.run && editor.active && !editor.pending;
+  const draftTestable = draftSimulationAllowed(editor);
   const recovery = <EditorRecovery lifecycle={lifecycle} libraryReturn={libraryReturn} />;
   return (
     <div className="mx-auto flex max-w-[1700px] flex-col gap-4 xl:h-[calc(100dvh-120px)] xl:min-h-[620px]">
@@ -225,7 +247,22 @@ export function WorkflowEditor({
                 {t("runs")}
               </TabsTrigger>
             </TabsList>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!draftTestable}
+                onClick={(event) => {
+                  if (!draftTestable) return;
+                  draftTestFocus.remember(event.currentTarget);
+                  setDraftTest(
+                    captureDraftTestSnapshot(initial.id, editor.name, editor.definition),
+                  );
+                }}
+              >
+                <FlaskConical className="size-4" />
+                {t("draftSimulation")}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -354,6 +391,14 @@ export function WorkflowEditor({
             editor.setNotice("runStarted");
             setTab("runs");
           }}
+        />
+      )}
+      {draftTest !== null && draftTest.workflowId === initial.id && (
+        <DraftTestDialog
+          key={draftTest.cutKey}
+          snapshot={draftTest}
+          onClose={() => setDraftTest(null)}
+          onCloseAutoFocus={(event) => draftTestFocus.restore(event, heading.current)}
         />
       )}
     </div>

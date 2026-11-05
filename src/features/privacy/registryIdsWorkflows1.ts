@@ -1,5 +1,18 @@
 // Reviewed Workflow boundary identifiers. New or changed source requires review.
 export const workflowIds1: string[] = [
+  // WF025: bounded transient unsaved graph simulation; every preview rolls back.
+  // SELECT clocks, hash updates and ancestry deletion are conservative scanner IDs.
+  "derived:src/features/workflows/draftSimulation.ts",
+  "writer:src/features/workflows/draftSimulation.ts#execute:dynamic",
+  "writer:src/features/workflows/draftSimulation.ts#update:authoredJson",
+  "derived:src/features/workflows/draftSimulationInput.ts",
+  "writer:src/features/workflows/draftSimulationInput.ts#delete:dynamic",
+  "derived:src/features/workflows/ui/DraftTestDialog.tsx",
+  "sourceReview:src/features/workflows/draftSimulation.ts#d65b84881879cd007ebe1f7813e607ba5ad51b72e37b0f0aacc73c0bfc03b8f1",
+  "sourceReview:src/features/workflows/draftSimulationInput.ts#4d6c90a7ab992a9072ddd3ae29cf4e008ade63b4c55479a0f526e94c51cfd87d",
+  "sourceReview:src/features/workflows/draftSimulationReceipt.ts#804f5d304eb8c7d46fa24117e029e2613a76cd6314ee5c0d5e8178a41a29021a",
+  "sourceReview:src/features/workflows/ui/DraftTestDialog.tsx#9312c0fc70f4d8675b1a814d907815b68fa7d64288bd3a4f239ebe2ccd598f4d",
+  "sourceReview:src/features/workflows/ui/WorkflowEditor.tsx#02b1e056f7b02b3bfb7e39c13806930526c4d9908aa7fbb002e3d3d7b8b5b26c",
   // WF022: bounded transient parsing/evaluation and local stable-row edits.
   // These Sets/Maps are per-call/editor derived state, not durable stores.
   "derived:src/features/workflows/conditionExpressionBudget.ts",
@@ -117,7 +130,7 @@ export const workflowIds1: string[] = [
   "writer:src/features/workflows/runRetry.ts#update:workflowRunFailures",
   "writer:src/features/workflows/runRetry.ts#update:workflowRuns",
   "writer:src/features/workflows/runRetrySession.ts#execute:sql",
-  "sourceReview:src/features/workflows/actions.ts#1d6b2a3fc046f37ea8f925252af45674fea5e0373b87e2a7488e6c2506458134",
+  "sourceReview:src/features/workflows/actions.ts#76e20ad68f01f1acabee5be7dfaebc913bc57e371c93efb21f2e2baac6ae5620",
   "sourceReview:src/features/workflows/ui/RunRecovery.tsx#c349f7079de28c7ddb408b845911adb79ec0cfe5e144d9a90882867ae23d9714",
   "derived:src/features/workflows/graph.ts",
   "derived:src/features/workflows/graphEditor.ts",

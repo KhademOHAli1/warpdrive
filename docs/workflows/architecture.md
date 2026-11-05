@@ -37,7 +37,9 @@ silently selecting a false branch. Binding resolution accepts only own completed
 
 Admissions use a caller-generated request key, pin an immutable published version, and persist the cursor before enqueueing. Reusing a key with different inputs is rejected. A pg-boss worker resumes the persisted cursor; startup and minutely reconciliation recover missed enqueues. Competing workers lock the run row. CRM database effects, step completion, and cursor advancement commit in the same transaction, so failure rolls back the effect as well as progress.
 
-Simulation invokes the same canonical CRM service inside a rolled-back savepoint. It persists run/step evidence while retaining no task mutations. This strategy is restricted to the current database-only task action; future external effects require separate simulation adapters. Runs use published versions, so the current UI requires publication before simulation.
+Published-version run simulation invokes the same canonical CRM service inside a rolled-back savepoint. It persists ordinary run/step evidence while retaining no task mutations and requires publication. This strategy is restricted to the current database-only task action; future external effects require separate simulation adapters.
+
+The separate [transient draft simulation](draft-simulation.md) captures unsaved editor changes and a selected visible deal under current edit/run authority. It needs no publication or activation, rolls back its enclosing writable transaction and returns a finite transient step receipt without creating an ordinary run or history entry.
 
 Cancellation records who cancelled and when, and prevents subsequent steps. It does not undo already committed tasks. Pausing prevents new admission; existing runs continue unless explicitly cancelled. Permission revocation and user deactivation are checked again at every resumed step.
 
