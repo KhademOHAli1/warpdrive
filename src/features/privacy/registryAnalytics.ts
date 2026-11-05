@@ -4,9 +4,11 @@ export const analyticsComputationInventoryEntry = classifyInventory(
   [
     "derived:src/features/stats/analyticsInputAdmission.ts",
     "derived:src/features/stats/attribution.ts",
+    "derived:src/features/stats/history/dealCloseIncidence.ts",
     "derived:src/features/stats/periodForecast.ts",
     "sourceReview:src/features/stats/analyticsInputAdmission.ts#674093beb290f925d774c58d0992657351fa8ae1a85f7a21886dbe04ddba482f",
     "sourceReview:src/features/stats/attribution.ts#5f6a361893b683967972de619327f39595c784f5fe7070335fe1a417b35d2de7",
+    "sourceReview:src/features/stats/history/dealCloseIncidence.ts#0ad2c3f82f2b868f682222a470d379347dcfccba1c119085b4c29a06d5b43071",
     "sourceReview:src/features/stats/periodForecast.ts#500d5c56f006ea39067c741877de1b581de7731142750b431ffbd91cfead2021",
     "writer:src/features/stats/analyticsInputAdmission.ts#update:dynamic",
   ],
@@ -16,13 +18,14 @@ export const analyticsComputationInventoryEntry = classifyInventory(
       "source producer, event, identity and correction references",
       "interaction classifications and descriptive credit",
       "CRM deal identifiers, amounts and forecast assumptions",
+      "deal incarnations, observed entry and close facts, and precise elapsed ages",
     ],
     subjectRelation:
       "Projections may refer to people, accounts and deals; a source key or fingerprint does not verify subject identity or authorize access.",
     purpose:
-      "Compute an atomic input admission plan, descriptive attribution and exact forecast scenarios from explicitly scoped facts.",
+      "Compute an atomic input admission plan, descriptive attribution, exact forecast scenarios and competing outcome incidence from explicitly scoped facts.",
     disclosure:
-      "Private server-side values. An adapter must prove authorized and complete membership and build a separate disclosure DTO before sharing results.",
+      "Private server-side values. An adapter must prove authorized and complete membership and build a separate disclosure DTO before sharing results. Single-deal steps and precise ages in an incidence curve can identify a contributor and are not viewer output.",
     retention:
       "Transient computation only. Immutable source receipts, correction policy, subject restrictions and deletion require separately qualified storage and lifecycle behavior.",
     externalEffects:

@@ -1,6 +1,12 @@
 # Advanced model runtime path — source research
 
-All advanced programme rows remain included. This research is preparation for implementation; no engine, runtime, model fit, real dataset, provider or result is installed or qualified. Governed ingestion, immutable cutoff/dataset manifests and permission-safe artifact readers precede model-run qualification.
+All advanced programme rows remain included. The private competing outcome baseline below has source and deterministic fixtures. No model runtime, model fit, real dataset, provider or viewer result is installed or qualified. Governed ingestion, immutable cutoff/dataset manifests and permission-safe artifact readers precede model-run qualification.
+
+## Time to first close
+
+`dealCloseIncidence.ts` computes a descriptive Aalen–Johansen baseline for observed entrants. Won and lost are competing first close outcomes; deals still open at the common observation cutoff are right-censored. Each tied age uses the risk set before withdrawing outcomes or censors. Exact integer arithmetic preserves mass before presentation, and the output ends at the last observed age. An empty, all-censored or observed-no-win population is distinct. The caller must establish a complete authorized roster, observed insert and first transaction-final close or open observation, and a common cutoff. A source assertion is not proof of those facts.
+
+The ten focused fixtures include hand calculations, tied outcomes and censoring, exact nanosecond ages, bounded and incomplete inputs, and rounding that conserves mass. Still required: a qualified native roster, reference comparison against the [R survival multistate estimator](https://cran.r-project.org/web/packages/survival/refman/survival.html), interval and temporal evaluation, and a separate permission and disclosure policy. Precise age steps stay internal. The baseline assumes censoring is not informative within the analysis population; it supplies neither a calibrated prediction nor a causal result.
 
 ## Proposed execution boundary
 

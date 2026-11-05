@@ -31,9 +31,9 @@
     },
     "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. Main #990 no longer requires a coordination queue; that policy change does not override the user preference. Use hosted workflows for heavy checks.",
     "latestRemoteObservation": {
-      "sha": "0047318c23acc43f16500d72227b99642eeccf14",
+      "sha": "dda4ad111677cbe27820a73526f4c06fd32b7910",
       "date": "2026-11-05",
-      "change": "Preserve PR #990 dashboard/region/KPI, PR #993 demo-mail setup and PR #994 explicit MCP draft sender. Canonical migration still ends at 0107_kpi_scorecards; no analytics ordinal reserved."
+      "change": "Preserve dashboard/region/KPI and Main MAIL feedback through PR #995. Canonical migration still ends at 0107_kpi_scorecards; no analytics ordinal reserved."
     }
   },
   "statusMeaning": {
@@ -608,8 +608,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/history/dealCloseIncidence.ts",
+        "src/features/stats/history/dealCloseIncidence.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "aging-visits", "cohort-equal-age"],
       "dataRequirements": [
         "Sufficient observed origin/outcome/censoring data; explicit inclusion/competing-outcome assumptions."
