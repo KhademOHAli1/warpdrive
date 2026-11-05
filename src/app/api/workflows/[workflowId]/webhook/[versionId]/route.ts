@@ -1,16 +1,11 @@
 import { db } from "@/db/client";
 import { nudgeWorkflowRun } from "@/features/workflows/worker";
 import { admitWorkflowWebhookDelivery } from "@/features/workflows/workflowWebhookAdmission";
-import { handleWorkflowWebhookRequest } from "@/features/workflows/workflowWebhookHttp";
-import { workflowWebhookOperatorServices } from "@/features/workflows/workflowWebhookOperator";
-
-export {
-  workflowWebhookMethodNotAllowed as DELETE,
-  workflowWebhookMethodNotAllowed as HEAD,
-  workflowWebhookMethodNotAllowed as OPTIONS,
-  workflowWebhookMethodNotAllowed as PATCH,
-  workflowWebhookMethodNotAllowed as PUT,
+import {
+  handleWorkflowWebhookRequest,
+  workflowWebhookMethodNotAllowed,
 } from "@/features/workflows/workflowWebhookHttp";
+import { workflowWebhookOperatorServices } from "@/features/workflows/workflowWebhookOperator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,4 +20,16 @@ async function handle(request: Request, context: Context): Promise<Response> {
   });
 }
 
-export { handle as GET, handle as POST };
+function rejectMethod(request: Request): Response {
+  return workflowWebhookMethodNotAllowed(request);
+}
+
+export {
+  handle as GET,
+  handle as POST,
+  rejectMethod as DELETE,
+  rejectMethod as HEAD,
+  rejectMethod as OPTIONS,
+  rejectMethod as PATCH,
+  rejectMethod as PUT,
+};

@@ -43,20 +43,17 @@ function rejectBody(error: BodyError): Response {
 }
 
 function rejectAdmission(error: Extract<AdmissionResult, { ok: false }>["error"]): Response {
-  switch (error) {
-    case "invalid-request":
-    case "invalid-payload":
-      return rejectBody("invalid-request");
-    case "unauthorized":
-    case ERROR_IDS.WORKFLOW_DENIED:
-    case ERROR_IDS.WORKFLOW_INVALID:
-    case ERROR_IDS.WORKFLOW_NOT_READY:
-      return response(404, "Webhook unavailable.");
-    case ERROR_IDS.WORKFLOW_CONFLICT:
-      return response(409, "Webhook request conflicted.");
-    default:
-      return response(503, "Webhook unavailable.");
-  }
+  if (error === "invalid-request" || error === "invalid-payload")
+    return rejectBody("invalid-request");
+  if (
+    error === "unauthorized" ||
+    error === ERROR_IDS.WORKFLOW_DENIED ||
+    error === ERROR_IDS.WORKFLOW_INVALID ||
+    error === ERROR_IDS.WORKFLOW_NOT_READY
+  )
+    return response(404, "Webhook unavailable.");
+  if (error === ERROR_IDS.WORKFLOW_CONFLICT) return response(409, "Webhook request conflicted.");
+  return response(503, "Webhook unavailable.");
 }
 
 function discardBody(body: { cancel(): Promise<void> } | null): void {

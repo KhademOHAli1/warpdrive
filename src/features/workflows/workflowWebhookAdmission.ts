@@ -245,7 +245,7 @@ async function admitLockedWebhook(
     },
     definition,
     authorized.value.signedAtMs,
-    services.insertRun,
+    (database, row) => services.insertRun(database, row),
     signal,
   );
 }
