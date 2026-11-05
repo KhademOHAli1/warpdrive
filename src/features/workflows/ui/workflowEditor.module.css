@@ -222,8 +222,14 @@
     flex-wrap: wrap;
     padding-block: 4px;
   }
+  .name {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
   .metadata {
-    display: none;
+    padding-inline: 4px;
+    padding-block-end: 3px;
   }
   .builderGrid[data-panel="true"] {
     grid-template-columns: minmax(0, 1fr) min(400px, 50vw);
