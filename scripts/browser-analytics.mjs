@@ -305,6 +305,11 @@ async function setRegional(currentLocale, key, option, expected) {
     assert.equal(await page.locator("html").getAttribute("lang"), currentLocale);
     phase(entry, "wait-for-csrf");
     await csrfReady(page);
+    phase(entry, "wait-for-regional-controls");
+    await page
+      .getByRole("switch", exact(copy[currentLocale].regional.browserTimeZone))
+      .and(page.locator('[aria-checked="false"]:enabled'))
+      .waitFor();
     if (key === "calendar") {
       phase(entry, "open-regional-formats");
       await expandRegionalFormats(page, currentLocale);
