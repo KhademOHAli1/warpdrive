@@ -61,6 +61,39 @@ bun dist/auth-operator.mjs recover --request-id PENDING_SOLE_ADMIN_CASE_UUID --c
 
 All three flags are required. The host service takes the common account lock before administrator/identity/case row locks, rechecks eligibility, writes `recovery.emergency_review` with the operator-attestation method, then calls the existing recovery completion and native reset-link workflow. Review, completion, revocation, audit events and encrypted message enqueue commit atomically. Concurrent executions produce one winner. There is no public route, browser self-approval, arbitrary destination-email override or operator-selected password.
 
+## Google Workspace sign-in
+
+Configure a Google OAuth web application for the installation. For an organization-only CRM,
+use an Internal audience in the organization's Google Cloud project. Register the exact HTTPS
+callback `<BASE_URL>/api/auth/callback/google` and the application origin. For example, an
+installation at `https://crm.example.com` uses
+`https://crm.example.com/api/auth/callback/google`. The retired `/auth/callback` is not the
+native Google sign-in callback.
+
+Enable `AUTH_GOOGLE_ENABLED`, configure `GOOGLE_OAUTH_CLIENT_ID`, and supply the client secret
+privately through `GOOGLE_OAUTH_CLIENT_SECRET` or `GOOGLE_OAUTH_CLIENT_SECRET_FILE`. Set
+`GOOGLE_WORKSPACE_DOMAIN` to the intended Workspace domain. The active Google provider normalizes
+the configured domain and checks it against Google's verified hosted-domain claim. A wrong or
+missing claim is rejected even if the email address has the expected suffix. A blank configured
+domain retains public Google sign-in for installations that need it.
+
+Login requests only `openid`, `email` and `profile`. An invitation for the exact verified email
+is still required for a new identity; an existing user must remain active. Workspace membership
+does not create a CRM user or grant permissions. Google login does not satisfy the CRM's local
+administrator strong-authentication requirement by itself. Keep invitation, account-linking,
+factor enrollment and recovery checks in the installed acceptance journey.
+
+Validate Google login, administrator access and recovery before disabling alternative login
+methods. `AUTH_ALLOW_PASSWORD` and `AUTH_ALLOW_PASSKEY` are separate controls. This OAuth setup
+does not change how staff sign into Google Workspace and requires no service-account domain-wide
+delegation. Gmail consent uses its separate `/api/gmail/oauth/callback` and additional per-user
+mail scopes; Google Calendar integration is not configured by enabling sign-in.
+
+Keep the client secret, runtime keys and downloaded credential JSON outside the repository,
+build context, container image and public CI artifacts. Source tests of provider options and
+domain checks do not qualify a real Google tenant, deployed callback, invitation or authenticated
+session.
+
 ## Delivery, cutover and verification
 
 The regular worker registers `auth-maintenance` every minute. It delivers pending mail, retries integration revocation, and expires authentication records. Review mail status/attempts through the existing administration workflow. A host can inspect aggregate status without exposing encrypted payloads:
