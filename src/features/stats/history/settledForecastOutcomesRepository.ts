@@ -93,8 +93,8 @@ function boundedTimeout(value: number | undefined, max: number): boolean {
 
 function validCutRequest({ commit, settlementFence }: AdmittedForecastOutcomeSource): boolean {
   return (
-    commit.definitionVersion === 1 &&
-    commit.basis === "independent-native-visibility-before-target" &&
+    z.literal(1).safeParse(commit.definitionVersion).success &&
+    z.literal("independent-native-visibility-before-target").safeParse(commit.basis).success &&
     [
       commit.predictionCutoff,
       commit.insertedAt,

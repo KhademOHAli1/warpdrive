@@ -98,8 +98,8 @@ function sameTarget(a: Period["target"], b: Period["target"]): boolean {
 
 function matchesNativeCommit(commit: PrivateForecastCommitProof, period: Period, currency: string) {
   return (
-    commit.definitionVersion === 1 &&
-    commit.basis === "independent-native-visibility-before-target" &&
+    z.literal(1).safeParse(commit.definitionVersion).success &&
+    z.literal("independent-native-visibility-before-target").safeParse(commit.basis).success &&
     commit.snapshotId === period.forecastSnapshotId &&
     commit.currency === currency &&
     commit.predictionCutoff === period.predictionCutoff &&
@@ -150,7 +150,7 @@ function sameMeasurement(a: Prepared["measurement"], b: Prepared["measurement"])
     a.outcomeDefinition === b.outcomeDefinition &&
     a.settlementPolicy === b.settlementPolicy &&
     a.restatementPolicy === b.restatementPolicy &&
-    a.measure === b.measure
+    z.literal(b.measure).safeParse(a.measure).success
   );
 }
 

@@ -38,7 +38,7 @@ function chartRecordInput(chart: RecordChartSelection | undefined) {
       return { wonMonth: chart.month };
     case "lost-reason":
       return { lostReason: chart.selector };
-    default:
+    case undefined:
       return {};
   }
 }

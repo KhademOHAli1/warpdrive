@@ -325,8 +325,10 @@ export async function readForecastGoalOptionsInSnapshot(
       revision: row.revision,
       createdAt: row.definitionCreatedAt.toISOString(),
     };
-    if (incompatibility(context, goal, pinned) === null)
-      options.push({ id: goal.id, label: goal.name?.trim() || pinned.name.trim() });
+    if (incompatibility(context, goal, pinned) === null) {
+      const goalLabel = goal.name?.trim() ?? "";
+      options.push({ id: goal.id, label: goalLabel.length > 0 ? goalLabel : pinned.name.trim() });
+    }
   }
   return { state: "available", options };
 }

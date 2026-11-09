@@ -21,7 +21,7 @@ const fixture = vi.hoisted(() => ({
     currency: "USD",
     timeZone: "Europe/Berlin",
     effectiveOwnerScope: { kind: "me" } as const,
-    metric: "won" as "won" | "lost",
+    metric: "won",
     wonMonth: undefined as string | undefined,
     lostReason: undefined as string | undefined,
     definitionVersion: "1",
@@ -30,7 +30,7 @@ const fixture = vi.hoisted(() => ({
       {
         id: "00000000-0000-4000-8000-000000000001",
         title: "Acme service agreement",
-        status: "won" as "won" | "lost",
+        status: "won",
         value: "0.00",
         currency: "USD",
         createdAt: "2026-10-01T08:00:00.000Z",

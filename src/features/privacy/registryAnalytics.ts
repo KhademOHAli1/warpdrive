@@ -94,7 +94,7 @@ export const currentAccountConcentrationInventoryEntry = classifyInventory(
 export const nativePeriodForecastInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/stats/nativePeriodForecast.ts#f2b831e0b5c8633bd8d8caa4f21f219512bbca5fae85763f78a889836a270d65",
-    "sourceReview:src/features/stats/forecastGoalCoverage.ts#96ac9165e05e92875eb4f9eab9e81f9ea3afeef92a5c8f5de1e5649895880864",
+    "sourceReview:src/features/stats/forecastGoalCoverage.ts#b3a82aa9ee1dd552db6c44ca2a9e48773a9c13c6589a7994c4e894ad7beacaa6",
     "writer:src/features/stats/forecastGoalCoverage.ts#execute:sql",
     "writer:src/features/stats/nativePeriodForecast.ts#execute:sql",
   ],
@@ -172,7 +172,7 @@ export const settledForecastOutcomesInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/settledForecastOutcomes.ts",
     "derived:src/features/stats/history/settledForecastOutcomesRepository.ts",
     "sourceReview:src/features/stats/history/settledForecastOutcomes.ts#7ad217a369c58052e4191e9f56fdab9e736f6d8e2c2a89488b042ceffa42ea7c",
-    "sourceReview:src/features/stats/history/settledForecastOutcomesRepository.ts#ed72039241dc0191e97e8c6187925a447ae7654e62b1541065a0b7134a94b734",
+    "sourceReview:src/features/stats/history/settledForecastOutcomesRepository.ts#51fc99d070f2e0ccea0b2aee518e2d4d75a69730ffec7e5cfdc06ba795ffae47",
     "writer:src/features/stats/history/settledForecastOutcomesRepository.ts#execute:sql",
     "writer:src/features/stats/history/settledForecastOutcomesRepository.ts#query:dynamic",
   ],
@@ -282,7 +282,7 @@ export const analyticsComputationInventoryEntry = classifyInventory(
     "sourceReview:src/features/stats/commercialDecomposition.ts#3d362fc66e384257a08205db5e967bc0422d9dae2f425e1bc9d12145e04e061a",
     "sourceReview:src/features/stats/fixedExperimentReadout.ts#4f4ff4b0d81681ed6d4c2c9d19b5a5a9c1790b2e10c0125c27d427828800f0ed",
     "sourceReview:src/features/stats/forecastEvaluation.ts#5eb521f6f6dfdc5e275cd68169a9f8bce327620f0dbe376b1634c86e26b162c3",
-    "sourceReview:src/features/stats/forecastProbabilityCalibration.ts#414180efdf81b93144680047ef2f7700106d9da89ef9327a24757c168b6d0dd2",
+    "sourceReview:src/features/stats/forecastProbabilityCalibration.ts#11d8eb2e6bad88c3818a1b63d80b5b86f6702ae23baf0377581b97fafe1fb6ed",
     "sourceReview:src/features/stats/history/dealCloseIncidence.ts#0ad2c3f82f2b868f682222a470d379347dcfccba1c119085b4c29a06d5b43071",
     "sourceReview:src/features/stats/lifecycleEconomics.ts#f9173c38f1e2c375e0b5280acd85e1fb4e0fcaf64f7133cab07aefa5f650e542",
     "sourceReview:src/features/stats/periodForecast.ts#15b312bcb1dd3c067e1cfe1c59fce9b0591f92ecd215c1d4ab2d9e545a8d9af0",

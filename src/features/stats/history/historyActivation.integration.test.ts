@@ -22,7 +22,7 @@ function proposal(name: "history-storage-dormant" | "history-activate-locked") {
 
 async function withBoundedClient<T>(
   pool: Awaited<ReturnType<typeof makeTestDb>>["pool"],
-  use: (client: PoolClient) => Promise<T>,
+  consume: (client: PoolClient) => Promise<T>,
 ) {
   const client = await pool.connect();
   let reusable = false;
@@ -30,7 +30,7 @@ async function withBoundedClient<T>(
     await client.query(
       "SET lock_timeout='2000ms'; SET statement_timeout='5000ms'; SET idle_in_transaction_session_timeout='10000ms'",
     );
-    return await use(client);
+    return await consume(client);
   } finally {
     try {
       await client.query("ROLLBACK; RESET ALL");
