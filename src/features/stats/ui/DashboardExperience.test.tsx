@@ -2,6 +2,8 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { hydrateRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { RouterOutputs } from "@/lib/trpc-client";
@@ -44,6 +46,9 @@ const fixture = vi.hoisted(() => ({
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
   goalsError: false,
+  pipelineLoading: false,
+  pipelineError: false,
+  pipelineRefetch: vi.fn(),
   result: {
     currency: "USD",
     dealPerformance: {
@@ -81,7 +86,17 @@ vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "saved-report-csrf" 
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    pipeline: { list: { useQuery: () => ({ data: [{ id: "p1", name: "Sales" }] }) } },
+    pipeline: {
+      list: {
+        useQuery: () => ({
+          data: fixture.pipelineLoading ? undefined : [{ id: "p1", name: "Sales" }],
+          isLoading: fixture.pipelineLoading,
+          isError: fixture.pipelineError,
+          isFetching: fixture.pipelineLoading,
+          refetch: fixture.pipelineRefetch,
+        }),
+      },
+    },
     stats: {
       dashboard: {
         useQuery: (input: unknown, options: unknown) => {
@@ -252,6 +267,8 @@ beforeEach(() => {
   fixture.savedRun.mockReturnValue({ state: "unavailable", reason: "not-found" });
   fixture.error = false;
   fixture.goalsError = false;
+  fixture.pipelineLoading = false;
+  fixture.pipelineError = false;
   fixture.cohortReport.mockReturnValue({ state: "coverage-not-started" });
   fixture.cohortFetching = false;
   fixture.agingReport.mockReturnValue({ state: "unavailable", reason: "capture" });
@@ -321,6 +338,75 @@ function ChangeReportTimeZone() {
 }
 
 describe("Performance report experience", () => {
+  it("hydrates the pending pipeline picker after another component has filled its cache", async () => {
+    const view = <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />;
+    const container = document.createElement("div");
+    document.body.append(container);
+    const consoleErrors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const recoverableErrors: unknown[] = [];
+    let root: Root | undefined;
+    try {
+      fixture.pipelineLoading = true;
+      container.innerHTML = renderToString(view);
+      const serverPicker = within(container).getByRole("combobox", { name: "Pipeline" });
+      expect(serverPicker).toBeDisabled();
+
+      fixture.pipelineLoading = false;
+      await act(async () => {
+        root = hydrateRoot(container, view, {
+          onRecoverableError: (error) => recoverableErrors.push(error),
+        });
+        await Promise.resolve();
+      });
+
+      const picker = within(container).getByRole("combobox", { name: "Pipeline" });
+      expect(picker).toBe(serverPicker);
+      expect(picker).toBeEnabled();
+      expect(recoverableErrors).toEqual([]);
+      expect(consoleErrors).not.toHaveBeenCalled();
+      await userEvent.click(picker);
+      await userEvent.click(screen.getByRole("option", { name: "Sales", exact: true }));
+      expect(fixture.query).toHaveBeenLastCalledWith(
+        expect.objectContaining({ pipelineId: "p1", ownerScope: { kind: "me" } }),
+        { enabled: true },
+      );
+    } finally {
+      await act(async () => root?.unmount());
+      container.remove();
+      consoleErrors.mockRestore();
+    }
+  });
+
+  it("keeps pipeline selection unavailable through loading and errors, then recovers after retry", async () => {
+    fixture.pipelineLoading = true;
+    const { rerender } = render(
+      <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />,
+    );
+    const filters = within(screen.getByRole("region", { name: "Report filters" }));
+    const picker = filters.getByRole("combobox", { name: "Pipeline" });
+    expect(picker).toBeDisabled();
+
+    fixture.pipelineLoading = false;
+    fixture.pipelineError = true;
+    rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />);
+    expect(picker).toBeDisabled();
+    const alert = filters.getByRole("alert");
+    expect(alert).toHaveTextContent("Pipeline options could not be loaded.");
+    await userEvent.click(within(alert).getByRole("button", { name: "Try again" }));
+    expect(fixture.pipelineRefetch).toHaveBeenCalledTimes(1);
+
+    fixture.pipelineError = false;
+    rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />);
+    expect(filters.queryByRole("alert")).not.toBeInTheDocument();
+    expect(picker).toBeEnabled();
+    await userEvent.click(picker);
+    await userEvent.click(screen.getByRole("option", { name: "Sales", exact: true }));
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pipelineId: "p1", ownerScope: { kind: "me" } }),
+      { enabled: true },
+    );
+  });
+
   it("runs only the native saved scope and removes results when scope is lost", async () => {
     const report = {
       id: "shared-scope",

@@ -171,6 +171,7 @@ async function journey(
     phases: [],
     contextClosed: false,
     reports: [],
+    dashboardErrors: [],
   };
   report.journeys.push(entry);
   phase(entry, "create-context");
@@ -189,9 +190,15 @@ async function journey(
   const errors = [];
   const failures = [];
   context.on("page", (opened) => {
-    opened.on("pageerror", (error) => errors.push(safeError(error)));
+    const recordError = (error) => {
+      const message = safeError(error);
+      errors.push(message);
+      if (new URL(opened.url()).pathname === "/dashboard" && entry.dashboardErrors.length < 10)
+        entry.dashboardErrors.push(message);
+    };
+    opened.on("pageerror", recordError);
     opened.on("console", (message) => {
-      if (message.type() === "error") errors.push(safeError(message.text()));
+      if (message.type() === "error") recordError(message.text());
     });
   });
   let page;

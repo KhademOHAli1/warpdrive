@@ -9,7 +9,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,6 +51,7 @@ import { ActivitiesWidget, DealPerformanceWidget, FunnelWidget, StageSumsWidget 
 
 const ALL_PIPELINES = "all";
 const ME_SCOPE: OwnerScope = { kind: "me" };
+const subscribeHydration = (): (() => void) => () => {};
 const REPORT_TAB = cn(
   PILL_TAB,
   "min-h-10 flex-none px-4 data-[state=active]:bg-link/10 data-[state=active]:text-link",
@@ -116,6 +117,13 @@ export function Dashboard({
   const tCurrency = useAppTranslations("sales");
   const { timeZone, calendar, locale, country, numberingSystem } = useLocalePreferences();
   const preferencePending = useLocalePreferencePending();
+  // Quick add can fill the shared pipeline cache before this subtree hydrates.
+  // Keep the first picker markup stable, then apply its current query state.
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    () => true,
+    () => false,
+  );
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
   const [range, setRange] = useState(() => presetRange("year", today, calendar));
@@ -162,7 +170,7 @@ export function Dashboard({
   const pipelinesQ = trpc.pipeline.list.useQuery();
   const pipelineOptions = [
     { value: ALL_PIPELINES, label: S.allPipelines },
-    ...(pipelinesQ.data ?? []).map((p) => ({ value: p.id, label: p.name })),
+    ...(hydrated ? (pipelinesQ.data ?? []) : []).map((p) => ({ value: p.id, label: p.name })),
   ];
   const ownerOptionsQ = trpc.stats.ownerOptions.useQuery(undefined, { enabled: canViewOthers });
   const data = trpc.stats.dashboard.useQuery(reportScope, {
@@ -267,7 +275,7 @@ export function Dashboard({
                 value={selectedPipelineId}
                 onChange={setSelectedPipelineId}
                 options={pipelineOptions}
-                disabled={pipelinesQ.isLoading || pipelinesQ.isError}
+                disabled={!hydrated || pipelinesQ.isLoading || pipelinesQ.isError}
               />
             </div>
             <div className="min-w-0 space-y-2 [&_button]:w-full">
