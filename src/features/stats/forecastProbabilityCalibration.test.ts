@@ -134,7 +134,7 @@ function authorize(evaluation: ReturnType<typeof frame>): AuthorizedForecastCali
       },
     }),
   );
-  return {
+  const input: Pick<AuthorizedForecastCalibrationInput, "evaluation" | "periods" | "holdout"> = {
     evaluation,
     periods,
     holdout: {
@@ -148,7 +148,8 @@ function authorize(evaluation: ReturnType<typeof frame>): AuthorizedForecastCali
       measurement: prepared.measurement,
       targets: prepared.periods.map(({ target }) => target),
     },
-  } as AuthorizedForecastCalibrationInput;
+  };
+  return input as AuthorizedForecastCalibrationInput;
 }
 
 function repeated(count: number, probability: string, won: boolean): Observation[] {
