@@ -371,7 +371,7 @@ describe("Performance report experience", () => {
         { enabled: true },
       );
     } finally {
-      await act(async () => root?.unmount());
+      act(() => root?.unmount());
       container.remove();
       consoleErrors.mockRestore();
     }
