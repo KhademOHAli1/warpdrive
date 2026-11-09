@@ -268,10 +268,27 @@ describe("native private inventory snapshot writer", () => {
       );
       expect(row.records).toEqual(expected.sort((a, b) => a.entityId.localeCompare(b.entityId)));
       const events = await readCaptureEvents(h.pool, "deal", f.dealId);
-      expect(events.at(-1)?.afterState).toMatchObject({
-        personId: contactId,
-        title: "Private title",
+      expect(events.at(-1)?.afterState).toEqual({
+        status: "open",
+        value: EXACT_LEGACY_VALUE,
+        currency: "EUR",
+        ownerId: actor.id,
+        pipelineId: f.pipelineId,
+        stageId: f.stageId,
+        wonTime: null,
+        lostTime: null,
+        expectedCloseDate: null,
+        archivedAt: null,
+        deletedAt: null,
+        visibilityLevel: "owner",
+        visibilityGroupId: null,
+        visibleToUserIds: [],
       });
+      const capturedBytes = JSON.stringify(events);
+      expect(capturedBytes).not.toContain(contactId);
+      expect(capturedBytes).not.toContain("Private title");
+      expect(capturedBytes).not.toContain("private-source");
+      expect(capturedBytes).not.toContain("do-not-copy-into-analytics");
       expect(row.activationId).toBe(events[0]?.activationId);
     });
   });

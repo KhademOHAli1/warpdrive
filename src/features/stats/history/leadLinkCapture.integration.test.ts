@@ -310,6 +310,18 @@ test("allows a nonowning source writer to capture through the trigger while keep
       await client.query(
         `GRANT SELECT(id), UPDATE(converted_deal_id) ON public.leads TO "${runtime}"`,
       );
+      // The canonical workflow trigger checks these columns as the source writer.
+      // No active workflow is present, so it returns without writing a workflow event.
+      await client.query(`
+        GRANT SELECT(id,published_number,active,archived_at)
+          ON public.workflows_v2 TO "${runtime}";
+        GRANT SELECT(workflow_id,number,definition)
+          ON public.workflow_v2_versions TO "${runtime}";
+        GRANT SELECT(run_id,kind,status,config)
+          ON public.workflow_v2_waits TO "${runtime}";
+        GRANT SELECT(id,workflow_id,status)
+          ON public.workflow_v2_runs TO "${runtime}";
+      `);
       for (const sql of [
         "SELECT ordinal FROM public.analytics_lead_link_events",
         "INSERT INTO public.analytics_lead_link_events DEFAULT VALUES",

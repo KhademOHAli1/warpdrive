@@ -365,7 +365,7 @@ describe("Performance report experience", () => {
       expect(recoverableErrors).toEqual([]);
       expect(consoleErrors).not.toHaveBeenCalled();
       await userEvent.click(picker);
-      await userEvent.click(screen.getByRole("option", { name: "Sales", exact: true }));
+      await userEvent.click(screen.getByRole("option", { name: "Sales" }));
       expect(fixture.query).toHaveBeenLastCalledWith(
         expect.objectContaining({ pipelineId: "p1", ownerScope: { kind: "me" } }),
         { enabled: true },
@@ -400,7 +400,7 @@ describe("Performance report experience", () => {
     expect(filters.queryByRole("alert")).not.toBeInTheDocument();
     expect(picker).toBeEnabled();
     await userEvent.click(picker);
-    await userEvent.click(screen.getByRole("option", { name: "Sales", exact: true }));
+    await userEvent.click(screen.getByRole("option", { name: "Sales" }));
     expect(fixture.query).toHaveBeenLastCalledWith(
       expect.objectContaining({ pipelineId: "p1", ownerScope: { kind: "me" } }),
       { enabled: true },

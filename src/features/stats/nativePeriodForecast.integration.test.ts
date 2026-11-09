@@ -278,7 +278,7 @@ test("compares scenarios to an existing exactly scoped KPI assignment in the sam
           scenarios: {
             base: {
               state: "available",
-              numerator: "20.00",
+              numerator: "20.0000",
               denominator: "100.00",
               remainingAfterScenario: "80.00",
             },
