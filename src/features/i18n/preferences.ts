@@ -25,6 +25,9 @@ export type LocalePreferences = {
 };
 
 export function isTimeZone(value: string): boolean {
+  // Date formatting and database civil-period queries must share a named zone.
+  // Bare UTC offsets can use a different sign convention in PostgreSQL text queries.
+  if (!/^[A-Za-z]/u.test(value)) return false;
   try {
     new Intl.DateTimeFormat("en", { timeZone: value });
     return true;

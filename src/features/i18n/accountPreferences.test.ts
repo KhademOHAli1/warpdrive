@@ -45,6 +45,13 @@ it("uses the current device zone in browser mode while preserving the saved coun
       fallback: { timeZone: "Invalid/Zone" },
     }).timeZone,
   ).toBe("Asia/Tehran");
+  expect(
+    resolveAccountLocalePreferences({
+      saved: { ...saved, timeZone: "Asia/Tehran" },
+      profileTimeZone: "Asia/Tehran",
+      fallback: { timeZone: "+05:30" },
+    }).timeZone,
+  ).toBe("Asia/Tehran");
 });
 
 it("preserves explicit manual UTC and legacy non-UTC profile overrides", () => {

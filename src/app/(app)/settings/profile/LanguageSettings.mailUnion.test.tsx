@@ -23,27 +23,27 @@ function Amount() {
 it.each([
   {
     locale: "en",
-    digits: "Number display",
     customize: "Customize formats",
+    digits: "Number display",
     money: "Display Iranian amounts in",
     rial: "Iranian rial (IRR)",
   },
   {
     locale: "de",
-    digits: "Zifferndarstellung",
     customize: "Formate anpassen",
+    digits: "Zifferndarstellung",
     money: "Iranische Beträge anzeigen in",
     rial: "Iranischer Rial (IRR)",
   },
 ] as const)(
   "keeps explicit Persian digits independent of toman display in $locale",
-  async ({ locale, digits, customize, money, rial }) => {
+  async ({ locale, customize, digits, money, rial }) => {
     const user = userEvent.setup();
     render(
       <LocaleProvider
         locale={locale}
-        calendar="persian"
         country="IR"
+        calendar="persian"
         timeZone="Asia/Tehran"
         numberingSystem="arabext"
         iranianMoneyUnit="toman"
@@ -53,7 +53,11 @@ it.each([
         <input aria-label="Draft" defaultValue="C01234 پیگیری" />
       </LocaleProvider>,
     );
-    await user.click(screen.getByRole("button", { name: customize }));
+    const formats = screen.getByRole("button", { name: customize });
+    expect(formats).toHaveAttribute("aria-expanded", "false");
+    await user.click(formats);
+    expect(formats).toHaveAttribute("aria-expanded", "true");
+    expect(save).not.toHaveBeenCalled();
     expect(screen.getByRole("combobox", { name: digits })).toBeVisible();
     expect(screen.getByTestId("amount")).toHaveTextContent(/toman/iu);
     expect(screen.getByTestId("amount")).toHaveTextContent(/[۰-۹]/u);
@@ -64,8 +68,8 @@ it.each([
       expect(save).toHaveBeenCalledExactlyOnceWith(
         {
           locale,
-          calendar: "persian",
           country: "IR",
+          calendar: "persian",
           timeZone: "Asia/Tehran",
           numberingSystem: "arabext",
           iranianMoneyUnit: "rial",

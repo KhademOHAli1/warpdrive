@@ -8,7 +8,7 @@
     "liveExecution": "Canonical GitHub issues and central Project; this matrix preserves capability coverage and acceptance, not a competing issue-status ledger.",
     "authoringExclusion": "Settings → Goals, KPI definition and KPI scheme authoring are owned by another chat; consume agreed outputs only.",
     "excludedWorkspace": "codex/deal-workspace-premium remains uninspected and unchanged.",
-    "publication": "Integration coordinator owns main publication. No merge, release or deployment is implied.",
+    "publication": "The user explicitly authorizes this chat to merge the completed programme into main and publish a compatible three-part release after required qualification. Preserve reviewed PRs, exact-main CI/CodeQL, acceptance and release gates.",
     "existingChats": "No authorization to contact or interrupt existing chats."
   },
   "baseline": {
@@ -29,16 +29,16 @@
       "comments": 0,
       "limitation": "Read snapshot only; no competing live analytics ownership claim observed. Recheck before overlapping shared contracts."
     },
-    "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. No new allocation or prior exception reused.",
+    "validationAllocation": "User chose to keep local heavy validation queued on 2026-11-05. Main #990 no longer requires a coordination queue; that policy change does not override the user preference. Use hosted workflows for heavy checks.",
     "latestRemoteObservation": {
-      "sha": "cd7a964a4d7f992299d846c34e397396c6a268ab",
+      "sha": "6e31cec88e6d7a09fb48ebd171803c05cc757fe4",
       "date": "2026-11-05",
-      "change": "Workflow/settings and light CI PR #980; no stats/Goals authoring source overlap. Global inventory regenerated."
+      "change": "Preserve calendar Undo/resize/touch and Gmail history recovery through PR #1000. Canonical migration remains 0107_kpi_scorecards."
     }
   },
   "statusMeaning": {
     "remaining": "Included work not established delivered/qualified by this matrix.",
-    "in-progress": "Current I1 implementation; no completion or acceptance claim.",
+    "in-progress": "Source implementation underway; no completion or acceptance claim.",
     "preserved-local": "Historical local UI checkpoint retained, without new qualification."
   },
   "increments": [
@@ -261,8 +261,12 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": ["src/features/leads/leadConvert.ts", "src/db/schema/activities.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/leads/leadConvert.ts",
+        "src/features/stats/currentLeadHandoffReport.ts",
+        "src/db/schema/activities.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["funnel-journey", "history-exact-events"],
       "dataRequirements": [
         "Qualified handoff, acceptance/rejection and first-response event definition."
@@ -359,7 +363,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/stageConversion.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary", "history-exact-events", "regional-boundaries"],
       "dataRequirements": ["Cohort origin, conversion event, cutoff and elapsed-age definition."],
       "acceptance": [
@@ -384,7 +388,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/ui/Breakdowns.tsx"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["cohort-equal-age", "accessible-charts"],
       "dataRequirements": ["Eligible observations by age bucket."],
       "acceptance": ["Provide accessible exact values and sample counts; color is supplementary."],
@@ -448,7 +452,7 @@
         "src/features/stats/dealPerformance.ts",
         "src/features/stats/stageConversion.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary"],
       "dataRequirements": ["Existing independent populations and dates."],
       "acceptance": [
@@ -472,8 +476,12 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/ui/DealWinCohortPanel.tsx",
+        "src/features/stats/ui/DashboardExperience.test.tsx",
+        "src/features/stats/commercialDecomposition.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["cohort-equal-age", "segment-dimensions"],
       "dataRequirements": ["Qualified sample/unit assumptions and sufficient observations."],
       "acceptance": [
@@ -483,7 +491,8 @@
       "tests": [
         "Small/empty/imbalanced segments, interval coverage and Simpson-style mix-change fixtures."
       ],
-      "deliveryIncrement": "I5"
+      "deliveryIncrement": "I5",
+      "currentSourceNote": "Viewer shows missing-mature-outcome bounds with explicit partial coverage; exact private ordered mix decomposition is available in source. Validated sampling intervals, qualified segments and comparisons remain open."
     },
     {
       "id": "aging-distribution",
@@ -501,7 +510,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/stageConversion.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "history-stage-versions"],
       "dataRequirements": ["Exact visit entry/exit timestamps and duration eligibility."],
       "acceptance": [
@@ -526,7 +535,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/deals.ts", "src/db/schema/stages.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["scope-filters", "aging-distribution"],
       "dataRequirements": ["Current stageEnteredAt, team mapping and configurable age policy."],
       "acceptance": [
@@ -559,7 +568,7 @@
         "src/features/deals/statusTransition.ts",
         "src/features/pipelines/stageActions.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "history-stage-versions"],
       "dataRequirements": ["Ordered transition identities and versioned stage map."],
       "acceptance": [
@@ -608,8 +617,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/history/dealCloseIncidence.ts",
+        "src/features/stats/history/dealCloseIncidence.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "aging-visits", "cohort-equal-age"],
       "dataRequirements": [
         "Sufficient observed origin/outcome/censoring data; explicit inclusion/competing-outcome assumptions."
@@ -670,7 +682,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/changeLogs.ts", "src/features/stats/dealPerformance.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "history-snapshots"],
       "dataRequirements": [
         "Reliable snapshot/event coverage including removed and archived records."
@@ -700,7 +712,7 @@
         "src/features/deals/dealUpdateChangeLog.ts",
         "src/features/deals/archiveDeal.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["movement-inventory", "money-one-currency"],
       "dataRequirements": ["Complete event before/after monetary and scope state."],
       "acceptance": [
@@ -759,8 +771,13 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": ["src/db/schema/deals.ts", "src/db/schema/leads.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/db/schema/deals.ts",
+        "src/db/schema/leads.ts",
+        "src/features/stats/recordedDealSourceReport.ts",
+        "src/features/stats/recordedDealSourceReport.integration.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["funnel-identity", "cohort-equal-age", "segment-dimensions"],
       "dataRequirements": ["Qualified source taxonomy and campaign mapping."],
       "acceptance": [
@@ -769,7 +786,8 @@
       "tests": [
         "Unknown source, source correction, multi-contact purchase and mixed currency exclusion."
       ],
-      "deliveryIncrement": "I3"
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "The Acquisition tab groups current authorized deal creation and outcomes by recorded channel. Lead, handoff and campaign evidence remain open, alongside hosted qualification of the current tab."
     },
     {
       "id": "source-cost-retention",
@@ -825,7 +843,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/deals.ts", "src/features/deals/dealUpdateChangeLog.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["touchpoint-input", "funnel-identity"],
       "dataRequirements": [
         "Time-bounded qualifying touches and stable purchase/opportunity identity."
@@ -886,7 +904,7 @@
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["attribution-first-last", "touchpoint-input"],
       "dataRequirements": ["Suitable recorded journeys; explicit model and decay/window versions."],
       "acceptance": [
@@ -913,7 +931,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/deals.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary", "history-exact-events"],
       "dataRequirements": [
         "Eligible closes, probability source, timing assumptions and selected period."
@@ -936,7 +954,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["forecast-outcome-timing"],
       "dataRequirements": ["Versioned assumptions and bounded user scenario inputs."],
       "acceptance": [
@@ -963,7 +981,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/features/stats/ui/GoalsWidget.tsx"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["goals-adapter", "forecast-outcome-timing"],
       "dataRequirements": [
         "Permitted Goals output matching owner/team, currency and target dates."
@@ -1012,8 +1030,11 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "docs/analytics/forecast-custody-proposal.sql",
+        "src/features/stats/history/forecastCustody.integration.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["forecast-outcome-timing", "report-persistence", "history-snapshots"],
       "dataRequirements": [
         "Cutoff, target period, scope, model/version, assumptions and preserved eligible record state."
@@ -1024,7 +1045,8 @@
       "tests": [
         "Write/retry idempotency, immutability, actor revocation and exact snapshot replay."
       ],
-      "deliveryIncrement": "I3"
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "Private custody proposal binds exact bytes and native captured roster to a pre-target insertion clock. Native tests, production adapter, writer authority, separate pre-target commit proof and viewer report remain open."
     },
     {
       "id": "forecast-accuracy",
@@ -1041,8 +1063,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/forecastEvaluation.ts",
+        "src/features/stats/forecastEvaluation.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["forecast-snapshots", "model-evaluation"],
       "dataRequirements": [
         "Mature target periods and permission-safe actual outcomes under declared restatement policy."
@@ -1053,7 +1078,8 @@
       "tests": [
         "Zero actual/forecast, under/overprediction, missing actual coverage and temporal leakage."
       ],
-      "deliveryIncrement": "I5"
+      "deliveryIncrement": "I5",
+      "currentSourceNote": "Private exact saved-cohort evaluation passes deterministic fixtures. Immutable forecast and actual custody, reader, statistical qualification and viewer result remain open."
     },
     {
       "id": "forecast-calibrated",
@@ -1153,8 +1179,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/commercialDecomposition.ts",
+        "src/features/stats/commercialDecomposition.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["cohort-basis", "segment-dimensions", "dictionary"],
       "dataRequirements": [
         "Comparable periods/populations and mathematically defined decomposition."
@@ -1163,7 +1192,8 @@
         "Components reconcile where decomposition is appropriate; path/order and residual assumptions are explicit."
       ],
       "tests": ["Reconciliation, composition-only change, zero baseline and noncomparable scopes."],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private exact ordered bridge and seven focused fixtures. Qualified cohort/segment collection, viewer result and acceptance remain open."
     },
     {
       "id": "commercial-profitability",
@@ -1270,7 +1300,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/organizations.ts", "src/db/schema/organizationRelations.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["lifecycle-models", "segment-dimensions"],
       "dataRequirements": [
         "Explicit linked expansion opportunities, offerings and purchase/contract events."
@@ -1296,15 +1326,20 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": ["src/db/schema/deals.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/db/schema/deals.ts",
+        "src/features/stats/lifecycleEconomics.ts",
+        "src/features/stats/lifecycleEconomics.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["lifecycle-models", "commercial-profitability"],
       "dataRequirements": ["Stable account identity, qualified value and economic source."],
       "acceptance": [
         "Show concentration denominator and observation horizon; profit requires sourced costs."
       ],
       "tests": ["Large account, multiple contacts, account merge/correction and hidden accounts."],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private exact account concentration and sourced delivery contribution from a reconciled settled window. Qualified finance/account source, lifecycle collection and viewer result remain open."
     },
     {
       "id": "buying-group",
@@ -1383,8 +1418,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/fixedExperimentReadout.ts",
+        "src/features/stats/fixedExperimentReadout.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["experiment-workspace", "model-evaluation"],
       "dataRequirements": ["Valid assignment/outcome units and eligible analysis population."],
       "acceptance": [
@@ -1393,7 +1431,8 @@
       "tests": [
         "Known randomized fixtures, unequal allocation, binary/continuous outcomes, attrition and no observations."
       ],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private two-arm intention-to-treat risk differences and conservative simultaneous fixed-look intervals pass deterministic fixtures. Freeze, qualified unit evidence and viewer result remain open."
     },
     {
       "id": "experiment-peeking",
@@ -1410,8 +1449,11 @@
         }
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
-      "baselineCode": [],
-      "status": "remaining",
+      "baselineCode": [
+        "src/features/stats/fixedExperimentReadout.ts",
+        "src/features/stats/fixedExperimentReadout.test.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["experiment-ab-holdout"],
       "dataRequirements": [
         "Declared analysis schedule, number of comparisons and exposure overlap."
@@ -1422,7 +1464,8 @@
       "tests": [
         "Repeated analysis, many variants, crossover/contamination and post-hoc measure changes."
       ],
-      "deliveryIncrement": "I4"
+      "deliveryIncrement": "I4",
+      "currentSourceNote": "Private method refuses an unverified look history and limits coverage to two endpoints at one fixed look. Native freeze, look custody and contamination evidence remain open."
     },
     {
       "id": "experiment-geo",
@@ -1559,7 +1602,7 @@
         "src/features/activities/next-action-queue/queueTypes.ts",
         "src/features/activities/next-action-queue/readNextActionQueue.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "qualification-input"],
       "dataRequirements": ["Canonical activity evidence and versioned thresholds."],
       "acceptance": [
@@ -1649,7 +1692,7 @@
         "src/server/realtime/events.ts",
         "src/server/notify.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary", "ownership-contracts"],
       "dataRequirements": [
         "Atomic mutation/event identity, before/after state, origin/provenance and deterministic sequence."
@@ -1679,7 +1722,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": ["src/db/schema/stages.ts", "src/features/pipelines/stageActions.ts"],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["ownership-contracts"],
       "dataRequirements": ["Immutable stage identity/name/order/version at event time."],
       "acceptance": [
@@ -1704,7 +1747,7 @@
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "report-persistence"],
       "dataRequirements": ["Cutoff/scope/version/provenance and correction policy."],
       "acceptance": [
@@ -1730,7 +1773,7 @@
         "src/features/stats/stageConversion.ts",
         "src/features/import/commitDeal.history.test.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary"],
       "dataRequirements": [
         "Observed audit coverage, known import provenance and reliable-history start."
@@ -1973,7 +2016,7 @@
         "src/db/schema/savedFilters.ts",
         "docs/sales-platform/view-compatibility.md"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["scope-permissions", "dictionary"],
       "dataRequirements": [
         "Versioned report definition, ownership/sharing policy and supported fields."
@@ -2001,8 +2044,12 @@
         }
       ],
       "registration": "Existing canonical scope; bounded contribution does not close the issue.",
-      "baselineCode": ["src/db/schema/savedFilters.ts"],
-      "status": "remaining",
+      "baselineCode": [
+        "src/db/schema/savedFilters.ts",
+        "src/app/(app)/dashboard/export/route.ts",
+        "src/features/stats/dealReportExportCsv.ts"
+      ],
+      "status": "in-progress",
       "dependencies": ["outcome-drilldown", "scope-permissions", "regional-formatting"],
       "dataRequirements": [
         "Qualified existing export permission/path and current report definition."
@@ -2013,7 +2060,8 @@
       "tests": [
         "Export permission, formula injection, pagination completeness, revocation and decimal precision."
       ],
-      "deliveryIncrement": "I3"
+      "deliveryIncrement": "I3",
+      "currentSourceNote": "All contributing-deal metric tables have a permission-checked complete CSV download with a 100-row cap. Hosted qualification and export for the remaining report families are pending."
     },
     {
       "id": "data-quality-states",
@@ -2070,7 +2118,11 @@
       "baselineCode": [
         "src/db/schema/importBatches.ts",
         "src/db/schema/importExternalIds.ts",
-        "docs/sales-platform/product-signal-event-contract.md"
+        "docs/sales-platform/product-signal-event-contract.md",
+        "src/features/stats/analyticsInputContracts.ts",
+        "src/features/stats/analyticsInputAdmission.ts",
+        "src/features/stats/governedInputRepository.ts",
+        "docs/analytics/governed-source-storage-proposal.sql"
       ],
       "status": "in-progress",
       "dependencies": ["ownership-contracts", "scope-permissions"],
@@ -2085,7 +2137,7 @@
         "Native intake validation, replay/conflict, source revocation, correction, identity, bounded payload and database persistence."
       ],
       "deliveryIncrement": "I3",
-      "currentSourceNote": "Versioned Zod/Temporal payload validators and independent review implemented. Authenticated ingest, persistence, persistent dedup/corrections, source adapters and real source qualification remain unimplemented. See governed-inputs.md."
+      "currentSourceNote": "Versioned payload validators, an atomic planner and an unnumbered private custody writer are implemented in source. Native fixture qualification, installed storage, authenticated adapters, real sources and privacy lifecycle remain open. See governed-inputs.md."
     },
     {
       "id": "regional-boundaries",
@@ -2107,7 +2159,7 @@
         "src/features/activities/accountTimeZone.ts",
         "src/features/stats/ui/dateRange.ts"
       ],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["dictionary"],
       "dataRequirements": [
         "Independent locale/calendar/timezone preferences and canonical instants."
@@ -2261,7 +2313,7 @@
       ],
       "registration": "Specification extension under programme issue #8/#56 pending registration; existing linked issues do not silently acquire new acceptance.",
       "baselineCode": [],
-      "status": "remaining",
+      "status": "in-progress",
       "dependencies": ["history-exact-events", "input-contracts", "scope-permissions"],
       "dataRequirements": [
         "Qualified outcomes, immutable dataset/cutoff/model version and prespecified temporal evaluation."
@@ -2333,7 +2385,7 @@
         "Fresh one-use queue allocation before heavy type/lint/build/database/browser validation."
       ],
       "acceptance": [
-        "Clean task-owned commits/PRs with canonical issue mapping; main publication reserved to integration coordinator.",
+        "Clean task-owned commits/PRs with canonical issue mapping; final programme merge/publication expressly authorized by the user after required qualification.",
         "Source implemented, integrated/CI, accepted, released, deployed and real-source qualified are independent gates.",
         "Retain all unfinished/advanced scope and actual failures; never infer whole-programme completion from a slice."
       ],
@@ -2364,5 +2416,25 @@
     "preparedUnrun": "17 PostgreSQL cases; configured typegen/TSC and typed lint; actual desktop/mobile light/dark EN/DE/FA/RTL browser review.",
     "remaining": "All broad canonical acceptance and later programme capabilities remain open.",
     "inputContractReview": "docs/analytics/input-contract-review.json"
+  },
+  "currentHistoryIncrementEvidence": {
+    "state": "Private source proposal; no canonical migration or installed report",
+    "source": [
+      "src/db/schema/analyticsHistory.ts",
+      "docs/analytics/history-capture-proposal.sql",
+      "src/features/stats/history/contracts.ts",
+      "src/features/stats/history/fold.ts",
+      "src/features/stats/history/coverage.ts",
+      "src/features/stats/history/repository.ts",
+      "src/features/stats/history/stageEpisodes.ts",
+      "src/features/stats/history/currentStageEpisodes.ts",
+      "src/features/stats/history/stageStatistics.ts",
+      "src/features/stats/history/stageDefinitions.ts",
+      "src/features/stats/history/stageDefinitionRepository.ts",
+      "src/features/stats/history/inventoryMovement.ts"
+    ],
+    "capture": "Database-observed row changes with activation baseline, top-level transaction/snapshot witness and record incarnations; observed times and ordinals are not commit times.",
+    "reader": "Bounded internal current-deal reader, shared current authority and same-observation historical pipeline gate; reused pipeline IDs conservatively denied. No retained-deletion authority or browser DTO.",
+    "remaining": "Canonical admission/populated upgrade, amended native rerun, authenticated actor/command capture, snapshot writer and collection, integrated report services/UI, workload measurement and all later capabilities remain open."
   }
 }

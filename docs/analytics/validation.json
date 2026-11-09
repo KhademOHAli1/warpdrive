@@ -68,8 +68,7 @@
     "state": "queued by explicit user choice",
     "allocation": "none; prior exceptions not reused",
     "notRun": [
-      "declared Next typegen/configured whole-app TSC",
-      "configured type-aware ESLint",
+      "Local typegen/TSC and typed ESLint remain unrun; prior I1 hosted static result is recorded separately and does not qualify I2.",
       "17 prepared real PostgreSQL cases and affected existing DB suites",
       "actual desktop/mobile light/dark EN/DE/FA/RTL browser and keyboard review",
       "app/worker production build",

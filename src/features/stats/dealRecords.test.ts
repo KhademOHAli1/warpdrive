@@ -16,6 +16,7 @@ import type { DealRecordMetric } from "./metricDictionary";
 import { reportPeriod } from "./reportPeriod";
 import { winRate } from "./winRate";
 import { wonDealStats } from "./wonDealStats";
+import { wonTrend } from "./wonTrend";
 
 const RANGE = { from: "2026-06-01", to: "2026-06-30" };
 const signal = () => AbortSignal.timeout(10_000);
@@ -79,6 +80,38 @@ async function fixture(db: Db) {
 }
 
 describe("permission-safe report record populations", () => {
+  test("uses the exact trend bucket across a repeated local month-start midnight", async () => {
+    await withTestDb(async (db) => {
+      const f = await fixture(db);
+      const filters = {
+        ...f.filters,
+        from: "2026-10-15",
+        to: "2026-11-05",
+        timeZone: "America/Havana",
+      };
+      const earlier = await f.add({ wonTime: new Date("2026-11-01T04:30:00Z"), value: "1.2345" });
+      const later = await f.add({ wonTime: new Date("2026-11-01T05:30:00Z"), value: "0.7654" });
+      await f.add({ wonTime: new Date("2026-11-01T03:59:00Z"), value: "20.00" });
+      await f.add({ wonTime: new Date("2026-11-06T05:00:00Z"), value: "30.00" });
+      await f.add({ wonTime: new Date("2026-11-01T14:00:00Z"), currency: "EUR" });
+      const trend = await wonTrend(db, f.actor, filters, signal());
+      const page = await dealRecords(
+        db,
+        f.actor,
+        filters,
+        { metric: "won", wonMonth: "2026-11", limit: 25 },
+        signal(),
+      );
+      expect(trend.find(({ month }) => month === "2026-11")).toEqual({
+        month: "2026-11",
+        count: 2,
+        value: "1.9999",
+      });
+      expect(page.totals).toEqual({ count: 2, value: "1.9999", valueCount: 2 });
+      expect(new Set(page.rows.map(({ id }) => id))).toEqual(new Set([earlier.id, later.id]));
+    });
+  });
+
   test("reconciles all won pages with count, exact four-place money and non-null sample count", async () => {
     await withTestDb(async (db) => {
       const f = await fixture(db);

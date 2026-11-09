@@ -25,6 +25,13 @@ describe("language and regional preferences", () => {
     );
   });
 
+  it("requires a named reporting zone while retaining named fixed-zone aliases", () => {
+    const base = { locale: "en", calendar: "gregory" } as const;
+    expect(localePreferencesSchema.safeParse({ ...base, timeZone: "+05:30" }).success).toBe(false);
+    expect(resolveLocalePreferences({ ...base, timeZone: "-03:30" }).timeZone).toBe("UTC");
+    expect(resolveLocalePreferences({ ...base, timeZone: "Etc/GMT+8" }).timeZone).toBe("Etc/GMT+8");
+  });
+
   it("rejects unsupported preference writes and recovers individual invalid cookies", () => {
     expect(
       localePreferencesSchema.safeParse({ locale: "fr", calendar: "persian", timeZone: "UTC" })

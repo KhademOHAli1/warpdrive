@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "scope": "I2 stage definitions at a captured anchor and one-currency inventory movement reconciliation; native fixture ordering correction. No installed schema, UI, snapshot writer or release.",
+  "sources": [
+    {
+      "path": "src/features/stats/history/contracts.ts",
+      "sha256": "a132b6e2508f6931a38c0793c167da8ce813af8bbf60197429ac66212ec9fdfa"
+    },
+    {
+      "path": "src/features/stats/history/contracts.test.ts",
+      "sha256": "99b4995eef17292bdf2083417618679bf6ecbf17768f8d5b67a43e7a5fe4511f"
+    },
+    {
+      "path": "src/features/stats/history/stageDefinitions.ts",
+      "sha256": "900c123dd4f40e0c3bb0d0d9604056532b48331028220b7b46a327328097bf48"
+    },
+    {
+      "path": "src/features/stats/history/stageDefinitions.test.ts",
+      "sha256": "16d546ae581e138c356a2f58e30c3678365d93d1070d71fc2ceb81a5f8592543"
+    },
+    {
+      "path": "src/features/stats/history/stageDefinitionRepository.ts",
+      "sha256": "7c4a5e0b384b3f9959e4191ab4f4688e8ff96b4675143bcf875238e8b01b1327"
+    },
+    {
+      "path": "src/features/stats/history/stageDefinitionRepository.integration.test.ts",
+      "sha256": "44298ec56775767201549efc61c6b5bd94575767a1ec1a22421f02d09fd620ce"
+    },
+    {
+      "path": "src/features/stats/history/inventoryMovement.ts",
+      "sha256": "d915bb99c0564e25986f2bc82d2b1625412f7b489e252eee645568a40edba087"
+    },
+    {
+      "path": "src/features/stats/history/inventoryMovement.test.ts",
+      "sha256": "cff9a702bf4ea4684cc8608156e063023e421d487697b98083b22f672f78a344"
+    },
+    {
+      "path": "src/features/stats/history/capture.test-helpers.ts",
+      "sha256": "d49a14192ed38df3360889e5909a5994212775ccf45401b3be054d2bc214765b"
+    },
+    {
+      "path": "src/features/stats/history/repository.integration.test.ts",
+      "sha256": "c786da4d797d87032709fd1172183e5434f2a954c4587c5e331f8fe1ca4a7038"
+    }
+  ],
+  "review": [
+    {
+      "reviewer": "/root/history_sources",
+      "module": "stageDefinitions.ts / inventoryMovement.ts",
+      "result": "Read-only source review; no arithmetic or lifecycle blocker. Legacy stored UUIDs were narrower than PostgreSQL and are aligned with shared historyUuid. Caller must authorize both states and witnesses; inScope is report selection, never an access-denial sentinel."
+    },
+    {
+      "reviewer": "/root/history_kernel_tests",
+      "module": "stageDefinitionRepository.ts",
+      "result": "Independent source read verified owned pool transaction, current durable actor/ceiling, explicit native anchor membership, current stage head and exact incarnation binding. Same-anchor replacement without a reference witness is unavailable; a later anchor can resolve a committed replacement. No viewer DTO or retained-stage grant."
+    }
+  ],
+  "boundaries": {
+    "stage": "Read-only repeatable-read snapshot with fresh actor intersection, current-deal/report authorization, live stage tip, PG native membership before limit. Returns only scoped definition/version facts; no raw event states, linked contacts or database snapshot.",
+    "movement": "Pure exact signed four-place decimal and count reconciliation over complete authorized boundary books and native membership-difference changes. Explicit absence differs from missing fact and unknown value. Source witnesses and stable same-unit transfer/value decomposition; no database writes, currency conversion, authority inference or complete collector.",
+    "privacy": "Eight narrow source inventory declarations, all lifecycle capabilities unsupported; execute:sql represents SELECT/session-local limits, delete:dynamic is transient Map.delete."
+  },
+  "focused": {
+    "tests": 164,
+    "files": 3,
+    "vitestSeconds": 0.235,
+    "selection": ["contracts.test.ts", "stageDefinitions.test.ts", "inventoryMovement.test.ts"],
+    "log": "work/stage-movement-unit.log",
+    "observedResourceEntry": "Pressure level 1, 56% available memory, more than 8 GiB disk; one worker, 55-second deadline, no result cache, aggregate peak unmeasured."
+  },
+  "retainedNativeEvidence": {
+    "source": "f27f2537d9cfc9e518cb6822118626957c7b620d",
+    "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42088809864",
+    "appUnits": "11302 passed, 3 skipped",
+    "postgres": "3936 passed, 1 failed; build and worker steps skipped",
+    "affected": "17 of 18 capture cases passed, all 19 current reader cases and the 15 outcome records/2 activity cases passed. One cascade case observed an insert where the test helper expected the second numeric event to be delete.",
+    "correction": "The fixture selected ordinal::text AS ordinal and ORDER BY ordinal, which chose the output text alias. Qualify ORDER BY e.ordinal to sort the native bigint while preserving exact text transport. Production reader already uses a qualified numeric sort; no capture SQL or assertion was relaxed.",
+    "reference": "https://www.postgresql.org/docs/16/queries-order.html",
+    "status": "Amended native run still required; no whole-workflow pass."
+  },
+  "nativePrepared": "Eight stage repository native definitions plus one current-deal legacy UUID case, unrun. The existing cascade oracle is retained with corrected fixture ordering.",
+  "qualificationLimits": [
+    "Local heavy validation remains queued; only focused pure/source checks ran locally.",
+    "Matching cutoff/definition/authority labels cannot prove snapshot membership, completeness or retained access. The collecting service and canonical populated upgrade remain required.",
+    "No migration ordinal/journal/snapshot/schema export, immutable snapshot writer, report UI, provider, human acceptance, main merge or release."
+  ],
+  "base": "56f137fe4858127b9b66a9f8ca485165edb29c54",
+  "uiFocused": {
+    "tests": 32,
+    "files": 2,
+    "vitestSeconds": 3.06,
+    "log": "work/browser-scoreboard-focused.log",
+    "limitation": "Behavior checks after the scoreboard adjustment. CSS layout is verified only by a rendered hosted rerun."
+  },
+  "inventory": {
+    "result": "passed after main reconciliation",
+    "missing": [],
+    "invalid": [],
+    "registryTests": 20,
+    "translationCatalogIssues": 0
+  }
+}

@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/Button";
 import { activityTypeName } from "@/features/activities/activityTypeLabels";
 import { useLocale, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
@@ -40,9 +41,11 @@ export function ActivityTypesWidget({ data }: { data: ActivityTypeCount[] }) {
 export function LostReasonsWidget({
   data,
   currency,
+  onInspectReason,
 }: {
   data: LostReasonCount[];
   currency: string;
+  onInspectReason?: (selector: string, label: string, trigger: HTMLButtonElement) => void;
 }) {
   const preferences = useLocalePreferences();
 
@@ -59,12 +62,14 @@ export function LostReasonsWidget({
         {data.map((r) => {
           // A null name means the deal was closed lost with nothing recorded, which is worth
           // seeing as its own row rather than hiding.
-          const label = r.name ?? S.lostReasonUnspecified;
+          const label =
+            r.name === null ? S.lostReasonUnspecified : r.name === "" ? S.lostReasonBlank : r.name;
+          const { selector } = r;
           return (
-            <div key={r.reasonId ?? `text:${r.name ?? "unspecified"}`}>
+            <div key={JSON.stringify([r.reasonId, r.name])}>
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span className="flex min-w-0 items-baseline gap-1.5">
-                  <span className="min-w-0 break-words">{label}</span>
+                  <bdi className="min-w-0 wrap-anywhere">{label}</bdi>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     ({format.number(r.count)})
                   </span>
@@ -74,6 +79,18 @@ export function LostReasonsWidget({
                 </span>
               </div>
               <Bar label={label} pct={(Number(r.value) / max) * 100} />
+              {selector !== undefined && onInspectReason !== undefined && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 min-h-10"
+                  aria-label={S._extra.lostReasonInspect(label)}
+                  onClick={(event) => onInspectReason(selector, label, event.currentTarget)}
+                >
+                  {S.trendInspect}
+                </Button>
+              )}
             </div>
           );
         })}
