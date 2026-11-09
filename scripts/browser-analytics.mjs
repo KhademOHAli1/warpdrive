@@ -253,7 +253,7 @@ async function rpcAfter(page, procedure, matches, action) {
     page.waitForResponse(
       (candidate) => {
         const call = rpcRequest(candidate.url(), procedure);
-        return call?.input !== undefined && matches(call.input);
+        return call !== null && matches(call.input);
       },
       { timeout: 15000 },
     ),
@@ -422,15 +422,26 @@ async function openDashboard(page, locale, calendar, zone, { allPipelines = fals
   const clock = () =>
     pool.query("SELECT to_char(now() AT TIME ZONE $1, 'YYYY-MM-DD') AS today", [zone]);
   const before = await clock();
-  const initial = await rpcAfter(
-    page,
-    "stats.dashboard",
-    (input) => input.pipelineId === null,
-    async () => {
-      assert.equal((await page.goto("/dashboard"))?.status(), 200);
-      assert.equal(new URL(page.url()).pathname, "/dashboard");
-    },
-  );
+  const [pipelineList, initial] = await Promise.all([
+    rpcAfter(
+      page,
+      "pipeline.list",
+      () => true,
+      () => Promise.resolve(),
+    ),
+    rpcAfter(
+      page,
+      "stats.dashboard",
+      (input) => input.pipelineId === null,
+      async () => {
+        assert.equal((await page.goto("/dashboard"))?.status(), 200);
+        assert.equal(new URL(page.url()).pathname, "/dashboard");
+      },
+    ),
+  ]);
+  assert.ok(Array.isArray(pipelineList.data), "Native pipeline list response");
+  assert.ok(pipelineList.data.some((pipeline) => pipeline.id === actor.pipelineId));
+  assert.ok(!pipelineList.data.some((pipeline) => pipeline.id === actor.restrictedPipelineId));
   const today = initial.input.to;
   assert.match(today, /^\d{4}-\d{2}-\d{2}$/);
   const after = await clock();
