@@ -1,6 +1,7 @@
 // Global (unscoped) flags: stored under their own name.
 export const GLOBAL_FLAGS = [
   "deal.create",
+  "project.create",
   "contact.create",
   "activity.create",
   "bulk.edit",
@@ -81,6 +82,7 @@ export const PERMISSION_FLAGS = {
 
 // Granting any of these to a set requires the actor to be an admin (permissions spec 5.2).
 export const HIGH_RISK_FLAGS = [
+  "project.create",
   "workflow.publish",
   "company.legal.manage",
   "work.manage",

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "templateId": "short_video",
+  "version": 1,
+  "label": {
+    "fa": "تولید ویدیوی کوتاه",
+    "de": "Kurzes Video",
+    "en": "Short video production"
+  },
+  "description": {
+    "fa": "الگویی برای هماهنگی تدوین یک ویدیوی کوتاه. پیش از استفاده، دامنه کار، افراد مسئول و تاریخ‌ها را بررسی کنید. فاصله روزها پیشنهادی و قابل ویرایش است؛ زمان تحویل را جداگانه توافق کنید.",
+    "de": "Vorlage für die Koordination eines kurzen Videoschnitts. Vor der Verwendung Leistungsumfang, Rollenbesetzung und Termine prüfen. Die Tagesabstände sind editierbare Annahmen; Liefertermine separat abstimmen.",
+    "en": "Coordinate editing for a short video. Review scope, role mapping and dates before use. Use day offsets as editable planning assumptions and agree delivery dates separately."
+  },
+  "roles": [
+    {
+      "id": "producer",
+      "kind": "internal-producer",
+      "label": {
+        "fa": "مسئول داخلی پروژه",
+        "de": "Interne Projektverantwortung",
+        "en": "Internal project owner"
+      }
+    },
+    {
+      "id": "editor",
+      "kind": "freelancer-contact",
+      "label": {
+        "fa": "تدوین‌گر همکار",
+        "de": "Externer Videoschnitt",
+        "en": "Freelance video editor"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "id": "briefing",
+      "label": { "fa": "شرح کار و نقش‌ها", "de": "Briefing und Rollen", "en": "Brief and roles" },
+      "dependsOn": []
+    },
+    {
+      "id": "production",
+      "label": { "fa": "تدوین", "de": "Schnitt", "en": "Editing" },
+      "dependsOn": ["briefing"]
+    },
+    {
+      "id": "internal_review",
+      "label": { "fa": "بازبینی داخلی", "de": "Interne Prüfung", "en": "Internal review" },
+      "dependsOn": ["production"]
+    }
+  ],
+  "deliverables": [
+    {
+      "id": "video_cut",
+      "label": { "fa": "نسخه تدوین‌شده ویدیو", "de": "Videoschnitt", "en": "Video cut" },
+      "stageId": "production",
+      "responsibleRoleId": "producer"
+    }
+  ],
+  "intents": [
+    {
+      "id": "brief_followup",
+      "kind": "follow-up",
+      "label": {
+        "fa": "تکمیل شرح کار و محدوده تدوین",
+        "de": "Briefing und Schnittumfang klären",
+        "en": "Clarify brief and editing scope"
+      },
+      "stageId": "briefing",
+      "assigneeRoleId": "producer",
+      "dependsOn": [],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 0 }
+    },
+    {
+      "id": "video_assignment",
+      "kind": "assignment",
+      "label": {
+        "fa": "هماهنگی تدوین ویدیو",
+        "de": "Videoschnitt koordinieren",
+        "en": "Coordinate video editing"
+      },
+      "stageId": "production",
+      "deliverableId": "video_cut",
+      "internalProducerRoleId": "producer",
+      "freelancerRoleId": "editor",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 3 }
+    },
+    {
+      "id": "client_update_followup",
+      "kind": "follow-up",
+      "label": {
+        "fa": "پیگیری گزارش پیشرفت برای مشتری",
+        "de": "Kundenupdate intern nachhalten",
+        "en": "Follow up internally on client update"
+      },
+      "stageId": "production",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 2 }
+    },
+    {
+      "id": "video_review",
+      "kind": "review",
+      "label": {
+        "fa": "بازبینی داخلی نسخه تدوین‌شده",
+        "de": "Videoschnitt intern prüfen",
+        "en": "Review video cut internally"
+      },
+      "stageId": "internal_review",
+      "deliverableId": "video_cut",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["video_assignment"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 4 }
+    }
+  ]
+}

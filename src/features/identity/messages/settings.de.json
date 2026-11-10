@@ -759,7 +759,8 @@
       "work_view": "Operative Arbeit ansehen",
       "work_create": "Operative Arbeit erstellen",
       "work_change": "Sichtbare operative Arbeit bearbeiten",
-      "work_manage": "Arbeitsarten und Phasen verwalten"
+      "work_manage": "Arbeitsarten und Phasen verwalten",
+      "project_create": "Projekt erstellen"
     },
     "icons": {
       "call": "Anruf",
