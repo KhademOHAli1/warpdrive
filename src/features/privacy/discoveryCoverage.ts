@@ -15,6 +15,17 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
     [
+      "agency_projects",
+      "agency_project_members",
+      "agency_project_history",
+      "agency_project_requests",
+      "agency_project_settings",
+    ],
+    "unsupported",
+    "Project titles, CRM anchors, workforce memberships, immutable audit history and keyed actor-bound receipts require dedicated subject/provenance and safe-projection adapters. Native project membership and current CRM visibility grant ordinary product access only. The default-disabled module, receipt tombstones and append-only triggers establish no discovery, export, rectification, restriction, erasure or retention execution capability.",
+  ),
+  ...group(
+    [
       "workflows_v2",
       "workflow_v2_versions",
       "workflow_v2_runs",

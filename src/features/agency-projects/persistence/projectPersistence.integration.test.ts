@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // Real DB fixture, kept in the integration lane by the @/test/db marker.
 import { insertProject, schemaCase } from "./projectPersistence.seeds";
 
-describe("Agency reserved0099 project schema on canonical0000..0097", () => {
+describe("Agency project persistence constraints", () => {
   it(
     "stores native UUID anchors with planned/revision0 and server timestamp defaults",
     schemaCase(async (f) => {

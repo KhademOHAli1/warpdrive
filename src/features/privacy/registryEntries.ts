@@ -1,3 +1,4 @@
+import { agencyProjectInventoryEntry } from "./registryAgencyProjects";
 import {
   analyticsAttentionInventoryEntry,
   analyticsComputationInventoryEntry,
@@ -59,6 +60,7 @@ import {
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
+  agencyProjectInventoryEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,
   currentLeadHandoffInventoryEntry,

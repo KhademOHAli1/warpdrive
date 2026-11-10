@@ -116,6 +116,7 @@
     "back": "Zurück zu den Projekten",
     "client": "Kundenorganisation",
     "chooseClient": "Kundenorganisation auswählen",
-    "loading": "Projekt wird geladen..."
+    "loading": "Projekt wird geladen...",
+    "new": "Neues Projekt"
   }
 }

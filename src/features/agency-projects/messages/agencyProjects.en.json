@@ -116,6 +116,7 @@
     "back": "Back to projects",
     "client": "Client organization",
     "chooseClient": "Choose a client organization",
-    "loading": "Loading project..."
+    "loading": "Loading project...",
+    "new": "New project"
   }
 }
