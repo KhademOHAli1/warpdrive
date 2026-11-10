@@ -92,8 +92,7 @@ test("pasted surrounding whitespace and uppercase UUID hex pass only canonical l
   render(wrap(<ReviewerCaseReferenceEntry {...entryProps()} />));
   fireEvent.change(screen.getByLabelText(labels.en.reference), {
     target: {
-      value: `  ${CASE.toUpperCase()} 
-`,
+      value: `  ${CASE.toUpperCase()} \n`,
     },
   });
   fireEvent.click(screen.getByRole("button", { name: labels.en.open }));
