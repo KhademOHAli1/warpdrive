@@ -17,7 +17,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/admin/operations.ts#78ab80f65f5b41dd04aa6f522e69628bc00f661c89bc57fca76de4978ab00c82",
   "sourceReview:src/features/newsletter/audience/operations.ts#186d7c4f21a19f2496688447963ca47776476397db4eb39e4f58f3e588b57b6d",
   "sourceReview:src/features/newsletter/campaigns/CampaignAnalytics.tsx#f2fcc792762ae30845b0dc4ea74bb676cbe43116f7955ac1b4b76023569ca7ea",
-  "sourceReview:src/features/newsletter/campaigns/CampaignEditor.tsx#70cf7f13161e086b2a2c3a2a2b3038516386b70b597f6048d9de74b205193882",
+  "sourceReview:src/features/newsletter/campaigns/CampaignEditor.tsx#1e20a6abd93d50345b2f901f763899546108af285f1b76f7c4efd5181e9271f0",
   "sourceReview:src/features/newsletter/campaigns/model.ts#8438ccbe5d5e86f7f9eb999fbde0022fb3676a97140addce64c048ac14a9343d",
   "sourceReview:src/features/newsletter/campaigns/operations.ts#e1c38732478a32d676e6301348b7e07bb8d82d73479c036e966328bc93a12064",
   "sourceReview:src/features/newsletter/listmonkClient.ts#9f429f6a844f8e74c87f76d44009b82c25ffe40536d788ca46b52c93f630a242",

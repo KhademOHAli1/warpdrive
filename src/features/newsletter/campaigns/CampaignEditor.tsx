@@ -11,9 +11,6 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
-import { AudienceRefresh } from "@/features/newsletter/audience/components";
-import { useAudienceMessages } from "@/features/newsletter/audience/messages";
-import { emailAudiencePaths } from "@/features/newsletter/audience/paths";
 import { useNewsletterRead, useNewsletterWrite } from "@/features/newsletter/ui/client";
 import { useFormatters } from "@/lib/useFormatters";
 import { useCampaignMessages } from "./messages";
@@ -211,76 +208,58 @@ function MessageBody({
   );
 }
 
-type MailingListRead = ReturnType<typeof useNewsletterRead<Choice[]>>;
-
 function CampaignAudience({
   selected,
-  listRead,
+  choices,
   disabled,
   onChange,
 }: {
   selected: Choice[];
-  listRead: MailingListRead;
+  choices: Choice[];
   disabled: boolean;
   onChange: (value: Choice[]) => void;
 }) {
   const m = useCampaignMessages();
-  const L = useAudienceMessages();
-  const choices = listRead.data ?? [];
   const available = [
     ...choices,
     ...selected.filter((item) => !choices.some((choice) => choice.id === item.id)),
   ];
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          className="text-sm text-link hover:underline"
-          href={emailAudiencePaths.lists}
-          target="_blank"
-          rel="noopener"
-        >
-          {L.manageAudience}
-        </Link>
-        <AudienceRefresh read={listRead} />
-      </div>
-      {listRead.isRefetchError && (
-        <p role="alert" className="text-sm text-destructive">
-          {L.loadError}
+    <fieldset className="grid gap-2" disabled={disabled}>
+      <legend className="mb-2 text-sm font-medium">{m.lists}</legend>
+      {available.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          <Link className="text-link hover:underline" href="/campaigns/lists">
+            {m.noLists}
+          </Link>
         </p>
+      ) : (
+        <div className="grid max-h-48 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2">
+          {available.map((item) => {
+            const checked = selected.some((list) => list.id === item.id);
+            return (
+              <label
+                key={item.id}
+                htmlFor={`campaign-list-${item.id}`}
+                className="flex items-center gap-2 text-sm"
+              >
+                <Checkbox
+                  id={`campaign-list-${item.id}`}
+                  label={item.name}
+                  checked={checked}
+                  onCheckedChange={(next) =>
+                    onChange(
+                      next ? [...selected, item] : selected.filter((list) => list.id !== item.id),
+                    )
+                  }
+                />
+                <bdi>{item.name}</bdi>
+              </label>
+            );
+          })}
+        </div>
       )}
-      <fieldset className="grid gap-2" disabled={disabled}>
-        <legend className="mb-2 text-sm font-medium">{m.recipients}</legend>
-        {available.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{m.noLists}</p>
-        ) : (
-          <div className="grid max-h-48 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2">
-            {available.map((item) => {
-              const checked = selected.some((list) => list.id === item.id);
-              return (
-                <label
-                  key={item.id}
-                  htmlFor={`campaign-list-${item.id}`}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <Checkbox
-                    id={`campaign-list-${item.id}`}
-                    label={item.name}
-                    checked={checked}
-                    onCheckedChange={(next) =>
-                      onChange(
-                        next ? [...selected, item] : selected.filter((list) => list.id !== item.id),
-                      )
-                    }
-                  />
-                  <bdi>{item.name}</bdi>
-                </label>
-              );
-            })}
-          </div>
-        )}
-      </fieldset>
-    </div>
+    </fieldset>
   );
 }
 
@@ -621,13 +600,13 @@ function ArchiveControls({
 
 function CampaignForm({
   initial,
-  listRead,
+  lists,
   templates,
   config,
   reloadCampaign,
 }: {
   initial?: Campaign;
-  listRead: MailingListRead;
+  lists: Choice[];
   templates: TemplateItem[];
   config?: DeliveryConfig;
   reloadCampaign: () => Promise<Campaign | undefined>;
@@ -810,7 +789,7 @@ function CampaignForm({
           </div>
           <CampaignAudience
             selected={draft.lists}
-            listRead={listRead}
+            choices={lists}
             disabled={disabled || saving}
             onChange={(value) => set("lists", value)}
           />
@@ -950,12 +929,7 @@ export function CampaignEditor({ campaignId }: { campaignId?: number }) {
       />
       <QueryState
         loading={campaign.isLoading || lists.isLoading || templates.isLoading || config.isLoading}
-        error={
-          campaign.error ??
-          (lists.data === undefined ? lists.error : null) ??
-          templates.error ??
-          config.error
-        }
+        error={campaign.error ?? lists.error ?? templates.error ?? config.error}
         retry={() => {
           if (campaignId !== undefined) void campaign.refetch();
           void lists.refetch();
@@ -967,7 +941,7 @@ export function CampaignEditor({ campaignId }: { campaignId?: number }) {
           <CampaignForm
             key={campaignId ?? "new"}
             initial={item}
-            listRead={lists}
+            lists={lists.data ?? []}
             templates={templates.data ?? []}
             config={config.data}
             reloadCampaign={async () => {
