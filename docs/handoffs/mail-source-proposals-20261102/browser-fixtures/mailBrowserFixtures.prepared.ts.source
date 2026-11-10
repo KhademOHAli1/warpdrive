@@ -1,0 +1,234 @@
+// Prepared local-only fixture launcher. Run only in a fresh Main-allocated native/browser slot.
+import { randomBytes } from "node:crypto";
+import { appendFileSync, chmodSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { decodedSmtpBody, startAuthSmtpSink } from "../../../src/test/authSmtpSink";
+import { startMailProtocolImap } from "../../../src/test/mailProtocolImap";
+import { startMailProtocolSmtp } from "../../../src/test/mailProtocolSmtp";
+import { MAIL_PROTOCOL_TEST_CERT } from "../../../src/test/mailProtocolTls";
+
+const FIXTURE_LIFETIME_MS = 285_000;
+const CLEANUP_DEADLINE_MS = 15_000;
+const AUTH_FLUSH_INTERVAL_MS = 250;
+const directory = mkdtempSync(join(tmpdir(), "warpdrive-mail-fixtures-"));
+chmodSync(directory, 0o700);
+const authCapturePath = join(directory, "auth-mail.jsonl");
+writeFileSync(authCapturePath, "", { mode: 0o600, flag: "wx" });
+const owned: { close: () => Promise<void> }[] = [];
+let authSink: Awaited<ReturnType<typeof startAuthSmtpSink>> | undefined;
+let capturedAuthCount = 0;
+const smtpCaptures: {
+  path: string;
+  received: Buffer[];
+  captured: number;
+}[] = [];
+let flushTimer: ReturnType<typeof setInterval> | undefined;
+let stopped = false;
+let stopPromise: Promise<void> | undefined;
+let resolveStopped: () => void = () => {};
+const stoppedPromise = new Promise<void>((resolve) => {
+  resolveStopped = resolve;
+});
+let resolveStartupFinished: () => void = () => {};
+const startupFinished = new Promise<void>((resolve) => {
+  resolveStartupFinished = resolve;
+});
+
+function privateJson(name: string, value: unknown) {
+  writeFileSync(join(directory, name), `${JSON.stringify(value, null, 2)}\n`, {
+    mode: 0o600,
+    flag: "wx",
+  });
+}
+
+function flushMail() {
+  for (const capture of smtpCaptures) {
+    const pending = capture.received.slice(capture.captured);
+    if (pending.length === 0) continue;
+    const lines = pending.map((raw) =>
+      JSON.stringify({
+        capturedAt: new Date().toISOString(),
+        rawBase64: raw.toString("base64"),
+      }),
+    );
+    appendFileSync(capture.path, `${lines.join("\n")}\n`, { encoding: "utf8", mode: 0o600 });
+    capture.captured += pending.length;
+  }
+  if (authSink === undefined || capturedAuthCount === authSink.messages.length) return;
+  const pending = authSink.messages.slice(capturedAuthCount);
+  const lines = pending.map((message) =>
+    JSON.stringify({
+      capturedAt: new Date().toISOString(),
+      recipient: message.recipient,
+      raw: message.raw,
+      text: decodedSmtpBody(message.raw),
+    }),
+  );
+  appendFileSync(authCapturePath, `${lines.join("\n")}\n`, { encoding: "utf8", mode: 0o600 });
+  capturedAuthCount += pending.length;
+}
+
+async function keep<T extends { close: () => Promise<void> }>(pending: Promise<T>): Promise<T> {
+  const fixture = await pending;
+  if (stopped) {
+    await fixture.close();
+    throw new Error("Fixture launcher was stopped during startup");
+  }
+  owned.push(fixture);
+  return fixture;
+}
+
+function stop(reason: "signal" | "lifetime" | "startup" | "capture"): Promise<void> {
+  if (stopPromise !== undefined) return stopPromise;
+  stopped = true;
+  clearTimeout(lifetimeTimer);
+  if (flushTimer !== undefined) clearInterval(flushTimer);
+  stopPromise = (async () => {
+    // A stuck close may end only this fixture process. The five owned sockets are OS-closed.
+    const cleanupDeadline = setTimeout(() => {
+      process.stderr.write(`${JSON.stringify({ status: "cleanup-deadline", directory })}\n`);
+      process.exit(1);
+    }, CLEANUP_DEADLINE_MS);
+    const results = await Promise.allSettled(owned.splice(0).map((fixture) => fixture.close()));
+    // A late startup fixture closes inside keep() before startup is declared finished.
+    await startupFinished;
+    let captureFailed = false;
+    try {
+      flushMail();
+    } catch {
+      captureFailed = true;
+    }
+    let clean = results.every((result) => result.status === "fulfilled") && !captureFailed;
+    try {
+      privateJson("stopped.json", {
+        status: clean ? "closed" : "cleanup-error",
+        reason,
+        stoppedAt: new Date().toISOString(),
+        capturedAuthCount,
+        capturedSmtpCount: smtpCaptures.map((capture) => capture.captured),
+      });
+    } catch {
+      clean = false;
+    }
+    if (!clean) process.exitCode = 1;
+    process.stdout.write(
+      `${JSON.stringify({ status: clean ? "closed" : "cleanup-error", directory })}\n`,
+    );
+    clearTimeout(cleanupDeadline);
+    resolveStopped();
+  })();
+  return stopPromise;
+}
+
+const lifetimeTimer = setTimeout(() => {
+  void stop("lifetime");
+}, FIXTURE_LIFETIME_MS);
+const onSignal = () => {
+  void stop("signal");
+};
+process.once("SIGINT", onSignal);
+process.once("SIGTERM", onSignal);
+
+async function main() {
+  const first = {
+    username: "first@mail.test",
+    password: randomBytes(24).toString("base64url"),
+    recipient: "first@mail.test",
+    messageIdPrefix: "first-inbox",
+    subject: "پیشنهاد همکاری برای شرکت اول",
+  };
+  const second = {
+    username: "second@mail.test",
+    password: randomBytes(24).toString("base64url"),
+    recipient: "second@mail.test",
+    messageIdPrefix: "second-inbox",
+    subject: "Anfragen für das zweite Unternehmen",
+  };
+  const mailboxes = [];
+  const endpoints = [];
+  for (const [index, identity] of [first, second].entries()) {
+    const imap = await keep(startMailProtocolImap(identity));
+    const smtp = await keep(
+      startMailProtocolSmtp({
+        username: identity.username,
+        password: identity.password,
+      }),
+    );
+    const id = index === 0 ? "first" : "second";
+    const capturePath = join(directory, `smtp-${id}.jsonl`);
+    writeFileSync(capturePath, "", { mode: 0o600, flag: "wx" });
+    smtpCaptures.push({ path: capturePath, received: smtp.received, captured: 0 });
+    mailboxes.push({
+      id,
+      email: identity.username,
+      username: identity.username,
+      password: identity.password,
+      imap: { host: "127.0.0.1", port: imap.endpoint.port, protocol: "imaps" },
+      smtp: { host: "127.0.0.1", port: smtp.endpoint.port, protocol: "smtps" },
+    });
+    for (const endpoint of [imap.endpoint, smtp.endpoint])
+      endpoints.push({
+        protocol: endpoint.protocol,
+        host: "127.0.0.1",
+        port: endpoint.port,
+        allowedAddresses: ["127.0.0.1"],
+        allowLoopback: true,
+        ca: MAIL_PROTOCOL_TEST_CERT,
+      });
+  }
+  authSink = await keep(startAuthSmtpSink());
+  if (stopped) return;
+  writeFileSync(join(directory, "mailbox-ca.pem"), MAIL_PROTOCOL_TEST_CERT, {
+    mode: 0o600,
+    flag: "wx",
+  });
+  privateJson("mailbox-settings.json", mailboxes);
+  privateJson("mail-internal-endpoints.json", endpoints);
+  privateJson("runtime-env.json", {
+    MAIL_INTERNAL_ENDPOINTS: JSON.stringify(endpoints),
+    AUTH_MAIL_TRANSPORT: "smtp",
+    AUTH_MAIL_FROM: "auth@mail.test",
+    AUTH_SMTP_HOST: "127.0.0.1",
+    AUTH_SMTP_PORT: String(authSink.port),
+    AUTH_SMTP_SECURE: "false",
+    AUTH_SMTP_USER: "",
+    AUTH_SMTP_PASSWORD: "",
+  });
+  const readiness = {
+    status: "ready",
+    pid: process.pid,
+    directory,
+    expiresAfterMs: FIXTURE_LIFETIME_MS,
+    mailboxes: mailboxes.map((mailbox) => ({
+      id: mailbox.id,
+      imapPort: mailbox.imap.port,
+      smtpPort: mailbox.smtp.port,
+    })),
+    authSmtpPort: authSink.port,
+  };
+  privateJson("readiness.json", readiness);
+  flushTimer = setInterval(() => {
+    try {
+      flushMail();
+    } catch {
+      process.exitCode = 1;
+      void stop("capture");
+    }
+  }, AUTH_FLUSH_INTERVAL_MS);
+  process.stdout.write(`${JSON.stringify(readiness)}\n`);
+  resolveStartupFinished();
+  await stoppedPromise;
+}
+
+try {
+  await main();
+} catch {
+  process.exitCode = 1;
+  process.stderr.write(`${JSON.stringify({ status: "startup-error", directory })}\n`);
+} finally {
+  resolveStartupFinished();
+  await stop("startup");
+  process.removeListener("SIGINT", onSignal);
+  process.removeListener("SIGTERM", onSignal);
+}

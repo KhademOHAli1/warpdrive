@@ -7,6 +7,7 @@ import {
   type ConnectionView,
 } from "@/app/(app)/settings/connections/ConnectionsClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MailboxManagementEntry } from "@/features/email/connections/MailboxManagementEntry";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
@@ -68,6 +69,7 @@ export function IntegrationHub({
   }
   return (
     <div className="@container min-w-0 space-y-6">
+      <MailboxManagementEntry />
       <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto border-b">
           <TabsList

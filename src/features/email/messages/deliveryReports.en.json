@@ -23,6 +23,7 @@
   "saving": "Saving review…",
   "saved": "Review saved",
   "failure": "Your review could not be saved. Try again.",
+  "saveUnconfirmed": "We could not confirm that your review was saved. Close this dialog and refresh the report before trying again.",
   "permission": "Your access has changed. Refresh this message before reviewing again.",
   "conflict": "This report has changed. Refresh it before reviewing again.",
   "conflictingStatus": "The reported action and status code conflict. Review the original report.",

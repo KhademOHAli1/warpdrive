@@ -24,7 +24,7 @@
   "acceptedRecipients": "Vom Versandserver angenommen",
   "rejectedRecipients": "Vom Versandserver abgelehnt",
   "unknownTitle": "Sendestatus ist nicht bestätigt",
-  "unknownDescription": "Die Bestätigung des Servers fehlt. Die Nachricht wurde möglicherweise bereits gesendet. Prüfen Sie den Status, bevor Sie eine neue Nachricht erstellen.",
+  "unknownDescription": "Der Mailserver hat diese Nachricht möglicherweise bereits angenommen. Prüfen Sie ihren Status, bevor Sie dieselbe Nachricht erneut senden.",
   "acceptedReviewTitle": "Nachricht angenommen, CRM-Kopie ausstehend",
   "acceptedReviewDescription": "Der Versandserver hat Ihre Nachricht angenommen. Die CRM-Kopie muss noch gespeichert werden. Die Statusprüfung stellt die Kopie wieder her, ohne erneut zu senden.",
   "pendingTitle": "Versand läuft",

@@ -1,0 +1,97 @@
+{
+  "status": "CURATED_SOURCE_ONLY_NO_RUNTIME_LOGS_ENV_CREDS_PROFILES_OR_DEPS",
+  "files": [
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/0102_mail_read_intents.sql.source",
+      "sha256": "390fdee27409509e046352ab1f575a2a9a74a7a1170a197ff0beed7a8b8ad124",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/0102_mail_read_intents.sql",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/0102_mail_read_intents.sql",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentAdmission.integration.test.ts.source",
+      "sha256": "d675269aafc1d57bedae15e06d78071f41ffbcca0114023b0003047a23e2609a",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentAdmission.integration.test.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentAdmission.integration.test.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.integration.test.ts.source",
+      "sha256": "733dfa9e4613224e9395daf135ed8995021db01459fdf46c4a77c506ec3ad2f3",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentConstraints.integration.test.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentConstraints.integration.test.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.test-fixtures.ts.source",
+      "sha256": "1d02797a760da3472bd75ebff345e237fca42e38c08f46f2d4139ca3cda4a5ec",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentConstraints.test-fixtures.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentConstraints.test-fixtures.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentImap.integration.test.ts.source",
+      "sha256": "6b4b478a3ef262e4492012ba54eca1adce132f12843e6dff94c9472bace7999b",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentImap.integration.test.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentImap.integration.test.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentLifecycle.integration.test.ts.source",
+      "sha256": "1aeef0244653d858113f8e1b16df6cde447119fe6ae0c214fc683e88bd7c13f6",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentLifecycle.integration.test.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentLifecycle.integration.test.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentRemoteAuthority.integration.test.ts.source",
+      "sha256": "d3171a50ba1f6dd8033db4bede1b169678f0f7e666f232765c47107972059105",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentRemoteAuthority.integration.test.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentRemoteAuthority.integration.test.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentTruncate.integration.test.ts.source",
+      "sha256": "96b8e53ccaf2c6c2fc9fc7dfdfbc5e586cc49349d64a5cf7fdcb3a5bfe5553ff",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentTruncate.integration.test.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/prepared/readIntentTruncate.integration.test.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents-model-note.md.source",
+      "sha256": "7c3fa52f1522597c326bd7b07606419dea32ba0b73e0109d2ec40818b9b0d696",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/proposals/emailReadIntents-model-note.md",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/proposals/emailReadIntents-model-note.md",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents.ts.source",
+      "sha256": "610126876e45020cee2af34cb0f0e28fb16e22f72916e6a5c1740c3c94b8fe77",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/proposals/emailReadIntents.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-read-recovery-83-20261102/private-schema-and-tests/proposals/emailReadIntents.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolImap.ts.source",
+      "sha256": "38091878fcfd159d1df53d5643df5c0383497ff4f35036dd486b12b507a5d889",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-two-mailbox-journey-20261101/green/src/test/mailProtocolImap.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-two-mailbox-journey-20261101/green/src/test/mailProtocolImap.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolSmtp.ts.source",
+      "sha256": "26eefe916c7722abbe235223b35af730409d8e45faba661d16faa17da7bc0dab",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-two-mailbox-journey-20261101/green/src/test/mailProtocolSmtp.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-two-mailbox-journey-20261101/green/src/test/mailProtocolSmtp.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/browser-fixtures/mailBrowserFixtures.prepared.ts.source",
+      "sha256": "6873f39ae041fde62496651a49be622e3bb384b49ea7794c9d2c152090abae83",
+      "originalLocalPath": "/Users/ali/Developer/warpdrive-mail-platform/.runtime/handoffs/mail-two-mailbox-journey-20261101/mailBrowserFixtures.prepared.ts",
+      "restoreRepoRelative": ".runtime/handoffs/mail-two-mailbox-journey-20261101/mailBrowserFixtures.prepared.ts",
+      "status": "PRESERVATION_ONLY_NOT_ACTIVATED"
+    }
+  ],
+  "sourceExtensionsAppendedToPreventAutomaticBuildTestDiscovery": true
+}
