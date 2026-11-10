@@ -512,12 +512,34 @@ function watchNetwork(context, page, entry) {
   const unexpected = [];
   const postCancellations = [];
   const regionalCancellations = [];
+  const scriptCancellations = [];
+  const successfulScriptResponses = new WeakSet();
+  const loadedScripts = new Set();
   const deliveredRegionalSaves = new WeakSet();
   let preferenceProbe;
   entry.navigationCancellations = [];
+  entry.loadedScriptCancellations = [];
   entry.fulfilledResponseCancellations = [];
   entry.regionalResponseCancellations = [];
   let expectedTransportErrors = 0;
+  function isLocalScript(request, url) {
+    return (
+      url.origin === origin &&
+      request.method() === "GET" &&
+      request.resourceType() === "script" &&
+      url.pathname.startsWith("/_next/static/chunks/") &&
+      url.pathname.endsWith(".js")
+    );
+  }
+  page.on("response", (response) => {
+    const request = response.request();
+    if (response.ok() && isLocalScript(request, new URL(request.url()))) {
+      successfulScriptResponses.add(request);
+    }
+  });
+  page.on("requestfinished", (request) => {
+    if (successfulScriptResponses.has(request)) loadedScripts.add(request.url());
+  });
   page.on("requestfailed", (request) => {
     const url = new URL(request.url());
     const detail = {
@@ -526,6 +548,8 @@ function watchNetwork(context, page, entry) {
       failure: request.failure()?.errorText,
       navigation: request.isNavigationRequest(),
       rsc: request.headers().rsc === "1",
+      resourceType: request.resourceType(),
+      pagePath: new URL(page.url()).pathname,
     };
     // Explicit navigation/reload legitimately cancels the superseded document or RSC fetch.
     // Keep each observation; all other failed GETs and every unexpected POST still fail.
@@ -536,6 +560,10 @@ function watchNetwork(context, page, entry) {
       (detail.navigation || detail.rsc)
     ) {
       entry.navigationCancellations.push(detail);
+      return;
+    }
+    if (detail.failure === "net::ERR_ABORTED" && isLocalScript(request, url)) {
+      scriptCancellations.push({ url: request.url(), detail });
       return;
     }
     if (detail.failure === "net::ERR_ABORTED" && isRegionalSaveRequest(request, origin)) {
@@ -610,6 +638,12 @@ function watchNetwork(context, page, entry) {
       preferenceProbe = probe;
     },
     verify(expectedAborts, probe) {
+      // Chromium can cancel a duplicate script fetch during navigation. Require
+      // the exact asset URL to have a separate successful, finished request.
+      for (const { url, detail } of scriptCancellations) {
+        if (loadedScripts.has(url)) entry.loadedScriptCancellations.push(detail);
+        else errors.push(detail);
+      }
       for (const { request, detail } of postCancellations) {
         const delivered = probe.deliveredObservation(request);
         if (delivered) entry.fulfilledResponseCancellations.push({ ...detail, delivered });

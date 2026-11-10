@@ -58,7 +58,7 @@ describe("pipeline stage header direction", () => {
   it("mirrors the Persian header and isolates mixed-script metrics", () => {
     renderHeader("fa");
     const heading = screen.getByRole("heading", { name: "Qualified" });
-    expect(heading.parentElement?.style.clipPath).toContain("0 50%");
+    expect(heading.parentElement?.style.clipPath).toMatch(/[(,]\s*0(?:px)?\s+50%\s*[,)]/);
     expect(heading.parentElement?.style.borderInlineStart).toContain("3px");
     expect(heading.querySelector("bdi")).toHaveAttribute("dir", "auto");
     const count = screen.getByText("۷ فرصت فروش");
