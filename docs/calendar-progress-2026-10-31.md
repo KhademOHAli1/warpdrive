@@ -74,10 +74,8 @@ The agency proposal was reviewed read-only against this dirty checkout. Its sepa
 
 Continue the full list in [the implementation plan](calendar-implementation-plan.md): personal reminder settings/channels, remaining cross-user/browser/mobile foundation acceptance, calendar source filters and a legacy ownership migration decision, Iranian-aware recurrence/exceptions, invitations/RSVP, Google Calendar plus Meet, scheduling/resources, attachments/sharing, ICS, Microsoft/Teams, Zoom and special-event lifecycles. Each needs appropriate permission, retry, locale and real acceptance evidence. Keep local HTTP fixtures separate from actual provider acceptance. Do not mark the persistent goal complete while any required package remains.
 
-
 ## Final local checkpoint
 
 The current source has a green verification checkpoint: 610 selected unit tests, 95 native PostgreSQL/pg-boss tests, the full typecheck, repository lint and dummy-config production build. The lead boundary correction additionally passed eight affected pure visibility tests. Source remains uncommitted and was not pushed or merged. A local recovery package is in `.runtime/calendar-checkpoint-20261031/` (tracked patch, non-ignored untracked source archive, status and SHA-256 checksums); do not apply it over this already-changed worktree. Preview restoration uses the browser fixture command in the original handoff. Recheck listener ownership before any future restart.
-
 
 Final service observation: preview listener PID 83400 was verified with cwd equal to the owned calendar worktree, port 3169. The isolated reminder worker is PID 83829, running `.runtime/calendar-reminder-worker.mts` against fixture port 54673. Disk pressure had terminated its earlier synthetic PostgreSQL connection; it was restarted after readiness verification, and the database still contained exactly one delivered notification/intent. Recheck PIDs and ownership, since PIDs can be reused. Worker bundle packaging also passed in `.runtime/calendar-final-workers-green.log`. The final owned browser tab is 351774526 (Chrome), on the Farsi calendar with no editor draft, marked for continuation.

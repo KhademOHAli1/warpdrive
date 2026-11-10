@@ -96,7 +96,6 @@ request exists in `sales-storage-coordination-request.md`; direct human messagin
 permission to the platform allocator is pending. Resource-only coordination with
 Mail is already authorized and was verified in that chat's human reply.
 
-
 At the earlier c655 R1 checkpoint, the full unit suite passed 6020 tests in 966
 files, and the affected real-PostgreSQL integration batch passed 239 tests in 50
 files. Full typecheck and lint, production webpack build, worker/WS/operator

@@ -113,7 +113,13 @@ export async function readArchive(bytes: Buffer): Promise<Map<string, Buffer>> {
   const files = new Map<string, Buffer>();
   extractor.on("entry", (header, stream, next) => {
     const parts: Buffer[] = [];
-    stream.on("data", (chunk: Buffer) => parts.push(chunk));
+    stream.on("data", (chunk) => {
+      if (!Buffer.isBuffer(chunk)) {
+        extractor.destroy(new TypeError("Archive entry emitted a non-Buffer chunk"));
+        return;
+      }
+      parts.push(chunk);
+    });
     stream.once("end", () => {
       files.set(header.name, Buffer.concat(parts));
       next();

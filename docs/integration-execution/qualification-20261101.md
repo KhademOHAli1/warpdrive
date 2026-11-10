@@ -122,7 +122,6 @@ The current MCP grant store/evaluator, scoped discovery and durable origin/recip
 services remain unimplemented design work. Build/unit success does not repair known authority,
 connection-health, numbering-independence or provider-qualification gaps.
 
-
 Sanitized D225 unit and build receipts are exported separately under
 `outputs/full-unit-20261101` and `outputs/build-20261101`; the earlier immutable source
 checkpoint is `outputs/progress-20261101`. Its pending labels were correct at export time.

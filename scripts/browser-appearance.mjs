@@ -8,6 +8,7 @@ import {
   isRegionalSaveRequest,
   prepareLocaleThroughUi,
 } from "./browser-locale-preferences.mjs";
+import { observeScriptRequests } from "./browser-script-requests.mjs";
 
 // Admission precedes DB/browser imports. Never run against an operator's local session/database.
 if (
@@ -138,8 +139,10 @@ async function login(page) {
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
-  const response = await page.goto("/settings/appearance");
-  assert.equal(response.status(), 200);
+  await page.getByRole("main").waitFor({ state: "visible" });
+  // The sign-in redirect changes the URL before its streamed scripts finish.
+  // Let those requests settle before the harness leaves for regional settings.
+  await page.waitForLoadState("networkidle");
 }
 
 async function visitAuthenticatedAppearance(page, context, locale, entry) {
@@ -149,6 +152,7 @@ async function visitAuthenticatedAppearance(page, context, locale, entry) {
   }
   await login(page);
   entry.localePreparation = await prepareLocaleThroughUi(page, origin, locale);
+  await page.waitForLoadState("networkidle");
   assert.equal((await page.goto("/settings/appearance")).status(), 200);
   nativeSessions.set(locale, await context.storageState());
   report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
@@ -509,9 +513,11 @@ function watchNetwork(context, page, entry) {
   const unexpected = [];
   const postCancellations = [];
   const regionalCancellations = [];
+  const scriptRequests = observeScriptRequests(page, origin);
   const deliveredRegionalSaves = new WeakSet();
   let preferenceProbe;
   entry.navigationCancellations = [];
+  entry.loadedScriptCancellations = [];
   entry.fulfilledResponseCancellations = [];
   entry.regionalResponseCancellations = [];
   let expectedTransportErrors = 0;
@@ -523,6 +529,8 @@ function watchNetwork(context, page, entry) {
       failure: request.failure()?.errorText,
       navigation: request.isNavigationRequest(),
       rsc: request.headers().rsc === "1",
+      resourceType: request.resourceType(),
+      pagePath: new URL(page.url()).pathname,
     };
     // Explicit navigation/reload legitimately cancels the superseded document or RSC fetch.
     // Keep each observation; all other failed GETs and every unexpected POST still fail.
@@ -535,6 +543,7 @@ function watchNetwork(context, page, entry) {
       entry.navigationCancellations.push(detail);
       return;
     }
+    if (scriptRequests.deferCancellation(request, detail)) return;
     if (detail.failure === "net::ERR_ABORTED" && isRegionalSaveRequest(request, origin)) {
       regionalCancellations.push({ request, detail });
       return;
@@ -607,6 +616,9 @@ function watchNetwork(context, page, entry) {
       preferenceProbe = probe;
     },
     verify(expectedAborts, probe) {
+      const { loaded, failed } = scriptRequests.classifyCancellations();
+      entry.loadedScriptCancellations = loaded;
+      errors.push(...failed);
       for (const { request, detail } of postCancellations) {
         const delivered = probe.deliveredObservation(request);
         if (delivered) entry.fulfilledResponseCancellations.push({ ...detail, delivered });

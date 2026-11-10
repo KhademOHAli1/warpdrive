@@ -308,7 +308,6 @@ The source-only phase 9 recovery checkpoint is
 and counts are recorded in its summary/checksums. Browser seed/preview/cleanup remain
 unrun, and the mirror/retention packages remain future work.
 
-
 ## Actual synthetic catalog acceptance and restoration
 
 The later browser window passed saved-catalog UI/server/PostgreSQL acceptance in Farsi and German at desktop 1512 by 771 and mobile 390 by 844, with no horizontal overflow. The unique `calendar-catalog-b06ded0c.localhost:3169` origin isolated the synthetic session cookies from protected previews. Normal sign-in used the existing regular synthetic owner. Disclosure opening read saved state without discovery. Availability-only Add was disabled. One Add, Remove and re-Add retained stable binding/dedicated-calendar identity and advanced versions 1/2/3. Selection persisted across navigation and locale change. One local Disconnect advanced account version/generation to 2, cleared the refresh bytes and hid catalog metadata. No provider connection, discovery, event synchronization, invitation or conferencing operation was invoked.

@@ -252,7 +252,6 @@ The next product goal is to support the Google Calendar workflow documented abov
 
 When work resumes, first close the visual uncertainty checklist on representative personal and eligible Workspace accounts. Then design the complete editor against the reconciled current UI, define the persistence and provider boundaries, and implement vertical workflows with real invitation/sync tests. Acceptance requires create, reopen, edit, cancel and series-exception round trips, permission failures, provider failures and locale review. None of those future capabilities is delivered by this documentation update.
 
-
 ## 9. Authorized calendar continuation, 31 October 2026
 
 The earlier implementation deferral in section 8 is historical. The user subsequently authorized the full calendar implementation in its owned worktree and explicitly prioritized Google Calendar plus Meet. The persistent goal is active. [Current continuation evidence](calendar-progress-2026-11-01.md) separates local reminder delivery and defaults, dedicated OAuth/account infrastructure, HTTP contract tests and unfinished provider acceptance.

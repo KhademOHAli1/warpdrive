@@ -317,7 +317,6 @@ The initial broad mail/notification PostgreSQL run passed 909 of 911 checks; the
 
 Predecessor Integration hosted CI passed all 7224 assertions but failed on an unhandled React update after test-environment teardown. A deterministic afterAll invariant then found six retained DOM nodes. Explicit cleanup before mock resets and waiting for settled visible results repaired the fixture; both checks and the empty-body invariant passed. No error suppression or production behavior change was used for that CI repair. Full types, translations/Biome/typed ESLint passed with 11 existing warnings. Later immutable-head hosted CI, production upgrades/restores, authenticated browser journeys and real provider acceptance remain separate evidence.
 
-
 ## Workspace billing source checkpoint (#978)
 
 The hosted workspace billing increment adds four explicitly classified billing tables and the Stripe/browser boundaries. Its capture-protected administrator Settings surface holds payer drafts and retry commands transiently; provider/profile/document authority remains in Stripe. HMAC update signatures and deletion from an AbortController collection are reviewed in-memory effects, not financial or data-subject erasure. Generic lifecycle/discovery capabilities for these stores remain unsupported pending dedicated subject/provenance and finance-retention adapters.
