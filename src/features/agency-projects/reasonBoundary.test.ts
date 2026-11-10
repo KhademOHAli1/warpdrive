@@ -47,20 +47,25 @@ describe("substantive lifecycle reason ingress", () => {
     ).toBe(false);
   });
 
-  it.each(visibleReasons)("preserves $label after existing outer trimming", ({ input, expected }) => {
-    expect(reasonSchema.parse(input)).toBe(expected);
-    expect(
-      projectCommandSchema.parse({ action: "cancel", expectedRevision: 3, reason: input }),
-    ).toEqual({ action: "cancel", expectedRevision: 3, reason: expected });
-  });
+  it.each(visibleReasons)(
+    "preserves $label after existing outer trimming",
+    ({ input, expected }) => {
+      expect(reasonSchema.parse(input)).toBe(expected);
+      expect(
+        projectCommandSchema.parse({ action: "cancel", expectedRevision: 3, reason: input }),
+      ).toEqual({ action: "cancel", expectedRevision: 3, reason: expected });
+    },
+  );
 
   it.each(["", "   ", "\t\r\n", " \u00a0\t\n "])(
     "retains optional trimmed-empty reason data: %j",
     (reason) => {
       expect(reasonSchema.parse(reason)).toBe("");
-      expect(
-        projectCommandSchema.parse({ action: "start", expectedRevision: 3, reason }),
-      ).toEqual({ action: "start", expectedRevision: 3, reason: "" });
+      expect(projectCommandSchema.parse({ action: "start", expectedRevision: 3, reason })).toEqual({
+        action: "start",
+        expectedRevision: 3,
+        reason: "",
+      });
     },
   );
 

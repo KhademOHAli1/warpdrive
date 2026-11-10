@@ -87,7 +87,15 @@ describe("project lifecycle policy v1", () => {
             ok: true,
             value: {
               next: { state: to, revision: 10, archivedFrom: to === "archived" ? state : null },
-              receipt: { policyVersion: 1, from: state, to, previousRevision: 9, revision: 10 },
+              receipt: {
+                policyVersion: 1,
+                action,
+                from: state,
+                to,
+                previousRevision: 9,
+                revision: 10,
+                reason: "تغییر برنامه / Kundenwunsch",
+              },
             },
           });
         }
@@ -95,21 +103,27 @@ describe("project lifecycle policy v1", () => {
     }
   }
 
-  it.each(["hold", "cancel", "archive", "restore", "reopen"] as const)(
-    "requires a recorded reason for %s",
-    (action) => {
-      const state =
-        action === "reopen" ? "completed" : action === "restore" ? "archived" : "active";
-      const current: ProjectSnapshot =
-        state === "archived"
-          ? { state, revision: 1, archivedFrom: "canceled" as const }
-          : { state, revision: 1, archivedFrom: null };
-      expect(transitionProject(current, { action, expectedRevision: 1, reason: "  " })).toEqual({
-        ok: false,
-        error: "reason_required",
-      });
-    },
-  );
+  for (const reason of [undefined, "  "] as const) {
+    it.each(["hold", "cancel", "archive", "restore", "reopen"] as const)(
+      `requires a recorded reason for %s when ${reason === undefined ? "omitted" : "blank"}`,
+      (action) => {
+        const state =
+          action === "reopen" ? "completed" : action === "restore" ? "archived" : "active";
+        const current: ProjectSnapshot =
+          state === "archived"
+            ? { state, revision: 1, archivedFrom: "canceled" as const }
+            : { state, revision: 1, archivedFrom: null };
+        const command =
+          reason === undefined
+            ? { action, expectedRevision: 1 }
+            : { action, expectedRevision: 1, reason };
+        expect(transitionProject(current, command)).toEqual({
+          ok: false,
+          error: "reason_required",
+        });
+      },
+    );
+  }
 
   it.each(["planned", "active", "on-hold", "completed", "canceled"] as const)(
     "restores archived %s without silently reopening terminal work",
@@ -156,6 +170,41 @@ describe("project lifecycle policy v1", () => {
       ok: false,
       error: "revision_conflict",
     });
+  });
+
+  it("permits the final exact revision advance before refusing exhaustion", () => {
+    const current = Object.freeze({
+      state: "planned" as const,
+      revision: Number.MAX_SAFE_INTEGER - 1,
+      archivedFrom: null,
+    });
+    const result = transitionProject(current, {
+      action: "start",
+      expectedRevision: Number.MAX_SAFE_INTEGER - 1,
+    });
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        next: { state: "active", revision: Number.MAX_SAFE_INTEGER, archivedFrom: null },
+        receipt: {
+          policyVersion: 1,
+          action: "start",
+          from: "planned",
+          to: "active",
+          previousRevision: Number.MAX_SAFE_INTEGER - 1,
+          revision: Number.MAX_SAFE_INTEGER,
+          reason: null,
+        },
+      },
+    });
+    if (!result.ok) return;
+    expect(
+      transitionProject(result.value.next, {
+        action: "complete",
+        expectedRevision: Number.MAX_SAFE_INTEGER,
+      }),
+    ).toEqual({ ok: false, error: "revision_exhausted" });
+    expect(current.revision).toBe(Number.MAX_SAFE_INTEGER - 1);
   });
 
   it("does not exceed the representable revision range", () => {
