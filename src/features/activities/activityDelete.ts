@@ -2,10 +2,11 @@ import { and, eq, isNull } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { activities } from "@/db/schema";
-import { can } from "@/features/permissions/can";
-import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
+import { guardActivityMutation } from "./activityAccessGuard";
+import { activityTransaction } from "./activityTransaction";
+import { reconcileReminderIntent } from "./calendarReminderIntent";
 import { recomputeDealActivityDates } from "./nextActivity";
 import { cancelActivityReminder } from "./reminderIntent";
 import { resolveActivityVisibility } from "./visibility";
@@ -19,8 +20,9 @@ export async function deleteActivity(
   actor: PermSetUser,
   id: string,
   signal: AbortSignal,
+  expectedVersion?: number,
 ): Promise<Result<{ id: string }, AppError>> {
-  return db.transaction(async (tx) => {
+  return activityTransaction(db, async (tx) => {
     const [current] = await tx
       .select()
       .from(activities)
@@ -31,17 +33,15 @@ export async function deleteActivity(
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
     }
 
-    const vis = await resolveActivityVisibility(tx, current, signal);
-
-    if (vis === null || !canSee(actor, vis)) {
-      // Invisible: return 404-on-invisible, not 403.
-      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
-    }
-
-    if (!can(actor, "activity.delete", vis)) {
-      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id }));
-    }
-
+    const allowed = await guardActivityMutation(
+      tx,
+      actor,
+      current,
+      "activity.delete",
+      signal,
+      expectedVersion,
+    );
+    if (!allowed.ok) return allowed;
     const [row] = await tx
       .update(activities)
       .set({ deletedAt: new Date() })
@@ -58,6 +58,7 @@ export async function deleteActivity(
       await recomputeDealActivityDates(tx, row.dealId, signal);
     }
 
+    await reconcileReminderIntent(tx, row, signal);
     return ok({ id: row.id });
   });
 }

@@ -11,18 +11,19 @@ import {
   deals,
 } from "@/db/schema";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
-import { can } from "@/features/permissions/can";
-import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { activityAccountPreferences } from "./accountTimeZone";
+import { guardActivityMutation } from "./activityAccessGuard";
+import { applyActivityReminders } from "./activityReminderWrite";
 import { canonicalUpdateDates, civilEndBeforeStart } from "./activityTemporalWrite";
+import { activityTransaction } from "./activityTransaction";
+import { assertCalendarWritable } from "./calendars";
 import { recomputeDealsActivityDates } from "./nextActivity";
 import { assertActivityReminderGeneration, synchronizeActivityReminder } from "./reminderIntent";
 import { type ActivityUpdateInput, activityUpdateInput } from "./schemas";
-import { resolveActivityVisibility } from "./visibility";
 
 type ParsedUpdate = z.infer<typeof activityUpdateInput>;
 
@@ -67,6 +68,10 @@ async function assertTypeActive(
 // Columns copied verbatim when their key is present (Zod already validated the values).
 const PASS_THROUGH_KEYS = [
   "subject",
+  "eventTimeZone",
+  "calendarId",
+  "eventVisibility",
+  "availability",
   "typeId",
   "priority",
   "durationMinutes",
@@ -182,7 +187,7 @@ export async function updateActivity(
   const input = parsed.data;
 
   const prefs = await activityAccountPreferences(db, actor.id);
-  return db.transaction(async (tx) => {
+  return activityTransaction(db, async (tx) => {
     const [current] = await tx
       .select()
       .from(activities)
@@ -195,17 +200,18 @@ export async function updateActivity(
       );
     }
 
-    const vis = await resolveActivityVisibility(tx, current, signal);
-
-    if (vis === null || !canSee(actor, vis)) {
-      // Invisible: return 404-on-invisible, not 403.
-      return err(
-        new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id: input.id }),
-      );
-    }
-
-    if (!can(actor, "activity.edit", vis)) {
-      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id: input.id }));
+    const allowed = await guardActivityMutation(
+      tx,
+      actor,
+      current,
+      "activity.edit",
+      signal,
+      input.expectedVersion,
+    );
+    if (!allowed.ok) return allowed;
+    if (input.calendarId !== undefined && input.calendarId !== current.calendarId) {
+      const target = await assertCalendarWritable(tx, actor, input.calendarId, signal);
+      if (!target.ok) return target;
     }
 
     const generation = await assertActivityReminderGeneration(
@@ -239,20 +245,15 @@ export async function updateActivity(
     const patch = {
       ...buildPatch(input),
       ...civilDates,
+      updatedAt: new Date(),
     };
-    let row = current;
-    if (Object.keys(patch).length > 0) {
-      const [updated] = await tx
-        .update(activities)
-        .set(patch)
-        .where(eq(activities.id, input.id))
-        .returning();
-      if (updated === undefined) {
-        return err(
-          new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity update returned no rows", {}),
-        );
-      }
-      row = updated;
+    const [row] = await tx
+      .update(activities)
+      .set(patch)
+      .where(eq(activities.id, input.id))
+      .returning();
+    if (row === undefined) {
+      return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity update returned no rows", {}));
     }
 
     await reconcileGuestsAndParticipants(tx, row.id, input);
@@ -275,6 +276,8 @@ export async function updateActivity(
     if (current.dealId !== null && current.dealId !== row.dealId) affectedDeals.add(current.dealId);
     await recomputeDealsActivityDates(tx, affectedDeals, signal);
 
+    const reminders = await applyActivityReminders(tx, actor, row, input.personalReminders, signal);
+    if (!reminders.ok) return reminders;
     return ok(row);
   });
 }

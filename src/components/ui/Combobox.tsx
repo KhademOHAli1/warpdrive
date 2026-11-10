@@ -111,7 +111,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
       <PopoverContent className="p-0">
-        <Command filter={matchLabel} shouldFilter={search === undefined}>
+        <Command label={t("search")} filter={matchLabel} shouldFilter={search === undefined}>
           <CommandInput
             placeholder={t("search")}
             aria-label={t("search")}

@@ -21,6 +21,7 @@ import {
 import { leads } from "@/db/schema/leads";
 import { activityAccountPreferences } from "@/features/activities/accountTimeZone";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { loadCalendarAccess } from "@/features/activities/calendarAccess";
 import { isActivityOverdue } from "@/features/activities/overdue";
 import { linkedParentVisible } from "@/features/activities/parentLinkVisibility";
 import { listChangeLog } from "@/features/collaboration/changeLog";
@@ -142,7 +143,14 @@ export async function leadTimeline(
   const actor = sessionActor(session);
   const preferences = await activityAccountPreferences(db, actor.id);
   const activityItems: CalendarActivity[] = [];
+  const calendarAccess = await loadCalendarAccess(
+    db,
+    actor,
+    activityRows.map((row) => row.id),
+    signal,
+  );
   for (const row of activityRows) {
+    if (calendarAccess.get(row.id)?.read === false) continue;
     if (row.dueAt === null) continue;
     const personOk = linkedParentVisible(actor, "person", row.personVisibleId, {
       ownerId: row.personOwnerId,

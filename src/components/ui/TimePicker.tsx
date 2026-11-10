@@ -11,6 +11,7 @@ interface TimePickerProps {
   value: string;
   onChange: (v: string) => void;
   ariaLabel: string;
+  required?: boolean;
 }
 interface TimeDraft {
   source: string;
@@ -21,13 +22,18 @@ interface TimeDraft {
 function initialDraft(value: string): TimeDraft {
   return { source: value, draft: value, editing: false, invalid: false };
 }
-function invalidTime(value: string): boolean {
-  return value.trim() !== "" && maskTime(value) === "";
+function invalidTime(value: string, required: boolean): boolean {
+  return value.trim() === "" ? required : maskTime(value) === "";
 }
 
 // Raw edits belong to the user until blur/Enter. Display preferences only reformat pristine
 // values; an external canonical value change still replaces the draft immediately.
-export function TimePicker({ value, onChange, ariaLabel }: TimePickerProps): React.ReactNode {
+export function TimePicker({
+  value,
+  onChange,
+  ariaLabel,
+  required = false,
+}: TimePickerProps): React.ReactNode {
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
   const t = useAppTranslations("sharedUi");
@@ -37,7 +43,7 @@ export function TimePicker({ value, onChange, ariaLabel }: TimePickerProps): Rea
   const [stored, setStored] = useState(() => initialDraft(value));
   const current = stored.source === value ? stored : initialDraft(value);
   if (stored.source !== value) setStored(current);
-  const invalidValue = invalidTime(current.draft);
+  const invalidValue = invalidTime(current.draft, required);
   useEffect(() => {
     ref.current?.setCustomValidity(invalidValue ? errorMessage : "");
   }, [invalidValue, errorMessage]);
@@ -62,6 +68,7 @@ export function TimePicker({ value, onChange, ariaLabel }: TimePickerProps): Rea
         data-time-picker=""
         dir="ltr"
         aria-label={ariaLabel}
+        aria-required={required || undefined}
         aria-invalid={current.invalid || undefined}
         aria-describedby={current.invalid ? errorId : undefined}
         inputMode="numeric"
@@ -71,7 +78,7 @@ export function TimePicker({ value, onChange, ariaLabel }: TimePickerProps): Rea
         }
         onChange={(e) => {
           const raw = e.target.value;
-          const invalid = invalidTime(raw);
+          const invalid = invalidTime(raw, required);
           e.currentTarget.setCustomValidity(invalid ? errorMessage : "");
           setStored({
             source: value,

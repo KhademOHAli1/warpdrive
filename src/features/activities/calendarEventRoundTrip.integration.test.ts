@@ -125,7 +125,11 @@ describe.each([
       expect(calendarEventPatch(loaded.value, reopened, zone)).toBeNull();
       reopened.note = "<p>به‌روزرسانی / Aktualisiert</p>";
       const patch = calendarEventPatch(loaded.value, reopened, zone);
-      expect(patch).toEqual({ id: loaded.value.id, note: reopened.note });
+      expect(patch).toEqual({
+        id: loaded.value.id,
+        expectedVersion: loaded.value.version,
+        note: reopened.note,
+      });
       if (patch === null) return;
       const updated = await updateActivity(ctx.db, actor(user.id), patch, signal());
       expect(updated.ok).toBe(true);

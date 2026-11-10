@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
+import { CalendarConnectionCard } from "@/features/activities/providers/google/CalendarConnectionCard";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { revokeConnectionAction } from "@/features/oauth/revokeAction";
 import { useFormatters } from "@/lib/useFormatters";

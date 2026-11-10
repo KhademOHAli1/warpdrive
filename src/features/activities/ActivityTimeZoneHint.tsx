@@ -7,12 +7,14 @@ export function ActivityTimeZoneHint({
   time,
   legacy = false,
   originalInstant,
+  hideSummary = false,
 }: {
   timeZone: string;
   date: string;
   time: string;
   legacy?: boolean;
   originalInstant?: string | null;
+  hideSummary?: boolean;
 }) {
   const t = useAppTranslations("calendar");
   let offset = "";
@@ -27,12 +29,14 @@ export function ActivityTimeZoneHint({
   }
   return (
     <div className="text-xs text-muted-foreground">
-      <p>
-        {t("draftTimeZone", {
-          zone: `\u2066${timeZone}\u2069`,
-          offset: offset ? `\u2066UTC${offset}\u2069` : "",
-        })}
-      </p>
+      {!hideSummary && (
+        <p>
+          {t("draftTimeZone", {
+            zone: `\u2066${timeZone}\u2069`,
+            offset: offset ? `\u2066UTC${offset}\u2069` : "",
+          })}
+        </p>
+      )}
       {ambiguous && <p>{t("ambiguousTime")}</p>}
       {legacy && <p>{t("legacyAllDay")}</p>}
     </div>
