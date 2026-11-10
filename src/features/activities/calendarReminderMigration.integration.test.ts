@@ -35,14 +35,19 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
     const user = await seedUser(h.db, { isAdmin: true });
     const [type] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
     if (type === undefined) throw new Error("Upgrade meeting fixture missing");
-    const old = (await h.pool.query<{ id: string; subject: string }>(`
+    const old = (
+      await h.pool.query<{ id: string; subject: string }>(
+        `
       INSERT INTO activities(type_id,subject,owner_id,assignee_id,due_at,duration_minutes,all_day,due_date,end_date,done,done_at)
       VALUES
         ($1,'Exact timed event',$2,$2,'2026-10-25T01:30:29.123Z',60,false,NULL,NULL,false,NULL),
         ($1,'Known civil date',$2,$2,'2027-03-28T00:00:00Z',NULL,true,'2027-03-28','2027-03-29',false,NULL),
         ($1,'Unknown authored zone',$2,$2,'2026-10-25T00:00:00Z',NULL,true,NULL,NULL,false,NULL),
         ($1,'Finished old event',$2,$2,NULL,NULL,false,NULL,NULL,true,'2026-10-25T02:00:00Z')
-      RETURNING id,subject`, [type.id,user.id])).rows;
+      RETURNING id,subject`,
+        [type.id, user.id],
+      )
+    ).rows;
     const first = old[0];
     if (first === undefined) throw new Error("Upgrade event fixture missing");
     await h.db.insert(notifications).values({
@@ -75,7 +80,10 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
     expect((await ledger(h)).slice(0, 102)).toEqual(oldLedger);
     expect(await ledger(h)).toHaveLength(103);
     expect(await h.db.select().from(activityReminderIntents)).toHaveLength(0);
-    expect(await applyMigrations(h.db, signal(), runtimeCandidate.folder)).toEqual({ ok: true, value: { applied: true } });
+    expect(await applyMigrations(h.db, signal(), runtimeCandidate.folder)).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
     const actor = await hydrateActor(h.db, user.id, signal());
     if (actor === null) throw new Error("Upgrade actor fixture missing");
     const read = await getActivityForEdit(h.db, actor, first.id, signal());
