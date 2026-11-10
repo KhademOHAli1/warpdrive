@@ -1,5 +1,5 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const protectedSecretsIds1: string[] = [
   "objectNamespace:filesystem:src/config/env.ts#readFileSync:filePath",
-  "sourceReview:src/config/env.ts#fb8b8a63e5f5db9baebd5add7eb17dd7b038b2cf4b09beb92746b1429cf88e21",
+  "sourceReview:src/config/env.ts#61a2d62872c1cd5aafae0068283bbcc0dc7affd26cff74c1ccda92b048d5ce49",
 ];

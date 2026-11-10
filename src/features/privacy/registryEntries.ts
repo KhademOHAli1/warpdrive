@@ -285,7 +285,7 @@ export const registryEntries: RegistryEntry[] = [
     retention:
       "Form/case/queue state and frozen unknown-result intents remain in component memory; intake success does not clear the personal summary. Identity changes clear displayed reviewer data and suppress late results. Next can buffer matched request bodies under the existing 64mb limit. Case URLs remain linkable metadata. No durable browser store, expiry policy or physical memory-erasure proof is introduced.",
     externalEffects:
-      "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
+      "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. The shared app layout also derives a canViewProjects navigation boolean through current native project admission. This projection contains no project titles, rows, CRM anchors, memberships or request receipts; showing navigation grants no project access. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
     erasureTask: "DPL-26",
   }),
   classifyInventory(

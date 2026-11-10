@@ -42,7 +42,7 @@ export const operationalClassifications = {
       "Notification recipient differs from subjects copied into body/payload. Review all referenced records and people.",
     purpose: "In-app notifications and queued recipient delivery.",
     disclosure:
-      "No blanket recipient-mailbox disclosure; scrub erased content and private related records before publication.",
+      "No blanket recipient-mailbox disclosure; scrub erased content and private related records before publication. Activity notification creation, feed visibility and mail admission additionally check current Calendar access and receipt policy. Immutable native in-app generation history cannot authorize email, and personal reminder settings do not replace CRM or Calendar visibility.",
     retention:
       "No universal notification retention mandate; metadata, queued payloads and sent copies require reviewed policy.",
     externalEffects:
@@ -78,13 +78,14 @@ export const operationalClassifications = {
       "query caches",
       "rate-limit state",
       "settings and preferences",
+      "presentation-only module availability and action metadata",
     ],
     subjectRelation:
       "Actor/owner/session keys identify processors or recipients and are not automatically the subject of cached records. Review required.",
     purpose:
       "Realtime delivery, derived views, preferences, authorization caches and service operations.",
     disclosure:
-      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions.",
+      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions. Navigation booleans expose module availability only. Project navigation and the high-risk project.create action metadata do not bypass current native session, module, membership or linked CRM checks.",
     retention:
       "Transient state ends with process/browser lifecycle unless explicitly persisted; invalidation after commit and restore admission require qualification.",
     externalEffects:

@@ -19,7 +19,7 @@ export const companyWorkIds: string[] = [
   "objectNamespace:company-assets/v1/",
   "sourceReview:src/app/api/company-billing-copy/route.ts#d8b92c4d92988708861cd5ba9f37198f58bc18c3a0d233d1dde5d7b0421e3c45",
   "sourceReview:src/app/api/company-profile/[[...path]]/route.ts#d20e033635d7f69af5a9056a9d1662fed389dc535dbeeff5a2dc16747826b06c",
-  "sourceReview:src/components/shell/WorkspaceShellProvider.tsx#3c5e50c5faf68c6797194a5482afa1f91e7a563112ac73a93fe9d627bbb2a27a",
+  "sourceReview:src/components/shell/WorkspaceShellProvider.tsx#6d883289005bfed5865f6233e0792fd6b10f568a61a31d02f57e1eca8df15f81",
   "sourceReview:src/features/billing/ui/CompanyBillingCopy.tsx#1fc1f26db091b6e00f2349476fcef46f5b2a2ecdf6c9a53120ddc1ea3d19e14b",
   "sourceReview:src/features/billing/ui/companyPrefill.ts#e4c616c349a6ca863f14c59f574fb68d036af503ae517b028c2a1f4d2200794a",
   "sourceReview:src/features/company-profile/assetSanitizer.ts#593ddaf3255fcf9e1ef47a656011462d4fafb5a0192b5f2187b6327005b3d040",

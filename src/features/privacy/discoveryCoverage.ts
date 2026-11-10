@@ -15,6 +15,29 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
     [
+      "calendars",
+      "calendar_members",
+      "activity_reminder_settings",
+      "calendar_reminder_defaults",
+      "calendar_reminder_intents",
+      "reminder_rebuilds",
+    ],
+    "unsupported",
+    "Calendar ownership and membership, shared event access, personal recipient choices, durable intents and rebuild markers require dedicated subject/provenance and safe-projection adapters. Calendar owner, assignee and reminder recipient remain distinct from people mentioned in event content. Native in-app, legacy and Calendar reminder ownership does not establish subject discovery, disclosure or erasure authority. Archive, receipt visibility and delivery suppression are not lifecycle execution.",
+  ),
+  ...group(
+    [
+      "calendar_provider_accounts",
+      "calendar_oauth_attempts",
+      "calendar_provider_catalog_states",
+      "calendar_provider_calendars",
+      "calendar_provider_bindings",
+    ],
+    "unsupported",
+    "Owned Calendar grants, hashed one-use authorization state, encrypted refresh/PKCE secrets, provider calendar metadata and local selections require credential-excluding dedicated discovery adapters. A native account or provider role does not establish the subjects of provider calendar contents. No generic credential disclosure, provider event import, remote revocation/deletion receipt or lifecycle execution is enabled by local grant purge or catalog selection.",
+  ),
+  ...group(
+    [
       "agency_projects",
       "agency_project_members",
       "agency_project_history",

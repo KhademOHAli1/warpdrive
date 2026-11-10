@@ -10,6 +10,8 @@ export const agencyProjectIds: string[] = [
   "derived:src/features/agency-projects/templates/starterTemplates.ts",
   "derived:src/features/agency-projects/templates/templateManifestGraph.ts",
   "derived:src/features/agency-projects/templates/templateRolePreview.ts",
+  "sourceReview:src/constants/nav.ts#d043698f4ec92603e6019bde26f7a9143df169c0841524d6f34c6a82a291e3a7",
+  "sourceReview:src/constants/workspaceNavigation.ts#c9853919c42a130140434cedf8a4b4d76bcdf67b46c946a6df542cbc07f043f3",
   "sourceReview:src/app/(app)/projects/page.tsx#44b54793cad87bae283fdbd2707690a4d5031c5ba37195134191f16152e186ab",
   "sourceReview:src/features/agency-projects/ProjectCreatePanel.tsx#c30659004ebd81fb32fe6e07b690d13659a2d8d72f7ab0f67482b4351a85282c",
   "sourceReview:src/features/agency-projects/ProjectCreationForm.tsx#7a77ba5dce40795f34b408cb1ff9e41df147bd7ad14b0453b3414b2d8926fd60",

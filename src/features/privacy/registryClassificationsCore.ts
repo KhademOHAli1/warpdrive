@@ -16,7 +16,7 @@ export const coreClassifications = {
     retention:
       "Existing completed auth mail bodies: seven days; auth audit/outbox metadata: 180 days. Other records follow existing purpose-specific handling pending an activated policy.",
     externalEffects:
-      "SMTP and Google grant revocation may occur; local disconnection and remote revocation are distinct.",
+      "SMTP and Google grant revocation may occur; local disconnection and remote revocation are distinct. Native offboarding also clears local Calendar credentials and pending authorization attempts inside the current authority transaction. Local credential purge does not establish Google token revocation or remote deletion.",
     erasureTask: "DPL-15",
   },
   crm: {
