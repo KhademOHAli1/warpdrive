@@ -36,7 +36,9 @@ async function withAuthority<T>(
   signal.throwIfAborted();
   try {
     // The signal-aware binding owns the transaction outcome, including an uncertain COMMIT.
-    return await authority.run(signal, work);
+    const result = await authority.run(signal, work);
+    signal.throwIfAborted();
+    return result;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw error;
     signal.throwIfAborted();

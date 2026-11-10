@@ -1,4 +1,5 @@
 import { and, asc, eq, ilike, isNull, sql } from "drizzle-orm";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { deals, organizations, persons, users } from "@/db/schema";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
@@ -12,6 +13,12 @@ import { checkProjectLocalAction } from "./projectLocalAccess";
 import { agencyProjectSettings } from "./schema/agencyProjectSettings";
 import { agencyProjectMembers } from "./schema/agencyProjects";
 
+class ModuleGateRollback extends AppError {
+  constructor() {
+    super(ERROR_IDS.DB_WRITE_FAILED, "Project module update rolled back");
+  }
+}
+
 export async function projectLanding(db: Db, who: NativeSessionRef, signal: AbortSignal) {
   return withCurrentAuthority(db, "read", signal, async (tx) => {
     const current = await currentNativeActor(tx, who, signal);
@@ -23,6 +30,7 @@ export async function projectLanding(db: Db, who: NativeSessionRef, signal: Abor
       .from(agencyProjectSettings)
       .where(eq(agencyProjectSettings.id, true));
     signal.throwIfAborted();
+    if ((await currentNativeActor(tx, who, signal)) === null) return null;
     return {
       actorId: current.actor.id,
       actorName: current.actor.name,
@@ -39,18 +47,27 @@ export async function enableNativeProjects(
   enabled: boolean,
   signal: AbortSignal,
 ) {
-  return withCurrentAuthority(db, "write", signal, async (tx) => {
-    const current = await currentNativeActor(tx, who, signal);
-    if (current?.actor.type !== "admin") return err("project_unavailable" as const);
-    const [staff] = await tx.select().from(users).where(eq(users.id, current.actor.id));
-    if (staff?.invitedAt !== null) return err("project_unavailable" as const);
-    await tx
-      .insert(agencyProjectSettings)
-      .values({ enabled })
-      .onConflictDoUpdate({ target: agencyProjectSettings.id, set: { enabled } });
-    signal.throwIfAborted();
-    return ok(undefined);
-  });
+  try {
+    return await withCurrentAuthority(db, "write", signal, async (tx) => {
+      const current = await currentNativeActor(tx, who, signal);
+      if (current?.actor.type !== "admin") return err("project_unavailable" as const);
+      const [staff] = await tx.select().from(users).where(eq(users.id, current.actor.id));
+      if (staff?.invitedAt !== null) return err("project_unavailable" as const);
+      await tx
+        .insert(agencyProjectSettings)
+        .values({ enabled })
+        .onConflictDoUpdate({ target: agencyProjectSettings.id, set: { enabled } });
+      signal.throwIfAborted();
+      if ((await currentNativeActor(tx, who, signal)) === null) throw new ModuleGateRollback();
+      return ok(undefined);
+    });
+  } catch (error) {
+    if (error instanceof ModuleGateRollback) {
+      signal.throwIfAborted();
+      return err("project_unavailable" as const);
+    }
+    throw error;
+  }
 }
 
 export async function projectCreationOptions(
@@ -100,6 +117,8 @@ export async function projectCreationOptions(
       .orderBy(asc(users.name), asc(users.id))
       .limit(100);
     signal.throwIfAborted();
+    if ((await nativeProjectActor(tx, who, signal)) === null)
+      return err("project_unavailable" as const);
     return ok({ clients, owners });
   });
 }
@@ -140,6 +159,8 @@ export async function projectWorkspace(
       if (row) labels.push(row.label);
     }
     signal.throwIfAborted();
+    if ((await nativeProjectActor(tx, who, signal)) === null)
+      return err("project_unavailable" as const);
     return ok({
       project,
       ownerLabel: owner?.name ?? null,

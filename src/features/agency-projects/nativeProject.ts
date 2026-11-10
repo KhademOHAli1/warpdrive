@@ -62,7 +62,10 @@ export function createNativeProjectRepository(db: Db, who: NativeSessionRef) {
           return result;
         });
       } catch (error) {
-        if (error instanceof ProjectRollback) return error.result;
+        if (error instanceof ProjectRollback) {
+          signal.throwIfAborted();
+          return error.result;
+        }
         throw error;
       }
     },
