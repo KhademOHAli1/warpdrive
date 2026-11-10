@@ -20,7 +20,6 @@ After refactoring and explicit inventory registration, the final selection passe
 
 These component/action-boundary results do not establish native authentication, HTTP behavior, database authorization, visual/device acceptance or a completed reviewer workspace. Durable disclosure-scope sealing, reviewed source/projection content, export jobs/repair and full reviewer case decisions remain unfinished. The full DPL-01 through DPL-36 goal and all 12 installed/operator gates remain open; no staging deployment exists yet.
 
-
 ## Preserved reviewer source completion, 10 November 2026
 
 The privacy root now mounts a separate exact-case reference entry after personal intake and reviewer triage. It starts with an empty reference and performs no automatic case lookup. A selected UUID mounts two independent explicit reads: original request context, and a preliminary native subject projection. Changing the reference or current security boundary removes the previous selection and its displayed data. Requester case-detail routes do not mount reviewer components.
@@ -34,7 +33,6 @@ The triage card can explicitly begin verification through the existing case-tran
 The preserved reader scaffold produced 30 failures and seven passing controls in three real PostgreSQL files before implementation. After implementation, all 37 cases passed on an owned native PostgreSQL 18.1 test instance using canonical migrations and isolated per-test database clones. This includes authority denials, authenticated intake corruption, original/current identity separation, non-finite timestamps and a real case-row wait through native session expiry. The first complete privacy unit selection passed 1,007 cases and exposed two inventory failures, which were addressed by additive declarations and current source hashes. Final combined static/unit/PG results are recorded in the implementation status after execution.
 
 These are local source results. Full DPL programme completion, durable disclosure/export/delivery/repair, native browser authentication and device/accessibility/RTL acceptance, configured-provider qualification and installed acceptance remain open. No production deployment or task acceptance is established by this increment.
-
 
 Final local checks on 10 November 2026 used pinned Bun 1.4.4: all 1,010 privacy unit tests in 76 files passed; all 242 tests in 34 non-storage privacy PostgreSQL files passed using native PostgreSQL 18.1 and real per-test database clones. The PostgreSQL sweep first exposed two cases where a saved domain failure hid cancellation arriving at the driver's actual rollback acknowledgement. Both guards now recheck cancellation before returning the saved failure; the focused seven-case rollback/atomicity/completion-expiry selection and final complete PostgreSQL selection passed. An explicit original-context mount regression failed before the card was mounted; its 34-case reference/lifecycle/root selection passed after integration.
 

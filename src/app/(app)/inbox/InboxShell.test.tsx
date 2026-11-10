@@ -81,7 +81,7 @@ it("keeps the folder rail beside a shrinkable content track", () => {
   if (shell === null || shell === undefined) throw new Error("Inbox grid is missing");
   // The rail owns a fixed length; minmax lets the content track shrink below its contents.
   expect(getComputedStyle(shell).gridTemplateColumns).toMatch(
-    /^\d+(?:\.\d+)?(?:rem|px) minmax\(0,\s*1fr\)$/,
+    /^\d+(?:\.\d+)?(?:rem|px) minmax\(0(?:px)?,\s*1fr\)$/,
   );
   expect(contentPane).toHaveStyle({ minWidth: "0", minHeight: "0" });
 });

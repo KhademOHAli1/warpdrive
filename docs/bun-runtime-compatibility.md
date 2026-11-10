@@ -17,19 +17,19 @@ then the checked-in scripts, which run Next, Vitest and the other CLI tools on B
 
 ## Direct dependency exceptions
 
-The CRM keeps two compatibility pins below the latest stable releases checked on
-2026-10-29. These are intentional exceptions to the package refresh.
+The CRM keeps the TypeScript compatibility pin below the latest stable release checked on
+2026-11-10.
 
-### jsdom 29.1.1
+### jsdom test runtime
 
 With Bun 1.4.2 on macOS arm64, jsdom 30.1.3 throws
 `TypeError: 'addEventListener' called on an object that is not a valid instance of EventTarget`
 when registering an error listener on its window. This also prevents Vitest 5.0.5 from
 starting its jsdom environment, before any tests are collected.
 
-The same isolated fixture with jsdom 29.1.1 passes both a document/script check and a
-Testing Library controlled-form typing, focus and submit check. The failure also reproduces
-without Vitest:
+The isolated document/script and controlled-form fixtures passed on jsdom 29.1.1. The
+window error-listener probe now passes on Bun 1.4.4 with jsdom 31.0.0, the upgraded test
+dependency. Use the same direct probe when evaluating another runtime change:
 
 ```sh
 bun -e 'import {JSDOM} from "jsdom"; const dom = new JSDOM("<p>hello</p>", {runScripts: "dangerously", pretendToBeVisual: true}); dom.window.addEventListener("error", () => {}); dom.window.close();'
@@ -40,7 +40,7 @@ installation alone does not verify the test environment.
 
 ### TypeScript 6.0.3 in the CRM
 
-The latest stable compiler is 7.0.2, but the latest typescript-eslint 8.72.1 supports
+The latest stable compiler is 7.0.2, but typescript-eslint 8.72.2 supports
 `>=4.8.4 <6.1.0`, as declared by its installed and registry peer dependencies and its
 [supported-version documentation](https://typescript-eslint.io/users/dependency-versions/).
 The typed lint parser uses the TypeScript compiler API.
@@ -53,7 +53,8 @@ the version alone would therefore break the parser's existing API calls.
 Keep the CRM compiler at 6.0.3 until the typed lint tooling supports the new API. The site
 and documentation packages already use the 7.0.2 compiler CLI, which runs under Bun; they
 do not use the CRM's typed lint parser. Recheck the peer range, API imports and complete
-typecheck/lint suite before removing the CRM pin.
+typecheck/lint suite before removing the CRM pin. Dependabot skips the known incompatible
+7.0.0 through 7.0.2 releases for the CRM. Newer releases remain eligible.
 
 ## Next development error reporting
 
@@ -70,10 +71,12 @@ remain in place. The patch does not suppress the original timeout, extend deadli
 application workers, requests or production rendering.
 
 Bun applies the patch automatically using the root `patchedDependencies` entry and lockfile.
+The original patch also applies to the 16.4.6 logger and is bound to that version in the
+package manifest.
 The files are maintained through the official [Bun patch workflow](https://bun.sh/docs/pm/cli/patch):
 
 ```sh
-bun patch next@16.4.3
+bun patch next@16.4.6
 # Edit the prepared package, then verify the regression.
 bun run test:unit nextDevLogger.test.ts
 bun patch --commit node_modules/next

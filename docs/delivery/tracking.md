@@ -106,7 +106,6 @@ Snapshot generation reconciles checkpoint and existing mapping identities agains
 
 The index generator uses verified mapping URLs and rejects a missing mapping by default. During an explicitly partial import, `--allow-partial` displays pending records without inventing issue URLs. It lists every programme and source namespace; it never calculates an aggregate completion percentage. Feature owners review and publish generated documentation with their owned tooling increment through reviewed pull requests. Preserve concurrent product edits and the current exact-revision CI and release boundaries. Independent validation follows the isolated resource rules in AGENTS.md; no coordination-chat or queue allocation is required.
 
-
 ## Adopt a new bug or maintenance intake
 
 Use the issue forms to create an ordinary issue, then triage its bounded scope. Add a registered item to `roadmap.json` with a stable ID such as `bug/reminder-recovery`, its complete acceptance criteria, module, owner and actual dependencies. This records scope decisions, while GitHub retains live execution. Do not create another issue for the same intake.

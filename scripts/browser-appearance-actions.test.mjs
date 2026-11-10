@@ -1,8 +1,44 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import test from "node:test";
 import { createPreferenceProbe, decodePreferenceResult } from "./browser-appearance-actions.mjs";
+import { observeScriptRequests } from "./browser-script-requests.mjs";
 
 const bytes = (value) => new TextEncoder().encode(value);
+
+await test("classifies a cancelled script only after the identical asset finishes loading", () => {
+  const page = new EventEmitter();
+  const origin = "https://127.0.0.1:3443";
+  const scripts = observeScriptRequests(page, origin);
+  const request = (url) => ({ url: () => url, method: () => "GET", resourceType: () => "script" });
+  const prefix = `${origin}/_next/static/chunks/`;
+  const loaded = { path: "/loaded.js", failure: "net::ERR_ABORTED" };
+  const incomplete = { path: "/incomplete.js", failure: "net::ERR_ABORTED" };
+  const differentQuery = { path: "/versioned.js", failure: "net::ERR_ABORTED" };
+  assert.equal(scripts.deferCancellation(request(`${prefix}loaded.js`), loaded), true);
+  assert.equal(scripts.deferCancellation(request(`${prefix}incomplete.js`), incomplete), true);
+  assert.equal(
+    scripts.deferCancellation(request(`${prefix}versioned.js?v=1`), differentQuery),
+    true,
+  );
+  for (const file of ["loaded.js", "incomplete.js", "versioned.js?v=2"]) {
+    const actual = request(`${prefix}${file}`);
+    page.emit("response", { request: () => actual, ok: () => true });
+    if (file !== "incomplete.js") page.emit("requestfinished", actual);
+  }
+  assert.equal(
+    scripts.deferCancellation(
+      request("https://example.invalid/_next/static/chunks/loaded.js"),
+      loaded,
+    ),
+    false,
+  );
+  assert.deepEqual(scripts.classifyCancellations(), {
+    loaded: [loaded],
+    failed: [incomplete, differentQuery],
+  });
+  assert.deepEqual(scripts.classifyCancellations(), { loaded: [], failed: [] });
+});
 
 await test("reads only the action result selected by root a", () => {
   assert.deepEqual(
