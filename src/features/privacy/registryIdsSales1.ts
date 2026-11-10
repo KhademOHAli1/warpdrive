@@ -1,7 +1,7 @@
 // Exact reviewed Sales and Integration boundaries from the frozen inventory packet.
 export const salesIntegrationIds1: string[] = [
   "derived:src/features/integrations/slackReadFailure.ts",
-  "sourceReview:src/features/integrations/slack.ts#4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+  "sourceReview:src/features/integrations/slack.ts#8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
   "sourceReview:src/features/integrations/slackRead.ts#83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a",
   "sourceReview:src/features/integrations/slackReadFailure.ts#fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4",
 

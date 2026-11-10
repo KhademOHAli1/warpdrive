@@ -178,6 +178,7 @@ export const ERROR_IDS = {
   OAUTH_CODE_EXPIRED: "E_OAUTH_004",
   OAUTH_TOKEN_REVOKED: "E_OAUTH_005",
   OAUTH_CONSENT_REQUIRED: "E_OAUTH_006",
+  OAUTH_INVALID_TARGET: "E_OAUTH_007",
   // SYNC
   SYNC_CURSOR_EXPIRED: "E_SYNC_001", // History cursor expired (404): gap-recovery resync triggered
   // JOBS

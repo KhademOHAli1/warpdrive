@@ -105,9 +105,8 @@ export async function invokeProvider<Operation extends ProviderOperation>(
       abort = () => {
         const reason: unknown = signal.reason;
         controller.abort(reason);
-        reject(
-          reason instanceof Error ? reason : new DOMException("Caller cancelled", "AbortError"),
-        );
+        // Match throwIfAborted: cancellation belongs to the caller, including non-Error reasons.
+        reject(reason);
       };
       signal.addEventListener("abort", abort, { once: true });
       timeout = setTimeout(
