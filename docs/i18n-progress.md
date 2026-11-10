@@ -13,7 +13,6 @@ superseded by the later German checkpoints. Test counts overlap and should not b
 The new visual workflow builder has its own [status ledger](workflows/status.md);
 its planned Iranian recurrence engine is separate from existing date display/input.
 
-
 English and Iranian Persian are the completed first localization milestone. German is the next
 milestone, with the same calendar, numeric-input, accessibility and contextual-copy requirements.
 The earlier dated sections below are historical evidence; this section and the newest checkpoint
@@ -230,7 +229,6 @@ regression confirmation, complete contextual English/Farsi browser workflows, re
 integration and production Docker/deployment verification. German remains the next language
 and is not selectable yet.
 
-
 ## Isolated publication checkpoint — 2026-10-29
 
 This checkpoint exports the Bun/i18n hardening onto `7b841de`; the concurrent Finance OS/sidebar/settings and contacts redesigns remain in the live working tree and are excluded from this publication. They are not dependencies of the exported calendar, numeric input, scheduling, import diagnostics, or accessibility changes.
@@ -247,7 +245,6 @@ The native development server was restarted with the persistent Next/Bun logger 
 
 Publication/hosted-CI status: pending at the time this section was written. Full final-build browser acceptance remains in progress. German remains the next language and is not selectable as a completed CRM translation. External OAuth/Gmail delivery and production Docker/deployment qualification remain separate from this local i18n checkpoint.
 
-
 ## Phone-input and hosted-CI follow-up — 2026-10-29
 
 The published `e91e794` checkpoint passed all 5,340 assertions in 857 files on hosted Linux, but the CRM job correctly failed on an uncaught recipient-field blur timer after teardown. The timer now cancels on unmount while preserving its 150 ms interaction delay; focused regression, typecheck and lint checks passed. Site and documentation jobs passed in that run. The complete next-commit hosted run is still pending.
@@ -257,7 +254,6 @@ Final browser contact creation exposed a real Farsi input defect: an identical p
 The follow-up passed full export typecheck, translation audit (zero unresolved findings, four reviewed exceptions), lint, production/worker builds and 144 targeted unit checks. Real PostgreSQL create/update checks preserve authored phone values, and six MCP wire/auth checks confirm all 35 tool schemas remain representable and permissions/isolation/revocation work. After rebuilding the exact isolated app, Persian-digit contact creation succeeded in the browser. No telephone call or email delivery was initiated.
 
 The checked build continues on local port 3102. Final hosted CI and publication of this follow-up remain pending at the time of writing. German implementation follows Farsi closeout; its planned registry entry is still unavailable in the language picker.
-
 
 ## German delivery checkpoint, 2026-10-30
 

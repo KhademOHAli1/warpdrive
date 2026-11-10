@@ -8,7 +8,6 @@
 
 Dated main admission, 1 November 2026: [`43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1`](https://github.com/KhademOHAli1/warpdrive/commit/43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1), tree `4b477872f1e9010383343060dc15949169dcf89e`, has a verified successful [Public Bun CI run](https://github.com/KhademOHAli1/warpdrive/actions/runs/41320388147). [The main admission record](main-admission-20261101.md) separates that exact CI cut, the two new review admissions, three skipped unit cases and the previous failed cuts. That cut preserves canonical migration prefix 0 through 85, including Privacy 83 through 85, then Workflow 86, CONN 87 and MAIL 88 through 97. Installed database histories, providers, browsers, deployment and publication retain their own gates. New work follows the main-only policy in `CLAUDE.md`; historical preview and migration-allocation instructions are not the current upgrade procedure. The [source inventory register](../privacy-data-inventory.md) retains the broader ledger at its recorded cuts and evidence limits.
 
-
 Persistent goal: active from 31 October 2026, with no token budget. The acceptance
 contract remains the 446 tasks across 23 packages in the source project plan.
 

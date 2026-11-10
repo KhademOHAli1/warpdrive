@@ -399,7 +399,6 @@ If `/tmp` paths or runtime resources no longer exist, recover the branch and thi
 from GitHub into a fresh owned checkout. Do not reconstruct private configuration from
 public placeholders or modify a peer checkout to make tests convenient.
 
-
 ## Private continuation, 2 November 2026: ordered-step consistency
 
 The occupied-edge insertion follow-up now uses one display dependency order across BuilderWorkspace, WorkflowCanvas numeric indexes, RunTrace, BindingField, ConnectionEditor and EdgeInspector. The stored nodes, edges, configurations, bindings and layout are preserved. Canvas nodes retain their original array/z-order and positions. Eligible-node ties retain creation priority; this does not select a runtime condition branch. Missing-edge endpoints are ignored for display, unresolved draft cycles remain in their original tail order, and duplicate-id drafts retain their original array. Existing validation remains authoritative.

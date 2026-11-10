@@ -47,8 +47,8 @@ After issue import, record the tracker URL in the project plan and use it as the
 | [QA](#qa) Shared verification and release acceptance         | CROSS     | P0       | 18    | QA + security + domain owners              |
 | [OSS](#oss) Open-source distribution and maintenance         | CROSS     | P1       | 12    | Maintainers + developer experience         |
 
-
 <a id="base"></a>
+
 ## BASE: Reconcile the preview with current development
 
 Inventory and reconcile current main, the isolated integration branch and any parallel workflow work without overwriting peer changes.
@@ -86,6 +86,7 @@ Package dependencies: none.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="arch"></a>
+
 ## ARCH: Architecture and product contracts
 
 Define the common contracts used by connections, MCP, workflows and future apps within the existing single-tenant product.
@@ -123,6 +124,7 @@ Package dependencies: BASE.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="ux"></a>
+
 ## UX: Product design, localization and accessibility
 
 Apply the existing visual language and Farsi-first quality requirements throughout every new workflow.
@@ -164,6 +166,7 @@ Package dependencies: BASE.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="conn"></a>
+
 ## CONN: Shared connector lifecycle and provider SDK
 
 Generalize the working Slack foundation into one lifecycle used by first-party connectors and future app providers.
@@ -229,6 +232,7 @@ Package dependencies: ARCH.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="evt"></a>
+
 ## EVT: Events, rules and reliable delivery
 
 Extend existing pg-boss and any current workflow implementation with durable events and one common integration delivery path.
@@ -282,6 +286,7 @@ Package dependencies: CONN.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="slk"></a>
+
 ## SLK: Slack notifications and management
 
 Deliver the first useful vertical slice: CRM event to configurable Slack message with traceable delivery and recovery.
@@ -343,6 +348,7 @@ Package dependencies: EVT, UX.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="slkx"></a>
+
 ## SLKX: Slack commands, actions and unfurls
 
 Extend validated Slack notifications into user-initiated CRM actions without assuming Slack channel membership grants CRM access.
@@ -380,6 +386,7 @@ Package dependencies: SLK, API.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="aisec"></a>
+
 ## AISEC: MCP and application authorization
 
 Constrain existing CRM permissions with explicit client capabilities and current-protocol authorization.
@@ -441,6 +448,7 @@ Package dependencies: ARCH.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="mcp"></a>
+
 ## MCP: Complete the CRM MCP capability surface
 
 Expand supported CRM workflows deliberately while preserving existing authorization and data contracts.
@@ -498,6 +506,7 @@ Package dependencies: AISEC.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="client"></a>
+
 ## CLIENT: ChatGPT, Claude and supporting client apps
 
 Ship client-specific onboarding, packages, workflows and optional embedded experiences over the same authorized server.
@@ -551,6 +560,7 @@ Package dependencies: MCP, UX.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="mail"></a>
+
 ## MAIL: Mail integration hardening
 
 Preserve Gmail behavior while moving account management onto the shared lifecycle and preparing for more providers.
@@ -607,6 +617,7 @@ Package dependencies: CONN.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="cal"></a>
+
 ## CAL: Calendar domain and event workflow
 
 Implement the existing Google Calendar workflow specification in a provider-neutral event domain with Iranian-calendar correctness.
@@ -664,6 +675,7 @@ Package dependencies: ARCH, UX.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="goog"></a>
+
 ## GOOG: Google Calendar and Google Meet
 
 Provide selected-calendar synchronization and meeting creation through the shared connection and calendar contracts.
@@ -717,6 +729,7 @@ Package dependencies: CAL, CONN, EVT.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="ms"></a>
+
 ## MS: Microsoft 365, Outlook and Teams
 
 Add Microsoft account, tenant, mail, calendar and Teams workflows without assuming Google behavior transfers directly.
@@ -764,6 +777,7 @@ Task-level exception: MS-001 through MS-005 are the approved independent mail su
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="zoom"></a>
+
 ## ZOOM: Zoom conferencing
 
 Manage authorized Zoom meetings as part of CRM event workflows using the same provider-neutral conference contract.
@@ -801,6 +815,7 @@ Package dependencies: CAL, CONN, EVT.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="api"></a>
+
 ## API: Public API and signed webhooks
 
 Provide supported external integration APIs and events using the same domain commands and permission evaluator as the application.
@@ -854,6 +869,7 @@ Package dependencies: ARCH, AISEC, EVT.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="auto"></a>
+
 ## AUTO: Workflow and automation integrations
 
 Connect native workflows and automation providers through reusable triggers/actions and the authorized API.
@@ -891,6 +907,7 @@ Package dependencies: API, EVT.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="exp"></a>
+
 ## EXP: Additional provider delivery tracks
 
 Deliver each additional named provider independently; telephony, accounting and e-signature vendor selection remain product decisions.
@@ -1010,6 +1027,7 @@ Task-level exception: EXP-041 through EXP-048 are the approved P1 / IR3 PBX and 
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="sms"></a>
+
 ## SMS: Verified Iranian SMS provider coverage
 
 User-requested expansion: deliver as many independently verifiable Iranian SMS providers as practical. Initial qualified SMS follows independent email; broad candidate delivery runs at the end of the approved P1 tranche.
@@ -1289,6 +1307,7 @@ The 30-provider inventory is a dated discovery set, not an exhaustive national r
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="sdk"></a>
+
 ## SDK: Application SDK and isolated extension runtime
 
 Build the reusable extension platform needed for privately installed apps and a later public marketplace.
@@ -1350,6 +1369,7 @@ Package dependencies: ARCH, CONN, EVT, API, AISEC.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="store"></a>
+
 ## STORE: Marketplace and app management
 
 Distribute compatible, permission-reviewed extensions with a reliable private and public installation lifecycle.
@@ -1407,6 +1427,7 @@ Package dependencies: SDK, UX.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="ops"></a>
+
 ## OPS: Self-hosting, observability and operations
 
 Make the integration system operable locally and in a later authorized deployment, including failure and recovery.
@@ -1456,6 +1477,7 @@ Package dependencies: BASE.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="qa"></a>
+
 ## QA: Shared verification and release acceptance
 
 Create a repeatable quality gate applied to every vertical slice rather than postponing localization and security testing until the end.
@@ -1505,6 +1527,7 @@ Package dependencies: BASE.
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
 <a id="oss"></a>
+
 ## OSS: Open-source distribution and maintenance
 
 Maintain the project as an open-source distribution with clear contribution, packaging, support and security boundaries.

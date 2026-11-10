@@ -255,7 +255,6 @@ actionlint .github/workflows/delivery.yml .github/workflows/delivery-acceptance.
 
 These standard-library tests do not install dependencies, build the app, start services, or access a database/provider. They exercise importer reconciliation and release gating with isolated API fixtures. The exact-main CI run and actual user acceptance remain required before any release.
 
-
 ## MAIL task releases: 1.5.x, then the full programme at 1.6.0
 
 The user authorized completion-order MAIL releases on 3 November 2026. Each release-ready mail deliverable receives the next unreserved `1.5.x` patch, starting at `1.5.1`; its MAIL number does not determine the patch number. Version `1.6.0` is reserved for the entire unchanged `programme/mail` scope. Later versions such as `1.6.1` remain available to the ordinary core track and its own gates. Parent/package tracking items are not accepted merely because one child was released.

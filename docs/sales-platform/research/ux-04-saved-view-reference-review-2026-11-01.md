@@ -71,5 +71,4 @@ The bounded search did not reveal an open filter editor. Neither search supplies
 
 UX-04 remains open. Any future design must be tested directly in Warpdrive against persisted envelope versions, current actor/record scope, exact reset/duplicate semantics and correct return navigation, first in Farsi and then German with English retained. This note neither implements those interactions nor replaces the approved research, runtime, security and recovery gates.
 
-
 Exact connector identifiers, queries and inspected positions are in the [metadata record](ux-04-saved-view-reference-metadata-2026-11-01.json).

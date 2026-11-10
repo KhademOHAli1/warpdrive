@@ -2,7 +2,6 @@
 
 Current-main context, 1 November 2026: the source admission recorded here is `43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1`, tree `4b477872f1e9010383343060dc15949169dcf89e`. Read [the main admission record](main-admission-20261101.md) for exact hosted CI and source-review limits. Canonical history retains the published prefix 0000 to 0085 (including Privacy 0083 to 0085), followed by Workflow 0086, CONN 0087 and MAIL 0088 to 0097. Divergent installed CONN83/Workflow84 histories remain refused. New work follows the main-only policy, explicit ownership and serial test windows. Historical programme receipts and restore instructions below retain their original source cuts and do not authorize a current-main upgrade or profile restart.
 
-
 The persistent goal is active, has no token budget, and covers all 446 task IDs. Do not
 create a replacement goal or mark it complete merely because BASE has closed.
 
