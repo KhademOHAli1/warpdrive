@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "basis": "65a579eec99755b587f33b97445374093d91e4ff",
+  "files": [
+    {
+      "path": "docs/privacy-implementation-status 2.md",
+      "blob": "766bcf97808df833296e09b0814ba9fb78a4836e",
+      "disposition": "unique_old_source"
+    },
+    {
+      "path": "src/proxy 2.ts",
+      "blob": "dc0863d9a1c39e10c5375a35f915ad953d030516",
+      "disposition": "unique_old_source"
+    },
+    {
+      "path": "src/proxy.test 2.ts",
+      "blob": "ecc78edbd84e5463ff60981c5b88e83cb45a18b0",
+      "disposition": "unique_old_source"
+    }
+  ]
+}
