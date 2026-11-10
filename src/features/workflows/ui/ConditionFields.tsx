@@ -86,7 +86,9 @@ function LegacyConditionFields({
   const operator = typeof node.config.operator === "string" ? node.config.operator : "equals";
   return (
     <div className="space-y-5">
-      <p className="text-sm leading-6 text-muted-foreground">{t("conditionActionHint")}</p>
+      <p className="text-sm leading-6 text-muted-foreground">
+        {t(node.type === "filter" ? "filterActionHint" : "conditionActionHint")}
+      </p>
       <BindingField
         definition={definition}
         nodeId={node.id}

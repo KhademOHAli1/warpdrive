@@ -3,6 +3,10 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { err, ok, type Result } from "@/types/result";
 import { validateDefinition } from "./definition";
 import type { WorkflowDefinition } from "./schemas";
+import {
+  readWorkflowManualLaunch,
+  type WorkflowManualLaunchPayload,
+} from "./workflowManualLaunchContract";
 
 export const draftSimulationInputLimits = {
   entries: 100_000,
@@ -11,17 +15,12 @@ export const draftSimulationInputLimits = {
   serializedUnits: 1_000_000,
 } as const;
 
-const inputSchema = z.strictObject({
-  workflowId: z
-    .string()
-    .uuid()
-    .transform((value) => value.toLowerCase()),
-  recordId: z
-    .string()
-    .uuid()
-    .transform((value) => value.toLowerCase()),
-  definition: z.unknown(),
-});
+const contextId = z.uuid().transform((value) => value.toLowerCase());
+const envelopeSchema = { workflowId: contextId, definition: z.unknown() };
+const inputSchema = z.union([
+  z.strictObject({ ...envelopeSchema, recordId: contextId }),
+  z.strictObject(envelopeSchema),
+]);
 
 type JsonVisit =
   | { kind: "value"; value: unknown; depth: number }
@@ -35,7 +34,7 @@ interface JsonWork {
 
 export interface PreparedDraftSimulationInput {
   workflowId: string;
-  recordId: string;
+  launch: WorkflowManualLaunchPayload;
   definition: WorkflowDefinition;
   // Owned raw-order clone. Serialize/hash only after current metadata validation;
   // never substitute the schema-parsed graph or expose this in the receipt.
@@ -126,9 +125,10 @@ function safeEnvelope(raw: unknown): boolean {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw) || !plainObject(raw))
     return false;
   const keys = jsonKeys(raw);
+  if (keys === null) return false;
   return (
-    keys !== null &&
-    keys.length === 3 &&
+    keys.includes("workflowId") &&
+    keys.includes("definition") &&
     keys.every(
       (key) =>
         ["workflowId", "recordId", "definition"].includes(key) && dataProperty(raw, key) !== null,
@@ -149,12 +149,23 @@ export function prepareDraftSimulationInput(
   const parsed = inputSchema.safeParse(raw);
   if (!parsed.success || !boundedDraftSimulationJson(parsed.data.definition))
     return err(ERROR_IDS.WORKFLOW_INVALID);
-  const checked = validateDefinition(parsed.data.definition);
+  let authoredDefinition: unknown;
+  try {
+    authoredDefinition = structuredClone(parsed.data.definition);
+  } catch {
+    return err(ERROR_IDS.WORKFLOW_INVALID);
+  }
+  const checked = validateDefinition(authoredDefinition);
   if (!checked.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const launch = readWorkflowManualLaunch(
+    checked.value,
+    "recordId" in parsed.data ? { recordId: parsed.data.recordId } : { scope: "global" },
+  );
+  if (launch === null) return err(ERROR_IDS.WORKFLOW_INVALID);
   return ok({
     workflowId: parsed.data.workflowId,
-    recordId: parsed.data.recordId,
+    launch,
     definition: checked.value,
-    authoredDefinition: structuredClone(parsed.data.definition),
+    authoredDefinition,
   });
 }

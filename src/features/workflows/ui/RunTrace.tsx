@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Circle } from "lucide-react";
+import { Check, Circle, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
@@ -16,6 +17,58 @@ import { WaitTimestamp } from "./WaitTimestamp";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 
 export type RunDetail = RouterOutputs["workflows"]["run"];
+
+function IteratorOccurrences({ steps }: { steps: RunDetail["steps"] }) {
+  const t = useAppTranslations("workflows");
+  const fmt = useFormatters();
+  const summary = steps.find((step) => step.iteratorSummary !== undefined)?.iteratorSummary;
+  return (
+    <>
+      {summary !== undefined && (
+        <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
+          {t("iteratorSummary", {
+            processed: fmt.number(summary.processedCount),
+            failed: fmt.number(summary.failedCount),
+          })}
+        </span>
+      )}
+      {steps.flatMap((step) =>
+        step.iterationIndex === undefined
+          ? []
+          : [
+              <span
+                className="mt-1 block text-[11px] font-normal text-muted-foreground"
+                key={step.iterationIndex}
+              >
+                {t("iteratorItemNumber", { number: fmt.number(step.iterationIndex + 1) })} ·{" "}
+                {t(
+                  step.outcome === "failed"
+                    ? "status.failed"
+                    : step.simulated
+                      ? "stepSimulated"
+                      : "stepCompleted",
+                )}
+              </span>,
+            ],
+      )}
+    </>
+  );
+}
+
+function traceStepLabel(
+  step: RunDetail["steps"][number] | undefined,
+  status: RunDetail["status"],
+  isNext: boolean,
+) {
+  if (step !== undefined) {
+    if (step.outcome === "failed") return "status.failed";
+    return step.simulated ? "stepSimulated" : "stepCompleted";
+  }
+  if (isNext && status === "waiting") return "stepWaiting";
+  if (isNext && status === "failed") return "stoppedHere";
+  return "stepNotReached";
+}
+
 export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId?: string }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -26,8 +79,13 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
       : (detail.definition.nodes[0]?.id ?? "start"),
   );
   const [reveal, setReveal] = useState<RevealNode>();
-  const completed = new Set(detail.steps.map((step) => step.nodeId));
+  const completed = new Set(
+    detail.steps.filter((step) => step.outcome !== "failed").map((step) => step.nodeId),
+  );
   const node = detail.definition.nodes.find((item) => item.id === selected);
+  const waitingForForm = detail.definition.nodes.some(
+    (item) => item.id === detail.nextNodeId && item.type === "human.form",
+  );
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3 px-5">
@@ -53,7 +111,12 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
       <p className="px-5 text-xs leading-5 text-muted-foreground">
         {t(detail.mode === "simulation" ? "simulationTraceHint" : "liveTraceHint")}
       </p>
-      {detail.status === "waiting" && (
+      {detail.status === "waiting" && waitingForForm && (
+        <p className="px-5 text-sm text-muted-foreground">
+          {t(detail.formExpired === true ? "humanFormExpired" : "humanFormWaiting")}
+        </p>
+      )}
+      {detail.status === "waiting" && !waitingForForm && (
         <p className="px-5 text-sm text-muted-foreground">
           <WaitTimestamp value={detail.resumeAt} label={t("scheduledResume")} />
           <span className="mt-1 block text-xs">{t("waitRecoveryHint")}</span>
@@ -61,7 +124,15 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
       )}
       {detail.status === "failed" && (
         <p role="alert" className="px-5 text-sm text-destructive">
-          {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>
+          {detail.errorId === ERROR_IDS.WORKFLOW_FORM_EXPIRED ? (
+            t("humanFormExpired")
+          ) : detail.errorId === ERROR_IDS.WORKFLOW_HTTP_OUTCOME_UNKNOWN ? (
+            t("httpRequestOutcomeUnknown")
+          ) : (
+            <>
+              {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>
+            </>
+          )}
         </p>
       )}
       {workflowId !== undefined && detail.recovery !== undefined && (
@@ -101,8 +172,10 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
           </div>
           <ol className="space-y-2" aria-label={t("steps")}>
             {orderedWorkflowNodes(detail.definition).map((item, index) => {
-              const step = detail.steps.find((entry) => entry.nodeId === item.id);
-              const Icon = step === undefined ? Circle : Check;
+              const occurrences = detail.steps.filter((entry) => entry.nodeId === item.id);
+              const step =
+                occurrences.find((entry) => entry.outcome !== "failed") ?? occurrences[0];
+              const Icon = step === undefined ? Circle : step.outcome === "failed" ? X : Check;
               return (
                 <li key={item.id}>
                   <Button
@@ -118,7 +191,9 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
                       className={
                         step === undefined
                           ? "size-4 shrink-0 text-muted-foreground"
-                          : "size-4 shrink-0 text-success"
+                          : step.outcome === "failed"
+                            ? "size-4 shrink-0 text-destructive"
+                            : "size-4 shrink-0 text-success"
                       }
                     />
                     <span className="min-w-0">
@@ -126,16 +201,14 @@ export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId
                         {fmt.number(index + 1)} · {displayNodeName(item, locale)}
                       </bdi>
                       <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
-                        {step === undefined
-                          ? detail.nextNodeId === item.id && detail.status === "waiting"
-                            ? t("stepWaiting")
-                            : detail.nextNodeId === item.id && detail.status === "failed"
-                              ? t("stoppedHere")
-                              : t("stepNotReached")
-                          : step.simulated
-                            ? t("stepSimulated")
-                            : t("stepCompleted")}
+                        {t(traceStepLabel(step, detail.status, detail.nextNodeId === item.id))}
                       </span>
+                      <IteratorOccurrences steps={occurrences} />
+                      {item.type === "record.delete" && step?.recordDeleted === true && (
+                        <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
+                          {t(step.simulated ? "recordWouldBeDeleted" : "recordWasDeleted")}
+                        </span>
+                      )}
                       {item.type === "delay" && step?.simulated === true && (
                         <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
                           {t("simulatedWait")}

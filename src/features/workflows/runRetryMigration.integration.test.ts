@@ -21,6 +21,10 @@ import {
   setupRetryActor,
   storedRetryRun,
 } from "./runRetry.test-helpers";
+import {
+  addCurrentColumnsForLegacyFixture,
+  restoreLegacyWorkflowColumns,
+} from "./runRetryLegacyMigration.test-helpers";
 
 async function oldFailedWait(h: RetryFixture) {
   await repairRetryPermission(h);
@@ -88,6 +92,7 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
     (await db.pool.query("SELECT to_regclass('public.workflow_run_failures') IS NULL AS absent"))
       .rows,
   ).toEqual([{ absent: true }]);
+  await addCurrentColumnsForLegacyFixture(db);
   const h = await setupRetryActor(db);
   const candidate = await migrationFolder(101);
   try {
@@ -124,6 +129,7 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
       [admitted.value.id],
     );
     const waitId = await oldFailedWait(h);
+    await restoreLegacyWorkflowColumns(db);
     const before = (
       await h.pool.query("SELECT to_jsonb(r) AS data FROM workflow_runs r ORDER BY id")
     ).rows;
@@ -170,6 +176,10 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
     });
     expect(await ledger(h)).toEqual(receipt);
     expect(await h.db.select().from(workflowRunFailures)).toEqual(failures);
+    expect(await applyMigrations(h.db, retrySignal())).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
     await repairRetryPermission(h);
     const lostWait = failures.find((row) => row.runId === waitId);
     if (lostWait === undefined) throw new Error("Legacy wait snapshot absent");

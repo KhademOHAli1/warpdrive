@@ -22,6 +22,7 @@ import { type AttemptRow, markSent, reconcile, type SendOutcome } from "./outbox
 import { privateIntakeBlocksQueuedSend } from "./privateIntakeDispatchFence";
 import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 import { type ReplyThreadHeaders, replyThreadHeaders } from "./replyHeaders";
+import { type WorkflowMailDispatch, workflowMailScope } from "./workflowMailFence";
 
 // Resolve the RFC 5322 threading headers for a reply. The parent's Message-ID lives only in
 // Gmail (we never stored the header), so it costs one metadata read per reply. A failed read
@@ -61,6 +62,7 @@ export async function enqueueSend(
     threadId?: string | null;
     scheduledAt?: Date | null;
     requiresPreparation?: boolean;
+    workflow?: WorkflowMailDispatch;
   },
 ): Promise<Result<{ attemptId: string; replay: boolean }, AppError>> {
   const header = deriveMessageId({
@@ -68,12 +70,23 @@ export async function enqueueSend(
     idempotencyKey: args.idempotencyKey,
     domain: new URL(env.BASE_URL).hostname,
   });
+  const workflow = args.workflow;
+  const workflowMailbox =
+    workflow === undefined
+      ? sql``
+      : sql`
+    AND user_id=${workflow.purpose.actorId} AND provider=${workflow.purpose.provider}
+    AND connection_generation=${workflow.purpose.generation} AND status='connected' AND NOT paused
+    AND coalesce((capabilities->>'send')::boolean,true)
+  `;
+  const payload =
+    workflow === undefined ? args.payload : { ...args.payload, workflowPurpose: workflow.purpose };
   await db.execute(sql`
     INSERT INTO email_send_attempts (idempotency_key, message_id_header, account_id, thread_id, payload, status, scheduled_at, connection_generation, payload_prepared)
     SELECT ${args.idempotencyKey}, ${header}, id, ${args.threadId ?? null},
-      ${JSON.stringify(args.payload)}::jsonb || jsonb_build_object('fromName',display_name),
+      ${JSON.stringify(payload)}::jsonb || jsonb_build_object('fromName',display_name),
       'pending', ${args.scheduledAt ?? null}, connection_generation, ${args.requiresPreparation !== true}
-    FROM email_accounts WHERE id=${args.accountId}
+    FROM email_accounts WHERE id=${args.accountId} ${workflowMailbox}
       AND (${args.threadId ?? null}::uuid IS NULL OR EXISTS(
         SELECT 1 FROM email_threads reply_thread WHERE reply_thread.id=${args.threadId ?? null}::uuid
           AND reply_thread.account_id=email_accounts.id
@@ -85,12 +98,13 @@ export async function enqueueSend(
     await db.execute(sql`
       SELECT id, status FROM email_send_attempts
       WHERE account_id=${args.accountId} AND idempotency_key=${args.idempotencyKey}
+        AND ${workflowMailScope(sql`payload`, workflow)}
     `)
   ).rows[0] as { id: string; status: string } | undefined;
   if (row === undefined) {
     if (args.threadId != null)
       return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "reply thread is unavailable"));
-    return err(new AppError("E_DB_002", "enqueueSend found no attempt row", args));
+    return err(new AppError("E_DB_002", "send attempt unavailable"));
   }
   return ok({ attemptId: row.id, replay: row.status === "sent" });
 }
@@ -105,6 +119,7 @@ interface ProcessSendArgs {
   now?: number;
   windowMs?: number;
   expectedGeneration?: number;
+  workflow?: WorkflowMailDispatch;
 }
 
 // ops B6 steps 2 to 4. Exactly-once-effect under crashes: never blind re-send a row
@@ -119,7 +134,7 @@ export async function processSendAttempt(
   const now = args.now ?? Date.now();
   const windowMs = args.windowMs ?? RECONCILE_WINDOW_MS;
 
-  const existing = await loadAttempt(db, args.accountId, args.idempotencyKey);
+  const existing = await loadAttempt(db, args.accountId, args.idempotencyKey, args.workflow);
   if (existing === undefined) {
     return err(
       new AppError("E_DB_002", "processSendAttempt: no attempt row", {
@@ -147,35 +162,39 @@ export async function processSendAttempt(
 
   // (c) branch on send_started_at: a stamped row may have been accepted -> reconcile,
   // never blind re-send. Do this BEFORE claiming so a stamped row can never re-send.
-  if (existing.send_started_at !== null) {
-    return reconcile(db, {
-      attempt: existing,
-      gmail: args.gmail,
-      signal: args.signal,
-      now,
-      windowMs,
-    });
-  }
+  const prior = await priorGmailSubmission(db, args, existing, now, windowMs);
+  if (prior !== null) return prior;
 
   // (b) token-guarded claim. A lost claim is expected contention (E_GMAIL_008), not an
   // API failure, so it does not pollute API-exhaustion metrics.
-  const token = await claim(db, existing.id, args.signal);
+  const token = await claim(db, existing.id, args.signal, args.workflow);
   if (token === null)
     return err(new AppError("E_GMAIL_008", "attempt not claimable", { id: existing.id }));
 
   // Re-check under the claim: another worker may have stamped between load and claim.
-  const claimed = await loadAttempt(db, args.accountId, args.idempotencyKey);
+  const claimed = await loadAttempt(db, args.accountId, args.idempotencyKey, args.workflow);
   if (claimed !== undefined && claimed.send_started_at !== null) {
-    return reconcile(db, {
-      attempt: claimed,
-      gmail: args.gmail,
-      signal: args.signal,
-      now,
-      windowMs,
-    });
+    return (
+      (await priorGmailSubmission(db, args, claimed, now, windowMs)) ??
+      ok({ status: "needs_review" })
+    );
   }
 
   return submitClaimedAttempt(db, args, existing, token);
+}
+
+async function priorGmailSubmission(
+  db: Db,
+  args: ProcessSendArgs,
+  attempt: AttemptRow,
+  now: number,
+  windowMs: number,
+): Promise<Result<SendOutcome, AppError> | null> {
+  if (args.workflow !== undefined && attempt.status === "failed")
+    return ok({ status: attempt.delivery_state === "unknown" ? "needs_review" : "failed" });
+  if (attempt.send_started_at === null) return null;
+  if (args.workflow !== undefined) return ok({ status: "needs_review" });
+  return reconcile(db, { attempt, gmail: args.gmail, signal: args.signal, now, windowMs });
 }
 
 async function submitClaimedAttempt(
@@ -188,7 +207,7 @@ async function submitClaimedAttempt(
   // send_started_at is committed a later failure can no longer be treated as definitely-unsent:
   // it routes into reconcile, which searches for a Message-ID that was never sent and parks the
   // attempt as needs_review. So load the inputs and resolve the reply's threading headers here.
-  const inputs = await loadSendInputs(db, existing.id, args.accountId);
+  const inputs = await loadSendInputs(db, existing.id, args.accountId, args.workflow);
   if (inputs === undefined)
     return err(
       new AppError("E_DB_002", "send inputs not found", {
@@ -223,7 +242,30 @@ async function submitClaimedAttempt(
     await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
     return attResult;
   }
-  const stamped = await stamp(db, existing.id, token, args.signal, args.expectedGeneration);
+  // Build the MIME and encode it before the final authority transaction.
+  const rawBase64 = toRawBase64(
+    buildMime({
+      from,
+      to: payload.to,
+      cc: payload.cc,
+      bcc: payload.bcc,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+      messageId: existing.message_id_header,
+      inReplyTo: threading.inReplyTo,
+      references: threading.references,
+      attachments: attResult.value.length > 0 ? attResult.value : undefined,
+    }),
+  );
+  const stamped = await stamp(
+    db,
+    existing.id,
+    token,
+    args.signal,
+    args.expectedGeneration,
+    args.workflow === undefined ? undefined : { dispatch: args.workflow, payload },
+  );
   if (!stamped) {
     await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
     return err(
@@ -233,27 +275,35 @@ async function submitClaimedAttempt(
     );
   }
 
-  // (f) build MIME with the FIXED Message-ID, then send with NO DB tx held open.
-  const mime = buildMime({
-    from,
-    to: payload.to,
-    cc: payload.cc,
-    bcc: payload.bcc,
-    subject: payload.subject,
-    html: payload.html,
-    text: payload.text,
-    messageId: existing.message_id_header,
-    inReplyTo: threading.inReplyTo,
-    references: threading.references,
-    attachments: attResult.value.length > 0 ? attResult.value : undefined,
-  });
   const sent = await args.gmail.sendRaw({
-    rawBase64: toRawBase64(mime),
+    rawBase64,
     threadId: gmailThreadId ?? undefined,
     signal: args.signal,
   });
   args.signal.throwIfAborted();
 
+  return recordGmailSendResponse(db, args, { existing, token, payload, purpose, sent });
+}
+
+async function recordGmailSendResponse(
+  db: Db,
+  args: ProcessSendArgs,
+  {
+    existing,
+    token,
+    payload,
+    purpose,
+    sent,
+  }: {
+    existing: AttemptRow;
+    token: string;
+    payload: SendPayload;
+    purpose: ReturnType<typeof parseNotificationSendPurpose>;
+    sent: Awaited<ReturnType<GmailClient["sendRaw"]>>;
+  },
+): Promise<Result<SendOutcome, AppError>> {
+  if (args.workflow !== undefined)
+    return checkpointWorkflowGmail(db, existing.id, token, args, sent);
   if (!sent.ok) {
     if (isDefiniteRejection(sent.error)) {
       // DEFINITE pre-acceptance rejection (HTTP 4xx): Gmail did not accept the message, so
@@ -319,4 +369,33 @@ async function fetchAttachmentBytes(
     result.push({ filename: att.filename, contentType: att.contentType, bytes: bytes.value });
   }
   return ok(result);
+}
+
+async function checkpointWorkflowGmail(
+  db: Db,
+  attemptId: string,
+  token: string,
+  args: ProcessSendArgs,
+  sent: Awaited<ReturnType<GmailClient["sendRaw"]>>,
+): Promise<Result<SendOutcome, AppError>> {
+  const state = sent.ok
+    ? "accepted"
+    : isDefiniteRejection(sent.error) && sent.error.context?.status !== 408
+      ? "rejected"
+      : "unknown";
+  const status = state === "accepted" ? "sent" : state === "rejected" ? "failed" : "needs_review";
+  const providerId = sent.ok ? sent.value.id : null;
+  const receipt = JSON.stringify({ state });
+  const changed = await db.execute(sql`UPDATE email_send_attempts
+    SET status=${status}::email_send_status, delivery_outcome=${receipt}::jsonb,
+      gmail_message_id=${providerId}, provider_message_id=${providerId},
+      sent_at=CASE WHEN ${sent.ok} THEN now() ELSE sent_at END,
+      error_id=${state === "accepted" ? null : state === "rejected" ? ERROR_IDS.MAIL_SEND_REJECTED : ERROR_IDS.MAIL_SEND_UNKNOWN},
+      claim_token=NULL, claimed_at=NULL
+    WHERE id=${attemptId} AND claim_token=${token} AND send_started_at IS NOT NULL
+      AND ${workflowMailScope(sql`payload`, args.workflow)}
+    RETURNING id`);
+  args.signal.throwIfAborted();
+  if (changed.rows.length !== 1) return ok({ status: "needs_review" });
+  return ok({ status, gmailMessageId: providerId ?? undefined });
 }

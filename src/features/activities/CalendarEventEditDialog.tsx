@@ -6,6 +6,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useNativeActor } from "@/features/identity/NativeActorProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CalendarEventDialog } from "./CalendarEventDialog";
+import { CalendarEventViewer } from "./CalendarEventViewer";
 import { readCalendarEventAction } from "./calendarNativeActions";
 import type { EditableActivity } from "./getForEdit";
 
@@ -71,6 +72,8 @@ export function CalendarEventEditDialog({
       active = false;
     };
   }, [actorId, id, attempt, readToken]);
+  if (snapshot !== null && snapshot.id === id && snapshot.canEdit === false)
+    return <CalendarEventViewer event={snapshot} onClose={onClose} />;
   if (snapshot !== null && snapshot.id === id)
     return (
       <CalendarEventDialog

@@ -18,7 +18,7 @@ type VersionInput = { id: string; versionNumber: number };
 type RunInput = {
   workflowId: string;
   requestKey: string;
-  recordId: string;
+  recordId?: string;
   mode: Mode;
   reviewedVersionId?: string;
 };
@@ -200,6 +200,7 @@ function confirm(messages: Messages = english) {
   return screen.getByRole("button", {
     name: (name) =>
       name === messages.confirmLive ||
+      name === messages.confirmLiveRecords ||
       name === messages.confirmSimulation ||
       name === messages.retry,
   });
@@ -236,15 +237,39 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("published live-test review", () => {
+  it("explains that a scheduled publication runs automatically and cannot be sent to manual admission", () => {
+    const current = publication();
+    current.definition = {
+      schemaVersion: 1,
+      nodes: [
+        {
+          id: "start",
+          type: "trigger.schedule",
+          version: 1,
+          name: "Scheduled",
+          config: { interval: "hours", hours: 1, minute: 30 },
+        },
+        {
+          id: "task",
+          type: "activity.create",
+          version: 1,
+          name: "Task",
+          config: { subject: { kind: "value", value: "Review pipeline" } },
+        },
+      ],
+      edges: [{ from: "start", to: "task", port: "next" }],
+    };
+    io.versions.set(`${workflowId}:1`, read(current));
+    render(view());
+    expect(screen.getByRole("status")).toHaveTextContent(english.scheduledRunsAutomatically);
+    expect(screen.queryByRole("combobox", { name: english.deal })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: english.confirmLive })).not.toBeInTheDocument();
+    expect(io.run).not.toHaveBeenCalled();
+  });
+
   it.each(locales)(
-    "keeps simulation independent of review and preserves close callbacks in $locale",
+    "pins the simulation publication without asking for a live review in $locale",
     async ({ locale, messages, acknowledgement }) => {
-      io.workflows.set(workflowId, {
-        ...workflowState(),
-        isError: true,
-        isSuccess: false,
-        status: "error",
-      });
       const user = userEvent.setup();
       const mounted = render(view({ mode: "simulation", locale }));
       await chooseRecord(user, messages);
@@ -254,7 +279,13 @@ describe("published live-test review", () => {
       await user.click(confirm(messages));
 
       expect(io.run).toHaveBeenCalledExactlyOnceWith(
-        { workflowId, requestKey: expect.any(String), recordId, mode: "simulation" },
+        {
+          workflowId,
+          requestKey: expect.any(String),
+          recordId,
+          mode: "simulation",
+          reviewedVersionId: firstVersionId,
+        },
         "csrf",
       );
       expect(io.started).toHaveBeenCalledTimes(1);
@@ -262,6 +293,50 @@ describe("published live-test review", () => {
       expect(io.close).toHaveBeenCalledTimes(1);
       mounted.unmount();
       await waitFor(() => expect(io.closeAutoFocus).toHaveBeenCalledTimes(1));
+    },
+  );
+
+  it.each(["simulation", "live"] as const)(
+    "launches a Global publication in %s mode without a deal",
+    async (mode) => {
+      const current = publication();
+      current.definition = {
+        schemaVersion: 1,
+        nodes: [
+          {
+            id: "start",
+            type: "trigger.manual",
+            version: 1,
+            name: "Start",
+            config: { scope: "global" },
+          },
+          {
+            id: "create-person",
+            type: "record.create",
+            version: 1,
+            name: "Create person",
+            config: { entity: "person", fields: { name: { kind: "value", value: "Example" } } },
+          },
+        ],
+        edges: [{ from: "start", to: "create-person", port: "next" }],
+      };
+      io.versions.set(`${workflowId}:1`, read(current));
+      const user = userEvent.setup();
+      render(view({ mode }));
+
+      expect(screen.queryByRole("combobox", { name: english.deal })).not.toBeInTheDocument();
+      expect(screen.queryByRole("textbox", { name: english.search })).not.toBeInTheDocument();
+      expect(screen.getByText(english.manualGlobalRunHint)).toBeVisible();
+      if (mode === "live") {
+        expect(confirm()).toBeDisabled();
+        await acknowledgeIfOffered(user);
+      }
+      expect(confirm()).toBeEnabled();
+      await user.click(confirm());
+      expect(io.run).toHaveBeenCalledExactlyOnceWith(
+        { workflowId, requestKey: expect.any(String), mode, reviewedVersionId: firstVersionId },
+        "csrf",
+      );
     },
   );
 
@@ -328,8 +403,7 @@ describe("published live-test review", () => {
     }
     const user = userEvent.setup();
     render(view());
-    await chooseRecord(user);
-
+    expect(screen.queryByRole("combobox", { name: english.deal })).not.toBeInTheDocument();
     expect(confirm()).toBeDisabled();
     expect(screen.queryByRole("region", { name: locales[0].heading })).not.toBeInTheDocument();
     await user.click(confirm());
@@ -520,7 +594,6 @@ it("keeps publication reloads independent when the same workflow is republished"
   });
   const user = userEvent.setup();
   const mounted = render(view());
-  await chooseRecord(user);
   await user.click(screen.getByRole("button", { name: "Reload review" }));
   await waitFor(() => expect(io.refetch).toHaveBeenCalledTimes(2));
   expect(screen.getByRole("button", { name: "Reload review" })).toBeDisabled();

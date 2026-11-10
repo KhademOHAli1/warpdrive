@@ -18,6 +18,10 @@ import {
   setupRetryActor,
   storedRetryRun,
 } from "./runRetry.test-helpers";
+import {
+  addCurrentColumnsForLegacyFixture,
+  restoreLegacyWorkflowColumns,
+} from "./runRetryLegacyMigration.test-helpers";
 
 async function completedPrefix(h: RetryFixture, runId: string) {
   return h.db
@@ -60,6 +64,7 @@ async function migratedFailure(cursor: "read" | "second_task") {
       (await db.pool.query("SELECT to_regclass('public.workflow_run_failures') IS NULL AS absent"))
         .rows,
     ).toEqual([{ absent: true }]);
+    await addCurrentColumnsForLegacyFixture(db);
     const h = await setupRetryActor(db);
     const admitted = await admitManualRun(
       h.db,
@@ -88,13 +93,12 @@ async function migratedFailure(cursor: "read" | "second_task") {
     const run = await storedRetryRun(h, admitted.value.id);
     const steps = await completedPrefix(h, run.id);
     const effects = await h.db.select().from(activities).orderBy(activities.id);
+    await restoreLegacyWorkflowColumns(db);
     candidate = await migrationFolder(101);
     expect(await applyMigrations(h.db, retrySignal(), candidate.folder)).toEqual({
       ok: true,
       value: { applied: true },
     });
-    expect(await storedRetryRun(h, run.id)).toEqual(run);
-    expect(await completedPrefix(h, run.id)).toEqual(steps);
     expect(await h.db.select().from(activities).orderBy(activities.id)).toEqual(effects);
     const [failure] = await h.db
       .select()
@@ -118,6 +122,12 @@ async function migratedFailure(cursor: "read" | "second_task") {
         )
       ).rows,
     ).toEqual([{ exact: true }]);
+    expect(await applyMigrations(h.db, retrySignal())).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
+    expect(await storedRetryRun(h, run.id)).toEqual(run);
+    expect(await completedPrefix(h, run.id)).toEqual(steps);
     return { h, run, failure, steps, effects, close };
   } catch (error) {
     await close();

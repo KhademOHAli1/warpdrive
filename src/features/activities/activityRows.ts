@@ -14,6 +14,7 @@ import { addCivilDays } from "@/lib/zonedDateTime";
 import { assertNever } from "@/types/result";
 import { activityDueDaySql } from "./activityDateSql";
 import { buildActivityVisibility } from "./activityVisibility";
+import { loadCalendarAccess } from "./calendarAccess";
 import { linkedParentVisible } from "./parentLinkVisibility";
 import type { ActivityListFilter, ActivitySort, ActivitySortField } from "./schemas";
 import { loadParentlessParticipants } from "./visibility";
@@ -228,11 +229,17 @@ export async function listActivityRows(
   signal.throwIfAborted();
 
   const participantsByActivity = await loadParentlessParticipants(db, rows, signal);
+  const calendarAccess = await loadCalendarAccess(
+    db,
+    actor,
+    rows.map((row) => row.id),
+    signal,
+  );
 
   const out: ActivityTableRow[] = [];
   for (const row of rows) {
     const vis = buildActivityVisibility(row, participantsByActivity.get(row.id) ?? []);
-    if (vis === null || !canSee(actor, vis)) continue;
+    if (vis === null || !canSee(actor, vis) || calendarAccess.get(row.id)?.read === false) continue;
     out.push(toTableRow(row, linkGates(actor, row)));
   }
   return out;

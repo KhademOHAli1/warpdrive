@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
+import { libraryReadDenied } from "./libraryErrors";
+import { RunHumanForm } from "./RunHumanForm";
 import { RunTrace } from "./RunTrace";
 
 export function RunDetailDialog({
@@ -69,6 +71,16 @@ function RunDetailRead({ workflowId, runId }: { workflowId: string; runId: strin
   const readProblem = query.isError || (query.data !== undefined && query.data.id !== runId);
   const visibleDetail =
     query.isError || query.isPlaceholderData || query.data?.id !== runId ? undefined : query.data;
+  // Keep local answers and a frozen submission through a failed background read,
+  // but require an authoritative read before showing or enabling the form again.
+  const retainedForm =
+    query.isRefetchError &&
+    query.data.id === runId &&
+    query.error.data?.code !== "NOT_FOUND" &&
+    !libraryReadDenied(query.error)
+      ? query.data.pendingForm
+      : undefined;
+  const pendingForm = visibleDetail?.pendingForm ?? retainedForm;
   const loading = query.isLoading || query.isPlaceholderData || retrying;
 
   async function retryRead() {
@@ -105,6 +117,18 @@ function RunDetailRead({ workflowId, runId }: { workflowId: string; runId: strin
         </div>
       )}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {pendingForm !== undefined && (
+          <RunHumanForm
+            key={pendingForm.nodeId}
+            form={pendingForm}
+            workflowId={workflowId}
+            runId={runId}
+            unavailable={visibleDetail === undefined}
+            onSubmitted={() => {
+              void retryRead();
+            }}
+          />
+        )}
         {visibleDetail !== undefined && (
           <RunTrace key={visibleDetail.id} detail={visibleDetail} workflowId={workflowId} />
         )}

@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { activityTypes, deals } from "@/db/schema";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { activities, activityTypes, deals } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { getBusyWindows } from "./availability";
+import { createCalendar, setCalendarArchived } from "./calendars";
 import { createActivity } from "./repo";
 
 let ctx: Awaited<ReturnType<typeof makeTestDb>>;
@@ -85,4 +87,70 @@ it("reports busy inside an activity window and free outside it", async () => {
     SIG(),
   );
   expect(free.length).toBe(0);
+});
+
+it("excludes completed, deleted and explicitly free activities while retaining legacy busy rows", async () => {
+  const user = await seedUser(ctx.db);
+  const [type] = await ctx.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
+  if (type === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "meeting seed absent");
+  const dueAt = new Date("2027-03-21T09:00:00Z");
+  const base = {
+    typeId: type.id,
+    ownerId: user.id,
+    assigneeId: user.id,
+    dueAt,
+    durationMinutes: 60,
+  };
+  await ctx.db.insert(activities).values([
+    { ...base, subject: "Completed", done: true, doneAt: new Date() },
+    { ...base, subject: "Deleted", deletedAt: new Date() },
+    { ...base, subject: "Free", availability: "free" },
+  ]);
+  const query = {
+    userId: user.id,
+    from: new Date("2027-03-21T08:00:00Z"),
+    to: new Date("2027-03-21T11:00:00Z"),
+  };
+  expect(await getBusyWindows(ctx.db, query, SIG())).toEqual([]);
+  await ctx.db.insert(activities).values({ ...base, subject: "Legacy busy" });
+  expect(await getBusyWindows(ctx.db, query, SIG())).toEqual([
+    { start: dueAt, end: new Date("2027-03-21T10:00:00Z") },
+  ]);
+});
+
+it("removes archived calendar events from availability and restores them with the calendar", async () => {
+  const user = await seedUser(ctx.db);
+  const actor = makeActor(user);
+  const cal = await createCalendar(
+    ctx.db,
+    actor,
+    { name: "Availability", timeZone: "Europe/Berlin" },
+    SIG(),
+  );
+  if (!cal.ok) throw cal.error;
+  const [type] = await ctx.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
+  if (type === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "meeting seed absent");
+  await ctx.db.insert(activities).values({
+    typeId: type.id,
+    ownerId: user.id,
+    assigneeId: user.id,
+    calendarId: cal.value.id,
+    subject: "Native busy",
+    dueAt: new Date("2027-03-21T09:00:00Z"),
+    durationMinutes: 60,
+  });
+  const query = {
+    userId: user.id,
+    from: new Date("2027-03-21T08:00:00Z"),
+    to: new Date("2027-03-21T11:00:00Z"),
+  };
+  expect(await getBusyWindows(ctx.db, query, SIG())).toHaveLength(1);
+  expect(
+    (await setCalendarArchived(ctx.db, actor, { id: cal.value.id, archived: true }, SIG())).ok,
+  ).toBe(true);
+  expect(await getBusyWindows(ctx.db, query, SIG())).toEqual([]);
+  expect(
+    (await setCalendarArchived(ctx.db, actor, { id: cal.value.id, archived: false }, SIG())).ok,
+  ).toBe(true);
+  expect(await getBusyWindows(ctx.db, query, SIG())).toHaveLength(1);
 });

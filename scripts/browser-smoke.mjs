@@ -90,6 +90,61 @@ async function login(page, email) {
   await page.getByRole("main", { name: "Board CI Pipeline", exact: true }).waitFor();
 }
 
+function captureWorkflowStudio(page, name) {
+  const evidence = new URL(
+    "../test-results/browser-smoke/workflow-draft-persistence/",
+    import.meta.url,
+  );
+  mkdirSync(evidence, { recursive: true });
+  return page.screenshot({
+    path: fileURLToPath(new URL(name, evidence)),
+    animations: "disabled",
+  });
+}
+
+async function exerciseWorkflowStudioSplit(page) {
+  const inspector = page.getByRole("complementary", { name: "Configure", exact: true });
+  const handle = page.getByRole("separator", { name: "Resize side panel", exact: true });
+  const canvas = page.locator(".workflow-canvas");
+  await inspector.getByRole("combobox", { name: "Change trigger", exact: true }).waitFor();
+  const opened = await canvas.boundingBox();
+  const boundary = await handle.boundingBox();
+  assert.ok(opened !== null && boundary !== null, "Studio canvas and resize edge must be visible");
+  assert.equal((await inspector.boundingBox())?.width, 400);
+  await captureWorkflowStudio(page, "inspector-open.png");
+
+  const x = boundary.x + boundary.width / 2;
+  const y = boundary.y + boundary.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 80, y, { steps: 4 });
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[role="separator"][aria-valuenow="320"],hr[aria-valuenow="320"]') !==
+      null,
+  );
+  const narrow = await canvas.boundingBox();
+  assert.equal(narrow?.width, opened.width + 80, "Canvas must grow during the drag");
+  assert.equal((await inspector.boundingBox())?.width, 320);
+  await page.mouse.up();
+  await captureWorkflowStudio(page, "inspector-narrow.png");
+
+  await inspector.getByRole("button", { name: "Close", exact: true }).click();
+  await inspector.waitFor({ state: "hidden" });
+  await page.waitForFunction(
+    (width) => document.querySelector(".workflow-canvas")?.getBoundingClientRect().width === width,
+    opened.width + 400,
+  );
+  await captureWorkflowStudio(page, "inspector-closed.png");
+  await page.getByRole("button", { name: "Configure", exact: true }).click();
+  await handle.waitFor();
+  assert.equal(
+    await handle.getAttribute("aria-valuenow"),
+    "320",
+    "Reopening restores the chosen width",
+  );
+}
+
 try {
   for (const [locale, heading, language] of [
     ["en", "Sign in to Warpdrive", "Language"],
@@ -190,33 +245,46 @@ try {
     await page.getByText(mail.empty, { exact: true }).waitFor();
   });
 
-  await journey("workflow-draft-persistence", "en", async (page) => {
-    await login(page, "studio-browser@example.invalid");
-    await page.goto("/workflows");
-    await page.getByRole("button", { name: workflows.new, exact: true }).first().click();
-    const dialog = page.getByRole("dialog");
-    await dialog
-      .getByRole("textbox", { name: workflows.name, exact: true })
-      .fill("CI follow-up draft");
-    await dialog.getByRole("button", { name: workflows.create, exact: true }).click();
-    await page.waitForURL(/\/workflows\/[0-9a-f-]+$/);
-    await page.getByRole("button", { name: "Add step", exact: true }).first().click();
-    await page.getByRole("button", { name: "Code", exact: true }).click();
-    await page
-      .getByRole("textbox", { name: "Source code", exact: true })
-      .fill("export function main(): { calculated: number } { return { calculated: 42 }; }");
-    await page.getByRole("button", { name: "Save draft", exact: true }).click();
-    await page.getByText("Draft · Revision 2", { exact: true }).waitFor();
-    await page.reload();
-    await page.getByRole("group", { name: "Code", exact: true }).waitFor();
-    await page.getByRole("button", { name: "Safe test", exact: true }).click();
-    await page.getByText("Evaluated", { exact: true }).waitFor();
-    await page.getByText("42", { exact: true }).waitFor();
-    await page.goto("/workflows");
-    await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
-    await page.reload();
-    await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
-  });
+  await journey(
+    "workflow-draft-persistence",
+    "en",
+    async (page) => {
+      await login(page, "studio-browser@example.invalid");
+      await page.goto("/workflows");
+      await page.getByRole("button", { name: workflows.new, exact: true }).first().click();
+      const dialog = page.getByRole("dialog");
+      await dialog
+        .getByRole("textbox", { name: workflows.name, exact: true })
+        .fill("CI follow-up draft");
+      await dialog.getByRole("button", { name: workflows.create, exact: true }).click();
+      await page.waitForURL(/\/workflows\/[0-9a-f-]+$/);
+      await exerciseWorkflowStudioSplit(page);
+      await page.getByRole("button", { name: "Add step", exact: true }).first().click();
+      const codeAction = page.getByRole("button", { name: "Code", exact: true });
+      await codeAction.waitFor();
+      assert.equal(
+        await page.getByRole("button", { name: "Send to inbox", exact: true }).count(),
+        0,
+      );
+      await captureWorkflowStudio(page, "action-picker.png");
+      await codeAction.click();
+      await page
+        .getByRole("textbox", { name: "Source code", exact: true })
+        .fill("export function main(): { calculated: number } { return { calculated: 42 }; }");
+      await page.getByRole("button", { name: "Save draft", exact: true }).click();
+      await page.getByText("Draft · Revision 2", { exact: true }).waitFor();
+      await page.reload();
+      await page.getByRole("group", { name: "Code", exact: true }).waitFor();
+      await page.getByRole("button", { name: "Safe test", exact: true }).click();
+      await page.getByText("Evaluated", { exact: true }).waitFor();
+      await page.getByText("42", { exact: true }).waitFor();
+      await page.goto("/workflows");
+      await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
+      await page.reload();
+      await page.getByRole("link", { name: /CI follow-up draft/ }).waitFor();
+    },
+    { width: 1280, height: 900 },
+  );
   await journey("goals-list-and-custom-kpi", "en", async (page) => {
     await login(page, "studio-browser@example.invalid");
     await page.goto("/settings/goals");

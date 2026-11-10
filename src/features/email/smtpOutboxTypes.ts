@@ -1,6 +1,7 @@
 import type { StorageClient } from "@/features/files/storage";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
 import type { SendPayload } from "./outboxClaim";
+import type { WorkflowMailDispatch } from "./workflowMailFence";
 
 export interface SmtpDeliveryOutcome {
   state: "accepted" | "partial" | "unknown" | "rejected";
@@ -42,6 +43,7 @@ export interface SmtpOutboxArgs {
   runtime: ImapConnectionRuntime;
   storage: StorageClient;
   signal: AbortSignal;
+  workflow?: WorkflowMailDispatch;
 }
 export interface SmtpAttempt {
   id: string;

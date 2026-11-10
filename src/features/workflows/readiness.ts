@@ -1,6 +1,7 @@
 import { parseConditionConfig } from "./conditionExpression";
 import { actionRegistry } from "./registry";
 import { bindingSchema, type WorkflowDefinition, type WorkflowNode } from "./schemas";
+import { workflowIteratorGraphReady } from "./workflowIteratorGraph";
 
 // ORM JSON types do not validate stored values at runtime.
 // Keep this boundary check strict without relying on the declared literal version types.
@@ -8,21 +9,45 @@ function isSupportedVersion(value: unknown): boolean {
   return value === 1;
 }
 
+function executableDelay(node: WorkflowNode): boolean {
+  if (Object.hasOwn(node.config, "delayType"))
+    return actionRegistry.delay.config.safeParse(node.config).success;
+  const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
+  const binding = bindingSchema.safeParse(node.config[selected]);
+  return (
+    binding.success &&
+    binding.data.kind === "value" &&
+    actionRegistry.delay.config.safeParse(node.config).success
+  );
+}
+
 // Contracts can be authored before every handler exists. Publication and execution
 // fail closed until an action's complete configuration has a qualified handler.
 export function executableNode(node: WorkflowNode): boolean {
   if (!isSupportedVersion(node.version)) return false;
-  if (node.type === "trigger.manual") return true;
-  if (node.type === "delay") {
-    const selected = Object.hasOwn(node.config, "until") ? "until" : "minutes";
-    const binding = bindingSchema.safeParse(node.config[selected]);
-    return (
-      binding.success &&
-      binding.data.kind === "value" &&
-      actionRegistry.delay.config.safeParse(node.config).success
-    );
-  }
-  if (node.type === "condition") {
+  if (node.type === "trigger.manual")
+    return actionRegistry["trigger.manual"].config.safeParse(node.config).success;
+  if (node.type === "trigger.schedule" || node.type === "trigger.webhook")
+    return actionRegistry[node.type].config.safeParse(node.config).success;
+  if (node.type === "delay") return executableDelay(node);
+  if (
+    [
+      "ifElse",
+      "iterator",
+      "record.create",
+      "record.update",
+      "record.delete",
+      "record.search",
+      "record.upsert",
+      "record.pick",
+      "email.draft",
+      "http.request",
+      "calendar.create",
+      "human.form",
+    ].includes(node.type)
+  )
+    return actionRegistry[node.type].config.safeParse(node.config).success;
+  if (node.type === "condition" || node.type === "filter") {
     if (Object.hasOwn(node.config, "expression") || Object.hasOwn(node.config, "defaultPort")) {
       const grouped = parseConditionConfig(node.config, "execute");
       return grouped.ok && grouped.value.kind === "grouped";
@@ -41,24 +66,44 @@ export function executableNode(node: WorkflowNode): boolean {
 }
 
 export function executableDefinition(definition: WorkflowDefinition): boolean {
-  return isSupportedVersion(definition.schemaVersion) && definition.nodes.every(executableNode);
+  return (
+    isSupportedVersion(definition.schemaVersion) &&
+    definition.nodes.every(executableNode) &&
+    workflowIteratorGraphReady(definition)
+  );
 }
 
-// Draft simulation intentionally has a narrower wait contract than published
-// execution. Fixed-instant waits remain executable after publication, but the
-// draft transaction only projects bounded duration waits and must never route an
-// `until` binding through delayResumeAt as if it were a `minutes` binding.
+// Legacy fixed instants retain their existing published-only contract. The
+// configured schedules share the same deadline projection in both modes.
 export function draftExecutableNode(node: WorkflowNode): boolean {
-  if (!executableNode(node)) return false;
+  if (
+    node.type === "human.form" ||
+    node.type === "trigger.schedule" ||
+    node.type === "trigger.webhook" ||
+    node.type === "http.request" ||
+    !executableNode(node)
+  )
+    return false;
   if (node.type !== "delay") return true;
+  if (Object.hasOwn(node.config, "delayType")) return true;
   return (
     !Object.hasOwn(node.config, "until") &&
     Object.keys(node.config).every((key) => key === "minutes")
   );
 }
 
+export function requiresExternalHttp(definition: WorkflowDefinition): boolean {
+  return definition.nodes.some((node) => node.type === "http.request");
+}
+
+export function requiresHumanForm(definition: WorkflowDefinition): boolean {
+  return definition.nodes.some((node) => node.type === "human.form");
+}
+
 export function draftExecutableDefinition(definition: WorkflowDefinition): boolean {
   return (
-    isSupportedVersion(definition.schemaVersion) && definition.nodes.every(draftExecutableNode)
+    isSupportedVersion(definition.schemaVersion) &&
+    definition.nodes.every(draftExecutableNode) &&
+    workflowIteratorGraphReady(definition)
   );
 }

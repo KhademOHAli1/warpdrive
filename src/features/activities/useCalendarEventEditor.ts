@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc-client";
 import { instantCivilDate } from "@/lib/zonedDateTime";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { localizeActivityTypes } from "./activityTypeLabels";
+import type { AdvancedCalendarDraft } from "./CalendarAdvancedFields";
 import {
   calendarEventDraft,
   calendarEventIssue,
@@ -27,6 +28,7 @@ import { mergeCalendarRefresh } from "./calendarReminderDraft";
 import type { EditableActivity } from "./getForEdit";
 import { resolveActivityReminderTime } from "./reminderTime";
 import { useActivitiesMessages } from "./useActivitiesMessages";
+import { useCalendarDraftGuard } from "./useCalendarDraftGuard";
 import { useCalendarEventPersistence } from "./useCalendarEventPersistence";
 import { useCalendarReminderEditor } from "./useCalendarReminderEditor";
 
@@ -52,7 +54,16 @@ export function useCalendarEventEditor({
   onMarkedDone,
 }: CalendarEventDialogProps) {
   const preferences = useLocalePreferences();
-  const [zone] = useState(editing?.authoredTimeZone ?? preferences.timeZone);
+  const [zone, setZone] = useState(
+    editing?.authoredTimeZone ?? editing?.eventTimeZone ?? preferences.timeZone,
+  );
+  const [advanced, setAdvanced] = useState<AdvancedCalendarDraft | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const onAdvancedChange = useCallback(
+    (next: AdvancedCalendarDraft) =>
+      setAdvanced((current) => (JSON.stringify(current) === JSON.stringify(next) ? current : next)),
+    [],
+  );
   const [baseline, setBaseline] = useState(editing);
   const t = useAppTranslations("calendar");
   const S = useActivitiesMessages();
@@ -126,6 +137,19 @@ export function useCalendarEventEditor({
       else setError(S.updateFailed(id), origin);
     },
   });
+  const [initialDraft] = useState(draft);
+  const guard = useCalendarDraftGuard({
+    draft,
+    initial:
+      baseline === undefined
+        ? initialDraft
+        : calendarEventDraft({ editing: baseline, timeZone: zone }),
+    fields,
+    pending: persistence.pending,
+    onClose,
+    extraChanged: advanced?.changed === true,
+  });
+  const calendarReminders = advanced?.patch.personalReminders !== undefined;
   const value = { ...draft, typeId: draft.typeId || (types[0]?.id ?? "") };
   const dateConfirmationRequired =
     baseline?.allDay === true &&
@@ -170,7 +194,11 @@ export function useCalendarEventEditor({
       setError(t("reminder.dateConfirmationRequired"));
       return;
     }
-    if (!validReminder()) return;
+    if (advanced !== null && !advanced.valid) {
+      setError(t("settings.unavailable"));
+      return;
+    }
+    if (!calendarReminders && !validReminder()) return;
     setError(null);
     const csrf = readCsrfToken();
     const identity = { v: 1, expectedActorId: persistence.actorId };
@@ -182,8 +210,14 @@ export function useCalendarEventEditor({
             activity: {
               ...buildActivityInput(value, zone),
               authoredTimeZone: zone,
-              reminder: reminder.selection ?? { kind: "none" },
-              reminderTimeZone: reminder.reminderZone,
+              ...(calendarReminders
+                ? { ...advanced.patch }
+                : {
+                    reminder: reminder.selection ?? { kind: "none" },
+                    reminderTimeZone: reminder.reminderZone,
+                    ...advanced?.patch,
+                  }),
+              eventTimeZone: zone,
             },
           },
           csrf,
@@ -192,7 +226,7 @@ export function useCalendarEventEditor({
       return;
     }
     const patch = calendarEventPatch(baseline, value, zone);
-    if (patch === null && !reminder.changed) {
+    if (patch === null && !reminder.changed && advanced?.changed !== true) {
       onClose();
       return;
     }
@@ -205,7 +239,8 @@ export function useCalendarEventEditor({
           ...identity,
           activity: {
             ...(patch ?? { id: baseline.id }),
-            ...reminder.patch(),
+            ...(calendarReminders ? {} : reminder.patch()),
+            ...advanced?.patch,
             ...(temporal ? { authoredTimeZone: zone } : {}),
             ...(dateConfirmationRequired && legacyDateConfirmed
               ? {
@@ -230,7 +265,10 @@ export function useCalendarEventEditor({
       kind === "delete"
         ? deleteCalendarEventAction({ ...identity, activityId: baseline.id }, readCsrfToken())
         : completeCalendarEventAction(
-            { ...identity, activity: { id: baseline.id, done: !doneNow } },
+            {
+              ...identity,
+              activity: { id: baseline.id, done: !doneNow, expectedVersion: baseline.version },
+            },
             readCsrfToken(),
           ),
     );
@@ -252,6 +290,12 @@ export function useCalendarEventEditor({
   }
   return {
     preferences,
+    advancedOpen,
+    setAdvancedOpen,
+    onAdvancedChange,
+    setZone,
+    guard,
+    calendarReminders,
     zone,
     t,
     S,

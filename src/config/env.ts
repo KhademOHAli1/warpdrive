@@ -10,6 +10,7 @@ import { mailEnvShape } from "./mailEnv";
 const SECRET_FILE_VARS = [
   "GOOGLE_OAUTH_CLIENT_SECRET",
   "SLACK_CLIENT_SECRET",
+  "GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET",
   "WS_TICKET_SECRET",
   "TOKEN_ENCRYPTION_KEY",
   "MINIO_SECRET_KEY",
@@ -22,6 +23,8 @@ const SECRET_FILE_VARS = [
   "MAIL_INTERNAL_ENDPOINTS",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
+  "WORKFLOW_HTTP_GRANTS",
+  "WORKFLOW_WEBHOOK_KEYS",
 ] as const;
 
 function resolveFileVars(
@@ -44,10 +47,15 @@ const base = z.object({
   ...mailEnvShape,
   ...billingEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  WORKFLOW_HTTP_GRANTS: z.string().default(""),
+  WORKFLOW_WEBHOOK_KEYS: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
   SLACK_CLIENT_ID: z.string().trim().default(""),
   SLACK_CLIENT_SECRET: z.string().trim().default(""),
+  GOOGLE_CALENDAR_OAUTH_CLIENT_ID: z.string().trim().max(1024).default(""),
+  GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET: z.string().trim().max(4096).default(""),
+  GOOGLE_CALENDAR_ACCESS: z.enum(["readOnly", "readWrite"]).default("readWrite"),
   GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
   BASE_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
@@ -99,8 +107,25 @@ const base = z.object({
   DISABLE_UPDATE_CHECK: boolFromString.default(false),
 });
 
+function calendarOAuthCredentialsPaired(value: {
+  GOOGLE_CALENDAR_OAUTH_CLIENT_ID: string;
+  GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET: string;
+}): boolean {
+  return (
+    (value.GOOGLE_CALENDAR_OAUTH_CLIENT_ID === "") ===
+    (value.GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET === "")
+  );
+}
+
 // Production guardrails for the first-run bootstrap (ops spec E6).
 const schema = base.superRefine((v, ctx) => {
+  if (!calendarOAuthCredentialsPaired(v)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["GOOGLE_CALENDAR_OAUTH_CLIENT_ID"],
+      message: "Calendar OAuth client ID and secret must both be configured or both unset",
+    });
+  }
   try {
     const billing = parseBillingConfig(v, v.BASE_URL);
     if (billing !== null) new StripeGateway({ ...billing, signal: new AbortController().signal });

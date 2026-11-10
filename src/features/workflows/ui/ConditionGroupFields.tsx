@@ -26,6 +26,7 @@ export interface ConditionGroupProps {
   onChange: (node: WorkflowNode) => void;
   metadata?: ConfigurationMetadata;
   issues?: readonly ConfigurationIssue[];
+  showOtherwise?: boolean;
 }
 interface GroupProps extends ConditionGroupProps {
   entry: ConditionObject;
@@ -177,6 +178,7 @@ function GroupRow(props: GroupProps) {
 }
 export function ConditionGroupFields(props: ConditionGroupProps) {
   const t = useAppTranslations("workflows");
+  const otherwise = t(props.node.type === "filter" ? "filterActionHint" : "conditionOtherwise");
   const root = conditionRoot(props.node.config);
   const editable = props.editable && props.metadata?.status !== "denied";
   const parsed = parseConditionConfig(props.node.config, "draft");
@@ -208,24 +210,28 @@ export function ConditionGroupFields(props: ConditionGroupProps) {
   return (
     <div className="space-y-4">
       <GroupRow {...props} editable={editable} entry={root} indices={[]} ordinals={[1]} />
-      <p className="text-xs text-muted-foreground">
-        {props.node.config.defaultPort === "false"
-          ? t("conditionOtherwise")
-          : t("conditionOmitted") + ": " + t("conditionOtherwise")}
-      </p>
-      {props.node.config.defaultPort !== "false" && (
-        <Button
-          disabled={!editable}
-          onClick={() => {
-            if (editable)
-              props.onChange({
-                ...props.node,
-                config: { ...props.node.config, defaultPort: "false" },
-              });
-          }}
-        >
-          {t("conditionUseDefault")}
-        </Button>
+      {props.showOtherwise !== false && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            {props.node.config.defaultPort === "false"
+              ? otherwise
+              : t("conditionOmitted") + ": " + otherwise}
+          </p>
+          {props.node.config.defaultPort !== "false" && (
+            <Button
+              disabled={!editable}
+              onClick={() => {
+                if (editable)
+                  props.onChange({
+                    ...props.node,
+                    config: { ...props.node.config, defaultPort: "false" },
+                  });
+              }}
+            >
+              {t(props.node.type === "filter" ? "filterUseDefault" : "conditionUseDefault")}
+            </Button>
+          )}
+        </>
       )}
     </div>
   );

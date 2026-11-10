@@ -10,7 +10,10 @@ import {
   asArray,
   asObject,
   connectStudioNodes,
+  duplicateStudioNode,
   initialConfig,
+  insertStudioNodeOnEdge,
+  replaceStudioNode,
   studioVariables,
   textValue,
   updateStudioNode,
@@ -62,6 +65,82 @@ describe("workflow studio graph authoring", () => {
     expect(validateWorkflowV2(graph).ok).toBe(true);
     expect(connectStudioNodes(graph, "work", "iterator", "next")).toBeNull();
     expect(arrangeStudio(graph).layout?.work?.y).toBe(arrangeStudio(graph).layout?.done?.y);
+  });
+  it("inserts on a specific connection without stealing the sibling branch or iterator loop", () => {
+    const graph: WorkflowV2Definition = {
+      schemaVersion: 2,
+      trigger: { type: "manual", config: {} },
+      nodes: [node("loop", "ITERATOR"), node("process", "CODE"), node("finish", "DELAY")],
+      edges: [
+        { id: "branch", source: "loop", target: "process", sourcePort: "loop" },
+        { id: "complete", source: "loop", target: "finish", sourcePort: "done" },
+      ],
+      entryNodeIds: ["loop"],
+    };
+    const prepare = node("prepare", "CODE");
+    const inserted = insertStudioNodeOnEdge(graph, prepare, "branch");
+    expect(inserted?.edges).toEqual([
+      { id: "branch", source: "loop", target: "prepare", sourcePort: "loop" },
+      { id: "complete", source: "loop", target: "finish", sourcePort: "done" },
+      expect.objectContaining({ source: "prepare", target: "process", sourcePort: "next" }),
+    ]);
+    expect(inserted !== null && validateWorkflowV2(inserted).ok).toBe(true);
+    expect(insertStudioNodeOnEdge(graph, prepare, "stale")).toBeNull();
+    expect(insertStudioNodeOnEdge(graph, prepare, "$trigger:loop")).toMatchObject({
+      entryNodeIds: ["prepare"],
+      edges: expect.arrayContaining([
+        expect.objectContaining({ source: "prepare", target: "loop", sourcePort: "next" }),
+      ]),
+    });
+  });
+  it("replaces the action in place and maps only iterator continuation edges", () => {
+    const graph: WorkflowV2Definition = {
+      schemaVersion: 2,
+      trigger: { type: "manual", config: {} },
+      nodes: [node("iterator", "ITERATOR"), node("body", "CODE"), node("done", "DELAY")],
+      edges: [
+        { id: "branch", source: "iterator", target: "body", sourcePort: "loop" },
+        { id: "continuation", source: "iterator", target: "done", sourcePort: "done" },
+      ],
+      entryNodeIds: ["iterator"],
+      layout: { iterator: { x: 140, y: 320 } },
+    };
+    const replacement = replaceStudioNode(graph, "iterator", "CODE", "Code");
+    expect(replacement?.nodes[0]).toEqual({
+      id: "iterator",
+      type: "CODE",
+      version: 1,
+      name: "Code",
+      config: initialConfig("CODE"),
+    });
+    expect(replacement?.edges).toEqual([{ ...graph.edges[1], sourcePort: "next" }]);
+    expect(replacement?.layout).toEqual(graph.layout);
+    expect(replacement?.entryNodeIds).toEqual(graph.entryNodeIds);
+    if (replacement === null) throw new Error("Expected the selected iterator to exist");
+    expect(replaceStudioNode(replacement, "iterator", "ITERATOR", "Iterator")?.edges).toEqual([
+      graph.edges[1],
+    ]);
+    expect(replaceStudioNode(replacement, "iterator", "IF_ELSE", "If/Else")?.edges).toEqual([]);
+    expect(replaceStudioNode(replacement, "iterator", "CODE", "Code")).toBe(replacement);
+  });
+  it("duplicates only the configured action, offsetting the detached copy", () => {
+    const source = node("find", "FIND_RECORDS");
+    const graph: WorkflowV2Definition = {
+      schemaVersion: 2,
+      trigger: { type: "manual", config: {} },
+      nodes: [source, node("finish", "DELAY")],
+      edges: [{ id: "next", source: "find", target: "finish", sourcePort: "next" }],
+      entryNodeIds: ["find"],
+      layout: { find: { x: 120, y: 240 } },
+    };
+    const duplicate = duplicateStudioNode(graph, "find", "copy");
+    expect(duplicate?.nodes.at(-1)).toEqual({ ...source, id: "copy", name: "find (Duplicate)" });
+    expect(duplicate?.nodes.at(-1)?.config).not.toBe(source.config);
+    expect(duplicate?.layout).toEqual({ ...graph.layout, copy: { x: 170, y: 290 } });
+    expect(duplicate?.edges).toEqual(graph.edges);
+    expect(duplicate?.entryNodeIds).toEqual(graph.entryNodeIds);
+    expect(duplicateStudioNode(graph, "$trigger", "copy")).toBeNull();
+    expect(duplicateStudioNode(graph, "find", "finish")).toBeNull();
   });
   it("offers only upstream records and arrays with the exact persisted binding path", () => {
     const graph: WorkflowV2Definition = {

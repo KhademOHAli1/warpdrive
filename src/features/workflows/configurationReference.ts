@@ -99,7 +99,8 @@ export function temporalConditionMismatch(
   definition: WorkflowDefinition,
   node: WorkflowNode,
 ): boolean {
-  if (node.type !== "condition" || node.config.operator === "exists") return false;
+  if ((node.type !== "condition" && node.type !== "filter") || node.config.operator === "exists")
+    return false;
   const left = bindingSchema.safeParse(node.config.left);
   const right = bindingSchema.safeParse(node.config.right);
   if (!left.success || !right.success) return false;
@@ -118,7 +119,8 @@ export function conditionContainsMismatch(
   definition: WorkflowDefinition,
   node: WorkflowNode,
 ): boolean {
-  if (node.type !== "condition" || node.config.operator !== "contains") return false;
+  if ((node.type !== "condition" && node.type !== "filter") || node.config.operator !== "contains")
+    return false;
   return ["left", "right"].some((field) => {
     const parsed = bindingSchema.safeParse(node.config[field]);
     if (!parsed.success) return false;

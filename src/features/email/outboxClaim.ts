@@ -5,6 +5,11 @@ import type { Db } from "@/db/client";
 import { stampGmailSend } from "./gmailSendFence";
 import type { NotificationSendPurpose } from "./mailSendPurpose";
 import type { AttemptRow } from "./outboxReconcile";
+import {
+  isNotLegacyWorkflowMail,
+  type WorkflowMailDispatch,
+  workflowMailScope,
+} from "./workflowMailFence";
 
 // Attachment metadata persisted in the payload so processSendAttempt can rebuild
 // the MIME on replay without re-querying files or re-authorizing the actor.
@@ -17,6 +22,7 @@ interface PayloadAttachment {
 
 export interface SendPayload {
   systemPurpose?: NotificationSendPurpose;
+  workflowPurpose?: WorkflowMailDispatch["purpose"];
   fromName?: string | null;
   to: string[];
   cc?: string[];
@@ -49,12 +55,19 @@ export async function claim(
   db: Db,
   attemptId: string,
   signal: AbortSignal,
+  workflow?: WorkflowMailDispatch,
 ): Promise<string | null> {
   const token = randomUUID();
   const res = await db.execute(sql`
     UPDATE email_send_attempts
     SET claim_token=${token}, claimed_at=now(), status='sending'
     WHERE id=${attemptId}
+      AND ${workflowMailScope(sql`payload`, workflow)}
+      ${
+        workflow === undefined
+          ? sql`AND ${isNotLegacyWorkflowMail(sql`idempotency_key`)}`
+          : sql`AND status='pending' AND send_started_at IS NULL`
+      }
       AND payload_prepared=true
       AND notification_suppressed_at IS NULL
       AND (
@@ -72,11 +85,13 @@ export async function loadAttempt(
   db: Db,
   accountId: string,
   idempotencyKey: string,
+  workflow?: WorkflowMailDispatch,
 ): Promise<AttemptRow | undefined> {
   const res = await db.execute(sql`
-    SELECT id, status, message_id_header, send_started_at, claim_token, gmail_message_id, connection_generation
+    SELECT id, status, message_id_header, send_started_at, claim_token, gmail_message_id, connection_generation, delivery_outcome->>'state' AS delivery_state
     FROM email_send_attempts
     WHERE account_id=${accountId} AND idempotency_key=${idempotencyKey}
+      AND ${workflowMailScope(sql`payload`, workflow)}
   `);
   return res.rows[0] as AttemptRow | undefined;
 }
@@ -95,6 +110,7 @@ export async function loadSendInputs(
   db: Db,
   attemptId: string,
   accountId: string,
+  workflow?: WorkflowMailDispatch,
 ): Promise<SendInputs | undefined> {
   const res = await db.execute(sql`
     SELECT a.email_address AS from_email, s.payload, t.gmail_thread_id,
@@ -108,6 +124,7 @@ export async function loadSendInputs(
     JOIN email_accounts a ON a.id = s.account_id
     LEFT JOIN email_threads t ON t.id = s.thread_id AND t.account_id = s.account_id
     WHERE s.id=${attemptId} AND a.id=${accountId}
+      AND ${workflowMailScope(sql`s.payload`, workflow)}
   `);
   const row = res.rows[0] as
     | {
@@ -134,6 +151,7 @@ export async function stamp(
   token: string,
   signal: AbortSignal,
   expectedGeneration?: number,
+  workflow?: { dispatch: WorkflowMailDispatch; payload: SendPayload },
 ): Promise<boolean> {
-  return stampGmailSend(db, attemptId, token, signal, expectedGeneration);
+  return stampGmailSend(db, attemptId, token, signal, expectedGeneration, workflow);
 }

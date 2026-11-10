@@ -120,7 +120,7 @@ export async function runSendJob(
     SELECT a.user_id,a.provider,a.status,a.paused,a.connection_generation,
       coalesce((a.capabilities->>'send')::boolean,true) AS can_send,
       EXISTS(SELECT 1 FROM email_send_attempts s WHERE s.account_id=a.id
-        AND s.idempotency_key=${args.idempotencyKey} AND s.delivery_outcome->>'state' IN ('accepted','partial')) AS receipt
+        AND s.idempotency_key=${args.idempotencyKey} AND NOT (s.payload ? 'workflowPurpose') AND s.delivery_outcome->>'state' IN ('accepted','partial')) AS receipt
     FROM email_accounts a JOIN users u ON u.id=a.user_id
     WHERE a.id=${args.accountId} AND u.is_active=true AND u.invited_at IS NULL
   `)
@@ -141,7 +141,8 @@ export async function runSendJob(
     return err(new AppError(ERROR_IDS.MAIL_CONNECTION_UNAVAILABLE, "mailbox unavailable"));
   const attempt = (
     await db.execute(sql`SELECT id,send_started_at FROM email_send_attempts
-    WHERE account_id=${args.accountId} AND idempotency_key=${args.idempotencyKey}`)
+    WHERE account_id=${args.accountId} AND idempotency_key=${args.idempotencyKey}
+      AND NOT (payload ? 'workflowPurpose')`)
   ).rows[0] as { id: string; send_started_at: unknown } | undefined;
   if (!attempt)
     return err(new AppError(ERROR_IDS.GMAIL_OUTBOX_NOT_FOUND, "send attempt unavailable"));

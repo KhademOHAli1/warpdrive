@@ -98,7 +98,7 @@ it("lists inserted historical linear steps in connected path order with matching
   );
   expect(buttons).toHaveLength(4);
   expect(buttons[0]).toHaveAccessibleName(/^1 · Manual start/);
-  expect(buttons[1]).toHaveAccessibleName(/^2 · Wait/);
+  expect(buttons[1]).toHaveAccessibleName(/^2 · Delay/);
   expect(buttons[2]).toHaveAccessibleName(/^3 · Read deal/);
   expect(buttons[3]).toHaveAccessibleName(/^4 · Create task/);
   expect(definition.nodes.map((node) => node.id)).toEqual(["start", "read", "task", "wait"]);

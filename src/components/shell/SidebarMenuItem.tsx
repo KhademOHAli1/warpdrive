@@ -50,6 +50,7 @@ export interface SidebarChild {
 export interface SidebarItem {
   href: string;
   section: string;
+  additionalSections?: readonly string[];
   label: string;
   Icon: ComponentType<{ className?: string; size?: number }>;
   children?: SidebarChild[];
@@ -68,7 +69,9 @@ export function SidebarMenuItem({
 }) {
   const t = useAppTranslations("shell.sidebar");
   const rtl = useLocale() === "fa";
-  const active = matchesSection(pathname, item.section);
+  const active =
+    matchesSection(pathname, item.section) ||
+    (item.additionalSections?.some((section) => matchesSection(pathname, section)) ?? false);
   const [override, setOverride] = useState<{ path: string; open: boolean } | null>(null);
   const open = expanded && (override?.path === pathname ? override.open : active);
   const children = item.children ?? [];

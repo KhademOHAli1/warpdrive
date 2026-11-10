@@ -97,8 +97,12 @@ Before upgrading an existing installation, follow the
 
 ## Operating the box
 
-- **Update to a new version:** `git pull && docker compose up -d --build`. Migrations run
-  automatically via the one-shot `migrate` service before the app restarts.
+- **Update to a new version:** build the reviewed release images, then use the
+  [authentication migration cutover](../src/features/activities/providers/google/authorizationREADME.md#connection-generation-migration)
+  for releases that change Calendar authorization state. Compose's one-shot migration
+  dependency gates cold startup; it does not itself stop old application processes
+  before an upgrade migration runs. The connection-generation migration requires the
+  stopped-service sequence below that link, rather than an overlapping restart.
 - **Logs:** `docker compose logs -f app` (or `ws` / `worker` / `caddy`).
 - **Backups:** the database lives in the `pgdata` volume. Take a dump on a schedule, e.g.
   `docker compose exec -T postgres pg_dump -U warpdrive warpdrive | gzip > backup-$(date +%F).sql.gz`.

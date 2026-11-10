@@ -368,3 +368,70 @@ it("rolls back an actual callback effect before returning a domain failure", asy
   expect(result.ok ? null : result.error.id).toBe(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID);
   expect(await h.db.select().from(activities)).toHaveLength(0);
 });
+
+it("propagates cancellation received on the actual PostgreSQL rollback acknowledgement", async () => {
+  const f = await fixture();
+  const who = await boundReference();
+  const owned = commandClient;
+  if (owned === undefined) invariant("Owned native client missing");
+  const controller = new AbortController();
+  const reason = Object.freeze({ kind: "calendar_rollback_ack_abort", nonce: randomUUID() });
+  const abort = AbortSignal.any([signal(), controller.signal]);
+  let tagged = 0;
+  let idleAcks = 0;
+  let transactionAcks = 0;
+  let settledOuter = false;
+  let settledAtAck = false;
+  const onCommand = (message: { text: string }) => {
+    if (message.text === "ROLLBACK") tagged++;
+  };
+  const onReady = (message: { status: string }) => {
+    if (message.status === "T") transactionAcks++;
+    if (message.status === "I" && tagged > 0) {
+      idleAcks++;
+      settledAtAck = settledOuter;
+      expect(owned.getTransactionStatus()).toBe("I");
+      controller.abort(reason);
+    }
+  };
+  let armed = false;
+  try {
+    const outcome = await withCalendarActor(commandDb, who, f.user.id, abort, async (tx) => {
+      await tx
+        .update(schema.users)
+        .set({ name: "Must roll back at native ACK" })
+        .where(eq(schema.users.id, f.user.id));
+      expect(abort.aborted).toBe(false);
+      expect(owned.getTransactionStatus()).toBe("T");
+      owned.connection.on("commandComplete", onCommand);
+      owned.connection.on("readyForQuery", onReady);
+      armed = true;
+      await tx.execute(sql`SELECT 1 AS transaction_ready_control`);
+      expect(abort.aborted).toBe(false);
+      return err(new AppError(ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID, "Controlled failed result"));
+    }).then(
+      (value) => {
+        settledOuter = true;
+        return { kind: "resolved" as const, value };
+      },
+      (error: unknown) => {
+        settledOuter = true;
+        return { kind: "rejected" as const, error };
+      },
+    );
+    expect(tagged).toBe(1);
+    expect(idleAcks).toBe(1);
+    expect(transactionAcks).toBeGreaterThanOrEqual(1);
+    expect(settledAtAck).toBe(false);
+    expect(controller.signal.reason).toBe(reason);
+    expect(outcome.kind).toBe("rejected");
+    if (outcome.kind === "rejected") expect(outcome.error).toBe(reason);
+  } finally {
+    if (armed) {
+      owned.connection.off("commandComplete", onCommand);
+      owned.connection.off("readyForQuery", onReady);
+    }
+    const [after] = await h.db.select().from(schema.users).where(eq(schema.users.id, f.user.id));
+    expect(after).toEqual(f.user);
+  }
+});

@@ -6,6 +6,7 @@ import {
   index,
   jsonb,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -13,6 +14,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import type { RunOutputs, StepOutput } from "@/features/workflows/runTypes";
+import type { WorkflowIteratorCursor } from "@/features/workflows/workflowIteratorRuntimeContract";
+import type { WorkflowRunLaunchPayload } from "@/features/workflows/workflowRunLaunchContract";
 import { users } from "./identity";
 import { workflows, workflowVersions } from "./workflows";
 
@@ -34,8 +37,9 @@ export const workflowRuns = pgTable(
     })
       .notNull()
       .default("queued"),
-    trigger: jsonb("trigger").$type<{ recordId: string }>().notNull(),
+    trigger: jsonb("trigger").$type<WorkflowRunLaunchPayload>().notNull(),
     nextNodeId: text("next_node_id"),
+    iteratorFrame: jsonb("iterator_frame").$type<WorkflowIteratorCursor>(),
     resumeAt: timestamp("resume_at", { withTimezone: true }),
     outputs: jsonb("outputs").$type<RunOutputs>().notNull().default(sql`'{}'::jsonb`),
     errorId: text("error_id"),
@@ -63,6 +67,10 @@ export const workflowRuns = pgTable(
         OR (${t.status} <> 'waiting' AND ${t.resumeAt} IS NULL)`,
     ),
     check("workflow_runs_mode_ck", sql`${t.mode} IN ('simulation','live')`),
+    check(
+      "workflow_runs_iterator_frame_ck",
+      sql`${t.iteratorFrame} IS NULL OR (${t.status} IN ('running','waiting') AND ${t.nextNodeId} IS NOT NULL AND jsonb_typeof(${t.iteratorFrame}) = 'object')`,
+    ),
   ],
 );
 
@@ -74,11 +82,24 @@ export const workflowSteps = pgTable(
       .notNull()
       .references(() => workflowRuns.id),
     nodeId: text("node_id").notNull(),
+    iterationIndex: smallint("iteration_index").notNull().default(-1),
+    outcome: text("outcome", { enum: ["succeeded", "failed"] })
+      .notNull()
+      .default("succeeded"),
+    errorId: text("error_id"),
     simulated: boolean("simulated").notNull(),
     output: jsonb("output").$type<StepOutput>().notNull(),
     completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("workflow_step_effect_unique").on(t.runId, t.nodeId)],
+  (t) => [
+    unique("workflow_step_effect_unique").on(t.runId, t.nodeId, t.iterationIndex),
+    check("workflow_steps_iteration_index_ck", sql`${t.iterationIndex} BETWEEN -1 AND 99`),
+    check(
+      "workflow_steps_outcome_ck",
+      sql`(${t.outcome} = 'succeeded' AND ${t.errorId} IS NULL) OR
+        (${t.outcome} = 'failed' AND ${t.iterationIndex} >= 0 AND ${t.errorId} IS NOT NULL AND ${t.output} = '{}'::jsonb)`,
+    ),
+  ],
 );
 
 // Failure facts survive recovery. A retry consumes one exact generation, never a

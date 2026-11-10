@@ -8,24 +8,11 @@ import { paletteDefinition, readyPaletteRead } from "./palette.TestHelpers";
 import { buildPaletteView } from "./paletteView";
 
 afterEach(cleanup);
-it("searches localized actions, explains the source branch and offers an empty-result recovery", () => {
+it("offers localized action groups in the inline panel and excludes trigger choices", () => {
   const onChoose = vi.fn<(selection: PickerSelection) => void>();
-  const definition = paletteDefinition();
-  definition.nodes.push({
-    id: "review",
-    type: "condition",
-    version: 1,
-    name: "Prüfung",
-    nameMode: "custom",
-    config: {
-      left: { kind: "reference", nodeId: "start", path: ["recordId"] },
-      operator: "exists",
-    },
-  });
-  definition.edges.push({ from: "start", to: "review", port: "next" });
   const model = buildPaletteView(
-    definition,
-    { kind: "output", output: { from: "review", port: "true" } },
+    paletteDefinition(),
+    { kind: "detached" },
     readyPaletteRead(),
     true,
   );
@@ -34,14 +21,53 @@ it("searches localized actions, explains the source branch and offers an empty-r
       <NodePalette open onClose={vi.fn()} model={model} onChoose={onChoose} />
     </LocaleProvider>,
   );
-  expect(screen.getByText("Prüfung · Trifft zu")).toBeDefined();
-  const search = screen.getByRole("textbox", { name: "Schritte suchen" });
-  fireEvent.change(search, { target: { value: "Aufgabe" } });
-  expect(screen.queryByRole("button", { name: /Bedingung/ })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: /Aufgabe erstellen/ }));
+  expect(screen.getByRole("dialog").textContent).toContain("Aktion auswählen");
+  expect(screen.getAllByRole("heading").map((heading) => heading.textContent)).toEqual([
+    "Aktion auswählen",
+    "Daten",
+    "Ablauf",
+    "Kern",
+    "Manuelle Eingabe",
+  ]);
+  expect(screen.queryByRole("textbox")).toBeNull();
+  expect(screen.queryByRole("button", { name: /Manueller/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Aufgabe erstellen" }));
   expect(onChoose).toHaveBeenCalledWith({ kind: "insert", type: "activity.create", version: 1 });
-  fireEvent.change(search, { target: { value: "does not exist" } });
-  expect(screen.getByText("Keine passenden Schritte")).toBeDefined();
-  fireEvent.click(screen.getByRole("button", { name: "Suche zurücksetzen" }));
-  expect(screen.getByRole("button", { name: /Bedingung/ })).toBeDefined();
+});
+it("keeps unavailable actions disabled and does not grant authoring in read-only mode", () => {
+  const onChoose = vi.fn();
+  const model = buildPaletteView(
+    paletteDefinition(),
+    { kind: "detached" },
+    readyPaletteRead(),
+    false,
+  );
+  render(
+    <LocaleProvider locale="en">
+      <NodePalette open onClose={vi.fn()} model={model} onChoose={onChoose} />
+    </LocaleProvider>,
+  );
+  for (const button of screen
+    .getAllByRole("button")
+    .filter((button) => button.getAttribute("aria-disabled") === "true"))
+    fireEvent.click(button);
+  expect(onChoose).not.toHaveBeenCalled();
+});
+it("separates trigger replacement from action insertion and preserves dismissal", () => {
+  const onClose = vi.fn();
+  const model = buildPaletteView(
+    paletteDefinition(),
+    { kind: "replace", nodeId: "start" },
+    readyPaletteRead(),
+    true,
+  );
+  render(
+    <LocaleProvider locale="en">
+      <NodePalette open onClose={onClose} model={model} onChoose={vi.fn()} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("heading", { name: "Select Trigger" })).toBeDefined();
+  expect(screen.queryByRole("button", { name: "Create task" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  expect(onClose).toHaveBeenCalledTimes(1);
 });

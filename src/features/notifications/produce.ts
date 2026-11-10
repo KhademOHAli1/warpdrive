@@ -1,17 +1,19 @@
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { wsChannel } from "@/constants/wsChannels";
-import type { Db } from "@/db/client";
 import { notifications } from "@/db/schema";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import { hydrateActor } from "@/server/hydrateActor";
 import { publishEvent } from "@/server/notify";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { CreateNotificationInput } from "@/types/notification";
 import { err, ok, type Result } from "@/types/result";
+
+import { canReadNotificationCalendar } from "./calendarPrivacy";
 
 type ProduceOk = { notificationId: string } | { suppressed: true };
 
 export async function createNotification(
-  db: Db,
+  db: DbOrTx,
   input: CreateNotificationInput,
   signal: AbortSignal,
 ): Promise<Result<ProduceOk, AppError>> {
@@ -24,6 +26,10 @@ export async function createNotification(
   // A null actor means the recipient is missing or inactive: suppress, no insert, no publish.
   const recipientUser = await hydrateActor(db, input.recipientId, signal);
   if (recipientUser === null) {
+    return ok({ suppressed: true });
+  }
+
+  if (!(await canReadNotificationCalendar(db, recipientUser, input, signal))) {
     return ok({ suppressed: true });
   }
 
@@ -93,7 +99,7 @@ export async function createNotification(
 // Fan-out: map each input through createNotification. A single failure becomes
 // an err entry and does NOT abort the batch. AbortError is always rethrown.
 export async function fanOut(
-  db: Db,
+  db: DbOrTx,
   inputs: CreateNotificationInput[],
   signal: AbortSignal,
 ): Promise<Result<ProduceOk, AppError>[]> {

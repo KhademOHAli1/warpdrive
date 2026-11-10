@@ -95,7 +95,10 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                         avatarUrl={ctx.actor.avatarUrl}
                         appearance={parseAppearance(prefs.ui.appearance)}
                       />
-                      <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">
+                      <main
+                        data-app-content
+                        className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6"
+                      >
                         {children}
                       </main>
                     </div>

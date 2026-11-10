@@ -144,6 +144,21 @@ export const ERROR_IDS = {
   ACTIVITY_NATIVE_INPUT_INVALID: "E_ACTIVITY_009", // strict native event/reminder envelope input
   ACTIVITY_REMINDER_STALE: "E_ACTIVITY_010", // managed generation changed; refresh before saving
   ACTIVITY_SCHEDULE_STALE: "E_ACTIVITY_011", // calendar source timing changed; refresh before moving
+  ACTIVITY_CONFLICT: "E_ACTIVITY_012", // calendar revision changed since the editor opened
+  CALENDAR_NOT_FOUND: "E_CALENDAR_001",
+  CALENDAR_FORBIDDEN: "E_CALENDAR_002",
+  CALENDAR_INPUT_INVALID: "E_CALENDAR_003",
+  CALENDAR_ACCOUNT_INPUT_INVALID: "E_CALENDAR_004",
+  CALENDAR_ACCOUNT_NOT_FOUND: "E_CALENDAR_005",
+  CALENDAR_ACCOUNT_DISCONNECT_FAILED: "E_CALENDAR_006",
+  CALENDAR_CATALOG_FAILED: "E_CALENDAR_007",
+  CALENDAR_CATALOG_CONFLICT: "E_CALENDAR_008",
+  CALENDAR_BINDING_FAILED: "E_CALENDAR_009",
+  CALENDAR_BINDING_CONFLICT: "E_CALENDAR_010",
+  CALENDAR_CATALOG_RUN_EXPIRED: "E_CALENDAR_011",
+  CALENDAR_CATALOG_IDENTITY_CONFLICT: "E_CALENDAR_012",
+  CALENDAR_CATALOG_INPUT_INVALID: "E_CALENDAR_013",
+  CALENDAR_BINDING_INPUT_INVALID: "E_CALENDAR_014",
   // LABEL
   LABEL_NOT_FOUND: "E_LABEL_001", // label not found (rename/recolor/delete targeted a missing label)
   LABEL_IN_USE: "E_LABEL_002", // delete blocked: label still applied to one or more records
@@ -236,6 +251,9 @@ export const ERROR_IDS = {
   WORKFLOW_WRITE_FAILED: "E_WORKFLOW_004", // insert returned no persisted row
   WORKFLOW_NOT_READY: "E_WORKFLOW_005", // action contract has no qualified execution handler
   WORKFLOW_BINDING_MISSING: "E_WORKFLOW_006", // referenced value is unavailable at execution
+  WORKFLOW_FORM_REQUIRES_LIVE: "E_WORKFLOW_008", // simulation cannot collect a human response
+  WORKFLOW_FORM_EXPIRED: "E_WORKFLOW_007", // form response window ended
+  WORKFLOW_HTTP_OUTCOME_UNKNOWN: "E_WORKFLOW_009", // transport may have sent the request
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

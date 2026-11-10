@@ -16,6 +16,7 @@ import {
   settledForecastOutcomesInventoryEntry,
 } from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
+import { calendarInventoryEntries } from "./registryCalendar";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
 import { companyWorkInventoryEntry } from "./registryCompanyWork";
@@ -78,6 +79,7 @@ export const registryEntries: RegistryEntry[] = [
   kpiInventoryEntry,
   billingInventoryEntry,
   companyWorkInventoryEntry,
+  ...calendarInventoryEntries,
   workflowInventoryEntry,
   workflowBlocksInventoryEntry,
   workflowRuntimeInventoryEntry,

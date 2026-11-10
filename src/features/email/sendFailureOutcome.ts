@@ -5,10 +5,16 @@ import type { SendEmailOutcome } from "@/types/mail";
 import { ok, type Result } from "@/types/result";
 import { draftSendOutcome, PUBLIC_SEND_ATTEMPT_FIELDS } from "./draftSendOutcome";
 import { disableTokens } from "./tracking";
+import { type WorkflowMailDispatch, workflowMailScope } from "./workflowMailFence";
 
 export async function sendFailureOutcome(
   db: Db,
-  args: { attemptId: string; accountId: string; signal: AbortSignal },
+  args: {
+    attemptId: string;
+    accountId: string;
+    signal: AbortSignal;
+    workflow?: WorkflowMailDispatch;
+  },
   error: AppError,
 ): Promise<Result<SendEmailOutcome, AppError>> {
   const review: SendEmailOutcome = {
@@ -20,7 +26,8 @@ export async function sendFailureOutcome(
     const row = (
       await db.execute(sql`SELECT ${sql.raw(PUBLIC_SEND_ATTEMPT_FIELDS)} AS receipt,
       s.send_started_at,s.claim_token IS NOT NULL AS claimed FROM email_send_attempts s
-      WHERE s.id=${args.attemptId} AND s.account_id=${args.accountId}`)
+      WHERE s.id=${args.attemptId} AND s.account_id=${args.accountId}
+        AND ${workflowMailScope(sql`s.payload`, args.workflow)}`)
     ).rows[0] as
       | {
           receipt: unknown;
@@ -49,6 +56,7 @@ export async function sendFailureOutcome(
     const changed =
       await db.execute(sql`UPDATE email_send_attempts SET status='failed',error_id=${error.id}
       WHERE id=${args.attemptId} AND account_id=${args.accountId} AND send_started_at IS NULL
+        AND ${workflowMailScope(sql`payload`, args.workflow)}
         AND claim_token IS NULL AND (delivery_outcome->>'state' IS NULL OR delivery_outcome->>'state'='rejected') RETURNING id`);
     args.signal.throwIfAborted();
     if (changed.rows.length === 0) return ok({ status: "pending", attemptId: args.attemptId });

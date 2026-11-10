@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
+import { DashboardSelect } from "@/features/dashboards/DashboardSelect";
 import {
   useAppTranslations,
   useLocalePreferencePending,
@@ -60,6 +61,7 @@ const REPORT_TAB = cn(
 interface DashboardProps {
   canViewOthers: boolean;
   canManageGoals?: boolean;
+  canManagePipelines?: boolean;
   canExport?: boolean;
   today: string;
   currency: string;
@@ -109,6 +111,7 @@ function DashboardGoals({
 export function Dashboard({
   canViewOthers,
   canManageGoals = false,
+  canManagePipelines = false,
   canExport = false,
   currency,
   today,
@@ -253,7 +256,7 @@ export function Dashboard({
   return (
     <div className="min-h-full bg-muted/20 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex items-start gap-4">
+        <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-balance text-display font-[450] leading-tight tracking-tight">
               {S.title}
@@ -262,6 +265,11 @@ export function Dashboard({
               {S.subtitle}
             </p>
           </div>
+          <DashboardSelect
+            current={{ kind: "performance" }}
+            pipelines={pipelinesQ.data ?? []}
+            canManagePipelines={canManagePipelines}
+          />
         </header>
         <section
           aria-label={S.filtersLabel}

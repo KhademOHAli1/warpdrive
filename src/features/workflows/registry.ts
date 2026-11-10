@@ -7,10 +7,28 @@ import {
 import { customFieldSettingsSchema } from "./configurationBindings";
 import { configurationLimits, configurationProfiles } from "./configurationSpec";
 import type { ConfigurationProfile } from "./configurationTypes";
-import { delayUntilDate } from "./delayConfig";
+import {
+  delayDurationAmount,
+  delayDurationMilliseconds,
+  delayDurationUnits,
+  delayUntilDate,
+} from "./delayConfig";
+import { parseIfElseConfig } from "./ifElseConfig";
 import { coarseMappingOutputs, mappingOutputContracts } from "./mappingOutputs";
 import type { MappingValueContract } from "./mappingTypes";
 import { bindingSchema, type ValueType, type WorkflowNode } from "./schemas";
+import { workflowCalendarEventConfig } from "./workflowCalendarEventContract";
+import { workflowEmailDraftConfig } from "./workflowEmailDraftContract";
+import { workflowHttpRequestConfig } from "./workflowHttpRequestContract";
+import { workflowHumanFormConfig } from "./workflowHumanFormContract";
+import { workflowIteratorConfig } from "./workflowIteratorRuntimeContract";
+import { workflowManualLaunchConfig } from "./workflowManualLaunchContract";
+import { workflowPersonUpsertConfig } from "./workflowPersonUpsertContract";
+import { recordCreateConfig } from "./workflowRecordCreateContract";
+import { recordDeleteConfig, recordUpdateConfig } from "./workflowRecordMutationContract";
+import { recordPickConfig, recordSearchConfig } from "./workflowRecordQueryContract";
+import { workflowScheduleConfig } from "./workflowScheduleContract";
+import { workflowWebhookTriggerConfigSchema } from "./workflowWebhookContract";
 
 interface ActionSpec {
   configuration: ConfigurationProfile;
@@ -18,7 +36,7 @@ interface ActionSpec {
   inputs: Record<string, ValueType>;
   outputs: Record<string, ValueType>;
   outputContracts: Record<string, MappingValueContract>;
-  effect: "none" | "database" | "wait";
+  effect: "none" | "database" | "wait" | "external";
 }
 const entity = z.enum(["deal", "lead", "person", "organization"]);
 export const delayMinutesSchema = z
@@ -26,6 +44,45 @@ export const delayMinutesSchema = z
   .int()
   .min(configurationLimits.waitMin)
   .max(configurationLimits.waitMax);
+
+const durationBinding = bindingSchema.refine(
+  (binding) =>
+    binding.kind === "reference" ||
+    ((binding.literalType === undefined || binding.literalType === "number") &&
+      delayDurationAmount(binding.value) !== null),
+  "out_of_range",
+);
+
+export const delayScheduleConfigSchema = z.discriminatedUnion("delayType", [
+  z.strictObject({
+    delayType: z.literal("DURATION"),
+    duration: z
+      .strictObject({
+        days: durationBinding.optional(),
+        hours: durationBinding.optional(),
+        minutes: durationBinding.optional(),
+        seconds: durationBinding.optional(),
+      })
+      .refine((duration) => {
+        const minimum = Object.fromEntries(
+          delayDurationUnits.map((unit) => {
+            const binding = duration[unit];
+            return [unit, binding?.kind === "value" ? binding.value : 0];
+          }),
+        );
+        return delayDurationMilliseconds(minimum) !== null;
+      }, "out_of_range"),
+  }),
+  z.strictObject({
+    delayType: z.literal("SCHEDULED_DATE"),
+    scheduledDateTime: bindingSchema.refine(
+      (binding) =>
+        binding.kind === "reference" ||
+        (binding.literalType === "instant" && delayUntilDate(binding.value) !== null),
+      "literal_instant_invalid",
+    ),
+  }),
+]);
 export const conditionConfigSchema = z.unknown().transform((raw, context) => {
   const parsed = parseConditionConfig(raw, "execute");
   if (!parsed.ok) {
@@ -39,10 +96,26 @@ export const conditionConfigSchema = z.unknown().transform((raw, context) => {
 export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   "trigger.manual": {
     configuration: configurationProfiles["trigger.manual"],
-    config: z.strictObject({}),
+    config: workflowManualLaunchConfig,
     inputs: {},
     outputs: coarseMappingOutputs("trigger.manual"),
     outputContracts: mappingOutputContracts("trigger.manual"),
+    effect: "none",
+  },
+  "trigger.webhook": {
+    configuration: configurationProfiles["trigger.webhook"],
+    config: workflowWebhookTriggerConfigSchema,
+    inputs: {},
+    outputs: coarseMappingOutputs("trigger.webhook"),
+    outputContracts: mappingOutputContracts("trigger.webhook"),
+    effect: "none",
+  },
+  "trigger.schedule": {
+    configuration: configurationProfiles["trigger.schedule"],
+    config: workflowScheduleConfig,
+    inputs: {},
+    outputs: {},
+    outputContracts: {},
     effect: "none",
   },
   "trigger.record": {
@@ -90,9 +163,114 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     outputContracts: mappingOutputContracts("condition"),
     effect: "none",
   },
+  ifElse: {
+    configuration: configurationProfiles.ifElse,
+    config: z.custom((raw) => parseIfElseConfig(raw, "execute").ok),
+    inputs: {},
+    outputs: coarseMappingOutputs("ifElse"),
+    outputContracts: mappingOutputContracts("ifElse"),
+    effect: "none",
+  },
+  "record.create": {
+    configuration: configurationProfiles["record.create"],
+    config: recordCreateConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.create"),
+    outputContracts: mappingOutputContracts("record.create"),
+    effect: "database",
+  },
+  "record.update": {
+    configuration: configurationProfiles["record.update"],
+    config: recordUpdateConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.update"),
+    outputContracts: mappingOutputContracts("record.update"),
+    effect: "database",
+  },
+  "record.delete": {
+    configuration: configurationProfiles["record.delete"],
+    config: recordDeleteConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.delete"),
+    outputContracts: mappingOutputContracts("record.delete"),
+    effect: "database",
+  },
+  "record.search": {
+    configuration: configurationProfiles["record.search"],
+    config: recordSearchConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.search"),
+    outputContracts: mappingOutputContracts("record.search"),
+    effect: "none",
+  },
+  "record.upsert": {
+    configuration: configurationProfiles["record.upsert"],
+    config: workflowPersonUpsertConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.upsert"),
+    outputContracts: mappingOutputContracts("record.upsert"),
+    effect: "database",
+  },
+  "record.pick": {
+    configuration: configurationProfiles["record.pick"],
+    config: recordPickConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("record.pick"),
+    outputContracts: mappingOutputContracts("record.pick"),
+    effect: "none",
+  },
+  "http.request": {
+    configuration: configurationProfiles["http.request"],
+    config: workflowHttpRequestConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("http.request"),
+    outputContracts: mappingOutputContracts("http.request"),
+    effect: "external",
+  },
+  "email.draft": {
+    configuration: configurationProfiles["email.draft"],
+    config: workflowEmailDraftConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("email.draft"),
+    outputContracts: mappingOutputContracts("email.draft"),
+    effect: "database",
+  },
+  "calendar.create": {
+    configuration: configurationProfiles["calendar.create"],
+    config: workflowCalendarEventConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("calendar.create"),
+    outputContracts: mappingOutputContracts("calendar.create"),
+    effect: "database",
+  },
+  "human.form": {
+    configuration: configurationProfiles["human.form"],
+    config: workflowHumanFormConfig,
+    inputs: {},
+    outputs: {},
+    outputContracts: {},
+    effect: "wait",
+  },
+  iterator: {
+    configuration: configurationProfiles.iterator,
+    config: workflowIteratorConfig,
+    inputs: {},
+    outputs: coarseMappingOutputs("iterator"),
+    outputContracts: mappingOutputContracts("iterator"),
+    effect: "none",
+  },
+  filter: {
+    configuration: configurationProfiles.filter,
+    config: conditionConfigSchema,
+    inputs: {},
+    outputs: coarseMappingOutputs("filter"),
+    outputContracts: mappingOutputContracts("filter"),
+    effect: "none",
+  },
   delay: {
     configuration: configurationProfiles.delay,
     config: z.union([
+      delayScheduleConfigSchema,
       z.strictObject({
         minutes: bindingSchema.refine(
           (binding) =>
@@ -108,7 +286,7 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
         ),
       }),
     ]),
-    inputs: { minutes: "number", until: "instant" },
+    inputs: { minutes: "number", until: "instant", scheduledDateTime: "instant" },
     outputs: coarseMappingOutputs("delay"),
     outputContracts: mappingOutputContracts("delay"),
     effect: "wait",
