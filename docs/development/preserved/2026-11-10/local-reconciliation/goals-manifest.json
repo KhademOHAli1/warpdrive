@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "basis": "a341abeeeed8e10edc725e31bd6d0a92d0be9f36",
+  "files": [
+    {
+      "path": "docs/privacy-inventory-report.json",
+      "status": " M",
+      "blob": "70c9ce8e4e1bf2a418145b8d400eb626226fab6c",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/app/(app)/settings/goals/GoalsTable.tsx",
+      "status": " M",
+      "blob": "d249299963615a4da8d2eef29a8a79ab22e40e14",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/app/(app)/settings/goals/KpiWorkspace.tsx",
+      "status": " M",
+      "blob": "3b495f7d2f7828ccc13bee667cff6e40c2646b44",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/features/privacy/discoveryCoverage.ts",
+      "status": " M",
+      "blob": "7034a6d254f66d1ebc1147c4464e68d4d20f6a8b",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/features/privacy/registryIdsInfrastructure2.ts",
+      "status": " M",
+      "blob": "b24c8e86a9fb8e40cba5fade7c8b36c1ee9c1979",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/features/privacy/registryIdsKpis1.ts",
+      "status": " M",
+      "blob": "4a76585310fc1b8e4e09d2ada111329b03345f6f",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/app/(app)/settings/goals/KpiGraphCanvas.tsx",
+      "status": "??",
+      "blob": "e70a08a1a3d72d423a0f48e3728439b5958afe7a",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/app/(app)/settings/goals/KpiGraphEditor.tsx",
+      "status": "??",
+      "blob": "f97abe708ff059462fb54b8739d219de85d15ce7",
+      "disposition": "superseded_by_current_main"
+    },
+    {
+      "path": "src/app/(app)/settings/goals/KpiGraphPalette.tsx",
+      "status": "??",
+      "blob": "a9f911f46a65ad6ea282283183c79d0f8b556e0e",
+      "disposition": "superseded_by_current_main"
+    }
+  ]
+}
