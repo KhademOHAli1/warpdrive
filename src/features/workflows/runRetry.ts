@@ -15,6 +15,7 @@ import { canWorkflow } from "./access";
 import { type RetryRun, retryReason, retryTaskReady } from "./runRecovery";
 import { currentRetryActor } from "./runRetrySession";
 import type { RetrySessionRef } from "./runRetryTypes";
+import { workflowManualLaunchPayload } from "./workflowManualLaunchContract";
 
 export const retryWorkflowInput = z.strictObject({
   runId: z.uuid(),
@@ -28,6 +29,7 @@ interface RetryContext {
   run: RetryRun;
   actor: PermSetUser;
   workflow: Workflow;
+  recordId: string;
 }
 
 function canInspectRetry(actor: PermSetUser, workflow: Workflow, runActorId: string) {
@@ -71,9 +73,11 @@ async function lockedContext(
   if (run === undefined || run.actorId !== who.userId) return err(ERROR_IDS.WORKFLOW_DENIED);
   const actor = await currentRetryActor(db, who, signal);
   const [workflow] = await db.select().from(workflows).where(eq(workflows.id, run.workflowId));
-  return actor === null || workflow === undefined || !canInspectRetry(actor, workflow, run.actorId)
-    ? err(ERROR_IDS.WORKFLOW_DENIED)
-    : ok({ run, actor, workflow });
+  if (actor === null || workflow === undefined || !canInspectRetry(actor, workflow, run.actorId))
+    return err(ERROR_IDS.WORKFLOW_DENIED);
+  const launch = workflowManualLaunchPayload.safeParse(run.trigger);
+  if (!launch.success || !("recordId" in launch.data)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
+  return ok({ run, actor, workflow, recordId: launch.data.recordId });
 }
 
 async function replayReceipt(
@@ -153,7 +157,7 @@ async function reactivateTask(
 async function stillAuthorized(
   db: Db,
   who: RetrySessionRef,
-  run: RetryRun,
+  { run, recordId }: RetryContext,
   replayed: boolean,
   signal: AbortSignal,
 ) {
@@ -161,10 +165,7 @@ async function stillAuthorized(
   const [workflow] = await db.select().from(workflows).where(eq(workflows.id, run.workflowId));
   if (actor === null || workflow === undefined || !canInspectRetry(actor, workflow, run.actorId))
     return false;
-  if (
-    !replayed &&
-    (!workflow.active || !(await retryTaskReady(db, actor, run.trigger.recordId, signal)))
-  )
+  if (!replayed && (!workflow.active || !(await retryTaskReady(db, actor, recordId, signal))))
     return false;
   const finalActor = await currentRetryActor(db, who, signal);
   return finalActor !== null && sameAuthority(actor, finalActor);
@@ -215,7 +216,7 @@ export async function retryWorkflowRun(
         if (!result.ok) return result;
         // A unique-key wait or prerequisite read must not carry stale request
         // authority through commit. Denial rolls BOTH receipt and reactivation back.
-        if (!(await stillAuthorized(tx, who, context.value.run, result.value.replayed, signal))) {
+        if (!(await stillAuthorized(tx, who, context.value, result.value.replayed, signal))) {
           rollbackState.denied = true;
           tx.rollback();
         }

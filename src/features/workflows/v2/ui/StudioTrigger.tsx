@@ -15,6 +15,7 @@ import { BlockField } from "@/features/blocks/ui/BlockField";
 import { MASK_CLASS } from "@/features/observability/replayMasking";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { rotateWorkflowV2WebhookAction } from "../actions";
+import styles from "./studioInspector.module.css";
 import { asArray, textValue } from "./studioModel";
 
 export function triggerLabelKey(type: WorkflowV2Trigger["type"]) {
@@ -121,8 +122,7 @@ export function StudioTrigger({
   }
   const object = studio.objects.find((item) => item.name === textValue(config.objectName));
   return (
-    <div className="space-y-4 p-4">
-      <h2 className="text-sm font-medium">{L.trigger}</h2>
+    <div className={styles.content}>
       <BlockField label={L.changeTrigger}>
         <Select
           ariaLabel={L.changeTrigger}

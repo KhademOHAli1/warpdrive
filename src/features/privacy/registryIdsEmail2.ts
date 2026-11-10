@@ -1,5 +1,8 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const emailIds2: string[] = [
+  "writer:src/features/email/workflowMailFence.ts#execute:sql",
+  // The scanner also detects the hash update in the reviewed workflow mail fence.
+  "writer:src/features/email/workflowMailFence.ts#update:dynamic",
   "writer:src/features/email/emailReads.ts#execute:sql",
   "writer:src/features/email/emailVisibility.ts#execute:sql",
   "writer:src/features/email/entityMessageReads.ts#execute:sql",

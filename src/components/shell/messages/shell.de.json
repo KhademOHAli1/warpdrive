@@ -24,6 +24,14 @@
   "searchPlaceholder": "Verkaufschancen, Personen, Organisationen und Leads suchen...",
   "reconnecting": "Verbindung wird wiederhergestellt...",
   "home": "{app}-Startseite",
+  "dashboardViews": {
+    "dashboard": "Dashboard",
+    "select": "Dashboard auswählen",
+    "selectCurrent": "Dashboard auswählen: {name}",
+    "pipelines": "Pipelines",
+    "performance": "Leistung",
+    "addPipeline": "Neue Pipeline hinzufügen"
+  },
   "appearance": {
     "title": "Darstellung",
     "day": "Hell",

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LanguageSwitcher, useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { trpc } from "@/lib/trpc-client";
 import { draftExecutableDefinition } from "../readiness";
@@ -28,7 +28,10 @@ import { useDialogFocus } from "./useDialogFocus";
 import { useWorkflowEditor, type WorkflowDetail } from "./useWorkflowEditor";
 import { useWorkflowLifecycle } from "./useWorkflowLifecycle";
 import { VersionsDialog } from "./VersionsDialog";
+import { WorkflowEditorMenu } from "./WorkflowEditorMenu";
 import { WorkflowPublishReview } from "./WorkflowPublishReview";
+import styles from "./workflowEditor.module.css";
+import "./workflowTheme.css";
 
 function editorStatus(
   editor: Pick<ReturnType<typeof useWorkflowEditor>, "archivedAt" | "active" | "number">,
@@ -88,220 +91,219 @@ export function WorkflowEditor({
   const fieldId = useId();
   const runFocus = useDialogFocus();
   const runsTab = useRef<HTMLButtonElement>(null);
+  const optionsButton = useRef<HTMLButtonElement>(null);
   const editable = editor.archivedAt === null && editor.capabilities.edit && !editor.pending;
   const runnable =
     editor.archivedAt === null && editor.capabilities.run && editor.active && !editor.pending;
   const draftTestable = draftSimulationAllowed(editor);
   const recovery = <EditorRecovery lifecycle={lifecycle} libraryReturn={libraryReturn} />;
   return (
-    <div className="mx-auto flex max-w-[1700px] flex-col gap-4 xl:h-[calc(100dvh-120px)] xl:min-h-[620px]">
-      <h1 ref={heading} tabIndex={-1} className="sr-only">
-        {editor.name}
-      </h1>
-      <div className="flex items-center justify-between gap-4">
-        <Link
-          href={libraryReturn}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          {t("back")}
-        </Link>
-        <div className="flex items-center gap-3">
-          <LanguageSwitcher />
-          <Badge variant="outline">{t("early")}</Badge>
-        </div>
-      </div>
-      <header className="flex flex-wrap items-start justify-between gap-5">
-        <div className="min-w-0 flex-1">
-          <label htmlFor={fieldId} className="sr-only">
-            {t("name")}
-          </label>
-          <Input
-            dir="auto"
-            id={fieldId}
-            value={editor.name}
-            disabled={!editable}
-            maxLength={120}
-            className="h-11 max-w-xl border-transparent px-0 text-display font-semibold shadow-none focus-visible:px-3 md:text-display"
-            onChange={(event) => editor.setName(event.target.value)}
-          />
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <Badge variant={editor.active ? "success" : "secondary"}>
-              {t(editorStatus(editor))}
-            </Badge>
-            <span>
-              {editor.number === null ? t("notPublished") : t("version", { number: editor.number })}
-            </span>
-            {editor.dirty && <span>{t("unsaved")}</span>}
-            {(lifecycle.acknowledged !== null || editor.notice !== null) && (
-              <span role="status" className="text-success">
-                {lifecycle.acknowledged !== null ? t(lifecycle.acknowledged) : editor.notice}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {editor.available && (
-            <Button
-              variant="outline"
-              disabled={editor.pending}
-              onClick={(event) => {
-                lifecycleFocus.remember(event.currentTarget);
-                setVersionsOpen(true);
-              }}
-            >
-              {t("versions")}
-            </Button>
-          )}
-          {editor.capabilities.duplicate && (
-            <Button
-              variant="outline"
-              disabled={editor.pending || lifecycle.unknown || lifecycle.copyId !== null}
-              onClick={(event) => {
-                lifecycleFocus.remember(event.currentTarget);
-                lifecycle.clearError();
-                setDuplicateOpen(true);
-              }}
-            >
-              {t("duplicate")}
-            </Button>
-          )}
-          {(editor.archivedAt === null
-            ? editor.capabilities.edit
-            : editor.capabilities.unarchive) && (
-            <Button
-              variant="outline"
-              disabled={editor.pending || lifecycle.unknown}
-              onClick={(event) => {
-                lifecycleFocus.remember(event.currentTarget);
-                lifecycle.clearError();
-                setConfirmation({
-                  operation: editor.archivedAt === null ? "archive" : "unarchive",
-                });
-              }}
-            >
-              {t(editor.archivedAt === null ? "archive" : "unarchive")}
-            </Button>
-          )}
-          {editor.capabilities.edit && (
-            <Button
-              variant="outline"
-              disabled={editor.pending || !editor.dirty}
-              onClick={() => author("save")}
-            >
-              <Save className="size-4" />
-              {t("save")}
-            </Button>
-          )}
-          {editor.capabilities.publish && (
-            <Button
-              disabled={
-                editor.pending ||
-                editor.archivedAt !== null ||
-                !editor.available ||
-                editor.issues.length > 0 ||
-                editor.name.trim() === ""
-              }
-              onClick={(event) => {
-                publicationFocus.remember(event.currentTarget);
-                setPublicationOpen(true);
-              }}
-            >
-              {t("publish")}
-            </Button>
-          )}
-          {editor.active && editor.capabilities.edit && (
-            <Button
-              variant="outline"
-              title={t("pauseHint")}
-              disabled={editor.pending}
-              onClick={() => author("pause")}
-            >
-              {t("pause")}
-            </Button>
-          )}
-        </div>
-      </header>
-      {editor.archivedAt !== null && (
-        <p className="rounded-lg border bg-muted/30 p-4 text-sm">{t("archivedHint")}</p>
-      )}
-      {lifecycleError !== null && !versionsOpen && !duplicateOpen && (
-        <p role="alert" className="text-destructive">
-          {lifecycleError}
-        </p>
-      )}
-      {!duplicateOpen && recovery}
-      {editor.error !== null && (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
-          <IdentityActionError message={editor.error} />
-        </div>
-      )}
-      <div className="overflow-hidden rounded-xl border bg-card shadow-sm xl:min-h-0 xl:flex-1">
-        <Tabs
-          value={tab}
-          onValueChange={setTab}
-          className="flex flex-col gap-0 xl:h-full xl:min-h-0"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
-            <TabsList className="gap-5">
-              <TabsTrigger
-                value="configure"
-                className="border-b-2 border-transparent py-2 data-[state=active]:border-primary data-[state=active]:text-primary"
-              >
-                {t("configure")}
-              </TabsTrigger>
-              <TabsTrigger
-                ref={runsTab}
-                value="runs"
-                disabled={!editor.available}
-                className="border-b-2 border-transparent py-2 data-[state=active]:border-primary data-[state=active]:text-primary"
-              >
-                {t("runs")}
-              </TabsTrigger>
-            </TabsList>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!draftTestable}
-                onClick={(event) => {
-                  if (!draftTestable) return;
-                  draftTestFocus.remember(event.currentTarget);
-                  setDraftTest(
-                    captureDraftTestSnapshot(initial.id, editor.name, editor.definition),
-                  );
-                }}
-              >
-                <FlaskConical className="size-4" />
-                {t("draftSimulation")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!runnable}
-                onClick={(event) => {
-                  runFocus.remember(event.currentTarget);
-                  setRunMode("simulation");
-                }}
-              >
-                <FlaskConical className="size-4" />
-                {t("simulation")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!runnable}
-                onClick={(event) => {
-                  runFocus.remember(event.currentTarget);
-                  setRunMode("live");
-                }}
-              >
-                <Play className="size-4" />
-                {t("live")}
-              </Button>
+    <div className={`workflow-twenty-theme ${styles.editor}`} data-workflow-editor>
+      <Tabs value={tab} onValueChange={setTab} className={styles.tabs}>
+        <h1 ref={heading} tabIndex={-1} className="sr-only">
+          {editor.name}
+        </h1>
+        <div className={styles.breadcrumb}>
+          <Link
+            href={libraryReturn}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            {t("back")}
+          </Link>
+          <bdi className={styles.breadcrumbName}>{editor.name}</bdi>
+          <div className={styles.breadcrumbActions}>
+            <div className={styles.viewbar}>
+              <TabsList className="gap-5">
+                <TabsTrigger
+                  value="configure"
+                  className="border-b-2 border-transparent py-2 data-[state=active]:border-primary data-[state=active]:text-primary"
+                >
+                  {t("configure")}
+                </TabsTrigger>
+                <TabsTrigger
+                  ref={runsTab}
+                  value="runs"
+                  disabled={!editor.available}
+                  className="border-b-2 border-transparent py-2 data-[state=active]:border-primary data-[state=active]:text-primary"
+                >
+                  {t("runs")}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <div className={styles.actions}>
+              <WorkflowEditorMenu triggerRef={optionsButton}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!draftTestable}
+                  onClick={() => {
+                    if (!draftTestable) return;
+                    draftTestFocus.remember(optionsButton.current);
+                    setDraftTest(
+                      captureDraftTestSnapshot(initial.id, editor.name, editor.definition),
+                    );
+                  }}
+                >
+                  <FlaskConical className="size-4" />
+                  {t("draftSimulation")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!runnable}
+                  onClick={() => {
+                    runFocus.remember(optionsButton.current);
+                    setRunMode("simulation");
+                  }}
+                >
+                  <FlaskConical className="size-4" />
+                  {t("simulation")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!runnable}
+                  onClick={() => {
+                    runFocus.remember(optionsButton.current);
+                    setRunMode("live");
+                  }}
+                >
+                  <Play className="size-4" />
+                  {t("live")}
+                </Button>
+
+                {editor.available && (
+                  <Button
+                    variant="outline"
+                    disabled={editor.pending}
+                    onClick={() => {
+                      lifecycleFocus.remember(optionsButton.current);
+                      setVersionsOpen(true);
+                    }}
+                  >
+                    {t("versions")}
+                  </Button>
+                )}
+                {editor.capabilities.duplicate && (
+                  <Button
+                    variant="outline"
+                    disabled={editor.pending || lifecycle.unknown || lifecycle.copyId !== null}
+                    onClick={() => {
+                      lifecycleFocus.remember(optionsButton.current);
+                      lifecycle.clearError();
+                      setDuplicateOpen(true);
+                    }}
+                  >
+                    {t("duplicate")}
+                  </Button>
+                )}
+                {(editor.archivedAt === null
+                  ? editor.capabilities.edit
+                  : editor.capabilities.unarchive) && (
+                  <Button
+                    variant="outline"
+                    disabled={editor.pending || lifecycle.unknown}
+                    onClick={() => {
+                      lifecycleFocus.remember(optionsButton.current);
+                      lifecycle.clearError();
+                      setConfirmation({
+                        operation: editor.archivedAt === null ? "archive" : "unarchive",
+                      });
+                    }}
+                  >
+                    {t(editor.archivedAt === null ? "archive" : "unarchive")}
+                  </Button>
+                )}
+              </WorkflowEditorMenu>
+              {editor.capabilities.edit && (
+                <Button
+                  variant="outline"
+                  disabled={editor.pending || !editor.dirty}
+                  onClick={() => author("save")}
+                >
+                  <Save className="size-4" />
+                  {t("save")}
+                </Button>
+              )}
+              {editor.capabilities.publish && (
+                <Button
+                  disabled={
+                    editor.pending ||
+                    editor.archivedAt !== null ||
+                    !editor.available ||
+                    editor.issues.length > 0 ||
+                    editor.name.trim() === ""
+                  }
+                  onClick={(event) => {
+                    publicationFocus.remember(event.currentTarget);
+                    setPublicationOpen(true);
+                  }}
+                >
+                  {t("publish")}
+                </Button>
+              )}
+              {editor.active && editor.capabilities.edit && (
+                <Button
+                  variant="outline"
+                  title={t("pauseHint")}
+                  disabled={editor.pending}
+                  onClick={() => author("pause")}
+                >
+                  {t("pause")}
+                </Button>
+              )}
             </div>
           </div>
-          <TabsContent value="configure" className="mt-0 xl:min-h-0 xl:flex-1">
+        </div>
+        <header className={styles.header}>
+          <div className={styles.name}>
+            <label htmlFor={fieldId} className="sr-only">
+              {t("name")}
+            </label>
+            <Input
+              dir="auto"
+              id={fieldId}
+              value={editor.name}
+              disabled={!editable}
+              maxLength={120}
+              className="h-11 max-w-xl border-transparent px-0 text-display font-semibold shadow-none focus-visible:px-3 md:text-display"
+              onChange={(event) => editor.setName(event.target.value)}
+            />
+            <div className={styles.metadata}>
+              <Badge variant={editor.active ? "success" : "secondary"}>
+                {t(editorStatus(editor))}
+              </Badge>
+              <span>
+                {editor.number === null
+                  ? t("notPublished")
+                  : t("version", { number: editor.number })}
+              </span>
+              {editor.dirty && <span>{t("unsaved")}</span>}
+              {(lifecycle.acknowledged !== null || editor.notice !== null) && (
+                <span role="status" className="text-success">
+                  {lifecycle.acknowledged !== null ? t(lifecycle.acknowledged) : editor.notice}
+                </span>
+              )}
+            </div>
+          </div>
+        </header>
+        {editor.archivedAt !== null && (
+          <p className="rounded-lg border bg-muted/30 p-4 text-sm">{t("archivedHint")}</p>
+        )}
+        {lifecycleError !== null && !versionsOpen && !duplicateOpen && (
+          <p role="alert" className="text-destructive">
+            {lifecycleError}
+          </p>
+        )}
+        {!duplicateOpen && recovery}
+        {editor.error !== null && (
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+            <IdentityActionError message={editor.error} />
+          </div>
+        )}
+        <div className={styles.body}>
+          <TabsContent value="configure" className={styles.content}>
             <BuilderWorkspace
               workflowId={initial.id}
               definition={editor.definition}
@@ -311,13 +313,13 @@ export function WorkflowEditor({
               history={editor.history}
             />
           </TabsContent>
-          <TabsContent value="runs" className="mt-0 xl:min-h-0 xl:flex-1 xl:overflow-auto">
+          <TabsContent value="runs" className={styles.runsContent}>
             {editor.available && (
               <RunHistory workflowId={initial.id} canCancel={editor.capabilities.cancel} />
             )}
           </TabsContent>
-        </Tabs>
-      </div>
+        </div>
+      </Tabs>
       {publicationOpen && (
         <WorkflowPublishReview
           current={editor}

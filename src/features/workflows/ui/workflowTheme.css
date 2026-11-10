@@ -1,0 +1,122 @@
+/* Workflow visual reference: Twenty v2.55.0, b46d9e25d87ae1bec2dd3aa96591daea3cc7f6a5.
+   Explicit pixel typography preserves the reference scale inside Warpdrive's 16px application. */
+.workflow-twenty-theme {
+  --workflow-border-medium: color(display-p3 0.922 0.922 0.922);
+  --workflow-border-strong: color(display-p3 0.839 0.839 0.839);
+  --workflow-canvas-surface: color(display-p3 1 1 1);
+  --workflow-card-surface: color(display-p3 0.988 0.988 0.988);
+  --workflow-panel-surface: color(display-p3 1 1 1);
+  --workflow-tertiary-surface: color(display-p3 0.945 0.945 0.945);
+  --workflow-quaternary-surface: color(display-p3 0.922 0.922 0.922);
+  --workflow-popover-surface: color(display-p3 1 1 1 / 0.5);
+  --workflow-popover-filter: blur(12px) saturate(200%) contrast(50%) brightness(130%);
+  --workflow-shadow-light:
+    0 2px 4px color(display-p3 0 0 0 / 0.039), 0 0 4px color(display-p3 0 0 0 / 0.078);
+  --workflow-shadow-strong:
+    2px 4px 16px color(display-p3 0 0 0 / 0.161), 0 2px 4px color(display-p3 0 0 0 / 0.078);
+  --workflow-primary-text: color(display-p3 0.2 0.2 0.2);
+  --workflow-secondary-text: color(display-p3 0.4 0.4 0.4);
+  --workflow-tertiary-text: color(display-p3 0.6 0.6 0.6);
+  --workflow-light-text: color(display-p3 0.702 0.702 0.702);
+  --workflow-hover-surface: color(display-p3 0 0 0 / 0.02);
+  --workflow-hover-overlay: color(display-p3 0 0 0 / 0.02);
+  --workflow-icon-surface: color(display-p3 0 0 0 / 0.039);
+  --workflow-accent: color(display-p3 0.276 0.384 0.837);
+  --workflow-accent-surface: color(display-p3 0.971 0.977 0.998);
+  --workflow-accent-text: color(display-p3 0.256 0.354 0.755);
+  --workflow-success: color(display-p3 0.297 0.637 0.581);
+  --workflow-success-surface: color(display-p3 0.958 0.983 0.976);
+  --workflow-success-text: color(display-p3 0.19 0.5 0.32);
+  --workflow-danger: color(display-p3 0.83 0.329 0.324);
+  --workflow-danger-surface: color(display-p3 0.995 0.971 0.971);
+  --workflow-danger-text: color(display-p3 0.744 0.234 0.222);
+  --workflow-warning: color(display-p3 1 0.92 0.22);
+  --workflow-warning-surface: color(display-p3 0.995 0.99 0.922);
+  --workflow-primary-inverted: color(display-p3 0.2 0.2 0.2);
+  --workflow-primary-inverted-hover: color(display-p3 0.4 0.4 0.4);
+  --workflow-inverted-text: color(display-p3 1 1 1);
+  --workflow-trigger-icon: color(display-p3 0.523 0.318 0.751);
+  --workflow-record-trigger-icon: color(display-p3 0.276 0.384 0.837);
+  --workflow-record-icon: color(display-p3 0.6 0.6 0.6);
+  --workflow-flow-icon: color(display-p3 0.332 0.634 0.442);
+  --workflow-notification-icon: color(display-p3 0.83 0.329 0.324);
+  --workflow-human-input-icon: color(display-p3 0.9 0.45 0.2);
+  font-family: var(--font-interface), Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.1;
+  color: var(--workflow-primary-text);
+}
+
+.dark .workflow-twenty-theme,
+.workflow-twenty-theme.dark {
+  --workflow-border-medium: color(display-p3 0.133 0.133 0.133);
+  --workflow-border-strong: color(display-p3 0.282 0.282 0.282);
+  --workflow-canvas-surface: color(display-p3 0.09 0.09 0.09);
+  --workflow-card-surface: color(display-p3 0.106 0.106 0.106);
+  --workflow-panel-surface: color(display-p3 0.09 0.09 0.09);
+  --workflow-tertiary-surface: color(display-p3 0.114 0.114 0.114);
+  --workflow-quaternary-surface: color(display-p3 0.133 0.133 0.133);
+  --workflow-popover-surface: color(display-p3 0 0 0 / 0.5);
+  --workflow-popover-filter: blur(12px) saturate(200%) contrast(100%) brightness(130%);
+  --workflow-shadow-light:
+    0 2px 4px color(display-p3 0 0 0 / 0.04), 0 0 4px color(display-p3 0 0 0 / 0.08);
+  --workflow-shadow-strong:
+    2px 4px 16px color(display-p3 0 0 0 / 0.16), 0 2px 4px color(display-p3 0 0 0 / 0.08);
+  --workflow-primary-text: color(display-p3 0.922 0.922 0.922);
+  --workflow-secondary-text: color(display-p3 0.702 0.702 0.702);
+  --workflow-tertiary-text: color(display-p3 0.506 0.506 0.506);
+  --workflow-light-text: color(display-p3 0.4 0.4 0.4);
+  --workflow-hover-surface: color(display-p3 1 1 1 / 0.031);
+  --workflow-hover-overlay: color(display-p3 1 1 1 / 0.031);
+  --workflow-icon-surface: color(display-p3 1 1 1 / 0.059);
+  --workflow-accent: color(display-p3 0.276 0.384 0.837);
+  --workflow-accent-surface: color(display-p3 0.081 0.089 0.144);
+  --workflow-accent-text: color(display-p3 0.63 0.69 1);
+  --workflow-success: color(display-p3 0.297 0.637 0.581);
+  --workflow-success-surface: color(display-p3 0.075 0.11 0.107);
+  --workflow-success-text: color(display-p3 0.434 0.828 0.573);
+  --workflow-danger: color(display-p3 0.83 0.329 0.324);
+  --workflow-danger-surface: color(display-p3 0.118 0.077 0.079);
+  --workflow-danger-text: color(display-p3 1 0.57 0.55);
+  --workflow-warning: color(display-p3 1 0.92 0.22);
+  --workflow-warning-surface: color(display-p3 0.103 0.094 0.063);
+  --workflow-primary-inverted: color(display-p3 0.922 0.922 0.922);
+  --workflow-primary-inverted-hover: color(display-p3 0.702 0.702 0.702);
+  --workflow-inverted-text: color(display-p3 0.09 0.09 0.09);
+  --workflow-trigger-icon: color(display-p3 0.523 0.318 0.751);
+  --workflow-record-trigger-icon: color(display-p3 0.276 0.384 0.837);
+  --workflow-record-icon: color(display-p3 0.506 0.506 0.506);
+  --workflow-flow-icon: color(display-p3 0.332 0.634 0.442);
+  --workflow-notification-icon: color(display-p3 0.83 0.329 0.324);
+  --workflow-human-input-icon: color(display-p3 0.9 0.45 0.2);
+}
+
+/* The desktop editor supplies its own breadcrumb/action header. Mobile keeps the shell's drawer trigger. */
+@media (min-width: 1024px) {
+  [data-app-topbar]:has(+ [data-app-content] [data-workflow-editor]) {
+    display: none;
+  }
+  [data-app-content]:has([data-workflow-editor]) {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+}
+
+.workflow-twenty-theme [data-studio-category="ai"] {
+  color: color(display-p3 0.775 0.297 0.61);
+}
+
+.workflow-twenty-theme [data-studio-category="flow"] {
+  color: var(--workflow-flow-icon);
+}
+
+.workflow-twenty-theme [data-studio-category="core"] {
+  color: var(--workflow-notification-icon);
+}
+
+.workflow-twenty-theme [data-studio-category="human"] {
+  color: var(--workflow-human-input-icon);
+}

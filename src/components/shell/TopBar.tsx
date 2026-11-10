@@ -27,7 +27,7 @@ export async function TopBar({
   const t = await getAppTranslations("shell");
   const name = workspaceBrand?.displayName ?? APP_NAME;
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-app-topbar>
       <div className={styles.brandArea}>
         <MobileNavTrigger />
         <Link href="/pipeline" aria-label={t("home", { app: name })} className={styles.brand}>

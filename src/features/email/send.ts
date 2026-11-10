@@ -17,6 +17,11 @@ import { isValidMailRecipient } from "./recipientAddress";
 import { sanitizeAuthorHtml } from "./sanitizeHtml";
 import { deliverQueuedSend } from "./sendDelivery";
 import { resolveAttachments } from "./sendHelpers";
+import {
+  type WorkflowMailDispatch,
+  workflowMailRequestDigest,
+  workflowMailScope,
+} from "./workflowMailFence";
 
 // The lower-level system-send primitive lives in its own file (send.ts is at the size
 // cap) but is re-exported here so callers import both sends from one module.
@@ -77,6 +82,7 @@ export interface SendEmailArgs {
   gmail?: GmailClient;
   mail?: ImapConnectionRuntime;
   expectedGeneration?: number;
+  workflow?: WorkflowMailDispatch;
   // storage is required: every send path must wire in real storage so production
   // attachment sends never silently fail. Tests inject FakeStorageClient.
   storage: StorageClient;
@@ -109,7 +115,11 @@ async function runSend(
   args: SendEmailArgs,
   signal: AbortSignal,
 ): Promise<Result<SendEmailOutcome, AppError>> {
-  const { input } = args;
+  const { input, workflow } = args;
+  if (workflow !== undefined && !matchesWorkflowMailInput(args, workflow))
+    return err(
+      new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "workflow mailbox authority changed"),
+    );
 
   // (a) Ownership: load the account via assertMailboxOwner helper. Missing OR not-owned
   // are treated identically so a caller cannot probe which account ids exist.
@@ -134,10 +144,12 @@ async function runSend(
     gmail: args.gmail,
     mail: args.mail,
     expectedGeneration: args.expectedGeneration,
+    workflow,
   };
   const existing = (
     await db.execute(sql`
     SELECT id FROM email_send_attempts WHERE account_id=${input.accountId} AND idempotency_key=${input.idempotencyKey}
+      AND ${workflowMailScope(sql`payload`, workflow)}
   `)
   ).rows[0] as { id: string } | undefined;
   signal.throwIfAborted();
@@ -186,6 +198,7 @@ async function runSend(
   // never re-mint or re-send.
   const enq = await enqueueSend(db, {
     requiresPreparation: true,
+    workflow,
     accountId: input.accountId,
     idempotencyKey: input.idempotencyKey,
     payload: {
@@ -211,4 +224,17 @@ async function runSend(
   });
   if (!enq.ok) return enq;
   return deliverQueuedSend(db, { ...delivery, attemptId: enq.value.attemptId });
+}
+
+function matchesWorkflowMailInput(args: SendEmailArgs, workflow: WorkflowMailDispatch): boolean {
+  const { purpose, request } = workflow;
+  return (
+    purpose.actorId === args.actorId &&
+    purpose.effectKey === args.input.idempotencyKey &&
+    request.accountId === args.input.accountId &&
+    purpose.requestDigest === workflowMailRequestDigest(request) &&
+    purpose.generation === (args.mail?.generation ?? args.expectedGeneration) &&
+    purpose.provider === (args.mail === undefined ? "gmail" : "imap_smtp") &&
+    args.input.scheduledSendAt === undefined
+  );
 }

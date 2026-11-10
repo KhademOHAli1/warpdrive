@@ -38,3 +38,4 @@ export const IMPORT_JOB_TIMEOUT_MS = 5 * 60 * 1000;
 
 export const PGBOSS_QUEUE_WORKFLOW_RUN = "workflow.run";
 export const PGBOSS_QUEUE_WORKFLOW_RECONCILE = "workflow.reconcile";
+export const PGBOSS_QUEUE_WORKFLOW_SCHEDULE = "workflow.schedule";

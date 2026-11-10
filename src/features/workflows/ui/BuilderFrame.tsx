@@ -2,6 +2,7 @@
 
 import type { ReactNode, RefObject } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import "./workflowTheme.css";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export function BuilderFrame({
@@ -20,7 +21,7 @@ export function BuilderFrame({
   return (
     <Dialog open onOpenChange={onExpandedChange}>
       <DialogContent
-        className="flex h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-none flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-none"
+        className="workflow-twenty-theme flex h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-none flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-none"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           returnFocus.current?.focus();

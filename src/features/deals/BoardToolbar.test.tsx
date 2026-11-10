@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -24,6 +25,14 @@ function renderToolbar(activeView?: "board" | "list" | "archived") {
 }
 
 describe("BoardToolbar view toggle", () => {
+  it.each(["list", "archived"] as const)("retains %s when selecting a pipeline", async (view) => {
+    const user = userEvent.setup();
+    renderToolbar(view);
+    await user.click(screen.getByRole("button", { name: "Select dashboard: Sales" }));
+    expect(screen.getByRole("menuitem", { name: "Sales" }).getAttribute("href")).toBe(
+      `/pipeline/p1/${view}`,
+    );
+  });
   it("renders Board and List as icon buttons (Pipedrive), with accessible names", () => {
     renderToolbar();
     const board = screen.getByRole("link", { name: "Board view" });

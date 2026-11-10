@@ -12,12 +12,20 @@ import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
 import { lockMailRemoteWrites } from "./mailRemoteWriteLock";
 import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 import type { SmtpAttempt, SmtpReceipt } from "./smtpOutboxTypes";
+import {
+  currentWorkflowMailLease,
+  guardWorkflowMailSubmission,
+  isNotLegacyWorkflowMail,
+  type WorkflowMailDispatch,
+  workflowMailScope,
+} from "./workflowMailFence";
 
 export async function loadSmtpAttempt(
   db: Db,
   accountId: string,
   key: string,
   signal: AbortSignal,
+  workflow?: WorkflowMailDispatch,
 ): Promise<SmtpAttempt | undefined> {
   const result =
     await db.execute(sql`SELECT s.*,a.email_address AS from_email,a.user_id AS owner_id,
@@ -27,7 +35,8 @@ export async function loadSmtpAttempt(
     LEFT JOIN LATERAL (SELECT rfc_message_id,"references" FROM email_messages
       WHERE account_id=s.account_id AND thread_id=s.thread_id
       ORDER BY sent_at DESC NULLS LAST,created_at DESC LIMIT 1) p ON true
-    WHERE s.account_id=${accountId} AND s.idempotency_key=${key} AND a.provider='imap_smtp'`);
+    WHERE s.account_id=${accountId} AND s.idempotency_key=${key} AND a.provider='imap_smtp'
+      AND ${workflowMailScope(sql`s.payload`, workflow)}`);
   signal.throwIfAborted();
   const row = result.rows[0] as
     | (Omit<SmtpAttempt, "claimed_at" | "send_started_at" | "sent_at"> & {
@@ -53,6 +62,7 @@ export async function stampSmtpSubmission(
     token: string;
     receipt: SmtpReceipt;
     signal: AbortSignal;
+    workflow?: WorkflowMailDispatch;
   },
 ): Promise<boolean> {
   try {
@@ -66,11 +76,31 @@ export async function stampSmtpSubmission(
         });
         if (admission !== "ordinary" && admission !== "admitted") return false;
         if (!(await guardImapConnection(tx, args.runtime, args.signal))) return false;
+        const workflow = args.workflow;
+        if (
+          workflow !== undefined &&
+          (workflow.purpose.provider !== "imap_smtp" ||
+            workflow.purpose.actorId !== args.runtime.ownerId ||
+            workflow.purpose.generation !== args.runtime.generation ||
+            !(await guardWorkflowMailSubmission(tx, workflow, args.signal)))
+        )
+          return false;
+        const workflowAuthority =
+          workflow === undefined
+            ? sql`AND ${isNotLegacyWorkflowMail(sql`s.idempotency_key`)}`
+            : sql`
+          AND s.idempotency_key=${workflow.purpose.effectKey} AND s.scheduled_at IS NULL
+          AND ${currentWorkflowMailLease(workflow)}
+          AND EXISTS (SELECT 1 FROM email_accounts a WHERE a.id=s.account_id
+            AND coalesce((a.capabilities->>'send')::boolean,true))
+        `;
         const result = await tx.execute(sql`UPDATE email_send_attempts s
       SET send_started_at=now(),delivery_outcome=${JSON.stringify(args.receipt)}::jsonb
       WHERE s.id=${args.attempt.id} AND s.account_id=${args.runtime.accountId}
         AND connection_generation=${args.runtime.generation} AND claim_token=${args.token}
         AND status='sending' AND send_started_at IS NULL AND payload_prepared=true AND payload=${JSON.stringify(args.attempt.payload)}::jsonb
+        AND ${workflowMailScope(sql`s.payload`, workflow)}
+        ${workflowAuthority}
         AND NOT ${privateIntakeBlocksThread(sql`s.account_id`, sql`s.thread_id`)}
       RETURNING s.id`);
         if (result.rows.length === 1)
@@ -138,11 +168,18 @@ export async function claimSmtpAttempt(
   db: Db,
   id: string,
   signal: AbortSignal,
+  workflow?: WorkflowMailDispatch,
 ): Promise<string | null> {
   const token = randomUUID();
   const result = await db.execute(sql`UPDATE email_send_attempts
     SET claim_token=${token},claimed_at=now(),status='sending'
     WHERE id=${id} AND send_started_at IS NULL AND payload_prepared=true
+      AND ${workflowMailScope(sql`payload`, workflow)}
+      ${
+        workflow === undefined
+          ? sql`AND ${isNotLegacyWorkflowMail(sql`idempotency_key`)}`
+          : sql`AND status='pending'`
+      }
       AND (status IN ('pending','failed') OR (status='sending' AND claimed_at < now()-(${CLAIM_LEASE_SECONDS}*interval '1 second')))
       AND (scheduled_at IS NULL OR scheduled_at<=now()) RETURNING id`);
   signal.throwIfAborted();

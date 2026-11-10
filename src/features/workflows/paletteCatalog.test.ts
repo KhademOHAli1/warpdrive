@@ -4,14 +4,29 @@ import { findPaletteEntry, paletteCatalog } from "./paletteCatalog";
 import { executableNode } from "./readiness";
 import { nodeTypes, type WorkflowNode } from "./schemas";
 
-it("classifies exactly the seven known version-one entries in deliberate order", () => {
+it("classifies the known version-one entries in deliberate order", () => {
   expect(paletteCatalog.map((entry) => entry.type)).toEqual([
     "trigger.manual",
     "trigger.record",
+    "trigger.schedule",
+    "trigger.webhook",
+    "record.create",
+    "record.update",
+    "record.delete",
+    "record.search",
+    "record.upsert",
+    "record.pick",
+    "email.draft",
+    "calendar.create",
+    "http.request",
+    "human.form",
     "record.read",
     "activity.create",
     "notification",
     "condition",
+    "iterator",
+    "filter",
+    "ifElse",
     "delay",
   ]);
   expect(new Set(paletteCatalog.map((entry) => entry.type))).toEqual(new Set(nodeTypes));
@@ -21,7 +36,7 @@ it("classifies exactly the seven known version-one entries in deliberate order",
   }
 });
 
-it("keeps only the four factory types insertable and configures the existing manual trigger", () => {
+it("keeps factory actions insertable and replaces the existing trigger in place", () => {
   expect(
     paletteCatalog
       .filter((entry) => entry.selection === "insert")
@@ -30,7 +45,7 @@ it("keeps only the four factory types insertable and configures the existing man
   ).toEqual([...creatableNodeTypes].sort());
   expect(
     paletteCatalog.filter((entry) => entry.selection === "configure").map((entry) => entry.type),
-  ).toEqual(["trigger.manual"]);
+  ).toEqual(["trigger.manual", "trigger.schedule", "trigger.webhook"]);
   expect(
     paletteCatalog.filter((entry) => entry.selection === "unavailable").map((entry) => entry.type),
   ).toEqual(["trigger.record", "notification"]);
@@ -39,7 +54,28 @@ it("keeps only the four factory types insertable and configures the existing man
 it("describes supported runtime subsets without promoting broader schema variants", () => {
   expect(
     paletteCatalog.filter((entry) => entry.support === "supported").map((entry) => entry.profile),
-  ).toEqual(["manual-trigger", "deal-read", "basic-task", "scalar-condition", "literal-duration"]);
+  ).toEqual([
+    "manual-trigger",
+    "scheduled-trigger",
+    "webhook-trigger",
+    "create-record",
+    "update-record",
+    "delete-record",
+    "search-records",
+    "upsert-record",
+    "pick-record",
+    "draft-email",
+    "create-calendar-event",
+    "http-request",
+    "human-form",
+    "deal-read",
+    "basic-task",
+    "scalar-condition",
+    "iterator",
+    "scalar-condition",
+    "ordered-condition",
+    "delay-schedule",
+  ]);
   const node = (type: WorkflowNode["type"], config: WorkflowNode["config"]): WorkflowNode => ({
     id: "example",
     type,
@@ -85,7 +121,7 @@ it("provides categories and real label/description keys for the finite localized
   });
   expect(findPaletteEntry("delay", 1)).toMatchObject({
     labelKey: "delay",
-    descriptionKey: "delayMinutesHint",
+    descriptionKey: "delayScheduleHint",
   });
 });
 

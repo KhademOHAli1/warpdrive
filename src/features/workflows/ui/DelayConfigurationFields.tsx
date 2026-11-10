@@ -53,11 +53,27 @@ export function DelayConfigurationFields({
         options={[
           { value: "duration", label: t("delayModeDuration") },
           { value: "until", label: t("delayModeUntil") },
+          { value: "DURATION", label: t("delayAfterDuration") },
+          { value: "SCHEDULED_DATE", label: t("delayAtDateTime") },
         ]}
         onChange={(next) => {
           if (!editable || next === mode) return;
           if (next === "until") onChange({ until: { ...typedLiteralFromInput("instant", "") } });
           else if (next === "duration") onChange({ minutes: { kind: "value", value: "" } });
+          else if (next === "DURATION") {
+            const minutes = draftBindingSchema.safeParse(config.minutes);
+            onChange({
+              delayType: "DURATION",
+              duration: minutes.success ? { minutes: { ...minutes.data } } : {},
+            });
+          } else if (next === "SCHEDULED_DATE") {
+            onChange({
+              delayType: "SCHEDULED_DATE",
+              scheduledDateTime: {
+                ...(parsed.success ? parsed.data : typedLiteralFromInput("instant", "")),
+              },
+            });
+          }
         }}
       />
       {mode === "duration" ? (

@@ -35,6 +35,7 @@ export async function cancelWorkflowRun(
       .set({
         status: "cancelled",
         resumeAt: null,
+        iteratorFrame: null,
         cancelledBy: actor.id,
         cancelledAt: now,
         updatedAt: now,

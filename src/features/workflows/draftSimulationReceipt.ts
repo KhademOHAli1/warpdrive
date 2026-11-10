@@ -1,10 +1,22 @@
 import type { ERROR_IDS } from "@/constants/errorIds";
+import type { WorkflowEdge } from "./schemas";
 
 export const draftSimulationNodeTypes = [
   "trigger.manual",
   "record.read",
+  "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.upsert",
+  "record.pick",
+  "email.draft",
+  "calendar.create",
   "activity.create",
   "condition",
+  "ifElse",
+  "filter",
+  "iterator",
   "delay",
 ] as const;
 
@@ -16,8 +28,11 @@ export interface DraftSimulationStep {
   nodeType: DraftSimulationNodeType;
   status: "succeeded" | "failed";
   errorId?: DraftSimulationErrorId;
-  port?: "next" | "true" | "false";
+  port?: WorkflowEdge["port"];
   waitResumeAt?: string;
+  recordDeleted?: true;
+  iterationIndex?: number;
+  iteratorSummary?: { processedCount: number; failedCount: number };
 }
 
 // This is a transient draft receipt, not an ordinary persisted run-detail DTO.

@@ -292,6 +292,7 @@ it("LC20 exposes workflow ownership independently of the run initiator and withh
       createdAt: run.createdAt,
     });
     const serialized = JSON.stringify(result);
+    assert("recordId" in run.trigger);
     for (const hidden of [
       "private-definition-sentinel",
       "private-run-output-sentinel",

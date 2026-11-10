@@ -1,6 +1,13 @@
 import { err, ok } from "@/types/result";
-import { currentLayout } from "./nodeLayout";
-import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
+import { portsFor } from "./graphPorts";
+import { currentLayout, positionFor } from "./nodeLayout";
+import {
+  type NodePosition,
+  nodeSchema,
+  type WorkflowDefinition,
+  type WorkflowEdge,
+  type WorkflowNode,
+} from "./schemas";
 
 export type ConnectionProblem =
   | "nodeLimit"
@@ -12,9 +19,7 @@ export type ConnectionProblem =
 export function edgeId(edge: WorkflowEdge) {
   return `${edge.from}:${edge.port}:${edge.to}`;
 }
-export function portsFor(node: WorkflowNode): WorkflowEdge["port"][] {
-  return node.type === "condition" ? ["true", "false"] : ["next"];
-}
+export { portsFor } from "./graphPorts";
 export function disconnectNodes(graph: WorkflowDefinition, edge: WorkflowEdge): WorkflowDefinition {
   return { ...graph, edges: graph.edges.filter((item) => edgeId(item) !== edgeId(edge)) };
 }
@@ -56,12 +61,35 @@ export function insertNode(
     layout: { ...currentLayout(graph), [node.id]: position },
   };
 }
+
+export function updateNodeConfiguration(
+  graph: WorkflowDefinition,
+  node: WorkflowNode,
+): WorkflowDefinition {
+  const current = graph.nodes.find((item) => item.id === node.id);
+  if (
+    current?.type !== node.type ||
+    !nodeSchema.shape.version.safeParse(current.version).success ||
+    !nodeSchema.shape.version.safeParse(node.version).success
+  )
+    return graph;
+  const ports = portsFor(node);
+  return {
+    ...graph,
+    nodes: graph.nodes.map((item) => (item.id === node.id ? node : item)),
+    edges:
+      node.type === "ifElse"
+        ? graph.edges.filter((edge) => edge.from !== node.id || ports.includes(edge.port))
+        : graph.edges,
+  };
+}
 export function moveNode(
   graph: WorkflowDefinition,
   id: string,
   position: NodePosition,
 ): WorkflowDefinition {
   if (!graph.nodes.some((node) => node.id === id)) return graph;
+  const anchor = position.anchor ?? positionFor(graph, id).anchor;
   return {
     ...graph,
     layout: {
@@ -69,6 +97,7 @@ export function moveNode(
       [id]: {
         x: Math.max(-100000, Math.min(100000, position.x)),
         y: Math.max(-100000, Math.min(100000, position.y)),
+        ...(anchor === "center" ? { anchor } : {}),
       },
     },
   };

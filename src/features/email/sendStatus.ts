@@ -23,7 +23,8 @@ export async function readOwnedSendStatus(
     FROM email_send_attempts s JOIN email_accounts a ON a.id=s.account_id
     JOIN users u ON u.id=a.user_id WHERE s.account_id=${args.accountId}
       AND s.idempotency_key=${args.idempotencyKey} AND a.user_id=${args.actorId}
-      AND u.is_active=true AND u.invited_at IS NULL`)
+      AND u.is_active=true AND u.invited_at IS NULL
+      AND NOT (s.payload ? 'workflowPurpose')`)
   ).rows[0] as { provider: string; receipt: unknown } | undefined;
   args.signal.throwIfAborted();
   if (!row) return ok(null);

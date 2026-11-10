@@ -325,9 +325,11 @@ describe("preserved activation and authoring controls", () => {
     await waitFor(() => expect(io.save).toHaveBeenCalledTimes(1));
     expect(io.publish).not.toHaveBeenCalled();
     expect(screen.getByText(english.draft)).toBeVisible();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.live })).toBeDisabled();
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: english.workflowOptions }));
+    const menu = within(screen.getByRole("menu"));
+    expect(menu.getByRole("menuitem", { name: english.simulation })).toBeDisabled();
+    expect(menu.getByRole("menuitem", { name: english.live })).toBeDisabled();
   });
 
   it("keeps invalid definitions from opening publication", () => {
@@ -339,13 +341,15 @@ describe("preserved activation and authoring controls", () => {
     expect(io.save).not.toHaveBeenCalled();
   });
 
-  it("keeps archived authoring unavailable even with stale publish flags", () => {
+  it("keeps archived authoring unavailable even with stale publish flags", async () => {
     const initial = fixture();
     initial.archivedAt = new Date("2026-11-04T00:00:00Z");
     render(view(initial));
     expect(screen.getByRole("textbox", { name: english.name })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.simulation })).toBeDisabled();
-    expect(screen.getByRole("button", { name: english.live })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: english.workflowOptions }));
+    const menu = within(screen.getByRole("menu"));
+    expect(menu.getByRole("menuitem", { name: english.simulation })).toBeDisabled();
+    expect(menu.getByRole("menuitem", { name: english.live })).toBeDisabled();
     expect(io.publish).not.toHaveBeenCalled();
     expect(io.save).not.toHaveBeenCalled();
   });

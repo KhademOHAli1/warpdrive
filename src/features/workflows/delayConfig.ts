@@ -1,5 +1,18 @@
 import { Temporal } from "@js-temporal/polyfill";
+import { configurationLimits } from "./configurationLimits";
+import { isExactMappingDecimal } from "./mappingCompatibility";
 import { isMappingInstant, scalarLiteralTypes } from "./mappingLiteralIntent";
+
+export const delayDurationUnits = ["days", "hours", "minutes", "seconds"] as const;
+export type DelayDurationUnit = (typeof delayDurationUnits)[number];
+const unitMilliseconds: Record<DelayDurationUnit, number> = {
+  days: 86_400_000,
+  hours: 3_600_000,
+  minutes: 60_000,
+  seconds: 1_000,
+};
+export const maxDelayMilliseconds = configurationLimits.waitMax * unitMilliseconds.minutes;
+export const maxDelayDays = maxDelayMilliseconds / unitMilliseconds.days;
 
 function record(raw: unknown): raw is Record<string, unknown> {
   return raw !== null && typeof raw === "object" && !Array.isArray(raw);
@@ -47,18 +60,53 @@ function referenceDraft(raw: Record<string, unknown>): boolean {
   );
 }
 
+function boundedBinding(raw: unknown): boolean {
+  if (!record(raw)) return false;
+  return raw.kind === "reference" || Object.hasOwn(raw, "nodeId") || Object.hasOwn(raw, "path")
+    ? referenceDraft(raw)
+    : literalDraft(raw);
+}
+
+export function delayDurationSettings(raw: unknown): Record<string, unknown> | undefined {
+  return record(raw) && keysAllowed(raw, delayDurationUnits) ? raw : undefined;
+}
+
 // This shallow guard runs before recursive definition JSON parsing. An instant
 // tag must never admit rich, cyclic or deeply nested scalar payloads. Reviewed
 // incomplete and wrong-known-intent drafts remain inert and byte-preserving.
 export function boundedDelayConfig(raw: unknown): boolean {
-  if (!record(raw) || !Object.hasOwn(raw, "until")) return true;
-  if (!keysAllowed(raw, ["until"]) || !record(raw.until)) return false;
-  const binding = raw.until;
-  return binding.kind === "reference" ||
-    Object.hasOwn(binding, "nodeId") ||
-    Object.hasOwn(binding, "path")
-    ? referenceDraft(binding)
-    : literalDraft(binding);
+  if (!record(raw)) return true;
+  if (Object.hasOwn(raw, "delayType")) {
+    if (raw.delayType === "SCHEDULED_DATE")
+      return (
+        keysAllowed(raw, ["delayType", "scheduledDateTime"]) &&
+        (!Object.hasOwn(raw, "scheduledDateTime") || boundedBinding(raw.scheduledDateTime))
+      );
+    if (raw.delayType !== "DURATION" || !keysAllowed(raw, ["delayType", "duration"])) return false;
+    if (!Object.hasOwn(raw, "duration")) return true;
+    const duration = delayDurationSettings(raw.duration);
+    return duration !== undefined && Object.values(duration).every(boundedBinding);
+  }
+  return !Object.hasOwn(raw, "until") || (keysAllowed(raw, ["until"]) && boundedBinding(raw.until));
+}
+
+export function delayDurationAmount(raw: unknown): number | null {
+  if (raw === "") return 0;
+  const value = isExactMappingDecimal(raw) ? Number(raw) : raw;
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+export function delayDurationMilliseconds(parts: Partial<Record<DelayDurationUnit, unknown>>) {
+  let total = 0;
+  for (const unit of delayDurationUnits) {
+    if (!Object.hasOwn(parts, unit)) continue;
+    const amount = delayDurationAmount(parts[unit]);
+    if (amount === null) return null;
+    total += amount * unitMilliseconds[unit];
+  }
+  return Number.isFinite(total) && total >= 0 && total <= maxDelayMilliseconds
+    ? Math.trunc(total)
+    : null;
 }
 
 // Waits use native Date deadlines, while WF020 comparisons keep their existing
