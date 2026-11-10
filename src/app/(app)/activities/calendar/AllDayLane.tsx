@@ -16,11 +16,13 @@ export function AllDayLane({
   items,
   rows,
   onOpenActivity,
+  onCreate,
 }: {
   dayLabel: string;
   items: CalendarActivity[];
   rows: number;
   onOpenActivity: (activity: CalendarActivity) => void;
+  onCreate?: () => void;
 }): React.ReactNode {
   const t = useAppTranslations("calendar");
   const { allDay } = splitAllDay(items);
@@ -31,11 +33,19 @@ export function AllDayLane({
       data-all-day-lane
       role="group"
       aria-label={t("allDayLabel", { date: dayLabel })}
-      className="overflow-hidden border-s border-border px-0.5"
+      className="relative overflow-hidden border-s border-border px-0.5"
       style={{ height: rows * ALL_DAY_ROW_HEIGHT_PX }}
     >
+      {onCreate !== undefined && (
+        <button
+          type="button"
+          className="absolute inset-0 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+          aria-label={t("createAllDay", { date: dayLabel })}
+          onClick={onCreate}
+        />
+      )}
       {visible.map((a) => (
-        <ActivityChip key={a.id} a={a} onOpen={onOpenActivity} />
+        <ActivityChip key={a.id} a={a} onOpen={onOpenActivity} className="relative z-10" />
       ))}
       {hidden.length > 0 && <MoreActivitiesChip activities={hidden} onOpen={onOpenActivity} />}
     </div>

@@ -11,12 +11,15 @@ import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { activityWindowSql } from "./activityDateSql";
 import { buildActivityVisibility } from "./activityVisibility";
+import { loadCalendarAccess } from "./calendarAccess";
 import { isActivityOverdue } from "./overdue";
 import { linkedParentVisible } from "./parentLinkVisibility";
 import { loadParentlessParticipants } from "./visibility";
 
 export interface CalendarActivity {
   id: string;
+  calendarId?: string | null;
+  busyOnly?: boolean;
   subject: string;
   dueAt: Date;
   // No time was set; the editor must not echo the stored midnight back.
@@ -68,6 +71,8 @@ export interface CalendarActivity {
 }
 
 interface CalendarRow {
+  calendarId: string | null;
+  availability: "busy" | "free";
   allDay: boolean;
   dueDate?: string | null;
   endDate?: string | null;
@@ -146,6 +151,7 @@ function toCalendarActivity(
 ): CalendarActivity {
   return {
     id: row.id,
+    calendarId: row.calendarId,
     subject: row.subject,
     dueAt,
     allDay: row.allDay,
@@ -197,6 +203,8 @@ export async function calendarRange(
   const rows = await db
     .select({
       id: activities.id,
+      calendarId: activities.calendarId,
+      availability: activities.availability,
       subject: activities.subject,
       dueAt: activities.dueAt,
       allDay: activities.allDay,
@@ -255,11 +263,42 @@ export async function calendarRange(
   signal.throwIfAborted();
 
   const participantsByActivity = await loadParentlessParticipants(db, rows, signal);
+  const calendarAccess = await loadCalendarAccess(
+    db,
+    actor,
+    rows.map((row) => row.id),
+    signal,
+  );
 
   const out: CalendarActivity[] = [];
   for (const row of rows) {
     // Defensive: between excludes null dueAt, but skip explicitly before getTime().
     if (row.dueAt === null) continue;
+    const access = calendarAccess.get(row.id);
+    if (access?.read === false) {
+      // A free/busy grant exposes only the occupied interval. No CRM names, links or assignments.
+      if (access.freeBusy && row.availability === "busy" && !row.done)
+        out.push({
+          id: row.id,
+          calendarId: row.calendarId,
+          busyOnly: true,
+          subject: "",
+          dueAt: row.dueAt,
+          endAt: row.endAt,
+          allDay: row.allDay,
+          dueDate: row.dueDate,
+          endDate: row.endDate,
+          durationMinutes: row.durationMinutes,
+          typeKey: "busy",
+          done: false,
+          dealId: null,
+          personId: null,
+          orgId: null,
+          overdue: false,
+          ownerName: null,
+        });
+      continue;
+    }
     const vis = buildActivityVisibility(row, participantsByActivity.get(row.id) ?? []);
     if (vis === null || !canSee(actor, vis)) continue;
     out.push(toCalendarActivity(row, row.dueAt, now, linkGates(actor, row), timeZone));

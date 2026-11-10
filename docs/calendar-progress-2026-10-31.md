@@ -1,0 +1,83 @@
+# Calendar continuation checkpoint, 31 October 2026
+
+The persistent calendar goal remains active. This checkpoint supersedes the open blocker and UI layout in [the earlier handoff](calendar-handoff-2026-10-31.md), while retaining that handoff as historical evidence. It is not a full-calendar, provider, deployment or release completion claim.
+
+## Owned source and authorization
+
+Use `/Users/ali/Developer/warpdrive-calendar`, branch `codex/calendar-workflows`, base HEAD `2803183809c646a063f78fe954c110adbb2f453f`. Foundation and continuation changes remain uncommitted. Do not reset, stash, replace the checkout or change other worktrees. The user authorized local calendar implementation and synthetic acceptance, and confirmed that no Google test app/accounts are available yet. No real account scopes, external invitations, meetings, paid services, deployment or unrelated merges were authorized or performed.
+
+Peer branches have colliding local migration ordinals, including calendar 0083/0084/0085. These migrations are not a reconciled mainline allocation. Reconcile through the current migration owner before integration; do not apply branch-local migration histories to a shared database.
+
+## Save and reminder integrity
+
+Migration `0085_activity_reminder_intents.sql` adds durable reminder intents and backfills future open activities. `createActivity` now commits its intent in the event transaction with no queue I/O. Update, complete/reopen and delete reconcile the intent under the existing event lock. The current default remains 10 minutes.
+
+The reminder worker sweeps pending intents, using each intent UUID as its pg-boss job ID. Concurrent dispatch and enqueue-before-marker crashes recover without creating a second logical job. A bounded recovery sweep repairs missing, failed, queue-cancelled and prematurely completed jobs while preserving authoritative cancellation. Delivery locks the activity, calendar and intent, rechecks the exact due snapshot, recipient, completion/deletion and detail access, then creates the notification and delivery marker atomically. Email handoff occurs after that transaction commits, keeps the notification ID and uses a stable queue job ID. It can retry without inserting another in-app notification.
+
+Notification production, feed/unread and email delivery now enforce native calendar detail access as well as the existing CRM parent gate. Missing/deleted activities fail closed. Queued reminder email additionally rechecks the due snapshot, assignee and open state. Existing legacy activities and genuine system notifications retain their behavior.
+
+A final permission review also reproduced calendar sharing granting lead-only activity details to an unrelated reader/editor. Calendar grants now require every CRM link, including leadId, to be null. Six real PostgreSQL boundary tests preserve standalone sharing and intentional legacy assignee/participant access while denying unrelated reads, mutations and activity-gated notifications.
+
+A deterministic concurrency test exposed a separate stale-membership snapshot after a calendar lock wait. Calendar authorization now acquires the calendar lock before reading membership in a fresh statement, so a committed revocation wins. Availability excludes completed activities and archived calendars, preserving legacy null-calendar activities. Archive/restore tests preserve an actual event row.
+
+At this earlier checkpoint, personal timed/all-day defaults, multiple event reminder overrides and channels remained required work. See `calendar-progress-2026-11-01.md` for the subsequent local implementation and its remaining gates. Existing non-calendar assignment notification side effects have not been converted into a general durable notification outbox. Reminder email provider acceptance and the existing external-send acknowledgment window remain distinct from queue handoff proof.
+
+## Compact editor refinement
+
+The user's latest request makes routine event creation a compact single column at `max-w-2xl`. Title and grouped dates/times lead. Time-zone context is a subtle disclosure; the selected calendar remains visible, with private/free summaries. Calendar options and CRM details reveal inline. The permanent CRM sidebar and dashboard-width expansion are removed. Existing drafts, conflict handling, unsaved guards, authored zones, DST warnings and stable save/cancel footer remain.
+
+CRM controls start collapsed and reveal for relevant validation errors. Collapsing settings preserves their values. Existing location, description and pasted HTTPS meeting links remain functional; no unimplemented invitation, recurrence or provisioning controls are added. The shared Combobox adapter now supplies a translated cmdk label so its search input has a real accessible name.
+
+Google Help and the historical 2020 creation announcement inform hierarchy. A current blank Google full event editor was also inspected on 31 October in a signed-in personal account (English UK, primary calendar): title and schedule first, time-zone action beside schedule, guest column, and inline conferencing/location/reminder/calendar/busy/visibility/description fields. Its observed 30-minute account reminder row is not a Warpdrive default or a universal Google default. No fields were changed, external event saved, Meet provisioned or account permission granted; the reference tab was closed. Workspace policies and the quick-card visual path remain unqualified.
+
+## Google Calendar and Meet local contract layer
+
+New modules in `src/features/activities/providers/google/` implement typed, abortable HTTP boundaries for calendar discovery, paged full/incremental event reads, sparse deletions and sync-token expiration, conditional writes with explicit invitation-update decisions and ETags, and asynchronous conference response states. The folder README links current official API contracts and states the capability limitations.
+
+This layer has synthetic HTTP response tests only. It does not connect an account, store tokens, persist a mirror, run sync/watch workers, expose provider UI or provision an actual Meet conference. Next work requires a calendar-specific grant/token boundary, authorized external mappings, durable sync/write state, conflict/recovery policies and conferencing-aware full sync before modifying an existing cache. Do not reuse the Gmail grant or login grant as calendar consent.
+
+Real acceptance needs a Google Cloud OAuth web app with Calendar API enabled, configured consent/test users and exact callback registration, plus synthetic personal and eligible Workspace accounts and explicit consent at connection time. Watch acceptance additionally needs an approved reachable HTTPS callback. User response on 31 October: no setup yet, continue local implementation.
+
+## Evidence ledger
+
+- Original missing-queue failure reproduced: `.runtime/calendar-reminder-queue-reproduced.log`.
+- Save/lifecycle regressions: `.runtime/calendar-reminder-lifecycle-red.log`, then `.runtime/calendar-reminder-outbox-green.log` (15 tests).
+- Terminal queue recovery: `.runtime/calendar-reminder-recovery-red.log` and `-green.log` (15 tests across both outbox suites).
+- Native calendar notification privacy and stale email: `.runtime/calendar-notification-privacy-red.log`, `.runtime/calendar-reminder-email-red.log`, `.runtime/calendar-notifications-green.log` (16 tests).
+- Calendar revocation race: `.runtime/calendar-revocation-race-red.log` and `-green.log` (6 tests).
+- Combined native PostgreSQL/real pg-boss selection after the lead boundary correction: `.runtime/calendar-final-pg-green.log`, 95 tests across 21 files passed.
+- Compact editor and shared search label: `.runtime/calendar-compact-ui-final-unit.log`, 47 tests across 6 files passed. Locale audit had zero catalog issues/new source findings.
+- Google client contract layer after independent review: `.runtime/calendar-google-review-green.log`, 47 tests across 6 files passed. Path-segment safety, conference-only patches and quota-related 403 responses have explicit regressions. These are local/simulated provider contracts.
+- Final selected unit run: `.runtime/calendar-continuation-unit-green.log`, 610 tests across 96 files passed. A manager test synchronization race was reproduced deterministically and fixed in the test, with production pending-navigation behavior preserved.
+- Full final typecheck after the lead boundary correction: `.runtime/calendar-final-types-green.log`, exit 0. Whole repository lint passed in `.runtime/calendar-final-lint-green.log` (11 existing warnings in unrelated files). The final dummy-config production build passed in `.runtime/calendar-final-build-retry.log`. The first correction recheck hit disk exhaustion; removing only the stopped calendar worktree build/development caches recovered space, and the full retry exited 0. This is compilation evidence, not deployment or provider acceptance.
+- The first broad unit run overlapped deliberate Google client stubs: 563 tests passed, 23 failed for those not-yet-implemented contracts. It is not an all-green baseline; use the final rerun when available.
+
+## Synthetic browser/server/database acceptance
+
+Dedicated preview: `http://calendar-workflows.localhost:3169`. Synthetic PostgreSQL fixture stays on `127.0.0.1:54673`; do not rerun fixture creation. The existing regular-user session is used, with no MFA bypass or timeout weakening. The original browser tab belongs to the earlier chat; a new owned continuation tab is used.
+
+The original Nowruz event `3ee802b0-d564-46e3-b608-e0ac1f6567a9` reopened and saved a location edit at revision 2. Its exact `05:30Z` start, `06:30Z` end, `Asia/Tehran` zone, calendar and relationships were preserved. The old failed new-event draft was not saved again.
+
+New event `8c65ac96-799c-4897-89bc-a8e360252701`, title `آزمون تحویل یادآوری ۳۱ اکتبر`, was created once from the signed-in compact Farsi editor using Iranian dates/Persian digits. It reopens at 19:16-19:46 Tehran on 9 Aban 1405, persisted as `2026-10-31T15:46Z` to `16:16Z`. A privacy edit saved with settings collapsed. PostgreSQL verified one event and one reminder intent. The dedicated local worker delivered one in-app notification `64a7237c-7260-485f-b77d-714ae9936b18` and handed off its email job. No external mailbox is connected, so this proves local queue/in-app delivery, not external email acceptance.
+
+Ignored evidence/scripts: `.runtime/calendar-browser-database-evidence.json`, `.runtime/calendar-acceptance-inspect.mts`, `.runtime/calendar-reminder-worker.mts`, `.runtime/calendar-reminder-worker.log`. The dedicated worker registers only reminder and notification-email jobs. No import, mailbox-sync or auth worker was started. The preview has no WebSocket service; the real notification appeared in the Farsi feed with badge 1 after refresh, which must not be called realtime acceptance. Cold/hot-reload authentication timeouts intermittently replaced the local page; reload recovered earlier flows, and authentication policy was preserved. An initial German mobile edit attempt stopped at this infrastructure error before any new field was entered or saved. A fresh controlled tab later completed the edit and reopen successfully: location `Besprechungsraum Berlin`, activity revision 3, exact times unchanged, one original delivered reminder and notification.
+
+Signed-in compact editor screenshots are saved as user-facing outputs in the continuation chat: `calendar-compact-fa.jpg`, `calendar-compact-de.jpg`, `calendar-compact-de-mobile.jpg`, `calendar-compact-fa-mobile.jpg`, plus `calendar-reminder-fa.jpg`. German language was selected through the synthetic account's normal regional settings while retaining its Iranian calendar and Tehran zone. The German private-event view showed correct saved dates/times and the private summary. At 390 by 844, the dialog measured 358 CSS pixels within the viewport with no internal horizontal overflow; keyboard CRM disclosure worked and footer controls stayed visible. Farsi mobile also passed the same 390 by 844 horizontal-fit and keyboard-disclosure review, with Persian digits, Iranian dates, private summary and mixed-direction saved location. Broader cross-user browser acceptance remains open. The synthetic owner was restored to Farsi through normal regional settings, and the temporary viewport override was reset; this is not a change to a real user account.
+
+## Agency project integration seam, not enabled
+
+The canonical APIs remain `createActivity`/`completeActivity` in `repo.ts`, `updateActivity` in `activityUpdate.ts`, `deleteActivity` in `activityDelete.ts`, and fresh reads in `getForEdit.ts`; request actions retain CSRF/auth checks. Persist expected event versions for conflict-aware mutations. Calendar reads use `calendar.ts`/`calendarView.ts` and `calendarAccess.ts`, with CRM visibility gates. Reminders are internal transactional intents, not a second public task API. Agency production state/brief may be separately owned, while due dates/reminder/completion remain canonical activity fields. A project binding is not implemented or authorized merely by this seam. Before exposing linked tasks, review the project-visibility intersection in every read/write/search/export/notification/realtime/MCP path; do not grant project access through calendar membership alone. There is no committed/reconciled calendar integration base yet.
+
+The agency proposal was reviewed read-only against this dirty checkout. Its separate approval/communication state is compatible; activity completion does not represent agency approval, and there is no activity cancellation state distinct from completion/deletion. Timed `dueAt` is the event start, not an immutable promised-delivery fact. All-day canonical `dueDate`/inclusive `endDate` still need a non-null compatibility `dueAt` anchor. Preserve authored `eventTimeZone`. No atomic/idempotent actor-authorized project-binding command exists yet, and expectedVersion remains optional in the general API; the future adapter must require agreed activity/project revisions and project authorization. Do not write reminder intents directly or use the current 10-minute all-day anchor as an agreed personal notification time.
+
+## Next work and completion gates
+
+Continue the full list in [the implementation plan](calendar-implementation-plan.md): personal reminder settings/channels, remaining cross-user/browser/mobile foundation acceptance, calendar source filters and a legacy ownership migration decision, Iranian-aware recurrence/exceptions, invitations/RSVP, Google Calendar plus Meet, scheduling/resources, attachments/sharing, ICS, Microsoft/Teams, Zoom and special-event lifecycles. Each needs appropriate permission, retry, locale and real acceptance evidence. Keep local HTTP fixtures separate from actual provider acceptance. Do not mark the persistent goal complete while any required package remains.
+
+
+## Final local checkpoint
+
+The current source has a green verification checkpoint: 610 selected unit tests, 95 native PostgreSQL/pg-boss tests, the full typecheck, repository lint and dummy-config production build. The lead boundary correction additionally passed eight affected pure visibility tests. Source remains uncommitted and was not pushed or merged. A local recovery package is in `.runtime/calendar-checkpoint-20261031/` (tracked patch, non-ignored untracked source archive, status and SHA-256 checksums); do not apply it over this already-changed worktree. Preview restoration uses the browser fixture command in the original handoff. Recheck listener ownership before any future restart.
+
+
+Final service observation: preview listener PID 83400 was verified with cwd equal to the owned calendar worktree, port 3169. The isolated reminder worker is PID 83829, running `.runtime/calendar-reminder-worker.mts` against fixture port 54673. Disk pressure had terminated its earlier synthetic PostgreSQL connection; it was restarted after readiness verification, and the database still contained exactly one delivered notification/intent. Recheck PIDs and ownership, since PIDs can be reused. Worker bundle packaging also passed in `.runtime/calendar-final-workers-green.log`. The final owned browser tab is 351774526 (Chrome), on the Farsi calendar with no editor draft, marked for continuation.

@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
-import type { Db } from "@/db/client";
 import { permissionSets, teamMembers, teams, users, visibilityGroupMembers } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 
 // A hydrated actor plus the display fields already present on the user row hydrateActor reads.
 // Exposing them here lets the app shell render the avatar from ctx.actor instead of re-reading the
@@ -18,7 +18,7 @@ export interface HydratedActor extends PermSetUser {
 // createContext (request path) AND by import background jobs (no cookies available),
 // so it takes db explicitly and never imports next/headers.
 export async function hydrateActor(
-  db: Db,
+  db: DbOrTx,
   userId: string,
   signal: AbortSignal,
 ): Promise<HydratedActor | null> {

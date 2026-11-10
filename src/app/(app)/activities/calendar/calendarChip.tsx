@@ -1,5 +1,6 @@
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { calendarActivityTarget } from "@/features/activities/calendarActivityTarget";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface ActivityChipProps {
   a: CalendarActivity;
@@ -33,6 +34,15 @@ function ChipLabel({ a, parent }: { a: CalendarActivity; parent: string | null }
 }
 
 export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): React.ReactNode {
+  const t = useAppTranslations("calendar");
+  if (a.busyOnly === true)
+    return (
+      <div
+        className={`my-0.5 w-full rounded border border-border bg-muted/70 px-1 text-start text-xs text-muted-foreground ${className}`}
+      >
+        {t("busy")}
+      </div>
+    );
   // The overdue pair is the app-wide red-50/red-700 convention (12+ sites) and clears AA at 5.9:1;
   // the neutral tone uses the shared tokens rather than the calendar's own gray scale. Red is the
   // one tone without a token, so it carries its own Night pair or the chip stays light on a dark

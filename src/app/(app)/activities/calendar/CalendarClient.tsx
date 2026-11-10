@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
+import { CalendarManager } from "@/features/activities/CalendarManager";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
   type CalendarViewName,
@@ -61,7 +62,9 @@ export function CalendarClient({
   const label =
     view === "month"
       ? monthTitle(anchorIso, preferences)
-      : t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) });
+      : view === "day"
+        ? weekTitle(anchorIso, preferences)
+        : t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) });
   const rtl = preferences.locale === "fa";
   const [createDate, setCreateDate] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -69,13 +72,47 @@ export function CalendarClient({
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
-    <section aria-label={t("title")} className="p-4">
+    <section
+      aria-label={t("title")}
+      className="p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      onKeyDown={(event) => {
+        if (
+          event.defaultPrevented ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.altKey ||
+          !(event.target instanceof Node) ||
+          !event.currentTarget.contains(event.target) ||
+          event.key.toLowerCase() !== "c" ||
+          createDate !== null ||
+          editingId !== null
+        )
+          return;
+        if (
+          event.target instanceof Element &&
+          event.target.closest(
+            'input,textarea,select,[role="combobox"],[contenteditable="true"]',
+          ) !== null
+        )
+          return;
+        event.preventDefault();
+        setCreateDate(anchorIso);
+      }}
+    >
       <header className="mb-4 flex flex-wrap items-center gap-3">
+        <CalendarManager onChanged={onChanged} />
         <Button onClick={() => setCreateDate(todayIso)}>
           <Plus className="size-4" aria-hidden />
           {t("editor.create")}
         </Button>
         <div className="flex gap-1 rounded-md border border-border p-0.5">
+          <Link
+            aria-current={view === "day" ? "page" : undefined}
+            href={calendarHref("day", anchorIso)}
+            className={tab(view === "day")}
+          >
+            {t("day")}
+          </Link>
           <Link
             aria-current={view === "week" ? "page" : undefined}
             href={calendarHref("week", anchorIso)}
@@ -130,7 +167,9 @@ export function CalendarClient({
         />
       </header>
 
-      {empty !== undefined && activities.length === 0 ? (
+      {view !== "month" && activities.length === 0 && empty}
+
+      {empty !== undefined && activities.length === 0 && view === "month" ? (
         empty
       ) : view === "month" ? (
         <MonthView

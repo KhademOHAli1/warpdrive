@@ -15,6 +15,7 @@ const actions = vi.hoisted(() => ({
   invalidate: vi.fn(() => Promise.resolve(undefined)),
 }));
 vi.mock("./actions", () => actions);
+vi.mock("./reminderSettingsActions", () => ({ setEventReminderSettingsAction: vi.fn() }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/email/composer/RichTextBodyLazy", () => ({
   RichTextBody: ({ html, onChange }: { html: string; onChange: (value: string) => void }) => (
@@ -27,6 +28,20 @@ vi.mock("@/features/email/composer/RichTextBodyLazy", () => ({
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    calendars: {
+      list: {
+        useQuery: () => ({
+          data: [
+            {
+              id: "00000000-0000-4000-8000-000000000010",
+              name: "",
+              role: "owner",
+              isPrimary: true,
+            },
+          ],
+        }),
+      },
+    },
     useUtils: () => ({
       activities: {
         dayLoad: { invalidate: actions.invalidate },
@@ -58,12 +73,14 @@ const labels = {
   en: {
     title: "Event title",
     create: "New event",
-    more: "More options",
-    fewer: "Fewer options",
+    more: "CRM details",
+    fewer: "CRM details",
     start: "Start time",
     end: "End time",
     date: "Start date",
     allDay: "All day",
+    addLocation: "Add a location",
+    addDescription: "Add description",
     location: "Location",
     meeting: "Meeting link",
     addMeeting: "Add video meeting",
@@ -74,12 +91,14 @@ const labels = {
   fa: {
     title: "عنوان رویداد",
     create: "رویداد جدید",
-    more: "گزینه‌های بیشتر",
-    fewer: "گزینه‌های کمتر",
+    more: "جزئیات CRM",
+    fewer: "جزئیات CRM",
     start: "ساعت شروع",
     end: "ساعت پایان",
     date: "تاریخ شروع",
     allDay: "تمام روز",
+    addLocation: "افزودن مکان",
+    addDescription: "افزودن توضیحات",
     location: "مکان",
     meeting: "پیوند جلسه",
     addMeeting: "افزودن جلسهٔ آنلاین",
@@ -90,12 +109,14 @@ const labels = {
   de: {
     title: "Termintitel",
     create: "Neuer Termin",
-    more: "Weitere Optionen",
-    fewer: "Weniger Optionen",
+    more: "CRM-Details",
+    fewer: "CRM-Details",
     start: "Startzeit",
     end: "Endzeit",
     date: "Startdatum",
     allDay: "Ganztägig",
+    addLocation: "Ort hinzufügen",
+    addDescription: "Beschreibung hinzufügen",
     location: "Ort",
     meeting: "Besprechungslink",
     addMeeting: "Videobesprechung hinzufügen",
@@ -153,12 +174,14 @@ describe.each(["fa", "de", "en"] as Locale[])("calendar event workflow in %s", (
       target: { value: "جلسه با تیم / Teamtermin" },
     });
     fireEvent.click(screen.getByRole("button", { name: l.more }));
+    fireEvent.click(screen.getByRole("button", { name: l.addLocation }));
     fireEvent.change(screen.getByLabelText(l.location), { target: { value: "تهران / Berlin" } });
     fireEvent.click(screen.getByRole("button", { name: l.addMeeting }));
     fireEvent.change(screen.getByRole("textbox", { name: l.meeting }), {
       target: { value: "https://meet.google.com/abc-defg-hij" },
     });
     fireEvent.click(screen.getByRole("button", { name: l.applyLink }));
+    fireEvent.click(screen.getByRole("button", { name: l.addDescription }));
     fireEvent.change(screen.getByLabelText("Description editor"), {
       target: { value: "<p>برنامهٔ جلسه / Tagesordnung</p>" },
     });

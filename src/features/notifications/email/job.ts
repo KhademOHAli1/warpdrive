@@ -13,6 +13,7 @@ import { hydrateActor } from "@/server/hydrateActor";
 import type { EmailAccountRow } from "@/types/email";
 import type { NotificationRow } from "@/types/notification";
 import { ok, type Result } from "@/types/result";
+import { canDeliverActivityReminder, canReadNotificationCalendar } from "../calendarPrivacy";
 import { resolveDelivery } from "../preferences";
 import { renderNotificationEmail } from "./render";
 
@@ -62,6 +63,12 @@ export async function runEmailNotificationJob(
   // for a team manager holding team.viewMembers.
   const recipientUser = await hydrateActor(db, notifRow.userId, signal);
   if (recipientUser === null) return ok({ sent: false }); // recipient gone or deactivated
+
+  if (!(await canReadNotificationCalendar(db, recipientUser, notifRow, signal)))
+    return ok({ sent: false });
+
+  if (!(await canDeliverActivityReminder(db, recipientUser.id, notifRow, signal)))
+    return ok({ sent: false });
 
   // (c) RE-CHECK visibility at send time: the security core.
   // A notification queued while the entity was visible may have become invisible.

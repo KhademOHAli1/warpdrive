@@ -3,6 +3,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { Combobox } from "./Combobox";
 import { Tip } from "./tooltip";
 
@@ -171,3 +172,25 @@ describe("Combobox", () => {
     expect(screen.getByRole("option")).toHaveTextContent("Demo Rep Esra");
   });
 });
+
+it.each([
+  { locale: "en", search: "Search..." },
+  { locale: "fa", search: "جست‌وجو..." },
+  { locale: "de", search: "Suchen..." },
+] as const)(
+  "gives the search input a translated accessible name in $locale",
+  ({ locale, search }) => {
+    render(
+      <LocaleProvider locale={locale}>
+        <Combobox
+          value=""
+          onChange={vi.fn()}
+          options={[{ value: "tehran", label: "Asia/Tehran" }]}
+          ariaLabel="Time zone"
+        />
+      </LocaleProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Time zone" }));
+    expect(screen.getByRole("combobox", { name: search })).toBeInTheDocument();
+  },
+);

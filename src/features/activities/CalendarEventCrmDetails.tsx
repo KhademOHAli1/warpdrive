@@ -29,11 +29,7 @@ export function CalendarEventCrmDetails({
   const visible = records.filter((record) => record.id != null && record.name != null);
   const unknownType = draft.typeId !== "" && !types.some((type) => type.id === draft.typeId);
   return (
-    <aside
-      aria-label={t("editor.activityDetails")}
-      className="space-y-6 border-t border-border/70 bg-muted/25 px-6 py-6 md:border-s md:border-t-0"
-    >
-      <h3 className="text-sm font-semibold">{t("editor.activityDetails")}</h3>
+    <aside aria-label={t("editor.activityDetails")} className="space-y-3 pb-2 ps-6 pt-2">
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground">{S.activityType}</p>
         <Select
@@ -58,10 +54,7 @@ export function CalendarEventCrmDetails({
           ]}
         />
       </div>
-      <section
-        aria-label={t("editor.linkedRecords")}
-        className="space-y-3 border-t border-border/70 pt-5"
-      >
+      <section aria-label={t("editor.linkedRecords")} className="space-y-2 pt-1">
         <h4 className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <Link2 className="size-3.5" aria-hidden />
           {t("editor.linkedRecords")}

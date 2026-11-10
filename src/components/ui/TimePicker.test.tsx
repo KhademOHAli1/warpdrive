@@ -202,3 +202,29 @@ it("relocalizes an existing validation error without changing the invalid raw in
   expect(input).toHaveProperty("validationMessage", "ساعت معتبری با قالب ساعت:دقیقه وارد کنید.");
   expect(onChange).not.toHaveBeenCalled();
 });
+
+it.each([
+  { locale: "en", message: "Enter a valid time in hours:minutes format." },
+  { locale: "fa", message: "ساعت معتبری با قالب ساعت:دقیقه وارد کنید." },
+  { locale: "de", message: "Geben Sie eine gültige Uhrzeit im Format Stunde:Minute ein." },
+] as const)(
+  "keeps a required empty clock invalid with an associated translated error in $locale",
+  ({ locale, message }) => {
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider locale={locale}>
+        <TimePicker value="09:00" onChange={onChange} ariaLabel="Reminder clock" required />
+      </LocaleProvider>,
+    );
+    const input = screen.getByLabelText("Reminder clock");
+    expect(input).toHaveAttribute("aria-required", "true");
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.blur(input);
+    expect(input).toBeInvalid();
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    const error = screen.getByRole("alert");
+    expect(input).toHaveAttribute("aria-describedby", error.id);
+    expect(input).toHaveProperty("validationMessage", message);
+    expect(onChange).not.toHaveBeenCalled();
+  },
+);

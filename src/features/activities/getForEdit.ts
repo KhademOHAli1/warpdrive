@@ -9,17 +9,27 @@ import {
   organizations,
   persons,
 } from "@/db/schema";
+import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import { calendarActivityAccess, standaloneCalendarWriter } from "./calendarAccess";
 import { linkedParentVisible } from "./parentLinkVisibility";
+import { type EventReminderContext, eventReminderContext } from "./reminderSettingsState";
 import { resolveActivityVisibility } from "./visibility";
 
 // Every field the inline composer needs to prefill an edit. Timestamps are ISO strings so the
 // client can split them into its local date/time inputs without a serialization round-trip issue.
 export interface EditableActivity {
   id: string;
+  version?: number;
+  eventTimeZone?: string | null;
+  calendarId?: string | null;
+  eventVisibility?: "default" | "private";
+  availability?: "busy" | "free";
+  canEdit?: boolean;
+  personalReminders?: EventReminderContext;
   typeId: string;
   subject: string;
   priority: string | null;
@@ -126,7 +136,8 @@ export async function getActivityForEdit(
   }
 
   const vis = await resolveActivityVisibility(db, row, signal);
-  if (vis === null || !canSee(actor, vis)) {
+  const access = await calendarActivityAccess(db, actor, row, signal);
+  if (vis === null || !canSee(actor, vis) || access?.read === false) {
     return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
   }
 
@@ -142,7 +153,16 @@ export async function getActivityForEdit(
 
   return ok({
     ...names,
+    personalReminders: await eventReminderContext(db, actor, row, signal),
     id: row.id,
+    version: row.version,
+    eventTimeZone: row.eventTimeZone,
+    calendarId: row.calendarId,
+    eventVisibility: row.eventVisibility,
+    availability: row.availability,
+    canEdit:
+      access?.write !== false &&
+      (can(actor, "activity.edit", vis) || standaloneCalendarWriter(row, access)),
     typeId: row.typeId,
     subject: row.subject,
     priority: normalizePriority(row.priority),

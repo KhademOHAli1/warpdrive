@@ -1,10 +1,24 @@
 import { z } from "zod";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
+import { isTimeZone } from "@/features/i18n/preferences";
+import { personalReminderWriteSchema } from "./reminderPolicy";
+
+const eventTimeZone = z.string().min(1).max(100).refine(isTimeZone, "Invalid IANA time zone");
+export const activityManageInput = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().positive().optional(),
+});
+export { completeActivityInput as activityCompleteInput } from "./completeActivityInput";
 
 export const activityCreateInput = z
   .object({
+    personalReminders: personalReminderWriteSchema.optional(),
     typeId: z.string().uuid(),
     subject: z.string().min(1).max(255),
+    eventTimeZone: eventTimeZone.nullable().default(null),
+    calendarId: z.string().uuid().nullable().default(null),
+    eventVisibility: z.enum(["default", "private"]).default("default"),
+    availability: z.enum(["busy", "free"]).default("busy"),
     priority: z
       .enum(ACTIVITY_PRIORITY_KEYS as [string, ...string[]])
       .nullable()
@@ -46,6 +60,12 @@ export type ActivityCreateInput = z.input<typeof activityCreateInput>;
 export const activityUpdateInput = z
   .object({
     id: z.string().uuid(),
+    expectedVersion: z.number().int().positive().optional(),
+    personalReminders: personalReminderWriteSchema.optional(),
+    calendarId: z.string().uuid().optional(),
+    eventVisibility: z.enum(["default", "private"]).optional(),
+    availability: z.enum(["busy", "free"]).optional(),
+    eventTimeZone: eventTimeZone.nullable().optional(),
     subject: z.string().min(1).max(255).optional(),
     typeId: z.string().uuid().optional(),
     priority: z
@@ -71,7 +91,9 @@ export const activityUpdateInput = z
     personId: z.string().uuid().nullable().optional(),
     orgId: z.string().uuid().nullable().optional(),
   })
-  .refine((v) => Object.keys(v).length > 1, { message: "no fields to update" });
+  .refine((v) => Object.keys(v).some((key) => key !== "id" && key !== "expectedVersion"), {
+    message: "no fields to update",
+  });
 
 export type ActivityUpdateInput = z.input<typeof activityUpdateInput>;
 

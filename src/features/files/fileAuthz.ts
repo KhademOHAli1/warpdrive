@@ -1,5 +1,4 @@
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@/db/client";
 import {
   activities,
   deals,
@@ -14,6 +13,7 @@ import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { canSeeEmail } from "@/features/email/emailVisibility";
 import { canSee } from "@/features/permissions/canSee";
 import type { AuthUser, VisiblePersonOrOrg } from "@/features/permissions/types";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 
 // Dispatch a file's parent-entity authorization to the EXISTING per-entity
 // visibility logic. Never invents rules. A missing parent row OR a canSee/
@@ -21,7 +21,7 @@ import type { AuthUser, VisiblePersonOrOrg } from "@/features/permissions/types"
 // preserved: a deal is always routed through toVisibleDeal with the pipeline's
 // visibility group, never spread raw into canSee.
 export async function canActorAccessParent(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   entityType: string,
   entityId: string,
@@ -45,7 +45,7 @@ export async function canActorAccessParent(
 }
 
 async function canSeeDealParent(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   dealId: string,
   signal: AbortSignal,
@@ -63,7 +63,7 @@ async function canSeeDealParent(
 }
 
 async function canSeePersonOrOrg(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   kind: "person" | "organization",
   id: string,
@@ -106,7 +106,7 @@ function toVisibleRecord(
 }
 
 async function canSeeActivityParent(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   activityId: string,
   signal: AbortSignal,
@@ -126,7 +126,7 @@ async function canSeeActivityParent(
 // Exported so the write-authz dispatcher (fileWriteAuthz) can reuse the mailbox-privacy
 // gate: there is no distinct email write capability, so canSeeEmail gates uploads too.
 export async function canSeeEmailParent(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   messageId: string,
   signal: AbortSignal,
