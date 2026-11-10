@@ -18,8 +18,8 @@ import type { ProjectState } from "../projectLifecycle";
 
 type UnarchivedProjectState = Exclude<ProjectState, "archived">;
 
-// Complete model proposal for Main registration. The reviewed migration must also retain
-// the manual title function and audit triggers, which Drizzle table metadata cannot model.
+// The canonical migration also retains the manual title function and audit triggers,
+// which Drizzle table metadata cannot model.
 export const agencyProjects = pgTable(
   "agency_projects",
   {

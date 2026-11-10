@@ -165,7 +165,7 @@ try {
       await page.getByRole("menuitemradio").first().waitFor();
       assert.equal(await page.getByRole("menuitemradio").count(), 3);
       await page.keyboard.press("Escape");
-      for (const route of ["/inbox", "/deals", "/settings/email"]) {
+      for (const route of ["/inbox", "/deals", "/settings/email", "/projects"]) {
         await page.goto(`${origin}${route}`, { waitUntil: "networkidle" });
         assert.equal(
           new URL(page.url()).pathname,
@@ -191,6 +191,9 @@ try {
       { width: 390, height: 844 },
     );
   }
+
+  const { runAgencyProjectsBrowserSmoke } = await import("./agency-projects-browser.mjs");
+  await runAgencyProjectsBrowserSmoke({ journey, signIn, catalog });
 
   await journey("deal-persistence", "en", async (page) => {
     await login(page);

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Combobox } from "@/components/ui/Combobox";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -23,6 +24,7 @@ export function ProjectCreatePanel(props: {
   });
   const [client, setClient] = useState<Choice | null>(null);
   const [drafts, setDrafts] = useState<Record<string, ProjectCreationDraft>>({});
+  const [completed, setCompleted] = useState<ReadonlySet<string>>(() => new Set());
   useEffect(() => {
     let alive = true;
     const timer = setTimeout(() => {
@@ -78,21 +80,49 @@ export function ProjectCreatePanel(props: {
         search={{ value: query, onChange: setQuery }}
       />
       {client !== null && draft !== undefined && (
-        <ProjectCreationForm
-          contextKey={contextKey}
-          draft={draft}
-          contextLabel={client.label}
-          canCreate
-          owners={choices.owners}
-          onDraftChange={(next) => setDrafts((current) => ({ ...current, [contextKey]: next }))}
-          submit={async (input, signal) => {
-            signal.throwIfAborted();
-            const result = await createAgencyProjectAction(props.actorId, input, readCsrfToken());
-            signal.throwIfAborted();
-            return result;
-          }}
-          onCreated={props.onCreated}
-        />
+        <div className="space-y-4">
+          {completed.has(contextKey) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDrafts((current) => ({
+                  ...current,
+                  [contextKey]: {
+                    ...draft,
+                    attempt: null,
+                    input: { ...draft.input, intentId: crypto.randomUUID(), title: "" },
+                  },
+                }));
+                setCompleted((current) => {
+                  const next = new Set(current);
+                  next.delete(contextKey);
+                  return next;
+                });
+              }}
+            >
+              {t("screen.new")}
+            </Button>
+          )}
+          <ProjectCreationForm
+            key={`${contextKey}:${draft.input.intentId}`}
+            contextKey={contextKey}
+            draft={draft}
+            contextLabel={client.label}
+            canCreate
+            owners={choices.owners}
+            onDraftChange={(next) => setDrafts((current) => ({ ...current, [contextKey]: next }))}
+            submit={async (input, signal) => {
+              signal.throwIfAborted();
+              const result = await createAgencyProjectAction(props.actorId, input, readCsrfToken());
+              signal.throwIfAborted();
+              return result;
+            }}
+            onCreated={(id) => {
+              setCompleted((current) => new Set([...current, contextKey]));
+              props.onCreated(id);
+            }}
+          />
+        </div>
       )}
     </section>
   );
