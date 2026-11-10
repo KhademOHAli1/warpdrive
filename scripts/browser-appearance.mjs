@@ -138,8 +138,10 @@ async function login(page) {
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
-  const response = await page.goto("/settings/appearance");
-  assert.equal(response.status(), 200);
+  await page.getByRole("main").waitFor({ state: "visible" });
+  // The sign-in redirect changes the URL before its streamed scripts finish.
+  // Let those requests settle before the harness leaves for regional settings.
+  await page.waitForLoadState("networkidle");
 }
 
 async function visitAuthenticatedAppearance(page, context, locale, entry) {
@@ -149,6 +151,7 @@ async function visitAuthenticatedAppearance(page, context, locale, entry) {
   }
   await login(page);
   entry.localePreparation = await prepareLocaleThroughUi(page, origin, locale);
+  await page.waitForLoadState("networkidle");
   assert.equal((await page.goto("/settings/appearance")).status(), 200);
   nativeSessions.set(locale, await context.storageState());
   report.nativeLogins.push({ locale, method: "password", storage: "memory-only" });
