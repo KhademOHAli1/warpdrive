@@ -47,12 +47,13 @@ export interface ActivityTypeCount {
   completed: number;
 }
 
-// name is null only when the deal was lost with no reason at all; the UI supplies the label.
+// The UI supplies a label for a null group name. Selectors exist only for supported groups.
 export interface LostReasonCount {
   reasonId: string | null;
   name: string | null;
   count: number;
   value: string;
+  selector?: string;
 }
 
 // reached counts deals that ever got to this stage (from change-log history), not deals

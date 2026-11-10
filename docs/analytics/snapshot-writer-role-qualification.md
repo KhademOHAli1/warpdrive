@@ -1,0 +1,9 @@
+# Snapshot writer privilege qualification
+
+The native insert fence checks the transaction's real snapshot, clock bracket and pending captured writes. It cannot authenticate the writer or prove a fresh source observation when a privileged role imports an old view. It cannot establish that every fact in the submitted book was independently read and authorized.
+
+The prepared disposable fixture creates separate, non-owning runtime and writer roles inside one transaction. It verifies that an ordinary runtime cannot insert a snapshot, the writer can insert at its active native cut, and that the writer cannot mutate source deals or disable the guard. It rolls back the roles, privileges and snapshot. This is a proposed database permission test, not application or installed evidence.
+
+The installed design must keep migration/DDL ownership separate from both runtime roles. The snapshot writer needs read access to the minimum source, permission and capture tables and INSERT only for snapshots. General app transactions must not insert those rows. The writer obtains the creator from a current authenticated server request, starts a fresh repeatable-read transaction without importing a snapshot, reads the native witness before source queries, checks complete current authority and writes the original facts in that same transaction. A separate writer connection must not inherit the schema owner or general application write privileges.
+
+The current shared owner configuration does not establish that separation. Before admission, provision qualified role grants, exercise the actual repository using its dedicated connection, prove non-writer and source-write denials, verify existing app/migration behavior and document backup and restore lineage. A trusted fixture or an operator's SQL access does not qualify a user-visible comparison.

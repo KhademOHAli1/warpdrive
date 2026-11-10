@@ -7,21 +7,12 @@ import { createContext } from "@/server/trpc/context";
 import { resolveAccountLocalePreferences } from "./accountPreferences";
 import { type AppNamespace, createAppTranslator } from "./catalog";
 import {
-  CALENDAR_COOKIE,
-  COUNTRY_COOKIE,
-  IRANIAN_MONEY_UNIT_COOKIE,
-  LOCALE_COOKIE,
-  type LocalePreferences,
-  NUMBERING_SYSTEM_COOKIE,
-  resolveLocalePreferences,
-  TIME_ZONE_COOKIE,
-  TIME_ZONE_MODE_COOKIE,
-} from "./preferences";
+  type LocalePreferenceFallback,
+  readLocalePreferenceCookies,
+} from "./localePreferenceCookies";
+import { type LocalePreferences, resolveLocalePreferences } from "./preferences";
 
-function browserInitialization(
-  raw: Parameters<typeof resolveLocalePreferences>[0],
-  saved?: LocalePreferences,
-) {
+function browserInitialization(raw: LocalePreferenceFallback, saved?: LocalePreferences) {
   return {
     // These hints travel to the provider, never into the account preference bag.
     inferBrowserLanguage: saved === undefined && raw.locale === undefined,
@@ -35,15 +26,7 @@ function browserInitialization(
 
 export const getLocalePreferences = cache(async () => {
   const jar = await cookies();
-  const raw = {
-    locale: jar.get(LOCALE_COOKIE)?.value,
-    calendar: jar.get(CALENDAR_COOKIE)?.value,
-    timeZone: jar.get(TIME_ZONE_COOKIE)?.value,
-    country: jar.get(COUNTRY_COOKIE)?.value,
-    timeZoneMode: jar.get(TIME_ZONE_MODE_COOKIE)?.value,
-    numberingSystem: jar.get(NUMBERING_SYSTEM_COOKIE)?.value,
-    iranianMoneyUnit: jar.get(IRANIAN_MONEY_UNIT_COOKIE)?.value,
-  };
+  const raw = readLocalePreferenceCookies(jar);
   if (jar.get(SESSION_COOKIE) === undefined)
     return { ...resolveLocalePreferences(raw), ...browserInitialization(raw) };
   const { actor } = await createContext();

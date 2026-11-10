@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { currencyCode } from "@/features/currencies/currencySchema";
-import { DEAL_RECORD_METRICS } from "./metricDictionary";
+import { DEAL_WIN_COHORT_HORIZONS } from "./history/dealWinCohortView";
+import { lostReasonSelector } from "./lostReasonSelector";
+import { DEAL_RECORD_METRICS, type DealRecordMetric } from "./metricDictionary";
+import { monthsInRange } from "./monthBuckets";
 
 // Boundary validation for the dashboard procedure input.
 // Query functions receive the validated/narrowed types and trust them.
@@ -26,10 +29,59 @@ export const dashboardInput = z
     path: ["to"],
   });
 
-export const dealRecordsInput = dashboardInput.safeExtend({
-  metric: z.enum(DEAL_RECORD_METRICS),
-  limit: z.number().int().min(1).max(100).default(25),
-  cursor: z
-    .object({ createdAt: z.string().datetime({ offset: true }), id: z.string().uuid() })
-    .optional(),
+export const wonMonthInput = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+  .optional();
+
+export function validWonMonthScope({
+  from,
+  to,
+  metric,
+  wonMonth,
+}: {
+  from: string;
+  to: string;
+  metric: DealRecordMetric;
+  wonMonth?: string;
+}): boolean {
+  return wonMonth === undefined || (metric === "won" && monthsInRange(from, to).includes(wonMonth));
+}
+
+export function validLostReasonScope(input: {
+  metric: DealRecordMetric;
+  wonMonth?: string;
+  lostReason?: string;
+}): boolean {
+  return (
+    input.lostReason === undefined || (input.metric === "lost" && input.wonMonth === undefined)
+  );
+}
+
+export const dealRecordsInput = dashboardInput
+  .safeExtend({
+    metric: z.enum(DEAL_RECORD_METRICS),
+    limit: z.number().int().min(1).max(100).default(25),
+    cursor: z
+      .object({ createdAt: z.string().datetime({ offset: true }), id: z.string().uuid() })
+      .optional(),
+    wonMonth: wonMonthInput,
+    lostReason: lostReasonSelector.optional(),
+  })
+  .refine(validWonMonthScope, {
+    path: ["wonMonth"],
+    message: "Select a displayed won trend month",
+  })
+  .refine(validLostReasonScope, { path: ["lostReason"], message: "Select a lost reason group" });
+
+export const dealWinCohortsInput = dashboardInput.safeExtend({
+  // Cache identity only. The reader independently loads the viewer's saved calendar.
+  calendarIdentity: z.enum(["gregory", "persian"]).optional(),
+  horizon: z.enum(DEAL_WIN_COHORT_HORIZONS),
+});
+
+export const stageAgingInput = z.strictObject({
+  currency: currencyCode.optional(),
+  pipelineId: z.string().uuid().nullable().default(null),
+  ownerScope: ownerScopeInput.default({ kind: "me" }),
 });

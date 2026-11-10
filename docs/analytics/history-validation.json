@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "programmeComplete": false,
+  "qualification": "Focused source checks only. Database proposal and native test definitions remain unexecuted locally; no migration, installed report, integrated-main or release acceptance.",
+  "sources": [
+    {
+      "path": "src/features/stats/history/contracts.ts",
+      "sha256": "a132b6e2508f6931a38c0793c167da8ce813af8bbf60197429ac66212ec9fdfa"
+    },
+    {
+      "path": "src/features/stats/history/fold.ts",
+      "sha256": "41fdd735826d853c5b9256fc98690e4d13906e990f145838d03d6f754719142b"
+    },
+    {
+      "path": "src/features/stats/history/coverage.ts",
+      "sha256": "646c713460bbb9338307a97d549d9cdf4995f1a8a744c276de88b824ac2fa128"
+    },
+    {
+      "path": "src/features/stats/history/stageEpisodes.ts",
+      "sha256": "3cd1d2944db399dc5c676b6c074f505f7d694e66f810b7a3845b1840054ecad6"
+    },
+    {
+      "path": "src/features/stats/history/currentStageEpisodes.ts",
+      "sha256": "96f511943ee380b22eda9f517ef8927ffca46434099ddb75da60dc6dac8e39d7"
+    },
+    {
+      "path": "src/features/stats/history/stageStatistics.ts",
+      "sha256": "72c14845455676890312a1d870604d30d947653b61c093fedebab24e49ff6cf6"
+    }
+  ],
+  "runtime": "Pinned Bun 1.4.4; borrowed dependencies reused without installs or deliberate dependency edits; clean env; BUN_OPTIONS=--no-env-file, direct --no-env-file, Vite envDir:false; no dotenv or service started; one worker.",
+  "checks": [
+    {
+      "name": "Earlier I2 history/regional/dashboard focused cut",
+      "result": "passed",
+      "tests": 153,
+      "files": 7,
+      "vitestSeconds": 4.73,
+      "limitation": "Earlier source cut before required history snapshot/opaque command-ID refinements; does not qualify later amendments."
+    },
+    {
+      "name": "Current history contracts/fold/coverage",
+      "result": "passed",
+      "tests": 139,
+      "files": 3,
+      "vitestSeconds": 0.245,
+      "log": "work/i2-history-unit-current.log"
+    },
+    {
+      "name": "Stage episodes and completeness adapter",
+      "result": "passed",
+      "tests": 49,
+      "files": 2,
+      "vitestSeconds": 0.399,
+      "log": "work/i2-aging-unit.log"
+    },
+    {
+      "name": "Regional translation audit",
+      "result": "passed",
+      "catalogIssues": 0,
+      "newSourceFindings": 0,
+      "log": "work/i2-i18n.log"
+    },
+    {
+      "name": "Amended completeness adapter, including in-transaction archive/restore policy",
+      "result": "passed",
+      "tests": 10,
+      "files": 1,
+      "vitestSeconds": 0.367,
+      "log": "work/i2-adapter-amended-unit.log",
+      "limitation": "Replaces the earlier nine adapter cases at the amended test cut; unchanged stage kernel forty cases retain their earlier result."
+    },
+    {
+      "name": "Bounded exact stage statistics",
+      "result": "passed",
+      "tests": 44,
+      "files": 1,
+      "vitestSeconds": 0.147,
+      "log": "work/i2-statistics-unit.log",
+      "cache": "--no-cache; no install or deliberate dependency edits."
+    },
+    {
+      "name": "Independent history/statistics source review",
+      "result": "completed within source-only scope",
+      "report": "docs/analytics/history-source-review.json"
+    },
+    {
+      "name": "Configured focused formatter",
+      "result": "passed",
+      "files": 40,
+      "limitation": "No typed lint or compile result. SQL is reviewed source; unsupported formatter input types are not formatted."
+    },
+    {
+      "name": "Unmodified inventory after main reconciliation",
+      "result": "passed",
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "report": "docs/privacy-inventory-report.json"
+    },
+    {
+      "name": "Registry regression and validity suites",
+      "result": "passed",
+      "tests": 20,
+      "files": 2,
+      "vitestSeconds": 1.26,
+      "log": "work/i2-registry-unit.log"
+    },
+    {
+      "name": "Affected adapter cases after type-guard correction",
+      "result": "passed",
+      "tests": 10,
+      "files": 1,
+      "vitestSeconds": 0.444,
+      "log": "work/i2-adapter-type-fix-unit.log",
+      "limitation": "Container-free behavior checks; no local compiler/typed lint run."
+    },
+    {
+      "name": "Affected folding/episode/adapter cases after lint amendment",
+      "result": "passed",
+      "tests": 72,
+      "files": 3,
+      "vitestSeconds": 0.435,
+      "log": "work/i2-lint-amendment-unit.log",
+      "limitation": "No local compiler/typed lint/native execution."
+    },
+    {
+      "name": "Inventory and registry after reviewed lint amendment",
+      "result": "passed",
+      "tests": 20,
+      "files": 2,
+      "vitestSeconds": 1.18,
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "log": "work/i2-registry-lint-fix.log"
+    },
+    {
+      "name": "Legacy UUID parity, anchored stage selection and stock reconciliation",
+      "result": "passed",
+      "tests": 164,
+      "files": 3,
+      "vitestSeconds": 0.235,
+      "report": "docs/analytics/stage-movement-validation.json",
+      "limitation": "Focused pure cases. Native eight new stage reader cases and cascade rerun remain pending."
+    }
+  ],
+  "resourceEvidence": {
+    "observedPressureLevel": 2,
+    "observedFreeMemoryPercent": "45–52 at entries",
+    "disk": "More than 8 GiB free",
+    "execution": "Warning-mode focused lane; 55-second finite command deadlines, one owned check at a time. Owned aggregate peak RSS unmeasured; no normal-pressure or peak-conformance claim."
+  },
+  "nativePreparedUnrun": [
+    "src/features/stats/history/capture.integration.test.ts",
+    "src/features/stats/history/repository.integration.test.ts"
+  ],
+  "remaining": [
+    "Native populated clone/proposal/compatibility and concurrency execution",
+    "Canonical contiguous migration reservation, framework transaction integration, generated parity and populated upgrade",
+    "Current I2 configured typegen/TSC/typed lint on hosted runner",
+    "Authenticated caller/session/actor lifecycle qualification",
+    "Real rendered desktop/mobile light/dark EN/DE/FA/RTL browser review",
+    "Stage/report services UI, exact-current main checks, full programme and release gates"
+  ],
+  "localHeavyValidation": "Explicitly kept queued by the user. No allocation claimed, no local database/browser/compiler/build/install started.",
+  "cleanup": "All owned focused commands terminated. No task container, database, browser or server launched; no shared service modified.",
+  "base": "02b1563e8ee4125959bbd53d0e6a646529337025",
+  "retainedHostedDiagnostics": [
+    {
+      "source": "2fda2f7a27e191bb48ef0e026ca430340865016c",
+      "mergeCandidate": "107e23af935dea97e6c7e406d6cfe76942558f63",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42086116816",
+      "result": "Next type generation passed; TSC failed TS2322 at currentStageEpisodes.ts negative union-state guard. Lint and focused hosted tests skipped. Marketing/documentation, required quality and delivery checks passed.",
+      "correction": "Explicit positive missing/unavailable early returns preserve behavior and remove the narrowing error. Fresh hosted type/lint evidence remains required."
+    },
+    {
+      "source": "9e8749a0c6c2805ce9d249c88893378e2ff971c7",
+      "mergeCandidate": "b49fb216b20237d96e7819e897327e40acb7707f",
+      "run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42086810612",
+      "result": "Configured Next typegen/TSC passed. Typed lint found three owned errors: capture.test-helpers.ts raw Errors twice; fold.ts unnecessary JSON.stringify nullish fallback. Focused hosted tests skipped. Other required light checks passed.",
+      "correction": "Use established fixture AppError IDs and remove unreachable fallback for valid parsed JSON. Independent amendment source review retained; fresh hosted static/native evidence remains required."
+    }
+  ]
+}

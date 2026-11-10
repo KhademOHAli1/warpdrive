@@ -1,6 +1,7 @@
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
+import type { LocalePreferenceFallback } from "@/features/i18n/localePreferenceCookies";
 import { getPreferences } from "@/features/identity/preferencesRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
@@ -20,9 +21,11 @@ export async function resolveReportScope(
     to: string;
   },
   signal: AbortSignal,
+  localeFallback?: LocalePreferenceFallback,
+  teamMemberLimit?: number,
 ) {
   const effectiveOwnerScope = ownerScope(actor, input.ownerScope);
-  const owners = await resolveOwnerIds(db, actor, effectiveOwnerScope, signal);
+  const owners = await resolveOwnerIds(db, actor, effectiveOwnerScope, signal, teamMemberLimit);
   if (
     input.pipelineId !== null &&
     !(await isPipelineVisible(db, actor, input.pipelineId, signal))
@@ -41,6 +44,7 @@ export async function resolveReportScope(
   const { timeZone } = resolveAccountLocalePreferences({
     saved: preferences.ui.localePreferences,
     profileTimeZone: preferences.timezone,
+    fallback: localeFallback,
   });
   const filters: DashboardFilters = {
     currency,

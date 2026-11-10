@@ -1,17 +1,54 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { hydrateRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { RouterOutputs } from "@/lib/trpc-client";
+import type { CurrentLeadHandoffReport } from "../currentLeadHandoffReport";
+import type { DealWinCohortView } from "../history/dealWinCohortView";
+import type { StageAgingView } from "../history/stageAgingView";
+import type { RecordedDealSourceReport } from "../recordedDealSourceReport";
+
+type SavedRoutes = RouterOutputs["stats"]["savedPerformance"];
+type SavedRun = RouterOutputs["stats"]["savedPerformanceRerun"];
 
 const fixture = vi.hoisted(() => ({
   refetch: vi.fn(),
   goalsRefetch: vi.fn(),
+  cohortQuery: vi.fn(),
+  cohortRefetch: vi.fn(),
+  cohortFetching: false,
+  cohortReport: vi.fn<() => DealWinCohortView>(),
+  agingQuery: vi.fn(),
+  agingReport: vi.fn<() => StageAgingView>(),
+  agingFetched: true,
+  agingFetching: false,
+  agingPlaceholder: false,
+  agingError: false,
+  recordedSourceQuery: vi.fn(),
+  recordedSourceRefetch: vi.fn(),
+  recordedSourceReport: vi.fn<() => RecordedDealSourceReport>(),
+  recordedSourceFresh: true,
+  recordedSourceFetching: false,
+  handoffQuery: vi.fn(),
+  handoffReport: vi.fn<() => CurrentLeadHandoffReport>(),
+  handoffFetching: false,
+  savedList: vi.fn<() => SavedRoutes["list"]>(),
+  savedReview: vi.fn<() => SavedRoutes["load"]>(),
+  savedCreate: vi.fn(),
+  savedRemove: vi.fn(),
+  savedRun: vi.fn<() => SavedRun>(),
+  savedRunQuery: vi.fn(),
   query: vi.fn(),
   savePreferences: vi.fn(() => Promise.resolve({ ok: true as const })),
   error: false,
   goalsError: false,
+  pipelineLoading: false,
+  pipelineError: false,
+  pipelineRefetch: vi.fn(),
   result: {
     currency: "USD",
     dealPerformance: {
@@ -45,9 +82,21 @@ vi.mock("@/features/i18n/actions", () => ({
   saveLocalePreferencesAction: fixture.savePreferences,
 }));
 
+vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "saved-report-csrf" }));
+
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    pipeline: { list: { useQuery: () => ({ data: [{ id: "p1", name: "Sales" }] }) } },
+    pipeline: {
+      list: {
+        useQuery: () => ({
+          data: fixture.pipelineLoading ? undefined : [{ id: "p1", name: "Sales" }],
+          isLoading: fixture.pipelineLoading,
+          isError: fixture.pipelineError,
+          isFetching: fixture.pipelineLoading,
+          refetch: fixture.pipelineRefetch,
+        }),
+      },
+    },
     stats: {
       dashboard: {
         useQuery: (input: unknown, options: unknown) => {
@@ -62,6 +111,116 @@ vi.mock("@/lib/trpc-client", () => ({
         },
       },
       ownerOptions: { useQuery: () => ({ data: { users: [], teams: [] } }) },
+      savedPerformance: {
+        list: {
+          useQuery: () => ({
+            data: fixture.savedList(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: false,
+            isPaused: false,
+            isPlaceholderData: false,
+            refetch: vi.fn(),
+          }),
+        },
+        load: {
+          useQuery: () => ({
+            data: fixture.savedReview(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: false,
+            isPaused: false,
+            isPlaceholderData: false,
+          }),
+        },
+        create: { useMutation: () => ({ isPending: false, mutateAsync: fixture.savedCreate }) },
+        remove: { useMutation: () => ({ isPending: false, mutateAsync: fixture.savedRemove }) },
+      },
+      savedPerformanceRerun: {
+        useQuery: (input: unknown) => {
+          fixture.savedRunQuery(input);
+          return {
+            data: fixture.savedRun(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: false,
+            isPaused: false,
+            isPlaceholderData: false,
+          };
+        },
+      },
+      recordedDealSource: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.recordedSourceQuery(input, options);
+          return {
+            data: fixture.recordedSourceReport(),
+            isError: false,
+            isFetchedAfterMount: fixture.recordedSourceFresh,
+            isFetching: fixture.recordedSourceFetching,
+            isPaused: false,
+            isPlaceholderData: false,
+            refetch: fixture.recordedSourceRefetch,
+          };
+        },
+      },
+      currentLeadHandoff: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.handoffQuery(input, options);
+          return {
+            data: fixture.handoffReport(),
+            isError: false,
+            isFetchedAfterMount: true,
+            isFetching: fixture.handoffFetching,
+            isPaused: false,
+            isPlaceholderData: false,
+            refetch: vi.fn(),
+          };
+        },
+      },
+      dealWinCohorts: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.cohortQuery(input, options);
+          return {
+            data: fixture.cohortReport(),
+            isError: false,
+            isLoading: false,
+            isFetching: fixture.cohortFetching,
+            refetch: fixture.cohortRefetch,
+          };
+        },
+      },
+      currentAttention: {
+        useQuery: () => ({
+          data: {
+            state: "available",
+            definition: "current-deal-next-action-queue-v1",
+            timeZone: "Europe/Berlin",
+            observedAt: "2026-11-05T07:00:00.123456Z",
+            counts: { overdueActivities: 4, dealsWithoutNextStep: 2 },
+          },
+          isFetchedAfterMount: true,
+          isFetching: false,
+          isPaused: false,
+          isPlaceholderData: false,
+          isError: false,
+          refetch: vi.fn(),
+        }),
+      },
+      stageAging: {
+        useQuery: (input: unknown, options: unknown) => {
+          fixture.agingQuery(input, options);
+          return {
+            data: fixture.agingReport(),
+            isFetchedAfterMount: fixture.agingFetched,
+            isFetching: fixture.agingFetching,
+            isPaused: false,
+            isPlaceholderData: fixture.agingPlaceholder,
+            isError: fixture.agingError,
+            error: fixture.agingError ? { data: { code: "FORBIDDEN" } } : null,
+            refetch: vi.fn(),
+          };
+        },
+      },
     },
     goals: {
       list: {
@@ -101,11 +260,68 @@ beforeEach(() => {
   vi.clearAllMocks();
   fixture.savePreferences.mockReset();
   fixture.savePreferences.mockResolvedValue({ ok: true });
+  fixture.savedList.mockReturnValue({ state: "listed", reports: [], truncated: false });
+  fixture.savedReview.mockReturnValue({ state: "unavailable", reason: "not-found" });
+  fixture.savedCreate.mockResolvedValue({ state: "created", id: "created-definition" });
+  fixture.savedRemove.mockResolvedValue({ state: "removed" });
+  fixture.savedRun.mockReturnValue({ state: "unavailable", reason: "not-found" });
   fixture.error = false;
   fixture.goalsError = false;
+  fixture.pipelineLoading = false;
+  fixture.pipelineError = false;
+  fixture.cohortReport.mockReturnValue({ state: "coverage-not-started" });
+  fixture.cohortFetching = false;
+  fixture.agingReport.mockReturnValue({ state: "unavailable", reason: "capture" });
+  fixture.agingFetched = true;
+  fixture.agingFetching = false;
+  fixture.agingPlaceholder = false;
+  fixture.agingError = false;
+  fixture.recordedSourceReport.mockReturnValue({ state: "unavailable" });
+  fixture.recordedSourceFresh = true;
+  fixture.recordedSourceFetching = false;
+  fixture.handoffFetching = false;
+  fixture.handoffReport.mockReturnValue({ state: "permission" });
 });
 const mount = () =>
   render(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+
+const noQuantiles = {
+  sampleCount: 0,
+  distinctDeals: 0,
+  medianNanoseconds: null,
+  p75Nanoseconds: null,
+  p90Nanoseconds: null,
+};
+const noLowerBounds = {
+  sampleCount: 0,
+  distinctDeals: 0,
+  minimumNanoseconds: null,
+  maximumNanoseconds: null,
+};
+const availableAging: StageAgingView = {
+  state: "available",
+  currency: "USD",
+  effectiveOwnerScope: "me",
+  dealCount: 1,
+  currentOpenDealCount: 1,
+  activatedAt: "2026-11-01T12:00:00.000000Z",
+  observedAt: "2026-11-05T16:00:00.000000Z",
+  rows: [
+    {
+      pipelineName: "Sales",
+      stageName: "Aging fixture stage",
+      completed: noQuantiles,
+      currentOpen: {
+        sampleCount: 1,
+        distinctDeals: 1,
+        medianNanoseconds: "3600000000000",
+        p75Nanoseconds: "3600000000000",
+        p90Nanoseconds: "3600000000000",
+      },
+      leftCensored: { completed: noLowerBounds, currentOpen: noLowerBounds },
+    },
+  ],
+};
 
 function ChangeReportTimeZone() {
   const choose = useSetLocalePreferences();
@@ -122,6 +338,370 @@ function ChangeReportTimeZone() {
 }
 
 describe("Performance report experience", () => {
+  it("hydrates the pending pipeline picker after another component has filled its cache", async () => {
+    const view = <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />;
+    const container = document.createElement("div");
+    document.body.append(container);
+    const consoleErrors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const recoverableErrors: unknown[] = [];
+    let root: Root | undefined;
+    try {
+      fixture.pipelineLoading = true;
+      container.innerHTML = renderToString(view);
+      const serverPicker = within(container).getByRole("combobox", { name: "Pipeline" });
+      expect(serverPicker).toBeDisabled();
+
+      fixture.pipelineLoading = false;
+      await act(async () => {
+        root = hydrateRoot(container, view, {
+          onRecoverableError: (error) => recoverableErrors.push(error),
+        });
+        await Promise.resolve();
+      });
+
+      const picker = within(container).getByRole("combobox", { name: "Pipeline" });
+      expect(picker).toBe(serverPicker);
+      expect(picker).toBeEnabled();
+      expect(recoverableErrors).toEqual([]);
+      expect(consoleErrors).not.toHaveBeenCalled();
+      await userEvent.click(picker);
+      await userEvent.click(screen.getByRole("option", { name: "Sales" }));
+      expect(fixture.query).toHaveBeenLastCalledWith(
+        expect.objectContaining({ pipelineId: "p1", ownerScope: { kind: "me" } }),
+        { enabled: true },
+      );
+    } finally {
+      act(() => root?.unmount());
+      container.remove();
+      consoleErrors.mockRestore();
+    }
+  });
+
+  it("keeps pipeline selection unavailable through loading and errors, then recovers after retry", async () => {
+    fixture.pipelineLoading = true;
+    const { rerender } = render(
+      <Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />,
+    );
+    const filters = within(screen.getByRole("region", { name: "Report filters" }));
+    const picker = filters.getByRole("combobox", { name: "Pipeline" });
+    expect(picker).toBeDisabled();
+
+    fixture.pipelineLoading = false;
+    fixture.pipelineError = true;
+    rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />);
+    expect(picker).toBeDisabled();
+    const alert = filters.getByRole("alert");
+    expect(alert).toHaveTextContent("Pipeline options could not be loaded.");
+    await userEvent.click(within(alert).getByRole("button", { name: "Try again" }));
+    expect(fixture.pipelineRefetch).toHaveBeenCalledTimes(1);
+
+    fixture.pipelineError = false;
+    rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers={false} />);
+    expect(filters.queryByRole("alert")).not.toBeInTheDocument();
+    expect(picker).toBeEnabled();
+    await userEvent.click(picker);
+    await userEvent.click(screen.getByRole("option", { name: "Sales" }));
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pipelineId: "p1", ownerScope: { kind: "me" } }),
+      { enabled: true },
+    );
+  });
+
+  it("runs only the native saved scope and removes results when scope is lost", async () => {
+    const report = {
+      id: "shared-scope",
+      name: "Earlier quarter",
+      definitionState: "version-1",
+    } as const;
+    fixture.savedList.mockReturnValue({ state: "listed", reports: [report], truncated: false });
+    const result: Extract<SavedRun, { state: "available" }> = {
+      state: "available",
+      report,
+      definition: {
+        version: 1,
+        currency: "EUR",
+        pipelineId: null,
+        ownerScope: { kind: "all" },
+        from: "2026-07-01",
+        to: "2026-09-30",
+      },
+      dashboard: {
+        ...fixture.result,
+        currency: "EUR",
+        timeZone: "Europe/Berlin",
+        effectiveOwnerScope: { kind: "all" },
+      },
+    };
+    fixture.savedRun.mockReturnValue(result);
+    const page = mount();
+    const rerender = () =>
+      page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    await userEvent.click(screen.getByRole("button", { name: "Saved Performance reports" }));
+    const panel = screen.getByRole("region", { name: "Saved Performance reports" });
+    await userEvent.click(
+      within(panel).getByRole("button", { name: /Run saved report.*Earlier quarter/ }),
+    );
+    expect(fixture.savedRunQuery).toHaveBeenLastCalledWith({ id: report.id });
+    expect(within(panel).getByText("Current results for the saved filters")).toBeInTheDocument();
+    expect(within(panel).getByText("Europe/Berlin")).toBeInTheDocument();
+    expect(screen.getByLabelText("Range start")).toHaveValue("2026-01-01");
+
+    fixture.savedRun.mockReturnValue({
+      ...result,
+      dashboard: { ...result.dashboard, effectiveOwnerScope: { kind: "me" } },
+    });
+    rerender();
+    expect(within(panel).getByRole("alert")).toHaveTextContent(
+      "This exact scope is no longer available.",
+    );
+    expect(
+      within(panel).queryByText("Current results for the saved filters"),
+    ).not.toBeInTheDocument();
+
+    fixture.savedRun.mockReturnValue({ state: "unavailable", reason: "scope-unavailable" });
+    rerender();
+    expect(within(panel).getByRole("alert")).toHaveTextContent(
+      "This exact scope is no longer available.",
+    );
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ currency: "USD", ownerScope: { kind: "me" }, from: "2026-01-01" }),
+      { enabled: true },
+    );
+  });
+
+  it("saves controlled filters and reviews or deletes private definitions without running another scope", async () => {
+    const earlier = {
+      id: "earlier-definition",
+      name: "Earlier quarter",
+      definitionState: "version-1",
+    } as const;
+    fixture.savedList.mockReturnValue({
+      state: "listed",
+      reports: [
+        earlier,
+        {
+          id: "future-definition",
+          name: "Future definition",
+          definitionState: "unsupported-version",
+        },
+      ],
+      truncated: false,
+    });
+    fixture.savedReview.mockReturnValue({
+      state: "loaded",
+      report: earlier,
+      definition: {
+        version: 1,
+        currency: "EUR",
+        pipelineId: null,
+        ownerScope: { kind: "all" },
+        from: "2026-07-01",
+        to: "2026-09-30",
+      },
+    });
+    const page = mount();
+    expect(fixture.savedList).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Last 30 days" }));
+    await userEvent.click(screen.getByRole("button", { name: "Saved Performance reports" }));
+    const panel = screen.getByRole("region", { name: "Saved Performance reports" });
+    await userEvent.type(within(panel).getByRole("textbox", { name: "Report name" }), "Last 30");
+    await userEvent.click(within(panel).getByRole("button", { name: "Save current filters" }));
+    expect(fixture.savedCreate).toHaveBeenCalledWith({
+      name: "Last 30",
+      definition: {
+        version: 1,
+        currency: "USD",
+        pipelineId: null,
+        ownerScope: { kind: "me" },
+        from: "2026-10-07",
+        to: "2026-11-05",
+      },
+      csrfToken: "saved-report-csrf",
+    });
+    await userEvent.click(
+      within(panel).getByRole("button", { name: /Review filters for.*Earlier quarter/ }),
+    );
+    expect(within(panel).getByText("EUR")).toBeInTheDocument();
+    expect(screen.getByLabelText("Range start")).toHaveValue("2026-10-07");
+    expect(fixture.query).toHaveBeenLastCalledWith(
+      expect.objectContaining({ currency: "USD", ownerScope: { kind: "me" } }),
+      { enabled: true },
+    );
+
+    fixture.savedReview.mockReturnValue({ state: "unavailable", reason: "scope-unavailable" });
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(within(panel).getByRole("alert")).toHaveTextContent(
+      "This exact scope is no longer available.",
+    );
+    expect(within(panel).queryByText("EUR")).not.toBeInTheDocument();
+    expect(
+      within(panel).getByText("This saved definition uses an unsupported version."),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("button", { name: /Review filters for.*Future definition/ }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(within(panel).getByRole("button", { name: /Delete.*Future definition/ }));
+    const confirmation = screen.getByRole("alertdialog", { name: "Delete saved definition?" });
+    await userEvent.click(within(confirmation).getByRole("button", { name: "Delete definition" }));
+    expect(fixture.savedRemove).toHaveBeenCalledWith({
+      id: "future-definition",
+      csrfToken: "saved-report-csrf",
+    });
+  });
+
+  it("loads a scoped Acquisition read and keeps its outcome samples and refresh states separate", async () => {
+    fixture.recordedSourceFresh = false;
+    fixture.recordedSourceReport.mockReturnValue({
+      state: "available",
+      definition: "recorded-deal-source-current-v1",
+      currency: "USD",
+      timeZone: "Europe/Berlin",
+      effectiveOwnerScope: "me",
+      rows: [
+        {
+          channel: "campaign",
+          added: 3,
+          won: 2,
+          lost: 0,
+          wonValueCount: 1,
+          wonValue: "0",
+          wonCycleCount: 2,
+          wonCycleMicroseconds: "259200000000",
+        },
+        {
+          channel: "unrecognized",
+          added: 1,
+          won: 1,
+          lost: 0,
+          wonValueCount: 0,
+          wonValue: null,
+          wonCycleCount: 1,
+          wonCycleMicroseconds: "0",
+        },
+        {
+          channel: "unrecorded",
+          added: 0,
+          won: 0,
+          lost: 2,
+          wonValueCount: 0,
+          wonValue: null,
+          wonCycleCount: 0,
+          wonCycleMicroseconds: null,
+        },
+      ],
+    });
+    const page = mount();
+    const rerender = () =>
+      page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(fixture.recordedSourceQuery).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Last 30 days" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
+    await userEvent.click(screen.getByRole("option", { name: "Sales" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Acquisition" }));
+    expect(fixture.recordedSourceQuery).toHaveBeenLastCalledWith(
+      {
+        currency: "USD",
+        pipelineId: "p1",
+        ownerScope: { kind: "me" },
+        from: "2026-10-07",
+        to: "2026-11-05",
+        timeZoneIdentity: "UTC",
+      },
+      expect.objectContaining({ gcTime: 0, refetchOnMount: "always" }),
+    );
+    const findTable = () => screen.queryByRole("table", { name: "Recorded deal sources" });
+    expect(findTable()).not.toBeInTheDocument();
+    fixture.recordedSourceFresh = true;
+    rerender();
+
+    const panel = screen.getByRole("region", { name: "Recorded deal sources" });
+    expect(panel).toHaveTextContent("Europe/Berlin");
+    expect(
+      within(panel)
+        .getAllByRole("definition")
+        .slice(-3)
+        .map((item) => item.textContent),
+    ).toEqual(["4", "3", "2"]);
+    const campaign = within(panel).getByRole("row", { name: /Marketing campaign/ });
+    const value = within(campaign).getAllByRole("cell").at(-2);
+    const cycle = within(campaign).getAllByRole("cell").at(-1);
+    expect(value).toHaveTextContent("$0");
+    expect(value).toHaveTextContent("1 of 2 wins");
+    expect(cycle).toHaveTextContent("1.5");
+    expect(cycle).toHaveTextContent("2 of 2 wins");
+    expect(within(panel).getByRole("row", { name: /Unrecognized channel/ })).toHaveTextContent(
+      "No eligible sample",
+    );
+    expect(within(panel).getByRole("row", { name: /Channel unrecorded/ })).toBeInTheDocument();
+
+    fixture.recordedSourceFetching = true;
+    rerender();
+    expect(findTable()).not.toBeInTheDocument();
+    fixture.recordedSourceFetching = false;
+    fixture.recordedSourceReport.mockReturnValue({ state: "unavailable" });
+    rerender();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(fixture.recordedSourceRefetch).toHaveBeenCalledOnce();
+    expect(findTable()).not.toBeInTheDocument();
+  });
+
+  it("shows current lead linkage only on a fresh all-pipelines read", async () => {
+    fixture.handoffReport.mockReturnValue({
+      state: "available",
+      definition: "current-lead-deal-link-v1",
+      population: "current-visible-leads-created-in-period",
+      destination: "current-visible-live-linked-deal",
+      handoffHistory: "unqualified",
+      firstResponseHistory: "unqualified",
+      currency: "USD",
+      timeZone: "Europe/Berlin",
+      effectiveOwnerScope: "me",
+      counts: {
+        eligibleLeads: 9,
+        linkedLeads: 4,
+        distinctLinkedDeals: 3,
+        pendingUnlinkedLeads: 2,
+        archivedUnlinkedLeads: 1,
+        unavailableLinkedLeads: 2,
+      },
+    });
+    const page = mount();
+    await userEvent.click(screen.getByRole("tab", { name: "Acquisition" }));
+    const panel = within(screen.getByRole("region", { name: "Lead-to-deal links" }));
+    expect(panel.getByText("Lead creation period")).toBeVisible();
+    expect(
+      panel
+        .getAllByRole("definition")
+        .slice(-6)
+        .map((cell) => cell.textContent),
+    ).toEqual(["9", "4", "3", "2", "1", "2"]);
+    expect(fixture.handoffQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pipelineId: null, currency: "USD" }),
+      expect.objectContaining({ enabled: true, gcTime: 0 }),
+    );
+    fixture.handoffFetching = true;
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(panel.queryByText("Leads with a visible deal")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
+    await userEvent.click(screen.getByRole("option", { name: "Sales" }));
+    const scopedPanel = within(screen.getByRole("region", { name: "Lead-to-deal links" }));
+    expect(scopedPanel.getByText(/Choose All pipelines/)).toBeVisible();
+    expect(fixture.handoffQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pipelineId: "p1" }),
+      expect.objectContaining({ enabled: false }),
+    );
+  });
+
+  it("keeps the deal attention counts separate and displays the queue's account zone", async () => {
+    mount();
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    const panel = within(screen.getByRole("region", { name: "Deal next actions" }));
+    expect(panel.getByText("(Europe/Berlin)")).toBeVisible();
+    expect(panel.getByText("Overdue deal activities")).toBeVisible();
+    expect(panel.getByText("Open deals without a next step")).toBeVisible();
+    expect(panel.getAllByRole("definition").map((cell) => cell.textContent)).toEqual(["4", "2"]);
+  });
+
   it("selects only the requested preset when month and quarter have identical bounds", async () => {
     render(<Dashboard today="2026-10-05" currency="USD" canViewOthers />);
     await userEvent.click(screen.getByRole("button", { name: "This quarter" }));
@@ -230,6 +810,20 @@ describe("Performance report experience", () => {
     await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
     expect(screen.getByRole("tabpanel", { name: "Pipeline" })).toHaveTextContent("Proposal");
     expect(screen.getByRole("tabpanel", { name: "Pipeline" })).toHaveTextContent("Timing");
+    expect(screen.getByRole("tabpanel", { name: "Pipeline" })).toHaveTextContent(
+      "Deal history capture has not started",
+    );
+    expect(fixture.cohortQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        from: "2026-10-01",
+        to: "2026-11-05",
+        currency: "USD",
+        pipelineId: null,
+        ownerScope: { kind: "me" },
+        horizon: "30-days",
+      }),
+      { enabled: true, staleTime: 0, gcTime: 0, refetchOnMount: "always" },
+    );
     expect(screen.queryByRole("heading", { name: "Won value over time" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("tab", { name: "Activities" }));
     expect(screen.getByRole("tabpanel", { name: "Activities" })).toHaveTextContent("Activity mix");
@@ -238,6 +832,120 @@ describe("Performance report experience", () => {
       expect.objectContaining({ from: "2026-10-01", to: "2026-11-05" }),
       { enabled: true },
     );
+  });
+  it("shows clipped coverage and bounds the win rate using only mature outcomes", async () => {
+    fixture.cohortReport.mockReturnValue({
+      state: "available",
+      definition: "observed-deal-entry-to-win-v1",
+      population: "current-authorized-live-deals",
+      effectiveOwnerScope: "me",
+      calendar: "persian",
+      timeZone: "Asia/Tehran",
+      observationCutoff: "2026-11-05T16:00:00Z",
+      horizonDays: 30,
+      covered: {
+        state: "partial",
+        fromInclusive: "2026-10-03T00:00:00Z",
+        to: "2026-11-05T16:00:00Z",
+        upperBound: "inclusive",
+      },
+      rows: [
+        {
+          calendarMonthStart: "2026-09-23",
+          entered: 8,
+          mature: 6,
+          immature: 2,
+          confirmedWins: 1,
+          unknownOutcomes: 1,
+          rate: { state: "unavailable", reason: "mature-outcome-unknown" },
+        },
+      ],
+    });
+    const page = mount();
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    const panel = screen.getByRole("region", { name: "Deal cohorts by age" });
+    expect(panel).toHaveTextContent("Only part of the selected range is covered");
+    expect(panel).toHaveTextContent("Solar Hijri (Iranian)");
+    expect(panel).toHaveTextContent("Asia/Tehran");
+    const table = within(panel).getByRole("table", { name: "Deal cohorts by age" });
+    expect(within(table).getAllByRole("columnheader")).toHaveLength(7);
+    const row = within(table).getByRole("row", { name: /Mehr/ });
+    const rate = within(row).getAllByRole("cell").at(-1);
+    expect(rate).toHaveTextContent(/^Range from missing outcomes\s*16\.6% to 33\.4%$/);
+    expect(panel).toHaveTextContent("The range is rounded outward.");
+    fixture.cohortFetching = true;
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    expect(screen.queryByRole("table", { name: "Deal cohorts by age" })).not.toBeInTheDocument();
+    fixture.cohortFetching = false;
+    fixture.cohortReport.mockReturnValue({ state: "unavailable" });
+    page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(fixture.cohortRefetch).toHaveBeenCalledOnce();
+  });
+  it("loads stage aging only on the Pipeline tab and keeps it independent of the date range", async () => {
+    fixture.agingReport.mockReturnValue(availableAging);
+    mount();
+    expect(fixture.agingQuery).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    expect(fixture.agingQuery).toHaveBeenLastCalledWith(
+      { pipelineId: null, currency: "USD", ownerScope: { kind: "me" } },
+      expect.objectContaining({ gcTime: 0, refetchOnMount: "always" }),
+    );
+    const aging = screen.getByRole("region", { name: "Stage aging" });
+    expect(aging).toHaveTextContent("Dashboard dates apply to the period-based reports");
+    expect(aging).toHaveTextContent("As of");
+    expect(aging.querySelector('time[datetime="2026-11-05T16:00:00.000000Z"]')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Range start"), { target: { value: "2027-01-01" } });
+    expect(screen.queryByRole("region", { name: "Deal cohorts by age" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Aging fixture stage" })).toBeInTheDocument();
+    expect(fixture.agingQuery).toHaveBeenLastCalledWith(
+      { pipelineId: null, currency: "USD", ownerScope: { kind: "me" } },
+      expect.anything(),
+    );
+  });
+  it("withholds cached stage rows on mount, refetch, scope change and permission failure", async () => {
+    fixture.agingReport.mockReturnValue(availableAging);
+    fixture.agingFetched = false;
+    const page = mount();
+    const rerender = () =>
+      page.rerender(<Dashboard today="2026-11-05" currency="USD" canViewOthers canManageGoals />);
+    const stage = () => screen.queryByRole("heading", { name: "Aging fixture stage" });
+    await userEvent.click(screen.getByRole("tab", { name: "Pipeline" }));
+    expect(stage()).not.toBeInTheDocument();
+    expect(screen.getByText("Loading stage aging…")).toBeInTheDocument();
+
+    fixture.agingFetched = true;
+    rerender();
+    expect(stage()).toBeInTheDocument();
+    fixture.agingFetching = true;
+    rerender();
+    expect(stage()).not.toBeInTheDocument();
+    fixture.agingFetching = false;
+    fixture.agingPlaceholder = true;
+    rerender();
+    expect(stage()).not.toBeInTheDocument();
+    fixture.agingPlaceholder = false;
+
+    fixture.agingFetched = false;
+    await userEvent.click(screen.getByLabelText("Owner"));
+    await userEvent.click(screen.getByRole("option", { name: "Everyone" }));
+    expect(fixture.agingQuery).toHaveBeenLastCalledWith(
+      { pipelineId: null, currency: "USD", ownerScope: { kind: "all" } },
+      expect.anything(),
+    );
+    expect(stage()).not.toBeInTheDocument();
+    fixture.agingFetched = true;
+    rerender();
+    expect(stage()).toBeInTheDocument();
+    expect(screen.getByText("This report covers your own deals.")).toBeInTheDocument();
+
+    fixture.agingError = true;
+    rerender();
+    expect(stage()).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Your current permissions do not allow you to view this report."),
+    ).toBeInTheDocument();
   });
   it("supports keyboard movement and selection in the report tabs", async () => {
     mount();

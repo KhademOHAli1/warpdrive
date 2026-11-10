@@ -27,7 +27,7 @@ import { hashSessionAdapter } from "./hashedAdapter";
 import { hookBody } from "./hookBody";
 import { authMailLocale } from "./mailLocale";
 import { pinnedOidcPlugin } from "./pinnedOidc";
-import { oidcProviderId } from "./providers";
+import { googleProviderOptions, oidcProviderId } from "./providers";
 import { enforceAuthRateLimit } from "./rateLimit";
 import { createHashedBackupCodeStorage } from "./recoveryCodes";
 import { recordNativeSecurityChange, securityChangePlugin } from "./securityChanges";
@@ -129,11 +129,7 @@ export function createBetterAuth(db: Db, configuration: Env = env) {
       config.GOOGLE_OAUTH_CLIENT_ID &&
       config.GOOGLE_OAUTH_CLIENT_SECRET
         ? {
-            google: {
-              clientId: config.GOOGLE_OAUTH_CLIENT_ID,
-              clientSecret: config.GOOGLE_OAUTH_CLIENT_SECRET,
-              scope: ["openid", "email", "profile"],
-            },
+            google: googleProviderOptions(config),
           }
         : {}),
       ...(config.AUTH_MICROSOFT_CLIENT_ID && config.AUTH_MICROSOFT_CLIENT_SECRET

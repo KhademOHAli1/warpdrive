@@ -244,12 +244,23 @@ it("lets later draft steps see the test update and rolls back both records and t
             right: { kind: "value", value: updatedTitle },
           },
         },
+        {
+          id: "unexpectedTitle",
+          type: "record.read",
+          version: 1,
+          name: "Read unmatched deal",
+          config: {
+            entity: "deal",
+            recordId: { kind: "reference", nodeId: "start", path: ["recordId"] },
+          },
+        },
       ],
       edges: [
         { from: "start", to: "update", port: "next" },
         { from: "update", to: "read", port: "next" },
         { from: "read", to: "match", port: "next" },
         { from: "match", to: "remove", port: "true" },
+        { from: "match", to: "unexpectedTitle", port: "false" },
       ],
     };
     const workflow = await save(test, definition);

@@ -22,6 +22,7 @@ export async function resolveOwnerIds(
   actor: PermSetUser,
   scope: OwnerScope,
   signal: AbortSignal,
+  teamMemberLimit?: number,
 ): Promise<OwnerIdFilter> {
   signal.throwIfAborted();
   switch (scope.kind) {
@@ -32,10 +33,11 @@ export async function resolveOwnerIds(
     case "user":
       return { everyone: false, ids: [scope.userId] };
     case "team": {
-      const rows = await db
+      const query = db
         .select({ userId: teamMembers.userId })
         .from(teamMembers)
         .where(eq(teamMembers.teamId, scope.teamId));
+      const rows = teamMemberLimit === undefined ? await query : await query.limit(teamMemberLimit);
       signal.throwIfAborted();
       return { everyone: false, ids: rows.map((r) => r.userId) };
     }

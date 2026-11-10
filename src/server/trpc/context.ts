@@ -2,12 +2,17 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { type Db, db } from "@/db/client";
 import { loadLiveSessionByToken, SESSION_COOKIE } from "@/features/auth/session";
+import {
+  type LocalePreferenceFallback,
+  readLocalePreferenceCookies,
+} from "@/features/i18n/localePreferenceCookies";
 import { type HydratedActor, hydrateActor } from "@/server/hydrateActor";
 
 export interface AppContext {
   db: Db;
   session: { userId: string; sessionId: string } | null;
   actor: HydratedActor | null;
+  localeFallback?: LocalePreferenceFallback;
 }
 
 /**
@@ -20,7 +25,8 @@ export interface AppContext {
  * cache() is a pass-through, so behaviour there is unchanged.
  */
 export const createContext = cache(async (): Promise<AppContext> => {
-  const sid = (await cookies()).get(SESSION_COOKIE)?.value ?? null;
+  const jar = await cookies();
+  const sid = jar.get(SESSION_COOKIE)?.value ?? null;
   if (sid === null) return { db, session: null, actor: null };
 
   // One timeout signal for the whole context build so it is cancellable end to end.
@@ -29,5 +35,5 @@ export const createContext = cache(async (): Promise<AppContext> => {
   if (!live.ok) return { db, session: null, actor: null };
 
   const actor = await hydrateActor(db, live.value.userId, signal);
-  return { db, session: live.value, actor };
+  return { db, session: live.value, actor, localeFallback: readLocalePreferenceCookies(jar) };
 });

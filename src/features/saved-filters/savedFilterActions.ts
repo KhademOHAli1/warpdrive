@@ -1,4 +1,4 @@
-import { and, eq, not, or } from "drizzle-orm";
+import { and, eq, inArray, not, or } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { savedFilters } from "@/db/schema/savedFilters";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
@@ -10,6 +10,7 @@ import {
   type SaveFilterArgs,
 } from "./savedFilterInputs";
 import {
+  SAVED_FILTER_TARGET_ENTITIES,
   type SavedFilterTargetEntity,
   saveFilterInput,
   updateSavedFilterInputFor,
@@ -95,7 +96,13 @@ export async function removeSavedFilter(
   signal.throwIfAborted();
   const deleted = await db
     .delete(savedFilters)
-    .where(and(eq(savedFilters.id, id), eq(savedFilters.ownerId, session.userId)))
+    .where(
+      and(
+        eq(savedFilters.id, id),
+        eq(savedFilters.ownerId, session.userId),
+        inArray(savedFilters.targetEntity, SAVED_FILTER_TARGET_ENTITIES),
+      ),
+    )
     .returning({ id: savedFilters.id });
   if (deleted.length === 0) {
     return err(
@@ -120,7 +127,13 @@ export async function updateSavedFilter(
   const [existing] = await db
     .select({ targetEntity: savedFilters.targetEntity })
     .from(savedFilters)
-    .where(and(eq(savedFilters.id, id), eq(savedFilters.ownerId, session.userId)))
+    .where(
+      and(
+        eq(savedFilters.id, id),
+        eq(savedFilters.ownerId, session.userId),
+        inArray(savedFilters.targetEntity, SAVED_FILTER_TARGET_ENTITIES),
+      ),
+    )
     .limit(1);
   const entity = existing === undefined ? null : asTargetEntity(existing.targetEntity);
   if (entity === null) {
@@ -161,7 +174,13 @@ export async function updateSavedFilter(
       ...(patch.definition !== undefined ? { definition: patch.definition } : {}),
       ...(patch.isShared !== undefined ? { isShared: patch.isShared } : {}),
     })
-    .where(and(eq(savedFilters.id, id), eq(savedFilters.ownerId, session.userId)))
+    .where(
+      and(
+        eq(savedFilters.id, id),
+        eq(savedFilters.ownerId, session.userId),
+        eq(savedFilters.targetEntity, entity),
+      ),
+    )
     .returning();
 
   const row = rows[0];
@@ -186,7 +205,13 @@ export async function toggleFavorite(
   const rows = await db
     .update(savedFilters)
     .set({ favorite: not(savedFilters.favorite) })
-    .where(and(eq(savedFilters.id, id), eq(savedFilters.ownerId, session.userId)))
+    .where(
+      and(
+        eq(savedFilters.id, id),
+        eq(savedFilters.ownerId, session.userId),
+        inArray(savedFilters.targetEntity, SAVED_FILTER_TARGET_ENTITIES),
+      ),
+    )
     .returning();
   const row = rows[0];
   if (row === undefined) {

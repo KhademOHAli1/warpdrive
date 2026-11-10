@@ -32,6 +32,7 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
   const reportingPreferences = resolveAccountLocalePreferences({
     saved: prefs.ui.localePreferences,
     profileTimeZone: prefs.timezone,
+    fallback: ctx.localeFallback,
   });
   const today = todayInZone(reportingPreferences.timeZone, new Date());
 
@@ -41,6 +42,7 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
         canViewOthers={canViewOthers}
         canManageGoals={canManageGoals}
         canManagePipelines={canManagePipelines(ctx.actor)}
+        canExport={can(ctx.actor, "data.export")}
         today={today}
         currency={currency}
         defaultPipelineId={defaultPipelineId}

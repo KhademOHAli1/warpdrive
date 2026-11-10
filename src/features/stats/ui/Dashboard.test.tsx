@@ -108,7 +108,7 @@ describe("Dashboard pipeline switcher", () => {
     render(<Dashboard today="2026-03-01" canViewOthers currency="USD" />);
     expect(useQuery).toHaveBeenLastCalledWith(expect.objectContaining({ pipelineId: null }));
 
-    fireEvent.click(screen.getByLabelText("Pipeline"));
+    fireEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
     expect(screen.getByRole("option", { name: "All pipelines" })).toBeInTheDocument();
   });
 
@@ -117,12 +117,12 @@ describe("Dashboard pipeline switcher", () => {
     render(<Dashboard today="2026-03-01" canViewOthers currency="USD" />);
 
     // Pick a specific pipeline: its id flows to the query.
-    fireEvent.click(screen.getByLabelText("Pipeline"));
+    fireEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
     fireEvent.click(screen.getByRole("option", { name: "Partners" }));
     expect(useQuery).toHaveBeenLastCalledWith(expect.objectContaining({ pipelineId: "p2" }));
 
     // Return to "All pipelines": pipelineId clears back to null in-session.
-    fireEvent.click(screen.getByLabelText("Pipeline"));
+    fireEvent.click(screen.getByRole("combobox", { name: "Pipeline" }));
     fireEvent.click(screen.getByRole("option", { name: "All pipelines" }));
     expect(useQuery).toHaveBeenLastCalledWith(expect.objectContaining({ pipelineId: null }));
   });

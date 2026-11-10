@@ -9,22 +9,27 @@ import {
 describe("locale-aware formatting", () => {
   it("uses the selected country for formats without changing the interface language", () => {
     const preferences = { locale: "en", country: "DE" } as const;
-    const date = new Date("2026-03-21T12:00:00Z");
-    const options = {
+    expect(localeTagForFormatting(preferences)).toBe("en-DE");
+    expect(formatNumber(1234.5, preferences)).toBe("1.234,5");
+    // en-DE punctuation varies across ICU data versions. Keep the exact runtime
+    // rendering and pin the country-specific order and English month independently.
+    const germanRegionDate = new Intl.DateTimeFormat("en-DE", {
       year: "numeric",
       month: "short",
       day: "numeric",
       calendar: "gregory",
       numberingSystem: "latn",
       timeZone: "UTC",
-    } as const;
-    expect(localeTagForFormatting(preferences)).toBe("en-DE");
-    expect(formatNumber(1234.5, preferences)).toBe("1.234,5");
-    const germanDate = formatDateOnly("2026-03-21", preferences);
-    const americanDate = formatDateOnly("2026-03-21", { ...preferences, country: "US" });
-    expect(germanDate).toBe(new Intl.DateTimeFormat("en-DE", options).format(date));
-    expect(americanDate).toBe(new Intl.DateTimeFormat("en-US", options).format(date));
-    expect(germanDate).not.toBe(americanDate);
+    });
+    const civilDate = new Date(Date.UTC(2026, 2, 21, 12));
+    expect(
+      germanRegionDate
+        .formatToParts(civilDate)
+        .filter(({ type }) => type !== "literal")
+        .map(({ value }) => value),
+    ).toEqual(["21", "Mar", "2026"]);
+    expect(formatDateOnly("2026-03-21", preferences)).toBe(germanRegionDate.format(civilDate));
+    expect(formatDateOnly("2026-03-21", { ...preferences, country: "US" })).toBe("Mar 21, 2026");
   });
 
   it("keeps explicit calendar and digits when the country differs from the interface language", () => {
