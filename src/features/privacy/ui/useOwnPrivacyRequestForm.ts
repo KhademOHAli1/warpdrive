@@ -27,12 +27,16 @@ export function useOwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps, loca
   const [summary, setSummary] = useState("");
   const [attempt, setAttempt] = useState<OwnRequestInput | null>(null);
   const [receipt, setReceipt] = useState<OwnRequestReceipt | null>(null);
-  const [error, setError] = useState<OwnRequestError | null>(null);
+  const [error, setError] = useState<OwnRequestError | "email_verification_required" | null>(
+    props.securityStatus.emailVerified ? null : "email_verification_required",
+  );
   const [blocked, setBlocked] = useState(false);
   const [busy, startTransition] = useTransition();
   const running = useRef(false);
   const controller = useRef<AbortController | null>(null);
   const changed = props.securityStatus.user.id !== requesterId;
+  const emailVerified = props.securityStatus.emailVerified;
+  const [previousEmailVerified, setPreviousEmailVerified] = useState(emailVerified);
 
   const invalidate = useCallback(() => {
     controller.current?.abort();
@@ -51,9 +55,21 @@ export function useOwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps, loca
     setError(null);
     setBlocked(true);
   }
+  if (previousEmailVerified !== emailVerified) {
+    setPreviousEmailVerified(emailVerified);
+    // A same-account verification loss hides server results without discarding the retry intent.
+    if (!emailVerified) {
+      setReceipt(null);
+      setError("email_verification_required");
+    }
+  }
   useLayoutEffect(() => {
-    if (changed) controller.current?.abort();
-  }, [changed]);
+    if (changed || !emailVerified) {
+      controller.current?.abort();
+      controller.current = null;
+      running.current = false;
+    }
+  }, [changed, emailVerified]);
   useLayoutEffect(() => () => controller.current?.abort(), []);
 
   async function checkIdentity(signal: AbortSignal) {
@@ -66,6 +82,11 @@ export function useOwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps, loca
     const current = refreshed.value;
     if (current === null || current.user.id !== requesterId) {
       invalidate();
+      return false;
+    }
+    if (!current.emailVerified) {
+      setReceipt(null);
+      setError("email_verification_required");
       return false;
     }
     if (!current.fresh) {
@@ -97,7 +118,10 @@ export function useOwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps, loca
               : "request_failed",
           );
       } finally {
-        running.current = false;
+        if (controller.current === active) {
+          running.current = false;
+          controller.current = null;
+        }
       }
       if (accepted !== undefined && !active.signal.aborted) props.onReceived?.(accepted);
     });
@@ -105,6 +129,10 @@ export function useOwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps, loca
 
   function submit() {
     if (running.current || blocked || changed || receipt !== null) return;
+    if (!emailVerified) {
+      setError("email_verification_required");
+      return;
+    }
     const isRetry = attempt !== null;
     const candidate = attempt ?? {
       intakeKey: crypto.randomUUID(),
@@ -153,8 +181,8 @@ export function useOwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps, loca
     setKind,
     summary,
     setSummary,
-    receipt,
-    error,
+    receipt: emailVerified ? receipt : null,
+    error: emailVerified ? error : ("email_verification_required" as const),
     blocked: blocked || changed,
     frozen: attempt !== null,
     busy,

@@ -1,0 +1,73 @@
+{
+  "title": "Anfragekontext für die Prüfung",
+  "description": "Lesen Sie den aktuellen Anfragestand und die ursprünglich eingereichten Angaben. Das Laden dieser Informationen genehmigt keine Maßnahme.",
+  "load": "Anfragekontext laden",
+  "refresh": "Anfragekontext aktualisieren",
+  "loading": "Zugriff wird geprüft und Anfragekontext geladen…",
+  "reference": "Anfragereferenz",
+  "original": "Ursprüngliche Anfrage",
+  "originalNotice": "Dies sind die ursprünglich eingereichten Angaben. Eine spätere Identitätsprüfung ersetzt sie nicht.",
+  "currentKind": "Aktuelle Anfrageart",
+  "currentStatus": "Aktueller Status",
+  "revision": "Anfragerevision",
+  "originalKind": "Ursprüngliche Anfrageart",
+  "originalLocale": "Ursprüngliche Anfragesprache",
+  "summary": "Ursprüngliche Zusammenfassung",
+  "subject": "Ursprüngliche betroffene Person",
+  "recipient": "Ursprünglicher Empfänger",
+  "subjectReference": "Ursprüngliche Personenreferenz",
+  "subjectDetails": "Ursprüngliche Angaben zur Person",
+  "recipientReference": "Ursprüngliche Empfängerreferenz",
+  "recipientDetails": "Ursprüngliche Empfängerangaben",
+  "casePolicy": "Richtlinienversion der Anfrage",
+  "activePolicy": "Aktive Richtlinienversion",
+  "identity": "Identitätsprüfung",
+  "current": "Identitätszuordnung ist aktuell",
+  "reviewRequired": "Identitätsprüfung erforderlich",
+  "identityHelp": "Identitätsstatus und erfasste Richtlinienversionen erlauben weder eine Offenlegung noch eine andere Maßnahme.",
+  "received": "Eingegangen",
+  "due": "Antwort fällig",
+  "unconfigured": "Nicht konfiguriert",
+  "unavailable": "Der Anfragekontext ist nicht verfügbar. Laden Sie ihn erneut.",
+  "fresh": "Bestätigen Sie Ihre Identität, bevor Sie Anfragedetails laden.",
+  "verifyEmail": "Bestätigen Sie Ihre E-Mail-Adresse, bevor Sie Anfragedaten prüfen.",
+  "account": "Ihr angemeldetes Konto hat sich geändert. Laden Sie die Datenschutzeinstellungen erneut, um fortzufahren.",
+  "signedOut": "Melden Sie sich erneut an und laden Sie anschließend die Datenschutzeinstellungen neu.",
+  "kinds": {
+    "access": "Auskunftsanfrage",
+    "portability": "Datenübertragbarkeit",
+    "correction": "Berichtigung",
+    "restriction": "Einschränkung der Verarbeitung",
+    "objection": "Widerspruch",
+    "closure": "Kontoschließung",
+    "erasure": "Löschung personenbezogener Daten"
+  },
+  "states": {
+    "received": "Eingegangen",
+    "verification_needed": "Identitätsprüfung erforderlich",
+    "under_review": "In Prüfung",
+    "action_approved": "Maßnahme genehmigt",
+    "running": "In Bearbeitung",
+    "needs_attention": "Klärung erforderlich",
+    "refused": "Abgelehnt",
+    "response_ready": "Antwort vorbereitet",
+    "responded": "Beantwortet",
+    "closed": "Abgeschlossen",
+    "cancelled": "Zurückgezogen"
+  },
+  "languages": {
+    "en": "Englisch",
+    "de": "Deutsch",
+    "fa": "Persisch"
+  },
+  "subjectKinds": {
+    "external": "Externe betroffene Person",
+    "contact": "Kontakt",
+    "user": "Benutzerkonto"
+  },
+  "recipientKinds": {
+    "email": "E-Mail",
+    "in_app": "Empfänger im System",
+    "operator_assisted": "Manuell betreuter Empfänger"
+  }
+}
