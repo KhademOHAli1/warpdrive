@@ -37,6 +37,11 @@ Future applicable restrictions must be applied at the same pre-limit boundary.
 
 The original dirty workspaces and a private hash manifest were preserved. Historical
 fixture overlays/configurations and a rejection-only authority prototype were not installed
-as runtime code. Canonical migration admission, combined-revision CI and browser evidence
-must be reconciled before claiming integration; the historical private SQL ordinal is not
-a canonical migration allocation.
+as runtime code. Canonical migration `0112_agency_projects` follows the reconciled `0111`
+lineage, registers all five models and retains manual title validation and immutable
+history/receipt triggers. A fresh canonical PostgreSQL schema passes all77 Agency cases.
+A populated `0111` upgrade preserves CRM, identity, sessions, preferences, private case and
+automation rows, then exercises native create/start/replay and an idempotent migration rerun.
+These are local PostgreSQL18.1 checks, with synthetic data. Combined-revision CI, browser
+evidence and installation acceptance remain separate; the historical private SQL ordinal
+is not a canonical migration allocation.
