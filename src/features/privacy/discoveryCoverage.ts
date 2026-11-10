@@ -85,6 +85,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Merchant billing bindings, linkable operation fingerprints, provider event receipts and administrator audit references require a dedicated subject/provenance and finance-retention adapter. A payer may be a legal person, sole trader or finance contact; workspace administration does not establish data-subject identity. This declaration enables no generic export, erasure or provider deletion.",
   ),
   ...group(
+    ["newsletter_operation_receipts"],
+    "unsupported",
+    "Actor-scoped campaign command IDs, keyed intent fingerprints and reviewed outcome references require a dedicated provenance and retention adapter. A staff actor recorded in a receipt does not identify subscribers or other people in a campaign. Keep admitted and unknown receipts fenced for replay safety. The operational Logs screen grants no generic discovery, disclosure or erasure authority.",
+  ),
+  ...group(
     ["email_read_intents"],
     "unsupported",
     "Actor-bound read-operation bindings, mailbox/thread references, dispatch claims and outcome timestamps require a dedicated subject/provenance and safe-projection adapter. Mailbox ownership or current administration does not establish receipt disclosure or erasure authority. Supported disconnect, deactivation, reconnect and trash retain receipts; physical purge and automatic cleanup remain inactive. Admitted/unknown barriers cannot be expired, reset, taken over or pruned. This coverage declaration grants no lifecycle execution capability.",
