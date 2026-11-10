@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { deliverRegionalSave, isRegionalSaveRequest } from "./browser-locale-preferences.mjs";
+import { observeScriptRequests } from "./browser-script-requests.mjs";
 
 // Admission precedes DB/browser imports. This pack is deliberately production-only and must
 // never attach to a developer's local database or browser session.
@@ -263,6 +264,7 @@ function assertPreferenceRow(row, config, options = {}) {
 function observePage(context, page, entry) {
   const deliveredRegionalSaves = new WeakSet();
   const regionalCancellations = [];
+  const scriptRequests = observeScriptRequests(page, origin);
   const state = {
     externalRequests: [],
     unexpectedSockets: [],
@@ -271,6 +273,7 @@ function observePage(context, page, entry) {
     pageErrors: [],
     consoleErrors: [],
     navigationCancellations: [],
+    loadedScriptCancellations: [],
     regionalResponseCancellations: [],
   };
 
@@ -290,11 +293,12 @@ function observePage(context, page, entry) {
       regionalCancellations.push({ request, path: url.pathname, failure });
       return;
     }
-    state.requestFailures.push({
+    const detail = {
       path: url.pathname,
       method: request.method(),
       failure,
-    });
+    };
+    if (!scriptRequests.deferCancellation(request, detail)) state.requestFailures.push(detail);
   });
   page.on("pageerror", (error) => state.pageErrors.push(error.name));
   page.on("console", (message) => {
@@ -333,6 +337,9 @@ function observePage(context, page, entry) {
     state,
     ready: routesReady,
     verify() {
+      const { loaded, failed } = scriptRequests.classifyCancellations();
+      state.loadedScriptCancellations.push(...loaded);
+      state.requestFailures.push(...failed);
       for (const { request, path, failure } of regionalCancellations.splice(0)) {
         if (deliveredRegionalSaves.has(request))
           state.regionalResponseCancellations.push({ path, failure, delivered: true });
@@ -346,6 +353,7 @@ function observePage(context, page, entry) {
         pageErrors: state.pageErrors,
         consoleErrors: state.consoleErrors,
         navigationCancellations: state.navigationCancellations,
+        loadedScriptCancellations: state.loadedScriptCancellations,
         regionalResponseCancellations: state.regionalResponseCancellations,
       };
       assert.deepEqual(state.externalRequests, [], "No external origin requests");
@@ -399,12 +407,13 @@ async function statusPage(page, path) {
 }
 
 async function nativeLogin(page, context, config, entry) {
-  await statusPage(page, "/login");
+  assert.equal(page.url(), `${origin}/login`);
   await page.locator('input[name="email"]').fill(config.actor.email);
   await page.locator('input[name="password"]').fill(password);
   await page.locator('button[type="submit"]').click();
   await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
   await page.getByRole("main").waitFor({ state: "visible" });
+  await page.waitForLoadState("networkidle");
   await assertDocument(page, config);
   report.nativeLogins.push({
     key: config.key,
