@@ -57,15 +57,17 @@ export const operationalClassifications = {
       "encrypted case metadata",
       "job state",
       "minimal transitions",
+      "bounded native observation connection identity and cancellation state",
     ],
     subjectRelation:
       "Opaque case IDs and reviewed subject links only; owner/actor does not prove subject identity.",
     purpose: "Explicit privacy authority, case lifecycle and source coverage controls.",
     disclosure:
-      "Specific privacy capability, case scope, current account authority and fresh authentication required. Sensitive metadata stays encrypted.",
+      "Specific privacy capability, case scope, current account authority and fresh authentication required. Stored sensitive metadata stays encrypted; authorized exact-case reads return minimized original intake or preliminary native projections, without approving a durable disclosure scope.",
     retention:
       "Case retention needs operator activation; 180 days is only a proposed starting point. No destructive schedule inferred from locale.",
-    externalEffects: "No external communication is authorized merely by a case/job completion.",
+    externalEffects:
+      "No external communication is authorized merely by a case/job completion. Dedicated bounded observation pools may inspect and cancel only an exactly captured native backend identity with matching database, user and instance epoch. Cancellation requires separately observed completion/idle acknowledgement; local release alone does not establish remote rollback.",
     erasureTask: "DPL-26",
   },
   infrastructure: {
