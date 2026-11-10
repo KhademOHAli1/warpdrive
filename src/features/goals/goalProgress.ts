@@ -17,6 +17,7 @@ export interface GoalProgress {
   pace: number | null;
   dataState?: "available" | "incomplete";
   missingMeasurementDateCount?: number;
+  missingValueCount?: number;
 }
 
 // Null when `on` falls outside the goal's life: a goal that has not started or has ended has
@@ -32,7 +33,7 @@ export async function goalProgress(
   const period = currentPeriod(goal.interval, goal.startsOn, goal.endsOn, on);
   if (period === null) return null;
 
-  const { actual, missingMeasurementDateCount } = await goalActualWithQuality(
+  const { actual, missingMeasurementDateCount, missingValueCount } = await goalActualWithQuality(
     db,
     actor,
     goal,
@@ -40,10 +41,10 @@ export async function goalProgress(
     signal,
   );
   const isLimit = goal.action === "lost";
-  const attained =
-    missingMeasurementDateCount > 0
-      ? null
-      : attainment(actual, goal.target, isLimit ? "at_most" : "at_least");
+  const incomplete = missingMeasurementDateCount > 0 || missingValueCount > 0;
+  const attained = incomplete
+    ? null
+    : attainment(actual, goal.target, isLimit ? "at_most" : "at_least");
   return {
     goalId: goal.id,
     periodStart: period.start,
@@ -52,7 +53,8 @@ export async function goalProgress(
     target: goal.target,
     attainment: attained,
     pace: isLimit ? null : pace(attained, elapsedFraction(period, on)),
-    dataState: missingMeasurementDateCount > 0 ? "incomplete" : "available",
+    dataState: incomplete ? "incomplete" : "available",
     missingMeasurementDateCount,
+    missingValueCount,
   };
 }

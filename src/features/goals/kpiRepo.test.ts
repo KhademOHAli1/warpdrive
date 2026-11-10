@@ -16,7 +16,14 @@ import {
   toActor,
 } from "@/features/stats/statsTestHelpers";
 import { makeTestDb, type TestDb } from "@/test/db";
-import type { KpiActionResult, KpiDefinitionInput, KpiGoalInput, KpiPeriod } from "./kpiModel";
+import type {
+  KpiActionResult,
+  KpiDefinitionInput,
+  KpiGoalInput,
+  KpiGraph,
+  KpiGraphNode,
+  KpiPeriod,
+} from "./kpiModel";
 
 const request = vi.hoisted(() => ({
   db: null as Db | null,
@@ -153,6 +160,141 @@ afterEach(async () => {
 });
 
 describe("KPI native CRM evaluation", () => {
+  it("evaluates a persisted KPI graph with CRM visibility and exact pinned revisions", async () => {
+    const alice = toActor(await seedUser(h));
+    const bob = await seedUser(h);
+    const { pipeline, stage } = await pipelineFixture();
+    for (const [title, status, ownerId, visibilityLevel] of [
+      ["Visible win", "won", alice.id, "all"],
+      ["Visible loss", "lost", alice.id, "all"],
+      ["Private loss", "lost", bob.id, "owner"],
+    ] as const)
+      await seedDeal(h, {
+        title,
+        status,
+        ownerId,
+        visibilityLevel,
+        pipelineId: pipeline.id,
+        stageId: stage.id,
+        wonTime: status === "won" ? new Date("2026-11-03T12:00:00Z") : null,
+        lostTime: status === "lost" ? new Date("2026-11-03T12:00:00Z") : null,
+      });
+    const nodeBase = (id: string) => ({ id, label: id, position: { x: 0, y: 0 } });
+    const nodes: KpiGraphNode[] = [
+      {
+        ...nodeBase("wins"),
+        type: "metric",
+        metric: { ...COUNT, filters: { pipelineId: pipeline.id, status: "won" } },
+      },
+      {
+        ...nodeBase("closed"),
+        type: "metric",
+        metric: { ...COUNT, filters: { pipelineId: pipeline.id, status: "closed" } },
+      },
+      { ...nodeBase("percent"), type: "compute", operation: "percent" },
+      { ...nodeBase("out"), type: "output" },
+    ];
+    const graph: KpiGraph = {
+      version: 1,
+      nodes,
+      edges: [
+        { id: "a", source: "wins", target: "percent", targetHandle: "a" },
+        { id: "b", source: "closed", target: "percent", targetHandle: "b" },
+        { id: "value", source: "percent", target: "out", targetHandle: "value" },
+      ],
+      outputNodeId: "out",
+    };
+    const definition = await saveKpiDefinition(
+      h.db,
+      admin,
+      { ...COUNT, name: "Graph win rate", unit: "percent", graph },
+      {},
+    );
+    const assigned = await assignKpiGoal(
+      h.db,
+      admin,
+      goalInput(definition.id, { condition: { kind: "at_least", target: "50.5" } }),
+    );
+    const result = await readKpiGoalResult(h.db, alice, assigned, "2026-11-05", SIGNAL(), CLOCK);
+    expect(result.measurement).toMatchObject({ state: "available", value: "50" });
+    expect(result.assessment.standing).toBe("not_met");
+    expect(result.measurement.contributors.map((row) => row.label)).not.toContain("Private loss");
+    expect(result.measurement.nodeResults?.find((n) => n.nodeId === "wins")?.value).toBe("1");
+    await saveKpiDefinition(
+      h.db,
+      admin,
+      { ...definition, name: "Revised graph" },
+      { familyId: definition.familyId, expectedRevision: 1 },
+    );
+    expect((await getKpiDefinition(h.db, assigned.definitionId)).graph).toEqual(graph);
+  });
+  it("validates restricted source filters even in an untaken graph branch", async () => {
+    const alice = toActor(await seedUser(h));
+    const { pipeline } = await pipelineFixture();
+    const restricted = await pipelineFixture();
+    const [group] = await h.db
+      .insert(schema.visibilityGroups)
+      .values({ name: randomUUID() })
+      .returning();
+    if (group === undefined) throw new Error("Graph group fixture missing");
+    await h.db
+      .update(schema.pipelines)
+      .set({ visibilityGroupId: group.id })
+      .where(eq(schema.pipelines.id, restricted.pipeline.id));
+    const nodeBase = (id: string) => ({ id, label: id, position: { x: 0, y: 0 } });
+    const graph: KpiGraph = {
+      version: 1,
+      outputNodeId: "out",
+      nodes: [
+        { ...nodeBase("one"), type: "constant", value: "1" },
+        { ...nodeBase("zero"), type: "constant", value: "0" },
+        { ...nodeBase("compare"), type: "compare", operator: "gt" },
+        {
+          ...nodeBase("visible"),
+          type: "metric",
+          metric: { ...COUNT, filters: { pipelineId: pipeline.id, status: "won" } },
+        },
+        {
+          ...nodeBase("restricted"),
+          type: "metric",
+          metric: { ...COUNT, filters: { pipelineId: restricted.pipeline.id, status: "won" } },
+        },
+        { ...nodeBase("branch"), type: "branch" },
+        { ...nodeBase("out"), type: "output" },
+      ],
+      edges: [
+        { id: "a", source: "one", target: "compare", targetHandle: "a" },
+        { id: "b", source: "zero", target: "compare", targetHandle: "b" },
+        { id: "condition", source: "compare", target: "branch", targetHandle: "condition" },
+        { id: "yes", source: "visible", target: "branch", targetHandle: "true" },
+        { id: "no", source: "restricted", target: "branch", targetHandle: "false" },
+        { id: "value", source: "branch", target: "out", targetHandle: "value" },
+      ],
+    };
+    const definition = { ...COUNT, name: "Restricted branch", graph };
+    expect(
+      await evaluateKpi(
+        h.db,
+        alice,
+        definition,
+        COMPANY,
+        PERIOD,
+        "2026-11-05",
+        SIGNAL(),
+        undefined,
+        CLOCK,
+      ),
+    ).toMatchObject({
+      state: "unavailable",
+      value: null,
+      issues: expect.arrayContaining(["source_unavailable"]),
+    });
+    request.actor = { ...alice, flags: new Set(["goals.manage" as const]) };
+    expect(await saveKpiDefinitionAction(definition, CSRF)).toMatchObject({
+      ok: false,
+      error: { id: "E_KPI_INVALID" },
+    });
+  });
   it("discloses undated closed events under their ACL and leaves legitimately open or unscheduled records alone", async () => {
     const alice = toActor(await seedUser(h));
     const bob = await seedUser(h);

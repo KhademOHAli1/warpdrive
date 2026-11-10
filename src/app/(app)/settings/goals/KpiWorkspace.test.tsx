@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   KpiActionResult,
@@ -78,6 +78,22 @@ vi.mock("@/components/ui/DatePicker", () => ({
   ),
 }));
 vi.mock("@/features/currencies/CurrencySelect", () => ({ CurrencySelect: () => <span>EUR</span> }));
+vi.mock("./KpiGraphEditor", () => ({
+  KpiGraphEditor: ({
+    open,
+    onOpenChange,
+  }: {
+    open: boolean;
+    onOpenChange: (v: boolean) => void;
+  }) =>
+    open ? (
+      <div role="dialog" aria-label="KPI designer">
+        <button type="button" onClick={() => onOpenChange(false)}>
+          Close designer
+        </button>
+      </div>
+    ) : null,
+}));
 
 const crm: KpiDefinition = {
   id: "10000000-0000-4000-8000-000000000001",
@@ -170,7 +186,6 @@ function tab(name: string): void {
   fireEvent.click(target);
 }
 async function loaded(): Promise<void> {
-  await screen.findByText("Reusable KPIs", { exact: true });
   await waitFor(() => expect(screen.queryByText("Loading KPIs…")).not.toBeInTheDocument());
 }
 
@@ -196,24 +211,24 @@ describe("KPI workspace", () => {
     expect(screen.queryByText("Reusable KPIs", { exact: true })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     await loaded();
-    expect(screen.getByRole("heading", { name: crm.name })).toBeVisible();
+    expect(screen.getByRole("button", { name: crm.name })).toBeVisible();
   });
 
   it("combines library search with source filtering", async () => {
     show();
     await loaded();
     tab("KPI library");
-    expect(screen.getByRole("heading", { name: crm.name })).toBeVisible();
-    expect(screen.getByRole("heading", { name: manual.name })).toBeVisible();
+    expect(screen.getByRole("button", { name: crm.name })).toBeVisible();
+    expect(screen.getByRole("button", { name: manual.name })).toBeVisible();
     fireEvent.change(screen.getByLabelText("Search KPIs"), { target: { value: "revision" } });
-    expect(screen.queryByRole("heading", { name: crm.name })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: crm.name })).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("combobox", { name: "Source" }), {
       target: { value: "deals" },
     });
     expect(screen.getByText("No KPIs match your search.")).toBeVisible();
     fireEvent.change(screen.getByLabelText("Search KPIs"), { target: { value: "" } });
-    expect(screen.getByRole("heading", { name: crm.name })).toBeVisible();
-    expect(screen.queryByRole("heading", { name: manual.name })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: crm.name })).toBeVisible();
+    expect(screen.queryByRole("button", { name: manual.name })).not.toBeInTheDocument();
   });
 
   it("makes the manual source requirement visible when starting an agency template", async () => {
@@ -221,24 +236,30 @@ describe("KPI workspace", () => {
     await loaded();
     tab("Starting packs");
     fireEvent.click(screen.getByRole("button", { name: /^Consulting & agencies/ }));
-    const heading = screen.getByRole("heading", { name: "On-time acceptance" });
-    const card = heading.closest("article");
+    const heading = screen.getByText("On-time acceptance", { exact: true });
+    const card = heading.closest("tr");
     expect(card).not.toBeNull();
-    expect(within(card as HTMLElement).getByText("Source records required")).toBeVisible();
+    expect(
+      within(card as HTMLElement).getByText(/Milestone due dates, acceptance records/),
+    ).toBeVisible();
     fireEvent.click(within(card as HTMLElement).getByRole("button", { name: "Use template" }));
-    const dialog = screen.getByRole("dialog", { name: "Create KPI" });
+    const dialog = screen.getByRole("dialog", { name: "Set a goal" });
     expect(within(dialog).getByText("Required data", { exact: true })).toBeVisible();
     expect(within(dialog).getByText(/Milestone due dates, acceptance records/)).toBeVisible();
-    fireEvent.click(within(dialog).getByRole("button", { name: "Continue" }));
-    expect(within(dialog).getByRole("combobox", { name: "Data source" })).toHaveValue("manual");
-    expect(within(dialog).getByText(/Manual measurements need a source note/)).toBeVisible();
+    expect(within(dialog).queryByRole("combobox", { name: "Data source" })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("navigation")).not.toBeInTheDocument();
   });
 
   it("duplicates a scorecard with exact target precision and no revision identity", async () => {
     show();
     await loaded();
     tab("Scorecards");
-    fireEvent.click(screen.getByRole("button", { name: "Duplicate: Agency delivery" }));
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Actions: Agency delivery" }), {
+      button: 0,
+      ctrlKey: false,
+      pointerType: "mouse",
+    });
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Duplicate" }));
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByLabelText("Revision rounds: Target value")).toHaveValue("1.2345");
     expect(within(dialog).getByLabelText("Revision rounds: Upper limit")).toHaveValue("2.2345");
@@ -260,24 +281,15 @@ describe("KPI workspace", () => {
     expect(input).not.toHaveProperty("expectedRevision");
   });
 
-  it("hides results from the previous date while a new evaluation is loading", async () => {
-    let finish: (value: KpiActionResult<WorkspaceData>) => void = vi.fn();
+  it("uses the standard goal list by default and opens custom authoring only in the designer", async () => {
     show();
     await loaded();
-    expect(screen.getByRole("heading", { name: "Review this quarter" })).toBeVisible();
-    actions.readKpiWorkspaceAction.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finish = resolve;
-        }),
-    );
-    fireEvent.change(screen.getByLabelText("As of date"), { target: { value: "2026-10-05" } });
-    expect(await screen.findByText("Loading KPIs…")).toBeVisible();
-    expect(screen.queryByRole("heading", { name: "Review this quarter" })).not.toBeInTheDocument();
-    await act(async () => {
-      finish({ ok: true, value: { ...workspace, goals: [] } });
-      await Promise.resolve();
-    });
-    expect(await screen.findByText("Give your KPIs a destination")).toBeVisible();
+    expect(screen.getByRole("table", { name: "Goals" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "New goal" })).toBeVisible();
+    expect(screen.queryByText("Define success. Make it measurable.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Reusable KPIs", { exact: true })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Custom KPI" }));
+    expect(screen.getByRole("dialog", { name: "KPI designer" })).toBeVisible();
+    expect(screen.queryByRole("dialog", { name: "Create KPI" })).not.toBeInTheDocument();
   });
 });

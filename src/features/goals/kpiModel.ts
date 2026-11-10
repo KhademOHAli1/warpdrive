@@ -37,6 +37,43 @@ export interface KpiDefinitionInput {
   numeratorStatus?: KpiStatus;
   denominatorStatus?: KpiStatus;
   valueField?: "value" | "sales_cycle" | "duration";
+  graph?: KpiGraph;
+}
+export const KPI_GRAPH_COMPUTE = [
+  "add",
+  "subtract",
+  "multiply",
+  "divide",
+  "min",
+  "max",
+  "abs",
+  "round",
+  "percent",
+] as const;
+export const KPI_GRAPH_COMPARE = ["gt", "gte", "lt", "lte", "eq", "neq"] as const;
+export type KpiGraphHandle = "a" | "b" | "condition" | "true" | "false" | "value";
+export type KpiGraphNode = { id: string; label: string; position: { x: number; y: number } } & (
+  | { type: "metric"; metric: Omit<KpiDefinitionInput, "graph"> }
+  | { type: "constant"; value: string }
+  | { type: "compute"; operation: (typeof KPI_GRAPH_COMPUTE)[number] }
+  | { type: "compare"; operator: (typeof KPI_GRAPH_COMPARE)[number] }
+  | { type: "logic"; operation: "and" | "or" | "not" }
+  | { type: "branch" }
+  | { type: "output" }
+);
+export interface KpiGraph {
+  version: 1;
+  nodes: KpiGraphNode[];
+  edges: { id: string; source: string; target: string; targetHandle: KpiGraphHandle }[];
+  outputNodeId: string;
+}
+export interface KpiGraphNodeResult {
+  nodeId: string;
+  type: "number" | "boolean";
+  value: string | boolean | null;
+  state: KpiMeasurement["state"];
+  issues: string[];
+  measurement?: KpiMeasurement;
 }
 export interface KpiDefinition extends KpiDefinitionInput {
   id: string;
@@ -97,6 +134,9 @@ export interface KpiContributor {
   statuses?: KpiStatus[];
   numeratorMember?: boolean;
   denominatorMember?: boolean;
+  nodeId?: string;
+  nodeLabel?: string;
+  recordId?: string;
 }
 export interface KpiMeasurement {
   state: "available" | "incomplete" | "unavailable" | "stale";
@@ -113,6 +153,7 @@ export interface KpiMeasurement {
   evaluatedAt: string;
   period: { start: string; end: string } | null;
   trend?: { day: string; value: string | null }[];
+  nodeResults?: KpiGraphNodeResult[];
 }
 export interface KpiAssessment {
   standing: "met" | "not_met" | "in_progress" | "unavailable";

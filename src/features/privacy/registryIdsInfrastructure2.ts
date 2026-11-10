@@ -1,5 +1,6 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds2: string[] = [
+  "derived:src/features/stats/analyticsInputContracts.ts",
   "sourceReview:src/features/realtime/wsMultiplexer.ts#548410e96afd6613932f10df54a1e06ffeb7660e5b17af3c0b8c2c6e9f668733",
   "sourceReview:src/features/release/constants.ts#61beb82d1c4406f396858787f3edf95829372b14d15329ad9c62b51e4bad4555",
   "sourceReview:src/features/release/githubReleases.ts#e06d3b7d940680409ca6f8a90566cd8287a28029bec92be0ec08c4d3ee4b5936",
@@ -17,7 +18,9 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/stats/activitiesByType.ts#1151c7fff3ec2c2b5561b3f4dd1aa8f43abbf8544527e60a63eef29825fc911f",
   "sourceReview:src/features/stats/activitiesPerformance.ts#0d85f791cd74598c4d474e6e66aebb4ad07ebc7d24d81b643acdf24b00f822eb",
   "sourceReview:src/features/stats/aggregateStages.ts#b32dfae88c9c104612b0c1f4612984403611575568850afbbfde567e5c66aa7c",
+  "sourceReview:src/features/stats/analyticsInputContracts.ts#12ff6f80165eaab2745432f0b10b62b907be785fe0155521c0bd32522c1d8311",
   "sourceReview:src/features/stats/dealPerformance.ts#ae137d78896acd02c13cd310168399b56f3853a3f053fe9ad5326953b85aea5d",
+  "sourceReview:src/features/stats/dealRecords.ts#662530adaa994c3b416d32e9dfc3f24d716d27e1ce4e8ea978e0d0de99e4b655",
   "sourceReview:src/features/stats/funnel.ts#aa69de4eb7cd9eacfee9762f8a41b7c61d576242c09ce0dc00697d02b1ff1d00",
   "sourceReview:src/features/stats/lostReasons.ts#677236570420a5468b0e9d11fe376a897ebbd532759cf9200047dd772cbd2b0e",
   "sourceReview:src/features/stats/router.ts#085bda76fc9a94152c1568fe3ad1380c13b5c8d4bf2b7faab0e3b2e0cdc3876e",
@@ -73,6 +76,7 @@ export const infrastructureIds2: string[] = [
   "writer:src/features/stats/activitiesByType.ts#execute:sql",
   "writer:src/features/stats/activitiesPerformance.ts#execute:sql",
   "writer:src/features/stats/dealPerformance.ts#execute:sql",
+  "writer:src/features/stats/dealRecords.ts#execute:sql",
   "writer:src/features/stats/funnel.ts#execute:sql",
   "writer:src/features/stats/lostReasons.ts#execute:sql",
   "writer:src/features/stats/router.ts#query:dynamic",

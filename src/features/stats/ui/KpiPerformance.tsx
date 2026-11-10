@@ -33,14 +33,14 @@ export function KpiPerformance({
     (r) => activeScheme === "all" || r.goal.schemeId === activeScheme,
   );
   return (
-    <section aria-label={S.title} className="space-y-4 rounded-xl border bg-card p-5 sm:p-6">
+    <section aria-label={S.title} className="space-y-3 border-t bg-card py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2 text-base font-semibold">
             <Layers3 aria-hidden className="size-4 text-muted-foreground" />
             {S.title}
           </h2>
-          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
             {S.readScope}
           </p>
         </div>
@@ -92,7 +92,7 @@ export function KpiPerformance({
       ) : rows.length > 0 ? (
         <KpiResults rows={rows} />
       ) : (
-        <div className="rounded-lg border border-dashed bg-muted/10 px-5 py-8 text-center">
+        <div className="border-y px-3 py-6 text-center">
           <p className="text-sm font-medium">{S.emptyGoals}</p>
           <p className="mx-auto mt-2 max-w-lg text-xs leading-relaxed text-muted-foreground">
             {S.emptyGoalsBody}

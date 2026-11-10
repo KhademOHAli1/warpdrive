@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { compareKpiDecimals } from "./kpiEngine";
-import { KPI_CALCULATIONS, KPI_SOURCES, KPI_STATUSES, KPI_UNITS } from "./kpiModel";
+import { validateKpiGraphUnits } from "./kpiGraphUnits";
+import { validateKpiGraph } from "./kpiGraphValidation";
+import {
+  KPI_CALCULATIONS,
+  KPI_GRAPH_COMPARE,
+  KPI_GRAPH_COMPUTE,
+  KPI_SOURCES,
+  KPI_STATUSES,
+  KPI_UNITS,
+} from "./kpiModel";
 
 const decimal = z.string().regex(/^-?\d{1,14}(\.\d{1,4})?$/);
 const status = z.enum(KPI_STATUSES);
@@ -102,7 +111,7 @@ function validateAggregate(d: Definition, issue: DefinitionIssue): void {
   if (d.source !== "deals" || d.valueField !== "value" || d.unit !== "money")
     issue("Numeric CRM aggregates require deal value or a duration field", "valueField");
 }
-export const kpiDefinitionInput = definitionShape.superRefine((d, ctx) => {
+function validateDefinition(d: Definition, ctx: z.RefinementCtx): void {
   const issue: DefinitionIssue = (message, path) =>
     ctx.addIssue({ code: "custom", message, path: [path] });
   if (d.unit === "money" && (d.currency === undefined || d.currency === ""))
@@ -115,7 +124,85 @@ export const kpiDefinitionInput = definitionShape.superRefine((d, ctx) => {
   }
   validateSource(d, issue);
   validateAggregate(d, issue);
+}
+export const kpiMetricDefinitionInput = definitionShape.superRefine(validateDefinition);
+const graphNodeBase = z.object({
+  id: z.string().min(1).max(100),
+  label: z.string().trim().min(1).max(120),
+  position: z.object({
+    x: z.number().finite().min(-1000000).max(1000000),
+    y: z.number().finite().min(-1000000).max(1000000),
+  }),
 });
+const metricNodeInput = kpiMetricDefinitionInput.refine((metric) => metric.source !== "manual", {
+  message: "Graph metric inputs must use CRM records",
+});
+export const kpiGraphInput = z
+  .object({
+    version: z.literal(1),
+    nodes: z
+      .array(
+        z.discriminatedUnion("type", [
+          graphNodeBase.extend({ type: z.literal("metric"), metric: metricNodeInput }),
+          graphNodeBase.extend({ type: z.literal("constant"), value: decimal }),
+          graphNodeBase.extend({
+            type: z.literal("compute"),
+            operation: z.enum(KPI_GRAPH_COMPUTE),
+          }),
+          graphNodeBase.extend({ type: z.literal("compare"), operator: z.enum(KPI_GRAPH_COMPARE) }),
+          graphNodeBase.extend({
+            type: z.literal("logic"),
+            operation: z.enum(["and", "or", "not"]),
+          }),
+          graphNodeBase.extend({ type: z.literal("branch") }),
+          graphNodeBase.extend({ type: z.literal("output") }),
+        ]),
+      )
+      .min(1)
+      .max(40),
+    edges: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(100),
+          source: z.string().min(1).max(100),
+          target: z.string().min(1).max(100),
+          targetHandle: z.enum(["a", "b", "condition", "true", "false", "value"]),
+        }),
+      )
+      .max(80),
+    outputNodeId: z.string().min(1).max(100),
+  })
+  .superRefine((graph, ctx) => {
+    for (const issue of validateKpiGraph(graph))
+      ctx.addIssue({ code: "custom", message: issue.code, path: ["nodes"] });
+  });
+export const kpiDefinitionInput = definitionShape
+  .extend({ graph: kpiGraphInput.optional() })
+  .superRefine((definition, ctx) => {
+    if (definition.graph === undefined) {
+      validateDefinition(definition, ctx);
+      return;
+    }
+    if (definition.source === "manual")
+      ctx.addIssue({
+        code: "custom",
+        message: "Graph definitions cannot use assignment-bound manual observations",
+        path: ["source"],
+      });
+    if (
+      definition.unit === "money" &&
+      (definition.currency === undefined || definition.currency === "")
+    )
+      ctx.addIssue({ code: "custom", message: "Choose an output currency", path: ["currency"] });
+    if (
+      definition.unit === "custom" &&
+      (definition.customUnit === undefined || definition.customUnit === "")
+    )
+      ctx.addIssue({ code: "custom", message: "Name the output unit", path: ["customUnit"] });
+    if (validateKpiGraph(definition.graph).length === 0)
+      for (const issue of validateKpiGraphUnits(definition.graph, definition))
+        ctx.addIssue({ code: "custom", message: issue.code, path: ["graph"] });
+  });
 export const kpiConditionInput = z
   .object({
     kind: z.enum(["at_least", "at_most", "range", "improve", "deadline"]),
