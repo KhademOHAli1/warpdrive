@@ -13,6 +13,10 @@ export const WORKSPACE_NAV_ITEMS = [
   { href: "/contacts/people", key: "contacts", section: "/contacts" },
 ] as const;
 
+export const ACTION_NAV_ITEMS = [
+  { href: "/campaigns", key: "campaigns", section: "/campaigns" },
+] as const;
+
 export const UTILITY_NAV_ITEMS = [
   // The /settings index redirects by role (admins -> company settings, everyone else -> personal
   // preferences), so a non-admin never lands on an admin-only page.
@@ -21,7 +25,11 @@ export const UTILITY_NAV_ITEMS = [
 ] as const;
 
 // Keyboard shortcuts follow the same order as the visible workspace and utility groups.
-export const NAV_ITEMS = [...WORKSPACE_NAV_ITEMS, ...UTILITY_NAV_ITEMS] as const;
+export const NAV_ITEMS = [
+  ...WORKSPACE_NAV_ITEMS,
+  ...ACTION_NAV_ITEMS,
+  ...UTILITY_NAV_ITEMS,
+] as const;
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];
 

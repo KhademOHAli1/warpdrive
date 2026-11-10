@@ -1,0 +1,315 @@
+import { TRPCError } from "@trpc/server";
+import sharp from "sharp";
+import { z } from "zod";
+import { defineOperation } from "@/features/newsletter/operation";
+import {
+  analyticsLink,
+  analyticsMetric,
+  analyticsPoint,
+  campaign,
+  campaignContentType,
+  campaignFields,
+  campaignStatus,
+  campaignTransitions,
+  canEditCampaign,
+  deliveryConfig,
+  emptyInput,
+  id,
+  idInput,
+  mediaItem,
+  pageInput,
+  pageResponse,
+  templateFields,
+  templateItem,
+  transitionTargets,
+} from "./model";
+
+function queryPage(input: { page: number; search: string }) {
+  const query = new URLSearchParams({ page: String(input.page), per_page: "25" });
+  if (input.search) query.set("query", input.search);
+  return query;
+}
+
+function requireState(condition: boolean) {
+  if (!condition)
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "The current status does not allow this action.",
+    });
+}
+
+const campaignPage = pageResponse(campaign);
+const mediaPage = pageResponse(mediaItem);
+const testCandidates = pageResponse(z.object({ email: z.string(), status: z.string() }));
+const templateList = z
+  .array(templateItem)
+  .nullable()
+  .transform((rows) => rows ?? []);
+const confirmed = z.literal(true);
+const confirmedId = idInput.extend({ confirmed });
+const dateRange = z
+  .object({
+    ids: z.array(id).min(1).max(20),
+    from: z.iso.date(),
+    to: z.iso.date(),
+    type: analyticsMetric,
+  })
+  .strict()
+  .refine(({ from, to }) => from <= to);
+
+const maxMediaBytes = 2 * 1024 * 1024;
+const maxMediaPixels = 16_000_000;
+const allowedImageTypes = {
+  "image/png": {
+    format: "png",
+    extension: /\.png$/i,
+    signature: Buffer.from("89504e470d0a1a0a", "hex"),
+  },
+  "image/jpeg": { format: "jpeg", extension: /\.jpe?g$/i, signature: Buffer.from("ffd8ff", "hex") },
+  "image/gif": { format: "gif", extension: /\.gif$/i, signature: Buffer.from("GIF8") },
+};
+
+const upload = z
+  .object({
+    name: z
+      .string()
+      .min(1)
+      .max(240)
+      .regex(/^[^/\\\p{Cc}]+$/u),
+    contentType: z.enum(["image/png", "image/jpeg", "image/gif"]),
+    base64: z
+      .string()
+      .min(4)
+      .max(Math.ceil(maxMediaBytes / 3) * 4)
+      .regex(/^[A-Za-z0-9+/]*={0,2}$/),
+  })
+  .strict();
+
+async function validateImageUpload(input: z.output<typeof upload>): Promise<Buffer> {
+  const bytes = Buffer.from(input.base64, "base64");
+  const expected = allowedImageTypes[input.contentType];
+  const headerMatches =
+    bytes.length <= maxMediaBytes &&
+    expected.extension.test(input.name) &&
+    bytes.subarray(0, expected.signature.length).equals(expected.signature);
+  if (headerMatches) {
+    const metadata = await sharp(bytes, {
+      limitInputPixels: maxMediaPixels,
+      failOn: "warning",
+    })
+      .metadata()
+      .catch(() => null);
+    if (
+      metadata?.format === expected.format &&
+      metadata.width * (metadata.pageHeight ?? metadata.height) * (metadata.pages ?? 1) <=
+        maxMediaPixels
+    )
+      return bytes;
+  }
+  throw new TRPCError({
+    code: "BAD_REQUEST",
+    message: "Choose a valid PNG, JPEG or GIF image within the upload limits.",
+  });
+}
+
+export const campaignReads = {
+  "campaigns.list": defineOperation(
+    pageInput.extend({ status: campaignStatus.optional() }),
+    async (client, input) => {
+      const query = queryPage(input);
+      query.set("no_body", "true");
+      if (input.status) query.set("status", input.status);
+      return campaignPage.parse(await client.json("GET", "/api/campaigns", { query }));
+    },
+  ),
+  "campaigns.detail": defineOperation(idInput, async (client, input) =>
+    campaign.parse(await client.json("GET", `/api/campaigns/${input.id}`)),
+  ),
+  "campaigns.config": defineOperation(emptyInput, async (client) =>
+    deliveryConfig.parse(await client.json("GET", "/api/config")),
+  ),
+  "media.list": defineOperation(pageInput, async (client, input) =>
+    mediaPage.parse(await client.json("GET", "/api/media", { query: queryPage(input) })),
+  ),
+  "templates.list": defineOperation(emptyInput, async (client) =>
+    templateList.parse(
+      await client.json("GET", "/api/templates", {
+        query: new URLSearchParams({ no_body: "true" }),
+      }),
+    ),
+  ),
+  "templates.detail": defineOperation(idInput, async (client, input) =>
+    templateItem.parse(await client.json("GET", `/api/templates/${input.id}`)),
+  ),
+  "analytics.series": defineOperation(dateRange, async (client, input) => {
+    const query = new URLSearchParams({
+      from: `${input.from}T00:00:00Z`,
+      to: `${input.to}T23:59:59.999999Z`,
+    });
+    for (const campaignId of input.ids) query.append("id", String(campaignId));
+    const response = await client.json("GET", `/api/campaigns/analytics/${input.type}`, { query });
+    return input.type === "links"
+      ? (z.array(analyticsLink).nullable().parse(response) ?? [])
+      : (z.array(analyticsPoint).nullable().parse(response) ?? []);
+  }),
+};
+
+export const campaignWrites = {
+  "campaigns.preview": defineOperation(
+    z
+      .object({
+        id,
+        body: z.string().max(500_000),
+        content_type: campaignContentType,
+        template_id: id.nullish(),
+      })
+      .strict(),
+    async (client, input) => {
+      const body = new URLSearchParams({ body: input.body, content_type: input.content_type });
+      if (input.template_id != null) body.set("template_id", String(input.template_id));
+      return client.text("POST", `/api/campaigns/${input.id}/preview`, { body });
+    },
+  ),
+  "templates.preview": defineOperation(
+    templateFields.pick({ type: true, body: true }),
+    async (client, input) =>
+      client.text("POST", "/api/templates/preview", {
+        body: new URLSearchParams({ template_type: input.type, body: input.body }),
+      }),
+  ),
+  "campaigns.create": defineOperation(campaignFields, async (client, input) =>
+    idInput.strip().parse(
+      await client.json("POST", "/api/campaigns", {
+        body: {
+          ...input,
+          type: "regular",
+        },
+      }),
+    ),
+  ),
+  "campaigns.update": defineOperation(
+    campaignFields.extend({ id, expectedUpdatedAt: z.string().nullish() }),
+    async (client, { id: campaignId, expectedUpdatedAt, ...input }) => {
+      const path = `/api/campaigns/${campaignId}` as const;
+      const current = campaign.parse(await client.json("GET", path));
+      requireState(canEditCampaign(current.status));
+      requireState(expectedUpdatedAt === undefined || current.updated_at === expectedUpdatedAt);
+      return campaign.parse(
+        await client.json("PUT", path, {
+          body: {
+            ...input,
+            type: current.type,
+            media:
+              input.media ?? current.media.flatMap((item) => (item.id === null ? [] : [item.id])),
+          },
+        }),
+      );
+    },
+  ),
+  "campaigns.status": defineOperation(
+    confirmedId.extend({
+      status: z.enum(transitionTargets),
+      expectedUpdatedAt: z.string().nullish(),
+    }),
+    async (client, input, context) => {
+      if (input.status === "running" || input.status === "scheduled") context.requireDelivery();
+      const path = `/api/campaigns/${input.id}` as const;
+      const current = campaign.parse(await client.json("GET", path));
+      requireState(campaignTransitions(current).includes(input.status));
+      if (input.status === "running" || input.status === "scheduled") {
+        requireState(
+          input.expectedUpdatedAt === undefined || input.expectedUpdatedAt === current.updated_at,
+        );
+      }
+      return campaign.parse(
+        await client.json("PUT", `${path}/status`, { body: { status: input.status } }),
+      );
+    },
+  ),
+  "campaigns.test": defineOperation(
+    confirmedId.extend({
+      subscribers: z.array(z.email().max(254)).min(1).max(10),
+    }),
+    async (client, input, context) => {
+      context.requireDelivery();
+      const path = `/api/campaigns/${input.id}` as const;
+      const current = campaign.parse(await client.json("GET", path));
+      requireState(canEditCampaign(current.status));
+      const subscribers = [...new Set(input.subscribers.map((address) => address.toLowerCase()))];
+      const eligible = await Promise.all(
+        subscribers.map(async (address) => {
+          // Listmonk applies search as a PostgreSQL regular expression.
+          const literal = address.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const query = new URLSearchParams({ search: `^${literal}$`, per_page: "25" });
+          const rows = testCandidates.parse(
+            await client.json("GET", "/api/subscribers", { query }),
+          );
+          return rows.results.some(
+            (row) => row.email.toLowerCase() === address && row.status === "enabled",
+          );
+        }),
+      );
+      if (!eligible.every(Boolean)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Use enabled subscriber addresses for test delivery.",
+        });
+      }
+      return client.json("POST", `${path}/test`, {
+        body: {
+          ...current,
+          send_at: null,
+          lists: current.lists.flatMap((list) => (list.id === null ? [] : [list.id])),
+          media: current.media.flatMap((item) => (item.id === null ? [] : [item.id])),
+          subscribers,
+        },
+      });
+    },
+  ),
+  "campaigns.archive": defineOperation(
+    idInput.extend({
+      archive: z.boolean(),
+      archive_slug: z.string().max(255).default(""),
+      archive_template_id: z.number().int().min(0).safe().default(0),
+      archive_meta: z.record(z.string(), z.json()).default({}),
+    }),
+    async (client, { id: campaignId, ...body }) =>
+      client.json("PUT", `/api/campaigns/${campaignId}/archive`, { body }),
+  ),
+  "campaigns.delete": defineOperation(confirmedId, async (client, input) => {
+    const path = `/api/campaigns/${input.id}` as const;
+    const current = campaign.parse(await client.json("GET", path));
+    requireState(current.status !== "running" && current.status !== "scheduled");
+    return client.json("DELETE", path);
+  }),
+  "media.upload": defineOperation(upload, async (client, input) => {
+    const bytes = await validateImageUpload(input);
+    const form = new FormData();
+    form.append("file", new Blob([new Uint8Array(bytes)], { type: input.contentType }), input.name);
+    return mediaItem.parse(await client.multipart("/api/media", form));
+  }),
+  "media.delete": defineOperation(confirmedId, async (client, input) =>
+    client.json("DELETE", `/api/media/${input.id}`),
+  ),
+  "templates.create": defineOperation(templateFields, async (client, input) =>
+    templateItem.parse(await client.json("POST", "/api/templates", { body: input })),
+  ),
+  "templates.update": defineOperation(
+    templateFields.extend({ id }),
+    async (client, { id: templateId, ...input }) => {
+      const path = `/api/templates/${templateId}` as const;
+      const current = templateItem.parse(await client.json("GET", path));
+      requireState(current.type === input.type);
+      return templateItem.parse(await client.json("PUT", path, { body: input }));
+    },
+  ),
+  "templates.default": defineOperation(idInput, async (client, input) => {
+    const path = `/api/templates/${input.id}` as const;
+    const current = templateItem.parse(await client.json("GET", path));
+    requireState(current.type === "campaign");
+    return templateList.parse(await client.json("PUT", `${path}/default`));
+  }),
+  "templates.delete": defineOperation(confirmedId, async (client, input) =>
+    client.json("DELETE", `/api/templates/${input.id}`),
+  ),
+};

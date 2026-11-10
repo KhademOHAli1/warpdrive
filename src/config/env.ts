@@ -18,6 +18,7 @@ const SECRET_FILE_VARS = [
   "OAUTH_SIGNING_KEY",
   "AUTH_SECRET",
   "AUTH_SMTP_PASSWORD",
+  "NEWSLETTER_API_TOKEN",
   "AUTH_MICROSOFT_CLIENT_SECRET",
   "AUTH_OIDC_PROVIDERS",
   "MAIL_INTERNAL_ENDPOINTS",
@@ -87,6 +88,11 @@ const base = z.object({
   SALES_PIPELINE_LIFECYCLE_ENABLED: boolFromString.default(false),
   // Queue query, action-admission and UI acceptance are qualified before exposure.
   SALES_NEXT_ACTION_QUEUE_ENABLED: boolFromString.default(false),
+  // One private Listmonk engine per installation. The browser never receives these values.
+  NEWSLETTER_BASE_URL: z.string().trim().default(""),
+  NEWSLETTER_API_USER: z.string().trim().default(""),
+  NEWSLETTER_API_TOKEN: z.string().default(""),
+  NEWSLETTER_DELIVERY_ENABLED: boolFromString.default(false),
   BASE_CURRENCY: z.string().length(3).default("USD"),
   SEED_ADMIN_EMAIL: z.string().email().or(z.literal("")).default(""),
   ALLOW_FIRST_LOGIN_ADMIN: boolFromString.default(false),
@@ -131,6 +137,40 @@ function calendarOAuthCredentialsPaired(value: {
   );
 }
 
+function validateNewsletterEnvironment(
+  v: ReturnType<typeof base.parse>,
+  ctx: z.RefinementCtx,
+): void {
+  const newsletterValues = [v.NEWSLETTER_BASE_URL, v.NEWSLETTER_API_USER, v.NEWSLETTER_API_TOKEN];
+  const newsletterConfigured = newsletterValues.some((value) => value !== "");
+  if (newsletterConfigured || v.NEWSLETTER_DELIVERY_ENABLED) {
+    const endpoint = URL.canParse(v.NEWSLETTER_BASE_URL) ? new URL(v.NEWSLETTER_BASE_URL) : null;
+    const privateHttp =
+      endpoint?.protocol === "http:" &&
+      ["127.0.0.1", "localhost", "[::1]", "newsletter-engine"].includes(endpoint.hostname);
+    if (
+      endpoint === null ||
+      !(endpoint.protocol === "https:" || privateHttp) ||
+      endpoint.username !== "" ||
+      endpoint.password !== "" ||
+      endpoint.pathname !== "/" ||
+      endpoint.search !== "" ||
+      endpoint.hash !== "" ||
+      !/^[a-zA-Z0-9_.@-]{3,160}$/.test(v.NEWSLETTER_API_USER) ||
+      v.NEWSLETTER_API_TOKEN.length < 16 ||
+      v.NEWSLETTER_API_TOKEN.length > 1024 ||
+      /[\s:]/.test(v.NEWSLETTER_API_TOKEN)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["NEWSLETTER_BASE_URL"],
+        message:
+          "Campaign integration requires an engine origin and a dedicated API user and token",
+      });
+    }
+  }
+}
+
 // Production guardrails for the first-run bootstrap (ops spec E6).
 const schema = base.superRefine((v, ctx) => {
   if (!calendarOAuthCredentialsPaired(v)) {
@@ -141,6 +181,7 @@ const schema = base.superRefine((v, ctx) => {
     });
   }
   validateBillingEnvironment(v, ctx);
+  validateNewsletterEnvironment(v, ctx);
   if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

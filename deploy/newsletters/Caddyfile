@@ -1,0 +1,76 @@
+import /etc/caddy/Caddyfile
+
+{$NEWSLETTER_PUBLIC_DOMAIN} {
+	tls {$ACME_EMAIL}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	request_body {
+		max_size 2MB
+	}
+
+	@media {
+		method GET HEAD
+		path /uploads/*
+	}
+	handle @media {
+		header Content-Security-Policy "sandbox; default-src 'none'; frame-ancestors 'none'"
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+
+	@publicSignup {
+		method GET HEAD POST
+		path /subscription/form /api/public/lists /api/public/captcha/altcha
+		expression `"{$NEWSLETTER_DELIVERY_ENABLED:false}" == "true" && "{$NEWSLETTER_PUBLIC_SIGNUP_ENABLED:false}" == "true"`
+	}
+	@subscriptionPreferences {
+		method GET HEAD POST
+		path_regexp subscriberPreference ^/subscription/(optin/[0-9a-fA-F-]{36}|[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36})$
+	}
+	@recipientMessage {
+		method GET HEAD
+		path /campaign/* /link/*
+	}
+	@publicRead {
+		method GET HEAD
+		path /archive /archive/* /archive.xml /public/static/* /public/custom.css /api/public/archive /robots.txt
+	}
+	handle @publicSignup {
+		header Cache-Control "no-store"
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+	handle @subscriptionPreferences {
+		header Cache-Control "no-store"
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+	handle @recipientMessage {
+		header Cache-Control "no-store"
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+	handle @publicRead {
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+	handle {
+		respond 404
+	}
+}

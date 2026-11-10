@@ -1,0 +1,75 @@
+# Optional overlay for the single-box Warpdrive deployment.
+# Prepare the separate newsletter database and role first. See docs/newsletters.md.
+x-newsletter-unconfigured: &newsletter-unconfigured
+  NEWSLETTER_BASE_URL: ""
+  NEWSLETTER_API_USER: ""
+  NEWSLETTER_API_TOKEN: ""
+  NEWSLETTER_API_TOKEN_FILE: ""
+  NEWSLETTER_DELIVERY_ENABLED: "false"
+
+services:
+  newsletter-engine:
+    image: listmonk/listmonk:v6.2.0@sha256:f535d59e14991337a9f2d570273685378ae86b0d7698c3e00da444e3bc205286
+    restart: unless-stopped
+    command:
+      - sh
+      - -ec
+      - |
+        ./listmonk --install --idempotent --yes --config ''
+        ./listmonk --upgrade --yes --config ''
+        if [ "$$NEWSLETTER_DELIVERY_ENABLED" = "true" ]; then
+          exec ./listmonk --config ''
+        fi
+        exec ./listmonk --config '' --passive
+    environment:
+      LISTMONK_app__address: "0.0.0.0:9000"
+      LISTMONK_db__host: postgres
+      LISTMONK_db__port: "5432"
+      LISTMONK_db__user: warpdrive_newsletters
+      LISTMONK_db__database: warpdrive_newsletters
+      LISTMONK_db__password: ${NEWSLETTER_POSTGRES_PASSWORD:?set NEWSLETTER_POSTGRES_PASSWORD}
+      LISTMONK_db__ssl_mode: disable
+      LISTMONK_db__max_open: "20"
+      LISTMONK_db__max_idle: "5"
+      LISTMONK_db__max_lifetime: "300s"
+      NEWSLETTER_DELIVERY_ENABLED: ${NEWSLETTER_DELIVERY_ENABLED:-false}
+      LISTMONK_ADMIN_USER: ${NEWSLETTER_BOOTSTRAP_USER:-}
+      LISTMONK_ADMIN_PASSWORD: ${NEWSLETTER_BOOTSTRAP_PASSWORD:-}
+      TZ: Etc/UTC
+    volumes:
+      - newsletter_uploads:/listmonk/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    environment:
+      NEWSLETTER_BASE_URL: http://newsletter-engine:9000
+      NEWSLETTER_API_USER: ${NEWSLETTER_API_USER:-}
+      NEWSLETTER_API_TOKEN: ${NEWSLETTER_API_TOKEN:-}
+      NEWSLETTER_API_TOKEN_FILE: ""
+      NEWSLETTER_DELIVERY_ENABLED: ${NEWSLETTER_DELIVERY_ENABLED:-false}
+
+  migrate:
+    environment: *newsletter-unconfigured
+
+  ws:
+    environment: *newsletter-unconfigured
+
+  worker:
+    environment: *newsletter-unconfigured
+
+  createbuckets:
+    environment: *newsletter-unconfigured
+
+  caddy:
+    environment:
+      NEWSLETTER_PUBLIC_DOMAIN: ${NEWSLETTER_PUBLIC_DOMAIN:?set NEWSLETTER_PUBLIC_DOMAIN}
+      NEWSLETTER_PUBLIC_SIGNUP_ENABLED: ${NEWSLETTER_PUBLIC_SIGNUP_ENABLED:-false}
+      NEWSLETTER_DELIVERY_ENABLED: ${NEWSLETTER_DELIVERY_ENABLED:-false}
+    volumes:
+      - ./deploy/newsletters/Caddyfile:/etc/caddy/warpdrive-newsletters:ro
+    command: ["caddy", "run", "--config", "/etc/caddy/warpdrive-newsletters", "--adapter", "caddyfile"]
+
+volumes:
+  newsletter_uploads:

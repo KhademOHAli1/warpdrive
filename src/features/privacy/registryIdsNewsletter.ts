@@ -1,0 +1,22 @@
+// Reviewed Listmonk adapter, native settings, audience, previews and audit boundaries.
+export const newsletterIds = [
+  "derived:src/features/newsletter/admin/SettingsClient.tsx",
+  "derived:src/features/newsletter/audience/operations.ts",
+  "derived:src/features/newsletter/campaigns/CampaignAnalytics.tsx",
+  "derived:src/features/newsletter/campaigns/CampaignEditor.tsx",
+  "derived:src/features/newsletter/campaigns/model.ts",
+  "derived:src/features/newsletter/campaigns/operations.ts",
+  "derived:src/features/newsletter/router.ts",
+  "external:src/features/newsletter/listmonkClient.ts#fetch",
+  "sourceReview:src/features/newsletter/admin/SettingsClient.tsx#dabe9f2c5693f0cdedee4e55c5b8f07c2856f2134c8e6df4645858a94e0e70a0",
+  "sourceReview:src/features/newsletter/admin/operations.ts#78ab80f65f5b41dd04aa6f522e69628bc00f661c89bc57fca76de4978ab00c82",
+  "sourceReview:src/features/newsletter/audience/operations.ts#186d7c4f21a19f2496688447963ca47776476397db4eb39e4f58f3e588b57b6d",
+  "sourceReview:src/features/newsletter/campaigns/CampaignAnalytics.tsx#f2fcc792762ae30845b0dc4ea74bb676cbe43116f7955ac1b4b76023569ca7ea",
+  "sourceReview:src/features/newsletter/campaigns/CampaignEditor.tsx#2f2ef9671e9ab0df81c5a9df9b7c1646957a408b247663905c5ee103b165b66f",
+  "sourceReview:src/features/newsletter/campaigns/model.ts#8438ccbe5d5e86f7f9eb999fbde0022fb3676a97140addce64c048ac14a9343d",
+  "sourceReview:src/features/newsletter/campaigns/operations.ts#472a599b8932b0cf3a120f3e4f43dd6719a5f25e5d989a47b647ea2b8e0a53f6",
+  "sourceReview:src/features/newsletter/listmonkClient.ts#94dc999cd0b60791e7e70138667a445d67d5b88e2b9d3a8312b5773cb34d1299",
+  "sourceReview:src/features/newsletter/router.ts#5d337363e553ba2645dbacfea44e832c1b5e4cf278caaa0a9cd3bc163288faf6",
+  "writer:src/features/newsletter/admin/operations.ts#execute:sql",
+  "writer:src/features/newsletter/router.ts#query:dynamic",
+];
