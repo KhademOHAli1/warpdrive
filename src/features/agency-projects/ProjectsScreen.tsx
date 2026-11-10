@@ -47,7 +47,7 @@ function DisabledProjects(props: ProjectsScreenProps) {
   }
   return (
     <section className="space-y-4">
-      <h1 className="text-xl font-semibold">{t("screen.title")}</h1>
+      <h1 className="text-display font-[450]">{t("screen.title")}</h1>
       <p>{t("screen.disabled")}</p>
       {props.canEnable && (
         <Button
@@ -116,7 +116,7 @@ function EnabledProjects(props: ProjectsScreenProps) {
   }, [props.actorId, request, reload]);
   return (
     <div className={`${BLOCK_CLASS} ph-no-capture space-y-6`}>
-      <h1 className="text-xl font-semibold">{t("screen.title")}</h1>
+      <h1 className="text-display font-[450]">{t("screen.title")}</h1>
       {selected !== null && (
         <>
           <Button variant="outline" onClick={() => setSelected(null)}>
