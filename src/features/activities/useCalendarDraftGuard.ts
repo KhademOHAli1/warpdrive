@@ -22,7 +22,9 @@ export function useCalendarDraftGuard({
   const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
   function hasChanges(): boolean {
     if (dirty || extraChanged) return true;
-    const clocks = fields.current?.querySelectorAll<HTMLInputElement>("[data-time-picker]");
+    const clocks = fields.current?.querySelectorAll<HTMLInputElement>(
+      "[data-calendar-schedule] [data-time-picker]",
+    );
     return (
       clocks !== undefined &&
       Array.from(clocks)

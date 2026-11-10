@@ -12,6 +12,7 @@ import { resolveDelivery } from "@/features/notifications/preferences";
 import { createNotification } from "@/features/notifications/produce";
 import { canSee } from "@/features/permissions/canSee";
 import { hydrateActor } from "@/server/hydrateActor";
+import { personalReminderOwnsAssignee } from "./calendarReminderOwnership";
 import { activityParentRef } from "./notifyHelpers";
 import { activityReminderDueState } from "./reminderEligibility";
 import { cancelActivityReminder } from "./reminderIntent";
@@ -283,6 +284,11 @@ export async function processActivityReminder(
           matched.attemptVersion = intent.attemptVersion;
           return deliverManaged(tx, activity, intent, signal);
         }
+        if (
+          activity.reminderEngine === "intent" ||
+          (await personalReminderOwnsAssignee(tx, activity.id, activity.assigneeId, signal))
+        )
+          return { state: "cancelled" };
         return deliverLegacy(tx, activity, signal);
       },
     );

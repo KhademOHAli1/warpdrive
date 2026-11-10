@@ -10,7 +10,11 @@ import { calendarDeploymentConfig } from "./authorizationDeployment";
 import { googleCalendarSelectionInput } from "./calendarBindingAccess";
 import { setGoogleCalendarSelection } from "./calendarBindings";
 import { discoverGoogleCalendarCatalog } from "./calendarCatalog";
-import type { GoogleCalendarCatalog, GoogleCalendarSelection } from "./catalogContracts";
+import { withCalendarDomainActor } from "./calendarDomainAuthority";
+import type {
+  GoogleCalendarCatalog,
+  GoogleCalendarSelection,
+} from "./catalogContracts";
 import { rethrowGoogleAbort } from "./errors";
 
 type CatalogActionResult<T> = { ok: true; data: T } | { ok: false; error: ClientError };
@@ -42,6 +46,7 @@ export async function discoverGoogleCalendarsAction(
       parsed.data.accountId,
       config,
       signal,
+      { nativeSession: ctx.session },
     );
     signal.throwIfAborted();
     return result.ok
@@ -73,7 +78,14 @@ export async function setGoogleCalendarSelectionAction(
     if (!parsed.success) return failure(ERROR_IDS.CALENDAR_BINDING_INPUT_INVALID);
     if (parsed.data.selected && calendarDeploymentConfig(env) === null)
       return failure(ERROR_IDS.CALENDAR_BINDING_FAILED);
-    const result = await setGoogleCalendarSelection(ctx.db, ctx.actor.id, parsed.data, signal);
+    const userId = ctx.actor.id;
+    const result = await withCalendarDomainActor(
+      ctx.db,
+      ctx.session,
+      signal,
+      (db) => setGoogleCalendarSelection(db, userId, parsed.data, signal),
+      { kind: "unauthorized" },
+    );
     signal.throwIfAborted();
     return result.ok
       ? { ok: true, data: result.value }

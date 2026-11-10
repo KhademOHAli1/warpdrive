@@ -3,8 +3,8 @@ import { afterEach, expect, test } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   activities,
-  calendarReminderIntents,
   activityReminderSettings,
+  calendarReminderIntents,
   reminderRebuilds,
 } from "@/db/schema";
 import { makeTestDb, type TestDb } from "@/test/db";

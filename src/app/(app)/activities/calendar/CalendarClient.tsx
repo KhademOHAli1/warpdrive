@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
+import { CalendarManager } from "@/features/activities/CalendarManager";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
   type CalendarPoint,
@@ -227,6 +228,7 @@ export function CalendarClient({
       }}
     >
       <header className="mb-4 flex flex-wrap items-center gap-3">
+        <CalendarManager onChanged={onChanged} />
         <Button
           onClick={() => {
             const date = view === "agenda" ? anchorIso : todayIso;

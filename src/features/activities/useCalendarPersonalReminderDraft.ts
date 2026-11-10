@@ -22,6 +22,7 @@ export function useCalendarPersonalReminderDraft(
   const write = { selection, expectedRevision: context?.revision ?? 0 };
   return {
     selection,
+    valid,
     setSelection,
     changed,
     rawChanged,

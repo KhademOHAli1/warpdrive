@@ -6,6 +6,7 @@ import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
 import type { ClientError } from "@/types/actionResult";
 import { disconnectCalendarProviderAccount } from "./accounts";
+import { withCalendarDomainActor } from "./calendarDomainAuthority";
 import { rethrowGoogleAbort } from "./errors";
 
 type DisconnectResult = { ok: true } | { ok: false; error: ClientError };
@@ -25,11 +26,13 @@ export async function disconnectGoogleCalendarAction(
     return { ok: false, error: { id: ERROR_IDS.CALENDAR_ACCOUNT_INPUT_INVALID } };
   const signal = AbortSignal.timeout(10_000);
   try {
-    const result = await disconnectCalendarProviderAccount(
+    const userId = ctx.actor.id;
+    const result = await withCalendarDomainActor(
       ctx.db,
-      ctx.actor.id,
-      parsed.data,
+      ctx.session,
       signal,
+      (db) => disconnectCalendarProviderAccount(db, userId, parsed.data, signal),
+      { kind: "unauthorized" },
     );
     if (result.ok) return { ok: true };
     return {

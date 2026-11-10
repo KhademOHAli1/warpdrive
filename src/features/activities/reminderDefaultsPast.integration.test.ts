@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { PgBoss } from "pg-boss";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_ACTIVITY_REMINDER } from "@/constants/jobNames";
+import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_CALENDAR_REMINDER } from "@/constants/jobNames";
 import { calendarReminderDefaults } from "@/db/schema";
 import { makeTestDb } from "@/test/db";
 import { updateActivity } from "./activityUpdate";
@@ -26,7 +26,7 @@ beforeEach(async () => {
   ctx = await makeTestDb();
   boss = new PgBoss(ctx.url);
   await boss.start();
-  await boss.createQueue(PGBOSS_QUEUE_ACTIVITY_REMINDER);
+  await boss.createQueue(PGBOSS_QUEUE_CALENDAR_REMINDER);
   await boss.createQueue(EMAIL_NOTIFICATION_QUEUE);
 });
 afterEach(async () => {

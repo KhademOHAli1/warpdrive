@@ -107,10 +107,24 @@ const base = z.object({
   DISABLE_UPDATE_CHECK: boolFromString.default(false),
 });
 
+function calendarOAuthCredentialsPaired(value: {
+  GOOGLE_CALENDAR_OAUTH_CLIENT_ID: string;
+  GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET: string;
+}): boolean {
+  return (
+    (value.GOOGLE_CALENDAR_OAUTH_CLIENT_ID === "") ===
+    (value.GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET === "")
+  );
+}
+
 // Production guardrails for the first-run bootstrap (ops spec E6).
 const schema = base.superRefine((v, ctx) => {
-  if ((v.GOOGLE_CALENDAR_OAUTH_CLIENT_ID === "") !== (v.GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET === "")) {
-    ctx.addIssue({code:"custom",path:["GOOGLE_CALENDAR_OAUTH_CLIENT_ID"],message:"Calendar OAuth client ID and secret must both be configured or both unset"});
+  if (!calendarOAuthCredentialsPaired(v)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["GOOGLE_CALENDAR_OAUTH_CLIENT_ID"],
+      message: "Calendar OAuth client ID and secret must both be configured or both unset",
+    });
   }
   try {
     const billing = parseBillingConfig(v, v.BASE_URL);

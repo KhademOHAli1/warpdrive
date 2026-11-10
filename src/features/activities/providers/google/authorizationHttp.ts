@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Db } from "@/db/client";
 import { readCookie } from "@/features/auth/better/sessionToken";
+import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { loadLiveSessionByToken, SESSION_COOKIE } from "@/features/auth/session";
 import { hashCalendarOAuthToken } from "./authorization";
 import { CALENDAR_OAUTH_BROWSER_COOKIE, type CalendarOAuthConfig } from "./authorizationConfig";
@@ -21,10 +22,17 @@ export async function calendarHttpOwner(
   request: Request,
   signal: AbortSignal,
 ): Promise<string | null> {
+  return (await calendarHttpSession(db, request, signal))?.userId ?? null;
+}
+export async function calendarHttpSession(
+  db: Db,
+  request: Request,
+  signal: AbortSignal,
+): Promise<NativeSessionRef | null> {
   const cookie = readCookie(request.headers, SESSION_COOKIE);
   if (cookie === null) return null;
   const session = await loadLiveSessionByToken(db, cookie, signal);
-  return session.ok ? session.value.userId : null;
+  return session.ok ? session.value : null;
 }
 export function calendarBrowserCookieName(state: string): string {
   return `${CALENDAR_OAUTH_BROWSER_COOKIE}_${hashCalendarOAuthToken(state)}`;

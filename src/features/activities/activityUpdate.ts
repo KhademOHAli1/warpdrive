@@ -165,6 +165,18 @@ function toDate(iso: string | null): Date | null {
   return iso === null ? null : new Date(iso);
 }
 
+async function assertCalendarTargetWritable(
+  tx: DbOrTx,
+  actor: PermSetUser,
+  input: ParsedUpdate,
+  current: Activity,
+  signal: AbortSignal,
+): Promise<Result<undefined, AppError>> {
+  return input.calendarId === undefined || input.calendarId === current.calendarId
+    ? ok(undefined)
+    : assertCalendarWritable(tx, actor, input.calendarId, signal);
+}
+
 export async function updateActivity(
   db: Db,
   actor: PermSetUser,
@@ -192,7 +204,7 @@ export async function updateActivity(
       .select()
       .from(activities)
       .where(and(eq(activities.id, input.id), isNull(activities.deletedAt)))
-      .for("update");
+      .for("no key update");
 
     if (current === undefined) {
       return err(
@@ -209,10 +221,8 @@ export async function updateActivity(
       input.expectedVersion,
     );
     if (!allowed.ok) return allowed;
-    if (input.calendarId !== undefined && input.calendarId !== current.calendarId) {
-      const target = await assertCalendarWritable(tx, actor, input.calendarId, signal);
-      if (!target.ok) return target;
-    }
+    const target = await assertCalendarTargetWritable(tx, actor, input, current, signal);
+    if (!target.ok) return target;
 
     const generation = await assertActivityReminderGeneration(
       tx,

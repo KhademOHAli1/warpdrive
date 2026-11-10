@@ -12,9 +12,6 @@ import type { PreparedCustomFieldValidation } from "@/features/custom-fields/cur
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
-import { can } from "@/features/permissions/can";
-import { canSee } from "@/features/permissions/canSee";
-import { resolveActivityVisibility } from "./visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
@@ -30,6 +27,20 @@ import { recomputeDealActivityDates } from "./nextActivity";
 import { cancelActivityReminder, synchronizeActivityReminder } from "./reminderIntent";
 import { scheduleReminder } from "./reminders";
 import { type ActivityCreateInput, activityCreateInput } from "./schemas";
+
+function calendarCreateOwnership(
+  input: ReturnType<typeof activityCreateInput.parse>,
+  timeZone: string,
+) {
+  return {
+    reminderEngine:
+      input.reminder === undefined &&
+      (input.calendarId !== null || input.personalReminders !== undefined)
+        ? ("intent" as const)
+        : ("legacy" as const),
+    eventTimeZone: input.eventTimeZone ?? (input.calendarId !== null ? timeZone : null),
+  };
+}
 
 // Pipedrive parity: block linking a new activity to an archived deal. Extracted so
 // createActivity stays under the cognitive-complexity budget. No-op when dealId is null.
@@ -185,11 +196,9 @@ export async function createActivity(
       .insert(activities)
       .values({
         typeId: input.typeId,
-        reminderEngine: "intent",
+        ...calendarCreateOwnership(input, preferences.timeZone),
         reminderAutomationEnabled: options.scheduleReminder !== false,
         subject: input.subject,
-        eventTimeZone:
-          input.eventTimeZone ?? (input.calendarId !== null ? preferences.timeZone : null),
         calendarId: input.calendarId,
         eventVisibility: input.eventVisibility,
         availability: input.availability,
@@ -264,7 +273,12 @@ export async function createActivity(
     return ok(row);
   });
 
-  if (result.ok === true && options.scheduleReminder !== false && input.reminder === undefined) {
+  if (
+    result.ok === true &&
+    options.scheduleReminder !== false &&
+    input.reminder === undefined &&
+    result.value.reminderEngine === "legacy"
+  ) {
     await scheduleReminder(result.value.id, result.value.dueAt, signal);
   }
   return result;
@@ -283,22 +297,21 @@ export async function completeActivity(
       .select()
       .from(activities)
       .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
-      .for("update");
+      .for("no key update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
     }
 
-    const vis = await resolveActivityVisibility(tx, current, signal);
-
-    if (vis === null || !canSee(actor, vis)) {
-      // Invisible: return 404-on-invisible, not 403.
-      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
-    }
-
-    if (!can(actor, "activity.complete", vis)) {
-      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id }));
-    }
+    const allowed = await guardActivityMutation(
+      tx,
+      actor,
+      current,
+      "activity.complete",
+      signal,
+      current.done === done ? undefined : expectedVersion,
+    );
+    if (!allowed.ok) return allowed;
 
     // A retry must retain the acknowledged timestamp and avoid repeating linked writes.
     if (current.done === done) return ok(current);

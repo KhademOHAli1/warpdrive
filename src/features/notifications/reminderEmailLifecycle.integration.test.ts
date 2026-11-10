@@ -12,7 +12,7 @@ import {
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
 import { ok } from "@/types/result";
-import { runEmailNotificationJob } from "./email/job";
+import { runCalendarNotificationJob as runEmailNotificationJob } from "./calendarNotification.test-helpers";
 import { getFeed, getUnreadCount } from "./feed";
 import { setPreference } from "./preferences";
 

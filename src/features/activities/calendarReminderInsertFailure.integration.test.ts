@@ -4,9 +4,9 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { calendarReminderIntents, notifications } from "@/db/schema";
 import { getFeed, getUnreadCount } from "@/features/notifications/feed";
 import { makeTestDb, type TestDb } from "@/test/db";
+import { handleCalendarReminderJob as handleReminderJob } from "./calendarReminders";
 import { getEventReminderSettings, setEventReminderSettings } from "./personalReminderSettings";
 import { reminderFixture, sig } from "./reminderSettings.test-helpers";
-import { handleReminderJob } from "./reminders";
 
 let ctx: TestDb | undefined;
 afterEach(async () => {

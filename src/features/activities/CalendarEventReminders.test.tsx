@@ -3,23 +3,25 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { CalendarEventDialog } from "./CalendarEventDialog";
 import type { EditableActivity } from "./getForEdit";
 
 const mocks = vi.hoisted(() => ({
-  createActivityAction: vi.fn(),
-  editActivityAction: vi.fn(),
-  deleteActivityAction: vi.fn(),
-  completeActivityAction: vi.fn(),
-  setEventReminderSettingsAction: vi.fn(),
+  createCalendarEventAction: vi.fn(),
+  editCalendarEventAction: vi.fn(),
+  deleteCalendarEventAction: vi.fn(),
+  completeCalendarEventAction: vi.fn(),
+  readCalendarEventAction: vi.fn(),
+  retryCalendarReminderAction: vi.fn(),
   invalidate: vi.fn(() => Promise.resolve()),
   defaults: {
     timed: [{ method: "notification" as const, minutesBefore: 10 }],
     allDay: [{ method: "notification" as const, daysBefore: 0, time: "09:00" }],
   },
 }));
-vi.mock("./actions", () => mocks);
-vi.mock("./reminderSettingsActions", () => mocks);
+vi.mock("./calendarNativeActions", () => mocks);
+
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/email/composer/RichTextBodyLazy", () => ({ RichTextBody: () => null }));
 vi.mock("@/lib/trpc-client", () => ({
@@ -73,11 +75,11 @@ beforeAll(() => {
 });
 beforeEach(() => {
   mocks.invalidate.mockImplementation(() => Promise.resolve());
-  mocks.createActivityAction.mockResolvedValue({ ok: true });
-  mocks.editActivityAction.mockResolvedValue({ ok: true });
-  mocks.completeActivityAction.mockResolvedValue({ ok: true, version: 5 });
-  mocks.deleteActivityAction.mockResolvedValue({ ok: true });
-  mocks.setEventReminderSettingsAction.mockResolvedValue({ ok: true });
+  mocks.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+  mocks.editCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+  mocks.completeCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+  mocks.deleteCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+  mocks.readCalendarEventAction.mockResolvedValue({ ok: true, value: stored });
 });
 afterEach(() => {
   cleanup();
@@ -123,18 +125,21 @@ const stored: EditableActivity = {
 function open(editing?: EditableActivity) {
   const close = vi.fn();
   render(
-    <LocaleProvider locale="en" timeZone="Europe/Berlin">
-      <CalendarEventDialog
-        editing={editing}
-        defaultDate="2027-03-21"
-        defaultTime="09:00"
-        onClose={close}
-      />
-    </LocaleProvider>,
+    <NativeActorProvider actorId={stored.assigneeId}>
+      <LocaleProvider locale="en" timeZone="Europe/Berlin">
+        <CalendarEventDialog
+          editing={editing}
+          defaultDate="2027-03-21"
+          defaultTime="09:00"
+          onClose={close}
+        />
+      </LocaleProvider>
+    </NativeActorProvider>,
   );
   return close;
 }
 function customize() {
+  fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
   fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
   fireEvent.click(screen.getByRole("checkbox", { name: "Use my calendar defaults" }));
 }
@@ -149,21 +154,20 @@ it("saves a collapsed explicit no-reminder override with a new event", async () 
   fireEvent.change(screen.getByRole("textbox", { name: "Event title" }), {
     target: { value: "New" },
   });
-  expect(screen.getByRole("button", { name: "Reminders" })).toHaveAttribute(
-    "aria-expanded",
-    "false",
-  );
+  expect(screen.queryByRole("button", { name: "Reminders" })).not.toBeInTheDocument();
   customize();
   fireEvent.click(screen.getByRole("button", { name: "Remove reminder 1" }));
   fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() =>
-    expect(mocks.createActivityAction).toHaveBeenCalledWith(
+    expect(mocks.createCalendarEventAction).toHaveBeenCalledWith(
       expect.objectContaining({
-        personalReminders: {
-          selection: { useDefault: false, timed: [], allDay: mocks.defaults.allDay },
-          expectedRevision: 0,
-        },
+        activity: expect.objectContaining({
+          personalReminders: {
+            selection: { useDefault: false, timed: [], allDay: mocks.defaults.allDay },
+            expectedRevision: 0,
+          },
+        }),
       }),
       "csrf",
     ),
@@ -175,20 +179,27 @@ it("writes only the current user's preference when shared event fields are uncha
   changeMinutes("30");
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() =>
-    expect(mocks.setEventReminderSettingsAction).toHaveBeenCalledWith(
+    expect(mocks.editCalendarEventAction).toHaveBeenCalledWith(
       {
-        activityId: stored.id,
-        selection: {
-          useDefault: false,
-          timed: [{ method: "notification", minutesBefore: 30 }],
-          allDay: mocks.defaults.allDay,
-        },
-        expectedRevision: 3,
+        v: 1,
+        expectedActorId: stored.assigneeId,
+        activity: expect.objectContaining({
+          id: stored.id,
+          personalReminders: {
+            selection: {
+              useDefault: false,
+              timed: [{ method: "notification", minutesBefore: 30 }],
+              allDay: mocks.defaults.allDay,
+            },
+            expectedRevision: 3,
+          },
+        }),
       },
       "csrf",
     ),
   );
-  expect(mocks.editActivityAction).not.toHaveBeenCalled();
+  const sent = mocks.editCalendarEventAction.mock.calls[0]?.[0]?.activity;
+  expect(sent).not.toHaveProperty("subject");
   expect(close).toHaveBeenCalledOnce();
 });
 it("sends event and own reminder edits together for one transactional save", async () => {
@@ -200,24 +211,25 @@ it("sends event and own reminder edits together for one transactional save", asy
   });
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() =>
-    expect(mocks.editActivityAction).toHaveBeenCalledWith(
+    expect(mocks.editCalendarEventAction).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: stored.id,
-        subject: "Updated",
-        expectedVersion: 4,
-        personalReminders: {
-          expectedRevision: 3,
-          selection: {
-            useDefault: false,
-            timed: [{ method: "notification", minutesBefore: 45 }],
-            allDay: mocks.defaults.allDay,
+        activity: expect.objectContaining({
+          id: stored.id,
+          subject: "Updated",
+          expectedVersion: 4,
+          personalReminders: {
+            expectedRevision: 3,
+            selection: {
+              useDefault: false,
+              timed: [{ method: "notification", minutesBefore: 45 }],
+              allDay: mocks.defaults.allDay,
+            },
           },
-        },
+        }),
       }),
       "csrf",
     ),
   );
-  expect(mocks.setEventReminderSettingsAction).not.toHaveBeenCalled();
 });
 it("keeps an invalid reminder draft through collapse and prevents accidental event save", async () => {
   open(stored);
@@ -225,15 +237,10 @@ it("keeps an invalid reminder draft through collapse and prevents accidental eve
   changeMinutes("40321");
   fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
-  await waitFor(() =>
-    expect(screen.getByRole("button", { name: "Reminders" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    ),
-  );
+  await screen.findByRole("alert");
+  fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
   expect(screen.getByLabelText("Minutes before the event for reminder 1")).toHaveValue("40321");
-  expect(mocks.editActivityAction).not.toHaveBeenCalled();
-  expect(mocks.setEventReminderSettingsAction).not.toHaveBeenCalled();
+  expect(mocks.editCalendarEventAction).not.toHaveBeenCalled();
 });
 it("closes an untouched editor without treating reminder clocks as schedule changes", () => {
   const close = open(stored);
@@ -242,7 +249,7 @@ it("closes an untouched editor without treating reminder clocks as schedule chan
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
 });
 it.each([false, true])(
-  "keeps a committed save successful when cache refresh fails (existing: %s)",
+  "keeps a committed save acknowledged and retries only refresh when cache refresh fails (existing: %s)",
   async (existing) => {
     const close = open(existing ? stored : undefined);
     if (existing) {
@@ -254,14 +261,24 @@ it.each([false, true])(
       });
     mocks.invalidate.mockRejectedValueOnce(new Error("synthetic cache refresh failure"));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await screen.findByRole("button", { name: "Refresh saved event" });
+    expect(close).not.toHaveBeenCalled();
+    const dispatch = existing ? mocks.editCalendarEventAction : mocks.createCalendarEventAction;
+    expect(dispatch).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh saved event" }));
     await waitFor(() => expect(close).toHaveBeenCalledOnce());
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledOnce();
   },
 );
 it.each(["complete", "delete"] as const)(
   "keeps a committed %s successful when cache refresh fails",
   async (kind) => {
     const close = open(stored);
+    if (kind === "complete")
+      mocks.readCalendarEventAction.mockResolvedValue({
+        ok: true,
+        value: { ...stored, done: true },
+      });
     mocks.invalidate.mockRejectedValueOnce(new Error("synthetic cache refresh failure"));
     fireEvent.pointerDown(screen.getByRole("button", { name: "Event actions" }), {
       button: 0,
@@ -273,8 +290,13 @@ it.each(["complete", "delete"] as const)(
         name: kind === "complete" ? "Mark as done" : "Delete",
       }),
     );
+    await screen.findByRole("button", { name: "Refresh saved event" });
+    expect(close).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh saved event" }));
     if (kind === "delete") await waitFor(() => expect(close).toHaveBeenCalledOnce());
     else await waitFor(() => expect(screen.getByText("Completed", { exact: true })).toBeVisible());
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      kind === "delete" ? mocks.deleteCalendarEventAction : mocks.completeCalendarEventAction,
+    ).toHaveBeenCalledOnce();
   },
 );

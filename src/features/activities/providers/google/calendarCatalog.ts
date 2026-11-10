@@ -1,4 +1,5 @@
 import type { Db } from "@/db/client";
+import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, type Result } from "@/types/result";
 import { getCalendarAccessGrant } from "./accountTokens";
 import type { CalendarOAuthConfig } from "./authorizationConfig";
@@ -10,6 +11,7 @@ import {
   failCalendarCatalogDiscovery,
 } from "./calendarCatalogState";
 import { collectGoogleCalendarDiscovery } from "./calendarDiscovery";
+import { withCalendarDomainActor } from "./calendarDomainAuthority";
 import type { CalendarCatalogError, GoogleCalendarCatalog } from "./catalogContracts";
 import { createGoogleCalendarClient } from "./client";
 import type { GoogleTransport } from "./contracts";
@@ -23,7 +25,7 @@ export async function discoverGoogleCalendarCatalog(
   accountId: string,
   config: CalendarOAuthConfig,
   signal: AbortSignal,
-  options: { transport?: GoogleTransport; now?: () => Date } = {},
+  options: { transport?: GoogleTransport; now?: () => Date; nativeSession?: NativeSessionRef } = {},
 ): Promise<Result<GoogleCalendarCatalog, CalendarCatalogError>> {
   signal.throwIfAborted();
   const now = options.now ?? (() => new Date());
@@ -42,12 +44,22 @@ export async function discoverGoogleCalendarCatalog(
       await failCalendarCatalogDiscovery(db, run, collected.error.kind, signal);
       return collected;
     }
-    const published = await publishGoogleCalendarCatalog(db, run, collected.value, signal, now);
-    if (!published.ok) {
-      await failCalendarCatalogDiscovery(db, run, published.error.kind, signal);
-      return published;
-    }
-    return await listGoogleCalendarCatalog(db, userId, accountId, signal);
+    const publish = async (
+      tx: Db,
+    ): Promise<Result<GoogleCalendarCatalog, CalendarCatalogError>> => {
+      if (run === undefined) return err({ kind: "storage" });
+      const published = await publishGoogleCalendarCatalog(tx, run, collected.value, signal, now);
+      if (!published.ok) return published;
+      return listGoogleCalendarCatalog(tx, userId, accountId, signal);
+    };
+    const result =
+      options.nativeSession === undefined
+        ? await publish(db)
+        : await withCalendarDomainActor(db, options.nativeSession, signal, publish, {
+            kind: "unauthorized",
+          } as CalendarCatalogError);
+    if (!result.ok) await failCalendarCatalogDiscovery(db, run, result.error.kind, signal);
+    return result;
   } catch (error) {
     if (
       run !== undefined &&

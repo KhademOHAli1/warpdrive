@@ -1,17 +1,21 @@
 // @vitest-environment jsdom
+
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import type { completeActivityAction, editActivityAction } from "./actions";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
+
 import type { EditableActivity } from "./getForEdit";
 import { useCalendarEventEditor } from "./useCalendarEventEditor";
 
 const api = vi.hoisted(() => ({
-  createActivityAction: vi.fn(),
-  editActivityAction: vi.fn<typeof editActivityAction>(),
-  deleteActivityAction: vi.fn(),
-  completeActivityAction: vi.fn<typeof completeActivityAction>(),
+  createCalendarEventAction: vi.fn(),
+  editCalendarEventAction: vi.fn(),
+  deleteCalendarEventAction: vi.fn(),
+  readCalendarEventAction: vi.fn(),
+  retryCalendarReminderAction: vi.fn(),
+  completeCalendarEventAction: vi.fn(),
 }));
-vi.mock("./actions", () => api);
+vi.mock("./calendarNativeActions", () => api);
 vi.mock("./reminderSettingsActions", () => ({ setEventReminderSettingsAction: vi.fn() }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/lib/trpc-client", () => ({
@@ -70,55 +74,59 @@ const stored: EditableActivity = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  api.editActivityAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+  api.editCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
 });
 afterEach(cleanup);
 
-const cases = [
-  {
-    label: "missing completion version retains the last known token",
-    response: { ok: true, value: { id: stored.id } },
-    expectedVersion: 4,
+test.each([4, 9])(
+  "uses freshly read event version %s after completion for the next edit",
+  async (version) => {
+    api.completeCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
+    api.readCalendarEventAction.mockResolvedValue({
+      ok: true,
+      value: { ...stored, done: true, version },
+    });
+    const { result } = renderHook(
+      () => useCalendarEventEditor({ editing: stored, onClose: vi.fn() }),
+      {
+        wrapper: ({ children }) => (
+          <NativeActorProvider actorId={stored.assigneeId}>{children}</NativeActorProvider>
+        ),
+      },
+    );
+    await act(async () => {
+      await result.current.manage("complete");
+    });
+    expect(api.completeCalendarEventAction).toHaveBeenCalledExactlyOnceWith(
+      {
+        v: 1,
+        expectedActorId: stored.assigneeId,
+        activity: { id: stored.id, done: true, expectedVersion: 4 },
+      },
+      "csrf",
+    );
+    expect(api.readCalendarEventAction).toHaveBeenCalledExactlyOnceWith(
+      { v: 1, expectedActorId: stored.assigneeId, activityId: stored.id },
+      "csrf",
+    );
+    expect(result.current.error).toBeNull();
+    expect(result.current.doneNow).toBe(true);
+    act(() => result.current.change({ subject: "Edited after completion" }));
+    await act(async () => {
+      await result.current.save();
+    });
+    expect(api.editCalendarEventAction).toHaveBeenCalledExactlyOnceWith(
+      {
+        v: 1,
+        expectedActorId: stored.assigneeId,
+        activity: expect.objectContaining({
+          id: stored.id,
+          subject: "Edited after completion",
+          expectedVersion: version,
+        }),
+      },
+      "csrf",
+    );
+    expect(result.current.error).toBeNull();
   },
-  {
-    label: "same authoritative completion version remains the next edit token",
-    response: { ok: true, value: { id: stored.id }, version: 4 },
-    expectedVersion: 4,
-  },
-  {
-    label: "new authoritative completion version becomes the next edit token",
-    response: { ok: true, value: { id: stored.id }, version: 9 },
-    expectedVersion: 9,
-  },
-] satisfies Array<{
-  label: string;
-  response: Awaited<ReturnType<typeof completeActivityAction>>;
-  expectedVersion: number;
-}>;
-
-test.each(cases)("$label", async ({ response, expectedVersion }) => {
-  api.completeActivityAction.mockResolvedValue(response);
-  const { result } = renderHook(() =>
-    useCalendarEventEditor({ editing: stored, onClose: vi.fn() }),
-  );
-
-  await act(async () => {
-    await result.current.manage("complete");
-  });
-  expect(api.completeActivityAction).toHaveBeenCalledExactlyOnceWith(
-    { id: stored.id, done: true, expectedVersion: 4 },
-    "csrf",
-  );
-  expect(result.current.error).toBeNull();
-  expect(result.current.doneNow).toBe(true);
-
-  act(() => result.current.change({ subject: "Edited after completion" }));
-  await act(async () => {
-    await result.current.save();
-  });
-  expect(api.editActivityAction).toHaveBeenCalledExactlyOnceWith(
-    expect.objectContaining({ id: stored.id, subject: "Edited after completion", expectedVersion }),
-    "csrf",
-  );
-  expect(result.current.error).toBeNull();
-});
+);

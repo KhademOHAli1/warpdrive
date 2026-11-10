@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { users } from "@/db/schema";
+import { afterEach, assert, beforeEach, expect, it, vi } from "vitest";
+import { calendarProviderAccounts, sessions, users } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
+import { createSession } from "@/features/auth/session";
 import { makeTestDb } from "@/test/db";
 import { connectTestCalendar, calendarTestSignal as signal } from "./accountTestHelpers";
 import {
@@ -217,4 +218,61 @@ it("the same opaque calendar ID has separate stable identities and permissions i
     true,
   );
   expect(await readCatalog(ctx.db, second)).toEqual(independent);
+});
+
+it("does not publish or return a private provider catalog after the initiating session logs out during HTTP", async () => {
+  const fixture = await readyCatalogFixture(ctx.db);
+  const current = await createSession(ctx.db, fixture.userId, signal());
+  assert(current.ok);
+  let entered: () => void = () => undefined;
+  const enteredPromise = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  let release: () => void = () => undefined;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const transport = catalogTransport([
+    {
+      items: [{ id: "private-after-logout", summary: "Private", accessRole: "owner" }],
+      nextSyncToken: "private-cursor",
+    },
+  ]);
+  const api = await import("./calendarCatalog");
+  const { calendarTestConfig } = await import("./accountTestHelpers");
+  const pending = api.discoverGoogleCalendarCatalog(
+    ctx.db,
+    fixture.userId,
+    fixture.accountId,
+    calendarTestConfig,
+    signal(),
+    {
+      nativeSession: { userId: fixture.userId, sessionId: current.value.sessionId },
+      transport: async (url, init) => {
+        if (url.includes("/calendar/v3/users/me/calendarList")) {
+          entered();
+          await released;
+        }
+        return transport(url, init);
+      },
+    },
+  );
+  try {
+    await enteredPromise;
+    const before = await ctx.db.select().from(calendarProviderAccounts);
+    await ctx.db
+      .update(sessions)
+      .set({ revokedAt: new Date() })
+      .where(eq(sessions.id, current.value.sessionId));
+    release();
+    expect(await pending).toEqual({ ok: false, error: { kind: "unauthorized" } });
+    const after = await readCatalog(ctx.db, fixture);
+    expect(after.revision).toBe(fixture.catalog.revision);
+    expect(after.calendars).toEqual(fixture.catalog.calendars);
+    expect(JSON.stringify(after)).not.toContain("private-after-logout");
+    expect(await ctx.db.select().from(calendarProviderAccounts)).toEqual(before);
+  } finally {
+    release();
+    await pending;
+  }
 });

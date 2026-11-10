@@ -1,6 +1,18 @@
+// The exact-session admission adapter is an application boundary in these action/query
+// contract tests. Its database and revocation behavior has separate real-PG coverage.
+vi.mock("./calendarDomainAuthority", () => ({
+  withCalendarDomainActor: <T>(
+    db: Db,
+    _session: unknown,
+    _signal: AbortSignal,
+    command: (db: Db) => Promise<T>,
+  ) => command(db),
+}));
+
 import { beforeEach, expect, it, vi } from "vitest";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import type { Db } from "@/db/client";
 import { db } from "@/db/client";
 import {
   discoverGoogleCalendarsAction,
@@ -128,6 +140,7 @@ it("discovers with the trusted owner, typed deployment configuration and a bound
     accountId,
     config,
     expect.any(AbortSignal),
+    { nativeSession: session },
   );
 });
 it("forwards the validated selection, trusted owner and signal without adding authority fields", async () => {

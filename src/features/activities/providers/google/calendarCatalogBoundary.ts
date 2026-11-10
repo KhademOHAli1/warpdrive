@@ -3,12 +3,19 @@ import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { protectedProcedure } from "@/server/trpc/trpc";
 import { listGoogleCalendarCatalog } from "./calendarCatalog";
+import { withCalendarDomainActor } from "./calendarDomainAuthority";
 
 export const googleCalendarCatalogQuery = protectedProcedure
   .input(z.strictObject({ accountId: z.uuid() }))
   .query(async ({ ctx, input }) => {
     const signal = AbortSignal.timeout(10_000);
-    const result = await listGoogleCalendarCatalog(ctx.db, ctx.actor.id, input.accountId, signal);
+    const result = await withCalendarDomainActor(
+      ctx.db,
+      ctx.session,
+      signal,
+      (db) => listGoogleCalendarCatalog(db, ctx.actor.id, input.accountId, signal),
+      { kind: "unauthorized" } as const,
+    );
     signal.throwIfAborted();
     if (result.ok) return result.value;
     if (result.error.kind === "unauthorized")

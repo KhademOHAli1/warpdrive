@@ -42,6 +42,14 @@ const context: AppContext = {
 };
 const activity: Activity = {
   id: ACTIVITY_ID,
+  version: 1,
+  calendarId: null,
+  eventTimeZone: null,
+  eventVisibility: "default",
+  availability: "busy",
+  reminderEngine: "legacy",
+  reminderAutomationEnabled: true,
+  reminderAuthoredAt: new Date("2026-11-01T08:00:00Z"),
   typeId: "33333333-3333-4333-8333-333333333333",
   subject: "Call Acme",
   allDay: false,
@@ -86,6 +94,7 @@ test.each([true, false])(
     expect(await request({ id: ACTIVITY_ID, done })).toEqual({
       ok: true,
       value: { id: ACTIVITY_ID },
+      version: 1,
     });
     expect(boundary.csrf).toHaveBeenCalledExactlyOnceWith("csrf");
     expect(boundary.context).toHaveBeenCalledOnce();

@@ -95,7 +95,7 @@ it("rejects PostgreSQL-unsafe NUL characters in event values and opaque object k
   ).toMatchObject({ ok: true, count: 1 });
   for (const event of [
     { id: "nul_value", summary: "unsafe\u0000value" },
-    { id: "nul_key", opaque: { ["unsafe\u0000key"]: true } },
+    { id: "nul_key", opaque: { "unsafe\u0000key": true } },
   ]) {
     expect(
       compact(
@@ -119,8 +119,8 @@ it("rejects lone high and low surrogates in values and keys while preserving val
   for (const event of [
     { id: "high_value", summary: "\ud800" },
     { id: "low_value", opaque: { nested: "\udfff" } },
-    { id: "high_key", opaque: { ["\ud800"]: true } },
-    { id: "low_key", opaque: { ["\udfff"]: true } },
+    { id: "high_key", opaque: { "\ud800": true } },
+    { id: "low_key", opaque: { "\udfff": true } },
   ]) {
     expect(
       compact(

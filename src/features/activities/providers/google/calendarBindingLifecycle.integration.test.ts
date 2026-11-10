@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, it } from "vitest";
 import {
   activities,
-  calendarReminderIntents,
   activityReminderSettings,
+  calendarReminderIntents,
   organizations,
 } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";

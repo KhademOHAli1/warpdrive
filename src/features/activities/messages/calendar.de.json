@@ -91,7 +91,17 @@
     "savedRefreshFailed": "Der Termin wurde gespeichert. Die aktuellen Details konnten nicht geladen werden. Aktualisiere sie, um fortzufahren. Der Termin wird dabei nicht erneut gespeichert.",
     "saveUnconfirmed": "Das Ergebnis konnte nicht bestätigt werden. Dein Entwurf bleibt erhalten. Prüfe den Kalender vor dem erneuten Speichern, um einen doppelten Termin zu vermeiden.",
     "refreshSaved": "Gespeicherten Termin laden",
-    "checkCalendar": "Kalender prüfen"
+    "checkCalendar": "Kalender prüfen",
+    "crmDetails": "CRM-Details",
+    "discardTitle": "Ungespeicherte Änderungen verwerfen?",
+    "discardBody": "Ihre Änderungen wurden noch nicht gespeichert. Sie können weiter bearbeiten oder die Änderungen verwerfen.",
+    "discard": "Änderungen verwerfen",
+    "keepEditing": "Weiter bearbeiten",
+    "conflict": "Dieser Termin wurde seit dem Öffnen geändert. Ihr Entwurf bleibt erhalten. Öffnen Sie den Termin erneut und prüfen Sie die aktuelle Version, bevor Sie Ihre Änderungen übernehmen.",
+    "eventTimeZone": "Zeitzone des Termins",
+    "eventTimeZoneHint": "Die Uhrzeiten beziehen sich auf diese Zeitzone. Beim Wechsel bleibt die eingegebene Uhrzeit gleich, der tatsächliche Zeitpunkt ändert sich.",
+    "readOnly": "Termindetails · Nur lesen",
+    "close": "Schließen"
   },
   "reminder": {
     "title": "Erinnerung",

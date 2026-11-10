@@ -9,7 +9,6 @@ import { activityTransaction } from "./activityTransaction";
 import { reconcileReminderIntent } from "./calendarReminderIntent";
 import { recomputeDealActivityDates } from "./nextActivity";
 import { cancelActivityReminder } from "./reminderIntent";
-import { resolveActivityVisibility } from "./visibility";
 
 // Soft-delete: mirrors completeActivity's gate order (load -> visibility 404 -> permission 403 ->
 // mutate), but gates on "activity.delete" instead of "activity.complete". Unlike edit/complete,
@@ -27,7 +26,7 @@ export async function deleteActivity(
       .select()
       .from(activities)
       .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
-      .for("update");
+      .for("no key update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));

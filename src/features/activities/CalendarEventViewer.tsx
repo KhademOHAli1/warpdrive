@@ -109,7 +109,7 @@ export function CalendarEventViewer({
               />
             </section>
           )}
-          {event.personalReminders !== undefined && (
+          {event.personalReminders !== undefined && event.reminder == null && (
             <CalendarPersonalRemindersPanel
               key={event.id}
               activityId={event.id}

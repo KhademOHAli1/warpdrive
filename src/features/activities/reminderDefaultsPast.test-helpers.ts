@@ -2,18 +2,21 @@ import { and, eq, sql } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
 import { vi } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_ACTIVITY_REMINDER } from "@/constants/jobNames";
+import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_CALENDAR_REMINDER } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
-import { calendarReminderIntents, activityTypes, emailAccounts, notifications } from "@/db/schema";
+import { activityTypes, calendarReminderIntents, emailAccounts, notifications } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
-import { runEmailNotificationJob, type SendFn } from "@/features/notifications/email/job";
+import {
+  runCalendarNotificationJob as runEmailNotificationJob,
+  type SendFn,
+} from "@/features/notifications/calendarNotification.test-helpers";
 import { setPreference } from "@/features/notifications/preferences";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { TestDb } from "@/test/db";
 import { ok } from "@/types/result";
+import { deliverReminderIntent } from "./calendarReminderDelivery";
 import { createCalendar, setCalendarMember } from "./calendars";
 import { setCalendarReminderDefaults, setEventReminderSettings } from "./personalReminderSettings";
-import { deliverReminderIntent } from "./calendarReminderDelivery";
 import { dispatchReminderIntents } from "./reminderOutbox";
 import type { ReminderDefaults } from "./reminderPolicy";
 import { createActivity } from "./repo";
@@ -192,7 +195,7 @@ export async function evidence(ctx: TestDb, f: PastFixture) {
     noteIds: notes.map((row) => row.id).sort(),
     reminderJobs: await queueRows(
       ctx,
-      PGBOSS_QUEUE_ACTIVITY_REMINDER,
+      PGBOSS_QUEUE_CALENDAR_REMINDER,
       intents.map((row) => row.id),
     ),
     emailJobs: await queueRows(

@@ -1,5 +1,17 @@
+// The exact-session admission adapter is an application boundary in these action/query
+// contract tests. Its database and revocation behavior has separate real-PG coverage.
+vi.mock("./calendarDomainAuthority", () => ({
+  withCalendarDomainActor: <T>(
+    db: Db,
+    _session: unknown,
+    _signal: AbortSignal,
+    command: (db: Db) => Promise<T>,
+  ) => command(db),
+}));
+
 import { beforeEach, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
+import type { Db } from "@/db/client";
 import { db } from "@/db/client";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { disconnectGoogleCalendarAction } from "./connectionActions";
@@ -28,7 +40,11 @@ beforeEach(() => {
   headers.set("sec-fetch-site", "same-origin");
   cookies.clear();
   cookies.set(CSRF_COOKIE, "csrf");
-  service.context.mockResolvedValue({ db, actor: { id: ownerId }, session: { userId: ownerId } });
+  service.context.mockResolvedValue({
+    db,
+    actor: { id: ownerId },
+    session: { userId: ownerId, sessionId: "native-session" },
+  });
   service.disconnect.mockResolvedValue({ ok: true, value: undefined });
 });
 it("rejects missing or cross-origin CSRF before reading context or disconnecting", async () => {

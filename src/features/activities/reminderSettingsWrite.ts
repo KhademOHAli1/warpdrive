@@ -4,6 +4,7 @@ import { type Activity, activityReminderSettings, calendarReminderDefaults } fro
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import { nativeReminderOwnsActivity } from "./calendarReminderOwnership";
 import { DEFAULT_REMINDER_RULES } from "./reminderPolicy";
 import { advanceReminderRuleActivations } from "./reminderRuleActivation";
 import { assertReminderActivityReadable } from "./reminderSettingsAccess";
@@ -23,6 +24,7 @@ export async function writePersonalReminderSelection(
   // The caller holds the activity lock (or inserted it), matching delivery's lock order.
   const readable = await assertReminderActivityReadable(tx, actor, row, signal, true);
   if (!readable.ok) return readable;
+  if (await nativeReminderOwnsActivity(tx, row.id, signal)) return conflict();
   const key = and(
     eq(activityReminderSettings.activityId, row.id),
     eq(activityReminderSettings.userId, actor.id),

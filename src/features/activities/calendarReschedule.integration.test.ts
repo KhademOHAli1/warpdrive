@@ -158,6 +158,8 @@ it("moves only temporal fields, returns persisted timing and reschedules the cur
   const after = await row(f.activity.id);
   expect(after).toEqual({
     ...f.activity,
+    version: f.activity.version + 1,
+    reminderAuthoredAt: expect.any(Date),
     dueAt: new Date("2027-03-28T07:15:00.000Z"),
     endAt: new Date("2027-03-28T08:30:00.333Z"),
     updatedAt: expect.any(Date),

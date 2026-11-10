@@ -195,6 +195,8 @@ it.each([
     if (close === "Cancel")
       await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
     else await user.keyboard("{Escape}");
+    const discard = await screen.findByRole("alertdialog", { name: "Discard unsaved changes?" });
+    await user.click(within(discard).getByRole("button", { name: "Discard changes" }));
     await waitFor(() => expect(api.closeAutoFocus).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     // Assert after the actual close-autofocus event, without waiting for the desired focus outcome.

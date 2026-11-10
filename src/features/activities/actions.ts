@@ -55,7 +55,14 @@ export async function completeActivityAction(
     return { ok: false, error: { id: ERROR_IDS.ACTIVITY_COMPLETE_INPUT_INVALID } };
 
   // Record-scoped: completeActivity gates via can(actor, "activity.complete", vis).
-  const result = await completeActivity(db, actor, parsed.data.id, parsed.data.done, SIG());
+  const result = await completeActivity(
+    db,
+    actor,
+    parsed.data.id,
+    parsed.data.done,
+    SIG(),
+    ...(parsed.data.expectedVersion === undefined ? [] : [parsed.data.expectedVersion]),
+  );
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return {
     ok: true,

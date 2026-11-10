@@ -3,18 +3,18 @@ import { and, eq, sql } from "drizzle-orm";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import {
   activities,
-  calendarReminderIntents,
   activityReminderSettings,
   calendarMembers,
   calendarReminderDefaults,
+  calendarReminderIntents,
   calendars,
   notifications,
 } from "@/db/schema";
+import { deliverReminderIntent } from "@/features/activities/calendarReminderDelivery";
 import { admitReminderIntent } from "@/features/activities/reminderAdmission";
-import { deliverReminderIntent } from "@/features/activities/reminderDelivery";
 import { makeTestDb } from "@/test/db";
 import { ok } from "@/types/result";
-import { runEmailNotificationJob } from "./email/job";
+import { runCalendarNotificationJob as runEmailNotificationJob } from "./calendarNotification.test-helpers";
 import { getFeed, getUnreadCount } from "./feed";
 import { setPreference } from "./preferences";
 import { reminderChannelFixture, required, signal } from "./reminderChannels.test-helpers";

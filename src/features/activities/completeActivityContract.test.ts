@@ -11,7 +11,7 @@ test("retains the canonical completion-input error ID", () => {
 });
 
 test("appends a distinct conflict ID without reusing the completion-input ID", () => {
-  expect(registry.ACTIVITY_CONFLICT).toBe("E_ACTIVITY_009");
+  expect(registry.ACTIVITY_CONFLICT).toBe("E_ACTIVITY_012");
   expect(registry.ACTIVITY_CONFLICT).not.toBe(registry.ACTIVITY_COMPLETE_INPUT_INVALID);
 });
 

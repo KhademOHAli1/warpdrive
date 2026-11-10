@@ -3,20 +3,20 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   activities,
-  calendarReminderIntents,
   activityReminderSettings,
   activityTypes,
   calendarReminderDefaults,
+  calendarReminderIntents,
   notifications,
   reminderRebuilds,
 } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
-import { createCalendar, setCalendarMember } from "./calendars";
 import { reconcileReminderIntent } from "./calendarReminderIntent";
+import { handleCalendarReminderJob as handleReminderJob } from "./calendarReminders";
+import { createCalendar, setCalendarMember } from "./calendars";
 import { DEFAULT_REMINDER_RULES } from "./reminderPolicy";
-import { handleReminderJob } from "./reminders";
 import { createActivity } from "./repo";
 
 let ctx: Awaited<ReturnType<typeof makeTestDb>>;

@@ -1,6 +1,6 @@
 import { and, eq, isNull, lte } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
-import { PGBOSS_QUEUE_ACTIVITY_REMINDER } from "@/constants/jobNames";
+import { PGBOSS_QUEUE_CALENDAR_REMINDER } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { calendarReminderIntents } from "@/db/schema";
 import { handoffReminderEmail } from "./reminderEmailHandoff";
@@ -11,7 +11,7 @@ type ReminderIntent = typeof calendarReminderIntents.$inferSelect;
 
 async function enqueueReminder(boss: PgBoss, intent: ReminderIntent, signal: AbortSignal) {
   await boss.send(
-    PGBOSS_QUEUE_ACTIVITY_REMINDER,
+    PGBOSS_QUEUE_CALENDAR_REMINDER,
     { intentId: intent.id },
     {
       id: intent.id,
@@ -29,24 +29,24 @@ async function recoverReminderJob(
   intent: ReminderIntent,
   signal: AbortSignal,
 ): Promise<boolean> {
-  const job = await boss.getJobById(PGBOSS_QUEUE_ACTIVITY_REMINDER, intent.id);
+  const job = await boss.getJobById(PGBOSS_QUEUE_CALENDAR_REMINDER, intent.id);
   signal.throwIfAborted();
   if (job === null || job.state === "completed") {
     // Completed work may have run before fireAt. A lost handoff can be retried with the same UUID.
     if (job !== null) {
-      await boss.deleteJob(PGBOSS_QUEUE_ACTIVITY_REMINDER, intent.id);
+      await boss.deleteJob(PGBOSS_QUEUE_CALENDAR_REMINDER, intent.id);
       signal.throwIfAborted();
     }
     await enqueueReminder(boss, intent, signal);
     return true;
   }
   if (job.state === "failed") {
-    await boss.retry(PGBOSS_QUEUE_ACTIVITY_REMINDER, intent.id);
+    await boss.retry(PGBOSS_QUEUE_CALENDAR_REMINDER, intent.id);
     signal.throwIfAborted();
     return true;
   }
   if (job.state === "cancelled") {
-    await boss.resume(PGBOSS_QUEUE_ACTIVITY_REMINDER, intent.id);
+    await boss.resume(PGBOSS_QUEUE_CALENDAR_REMINDER, intent.id);
     signal.throwIfAborted();
     return true;
   }
@@ -90,7 +90,7 @@ export async function dispatchReminderIntents(
 ): Promise<number> {
   signal.throwIfAborted();
   await processReminderRebuilds(db, signal);
-  await boss.createQueue(PGBOSS_QUEUE_ACTIVITY_REMINDER);
+  await boss.createQueue(PGBOSS_QUEUE_CALENDAR_REMINDER);
   signal.throwIfAborted();
   const count = await db.transaction(async (tx) => {
     const pending = await tx

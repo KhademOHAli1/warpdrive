@@ -1,8 +1,8 @@
 import type {
   Activity,
-  calendarReminderIntents,
   activityReminderSettings,
   calendarReminderDefaults,
+  calendarReminderIntents,
 } from "@/db/schema";
 import {
   type AllDayReminderRule,

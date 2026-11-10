@@ -3,8 +3,8 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   activities,
-  calendarReminderIntents,
   activityTypes,
+  calendarReminderIntents,
   leads,
   notifications,
 } from "@/db/schema";
@@ -15,9 +15,9 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { updateActivity } from "./activityUpdate";
 import { calendarRange } from "./calendar";
+import { handleCalendarReminderJob as handleReminderJob } from "./calendarReminders";
 import { createCalendar, setCalendarMember } from "./calendars";
 import { getActivityForEdit } from "./getForEdit";
-import { handleReminderJob } from "./reminders";
 import { createActivity } from "./repo";
 
 let ctx: Awaited<ReturnType<typeof makeTestDb>>;

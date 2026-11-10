@@ -2,9 +2,14 @@ import { z } from "zod";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { isTimeZone } from "@/features/i18n/preferences";
 import { personalReminderWriteSchema } from "./reminderPolicy";
-const eventTimeZone = z.string().min(1).max(100).refine(isTimeZone,"Invalid IANA time zone");
-export const activityManageInput=z.object({id:z.string().uuid(),expectedVersion:z.number().int().positive().optional()});
-export {completeActivityInput as activityCompleteInput} from "./completeActivityInput";
+
+const eventTimeZone = z.string().min(1).max(100).refine(isTimeZone, "Invalid IANA time zone");
+export const activityManageInput = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().positive().optional(),
+});
+export { completeActivityInput as activityCompleteInput } from "./completeActivityInput";
+
 import { activityReminderSelectionV1, activityReminderTimeZone } from "./reminderIntentTypes";
 
 export const activityCreateInput = z
@@ -47,6 +52,9 @@ export const activityCreateInput = z
     // Generated token-based video-call link (B3); a plain URL string, no external OAuth.
     videoCallUrl: z.string().url().max(2048).nullable().default(null),
     done: z.boolean().default(false),
+  })
+  .refine((v) => !(v.reminder !== undefined && v.personalReminders !== undefined), {
+    message: "Choose one reminder owner",
   })
   .refine((v) => !(v.dealId !== null && v.leadId !== null), {
     message: "An activity links at most one primary parent (deal or lead, not both)",
@@ -96,8 +104,14 @@ export const activityUpdateInput = z
     personId: z.string().uuid().nullable().optional(),
     orgId: z.string().uuid().nullable().optional(),
   })
+  .refine((v) => !(v.reminder !== undefined && v.personalReminders !== undefined), {
+    message: "Choose one explicit reminder owner",
+  })
   .refine(
-    (v) => Object.keys(v).some((key) => key !== "id" && key !== "expectedReminderGeneration" && key !== "expectedVersion"),
+    (v) =>
+      Object.keys(v).some(
+        (key) => key !== "id" && key !== "expectedReminderGeneration" && key !== "expectedVersion",
+      ),
     {
       message: "no fields to update",
     },

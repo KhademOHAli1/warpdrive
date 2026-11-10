@@ -1,11 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import {
   type Activity,
-  type calendarReminderIntents,
   activityReminderSettings,
   calendarReminderDefaults,
+  type calendarReminderIntents,
 } from "@/db/schema";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { nativeReminderOwnsActivity } from "./calendarReminderOwnership";
 import { mayReceivePersonalReminder } from "./reminderPolicies";
 import {
   DEFAULT_REMINDER_RULES,
@@ -142,6 +143,7 @@ export async function admitReminderIntent(
   channel?: "inApp" | "email",
 ): Promise<boolean> {
   signal.throwIfAborted();
+  if (await nativeReminderOwnsActivity(db, activity.id, signal)) return false;
   if (channel !== undefined && !intent[channel]) return false;
   if (
     intent.activityId !== activity.id ||

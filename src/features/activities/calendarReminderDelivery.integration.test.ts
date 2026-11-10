@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { PgBoss } from "pg-boss";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { activities, calendarReminderIntents, activityTypes } from "@/db/schema";
+import { activities, activityTypes, calendarReminderIntents } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { setBoss } from "@/jobs/boss";
@@ -42,6 +42,7 @@ async function event() {
     {
       subject: "رویداد بدون صف / Neuer Termin",
       typeId: type.id,
+      personalReminders: { selection: { useDefault: true }, expectedRevision: 0 },
       dueAt: "2030-03-21T09:00:00Z",
     },
     signal(),
@@ -54,7 +55,7 @@ const intents = (id: string) =>
 
 it("saves exactly one event and durable 10-minute intent with no reminder worker or queue", async () => {
   const { row } = await event();
-  expect(await boss.getQueue("activity.reminder")).toBeNull();
+  expect(await boss.getQueue("calendar.reminder")).toBeNull();
   const [intent] = await intents(row.id);
   expect(intent).toMatchObject({
     activityId: row.id,

@@ -2,12 +2,12 @@ import { eq, sql } from "drizzle-orm";
 import { PgBoss } from "pg-boss";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_ACTIVITY_REMINDER } from "@/constants/jobNames";
-import { activities, calendarReminderIntents, activityTypes, notifications } from "@/db/schema";
+import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_CALENDAR_REMINDER } from "@/constants/jobNames";
+import { activities, activityTypes, calendarReminderIntents, notifications } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
 import { makeTestDb } from "@/test/db";
+import { handleCalendarReminderJob as handleReminderJob } from "./calendarReminders";
 import { dispatchReminderIntents } from "./reminderOutbox";
-import { handleReminderJob } from "./reminders";
 import { createActivity } from "./repo";
 
 let ctx: Awaited<ReturnType<typeof makeTestDb>>;
@@ -31,6 +31,7 @@ async function fixture() {
     { id: user.id, type: "admin", isActive: true, flags: new Set(), groupIds: new Set() },
     {
       typeId: type.id,
+      personalReminders: { selection: { useDefault: true }, expectedRevision: 0 },
       subject: "یادآوری / Erinnerung",
       dueAt: new Date(Date.now() + 5 * 60_000).toISOString(),
     },
@@ -52,10 +53,10 @@ const stored = async (id: string) =>
 
 it("recovers enqueue-before-mark crashes with the same job UUID and one notification", async () => {
   const { intent } = await fixture();
-  await boss.createQueue(PGBOSS_QUEUE_ACTIVITY_REMINDER);
+  await boss.createQueue(PGBOSS_QUEUE_CALENDAR_REMINDER);
   await boss.createQueue(EMAIL_NOTIFICATION_QUEUE);
   await boss.send(
-    PGBOSS_QUEUE_ACTIVITY_REMINDER,
+    PGBOSS_QUEUE_CALENDAR_REMINDER,
     { intentId: intent.id },
     { id: intent.id, startAfter: intent.fireAt },
   );
@@ -64,7 +65,7 @@ it("recovers enqueue-before-mark crashes with the same job UUID and one notifica
     dispatchReminderIntents(ctx.db, boss, signal()),
   ]);
   const jobs = await ctx.pool.query("SELECT id FROM pgboss.job WHERE name=$1", [
-    PGBOSS_QUEUE_ACTIVITY_REMINDER,
+    PGBOSS_QUEUE_CALENDAR_REMINDER,
   ]);
   expect(jobs.rows).toEqual([{ id: intent.id }]);
   expect((await stored(intent.id))?.state).toBe("dispatched");

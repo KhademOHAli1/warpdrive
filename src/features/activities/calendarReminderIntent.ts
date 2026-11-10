@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { type Activity, calendarReminderIntents, reminderRebuilds } from "@/db/schema";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { nativeReminderOwnsActivity } from "./calendarReminderOwnership";
 import { loadPersonalReminderPlans, type PersonalReminderPlan } from "./reminderPolicies";
 import { reminderTemporalSignature } from "./reminderPolicy";
 import { reminderPlanChannelEligible } from "./reminderPolicyPlans";
@@ -23,12 +24,26 @@ export async function reconcileReminderIntent(
 ): Promise<void> {
   signal.throwIfAborted();
   // A rebuild from an old writer does not authorize adopting its delivery engine.
-  if (row.reminderEngine === "legacy") {
+  if (await nativeReminderOwnsActivity(tx, row.id, signal)) {
+    await tx
+      .update(calendarReminderIntents)
+      .set({ state: "cancelled", cancelledAt: new Date() })
+      .where(
+        and(
+          eq(calendarReminderIntents.activityId, row.id),
+          inArray(calendarReminderIntents.state, ["pending", "dispatched"]),
+        ),
+      );
     await tx.delete(reminderRebuilds).where(eq(reminderRebuilds.activityId, row.id));
     signal.throwIfAborted();
     return;
   }
-  const plans = await loadPersonalReminderPlans(tx, row, signal, enabled);
+  const plans = await loadPersonalReminderPlans(
+    tx,
+    row,
+    signal,
+    enabled && row.reminderEngine === "intent",
+  );
   const active = await tx
     .select()
     .from(calendarReminderIntents)

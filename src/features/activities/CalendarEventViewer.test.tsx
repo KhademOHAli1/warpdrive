@@ -1,11 +1,14 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { CalendarEventViewer } from "./CalendarEventViewer";
 import type { EditableActivity } from "./getForEdit";
 
+vi.mock("./CalendarPersonalRemindersPanel", () => ({
+  CalendarPersonalRemindersPanel: () => <button type="button">Save personal reminders</button>,
+}));
 afterEach(cleanup);
 const event: EditableActivity = {
   id: "event",
@@ -45,5 +48,47 @@ it.each(["fa", "de"] as const)(
     expect(screen.getAllByRole("link")).toHaveLength(1);
     expect(screen.getByRole("link")).toHaveAttribute("href", event.videoCallUrl);
     expect(screen.queryByRole("button", { name: /Speichern|ذخیره/ })).not.toBeInTheDocument();
+  },
+);
+
+it.each([false, true])(
+  "offers personal reminder editing only for supported non-native events (native: %s)",
+  (native) => {
+    render(
+      <LocaleProvider locale="en">
+        <CalendarEventViewer
+          event={{
+            ...event,
+            personalReminders: {
+              selection: { useDefault: true },
+              defaults: { timed: [], allDay: [] },
+              revision: 0,
+              subscribed: false,
+              emailCapability: "mailboxMissing",
+              timeZone: "UTC",
+            },
+            ...(native
+              ? {
+                  reminder: {
+                    generationId: "00000000-0000-4000-8000-000000000001",
+                    selection: { kind: "none" },
+                    reminderTimeZone: "UTC",
+                    status: "cancelled",
+                    fireAt: null,
+                    outcomeReason: "disabled",
+                    retryable: false,
+                  },
+                }
+              : {}),
+          }}
+          onClose={() => {}}
+        />
+      </LocaleProvider>,
+    );
+    if (native)
+      expect(
+        screen.queryByRole("button", { name: "Save personal reminders" }),
+      ).not.toBeInTheDocument();
+    else expect(screen.getByRole("button", { name: "Save personal reminders" })).toBeVisible();
   },
 );

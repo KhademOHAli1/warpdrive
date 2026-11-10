@@ -6,6 +6,7 @@ import { isTimeZone } from "@/features/i18n/preferences";
 import type { GoogleCalendarCatalogEntry } from "./catalogContracts";
 
 function roleLabel(role: string | null) {
+  if (role === null) return "unknown";
   switch (role) {
     case "owner":
       return "owner";
@@ -19,7 +20,6 @@ function roleLabel(role: string | null) {
       return "freeBusy";
     case "none":
       return "none";
-    case null:
     default:
       return "unknown";
   }

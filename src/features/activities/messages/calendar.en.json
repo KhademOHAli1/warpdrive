@@ -91,7 +91,17 @@
     "savedRefreshFailed": "The event was saved. Its latest details could not be refreshed. Refresh to continue; this will not save it again.",
     "saveUnconfirmed": "We could not confirm the result. Your draft is still here. Check Calendar before submitting again to avoid creating a duplicate.",
     "refreshSaved": "Refresh saved event",
-    "checkCalendar": "Check Calendar"
+    "checkCalendar": "Check Calendar",
+    "crmDetails": "CRM details",
+    "discardTitle": "Discard unsaved changes?",
+    "discardBody": "Your changes have not been saved. You can continue editing or discard this draft.",
+    "discard": "Discard changes",
+    "keepEditing": "Keep editing",
+    "conflict": "This event has changed since you opened it. Your draft is preserved. Reopen the event to review the latest version before applying your changes.",
+    "eventTimeZone": "Event time zone",
+    "eventTimeZoneHint": "Times are entered in this zone. Changing it keeps the clock times and changes when the event occurs.",
+    "readOnly": "Event details · read-only",
+    "close": "Close"
   },
   "reminder": {
     "title": "Reminder",

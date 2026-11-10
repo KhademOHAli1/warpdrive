@@ -17,7 +17,7 @@ import { err, ok, type Result } from "@/types/result";
 import { calendarActivityAccess, standaloneCalendarWriter } from "./calendarAccess";
 import { linkedParentVisible } from "./parentLinkVisibility";
 import { type ActivityReminderView, readActivityReminderView } from "./reminderReadModel";
-import { type EventReminderContext,eventReminderContext } from "./reminderSettingsState";
+import { type EventReminderContext, eventReminderContext } from "./reminderSettingsState";
 import { resolveActivityVisibility } from "./visibility";
 
 // Every field the inline composer needs to prefill an edit. Timestamps are ISO strings so the
@@ -159,7 +159,7 @@ export async function getActivityForEdit(
   return ok({
     ...names,
     ...reminder,
-    personalReminders: await eventReminderContext(db,actor,row,signal),
+    personalReminders: await eventReminderContext(db, actor, row, signal),
     id: row.id,
     version: row.version,
     eventTimeZone: row.eventTimeZone,

@@ -1,5 +1,8 @@
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, type Result } from "@/types/result";
+import { withCalendarActor } from "../../calendarNativeAuthority";
 import { calendarCallbackInput, consumeCalendarAuthorization } from "./accountAuthorizationState";
 import { bindCalendarGrant } from "./accountBind";
 import {
@@ -14,6 +17,7 @@ import { googleFetch } from "./transport";
 export type { CalendarAuthorizationOptions, CalendarOAuthStart } from "./accountAuthorizationState";
 export { beginCalendarAuthorization } from "./accountAuthorizationState";
 export interface CalendarFinishOptions {
+  nativeSession?: NativeSessionRef;
   transport?: GoogleTransport;
   now?: () => Date;
   requireSameEmail?: boolean;
@@ -51,14 +55,28 @@ export async function finishCalendarAuthorization(
   if (!tokens.ok) return tokens;
   const identity = await fetchCalendarIdentity(tokens.value.accessToken, signal, transport);
   if (!identity.ok) return identity;
-  return bindCalendarGrant(
-    db,
-    consumed.value,
-    validated.value,
-    identity.value,
-    tokens.value,
-    { requireSameEmail: options.requireSameEmail, allowedDomain: options.allowedDomain },
-    signal,
-    now,
-  );
+  const bind = (tx: Db) =>
+    bindCalendarGrant(
+      tx,
+      consumed.value,
+      validated.value,
+      identity.value,
+      tokens.value,
+      { requireSameEmail: options.requireSameEmail, allowedDomain: options.allowedDomain },
+      signal,
+      now,
+    );
+  if (options.nativeSession === undefined) return bind(db);
+  // Provider HTTP happens outside the native authority fence. Only the short
+  // final binding transaction holds it, so logout can revoke an in-flight exchange.
+  const failure: { value: CalendarAuthorizationError | null } = { value: null };
+  const bound = await withCalendarActor(db, options.nativeSession, userId, signal, async (tx) => {
+    const result = await bind(tx);
+    if (result.ok) return result;
+    failure.value = result.error;
+    return err(
+      new AppError(ERROR_IDS.CALENDAR_ACCOUNT_INPUT_INVALID, "Calendar grant binding denied"),
+    );
+  });
+  return bound.ok ? bound : err(failure.value ?? { kind: "invalid_state" });
 }

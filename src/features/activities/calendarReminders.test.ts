@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { PGBOSS_QUEUE_ACTIVITY_REMINDER, PGBOSS_QUEUE_REMINDER_OUTBOX } from "@/constants/jobNames";
+import { PGBOSS_QUEUE_CALENDAR_REMINDER, PGBOSS_QUEUE_REMINDER_OUTBOX } from "@/constants/jobNames";
 import {
   activities,
-  calendarReminderIntents,
   activityTypes,
+  calendarReminderIntents,
   deals,
   notifications,
 } from "@/db/schema";
@@ -13,7 +13,10 @@ import type { Activity } from "@/db/schema/activities";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { reconcileReminderIntent } from "./calendarReminderIntent";
-import { handleReminderJob, registerReminderWorker } from "./reminders";
+import {
+  handleCalendarReminderJob as handleReminderJob,
+  registerCalendarReminderWorker as registerReminderWorker,
+} from "./calendarReminders";
 
 type TestDb = Parameters<Parameters<typeof withTestDb>[0]>[0];
 async function reminderJob(db: TestDb, activity: Activity) {
@@ -265,10 +268,10 @@ describe("registerReminderWorker", () => {
     );
 
     const queueNames = fakeBoss.queues.map((q) => q.name);
-    expect(queueNames).toEqual([PGBOSS_QUEUE_ACTIVITY_REMINDER, PGBOSS_QUEUE_REMINDER_OUTBOX]);
+    expect(queueNames).toEqual([PGBOSS_QUEUE_CALENDAR_REMINDER, PGBOSS_QUEUE_REMINDER_OUTBOX]);
 
     const workerNames = fakeBoss.workers.map((w) => w.name);
-    expect(workerNames).toEqual([PGBOSS_QUEUE_ACTIVITY_REMINDER, PGBOSS_QUEUE_REMINDER_OUTBOX]);
+    expect(workerNames).toEqual([PGBOSS_QUEUE_CALENDAR_REMINDER, PGBOSS_QUEUE_REMINDER_OUTBOX]);
     expect(fakeBoss.schedules).toEqual([{ name: PGBOSS_QUEUE_REMINDER_OUTBOX, cron: "* * * * *" }]);
     expect(fakeBoss.sends).toEqual([{ name: PGBOSS_QUEUE_REMINDER_OUTBOX, data: {} }]);
   });

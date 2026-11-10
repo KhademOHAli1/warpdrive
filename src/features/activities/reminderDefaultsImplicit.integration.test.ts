@@ -1,8 +1,9 @@
 import { PgBoss } from "pg-boss";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_ACTIVITY_REMINDER } from "@/constants/jobNames";
+import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_CALENDAR_REMINDER } from "@/constants/jobNames";
 import { makeTestDb } from "@/test/db";
+import { deliverReminderIntent } from "./calendarReminderDelivery";
 import { setEventReminderSettings } from "./personalReminderSettings";
 import {
   drainTarget,
@@ -15,7 +16,6 @@ import {
   targetNotes,
   timedRules,
 } from "./reminderDefaultsPast.test-helpers";
-import { deliverReminderIntent } from "./calendarReminderDelivery";
 import { DEFAULT_REMINDER_RULES } from "./reminderPolicy";
 import { processReminderRebuilds } from "./reminderRebuild";
 
@@ -25,7 +25,7 @@ beforeEach(async () => {
   ctx = await makeTestDb();
   boss = new PgBoss(ctx.url);
   await boss.start();
-  await boss.createQueue(PGBOSS_QUEUE_ACTIVITY_REMINDER);
+  await boss.createQueue(PGBOSS_QUEUE_CALENDAR_REMINDER);
   await boss.createQueue(EMAIL_NOTIFICATION_QUEUE);
 });
 afterEach(async () => {

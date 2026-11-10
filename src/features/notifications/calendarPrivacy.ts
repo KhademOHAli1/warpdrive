@@ -161,6 +161,18 @@ async function receiptAccess(
   signal: AbortSignal,
 ): Promise<boolean> {
   if (row.userId !== recipientId) return false;
+  if ("reminderGenerationId" in row.payload) {
+    // Native generations are in-app only. Their immutable notice remains history
+    // when mutable calendar defaults or the current generation later changes.
+    const id = activityId(row);
+    return (
+      channel === "inApp" &&
+      !("reminderIntentId" in row.payload) &&
+      activityIdSchema.safeParse(row.payload.reminderGenerationId).success &&
+      id !== null &&
+      activityRows.has(id)
+    );
+  }
   const ref = reminderIntentId(row);
   if (ref === null) return false;
   const backlinks = indexes.byNotification.get(row.id) ?? [];

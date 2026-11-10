@@ -4,11 +4,11 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import {
   activities,
-  calendarReminderIntents,
   activityReminderSettings,
   activityTypes,
   calendarMembers,
   calendarReminderDefaults,
+  calendarReminderIntents,
   calendars,
   emailAccounts,
 } from "@/db/schema";

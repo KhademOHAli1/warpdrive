@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { afterAll, beforeAll, expect, it } from "vitest";
@@ -6,6 +5,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import * as schema from "@/db/schema";
 import { calendarReminderDefaults, emailAccounts, notificationPreferences } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
+import { createSession } from "@/features/auth/session";
 import { type HydratedActor, hydrateActor } from "@/server/hydrateActor";
 import { makeTestDb } from "@/test/db";
 import { calendarsRouter } from "./calendarRouter";
@@ -31,7 +31,7 @@ async function calendar(owner: HydratedActor, name: string) {
   if (!result.ok) throw result.error;
   return result.value;
 }
-function caller(user: HydratedActor, queries: string[] = []) {
+async function caller(user: HydratedActor, queries: string[] = []) {
   const db = drizzle(ctx.pool, {
     schema,
     logger: {
@@ -40,10 +40,12 @@ function caller(user: HydratedActor, queries: string[] = []) {
       },
     },
   });
+  const session = await createSession(ctx.db, user.id, signal());
+  if (!session.ok) throw session.error;
   return calendarsRouter.createCaller({
     db,
     actor: user,
-    session: { userId: user.id, sessionId: randomUUID() },
+    session: { userId: user.id, sessionId: session.value.sessionId },
   });
 }
 
@@ -94,7 +96,7 @@ it("batches the caller's defaults and capability without exposing another user's
     .insert(emailAccounts)
     .values({ userId: user.id, emailAddress: user.email, status: "connected" });
   const queries: string[] = [];
-  const listed = await caller(user, queries).list();
+  const listed = await (await caller(user, queries)).list();
   expect(listed.find((c) => c.id === own.id)?.personalReminders).toEqual({
     defaults: ownRules,
     revision: 4,
@@ -138,7 +140,7 @@ it("drops reminder context immediately on reader downgrade and removes a revoked
     signal(),
   );
   if (!grant.ok) throw grant.error;
-  const api = caller(reader);
+  const api = await caller(reader);
   expect((await api.list()).find((c) => c.id === cal.id)?.personalReminders).toBeDefined();
   grant = await setCalendarMember(
     ctx.db,
@@ -166,7 +168,7 @@ it("shares only the caller's current master-channel/mailbox capability across th
   await ctx.db
     .insert(notificationPreferences)
     .values({ userId: user.id, type: "activity_reminder", email: false, inApp: true });
-  const api = caller(user);
+  const api = await caller(user);
   expect((await api.list()).find((c) => c.id === cal.id)?.personalReminders?.emailCapability).toBe(
     "channelDisabled",
   );
@@ -202,7 +204,7 @@ it("does not attach usable reminder settings to an archived calendar", async () 
     signal(),
   );
   if (!archived.ok) throw archived.error;
-  const api = caller(user);
+  const api = await caller(user);
   expect((await api.list()).some((c) => c.id === cal.id)).toBe(false);
   const listed = (await api.list({ includeArchived: true })).find((c) => c.id === cal.id);
   expect(listed).toBeDefined();

@@ -7,6 +7,7 @@ import {
   authInvitations,
   authMailOutbox,
 } from "@/db/schema/authManagement";
+import { revokeCalendarProviderAccountsForUser } from "@/features/activities/providers/google/accounts";
 import { lockAuthAccount } from "@/features/auth/better/accountLock";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { lockMcpGrants, revokeMcpGrants } from "./mcpGrants";
@@ -28,6 +29,7 @@ export async function revokeUserAccess(
         .where(eq(users.id, userId))
         .for("no key update");
       const now = new Date();
+      await revokeCalendarProviderAccountsForUser(tx, userId, signal);
       await tx
         .update(sessions)
         .set({ revokedAt: now })
