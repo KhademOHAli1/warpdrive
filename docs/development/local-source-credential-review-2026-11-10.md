@@ -10,4 +10,4 @@ Four pattern hits were classified as non-secrets:
 
 Three hit blobs already exist in the original Main history; the additional workflow blob contains a UUID identifier. No actionable credential finding remains. This bounded pattern and source-context review does not guarantee detection of every possible secret format.
 
-`secret-scan-summary.json` contains only relative paths, classifications and blob identities. Original checkouts remain untouched. Generated scanner binaries, reconstructed scan inputs and raw tool reports are private working artifacts and must not be committed.
+The [redacted scan record](local-source-credential-scan-2026-11-10.json) contains only relative paths, classifications and blob identities. Original checkouts remain untouched. Generated scanner binaries, reconstructed scan inputs and raw tool reports are private working artifacts and must not be committed.
