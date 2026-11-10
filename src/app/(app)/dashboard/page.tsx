@@ -2,6 +2,7 @@ import { db } from "@/db/client";
 import { todayInZone } from "@/features/goals/todayInZone";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { can } from "@/features/permissions/can";
+import { canManagePipelines } from "@/features/pipelines/canManagePipelines";
 import { loadDashboardConfig } from "@/features/stats/stageNames";
 import { getStatsMessages } from "@/features/stats/statsMessages.server";
 import { Dashboard } from "@/features/stats/ui/Dashboard";
@@ -34,6 +35,7 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
       <Dashboard
         canViewOthers={canViewOthers}
         canManageGoals={canManageGoals}
+        canManagePipelines={canManagePipelines(ctx.actor)}
         today={today}
         currency={currency}
         defaultPipelineId={defaultPipelineId}

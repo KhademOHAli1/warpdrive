@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Tip } from "@/components/ui/tooltip";
 import { useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import styles from "./LeftNav.module.css";
@@ -9,14 +9,14 @@ export function SidebarToggle({ expanded, onToggle }: { expanded: boolean; onTog
   const messages = useMessages();
   const rtl = useLocale() === "fa";
   const label = expanded ? messages.navigation.collapse : messages.navigation.expand;
-  const Icon = expanded ? PanelLeftClose : PanelLeftOpen;
+  const Icon = expanded ? ChevronLeft : ChevronRight;
   return (
     <Tip
       label={label}
       side={rtl ? "left" : "right"}
       className={styles.tooltip}
-      delayDuration={0}
-      sideOffset={10}
+      delayDuration={200}
+      sideOffset={8}
     >
       <button
         type="button"
@@ -28,7 +28,7 @@ export function SidebarToggle({ expanded, onToggle }: { expanded: boolean; onTog
       >
         <Icon
           size={16}
-          strokeWidth={1.6}
+          strokeWidth={1.5}
           aria-hidden="true"
           focusable="false"
           data-rtl-mirror="true"

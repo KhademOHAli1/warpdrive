@@ -58,15 +58,13 @@
 .sidebarTopbarCollapsed {
   width: calc(100% + 1px);
   align-self: flex-start;
-  flex-direction: column;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 10px;
+  padding: calc((var(--portal-header-height) - 40px) / 2) 10px;
 }
 
 .sidebarTopbarCollapsed .logoLink {
   width: 44px;
-  height: 24px;
+  height: 40px;
   justify-content: center;
   padding: 0;
 }
@@ -184,22 +182,20 @@
   position: relative;
   z-index: 2;
   display: flex;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--portal-border);
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--portal-text) 3%, var(--portal-surface));
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   color: var(--portal-muted);
   cursor: pointer;
-  box-shadow: 0 1px 2px rgb(8 12 10 / 3%);
+  padding: 0;
   transition:
     color 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+    background-color 160ms ease;
 }
 
 .sidebarToggle svg,
@@ -209,9 +205,19 @@
 }
 
 .sidebarToggle:hover {
-  border-color: color-mix(in srgb, var(--portal-text) 18%, var(--portal-border));
   color: var(--portal-text);
-  box-shadow: 0 2px 5px rgb(8 12 10 / 8%);
+}
+
+.sidebarToggleDock {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  margin-block-start: 8px;
+}
+
+.sidebarBodyCollapsed .sidebarToggleDock {
+  justify-content: center;
+  margin-block-start: 0;
 }
 
 .sidebarBody {
@@ -726,6 +732,8 @@
 }
 .sidebar[data-sidebar-state="collapsed"] .utilityNav {
   width: 44px;
+  border-top: 0;
+  padding-top: 0;
 }
 .navItem:lang(fa) {
   font-size: 16px;

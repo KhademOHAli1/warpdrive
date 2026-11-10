@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(() => {
@@ -52,6 +53,31 @@ describe("Dashboard heading", () => {
     render(<Dashboard today="2026-03-01" canViewOthers currency="USD" />);
     expect(screen.getByRole("heading", { name: "Performance" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Dashboard" })).not.toBeInTheDocument();
+  });
+
+  it("provides central dashboard navigation while stats are loading", async () => {
+    const user = userEvent.setup();
+    render(<Dashboard today="2026-03-01" canViewOthers={false} currency="USD" />);
+    await user.click(screen.getByRole("button", { name: "Select dashboard: Performance" }));
+    expect(await screen.findByRole("menuitem", { name: "Sales" })).toHaveAttribute(
+      "href",
+      "/pipeline/p1",
+    );
+    expect(screen.getByRole("menuitem", { name: "Performance" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  it("keeps dashboard navigation available when the stats query fails", async () => {
+    const user = userEvent.setup();
+    useQuery.mockReturnValueOnce({ isLoading: false, isError: true, data: undefined });
+    render(<Dashboard today="2026-03-01" canViewOthers={false} currency="USD" />);
+    await user.click(screen.getByRole("button", { name: "Select dashboard: Performance" }));
+    expect(await screen.findByRole("menuitem", { name: "Partners" })).toHaveAttribute(
+      "href",
+      "/pipeline/p2",
+    );
   });
 });
 

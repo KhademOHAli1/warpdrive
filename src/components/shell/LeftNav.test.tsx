@@ -10,7 +10,8 @@ import styles from "./LeftNav.module.css";
 
 // LeftNav reads the current path via usePathname to mark the active item; mock it so the
 // component renders outside an app-router provider.
-vi.mock("next/navigation", () => ({ usePathname: () => "/pipeline" }));
+const route = vi.hoisted(() => ({ pathname: "/pipeline" }));
+vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
 
 // The collapse preference now persists in a cookie (so the server can read it and render the
 // correct width, avoiding the reload flash). jsdom provides a working document.cookie; clear it
@@ -39,6 +40,7 @@ afterEach(() => {
   cleanup();
   clearNavCookie();
   mediaMatches = true;
+  route.pathname = "/pipeline";
   document.documentElement.lang = "en";
   document.documentElement.dir = "ltr";
 });
@@ -57,13 +59,10 @@ describe("LeftNav", () => {
       ).toEqual([
         "/pipeline",
         "/activities",
-        "/inbox",
         "/leads",
+        "/inbox",
         "/contacts/people",
-        "/dashboard",
-        "/workflows",
-        "/settings",
-        DOCS_SITE_URL,
+        ...(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []),
       ]);
     },
   );
@@ -81,7 +80,7 @@ describe("LeftNav", () => {
   });
 
   test.each([true, false])(
-    "keeps the icon-only sidebar control beside the Home link in the header (expanded: %s)",
+    "keeps the refined footer toggle below the links, separate from the Home header (expanded: %s)",
     (expanded) => {
       setViewport(expanded);
       render(<LeftNav />);
@@ -92,20 +91,27 @@ describe("LeftNav", () => {
       });
       const navigation = screen.getByRole("navigation", { name: "Primary" });
       expect(header).not.toBeNull();
-      expect(header?.contains(toggle)).toBe(true);
+      expect(header?.contains(toggle)).toBe(false);
       expect(header?.contains(home)).toBe(true);
       expect(home.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(toggle.textContent?.trim()).toBe("");
+      expect(toggle.querySelector("kbd")).toBeNull();
       expect(toggle.getAttribute("type")).toBe("button");
       expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
       expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
-      expect(navigation.contains(toggle)).toBe(false);
-      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(false);
+      expect(navigation.contains(toggle)).toBe(true);
+      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(true);
+      if (expanded) {
+        const docs = screen.getByRole("link", { name: "Help & docs" });
+        expect(
+          docs.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      }
       expect(toggle.querySelector('svg[aria-hidden="true"][focusable="false"]')).not.toBeNull();
     },
   );
 
-  test("supports keyboard activation in both directions and persists the header control choice", async () => {
+  test("supports keyboard activation in both directions and persists the footer control choice", async () => {
     const user = userEvent.setup();
     setViewport(true);
     const first = render(<LeftNav />);
@@ -116,7 +122,12 @@ describe("LeftNav", () => {
     const expand = screen.getByRole("button", { name: "Expand sidebar" });
     expect(expand.getAttribute("aria-expanded")).toBe("false");
     expect(document.cookie).toContain("wd_nav_expanded=0");
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
+    expect(
+      screen
+        .getByRole("navigation", { name: "Primary" })
+        .querySelector('a[href="/pipeline"] [data-sidebar-copy-state]')
+        ?.getAttribute("aria-hidden"),
+    ).toBe("true");
     expand.focus();
     await user.keyboard(" ");
     expect(
@@ -127,11 +138,16 @@ describe("LeftNav", () => {
     setViewport(false);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
+    expect(
+      screen
+        .getByRole("navigation", { name: "Primary" })
+        .querySelector('a[href="/pipeline"] [data-sidebar-copy-state]')
+        ?.getAttribute("aria-hidden"),
+    ).toBe("false");
   });
 
   test.each([true, false])(
-    "keeps the Farsi header control named with a decorative mirrored glyph (expanded: %s)",
+    "keeps the Farsi footer toggle named with a decorative mirrored glyph (expanded: %s)",
     (expanded) => {
       setViewport(expanded);
       render(
@@ -149,7 +165,8 @@ describe("LeftNav", () => {
       expect(glyph?.getAttribute("aria-hidden")).toBe("true");
       expect(glyph?.getAttribute("focusable")).toBe("false");
       expect(glyph?.getAttribute("data-rtl-mirror")).toBe("true");
-      expect(toggle.closest(`.${styles.sidebarTopbar}`)).not.toBeNull();
+      expect(toggle.closest(`.${styles.sidebarTopbar}`)).toBeNull();
+      expect(toggle.closest(`.${styles.utilityNav}`)).not.toBeNull();
       expect(document.documentElement.dir).toBe("rtl");
     },
   );
@@ -170,22 +187,69 @@ describe("LeftNav", () => {
   test("renders all primary destinations as links with a navigation landmark", () => {
     render(<LeftNav />);
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Pipeline" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Dashboard" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
   });
 
-  test("labels the stats destination 'Performance', not 'Dashboard'", () => {
+  test("uses Dashboard as the central destination without separate Pipeline or Performance links", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Performance" })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Dashboard" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/pipeline");
+    expect(screen.queryByRole("link", { name: "Pipeline" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Performance" })).toBeNull();
   });
 
   test("marks the active section with aria-current", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Pipeline" }).getAttribute("aria-current")).toBe(
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("aria-current")).toBe(
       "page",
     );
     expect(screen.getByRole("link", { name: "Contacts" }).getAttribute("aria-current")).toBeNull();
+  });
+
+  test("keeps Dashboard active when viewing Performance through the dashboard selector", () => {
+    route.pathname = "/dashboard";
+    render(<LeftNav />);
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    const dashboard = screen.getByRole("link", { name: "Dashboard" });
+    expect(dashboard.getAttribute("aria-current")).toBe("page");
+    expect(dashboard.getAttribute("href")).toBe("/pipeline");
+    expect(navigation.querySelectorAll('a[aria-current="page"]')).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "Performance" })).toBeNull();
+  });
+
+  test.each([true, false])(
+    "separates five daily destinations from Settings, Workflows and Help (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(<LeftNav />);
+      const navigation = screen.getByRole("navigation", { name: "Primary" });
+      const workspace = navigation.querySelector(`.${styles.workspaceNav}`);
+      const footer = navigation.querySelector(`.${styles.utilityNav}`);
+      expect(workspace).not.toBeNull();
+      expect(footer).not.toBeNull();
+      expect(
+        within(workspace as HTMLElement)
+          .getAllByRole("link")
+          .map((link) => link.getAttribute("href")),
+      ).toEqual(["/pipeline", "/activities", "/leads", "/inbox", "/contacts/people"]);
+      expect(
+        within(footer as HTMLElement)
+          .queryAllByRole("link")
+          .map((link) => link.getAttribute("href")),
+      ).toEqual(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []);
+    },
+  );
+
+  test.each([
+    { locale: "de", label: "Dashboard" },
+    { locale: "fa", label: "داشبورد" },
+  ] as const)("names the central dashboard in $locale", ({ locale, label }) => {
+    render(
+      <LocaleProvider locale={locale}>
+        <LeftNav />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe("/pipeline");
   });
 
   test("each destination shows a decorative icon (Pipedrive-style icon+label nav)", () => {
@@ -203,14 +267,14 @@ describe("LeftNav", () => {
     setViewport(true);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("defaults to the collapsed rail on a small screen (no stored preference)", () => {
     setViewport(false);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("true");
   });
 
   test("collapses to icons and expands to full labels via a toggle button", () => {
@@ -219,12 +283,12 @@ describe("LeftNav", () => {
     render(<LeftNav />);
     const toggle = screen.getByRole("button", { name: "Expand sidebar" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("true");
 
     fireEvent.click(toggle);
     const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
     expect(collapse.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("an explicit expand preference overrides the small-screen default across mounts", () => {
@@ -248,7 +312,7 @@ describe("LeftNav", () => {
 
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 
   test("keeps collapsed destinations named while hiding their duplicate inline labels", () => {
@@ -327,7 +391,7 @@ describe("LeftNav bracket shortcuts", () => {
     expect(docs.getAttribute("rel")).toContain("noreferrer");
   });
 
-  test("keeps only Settings and Help in the utility footer below daily work", () => {
+  test("keeps only Settings, Workflows and Help in the utility footer below daily work", () => {
     setViewport(true);
     render(<LeftNav />);
     const navigation = screen.getByRole("navigation", { name: "Primary" });
@@ -337,17 +401,35 @@ describe("LeftNav bracket shortcuts", () => {
       within(footer as HTMLElement)
         .getAllByRole("link")
         .map((link) => link.textContent),
-    ).toEqual(["Settings", "Help & docs"]);
+    ).toEqual(["Settings", "Workflows", "Help & docs"]);
     const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(footer?.contains(toggle)).toBe(false);
-    expect(within(footer as HTMLElement).queryByRole("button")).toBeNull();
-    expect(navigation.contains(toggle)).toBe(false);
+    expect(footer?.contains(toggle)).toBe(true);
+    expect(within(footer as HTMLElement).getAllByRole("button")).toHaveLength(1);
+    expect(navigation.contains(toggle)).toBe(true);
   });
 
-  test("keeps an accessible name for the docs link on the collapsed rail", () => {
+  test("removes utility links from the collapsed rail and restores them when opened", async () => {
+    const user = userEvent.setup();
     setViewport(false);
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Help & docs" })).not.toBeNull();
+    const footer = screen
+      .getByRole("navigation", { name: "Primary" })
+      .querySelector(`.${styles.utilityNav}`) as HTMLElement;
+    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    const opener = within(footer).getByRole("button", { name: "Expand sidebar" });
+    opener.focus();
+    await user.keyboard("{Enter}");
+    expect(
+      within(footer)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Settings", "Workflows", "Help & docs"]);
+    expect(document.activeElement).toBe(
+      within(footer).getByRole("button", { name: "Collapse sidebar" }),
+    );
+    await user.keyboard("{Enter}");
+    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    expect(document.activeElement).toBe(opener);
   });
 });
 
