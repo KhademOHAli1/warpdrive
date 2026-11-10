@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "settings": "Einstellungen",
     "docs": "Hilfe & Dokumentation",
-    "work": "Arbeit"
+    "work": "Arbeit",
+    "projects": "Projekte"
   },
   "auth": {
     "signInWithGoogle": "Mit Google anmelden",

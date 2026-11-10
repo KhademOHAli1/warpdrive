@@ -1,6 +1,12 @@
 import { expect, it } from "vitest";
 import { workspaceNavItems } from "./workspaceNavigation";
 
+it("shows Projects only when native project navigation allows it, independently of work access", () => {
+  expect(workspaceNavItems([], false, true).some((item) => item.href === "/projects")).toBe(true);
+  expect(workspaceNavItems([], true, false).some((item) => item.href === "/projects")).toBe(false);
+  expect(workspaceNavItems([], true).some((item) => item.href === "/projects")).toBe(false);
+});
+
 it("keeps established navigation when no module choice exists and gates work", () => {
   expect(workspaceNavItems([], false).find((item) => item.key === "dashboard")?.href).toBe(
     "/pipeline",

@@ -13,7 +13,8 @@
     "dashboard": "داشبورد",
     "settings": "تنظیمات",
     "docs": "راهنما و مستندات",
-    "work": "کارها"
+    "work": "کارها",
+    "projects": "پروژه‌ها"
   },
   "auth": {
     "signInWithGoogle": "ورود با حساب گوگل",

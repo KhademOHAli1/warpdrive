@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "settings": "Settings",
     "docs": "Help & docs",
-    "work": "Work"
+    "work": "Work",
+    "projects": "Projects"
   },
   "auth": {
     "signInWithGoogle": "Sign in with Google",

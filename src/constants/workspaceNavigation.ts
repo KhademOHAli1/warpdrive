@@ -7,10 +7,15 @@ const moduleFor: Partial<Record<NavKey, string>> = {
   work: "work",
 };
 /** Presentation only: every destination retains its own server permission checks. */
-export function workspaceNavItems(modules: readonly string[], canViewWork: boolean) {
+export function workspaceNavItems(
+  modules: readonly string[],
+  canViewWork: boolean,
+  canViewProjects = false,
+) {
   const configured = modules.length > 0;
   const showSales = !configured || modules.includes("sales");
   return NAV_ITEMS.filter((item) => {
+    if (item.key === "projects" && !canViewProjects) return false;
     if (item.key === "work" && !canViewWork) return false;
     if (!configured) return true;
     const area = moduleFor[item.key];
