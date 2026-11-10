@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { activityTypes } from "./activityTypes";
+import { calendars } from "./calendars";
 import { deals } from "./deals";
 import { users } from "./identity";
 import { leads } from "./leads";
@@ -26,6 +27,15 @@ export const activities = pgTable(
       .notNull()
       .references(() => activityTypes.id),
     subject: text("subject").notNull(),
+    // A database trigger advances this for every writer, including older composers and imports.
+    version: integer("version").notNull().default(1),
+    eventTimeZone: text("event_time_zone"),
+    calendarId: uuid("calendar_id").references(() => calendars.id),
+    eventVisibility: text("event_visibility")
+      .$type<"default" | "private">()
+      .notNull()
+      .default("default"),
+    availability: text("availability").$type<"busy" | "free">().notNull().default("busy"),
     dueAt: timestamp("due_at", { withTimezone: true }),
     // No chosen clock time. New/date-edited rows use due_date/end_date as canonical
     // civil dates; due_at/end_at remain compatibility anchors. Null dates denote legacy.
@@ -41,6 +51,16 @@ export const activities = pgTable(
     durationMinutes: integer("duration_minutes"),
     // Optional priority (Pipedrive Low/Medium/High); null = unset. Key resolved to name+color in UI.
     priority: text("priority"),
+    // Old writers retain their delivery authority until an explicit engine takeover.
+    reminderEngine: text("reminder_engine")
+      .$type<"legacy" | "intent">()
+      .notNull()
+      .default("legacy"),
+    reminderAutomationEnabled: boolean("reminder_automation_enabled").notNull().default(true),
+    // Semantic schedule edits authorize late reminders; unrelated shared edits do not.
+    reminderAuthoredAt: timestamp("reminder_authored_at", { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
     done: boolean("done").notNull().default(false),
     doneAt: timestamp("done_at", { withTimezone: true }),
     ownerId: uuid("owner_id")
@@ -73,6 +93,10 @@ export const activities = pgTable(
   (t) => [
     // Index: assignee's to-do list, sorted by completion + due date.
     index("activity_assignee_idx").on(t.assigneeId, t.done, t.dueAt),
+    index("activity_calendar_idx").on(t.calendarId, t.dueAt),
+    check("activity_event_visibility", sql`${t.eventVisibility} in ('default','private')`),
+    check("activity_availability", sql`${t.availability} in ('busy','free')`),
+    check("activity_reminder_engine", sql`${t.reminderEngine} in ('legacy','intent')`),
     // Index: FK lookups by linked record.
     index("activity_deal_idx").on(t.dealId),
     index("activity_lead_idx").on(t.leadId),

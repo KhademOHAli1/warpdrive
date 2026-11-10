@@ -1,15 +1,15 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import type { Db } from "@/db/client";
 import { activityParticipants, deals, organizations, persons, pipelines } from "@/db/schema";
 import type { Activity } from "@/db/schema/activities";
 import type { VisibleActivity } from "@/features/permissions/types";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { calendarReaders } from "./calendarAccess";
 
 // Parentless activities (no deal/person/org) are visible to their assignee + participants, so fetch
 // those participants in one batched query keyed by activity id rather than per row. Used by the list
 // and calendar paths, which resolve the rest of visibility in memory (see activityVisibility.ts).
 export async function loadParentlessParticipants(
-  db: Db,
+  db: DbOrTx,
   rows: { id: string; dealId: string | null; personId: string | null; orgId: string | null }[],
   signal: AbortSignal,
 ): Promise<Map<string, string[]>> {
@@ -28,6 +28,11 @@ export async function loadParentlessParticipants(
     list.push(p.userId);
     byActivity.set(p.activityId, list);
   }
+  // Lead-only activities retain legacy assignee/participant access. Calendar grants exclude
+  // every CRM link, including leadId, so sharing cannot broaden that legacy audience.
+  const calendarGrants = await calendarReaders(db, parentlessIds, signal);
+  for (const [id, grants] of calendarGrants)
+    byActivity.set(id, [...(byActivity.get(id) ?? []), ...grants]);
   return byActivity;
 }
 
@@ -147,7 +152,11 @@ async function resolveParentless(
     .where(eq(activityParticipants.activityId, activity.id));
   signal.throwIfAborted();
 
-  const participantUserIds = participants.map((p) => p.userId);
+  const grants = await calendarReaders(db, [activity.id], signal);
+  const participantUserIds = [
+    ...participants.map((p) => p.userId),
+    ...(grants.get(activity.id) ?? []),
+  ];
 
   // Assignee + participants go into visibleToUserIds so canSee's additive-allow
   // rule yields exactly the parentless visibility spec: assignee/participant ONLY.

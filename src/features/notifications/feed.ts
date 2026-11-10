@@ -27,6 +27,12 @@ import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferen
 import { getPreferences as getAccountPreferences } from "@/features/identity/preferencesRepo";
 import type { AuthUser } from "@/features/permissions/types";
 import type { NotificationFeedItem } from "@/types/notification";
+import {
+  hasNotificationCalendarAccess,
+  hasNotificationReminderAccess,
+  loadNotificationCalendarAccess,
+  loadNotificationReminderAccess,
+} from "./calendarPrivacy";
 import { notificationBand } from "./notificationBand";
 import { getPreferences } from "./preferences";
 
@@ -53,9 +59,13 @@ async function isVisible(
   db: Db,
   user: AuthUser,
   row: Notification,
+  calendarAccess: Map<string, boolean>,
+  reminderAccess: Map<string, boolean>,
   signal: AbortSignal,
 ): Promise<boolean> {
   signal.throwIfAborted();
+  if (!hasNotificationCalendarAccess(row, calendarAccess)) return false;
+  if (!hasNotificationReminderAccess(row, reminderAccess)) return false;
   if (row.entityType === null || row.entityId === null) return true;
   return canActorAccessParent(db, user, row.entityType, row.entityId, signal);
 }
@@ -90,12 +100,14 @@ export async function getFeed(
     fallback: { timeZone: options.timeZone },
   });
 
+  const calendarAccess = await loadNotificationCalendarAccess(db, user, rows, signal);
+  const reminderAccess = await loadNotificationReminderAccess(db, user.id, rows, signal);
   const visible: NotificationFeedItem[] = [];
   for (const row of rows) {
     if (visible.length >= limit) break;
     // Fail-open for unknown types: only suppress when inApp is explicitly false.
     if (prefs[row.type].inApp === false) continue;
-    const ok = await isVisible(db, user, row, signal);
+    const ok = await isVisible(db, user, row, calendarAccess, reminderAccess, signal);
     if (ok) visible.push(toFeedItem(row, now, timeZone));
   }
   return visible;
@@ -117,10 +129,12 @@ export async function getUnreadCount(db: Db, user: AuthUser, signal: AbortSignal
   ]);
   signal.throwIfAborted();
 
+  const calendarAccess = await loadNotificationCalendarAccess(db, user, rows, signal);
+  const reminderAccess = await loadNotificationReminderAccess(db, user.id, rows, signal);
   let count = 0;
   for (const row of rows) {
     if (prefs[row.type].inApp === false) continue;
-    const ok = await isVisible(db, user, row, signal);
+    const ok = await isVisible(db, user, row, calendarAccess, reminderAccess, signal);
     if (ok) count++;
   }
   return count;

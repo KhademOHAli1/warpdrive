@@ -9,9 +9,15 @@ export const calendarCreateEnvelopeV1 = z.strictObject({
   activity: activityCreateInput
     .safeExtend({
       authoredTimeZone: activityReminderTimeZone,
-      reminder: activityReminderSelectionV1,
+      reminder: activityReminderSelectionV1.optional(),
     })
-    .strict(),
+    .strict()
+    .refine(
+      (value) =>
+        value.reminder !== undefined ||
+        (value.calendarId !== null && value.personalReminders !== undefined),
+      { message: "Choose one explicit reminder owner" },
+    ),
 });
 export const calendarEditEnvelopeV1 = z.strictObject({
   ...actor,

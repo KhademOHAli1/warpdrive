@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
+import { CalendarConnectionCard } from "@/features/activities/providers/google/CalendarConnectionCard";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { revokeConnectionAction } from "@/features/oauth/revokeAction";
 import { useFormatters } from "@/lib/useFormatters";
@@ -60,72 +61,78 @@ export function ConnectionsClient({
   }
 
   return (
-    <SettingsCard>
-      <SettingsCardHeader
-        icon={<Plug className="size-4" aria-hidden="true" />}
-        title={S.connectedAppsList}
-        description={S.connectedAppsListDescription}
-      />
-      <SettingsCardBody className="p-0">
-        {connections.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">{S.connectedAppsEmpty}</p>
-        ) : (
-          <ul className="divide-y">
-            {connections.map((connection) => (
-              <li key={connection.clientId} className="flex flex-wrap items-center gap-4 px-5 py-4">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium [overflow-wrap:anywhere]">
-                    {connection.clientName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {S.connectedAppsConnected(formatDate(connection.connectedAtIso))}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {connection.lastUsedAtIso === null
-                      ? S.connectedAppsNeverUsed
-                      : S.connectedAppsLastUsed(formatDate(connection.lastUsedAtIso))}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pendingId !== null}
-                  aria-label={`${pendingId === connection.clientId ? S.connectedAppsRevoking : S.connectedAppsRevoke}: ${connection.clientName}`}
-                  onClick={() => setConfirming(connection)}
+    <>
+      <CalendarConnectionCard />
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={<Plug className="size-4" aria-hidden="true" />}
+          title={S.connectedAppsList}
+          description={S.connectedAppsListDescription}
+        />
+        <SettingsCardBody className="p-0">
+          {connections.length === 0 ? (
+            <p className="p-5 text-sm text-muted-foreground">{S.connectedAppsEmpty}</p>
+          ) : (
+            <ul className="divide-y">
+              {connections.map((connection) => (
+                <li
+                  key={connection.clientId}
+                  className="flex flex-wrap items-center gap-4 px-5 py-4"
                 >
-                  {pendingId === connection.clientId
-                    ? S.connectedAppsRevoking
-                    : S.connectedAppsRevoke}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {error !== null ? (
-          <p className="border-t px-5 py-3 text-sm text-destructive" role="alert">
-            {error}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium [overflow-wrap:anywhere]">
+                      {connection.clientName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {S.connectedAppsConnected(formatDate(connection.connectedAtIso))}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {connection.lastUsedAtIso === null
+                        ? S.connectedAppsNeverUsed
+                        : S.connectedAppsLastUsed(formatDate(connection.lastUsedAtIso))}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pendingId !== null}
+                    aria-label={`${pendingId === connection.clientId ? S.connectedAppsRevoking : S.connectedAppsRevoke}: ${connection.clientName}`}
+                    onClick={() => setConfirming(connection)}
+                  >
+                    {pendingId === connection.clientId
+                      ? S.connectedAppsRevoking
+                      : S.connectedAppsRevoke}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {error !== null ? (
+            <p className="border-t px-5 py-3 text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <p className="border-t px-5 py-4 text-sm text-muted-foreground">
+            {L._extra.connectionJourney.mailboxHint}{" "}
+            <Link href="/settings/email-sync" className="text-primary underline underline-offset-4">
+              {L._extra.connectionJourney.mailboxLink}
+            </Link>
           </p>
-        ) : null}
-        <p className="border-t px-5 py-4 text-sm text-muted-foreground">
-          {L._extra.connectionJourney.mailboxHint}{" "}
-          <Link href="/settings/email-sync" className="text-primary underline underline-offset-4">
-            {L._extra.connectionJourney.mailboxLink}
-          </Link>
-        </p>
-        {confirming !== null && (
-          <ConfirmDialog
-            open
-            onOpenChange={(open) => {
-              if (!open) setConfirming(null);
-            }}
-            title={L._extra.connectionJourney.revokeTitle(confirming.clientName)}
-            description={L._extra.connectionJourney.revokeDescription(confirming.clientName)}
-            confirmLabel={S.connectedAppsRevoke}
-            destructive
-            onConfirm={() => void revoke(confirming.clientId)}
-          />
-        )}
-      </SettingsCardBody>
-    </SettingsCard>
+          {confirming !== null && (
+            <ConfirmDialog
+              open
+              onOpenChange={(open) => {
+                if (!open) setConfirming(null);
+              }}
+              title={L._extra.connectionJourney.revokeTitle(confirming.clientName)}
+              description={L._extra.connectionJourney.revokeDescription(confirming.clientName)}
+              confirmLabel={S.connectedAppsRevoke}
+              destructive
+              onConfirm={() => void revoke(confirming.clientId)}
+            />
+          )}
+        </SettingsCardBody>
+      </SettingsCard>
+    </>
   );
 }

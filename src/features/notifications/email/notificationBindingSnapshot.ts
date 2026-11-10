@@ -6,6 +6,7 @@ import { getPreferences } from "@/features/identity/preferencesRepo";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { NotificationRow } from "@/types/notification";
+import { canDeliverActivityReminder, canReadNotificationCalendar } from "../calendarPrivacy";
 import { resolveDelivery } from "../preferences";
 import type { NotificationEmailSkip } from "./notificationEmailTypes";
 import { renderNotificationEmail } from "./render";
@@ -18,6 +19,11 @@ export async function notificationSnapshot(
 ): Promise<{ payload: SendPayload } | NotificationEmailSkip> {
   const recipient = await hydrateActor(db, notification.userId, signal);
   if (recipient === null) return { status: "skipped", reason: "recipient" };
+  if (
+    !(await canReadNotificationCalendar(db, recipient, notification, signal)) ||
+    !(await canDeliverActivityReminder(db, notification.userId, notification, signal))
+  )
+    return { status: "skipped", reason: "visibility" };
   if (notification.entityType !== null && notification.entityId !== null) {
     const visible = await canActorAccessParent(
       db,

@@ -2,6 +2,7 @@ import type { PgBoss as PgBossType } from "pg-boss";
 import { PgBoss } from "pg-boss";
 import { env } from "@/config/env";
 import { db } from "@/db/client";
+import { registerCalendarReminderWorker } from "@/features/activities/calendarReminders";
 import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerAuthMailWorker } from "@/features/auth/management/workers";
 import { registerEmailJobs } from "@/features/email/workerJobs";
@@ -24,6 +25,7 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerImportWorkers(boss);
   await registerEmailNotificationWorker(boss);
   await registerReminderWorker(boss);
+  await registerCalendarReminderWorker(boss);
   await registerAuthMailWorker(boss, db);
   // Update-check cron (OSS self-hosters). No-op when DISABLE_UPDATE_CHECK is set.
   await registerReleaseCheckJob(boss);

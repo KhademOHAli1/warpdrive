@@ -69,6 +69,7 @@ export async function withCalendarActor<T>(
       return result;
     });
   } catch (error) {
+    signal.throwIfAborted();
     if (error instanceof CalendarCommandRollback) return err(error.failure);
     // Unknown driver/commit failures are not proof that no event was saved.
     throw error;
