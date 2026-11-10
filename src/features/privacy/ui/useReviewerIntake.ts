@@ -15,6 +15,7 @@ import {
   type ReviewerIntakeView,
   reviewerIsFresh,
 } from "./reviewerIntakeModel";
+import type { ReviewerVerificationParentDenial } from "./reviewerVerificationStartModel";
 
 const QUEUE_PAGE_SIZE = 25;
 export function useReviewerIntake(props: ReviewerIntakeCardProps) {
@@ -22,6 +23,10 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
   const [reviewerId] = useState(props.securityStatus.user.id);
   const [view, setView] = useState<ReviewerIntakeView>(emptyReviewerIntake);
   const [blocked, setBlocked] = useState<"account_changed" | "signed_out" | null>(null);
+  const [denial, setDenial] = useState<ReviewerVerificationParentDenial>({
+    epoch: 0,
+    reason: null,
+  });
   const active = useRef<AbortController | null>(null);
   const running = useRef(false);
   const userId = props.securityStatus.user.id;
@@ -67,6 +72,15 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
   }
 
   const fail = useCallback((error: ReviewerIntakeError, mutation = false) => {
+    if (
+      error === "forbidden" ||
+      error === "fresh_auth_required" ||
+      error === "email_verification_required" ||
+      error === "security_unavailable"
+    ) {
+      const reason = error;
+      setDenial((previous) => ({ epoch: previous.epoch + 1, reason }));
+    }
     setView((previous) => ({
       ...previous,
       error,
@@ -89,6 +103,20 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
     setBlocked(reason);
     setView((previous) => ({ ...previous, rows: [], cursor: null, receipt: null, busy: false }));
   }, []);
+  const denyReview = useCallback(
+    (error: ReviewerIntakeError) => {
+      active.current?.abort();
+      active.current = null;
+      running.current = false;
+      fail(error);
+      setView((previous) => ({
+        ...previous,
+        busy: false,
+        claimState: previous.claimState === "pending" ? "uncertain" : previous.claimState,
+      }));
+    },
+    [fail],
+  );
 
   useLayoutEffect(() => {
     if (
@@ -252,5 +280,8 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
       if (view.intent !== null) submit(view.intent);
     },
     canRetry: view.intent !== null && ["prepared", "uncertain"].includes(view.claimState),
+    invalidate,
+    denyReview,
+    denial,
   };
 }

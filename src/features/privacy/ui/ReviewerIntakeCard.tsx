@@ -12,8 +12,10 @@ import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { useFormatters } from "@/lib/useFormatters";
 import { privacyRequestMessagesForLocale } from "../privacyRequestMessages";
 import { privacyReviewerMessagesForLocale } from "../privacyReviewerMessages";
+import { ReviewerVerificationStart } from "./ReviewerVerificationStart";
 import type { ReviewerIntakeCardProps, ReviewerIntakeRow } from "./reviewerIntakeModel";
 import { useReviewerIntake } from "./useReviewerIntake";
+import { useReviewerVerificationStart } from "./useReviewerVerificationStart";
 
 export type { ReviewerIntakeCardProps } from "./reviewerIntakeModel";
 
@@ -141,7 +143,7 @@ function IntakeFeedback({ task, L }: IntakeSectionProps) {
   );
 }
 
-function IntakeQueue({ task, L }: IntakeSectionProps) {
+function IntakeQueue({ task, L, claimLocked }: IntakeSectionProps & { claimLocked: boolean }) {
   if (task.hideRows) return null;
   return (
     <>
@@ -152,7 +154,7 @@ function IntakeQueue({ task, L }: IntakeSectionProps) {
               key={row.id}
               row={row}
               L={L}
-              disabled={task.busy || task.intent !== null}
+              disabled={task.busy || task.intent !== null || claimLocked}
               claim={task.claim}
             />
           ))}
@@ -174,6 +176,14 @@ export function ReviewerIntakeCard(props: ReviewerIntakeCardProps) {
   const locale = useLocale();
   const L = privacyReviewerMessagesForLocale(locale);
   const task = useReviewerIntake(props);
+  const verification = useReviewerVerificationStart({
+    ...props,
+    claimReceipt: task.receipt,
+    claimIntent: task.intent,
+    parentDenial: task.denial,
+    onInvalidate: task.invalidate,
+    onDeny: task.denyReview,
+  });
   return (
     <div dir={directionForLocale(locale)} className={`${BLOCK_CLASS} ph-no-capture`}>
       <SettingsCard>
@@ -193,7 +203,8 @@ export function ReviewerIntakeCard(props: ReviewerIntakeCardProps) {
               <p className="text-sm text-muted-foreground">{L.liveWarning}</p>
               <IntakeControls task={task} L={L} />
               <IntakeFeedback task={task} L={L} />
-              <IntakeQueue task={task} L={L} />
+              <ReviewerVerificationStart task={verification} />
+              <IntakeQueue task={task} L={L} claimLocked={verification.locksClaim} />
             </>
           )}
         </SettingsCardBody>

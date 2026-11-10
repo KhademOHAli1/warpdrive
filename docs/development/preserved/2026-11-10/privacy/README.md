@@ -1,0 +1,9 @@
+# Preserved local privacy work
+
+The original dirty privacy checkout was based on `7e747e99`. Its modified and untracked source was compared by content with current main `a341abee` before transfer. The manifest accounts for all 156 original files: 62 were already byte-equal to main, 86 unique source/test files were ported and completed, and eight older shared metadata/equivalent helper files were reconciled against current main.
+
+The older dependency additions and export error IDs already exist on main. Shared inventory files were updated additively with current hashes, preserving newer analytics, authentication, company, billing and other declarations. Historical status prose already present on main was retained. The helper-only difference reused a function that main already contains equivalently; the newer native snapshot assertion remains intact. None of those eight older full files replaced current main.
+
+Ported code includes exact-case original-intake review, preliminary native subject projection, explicit reviewer verification transitions and a bounded discovery-status connection adapter with cancellation regressions. The original reader scaffold was replaced and the reviewer cards are mounted at the privacy root. The observation adapter remains an internal building block, consistent with the existing main status service; no public observation endpoint or automatic polling is claimed.
+
+The source/test file hashes identify the original preserved bytes before completion fixes, not the final candidate bytes. The original checkout remains unchanged and a private byte-for-byte source snapshot was retained during reconciliation. The manifest does not establish full privacy programme or installation acceptance. See the dated evidence in `docs/privacy-reviewer-intake.md` and canonical privacy issues for remaining scope.

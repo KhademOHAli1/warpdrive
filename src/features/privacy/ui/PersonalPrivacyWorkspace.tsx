@@ -12,6 +12,7 @@ import { privacyRequestMessagesForLocale } from "../privacyRequestMessages";
 import { loadOwnPrivacySecurity } from "./loadOwnPrivacySecurity";
 import { OwnPrivacyCaseStatus } from "./OwnPrivacyCaseStatus";
 import { OwnPrivacyRequestForm } from "./OwnPrivacyRequestForm";
+import { ReviewerCaseReferenceEntry } from "./ReviewerCaseReferenceEntry";
 import { ReviewerIntakeCard } from "./ReviewerIntakeCard";
 
 type WorkspaceState = {
@@ -183,6 +184,11 @@ export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
           <>
             <OwnPrivacyRequestForm securityStatus={security} refreshSecurity={refreshSecurity} />
             <ReviewerIntakeCard
+              securityStatus={security}
+              refreshSecurity={refreshSecurity}
+              securityUnavailable={view.unavailable}
+            />
+            <ReviewerCaseReferenceEntry
               securityStatus={security}
               refreshSecurity={refreshSecurity}
               securityUnavailable={view.unavailable}
