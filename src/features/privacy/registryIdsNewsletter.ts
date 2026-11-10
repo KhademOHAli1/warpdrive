@@ -26,7 +26,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/operationReceiptsPolicy.ts#0257201d42999f00f779459de99afc7517a2ad370c836b690b8cbb7ba8c4aa05",
   "sourceReview:src/features/newsletter/router.ts#52832c25619cd7aa642247ff3cdb30d0973713b5d0a126bd68d3822bcb810532",
   "sourceReview:src/features/newsletter/schema/operationReceipts.ts#72a974da475d645c6cfb769a21554168902cb1897166beec62b023d38bc0d696",
-  "sourceReview:src/features/newsletter/ui/client.ts#1068da89dc6cbcbe2942e8879a8fc3665957fa8898543673c058d36f02ece05d",
+  "sourceReview:src/features/newsletter/ui/client.ts#f9c650c5a09ddacde64f9dfe93a6e91ec544a094699d3a50fc0d15de6cbb965f",
   "table:newsletter_operation_receipts",
   "writer:src/features/newsletter/admin/operations.ts#execute:sql",
   "writer:src/features/newsletter/operation.ts#execute:none",

@@ -60,7 +60,7 @@ function pendingEntries(actorId: string): [string, string][] {
     const entries: [string, string][] = [];
     for (let index = 0; index < sessionStorage.length; index += 1) {
       const key = sessionStorage.key(index);
-      if (!key?.startsWith(prefix)) continue;
+      if (key === null || !key.startsWith(prefix)) continue;
       const id = sessionStorage.getItem(key);
       if (id !== null && uuidPattern.test(id)) entries.push([key, id]);
     }
