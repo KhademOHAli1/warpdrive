@@ -6,6 +6,8 @@ const text: MappingValueContract = { kind: "text", nullable: false };
 const deal: MappingValueContract = { kind: "entity", entity: "deal", nullable: false };
 const contracts: Record<WorkflowNode["type"], OutputContracts> = {
   "trigger.manual": { recordId: deal },
+  "trigger.schedule": {},
+  "trigger.webhook": { recordId: deal },
   "trigger.record": { recordId: deal, eventId: text },
   "record.read": {
     id: deal,
@@ -17,8 +19,29 @@ const contracts: Record<WorkflowNode["type"], OutputContracts> = {
     currency: text,
     expectedCloseDate: { kind: "date", nullable: true },
   },
+  "record.create": { id: text },
+  "record.update": { id: text },
+  "record.delete": { deleted: { kind: "boolean", nullable: false } },
+  "record.search": {
+    firstId: { kind: "text", nullable: true },
+    totalCount: { kind: "number", nullable: false },
+  },
+  "record.upsert": { id: { kind: "entity", entity: "person", nullable: false } },
+  "record.pick": { id: text },
+  "email.draft": {},
+  "http.request": { status: { kind: "number", nullable: false } },
+  "human.form": {},
+  "calendar.create": { id: { kind: "entity", entity: "activity", nullable: false } },
   "activity.create": { id: { kind: "entity", entity: "activity", nullable: false } },
   condition: { result: { kind: "boolean", nullable: false } },
+  ifElse: { matchingBranchId: text },
+  iterator: {
+    currentItemIndex: { kind: "number", nullable: false },
+    processedCount: { kind: "number", nullable: false },
+    failedCount: { kind: "number", nullable: false },
+    hasProcessedAllItems: { kind: "boolean", nullable: false },
+  },
+  filter: { matchesFilter: { kind: "boolean", nullable: false } },
   delay: { resumeAt: { kind: "instant", nullable: false } },
   notification: { id: text },
 };
@@ -30,6 +53,17 @@ export function mappingOutputContracts(type: WorkflowNode["type"]): OutputContra
 export function isMappingFieldKey(key: string): key is MappingFieldKey {
   return [
     "recordId",
+    "currentItem",
+    "currentItemIndex",
+    "processedCount",
+    "failedCount",
+    "hasProcessedAllItems",
+    "name",
+    "subject",
+    "dueAt",
+    "done",
+    "createdAt",
+    "updatedAt",
     "id",
     "title",
     "ownerId",
@@ -38,6 +72,11 @@ export function isMappingFieldKey(key: string): key is MappingFieldKey {
     "value",
     "currency",
     "result",
+    "deleted",
+    "firstId",
+    "totalCount",
+    "matchesFilter",
+    "matchingBranchId",
     "resumeAt",
     "expectedCloseDate",
   ].includes(key);

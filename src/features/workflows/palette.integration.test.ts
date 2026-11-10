@@ -26,17 +26,34 @@ const denied = { ok: false, error: ERROR_IDS.WORKFLOW_DENIED };
 const types = [
   "trigger.manual",
   "trigger.record",
+  "trigger.schedule",
+  "trigger.webhook",
+  "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.upsert",
+  "record.pick",
+  "email.draft",
+  "calendar.create",
+  "http.request",
+  "human.form",
   "record.read",
   "activity.create",
   "notification",
   "condition",
+  "iterator",
+  "filter",
+  "ifElse",
   "delay",
 ] as const;
 const entrySchema = z.strictObject({
   type: z.enum(types),
   version: z.literal(1),
   support: z.enum(["supported", "unavailable"]),
-  supportReason: z.literal("handler-unavailable").nullable(),
+  supportReason: z
+    .enum(["handler-unavailable", "http-grant-required", "webhook-key-required"])
+    .nullable(),
   provider: z.enum(["not-required", "not-assessed"]),
   executionReasons: z.array(z.enum(["activity-create-required", "task-type-unavailable"])).max(2),
 });
@@ -47,7 +64,7 @@ const snapshotSchema = z.strictObject({
     allowed: z.boolean(),
     reason: z.enum(["workflow-edit-required", "workflow-archived"]).nullable(),
   }),
-  entries: z.array(entrySchema).length(7),
+  entries: z.array(entrySchema).length(types.length),
 });
 
 async function setupPalette() {
@@ -296,7 +313,7 @@ it("validates service UUIDs and the actual protected router's strict input bound
   }
 });
 
-it("returns only the exact seven-entry DTO without effects and safely handles read failure and abort", async () => {
+it("returns the exact provider-safe palette DTO without effects and safely handles read failure and abort", async () => {
   const test = await setupPalette();
   try {
     await test.db
@@ -312,9 +329,17 @@ it("returns only the exact seven-entry DTO without effects and safely handles re
     expect(snapshot.entries.map((entry) => entry.type)).toEqual(types);
     for (const entry of snapshot.entries) {
       const unavailable = entry.type === "trigger.record" || entry.type === "notification";
+      const reasons = {
+        "trigger.webhook": "webhook-key-required",
+        "http.request": "http-grant-required",
+      } as const;
+      const providerReason =
+        entry.type === "trigger.webhook" || entry.type === "http.request"
+          ? reasons[entry.type]
+          : null;
       expect(entry).toMatchObject({
-        support: unavailable ? "unavailable" : "supported",
-        supportReason: unavailable ? "handler-unavailable" : null,
+        support: unavailable || providerReason !== null ? "unavailable" : "supported",
+        supportReason: unavailable ? "handler-unavailable" : providerReason,
         provider: unavailable ? "not-assessed" : "not-required",
       });
       expect(entry.executionReasons).toEqual(

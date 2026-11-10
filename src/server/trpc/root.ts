@@ -1,3 +1,4 @@
+import { calendarsRouter } from "@/features/activities/calendarRouter";
 import { activitiesRouter } from "@/features/activities/router";
 import { collaborationRouter } from "@/features/collaboration/router";
 import { contactsRouter } from "@/features/contacts/router";
@@ -33,6 +34,7 @@ export const appRouter = router({
   customFields: customFieldsRouter,
   collaboration: collaborationRouter,
   activities: activitiesRouter,
+  calendars: calendarsRouter,
   import: importRouter,
   labels: labelsRouter,
   mailLabels: mailLabelsRouter,

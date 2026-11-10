@@ -14,6 +14,8 @@ import {
   paletteCatalog,
   type WorkflowPaletteSnapshot,
 } from "./paletteCatalog";
+import { hasWorkflowHttpOperatorGrant } from "./workflowHttpOperatorPolicy";
+import { hasWorkflowWebhookKey } from "./workflowWebhookOperator";
 
 function authoringState(
   actor: PermSetUser,
@@ -25,15 +27,27 @@ function authoringState(
   return { allowed: true, reason: null };
 }
 
-function entryStates(reasons: PaletteExecutionReason[]): PaletteEntryState[] {
-  return paletteCatalog.map((entry) => ({
-    type: entry.type,
-    version: entry.version,
-    support: entry.support,
-    supportReason: entry.supportReason,
-    provider: entry.provider,
-    executionReasons: entry.type === "activity.create" ? [...reasons] : [],
-  }));
+function entryStates(
+  reasons: PaletteExecutionReason[],
+  httpGranted: boolean,
+  webhookGranted: boolean,
+): PaletteEntryState[] {
+  return paletteCatalog.map((entry) => {
+    const missingWebhookKey = entry.type === "trigger.webhook" && !webhookGranted;
+    const missingHttpGrant = entry.type === "http.request" && !httpGranted;
+    return {
+      type: entry.type,
+      version: entry.version,
+      support: missingHttpGrant || missingWebhookKey ? "unavailable" : entry.support,
+      supportReason: missingHttpGrant
+        ? "http-grant-required"
+        : missingWebhookKey
+          ? "webhook-key-required"
+          : entry.supportReason,
+      provider: entry.provider,
+      executionReasons: entry.type === "activity.create" ? [...reasons] : [],
+    };
+  });
 }
 
 // Editing/prerequisite metadata only. Publication, target-record access and actual
@@ -76,7 +90,11 @@ export async function readWorkflowPalette(
       workflowId: workflow.id,
       revision: workflow.revision,
       authoring: authoringState(currentActor, workflow),
-      entries: entryStates(reasons),
+      entries: entryStates(
+        reasons,
+        currentActor.type === "admin" && hasWorkflowHttpOperatorGrant(workflow.id),
+        hasWorkflowWebhookKey(workflow.id, workflow.ownerId),
+      ),
     });
   } catch (error) {
     signal.throwIfAborted();

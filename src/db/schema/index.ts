@@ -1,4 +1,8 @@
 // Installation-scoped subscription, company and operational-work tables.
+
+export * from "@/features/agency-projects/schema/agencyProjectAudit";
+export * from "@/features/agency-projects/schema/agencyProjectSettings";
+export * from "@/features/agency-projects/schema/agencyProjects";
 export * from "@/features/billing/schema";
 export * from "@/features/company-profile/schema";
 export * from "@/features/work-profile/schema";
@@ -11,6 +15,11 @@ export * from "./authEmailVerification";
 export * from "./authentication";
 export * from "./authManagement";
 export * from "./authTotpReplay";
+export * from "./calendarProviderAccounts";
+export * from "./calendarProviderCatalog";
+export * from "./calendarReminderIntents";
+export * from "./calendarReminderSettings";
+export * from "./calendars";
 export * from "./changeLogs";
 export * from "./comments";
 export * from "./contactFollowers";
@@ -66,6 +75,7 @@ export * from "./stages";
 export * from "./system";
 export * from "./userPreferences";
 export * from "./workflowExecutions";
+export * from "./workflowExternalEffects";
 export * from "./workflows";
 export * from "./workflowV2";
 export * from "./workflowV2Events";

@@ -147,6 +147,8 @@ export async function withPrivacyAuthority<R extends Result<unknown, unknown>>(
       return result;
     });
   } catch (error) {
+    // Do not let a saved domain failure hide cancellation during rollback.
+    signal.throwIfAborted();
     if (failedResult !== undefined && error instanceof TransactionRollbackError)
       return failedResult;
     throw error;

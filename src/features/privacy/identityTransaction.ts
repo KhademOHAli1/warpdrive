@@ -35,6 +35,8 @@ export async function identityTransaction<R extends Result<unknown, unknown>>(
       return result;
     });
   } catch (error) {
+    // Cancellation can arrive with the driver's rollback acknowledgement.
+    signal.throwIfAborted();
     if (failed !== undefined && error instanceof TransactionRollbackError) return failed;
     throw error;
   }

@@ -2,11 +2,13 @@ import { eq, sql } from "drizzle-orm";
 import { assert, expect, it } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { activities, workflowRuns, workflows } from "@/db/schema";
+import { activities, workflowRuns, workflowSteps, workflows } from "@/db/schema";
 import type { TestDb } from "@/test/db";
+import { advanceWorkflowRun } from "./execution";
 import { setupWorkflowExecution } from "./execution.test-helpers";
-import { publishWorkflow, saveWorkflowDraft } from "./persistence";
+import { createWorkflow, publishWorkflow, saveWorkflowDraft } from "./persistence";
 import { admitManualRun } from "./runAdmission";
+import type { WorkflowDefinition } from "./schemas";
 
 const signal = new AbortController().signal;
 const conflict = { ok: false, error: ERROR_IDS.WORKFLOW_CONFLICT };
@@ -117,6 +119,119 @@ it("admits a reviewed live command pinned to the exact current publication", asy
     expect(admitted.value).toMatchObject({ versionId: test.version.id, mode: "live" });
     expect(await test.db.select().from(workflowRuns)).toHaveLength(1);
     expect(await test.db.select().from(activities)).toHaveLength(0);
+  } finally {
+    await test.close();
+  }
+});
+
+it("executes and replays a reviewed Global live command after republishing for Deals", async () => {
+  const test = await setupWorkflowExecution();
+  try {
+    const name = "Global task workflow";
+    const subject = "Review the synthetic checklist";
+    const definition: WorkflowDefinition = {
+      schemaVersion: 1,
+      nodes: [
+        {
+          id: "start",
+          type: "trigger.manual",
+          version: 1,
+          name: "Start",
+          config: { scope: "global" },
+        },
+        {
+          id: "task",
+          type: "activity.create",
+          version: 1,
+          name: "Create task",
+          config: { subject: { kind: "value", value: subject } },
+        },
+      ],
+      edges: [{ from: "start", to: "task", port: "next" }],
+    };
+    const created = await createWorkflow(test.db, test.actor, { name, definition }, signal);
+    assert(created.ok, JSON.stringify(created));
+    const { id: workflowId, revision } = created.value;
+    const globalPublication = await publishWorkflow(
+      test.db,
+      test.actor,
+      workflowId,
+      revision,
+      signal,
+    );
+    assert(globalPublication.ok, JSON.stringify(globalPublication));
+    const input = {
+      workflowId,
+      requestKey: crypto.randomUUID(),
+      mode: "live" as const,
+      reviewedVersionId: globalPublication.value.id,
+    };
+    const forged = { ...input, recordId: test.deal.id };
+    expect(await admitManualRun(test.db, test.actor, forged, signal)).toEqual({
+      ok: false,
+      error: ERROR_IDS.WORKFLOW_INVALID,
+    });
+    expect(await test.db.select().from(workflowRuns)).toHaveLength(0);
+    const admitted = await admitManualRun(test.db, test.actor, input, signal);
+    assert(admitted.ok, JSON.stringify(admitted));
+    const runId = admitted.value.id;
+
+    const saved = await saveWorkflowDraft(
+      test.db,
+      test.actor,
+      { id: workflowId, revision, name, definition: test.definition },
+      signal,
+    );
+    assert(saved.ok, JSON.stringify(saved));
+    const current = await publishWorkflow(
+      test.db,
+      test.actor,
+      workflowId,
+      saved.value.revision,
+      signal,
+    );
+    assert(current.ok, JSON.stringify(current));
+    expect(current.value.id).not.toBe(globalPublication.value.id);
+
+    expect(await advanceWorkflowRun(test.db, runId, signal)).toEqual({
+      ok: true,
+      value: "running",
+    });
+    expect(await advanceWorkflowRun(test.db, runId, signal)).toEqual({
+      ok: true,
+      value: "succeeded",
+    });
+    const steps = await test.db
+      .select({
+        nodeId: workflowSteps.nodeId,
+        output: workflowSteps.output,
+        simulated: workflowSteps.simulated,
+      })
+      .from(workflowSteps)
+      .where(eq(workflowSteps.runId, runId));
+    expect(steps.find((step) => step.nodeId === "start")).toEqual({
+      nodeId: "start",
+      output: {},
+      simulated: false,
+    });
+    expect(
+      await test.db
+        .select({ subject: activities.subject, dealId: activities.dealId })
+        .from(activities),
+    ).toEqual([{ subject, dealId: null }]);
+
+    const replay = await admitManualRun(test.db, test.actor, input, signal);
+    assert(replay.ok, JSON.stringify(replay));
+    expect(replay.value).toMatchObject({
+      id: runId,
+      versionId: globalPublication.value.id,
+      mode: "live",
+      status: "succeeded",
+    });
+    expect(replay.value.trigger).toEqual({ scope: "global" });
+    expect(replay.value.outputs.start).toEqual({});
+    expect(await admitManualRun(test.db, test.actor, forged, signal)).toEqual(conflict);
+    expect(await test.db.select().from(workflowRuns)).toHaveLength(1);
   } finally {
     await test.close();
   }

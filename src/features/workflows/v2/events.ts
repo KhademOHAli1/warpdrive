@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import {
   workflowsV2,
@@ -22,7 +22,7 @@ export interface WorkflowV2Event {
   changedFields: string[];
   payload: BlockOutput;
   originRunId?: string | null;
-  occurredAt?: string;
+  occurredAt: Date;
 }
 export type EventProjection = (
   db: Db,
@@ -94,7 +94,7 @@ export async function admitWorkflowV2Event(
       )
         return null;
       const version = await publishedWorkflowV2(tx, workflow.id, workflow.publishedNumber);
-      if (version === null) return null;
+      if (version === null || event.occurredAt < version.createdAt) return null;
       const trigger = version.definition.trigger;
       const wanted = `record.${action}`;
       if (
@@ -165,12 +165,6 @@ function changedFieldsMatch(
     watched.some((field) => typeof field === "string" && fields.includes(field))
   );
 }
-function matchesWait(wait: typeof workflowV2Waits.$inferSelect, event: WorkflowV2Event): boolean {
-  if (wait.config.eventName !== event.eventName) return false;
-  if (event.occurredAt !== undefined && new Date(event.occurredAt) < wait.createdAt) return false;
-  if (wait.expiresAt !== null && wait.expiresAt <= new Date()) return false;
-  return typeof wait.config.recordId !== "string" || wait.config.recordId === event.recordId;
-}
 export async function resumeWorkflowV2Event(
   db: Db,
   event: WorkflowV2Event,
@@ -179,19 +173,37 @@ export async function resumeWorkflowV2Event(
   signal: AbortSignal,
 ): Promise<string[]> {
   const waits = await db
-    .select()
+    .select({ id: workflowV2Waits.id, runId: workflowV2Waits.runId })
     .from(workflowV2Waits)
-    .where(and(eq(workflowV2Waits.kind, "event"), eq(workflowV2Waits.status, "open")));
+    .where(
+      and(
+        eq(workflowV2Waits.kind, "event"),
+        eq(workflowV2Waits.status, "open"),
+        sql`${workflowV2Waits.config}->>'eventName' = ${event.eventName}`,
+        or(
+          sql`${workflowV2Waits.config}->>'recordId' IS NULL`,
+          sql`lower(${workflowV2Waits.config}->>'recordId') = ${event.recordId}`,
+        ),
+        sql`date_trunc('milliseconds', ${workflowV2Waits.createdAt}) <= ${event.occurredAt.toISOString()}::timestamptz`,
+        or(isNull(workflowV2Waits.expiresAt), gt(workflowV2Waits.expiresAt, event.occurredAt)),
+      ),
+    );
   const ids: string[] = [];
   for (const wait of waits) {
-    if (!matchesWait(wait, event)) continue;
-    const [run] = await db.select().from(workflowV2Runs).where(eq(workflowV2Runs.id, wait.runId));
-    if (run === undefined || run.status !== "waiting") continue;
-    const actor = await hydrateActor(db, run.actorId, signal);
-    if (actor === null) continue;
-    const payload = await projectEvent(db, actor, event, signal);
-    if (payload === null || !changedFieldsMatch(wait.config.updatedFields, payload)) continue;
-    const result = await resumeV2EventWait(db, wait.id, payload, adapters, signal, event.eventKey);
+    signal.throwIfAborted();
+    const result = await resumeV2EventWait(
+      db,
+      wait.id,
+      event,
+      adapters,
+      signal,
+      async (tx, actor, config) => {
+        const payload = await projectEvent(tx, actor, event, signal);
+        return payload !== null && changedFieldsMatch(config.updatedFields, payload)
+          ? payload
+          : null;
+      },
+    );
     if (result.ok) ids.push(wait.runId);
   }
   return ids;

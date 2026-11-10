@@ -10,6 +10,7 @@ import type {
   ConfigurationIssueCode,
   ConfigurationMetadata,
 } from "./configurationTypes";
+import { delayDurationSettings, delayDurationUnits } from "./delayConfig";
 import { mappingPathNodes } from "./mappingAvailability";
 import {
   customMappingContract,
@@ -28,6 +29,7 @@ import type {
   MappingTargetResult,
   MappingValueContract,
 } from "./mappingTypes";
+import { applyRecordSearchMapping, currentRecordSearchMapping } from "./recordSearchMapping";
 import { actionRegistry } from "./registry";
 import {
   bindingSchema,
@@ -37,6 +39,23 @@ import {
   type WorkflowDefinition,
   type WorkflowNode,
 } from "./schemas";
+import { workflowCalendarEventFieldTarget } from "./workflowCalendarEventContract";
+import { workflowEmailDraftFieldTarget } from "./workflowEmailDraftContract";
+import {
+  workflowHttpRequestConfig,
+  workflowHttpRequestTarget,
+} from "./workflowHttpRequestContract";
+import { workflowHumanFormOutputDescriptors } from "./workflowHumanFormContract";
+import { iteratorMappingOutputs, iteratorOutputVisible } from "./workflowIteratorMapping";
+import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
+import { workflowPersonUpsertTarget } from "./workflowPersonUpsertContract";
+import {
+  recordCreateEntitySchema,
+  recordCreateFieldTarget,
+  recordCreateOutputContract,
+} from "./workflowRecordCreateContract";
+import { recordMutationTarget } from "./workflowRecordMutationContract";
+import { recordSearchBindingTarget, recordSearchDraftConfig } from "./workflowRecordQueryContract";
 
 function issue(
   nodeId: string,
@@ -56,10 +75,60 @@ function qualifiedSource(node: WorkflowNode): boolean {
   return node.type !== "record.read" || node.config.entity === "deal";
 }
 
-function outputsFor(node: WorkflowNode): MappingOutput[] {
+function httpMappingOutputs(node: WorkflowNode): MappingOutput[] {
+  const parsed = workflowHttpRequestConfig.safeParse(node.config);
+  if (!parsed.success) return [];
+  return [
+    {
+      nodeId: node.id,
+      path: ["status"],
+      field: "httpStatus",
+      contract: { kind: "number", nullable: false },
+    },
+    ...(parsed.data.response ?? []).map(
+      (field): MappingOutput => ({
+        nodeId: node.id,
+        path: ["result", field.name],
+        field: "httpResult",
+        label: field.name,
+        contract: { kind: field.type, nullable: field.nullable === true },
+      }),
+    ),
+  ];
+}
+
+function outputsFor(definition: WorkflowDefinition, node: WorkflowNode): MappingOutput[] {
   if (!qualifiedSource(node)) return [];
+  if (node.type === "iterator") return iteratorMappingOutputs(definition, node);
+  if (node.type === "http.request") return httpMappingOutputs(node);
+  if (node.type === "trigger.webhook" && node.config.httpMethod !== "POST") return [];
+  if (node.type === "trigger.manual" && workflowManualLaunchScope(node.config) !== "deal")
+    return [];
+  if (node.type === "human.form")
+    return workflowHumanFormOutputDescriptors(node.config).map((output) => ({
+      ...output,
+      nodeId: node.id,
+      field: "formAnswer" as const,
+    }));
   const needsConfiguration = !actionRegistry[node.type].config.safeParse(node.config).success;
-  return Object.entries(actionRegistry[node.type].outputContracts).flatMap(([field, contract]) =>
+  const entity =
+    node.type === "record.create" ||
+    node.type === "record.update" ||
+    node.type === "record.search" ||
+    node.type === "record.pick"
+      ? recordCreateEntitySchema.safeParse(node.config.entity)
+      : undefined;
+  if (entity !== undefined && !entity.success) return [];
+  const contracts =
+    entity?.success === true
+      ? node.type === "record.search"
+        ? {
+            firstId: { ...recordCreateOutputContract(entity.data), nullable: true },
+            totalCount: { kind: "number" as const, nullable: false },
+          }
+        : { id: recordCreateOutputContract(entity.data) }
+      : actionRegistry[node.type].outputContracts;
+  return Object.entries(contracts).flatMap(([field, contract]) =>
     isMappingFieldKey(field)
       ? [
           {
@@ -84,7 +153,9 @@ export function mappingOutputForReference(
   const node = nodes[0];
   return node === undefined
     ? undefined
-    : outputsFor(node).find((output) => output.path.join(".") === reference.path.join("."));
+    : outputsFor(definition, node).find(
+        (output) => output.path.join(".") === reference.path.join("."),
+      );
 }
 
 function catalog(
@@ -97,7 +168,13 @@ function catalog(
   const path = mappingPathNodes(definition, nodeId, includeCurrent);
   return {
     state: "ready",
-    outputs: path.nodes.flatMap(outputsFor),
+    outputs: path.nodes.flatMap((node, index) =>
+      outputsFor(definition, node).filter(
+        (output) =>
+          node.type !== "iterator" ||
+          iteratorOutputVisible(definition, output, path.nodes[index + 1]?.id ?? nodeId),
+      ),
+    ),
     ...(path.issue === undefined ? {} : { pathIssue: path.issue }),
   };
 }
@@ -220,12 +297,121 @@ function builtinTarget(
   if (field.readOnly === true)
     return unavailableTarget(node.id, path, "unsupported-source", "unsupported_setting");
   const target = targetForField(node, field);
-  if (node.type === "condition" && path[0] === "right") {
+  if ((node.type === "condition" || node.type === "filter") && path[0] === "right") {
     const left = conditionRightContract(definition, node);
     if (left?.kind === "date" || left?.kind === "instant")
       target.contract = { kind: left.kind, nullable: true };
   }
   return { state: "ready", target };
+}
+
+function delayScheduleTarget(node: WorkflowNode, path: readonly string[]): MappingTargetResult {
+  const durationUnit =
+    node.config.delayType === "DURATION" &&
+    path.length === 2 &&
+    path[0] === "duration" &&
+    delayDurationUnits.some((unit) => unit === path[1]);
+  const instant =
+    node.config.delayType === "SCHEDULED_DATE" &&
+    path.length === 1 &&
+    path[0] === "scheduledDateTime";
+  if (!durationUnit && !instant)
+    return unavailableTarget(node.id, path, "unknown-output", "unknown_setting");
+  return {
+    state: "ready",
+    target: {
+      nodeId: node.id,
+      path: [...path],
+      required: instant,
+      mode: "binding",
+      contract: { kind: instant ? "instant" : "number", nullable: false },
+      acceptedKinds: instant ? ["instant", "date"] : ["number", "decimal"],
+    },
+  };
+}
+
+function extendedTargetResult(
+  node: WorkflowNode,
+  path: readonly string[],
+  target?: MappingTarget,
+): MappingTargetResult {
+  return target === undefined
+    ? unavailableTarget(node.id, path, "unknown-output", "unsupported_setting")
+    : { state: "ready", target };
+}
+
+function recordFieldMappingTarget(
+  node: WorkflowNode,
+  path: readonly string[],
+): MappingTarget | undefined {
+  const entity = recordCreateEntitySchema.safeParse(node.config.entity);
+  if (!entity.success) return undefined;
+  if (node.type === "record.create") {
+    const [section, field] = path;
+    return section === "fields" && path.length === 2 && field !== undefined
+      ? recordCreateFieldTarget(node.id, entity.data, field)
+      : undefined;
+  }
+  return node.type === "record.update" || path[0] === "recordId"
+    ? recordMutationTarget(node.id, entity.data, path)
+    : undefined;
+}
+
+function extendedMappingTarget(
+  node: WorkflowNode,
+  path: readonly string[],
+): MappingTargetResult | undefined {
+  switch (node.type) {
+    case "record.create":
+    case "record.update":
+    case "record.delete":
+      return extendedTargetResult(node, path, recordFieldMappingTarget(node, path));
+    case "record.upsert":
+      return extendedTargetResult(node, path, workflowPersonUpsertTarget(node.id, path));
+    case "record.search": {
+      const draft = recordSearchDraftConfig.safeParse(node.config);
+      return extendedTargetResult(
+        node,
+        path,
+        draft.success ? recordSearchBindingTarget(node.id, draft.data, path) : undefined,
+      );
+    }
+    case "calendar.create": {
+      const field = path.length === 1 ? path[0] : undefined;
+      return extendedTargetResult(
+        node,
+        path,
+        field === undefined
+          ? undefined
+          : workflowCalendarEventFieldTarget(node.id, field, node.config.allDay === true),
+      );
+    }
+    case "http.request":
+      return extendedTargetResult(node, path, workflowHttpRequestTarget(node.id, path));
+    case "email.draft": {
+      const field = path.length === 1 ? path[0] : undefined;
+      return extendedTargetResult(
+        node,
+        path,
+        field === undefined ? undefined : workflowEmailDraftFieldTarget(node.id, field),
+      );
+    }
+    case "activity.create":
+    case "human.form":
+    case "iterator":
+    case "condition":
+    case "delay":
+    case "filter":
+    case "ifElse":
+    case "notification":
+    case "record.pick":
+    case "record.read":
+    case "trigger.manual":
+    case "trigger.schedule":
+    case "trigger.webhook":
+    case "trigger.record":
+      return undefined;
+  }
 }
 
 export function describeMappingTarget(
@@ -238,7 +424,11 @@ export function describeMappingTarget(
   const node = nodes[0];
   if (nodes.length !== 1 || node === undefined)
     return unavailableTarget(nodeId, path, "source-missing", "reference_missing");
-  if (node.type === "condition" && path[0] === "expression")
+  const extended = extendedMappingTarget(node, path);
+  if (extended !== undefined) return extended;
+  if (node.type === "delay" && Object.hasOwn(node.config, "delayType"))
+    return delayScheduleTarget(node, path);
+  if ((node.type === "condition" || node.type === "filter") && path[0] === "expression")
     return groupedConditionTarget(definition, node, path);
   return path[0] === "customFields"
     ? customTarget(node, path, metadata)
@@ -545,6 +735,54 @@ export function inspectMapping(
   return literalInspection(definition, nodeId, target, raw, metadata);
 }
 
+function writeDelayMapping(node: WorkflowNode, unit: string, binding: ReferenceBinding): boolean {
+  const previous = node.config.duration;
+  const settings = delayDurationSettings(previous);
+  if (previous !== undefined && settings === undefined) return false;
+  node.config.duration = {
+    ...(previous !== null && typeof previous === "object" ? previous : {}),
+    [unit]: binding,
+  };
+  return true;
+}
+
+function writeRecordMapping(node: WorkflowNode, field: string, binding: ReferenceBinding): boolean {
+  const current = node.config.fields;
+  if (current === null || typeof current !== "object" || Array.isArray(current)) return false;
+  node.config.fields = { ...current, [field]: binding };
+  return true;
+}
+
+function writeReference(
+  node: WorkflowNode,
+  path: readonly string[],
+  binding: ReferenceBinding,
+): boolean {
+  const [key, field] = path;
+  if (key === undefined) return false;
+  if (node.type === "record.search") return applyRecordSearchMapping(node, path, binding);
+  if (key === "duration" && field !== undefined && node.type === "delay")
+    return writeDelayMapping(node, field, binding);
+  if (
+    key === "fields" &&
+    field !== undefined &&
+    (node.type === "record.create" ||
+      node.type === "record.update" ||
+      node.type === "record.upsert")
+  )
+    return writeRecordMapping(node, field, binding);
+  if (key !== "customFields") {
+    node.config[key] = binding;
+    return true;
+  }
+  if (field === undefined) return false;
+  const previous = node.config.customFields;
+  const settings =
+    previous !== null && typeof previous === "object" && !Array.isArray(previous) ? previous : {};
+  node.config.customFields = { ...settings, [field]: binding };
+  return true;
+}
+
 function applyReference(
   definition: WorkflowDefinition,
   nodeId: string,
@@ -553,19 +791,7 @@ function applyReference(
 ): WorkflowDefinition | undefined {
   const copy = structuredClone(definition);
   const node = copy.nodes.find((entry) => entry.id === nodeId);
-  const key = path[0];
-  if (node === undefined || key === undefined) return undefined;
-  if (key !== "customFields") {
-    node.config[key] = binding;
-    return copy;
-  }
-  const id = path[1];
-  if (id === undefined) return undefined;
-  const previous = node.config.customFields;
-  const settings =
-    previous !== null && typeof previous === "object" && !Array.isArray(previous) ? previous : {};
-  node.config.customFields = { ...settings, [id]: binding };
-  return copy;
+  return node !== undefined && writeReference(node, path, binding) ? copy : undefined;
 }
 
 export function sameMappingReference(left: unknown, right: unknown): boolean {
@@ -587,6 +813,21 @@ function currentBinding(
   const node = definition.nodes.find((entry) => entry.id === nodeId);
   const key = path[0];
   if (node === undefined || key === undefined) return undefined;
+  if (node.type === "record.search") return currentRecordSearchMapping(node, path);
+  if (node.type === "delay" && key === "duration" && path[1] !== undefined)
+    return delayDurationSettings(node.config.duration)?.[path[1]];
+  if (
+    (node.type === "record.create" ||
+      node.type === "record.update" ||
+      node.type === "record.upsert") &&
+    key === "fields" &&
+    path[1] !== undefined
+  ) {
+    const fields = node.config.fields;
+    return fields !== null && typeof fields === "object" && !Array.isArray(fields)
+      ? fields[path[1]]
+      : undefined;
+  }
   if (key !== "customFields") return node.config[key];
   const settings = node.config.customFields;
   if (settings === null || typeof settings !== "object" || Array.isArray(settings))

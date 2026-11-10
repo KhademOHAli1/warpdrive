@@ -159,8 +159,14 @@ describe("notifyActivityAssigned", () => {
       const owner = await seedUser(db);
       const dealId = await seedDeal(db, { ownerId: owner.id, visibilityLevel: "all" });
 
+      const inserted = await db.execute<{ id: string }>(sql`
+        INSERT INTO activities(type_id,subject,owner_id,assignee_id,deal_id)
+        SELECT id,'Call',${actor.id},${assignee.id},${dealId} FROM activity_types WHERE key='meeting' LIMIT 1
+        RETURNING id`);
+      const activity = inserted.rows[0];
+      if (activity === undefined) throw new Error("Assigned activity fixture missing");
       await notifyActivityAssigned(db, {
-        activityId: "00000000-0000-0000-0000-000000000001",
+        activityId: activity.id,
         assigneeId: assignee.id,
         actorId: actor.id,
         entityType: "deal",

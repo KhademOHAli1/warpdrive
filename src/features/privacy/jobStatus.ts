@@ -1,10 +1,14 @@
 import { and, eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
+import type { Pool } from "pg";
 import { z } from "zod";
 import type { Db } from "@/db/client";
+import * as schema from "@/db/schema";
 import { privacyJobs } from "@/db/schema";
 import { err, ok } from "@/types/result";
 import { privacyStorageOperation } from "./casePersistence";
 import { type PrivacyActor, withPrivacyAuthority } from "./permissions";
+import { withPrivacyObservationConnection } from "./privacyObservationConnection";
 
 const statusInputSchema = z.strictObject({ caseId: z.uuid(), jobId: z.uuid() });
 const statusSchema = z.strictObject({
@@ -58,4 +62,16 @@ export async function getDiscoveryJobStatus(
       },
     ),
   );
+}
+
+// Bind only a dedicated bounded Pool. The core read retains its existing authority transaction.
+export function createDiscoveryJobStatusReader(pool: Pool, controlPool: Pool) {
+  return async (actor: PrivacyActor, input: unknown, signal: AbortSignal) => {
+    signal.throwIfAborted();
+    // Reuse the strict boundary before checkout; the unchanged core remains authoritative.
+    if (!statusInputSchema.safeParse(input).success) return err("invalid_input" as const);
+    return withPrivacyObservationConnection(pool, controlPool, signal, (client, operationSignal) =>
+      getDiscoveryJobStatus(drizzle(client, { schema }), actor, input, operationSignal),
+    );
+  };
 }

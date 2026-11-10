@@ -1,6 +1,7 @@
 "use client";
 import { CalendarDays, CheckCircle2, Clock3, Maximize2, Minimize2 } from "lucide-react";
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
@@ -8,6 +9,7 @@ import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { ActivityTimeZoneHint } from "./ActivityTimeZoneHint";
+import { CalendarAdvancedFields } from "./CalendarAdvancedFields";
 import { CalendarEventActions } from "./CalendarEventActions";
 import { CalendarEventCrmDetails } from "./CalendarEventCrmDetails";
 import { CalendarEventDetails } from "./CalendarEventDetails";
@@ -79,6 +81,13 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
   });
   const {
     preferences,
+    advancedOpen,
+    advancedMounted,
+    setAdvancedOpen,
+    onAdvancedChange,
+    setZone,
+    guard,
+    calendarReminders,
     zone,
     t,
     S,
@@ -109,7 +118,7 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && canClose()) props.onClose();
+        if (!open && canClose()) guard.requestClose();
       }}
     >
       <DialogContent
@@ -117,8 +126,7 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
         dir={preferences.locale === "fa" ? "rtl" : "ltr"}
         onCloseAutoFocus={(event) => {
           if (
-            opener !== null &&
-            opener.isConnected &&
+            opener?.isConnected === true &&
             !opener.matches(":disabled") &&
             opener.closest("[hidden],[inert]") === null
           ) {
@@ -225,28 +233,49 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
                       />
                     )}
                   </section>
-                  <CalendarReminderFields
-                    selection={reminder.selection}
-                    date={draft.startDate}
-                    timeZone={reminder.reminderZone}
-                    metadata={reminder.metadata}
-                    legacyWarning={reminder.legacyWarning}
-                    changed={reminder.changed}
-                    pending={pending || !canEdit}
-                    onEnable={(enabled) => reminder.enable(enabled, draft.startTime === "")}
-                    onTime={reminder.chooseTime}
-                    onRefresh={
-                      refreshReminder === undefined
-                        ? undefined
-                        : () => {
-                            void refreshReminder();
-                          }
-                    }
-                    onRetry={() => {
-                      void retryReminder();
-                    }}
-                    dateConfirmation={dateConfirmation}
-                  />
+                  {!calendarReminders && (
+                    <CalendarReminderFields
+                      selection={reminder.selection}
+                      date={draft.startDate}
+                      timeZone={reminder.reminderZone}
+                      metadata={reminder.metadata}
+                      legacyWarning={reminder.legacyWarning}
+                      changed={reminder.changed}
+                      pending={pending || !canEdit}
+                      onEnable={(enabled) => reminder.enable(enabled, draft.startTime === "")}
+                      onTime={reminder.chooseTime}
+                      onRefresh={
+                        refreshReminder === undefined
+                          ? undefined
+                          : () => {
+                              void refreshReminder();
+                            }
+                      }
+                      onRetry={() => {
+                        void retryReminder();
+                      }}
+                      dateConfirmation={dateConfirmation}
+                    />
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAdvancedOpen((open) => !open)}
+                  >
+                    {t("settings.eventCalendar")}
+                  </Button>
+                  {advancedMounted && (
+                    <div hidden={!advancedOpen}>
+                      <CalendarAdvancedFields
+                        editing={props.editing}
+                        allDay={draft.startTime === ""}
+                        timeZone={zone}
+                        onTimeZone={setZone}
+                        onChange={onAdvancedChange}
+                      />
+                    </div>
+                  )}
                   <div className="border-t border-border/70 pt-4">
                     <CalendarEventDetails draft={draft} expanded={details} onChange={change} />
                   </div>
@@ -295,7 +324,7 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
               </span>
             </Button>
             <div className="flex shrink-0 items-center gap-2">
-              <Button variant="ghost" disabled={pending} onClick={props.onClose}>
+              <Button variant="ghost" disabled={pending} onClick={guard.requestClose}>
                 {S.cancel}
               </Button>
               <Tip label={t("editor.saveShortcut")}>
@@ -314,6 +343,16 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
           </footer>
         </form>
       </DialogContent>
+      {guard.open && (
+        <ConfirmDialog
+          open
+          onOpenChange={guard.setOpen}
+          title={t("editor.discardTitle")}
+          description={t("editor.discardBody")}
+          confirmLabel={t("editor.discard")}
+          onConfirm={guard.discard}
+        />
+      )}
     </Dialog>
   );
 }

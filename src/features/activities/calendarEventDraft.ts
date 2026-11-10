@@ -235,5 +235,7 @@ export function calendarEventPatch(
   if (d.videoCallUrl !== initial.videoCallUrl) patch.videoCallUrl = d.videoCallUrl || null;
   if (d.ownerId !== initial.ownerId && d.ownerId !== "") patch.assigneeId = d.ownerId;
   Object.assign(patch, calendarTemporalPatch(stored, d, timeZone));
-  return Object.keys(patch).length === 1 ? null : patch;
+  return Object.keys(patch).length === 1
+    ? null
+    : { ...patch, ...(stored.version === undefined ? {} : { expectedVersion: stored.version }) };
 }

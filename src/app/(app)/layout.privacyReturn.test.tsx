@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   currency: vi.fn(),
   companyMember: vi.fn(),
   workNavigation: vi.fn(),
+  projectLanding: vi.fn(),
   requestHeaders: new Headers(),
   headers: vi.fn(),
   jar: new Map<string, { value: string }>(),
@@ -32,6 +33,7 @@ vi.mock("@/features/company-profile/repository", () => ({
   getCompanyMemberProjection: mocks.companyMember,
 }));
 vi.mock("@/features/work-profile/navigation", () => ({ readWorkNavigation: mocks.workNavigation }));
+vi.mock("@/features/agency-projects/nativeViews", () => ({ projectLanding: mocks.projectLanding }));
 vi.mock("next/headers", () => ({
   headers: mocks.headers,
   cookies: () => Promise.resolve(mocks.jar),
@@ -81,6 +83,7 @@ beforeEach(() => {
   mocks.currency.mockResolvedValue("EUR");
   mocks.companyMember.mockResolvedValue(brand);
   mocks.workNavigation.mockResolvedValue(navigation);
+  mocks.projectLanding.mockResolvedValue(null);
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -106,6 +109,7 @@ async function expectDestination(path: string) {
   expect(mocks.currency).not.toHaveBeenCalled();
   expect(mocks.companyMember).not.toHaveBeenCalled();
   expect(mocks.workNavigation).not.toHaveBeenCalled();
+  expect(mocks.projectLanding).not.toHaveBeenCalled();
 }
 
 test.each([
@@ -180,3 +184,26 @@ test("an authenticated actor keeps the existing shell without a return-path redi
   expect(mocks.companyMember).toHaveBeenCalledWith(db, expect.any(AbortSignal));
   expect(mocks.workNavigation).toHaveBeenCalledWith(db, actor, expect.any(AbortSignal));
 });
+
+test.each([
+  [{ enabled: true, canEnable: false }, true],
+  [{ enabled: false, canEnable: true }, true],
+  [{ enabled: false, canEnable: false }, false],
+  [null, false],
+])(
+  "derives Projects navigation from current native module admission %#",
+  async (landing, visible) => {
+    const session = { userId: "00000000-0000-4000-8000-000000000001", sessionId: "native-session" };
+    mocks.context.mockResolvedValueOnce({
+      db,
+      actor: { id: session.userId, name: "Member", email: "member@example.test", type: "regular" },
+      session,
+    });
+    mocks.projectLanding.mockResolvedValueOnce(landing);
+    const tree = await AppLayout({ children: "PRIVATE-child" });
+    expect(tree).toMatchObject({
+      props: { children: { type: WorkspaceShellProvider, props: { canViewProjects: visible } } },
+    });
+    expect(mocks.projectLanding).toHaveBeenCalledWith(db, session, expect.any(AbortSignal));
+  },
+);

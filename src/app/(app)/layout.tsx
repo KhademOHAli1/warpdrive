@@ -10,6 +10,7 @@ import { WorkspaceShellProvider } from "@/components/shell/WorkspaceShellProvide
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { db } from "@/db/client";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
+import { projectLanding } from "@/features/agency-projects/nativeViews";
 import { resolveWorkflowSession } from "@/features/auth/better/sessionPolicy";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { getCompanyMemberProjection } from "@/features/company-profile/repository";
@@ -48,11 +49,14 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   // user row), so the shell no longer re-reads that row per authenticated page. Only the per-user
   // interface preferences remain; default comfortable when no row exists (DealCard/Board read the
   // density via the data-density attribute).
-  const [prefs, baseCurrency, brand, navigation] = await Promise.all([
+  const [prefs, baseCurrency, brand, navigation, projects] = await Promise.all([
     getPreferencesForActor(db, ctx.actor.id),
     readBaseCurrency(db, AbortSignal.timeout(5000)),
     getCompanyMemberProjection(db, AbortSignal.timeout(5000)),
     readWorkNavigation(db, ctx.actor, AbortSignal.timeout(5000)),
+    ctx.session === null
+      ? Promise.resolve(null)
+      : projectLanding(db, ctx.session, AbortSignal.timeout(5000)),
   ]);
   return (
     <NativeActorProvider key={ctx.actor.id} actorId={ctx.actor.id}>
@@ -60,6 +64,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         brand={brand}
         modules={navigation.modules}
         canViewWork={navigation.canViewWork}
+        canViewProjects={projects !== null && (projects.enabled || projects.canEnable)}
       >
         <CurrencyProvider currency={baseCurrency}>
           <ActionErrorProvider>
@@ -95,7 +100,10 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                         avatarUrl={ctx.actor.avatarUrl}
                         appearance={parseAppearance(prefs.ui.appearance)}
                       />
-                      <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">
+                      <main
+                        data-app-content
+                        className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6"
+                      >
                         {children}
                       </main>
                     </div>

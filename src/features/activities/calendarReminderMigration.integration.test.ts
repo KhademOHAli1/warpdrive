@@ -8,7 +8,7 @@ import {
   migrationFolder,
 } from "@/db/migrationAdmission.test-helpers";
 import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
-import { activities, activityTypes, notifications } from "@/db/schema";
+import { activityTypes, notifications } from "@/db/schema";
 import { activityReminderIntents } from "@/db/schema/activityReminderIntents";
 import { seedUser } from "@/db/testing/factories";
 import { hydrateActor } from "@/server/hydrateActor";
@@ -16,12 +16,12 @@ import { getActivityForEdit } from "./getForEdit";
 import { processActivityReminder } from "./reminderDelivery";
 import { createActivity } from "./repo";
 
-// Root reserved 0102. This fixture remains UNRUN until Root actually generates,
-// reviews and admits all 103 canonical entries. It does not guess a future tag,
-// snapshot or SQL hash; the executed request must pin those actual bytes.
+// Preserve the historical 0102 boundary using raw columns from that prefix.
+// Current application services run only after the remaining admitted forward history.
 it("upgrades populated 102-entry customers without inventing zones or reminder history", async () => {
   const h = await freshMigrationDb();
   const candidate = await migrationFolder(103);
+  const runtimeCandidate = await migrationFolder();
   const signal = () => AbortSignal.timeout(15_000);
   try {
     await installPrefix(h, 102);
@@ -35,45 +35,19 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
     const user = await seedUser(h.db, { isAdmin: true });
     const [type] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
     if (type === undefined) throw new Error("Upgrade meeting fixture missing");
-    const old = await h.db
-      .insert(activities)
-      .values([
-        {
-          typeId: type.id,
-          subject: "Exact timed event",
-          ownerId: user.id,
-          assigneeId: user.id,
-          dueAt: new Date("2026-10-25T01:30:29.123Z"),
-          durationMinutes: 60,
-        },
-        {
-          typeId: type.id,
-          subject: "Known civil date",
-          ownerId: user.id,
-          assigneeId: user.id,
-          allDay: true,
-          dueAt: new Date("2027-03-28T00:00:00Z"),
-          dueDate: "2027-03-28",
-          endDate: "2027-03-29",
-        },
-        {
-          typeId: type.id,
-          subject: "Unknown authored zone",
-          ownerId: user.id,
-          assigneeId: user.id,
-          allDay: true,
-          dueAt: new Date("2026-10-25T00:00:00Z"),
-        },
-        {
-          typeId: type.id,
-          subject: "Finished old event",
-          ownerId: user.id,
-          assigneeId: user.id,
-          done: true,
-          doneAt: new Date("2026-10-25T02:00:00Z"),
-        },
-      ])
-      .returning();
+    const old = (
+      await h.pool.query<{ id: string; subject: string }>(
+        `
+      INSERT INTO activities(type_id,subject,owner_id,assignee_id,due_at,duration_minutes,all_day,due_date,end_date,done,done_at)
+      VALUES
+        ($1,'Exact timed event',$2,$2,'2026-10-25T01:30:29.123Z',60,false,NULL,NULL,false,NULL),
+        ($1,'Known civil date',$2,$2,'2027-03-28T00:00:00Z',NULL,true,'2027-03-28','2027-03-29',false,NULL),
+        ($1,'Unknown authored zone',$2,$2,'2026-10-25T00:00:00Z',NULL,true,NULL,NULL,false,NULL),
+        ($1,'Finished old event',$2,$2,NULL,NULL,false,NULL,NULL,true,'2026-10-25T02:00:00Z')
+      RETURNING id,subject`,
+        [type.id, user.id],
+      )
+    ).rows;
     const first = old[0];
     if (first === undefined) throw new Error("Upgrade event fixture missing");
     await h.db.insert(notifications).values({
@@ -106,6 +80,10 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
     expect((await ledger(h)).slice(0, 102)).toEqual(oldLedger);
     expect(await ledger(h)).toHaveLength(103);
     expect(await h.db.select().from(activityReminderIntents)).toHaveLength(0);
+    expect(await applyMigrations(h.db, signal(), runtimeCandidate.folder)).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
     const actor = await hydrateActor(h.db, user.id, signal());
     if (actor === null) throw new Error("Upgrade actor fixture missing");
     const read = await getActivityForEdit(h.db, actor, first.id, signal());
@@ -147,7 +125,7 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
     ).toBe("completed");
     const receipt = await h.db.select().from(activityReminderIntents);
     const ledgerBeforeSecond = await ledger(h);
-    expect(await applyMigrations(h.db, signal(), candidate.folder)).toEqual({
+    expect(await applyMigrations(h.db, signal(), runtimeCandidate.folder)).toEqual({
       ok: true,
       value: { applied: true },
     });
@@ -157,6 +135,7 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
     expect(await h.db.select().from(notifications)).toHaveLength(2);
   } finally {
     await candidate.dispose();
+    await runtimeCandidate.dispose();
     await h.close();
   }
 });

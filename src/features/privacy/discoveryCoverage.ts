@@ -15,6 +15,40 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
     [
+      "calendars",
+      "calendar_members",
+      "activity_reminder_settings",
+      "calendar_reminder_defaults",
+      "calendar_reminder_intents",
+      "reminder_rebuilds",
+    ],
+    "unsupported",
+    "Calendar ownership and membership, shared event access, personal recipient choices, durable intents and rebuild markers require dedicated subject/provenance and safe-projection adapters. Calendar owner, assignee and reminder recipient remain distinct from people mentioned in event content. Native in-app, legacy and Calendar reminder ownership does not establish subject discovery, disclosure or erasure authority. Archive, receipt visibility and delivery suppression are not lifecycle execution.",
+  ),
+  ...group(
+    [
+      "calendar_provider_accounts",
+      "calendar_oauth_attempts",
+      "calendar_provider_catalog_states",
+      "calendar_provider_calendars",
+      "calendar_provider_bindings",
+    ],
+    "unsupported",
+    "Owned Calendar grants, hashed one-use authorization state, encrypted refresh/PKCE secrets, provider calendar metadata and local selections require credential-excluding dedicated discovery adapters. A native account or provider role does not establish the subjects of provider calendar contents. No generic credential disclosure, provider event import, remote revocation/deletion receipt or lifecycle execution is enabled by local grant purge or catalog selection.",
+  ),
+  ...group(
+    [
+      "agency_projects",
+      "agency_project_members",
+      "agency_project_history",
+      "agency_project_requests",
+      "agency_project_settings",
+    ],
+    "unsupported",
+    "Project titles, CRM anchors, workforce memberships, immutable audit history and keyed actor-bound receipts require dedicated subject/provenance and safe-projection adapters. Native project membership and current CRM visibility grant ordinary product access only. The default-disabled module, receipt tombstones and append-only triggers establish no discovery, export, rectification, restriction, erasure or retention execution capability.",
+  ),
+  ...group(
+    [
       "workflows_v2",
       "workflow_v2_versions",
       "workflow_v2_runs",
@@ -94,7 +128,14 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Workspace credentials, OAuth attempt security material and connection event provenance require dedicated subject-aware adapters. Workspace ownership or current administration does not establish disclosure or remote-erasure authority.",
   ),
   ...group(
-    ["workflows", "workflow_versions", "workflow_runs", "workflow_steps", "workflow_run_failures"],
+    [
+      "workflows",
+      "workflow_versions",
+      "workflow_runs",
+      "workflow_steps",
+      "workflow_run_failures",
+      "workflow_external_effects",
+    ],
     "unsupported",
     "Workflow definitions, workforce provenance, failure/retry receipt history, trigger links and copied execution outputs need a dedicated subject/provenance adapter. Workflow ownership and history access do not establish subject identity or approved disclosure scope.",
   ),

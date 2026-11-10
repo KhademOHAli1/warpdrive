@@ -1,7 +1,25 @@
 import { ancestors } from "./graph";
 import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 
-export const creatableNodeTypes = ["record.read", "activity.create", "condition", "delay"] as const;
+export const creatableNodeTypes = [
+  "record.read",
+  "record.create",
+  "record.update",
+  "record.delete",
+  "record.search",
+  "record.upsert",
+  "record.pick",
+  "email.draft",
+  "http.request",
+  "calendar.create",
+  "human.form",
+  "activity.create",
+  "condition",
+  "ifElse",
+  "filter",
+  "iterator",
+  "delay",
+] as const;
 export type CreatableNodeType = (typeof creatableNodeTypes)[number];
 export function makeNode(
   graph: WorkflowDefinition,
@@ -13,7 +31,7 @@ export function makeNode(
 ): WorkflowNode {
   const available =
     sourceId === undefined ? undefined : new Set([...ancestors(graph, sourceId), sourceId]);
-  const trigger = graph.nodes.find((node) => node.type === "trigger.manual");
+  const trigger = graph.nodes.find((node) => node.type.startsWith("trigger."));
   const read = [...graph.nodes]
     .reverse()
     .find(

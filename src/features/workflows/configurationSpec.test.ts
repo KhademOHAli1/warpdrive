@@ -27,6 +27,27 @@ function field(type: CustomFieldDef["type"]): CustomFieldDef {
 }
 const metadata = { status: "complete", defs: [] } as const;
 
+it("preselects a Deal binding only for triggers that actually provide one", () => {
+  const start = { id: "start", version: 1, name: "Trigger" } as const;
+  const task = (trigger: WorkflowDefinition["nodes"][number]) =>
+    defaultConfiguration("activity.create", { trigger, subject: "Follow up" });
+  const signed = { authentication: "HMAC_SHA256" } as const;
+  expect(
+    task({ ...start, type: "trigger.manual", config: { scope: "global" } }),
+  ).not.toHaveProperty("dealId");
+  expect(
+    task({ ...start, type: "trigger.schedule", config: { interval: "minutes", minutes: 15 } }),
+  ).not.toHaveProperty("dealId");
+  expect(
+    task({ ...start, type: "trigger.webhook", config: { ...signed, httpMethod: "GET" } }),
+  ).not.toHaveProperty("dealId");
+  expect(
+    task({ ...start, type: "trigger.webhook", config: { ...signed, httpMethod: "POST" } }),
+  ).toMatchObject({
+    dealId: { kind: "reference", nodeId: "start", path: ["recordId"] },
+  });
+});
+
 describe("shared configuration profile descriptors", () => {
   it("covers exactly the finite registry and rejects unknown action/version inputs", () => {
     for (const type of nodeTypes) expect(getConfigurationSpec(type, 1, metadata)?.type).toBe(type);
@@ -138,7 +159,7 @@ describe("shared configuration profile descriptors", () => {
     });
   });
 
-  it("shares the literal wait bound/default without enabling mapped waits", () => {
+  it("keeps the legacy wait bound and defaults new waits to the configurable duration", () => {
     expect(getConfigurationSpec("delay", 1, metadata)?.fields).toContainEqual(
       expect.objectContaining({
         path: ["minutes"],
@@ -148,7 +169,10 @@ describe("shared configuration profile descriptors", () => {
         constraints: { min: 1, max: 525600, integer: true },
       }),
     );
-    expect(defaultConfiguration("delay", {})).toEqual({ minutes: { kind: "value", value: 1 } });
+    expect(defaultConfiguration("delay", {})).toEqual({
+      delayType: "DURATION",
+      duration: { minutes: { kind: "value", value: 1 } },
+    });
   });
 
   it("keeps unsupported actions and schema-only task settings explicitly read-only", () => {

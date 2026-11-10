@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { workflowRuns, workflowSteps, type workflows, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -46,7 +46,7 @@ export async function hydrateRunHistoryRows(
       const steps = await db
         .select()
         .from(workflowSteps)
-        .where(eq(workflowSteps.runId, source.id))
+        .where(and(eq(workflowSteps.runId, source.id), eq(workflowSteps.outcome, "succeeded")))
         .orderBy(workflowSteps.completedAt);
       const recovery = await describeRunRecovery(
         db,

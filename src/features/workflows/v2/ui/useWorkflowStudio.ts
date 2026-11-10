@@ -23,10 +23,13 @@ import {
 import {
   arrangeStudio,
   connectStudioNodes,
+  duplicateStudioNode,
   freshId,
   initialConfig,
+  insertStudioNodeOnEdge,
   portsForNode,
   removeStudioNode,
+  replaceStudioNode,
 } from "./studioModel";
 
 type Simulation = Extract<
@@ -47,7 +50,7 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [selected, setSelected] = useState("$trigger");
-  const [tab, setTab] = useState<"configure" | "palette" | "runs" | "test">("configure");
+  const [tab, setTab] = useState<"configure" | "palette" | "runs" | "test" | null>("configure");
   const [past, setPast] = useState<WorkflowV2Definition[]>([]);
   const [future, setFuture] = useState<WorkflowV2Definition[]>([]);
   const [layoutRevision, setLayoutRevision] = useState(0);
@@ -126,7 +129,7 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
     setSelected(id);
     setReveal(revealNode ? { id, nonce: ++revealNonce.current } : undefined);
   }
-  function add(type: ActionBlockKind, port?: string) {
+  function add(type: ActionBlockKind, port?: string, edgeId?: string) {
     if (document.draft.nodes.length >= 100) {
       setError(L.invalid);
       return;
@@ -139,19 +142,52 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
       name: L.blocks[type] ?? type,
       config: initialConfig(type),
     };
-    let draft = { ...document.draft, nodes: [...document.draft.nodes, node] };
-    if (selected === "$trigger") draft = connectStudioNodes(draft, "$trigger", id, "next") ?? draft;
-    else {
+    let draft: WorkflowV2Definition;
+    if (edgeId !== undefined) {
+      const inserted = insertStudioNodeOnEdge(document.draft, node, edgeId);
+      if (inserted === null) {
+        setError(L.invalid);
+        return;
+      }
+      draft = inserted;
+    } else {
+      draft = { ...document.draft, nodes: [...document.draft.nodes, node] };
       const source = draft.nodes.find((item) => item.id === selected);
-      if (source !== undefined)
+      if (selected === "$trigger") {
+        draft = connectStudioNodes(draft, "$trigger", id, "next") ?? draft;
+      } else if (source !== undefined) {
         draft =
           connectStudioNodes(draft, selected, id, port ?? portsForNode(source)[0] ?? "next") ??
           draft;
+      }
     }
     edit(arrangeStudio(draft));
     select(id);
     setTab("configure");
     setLayoutRevision((value) => value + 1);
+  }
+  function replace(id: string, type: ActionBlockKind) {
+    if (disabled || lock.current) return;
+    const draft = replaceStudioNode(document.draft, id, type, L.blocks[type] ?? type);
+    if (draft === null || (draft !== document.draft && !parseWorkflowV2Draft(draft).ok)) {
+      setError(L.invalid);
+      return;
+    }
+    if (draft !== document.draft) edit(draft);
+    select(id);
+    setTab("configure");
+  }
+  function duplicate(id: string) {
+    if (disabled || lock.current) return;
+    const copyId = freshId();
+    const draft = duplicateStudioNode(document.draft, id, copyId);
+    if (draft === null || !parseWorkflowV2Draft(draft).ok) {
+      setError(L.invalid);
+      return;
+    }
+    edit(draft);
+    select(copyId);
+    setTab("configure");
   }
   function undo(direction: "undo" | "redo") {
     if (disabled || lock.current) return;
@@ -332,6 +368,8 @@ export function useWorkflowStudio(initial: WorkflowV2Document) {
     setTab,
     edit,
     add,
+    replace,
+    duplicate,
     undo,
     past,
     future,

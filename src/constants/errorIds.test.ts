@@ -37,6 +37,7 @@ describe("error IDs", () => {
       "COMMENT",
       "IMPORT",
       "ACTIVITY",
+      "CALENDAR",
       "USER",
       "NOTIF",
       "SEARCH",

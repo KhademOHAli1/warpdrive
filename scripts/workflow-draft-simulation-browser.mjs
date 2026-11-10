@@ -409,6 +409,33 @@ function nativeSubmission(page, origin, profile) {
     );
   });
 }
+async function captureEditor(page, profile, copy, name) {
+  await name.waitFor();
+  const canvas = page.getByRole("region", { name: copy.canvas, exact: true });
+  await canvas.waitFor();
+  const directory = caseDirectory(profile);
+  mkdirSync(directory, { recursive: true });
+  async function screenshot(file) {
+    const path = new URL(file, directory);
+    assert.equal(existsSync(path), false, "Never overwrite a native editor screenshot");
+    await page.screenshot({ path: fileURLToPath(path), animations: "disabled" });
+    return { file, sha256: sha256(readFileSync(path)) };
+  }
+  const editor = await screenshot("editor.png");
+  const add = canvas.getByRole("button", { name: /Add a step after CI saved draft task/ });
+  await add.click();
+  const picker = page.getByRole("dialog", { name: copy.selectAction, exact: true });
+  await picker.getByRole("button", { name: copy.createRecord, exact: true }).waitFor();
+  const iterator = picker.getByRole("button", { name: copy.iterator, exact: true });
+  await iterator.waitFor();
+  assert.equal(await iterator.isEnabled(), true);
+  assert.equal(await canvas.locator(".react-flow__node.selected").count(), 0);
+  const palette = await screenshot("action-picker.png");
+  await picker.getByRole("button", { name: copy.close, exact: true }).click();
+  await picker.waitFor({ state: "hidden" });
+  await add.waitFor();
+  return [editor, palette];
+}
 async function exerciseDraft(page, pool, profile, copy, signIn, origin) {
   // The prior journey can leave a different saved account language. Establish this journey's
   // language through the real control before asserting the authenticated board's exact name.
@@ -424,17 +451,27 @@ async function exerciseDraft(page, pool, profile, copy, signIn, origin) {
   );
   const name = page.getByRole("textbox", { name: copy.name, exact: true });
   const step = page.getByRole("textbox", { name: copy.stepName, exact: true });
+  const editorImages = profile.tag === "EN" ? await captureEditor(page, profile, copy, name) : [];
   await name.fill(profile.unsavedName);
+  await page
+    .getByRole("navigation", { name: copy.steps, exact: true })
+    .getByRole("button", { name: /CI saved draft trigger/ })
+    .press("Enter");
   await step.fill(profile.unsavedStep);
   await page.getByText(copy.unsaved, { exact: true }).waitFor();
   assert.equal(await page.getByRole("button", { name: copy.save, exact: true }).isEnabled(), true);
+  const opener = page.getByRole("button", { name: copy.workflowOptions, exact: true });
+  await opener.click();
+  const menu = page.getByRole("menu");
   assert.equal(
-    await page.getByRole("button", { name: copy.simulation, exact: true }).isDisabled(),
+    await menu.getByRole("menuitem", { name: copy.simulation, exact: true }).isDisabled(),
     true,
   );
-  assert.equal(await page.getByRole("button", { name: copy.live, exact: true }).isDisabled(), true);
-  const opener = page.getByRole("button", { name: copy.draftSimulation, exact: true });
-  await opener.click();
+  assert.equal(
+    await menu.getByRole("menuitem", { name: copy.live, exact: true }).isDisabled(),
+    true,
+  );
+  await menu.getByRole("menuitem", { name: copy.draftSimulation, exact: true }).click();
   const dialog = page.getByRole("dialog", { name: copy.draftSimulation, exact: true });
   await dialog.getByText(profile.unsavedName, { exact: true }).waitFor();
   await dialog.getByRole("textbox", { name: copy.search, exact: true }).fill(profile.dealName);
@@ -554,7 +591,7 @@ async function exerciseDraft(page, pool, profile, copy, signIn, origin) {
     before,
     afterSimulation,
     afterHistory,
-    files: [beforeFile, afterFile, historyFile, screenshot],
+    files: [beforeFile, afterFile, historyFile, screenshot, ...editorImages],
     historyEmpty: true,
     focusReturned: true,
   };

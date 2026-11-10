@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, notExists, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
 import {
@@ -8,6 +8,7 @@ import {
   workflowV2Versions,
   workflowV2Waits,
 } from "@/db/schema/workflowV2";
+import { workflowV2RecordEvents } from "@/db/schema/workflowV2Events";
 import { resolveBlockConfig } from "@/features/blocks/bindings";
 import type { BlockJson, BlockOutput, WorkflowV2Adapters } from "@/features/blocks/contracts";
 import { blockOutputSchema } from "@/features/blocks/schemas";
@@ -15,6 +16,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { canWorkflow } from "../access";
+import type { WorkflowV2Event } from "./events";
 import { type AdvanceResult, completeV2Step } from "./runner";
 import { V2_ERROR } from "./shared";
 
@@ -116,7 +118,7 @@ async function authorizedResume(
 async function applyWait(
   db: Db,
   wait: Wait,
-  output: BlockOutput,
+  prepareOutput: BlockOutput | ((actor: PermSetUser) => Promise<BlockOutput | null>),
   adapters: WorkflowV2Adapters,
   signal: AbortSignal,
   receiptKey: string,
@@ -124,6 +126,9 @@ async function applyWait(
 ) {
   const current = await authorizedResume(db, wait, adapters, signal);
   if (!current.ok) return current;
+  const output =
+    typeof prepareOutput === "function" ? await prepareOutput(current.value.actor) : prepareOutput;
+  if (output === null) return err(V2_ERROR.denied);
   const result = await completeV2Step(
     db,
     current.value.run,
@@ -316,6 +321,36 @@ export async function resumeWorkflowV2Form(
     );
   });
 }
+function dueWaitScope(db: Db, now: Date) {
+  // A matching event can arrive on time and wait in the outbox past the deadline.
+  // Use the same millisecond precision as the driver uses when resuming the wait.
+  const pendingEvent = db
+    .select({ id: workflowV2RecordEvents.id })
+    .from(workflowV2RecordEvents)
+    .where(
+      and(
+        inArray(workflowV2RecordEvents.status, ["pending", "claimed"]),
+        sql`${workflowV2RecordEvents.eventName} = ${workflowV2Waits.config}->>'eventName'`,
+        or(
+          sql`${workflowV2Waits.config}->>'recordId' IS NULL`,
+          sql`${workflowV2RecordEvents.recordId}::text = lower(${workflowV2Waits.config}->>'recordId')`,
+        ),
+        sql`${workflowV2RecordEvents.createdAt} >= date_trunc('milliseconds', ${workflowV2Waits.createdAt})`,
+        sql`${workflowV2RecordEvents.createdAt} < ${workflowV2Waits.expiresAt}`,
+      ),
+    );
+  return and(
+    eq(workflowV2Waits.status, "open"),
+    or(
+      and(eq(workflowV2Waits.kind, "delay"), lte(workflowV2Waits.wakeAt, now)),
+      and(
+        eq(workflowV2Waits.kind, "event"),
+        lte(workflowV2Waits.expiresAt, now),
+        notExists(pendingEvent),
+      ),
+    ),
+  );
+}
 export async function resumeDueWorkflowV2Waits(
   db: Db,
   adapters: WorkflowV2Adapters,
@@ -325,12 +360,7 @@ export async function resumeDueWorkflowV2Waits(
   const due = await db
     .select({ id: workflowV2Waits.id, runId: workflowV2Waits.runId })
     .from(workflowV2Waits)
-    .where(
-      and(
-        eq(workflowV2Waits.status, "open"),
-        or(lte(workflowV2Waits.wakeAt, now), lte(workflowV2Waits.expiresAt, now)),
-      ),
-    )
+    .where(dueWaitScope(db, now))
     .limit(100);
   const runs: string[] = [];
   for (const row of due) {
@@ -344,11 +374,10 @@ export async function resumeDueWorkflowV2Waits(
       const [wait] = await tx
         .select()
         .from(workflowV2Waits)
-        .where(eq(workflowV2Waits.id, row.id))
+        .where(and(eq(workflowV2Waits.id, row.id), dueWaitScope(tx, now)))
         .for("update");
-      if (wait === undefined || wait.status !== "open") return null;
-      const expired = wait.kind === "event" && wait.expiresAt !== null && wait.expiresAt <= now;
-      if (wait.kind !== "delay" && !expired) return null;
+      if (wait === undefined) return null;
+      const expired = wait.kind === "event";
       return applyWait(
         tx,
         wait,
@@ -366,26 +395,34 @@ export async function resumeDueWorkflowV2Waits(
 export async function resumeV2EventWait(
   db: Db,
   waitId: string,
-  output: BlockOutput,
+  event: Pick<WorkflowV2Event, "eventName" | "eventKey" | "recordId" | "occurredAt">,
   adapters: WorkflowV2Adapters,
   signal: AbortSignal,
-  eventKey: string,
+  project: (db: Db, actor: PermSetUser, config: BlockOutput) => Promise<BlockOutput | null>,
 ) {
   return db.transaction(async (tx) => {
-    const [lookup] = await tx.select().from(workflowV2Waits).where(eq(workflowV2Waits.id, waitId));
-    if (lookup === undefined) return err(V2_ERROR.missing);
-    await tx
-      .select({ id: workflowV2Runs.id })
-      .from(workflowV2Runs)
-      .where(eq(workflowV2Runs.id, lookup.runId))
-      .for("update");
-    const [wait] = await tx
-      .select()
-      .from(workflowV2Waits)
-      .where(eq(workflowV2Waits.id, waitId))
-      .for("update");
-    if (wait === undefined || wait.status !== "open" || wait.kind !== "event")
+    const wait = await lockWait(tx, waitId);
+    if (
+      wait === null ||
+      wait.status !== "open" ||
+      wait.kind !== "event" ||
+      wait.config.eventName !== event.eventName ||
+      (typeof wait.config.recordId === "string" &&
+        wait.config.recordId.toLowerCase() !== event.recordId) ||
+      event.occurredAt < wait.createdAt ||
+      (wait.expiresAt !== null && event.occurredAt >= wait.expiresAt)
+    )
       return err(V2_ERROR.conflict);
-    return applyWait(tx, wait, { ...output, hasTimedOut: false }, adapters, signal, eventKey);
+    return applyWait(
+      tx,
+      wait,
+      async (actor) => {
+        const output = await project(tx, actor, wait.config);
+        return output === null ? null : { ...output, hasTimedOut: false };
+      },
+      adapters,
+      signal,
+      event.eventKey,
+    );
   });
 }

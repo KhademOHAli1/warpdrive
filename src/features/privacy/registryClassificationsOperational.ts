@@ -42,7 +42,7 @@ export const operationalClassifications = {
       "Notification recipient differs from subjects copied into body/payload. Review all referenced records and people.",
     purpose: "In-app notifications and queued recipient delivery.",
     disclosure:
-      "No blanket recipient-mailbox disclosure; scrub erased content and private related records before publication.",
+      "No blanket recipient-mailbox disclosure; scrub erased content and private related records before publication. Activity notification creation, feed visibility and mail admission additionally check current Calendar access and receipt policy. Immutable native in-app generation history cannot authorize email, and personal reminder settings do not replace CRM or Calendar visibility.",
     retention:
       "No universal notification retention mandate; metadata, queued payloads and sent copies require reviewed policy.",
     externalEffects:
@@ -57,15 +57,17 @@ export const operationalClassifications = {
       "encrypted case metadata",
       "job state",
       "minimal transitions",
+      "bounded native observation connection identity and cancellation state",
     ],
     subjectRelation:
       "Opaque case IDs and reviewed subject links only; owner/actor does not prove subject identity.",
     purpose: "Explicit privacy authority, case lifecycle and source coverage controls.",
     disclosure:
-      "Specific privacy capability, case scope, current account authority and fresh authentication required. Sensitive metadata stays encrypted.",
+      "Specific privacy capability, case scope, current account authority and fresh authentication required. Stored sensitive metadata stays encrypted; authorized exact-case reads return minimized original intake or preliminary native projections, without approving a durable disclosure scope.",
     retention:
       "Case retention needs operator activation; 180 days is only a proposed starting point. No destructive schedule inferred from locale.",
-    externalEffects: "No external communication is authorized merely by a case/job completion.",
+    externalEffects:
+      "No external communication is authorized merely by a case/job completion. Dedicated bounded observation pools may inspect and cancel only an exactly captured native backend identity with matching database, user and instance epoch. Cancellation requires separately observed completion/idle acknowledgement; local release alone does not establish remote rollback.",
     erasureTask: "DPL-26",
   },
   infrastructure: {
@@ -76,13 +78,14 @@ export const operationalClassifications = {
       "query caches",
       "rate-limit state",
       "settings and preferences",
+      "presentation-only module availability and action metadata",
     ],
     subjectRelation:
       "Actor/owner/session keys identify processors or recipients and are not automatically the subject of cached records. Review required.",
     purpose:
       "Realtime delivery, derived views, preferences, authorization caches and service operations.",
     disclosure:
-      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions.",
+      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions. Navigation booleans expose module availability only. Project navigation and the high-risk project.create action metadata do not bypass current native session, module, membership or linked CRM checks.",
     retention:
       "Transient state ends with process/browser lifecycle unless explicitly persisted; invalidation after commit and restore admission require qualification.",
     externalEffects:

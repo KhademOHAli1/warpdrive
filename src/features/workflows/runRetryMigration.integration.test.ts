@@ -9,6 +9,7 @@ import {
 } from "@/db/migrationAdmission.test-helpers";
 import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
 import { activities, permissionSets, workflowRunFailures, workflowSteps } from "@/db/schema";
+import type { TestDb } from "@/test/db";
 import { admitManualRun, advanceWorkflowRun } from "./execution";
 import { createWorkflow, publishWorkflow } from "./persistence";
 import { retryWorkflowRun } from "./runRetry";
@@ -21,6 +22,57 @@ import {
   setupRetryActor,
   storedRetryRun,
 } from "./runRetry.test-helpers";
+
+// Generate successful steps on the schema supported by the current engine, then
+// restore their genuine rows through each predecessor table's actual row type.
+// This preserves outputs and precision without adding modern columns to the old database.
+async function installPredecessorFixture(source: RetryFixture, target: TestDb) {
+  const tables = [
+    "permission_sets",
+    "users",
+    "auth_users",
+    "sessions",
+    "pipelines",
+    "stages",
+    "deals",
+    "activity_types",
+    "activities",
+    "workflows",
+    "workflow_versions",
+    "workflow_runs",
+    "workflow_steps",
+  ] as const;
+  // Built-in types receive random IDs at migration time. Keep the engine's exact
+  // type identities so the copied task and its recorded output remain linked.
+  await target.pool.query("DELETE FROM activity_types");
+  const inserts: string[] = [];
+  const values: string[] = [];
+  for (const table of tables) {
+    const rows = await source.pool.query<{ data: string }>(
+      `SELECT COALESCE(jsonb_agg(to_jsonb(t)), '[]'::jsonb)::text AS data FROM public."${table}" t`,
+    );
+    const columns = (
+      await target.pool.query<{ names: string }>(
+        `SELECT string_agg(quote_ident(column_name), ', ' ORDER BY ordinal_position) AS names
+         FROM information_schema.columns
+         WHERE table_schema='public' AND table_name=$1 AND is_generated='NEVER'`,
+        [table],
+      )
+    ).rows[0]?.names;
+    if (columns === undefined) throw new Error("Missing predecessor columns");
+    const data = rows.rows[0]?.data;
+    if (data === undefined) throw new Error("Missing predecessor rows");
+    values.push(data);
+    inserts.push(
+      `"${table}_fixture" AS (INSERT INTO public."${table}" (${columns})
+       SELECT ${columns} FROM jsonb_populate_recordset(NULL::public."${table}", $${values.length}::jsonb)
+       RETURNING id)`,
+    );
+  }
+  // One statement admits both sides of the existing immediate publication FK.
+  await target.pool.query(`WITH ${inserts.join(",")} SELECT 1`, values);
+  return { ...source, ...target };
+}
 
 async function oldFailedWait(h: RetryFixture) {
   await repairRetryPermission(h);
@@ -88,7 +140,8 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
     (await db.pool.query("SELECT to_regclass('public.workflow_run_failures') IS NULL AS absent"))
       .rows,
   ).toEqual([{ absent: true }]);
-  const h = await setupRetryActor(db);
+  const generated = await setupRetryActor();
+  let h = generated;
   const candidate = await migrationFolder(101);
   try {
     const migrations = await readCanonicalMigrations(candidate.folder, retrySignal());
@@ -107,8 +160,8 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
       retrySignal(),
     );
     if (!admitted.ok) throw new Error(admitted.error);
-    // Only successful predecessor-compatible steps run before0100. The new
-    // failure writer is deliberately never invoked while its table is absent.
+    // Generate only successful predecessor-compatible steps. The new failure
+    // writer is never invoked or copied into the historical fixture.
     for (let n = 0; n < 3; n++)
       expect(await advanceWorkflowRun(h.db, admitted.value.id, retrySignal())).toEqual({
         ok: true,
@@ -124,13 +177,15 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
       [admitted.value.id],
     );
     const waitId = await oldFailedWait(h);
+    h = await installPredecessorFixture(generated, db);
     const before = (
       await h.pool.query("SELECT to_jsonb(r) AS data FROM workflow_runs r ORDER BY id")
     ).rows;
     const steps = (
       await h.pool.query("SELECT to_jsonb(s) AS data FROM workflow_steps s ORDER BY id")
     ).rows;
-    const effects = await h.db.select().from(activities);
+    const effects = (await h.pool.query("SELECT to_jsonb(a) AS data FROM activities a ORDER BY id"))
+      .rows;
     const oldLedger = await ledger(h);
     expect(oldLedger).toHaveLength(100);
     expect(await applyMigrations(h.db, retrySignal(), candidate.folder)).toEqual({
@@ -143,7 +198,9 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
     expect(
       (await h.pool.query("SELECT to_jsonb(s) AS data FROM workflow_steps s ORDER BY id")).rows,
     ).toEqual(steps);
-    expect(await h.db.select().from(activities)).toEqual(effects);
+    expect(
+      (await h.pool.query("SELECT to_jsonb(a) AS data FROM activities a ORDER BY id")).rows,
+    ).toEqual(effects);
     const failures = await h.db.select().from(workflowRunFailures);
     const failure = failures.find((row) => row.runId === admitted.value.id);
     expect(failure?.origin).toBe("legacy_snapshot");
@@ -170,6 +227,10 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
     });
     expect(await ledger(h)).toEqual(receipt);
     expect(await h.db.select().from(workflowRunFailures)).toEqual(failures);
+    expect(await applyMigrations(h.db, retrySignal())).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
     await repairRetryPermission(h);
     const lostWait = failures.find((row) => row.runId === waitId);
     if (lostWait === undefined) throw new Error("Legacy wait snapshot absent");
@@ -198,6 +259,7 @@ it("upgrades stored failed-task customers without changing old rows and resumes 
     ).toHaveLength(3);
   } finally {
     await candidate.dispose();
-    await h.close();
+    await db.close();
+    await generated.close();
   }
 });

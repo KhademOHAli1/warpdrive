@@ -32,6 +32,7 @@ function Preview() {
 it.each([
   {
     locale: "fa",
+    country: "DE",
     customize: "سفارشی‌سازی قالب‌ها",
     calendar: "gregory",
     label: "نمایش اعداد",
@@ -41,6 +42,7 @@ it.each([
   },
   {
     locale: "de",
+    country: "IR",
     customize: "Formate anpassen",
     calendar: "persian",
     label: "Zifferndarstellung",
@@ -50,6 +52,7 @@ it.each([
   },
   {
     locale: "en",
+    country: "IR",
     customize: "Customize formats",
     calendar: "gregory",
     label: "Number display",
@@ -59,12 +62,12 @@ it.each([
   },
 ] as const)(
   "saves both digit choices in $locale without changing calendar, zone or a raw draft",
-  async ({ locale, customize, calendar, label, persian, latin, year }) => {
+  async ({ locale, country, customize, calendar, label, persian, latin, year }) => {
     const user = userEvent.setup();
     render(
       <LocaleProvider
         locale={locale}
-        country="IR"
+        country={country}
         calendar={calendar}
         numberingSystem="latn"
         timeZone="Europe/Berlin"
@@ -88,7 +91,7 @@ it.each([
         1,
         {
           locale,
-          country: "IR",
+          country,
           calendar,
           numberingSystem: "arabext",
           timeZone: "Europe/Berlin",
@@ -108,7 +111,7 @@ it.each([
         2,
         {
           locale,
-          country: "IR",
+          country,
           calendar,
           numberingSystem: "latn",
           timeZone: "Europe/Berlin",

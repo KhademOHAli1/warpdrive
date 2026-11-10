@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "basis": "9d0cadf15631560cee788ba798e128cf20d7eb40",
+  "files": [
+    {
+      "path": "src/components/shell/LeftNav 2.tsx",
+      "blob": "8c284bdda4f9899893f0703299b981bcad322013",
+      "disposition": "already_in_main_history"
+    },
+    {
+      "path": "src/components/shell/LeftNav.mobile.test 2.tsx",
+      "blob": "d966f7f120f2d8d568bd33c760e94071f5adc3f3",
+      "disposition": "already_in_main_history"
+    },
+    {
+      "path": "src/components/shell/LeftNav.module 2.css",
+      "blob": "fbd106e5d196694ac55da9f974b0a24b377e9425",
+      "disposition": "already_in_main_history"
+    },
+    {
+      "path": "src/components/shell/SidebarChrome 2.tsx",
+      "blob": "cbacc23060fe33df84a2a92cfdc239ca7beae18d",
+      "disposition": "already_in_main_history"
+    },
+    {
+      "path": "src/components/shell/SidebarToggle 2.tsx",
+      "blob": "9a47ef3e78a5573554d345accf76c17f97797413",
+      "disposition": "already_in_main_history"
+    },
+    {
+      "path": "src/db/schema/workflowRecordEvents.ts",
+      "blob": "ac7121318e9274f6e9bf5bbb0dd9c154fffb2074",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowAi.test.ts",
+      "blob": "3994d03e4883aba3958da5188cb37ef5c0cada2d",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowAi.ts",
+      "blob": "fa6bf7813ab914e34fdbcfd9629c5f805d18b086",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowAiContract.ts",
+      "blob": "5640bd71e41a236bccb2b8feeec5c44349866020",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEmailSend.test.ts",
+      "blob": "38e0b1e64a0b5c7c1a5cddfa9e248d0eb2dc3e7f",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEmailSend.ts",
+      "blob": "58842ab7fd810aef4840a1416d047badef2f39fc",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEmailSendContract.ts",
+      "blob": "1b2b5bbb29262b28b545ca4b6a2e9db3f335e9b7",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEmailSendPlan.ts",
+      "blob": "b145ad9fc777af2992cc55fd1321cb7bf14ee6f0",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEventWait.test.ts",
+      "blob": "bf29718e930eb4bac33cb8eb7988bd5841c901c9",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEventWait.ts",
+      "blob": "5728cfe7ec3dadc476d962e12c4d8079bcc4dd19",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowEventWaitContract.ts",
+      "blob": "30206a5441e029485055515cf0f2a76a67a07dba",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowRecordEvent.test.ts",
+      "blob": "3de22f2325dd3a6dcf5ae89f2de13e20000924cd",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowRecordEvent.ts",
+      "blob": "882212dcf7b3e96d9b5573066918f25202af72eb",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowRecordEventAdmission.test.ts",
+      "blob": "1316d1a15b5bae1471a3c5d36d6a73768d403f39",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowRecordEventAdmission.ts",
+      "blob": "269f4017c4db9b4b0880e2cecf3c12bc8b75f4f0",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowRecordEventContract.ts",
+      "blob": "ac1287f05566b1dd8475343fd2ef699b77cef942",
+      "disposition": "unique_local_prototype"
+    },
+    {
+      "path": "src/features/workflows/workflowScheduleContract 2.ts",
+      "blob": "d6999c840e7d024cf89f5665d42d521f8a030066",
+      "disposition": "already_in_PR991_history"
+    },
+    {
+      "path": "src/features/workflows/workflowScheduleContract.test 2.ts",
+      "blob": "510ded222e31d1d918f0fdbe462204e8e6c36a31",
+      "disposition": "already_in_PR991_history"
+    },
+    {
+      "path": "src/features/workflows/workflowSchedulePoll 2.ts",
+      "blob": "2a8ba66980efeb12074c178e2c295b5e2a826781",
+      "disposition": "already_in_PR991_history"
+    }
+  ]
+}

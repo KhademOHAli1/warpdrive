@@ -1,5 +1,6 @@
 // pg-boss queue names and scheduling constants.
 export const PGBOSS_QUEUE_ACTIVITY_REMINDER = "activity.reminder";
+export const PGBOSS_QUEUE_REMINDER_OUTBOX = "activity.reminder.dispatch";
 
 // Minutes before an activity's dueAt that the reminder fires.
 export const REMINDER_LEAD_MINUTES = 10;
@@ -37,3 +38,6 @@ export const IMPORT_JOB_TIMEOUT_MS = 5 * 60 * 1000;
 
 export const PGBOSS_QUEUE_WORKFLOW_RUN = "workflow.run";
 export const PGBOSS_QUEUE_WORKFLOW_RECONCILE = "workflow.reconcile";
+export const PGBOSS_QUEUE_WORKFLOW_SCHEDULE = "workflow.schedule";
+
+export const PGBOSS_QUEUE_CALENDAR_REMINDER = "calendar.reminder";

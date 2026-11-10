@@ -83,8 +83,8 @@ async function businessSnapshot(h: TestDb) {
       "SELECT * FROM privacy_cases ORDER BY id",
       "SELECT * FROM workflows ORDER BY id",
       "SELECT * FROM workflow_versions ORDER BY id",
-      "SELECT to_jsonb(r) - 'resume_at' AS value FROM workflow_runs r ORDER BY id",
-      "SELECT * FROM workflow_steps ORDER BY id",
+      "SELECT to_jsonb(r) - 'resume_at' - 'iterator_frame' AS value FROM workflow_runs r ORDER BY id",
+      "SELECT to_jsonb(s) - 'iteration_index' - 'outcome' - 'error_id' AS value FROM workflow_steps s ORDER BY id",
     ].map(async (query) => (await h.pool.query(query)).rows),
   );
 }
@@ -167,8 +167,12 @@ test("connection upgrade preserves canonical workflow, privacy and identity data
     expect(legacyRunIds.length).toBeGreaterThan(0);
     expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
     expect(
-      (await h.pool.query("SELECT id, resume_at FROM workflow_runs ORDER BY id")).rows,
-    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null })));
+      (await h.pool.query("SELECT id, resume_at, iterator_frame FROM workflow_runs ORDER BY id"))
+        .rows,
+    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null, iterator_frame: null })));
+    expect(
+      (await h.pool.query("SELECT iteration_index, outcome, error_id FROM workflow_steps")).rows,
+    ).toEqual([{ iteration_index: -1, outcome: "succeeded", error_id: null }]);
     expect((await ledger(h)).slice(0, beforeLedger.length)).toEqual(beforeLedger);
     expect(await ledger(h)).toHaveLength(entries.length);
     expect(await businessSnapshot(h)).toEqual(beforeBusiness);
@@ -194,8 +198,9 @@ test("connection upgrade preserves canonical workflow, privacy and identity data
     const completedLedger = await ledger(h);
     expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
     expect(
-      (await h.pool.query("SELECT id, resume_at FROM workflow_runs ORDER BY id")).rows,
-    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null })));
+      (await h.pool.query("SELECT id, resume_at, iterator_frame FROM workflow_runs ORDER BY id"))
+        .rows,
+    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null, iterator_frame: null })));
     expect(await ledger(h)).toEqual(completedLedger);
     expect(await businessSnapshot(h)).toEqual(beforeBusiness);
     expect((await h.pool.query("SELECT * FROM integration_connections ORDER BY id")).rows).toEqual(

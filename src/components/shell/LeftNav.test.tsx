@@ -7,10 +7,12 @@ import { DOCS_SITE_URL } from "@/constants/docs";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { LeftNav } from "./LeftNav";
 import styles from "./LeftNav.module.css";
+import { WorkspaceShellProvider } from "./WorkspaceShellProvider";
 
 // LeftNav reads the current path via usePathname to mark the active item; mock it so the
 // component renders outside an app-router provider.
-vi.mock("next/navigation", () => ({ usePathname: () => "/pipeline" }));
+const route = vi.hoisted(() => ({ pathname: "/pipeline" }));
+vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
 
 // The collapse preference now persists in a cookie (so the server can read it and render the
 // correct width, avoiding the reload flash). jsdom provides a working document.cookie; clear it
@@ -39,6 +41,7 @@ afterEach(() => {
   cleanup();
   clearNavCookie();
   mediaMatches = true;
+  route.pathname = "/pipeline";
   document.documentElement.lang = "en";
   document.documentElement.dir = "ltr";
 });
@@ -57,10 +60,9 @@ describe("LeftNav", () => {
       ).toEqual([
         "/pipeline",
         "/activities",
-        "/inbox",
         "/leads",
+        "/inbox",
         "/contacts/people",
-        "/dashboard",
         ...(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []),
       ]);
     },
@@ -186,22 +188,91 @@ describe("LeftNav", () => {
   test("renders all primary destinations as links with a navigation landmark", () => {
     render(<LeftNav />);
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Pipeline" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Dashboard" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
   });
 
-  test("labels the stats destination 'Performance', not 'Dashboard'", () => {
+  test("uses Dashboard as the central destination without separate Pipeline or Performance links", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Performance" })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Dashboard" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/pipeline");
+    expect(screen.queryByRole("link", { name: "Pipeline" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Performance" })).toBeNull();
+  });
+
+  test("applies workspace branding and work module visibility to the combined rail", () => {
+    render(
+      <WorkspaceShellProvider
+        brand={{
+          displayName: "Fixture Company",
+          iconUrl: null,
+          accentColor: null,
+          foregroundColor: "#ffffff",
+        }}
+        modules={["work", "contacts"]}
+        canViewWork
+      >
+        <LeftNav />
+      </WorkspaceShellProvider>,
+    );
+    expect(screen.getByRole("link", { name: "Fixture Company home" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Work" }).getAttribute("href")).toBe("/work");
+    expect(screen.getByRole("link", { name: "Contacts" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/dashboard");
+    expect(screen.queryByRole("link", { name: "Activities" })).toBeNull();
   });
 
   test("marks the active section with aria-current", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Pipeline" }).getAttribute("aria-current")).toBe(
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("aria-current")).toBe(
       "page",
     );
     expect(screen.getByRole("link", { name: "Contacts" }).getAttribute("aria-current")).toBeNull();
+  });
+
+  test("keeps Dashboard active when viewing Performance through the dashboard selector", () => {
+    route.pathname = "/dashboard";
+    render(<LeftNav />);
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    const dashboard = screen.getByRole("link", { name: "Dashboard" });
+    expect(dashboard.getAttribute("aria-current")).toBe("page");
+    expect(dashboard.getAttribute("href")).toBe("/pipeline");
+    expect(navigation.querySelectorAll('a[aria-current="page"]')).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "Performance" })).toBeNull();
+  });
+
+  test.each([true, false])(
+    "separates five daily destinations from Settings, Workflows and Help (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(<LeftNav />);
+      const navigation = screen.getByRole("navigation", { name: "Primary" });
+      const workspace = navigation.querySelector(`.${styles.workspaceNav}`);
+      const footer = navigation.querySelector(`.${styles.utilityNav}`);
+      expect(workspace).not.toBeNull();
+      expect(footer).not.toBeNull();
+      expect(
+        within(workspace as HTMLElement)
+          .getAllByRole("link")
+          .map((link) => link.getAttribute("href")),
+      ).toEqual(["/pipeline", "/activities", "/leads", "/inbox", "/contacts/people"]);
+      expect(
+        within(footer as HTMLElement)
+          .queryAllByRole("link")
+          .map((link) => link.getAttribute("href")),
+      ).toEqual(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []);
+    },
+  );
+
+  test.each([
+    { locale: "de", label: "Dashboard" },
+    { locale: "fa", label: "داشبورد" },
+  ] as const)("names the central dashboard in $locale", ({ locale, label }) => {
+    render(
+      <LocaleProvider locale={locale}>
+        <LeftNav />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe("/pipeline");
   });
 
   test("each destination shows a decorative icon (Pipedrive-style icon+label nav)", () => {
@@ -219,14 +290,14 @@ describe("LeftNav", () => {
     setViewport(true);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("defaults to the collapsed rail on a small screen (no stored preference)", () => {
     setViewport(false);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("true");
   });
 
   test("collapses to icons and expands to full labels via a toggle button", () => {
@@ -235,12 +306,12 @@ describe("LeftNav", () => {
     render(<LeftNav />);
     const toggle = screen.getByRole("button", { name: "Expand sidebar" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("true");
 
     fireEvent.click(toggle);
     const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
     expect(collapse.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
+    expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("an explicit expand preference overrides the small-screen default across mounts", () => {

@@ -23,20 +23,11 @@ type Copy = (typeof paletteLocales)[number]["copy"];
 type Locale = (typeof paletteLocales)[number]["locale"];
 
 function entry(label: string) {
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return screen.getByRole("button", { name: new RegExp(escaped, "i") });
+  return screen.getByRole("button", { name: label });
 }
 
-function titles(copy: Copy) {
-  return [
-    copy.paletteManual,
-    copy.paletteRecordTrigger,
-    copy.read,
-    copy.task,
-    copy.notification,
-    copy.condition,
-    copy.delay,
-  ];
+function actionTitles(copy: Copy) {
+  return [copy.read, copy.task, copy.notification, copy.condition, copy.iterator, copy.delay];
 }
 
 function fixture(locale: Locale = "en", read: PaletteRead = readyPaletteRead(), editable = true) {
@@ -44,8 +35,13 @@ function fixture(locale: Locale = "en", read: PaletteRead = readyPaletteRead(), 
   const before = structuredClone(definition);
   const onChoose = vi.fn<(selection: PickerSelection) => void>();
   const onClose = vi.fn<() => void>();
-  function view(nextRead = read, nextEditable = editable, open = true) {
-    const model = buildPaletteView(definition, { kind: "detached" }, nextRead, nextEditable);
+  function view(nextRead = read, nextEditable = editable, open = true, trigger = false) {
+    const model = buildPaletteView(
+      definition,
+      trigger ? { kind: "replace", nodeId: "start" } : { kind: "detached" },
+      nextRead,
+      nextEditable,
+    );
     return (
       <LocaleProvider locale={locale}>
         <NodePalette open={open} onClose={onClose} model={model} onChoose={onChoose} />
@@ -56,31 +52,27 @@ function fixture(locale: Locale = "en", read: PaletteRead = readyPaletteRead(), 
 }
 
 it.each(paletteLocales)(
-  "searches localized category, title and description in $locale",
-  async ({ locale, copy }) => {
+  "presents localized action groups and accessible descriptions without search in $locale",
+  ({ locale, copy }) => {
     const test = fixture(locale);
-    const user = userEvent.setup();
     render(test.view());
+    expect(screen.getByRole("dialog", { name: copy.selectAction })).toBeVisible();
     for (const category of [
-      copy.paletteCategoryTriggers,
-      copy.paletteCategoryCrm,
-      copy.paletteCategoryLogic,
-      copy.paletteCategoryTiming,
+      copy.nodeCategoryData,
+      copy.nodeCategoryFlow,
+      copy.nodeCategoryCore,
+      copy.nodeCategoryHumanInput,
     ])
       expect(screen.getByRole("heading", { name: category })).toBeVisible();
-    const search = screen.getByLabelText(copy.searchNodes);
-    await user.type(search, copy.paletteCategoryLogic);
-    expect(entry(copy.condition)).toBeVisible();
-    expect(screen.queryByRole("button", { name: new RegExp(copy.read) })).not.toBeInTheDocument();
-    await user.clear(search);
-    const title = locale === "fa" ? copy.read.replaceAll("ی", "ي").replaceAll("ک", "ك") : copy.read;
-    await user.type(search, title);
-    expect(entry(copy.read)).toBeVisible();
-    await user.clear(search);
-    await user.type(search, copy.readActionHint);
-    expect(entry(copy.read)).toBeVisible();
+    for (const label of actionTitles(copy)) expect(entry(label)).toBeVisible();
+    expect(entry(copy.read)).toHaveAccessibleDescription(
+      expect.stringContaining(copy.readActionHint),
+    );
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: copy.clearSearch })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: copy.paletteManual })).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: new RegExp(copy.condition) }),
+      screen.queryByRole("button", { name: copy.paletteRecordTrigger }),
     ).not.toBeInTheDocument();
     expect(test.onChoose).not.toHaveBeenCalled();
     expect(test.definition).toStrictEqual(test.before);
@@ -92,17 +84,37 @@ it.each(paletteLocales)(
   async ({ locale, copy }) => {
     const test = fixture(locale);
     const user = userEvent.setup();
-    render(test.view());
-    expect(entry(copy.read)).toHaveTextContent(copy.paletteNoProvider);
-    expect(entry(copy.read)).not.toHaveTextContent(copy.paletteProviderNotAssessed);
-    for (const label of [copy.paletteRecordTrigger, copy.notification]) {
-      const unavailable = entry(label);
-      expect(unavailable).toHaveAttribute("aria-disabled", "true");
-      expect(unavailable).toHaveTextContent(copy.paletteUnavailable);
-      expect(unavailable).toHaveTextContent(copy.paletteProviderNotAssessed);
-      expect(unavailable).not.toHaveTextContent(copy.paletteNoProvider);
-      await user.click(unavailable);
-    }
+    const mounted = render(test.view());
+    const read = entry(copy.read);
+    expect(read).toHaveAccessibleDescription(expect.stringContaining(copy.paletteNoProvider));
+    expect(read).not.toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteProviderNotAssessed),
+    );
+    const notification = entry(copy.notification);
+    expect(notification).toHaveAttribute("aria-disabled", "true");
+    expect(notification).toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteUnavailable),
+    );
+    expect(notification).toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteProviderNotAssessed),
+    );
+    expect(notification).not.toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteNoProvider),
+    );
+    await user.click(notification);
+    mounted.rerender(test.view(undefined, true, true, true));
+    const recordTrigger = entry(copy.paletteRecordTrigger);
+    expect(recordTrigger).toHaveAttribute("aria-disabled", "true");
+    expect(recordTrigger).toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteUnavailable),
+    );
+    expect(recordTrigger).toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteProviderNotAssessed),
+    );
+    expect(recordTrigger).not.toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteNoProvider),
+    );
+    await user.click(recordTrigger);
     expect(test.onChoose).not.toHaveBeenCalled();
     expect(test.onClose).not.toHaveBeenCalled();
   },
@@ -118,7 +130,7 @@ it.each(paletteLocales)(
     const user = userEvent.setup();
     const mounted = render(test.view());
     expect(screen.getAllByText(copy.paletteEditRequired).length).toBeGreaterThan(0);
-    for (const label of [copy.paletteManual, copy.read, copy.task, copy.condition, copy.delay])
+    for (const label of actionTitles(copy))
       expect(entry(label)).toHaveAttribute("aria-disabled", "true");
     fireEvent.click(entry(copy.task));
     expect(test.onChoose).not.toHaveBeenCalled();
@@ -128,8 +140,12 @@ it.each(paletteLocales)(
         state.executionReasons = ["activity-create-required", "task-type-unavailable"];
     }
     mounted.rerender(test.view({ ...readyPaletteRead(), data: warning }));
-    expect(entry(copy.task)).toHaveTextContent(copy.paletteActivityRequired);
-    expect(entry(copy.task)).toHaveTextContent(copy.paletteTaskTypeUnavailable);
+    expect(entry(copy.task)).toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteActivityRequired),
+    );
+    expect(entry(copy.task)).toHaveAccessibleDescription(
+      expect.stringContaining(copy.paletteTaskTypeUnavailable),
+    );
     expect(entry(copy.task)).not.toHaveAttribute("aria-disabled", "true");
     await user.click(entry(copy.task));
     expect(test.onChoose).toHaveBeenCalledExactlyOnceWith({
@@ -142,20 +158,29 @@ it.each(paletteLocales)(
 );
 
 it.each(paletteLocales)(
-  "keeps no-match feedback and Clear search usable in $locale",
+  "shows trigger choices only when replacing a trigger in $locale",
   async ({ locale, copy }) => {
     const test = fixture(locale);
     const user = userEvent.setup();
-    render(test.view());
-    const search = screen.getByLabelText(copy.searchNodes);
-    await user.type(search, "zz-no-workflow-action-8273");
-    expect(screen.getByRole("status")).toHaveTextContent(copy.noNodes);
-    expect(screen.queryByRole("button", { name: new RegExp(copy.read) })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: copy.clearSearch }));
-    expect(search).toHaveValue("");
-    for (const label of titles(copy)) expect(entry(label)).toBeVisible();
-    expect(test.onChoose).not.toHaveBeenCalled();
-    expect(test.onClose).not.toHaveBeenCalled();
+    const mounted = render(test.view());
+    expect(screen.queryByRole("button", { name: copy.paletteManual })).not.toBeInTheDocument();
+    mounted.rerender(test.view(undefined, true, true, true));
+    expect(screen.getByRole("dialog", { name: copy.selectTrigger })).toBeVisible();
+    expect(screen.getByRole("heading", { name: copy.triggerGroupOthers })).toBeVisible();
+    expect(screen.getByRole("heading", { name: copy.nodeCategoryData })).toBeVisible();
+    expect(entry(copy.paletteManual)).toBeVisible();
+    expect(entry(copy.scheduledTrigger)).toBeVisible();
+    expect(entry(copy.paletteRecordTrigger)).toBeVisible();
+    for (const label of actionTitles(copy))
+      expect(screen.queryByRole("button", { name: label })).not.toBeInTheDocument();
+    await user.click(entry(copy.paletteManual));
+    expect(test.onChoose).toHaveBeenCalledExactlyOnceWith({
+      kind: "configure",
+      type: "trigger.manual",
+      version: 1,
+      nodeId: "start",
+    });
+    expect(test.definition).toStrictEqual(test.before);
   },
 );
 
@@ -165,9 +190,7 @@ it("lets fresh server denial and current editor read-only state override stale p
   expect(entry(english.task)).not.toHaveAttribute("aria-disabled", "true");
   mounted.rerender(
     test.view(
-      readyPaletteRead({
-        authoring: { allowed: false, reason: "workflow-edit-required" },
-      }),
+      readyPaletteRead({ authoring: { allowed: false, reason: "workflow-edit-required" } }),
     ),
   );
   fireEvent.click(entry(english.task));
@@ -176,11 +199,7 @@ it("lets fresh server denial and current editor read-only state override stale p
   fireEvent.click(entry(english.task));
   expect(entry(english.task)).toHaveAttribute("aria-disabled", "true");
   mounted.rerender(
-    test.view(
-      readyPaletteRead({
-        authoring: { allowed: false, reason: "workflow-archived" },
-      }),
-    ),
+    test.view(readyPaletteRead({ authoring: { allowed: false, reason: "workflow-archived" } })),
   );
   expect(screen.getAllByText(english.paletteArchived).length).toBeGreaterThan(0);
   expect(entry(english.task)).toHaveAttribute("aria-disabled", "true");
@@ -194,7 +213,7 @@ it("shows initial unconfirmed loading without presenting an empty or selectable 
   render(test.view());
   expect(screen.getByRole("status")).toHaveTextContent(english.paletteLoading);
   expect(screen.queryByText(english.noNodes)).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: new RegExp(english.read) })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: english.read })).not.toBeInTheDocument();
   expect(test.onChoose).not.toHaveBeenCalled();
   expect(retry).not.toHaveBeenCalled();
 });
@@ -205,7 +224,9 @@ it("retains cached descriptions on transient read error with one read-only Retry
   render(test.view());
   expect(screen.getByRole("alert")).toHaveTextContent(english.paletteReadError);
   expect(screen.getAllByRole("button", { name: english.retry })).toHaveLength(1);
-  expect(entry(english.read)).toHaveTextContent(english.readActionHint);
+  expect(entry(english.read)).toHaveAccessibleDescription(
+    expect.stringContaining(english.readActionHint),
+  );
   expect(entry(english.read)).toHaveAttribute("aria-disabled", "true");
   fireEvent.click(entry(english.read));
   expect(test.onChoose).not.toHaveBeenCalled();
@@ -213,16 +234,14 @@ it("retains cached descriptions on transient read error with one read-only Retry
   expect(retry).not.toHaveBeenCalled();
 });
 
-it("hides cached metadata after confirmed denial while retaining the search and draft", async () => {
+it("hides cached metadata after confirmed denial while retaining the local draft", () => {
   const test = fixture();
-  const user = userEvent.setup();
   const mounted = render(test.view());
-  await user.type(screen.getByLabelText(english.searchNodes), english.read);
   expect(entry(english.read)).toBeVisible();
   mounted.rerender(test.view({ ...readyPaletteRead(), status: "denied" }));
   expect(screen.getByRole("alert")).toHaveTextContent(english.paletteDenied);
-  expect(screen.getByLabelText(english.searchNodes)).toHaveValue(english.read);
-  expect(screen.queryByRole("button", { name: new RegExp(english.read) })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: english.read })).not.toBeInTheDocument();
+  expect(screen.queryByText(english.readActionHint)).not.toBeInTheDocument();
   expect(screen.queryByText(english.noNodes)).not.toBeInTheDocument();
   expect(test.onChoose).not.toHaveBeenCalled();
   expect(test.definition).toStrictEqual(test.before);
@@ -236,7 +255,7 @@ it("does not use another workflow's ready response as this query key's confirmat
   });
   render(test.view());
   expect(screen.getByRole("status")).toHaveTextContent(english.paletteLoading);
-  expect(screen.queryByRole("button", { name: new RegExp(english.read) })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: english.read })).not.toBeInTheDocument();
   expect(screen.queryByText(english.noNodes)).not.toBeInTheDocument();
   expect(test.onChoose).not.toHaveBeenCalled();
 });
@@ -245,7 +264,7 @@ it("keeps unavailable choices keyboard-discoverable without dispatching keyboard
   const test = fixture();
   const user = userEvent.setup();
   render(test.view());
-  const unavailable = entry(english.paletteRecordTrigger);
+  const unavailable = entry(english.notification);
   expect(unavailable).toHaveAttribute("aria-disabled", "true");
   unavailable.focus();
   expect(unavailable).toHaveFocus();
@@ -260,18 +279,18 @@ it("keeps unavailable choices keyboard-discoverable without dispatching keyboard
   });
 });
 
-it("unmounts the closed shared dialog without dispatching a choice or a read retry", () => {
+it("unmounts the closed inline dialog without dispatching a choice or a read retry", () => {
   const retry = vi.fn<() => Promise<unknown>>();
   const test = fixture("en", { ...readyPaletteRead(), retry });
   render(test.view(undefined, true, false));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(screen.queryByLabelText(english.searchNodes)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: english.read })).not.toBeInTheDocument();
   expect(test.onChoose).not.toHaveBeenCalled();
   expect(test.onClose).not.toHaveBeenCalled();
   expect(retry).not.toHaveBeenCalled();
 });
 
-it("preserves search and the local draft through a deferred read Retry without selecting", async () => {
+it("preserves the draft and cached choices through one deferred read Retry without selecting", async () => {
   const held = deferred<unknown>();
   const retry = vi.fn<() => Promise<unknown>>().mockReturnValue(held.promise);
   const read: PaletteRead = { ...readyPaletteRead(), status: "error", retry };
@@ -279,17 +298,22 @@ it("preserves search and the local draft through a deferred read Retry without s
   const user = userEvent.setup();
   const mounted = render(test.view());
   try {
-    await user.type(screen.getByLabelText(english.searchNodes), english.read);
-    await user.click(screen.getByRole("button", { name: english.retry }));
+    const retryButton = screen.getByRole("button", { name: english.retry });
+    await user.click(retryButton);
+    fireEvent.click(retryButton);
     expect(retry).toHaveBeenCalledTimes(1);
-    expect(screen.getByLabelText(english.searchNodes)).toHaveValue(english.read);
+    expect(retryButton).toBeDisabled();
+    expect(entry(english.read)).toHaveAttribute("aria-disabled", "true");
+    expect(entry(english.read)).toHaveAccessibleDescription(
+      expect.stringContaining(english.readActionHint),
+    );
+    fireEvent.click(entry(english.read));
     expect(test.onChoose).not.toHaveBeenCalled();
     await act(async () => {
       held.resolve({ isError: false });
       await held.promise;
     });
     mounted.rerender(test.view({ ...readyPaletteRead(), retry }));
-    expect(screen.getByLabelText(english.searchNodes)).toHaveValue(english.read);
     expect(entry(english.read)).not.toHaveAttribute("aria-disabled", "true");
     expect(test.onChoose).not.toHaveBeenCalled();
     expect(test.onClose).not.toHaveBeenCalled();

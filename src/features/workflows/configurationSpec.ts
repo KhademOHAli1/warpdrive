@@ -7,7 +7,10 @@ import type {
   ConfigurationSpec,
   ConfigurationValueKind,
 } from "./configurationTypes";
+import { delayDurationUnits } from "./delayConfig";
+import { newIfElseConfig } from "./ifElseConfig";
 import type { ValueType, WorkflowNode } from "./schemas";
+import { workflowManualLaunchScope } from "./workflowManualLaunchContract";
 
 export { configurationLimits } from "./configurationLimits";
 
@@ -51,6 +54,8 @@ const unavailable = (key: string, type: ConfigurationValueKind) =>
 
 export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationProfile> = {
   "trigger.manual": { supported: true, fields: [name] },
+  "trigger.schedule": { supported: true, fields: [name] },
+  "trigger.webhook": { supported: true, fields: [name] },
   "trigger.record": {
     supported: false,
     fields: [name, unavailable("entity", "entity"), unavailable("event", "string")],
@@ -99,6 +104,35 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
       }),
     ],
   },
+  ifElse: { supported: true, fields: [name] },
+  iterator: { supported: true, fields: [name] },
+  "record.create": { supported: true, fields: [name] },
+  "record.update": { supported: true, fields: [name] },
+  "record.delete": { supported: true, fields: [name] },
+  "record.search": { supported: true, fields: [name] },
+  "record.upsert": { supported: true, fields: [name] },
+  "record.pick": { supported: true, fields: [name] },
+  "email.draft": { supported: true, fields: [name] },
+  "http.request": { supported: true, fields: [name] },
+  "calendar.create": { supported: true, fields: [name] },
+  "human.form": { supported: true, fields: [name] },
+  filter: {
+    supported: true,
+    fields: [
+      name,
+      field("left", "conditionField", "scalar", { modes: ["reference"], nullable: true }),
+      field("operator", "conditionOperator", "operator", {
+        control: "operator",
+        modes: ["literal"],
+        choices: ["exists", "equals", "notEquals", "contains"],
+      }),
+      field("right", "conditionValue", "scalar", {
+        nullable: true,
+        modes: ["literal", "reference", "null"],
+        requiredWhen: { field: "operator", not: "exists" },
+      }),
+    ],
+  },
   delay: {
     supported: true,
     fields: [
@@ -116,6 +150,14 @@ export const configurationProfiles: Record<WorkflowNode["type"], ConfigurationPr
         required: false,
         modes: ["literal"],
       }),
+      ...delayDurationUnits.map((unit) =>
+        field(unit, `delayUnits.${unit}`, "numeric", {
+          path: ["duration", unit],
+          required: false,
+          constraints: { min: 0 },
+        }),
+      ),
+      field("scheduledDateTime", "delayScheduledDateTime", "scalar"),
     ],
   },
   notification: { supported: false, fields: [name, unavailable("title", "string")] },
@@ -182,17 +224,50 @@ export function conditionSourceDefaults(source: {
   return { operator: "equals", right: { kind: "value", value } };
 }
 
+function fixedNodeConfiguration(type: WorkflowNode["type"]): WorkflowNode["config"] | undefined {
+  if (type === "trigger.webhook") return { httpMethod: "POST", authentication: "HMAC_SHA256" };
+  if (type === "trigger.schedule") return { interval: "days", days: 1, hour: 9, minute: 0 };
+  if (type === "ifElse") return newIfElseConfig();
+  if (type === "iterator") return { items: { kind: "literal", itemKind: "text", items: [] } };
+  if (type === "record.create" || type === "record.update") return { fields: {} };
+  if (type === "record.delete" || type === "record.search" || type === "email.draft") return {};
+  if (type === "human.form") return { fields: [] };
+  if (type === "calendar.create") return { allDay: false };
+  if (type === "http.request") return { method: "GET", url: { kind: "value", value: "" } };
+  if (type === "record.upsert") return { entity: "person", fields: {} };
+  if (type === "record.pick") return { strategy: "RANDOM", recordIds: [] };
+  return undefined;
+}
+
+function triggerProvidesDeal(trigger: WorkflowNode | undefined): boolean {
+  if (trigger === undefined) return true;
+  if (trigger.type === "trigger.webhook") return trigger.config.httpMethod === "POST";
+  return trigger.type === "trigger.manual" && workflowManualLaunchScope(trigger.config) === "deal";
+}
+
 export function defaultConfiguration(
   type: WorkflowNode["type"],
   source: { trigger?: WorkflowNode; read?: WorkflowNode; subject?: string },
 ): WorkflowNode["config"] {
   const recordId = { kind: "reference", nodeId: source.trigger?.id ?? "start", path: ["recordId"] };
-  if (type === "record.read") return { entity: "deal", recordId };
+  const dealAvailable = triggerProvidesDeal(source.trigger);
+  if (type === "record.read")
+    return dealAvailable ? { entity: "deal", recordId } : { entity: "deal" };
+  const defaults = fixedNodeConfiguration(type);
+  if (defaults !== undefined) return defaults;
   if (type === "activity.create")
-    return { subject: { kind: "value", value: source.subject ?? "" }, dealId: recordId };
-  if (type === "delay") return { minutes: { kind: "value", value: configurationLimits.waitMin } };
-  if (type !== "condition") return {};
+    return {
+      subject: { kind: "value", value: source.subject ?? "" },
+      ...(dealAvailable ? { dealId: recordId } : {}),
+    };
+  if (type === "delay")
+    return {
+      delayType: "DURATION",
+      duration: { minutes: { kind: "value", value: configurationLimits.waitMin } },
+    };
+  if (type !== "condition" && type !== "filter") return {};
   const read = source.read;
+  if (read === undefined && !dealAvailable) return { operator: "exists" };
   return {
     left: {
       kind: "reference",

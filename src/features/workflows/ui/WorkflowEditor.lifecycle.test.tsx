@@ -262,8 +262,23 @@ async function dirty(user: ReturnType<typeof userEvent.setup>) {
   expect(graph()).toContain("Local graph node");
   return { name, graph: graph() };
 }
+async function openOptions(
+  user: ReturnType<typeof userEvent.setup>,
+  label = english.workflowOptions,
+) {
+  const opener = screen.getByLabelText(label, { selector: "button" });
+  if (screen.queryByRole("menu") === null) await user.click(opener);
+  return opener;
+}
+
+async function chooseOption(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const opener = await openOptions(user);
+  await user.click(screen.getByRole("menuitem", { name: label }));
+  return opener;
+}
+
 async function versionReview(user: ReturnType<typeof userEvent.setup>, label = "Versions") {
-  await user.click(screen.getByRole("button", { name: label }));
+  await chooseOption(user, label);
   const dialog = await screen.findByRole("dialog");
   await selectVersion(user, dialog);
   return dialog;
@@ -381,10 +396,12 @@ describe("archived editor and version history", () => {
       expect(screen.getByRole("textbox", { name: messages.name })).toBeDisabled();
       expect(screen.queryByRole("button", { name: messages.save })).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: messages.publish })).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: messages.live })).toBeDisabled();
-      expect(screen.getByRole("button", { name: unarchive })).toBeEnabled();
-      const opener = screen.getByRole("button", { name: versions });
+      const opener = screen.getByRole("button", { name: messages.workflowOptions });
       opener.focus();
+      await user.keyboard("{Enter}");
+      expect(screen.getByRole("menuitem", { name: messages.live })).toBeDisabled();
+      expect(screen.getByRole("menuitem", { name: unarchive })).toBeEnabled();
+      screen.getByRole("menuitem", { name: versions }).focus();
       await user.keyboard("{Enter}");
       const dialog = await screen.findByRole("dialog");
       expect(dialog).toContainElement(document.activeElement as HTMLElement);
@@ -402,7 +419,7 @@ describe("archived editor and version history", () => {
     io.versionsError = true;
     const user = userEvent.setup();
     render(view());
-    await user.click(screen.getByRole("button", { name: "Versions" }));
+    await chooseOption(user, "Versions");
     expect(await screen.findByRole("alert")).toHaveTextContent(english.loadError);
     expect(screen.queryByText(english.historyEmpty)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: english.retry }));
@@ -548,7 +565,7 @@ describe("independent lifecycle writes and lost follow-up work", () => {
     local = { name: local.name, graph: graph() };
     io.detailRefresh.mockRejectedValueOnce(new Error("read failed"));
     io.archive.mockResolvedValueOnce({ ok: true, value: { ...stored(true), revision: 9 } });
-    await user.click(screen.getByRole("button", { name: "Archive workflow" }));
+    await chooseOption(user, "Archive workflow");
     const confirmation = await screen.findByRole("alertdialog");
     await user.click(within(confirmation).getByRole("button", { name: "Archive workflow" }));
     await waitFor(() => expect(io.archive).toHaveBeenCalledTimes(1));
@@ -566,7 +583,7 @@ describe("independent lifecycle writes and lost follow-up work", () => {
     io.detailRefresh.mockRejectedValueOnce(new Error("refresh failed"));
     const user = userEvent.setup();
     render(view(fixture(true)));
-    await user.click(screen.getByRole("button", { name: "Unarchive workflow" }));
+    await chooseOption(user, "Unarchive workflow");
     const confirmation = await screen.findByRole("alertdialog");
     expect(confirmation).toHaveTextContent("returns inactive");
     await user.click(within(confirmation).getByRole("button", { name: "Unarchive workflow" }));
@@ -590,7 +607,7 @@ describe("independent lifecycle writes and lost follow-up work", () => {
     const user = userEvent.setup();
     render(view());
     const local = await dirty(user);
-    await user.click(screen.getByRole("button", { name: "Duplicate workflow" }));
+    await chooseOption(user, "Duplicate workflow");
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toHaveTextContent("Copies the saved draft");
     await user.click(within(dialog).getByRole("button", { name: "Duplicate workflow" }));
@@ -612,7 +629,7 @@ describe("independent lifecycle writes and lost follow-up work", () => {
     });
     const user = userEvent.setup();
     render(view());
-    await user.click(screen.getByRole("button", { name: "Duplicate workflow" }));
+    await chooseOption(user, "Duplicate workflow");
     const dialog = await screen.findByRole("dialog");
     const name = within(dialog).getByRole("textbox", { name: "Name for copied workflow" });
     await user.clear(name);
@@ -709,12 +726,12 @@ describe("current authority and explicit reconciliation regressions", () => {
     const user = userEvent.setup();
     render(view());
 
-    await user.click(screen.getByRole("button", { name: "Archive workflow" }));
+    await chooseOption(user, "Archive workflow");
     let confirmation = await screen.findByRole("alertdialog");
     await user.click(within(confirmation).getByRole("button", { name: "Archive workflow" }));
     await waitFor(() => expect(io.currentRead).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
-    await user.click(screen.getByRole("button", { name: "Unarchive workflow" }));
+    await chooseOption(user, "Unarchive workflow");
     confirmation = await screen.findByRole("alertdialog");
     await user.click(within(confirmation).getByRole("button", { name: "Unarchive workflow" }));
     await waitFor(() => expect(io.currentRead).toHaveBeenCalledTimes(2));
@@ -726,8 +743,10 @@ describe("current authority and explicit reconciliation regressions", () => {
     expect(screen.getByRole("textbox", { name: english.name })).toBeDisabled();
     expect(screen.queryByRole("button", { name: english.save })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: english.publish })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Duplicate workflow" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: english.live })).toBeDisabled();
+    await openOptions(user);
+    expect(screen.queryByRole("menuitem", { name: "Duplicate workflow" })).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: english.live })).toBeDisabled();
+    await user.keyboard("{Escape}");
     await user.click(screen.getByRole("tab", { name: english.runs }));
     expect(screen.queryByRole("button", { name: english.cancelRun })).not.toBeInTheDocument();
     expect(io.save).not.toHaveBeenCalled();
@@ -750,7 +769,7 @@ describe("current authority and explicit reconciliation regressions", () => {
     await waitFor(() => expect(io.save).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByRole("button", { name: english.save })).toBeDisabled());
     expect(screen.getByRole("button", { name: english.undo })).toBeEnabled();
-    await user.click(screen.getByRole("button", { name: "Archive workflow" }));
+    await chooseOption(user, "Archive workflow");
     const confirmation = await screen.findByRole("alertdialog");
     await user.click(within(confirmation).getByRole("button", { name: "Archive workflow" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
@@ -790,7 +809,7 @@ describe("current authority and explicit reconciliation regressions", () => {
     const user = userEvent.setup();
     render(view());
     const local = await dirty(user);
-    await user.click(screen.getByRole("button", { name: "Archive workflow" }));
+    await chooseOption(user, "Archive workflow");
     const confirmation = await screen.findByRole("alertdialog");
     await user.click(within(confirmation).getByRole("button", { name: "Archive workflow" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
@@ -915,7 +934,7 @@ describe("current authority and explicit reconciliation regressions", () => {
     io.duplicate.mockRejectedValueOnce(new Error("copy response lost"));
     const user = userEvent.setup();
     render(view());
-    await user.click(screen.getByRole("button", { name: "Duplicate workflow" }));
+    await chooseOption(user, "Duplicate workflow");
     const dialog = await screen.findByRole("dialog");
     const name = within(dialog).getByRole("textbox", { name: "Name for copied workflow" });
     await user.clear(name);
@@ -947,7 +966,7 @@ describe("current authority and explicit reconciliation regressions", () => {
     io.duplicate.mockRejectedValueOnce(new Error("copy response lost"));
     const user = userEvent.setup();
     render(view());
-    await user.click(screen.getByRole("button", { name: "Duplicate workflow" }));
+    await chooseOption(user, "Duplicate workflow");
     let dialog = await screen.findByRole("dialog");
     const name = within(dialog).getByRole("textbox", { name: "Name for copied workflow" });
     await user.clear(name);
@@ -959,10 +978,12 @@ describe("current authority and explicit reconciliation regressions", () => {
     await waitFor(() => expect(io.currentRead).toHaveBeenCalledTimes(1));
     await user.click(within(dialog).getByRole("button", { name: english.cancel }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(screen.getByRole("button", { name: "Duplicate workflow" })).toBeDisabled();
+    await openOptions(user);
+    expect(screen.getByRole("menuitem", { name: "Duplicate workflow" })).toBeDisabled();
+    await user.keyboard("{Escape}");
     await user.click(screen.getByRole("button", { name: english.allowRetry }));
     expect(io.duplicate).toHaveBeenCalledTimes(1);
-    await user.click(screen.getByRole("button", { name: "Duplicate workflow" }));
+    await chooseOption(user, "Duplicate workflow");
     dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByRole("textbox", { name: "Name for copied workflow" })).toHaveValue(
       "Keep my reviewed copy name",
@@ -991,20 +1012,20 @@ describe("current authority and explicit reconciliation regressions", () => {
     expect(io.archive).not.toHaveBeenCalled();
   });
 
-  it("returns focus to the enabled archive opener after a held conflict and retains the dirty draft", async () => {
+  it("returns focus to Workflow options after a held archive conflict and retains the dirty draft", async () => {
     const held = deferred<Awaited<ReturnType<typeof archiveWorkflowAction>>>();
     const conflict = { ok: false, error: ERROR_IDS.WORKFLOW_CONFLICT } as const;
     io.archive.mockReturnValueOnce(held.promise);
     const user = userEvent.setup();
     render(view());
     const local = await dirty(user);
-    const opener = screen.getByRole("button", { name: "Archive workflow" });
-    await user.click(opener);
+    const opener = await chooseOption(user, "Archive workflow");
     const confirmation = await screen.findByRole("alertdialog");
     try {
-      await user.click(within(confirmation).getByRole("button", { name: "Archive workflow" }));
+      const submit = within(confirmation).getByRole("button", { name: "Archive workflow" });
+      await user.click(submit);
       await waitFor(() => expect(io.archive).toHaveBeenCalledTimes(1));
-      expect(opener).toBeDisabled();
+      expect(submit).toBeDisabled();
       expect(local.name).toHaveValue("Unsaved local name");
       expect(graph()).toBe(local.graph);
       await act(async () => {
@@ -1037,24 +1058,27 @@ it("retains an archive ACK but removes stale controls after a confirmed current-
   });
   const user = userEvent.setup();
   render(view());
-  await user.click(screen.getByRole("button", { name: english.archive }));
+  await chooseOption(user, english.archive);
   const confirmation = await screen.findByRole("alertdialog");
   await user.click(within(confirmation).getByRole("button", { name: english.archive }));
   await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
   expect(await screen.findByRole("alert")).toHaveTextContent(english.denied);
   expect(screen.getByRole("status")).toHaveTextContent(english.archivedSaved);
   expect(screen.getByRole("textbox", { name: english.name })).toBeDisabled();
-  expect(screen.queryByRole("button", { name: english.versions })).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: english.unarchive })).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: english.duplicate })).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: english.runs })).toBeDisabled();
+  await openOptions(user);
+  expect(screen.queryByRole("menuitem", { name: english.versions })).not.toBeInTheDocument();
+  expect(screen.queryByRole("menuitem", { name: english.unarchive })).not.toBeInTheDocument();
+  expect(screen.queryByRole("menuitem", { name: english.duplicate })).not.toBeInTheDocument();
+  await user.keyboard("{Escape}");
   const authorized = { ...fixture(true), revision: 8 };
   io.currentRead.mockResolvedValueOnce(authorized);
   await user.click(screen.getByRole("button", { name: english.refresh }));
   await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
-  expect(screen.getByRole("button", { name: english.versions })).toBeEnabled();
-  expect(screen.getByRole("button", { name: english.unarchive })).toBeEnabled();
   expect(screen.getByRole("status")).toHaveTextContent(english.archivedSaved);
+  await openOptions(user);
+  expect(screen.getByRole("menuitem", { name: english.versions })).toBeEnabled();
+  expect(screen.getByRole("menuitem", { name: english.unarchive })).toBeEnabled();
   expect(io.archive).toHaveBeenCalledTimes(1);
   expect(io.save).not.toHaveBeenCalled();
 });

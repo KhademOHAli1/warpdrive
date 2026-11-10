@@ -9,6 +9,19 @@ export interface LiveRunEffects {
     readonly read: number;
     readonly task: number;
     readonly condition: number;
+    readonly filter?: number;
+    readonly ifElse?: number;
+    readonly iterator?: number;
+    readonly recordCreate?: number;
+    readonly recordUpdate?: number;
+    readonly recordDelete?: number;
+    readonly recordSearch?: number;
+    readonly recordUpsert?: number;
+    readonly recordPick?: number;
+    readonly emailDraft?: number;
+    readonly httpRequest?: number;
+    readonly calendarEvent?: number;
+    readonly humanForm?: number;
     readonly delay: number;
   };
 }
@@ -78,9 +91,24 @@ function boundedJson(input: unknown): boolean {
 
 const countKey: Partial<Record<WorkflowNode["type"], keyof LiveRunEffects["counts"]>> = {
   "trigger.manual": "start",
+  "trigger.schedule": "start",
+  "trigger.webhook": "start",
   "record.read": "read",
   "activity.create": "task",
   condition: "condition",
+  filter: "filter",
+  ifElse: "ifElse",
+  iterator: "iterator",
+  "record.create": "recordCreate",
+  "record.update": "recordUpdate",
+  "record.delete": "recordDelete",
+  "record.search": "recordSearch",
+  "record.upsert": "recordUpsert",
+  "record.pick": "recordPick",
+  "email.draft": "emailDraft",
+  "http.request": "httpRequest",
+  "calendar.create": "calendarEvent",
+  "human.form": "humanForm",
   delay: "delay",
 };
 
@@ -90,11 +118,13 @@ export function projectLiveRunEffects(input: unknown): LiveRunEffects | null {
     if (!boundedJson(input)) return null;
     const checked = validateDefinition(input);
     if (!checked.ok || !executableDefinition(checked.value)) return null;
-    const counts = { start: 0, read: 0, task: 0, condition: 0, delay: 0 };
+    const counts: {
+      -readonly [Key in keyof LiveRunEffects["counts"]]: LiveRunEffects["counts"][Key];
+    } = { start: 0, read: 0, task: 0, condition: 0, delay: 0 };
     for (const node of checked.value.nodes) {
       const key = countKey[node.type];
       if (key === undefined) return null;
-      counts[key]++;
+      counts[key] = (counts[key] ?? 0) + 1;
     }
     if (counts.start !== 1) return null;
     return { configuredSteps: checked.value.nodes.length, counts };

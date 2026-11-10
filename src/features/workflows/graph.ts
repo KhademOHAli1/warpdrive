@@ -1,3 +1,4 @@
+import { portsFor } from "./graphPorts";
 import type { DefinitionIssue, WorkflowDefinition } from "./schemas";
 
 function inspectEdges(definition: WorkflowDefinition): DefinitionIssue[] {
@@ -6,10 +7,7 @@ function inspectEdges(definition: WorkflowDefinition): DefinitionIssue[] {
   for (const edge of definition.edges) {
     if (!nodes.has(edge.from) || !nodes.has(edge.to)) issues.push({ code: "missing_node" });
     const source = nodes.get(edge.from);
-    if (
-      source !== undefined &&
-      (source.type === "condition" ? edge.port === "next" : edge.port !== "next")
-    )
+    if (source !== undefined && !portsFor(source).includes(edge.port))
       issues.push({ code: "invalid_port", nodeId: edge.from });
   }
   return issues;

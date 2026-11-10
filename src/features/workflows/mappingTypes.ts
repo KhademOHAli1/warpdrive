@@ -19,7 +19,7 @@ export type MappingValueKind =
 export interface MappingValueContract {
   kind: MappingValueKind;
   nullable: boolean;
-  entity?: "deal" | "activity" | "user" | "person" | "organization";
+  entity?: "deal" | "lead" | "activity" | "user" | "person" | "organization";
   optionFieldId?: string;
 }
 
@@ -33,6 +33,25 @@ export type MappingFieldKey =
   | "value"
   | "currency"
   | "result"
+  | "formAnswer"
+  | "httpStatus"
+  | "httpResult"
+  | "currentItem"
+  | "currentItemIndex"
+  | "processedCount"
+  | "failedCount"
+  | "hasProcessedAllItems"
+  | "name"
+  | "subject"
+  | "dueAt"
+  | "done"
+  | "createdAt"
+  | "updatedAt"
+  | "deleted"
+  | "firstId"
+  | "totalCount"
+  | "matchesFilter"
+  | "matchingBranchId"
   | "resumeAt"
   | "expectedCloseDate";
 
@@ -52,6 +71,7 @@ export interface MappingOutput {
   path: readonly string[];
   contract: MappingValueContract;
   field: MappingFieldKey;
+  label?: string;
   needsConfiguration?: true;
 }
 

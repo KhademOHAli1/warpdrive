@@ -11,6 +11,10 @@ const { revoke, refresh } = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/oauth/revokeAction", () => ({ revokeConnectionAction: revoke }));
+// CalendarConnectionsClient.test.tsx covers the mounted card and its tRPC contract.
+vi.mock("@/features/activities/providers/google/CalendarConnectionCard", () => ({
+  CalendarConnectionCard: () => null,
+}));
 
 import { ConnectionsClient } from "./ConnectionsClient";
 

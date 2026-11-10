@@ -1,34 +1,32 @@
 "use client";
 
-import { BriefcaseBusiness, GitBranch } from "lucide-react";
+import { BriefcaseBusiness, Folders, GitBranch, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DOCS_SITE_URL } from "@/constants/docs";
-import type { NAV_ITEMS, NavKey } from "@/constants/nav";
+import type { NavKey } from "@/constants/nav";
 import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
 import {
   ActivitiesIcon,
   ContactsIcon,
-  DashboardIcon,
   DocsIcon,
   InboxIcon,
   LeadsIcon,
-  PipelineIcon,
   SettingsIcon,
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
 import { SidebarToggle } from "./SidebarToggle";
 import { useWorkspaceNavigation } from "./WorkspaceShellProvider";
 
-const ICONS: Record<NavKey, typeof PipelineIcon> = {
-  pipeline: PipelineIcon,
+const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
+  dashboard: LayoutDashboard,
   work: BriefcaseBusiness,
+  projects: Folders,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,
   inbox: InboxIcon,
-  dashboard: DashboardIcon,
   settings: SettingsIcon,
   workflows: GitBranch,
 };
@@ -63,7 +61,7 @@ export function SidebarMenu({
       ];
     return undefined;
   }
-  function menuItem(item: (typeof NAV_ITEMS)[number]) {
+  function menuItem(item: (typeof navItems)[number]) {
     return (
       <SidebarMenuItem
         key={item.key}

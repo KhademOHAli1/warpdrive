@@ -20,6 +20,7 @@ export async function cancelOutbox(
       SELECT s.id, s.claim_token, s.sent_at, s.status,s.send_started_at,s.delivery_outcome->>'state' AS receipt_state
       FROM email_send_attempts s JOIN email_accounts a ON a.id = s.account_id
       WHERE s.id = ${args.attemptId} AND a.user_id = ${args.actor.id}
+        AND NOT (s.payload ? 'workflowPurpose')
     `)
   ).rows[0] as
     | {
@@ -48,7 +49,7 @@ export async function cancelOutbox(
   const deleted = (
     await db.execute(sql`
       DELETE FROM email_send_attempts
-      WHERE id = ${args.attemptId} AND claim_token IS NULL AND sent_at IS NULL AND send_started_at IS NULL
+      WHERE id = ${args.attemptId} AND NOT (payload ? 'workflowPurpose') AND claim_token IS NULL AND sent_at IS NULL AND send_started_at IS NULL
         AND status IN ('pending','failed')
         AND (delivery_outcome->>'state' IS NULL OR delivery_outcome->>'state'='rejected')
       RETURNING id

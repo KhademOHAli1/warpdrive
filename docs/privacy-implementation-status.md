@@ -14,6 +14,14 @@ Private progress on 1 November 2026: current object storage passed all 12 real s
 
 The next private UI increment adds localized reviewer intake at the existing privacy root, with minimal paged rows and frozen assignment retries. After actual missing-UI and cached-receipt denial failures, 69 focused UI/workspace/registry cases passed. The locale audit passed. After correcting three typed-lint errors and one warning, all 69 regressions passed again, and the declared Next type-generation/full TSC plus 12-file typed ESLint passed under the third one-use compiler allocation. The second allocation returned unstarted because another compiler was active. These are private-source results; current-main integration, exact-revision CI, browser/native-auth/device acceptance and the remainder of the reviewer workspace stay open. See [reviewer intake](privacy-reviewer-intake.md).
 
+## Local source completion, 10 November 2026
+
+The preserved dirty checkout was reconciled additively onto current main rather than replacing shared files from its older base. Storage/staging and initial reviewer intake already present on main were retained. The new source increment completes the original reviewer-case reader, exposes explicit exact-case original-intake and preliminary native-subject reads at the privacy root, and preserves reviewer verification transitions plus bounded discovery-status connection controls. No schema migration or runtime capability activation is added. See [reviewer source behavior and local evidence](privacy-reviewer-intake.md#preserved-reviewer-source-completion-10-november-2026).
+
+Local checks on the completed source passed 1,010 privacy unit tests, 242 real-PostgreSQL cases across 34 files, configured type generation/full TypeScript, scoped typed lint, formatting and locale audit. The generated source inventory has zero missing/invalid declarations. Native PostgreSQL 18.1 evidence does not replace hosted PostgreSQL 16/storage CI; five Docker-backed storage files remain for that lane. These results do not establish browser/provider or installed acceptance.
+
+This is a dated source observation for the existing [DPL-12 issue](https://github.com/KhademOHAli1/warpdrive/issues/711), with supporting authority and discovery-observation work. It does not close the programme issue or replace canonical GitHub tracking. The historical register below preserves unimplemented durable disclosure/export/delivery/erasure/retention and installed acceptance requirements. Historical qualification remains tied to its recorded revision.
+
 ## Historical task register
 
 | Task   | Status      | Current evidence or next required work                                                                                                                                                                                                                   |

@@ -18,7 +18,7 @@ type RunInput = {
   requestKey: string;
   recordId: string;
   mode: Mode;
-  reviewedVersionId?: string;
+  reviewedVersionId: string;
 };
 type RunReply = { ok: true; value: { id: string } } | { ok: false; error: string };
 
@@ -143,8 +143,9 @@ async function chooseRecord(
   messages: RunMessages,
   mode: Mode,
 ) {
+  await user.click(screen.getByRole("button", { name: messages.workflowOptions }));
   await user.click(
-    screen.getByRole("button", {
+    screen.getByRole("menuitem", {
       name: mode === "simulation" ? messages.simulation : messages.live,
     }),
   );
@@ -177,7 +178,7 @@ function expectRunPayload(mode: Mode, times: number) {
       ),
       recordId,
       mode,
-      ...(mode === "live" ? { reviewedVersionId: publishedVersionId } : {}),
+      reviewedVersionId: publishedVersionId,
     },
     "csrf",
   );
@@ -308,11 +309,13 @@ for (const mode of ["simulation", "live"] as const) {
 it.each([
   { active: false, canRun: true },
   { active: true, canRun: false },
-])("preserves run gates with active=$active and permission=$canRun", ({ active, canRun }) => {
+])("preserves run gates with active=$active and permission=$canRun", async ({ active, canRun }) => {
+  const user = userEvent.setup();
   mount("en", active, canRun);
 
-  expect(screen.getByRole("button", { name: english.simulation })).toBeDisabled();
-  expect(screen.getByRole("button", { name: english.live })).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: english.workflowOptions }));
+  expect(screen.getByRole("menuitem", { name: english.simulation })).toBeDisabled();
+  expect(screen.getByRole("menuitem", { name: english.live })).toBeDisabled();
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(calls.run).not.toHaveBeenCalled();
   expect(calls.invalidate).not.toHaveBeenCalled();

@@ -91,7 +91,14 @@ export async function completeCalendarEventAction(
   csrf: string | null,
 ): Promise<ActionResult<{ id: string }>> {
   const result = await command(calendarCompleteEnvelopeV1, raw, csrf, (tx, actor, input, signal) =>
-    completeActivity(tx, actor, input.activity.id, input.activity.done, signal),
+    completeActivity(
+      tx,
+      actor,
+      input.activity.id,
+      input.activity.done,
+      signal,
+      input.activity.expectedVersion,
+    ),
   );
   if (!result.ok) return result;
   afterCalendarCommit(result.value.id);

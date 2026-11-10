@@ -1,0 +1,792 @@
+{
+  "schema_version": 1,
+  "original_basis": "7e747e99524e08037da6eba1bd01f6558663f8f0",
+  "integration_basis": "a341abeeeed8e10edc725e31bd6d0a92d0be9f36",
+  "disposition_counts": {
+    "already_in_main_exact": 62,
+    "ported_and_completed": 86,
+    "main_metadata_or_equivalent_behavior_retained": 8
+  },
+  "files": [
+    {
+      "path": "docs/privacy-export-stage.md",
+      "original_sha256": "03a341f6a7262cff36c004132f0c6ef0378c5cef88812d8a3d71ec73c26b2595",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "docs/privacy-export-storage.md",
+      "original_sha256": "f5995da11aaeabe37ab4ea0c6a0d9bd95e025f669dfb139fdc4855e00266990a",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "docs/privacy-reviewer-intake.md",
+      "original_sha256": "33b9d04d5cd71a961b58e85979bd9c38f476f5d0798edca5db1c18aafbea3f58",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/__fixtures__/CaseTransitionActionsTestKit.ts",
+      "original_sha256": "b17c953b130e870aba359739654630b22b79f30d56c1b356f424d0a0066ca16f",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/__fixtures__/ReviewerActionsTestKit.ts",
+      "original_sha256": "706aa6caaef64529c23d183b238a2305ad070634244fc8669283a52febdd2e20",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/__fixtures__/ReviewerCaseCardTestKit.tsx",
+      "original_sha256": "c50c8a269344cb5985e634cb0d95e384d3c48aad29c0383359f0e10b16f4bcff",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/__fixtures__/ReviewerCaseReferenceEntryTestKit.tsx",
+      "original_sha256": "70839768fb34a24a812c87c15fc5cd6eb71000b0256b4d02866c0641870ae4c2",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/__fixtures__/reviewerCaseActionsTestKit.ts",
+      "original_sha256": "8f71cea46dfd5e2942880a4196c106b1c8231ce8b40640146d80bc1730bce3a7",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/authorityCompletionExpiry.integration.test.ts",
+      "original_sha256": "4b23671f8a5f59f41707472df19708c215d7eb5514f7ef43fda9082ceec98b08",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/authorityCompletionExpiry.test-helpers.ts",
+      "original_sha256": "1fb624992d5102591322b71bb783a4fa57bd30307ef7d5ec721af85462c2bc30",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "src/features/privacy/caseTransitionActions.fencing.test.ts",
+      "original_sha256": "77bcfa775378f7392c06ff856f200e81182dd17bd1bde554fef731175b0c4619",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/caseTransitionActions.test.ts",
+      "original_sha256": "d86037de52345c98e8f1392be8ea4fe565af768b82e0fb1dcac9b01d2c687020",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/disclosureFields.limits.test.ts",
+      "original_sha256": "63f7b348cbf868f5e0b44ec5742d489aebf17ad0dee5bd103d654d2c007be84e",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportArchiveStage.test.ts",
+      "original_sha256": "1059aa767c8f2739aa04b4bb07897808037ab1f74623b986b49fc6042e399f3a",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportArchiveStage.ts",
+      "original_sha256": "09039b41c86eb25cc5cd0f7b419795857ab45332569f2576ae51592de2aeb543",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportArchiveStageTypes.ts",
+      "original_sha256": "f1203792160389816243f5c0192b9d42d5f0dd1b53a19ee634629762ecf371a8",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStore.integration.test.ts",
+      "original_sha256": "9bbb338dc8666d2767e5c36f1d66b30915dfe15e1ef060f60ee145d3e8e6f9f9",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStore.test-helpers.ts",
+      "original_sha256": "280e70189ab88dcfa74092c8305a411c129fde14b9db4154fc6c76735e456d61",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStore.test.ts",
+      "original_sha256": "28352f9e352ac376f3a8a597b2e19b00e5360cd335accb848db92640053be3f5",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStore.ts",
+      "original_sha256": "84fbbfc071b587dd718d24ba24baf7cbaff3774cf364e4e67235343a95f3452f",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreCancellation.integration.test.ts",
+      "original_sha256": "c6f5f05166936bc66a6efcfab0eea1e41958717e76aa0b1d0d88c6e8c13605eb",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreCompletion.test.ts",
+      "original_sha256": "e1a58ce1839bf59065f20d518623c2ea092c0fdb421a24330f7a07d08f3f89d0",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreDiagnostic.integration.test.ts",
+      "original_sha256": "cb6ea1cc2620a592cc7c68130735348bca095cfec33a0b298ccbd15d971db006",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreDiagnostics.test-helpers.ts",
+      "original_sha256": "e324e462b1d2beb40f97f0b4b926493ec37ae30cc0fc76eb76bd34fba247dab4",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreFailures.integration.test.ts",
+      "original_sha256": "8a43f4455ea66f02377c5d049a628520d1c6a6229b95326ff8307442f2b2ab7c",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreObjects.ts",
+      "original_sha256": "19dcfc32723787035a7c235d57873c3e4d2bab0fbfd8f4ef3c6685c181e27687",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreParts.test.ts",
+      "original_sha256": "922ce67624599263b8c428fbaaf26dfe91a2d60f0ab0bf8db92ae01971dda821",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreParts.ts",
+      "original_sha256": "7e9742f26297c654d29fce1bc01542b02a3da5f04eff0c74f0d1633735ba9812",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreProxy.test-helpers.ts",
+      "original_sha256": "b314ce71676bce060e15fc3dbf83d4228c16c9d9795be44230200b40eb2a0645",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreReadiness.test-helpers.ts",
+      "original_sha256": "7d1abd0fdc7d74f2d1d702cf5697c4d6f5dce58c1c6c2d58d62b5f3b7e75f41a",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreReadiness.test.ts",
+      "original_sha256": "6d256a4698087ed9d90be5d1809d5bbcb2a88214f1a1a6ed7377aeafe62cc198",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreReadinessProtocol.test.ts",
+      "original_sha256": "1710e0c3442aadb20af4e1ef73274444351c27ec513bd0d79bb9b8760cece946",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreRefs.ts",
+      "original_sha256": "002262cc73fff209e9dc72647ee12b41e70d92455fe7aa24d1af9785a38c762b",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreTransport.ts",
+      "original_sha256": "b2ecab02d98b7b723887def6cf84b9a9b9b2a9439b609fb02e336646333121e0",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/exportObjectStoreTypes.ts",
+      "original_sha256": "6517d5bb3292576ed91442fde7f59554ceccbf0821cf276d700e909f12a3c2ca",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/jobStatusCancellation.test-helpers.ts",
+      "original_sha256": "ab5db826df3373926dd5ab611a6c2eee6ea2b098a6fff434a18c67a9aff90d9b",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/jobStatusReaderConnection.integration.test.ts",
+      "original_sha256": "f4e3c334d827f5e780ec95dee5fde9ab2468a421c524696a313199f81ebfe2ae",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/jobStatusReaderConnection.test-helpers.ts",
+      "original_sha256": "d5c17a256ebc8afb18c78b2aba39ec2cd25c96c6a84eaf0ed9d02fa295f5f96e",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/jobStatusSessionExpiry.integration.test.ts",
+      "original_sha256": "87726fbd7e4d07db2258915ad4beb0b90a8546802bac7d454cc3a451dedc8b7f",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/jobStatusSessionExpiry.test-helpers.ts",
+      "original_sha256": "532b9ff8ffa3fdaf33665e4dd4815d315b6d30a2ecd262c6b196c045087f64fc",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyNativeSubjectReview.de.json",
+      "original_sha256": "cddf7978f11ddd0870efe253835ac46451602196b569d0dcc15510b7f2ba872f",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyNativeSubjectReview.en.json",
+      "original_sha256": "fd3af5f11f8b86aa3e927dc68d1121fce06efb2ff7ace047b143f269a313756b",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyNativeSubjectReview.fa.json",
+      "original_sha256": "d9bcb7fbc07d9110c5b283f98e1ebde64c333744995c47e64e5735cc182e74e3",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewer.de.json",
+      "original_sha256": "d494156eed907c190eabb4732579f80d8ee333a368d32f6edf6708f369fee332",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewer.en.json",
+      "original_sha256": "c968c2c41c4823340c7fd7e5a68945386e0151246954133c24e44975c97980b5",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewer.fa.json",
+      "original_sha256": "2ebf5c6f8a49e3844e3b032265921f501505dedc8d0def7a313449f85c40beff",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewerCase.de.json",
+      "original_sha256": "e9d7da61878f014ced89e9148a179f3e2e737d3535fd9b8bce9853faf2b17a64",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewerCase.en.json",
+      "original_sha256": "c421062a335db036bfd31fcd31f4cba538ec3f467ffbb18a6e386035fdffc72f",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewerCase.fa.json",
+      "original_sha256": "119fb576977840d82d2e1063bcd0f5b14c06bcf69c22be6315ee055c94294ccc",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewerVerification.de.json",
+      "original_sha256": "c8d8e55bcec43ddc23477fd2c23d8a7b5f6eb4f43c693531e652e2ee3664db7c",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewerVerification.en.json",
+      "original_sha256": "bba46941415d4448875b91ef0847bb12e885ffb6a13d1d3303363743e6c44bb4",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyReviewerVerification.fa.json",
+      "original_sha256": "2e806e23d5bc80754047ac3ec4c1ea93deee9f21066cc1868328fe47e08237d6",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectProjection.ts",
+      "original_sha256": "b03737eeb7f1de75e6e44550002e58e9b35fe51b56163c8fa6fabc3531f00f70",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.barrier.test-helpers.ts",
+      "original_sha256": "e8492bb8db7545d4e1b01a3dabac3c51e100a9e5b88b991629b5de26b6186424",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.barriers.integration.test.ts",
+      "original_sha256": "1820a1f275403eb532e4f30e59faefa562f6f4a44389ee2ac424f17dba148894",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.boundaries.integration.test.ts",
+      "original_sha256": "20303fe8b2a002071d97b901afc0208520abe5178578c9d07e415f038433a356",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.integration.test.ts",
+      "original_sha256": "ed81b9112d5d7686388b9c6ffdf83d8a2463386453b8298275e800a476951709",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.test-helpers.ts",
+      "original_sha256": "fe84f45ab9661bfcc26f89888681718248b32422fca97972b88f2fbad9b853b5",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.ts",
+      "original_sha256": "b6bdf21f171fb8f7e30349640041e2f0083e39c76b3acbbd3e746bd194f2d620",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReview.values.integration.test.ts",
+      "original_sha256": "4cfd4e687b982d497b1aec71ef9d7fe552bc2b11830341d039e587da122995a0",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReviewActions.contract.test.ts",
+      "original_sha256": "e24d784925e85d4540268d6cb0bbc5cdfbe1053091b9c8f44b5b21841f566cf7",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReviewActions.fencing.test.ts",
+      "original_sha256": "a0090c64bb4b5f4e905db4fea20b697b0f145be8bce3319bdad827b2f5de83fb",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReviewActions.test.ts",
+      "original_sha256": "9fe1e10fcd22730f8604be1879a6c253ce6caad3156f53fe50dbfe3815e65b7a",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReviewActionsTestKit.ts",
+      "original_sha256": "22dc90c2505d57ace07130fbb67829c1661b744c6b637ee1a745dcfd827719e5",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/nativeSubjectReviewTypes.ts",
+      "original_sha256": "a4aa0bd8ae6a305aa3266255ed49eedc7b85aefcc5d158d2ee1f00580d77dfb4",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/privacyNativeSubjectReviewMessages.ts",
+      "original_sha256": "e1c352e3890fcd1db444a504325b7dd31cec329b597254191e411f2dd27f8dd4",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/privacyObservationCancellation.ts",
+      "original_sha256": "eecb0318805ebcbc9866ef29a6e785404b5a7157dbdc954d925b36cd647b1e99",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/privacyObservationConnection.ts",
+      "original_sha256": "4c0c1cda5a1dea591a595c7a28c9f535bbcba6f9ae46d15c00be3cc74959803c",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/privacyObservationPoolErrors.ts",
+      "original_sha256": "46d7e4256658228425c76c74488070c1723a029d679725e49db359a32364ffb8",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/privacyReviewerCaseMessages.ts",
+      "original_sha256": "3c109e93da531588c62694f9c3f48ff8eb14a2d96e19b3912393c0890f02f927",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/privacyReviewerMessages.ts",
+      "original_sha256": "005b03da9bbcc528ac5e72c8ad72b860be019a581c049704a73f669408eab1be",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/privacyReviewerVerificationMessages.ts",
+      "original_sha256": "070cb224c09aaa372f025c2779cb2f88131771f522344725c41f9f4b5c275845",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/registryClassificationsExportStorage.ts",
+      "original_sha256": "4bfc1d2d64b380265036eed67dcb004e14d46150ccda9c804f8d4f0ca506ee62",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/registryIdsExportStorage1.ts",
+      "original_sha256": "b4cbf524390adfb30d76201e394072903697c904ba1af33cecec8427979aadb9",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/retentionPreview.test.ts",
+      "original_sha256": "7c92211fd01584dda7e9a4053de07055aa357e8074cda5821b1b4a6b6b2c5df5",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/retentionPreview.ts",
+      "original_sha256": "7a5b1ba3fca633e15e39043f719e08d732b6af2660fe5ee764e14a6d27eab8bb",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/retentionPreviewSchemas.ts",
+      "original_sha256": "87a2b23d11feae22f999e82d28cf4a25fd4fd5db080ead6fa1aff6f9e43887ab",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/reviewerActions.fencing.test.ts",
+      "original_sha256": "6c4965e35f67aec6bb97bcf1ea31dbcc00b560a93f0efb13e947d1ded2e2888c",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/reviewerActions.test.ts",
+      "original_sha256": "f47d7132209c2727740b485768c950c08844bfb7aa372a84844f98021d7db951",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/reviewerActions.ts",
+      "original_sha256": "47e7bfc0d81161ad4b699bd4b2ad3d962203c5592f79020f867bda09261251ed",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCase.barrier.test-helpers.ts",
+      "original_sha256": "35554c0505f25bfab8ed963ec3606cf0af20d17a9c6580df1c3b6751818ea206",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCase.barriers.integration.test.ts",
+      "original_sha256": "2a08d2fee0ac8c40b6999ca518484db2d1d7fc4879e1a57370385391186a5b9e",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCase.boundaries.integration.test.ts",
+      "original_sha256": "ea514d180e558c2d287d73ec1c6b460277f18c278a19e449182f4414454dba9e",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCase.integration.test.ts",
+      "original_sha256": "94112428c120c0b41d0f6d67d79219e28c2785376a661e887b9dac757e2def91",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCase.test-helpers.ts",
+      "original_sha256": "eb3ec64674e85105956f5a25d11e531abfff82e320a51bf37e492b8209c3ebd6",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCase.ts",
+      "original_sha256": "35bd30480032f5b6852938ab1ea66e9498e9f14004c9d5b7022a8e14f87cdfed",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCaseActions.fencing.test.ts",
+      "original_sha256": "aa64f0e50ec0d693db794ad601fea25fc14f60f56385bc817f713f05e80d2bca",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCaseActions.test.ts",
+      "original_sha256": "ccb754b1f90fc1a8adda05cd04d07391f554ffba15f654f7c907162c92c7beff",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/reviewerCaseTypes.ts",
+      "original_sha256": "b34fa6862f5e141257bdedccce051f3b5646750c79c563796a5e64946f8c2322",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/rollbackAckAbort.integration.test.ts",
+      "original_sha256": "5c9a93be833fc65d8a7c9cb5c87b7dec247d4d78f13f03f87765b004f42291c6",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/rollbackAckAbort.test-helpers.ts",
+      "original_sha256": "b0015a099db33770ab7253322486ad0b61faaabd8425d1369841a799846b8703",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ExistingPrivacyEmailVerification.reviewer.test.tsx",
+      "original_sha256": "150e9fde9c95a4deaf9c2ccf65356d5b4b3cf574258f6a6d1c309dd9e36196ec",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ExistingPrivacyEmailVerification.test.tsx",
+      "original_sha256": "cbfb2c901de179803f2aa30ed094f02ad7fc1fc452abf02c30497bd17f904c1c",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ExistingPrivacyMfaBoundary.reviewer.test.tsx",
+      "original_sha256": "1ba8855828e27f5d65369b0e04054b81c9b3406694f96c95e04e225e6469c5c5",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewCard.lifecycle.test.tsx",
+      "original_sha256": "0da6b1df0e59b689f7ec8d5c1958b391681ba55bb4f0d10afadbec2efdf1506f",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewCard.test.tsx",
+      "original_sha256": "ad60713864b5b12fa50fda152d29210c1b5a22709c3bd0a3e20db4076de3dcdc",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewCard.tsx",
+      "original_sha256": "3cd96a6e13e0ca6e8e5d2de67278bd7e5335fa571b41ab32f82fbb8ea0e9639d",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewCard.values.test.tsx",
+      "original_sha256": "506d8b6ad110b931667424a8efc7e66a52c3155d696f3541dc2df910429536f8",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewCardTestKit.tsx",
+      "original_sha256": "9a41b2fd51a59afd09575a88a4e0442ec997c9e8dd5d7367aefdb37138fbaa12",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewDetails.tsx",
+      "original_sha256": "e86bcc2cb52c9c452cc795a29f06a8dd650e1d672c6fe3ad8301e6d4481c577b",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewField.icu.test.tsx",
+      "original_sha256": "e6fd27617369c525dc7529607db5e6c4b6625dbd1cdd86157d5d1a25368c08e6",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/NativeSubjectReviewField.tsx",
+      "original_sha256": "c3cb3af85e3086e76acedcd688992a20ebf4c89fb619410b4104133297345c05",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.reviewer.test.tsx",
+      "original_sha256": "8e06fd6d3379380d21c624f3d3a96ff5b67851fb87adc5104d864fe442fbd9d3",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.sourceReview.test.tsx",
+      "original_sha256": "dbc0d9f093170101f17bdb7da8a58c8c49c335581517b24db617b7c2e82b9991",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseCard.lifecycle.test.tsx",
+      "original_sha256": "c107e8b75dbb7a7d010e28cb1d35617ce2004336f41ea3c98327faac001950d0",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseCard.test.tsx",
+      "original_sha256": "2679206f81bb6c0f065707896d12cf8585c0d221fbf43e5abe57fa2d3d33e546",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseCard.tsx",
+      "original_sha256": "ee4e202af350707e69a7f07b384c5739278a944f12064d97555d07d78b997350",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseCardDetails.tsx",
+      "original_sha256": "a4d37f237fa21d38233276e5d7c0c7ac3dee517683aa1426fdd7cf1dcc576c67",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseCardModel.ts",
+      "original_sha256": "5312385c1e44fb13dfa68cd12552fb8043136d9397206eca471b5a5ad8a96d92",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseCardOriginal.tsx",
+      "original_sha256": "d5269cf23355eba2e0e3d0bfea7dd66acd590a773b187651a58e446be4dd58fc",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseReferenceEntry.lifecycle.test.tsx",
+      "original_sha256": "dc9f4d737963fea5f60d8df3aac649e4e49fe9049b81ef0541449791a81ee0ab",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseReferenceEntry.test.tsx",
+      "original_sha256": "c061098b425a1c36ae638e3be646fe4f215842056d17650d15aef3a41ab933d5",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerCaseReferenceEntry.tsx",
+      "original_sha256": "0db1c6e28241637a8c022125324407e94611321de2498d73c5a963d65eda82f2",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.boundaries.test.tsx",
+      "original_sha256": "c4f85d8295fb882e9f8a977fcbd54b3d19393c2d18e9c5d42e1a72054062a84a",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.lifecycle.test.tsx",
+      "original_sha256": "3b6665042c66b9643514d78f2ebcb0e63069470a14fdf11074fb640069851dd5",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.test.tsx",
+      "original_sha256": "249dbbbe9430474cb9b7642676e9f2f2b1987adca2f46986be32efa031701342",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.tsx",
+      "original_sha256": "e3e1fcfde63833e69cf502f0fc031c6e61fc36559536e5169ca47478932ebd74",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeTestKit.tsx",
+      "original_sha256": "8daeb7dae830df83ff79bfff3f0e637666e22f78ae977a7bb6f777709034c76d",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerVerificationStart.denialRecovery.test.tsx",
+      "original_sha256": "a2efaa2c3aca1749bd2645915c1ad91de04256d5bc8611f8785a6848dfd90ed2",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerVerificationStart.lifecycle.test.tsx",
+      "original_sha256": "92d93a112f0b60b7911c8cd7b4c068395f1cb672c792f2c65db1e75dc9cae210",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerVerificationStart.presentation.test.tsx",
+      "original_sha256": "5b1633583f01cc51d8a268998521f123523c642d315429f665b4ee3d5620c984",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerVerificationStart.test.tsx",
+      "original_sha256": "8adf54338b2d4b45e484d2854a80cbc3a719071cbbb1ebb60b9a7a4958bb8467",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerVerificationStart.tsx",
+      "original_sha256": "8b0e196ce0c54e695a37a06ef67fc71a7f472db8f15a049fcd2fa0c1b5aa62c7",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/__fixtures__/ExistingPrivacyEmailVerificationTestKit.ts",
+      "original_sha256": "27f7df393451c574a83d8430335031c0b3733f92430b1c7c951f01f172a372ae",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/__fixtures__/NativeSubjectReviewFieldIcuTestKit.ts",
+      "original_sha256": "e55a6876a7fa67c1e20fbe989d4f87f47ab1232f79bbfee4b9981a1e7c14dc41",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/__fixtures__/ReviewerVerificationStartTestKit.tsx",
+      "original_sha256": "4e1ae60ab73d2604949642b5552551b7265797a7a33aff536ae5c3627c6bf379",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/nativeSubjectReviewCardModel.ts",
+      "original_sha256": "2a7b06e0ca0908a3bf2699e4300d64d7963c3f4c3050807e5dc2626783a82012",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/reviewerIntakeModel.ts",
+      "original_sha256": "a625efc6c986e469f65e90477faa0d654a07725b81edc67d61cc4d214341a072",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/reviewerVerificationStartModel.ts",
+      "original_sha256": "d39fd28d668cc476f3304de94b138792addbf2c0bf4795fdd57f921c5e8d6aed",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/useNativeSubjectReview.ts",
+      "original_sha256": "6a4ef4f990453c07f2cbe9ecdc5e4d9b461a3f4aa12bf325d9df518fce0f6362",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/useReviewerCaseCard.ts",
+      "original_sha256": "dda8ee7ab546414684a5b923ff889a7278a3921f2a9a83ed40bab4802b03c6eb",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/useReviewerIntake.ts",
+      "original_sha256": "1152edc1e7284d1ee1e2ca683dccc3ecd4afbba33adbb7b61d456e3df638a492",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/ui/useReviewerVerificationStart.ts",
+      "original_sha256": "a28a6af68edd1c57ced1add305fbc42562f66f99e79ced3628ecd517907e2aef",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "bun.lock",
+      "original_sha256": "d48e9249664ae0a0b7c1e5d97c7c40de21762154346146326e4e4d3f5dc4f766",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "docs/privacy-implementation-status.md",
+      "original_sha256": "ecdcc7b1bda01c73d5007c414324ed2c289c59c89feb14c18a73a056dd18f53c",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "package.json",
+      "original_sha256": "3ff65ba516db62d175954053669ae4292b97ee4b56883c9dcbd4b9e91f02c992",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "src/constants/errorIds.ts",
+      "original_sha256": "d27e7c93d9ae62a588f437ac7896bbaa37d9e9684626938e26ab36cc1cea6eeb",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "src/features/privacy/disclosureFields.ts",
+      "original_sha256": "6e19e38aa6599ce6f34ce03ed88a3e70f7f9693d460a11d45b9362db711fe1b0",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/identitySelf.ts",
+      "original_sha256": "7821b4ea5b20997e30a8720eba98330851db210b525c8e51506e478460beb5b5",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/identityTransaction.ts",
+      "original_sha256": "04f4e3c02dd5371f52447940609b29d17474c784a8d50b195f8d39a6760fa042",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/jobStatus.ts",
+      "original_sha256": "da34ba37f3ac315e73d4cc7c647c5b423e852e51b6da4b2d2147812bb6c3f338",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/jobStatusBoundaries.integration.test.ts",
+      "original_sha256": "342acb8a26266afd72a05f1daaa7f8ebd42f0cbf996808a556a69d3f2cc79feb",
+      "disposition": "ported_and_completed"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyRequest.de.json",
+      "original_sha256": "589563dfbf44bc0d80f712abee6f36969e3ddcddbca7c6619d962886f6b89e1b",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyRequest.en.json",
+      "original_sha256": "c4f72dc4ac3bbd4b9b6b4b3fa0add31c6384152e057c417c3b18bba3a3a8e9d7",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/messages/privacyRequest.fa.json",
+      "original_sha256": "3a5612fb68dbcaa3f02f4e5be8e568c74b7409e4c72996c0ea479591825fd660",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/permissions.ts",
+      "original_sha256": "90f8f0bece98c9034ccbf824c3a729385d6eb77ba9857ce589257a647a12295a",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/registryEntries.ts",
+      "original_sha256": "432d3442f292121a2f77d279f40e8ac4b529c96723b233622d089ac0ca99ff45",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "src/features/privacy/registryIdsPersonalRequests1.ts",
+      "original_sha256": "707ea911bf07b240eb8e9d466ae089c28c9ae01702c72517c000725a38930db0",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "src/features/privacy/registryIdsPrivacy1.ts",
+      "original_sha256": "063542e85edeb162e355e46ff63053050d0db051c62694f47c1eaf67f46d41f3",
+      "disposition": "main_metadata_or_equivalent_behavior_retained"
+    },
+    {
+      "path": "src/features/privacy/registryIdsRequestServices1.ts",
+      "original_sha256": "26b6e24d6ceca16fb44f64daef2758795150e58c52f854f48240e59e750fdec6",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/selfService.ts",
+      "original_sha256": "2cfa96c971211fa36f8ab6581487538d74540901388749f25ea06854cff80b9e",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/OwnPrivacyCaseStatus.tsx",
+      "original_sha256": "4ff6f22ce72cbcbf7bf43a2b3cdcbb0dce097cb586b8d351e6780a26ee1dde86",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.tsx",
+      "original_sha256": "0f3fb5128d27f7fe30acc1ecf60f338cb17c88ba12f79f313525b9d7e5886fcc",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/ownCaseStatusModel.ts",
+      "original_sha256": "700003f883f0c6732331f32929f775c82353a1262be90934e616b945df3374a3",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/useOwnPrivacyCaseStatus.ts",
+      "original_sha256": "e6e2c3473b3af1308ba470dd907ae7ce3d136995e3ebe036ce79bcb695317f2a",
+      "disposition": "already_in_main_exact"
+    },
+    {
+      "path": "src/features/privacy/ui/useOwnPrivacyRequestForm.ts",
+      "original_sha256": "7a6a760828368bf2e14a19439990e4f9fe17235a3be191ebd39b306108b83a7c",
+      "disposition": "already_in_main_exact"
+    }
+  ]
+}

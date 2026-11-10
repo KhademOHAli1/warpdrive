@@ -1,0 +1,38 @@
+.conditions,
+.route {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  color: var(--workflow-light-text);
+  font-size: 11.05px;
+  font-weight: 600;
+}
+
+.routeTitle {
+  color: var(--workflow-primary-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.route + .route,
+.addRoute {
+  border-block-start: 1px solid var(--workflow-border-medium);
+  padding-block-start: 8px;
+}
+
+.addRoute,
+.routeActions {
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hint {
+  color: var(--workflow-secondary-text);
+  font-size: 11.05px;
+}

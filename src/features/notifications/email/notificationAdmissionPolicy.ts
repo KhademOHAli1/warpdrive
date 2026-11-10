@@ -4,6 +4,7 @@ import type { NotificationSendPurpose } from "@/features/email/mailSendPurpose";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { canDeliverActivityReminder, canReadNotificationCalendar } from "../calendarPrivacy";
 import { resolveDelivery } from "../preferences";
 import type {
   NotificationAdmissionAuthority,
@@ -20,7 +21,9 @@ export async function notificationSubmissionPolicy(
   // NOWAIT defers instead of holding owner locks while a policy writer waits on us.
   await tx.execute(sql`LOCK TABLE notification_preferences,permission_sets,
     visibility_group_members,teams,team_members,pipelines,deals,persons,organizations,
-    activities,activity_participants,email_messages,email_threads,email_accounts
+    activities,activity_participants,email_messages,email_threads,email_accounts,
+    calendars,calendar_members,activity_reminder_settings,calendar_reminder_defaults,
+    calendar_reminder_intents
     IN SHARE MODE NOWAIT`);
   signal.throwIfAborted();
   const [notice] = await tx
@@ -40,6 +43,11 @@ export async function notificationSubmissionPolicy(
   const actor = await hydrateActor(tx, purpose.recipientUserId, signal);
   signal.throwIfAborted();
   if (actor === null) return { state: "suppressed", reason: "recipient_unavailable" };
+  if (
+    !(await canReadNotificationCalendar(tx, actor, notice, signal)) ||
+    !(await canDeliverActivityReminder(tx, notice.userId, notice, signal))
+  )
+    return { state: "suppressed", reason: "entity_unavailable" };
   if (notice.entityType !== null && notice.entityId !== null) {
     const visible = await canActorAccessParent(
       tx,

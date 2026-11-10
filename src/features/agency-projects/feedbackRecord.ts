@@ -1,0 +1,59 @@
+import { z } from "zod";
+import { err, ok, type Result } from "@/types/result";
+import {
+  communicationChannelSchema,
+  plainTextSchema,
+} from "./communication/communicationValueSchemas";
+import { exactInstantSchema } from "./instantSchema";
+import { canonicalUuidSchema, referenceSchema } from "./valueSchemas";
+
+const FEEDBACK_TEXT_MAX_LENGTH = 2_000;
+
+// Check-only removal keeps authored joiners/selectors without accepting invisible-only content.
+function isSubstantiveFeedbackValue(value: string): boolean {
+  return value.replace(/[\p{Cf}\p{Default_Ignorable_Code_Point}]/gu, "").trim().length > 0;
+}
+
+const feedbackReferenceSchema = referenceSchema.refine(isSubstantiveFeedbackValue);
+
+const feedbackDeclarationSchema = z.strictObject({
+  projectId: canonicalUuidSchema,
+  deliverableId: canonicalUuidSchema,
+  workVersionReference: feedbackReferenceSchema,
+  author: z.discriminatedUnion("kind", [
+    z.strictObject({ kind: z.literal("internal-user"), userId: canonicalUuidSchema }),
+    z.strictObject({ kind: z.literal("external-contact"), personId: canonicalUuidSchema }),
+  ]),
+  source: z.strictObject({
+    channel: communicationChannelSchema.refine(
+      (channel) => channel.kind !== "other" || isSubstantiveFeedbackValue(channel.label),
+    ),
+    evidenceReference: feedbackReferenceSchema.optional(),
+  }),
+  text: plainTextSchema(FEEDBACK_TEXT_MAX_LENGTH, true).refine(isSubstantiveFeedbackValue),
+});
+
+const recordedFeedbackCommandSchema = z.strictObject({
+  feedbackId: canonicalUuidSchema,
+  provenance: z.literal("staff-recorded"),
+  declaration: feedbackDeclarationSchema,
+  recordedByUserId: canonicalUuidSchema,
+  recordedAt: exactInstantSchema,
+});
+
+export type FeedbackDeclaration = z.infer<typeof feedbackDeclarationSchema>;
+export type RecordedFeedbackCommand = z.infer<typeof recordedFeedbackCommandSchema>;
+
+export function parseFeedbackDeclaration(
+  input: unknown,
+): Result<FeedbackDeclaration, "invalid_feedback_declaration"> {
+  const parsed = feedbackDeclarationSchema.safeParse(input);
+  return parsed.success ? ok(parsed.data) : err("invalid_feedback_declaration");
+}
+
+export function parseFeedbackCommand(
+  input: unknown,
+): Result<RecordedFeedbackCommand, "invalid_feedback_command"> {
+  const parsed = recordedFeedbackCommandSchema.safeParse(input);
+  return parsed.success ? ok(parsed.data) : err("invalid_feedback_command");
+}

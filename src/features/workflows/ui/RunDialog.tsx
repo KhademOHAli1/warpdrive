@@ -12,10 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { runWorkflowAction } from "../actions";
+import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
+import { readWorkflowScheduleTrigger } from "../workflowScheduleContract";
+import { readWorkflowWebhookTrigger } from "../workflowWebhookContract";
 import { LiveRunReview, type LiveRunReviewContext } from "./LiveRunReview";
 import { projectLiveRunEffects } from "./liveRunEffectSummary";
 
@@ -26,12 +30,14 @@ type Version = RouterOutputs["workflows"]["version"];
 type ReadFlags = { isFetching: boolean; isError: boolean; isPlaceholderData: boolean };
 interface LivePublication {
   readonly versionId: string;
-  readonly review: LiveRunReviewContext;
+  readonly scope: "deal" | "global" | "schedule" | "webhook";
+  readonly review: LiveRunReviewContext | null;
+  readonly liveOnly?: boolean;
 }
 interface RunCommand {
   readonly workflowId: string;
   readonly requestKey: string;
-  readonly recordId: string;
+  readonly recordId?: string;
   readonly mode: Mode;
   readonly reviewedVersionId?: string;
 }
@@ -44,6 +50,11 @@ function freshRead(read: ReadFlags): boolean {
   return !read.isFetching && !read.isError && !read.isPlaceholderData;
 }
 
+function automaticLaunchScope(definition: Version["definition"]): "schedule" | "webhook" | null {
+  if (readWorkflowScheduleTrigger(definition) !== null) return "schedule";
+  return readWorkflowWebhookTrigger(definition) === null ? null : "webhook";
+}
+
 function currentPublication(
   workflowId: string,
   chosen: DealOption | null,
@@ -51,7 +62,7 @@ function currentPublication(
   version: Version | undefined,
   fresh: boolean,
 ): LivePublication | null {
-  if (!fresh || chosen === null || workflow === undefined || version === undefined) return null;
+  if (!fresh || workflow === undefined || version === undefined) return null;
   if (
     workflow.id !== workflowId ||
     !workflow.active ||
@@ -61,15 +72,27 @@ function currentPublication(
   )
     return null;
   const effects = projectLiveRunEffects(version.definition);
-  if (effects === null) return null;
+  if (effects !== null) {
+    const automatic = automaticLaunchScope(version.definition);
+    if (automatic !== null) return { versionId: version.id, scope: automatic, review: null };
+  }
+  const trigger = version.definition.nodes.find((node) => node.type === "trigger.manual");
+  const scope = workflowManualLaunchScope(trigger?.config);
+  if (effects === null || scope === null) return null;
+  const recordLabel = scope === "deal" ? chosen?.label : undefined;
   return {
     versionId: version.id,
-    review: {
-      publicationName: version.name,
-      publicationNumber: version.number,
-      recordLabel: chosen.label,
-      effects,
-    },
+    scope,
+    liveOnly: (effects.counts.httpRequest ?? 0) > 0,
+    review:
+      scope === "deal" && recordLabel === undefined
+        ? null
+        : {
+            publicationName: version.name,
+            publicationNumber: version.number,
+            ...(recordLabel === undefined ? {} : { recordLabel }),
+            effects,
+          },
   };
 }
 
@@ -142,14 +165,26 @@ function prepareSubmission(
   publication: LivePublication | null,
   acknowledged: boolean,
 ): Submission | null {
-  if (chosen === null) return null;
-  const command = { workflowId, requestKey, recordId: chosen.value, mode };
-  if (mode === "simulation") return { command: Object.freeze(command), review: null };
-  if (publication === null || !acknowledged) return null;
-  return {
-    command: Object.freeze({ ...command, reviewedVersionId: publication.versionId }),
-    review: publication.review,
-  };
+  if (
+    publication === null ||
+    publication.scope === "schedule" ||
+    publication.scope === "webhook" ||
+    (mode === "simulation" && publication.liveOnly === true)
+  )
+    return null;
+  const recordId = publication.scope === "deal" ? chosen?.value : undefined;
+  if (publication.scope === "deal" && recordId === undefined) return null;
+  const command = Object.freeze({
+    workflowId,
+    requestKey,
+    mode,
+    reviewedVersionId: publication.versionId,
+    ...(recordId === undefined ? {} : { recordId }),
+  });
+  if (mode === "simulation") return { command, review: null };
+  return publication.review !== null && acknowledged
+    ? { command, review: publication.review }
+    : null;
 }
 
 function LiveReviewReadState({
@@ -157,23 +192,25 @@ function LiveReviewReadState({
   loading,
   reloading,
   reload,
+  simulation = false,
 }: {
   chosen: boolean;
   loading: boolean;
   reloading: boolean;
   reload: () => Promise<void>;
+  simulation?: boolean;
 }) {
   const t = useAppTranslations("workflows");
   if (!chosen)
     return <p className="text-sm text-muted-foreground">{t("liveReviewChooseRecord")}</p>;
-  if (loading) return <p role="status">{t("loading")}</p>;
+  if (loading) return <p role="status">{t(simulation ? "manualPublicationLoading" : "loading")}</p>;
   return (
     <div className="space-y-2">
       <p role="alert" className="text-sm text-destructive">
-        {t("liveReviewUnavailable")}
+        {t(simulation ? "manualPublicationUnavailable" : "liveReviewUnavailable")}
       </p>
       <Button variant="outline" disabled={reloading} onClick={() => void reload()}>
-        {t("liveReviewReload")}
+        {t(simulation ? "manualPublicationReload" : "liveReviewReload")}
       </Button>
     </div>
   );
@@ -229,9 +266,11 @@ function RunReviewContent({
 function submissionLabel(
   error: boolean,
   mode: Mode,
-): "retry" | "confirmSimulation" | "confirmLive" {
+  createsRecords: boolean,
+): "retry" | "confirmSimulation" | "confirmLive" | "confirmLiveRecords" {
   if (error) return "retry";
-  return mode === "simulation" ? "confirmSimulation" : "confirmLive";
+  if (mode === "simulation") return "confirmSimulation";
+  return createsRecords ? "confirmLiveRecords" : "confirmLive";
 }
 
 export function RunDialog({
@@ -253,24 +292,30 @@ export function RunDialog({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [formRequiresLive, setFormRequiresLive] = useState(false);
   const [submission, setSubmission] = useState<Submission | null>(null);
   const submitted = useRef<Submission | null>(null);
   const inFlight = useRef(false);
   const completed = useRef(false);
   const displayMode = submission?.command.mode ?? mode;
   const displayWorkflowId = submission?.command.workflowId ?? workflowId;
-  const read = useLivePublication(
-    displayWorkflowId,
-    chosen,
-    displayMode === "live" && submission === null,
-  );
+  const read = useLivePublication(displayWorkflowId, chosen, submission === null);
+  const launchScope =
+    submission === null
+      ? read.publication?.scope
+      : submission.command.recordId === undefined
+        ? "global"
+        : "deal";
+  const automated = launchScope === "schedule" || launchScope === "webhook";
+  const externalSimulationBlocked =
+    displayMode === "simulation" && read.publication?.liveOnly === true;
   const cut =
     read.publication === null
       ? null
       : JSON.stringify([
           workflowId,
           mode,
-          chosen?.value,
+          read.publication.scope === "deal" ? chosen?.value : null,
           read.publication.versionId,
           read.publication.review,
         ]);
@@ -283,9 +328,16 @@ export function RunDialog({
     read.publication,
     acknowledgement.acknowledged,
   );
-  const canSubmit = submission !== null || nextSubmission !== null;
+  const canSubmit = !formRequiresLive && (submission !== null || nextSubmission !== null);
   const displayedReview =
     submission === null ? (read.publication?.review ?? null) : submission.review;
+  const counts = displayedReview?.effects.counts;
+  const changesRecords =
+    (counts?.recordCreate ?? 0) +
+      (counts?.recordUpdate ?? 0) +
+      (counts?.recordDelete ?? 0) +
+      (counts?.recordUpsert ?? 0) >
+    0;
   async function run() {
     if (inFlight.current || completed.current) return;
     const command = submitted.current ?? nextSubmission;
@@ -298,7 +350,8 @@ export function RunDialog({
     try {
       const result = await runWorkflowAction(command.command, readCsrfToken());
       if (!result.ok) {
-        setError(true);
+        if (result.error === ERROR_IDS.WORKFLOW_FORM_REQUIRES_LIVE) setFormRequiresLive(true);
+        else setError(true);
         return;
       }
       completed.current = true;
@@ -322,34 +375,65 @@ export function RunDialog({
         <DialogHeader>
           <DialogTitle>{t("runTitle")}</DialogTitle>
           <DialogDescription>
-            {t(displayMode === "simulation" ? "simulationHint" : "liveHint")}
+            {t(
+              displayMode === "simulation"
+                ? "simulationHint"
+                : changesRecords
+                  ? "liveRecordsHint"
+                  : "liveHint",
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-5">
           <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
             {t("publishedHint")}
           </p>
-          <RunDealPicker
-            chosen={chosen}
-            onChoose={setChosen}
-            locked={pending || submission !== null}
-          />
-          <RunReviewContent
-            mode={displayMode}
-            review={displayedReview}
-            chosen={chosen !== null}
-            loading={read.loading}
-            reloading={read.reloading}
-            reload={read.reload}
-            acknowledged={submission !== null || acknowledgement.acknowledged}
-            changed={acknowledgement.changed}
-            locked={pending || submission !== null}
-            frozen={submission !== null}
-            onAcknowledgedChange={acknowledgement.acknowledge}
-          />
+          {launchScope === "deal" && !externalSimulationBlocked && (
+            <RunDealPicker
+              chosen={chosen}
+              onChoose={setChosen}
+              locked={pending || submission !== null}
+            />
+          )}
+          {launchScope === "global" &&
+            displayMode === "simulation" &&
+            !externalSimulationBlocked && (
+              <p className="text-sm text-muted-foreground">{t("manualGlobalRunHint")}</p>
+            )}
+          {launchScope === undefined && displayMode === "simulation" && (
+            <LiveReviewReadState
+              chosen
+              loading={read.loading}
+              reloading={read.reloading}
+              reload={read.reload}
+              simulation
+            />
+          )}
+          {externalSimulationBlocked && <p role="status">{t("httpRequestLiveOnly")}</p>}
+          {automated && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {t(launchScope === "webhook" ? "webhookRunsOnRequest" : "scheduledRunsAutomatically")}
+            </p>
+          )}
+          {!automated && (
+            <RunReviewContent
+              mode={displayMode}
+              review={displayedReview}
+              chosen={launchScope !== "deal" || chosen !== null}
+              loading={read.loading}
+              reloading={read.reloading}
+              reload={read.reload}
+              acknowledged={submission !== null || acknowledgement.acknowledged}
+              changed={acknowledgement.changed}
+              locked={pending || submission !== null}
+              frozen={submission !== null}
+              onAcknowledgedChange={acknowledgement.acknowledge}
+            />
+          )}
           {submission !== null && (
             <p className="text-sm text-muted-foreground">{t("testSubmissionFrozen")}</p>
           )}
+          {formRequiresLive && <p role="alert">{t("humanFormRequiresLive")}</p>}
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {t("testSubmissionError")}
@@ -357,11 +441,13 @@ export function RunDialog({
           )}
           <DialogFooter>
             <Button variant="outline" onClick={onClose} disabled={pending}>
-              {t("cancel")}
+              {t(automated ? "close" : "cancel")}
             </Button>
-            <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
-              {t(submissionLabel(error, displayMode))}
-            </Button>
+            {!automated && !externalSimulationBlocked && (
+              <Button disabled={pending || finished || !canSubmit} onClick={() => void run()}>
+                {t(submissionLabel(error, displayMode, changesRecords))}
+              </Button>
+            )}
           </DialogFooter>
         </div>
       </DialogContent>

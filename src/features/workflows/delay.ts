@@ -1,9 +1,19 @@
 import { ERROR_IDS } from "@/constants/errorIds";
 import { err, ok } from "@/types/result";
-import { configurationLimits } from "./configurationLimits";
-import { delayUntilDate } from "./delayConfig";
-import { actionRegistry, delayMinutesSchema } from "./registry";
-import { bindingSchema } from "./schemas";
+import {
+  type DelayDurationUnit,
+  delayDurationMilliseconds,
+  delayDurationUnits,
+  delayUntilDate,
+  maxDelayMilliseconds,
+} from "./delayConfig";
+import { isMappingDate } from "./mappingLiteralIntent";
+import { actionRegistry, delayMinutesSchema, delayScheduleConfigSchema } from "./registry";
+import { type RunMappingContext, resolveRunBinding } from "./runBindings";
+import type { RunOutputs } from "./runTypes";
+import { type Binding, bindingSchema } from "./schemas";
+
+type DelayMappingContext = Omit<RunMappingContext, "path"> & { outputs: RunOutputs };
 
 export function delayResumeAt(raw: unknown, now: Date) {
   const binding = bindingSchema.safeParse(raw);
@@ -15,13 +25,61 @@ export function delayResumeAt(raw: unknown, now: Date) {
   return Number.isFinite(resumeAt.getTime()) ? ok(resumeAt) : err(ERROR_IDS.WORKFLOW_INVALID);
 }
 
+function delayBinding(
+  binding: Binding,
+  path: readonly string[],
+  context: DelayMappingContext | undefined,
+) {
+  if (binding.kind === "value") return ok(binding.value);
+  if (context === undefined) return err(ERROR_IDS.WORKFLOW_NOT_READY);
+  const resolved = resolveRunBinding(binding, context.outputs, { ...context, path });
+  if (resolved.state === "invalid") return err(ERROR_IDS.WORKFLOW_INVALID);
+  return resolved.state === "value" ? ok(resolved.value) : err(ERROR_IDS.WORKFLOW_BINDING_MISSING);
+}
+
+function scheduledDateAt(binding: Binding, now: Date, context: DelayMappingContext | undefined) {
+  const resolved = delayBinding(binding, ["scheduledDateTime"], context);
+  if (!resolved.ok) return resolved;
+  const requested = delayUntilDate(
+    binding.kind === "reference" && isMappingDate(resolved.value)
+      ? `${resolved.value}T00:00:00.000Z`
+      : resolved.value,
+  );
+  if (requested === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const elapsed = requested.getTime() - now.getTime();
+  return elapsed >= 0 && elapsed <= maxDelayMilliseconds
+    ? ok(requested)
+    : err(ERROR_IDS.WORKFLOW_INVALID);
+}
+
+function configuredScheduleAt(raw: unknown, now: Date, context?: DelayMappingContext) {
+  const parsed = delayScheduleConfigSchema.safeParse(raw);
+  if (!parsed.success) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const config = parsed.data;
+  if (config.delayType === "SCHEDULED_DATE")
+    return scheduledDateAt(config.scheduledDateTime, now, context);
+  const amounts: Partial<Record<DelayDurationUnit, unknown>> = {};
+  for (const unit of delayDurationUnits) {
+    const binding = config.duration[unit];
+    if (binding === undefined) continue;
+    const resolved = delayBinding(binding, ["duration", unit], context);
+    if (!resolved.ok) return resolved;
+    amounts[unit] = resolved.value;
+  }
+  const elapsed = delayDurationMilliseconds(amounts);
+  if (elapsed === null) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const deadline = new Date(now.getTime() + elapsed);
+  return Number.isFinite(deadline.getTime()) ? ok(deadline) : err(ERROR_IDS.WORKFLOW_INVALID);
+}
+
 // Only initial arming uses the current database clock and future horizon. An
 // armed wait must instead retain its stored deadline across subsequent wakes.
-export function delayScheduleAt(rawConfig: unknown, now: Date) {
+export function delayScheduleAt(rawConfig: unknown, now: Date, context?: DelayMappingContext) {
   if (!Number.isFinite(now.getTime())) return err(ERROR_IDS.WORKFLOW_INVALID);
-  if (!actionRegistry.delay.config.safeParse(rawConfig).success)
-    return err(ERROR_IDS.WORKFLOW_INVALID);
   if (rawConfig === null || typeof rawConfig !== "object" || Array.isArray(rawConfig))
+    return err(ERROR_IDS.WORKFLOW_INVALID);
+  if (Object.hasOwn(rawConfig, "delayType")) return configuredScheduleAt(rawConfig, now, context);
+  if (!actionRegistry.delay.config.safeParse(rawConfig).success)
     return err(ERROR_IDS.WORKFLOW_INVALID);
   if (!Object.hasOwn(rawConfig, "until"))
     return delayResumeAt((rawConfig as Record<string, unknown>).minutes, now);
@@ -30,7 +88,5 @@ export function delayScheduleAt(rawConfig: unknown, now: Date) {
   const requested = delayUntilDate(binding.data.value);
   if (requested === null) return err(ERROR_IDS.WORKFLOW_INVALID);
   const elapsed = requested.getTime() - now.getTime();
-  return elapsed > configurationLimits.waitMax * 60_000
-    ? err(ERROR_IDS.WORKFLOW_INVALID)
-    : ok(requested);
+  return elapsed > maxDelayMilliseconds ? err(ERROR_IDS.WORKFLOW_INVALID) : ok(requested);
 }

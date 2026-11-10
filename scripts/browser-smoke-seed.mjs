@@ -21,7 +21,9 @@ if (admission.error || admission.status !== 0) {
 const { db, pool } = await import("../src/db/client.ts");
 const { createBetterAuth } = await import("../src/features/auth/better/auth.ts");
 const { ALL_PERMISSION_FLAG_KEYS } = await import("../src/constants/permissionFlags.ts");
+const { seedCalendarOwnershipBrowserFixture } = await import("./calendar-ownership-browser.mjs");
 const { calendarOverlapFixture } = await import("./calendar-interactions-browser.mjs");
+const { seedAgencyBrowserFixture } = await import("./agency-projects-browser.mjs");
 const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
@@ -61,6 +63,7 @@ try {
   const password = await (await auth.$context).password.hash("CI-browser-only-password-2026!");
   client = await pool.connect();
   await client.query("BEGIN");
+  await seedAgencyBrowserFixture(client, password, ALL_PERMISSION_FLAG_KEYS);
   await client.query(
     "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI browser permissions',$2)",
     [permission, permissionFlags(granted)],
@@ -68,6 +71,7 @@ try {
   await client.query("INSERT INTO visibility_groups(id,name) VALUES($1,'CI browser group')", [
     group,
   ]);
+  await seedCalendarOwnershipBrowserFixture(client, password, ALL_PERMISSION_FLAG_KEYS, group);
   await client.query(
     "INSERT INTO users(id,email,name,is_admin,permission_set_id,primary_visibility_group_id) VALUES($1,'browser@example.invalid','CI Browser',false,$2,$3)",
     [id, permission, group],

@@ -12,19 +12,36 @@ import type { PreparedCustomFieldValidation } from "@/features/custom-fields/cur
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
-import { can } from "@/features/permissions/can";
-import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { activityAccountPreferences } from "./accountTimeZone";
+import { guardActivityMutation } from "./activityAccessGuard";
+import { applyActivityReminders } from "./activityReminderWrite";
 import { canonicalCreateDates, civilEndBeforeStart } from "./activityTemporalWrite";
+import { activityTransaction } from "./activityTransaction";
+import { reconcileReminderIntent } from "./calendarReminderIntent";
+import { assertCalendarWritable } from "./calendars";
 import { recomputeDealActivityDates } from "./nextActivity";
 import { cancelActivityReminder, synchronizeActivityReminder } from "./reminderIntent";
 import { scheduleReminder } from "./reminders";
 import { type ActivityCreateInput, activityCreateInput } from "./schemas";
-import { resolveActivityVisibility } from "./visibility";
+
+function calendarCreateOwnership(
+  input: ReturnType<typeof activityCreateInput.parse>,
+  timeZone: string,
+) {
+  return {
+    reminderEngine:
+      input.reminder === undefined &&
+      (input.calendarId !== null || input.personalReminders !== undefined)
+        ? ("intent" as const)
+        : ("legacy" as const),
+    eventTimeZone: input.eventTimeZone ?? (input.calendarId !== null ? timeZone : null),
+    allDay: input.dueAt !== null && input.allDay,
+  };
+}
 
 // Pipedrive parity: block linking a new activity to an archived deal. Extracted so
 // createActivity stays under the cognitive-complexity budget. No-op when dealId is null.
@@ -161,7 +178,9 @@ export async function createActivity(
     );
   const refActor = toVisibilitySession(actor);
 
-  const result = await db.transaction(async (tx) => {
+  const result = await activityTransaction(db, async (tx) => {
+    const calendarAccess = await assertCalendarWritable(tx, actor, input.calendarId, signal);
+    if (!calendarAccess.ok) return calendarAccess;
     // Validate all referenced entities are visible to the actor. A lead reference is gated
     // here too, so an actor cannot attach an activity to a lead they cannot see.
     const refs = collectReferences(input);
@@ -178,11 +197,14 @@ export async function createActivity(
       .insert(activities)
       .values({
         typeId: input.typeId,
+        ...calendarCreateOwnership(input, preferences.timeZone),
+        reminderAutomationEnabled: options.scheduleReminder !== false,
         subject: input.subject,
+        calendarId: input.calendarId,
+        eventVisibility: input.eventVisibility,
+        availability: input.availability,
         priority: input.priority,
         dueAt: input.dueAt === null ? null : new Date(input.dueAt),
-        // A null dueAt cannot be all-day: there is no day.
-        allDay: input.dueAt !== null && input.allDay,
         ...civilDates,
         endAt: input.endAt === null ? null : new Date(input.endAt),
         durationMinutes: input.durationMinutes,
@@ -238,10 +260,24 @@ export async function createActivity(
       await recomputeDealActivityDates(tx, row.dealId, signal);
     }
 
+    const reminders = await applyActivityReminders(
+      tx,
+      actor,
+      row,
+      input.personalReminders,
+      signal,
+      options.scheduleReminder !== false,
+    );
+    if (!reminders.ok) return reminders;
     return ok(row);
   });
 
-  if (result.ok === true && options.scheduleReminder !== false && input.reminder === undefined) {
+  if (
+    result.ok === true &&
+    options.scheduleReminder !== false &&
+    input.reminder === undefined &&
+    result.value.reminderEngine === "legacy"
+  ) {
     await scheduleReminder(result.value.id, result.value.dueAt, signal);
   }
   return result;
@@ -253,28 +289,28 @@ export async function completeActivity(
   id: string,
   done: boolean,
   signal: AbortSignal,
+  expectedVersion?: number,
 ): Promise<Result<Activity, AppError>> {
-  return db.transaction(async (tx) => {
+  return activityTransaction(db, async (tx) => {
     const [current] = await tx
       .select()
       .from(activities)
       .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
-      .for("update");
+      .for("no key update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
     }
 
-    const vis = await resolveActivityVisibility(tx, current, signal);
-
-    if (vis === null || !canSee(actor, vis)) {
-      // Invisible: return 404-on-invisible, not 403.
-      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
-    }
-
-    if (!can(actor, "activity.complete", vis)) {
-      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id }));
-    }
+    const allowed = await guardActivityMutation(
+      tx,
+      actor,
+      current,
+      "activity.complete",
+      signal,
+      current.done === done ? undefined : expectedVersion,
+    );
+    if (!allowed.ok) return allowed;
 
     // A retry must retain the acknowledged timestamp and avoid repeating linked writes.
     if (current.done === done) return ok(current);
@@ -296,6 +332,7 @@ export async function completeActivity(
       await recomputeDealActivityDates(tx, row.dealId, signal);
     }
 
+    await reconcileReminderIntent(tx, row, signal);
     return ok(row);
   });
 }

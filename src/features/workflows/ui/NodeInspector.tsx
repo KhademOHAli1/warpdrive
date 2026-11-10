@@ -13,6 +13,14 @@ import {
   useWorkflowConfiguration,
   type WorkflowConfigurationRead,
 } from "./useWorkflowConfiguration";
+import { WorkflowReferenceIcon } from "./WorkflowReferenceIcon";
+import styles from "./workflowInspector.module.css";
+import {
+  NODE_ICONS,
+  workflowNodeCategory,
+  workflowNodeStrokeWidth,
+} from "./workflowNodePresentation";
+import "./workflowTheme.css";
 
 interface Props {
   definition: WorkflowDefinition;
@@ -20,6 +28,7 @@ interface Props {
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
   onRemove: () => void;
+  onClose?: () => void;
   nameInputRef?: Ref<HTMLInputElement>;
   workflowId?: string;
 }
@@ -37,15 +46,30 @@ export function NodeInspector(props: Props) {
   return props.workflowId === undefined ? (
     <Inspector {...props} read={noRead} />
   ) : (
-    <QueriedInspector key={props.workflowId + ":" + props.node.type} {...props} />
+    <QueriedInspector key={`${props.workflowId}:${props.node.type}`} {...props} />
   );
 }
 const hints = {
-  "trigger.manual": "triggerHint",
+  "trigger.manual": "manualLaunchHint",
+  "trigger.schedule": undefined,
+  "trigger.webhook": undefined,
   "trigger.record": undefined,
   "record.read": "readHint",
+  "record.create": undefined,
+  "record.update": undefined,
+  "record.delete": undefined,
+  "record.search": undefined,
+  "record.upsert": undefined,
+  "record.pick": undefined,
+  "email.draft": undefined,
+  "http.request": undefined,
+  "calendar.create": undefined,
+  "human.form": undefined,
   "activity.create": "taskHint",
   condition: undefined,
+  ifElse: undefined,
+  iterator: undefined,
+  filter: undefined,
   delay: undefined,
   notification: undefined,
 } as const satisfies Record<WorkflowNode["type"], string | undefined>;
@@ -55,6 +79,7 @@ function Inspector({
   editable: onEdit,
   onChange,
   onRemove,
+  onClose,
   nameInputRef,
   workflowId,
   read,
@@ -66,14 +91,35 @@ function Inspector({
   const validation = validateNodeConfiguration(node, { definition, metadata: read.metadata });
   const hint = hints[node.type];
   return (
-    <section className="flex flex-col" aria-label={t("configure")}>
-      <div className="border-b p-5">
-        <p className="text-xs font-medium text-muted-foreground">{t("configure")}</p>
-        <h2 dir="auto" className="mt-2 break-words text-lg font-semibold">
-          {displayNodeName(node, locale)}
-        </h2>
-      </div>
-      <div className="space-y-5 p-5">
+    <section className={`workflow-twenty-theme ${styles.panel}`} aria-label={t("configure")}>
+      <header className={styles.header}>
+        <span className={styles.icon} data-node-type={node.type}>
+          <WorkflowReferenceIcon
+            name={NODE_ICONS[node.type]}
+            stroke={workflowNodeStrokeWidth(node.type)}
+          />
+        </span>
+        <div className={styles.heading}>
+          <h2 dir="auto" className={styles.title}>
+            {displayNodeName(node, locale)}
+          </h2>
+          <span className={styles.category}>{t(workflowNodeCategory(node.type))}</span>
+        </div>
+        {onClose !== undefined && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            static
+            className={styles.close}
+            aria-label={t("close")}
+            onClick={onClose}
+          >
+            <WorkflowReferenceIcon name="x" />
+          </Button>
+        )}
+      </header>
+      <div className={styles.body}>
         <ConfigurationName
           node={node}
           editable={editable}
@@ -82,7 +128,7 @@ function Inspector({
           spec={spec}
           validation={validation}
         />
-        {hint !== undefined && <p className="text-sm text-muted-foreground">{t(hint)}</p>}
+        {hint !== undefined && <p className={styles.hint}>{t(hint)}</p>}
         <ConfigurationNodeFields
           definition={definition}
           node={node}
@@ -96,12 +142,12 @@ function Inspector({
         <RetainedConfigurationIssues spec={spec} validation={validation} />
         {node.type === "activity.create" && <ConfigurationMetadataStatus read={read} />}
         {spec?.supported === false && (
-          <p className="text-xs text-muted-foreground">{t("configurationUnsupportedSetting")}</p>
+          <p className={styles.hint}>{t("configurationUnsupportedSetting")}</p>
         )}
       </div>
       {!node.type.startsWith("trigger.") && editable && (
-        <div className="mt-auto border-t p-5">
-          <Button variant="ghost" className="text-destructive" onClick={onRemove}>
+        <div className={styles.footer}>
+          <Button variant="ghost" static className={styles.remove} onClick={onRemove}>
             {t("remove")}
           </Button>
         </div>

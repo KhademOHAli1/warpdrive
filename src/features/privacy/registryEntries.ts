@@ -1,3 +1,4 @@
+import { agencyProjectInventoryEntry } from "./registryAgencyProjects";
 import {
   analyticsAttentionInventoryEntry,
   analyticsComputationInventoryEntry,
@@ -15,6 +16,7 @@ import {
   settledForecastOutcomesInventoryEntry,
 } from "./registryAnalytics";
 import { billingInventoryEntry } from "./registryBilling";
+import { calendarInventoryEntries } from "./registryCalendar";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
 import { companyWorkInventoryEntry } from "./registryCompanyWork";
@@ -59,6 +61,7 @@ import {
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
+  agencyProjectInventoryEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,
   currentLeadHandoffInventoryEntry,
@@ -76,6 +79,7 @@ export const registryEntries: RegistryEntry[] = [
   kpiInventoryEntry,
   billingInventoryEntry,
   companyWorkInventoryEntry,
+  ...calendarInventoryEntries,
   workflowInventoryEntry,
   workflowBlocksInventoryEntry,
   workflowRuntimeInventoryEntry,
@@ -266,6 +270,7 @@ export const registryEntries: RegistryEntry[] = [
       "requester and minimal receipt references",
       "own-case summaries, URL selectors and frozen confirmation commands",
       "minimal reviewer intake pages and frozen assignment commands/receipts",
+      "authorized original case intake and preliminary exact-subject projections",
       "transient allowlisted case-return request headers",
       "global matched CRM/authentication body copies",
       "native account security status and authentication inputs",
@@ -274,13 +279,13 @@ export const registryEntries: RegistryEntry[] = [
     subjectRelation:
       "The server resolves the actor natively; path hints are not authority and expected requester/reviewer UUIDs are deny-only. Reviewer assignment does not establish subject identity or authorize case-content disclosure. Global non-API app/Server Action body copies can contain unrelated CRM data and authentication secrets; actor/path never determine their subject scope.",
     purpose:
-      "Mount requester intake/detail routes, preserve a validated case return path, read minimal own-case status and submit exact own-account confirmation commands. The root also offers explicit paged reviewer triage and frozen assignment retries through existing CSRF/fresh-session Server Actions, with no new route or case-detail access.",
+      "Mount requester intake/detail routes, preserve a validated case return path, read minimal own-case status and submit exact own-account confirmation commands. The root also offers explicit paged reviewer triage and frozen assignment retries through existing CSRF/fresh-session Server Actions, and exact-case reviewer reads without a new route. Original intake requires current assigned case.review; preliminary native projections require current case.review plus case.disclose, verified identity and active disclosure policy.",
     disclosure:
-      "Own-case summaries remain requester-bound. Reviewer intake requires current case.assign authority; initial claim additionally requires authority.manage and case.review. Minimal rows/receipts clear on current access or security denial; an assignment receipt is historical, not proof of current ownership or approval. Body copies remain excluded from disclosure/telemetry. Replay masking does not establish installed browser acceptance.",
+      "Own-case summaries remain requester-bound. Reviewer intake requires current case.assign authority; initial claim additionally requires authority.manage and case.review. Original intake stays distinct from current identity evidence; projections are explicitly incomplete and grant no scope approval. Minimal rows/receipts and reviewer content clear on current access or security denial; an assignment receipt is historical, not proof of current ownership or approval. Body copies remain excluded from disclosure/telemetry. Replay masking does not establish installed browser acceptance.",
     retention:
       "Form/case/queue state and frozen unknown-result intents remain in component memory; intake success does not clear the personal summary. Identity changes clear displayed reviewer data and suppress late results. Next can buffer matched request bodies under the existing 64mb limit. Case URLs remain linkable metadata. No durable browser store, expiry policy or physical memory-erasure proof is introduced.",
     externalEffects:
-      "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
+      "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. The shared app layout also derives a canViewProjects navigation boolean through current native project admission. This projection contains no project titles, rows, CRM anchors, memberships or request receipts; showing navigation grants no project access. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
     erasureTask: "DPL-26",
   }),
   classifyInventory(

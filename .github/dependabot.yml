@@ -1,0 +1,95 @@
+version: 2
+updates:
+  # Check every day, including weekends. Keep one grouped version PR per project.
+  # CI and the integration coordinator review updates before merging.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: "0 7 * * *"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      app-dependencies:
+        patterns:
+          - "*"
+      app-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    # Next has a version-specific Bun patch. Rebase/re-pin it when reviewing
+    # a Next update; keep the update visible rather than silently ignoring it.
+
+  - package-ecosystem: bun
+    directory: /site
+    schedule:
+      interval: cron
+      cronjob: "0 7 * * *"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      site-dependencies:
+        patterns:
+          - "*"
+      site-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: bun
+    directory: /docs-site
+    schedule:
+      interval: cron
+      cronjob: "0 7 * * *"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      docs-dependencies:
+        patterns:
+          - "*"
+      docs-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: bun
+    directory: /tools/browser-smoke
+    schedule:
+      interval: cron
+      cronjob: "0 7 * * *"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      browser-dependencies:
+        patterns:
+          - "*"
+      browser-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: "0 7 * * *"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"

@@ -3,6 +3,7 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useIfElsePortLabel } from "./conditionPortLabel";
 import type {
   ConnectionDifference,
   StepDifference,
@@ -31,6 +32,7 @@ function Connections({
   connections: ConnectionDifference[];
 }) {
   const t = useAppTranslations("workflows");
+  const branchLabel = useIfElsePortLabel();
   return (
     <section className="space-y-2">
       <h4 className="font-medium">{title}</h4>
@@ -41,13 +43,15 @@ function Connections({
             <ArrowRight aria-hidden="true" className="size-3 shrink-0 rtl:rotate-180" />
             <bdi>{connection.toName}</bdi>
             <span className="text-muted-foreground">
-              {t(
-                connection.port === "next"
-                  ? "versionComparePortNext"
-                  : connection.port === "true"
-                    ? "versionComparePortTrue"
-                    : "versionComparePortFalse",
-              )}
+              {connection.port === "branch"
+                ? branchLabel(connection.branch)
+                : t(
+                    connection.port === "next"
+                      ? "versionComparePortNext"
+                      : connection.port === "true"
+                        ? "versionComparePortTrue"
+                        : "versionComparePortFalse",
+                  )}
             </span>
           </li>
         ))}

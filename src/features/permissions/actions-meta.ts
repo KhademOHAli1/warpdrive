@@ -19,6 +19,7 @@ const RECORD_SCOPED_ONLY = ["activity.complete"] as const;
 
 type GlobalAction =
   | "deal.create"
+  | "project.create"
   | "contact.create"
   | "activity.create"
   | "bulk.edit"

@@ -14,6 +14,7 @@ import type {
   CalendarScheduleSnapshot,
 } from "./calendarRescheduleSchemas";
 import { signCalendarUndo } from "./calendarRescheduleUndo";
+import { createCalendar } from "./calendars";
 import { createActivity } from "./repo";
 
 const {
@@ -158,6 +159,8 @@ it("moves only temporal fields, returns persisted timing and reschedules the cur
   const after = await row(f.activity.id);
   expect(after).toEqual({
     ...f.activity,
+    version: f.activity.version + 1,
+    reminderAuthoredAt: expect.any(Date),
     dueAt: new Date("2027-03-28T07:15:00.000Z"),
     endAt: new Date("2027-03-28T08:30:00.333Z"),
     updatedAt: expect.any(Date),
@@ -502,3 +505,39 @@ it("allows only one of two concurrent drops using the same displayed source", as
   const winner = results.find((result) => result.ok);
   expect(winner?.ok && winner.value.dueAt).toBe((await row(f.activity.id)).dueAt?.toISOString());
 });
+
+it.each(["same position", "stale schedule"] as const)(
+  "checks revoked calendar authority before a %s response",
+  async (kind) => {
+    const f = await fixture();
+    const other = await seedUser(h.db);
+    const calendar = await createCalendar(
+      h.db,
+      actor(other.id),
+      { name: "Revoked calendar", timeZone: "UTC" },
+      signal(),
+    );
+    if (!calendar.ok) throw calendar.error;
+    await h.db
+      .update(activities)
+      .set({ calendarId: calendar.value.id })
+      .where(eq(activities.id, f.activity.id));
+    const before = await row(f.activity.id);
+    const result = await rescheduleCalendarEvent(
+      h.db,
+      actor(f.user.id, "regular"),
+      {
+        id: f.activity.id,
+        expected:
+          kind === "stale schedule"
+            ? { ...f.expected, dueAt: "2027-03-26T08:15:29.123Z" }
+            : f.expected,
+        timeZone: "Europe/Berlin",
+        target: { date: "2027-03-27" },
+      },
+      signal(),
+    );
+    expect(result).toMatchObject({ ok: false, error: { id: ERROR_IDS.ACTIVITY_NOT_FOUND } });
+    expect(await row(f.activity.id)).toEqual(before);
+  },
+);

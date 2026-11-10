@@ -8,6 +8,7 @@ import {
   migrationFolder,
 } from "@/db/migrationAdmission.test-helpers";
 import { activities, workflowRunFailures, workflowSteps } from "@/db/schema";
+import type { TestDb } from "@/test/db";
 import { admitManualRun, advanceWorkflowRun } from "./execution";
 import { readRunDetail } from "./runDetail";
 import { retryWorkflowRun } from "./runRetry";
@@ -18,6 +19,57 @@ import {
   setupRetryActor,
   storedRetryRun,
 } from "./runRetry.test-helpers";
+
+// Generate successful steps on the schema supported by the current engine, then
+// restore their genuine rows through each predecessor table's actual row type.
+// This preserves outputs and precision without adding modern columns to the old database.
+async function installPredecessorFixture(source: RetryFixture, target: TestDb) {
+  const tables = [
+    "permission_sets",
+    "users",
+    "auth_users",
+    "sessions",
+    "pipelines",
+    "stages",
+    "deals",
+    "activity_types",
+    "activities",
+    "workflows",
+    "workflow_versions",
+    "workflow_runs",
+    "workflow_steps",
+  ] as const;
+  // Built-in types receive random IDs at migration time. Keep the engine's exact
+  // type identities so the copied task and its recorded output remain linked.
+  await target.pool.query("DELETE FROM activity_types");
+  const inserts: string[] = [];
+  const values: string[] = [];
+  for (const table of tables) {
+    const rows = await source.pool.query<{ data: string }>(
+      `SELECT COALESCE(jsonb_agg(to_jsonb(t)), '[]'::jsonb)::text AS data FROM public."${table}" t`,
+    );
+    const columns = (
+      await target.pool.query<{ names: string }>(
+        `SELECT string_agg(quote_ident(column_name), ', ' ORDER BY ordinal_position) AS names
+         FROM information_schema.columns
+         WHERE table_schema='public' AND table_name=$1 AND is_generated='NEVER'`,
+        [table],
+      )
+    ).rows[0]?.names;
+    if (columns === undefined) throw new Error("Missing predecessor columns");
+    const data = rows.rows[0]?.data;
+    if (data === undefined) throw new Error("Missing predecessor rows");
+    values.push(data);
+    inserts.push(
+      `"${table}_fixture" AS (INSERT INTO public."${table}" (${columns})
+       SELECT ${columns} FROM jsonb_populate_recordset(NULL::public."${table}", $${values.length}::jsonb)
+       RETURNING id)`,
+    );
+  }
+  // One statement admits both sides of the existing immediate publication FK.
+  await target.pool.query(`WITH ${inserts.join(",")} SELECT 1`, values);
+  return { ...source, ...target };
+}
 
 async function completedPrefix(h: RetryFixture, runId: string) {
   return h.db
@@ -43,15 +95,18 @@ async function durableState(h: RetryFixture, runId: string) {
 // Migration-state fixtures, distinct from the engine-generated failures in
 // runRetryRead.integration.test.ts. Before0100 there is no failure-history table:
 // reproduce only its predecessor status/error save, then run canonical0100 SQL.
-// Never patch an origin, cursor, output, or published version into the fixture.
+// Copy genuine engine-generated outputs; never invent an origin, cursor, output,
+// or published version for the migration fixture.
 async function migratedFailure(cursor: "read" | "second_task") {
   const db = await freshMigrationDb();
   let candidate: Awaited<ReturnType<typeof migrationFolder>> | undefined;
+  let generated: RetryFixture | undefined;
   const close = async () => {
     try {
       await candidate?.dispose();
     } finally {
       await db.close();
+      await generated?.close();
     }
   };
   try {
@@ -60,7 +115,8 @@ async function migratedFailure(cursor: "read" | "second_task") {
       (await db.pool.query("SELECT to_regclass('public.workflow_run_failures') IS NULL AS absent"))
         .rows,
     ).toEqual([{ absent: true }]);
-    const h = await setupRetryActor(db);
+    generated = await setupRetryActor();
+    let h = generated;
     const admitted = await admitManualRun(
       h.db,
       h.actor,
@@ -87,15 +143,23 @@ async function migratedFailure(cursor: "read" | "second_task") {
     );
     const run = await storedRetryRun(h, admitted.value.id);
     const steps = await completedPrefix(h, run.id);
-    const effects = await h.db.select().from(activities).orderBy(activities.id);
+    h = await installPredecessorFixture(generated, db);
+    const activityColumns = (
+      await h.pool.query<{ column_name: string }>(
+        "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='activities' ORDER BY ordinal_position",
+      )
+    ).rows.map((row) => row.column_name);
+    const legacyEffects = (
+      await h.pool.query("SELECT to_jsonb(a) AS data FROM activities a ORDER BY id")
+    ).rows;
     candidate = await migrationFolder(101);
     expect(await applyMigrations(h.db, retrySignal(), candidate.folder)).toEqual({
       ok: true,
       value: { applied: true },
     });
-    expect(await storedRetryRun(h, run.id)).toEqual(run);
-    expect(await completedPrefix(h, run.id)).toEqual(steps);
-    expect(await h.db.select().from(activities).orderBy(activities.id)).toEqual(effects);
+    expect(
+      (await h.pool.query("SELECT to_jsonb(a) AS data FROM activities a ORDER BY id")).rows,
+    ).toEqual(legacyEffects);
     const [failure] = await h.db
       .select()
       .from(workflowRunFailures)
@@ -118,6 +182,24 @@ async function migratedFailure(cursor: "read" | "second_task") {
         )
       ).rows,
     ).toEqual([{ exact: true }]);
+    expect(await applyMigrations(h.db, retrySignal())).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
+    expect(await storedRetryRun(h, run.id)).toEqual(run);
+    expect(await completedPrefix(h, run.id)).toEqual(steps);
+    // Newly added columns receive canonical defaults. Every predecessor effect
+    // column must still retain its exact value through the complete upgrade.
+    expect(
+      (
+        await h.pool.query(
+          `SELECT (SELECT jsonb_object_agg(key,value) FROM jsonb_each(to_jsonb(a))
+            WHERE key=ANY($1::text[])) AS data FROM activities a ORDER BY id`,
+          [activityColumns],
+        )
+      ).rows,
+    ).toEqual(legacyEffects);
+    const effects = await h.db.select().from(activities).orderBy(activities.id);
     return { h, run, failure, steps, effects, close };
   } catch (error) {
     await close();

@@ -48,6 +48,22 @@ function input(draft = definition()) {
   return { workflowId, recordId, definition: draft };
 }
 
+function globalDefinition(): WorkflowDefinition {
+  return {
+    schemaVersion: 1,
+    nodes: [
+      {
+        id: "start",
+        type: "trigger.manual",
+        version: 1,
+        name: "Start",
+        config: { scope: "global" },
+      },
+    ],
+    edges: [],
+  };
+}
+
 function nested(depth: number): unknown {
   let result: unknown = 0;
   for (let level = 0; level < depth; level++) result = [result];
@@ -99,8 +115,37 @@ describe("draft simulation input preparation", () => {
     });
     assert(result.ok, JSON.stringify(result));
     expect(result.value.workflowId).toBe(workflowId);
-    expect(result.value.recordId).toBe(recordId);
+    expect(result.value.launch).toEqual({ recordId });
     expect(JSON.stringify(result.value.authoredDefinition)).toBe(JSON.stringify(graph));
+  });
+
+  it("accepts the exact two-field envelope for a captured Global manual trigger", () => {
+    const graph = globalDefinition();
+    const result = prepareDraftSimulationInput({
+      workflowId: workflowId.toUpperCase(),
+      definition: graph,
+    });
+    assert(result.ok, JSON.stringify(result));
+    expect(result.value.workflowId).toBe(workflowId);
+    expect(result.value.launch).toEqual({ scope: "global" });
+    graph.nodes[0]!.config = {};
+    expect(result.value.definition.nodes[0]?.config).toEqual({ scope: "global" });
+    expect(result.value.authoredDefinition).toEqual(result.value.definition);
+  });
+
+  it.each([
+    { label: "Global launch with a Deal", make: () => input(globalDefinition()) },
+    {
+      label: "Global launch with an explicit undefined Deal",
+      make: () => ({ ...input(globalDefinition()), recordId: undefined }),
+    },
+    { label: "Deal launch without a Deal", make: () => ({ workflowId, definition: definition() }) },
+    {
+      label: "caller-supplied scope",
+      make: () => ({ workflowId, definition: globalDefinition(), scope: "global" }),
+    },
+  ])("rejects $label", ({ make }) => {
+    expect(prepareDraftSimulationInput(make())).toEqual(invalid);
   });
 
   it.each([
