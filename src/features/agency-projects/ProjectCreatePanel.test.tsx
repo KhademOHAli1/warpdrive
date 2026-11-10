@@ -35,13 +35,13 @@ test("a confirmed creation admits another fresh intent for the same client", asy
   fireEvent.change(screen.getByRole("textbox", { name: "Project name" }), {
     target: { value: "First project" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Create project", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Create project" }));
   await waitFor(() => expect(actions.create).toHaveBeenCalledTimes(1));
-  fireEvent.click(await screen.findByRole("button", { name: "New project", exact: true }));
+  fireEvent.click(await screen.findByRole("button", { name: "New project" }));
   fireEvent.change(screen.getByRole("textbox", { name: "Project name" }), {
     target: { value: "Second project" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Create project", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Create project" }));
   await waitFor(() => expect(actions.create).toHaveBeenCalledTimes(2));
   const first = actions.create.mock.calls[0]?.[1] as { intentId: string };
   const second = actions.create.mock.calls[1]?.[1] as { intentId: string };
