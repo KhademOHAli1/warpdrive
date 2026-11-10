@@ -759,7 +759,8 @@
       "work_view": "View operational work",
       "work_create": "Create operational work",
       "work_change": "Change visible operational work",
-      "work_manage": "Manage work types and stages"
+      "work_manage": "Manage work types and stages",
+      "project_create": "Create project"
     },
     "icons": {
       "call": "call",
