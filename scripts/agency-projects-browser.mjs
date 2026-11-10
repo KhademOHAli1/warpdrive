@@ -31,6 +31,24 @@ export async function seedAgencyBrowserFixture(client, password, flagKeys) {
       "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
       [id, id, password],
     );
+    const timeZone = locale === "fa" ? "Asia/Tehran" : locale === "de" ? "Europe/Berlin" : "UTC";
+    await client.query(
+      "INSERT INTO user_preferences(user_id,timezone,density,ui) VALUES($1,$2,'comfortable',$3)",
+      [
+        id,
+        timeZone,
+        JSON.stringify({
+          localePreferences: {
+            locale,
+            calendar: locale === "fa" ? "persian" : "gregory",
+            timeZone,
+            country: locale === "fa" ? "IR" : locale === "de" ? "DE" : "US",
+            numberingSystem: locale === "fa" ? "arabext" : "latn",
+            timeZoneMode: "manual",
+          },
+        }),
+      ],
+    );
   }
   await client.query(
     "INSERT INTO organizations(id,name,owner_id,visibility_level) VALUES($1,$2,$3,'all')",
