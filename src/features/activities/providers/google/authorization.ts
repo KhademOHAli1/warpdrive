@@ -32,7 +32,7 @@ export function buildCalendarAuthorizationUrl(
   material: { state: string; codeChallenge: string },
 ): Result<string, CalendarAuthorizationError> {
   const validated = readCalendarOAuthConfig(config);
-  if (!validated.ok) return validated;
+  if (!validated.ok) return err({ kind: "configuration" });
   if (
     !calendarOpaqueTokenSchema.safeParse(material.state).success ||
     !calendarOpaqueTokenSchema.safeParse(material.codeChallenge).success

@@ -165,7 +165,7 @@ describe("recorded review decisions and conflicts", () => {
     expect(
       applyReviewCommand(snapshot(), {
         ...internalReview(),
-        reviewedVersionReference: version.replace("%2F", "%2f"),
+        reviewedVersionReference: version.replaceAll("%2F", "%2f"),
       }),
     ).toEqual({ ok: false, error: "review_version_conflict" });
   });
