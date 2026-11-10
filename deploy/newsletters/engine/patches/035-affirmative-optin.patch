@@ -1,0 +1,127 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index 3a3e768..7a5472f 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1}})
+ 		}, "settings:get"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+ 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
+@@ -273,8 +273,10 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.POST("/subscription/form", a.SubscriptionForm)
+ 		g.GET("/subscription/:campUUID/:subUUID", noIndex(a.hasUUID(a.hasSub(a.SubscriptionPage), "campUUID", "subUUID")))
+ 		g.POST("/subscription/:campUUID/:subUUID", a.hasUUID(a.hasSub(a.SubscriptionPrefs), "campUUID", "subUUID"))
+-		g.GET("/subscription/optin/:subUUID", noIndex(a.hasUUID(a.hasSub(a.OptinPage), "subUUID")))
+-		g.POST("/subscription/optin/:subUUID", a.hasUUID(a.hasSub(a.OptinPage), "subUUID"))
++		optin := noIndex(a.hasUUID(a.hasSub(a.OptinPage), "subUUID"))
++		g.GET("/subscription/optin/:subUUID", optin)
++		g.HEAD("/subscription/optin/:subUUID", optin)
++		g.POST("/subscription/optin/:subUUID", optin)
+ 		g.POST("/subscription/export/:subUUID", a.hasUUID(a.hasSub(a.SelfExportSubscriberData), "subUUID"))
+ 		g.POST("/subscription/wipe/:subUUID", a.hasUUID(a.hasSub(a.WipeSubscriberData), "subUUID"))
+ 		g.GET("/link/:linkUUID/:campUUID/:subUUID", noIndex(a.hasUUID(a.LinkRedirect, "linkUUID", "campUUID", "subUUID")))
+diff --git a/cmd/public.go b/cmd/public.go
+index 8ad0290..6cc20c8 100644
+--- a/cmd/public.go
++++ b/cmd/public.go
+@@ -69,15 +69,10 @@ type unsubTpl struct {
+ 	ShowManage       bool
+ }
+ 
+-type optinReq struct {
+-	SubUUID   string
+-	ListUUIDs []string      `query:"l" form:"l"`
+-	Lists     []models.List `query:"-" form:"-"`
+-}
+-
+ type optinTpl struct {
+ 	publicTpl
+-	optinReq
++	SubUUID string
++	Lists   []models.List
+ }
+ 
+ type msgTpl struct {
+@@ -334,31 +329,32 @@ func (a *App) SubscriptionPrefs(c echo.Context) error {
+ 		makeMsgTpl(a.i18n.T("globals.messages.done"), "", a.i18n.T("public.prefsSaved")))
+ }
+ 
+-// OptinPage renders the double opt-in confirmation page that subscribers
+-// see when they click on the "Confirm subscription" button in double-optin
+-// notifications.
++// OptinPage presents pending subscriptions and accepts explicit form submissions.
+ func (a *App) OptinPage(c echo.Context) error {
+-	var (
+-		subUUID    = c.Param("subUUID")
+-		confirm, _ = strconv.ParseBool(c.FormValue("confirm"))
+-		req        optinReq
+-	)
+-	if err := c.Bind(&req); err != nil {
+-		return err
++	subUUID := c.Param("subUUID")
++	listUUIDs := c.QueryParams()["l"]
++	request := c.Request()
++	submitted := request.Method == http.MethodPost
++	if submitted {
++		// Query parameters may be present in email links and scanner requests.
++		// Only the submitted form body can authorize a confirmation.
++		if err := request.ParseForm(); err != nil || request.PostForm.Get("confirm") != "true" || len(request.PostForm["l"]) == 0 {
++			return c.Render(http.StatusBadRequest, tplMessage,
++				makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.T("globals.messages.invalidData")))
++		}
++		listUUIDs = request.PostForm["l"]
+ 	}
+ 
+ 	// Validate list UUIDs if there are incoming UUIDs in the request.
+-	if len(req.ListUUIDs) > 0 {
+-		for _, l := range req.ListUUIDs {
+-			if !reUUID.MatchString(l) {
+-				return c.Render(http.StatusBadRequest, tplMessage,
+-					makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.T("globals.messages.invalidUUID")))
+-			}
++	for _, l := range listUUIDs {
++		if !reUUID.MatchString(l) {
++			return c.Render(http.StatusBadRequest, tplMessage,
++				makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.T("globals.messages.invalidUUID")))
+ 		}
+ 	}
+ 
+ 	// Get the list of subscription lists where the subscriber hasn't confirmed.
+-	lists, err := a.core.GetSubscriberLists(0, subUUID, nil, req.ListUUIDs, models.SubscriptionStatusUnconfirmed, models.ListOptinDouble)
++	lists, err := a.core.GetSubscriberLists(0, subUUID, nil, listUUIDs, models.SubscriptionStatusUnconfirmed, models.ListOptinDouble)
+ 	if err != nil {
+ 		return c.Render(http.StatusInternalServerError, tplMessage,
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.errorFetchingLists")))
+@@ -370,7 +366,7 @@ func (a *App) OptinPage(c echo.Context) error {
+ 			makeMsgTpl(a.i18n.T("public.noSubTitle"), "", a.i18n.Ts("public.noSubInfo")))
+ 	}
+ 
+-	if confirm || !a.cfg.ShowOptinPage {
++	if submitted {
+ 		return a.confirmOptinSubscription(c, subUUID, lists)
+ 	}
+ 
+diff --git a/static/public/templates/optin.html b/static/public/templates/optin.html
+index 77e4e97..48518c3 100644
+--- a/static/public/templates/optin.html
++++ b/static/public/templates/optin.html
+@@ -6,7 +6,7 @@
+         {{ L.T "public.confirmSubInfo" }}
+     </p>
+ 
+-    <form method="post" class="optin-form">
++    <form method="post" action="./{{ .Data.SubUUID }}" class="optin-form">
+         <ul>
+             {{ range $i, $l := .Data.Lists }}
+                 <input type="hidden" name="l" value="{{ $l.UUID }}" />
+@@ -27,4 +27,4 @@
+ </section>
+ 
+ {{ template "footer" .}}
+-{{ end }}
+\ No newline at end of file
++{{ end }}

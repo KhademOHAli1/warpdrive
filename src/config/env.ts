@@ -93,6 +93,16 @@ const base = z.object({
   NEWSLETTER_API_USER: z.string().trim().default(""),
   NEWSLETTER_API_TOKEN: z.string().default(""),
   NEWSLETTER_DELIVERY_ENABLED: boolFromString.default(false),
+  NEWSLETTER_TEST_RECIPIENTS: z
+    .string()
+    .max(4096)
+    .default("")
+    .transform((value) =>
+      [...new Set(value.split(",").map((email) => email.trim().toLowerCase()))].filter(
+        (email) => email !== "",
+      ),
+    )
+    .pipe(z.array(z.email().max(254)).max(50)),
   BASE_CURRENCY: z.string().length(3).default("USD"),
   SEED_ADMIN_EMAIL: z.string().email().or(z.literal("")).default(""),
   ALLOW_FIRST_LOGIN_ADMIN: boolFromString.default(false),

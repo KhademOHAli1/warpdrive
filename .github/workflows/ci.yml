@@ -46,6 +46,7 @@ jobs:
           src/features/workflows/draftSimulationInput.test.ts
           src/features/workflows/runRetryActions.test.ts
           src/features/billing
+          src/features/newsletter
           src/features/goals/kpiSchemas.test.ts
           src/features/goals/goalProgress.test.ts
           src/features/goals/kpiTrend.test.ts

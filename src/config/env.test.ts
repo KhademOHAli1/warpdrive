@@ -92,6 +92,24 @@ describe("env boundary", () => {
     }
   });
 
+  test("normalizes a closed newsletter test-recipient allowlist", () => {
+    const parsed = parseEnv({
+      ...process.env,
+      NEWSLETTER_TEST_RECIPIENTS:
+        " First+Preview@Example.test, second@example.test,first+preview@example.test ",
+    });
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.NEWSLETTER_TEST_RECIPIENTS).toEqual([
+        "first+preview@example.test",
+        "second@example.test",
+      ]);
+    }
+    expect(parseEnv({ ...process.env, NEWSLETTER_TEST_RECIPIENTS: "*@example.test" }).ok).toBe(
+      false,
+    );
+  });
+
   describe("Docker secret <VAR>_FILE resolution", () => {
     let dir: string;
 

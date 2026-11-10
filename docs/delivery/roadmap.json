@@ -80095,6 +80095,28 @@
         "type:feature"
       ],
       "notes": "Explicit user-requested implementation of prior research; independent integration authorized. Does not expand into native CRM-client invoice issuance or production Stripe activation."
+    },
+    {
+      "id": "integration/newsletter-campaign-foundation",
+      "title": "Qualify native Campaigns consent and write recovery",
+      "module": "integrations",
+      "kind": "deliverable",
+      "parent": "programme/integrations",
+      "source_tasks": [],
+      "acceptance": [
+        "Integrate the native Campaigns workspace with the authenticated, isolated newsletter engine and preserve existing CRM navigation and authority.",
+        "Keep subscription confirmation, campaign eligibility and historical unsubscribe links correct for suppressed, pending, archived and previously contacted audiences.",
+        "Use durable operation receipts and safe reconciliation for retried or uncertain newsletter mutations. Verify storage and contract compatibility.",
+        "Run isolated PostgreSQL, Mailpit and public ingress regressions, review the exact PR revision and verify the resulting Main checks."
+      ],
+      "dependencies": [],
+      "evidence": [],
+      "owner": "KhademOHAli1",
+      "owner_role": "Campaigns integration maintainer",
+      "observed_status": "in-progress",
+      "observed_stage": "source implementation and isolated qualification",
+      "priority": "P0",
+      "notes": "Campaigns foundation, consent and mutation recovery. The broader CRM and provider integration has separate scope and acceptance."
     }
   ],
   "aliases": {

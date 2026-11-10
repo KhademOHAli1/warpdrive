@@ -792,6 +792,13 @@
       "when": 1794320527340,
       "tag": "0112_agency_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "7",
+      "when": 1794351591224,
+      "tag": "0113_newsletter_operation_receipts",
+      "breakpoints": true
     }
   ]
 }

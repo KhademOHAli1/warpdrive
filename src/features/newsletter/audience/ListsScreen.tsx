@@ -109,6 +109,7 @@ function ListEditor({ row, close }: { row: MailingList | null; close: () => void
               <p className="text-sm font-medium">{L.optin}</p>
               <Select
                 ariaLabel={L.optin}
+                disabled={row?.optin === "double"}
                 value={optin}
                 onChange={(value) => setOptin(value as MailingList["optin"])}
                 options={[

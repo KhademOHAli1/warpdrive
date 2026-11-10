@@ -94,7 +94,6 @@ const currentBouncePolicy = z.strictObject({
 export const settingSpecs = {
   "app.enable_public_subscription_page": { section: "general", kind: "toggle", value: toggle },
   "app.send_optin_confirmation": { section: "general", kind: "toggle", value: toggle },
-  "app.show_optin_page": { section: "general", kind: "toggle", value: toggle },
   "app.enable_public_archive": { section: "general", kind: "toggle", value: toggle },
   "app.enable_public_archive_rss_content": { section: "general", kind: "toggle", value: toggle },
   "app.concurrency": { section: "performance", kind: "number", value: count(100) },

@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
+import { AudienceRefresh } from "@/features/newsletter/audience/components";
+import { useAudienceMessages } from "@/features/newsletter/audience/messages";
+import { emailAudiencePaths } from "@/features/newsletter/audience/paths";
 import { useNewsletterRead, useNewsletterWrite } from "@/features/newsletter/ui/client";
 import { useFormatters } from "@/lib/useFormatters";
 import { useCampaignMessages } from "./messages";
@@ -19,6 +22,7 @@ import {
   type CampaignFields,
   campaignContentType,
   campaignFields,
+  campaign as campaignSchema,
   campaignTransitions,
   canEditCampaign,
   type DeliveryConfig,
@@ -207,58 +211,76 @@ function MessageBody({
   );
 }
 
+type MailingListRead = ReturnType<typeof useNewsletterRead<Choice[]>>;
+
 function CampaignAudience({
   selected,
-  choices,
+  listRead,
   disabled,
   onChange,
 }: {
   selected: Choice[];
-  choices: Choice[];
+  listRead: MailingListRead;
   disabled: boolean;
   onChange: (value: Choice[]) => void;
 }) {
   const m = useCampaignMessages();
+  const L = useAudienceMessages();
+  const choices = listRead.data ?? [];
   const available = [
     ...choices,
     ...selected.filter((item) => !choices.some((choice) => choice.id === item.id)),
   ];
   return (
-    <fieldset className="grid gap-2" disabled={disabled}>
-      <legend className="mb-2 text-sm font-medium">{m.lists}</legend>
-      {available.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          <Link className="text-link hover:underline" href="/campaigns/lists">
-            {m.noLists}
-          </Link>
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          className="text-sm text-link hover:underline"
+          href={emailAudiencePaths.lists}
+          target="_blank"
+          rel="noopener"
+        >
+          {L.manageAudience}
+        </Link>
+        <AudienceRefresh read={listRead} />
+      </div>
+      {listRead.isRefetchError && (
+        <p role="alert" className="text-sm text-destructive">
+          {L.loadError}
         </p>
-      ) : (
-        <div className="grid max-h-48 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2">
-          {available.map((item) => {
-            const checked = selected.some((list) => list.id === item.id);
-            return (
-              <label
-                key={item.id}
-                htmlFor={`campaign-list-${item.id}`}
-                className="flex items-center gap-2 text-sm"
-              >
-                <Checkbox
-                  id={`campaign-list-${item.id}`}
-                  label={item.name}
-                  checked={checked}
-                  onCheckedChange={(next) =>
-                    onChange(
-                      next ? [...selected, item] : selected.filter((list) => list.id !== item.id),
-                    )
-                  }
-                />
-                <bdi>{item.name}</bdi>
-              </label>
-            );
-          })}
-        </div>
       )}
-    </fieldset>
+      <fieldset className="grid gap-2" disabled={disabled}>
+        <legend className="mb-2 text-sm font-medium">{m.recipients}</legend>
+        {available.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{m.noLists}</p>
+        ) : (
+          <div className="grid max-h-48 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2">
+            {available.map((item) => {
+              const checked = selected.some((list) => list.id === item.id);
+              return (
+                <label
+                  key={item.id}
+                  htmlFor={`campaign-list-${item.id}`}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <Checkbox
+                    id={`campaign-list-${item.id}`}
+                    label={item.name}
+                    checked={checked}
+                    onCheckedChange={(next) =>
+                      onChange(
+                        next ? [...selected, item] : selected.filter((list) => list.id !== item.id),
+                      )
+                    }
+                  />
+                  <bdi>{item.name}</bdi>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </fieldset>
+    </div>
   );
 }
 
@@ -346,6 +368,7 @@ function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: bool
   const config = useNewsletterRead<{ deliveryEnabled: boolean }>("system.status");
   const write = useNewsletterWrite();
   const [action, setAction] = useState<StatusAction | "test" | "delete" | null>(null);
+  const [reviewedRevision, setReviewedRevision] = useState(campaign.updated_at);
   const [emails, setEmails] = useState("");
   const [notice, setNotice] = useState("");
   const [inputError, setInputError] = useState("");
@@ -376,7 +399,9 @@ function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: bool
         .run("campaigns.status", {
           ...input,
           status: action,
-          expectedUpdatedAt: campaign.updated_at,
+          ...(action === "running" || action === "scheduled"
+            ? { expectedUpdatedAt: reviewedRevision }
+            : {}),
         })
         .then(() => setNotice(m.saved))
         .catch(() => undefined);
@@ -406,7 +431,10 @@ function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: bool
               write.isPending ||
               ((dirty || !delivery) && (status === "running" || status === "scheduled"))
             }
-            onClick={() => setAction(status)}
+            onClick={() => {
+              setReviewedRevision(campaign.updated_at);
+              setAction(status);
+            }}
           >
             {labels[status]}
           </Button>
@@ -593,14 +621,16 @@ function ArchiveControls({
 
 function CampaignForm({
   initial,
-  lists,
+  listRead,
   templates,
   config,
+  reloadCampaign,
 }: {
   initial?: Campaign;
-  lists: Choice[];
+  listRead: MailingListRead;
   templates: TemplateItem[];
   config?: DeliveryConfig;
+  reloadCampaign: () => Promise<Campaign | undefined>;
 }) {
   const m = useCampaignMessages();
   const f = useFormatters();
@@ -608,11 +638,13 @@ function CampaignForm({
   const [draft, setDraft] = useState(() => draftOf(initial));
   const [baseline, setBaseline] = useState(() => draftOf(initial));
   const [saved, setSaved] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [revision, setRevision] = useState(initial?.updated_at);
   const [formError, setFormError] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const write = useNewsletterWrite<{ id: number } | Campaign>();
   const render = useNewsletterWrite<string>();
+  const saving = write.isPending || restoring;
   const disabled = initial !== undefined && !canEditCampaign(initial.status);
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
   const currentDraft = initial === undefined ? baseline : draftOf(initial);
@@ -629,7 +661,7 @@ function CampaignForm({
 
   function save(event: FormEvent) {
     event.preventDefault();
-    if (disabled || write.isPending) return;
+    if (disabled || saving) return;
     if (draft.lists.length === 0) {
       setFormError(m.listRequired);
       return;
@@ -649,17 +681,31 @@ function CampaignForm({
         initial ? "campaigns.update" : "campaigns.create",
         initial ? { ...input, id: initial.id, expectedUpdatedAt: expectedRevision } : input,
       )
-      .then((result) => {
+      .then(async (result) => {
         if (!initial) {
           router.push(`/campaigns/${result.id}`);
           return;
         }
+        let current: Campaign | undefined;
         if ("updated_at" in result) {
-          const updated = draftOf(result);
-          setRevision(result.updated_at);
-          setDraft(updated);
-          setBaseline(updated);
+          current = result;
+        } else {
+          // A replay confirms the write but contains only its stable record ID.
+          setRestoring(true);
+          try {
+            current = await reloadCampaign();
+          } finally {
+            setRestoring(false);
+          }
         }
+        if (current === undefined) {
+          setFormError(m.loadError);
+          return;
+        }
+        const updated = draftOf(current);
+        setRevision(current.updated_at);
+        setDraft(updated);
+        setBaseline(updated);
         setSaved(true);
       })
       .catch(() => undefined);
@@ -705,7 +751,7 @@ function CampaignForm({
         </div>
       )}
       <form onSubmit={save} className={`${panelClass} grid gap-4 p-4 sm:p-5`}>
-        <fieldset disabled={disabled || write.isPending} className="grid gap-4">
+        <fieldset disabled={disabled || saving} className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={m.name} htmlFor="campaign-name">
               <Input
@@ -741,7 +787,7 @@ function CampaignForm({
                 ariaLabel={m.messenger}
                 value={draft.messenger}
                 onChange={(value) => set("messenger", value)}
-                disabled={disabled || write.isPending}
+                disabled={disabled || saving}
                 options={messengers.map((value) => ({ value, label: value }))}
               />
             </div>
@@ -764,8 +810,8 @@ function CampaignForm({
           </div>
           <CampaignAudience
             selected={draft.lists}
-            choices={lists}
-            disabled={disabled || write.isPending}
+            listRead={listRead}
+            disabled={disabled || saving}
             onChange={(value) => set("lists", value)}
           />
           <div className="grid gap-3 sm:grid-cols-2">
@@ -774,7 +820,7 @@ function CampaignForm({
               <Select
                 ariaLabel={m.contentType}
                 value={draft.contentType}
-                disabled={disabled || write.isPending}
+                disabled={disabled || saving}
                 onChange={(value) => {
                   const parsed = campaignContentType.safeParse(value);
                   if (parsed.success) set("contentType", parsed.data);
@@ -788,7 +834,7 @@ function CampaignForm({
                 <Select
                   ariaLabel={m.template}
                   value={String(draft.templateId ?? "")}
-                  disabled={disabled || write.isPending}
+                  disabled={disabled || saving}
                   onChange={(value) => set("templateId", value ? Number(value) : null)}
                   options={[{ value: "", label: m.defaultTemplate }, ...templateOptions]}
                 />
@@ -798,7 +844,7 @@ function CampaignForm({
           <MessageBody
             draft={draft}
             onChange={(value) => set("body", value)}
-            disabled={disabled || write.isPending}
+            disabled={disabled || saving}
           />
           {draft.contentType === "visual" && (
             <Field label={m.source} htmlFor="campaign-body-source">
@@ -824,7 +870,7 @@ function CampaignForm({
           )}
           <AttachmentPicker
             media={draft.media}
-            disabled={disabled || write.isPending}
+            disabled={disabled || saving}
             onChange={(value) => set("media", value)}
           />
           <details>
@@ -853,7 +899,7 @@ function CampaignForm({
         </fieldset>
         <div className="flex flex-wrap gap-2">
           {!disabled && (
-            <Button type="submit" disabled={write.isPending}>
+            <Button type="submit" disabled={saving}>
               {initial ? m.save : m.createDraft}
             </Button>
           )}
@@ -878,7 +924,9 @@ function CampaignForm({
           </div>
         )}
       </form>
-      {initial && <DeliveryControls campaign={initial} dirty={dirty} />}
+      {initial && (
+        <DeliveryControls campaign={initial} dirty={dirty || !sameRemoteFields || saving} />
+      )}
       {initial && <ArchiveControls campaign={initial} templates={templates} />}
     </div>
   );
@@ -902,7 +950,12 @@ export function CampaignEditor({ campaignId }: { campaignId?: number }) {
       />
       <QueryState
         loading={campaign.isLoading || lists.isLoading || templates.isLoading || config.isLoading}
-        error={campaign.error ?? lists.error ?? templates.error ?? config.error}
+        error={
+          campaign.error ??
+          (lists.data === undefined ? lists.error : null) ??
+          templates.error ??
+          config.error
+        }
         retry={() => {
           if (campaignId !== undefined) void campaign.refetch();
           void lists.refetch();
@@ -914,9 +967,15 @@ export function CampaignEditor({ campaignId }: { campaignId?: number }) {
           <CampaignForm
             key={campaignId ?? "new"}
             initial={item}
-            lists={lists.data ?? []}
+            listRead={lists}
             templates={templates.data ?? []}
             config={config.data}
+            reloadCampaign={async () => {
+              const result = await campaign.refetch();
+              if (!result.isSuccess) return undefined;
+              const parsed = campaignSchema.safeParse(result.data);
+              return parsed.success ? parsed.data : undefined;
+            }}
           />
         )}
       </QueryState>

@@ -1,0 +1,250 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index ef92287..b1804ee 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1, "dispatch": 1, "listConsentMode": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1}})
+ 		}, "settings:get"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+ 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
+diff --git a/cmd/public.go b/cmd/public.go
+index 4fd2105..8ad0290 100644
+--- a/cmd/public.go
++++ b/cmd/public.go
+@@ -18,7 +18,6 @@ import (
+ 	"github.com/knadh/listmonk/internal/notifs"
+ 	"github.com/knadh/listmonk/models"
+ 	"github.com/labstack/echo/v4"
+-	"github.com/lib/pq"
+ )
+ 
+ const (
+@@ -292,17 +291,10 @@ func (a *App) SubscriptionPrefs(c echo.Context) error {
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.T("subscribers.invalidName")))
+ 	}
+ 
+-	// Get the subscriber from the DB.
+-	sub, err := a.core.GetSubscriber(0, subUUID, "")
++	// The public form only edits a name. A stale profile snapshot must never
++	// overwrite a concurrent blocklist, address change, or attribute edit.
++	subID, err := a.core.UpdatePublicSubscriberName(subUUID, req.Name)
+ 	if err != nil {
+-		return c.Render(http.StatusInternalServerError, tplMessage,
+-			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("globals.messages.pFound",
+-				"name", a.i18n.T("globals.terms.subscriber"))))
+-	}
+-	sub.Name = req.Name
+-
+-	// Update the subscriber properties in the DB.
+-	if _, err := a.core.UpdateSubscriber(sub.ID, sub); err != nil {
+ 		return c.Render(http.StatusInternalServerError, tplMessage,
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.T("public.errorProcessingRequest")))
+ 	}
+@@ -332,7 +324,7 @@ func (a *App) SubscriptionPrefs(c echo.Context) error {
+ 	}
+ 
+ 	// Unsubscribe from lists.
+-	if err := a.core.UnsubscribeLists([]int{sub.ID}, nil, unsubUUIDs); err != nil {
++	if err := a.core.UnsubscribeLists([]int{subID}, nil, unsubUUIDs); err != nil {
+ 		return c.Render(http.StatusInternalServerError, tplMessage,
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.T("public.errorProcessingRequest")))
+ 
+@@ -760,8 +752,6 @@ func (a *App) processSubForm(c echo.Context) (bool, error) {
+ 		return false, echo.NewHTTPError(http.StatusBadRequest, a.i18n.T("subscribers.invalidName"))
+ 	}
+ 
+-	listUUIDs := pq.StringArray(req.FormListUUIDs)
+-
+ 	// Fetch the list types and ensure that they are not private.
+ 	listTypes, err := a.core.GetListTypes(nil, req.FormListUUIDs)
+ 	if err != nil {
+@@ -774,38 +764,5 @@ func (a *App) processSubForm(c echo.Context) (bool, error) {
+ 		}
+ 	}
+ 
+-	// Insert the subscriber into the DB.
+-	_, hasOptin, err := a.core.InsertSubscriber(models.Subscriber{
+-		Name:   req.Name,
+-		Email:  req.Email,
+-		Status: models.SubscriberStatusEnabled,
+-	}, nil, listUUIDs, false, true)
+-	if err == nil {
+-		return hasOptin, nil
+-	}
+-
+-	// Insert returned an error. Examine it.
+-	var lastErr = err
+-
+-	// Subscriber already exists. Update subscriptions in the DB.
+-	if e, ok := err.(*echo.HTTPError); ok && e.Code == http.StatusConflict {
+-		// Get the subscriber from the DB by their email.
+-		sub, err := a.core.GetSubscriber(0, "", req.Email)
+-		if err != nil {
+-			return false, err
+-		}
+-
+-		// Update the subscriber's subscriptions in the DB.
+-		_, hasOptin, err := a.core.UpdateSubscriberWithLists(sub.ID, sub, nil, listUUIDs, false, false, true, nil, true)
+-		if err == nil {
+-			return hasOptin, nil
+-		}
+-		lastErr = err
+-	}
+-
+-	// Something else went wrong.
+-	if e, ok := lastErr.(*echo.HTTPError); ok {
+-		return false, echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s", e.Message))
+-	}
+-	return false, echo.NewHTTPError(http.StatusInternalServerError, a.i18n.T("public.errorProcessingRequest"))
++	return a.core.SubscribePublic(req.Email, req.Name, req.FormListUUIDs)
+ }
+diff --git a/internal/core/subscribers.go b/internal/core/subscribers.go
+index 32e497b..139b992 100644
+--- a/internal/core/subscribers.go
++++ b/internal/core/subscribers.go
+@@ -356,38 +356,52 @@ func (c *Core) InsertSubscriber(sub models.Subscriber, listIDs []int, listUUIDs
+ 	return out, hasOptin, nil
+ }
+ 
+-// UpdateSubscriber updates a subscriber's properties.
+-func (c *Core) UpdateSubscriber(id int, sub models.Subscriber) (models.Subscriber, error) {
+-	// Format raw JSON attributes.
+-	attribs := []byte("{}")
+-	if len(sub.Attribs) > 0 {
+-		if b, err := json.Marshal(sub.Attribs); err != nil {
+-			return models.Subscriber{}, echo.NewHTTPError(http.StatusInternalServerError,
+-				c.i18n.Ts("globals.messages.errorUpdating",
+-					"name", "{globals.terms.subscriber}", "error", err.Error()))
+-		} else {
+-			attribs = b
+-		}
++// UpdatePublicSubscriberName changes only the name authorized by the public preference form.
++func (c *Core) UpdatePublicSubscriberName(subUUID, name string) (int, error) {
++	var id int
++	if err := c.q.UpdatePublicSubscriberName.Get(&id, subUUID, name); err != nil {
++		c.log.Printf("error updating subscriber name: %v", err)
++		return 0, echo.NewHTTPError(http.StatusInternalServerError,
++			c.i18n.T("public.errorProcessingRequest"))
+ 	}
++	return id, nil
++}
+ 
+-	_, err := c.q.UpdateSubscriber.Exec(id,
+-		sub.Email,
+-		strings.TrimSpace(sub.Name),
+-		sub.Status,
+-		json.RawMessage(attribs),
+-	)
++// SubscribePublic adds only missing memberships to selected, active public lists.
++func (c *Core) SubscribePublic(email, name string, listUUIDs []string) (bool, error) {
++	uuid, err := uuid.NewV4()
+ 	if err != nil {
+-		c.log.Printf("error updating subscriber: %v", err)
+-		return models.Subscriber{}, echo.NewHTTPError(http.StatusInternalServerError,
+-			c.i18n.Ts("globals.messages.errorUpdating", "name", "{globals.terms.subscriber}", "error", pqErrMsg(err)))
++		c.log.Printf("error generating UUID: %v", err)
++		return false, echo.NewHTTPError(http.StatusInternalServerError, c.i18n.T("public.errorProcessingRequest"))
++	}
++	var result struct {
++		ID      int           `db:"id"`
++		ListIDs pq.Int64Array `db:"list_ids"`
++	}
++	if err := c.q.SubscribePublic.Get(&result, uuid.String(), email, name, pq.Array(listUUIDs)); err != nil {
++		if err == sql.ErrNoRows {
++			return false, nil
++		}
++		c.log.Printf("error processing public subscription: %v", err)
++		return false, echo.NewHTTPError(http.StatusInternalServerError, c.i18n.T("public.errorProcessingRequest"))
++	}
++	if !c.consts.SendOptinConfirmation || len(result.ListIDs) == 0 {
++		return false, nil
+ 	}
+ 
+-	out, err := c.GetSubscriber(sub.ID, "", sub.Email)
++	sub, err := c.GetSubscriber(result.ID, "", "")
+ 	if err != nil {
+-		return models.Subscriber{}, err
++		return false, err
+ 	}
+-
+-	return out, nil
++	if sub.Status != models.SubscriberStatusEnabled || !strings.EqualFold(sub.Email, email) {
++		return false, nil
++	}
++	listIDs := make([]int, 0, len(result.ListIDs))
++	for _, id := range result.ListIDs {
++		listIDs = append(listIDs, int(id))
++	}
++	num, err := c.h.SendOptinConfirmation(sub, listIDs)
++	return num > 0, err
+ }
+ 
+ // UpdateSubscriberWithLists updates a subscriber's properties.
+diff --git a/models/queries.go b/models/queries.go
+index dcb5d97..f071a02 100644
+--- a/models/queries.go
++++ b/models/queries.go
+@@ -23,7 +23,8 @@ type Queries struct {
+ 	GetSubscriberLists              *sqlx.Stmt `query:"get-subscriber-lists"`
+ 	GetSubscriptions                *sqlx.Stmt `query:"get-subscriptions"`
+ 	GetSubscriberListsLazy          *sqlx.Stmt `query:"get-subscriber-lists-lazy"`
+-	UpdateSubscriber                *sqlx.Stmt `query:"update-subscriber"`
++	UpdatePublicSubscriberName      *sqlx.Stmt `query:"update-public-subscriber-name"`
++	SubscribePublic                 *sqlx.Stmt `query:"subscribe-public"`
+ 	UpdateSubscriberWithLists       *sqlx.Stmt `query:"update-subscriber-with-lists"`
+ 	BlocklistSubscribers            *sqlx.Stmt `query:"blocklist-subscribers"`
+ 	AddSubscribersToLists           *sqlx.Stmt `query:"add-subscribers-to-lists"`
+diff --git a/queries/subscribers.sql b/queries/subscribers.sql
+index f8379f9..51a4e90 100644
+--- a/queries/subscribers.sql
++++ b/queries/subscribers.sql
+@@ -148,14 +148,37 @@ WITH sub AS (
+ UPDATE subscriber_lists SET status='unsubscribed', updated_at=NOW()
+     WHERE subscriber_id = (SELECT id FROM sub);
+ 
+--- name: update-subscriber
+-UPDATE subscribers SET
+-    email=(CASE WHEN $2 != '' THEN $2 ELSE email END),
+-    name=(CASE WHEN $3 != '' THEN $3 ELSE name END),
+-    status=(CASE WHEN $4 != '' THEN $4::subscriber_status ELSE status END),
+-    attribs=(CASE WHEN $5 != '' THEN $5::JSONB ELSE attribs END),
+-    updated_at=NOW()
+-WHERE id = $1;
++-- name: update-public-subscriber-name
++UPDATE subscribers SET name=$2, updated_at=NOW() WHERE uuid=$1::UUID RETURNING id;
++
++-- name: subscribe-public
++WITH publicLists AS MATERIALIZED (
++    SELECT id FROM lists WHERE uuid=ANY($4::UUID[]) AND type='public' AND status='active'
++    FOR SHARE
++),
++sub AS (
++    INSERT INTO subscribers AS existing (uuid, email, name, status)
++    SELECT $1, $2, $3, 'enabled' WHERE EXISTS (SELECT 1 FROM publicLists)
++    -- The conflict branch locks the current subscriber and rechecks suppression.
++    -- An existing profile is left intact, including its address and status.
++    ON CONFLICT (LOWER(email)) DO UPDATE SET name=existing.name WHERE existing.status='enabled'
++    RETURNING id
++),
++added AS (
++    INSERT INTO subscriber_lists (subscriber_id, list_id, status)
++    SELECT sub.id, publicLists.id, 'unconfirmed' FROM sub CROSS JOIN publicLists
++    ON CONFLICT (subscriber_id, list_id) DO NOTHING
++    RETURNING list_id
++),
++pending AS (
++    SELECT list_id FROM added
++    UNION
++    SELECT sl.list_id FROM subscriber_lists sl
++    JOIN sub ON sl.subscriber_id=sub.id
++    JOIN publicLists ON sl.list_id=publicLists.id
++    WHERE sl.status='unconfirmed'
++)
++SELECT sub.id, ARRAY(SELECT list_id FROM pending) AS list_ids FROM sub;
+ 
+ -- name: update-subscriber-with-lists
+ -- Updates a subscriber's data, and given a list of list_ids, inserts subscriptions

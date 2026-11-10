@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
-  "generated_at": "2026-11-05T18:52:25+00:00",
+  "generated_at": "2026-11-10T22:52:39+00:00",
   "issues": {
     "programme/integrations": {
       "number": 7,
@@ -5462,6 +5462,12 @@
       "id": 6229197220,
       "node_id": "I_kwDOVcNfnM8AAAABc0oBpA",
       "url": "https://github.com/KhademOHAli1/warpdrive/issues/989"
+    },
+    "integration/newsletter-campaign-foundation": {
+      "number": 1011,
+      "id": 6317533144,
+      "node_id": "I_kwDOVcNfnM8AAAABeI3n2A",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/1011"
     }
   },
   "sources": [

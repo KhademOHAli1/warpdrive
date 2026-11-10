@@ -1,10 +1,18 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { env } from "@/config/env";
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type Options = { body?: unknown; query?: URLSearchParams };
 
 const maxResponseBytes = 8 * 1024 * 1024;
+const consentContract = z.object({
+  consent: z.literal(2),
+  dispatch: z.literal(1),
+  listConsentMode: z.literal(1),
+  publicSubscriberUpdate: z.literal(1),
+  campaignRevision: z.literal(1),
+});
 
 export class NewsletterConnectionError extends Error {
   constructor(readonly uncertain: boolean) {
@@ -41,14 +49,23 @@ function requestBody(body: unknown, headers: Headers): BodyInit | undefined {
 
 export class ListmonkClient {
   private readonly authorization: string;
+  private consentVerification: Promise<boolean> | undefined;
 
   constructor(
     private readonly origin: string,
     username: string,
     token: string,
     private readonly signal: AbortSignal,
+    private readonly onMutationDispatch?: () => void,
   ) {
     this.authorization = `Basic ${Buffer.from(`${username}:${token}`).toString("base64")}`;
+  }
+
+  hasConsentContract(): Promise<boolean> {
+    this.consentVerification ??= this.json("GET", "/api/warpdrive-capabilities")
+      .then((data) => consentContract.safeParse(data).success)
+      .catch(() => false);
+    return this.consentVerification;
   }
 
   private async request(method: Method, path: string, options: Options): Promise<string> {
@@ -56,11 +73,19 @@ export class ListmonkClient {
     if (!/^\/api\/[a-zA-Z0-9_./-]+$/.test(path) || path.split("/").includes("..")) {
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
     }
+    if (method !== "GET" && !(await this.hasConsentContract())) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "Connect a verified Warpdrive newsletter engine to make changes.",
+      });
+    }
     const url = new URL(path, this.origin);
     if (options.query) url.search = options.query.toString();
     const headers = new Headers({ authorization: this.authorization });
     const body = requestBody(options.body, headers);
     let response: Response;
+    this.signal.throwIfAborted();
+    if (method !== "GET") this.onMutationDispatch?.();
     try {
       response = await fetch(url, {
         method,
@@ -123,7 +148,10 @@ export function newsletterConfigured(): boolean {
   return env.NEWSLETTER_BASE_URL !== "";
 }
 
-export function createListmonkClient(signal: AbortSignal): ListmonkClient {
+export function createListmonkClient(
+  signal: AbortSignal,
+  onMutationDispatch?: () => void,
+): ListmonkClient {
   if (!newsletterConfigured()) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
@@ -135,5 +163,6 @@ export function createListmonkClient(signal: AbortSignal): ListmonkClient {
     env.NEWSLETTER_API_USER,
     env.NEWSLETTER_API_TOKEN,
     signal,
+    onMutationDispatch,
   );
 }

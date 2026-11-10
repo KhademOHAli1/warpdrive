@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
-import { currentNativeActor } from "@/features/auth/currentNativeActor";
+import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { recordAudit } from "@/features/identity/audit";
 import type { AppContext } from "@/server/trpc/context";
@@ -11,30 +11,47 @@ import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { settingsReads, settingsWrites } from "./admin/operations";
 import { audienceReads, audienceWrites } from "./audience/operations";
 import { campaignReads, campaignWrites } from "./campaigns/operations";
-import {
-  createListmonkClient,
-  NewsletterConnectionError,
-  newsletterConfigured,
-} from "./listmonkClient";
+import { createListmonkClient, newsletterConfigured } from "./listmonkClient";
 import { defineLocalOperation, type NewsletterExecution } from "./operation";
+import {
+  admitNewsletterReceipt,
+  finishNewsletterReceipt,
+  newsletterIntent,
+  newsletterResolutionSchema,
+  newsletterUnconfirmed,
+  projectNewsletterReceipt,
+  readNewsletterReceipt,
+  replayNewsletterResult,
+  resolveNewsletterReceipt,
+} from "./operationReceipts";
+import { needsNewsletterReceipt } from "./operationReceiptsPolicy";
 
 const status = defineLocalOperation(z.strictObject({}), async (_input, context) => {
   let connected = false;
+  let consentVerified = false;
   if (context.configured) {
     try {
       const client = createListmonkClient(context.signal);
       connected = (await client.json("GET", "/api/health")) === true;
+      consentVerified = connected && (await client.hasConsentContract());
     } catch {
       // Project service state without disclosing its URL, credentials, or raw diagnostics.
     }
   }
-  return { configured: context.configured, connected, deliveryEnabled: context.deliveryEnabled };
+  return {
+    configured: context.configured,
+    connected,
+    consentVerified,
+    deliveryEnabled: context.deliveryEnabled && consentVerified,
+  };
 });
 
 const reads = new Map(
   Object.entries({ "system.status": status, ...campaignReads, ...audienceReads, ...settingsReads }),
 );
 const writes = new Map(Object.entries({ ...campaignWrites, ...audienceWrites, ...settingsWrites }));
+
+const operationId = z.uuid().transform((value) => value.toLowerCase());
 
 const command = z.strictObject({
   operation: z
@@ -69,18 +86,30 @@ function execution(ctx: AppContext, requestSignal: AbortSignal | undefined): New
   };
 }
 
-function publicError(error: unknown, unknownWrite = false): TRPCError {
-  if (unknownWrite) {
-    return new TRPCError({
-      code: "BAD_GATEWAY",
-      message: "The campaign service could not confirm the result. Refresh before trying again.",
-    });
-  }
+function publicError(error: unknown): TRPCError {
   if (error instanceof TRPCError) return error;
   return new TRPCError({
     code: "SERVICE_UNAVAILABLE",
     message: "The campaign service is unavailable.",
   });
+}
+
+async function withNewsletterActor<T>(
+  context: NewsletterExecution,
+  session: NativeSessionRef,
+  run: (current: NewsletterExecution) => Promise<T>,
+): Promise<T> {
+  try {
+    return await withCurrentAuthority(context.db, "read", context.signal, async (tx) => {
+      const current = await currentNativeActor(tx, session, context.signal);
+      if (current?.actor.type !== "admin" || current.actor.id !== context.actor.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return run({ ...context, db: tx, actor: current.actor });
+    });
+  } catch (error) {
+    throw publicError(error);
+  }
 }
 
 async function audit(
@@ -114,35 +143,93 @@ export const newsletterRouter = router({
       throw publicError(error);
     }
   }),
+  receipt: protectedProcedure
+    .input(z.strictObject({ operationId }))
+    .query(async ({ ctx, input, signal }) => {
+      const context = execution(ctx, signal);
+      return withNewsletterActor(context, ctx.session, (current) =>
+        readNewsletterReceipt(current.db, {
+          actorId: current.actor.id,
+          operationId: input.operationId,
+        }),
+      );
+    }),
+  resolveReceipt: protectedProcedure
+    .input(
+      newsletterResolutionSchema.extend({ operationId, csrfToken: z.string().max(128).nullable() }),
+    )
+    .mutation(async ({ ctx, input, signal }) => {
+      const context = execution(ctx, signal);
+      if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+      return withNewsletterActor(context, ctx.session, async (current) => {
+        const key = { actorId: current.actor.id, operationId: input.operationId };
+        const { receipt, recorded } = await resolveNewsletterReceipt(current.db, key, input);
+        if (recorded) await audit(current, "operations.resolve", key.operationId, "succeeded");
+        return receipt;
+      });
+    }),
   write: protectedProcedure
-    .input(command.extend({ csrfToken: z.string().max(128).nullable() }))
+    .input(
+      command.extend({
+        operationId: operationId.optional(),
+        csrfToken: z.string().max(128).nullable(),
+      }),
+    )
     .mutation(async ({ ctx, input, signal }) => {
       const context = execution(ctx, signal);
       if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
       const operation = writes.get(input.operation);
       if (!operation) throw new TRPCError({ code: "NOT_FOUND" });
-      const correlationId = randomUUID();
-      await withCurrentAuthority(context.db, "read", context.signal, async (tx) => {
-        const current = await currentNativeActor(tx, ctx.session, context.signal);
-        if (current?.actor.type !== "admin" || current.actor.id !== context.actor.id) {
-          throw new TRPCError({ code: "FORBIDDEN" });
-        }
-        await audit({ ...context, db: tx }, input.operation, correlationId, "requested");
+      const durable = needsNewsletterReceipt(input.operation);
+      if (durable && input.operationId === undefined) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A campaign operation ID is required.",
+        });
+      }
+      const correlationId = input.operationId ?? randomUUID();
+      const key = { actorId: context.actor.id, operationId: correlationId };
+      const dispatch = { started: false };
+      const prepared = operation.prepare(input.input, {
+        ...context,
+        onMutationDispatch: () => {
+          dispatch.started = true;
+        },
       });
-      context.signal.throwIfAborted();
+      const intent = durable ? newsletterIntent(key, input.operation, prepared.input) : null;
+      const admission = await withNewsletterActor(context, ctx.session, async (current) => {
+        const receipt = intent === null ? null : await admitNewsletterReceipt(current.db, intent);
+        if (receipt?.admitted !== false) {
+          await audit(current, input.operation, correlationId, "requested");
+        }
+        return receipt;
+      });
+      if (admission?.admitted === false) {
+        return replayNewsletterResult(admission.state, admission.result);
+      }
+
       let result: unknown;
       try {
-        result = await operation.run(input.input, context);
+        context.signal.throwIfAborted();
+        result = await prepared.execute();
+        if (durable) {
+          await finishNewsletterReceipt(context.db, key, {
+            state: "succeeded",
+            result: projectNewsletterReceipt(input.operation, result),
+          });
+        }
       } catch (error) {
-        const outcome =
-          error instanceof TRPCError ||
-          (error instanceof NewsletterConnectionError && !error.uncertain)
-            ? "failed"
-            : "unknown";
-        await audit(context, input.operation, correlationId, outcome).catch(() => undefined);
-        throw publicError(error, outcome === "unknown");
+        // Any exception after a remote mutation was dispatched is ambiguous, including
+        // later validation, subsequent reads, and loss of the local finalization response.
+        const state = durable && dispatch.started ? "unknown" : "failed";
+        if (durable) {
+          await finishNewsletterReceipt(context.db, key, { state, result: null }).catch(
+            () => undefined,
+          );
+        }
+        await audit(context, input.operation, correlationId, state).catch(() => undefined);
+        throw state === "unknown" ? newsletterUnconfirmed() : publicError(error);
       }
-      // The initial receipt survives an audit storage failure after the upstream accepted the write.
       await audit(context, input.operation, correlationId, "succeeded").catch(() => undefined);
       return result;
     }),

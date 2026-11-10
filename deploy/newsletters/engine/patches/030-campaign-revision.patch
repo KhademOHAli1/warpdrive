@@ -1,0 +1,158 @@
+diff --git a/cmd/campaigns.go b/cmd/campaigns.go
+index 2a272a6..a6d2437 100644
+--- a/cmd/campaigns.go
++++ b/cmd/campaigns.go
+@@ -35,10 +35,25 @@ type campReq struct {
+ 
+ 	MediaIDs []int `json:"media"`
+ 
++	ExpectedUpdatedAt json.RawMessage `json:"expected_updated_at"`
++
+ 	// This is only relevant to campaign test requests.
+ 	SubscriberEmails pq.StringArray `json:"subscribers"`
+ }
+ 
++// Parse a caller-reviewed revision, distinguishing an explicit null database value from
++// the omitted field used by the standalone Listmonk admin client.
++func requestedCampaignRevision(raw json.RawMessage) (*null.Time, error) {
++	if len(raw) == 0 {
++		return nil, nil
++	}
++	var revision null.Time
++	if err := json.Unmarshal(raw, &revision); err != nil {
++		return nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid expected campaign revision")
++	}
++	return &revision, nil
++}
++
+ // campContentReq wraps params coming from API requests for converting
+ // campaign content formats.
+ type campContentReq struct {
+@@ -341,7 +356,14 @@ func (a *App) UpdateCampaign(c echo.Context) error {
+ 		o = c
+ 	}
+ 
+-	out, err := a.core.UpdateCampaign(id, o.Campaign, o.ListIDs, o.MediaIDs)
++	revision, err := requestedCampaignRevision(o.ExpectedUpdatedAt)
++	if err != nil {
++		return err
++	}
++	if revision == nil {
++		revision = &cm.UpdatedAt
++	}
++	out, err := a.core.UpdateCampaign(id, o.Campaign, o.ListIDs, o.MediaIDs, *revision)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -360,14 +382,19 @@ func (a *App) UpdateCampaignStatus(c echo.Context) error {
+ 	}
+ 
+ 	req := struct {
+-		Status string `json:"status"`
++		Status            string          `json:"status"`
++		ExpectedUpdatedAt json.RawMessage `json:"expected_updated_at"`
+ 	}{}
+ 	if err := c.Bind(&req); err != nil {
+ 		return err
+ 	}
+ 
++	revision, err := requestedCampaignRevision(req.ExpectedUpdatedAt)
++	if err != nil {
++		return err
++	}
+ 	// Update the campaign status in the DB.
+-	out, err := a.core.UpdateCampaignStatus(id, req.Status)
++	out, err := a.core.UpdateCampaignStatus(id, req.Status, revision)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index b1804ee..3a3e768 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1}})
+ 		}, "settings:get"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+ 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
+diff --git a/internal/core/campaigns.go b/internal/core/campaigns.go
+index 49f051c..416ae24 100644
+--- a/internal/core/campaigns.go
++++ b/internal/core/campaigns.go
+@@ -10,6 +10,7 @@ import (
+ 	"github.com/knadh/listmonk/models"
+ 	"github.com/labstack/echo/v4"
+ 	"github.com/lib/pq"
++	"gopkg.in/volatiletech/null.v6"
+ )
+ 
+ const (
+@@ -211,7 +212,7 @@ func (c *Core) CreateCampaign(o models.Campaign, listIDs []int, mediaIDs []int)
+ }
+ 
+ // UpdateCampaign updates a campaign.
+-func (c *Core) UpdateCampaign(id int, o models.Campaign, listIDs []int, mediaIDs []int) (models.Campaign, error) {
++func (c *Core) UpdateCampaign(id int, o models.Campaign, listIDs []int, mediaIDs []int, expectedRevision null.Time) (models.Campaign, error) {
+ 	var changed int
+ 	err := c.q.UpdateCampaign.Get(&changed, id,
+ 		o.Name,
+@@ -232,7 +233,8 @@ func (c *Core) UpdateCampaign(id int, o models.Campaign, listIDs []int, mediaIDs
+ 		o.ArchiveTemplateID,
+ 		o.ArchiveMeta,
+ 		pq.Array(mediaIDs),
+-		o.BodySource)
++		o.BodySource,
++		expectedRevision)
+ 	if err != nil {
+ 		c.log.Printf("error updating campaign: %v", err)
+ 		return models.Campaign{}, echo.NewHTTPError(http.StatusInternalServerError,
+@@ -252,7 +254,7 @@ func (c *Core) UpdateCampaign(id int, o models.Campaign, listIDs []int, mediaIDs
+ }
+ 
+ // UpdateCampaignStatus updates a campaign's status, eg: draft to running.
+-func (c *Core) UpdateCampaignStatus(id int, status string) (models.Campaign, error) {
++func (c *Core) UpdateCampaignStatus(id int, status string, expectedRevision *null.Time) (models.Campaign, error) {
+ 	cm, err := c.GetCampaign(id, "", "")
+ 	if err != nil {
+ 		return models.Campaign{}, err
+@@ -290,7 +292,13 @@ func (c *Core) UpdateCampaignStatus(id int, status string) (models.Campaign, err
+ 		return models.Campaign{}, echo.NewHTTPError(http.StatusBadRequest, errMsg)
+ 	}
+ 
+-	if err := c.q.UpdateCampaignStatusIfCurrent.Get(&cm, cm.ID, status, cm.Status, cm.UpdatedAt); err != nil {
++	// Batch progress changes updated_at while a campaign is running. An emergency stop
++	// with no caller revision compares status only; reviewed starts still compare the revision.
++	ignoreRevision := expectedRevision == nil && (status == models.CampaignStatusPaused || status == models.CampaignStatusCancelled)
++	if expectedRevision == nil {
++		expectedRevision = &cm.UpdatedAt
++	}
++	if err := c.q.UpdateCampaignStatusIfCurrent.Get(&cm, cm.ID, status, cm.Status, *expectedRevision, ignoreRevision); err != nil {
+ 		if err == sql.ErrNoRows {
+ 			return models.Campaign{}, echo.NewHTTPError(http.StatusConflict, "Campaign changed before the status update")
+ 		}
+diff --git a/queries/campaigns.sql b/queries/campaigns.sql
+index 0d4131f..cf913f0 100644
+--- a/queries/campaigns.sql
++++ b/queries/campaigns.sql
+@@ -442,6 +442,7 @@ WITH camp AS (
+         body_source=$20,
+         updated_at=NOW()
+     WHERE id = $1 AND status IN ('draft', 'scheduled', 'paused')
++      AND updated_at IS NOT DISTINCT FROM $21::TIMESTAMPTZ
+       AND (
+           (started_at IS NULL AND sent = 0)
+           OR ARRAY(
+@@ -498,7 +499,8 @@ WHERE id = $1 AND status = 'running';
+ UPDATE campaigns SET
+     status = CASE WHEN send_at > NOW() AND $2 = 'running' THEN 'scheduled' ELSE $2::campaign_status END,
+     updated_at = NOW()
+-WHERE id = $1 AND status = $3::campaign_status AND updated_at IS NOT DISTINCT FROM $4::TIMESTAMPTZ
++WHERE id = $1 AND status = $3::campaign_status
++  AND ($5::BOOLEAN OR updated_at IS NOT DISTINCT FROM $4::TIMESTAMPTZ)
+ RETURNING status, updated_at;
+ 
+ -- name: update-campaign-archive

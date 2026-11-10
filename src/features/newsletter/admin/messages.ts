@@ -48,11 +48,6 @@ const fields = {
     "Anmeldebestätigung per E-Mail senden",
     "ارسال ایمیل تأیید عضویت",
   ],
-  "app.show_optin_page": [
-    "Show confirmation page",
-    "Bestätigungsseite anzeigen",
-    "نمایش صفحه تأیید",
-  ],
   "app.enable_public_archive": ["Public archive", "Öffentliches Archiv", "بایگانی عمومی"],
   "app.enable_public_archive_rss_content": [
     "Archive content in RSS",

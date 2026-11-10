@@ -1,0 +1,131 @@
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -101,6 +101,9 @@
+ 		// API endpoints.
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
++		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1}})
++		}, "settings:get"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+ 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
+ 		g.GET("/api/dashboard/counts", a.GetDashboardCounts)
+--- a/cmd/public.go
++++ b/cmd/public.go
+@@ -366,7 +366,7 @@
+ 	}
+ 
+ 	// Get the list of subscription lists where the subscriber hasn't confirmed.
+-	lists, err := a.core.GetSubscriberLists(0, subUUID, nil, req.ListUUIDs, models.SubscriptionStatusUnconfirmed, "")
++	lists, err := a.core.GetSubscriberLists(0, subUUID, nil, req.ListUUIDs, models.SubscriptionStatusUnconfirmed, models.ListOptinDouble)
+ 	if err != nil {
+ 		return c.Render(http.StatusInternalServerError, tplMessage,
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.errorFetchingLists")))
+@@ -379,7 +379,7 @@
+ 	}
+ 
+ 	if confirm || !a.cfg.ShowOptinPage {
+-		return a.confirmOptinSubscription(c, subUUID, req.ListUUIDs, lists)
++		return a.confirmOptinSubscription(c, subUUID, lists)
+ 	}
+ 
+ 	var out optinTpl
+@@ -390,12 +390,11 @@
+ 	return c.Render(http.StatusOK, "optin", out)
+ }
+ 
+-func (a *App) confirmOptinSubscription(c echo.Context, subUUID string, listUUIDs []string, lists []models.List) error {
+-	if len(listUUIDs) == 0 {
+-		listUUIDs = make([]string, 0, len(lists))
+-		for _, l := range lists {
+-			listUUIDs = append(listUUIDs, l.UUID)
+-		}
++func (a *App) confirmOptinSubscription(c echo.Context, subUUID string, lists []models.List) error {
++	// Only pass memberships selected as pending double opt-in by OptinPage.
++	listUUIDs := make([]string, 0, len(lists))
++	for _, l := range lists {
++		listUUIDs = append(listUUIDs, l.UUID)
+ 	}
+ 
+ 	meta := models.JSON{}
+@@ -407,10 +406,16 @@
+ 		}
+ 	}
+ 
+-	if err := a.core.ConfirmOptionSubscription(subUUID, listUUIDs, meta); err != nil {
++	confirmed, err := a.core.ConfirmOptionSubscription(subUUID, listUUIDs, meta)
++	if err != nil {
+ 		a.log.Printf("error confirming opt-in subscription: %v", err)
+ 		return c.Render(http.StatusInternalServerError, tplMessage,
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.errorProcessingRequest")))
++	}
++
++	if confirmed == 0 {
++		return c.Render(http.StatusOK, tplMessage,
++			makeMsgTpl(a.i18n.T("public.noSubTitle"), "", a.i18n.Ts("public.noSubInfo")))
+ 	}
+ 
+ 	return c.Render(http.StatusOK, tplMessage,
+--- a/internal/core/subscribers.go
++++ b/internal/core/subscribers.go
+@@ -509,19 +509,20 @@
+ 	return nil
+ }
+ 
+-// ConfirmOptionSubscription confirms a subscriber's optin subscription.
+-func (c *Core) ConfirmOptionSubscription(subUUID string, listUUIDs []string, meta models.JSON) error {
++// ConfirmOptionSubscription confirms pending opt-in memberships and returns their count.
++func (c *Core) ConfirmOptionSubscription(subUUID string, listUUIDs []string, meta models.JSON) (int64, error) {
+ 	if meta == nil {
+ 		meta = models.JSON{}
+ 	}
+ 
+-	if _, err := c.q.ConfirmSubscriptionOptin.Exec(subUUID, pq.Array(listUUIDs), meta); err != nil {
++	result, err := c.q.ConfirmSubscriptionOptin.Exec(subUUID, pq.Array(listUUIDs), meta)
++	if err != nil {
+ 		c.log.Printf("error confirming subscription: %v", err)
+-		return echo.NewHTTPError(http.StatusInternalServerError,
++		return 0, echo.NewHTTPError(http.StatusInternalServerError,
+ 			c.i18n.Ts("globals.messages.errorUpdating", "name", "{globals.terms.subscribers}", "error", pqErrMsg(err)))
+ 	}
+ 
+-	return nil
++	return result.RowsAffected()
+ }
+ 
+ // DeleteSubscriberBounces deletes the given list of subscribers.
+--- a/queries/subscribers.sql
++++ b/queries/subscribers.sql
+@@ -229,14 +229,18 @@
+     WHERE (subscriber_id, list_id) = ANY(SELECT a, b FROM UNNEST($1::INT[]) a, UNNEST($2::INT[]) b);
+ 
+ -- name: confirm-subscription-optin
+-WITH subID AS (
+-    SELECT id FROM subscribers WHERE uuid = $1::UUID
++WITH eligibleSubscriber AS MATERIALIZED (
++    -- Serialize confirmation with changes to the subscriber's global status.
++    SELECT id FROM subscribers WHERE uuid = $1::UUID AND status = 'enabled'
++    FOR NO KEY UPDATE
+ ),
+ listIDs AS (
+-    SELECT id FROM lists WHERE uuid = ANY($2::UUID[])
++    SELECT id FROM lists WHERE uuid = ANY($2::UUID[]) AND optin = 'double'
+ )
+ UPDATE subscriber_lists SET status='confirmed', meta=meta || $3, updated_at=NOW()
+-    WHERE subscriber_id = (SELECT id FROM subID) AND list_id = ANY(SELECT id FROM listIDs);
++    WHERE subscriber_id = (SELECT id FROM eligibleSubscriber)
++      AND list_id = ANY(SELECT id FROM listIDs)
++      AND status = 'unconfirmed';
+ 
+ -- name: unsubscribe-subscribers-from-lists
+ WITH listIDs AS (
+--- a/static/public/templates/index.html
++++ b/static/public/templates/index.html
+@@ -42,6 +42,7 @@
+ 	
+ 	<footer class="container">
+ 		{{ L.T "public.poweredBy" }} <a target="_blank" rel="noreferrer" href="https://listmonk.app">listmonk</a>
++		· <a href="/public/static/warpdrive-engine-source.tar.gz">Source code</a>
+ 	</footer>
+ </body>
+ </html>

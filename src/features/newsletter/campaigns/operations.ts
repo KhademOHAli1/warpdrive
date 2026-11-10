@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import sharp from "sharp";
 import { z } from "zod";
+import { env } from "@/config/env";
 import { defineOperation } from "@/features/newsletter/operation";
 import {
   analyticsLink,
@@ -21,7 +22,6 @@ import {
   pageResponse,
   templateFields,
   templateItem,
-  transitionTargets,
 } from "./model";
 
 function queryPage(input: { page: number; search: string }) {
@@ -38,6 +38,30 @@ function requireState(condition: boolean) {
     });
 }
 
+function dispatchStarted(campaign: { started_at?: string | null; sent: number }) {
+  return campaign.started_at != null || campaign.sent > 0;
+}
+
+function sameAudience(previous: { id: number | null }[], requested: number[]) {
+  const saved = new Set(previous.flatMap(({ id }) => (id === null ? [] : [id])));
+  const selected = new Set(requested);
+  return saved.size === selected.size && [...saved].every((id) => selected.has(id));
+}
+
+function checkRecipientHeaders(headers: Record<string, string>[] = []) {
+  for (const header of headers) {
+    for (const key of Object.keys(header)) {
+      const name = key.toLowerCase();
+      if (name === "to" || name === "cc" || name === "bcc" || name.startsWith("resent-")) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Campaign recipients are selected through lists. Remove recipient headers.",
+        });
+      }
+    }
+  }
+}
+
 const campaignPage = pageResponse(campaign);
 const mediaPage = pageResponse(mediaItem);
 const testCandidates = pageResponse(z.object({ email: z.string(), status: z.string() }));
@@ -47,6 +71,11 @@ const templateList = z
   .transform((rows) => rows ?? []);
 const confirmed = z.literal(true);
 const confirmedId = idInput.extend({ confirmed });
+const revision = z.iso.datetime({ offset: true }).nullable();
+const campaignStatusChange = z.union([
+  confirmedId.extend({ status: z.enum(["running", "scheduled"]), expectedUpdatedAt: revision }),
+  confirmedId.extend({ status: z.enum(["draft", "paused", "cancelled"]) }),
+]);
 const dateRange = z
   .object({
     ids: z.array(id).min(1).max(20),
@@ -177,28 +206,37 @@ export const campaignWrites = {
         body: new URLSearchParams({ template_type: input.type, body: input.body }),
       }),
   ),
-  "campaigns.create": defineOperation(campaignFields, async (client, input) =>
-    idInput.strip().parse(
+  "campaigns.create": defineOperation(campaignFields, async (client, input) => {
+    checkRecipientHeaders(input.headers);
+    return idInput.strip().parse(
       await client.json("POST", "/api/campaigns", {
         body: {
           ...input,
           type: "regular",
         },
       }),
-    ),
-  ),
+    );
+  }),
   "campaigns.update": defineOperation(
-    campaignFields.extend({ id, expectedUpdatedAt: z.string().nullish() }),
+    campaignFields.extend({ id, expectedUpdatedAt: revision }),
     async (client, { id: campaignId, expectedUpdatedAt, ...input }) => {
       const path = `/api/campaigns/${campaignId}` as const;
       const current = campaign.parse(await client.json("GET", path));
       requireState(canEditCampaign(current.status));
-      requireState(expectedUpdatedAt === undefined || current.updated_at === expectedUpdatedAt);
+      requireState(current.updated_at === expectedUpdatedAt);
+      if (dispatchStarted(current) && !sameAudience(current.lists, input.lists)) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "The campaign's original audience is retained for recipient unsubscribe links.",
+        });
+      }
+      checkRecipientHeaders(input.headers);
       return campaign.parse(
         await client.json("PUT", path, {
           body: {
             ...input,
             type: current.type,
+            expected_updated_at: expectedUpdatedAt,
             media:
               input.media ?? current.media.flatMap((item) => (item.id === null ? [] : [item.id])),
           },
@@ -206,36 +244,39 @@ export const campaignWrites = {
       );
     },
   ),
-  "campaigns.status": defineOperation(
-    confirmedId.extend({
-      status: z.enum(transitionTargets),
-      expectedUpdatedAt: z.string().nullish(),
-    }),
-    async (client, input, context) => {
-      if (input.status === "running" || input.status === "scheduled") context.requireDelivery();
-      const path = `/api/campaigns/${input.id}` as const;
-      const current = campaign.parse(await client.json("GET", path));
-      requireState(campaignTransitions(current).includes(input.status));
-      if (input.status === "running" || input.status === "scheduled") {
-        requireState(
-          input.expectedUpdatedAt === undefined || input.expectedUpdatedAt === current.updated_at,
-        );
-      }
-      return campaign.parse(
-        await client.json("PUT", `${path}/status`, { body: { status: input.status } }),
-      );
-    },
-  ),
+  "campaigns.status": defineOperation(campaignStatusChange, async (client, input, context) => {
+    const startsDelivery = "expectedUpdatedAt" in input;
+    if (startsDelivery) context.requireDelivery();
+    const path = `/api/campaigns/${input.id}` as const;
+    const current = campaign.parse(await client.json("GET", path));
+    requireState(campaignTransitions(current).includes(input.status));
+    if (startsDelivery) requireState(input.expectedUpdatedAt === current.updated_at);
+    return campaign.parse(
+      await client.json("PUT", `${path}/status`, {
+        body: {
+          status: input.status,
+          ...(startsDelivery ? { expected_updated_at: input.expectedUpdatedAt } : {}),
+        },
+      }),
+    );
+  }),
   "campaigns.test": defineOperation(
     confirmedId.extend({
       subscribers: z.array(z.email().max(254)).min(1).max(10),
     }),
     async (client, input, context) => {
       context.requireDelivery();
+      const subscribers = [...new Set(input.subscribers.map((address) => address.toLowerCase()))];
+      const approved = new Set(env.NEWSLETTER_TEST_RECIPIENTS);
+      if (!subscribers.every((address) => approved.has(address))) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Choose test addresses approved for this installation.",
+        });
+      }
       const path = `/api/campaigns/${input.id}` as const;
       const current = campaign.parse(await client.json("GET", path));
       requireState(canEditCampaign(current.status));
-      const subscribers = [...new Set(input.subscribers.map((address) => address.toLowerCase()))];
       const eligible = await Promise.all(
         subscribers.map(async (address) => {
           // Listmonk applies search as a PostgreSQL regular expression.
@@ -280,6 +321,12 @@ export const campaignWrites = {
     const path = `/api/campaigns/${input.id}` as const;
     const current = campaign.parse(await client.json("GET", path));
     requireState(current.status !== "running" && current.status !== "scheduled");
+    if (dispatchStarted(current)) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "This campaign is retained for historical recipient unsubscribe links.",
+      });
+    }
     return client.json("DELETE", path);
   }),
   "media.upload": defineOperation(upload, async (client, input) => {
