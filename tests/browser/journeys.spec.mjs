@@ -16,12 +16,16 @@ test.beforeEach(async ({ page }) => {
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await expect(page).not.toHaveURL(/\/login|\/auth\//);
-  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByRole("main", { name: "Board CI Pipeline", exact: true })).toBeVisible();
 });
 
 test("deal creation persists through a production-page reload", async ({ page }) => {
   await page.goto(pipeline);
-  await page.getByRole("button", { name: sales.deal_96653, exact: true }).click();
+  await page
+    .getByRole("main", { name: "Board CI Pipeline", exact: true })
+    .getByRole("status")
+    .getByRole("button", { name: sales.deal_96653, exact: true })
+    .click();
   const dialog = page.getByRole("dialog");
   await dialog
     .getByRole("textbox", { name: sales.deal_title_95b14, exact: true })

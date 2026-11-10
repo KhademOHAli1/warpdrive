@@ -41,6 +41,10 @@ audit is strict: every high/critical finding fails. The existing app/site/docs l
 have known findings; the first customer release remains blocked until those findings are
 resolved and its exact CI passes. No advisory is ignored to obtain a green release.
 
+Every selected publication plan must match the next-release version committed at its
+selected revision, so an alternate plan filename cannot reuse maintenance-mode audit
+success as strict release proof.
+
 The publication gate requires security and browser CI as well as the existing application
 and delivery jobs. It verifies the three managed CodeQL analyses and reads blocking
 code-scanning results at the selected immutable revision. An analysis job succeeding
