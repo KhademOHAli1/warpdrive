@@ -54,9 +54,11 @@ export function useCalendarEventEditor({
   onMarkedDone,
 }: CalendarEventDialogProps) {
   const preferences = useLocalePreferences();
-  const [zone, setZone] = useState(
-    editing?.authoredTimeZone ?? editing?.eventTimeZone ?? preferences.timeZone,
-  );
+  const initialZone =
+    editing?.reminder == null
+      ? (editing?.eventTimeZone ?? editing?.authoredTimeZone)
+      : (editing.authoredTimeZone ?? editing.eventTimeZone);
+  const [zone, setZone] = useState(initialZone ?? preferences.timeZone);
   const [advanced, setAdvanced] = useState<AdvancedCalendarDraft | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const onAdvancedChange = useCallback(
@@ -250,6 +252,7 @@ export function useCalendarEventEditor({
                   authoredTimeZone: zone,
                 }
               : {}),
+            ...(baseline.version === undefined ? {} : { expectedVersion: baseline.version }),
             expectedReminderGeneration: reminder.metadata?.generationId ?? null,
           },
         },
@@ -291,6 +294,7 @@ export function useCalendarEventEditor({
   return {
     preferences,
     advancedOpen,
+    advancedMounted: advancedOpen || advanced !== null,
     setAdvancedOpen,
     onAdvancedChange,
     setZone,

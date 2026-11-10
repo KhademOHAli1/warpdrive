@@ -72,6 +72,11 @@ beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.hasPointerCapture = vi.fn(() => false);
   Element.prototype.releasePointerCapture = vi.fn();
+  global.ResizeObserver = class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  };
 });
 beforeEach(() => {
   mocks.invalidate.mockImplementation(() => Promise.resolve());
@@ -300,3 +305,102 @@ it.each(["complete", "delete"] as const)(
     ).toHaveBeenCalledOnce();
   },
 );
+
+it.each([false, true])(
+  "retains and version-fences advanced-only event edits (collapse: %s)",
+  async (collapse) => {
+    open(stored);
+    fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
+    fireEvent.pointerDown(screen.getByRole("combobox", { name: "Visibility" }), {
+      button: 0,
+      ctrlKey: false,
+      pointerType: "mouse",
+    });
+    fireEvent.click(await screen.findByRole("option", { name: "Private" }));
+    if (collapse) {
+      fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
+      fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
+      expect(screen.getByRole("combobox", { name: "Visibility" })).toHaveTextContent("Private");
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mocks.editCalendarEventAction).toHaveBeenCalledWith(
+        {
+          v: 1,
+          expectedActorId: stored.assigneeId,
+          activity: expect.objectContaining({
+            id: stored.id,
+            eventVisibility: "private",
+            expectedVersion: 4,
+          }),
+        },
+        "csrf",
+      ),
+    );
+    expect(mocks.editCalendarEventAction.mock.calls[0]?.[0]?.activity).not.toHaveProperty(
+      "subject",
+    );
+  },
+);
+
+it("keeps legacy ownership usable after advanced settings are opened", async () => {
+  open({ ...stored, calendarId: null, eventTimeZone: null });
+  fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
+  fireEvent.change(screen.getByRole("textbox", { name: "Event title" }), {
+    target: { value: "Legacy title edit" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await waitFor(() =>
+    expect(mocks.editCalendarEventAction).toHaveBeenCalledWith(
+      {
+        v: 1,
+        expectedActorId: stored.assigneeId,
+        activity: expect.objectContaining({
+          id: stored.id,
+          subject: "Legacy title edit",
+          expectedVersion: 4,
+        }),
+      },
+      "csrf",
+    ),
+  );
+  const activity = mocks.editCalendarEventAction.mock.calls[0]?.[0]?.activity;
+  expect(activity).not.toHaveProperty("calendarId");
+  expect(activity).not.toHaveProperty("personalReminders");
+});
+
+it("persists the explicitly changed calendar event zone used by personal reminder planning", async () => {
+  open(stored);
+  fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
+  fireEvent.click(screen.getByRole("button", { name: "Event time zone: Europe/Berlin" }));
+  fireEvent.click(screen.getByLabelText("Event time zone"));
+  fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "Asia/Tehran" } });
+  fireEvent.click(await screen.findByRole("option", { name: "Asia/Tehran" }));
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await waitFor(() =>
+    expect(mocks.editCalendarEventAction).toHaveBeenCalledWith(
+      {
+        v: 1,
+        expectedActorId: stored.assigneeId,
+        activity: expect.objectContaining({
+          id: stored.id,
+          eventTimeZone: "Asia/Tehran",
+          authoredTimeZone: "Asia/Tehran",
+          expectedVersion: 4,
+        }),
+      },
+      "csrf",
+    ),
+  );
+});
+
+it("reopens a calendar-owned event in its explicit stored zone despite older unmanaged authored metadata", () => {
+  open({
+    ...stored,
+    eventTimeZone: "Asia/Tehran",
+    authoredTimeZone: "Europe/Berlin",
+    reminder: null,
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
+  expect(screen.getByRole("button", { name: "Event time zone: Asia/Tehran" })).toBeVisible();
+});

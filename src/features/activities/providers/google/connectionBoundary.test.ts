@@ -1,3 +1,15 @@
+import type { Db } from "@/db/client";
+
+// Application boundary substitution only; exact-session admission has real-PG regressions.
+vi.mock("./calendarDomainAuthority", () => ({
+  withCalendarDomainActor: <T>(
+    db: Db,
+    _session: unknown,
+    _signal: AbortSignal,
+    command: (db: Db) => Promise<T>,
+  ) => command(db),
+}));
+
 import { beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db/client";
 import type { AppContext } from "@/server/trpc/context";

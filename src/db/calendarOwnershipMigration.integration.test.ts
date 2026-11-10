@@ -1,7 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { assert, expect, it } from "vitest";
 import { applyMigrations } from "./migrate";
-import { freshMigrationDb, installPrefix, ledger } from "./migrationAdmission.test-helpers";
+import {
+  canonicalFolder,
+  freshMigrationDb,
+  installPrefix,
+  ledger,
+} from "./migrationAdmission.test-helpers";
+import { readCanonicalMigrations } from "./migrationAdmissionSource";
 import { seedUser } from "./testing/factories";
 
 it("upgrades populated 0110 without firing activity automation or changing native reminder intent", async () => {
@@ -85,7 +91,9 @@ it("upgrades populated 0110 without firing activity automation or changing nativ
       triggerState,
     );
     expect((await ledger(h)).slice(0, beforeLedger.length)).toEqual(beforeLedger);
-    expect(await ledger(h)).toHaveLength(112);
+    const canonical = await readCanonicalMigrations(canonicalFolder, signal);
+    assert(canonical.ok);
+    expect(await ledger(h)).toHaveLength(canonical.value.length);
     expect(await applyMigrations(h.db, signal)).toMatchObject({ ok: true });
     await h.pool.query("UPDATE activities SET subject='Explicit user edit' WHERE id=$1", [
       activityId,

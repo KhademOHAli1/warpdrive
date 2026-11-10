@@ -107,6 +107,20 @@ const base = z.object({
   DISABLE_UPDATE_CHECK: boolFromString.default(false),
 });
 
+function validateBillingEnvironment(v: ReturnType<typeof base.parse>, ctx: z.RefinementCtx): void {
+  try {
+    const billing = parseBillingConfig(v, v.BASE_URL);
+    if (billing !== null) new StripeGateway({ ...billing, signal: new AbortController().signal });
+  } catch {
+    ctx.addIssue({
+      code: "custom",
+      path: ["BILLING_ENABLED"],
+      message:
+        "Enabled billing requires valid merchant hosting, Stripe mode, prices, portal, included seats and secrets",
+    });
+  }
+}
+
 function calendarOAuthCredentialsPaired(value: {
   GOOGLE_CALENDAR_OAUTH_CLIENT_ID: string;
   GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET: string;
@@ -126,17 +140,7 @@ const schema = base.superRefine((v, ctx) => {
       message: "Calendar OAuth client ID and secret must both be configured or both unset",
     });
   }
-  try {
-    const billing = parseBillingConfig(v, v.BASE_URL);
-    if (billing !== null) new StripeGateway({ ...billing, signal: new AbortController().signal });
-  } catch {
-    ctx.addIssue({
-      code: "custom",
-      path: ["BILLING_ENABLED"],
-      message:
-        "Enabled billing requires valid merchant hosting, Stripe mode, prices, portal, included seats and secrets",
-    });
-  }
+  validateBillingEnvironment(v, ctx);
   if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

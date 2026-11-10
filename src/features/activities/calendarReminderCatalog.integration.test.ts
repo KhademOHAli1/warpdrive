@@ -41,7 +41,8 @@ async function caller(user: HydratedActor, queries: string[] = []) {
     },
   });
   const session = await createSession(ctx.db, user.id, signal());
-  if (!session.ok) throw session.error;
+  if (!session.ok)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Native catalog session fixture missing");
   return calendarsRouter.createCaller({
     db,
     actor: user,

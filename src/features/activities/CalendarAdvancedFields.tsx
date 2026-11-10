@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarEventOwnership } from "./CalendarEventOwnership";
 import { CalendarEventTimeZone } from "./CalendarEventTimeZone";
 import { CalendarReminderEditor } from "./CalendarReminderEditor";
@@ -27,6 +27,8 @@ export function CalendarAdvancedFields({
   onTimeZone: (value: string) => void;
   onChange: (value: AdvancedCalendarDraft) => void;
 }): React.ReactNode {
+  const [initialTimeZone] = useState(timeZone);
+  const zoneChanged = timeZone !== initialTimeZone;
   const calendar = useCalendarEventSettings(editing);
   const personal = useCalendarPersonalReminderDraft(
     editing,
@@ -36,6 +38,7 @@ export function CalendarAdvancedFields({
   const calendarReminders = editing === undefined || editing.reminder == null;
   const value = useMemo<AdvancedCalendarDraft>(() => {
     const patch: Partial<ActivityUpdateInput> = {
+      ...(zoneChanged ? { eventTimeZone: timeZone } : {}),
       ...(editing === undefined
         ? {
             calendarId: calendar.settings.calendarId || undefined,
@@ -54,10 +57,13 @@ export function CalendarAdvancedFields({
     };
     return {
       patch,
-      valid: calendar.settings.calendarId !== "" && personal.valid,
-      changed: calendar.changed || personal.changed || personal.rawChanged,
+      valid:
+        (calendar.settings.calendarId !== "" ||
+          (editing !== undefined && editing.calendarId == null)) &&
+        personal.valid,
+      changed: calendar.changed || personal.changed || personal.rawChanged || zoneChanged,
     };
-  }, [editing, calendar, personal, calendarReminders]);
+  }, [editing, calendar, personal, calendarReminders, zoneChanged, timeZone]);
   const signature = JSON.stringify(value);
   const published = useRef<string | null>(null);
   useEffect(() => {

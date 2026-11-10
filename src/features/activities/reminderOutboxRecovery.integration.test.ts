@@ -8,6 +8,7 @@ import { seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { handleCalendarReminderJob as handleReminderJob } from "./calendarReminders";
+import { createCalendar } from "./calendars";
 import { dispatchReminderIntents } from "./reminderOutbox";
 import { completeActivity, createActivity } from "./repo";
 
@@ -37,12 +38,19 @@ async function fixture() {
   };
   const [type] = await ctx.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
   if (type === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "meeting seed absent");
+  const calendar = await createCalendar(
+    ctx.db,
+    actor,
+    { name: "Reminder owner", timeZone: "UTC" },
+    signal(),
+  );
+  if (!calendar.ok) throw calendar.error;
   const result = await createActivity(
     ctx.db,
     actor,
     {
       typeId: type.id,
-      personalReminders: { selection: { useDefault: true }, expectedRevision: 0 },
+      calendarId: calendar.value.id,
       subject: "بازیابی یادآوری / Wiederherstellung",
       dueAt: new Date(Date.now() + 5 * 60_000).toISOString(),
     },
