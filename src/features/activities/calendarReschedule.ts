@@ -2,10 +2,9 @@ import { and, eq, isNull } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { type Activity, activities } from "@/db/schema/activities";
-import { can } from "@/features/permissions/can";
-import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
+import { guardActivityMutation } from "./activityAccessGuard";
 import { updateActivity } from "./activityUpdate";
 import {
   calendarReschedulePatch,
@@ -15,7 +14,6 @@ import {
 import { type CalendarRescheduleValue, calendarRescheduleInput } from "./calendarRescheduleSchemas";
 import { verifyCalendarUndo } from "./calendarRescheduleUndo";
 import { readActivityReminderView } from "./reminderReadModel";
-import { resolveActivityVisibility } from "./visibility";
 
 function persistedSchedule(current: Activity): CalendarRescheduleValue {
   if (current.dueAt === null)
@@ -61,15 +59,12 @@ export async function rescheduleCalendarEvent(
       .select()
       .from(activities)
       .where(and(eq(activities.id, input.id), isNull(activities.deletedAt)))
-      .for("update");
+      .for("no key update");
     signal.throwIfAborted();
     if (current === undefined)
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "Activity not found"));
-    const visibility = await resolveActivityVisibility(tx, current, signal);
-    if (visibility === null || !canSee(actor, visibility))
-      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "Activity not found"));
-    if (!can(actor, "activity.edit", visibility))
-      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "Activity edit forbidden"));
+    const allowed = await guardActivityMutation(tx, actor, current, "activity.edit", signal);
+    if (!allowed.ok) return allowed;
     // Keep this comparison inside the row lock. Calling updateActivity alone after
     // an unlocked read would let a later drop overwrite an intervening move.
     if (!calendarScheduleMatches(current, input.expected))

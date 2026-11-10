@@ -9,6 +9,7 @@ import { setBoss } from "@/jobs/boss";
 import { makeTestDb } from "@/test/db";
 import { deleteActivity } from "./activityDelete";
 import { updateActivity } from "./activityUpdate";
+import { createCalendar } from "./calendars";
 import { completeActivity, createActivity } from "./repo";
 
 let ctx: Awaited<ReturnType<typeof makeTestDb>>;
@@ -36,13 +37,20 @@ async function event() {
   };
   const [type] = await ctx.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
   if (type === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "seed type missing");
+  const calendar = await createCalendar(
+    ctx.db,
+    actor,
+    { name: "Reminder owner", timeZone: "UTC" },
+    signal(),
+  );
+  if (!calendar.ok) throw calendar.error;
   const result = await createActivity(
     ctx.db,
     actor,
     {
       subject: "رویداد بدون صف / Neuer Termin",
       typeId: type.id,
-      personalReminders: { selection: { useDefault: true }, expectedRevision: 0 },
+      calendarId: calendar.value.id,
       dueAt: "2030-03-21T09:00:00Z",
     },
     signal(),

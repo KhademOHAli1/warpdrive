@@ -5,8 +5,10 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { EMAIL_NOTIFICATION_QUEUE, PGBOSS_QUEUE_CALENDAR_REMINDER } from "@/constants/jobNames";
 import { activities, activityTypes, calendarReminderIntents, notifications } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { handleCalendarReminderJob as handleReminderJob } from "./calendarReminders";
+import { createCalendar } from "./calendars";
 import { dispatchReminderIntents } from "./reminderOutbox";
 import { createActivity } from "./repo";
 
@@ -26,12 +28,26 @@ async function fixture() {
   const user = await seedUser(ctx.db, { isAdmin: true });
   const [type] = await ctx.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
   if (type === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "seed absent");
+  const actor: PermSetUser = {
+    id: user.id,
+    type: "admin",
+    isActive: true,
+    flags: new Set(),
+    groupIds: new Set<string>(),
+  };
+  const calendar = await createCalendar(
+    ctx.db,
+    actor,
+    { name: "Outbox owner", timeZone: "UTC" },
+    signal(),
+  );
+  if (!calendar.ok) throw calendar.error;
   const result = await createActivity(
     ctx.db,
-    { id: user.id, type: "admin", isActive: true, flags: new Set(), groupIds: new Set() },
+    actor,
     {
       typeId: type.id,
-      personalReminders: { selection: { useDefault: true }, expectedRevision: 0 },
+      calendarId: calendar.value.id,
       subject: "یادآوری / Erinnerung",
       dueAt: new Date(Date.now() + 5 * 60_000).toISOString(),
     },

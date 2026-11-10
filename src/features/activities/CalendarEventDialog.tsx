@@ -82,6 +82,7 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
   const {
     preferences,
     advancedOpen,
+    advancedMounted,
     setAdvancedOpen,
     onAdvancedChange,
     setZone,
@@ -264,14 +265,16 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
                   >
                     {t("settings.eventCalendar")}
                   </Button>
-                  {advancedOpen && (
-                    <CalendarAdvancedFields
-                      editing={props.editing}
-                      allDay={draft.startTime === ""}
-                      timeZone={zone}
-                      onTimeZone={setZone}
-                      onChange={onAdvancedChange}
-                    />
+                  {advancedMounted && (
+                    <div hidden={!advancedOpen}>
+                      <CalendarAdvancedFields
+                        editing={props.editing}
+                        allDay={draft.startTime === ""}
+                        timeZone={zone}
+                        onTimeZone={setZone}
+                        onChange={onAdvancedChange}
+                      />
+                    </div>
                   )}
                   <div className="border-t border-border/70 pt-4">
                     <CalendarEventDetails draft={draft} expanded={details} onChange={change} />

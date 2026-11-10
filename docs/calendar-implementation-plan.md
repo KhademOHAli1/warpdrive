@@ -1,8 +1,8 @@
 # Calendar workflow implementation
 
-Status: active private implementation in `/Users/ali/Developer/warpdrive-calendar`, detached at `2803183` plus preserved local edits. Settings owns integration and required main checks. The full roadmap remains open; private qualification is not main delivery, installed-upgrade proof or real-provider acceptance. Updated 2 November 2026.
+Status, 10 November 2026: the preserved local work is consolidated against current main in [the Calendar completion record](calendar-local-completion-2026-11-10.md). Earlier private ordinal, error-ID and qualification references below are historical; canonical Calendar DDL is forward migration 0111 after Workflow 0110. Source consolidation does not establish installed, live-provider or human acceptance.
 
-## Current evidence, 2 November 2026
+## Historical evidence, 2 November 2026
 
 The main-relative C-shortcut increment is Delivered as `a29c08c356af8a308056086ecbac98f2d70683e4`. Exact hosted CI `41365229340` passed all required jobs at 00:25:39 UTC on 2 November: 8,670 unit cases (3 skipped), 3,066 integration cases, full types/lint, application, all five worker bundles and sites. All thirteen shortcut component cases passed. This is source delivery; browser, installed-upgrade and provider acceptance remain open.
 

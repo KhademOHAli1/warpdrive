@@ -11,10 +11,7 @@ import { googleCalendarSelectionInput } from "./calendarBindingAccess";
 import { setGoogleCalendarSelection } from "./calendarBindings";
 import { discoverGoogleCalendarCatalog } from "./calendarCatalog";
 import { withCalendarDomainActor } from "./calendarDomainAuthority";
-import type {
-  GoogleCalendarCatalog,
-  GoogleCalendarSelection,
-} from "./catalogContracts";
+import type { GoogleCalendarCatalog, GoogleCalendarSelection } from "./catalogContracts";
 import { rethrowGoogleAbort } from "./errors";
 
 type CatalogActionResult<T> = { ok: true; data: T } | { ok: false; error: ClientError };

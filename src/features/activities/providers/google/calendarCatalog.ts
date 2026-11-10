@@ -57,7 +57,7 @@ export async function discoverGoogleCalendarCatalog(
         ? await publish(db)
         : await withCalendarDomainActor(db, options.nativeSession, signal, publish, {
             kind: "unauthorized",
-          } as CalendarCatalogError);
+          });
     if (!result.ok) await failCalendarCatalogDiscovery(db, run, result.error.kind, signal);
     return result;
   } catch (error) {
