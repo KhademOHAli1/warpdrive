@@ -143,15 +143,23 @@ describe("Agency project persistence constraints", () => {
     "preserves referenced staff and CRM records on hard-delete attempts",
     schemaCase(async (f) => {
       await insertProject(f);
+      // Supported PG versions report this named RESTRICT fence with either SQLSTATE.
+      const restrictViolation = expect.stringMatching(/^(?:23001|23503)$/u);
       await expect(
         f.db.pool.query("DELETE FROM organizations WHERE id=$1", [f.orgId]),
-      ).rejects.toMatchObject({ code: "23001" });
+      ).rejects.toMatchObject({
+        code: restrictViolation,
+        constraint: "agency_projects_org_id_fkey",
+      });
       expect(
         (await f.db.pool.query("SELECT id FROM organizations WHERE id=$1", [f.orgId])).rows,
       ).toEqual([{ id: f.orgId }]);
       await expect(
         f.db.pool.query("DELETE FROM users WHERE id=$1", [f.ownerId]),
-      ).rejects.toMatchObject({ code: "23001" });
+      ).rejects.toMatchObject({
+        code: restrictViolation,
+        constraint: "agency_projects_owner_user_id_fkey",
+      });
       expect((await f.db.pool.query("SELECT id FROM users WHERE id=$1", [f.ownerId])).rows).toEqual(
         [{ id: f.ownerId }],
       );

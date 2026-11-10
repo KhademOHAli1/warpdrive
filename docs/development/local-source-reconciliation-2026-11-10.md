@@ -31,3 +31,5 @@ This is source completion and integration of the audited local increment. It doe
 ## Final source inventory input basis
 
 Local regular-file read stalls prevented a complete live scan during the final OAuth error-boundary follow-up. The refreshed inventory uses a controlled reconstruction of the reviewed `2a77473b655606cebdb28ff710f03021b77c2407` Git tree, the two reviewed runtime-source edits read live, and 28 generated declarations read live. Its exact 3,269-path enumeration is retained. Substituting the original two files reproduced the previous source fingerprint exactly before the unchanged production inventory CLI accepted the updated snapshot: 3,278 declarations, zero missing or invalid entries. This is source-snapshot evidence and does not claim that every current working-tree byte was read successfully. Hosted configured qualification uses its own fresh checkout.
+
+A subsequent complete live inventory scan in the healthy local qualification checkout reproduced the refreshed report exactly. The configured unit targets also passed there without a discovery override.

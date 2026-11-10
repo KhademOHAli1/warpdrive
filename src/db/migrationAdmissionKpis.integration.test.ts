@@ -135,17 +135,13 @@ it("upgrades populated 0106 to 0107, preserving CRM, Goals and Company Work data
     const [team] = await h.db.insert(schema.teams).values({ name: randomUUID() }).returning();
     if (!deal || !type || !team) throw new Error("Populated upgrade fixture missing");
     await h.db.insert(schema.teamMembers).values({ teamId: team.id, userId: owner.id });
-    await h.db.insert(schema.activities).values({
-      typeId: type.id,
-      subject: "Retained civil date",
-      ownerId: owner.id,
-      assigneeId: owner.id,
-      dealId: deal.id,
-      allDay: true,
-      dueDate: "2026-11-01",
-      dueAt: new Date("2026-11-01T00:00:00Z"),
-      done: false,
-    });
+    // Seed only columns present at0106; the current model also includes later Calendar fields.
+    await h.pool.query(
+      `INSERT INTO activities
+        (type_id, subject, owner_id, assignee_id, deal_id, all_day, due_date, due_at, done)
+       VALUES ($1,$2,$3,$3,$4,true,'2026-11-01','2026-11-01T00:00:00Z',false)`,
+      [type.id, "Retained civil date", owner.id, deal.id],
+    );
     await h.db.insert(schema.goals).values({
       subject: "deal",
       action: "lost",
