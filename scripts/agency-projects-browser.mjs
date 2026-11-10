@@ -28,8 +28,8 @@ export async function seedAgencyBrowserFixture(client, password, flagKeys) {
       [id, email, name],
     );
     await client.query(
-      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-      [id, password],
+      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+      [id, id, password],
     );
   }
   await client.query(
