@@ -56,7 +56,12 @@ export function CalendarEventDescription({
         <RichTextBody
           ariaLabel={t("editor.description")}
           html={value}
-          onChange={onChange}
+          onChange={(html) => {
+            // TipTap publishes an empty paragraph on mount. Equivalent blank markup
+            // must not turn an untouched event into an unsaved edit.
+            if (isBlankHtml(value) && isBlankHtml(html)) return;
+            onChange(html);
+          }}
           frameClassName={formatting ? "border-0" : "border-0 [&_[role=toolbar]]:hidden"}
           contentClassName="min-h-20 px-2 py-3 [&_.ProseMirror]:min-h-20"
         />

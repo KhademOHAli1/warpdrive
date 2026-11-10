@@ -234,7 +234,7 @@ try {
   );
   await runCalendarInteractionsBrowserSmoke({ journey, login, catalog });
   const { runCalendarOwnershipBrowserSmoke } = await import("./calendar-ownership-browser.mjs");
-  await runCalendarOwnershipBrowserSmoke({ journey, login, catalog });
+  await runCalendarOwnershipBrowserSmoke({ journey, signIn, catalog });
 
   await journey("mailbox-setup-cancel", "en", async (page) => {
     await login(page);

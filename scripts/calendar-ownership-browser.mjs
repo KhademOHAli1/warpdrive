@@ -53,13 +53,13 @@ export async function seedCalendarOwnershipBrowserFixture(client, password, flag
 
 // Native UI, real server actions and the existing isolated browser database only.
 // The caller retains network blocking and native password/session setup.
-export async function runCalendarOwnershipBrowserSmoke({ journey, login, catalog }) {
+export async function runCalendarOwnershipBrowserSmoke({ journey, signIn, catalog }) {
   for (const [index, locale] of ["en", "de", "fa"].entries()) {
     const copy = catalog(`src/features/activities/messages/calendar.${locale}.json`);
     await journey(`calendar-ownership-${locale}`, locale, async (page) => {
-      await login(page, `calendar-${locale}@example.invalid`);
+      await signIn(page, `calendar-${locale}@example.invalid`);
       await page.goto(
-        `/activities/calendar?view=day&d=2032-06-${String(17 + index).padStart(2, "0")}`,
+        `/activities/calendar?view=agenda&d=2032-06-${String(17 + index).padStart(2, "0")}`,
       );
       await page.getByRole("button", { name: copy.settings.manage, exact: true }).click();
       await page.getByRole("dialog", { name: copy.settings.manage, exact: true }).waitFor();

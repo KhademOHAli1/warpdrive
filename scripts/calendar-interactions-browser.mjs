@@ -98,6 +98,18 @@ async function assertSchedule(dialog, calendar, iso, start, end) {
   );
 }
 
+async function closeUnchangedEventEditor(page) {
+  await page.keyboard.press("Escape");
+  // An alertdialog aria-hides its parent dialog. Role-locator hidden alone would
+  // falsely accept an unsaved-change confirmation as a successfully closed editor.
+  await page.locator('[role="dialog"][data-state="open"]').waitFor({ state: "detached" });
+  assert.equal(
+    await page.getByRole("alertdialog").count(),
+    0,
+    "Untouched event closes without discard confirmation",
+  );
+}
+
 async function checkPersistedEvent(page, calendar, id, iso, start, end, touch = false) {
   await page.reload();
   const chip = page.locator(`[data-calendar-event-id="${id}"]`);
@@ -112,8 +124,7 @@ async function checkPersistedEvent(page, calendar, id, iso, start, end, touch = 
       .inputValue(),
     subject,
   );
-  await page.keyboard.press("Escape");
-  await dialog.waitFor({ state: "hidden" });
+  await closeUnchangedEventEditor(page);
 }
 
 async function shiftDayEvent(page, id, minutes, edge) {
@@ -325,8 +336,7 @@ async function assertOverlapAgenda(page, calendar, view, visible, minTrackWidth)
       .inputValue(),
     title,
   );
-  await page.keyboard.press("Escape");
-  await editor.waitFor({ state: "hidden" });
+  await closeUnchangedEventEditor(page);
   if (view === "week") await assertKeyboardReveal(page, host, chips);
   return eventIds;
 }
@@ -384,8 +394,7 @@ async function assertMobileAgenda(page, calendar, eventIds) {
     title,
     "Agenda opens the selected event in the calendar editor",
   );
-  await page.keyboard.press("Escape");
-  await editor.waitFor({ state: "hidden" });
+  await closeUnchangedEventEditor(page);
 
   await page.getByRole("link", { name: calendar.day, exact: true }).click();
   await page.waitForURL(selectedDay("day"));
