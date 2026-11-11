@@ -4,6 +4,10 @@ These tests invoke only `docker compose config`/help. They never start services,
 a daemon, pull images or resolve service .env files. An explicit synthetic interpolation
 file and allowlisted subprocess environment keep real installation values out of output.
 Docker Compose with --no-env-resolution and !reset support is required, not skipped.
+
+The checked-in base/overlay are rendered with a scratch project directory. Relative service
+env, bind and build paths therefore normalize into scratch in both models. These checks
+prove merge preservation and selection, not production mount existence or runtime health.
 """
 
 from __future__ import annotations
@@ -52,6 +56,10 @@ class ImageComposeProfileTest(unittest.TestCase):
         cls.scratch = tempfile.TemporaryDirectory(prefix="warpdrive-image-compose-")
         cls.addClassCleanup(cls.scratch.cleanup)
         cls.directory = Path(cls.scratch.name)
+        # Compose versions differ on whether --no-env-resolution also bypasses the
+        # existence check. Satisfy it in scratch without creating/reading ROOT/.env.
+        cls.service_env = cls.directory / ".env"
+        cls.service_env.write_text("", encoding="utf-8")
         # No inherited COMPOSE_*, DOCKER_CONTEXT or installation credentials. The socket
         # deliberately does not exist; all checks must remain daemon-independent.
         cls.process_env = {
@@ -96,7 +104,7 @@ class ImageComposeProfileTest(unittest.TestCase):
             "--project-name",
             "warpdrive-image-profile-test",
             "--project-directory",
-            str(ROOT),
+            str(self.directory),
             "--env-file",
             str(interpolation),
             "--file",
@@ -126,6 +134,18 @@ class ImageComposeProfileTest(unittest.TestCase):
             with self.subTest(service=service):
                 self.assertNotIn("build", model["services"][service])
                 self.assertEqual(model["services"][service]["image"], SYNTHETIC_ENV[variable])
+
+    def test_service_env_paths_are_confined_to_the_empty_scratch_fixture(self) -> None:
+        model = self.model()
+        for service in ("app", "ws", "worker", "migrate", "createbuckets"):
+            with self.subTest(service=service):
+                env_files = model["services"][service]["env_file"]
+                paths = [entry["path"] if isinstance(entry, dict) else entry for entry in env_files]
+                self.assertEqual(
+                    [Path(path).resolve() for path in paths],
+                    [self.service_env.resolve()],
+                )
+        self.assertEqual(self.service_env.read_text(encoding="utf-8"), "")
 
     def test_merge_preserves_ingress_stateful_services_auth_and_cold_start_gates(self) -> None:
         base = self.model(overlay=False)
