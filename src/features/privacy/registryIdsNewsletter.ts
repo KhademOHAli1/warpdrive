@@ -44,7 +44,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/delivery/monitor.ts#de90229949e467faeee893a0b4fd0aa6739036f709302cd11675d599b59cceba",
   "sourceReview:src/features/newsletter/identity/authority.ts#497a4e97322c7dc63e2497530756a13dfd7c7f309c240ae2711a6f4d92dcfb96",
   "sourceReview:src/features/newsletter/identity/erasure.ts#ef181ec4a2fec465034ce7312d6bbdec0087d7835ba6ecb164673b99c16016d9",
-  "sourceReview:src/features/newsletter/identity/events.ts#43d7b33cf0e911e0fffba7d4015a2026eef44e29c36785b298a3fc050d73c02e",
+  "sourceReview:src/features/newsletter/identity/events.ts#2413fa3d9eb00127d013190b096d68c87dc7313879a819b99520ccaed192355a",
   "sourceReview:src/features/newsletter/identity/lifecycle.ts#cf26464f8bf0b18481060242476153043116bde8fe9f84b8d44996fa59167eff",
   "sourceReview:src/features/newsletter/identity/linkStore.ts#1b2a5feb25dc4de328d60a801771cd210bd6fb68cd68d6ece67532d03e9a1032",
   "sourceReview:src/features/newsletter/identity/router.ts#046c439d6b08566356303e750a665bd0b2ca8baf82c37cf2fc5c0214f9f03010",

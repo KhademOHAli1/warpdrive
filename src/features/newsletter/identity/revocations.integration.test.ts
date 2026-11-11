@@ -19,6 +19,7 @@ const provider = vi.hoisted(() => ({
   acknowledgeRevocations: vi.fn<(ids: string[]) => Promise<boolean>>(),
 }));
 vi.mock("./engine", () => ({ connectNewsletterIdentity: () => Promise.resolve(provider) }));
+vi.mock("../listmonkClient", () => ({ newsletterConfigured: () => true }));
 afterEach(() => vi.resetAllMocks());
 
 async function bindingFixture(db: Db, state: "pending" | "confirmed" = "confirmed") {

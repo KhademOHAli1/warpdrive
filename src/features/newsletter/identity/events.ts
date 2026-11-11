@@ -5,6 +5,7 @@ import type { Db } from "@/db/client";
 import { persons } from "@/db/schema/persons";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
+import { newsletterConfigured } from "../listmonkClient";
 import {
   newsletterIdentityCommands as commands,
   newsletterPersonEvents as events,
@@ -70,6 +71,7 @@ export async function drainNewsletterIdentityEvents(
 
 /** Only read engine proof for previously authorized claims; this path never issues mail. */
 export async function synchronizeNewsletterIdentity(db: Db, signal: AbortSignal): Promise<void> {
+  if (!newsletterConfigured()) return;
   const [proofs, invites] = await Promise.all([
     db
       .select({ id: links.id, actorId: links.actorId, personId: links.personId })
