@@ -257,6 +257,56 @@ class DockerRuntimeIdentityTests(unittest.TestCase):
         self.assertTrue(rows[value["candidateName"]]["State"]["Paused"])
         self.assertNotIn("identityDiagnostics", harness.report)
 
+    def test_unique_environment_permutation_retains_exact_config_identity_and_safe_native_evidence(self):
+        harness, rows, before, value, adapter = self.fixture()
+        rows[value["candidateName"]]["Config"]["Env"].reverse()
+        candidate = engine._inspect(adapter, before, value, route=before["route"])
+        self.assertEqual(candidate["configSha256"], before["runtime"]["configSha256"])
+        evidence = harness.report["environmentComparisons"][value["candidateName"]]
+        self.assertEqual(evidence, {"entryCount": 2, "sameUniqueEntriesAsInitial": True, "sameEntryOrderAsInitial": False,
+                                    "sameNonEnvironmentConfigurationAsInitial": True})
+        self.assertNotIn("not-for-evidence", json.dumps(harness.report))
+        self.assertNotIn("identityDiagnostics", harness.report)
+
+    def test_environment_canonicalization_never_discards_duplicate_names_or_invalid_bindings(self):
+        for entries in (None, {}, [None], ["MISSING_VALUE"], ["=empty-name"], ["A=one", "A=two"],
+                        ["A=same", "A=same"], ["A=bad\0value"], ["A=" + "x" * 65536]):
+            with self.subTest(entries=entries), self.assertRaises(smoke.WebSwitchSmokeError):
+                smoke.canonical_environment(entries)
+        self.assertEqual(smoke.canonical_environment(["Z=one=two", "A=", "a= whitespace "]),
+                         ["A=", "Z=one=two", "a= whitespace "])
+
+    def test_changed_value_after_permutation_still_rejects_candidate(self):
+        harness, rows, before, value, adapter = self.fixture()
+        rows[value["candidateName"]]["Config"]["Env"] = ["PRIVATE_CONFIG_VALUE=actually-changed", "NODE_ENV=production"]
+        with self.assertRaises(engine.SwitchConflict):
+            engine._inspect(adapter, before, value, route=before["route"])
+        evidence = harness.report["environmentComparisons"][value["candidateName"]]
+        self.assertFalse(evidence["sameUniqueEntriesAsInitial"])
+        self.assertNotIn("actually-changed", json.dumps(harness.report))
+
+    def test_added_removed_or_empty_environment_value_changes_still_reject_candidate(self):
+        for entries in (["NODE_ENV=production"], ["NODE_ENV=production", "PRIVATE_CONFIG_VALUE="],
+                        ["NODE_ENV=production", "PRIVATE_CONFIG_VALUE=not-for-evidence", "EXTRA="]):
+            harness, rows, before, value, adapter = self.fixture()
+            rows[value["candidateName"]]["Config"]["Env"] = entries
+            with self.subTest(entries=entries), self.assertRaises(engine.SwitchConflict):
+                engine._inspect(adapter, before, value, route=before["route"])
+
+    def test_command_entrypoint_and_mount_drift_remain_order_sensitive(self):
+        for field in ("Cmd", "Entrypoint", "Mounts"):
+            harness, rows, before, value, adapter = self.fixture()
+            candidate = rows[value["candidateName"]]
+            if field == "Cmd":
+                candidate["Config"][field].reverse()
+            elif field == "Entrypoint":
+                candidate["Config"][field].append("different-entrypoint")
+            else:
+                candidate[field].append({"Type": "tmpfs", "Destination": "/extra"})
+            with self.subTest(field=field), self.assertRaises(engine.SwitchConflict):
+                engine._inspect(adapter, before, value, route=before["route"])
+            self.assertFalse(harness.report["environmentComparisons"][value["candidateName"]]["sameNonEnvironmentConfigurationAsInitial"])
+
     def test_real_environment_and_memory_drift_still_reject_with_only_hashes_and_field_paths(self):
         for section in ("environment", "memory"):
             harness, rows, before, value, adapter = self.fixture()

@@ -48,6 +48,13 @@ internal fixture ports without adding an external network. Admin requests use fi
 origin, body limits and timeouts. The rehearsal does not alter the production Caddyfile or
 newsletter ingress allowlist.
 
+Runtime identity compares every executable, configuration, resource and mount field except
+the explicit slot hostname and operation label. Environment bindings compare independently
+of their inspect-list order, with exact case-sensitive names and values; malformed bindings
+or duplicate names reject the runtime. Reports retain only aggregate entry counts and whether
+the exact bindings, their order and the complete remaining configuration match the initial
+runtime. They never retain environment values. A changed value still rejects the candidate.
+
 Run a check on an admitted disposable native AMD64 runner using an already verified bundle:
 
 ```sh

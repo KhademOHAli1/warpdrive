@@ -106,10 +106,28 @@ def memory_peak(result):
     return {"status": "observed", "bytes": int(text)}
 
 
+def canonical_environment(entries):
+    """Compare Linux environment bindings exactly, independent of inspect list order.
+
+    Duplicate names are refused rather than assigning an order-dependent winner.
+    Sorting whole bindings retains empty values, embedded equals and whitespace.
+    """
+    require(isinstance(entries, list) and len(entries) <= 512, "bounded runtime environment list required")
+    names = set()
+    for entry in entries:
+        require(isinstance(entry, str) and 0 < len(entry) <= 65536 and "=" in entry and "\0" not in entry,
+                "complete runtime environment binding required")
+        name = entry.split("=", 1)[0]
+        require(bool(name) and name not in names, "unique nonempty runtime environment names required")
+        names.add(name)
+    return sorted(entries)
+
+
 def runtime_config(row):
-    """Exclude only explicit slot identity; retain every executable/config/resource field."""
+    """Exclude explicit slot identity; canonicalize unique environment binding order only."""
     config = copy.deepcopy(row["Config"])
     config.pop("Hostname", None)
+    config["Env"] = canonical_environment(config.get("Env"))
     labels = config.pop("Labels", {}) or {}
     return {"Config": config, "Labels": {key: value for key, value in labels.items() if key != OPERATION_LABEL},
             "HostConfig": copy.deepcopy(row["HostConfig"]), "Mounts": copy.deepcopy(row.get("Mounts", []))}
@@ -410,6 +428,7 @@ class WebSwitchSmoke:
         self.fixture = None
         self.relays, self.web_names, self.protected_names = [], set(), []
         self.runtime_configs = {}
+        self.environment_identities = {}
         self.watch = None
         self.report = {"schemaVersion": 1, "kind": "warpdrive-native-caddy-web-switch-smoke", "success": False,
                        "revision": self.revision, "startedAt": utc_now(), "checks": [], "images": {},
@@ -469,6 +488,19 @@ class WebSwitchSmoke:
         # Raw generated configuration remains in process memory only. Reports retain
         # whole-projection hashes and changed field paths, never its environment values.
         self.runtime_configs[name] = normalized
+        non_environment = copy.deepcopy(normalized)
+        non_environment["Config"].pop("Env")
+        environment = {"ordered": engine.content_hash(row["Config"]["Env"]),
+                       "canonical": engine.content_hash(normalized["Config"]["Env"]),
+                       "nonEnvironment": engine.content_hash(non_environment)}
+        baseline = next(iter(self.environment_identities.values()), environment)
+        self.environment_identities[name] = environment
+        self.report.setdefault("environmentComparisons", {})[name] = {
+            "entryCount": len(row["Config"]["Env"]),
+            "sameUniqueEntriesAsInitial": environment["canonical"] == baseline["canonical"],
+            "sameEntryOrderAsInitial": environment["ordered"] == baseline["ordered"],
+            "sameNonEnvironmentConfigurationAsInitial": environment["nonEnvironment"] == baseline["nonEnvironment"],
+        }
         require(row.get("State", {}).get("Running") is True and not row["State"].get("OOMKilled"), "Web runtime is not running")
         result = {"runtimeId": row["Id"], "name": name, "imageId": row["Image"], "sourceRevision": self.revision,
                   "configSha256": engine.content_hash(normalized), "schemaSha256": self.schema(),
