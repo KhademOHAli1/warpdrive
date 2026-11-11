@@ -215,7 +215,104 @@ class AdapterTests(unittest.TestCase):
         self.assertTrue(observed["healthy"])
 
 
+class DockerRuntimeIdentityTests(unittest.TestCase):
+    def fixture(self):
+        names = ("owned-web-a", "owned-web-rejected")
+        rows = {}
+        for index, name in enumerate(names, 1):
+            rows[name] = {"Id": str(index) * 64, "Name": "/" + name, "Image": "sha256:" + "a" * 64,
+                          "Config": {"Hostname": str(index) * 12, "Image": "sha256:" + "a" * 64,
+                                     "Cmd": ["bun", "--bun", "next", "start"], "Entrypoint": ["/usr/local/bin/docker-entrypoint.sh"],
+                                     "Env": ["NODE_ENV=production", "PRIVATE_CONFIG_VALUE=not-for-evidence"],
+                                     "User": "bun", "WorkingDir": "/app", "Labels": {smoke.OWNER_LABEL: "owned", "org.opencontainers.image.revision": "a" * 40}},
+                          "HostConfig": {"Memory": 1536 * smoke.MIB, "MemorySwap": 1536 * smoke.MIB,
+                                         "NanoCpus": 1_000_000_000, "PidsLimit": 192, "NetworkMode": "owned-network",
+                                         "CapDrop": ["ALL"], "SecurityOpt": ["no-new-privileges"], "ReadonlyRootfs": False},
+                          "Mounts": [], "RestartCount": 0, "State": {"Running": True, "OOMKilled": False, "Paused": index == 2}}
+        rows[names[1]]["Config"]["Labels"][smoke.OPERATION_LABEL] = "rejected-readiness"
+        def run(arguments, **options):
+            return SimpleNamespace(returncode=0, stdout=json.dumps([rows[arguments[2]]]))
+        harness = smoke.WebSwitchSmoke(SimpleNamespace(run=run), Path("unused"), "a" * 40, Path("unused"))
+        harness.fixture = SimpleNamespace(prefix="owned")
+        harness.web_names = set(names)
+        harness.web_image = "sha256:" + "a" * 64
+        harness.schema = lambda: "d" * 64
+        harness.unrelated = lambda: {"worker": {"id": "3" * 64, "restarts": 0}}
+        before = accepted()
+        before["runtime"] = harness.runtime(names[0])
+        before["route"]["runtimeId"] = before["runtime"]["runtimeId"]
+        before["unrelatedFingerprint"] = engine.content_hash(harness.unrelated())
+        harness.actual_route = lambda: copy.deepcopy(before["route"])
+        value = plan(before, "rejected-readiness")
+        value["candidateName"] = names[1]
+        adapter = smoke.CaddySwitchAdapter(harness, value, {})
+        return harness, rows, before, value, adapter
+
+    def test_actual_docker_shapes_keep_same_config_across_owned_names_labels_and_pause_state(self):
+        harness, rows, before, value, adapter = self.fixture()
+        candidate = engine._inspect(adapter, before, value, route=before["route"])
+        self.assertEqual(candidate["configSha256"], before["runtime"]["configSha256"])
+        self.assertNotEqual(candidate["runtimeId"], before["runtime"]["runtimeId"])
+        self.assertEqual(candidate["ownerOperation"], value["operationId"])
+        self.assertTrue(rows[value["candidateName"]]["State"]["Paused"])
+        self.assertNotIn("identityDiagnostics", harness.report)
+
+    def test_real_environment_and_memory_drift_still_reject_with_only_hashes_and_field_paths(self):
+        for section in ("environment", "memory"):
+            harness, rows, before, value, adapter = self.fixture()
+            if section == "environment":
+                rows[value["candidateName"]]["Config"]["Env"][1] = "PRIVATE_CONFIG_VALUE=changed-not-for-evidence"
+                path = "Config.Env[1]"
+            else:
+                rows[value["candidateName"]]["HostConfig"]["Memory"] += smoke.MIB
+                path = "HostConfig.Memory"
+            with self.subTest(section=section), self.assertRaises(engine.SwitchConflict):
+                engine._inspect(adapter, before, value, route=before["route"])
+            diagnostic = harness.report["identityDiagnostics"][-1]
+            self.assertIn("configSha256", diagnostic["candidateChangedFields"])
+            self.assertEqual(diagnostic["candidateConfigChangedFields"], [path])
+            self.assertNotEqual(diagnostic["expectedConfigSha256"], diagnostic["observedConfigSha256"])
+            self.assertNotIn("not-for-evidence", json.dumps(diagnostic))
+
+    def test_owner_or_schema_mismatch_is_not_hidden_by_config_normalization(self):
+        for field in ("owner", "schema"):
+            harness, rows, before, value, adapter = self.fixture()
+            if field == "owner":
+                rows[value["candidateName"]]["Config"]["Labels"][smoke.OPERATION_LABEL] = "foreign-owner-not-for-evidence"
+                path = "ownerOperation"
+            else:
+                snapshots = iter(["e" * 64, "d" * 64])
+                harness.schema = lambda: next(snapshots)
+                path = "schemaSha256"
+            with self.subTest(field=field), self.assertRaises(engine.SwitchConflict):
+                engine._inspect(adapter, before, value, route=before["route"])
+            diagnostic = harness.report["identityDiagnostics"][-1]
+            self.assertIn(path, diagnostic["candidateChangedFields"])
+            self.assertNotIn("not-for-evidence", json.dumps(diagnostic))
+
+
 class OwnershipAndEvidenceTests(unittest.TestCase):
+    def test_cause_chain_keeps_fixed_identity_guard_but_never_raw_secret_messages(self):
+        inner = engine.SwitchConflict("candidate differs from owned same-version plan")
+        outer = engine.SwitchUnknown("candidate creation could not be independently reconciled")
+        outer.__cause__ = inner
+        self.assertEqual(smoke.safe_causes(outer), [
+            {"type": "SwitchUnknown", "message": "candidate creation could not be independently reconciled"},
+            {"type": "SwitchConflict", "message": "candidate differs from owned same-version plan"},
+        ])
+        raw = RuntimeError("credential=private-do-not-retain")
+        outer.__cause__ = raw
+        causes = smoke.safe_causes(outer)
+        self.assertEqual(causes[-1], {"type": "RuntimeError"})
+        self.assertNotIn("private-do-not-retain", json.dumps(causes))
+        for _ in range(6):
+            next_error = RuntimeError("private-do-not-retain")
+            raw.__cause__ = next_error
+            raw = next_error
+        self.assertEqual(len(smoke.safe_causes(outer)), 4)
+        raw.__cause__ = raw
+        self.assertEqual(smoke.safe_causes(raw), [{"type": "RuntimeError"}])
+
     def test_native_memory_budget_charges_every_overlap_limit_and_one_gib_reserve(self):
         required = sum(smoke.MEMORY_LIMITS_MIB.values()) * smoke.MIB + 1024 ** 3
         admitted = smoke.memory_budget(f"MemTotal: 16777216 kB\nMemAvailable: {required // 1024} kB\n")

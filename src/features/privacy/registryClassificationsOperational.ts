@@ -79,17 +79,18 @@ export const operationalClassifications = {
       "rate-limit state",
       "settings and preferences",
       "presentation-only module availability and action metadata",
+      "ephemeral runtime callback, connection and teardown handles",
     ],
     subjectRelation:
       "Actor/owner/session keys identify processors or recipients and are not automatically the subject of cached records. Review required.",
     purpose:
-      "Realtime delivery, derived views, preferences, authorization caches and service operations.",
+      "Realtime delivery, derived views, preferences, authorization caches and service operations, including bounded worker/socket shutdown.",
     disclosure:
-      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions. Navigation booleans expose module availability only. Project navigation and the high-risk project.create action metadata do not bypass current native session, module, membership or linked CRM checks.",
+      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions. Navigation booleans expose module availability only. Project navigation and the high-risk project.create action metadata do not bypass current native session, module, membership or linked CRM checks. Current runtime.shutdown production callers log only fixed event/source/status/step labels and an exit code, never callback results, job payloads, session/recipient identifiers, exception objects or credentials. New WebSocket dispatch/teardown/heartbeat diagnostics are fixed messages.",
     retention:
-      "Transient state ends with process/browser lifecycle unless explicitly persisted; invalidation after commit and restore admission require qualification.",
+      "Transient state ends with process/browser lifecycle unless explicitly persisted; invalidation after commit and restore admission require qualification. Shutdown Promise markers and pending-operation/teardown Sets are removed on settlement; the socket-to-session Map removes entries after teardown success/failure, while its deduplication WeakMap does not retain keys. Active callbacks/session operations can retain existing payload or authority references until settling or process termination. Releasing these handles is not database, object or provider erasure.",
     externalEffects:
-      "Browser caches, PostgreSQL LISTEN/NOTIFY, WebSocket clients and configured service dependencies.",
+      "Browser caches, PostgreSQL LISTEN/NOTIFY, WebSocket clients and configured service dependencies. The discovered shutdown delete:marker, server delete:cleanup/delete:socket and socketSession delete:operation calls remove only in-memory Set/Map members; they are not database writes or subject deletion. Callback tracking forwards existing handlers, options, arguments and results; it creates no new queue destination, provider permission or durable personal-data store. Shutdown stops consumers/new connections, waits tracked work, closes sockets/relay/pools and reports incomplete/nonzero outcomes on timeout or failure. Existing handlers may perform their already-classified effects while draining; no exactly-once, installation recovery or privacy lifecycle capability is established.",
     erasureTask: "DPL-18",
   },
   observability: {

@@ -71,6 +71,19 @@ def require(condition, message):
         raise WebSwitchSmokeError(message)
 
 
+def safe_causes(error):
+    """Retain only the existing fixed-safe error contract, never raw external messages."""
+    chain, seen = [], set()
+    while error is not None and len(chain) < 4 and id(error) not in seen:
+        seen.add(id(error))
+        detail = {"type": type(error).__name__}
+        if isinstance(error, (SmokeError, engine.SwitchError)):
+            detail["message"] = str(error)[:512]
+        chain.append(detail)
+        error = error.__cause__ or (None if error.__suppress_context__ else error.__context__)
+    return chain
+
+
 def memory_budget(meminfo):
     require(isinstance(meminfo, str) and 0 < len(meminfo) <= 65536, "bounded native Linux memory information required")
     matches = re.findall(r"^MemAvailable:[ \t]+([0-9]+)[ \t]+kB[ \t]*$", meminfo, re.MULTILINE)
@@ -91,6 +104,46 @@ def memory_peak(result):
     if result.returncode != 0 or not re.fullmatch(r"[0-9]{1,20}", text) or int(text) > 2 ** 63:
         return {"status": "unavailable", "bytes": None}
     return {"status": "observed", "bytes": int(text)}
+
+
+def runtime_config(row):
+    """Exclude only explicit slot identity; retain every executable/config/resource field."""
+    config = copy.deepcopy(row["Config"])
+    config.pop("Hostname", None)
+    labels = config.pop("Labels", {}) or {}
+    return {"Config": config, "Labels": {key: value for key, value in labels.items() if key != OPERATION_LABEL},
+            "HostConfig": copy.deepcopy(row["HostConfig"]), "Mounts": copy.deepcopy(row.get("Mounts", []))}
+
+
+def changed_fields(expected, observed, path="", limit=32):
+    """Bounded field paths only: never serialize the underlying values or dynamic label names."""
+    differences = []
+    def visit(left, right, current):
+        if len(differences) >= limit or left == right:
+            return
+        if isinstance(left, dict) and isinstance(right, dict):
+            for key in sorted(set(left) | set(right)):
+                segment = "label-" + engine.content_hash(key)[:12] if current == "Labels" else key
+                location = f"{current}.{segment}" if current else segment
+                if key not in left or key not in right:
+                    differences.append(location)
+                else:
+                    visit(left[key], right[key], location)
+                if len(differences) >= limit:
+                    break
+        elif isinstance(left, list) and isinstance(right, list):
+            for index in range(max(len(left), len(right))):
+                location = f"{current}[{index}]"
+                if index >= len(left) or index >= len(right):
+                    differences.append(location)
+                else:
+                    visit(left[index], right[index], location)
+                if len(differences) >= limit:
+                    break
+        else:
+            differences.append(current or "root")
+    visit(expected, observed, path)
+    return differences
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -272,10 +325,46 @@ class CaddySwitchAdapter:
     def inspect(self, accepted_runtime, candidate_name):
         require(accepted_runtime["name"] in self.harness.web_names
                 and candidate_name in {None, self.plan["candidateName"]}, "fixture runtime target escapes owned names")
-        candidate = self.harness.runtime(candidate_name, allow_absent=True, candidate=True) if candidate_name else None
-        return {"acceptedRuntime": self.harness.runtime(accepted_runtime["name"]),
-                "candidateRuntime": candidate, "route": self.harness.actual_route(),
-                "unrelatedFingerprint": engine.content_hash(self.harness.unrelated())}
+        try:
+            candidate = self.harness.runtime(candidate_name, allow_absent=True, candidate=True) if candidate_name else None
+            snapshot = {"acceptedRuntime": self.harness.runtime(accepted_runtime["name"]),
+                        "candidateRuntime": candidate, "route": self.harness.actual_route(),
+                        "unrelatedFingerprint": engine.content_hash(self.harness.unrelated())}
+        except Exception as error:
+            if hasattr(self.harness, "report"):
+                diagnostics = self.harness.report.setdefault("identityDiagnostics", [])
+                if len(diagnostics) < 8:
+                    diagnostics.append({"observationErrorType": type(error).__name__})
+            raise
+        self._diagnose(accepted_runtime, snapshot)
+        return snapshot
+
+    def _diagnose(self, expected_accepted, snapshot):
+        if not hasattr(self.harness, "report"):
+            return
+        candidate = snapshot["candidateRuntime"]
+        expected = {key: self.plan[key] for key in ("imageId", "sourceRevision", "configSha256", "schemaSha256")}
+        expected.update({"name": self.plan["candidateName"], "ownerOperation": self.plan["operationId"], "running": True, "restartCount": 0})
+        observed = {key: candidate.get(key) for key in expected} if candidate is not None else None
+        if (snapshot["acceptedRuntime"] == expected_accepted and snapshot["unrelatedFingerprint"] == self.plan["unrelatedFingerprint"]
+                and (candidate is None or observed == expected)):
+            return
+        diagnostics = self.harness.report.setdefault("identityDiagnostics", [])
+        if len(diagnostics) >= 8:
+            return
+        detail = {"acceptedChangedFields": changed_fields(expected_accepted, snapshot["acceptedRuntime"]),
+                  "expectedAcceptedSha256": engine.content_hash(expected_accepted),
+                  "observedAcceptedSha256": engine.content_hash(snapshot["acceptedRuntime"]),
+                  "expectedUnrelatedSha256": self.plan["unrelatedFingerprint"], "observedUnrelatedSha256": snapshot["unrelatedFingerprint"]}
+        if candidate is not None:
+            detail.update({"candidateChangedFields": changed_fields(expected, observed),
+                           "expectedCandidateSha256": engine.content_hash(expected), "observedCandidateSha256": engine.content_hash(observed),
+                           "expectedConfigSha256": self.plan["configSha256"], "observedConfigSha256": candidate["configSha256"],
+                           "expectedSchemaSha256": self.plan["schemaSha256"], "observedSchemaSha256": candidate["schemaSha256"]})
+            configs = getattr(self.harness, "runtime_configs", {})
+            if expected_accepted["name"] in configs and candidate["name"] in configs:
+                detail["candidateConfigChangedFields"] = changed_fields(configs[expected_accepted["name"]], configs[candidate["name"]])
+        diagnostics.append(detail)
 
     def create_candidate(self, plan):
         self._plan(plan)
@@ -320,6 +409,7 @@ class WebSwitchSmoke:
         self.revision, self.output_dir = validate_revision(expected_revision), Path(output_dir)
         self.fixture = None
         self.relays, self.web_names, self.protected_names = [], set(), []
+        self.runtime_configs = {}
         self.watch = None
         self.report = {"schemaVersion": 1, "kind": "warpdrive-native-caddy-web-switch-smoke", "success": False,
                        "revision": self.revision, "startedAt": utc_now(), "checks": [], "images": {},
@@ -375,18 +465,16 @@ class WebSwitchSmoke:
         if row is None:
             return None
         require(name in self.web_names and row["Image"] == self.web_image, "untested Web runtime refused")
-        config = copy.deepcopy(row["Config"])
-        config.pop("Hostname", None)
-        labels = config.pop("Labels", {}) or {}
-        # Name/ownership distinguish slots; their executable and application config must match.
-        normalized = {"Config": config, "Labels": {key: value for key, value in labels.items() if key != OPERATION_LABEL},
-                      "HostConfig": row["HostConfig"], "Mounts": row.get("Mounts", [])}
+        normalized = runtime_config(row)
+        # Raw generated configuration remains in process memory only. Reports retain
+        # whole-projection hashes and changed field paths, never its environment values.
+        self.runtime_configs[name] = normalized
         require(row.get("State", {}).get("Running") is True and not row["State"].get("OOMKilled"), "Web runtime is not running")
         result = {"runtimeId": row["Id"], "name": name, "imageId": row["Image"], "sourceRevision": self.revision,
                   "configSha256": engine.content_hash(normalized), "schemaSha256": self.schema(),
                   "restartCount": row.get("RestartCount"), "running": True}
         if candidate:
-            result["ownerOperation"] = labels.get(OPERATION_LABEL)
+            result["ownerOperation"] = (row["Config"].get("Labels") or {}).get(OPERATION_LABEL)
         return result
 
     def unrelated(self):
@@ -574,6 +662,7 @@ class WebSwitchSmoke:
             require(self.unrelated() == self.protected, "protected runtime identities or restarts changed")
         except Exception as error:
             self.report["failure"] = str(error) if isinstance(error, (SmokeError, engine.SwitchError)) else type(error).__name__
+            self.report["failureCauses"] = safe_causes(error)
             if self.fixture:
                 self.report["diagnostics"] = self.fixture.failure_diagnostics()
         finally:
