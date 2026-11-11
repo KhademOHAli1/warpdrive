@@ -14,10 +14,10 @@ import {
 } from "./lifecycle";
 import { createWorkflow, publishWorkflow, saveWorkflowDraft } from "./persistence";
 import { pauseWorkflow } from "./queries";
+import { nudgeWorkflowRun } from "./queue";
 import { admitManualRun } from "./runAdmission";
 import { cancelWorkflowRun } from "./runControl";
 import { retryWorkflowRun } from "./runRetry";
-import { nudgeWorkflowRun } from "./worker";
 import { submitWorkflowHumanForm } from "./workflowHumanFormSubmit";
 
 async function authorizedContext(token: string | null) {

@@ -5,32 +5,15 @@ import {
   drainNewsletterIdentityEvents,
   synchronizeNewsletterIdentity,
 } from "@/features/newsletter/identity/events";
-import { getBoss } from "@/jobs/boss";
 import { createWorkflowV2Adapters } from "./adapters";
 import { admitNewsletterWorkflowEvent } from "./newsletterEvents";
+import { enqueueWorkflowV2Run, WORKFLOW_V2_RUN_QUEUE as RUN } from "./queue";
 import { drainWorkflowV2RecordOutbox } from "./recordOutbox";
 import { advanceWorkflowV2Run } from "./runner";
 import { reconcileWorkflowV2 } from "./scheduling";
 
-const RUN = "workflow-v2-run",
-  RECONCILE = "workflow-v2-reconcile",
+const RECONCILE = "workflow-v2-reconcile",
   NEWSLETTER_OPERATIONS = "newsletter-operations-monitor";
-async function enqueue(boss: PgBoss, runId: string) {
-  return boss.send(
-    RUN,
-    { runId },
-    { retryLimit: 2, expireInSeconds: 60, singletonSeconds: 1, singletonKey: runId },
-  );
-}
-export async function nudgeWorkflowV2Run(runId: string): Promise<void> {
-  const boss = getBoss();
-  if (boss === null) return;
-  try {
-    await enqueue(boss, runId);
-  } catch {
-    console.warn("Workflow v2 queue unavailable; durable run awaits reconciliation", { runId });
-  }
-}
 export async function registerWorkflowV2Jobs(boss: PgBoss, db: Db): Promise<void> {
   await boss.createQueue(RUN);
   await boss.createQueue(RECONCILE);
@@ -54,14 +37,14 @@ export async function registerWorkflowV2Jobs(boss: PgBoss, db: Db): Promise<void
       more = result.status === "running" || result.status === "queued";
       if (!more) break;
     }
-    if (more) await enqueue(boss, job.data.runId);
+    if (more) await enqueueWorkflowV2Run(boss, job.data.runId);
   });
   await boss.work(RECONCILE, async () => {
     const signal = AbortSignal.timeout(45_000);
     const adapters = createWorkflowV2Adapters();
     const outbox = await drainWorkflowV2RecordOutbox(db, adapters, signal);
     const ready = await reconcileWorkflowV2(db, adapters, signal);
-    for (const id of new Set([...outbox, ...ready])) await enqueue(boss, id);
+    for (const id of new Set([...outbox, ...ready])) await enqueueWorkflowV2Run(boss, id);
     const syncSignal = AbortSignal.any([signal, AbortSignal.timeout(15_000)]);
     try {
       await synchronizeNewsletterIdentity(db, syncSignal);
@@ -73,7 +56,7 @@ export async function registerWorkflowV2Jobs(boss: PgBoss, db: Db): Promise<void
       db,
       async (event) => {
         const runs = await admitNewsletterWorkflowEvent(db, adapters, event, signal);
-        for (const id of new Set(runs)) await enqueue(boss, id);
+        for (const id of new Set(runs)) await enqueueWorkflowV2Run(boss, id);
       },
       signal,
     );

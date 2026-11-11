@@ -53,6 +53,7 @@ import { mailSharedInventoryEntries } from "./registryMailShared";
 import { migrationInventoryEntry } from "./registryMigrations";
 import { newsletterInventoryEntry } from "./registryNewsletter";
 import { newsletterOperationalInventoryEntry } from "./registryNewsletterOperations";
+import { operationsContractInventoryEntry } from "./registryOperations";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import type { RegistryEntry } from "./registryTypes";
@@ -88,6 +89,7 @@ export const registryEntries: RegistryEntry[] = [
   migrationInventoryEntry,
   newsletterInventoryEntry,
   newsletterOperationalInventoryEntry,
+  operationsContractInventoryEntry,
   ...mailInventoryEntries,
   ...mailSharedInventoryEntries,
   salesToolingInventoryEntry,

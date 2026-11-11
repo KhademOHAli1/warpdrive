@@ -35,6 +35,15 @@ LIMITATIONS = [
 ]
 
 
+OVERRUN_LIMITATIONS = [
+    "Disposable native final-image expired-handler drain/restart only; no production deployment acceptance.",
+    "One real file.reaper query on empty owned files remains blocked after its job fails at expiry; no object/provider/mail operation is qualified.",
+    "The first job must remain failed with zero retries; no replay, redrive, exactly-once effects or general lease recovery is qualified.",
+    "No forced kill, authenticated realtime/browser reconnect, traffic-switch rollback, populated upgrade or data recovery is qualified.",
+]
+SCENARIOS = ("normal", "overrun")
+
+
 class DrainError(SmokeError):
     pass
 
@@ -42,6 +51,10 @@ class DrainError(SmokeError):
 CONTROLLER = r"""
 import { Client } from 'pg';
 import { PgBoss } from 'pg-boss';
+const scenario = process.env.IMAGE_SMOKE_DRAIN_SCENARIO;
+if (!['normal','overrun'].includes(scenario)) throw Error('Invalid drain scenario');
+const overrun = scenario === 'overrun';
+const expectedFirstState = overrun ? 'failed' : 'completed';
 const channel = process.env.IMAGE_SMOKE_DRAIN_CHANNEL;
 if (!/^[a-z0-9_]{1,63}$/.test(channel || '')) throw Error('Invalid fixture channel');
 const control = new Client({connectionString:process.env.DATABASE_URL,application_name:'wd-drain-control',connectionTimeoutMillis:3000,query_timeout:5000});
@@ -71,7 +84,38 @@ async function command(expected, milliseconds=15000) {
     return true;
   },milliseconds,'Fixture command timed out');
 }
-const jobState = async id=>(await boss.findJobs('file.reaper',{id,limit:1}))[0]?.state;
+const job = async id=>(await boss.findJobs('file.reaper',{id,limit:1}))[0];
+const jobState = async id=>(await job(id))?.state;
+let blockedQuery = null;
+const waitingQuery = async blockerPid => {
+  const waiting=await control.query(`SELECT a.pid, a.query_start::text AS started FROM pg_stat_activity a
+    WHERE a.datname=current_database() AND a.wait_event_type='Lock'
+    AND $1::integer=ANY(pg_blocking_pids(a.pid)) AND a.query LIKE '%files%'`,[blockerPid]);
+  if(waiting.rows.length!==1) return null;
+  return waiting.rows[0];
+};
+const sameQueryBlocked = async blockerPid => {
+  const waiting=await waitingQuery(blockerPid);
+  return waiting!==null && waiting.pid===blockedQuery.pid &&
+    waiting.started===blockedQuery.started;
+};
+const failedByExpiry = first => first?.state==='failed' && first.expireInSeconds===1 &&
+  first.retryLimit===0 && first.retryCount===0 &&
+  first.output?.message==='handler execution exceeded 1s';
+const expiryProof = async (firstId, blockerPid) => {
+  const first=await job(firstId);
+  if(!failedByExpiry(first) || !(await sameQueryBlocked(blockerPid))) {
+    throw Error('Expired record and actual blocked callback were not both preserved');
+  }
+  return {firstJobId:firstId,firstState:'failed',expireInSeconds:1,retryLimit:0,retryCount:0,
+    expiredByHandlerDeadline:true,workerQueryWaiting:true};
+};
+const requireFirstPreserved = async firstId => {
+  const first=await job(firstId);
+  if(overrun ? !failedByExpiry(first) : first?.state!=='completed') {
+    throw Error('First application job durable state changed');
+  }
+};
 try {
   await control.connect(); await blocker.connect(); await boss.start();
   await control.query('LISTEN "'+channel+'"');
@@ -86,41 +130,56 @@ try {
   await blocker.query("SET LOCAL idle_in_transaction_session_timeout='35s'");
   await blocker.query('LOCK TABLE public.files IN ACCESS EXCLUSIVE MODE');
   const pid=(await blocker.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
-  const first=await boss.send('file.reaper',{nativeDrainFixture:true},{retryLimit:0});
+  const first=await boss.send('file.reaper',{nativeDrainFixture:true},overrun ? {expireInSeconds:1,retryLimit:0} : {retryLimit:0});
   if(!first) throw Error('First application job was not persisted');
   await until(async()=> {
     if(await jobState(first)!=='active') return false;
-    const waiting=await control.query(`SELECT EXISTS(SELECT 1 FROM pg_stat_activity a
-      WHERE a.datname=current_database() AND a.wait_event_type='Lock'
-      AND $1::integer=ANY(pg_blocking_pids(a.pid)) AND a.query LIKE '%files%') AS waiting`,[pid]);
-    return waiting.rows[0]?.waiting===true;
+    const waiting=await waitingQuery(pid);
+    if(waiting===null) return false;
+    blockedQuery=waiting;
+    return true;
   },15000,'Real application job never became active and blocked');
   emit('active-blocked',{firstJobId:first,jobState:'active',workerQueryWaiting:true});
+  if(overrun) {
+    // The installed pg-boss timeout fails the durable job but does not cancel this actual query.
+    // No manual fail(), queue SQL rewrite, or test-only application callback is used.
+    await until(async()=> {
+      const current=await job(first);
+      if(current?.state==='active') return false;
+      if(!failedByExpiry(current)) throw Error('First job did not fail from its one-second handler expiry');
+      return true;
+    },10000,'Real handler did not overrun its one-second expiration');
+    emit('expired-blocked',await expiryProof(first,pid));
+  }
   await command('enqueue-second');
   const second=await boss.send('file.reaper',{nativeDrainFixture:true},{retryLimit:0});
-  if(!second || await jobState(second)!=='created' || await jobState(first)!=='active') throw Error('Post-signal queued job not safely retained');
-  emit('second-queued',{firstJobId:first,secondJobId:second,secondState:'created'});
+  if(!second || await jobState(second)!=='created' || await jobState(first)!==(overrun ? 'failed' : 'active')) throw Error('Post-signal queued job not safely retained');
+  const postSignal=overrun ? await expiryProof(first,pid) : {};
+  emit('second-queued',{firstJobId:first,secondJobId:second,secondState:'created',...postSignal});
   await command('release');
+  if(overrun) await expiryProof(first,pid);
   await blocker.query('COMMIT'); transaction=false;
   await until(async()=> {
     const secondState=await jobState(second);
     if(secondState!=='created') throw Error('Draining worker claimed new work after SIGTERM');
-    return await jobState(first)==='completed';
+    return await jobState(first)===expectedFirstState;
   },20000,'In-flight real application job did not complete');
-  emit('first-completed',{firstJobId:first,firstState:'completed',secondState:'created'});
+  await requireFirstPreserved(first);
+  emit(overrun ? 'first-remains-failed' : 'first-completed',{firstJobId:first,firstState:expectedFirstState,secondState:'created'});
   await command('verify-stopped');
-  if(await jobState(first)!=='completed' || await jobState(second)!=='created') throw Error('Durable state changed before replacement worker');
-  emit('stopped-with-pending-job',{firstState:'completed',secondState:'created'});
+  await requireFirstPreserved(first);
+  if(await jobState(second)!=='created') throw Error('Durable state changed before replacement worker');
+  emit('stopped-with-pending-job',{firstState:expectedFirstState,secondState:'created'});
   await command('restart');
   await until(async()=> {
     const state=await jobState(second);
     if(['failed','cancelled'].includes(state)) throw Error('Replacement worker rejected retained job');
     return state==='completed';
   },25000,'Replacement worker did not complete retained job');
-  if(await jobState(first)!=='completed') throw Error('First job completion was not durable');
+  await requireFirstPreserved(first);
   const finalFiles=await control.query('SELECT count(*)::int AS count FROM public.files');
   if(finalFiles.rows[0]?.count!==0) throw Error('Fixture unexpectedly changed files');
-  emit('complete',{firstState:'completed',secondState:'completed',filesCount:0});
+  emit('complete',{firstState:expectedFirstState,secondState:'completed',filesCount:0});
 } catch {
   console.error('native worker drain fixture failed'); process.exitCode=1;
 } finally {
@@ -167,14 +226,18 @@ def clean_exit(state):
 class DrainSmoke:
     def __init__(self, docker, bundle_dir: Path, expected_revision: str, output_dir: Path,
                  *, clock: Callable[[], float] = time.monotonic,
-                 sleep: Callable[[float], None] = time.sleep):
+                 sleep: Callable[[float], None] = time.sleep, scenario: str = "normal"):
+        if scenario not in SCENARIOS:
+            raise DrainError("Invalid native drain scenario")
+        self.scenario = scenario
         self.docker, self.bundle_dir, self.output_dir = docker, bundle_dir, output_dir
         self.revision = validate_revision(expected_revision)
         self.clock, self.sleep = clock, sleep
         self.fixture = None
         self.report = {"schemaVersion": 1, "kind": "warpdrive-native-worker-drain-smoke",
                        "success": False, "revision": self.revision, "startedAt": utc_now(),
-                       "checks": [], "images": {}, "limitations": LIMITATIONS,
+                       "checks": [], "images": {}, "scenario": scenario,
+                       "limitations": OVERRUN_LIMITATIONS if scenario == "overrun" else LIMITATIONS,
                        "failure": None, "diagnostics": [], "cleanup": {"success": False, "errors": []}}
 
     def check(self, name, operation):
@@ -230,14 +293,27 @@ class DrainSmoke:
         self.controller = self.fixture.start_container(
             "drain-controller", self.fixture.report["images"]["worker"]["id"],
             ["bun", "--no-env-file", "-e", CONTROLLER],
-            environment={**self.fixture.env, "IMAGE_SMOKE_DRAIN_CHANNEL": channel}, memory="384m")
+            environment={**self.fixture.env, "IMAGE_SMOKE_DRAIN_CHANNEL": channel,
+                         "IMAGE_SMOKE_DRAIN_SCENARIO": self.scenario}, memory="384m")
         phase = self.wait_phase("active-blocked", 25)
         if (phase.get("jobState") != "active" or phase.get("workerQueryWaiting") is not True
                 or not re.fullmatch(r"[0-9a-f-]{36}", str(phase.get("firstJobId", "")))):
             raise DrainError("Actual active application job and blocked query were not proven")
+        self.first_job_id = phase["firstJobId"]
+        if self.scenario == "overrun":
+            expired = self.wait_phase("expired-blocked", 15)
+            self.require_overrun_proof(expired)
         self.fixture.assert_running(self.worker)
-        return {"queue": "file.reaper", "durableState": "active", "actualQueryBlocked": True,
+        return {"queue": "file.reaper", "durableState": "failed" if self.scenario == "overrun" else "active",
+                "actualQueryBlocked": True, "expiryBeforeSignal": self.scenario == "overrun",
                 "lockDeadmanSeconds": 35, "productionTestHandler": False}
+
+    def require_overrun_proof(self, proof):
+        if (proof.get("firstJobId") != self.first_job_id or proof.get("firstState") != "failed"
+                or proof.get("expiredByHandlerDeadline") is not True or proof.get("workerQueryWaiting") is not True
+                or any(type(proof.get(key)) is not int or proof[key] != expected
+                       for key, expected in (("expireInSeconds", 1), ("retryLimit", 0), ("retryCount", 0)))):
+            raise DrainError("Expired first job and still-blocked actual callback were not proven")
 
     def notify(self, command: str):
         if command not in {"enqueue-second", "release", "verify-stopped", "restart"}:
@@ -260,9 +336,13 @@ class DrainSmoke:
         queued = self.wait_phase("second-queued", 5)
         if queued.get("secondState") != "created":
             raise DrainError("Post-SIGTERM work was not durably pending")
+        if self.scenario == "overrun":
+            self.require_overrun_proof(queued)
+            self.fixture.assert_running(self.worker)
         self.notify("release")
-        completed = self.wait_phase("first-completed", 25)
-        if completed.get("firstState") != "completed" or completed.get("secondState") != "created":
+        first_state = "failed" if self.scenario == "overrun" else "completed"
+        completed = self.wait_phase("first-remains-failed" if self.scenario == "overrun" else "first-completed", 25)
+        if completed.get("firstState") != first_state or completed.get("secondState") != "created":
             raise DrainError("In-flight completion or retained post-signal job was not proven")
         deadline = self.clock() + 35
         while True:
@@ -275,30 +355,38 @@ class DrainSmoke:
             self.sleep(0.25)
         self.notify("verify-stopped")
         stopped = self.wait_phase("stopped-with-pending-job", 5)
-        if stopped.get("firstState") != "completed" or stopped.get("secondState") != "created":
+        if stopped.get("firstState") != first_state or stopped.get("secondState") != "created":
             raise DrainError("Post-exit durable job state was not preserved")
-        return {"signal": "SIGTERM", "aliveWhileInflightBlocked": True, "inflightCompleted": True,
-                "workerExitCode": 0, "oomKilled": False, "newWorkUnclaimedAfterExit": True}
+        return {"signal": "SIGTERM", "aliveWhileInflightBlocked": True,
+                "inflightCompleted": self.scenario == "normal", "firstDurableState": first_state,
+                "expiredRecordPreserved": self.scenario == "overrun", "workerExitCode": 0,
+                "oomKilled": False, "newWorkUnclaimedAfterExit": True}
 
     def restart(self):
         self.docker.run(["start", self.worker], timeout=10)
         self.fixture.assert_running(self.worker)
         self.notify("restart")
         complete = self.wait_phase("complete", 30)
-        if complete != {"phase": "complete", "firstState": "completed", "secondState": "completed", "filesCount": 0}:
+        first_state = "failed" if self.scenario == "overrun" else "completed"
+        if complete != {"phase": "complete", "firstState": first_state, "secondState": "completed", "filesCount": 0}:
             raise DrainError("Replacement worker completion and empty files state were not proven")
         self.fixture.finished(self.controller, 10)
         self.fixture.assert_running(self.worker)
         return {"sameImageRestarted": True, "pendingJobCompleted": True,
-                "firstCompletionPreserved": True, "filesCount": 0, "externalSideEffects": 0}
+                "firstCompletionPreserved": self.scenario == "normal", "firstDurableState": first_state,
+                "expiredRecordPreserved": self.scenario == "overrun", "filesCount": 0, "externalSideEffects": 0}
 
     def run(self):
         self.output_dir.mkdir(parents=True, exist_ok=False)
         try:
             self.check("verified-bundle-and-exact-image-identities", self.load)
             self.check("isolated-fresh-database-and-real-worker", self.setup)
-            self.check("real-active-handler-held-by-bounded-lock", self.active_handler)
-            self.check("sigterm-drains-inflight-and-stops-consuming", self.drain)
+            handler_check = ("real-expired-job-and-still-blocked-callback" if self.scenario == "overrun"
+                             else "real-active-handler-held-by-bounded-lock")
+            drain_check = ("sigterm-waits-for-expired-callback-without-completing-or-replaying-job"
+                           if self.scenario == "overrun" else "sigterm-drains-inflight-and-stops-consuming")
+            self.check(handler_check, self.active_handler)
+            self.check(drain_check, self.drain)
             self.check("replacement-worker-completes-retained-job", self.restart)
         except Exception as error:
             self.report["failure"] = str(error) if isinstance(error, SmokeError) else type(error).__name__
@@ -318,11 +406,14 @@ def main(arguments=None):
     parser.add_argument("--bundle-dir", type=Path, required=True)
     parser.add_argument("--expected-revision", type=validate_revision, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--scenario", choices=SCENARIOS, default="normal",
+                        help="normal completed-job drain (default), or expired-record/still-running-handler drain")
     args = parser.parse_args(arguments)
     try:
         with tempfile.TemporaryDirectory(prefix="wd-drain-auth-") as directory:
             docker = IsolatedDocker(Path(directory) / "docker")
-            passed = DrainSmoke(docker, args.bundle_dir, args.expected_revision, args.output_dir).run()
+            passed = DrainSmoke(docker, args.bundle_dir, args.expected_revision, args.output_dir,
+                                scenario=args.scenario).run()
     except (SmokeError, ValueError, OSError) as error:
         print(f"Native worker drain smoke rejected: {error}", file=sys.stderr)
         return 1

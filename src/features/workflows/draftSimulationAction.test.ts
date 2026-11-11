@@ -25,7 +25,7 @@ vi.mock("@/features/identity/actions/shared", () => ({ guardCsrf: deps.csrf }));
 vi.mock("@/features/identity/actions/fresh", () => ({ requireFreshIdentityAction: deps.fresh }));
 vi.mock("@/server/trpc/context", () => ({ createContext: deps.context }));
 vi.mock("./draftSimulation", () => ({ simulateWorkflowDraft: deps.simulate }));
-vi.mock("./worker", () => ({ nudgeWorkflowRun: deps.nudge }));
+vi.mock("./queue", () => ({ nudgeWorkflowRun: deps.nudge }));
 
 import { simulateWorkflowDraftAction } from "./actions";
 

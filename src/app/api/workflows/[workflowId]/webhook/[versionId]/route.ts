@@ -1,5 +1,5 @@
 import { db } from "@/db/client";
-import { nudgeWorkflowRun } from "@/features/workflows/worker";
+import { nudgeWorkflowRun } from "@/features/workflows/queue";
 import { admitWorkflowWebhookDelivery } from "@/features/workflows/workflowWebhookAdmission";
 import {
   handleWorkflowWebhookRequest,

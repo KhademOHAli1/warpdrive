@@ -1,7 +1,7 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds2: string[] = [
   "derived:src/features/stats/analyticsInputContracts.ts",
-  "sourceReview:src/features/realtime/wsMultiplexer.ts#548410e96afd6613932f10df54a1e06ffeb7660e5b17af3c0b8c2c6e9f668733",
+  "sourceReview:src/features/realtime/wsMultiplexer.ts#802014a3dd9148ea8c73a0ae48962f2e3d3f730bbaedb30def527275a93b17c0",
   "sourceReview:src/features/release/constants.ts#61beb82d1c4406f396858787f3edf95829372b14d15329ad9c62b51e4bad4555",
   "sourceReview:src/features/release/githubReleases.ts#e06d3b7d940680409ca6f8a90566cd8287a28029bec92be0ec08c4d3ee4b5936",
   "sourceReview:src/features/release/job.ts#0ce9f31f7806ae647e1363f1b1a16f428ebb49b993f6ab402abd501c18a1e6e3",
@@ -106,4 +106,7 @@ export const infrastructureIds2: string[] = [
   "writer:src/server/ws/socketSession.ts#delete:operation",
   "writer:src/server/ws/socketSession.ts#send:dynamic",
   "writer:src/server/ws/socketSession.ts#send:json",
+  "writer:src/features/realtime/wsMultiplexer.ts#send:ws",
+  "sourceReview:src/features/realtime/useRealtimeChannel.ts#e26b420d73c0c67321b97f3b8d95d39822fc5b3228fbf43c6b0558e931e2647a",
+  "sourceReview:src/features/email/useInboxRealtime.ts#5ce5b027f1c8c61a1f3aecd5dc0817cc0345d2ca408646e0c5d2ae10e701196f",
 ];

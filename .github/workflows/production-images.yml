@@ -159,6 +159,11 @@ jobs:
           python3 scripts/deployment/drain_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/worker-drain"
+      - name: Verify expired worker callback drain without replaying the failed job
+        run: |
+          python3 scripts/deployment/drain_smoke.py \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/worker-overrun" --scenario overrun
       - name: Verify authenticated realtime drain and fresh resubscription
         run: |
           python3 scripts/deployment/ws_drain_smoke.py \
@@ -169,6 +174,24 @@ jobs:
           python3 scripts/deployment/web_switch_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/web-switch"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Install locked source producer and browser tooling on the disposable runner
+        env:
+          NODE_ENV: development
+          BUN_OPTIONS: --no-env-file
+        run: |
+          bun --no-env-file install --frozen-lockfile
+          bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
+          bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify persistent browser recovery after realtime-only restart
+        env:
+          BUN_OPTIONS: --no-env-file
+        run: |
+          python3 scripts/deployment/browser_realtime_smoke.py \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/browser-realtime"
       - name: Retain exact tested bundle for main candidate publication
         if: success() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

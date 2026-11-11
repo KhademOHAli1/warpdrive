@@ -17,12 +17,12 @@ import {
   saveWorkflowV2,
 } from "./persistence";
 import { cancelWorkflowV2Run, listWorkflowV2Runs, readWorkflowV2Run } from "./queries";
+import { nudgeWorkflowV2Run } from "./queue";
 import { V2_ERROR } from "./shared";
 import { testWorkflowV2Draft } from "./simulation";
 import { lookupWorkflowV2Records, readWorkflowV2Studio } from "./studio";
 import { listPendingWorkflowV2Inputs, readWorkflowV2Form, resumeWorkflowV2Form } from "./waits";
 import { rotateWorkflowV2Webhook } from "./webhook";
-import { nudgeWorkflowV2Run } from "./worker";
 
 async function context(token?: string | null) {
   if (token !== undefined && !(await guardCsrf(token)).ok) return null;

@@ -1,8 +1,7 @@
 "use client";
 
 // Thin wiring layer: subscribes to the user channel over the shared tab socket and invalidates the
-// email caches on email_arrived and email_tracking events. This hook is untested-ok (the wiring is
-// trivial; the logic lives server-side).
+// email caches on email_arrived/email_tracking and subscription recovery.
 import { useCallback } from "react";
 import { wsChannel } from "@/constants/wsChannels";
 import { useRealtimeChannel } from "@/features/realtime/useRealtimeChannel";
@@ -29,18 +28,13 @@ export function useInboxRealtime({
 
   const onFrame = useCallback(
     (frame: WsFrame) => {
-      if (frame.kind === "reconnect") {
+      if (frame.kind === "reconnect" || frame.kind === "resync") {
         onMailboxChanged?.();
-        // Socket dropped: cover events missed while offline (the old onclose path).
+        // Disconnect and confirmed resubscription both cover events missed while offline.
         void utils.email.inbox.list.invalidate();
         if (openThreadId !== undefined) {
           void utils.email.thread.get.invalidate({ threadId: openThreadId });
         }
-        return;
-      }
-      if (frame.kind === "resync") {
-        onMailboxChanged?.();
-        void utils.email.inbox.list.invalidate();
         return;
       }
       if (frame.kind !== "event" || frame.event === undefined) return;

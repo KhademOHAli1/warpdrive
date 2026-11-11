@@ -39,6 +39,8 @@ success.
 | `drain_smoke.py`      | Hold a bounded lock on the empty fixture files table, observe a real active `file.reaper` query waiting, signal the worker, release it, require durable completion and exit zero; require post-signal work to remain queued until the same image restarts | One safe empty-database handler; no forced kill, overrun recovery, external submission or large import proof                     |
 | `ws_drain_smoke.py`   | Authenticate a synthetic live session, subscribe and deliver a real relay event, require cooperative shutdown and exit zero, then authenticate and subscribe again after restarting the same image                                                        | Directly signed fixture tickets do not prove HTTP ticket issuance, login/MFA journeys, browser reconnection or offline replay    |
 | `web_switch_smoke.py` | Real Caddy compare-and-swap rejection, rejected candidate preserving accepted traffic, same-version Web switching, idempotent readback and recovery after injected acknowledgement loss                                                                   | Same image/configuration/schema only; no old/new compatibility, automatic rollback, populated upgrade or production switch proof |
+| `drain_smoke.py --scenario overrun` | Expire a real blocked handler, retain its exact failed job/query identity through SIGTERM, release the query and restart to complete only the subsequently queued job | Expiry precedes shutdown; pool closure can itself hold the query, so this does not isolate callback-tracker causality |
+| `browser_realtime_smoke.py` | Native password login in a persistent Board/Bell tab, realtime-only restart, missed-notice recovery after fresh ticket/auth/subscription ACKs, then an actual live notification event | Synthetic same-image journey; no MFA ceremony, cross-version compatibility or public ingress qualification |
 
 The Web switch fixture retains the accepted Web instance and pins worker, realtime, PostgreSQL
 and Caddy container identities/restart counts. A background observer checks proxied traffic.
@@ -66,6 +68,26 @@ The other checks use the same three flags. These are fixture commands, not insta
 deployment commands. The native image workflow executes them after the original image smoke.
 Only actual reports establish passing cases; the presence of a harness or passing unit tests
 does not establish native qualification.
+
+The browser rehearsal additionally requires the exact committed application source and frozen
+application/browser tooling on the disposable runner. It verifies the source revision and
+tracked harness files, rejects modified or unknown source files, and uses the ordinary
+notification producer through an owned database relay. Runtime containers receive no source
+mount. The actor uses native password storage and login; no session is forged. Both old
+notification queries must settle before producing the missed notice, and the mounted Board,
+bell and document must survive recovery. Reports omit tickets, cookies, raw frames and traces.
+
+Client reconnects retain one ticket-request slot and one closing-socket slot. Backoff, jitter
+and per-attempt deadlines bound retry overhead; retries can continue while subscribers remain.
+A request that ignores abort or a socket that never closes retains its slot rather than
+accumulating replacements. Genuine HTTP authorization refusal stops retries until all
+subscribers unmount; subscription ACKs, rather than socket creation, trigger resynchronization.
+
+Workflow enqueue producers now have separate queue modules so Web admission need not import
+consumer registration. The message and queue options remain unchanged. Fresh producer bundle
+graphs test this boundary. This extraction does not yet establish general worker-only Web
+reuse: Next helpers, development instrumentation, source/type checks and Tailwind discovery
+still need explicit component-input policies.
 
 ## Controller boundaries
 

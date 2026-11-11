@@ -8,42 +8,13 @@ import {
 } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { workflowRuns } from "@/db/schema";
-import { getBoss } from "@/jobs/boss";
 import { advanceWorkflowRun } from "./execution";
+import { enqueueWorkflowRun, nudgeWorkflowRunWithBoss } from "./queue";
 import { dispatchWorkflowSchedules } from "./workflowScheduleWorker";
 
-const JOB_OPTIONS = { retryLimit: 3, expireInSeconds: 60, singletonSeconds: 30 };
 const RECONCILE_BATCH_SIZE = 100;
 const DUE_WAIT_CAPACITY = 50;
 const WAKE_LOOKAHEAD_SECONDS = 90;
-
-export async function enqueueWorkflowRun(boss: PgBoss, runId: string, deadline?: Date) {
-  return boss.send(
-    PGBOSS_QUEUE_WORKFLOW_RUN,
-    { runId },
-    {
-      ...JOB_OPTIONS,
-      singletonKey: deadline === undefined ? runId : `${runId}:${deadline.getTime()}`,
-      ...(deadline === undefined ? {} : { startAfter: deadline }),
-    },
-  );
-}
-
-// Admission is already durable. A queue outage must not turn a successful admission into a
-// misleading failure: boot/minutely reconciliation recovers the persisted cursor.
-export async function nudgeWorkflowRun(runId: string): Promise<void> {
-  const boss = getBoss();
-  if (boss === null) return;
-  await nudge(boss, runId);
-}
-
-async function nudge(boss: PgBoss, runId: string, deadline?: Date): Promise<void> {
-  try {
-    await enqueueWorkflowRun(boss, runId, deadline);
-  } catch {
-    console.warn("Workflow queue unavailable; persisted run awaits reconciliation", { runId });
-  }
-}
 
 export async function reconcileWorkflowRuns(boss: PgBoss, db: Db, signal: AbortSignal) {
   // Use the database clock and queue only imminent wakes. Earlier deadlines
@@ -94,7 +65,7 @@ async function advanceQueuedRun(boss: PgBoss, db: Db, runId: string, signal: Abo
   try {
     const result = await advanceWorkflowRun(db, runId, signal, async (deadline, now) => {
       if (deadline.getTime() - now.getTime() <= WAKE_LOOKAHEAD_SECONDS * 1000)
-        await nudge(boss, runId, deadline);
+        await nudgeWorkflowRunWithBoss(boss, runId, deadline);
     });
     if (result.ok) return result.value;
   } catch {
@@ -133,7 +104,7 @@ export async function registerWorkflowJobs(boss: PgBoss, db: Db): Promise<void> 
       scheduleAfterId = await dispatchWorkflowSchedules(
         db,
         scheduleAfterId,
-        (runId) => nudge(boss, runId),
+        (runId) => nudgeWorkflowRunWithBoss(boss, runId),
         signal,
       );
     } catch {
