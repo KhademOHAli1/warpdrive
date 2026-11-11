@@ -27,3 +27,7 @@
 !readiness-tests/**/*.py
 !readiness-tests/**/*.go
 !readiness-tests/**/*.md
+!operational-tests/
+!operational-tests/**/*.py
+!operational-tests/**/*.go
+!operational-tests/**/*.md

@@ -1,5 +1,12 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const notificationsIds1: string[] = [
+  // Shared selectors/rendering cover authored Workflow messages and fixed-code in-app operations.
+  "sourceReview:src/constants/notificationDefaults.ts#a7ad4a831d244365c7ccf591df7d02c3a55dccd6e2e9d0ec038dbd4d36eace9b",
+  "sourceReview:src/constants/notificationTypes.ts#252be240979a4e8f7901f885f1d064bf56e6bec49b1980c42abb0489f9038521",
+  "sourceReview:src/features/notifications/email/render.ts#eb2f5096878de7cbcfd3be913bdabd941a7b93977ba132a1947b4cea920bd2b7",
+  "sourceReview:src/features/notifications/ui/PreferencesForm.tsx#74d6b09cc1355194739da0711a9d3c8715b055e8dea851f531f537b7b0d227d6",
+  "sourceReview:src/features/notifications/ui/deepLink.ts#0a509c02cc33d535ab37d1648ac1667b654454a540dd37bf55878290ca3ba8d6",
+  "sourceReview:src/features/notifications/ui/notificationText.ts#4374b4e2b31507a1f8adcbaa1082ea5a82ada6445f08d7281efa67371ce740cd",
   "derived:src/features/mentions/parse.ts",
   "derived:src/features/mentions/resolve.ts",
   "derived:src/features/notifications/preferences.ts",
@@ -9,9 +16,9 @@ export const notificationsIds1: string[] = [
   "sourceReview:src/features/mentions/parse.ts#9073724e366117150637accc89748c55c5cffcfb1321691277a81e67b5e440ac",
   "sourceReview:src/features/mentions/resolve.ts#e28503061b2624e3d48441f39599397ff529b103324cf9690c6b9719f407c7ec",
   "sourceReview:src/features/notifications/emailDispatch.ts#7e13f46ab62b6d16b73b600af1bba60c223a079656d819bc77e12f7e4b2a143d",
-  "sourceReview:src/features/notifications/feed.ts#8a423d046d6fdb0669a71934c99c127d63d0ea3875d6fec8f01a37badce2e2b5",
-  "sourceReview:src/features/notifications/preferences.ts#e098887ab722de1bd32f3e96d0427559cda66fca06d970610ff87c266afdace5",
-  "sourceReview:src/features/notifications/produce.ts#269ae5d14be73699611396d059acb6c7e87f65f41072cef134ff793e47eaa2fe",
+  "sourceReview:src/features/notifications/feed.ts#9edd2eef168e0dc4c4b05fc68bb6c89203303c22a9f8b2194dc82ee35849cc9f",
+  "sourceReview:src/features/notifications/preferences.ts#b4cb530c26f86bee412add3dce16cc945540fed4f99148c1f278214b8b4f2656",
+  "sourceReview:src/features/notifications/produce.ts#a8f23caf302ab72f1bfe2baf375384daddf695723687b65dae8e4d44119dbefd",
   "sourceReview:src/features/notifications/router.ts#4c2ce3c753f7210a15d7c654b85888145ea1fd515762527432e179e75db8a0c5",
   "sourceReview:src/features/notifications/scrub.ts#4cf1482b7185119ebc2424ace4865e68a174da722d02aa62c2caa6d84334fe59",
   "sourceReview:src/features/notifications/wire.ts#7aef69dfc0903e580597c96332bac49e429749c968dea118ef2ca147095187cb",

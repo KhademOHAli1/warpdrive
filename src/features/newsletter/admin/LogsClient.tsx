@@ -13,6 +13,8 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
+import { operationalNoticeText } from "../delivery/operationalMessages";
 import { useNewsletterRead } from "../ui/client";
 import {
   type LogCursor,
@@ -30,17 +32,26 @@ function EventsTable({
   rows,
   formatter,
   L,
+  locale,
 }: {
   rows: LogEntry[];
   formatter: Intl.DateTimeFormat;
   L: Labels;
+  locale: Locale;
 }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className={SETTINGS_TABLE_HEAD}>
           <tr>
-            {[L.timestamp, L.source, L.operation, L.outcome, L.correlation].map((label) => (
+            {[
+              L.timestamp,
+              L.source,
+              L.operation,
+              L.outcome,
+              L.operationalDetail,
+              L.correlation,
+            ].map((label) => (
               <th key={label} scope="col" className={SETTINGS_TABLE_HEADER_CELL}>
                 {label}
               </th>
@@ -60,6 +71,9 @@ function EventsTable({
                 </code>
               </td>
               <td className={SETTINGS_TABLE_CELL}>{L.logOutcome(entry.outcome)}</td>
+              <td className={SETTINGS_TABLE_CELL}>
+                {entry.detail ? operationalNoticeText(entry.detail, locale) : "—"}
+              </td>
               <td className={SETTINGS_TABLE_CELL}>
                 <code className="break-all text-xs" dir="ltr">
                   {entry.correlationId ?? "—"}
@@ -136,7 +150,7 @@ export function LogsClient() {
         </div>
       </SettingsCardBody>
       {result !== undefined && result.rows.length > 0 ? (
-        <EventsTable rows={result.rows} formatter={formatter} L={L} />
+        <EventsTable rows={result.rows} formatter={formatter} L={L} locale={prefs.locale} />
       ) : (
         <SettingsCardBody>
           <p role={logs.isError ? "alert" : "status"} className="text-sm text-muted-foreground">

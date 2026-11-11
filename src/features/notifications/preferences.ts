@@ -1,5 +1,9 @@
 import { and, eq } from "drizzle-orm";
-import { DEFAULT_EMAIL_BY_TYPE, DEFAULT_IN_APP } from "@/constants/notificationDefaults";
+import {
+  DEFAULT_EMAIL_BY_TYPE,
+  DEFAULT_IN_APP,
+  supportsNotificationEmail,
+} from "@/constants/notificationDefaults";
 import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 import type { Db } from "@/db/client";
@@ -28,7 +32,8 @@ export async function getPreferences(
 
   const out = {} as Record<NotificationType, { inApp: boolean; email: boolean }>;
   for (const t of NOTIFICATION_TYPES) {
-    out[t] = byType.get(t) ?? defaultPreference(t);
+    const preference = byType.get(t) ?? defaultPreference(t);
+    out[t] = { ...preference, email: supportsNotificationEmail(t) && preference.email };
   }
   return out;
 }
@@ -43,10 +48,15 @@ export async function setPreference(
   signal.throwIfAborted();
   await db
     .insert(notificationPreferences)
-    .values({ userId, type, inApp: prefs.inApp, email: prefs.email })
+    .values({
+      userId,
+      type,
+      inApp: prefs.inApp,
+      email: supportsNotificationEmail(type) && prefs.email,
+    })
     .onConflictDoUpdate({
       target: [notificationPreferences.userId, notificationPreferences.type],
-      set: { inApp: prefs.inApp, email: prefs.email },
+      set: { inApp: prefs.inApp, email: supportsNotificationEmail(type) && prefs.email },
     });
   signal.throwIfAborted();
 }
@@ -64,5 +74,6 @@ export async function resolveDelivery(
     .where(and(eq(notificationPreferences.userId, userId), eq(notificationPreferences.type, type)));
   signal.throwIfAborted();
 
-  return row ? { inApp: row.inApp, email: row.email } : defaultPreference(type);
+  const preference = row ? { inApp: row.inApp, email: row.email } : defaultPreference(type);
+  return { ...preference, email: supportsNotificationEmail(type) && preference.email };
 }

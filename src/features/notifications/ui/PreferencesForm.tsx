@@ -3,6 +3,7 @@
 import { useId, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
+import { supportsNotificationEmail } from "@/constants/notificationDefaults";
 import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 import { useMessages } from "@/features/i18n/LocaleProvider";
@@ -83,8 +84,8 @@ function PreferenceRow({
       <Toggle
         event={typeLabels[type]}
         channel={columnEmail}
-        checked={pref.email}
-        disabled={saving || type === "workflow_message"}
+        checked={supportsNotificationEmail(type) && pref.email}
+        disabled={saving || type === "workflow_message" || !supportsNotificationEmail(type)}
         onChange={(next) => onChange({ ...pref, email: next })}
       />
       {feedback !== undefined && (

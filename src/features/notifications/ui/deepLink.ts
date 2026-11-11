@@ -1,4 +1,5 @@
 import type { NotificationType } from "@/constants/notificationTypes";
+import { operationalNoticeSchema } from "@/features/newsletter/delivery/operationalContracts";
 import { entityHref } from "@/features/notifications/entityHref";
 import { isUuidParam } from "@/lib/isUuidParam";
 import type { NotificationFeedItem } from "@/types/notification";
@@ -9,6 +10,7 @@ import type { NotificationFeedItem } from "@/types/notification";
 const FALLBACK: Record<NotificationType, string> = {
   mention: "/",
   workflow_message: "/workflows",
+  newsletter_operational: "/settings/logs",
   activity_assigned: "/activities/calendar",
   activity_reminder: "/activities/calendar",
   deal_followed_update: "/",
@@ -29,6 +31,13 @@ function threadHref(item: NotificationFeedItem): string | null {
 }
 
 export function notificationHref(item: NotificationFeedItem): string {
+  if (item.type === "newsletter_operational") {
+    const parsed = operationalNoticeSchema.safeParse(item.payload);
+    if (!parsed.success || parsed.data.reason.startsWith("unmatched_")) return FALLBACK[item.type];
+    return parsed.data.category.startsWith("feedback.")
+      ? "/campaigns/subscribers/bounces"
+      : "/settings/maintenance";
+  }
   if (item.type === "workflow_message") {
     const id = item.payload.approvalWaitId;
     return typeof id === "string" && isUuidParam(id)

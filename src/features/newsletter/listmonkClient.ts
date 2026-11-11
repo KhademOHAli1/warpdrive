@@ -59,6 +59,7 @@ function requestBody(body: unknown, headers: Headers): BodyInit | undefined {
 export class ListmonkClient {
   private readonly authorization: string;
   private consentVerification: Promise<boolean> | undefined;
+  private operationalVerification: Promise<boolean> | undefined;
 
   constructor(
     private readonly origin: string,
@@ -75,6 +76,16 @@ export class ListmonkClient {
       .then((data) => consentContract.safeParse(data).success)
       .catch(() => false);
     return this.consentVerification;
+  }
+
+  hasOperationalContract(): Promise<boolean> {
+    this.operationalVerification ??= this.json("GET", "/api/warpdrive-capabilities")
+      .then(
+        (data) =>
+          consentContract.extend({ operationalEvents: z.literal(1) }).safeParse(data).success,
+      )
+      .catch(() => false);
+    return this.operationalVerification;
   }
 
   private async request(method: Method, path: string, options: Options): Promise<string> {

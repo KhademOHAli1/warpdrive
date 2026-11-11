@@ -34,9 +34,9 @@ export function renderNotificationEmail(
   const payloadSubject = typeof row.payload.subject === "string" ? row.payload.subject : null;
   const activitySubject = isolate(payloadSubject ?? t("activityFallback"));
   const type =
-    NOTIFICATION_TYPES.filter((candidate) => candidate !== "workflow_message").find(
-      (candidate) => candidate === row.type,
-    ) ?? "generic";
+    NOTIFICATION_TYPES.filter(
+      (candidate) => candidate !== "workflow_message" && candidate !== "newsletter_operational",
+    ).find((candidate) => candidate === row.type) ?? "generic";
   const subject =
     type === "deal_email_received" && payloadSubject !== null
       ? t("deal_email_received.subjectWithTitle", { subject: isolate(payloadSubject) })

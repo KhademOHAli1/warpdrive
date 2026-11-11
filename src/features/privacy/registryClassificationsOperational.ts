@@ -39,14 +39,14 @@ export const operationalClassifications = {
     owner: "notifications",
     categories: ["recipient identifiers", "notification payloads", "email outcomes", "preferences"],
     subjectRelation:
-      "Notification recipient differs from subjects copied into body/payload. Review all referenced records and people.",
+      "Notification recipient differs from subjects copied into body/payload. Review all referenced records and people. A newsletter_operational row identifies the staff recipient even though its strict category/reason/count payload contains no subscriber identity or content.",
     purpose: "In-app notifications and queued recipient delivery.",
     disclosure:
-      "No blanket recipient-mailbox disclosure; scrub erased content and private related records before publication. Activity notification creation, feed visibility and mail admission additionally check current Calendar access and receipt policy. Immutable native in-app generation history cannot authorize email, and personal reminder settings do not replace CRM or Calendar visibility.",
+      "No blanket recipient-mailbox disclosure; scrub erased content and private related records before publication. Activity notification creation, feed visibility and mail admission additionally check current Calendar access and receipt policy. Immutable native in-app generation history cannot authorize email, and personal reminder settings do not replace CRM or Calendar visibility. Newsletter operational production requires current operate authority and in-app preference. Feed, unread and read operations rehydrate current authority before exposure; a null entity is not a bypass. Its decoder rejects extra payload fields and links use fixed Maintenance/Bounces/Logs routes.",
     retention:
       "No universal notification retention mandate; metadata, queued payloads and sent copies require reviewed policy.",
     externalEffects:
-      "pg-boss, in-app readers and configured delivery boundary; external delivery requires installation proof.",
+      "Other notification kinds can use pg-boss and the configured delivery boundary; external delivery requires installation proof. The newsletter_operational kind calls only the direct transactional in-app producer and ID-only realtime event. Its default, saved and resolved email preferences are forced false, including stale stored values; email admission therefore rejects it. Generic email rendering is a fallback, not permission to enqueue or submit it.",
     erasureTask: "DPL-16",
   },
   privacy: {

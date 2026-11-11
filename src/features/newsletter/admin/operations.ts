@@ -13,6 +13,7 @@ import {
   defineOperation,
   type NewsletterExecution,
 } from "@/features/newsletter/operation";
+import { operationalNoticeSchema } from "../delivery/operationalContracts";
 import {
   cleanupSchema,
   exportSchema,
@@ -300,6 +301,7 @@ const logs = defineLocalOperation(logsSchema, async (input, context): Promise<Lo
       action: auditEvents.action,
       outcome,
       correlationId: auditEvents.correlationId,
+      operational: sql<unknown>`${auditEvents.after}->'operational'`,
     })
     .from(auditEvents)
     .where(
@@ -321,10 +323,27 @@ const logs = defineLocalOperation(logsSchema, async (input, context): Promise<Lo
     rows: window.flatMap<LogEntry>((row) => {
       const state = logOutcomeSchema.safeParse(row.outcome);
       if (!state.success) return [];
-      if (actionPattern.test(row.action))
-        return [{ ...row, outcome: state.data, source: "campaigns" as const }];
+      const entry = {
+        id: row.id,
+        at: row.at,
+        action: row.action,
+        correlationId: row.correlationId,
+        outcome: state.data,
+      };
+      if (actionPattern.test(row.action)) {
+        const detail = row.action.startsWith("newsletter.delivery.")
+          ? operationalNoticeSchema.safeParse(row.operational)
+          : null;
+        return [
+          {
+            ...entry,
+            source: "campaigns" as const,
+            ...(detail?.success === true ? { detail: detail.data } : {}),
+          },
+        ];
+      }
       if (workspaceActions.includes(row.action))
-        return [{ ...row, outcome: state.data, source: "workspace" as const }];
+        return [{ ...entry, source: "workspace" as const }];
       return [];
     }),
     next: records.length > logLimit && last ? { at: last.at, id: last.id } : null,

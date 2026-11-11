@@ -98,3 +98,32 @@ describe("Listmonk server boundary", () => {
     expect(request.mock.calls.map(([, options]) => options?.method)).toEqual(["GET", "POST"]);
   });
 });
+
+it("requires the exact operational event capability alongside the established safety contract", async () => {
+  const capabilities = {
+    consent: 2,
+    dispatch: 1,
+    listConsentMode: 1,
+    publicSubscriberUpdate: 1,
+    campaignRevision: 1,
+    crmIdentity: 1,
+    crmAudiences: 1,
+    durableDelivery: 1,
+    crmAttribution: 1,
+    listEmbed: 1,
+    sesFeedback: 1,
+    readiness: 1,
+    atomicBulk: 1,
+    consentEvents: 1,
+  };
+  for (const operationalEvents of [undefined, 2, 1]) {
+    const request = vi.fn<typeof fetch>(() =>
+      Promise.resolve(Response.json({ data: { ...capabilities, operationalEvents } })),
+    );
+    vi.stubGlobal("fetch", request);
+    const engine = client();
+    expect(await engine.hasOperationalContract()).toBe(operationalEvents === 1);
+    await engine.hasOperationalContract();
+    expect(request).toHaveBeenCalledTimes(1);
+  }
+});

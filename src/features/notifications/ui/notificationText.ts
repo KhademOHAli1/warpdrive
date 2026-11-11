@@ -1,6 +1,7 @@
 import { NOTIFY_STRINGS } from "@/constants/notifyStrings";
 import { createAppTranslator } from "@/features/i18n/catalog";
 import type { Locale } from "@/features/i18n/registry";
+import { operationalNoticeText } from "@/features/newsletter/delivery/operationalMessages";
 import type { NotificationFeedItem } from "@/types/notification";
 
 function text(value: unknown): string {
@@ -12,6 +13,8 @@ export function notificationText(item: NotificationFeedItem, locale: Locale): st
   const isolate = (value: string): string => (locale === "fa" ? `\u2068${value}\u2069` : value);
   const payload = item.payload;
   switch (item.type) {
+    case "newsletter_operational":
+      return operationalNoticeText(payload, locale);
     case "workflow_message":
       return t("workflow_message", {
         title: isolate(text(payload.title)),

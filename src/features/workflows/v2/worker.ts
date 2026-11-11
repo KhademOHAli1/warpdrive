@@ -13,7 +13,8 @@ import { advanceWorkflowV2Run } from "./runner";
 import { reconcileWorkflowV2 } from "./scheduling";
 
 const RUN = "workflow-v2-run",
-  RECONCILE = "workflow-v2-reconcile";
+  RECONCILE = "workflow-v2-reconcile",
+  NEWSLETTER_OPERATIONS = "newsletter-operations-monitor";
 async function enqueue(boss: PgBoss, runId: string) {
   return boss.send(
     RUN,
@@ -33,6 +34,16 @@ export async function nudgeWorkflowV2Run(runId: string): Promise<void> {
 export async function registerWorkflowV2Jobs(boss: PgBoss, db: Db): Promise<void> {
   await boss.createQueue(RUN);
   await boss.createQueue(RECONCILE);
+  await boss.createQueue(NEWSLETTER_OPERATIONS);
+  await boss.work(NEWSLETTER_OPERATIONS, async () => {
+    await checkNewsletterDelivery(db, AbortSignal.timeout(45_000));
+  });
+  await boss.schedule(NEWSLETTER_OPERATIONS, "* * * * *", {}, { tz: "UTC" });
+  await boss.send(
+    NEWSLETTER_OPERATIONS,
+    {},
+    { retryLimit: 2, expireInSeconds: 60, singletonSeconds: 60 },
+  );
   await boss.work<{ runId: string }>(RUN, async ([job]) => {
     if (job === undefined) return;
     const signal = AbortSignal.timeout(45_000);
@@ -58,7 +69,6 @@ export async function registerWorkflowV2Jobs(boss: PgBoss, db: Db): Promise<void
       signal.throwIfAborted();
       console.warn("Newsletter identity sync did not complete");
     }
-    await checkNewsletterDelivery(signal);
     await drainNewsletterIdentityEvents(
       db,
       async (event) => {
