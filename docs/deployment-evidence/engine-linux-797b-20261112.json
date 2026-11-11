@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "kind": "hosted-linux-engine-qualification-summary",
+  "headRevision": "797ba7f715069fd3794b2485df18ebc17516bc1f",
+  "testedMergeRevision": "61e8714d564267b0634f5229d81d1ec517c6a80a",
+  "workflowRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43120291944",
+  "artifact": {
+    "id": 13899479320,
+    "bytes": 26758112,
+    "sha256": "d851a0dfb8e07464c007b567e6780cc5c29983fdf4e8b83108a756bd0d5389b7"
+  },
+  "image": {
+    "id": "sha256:388b8911355f1007d866867429450a1466d1979d747864ee3e8b31c68fbf73d1",
+    "platform": "linux/amd64",
+    "revision": "61e8714d564267b0634f5229d81d1ec517c6a80a",
+    "contextSha256": "46cfa51efdb7265b23ccc8cdb56e2829b2f9b61687b3be0382b1ecde623d1275",
+    "user": "65532:65532"
+  },
+  "checks": [
+    {
+      "name": "immutable-final-engine-image",
+      "status": "passed"
+    },
+    {
+      "name": "owned-internal-fixture",
+      "status": "passed"
+    },
+    {
+      "name": "actual-final-image-packaging",
+      "status": "passed"
+    },
+    {
+      "name": "empty-runtime-refuses-schema-writes",
+      "status": "passed"
+    },
+    {
+      "name": "file-secret-loader-and-fresh-install",
+      "status": "passed"
+    },
+    {
+      "name": "fresh-repeat-no-write-migration",
+      "status": "passed"
+    },
+    {
+      "name": "pinned-schema-legacy-holds",
+      "status": "passed"
+    },
+    {
+      "name": "explicit-upgrade-and-no-write",
+      "status": "passed"
+    },
+    {
+      "name": "receipt-and-index-drift-rejection",
+      "status": "passed"
+    },
+    {
+      "name": "restricted-role-no-ddl-startup",
+      "status": "passed"
+    },
+    {
+      "name": "rls-policy-sequence-drift-rejection",
+      "status": "passed"
+    },
+    {
+      "name": "runtime-excludes-migration",
+      "status": "passed"
+    },
+    {
+      "name": "migration-excludes-actual-runtime",
+      "status": "passed"
+    },
+    {
+      "name": "fence-loss-exits-and-restarts",
+      "status": "passed"
+    },
+    {
+      "name": "final-image-health-and-readiness",
+      "status": "passed"
+    }
+  ],
+  "cleanupSuccess": true,
+  "reportSha256": "82bf8bfae94928b257ddac8ff8ba8ebb88ded53871fd047c519c299cef5e76af",
+  "copiedArtifactSha256": {
+    "entrypoint.sh": "da457db169026cb9e9c56539943b0ee5a6a7fc47f29d1279cd28f65850f3efe4",
+    "listmonk": "137cf3ee1eddd645d31789c86903b1bf21f2f323ef2e3895d6fbb583f145eb2d",
+    "warpdrive-engine-source.tar.gz": "b13ee54f51c68af217ac194a92ab0398b5f851dc21ee1487b697a8b0f65cde93"
+  },
+  "limitations": [
+    "Disposable Linux/amd64 final-image fixture only; no production deployment or existing-volume ownership transition.",
+    "Legacy upgrade starts from pinned upstream schema, not an older installed packed binary.",
+    "No external SMTP/provider delivery, public ingress, backup restore or installed monitoring qualification.",
+    "Advisory lifecycle locks are cooperative; supported DDL still requires independently verified offline maintenance."
+  ],
+  "deploymentAuthorized": false
+}

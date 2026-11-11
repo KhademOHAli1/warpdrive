@@ -135,8 +135,8 @@ try {
       [profile.adminId, profile.adminEmail],
     );
     await client.query(
-      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-      [profile.adminId, adminPassword],
+      "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+      [profile.adminId, profile.adminId, adminPassword],
     );
     await client.query('INSERT INTO pipelines(id,name,"order") VALUES($1,$2,0)', [
       profile.pipelineId,
