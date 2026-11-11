@@ -58,7 +58,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/router.ts#8f7ec7bacc0b8475549d42804989f4870ac9d031d6184342fa8b8a699d049840",
   "sourceReview:src/features/newsletter/schema/operationReceipts.ts#72a974da475d645c6cfb769a21554168902cb1897166beec62b023d38bc0d696",
   "sourceReview:src/features/newsletter/schema/personAddresses.ts#eb255a57b83742888e9e00acd2bf019291de534ba5e6b94e1df7fbcdf2c57148",
-  "sourceReview:src/features/newsletter/ui/client.ts#408ab84b0034980287a0ef5665e267ec8a382ce54bd1f446ec161f2b0f5d555a",
+  "sourceReview:src/features/newsletter/ui/client.ts#219b149a4ffc1e3f0307aef917126fcc53f93b7b110bb54aaa76e9c3caaa3847",
   "table:newsletter_attributed_wins",
   "table:newsletter_deal_sources",
   "table:newsletter_exposure_receipts",
