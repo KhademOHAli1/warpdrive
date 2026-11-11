@@ -18,6 +18,10 @@ export const GLOBAL_FLAGS = [
   "work.change",
   "work.manage",
   "goals.manage",
+  "newsletter.view",
+  "newsletter.edit",
+  "newsletter.send",
+  "newsletter.consent",
   "workflow.view",
   "workflow.create",
   "workflow.edit",
@@ -91,6 +95,8 @@ export const HIGH_RISK_FLAGS = [
   "metadata.manage",
   "data.export",
   "data.import",
+  "newsletter.send",
+  "newsletter.consent",
   "record.share_any",
 ] as const satisfies readonly PermissionFlagKey[];
 

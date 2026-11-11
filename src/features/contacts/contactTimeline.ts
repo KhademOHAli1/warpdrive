@@ -14,10 +14,13 @@ import {
   type NoteItem,
 } from "@/features/deal-workspace/historyTimeline";
 import type { Locale } from "@/features/i18n/registry";
+import { listPersonNewsletterEvents } from "@/features/newsletter/identity/events";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { NumberingSystem } from "@/lib/numberingSystem";
 import { toRefActor } from "./actorAdapters";
+import { personNewsletterMessages } from "./personNewsletterMessages";
 
 export interface ContactTimelineResult {
   items: HistoryItem[];
@@ -66,14 +69,27 @@ export async function contactTimeline(
   const changelog = await listChangeLog(db, entityType, entityId, signal);
   signal.throwIfAborted();
 
-  return {
-    items: buildHistoryTimeline(
-      activityItems,
-      changelog,
-      noteItems,
-      undefined,
-      locale,
-      numberingSystem,
-    ),
-  };
+  const items = buildHistoryTimeline(
+    activityItems,
+    changelog,
+    noteItems,
+    undefined,
+    locale,
+    numberingSystem,
+  );
+  if (entityType === "person" && hasNewsletterPermission(actor, "view")) {
+    const events = await listPersonNewsletterEvents(db, actor, entityId, signal);
+    const labels = personNewsletterMessages[locale].events;
+    for (const event of events) {
+      items.push({
+        kind: "event",
+        id: `newsletter:${event.id}`,
+        at: event.occurredAt,
+        label: labels[event.event],
+        actorName: null,
+      });
+    }
+    items.sort((left, right) => right.at.getTime() - left.at.getTime());
+  }
+  return { items };
 }

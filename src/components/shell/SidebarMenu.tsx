@@ -18,7 +18,7 @@ import {
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
 import { SidebarToggle } from "./SidebarToggle";
-import { useWorkspaceNavigation } from "./WorkspaceShellProvider";
+import { useWorkspaceNavigation, useWorkspaceShell } from "./WorkspaceShellProvider";
 
 const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   dashboard: LayoutDashboard,
@@ -49,7 +49,8 @@ export function SidebarMenu({
   const messages = useMessages();
   const t = useAppTranslations("shell.sidebar");
   const activities = useAppTranslations("activities");
-  const campaignNav = campaignNavigation(useLocale());
+  const { campaignCapabilities } = useWorkspaceShell();
+  const campaignNav = campaignNavigation(useLocale(), campaignCapabilities);
   const campaign = navItems.find((item) => item.key === "campaigns");
   function children(key: NavKey): SidebarChild[] | undefined {
     if (key === "contacts")

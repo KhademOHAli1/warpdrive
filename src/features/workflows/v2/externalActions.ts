@@ -15,6 +15,7 @@ import { err, ok } from "@/types/result";
 import { executeWorkflowAi } from "./aiActions";
 import { runWorkflowCode } from "./codeSandbox";
 import { safeWorkflowHttpRequest } from "./httpTransport";
+import { executeNewsletterWorkflowAction } from "./newsletterActions";
 import { matchesResponseSchema } from "./responseSchema";
 
 type ActionContext = Parameters<ExternalActionExecutor>[0];
@@ -29,6 +30,8 @@ export const executeExternalAction: ExternalActionExecutor = (context, node, con
     return executeWorkflowAi(context.db, node.type, config, context.signal);
   if (node.type === "HTTP_REQUEST") return executeHttp(context, config);
   if (node.type === "SEND_EMAIL") return executeEmail(context, config);
+  if (node.type === "NEWSLETTER_CONSENT_STATUS" || node.type === "NEWSLETTER_INVITE")
+    return executeNewsletterWorkflowAction(context, node.type, config);
   return Promise.resolve(err({ id: "E_WORKFLOW_EXTERNAL_UNSUPPORTED" }));
 };
 

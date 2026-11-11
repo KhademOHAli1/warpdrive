@@ -8,6 +8,7 @@ import {
   type WorkflowV2Adapters,
   type WorkflowV2Studio,
 } from "@/features/blocks/contracts";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
@@ -70,7 +71,13 @@ export async function readWorkflowV2Studio(
           { id: "palette", type, version: 1, name: type, config: {} },
           signal,
         );
-  return ok({ objects, members, ...external, readiness } satisfies WorkflowV2Studio);
+  return ok({
+    objects,
+    members,
+    ...external,
+    readiness,
+    newsletterEvents: hasNewsletterPermission(current, "view"),
+  } satisfies WorkflowV2Studio);
 }
 export async function lookupWorkflowV2Records(
   db: Db,

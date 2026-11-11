@@ -1,0 +1,848 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index 44aad6d..f0defe9 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -101,8 +101,9 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		// API endpoints.
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
++		g.GET("/api/warpdrive/readiness", pm(a.GetWarpdriveReadiness, "settings:get"))
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+diff --git a/cmd/init.go b/cmd/init.go
+index d0b04b9..489555e 100644
+--- a/cmd/init.go
++++ b/cmd/init.go
+@@ -614,6 +614,7 @@ func initCampaignManager(msgrs []manager.Messenger, q *models.Queries, u *UrlCon
+ 		SlidingWindowRate:     ko.Int("app.message_sliding_window_rate"),
+ 		ScanInterval:          time.Second * 5,
+ 		ScanCampaigns:         !ko.Bool("passive"),
++		DatabaseConnections:   db.Stats().MaxOpenConnections,
+ 	}, newManagerStore(db, q, co, md), i, lo)
+ 
+ 	// Attach all messengers to the campaign manager.
+diff --git a/cmd/main.go b/cmd/main.go
+index 9ead35d..b040094 100644
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -56,6 +56,7 @@ type App struct {
+ 	bufLog     *buflog.BufLog
+ 
+ 	sesFeedback   http.Handler
++	readiness     readinessProbes
+ 	about         about
+ 	fnOptinNotify func(models.Subscriber, []int) (int, error)
+ 
+@@ -208,6 +209,9 @@ func main() {
+ 	if err := sesfeedback.Install(db); err != nil {
+ 		lo.Fatal("could not initialize SES feedback receipts")
+ 	}
++	if err := installReadinessIndex(db); err != nil {
++		lo.Fatal("could not initialize campaign delivery rates")
++	}
+ 	sesConfig, err := sesfeedback.ConfigFromEnv()
+ 	if err != nil {
+ 		lo.Fatal("invalid SES feedback configuration")
+diff --git a/cmd/warpdrive_delivery_http.go b/cmd/warpdrive_delivery_http.go
+index 64136eb..3271344 100644
+--- a/cmd/warpdrive_delivery_http.go
++++ b/cmd/warpdrive_delivery_http.go
+@@ -17,6 +17,7 @@ type deliveryState struct {
+ 	Hold   string          `db:"hold" json:"hold"`
+ 	Counts json.RawMessage `db:"counts" json:"counts"`
+ 	Review json.RawMessage `db:"review" json:"review"`
++	Rates  json.RawMessage `db:"rates" json:"rates"`
+ }
+ 
+ func (a *App) GetWarpdriveDelivery(c echo.Context) error {
+@@ -34,13 +35,25 @@ func (a *App) GetWarpdriveDelivery(c echo.Context) error {
+ 			FROM warpdrive_delivery_recipients WHERE campaign_id = $1
+ 		), counters AS (
+ 			SELECT state, COUNT(*) AS count FROM projected GROUP BY state
++		), minutes AS (
++			SELECT generate_series(date_trunc('minute', NOW()) - INTERVAL '14 minutes',
++			                       date_trunc('minute', NOW()), INTERVAL '1 minute') AS minute
++		), accepted_by_minute AS (
++			SELECT date_trunc('minute', smtp_accepted_at) AS minute, COUNT(*) AS accepted
++			FROM warpdrive_delivery_recipients
++			WHERE campaign_id = $1 AND smtp_accepted_at >= (SELECT MIN(minute) FROM minutes)
++			GROUP BY 1
+ 		)
+ 		SELECT COALESCE((SELECT hold FROM warpdrive_delivery_runs WHERE campaign_id = $1), '') AS hold,
+ 		       COALESCE((SELECT jsonb_object_agg(state, count) FROM counters), '{}'::jsonb) AS counts,
+ 		       COALESCE((SELECT jsonb_agg(to_jsonb(r)) FROM (
+ 		           SELECT id, message_id, attempts, updated_at FROM projected
+ 		           WHERE state = 'unknown' ORDER BY updated_at, id LIMIT 100
+-		       ) AS r), '[]'::jsonb) AS review
++		       ) AS r), '[]'::jsonb) AS review,
++		       (SELECT jsonb_agg(jsonb_build_object(
++		           'minute', to_char(m.minute AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
++		           'accepted', COALESCE(a.accepted, 0)) ORDER BY m.minute)
++		        FROM minutes m LEFT JOIN accepted_by_minute a USING (minute)) AS rates
+ 	`, id); err != nil {
+ 		a.log.Printf("could not read delivery receipts for campaign %d: %v", id, err)
+ 		return echo.NewHTTPError(http.StatusInternalServerError)
+diff --git a/cmd/warpdrive_readiness.go b/cmd/warpdrive_readiness.go
+new file mode 100644
+index 0000000..fbf6266
+--- /dev/null
++++ b/cmd/warpdrive_readiness.go
+@@ -0,0 +1,209 @@
++package main
++
++import (
++	"context"
++	"database/sql"
++	"errors"
++	"net/http"
++	"sync"
++	"time"
++
++	"github.com/jmoiron/sqlx"
++	"github.com/knadh/listmonk/internal/manager"
++	"github.com/knadh/listmonk/internal/media"
++	"github.com/knadh/listmonk/internal/messenger/email"
++	"github.com/knadh/listmonk/internal/sesfeedback"
++	"github.com/labstack/echo/v4"
++	"github.com/lib/pq"
++)
++
++func installReadinessIndex(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(900731613, 50)"); err != nil {
++		return err
++	}
++	res, err := tx.ExecContext(ctx, "INSERT INTO warpdrive_delivery_migrations(version) VALUES (4) ON CONFLICT DO NOTHING")
++	if err != nil {
++		return err
++	}
++	n, err := res.RowsAffected()
++	if err != nil {
++		return err
++	}
++	if n == 1 {
++		if _, err := tx.ExecContext(ctx, `
++			CREATE INDEX warpdrive_delivery_smtp_recent ON warpdrive_delivery_recipients (campaign_id, smtp_accepted_at)
++			WHERE smtp_accepted_at IS NOT NULL
++		`); err != nil {
++			return err
++		}
++	}
++	return tx.Commit()
++}
++
++type readinessState struct {
++	Status string `json:"status"`
++}
++
++type checkedReadiness struct {
++	Status    string     `json:"status"`
++	CheckedAt *time.Time `json:"checkedAt"`
++}
++
++type feedbackReadiness struct {
++	Status      string     `json:"status"`
++	LastEventAt *time.Time `json:"lastEventAt"`
++}
++
++type readinessResult struct {
++	Ready     bool                       `json:"ready"`
++	Database  readinessState             `json:"database"`
++	Scheduler manager.SchedulerReadiness `json:"scheduler"`
++	Relay     checkedReadiness           `json:"relay"`
++	Media     checkedReadiness           `json:"media"`
++	Limits    manager.DeliveryLimits     `json:"limits"`
++	Feedback  feedbackReadiness          `json:"feedback"`
++}
++
++type cachedReadinessProbe struct {
++	mu     sync.Mutex
++	result checkedReadiness
++}
++
++func (p *cachedReadinessProbe) run(probe func(context.Context) string) checkedReadiness {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	if p.result.CheckedAt != nil && time.Since(*p.result.CheckedAt) < 20*time.Second {
++		return p.result
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
++	defer cancel()
++	status := probe(ctx)
++	now := time.Now().UTC()
++	p.result = checkedReadiness{Status: status, CheckedAt: &now}
++	return p.result
++}
++
++type readinessProbes struct {
++	relay, media cachedReadinessProbe
++}
++
++func (a *App) GetWarpdriveReadiness(c echo.Context) error {
++	var result readinessResult
++	var checks sync.WaitGroup
++	checks.Go(func() { result.Relay = a.readiness.relay.run(a.checkRelayReadiness) })
++	checks.Go(func() { result.Media = a.readiness.media.run(a.checkMediaReadiness) })
++
++	ctx, cancel := context.WithTimeout(c.Request().Context(), 3*time.Second)
++	defer cancel()
++	result.Database.Status = a.checkDatabaseReadiness(ctx)
++	result.Feedback = a.checkFeedbackReadiness(ctx)
++	result.Limits = a.manager.DeliveryLimits()
++	checks.Wait()
++	result.Scheduler = a.manager.SchedulerReadiness(time.Now())
++	result.Ready = result.Database.Status == "ready" && result.Scheduler.Status == "ready" &&
++		result.Relay.Status == "ready" && result.Media.Status == "ready" &&
++		(result.Feedback.Status == "disabled" || result.Feedback.Status == "confirmed")
++	return c.JSON(http.StatusOK, okResp{result})
++}
++
++func (a *App) checkDatabaseReadiness(ctx context.Context) string {
++	var ready bool
++	err := a.db.GetContext(ctx, &ready, `
++		SELECT to_regclass('warpdrive_crm_identity_challenges') IS NOT NULL
++		   AND to_regclass('warpdrive_campaign_audiences') IS NOT NULL
++		   AND to_regclass('warpdrive_delivery_recipients') IS NOT NULL
++		   AND to_regclass('warpdrive_ses_feedback') IS NOT NULL
++		   AND to_regclass('warpdrive_delivery_smtp_recent') IS NOT NULL
++		   AND (SELECT count(*) FROM warpdrive_delivery_migrations WHERE version IN (1, 2, 3, 4)) = 4
++	`)
++	var dbError *pq.Error
++	switch {
++	case errors.As(err, &dbError) && (dbError.Code == "42P01" || dbError.Code == "42703"):
++		return "migration_required"
++	case err != nil:
++		return "unavailable"
++	case !ready:
++		return "migration_required"
++	default:
++		return "ready"
++	}
++}
++
++func (a *App) checkRelayReadiness(ctx context.Context) string {
++	relay, ok := a.emailMsgr.(*email.Emailer)
++	if !ok || relay == nil {
++		return "unconfigured"
++	}
++	err := relay.ProbeCampaignRelay(ctx)
++	switch {
++	case errors.Is(err, email.ErrRelayUnconfigured):
++		return "unconfigured"
++	case err != nil:
++		return "unavailable"
++	default:
++		return "ready"
++	}
++}
++
++func (a *App) checkMediaReadiness(ctx context.Context) string {
++	probe, ok := a.media.(media.ReadinessProbe)
++	if !ok {
++		return "unchecked"
++	}
++	var sample string
++	if ko.String("upload.provider") == "s3" {
++		err := a.db.GetContext(ctx, &sample, "SELECT filename FROM media WHERE provider='s3' ORDER BY id DESC LIMIT 1")
++		if err != nil && !errors.Is(err, sql.ErrNoRows) {
++			return "unavailable"
++		}
++	}
++	err := probe.ProbeReadiness(ctx, sample)
++	switch {
++	case errors.Is(err, media.ErrReadinessUnchecked):
++		return "unchecked"
++	case err != nil:
++		return "unavailable"
++	default:
++		return "ready"
++	}
++}
++
++func (a *App) checkFeedbackReadiness(ctx context.Context) feedbackReadiness {
++	config, err := sesfeedback.ConfigFromEnv()
++	if err != nil {
++		return feedbackReadiness{Status: "configured"}
++	}
++	if !config.Enabled() {
++		return feedbackReadiness{Status: "disabled"}
++	}
++	result := feedbackReadiness{Status: "configured"}
++	var status struct {
++		Confirmed   bool
++		LastEventAt sql.NullTime `db:"last_event_at"`
++	}
++	if err := a.db.GetContext(ctx, &status, `
++		SELECT COALESCE((
++			SELECT kind='subscription' FROM warpdrive_ses_feedback WHERE topic_arn=$1
++			AND kind IN ('subscription','unsubscribe') ORDER BY received_at DESC LIMIT 1
++		), FALSE) AS confirmed, (
++			SELECT MAX(received_at) FROM warpdrive_ses_feedback WHERE topic_arn=$1
++			AND kind IN ('hard','soft','complaint')
++		) AS last_event_at
++	`, config.TopicARN); err == nil {
++		if status.Confirmed {
++			result.Status = "confirmed"
++		}
++		if status.LastEventAt.Valid {
++			at := status.LastEventAt.Time.UTC()
++			result.LastEventAt = &at
++		}
++	}
++	return result
++}
+diff --git a/internal/manager/manager.go b/internal/manager/manager.go
+index 160418e..2c647a0 100644
+--- a/internal/manager/manager.go
++++ b/internal/manager/manager.go
+@@ -1,6 +1,7 @@
+ package manager
+ 
+ import (
++	"context"
+ 	"crypto/sha1"
+ 	"encoding/hex"
+ 	"errors"
+@@ -14,6 +15,7 @@ import (
+ 	"regexp"
+ 	"strings"
+ 	"sync"
++	"sync/atomic"
+ 	"time"
+ 
+ 	"maps"
+@@ -24,6 +26,7 @@ import (
+ 	"github.com/knadh/listmonk/models"
+ 	"golang.org/x/text/cases"
+ 	"golang.org/x/text/language"
++	"golang.org/x/time/rate"
+ )
+ 
+ // attribInlineEmbed is the HTML attrib used to mark <img> tags whose source
+@@ -90,8 +93,11 @@ type Manager struct {
+ 	log        *log.Logger
+ 
+ 	// Campaigns that are currently running.
+-	pipes    map[int]*pipe
+-	pipesMut sync.RWMutex
++	pipes         map[int]*pipe
++	pipesMut      sync.RWMutex
++	lastScan      atomic.Int64
++	limits        DeliveryLimits
++	deliveryPacer *rate.Limiter
+ 
+ 	tpls    map[int]*models.Template
+ 	tplsMut sync.RWMutex
+@@ -164,27 +170,22 @@ type Config struct {
+ 	// This can be used to run multiple instances of listmonk
+ 	// (exposed to the internet, private etc.) where only one does campaign
+ 	// processing while the others handle other kinds of traffic.
+-	ScanCampaigns bool
++	ScanCampaigns       bool
++	DatabaseConnections int
+ }
+ 
+ var pushTimeout = time.Second * 3
+ 
+ // New returns a new instance of Mailer.
+ func New(cfg Config, store Store, i *i18n.I18n, l *log.Logger) *Manager {
+-	if cfg.BatchSize < 1 {
+-		cfg.BatchSize = 1000
+-	}
+-	if cfg.Concurrency < 1 {
+-		cfg.Concurrency = 1
+-	}
+-	if cfg.MessageRate < 1 {
+-		cfg.MessageRate = 1
+-	}
++	cfg, limits := normalizeDeliveryLimits(cfg)
+ 
+ 	m := &Manager{
+-		cfg:   cfg,
+-		store: store,
+-		i18n:  i,
++		cfg:           cfg,
++		store:         store,
++		limits:        limits,
++		deliveryPacer: rate.NewLimiter(rate.Limit(limits.MessagesPerSecond), 1),
++		i18n:          i,
+ 		fnNotify: func(subject string, data any) error {
+ 			return notifs.NotifySystem(subject, notifs.TplCampaignStatus, data, nil)
+ 		},
+@@ -194,8 +195,8 @@ func New(cfg Config, store Store, i *i18n.I18n, l *log.Logger) *Manager {
+ 		tpls:         make(map[int]*models.Template),
+ 		links:        make(map[string]string),
+ 		nextPipes:    make(chan *pipe, 1000),
+-		campMsgQ:     make(chan CampaignMessage, min(cfg.Concurrency, 64)*2),
+-		msgQ:         make(chan models.Message, min(cfg.Concurrency, 64)*2),
++		campMsgQ:     make(chan CampaignMessage, limits.QueueCapacity),
++		msgQ:         make(chan models.Message, limits.QueueCapacity),
+ 		slidingStart: time.Now(),
+ 	}
+ 	m.tplFuncs = m.makeGnericFuncMap()
+@@ -464,6 +465,7 @@ func (m *Manager) scanCampaigns(tick time.Duration) {
+ 			continue
+ 		}
+ 
++		m.lastScan.Store(time.Now().UnixNano())
+ 		for _, c := range campaigns {
+ 			// Create a new pipe that'll handle this campaign's states.
+ 			p, err := m.newPipe(c)
+@@ -510,8 +512,7 @@ func (m *Manager) testRecipientEligible(msg CampaignMessage) (bool, error) {
+ // worker is a blocking function that perpetually listents to events (message) on different
+ // queues and processes them.
+ func (m *Manager) worker() {
+-	// Counter to keep track of the message / sec rate limit.
+-	numMsg := 0
++	workerPacer := rate.NewLimiter(rate.Limit(max(m.cfg.MessageRate, 1)), 1)
+ 	for {
+ 		select {
+ 		// Campaign message.
+@@ -527,12 +528,12 @@ func (m *Manager) worker() {
+ 				continue
+ 			}
+ 
+-			// Pause on hitting the message rate.
+-			if numMsg >= m.cfg.MessageRate {
+-				time.Sleep(time.Second)
+-				numMsg = 0
++			// Apply both per-worker and installation-wide pacing before
++			// checking the final durable consent lease.
++			_ = workerPacer.Wait(context.Background())
++			if m.deliveryPacer != nil {
++				_ = m.deliveryPacer.Wait(context.Background())
+ 			}
+-			numMsg++
+ 
+ 			// Outgoing message.
+ 			out := models.Message{
+diff --git a/internal/manager/warpdrive_readiness.go b/internal/manager/warpdrive_readiness.go
+new file mode 100644
+index 0000000..20dd5de
+--- /dev/null
++++ b/internal/manager/warpdrive_readiness.go
+@@ -0,0 +1,63 @@
++package manager
++
++import "time"
++
++const (
++	maxDeliveryWorkers = 8
++	maxDeliveryRate    = 40
++	maxDeliveryBatch   = 200
++)
++
++type DeliveryLimits struct {
++	Workers                    int  `json:"workers"`
++	PerWorkerMessagesPerSecond int  `json:"perWorkerMessagesPerSecond"`
++	MessagesPerSecond          int  `json:"messagesPerSecond"`
++	BatchSize                  int  `json:"batchSize"`
++	QueueCapacity              int  `json:"queueCapacity"`
++	Clamped                    bool `json:"clamped"`
++}
++
++func normalizeDeliveryLimits(config Config) (Config, DeliveryLimits) {
++	workers := max(config.Concurrency, 1)
++	rate := max(config.MessageRate, 1)
++	batch := config.BatchSize
++	if batch < 1 {
++		batch = 1000
++	}
++	workerBudget := maxDeliveryWorkers
++	if config.DatabaseConnections > 0 {
++		workerBudget = min(workerBudget, max(1, config.DatabaseConnections/2))
++	}
++	config.Concurrency = min(workers, workerBudget)
++	config.MessageRate = min(rate, maxDeliveryRate/config.Concurrency)
++	config.BatchSize = min(batch, maxDeliveryBatch)
++	return config, DeliveryLimits{
++		Workers: config.Concurrency, PerWorkerMessagesPerSecond: config.MessageRate,
++		MessagesPerSecond: config.Concurrency * config.MessageRate, BatchSize: config.BatchSize,
++		QueueCapacity: config.Concurrency * 2,
++		Clamped:       workers != config.Concurrency || rate != config.MessageRate || batch != config.BatchSize,
++	}
++}
++
++func (m *Manager) DeliveryLimits() DeliveryLimits { return m.limits }
++
++type SchedulerReadiness struct {
++	Status     string     `json:"status"`
++	LastScanAt *time.Time `json:"lastScanAt"`
++}
++
++func (m *Manager) SchedulerReadiness(now time.Time) SchedulerReadiness {
++	if !m.cfg.ScanCampaigns {
++		return SchedulerReadiness{Status: "passive"}
++	}
++	lastScan := m.lastScan.Load()
++	if lastScan == 0 {
++		return SchedulerReadiness{Status: "starting"}
++	}
++	at := time.Unix(0, lastScan).UTC()
++	status := "ready"
++	if now.Sub(at) > 3*m.cfg.ScanInterval {
++		status = "stale"
++	}
++	return SchedulerReadiness{Status: status, LastScanAt: &at}
++}
+diff --git a/internal/manager/warpdrive_readiness_test.go b/internal/manager/warpdrive_readiness_test.go
+new file mode 100644
+index 0000000..54bc31a
+--- /dev/null
++++ b/internal/manager/warpdrive_readiness_test.go
+@@ -0,0 +1,34 @@
++package manager
++
++import (
++	"io"
++	"log"
++	"testing"
++	"time"
++)
++
++func TestEffectiveDeliveryLimitsAndScheduler(t *testing.T) {
++	original := Config{Concurrency: 100, MessageRate: 1000, BatchSize: 50000, DatabaseConnections: 6,
++		ScanCampaigns: true, ScanInterval: 5 * time.Second}
++	manager := New(original, nil, nil, log.New(io.Discard, "", 0))
++	want := DeliveryLimits{Workers: 3, PerWorkerMessagesPerSecond: 13, MessagesPerSecond: 39,
++		BatchSize: 200, QueueCapacity: 6, Clamped: true}
++	if manager.DeliveryLimits() != want || cap(manager.campMsgQ) != want.QueueCapacity {
++		t.Fatalf("runtime limits: %+v", manager.DeliveryLimits())
++	}
++	now := time.Now().UTC()
++	if got := manager.SchedulerReadiness(now); got.Status != "starting" || got.LastScanAt != nil {
++		t.Fatalf("initial scheduler: %+v", got)
++	}
++	manager.lastScan.Store(now.Add(-time.Second).UnixNano())
++	if got := manager.SchedulerReadiness(now); got.Status != "ready" || got.LastScanAt == nil {
++		t.Fatalf("live scheduler: %+v", got)
++	}
++	if got := manager.SchedulerReadiness(now.Add(time.Minute)); got.Status != "stale" || got.LastScanAt == nil {
++		t.Fatalf("stale scheduler: %+v", got)
++	}
++	manager.cfg.ScanCampaigns = false
++	if got := manager.SchedulerReadiness(now); got.Status != "passive" || got.LastScanAt != nil {
++		t.Fatalf("passive scheduler: %+v", got)
++	}
++}
+diff --git a/internal/media/providers/filesystem/warpdrive_readiness.go b/internal/media/providers/filesystem/warpdrive_readiness.go
+new file mode 100644
+index 0000000..885664c
+--- /dev/null
++++ b/internal/media/providers/filesystem/warpdrive_readiness.go
+@@ -0,0 +1,33 @@
++package filesystem
++
++import (
++	"context"
++	"errors"
++	"os"
++)
++
++func (c *Client) ProbeReadiness(ctx context.Context, _ string) (err error) {
++	if err := ctx.Err(); err != nil {
++		return err
++	}
++	file, err := os.CreateTemp(getDir(c.opts.UploadPath), ".warpdrive-probe-")
++	if err != nil {
++		return err
++	}
++	defer func() { err = errors.Join(err, os.Remove(file.Name())) }()
++	if _, err := file.WriteString("warpdrive"); err != nil {
++		file.Close()
++		return err
++	}
++	if err := file.Close(); err != nil {
++		return err
++	}
++	data, err := os.ReadFile(file.Name())
++	if err != nil {
++		return err
++	}
++	if string(data) != "warpdrive" {
++		return errors.New("media storage probe did not round-trip")
++	}
++	return nil
++}
+diff --git a/internal/media/providers/s3/warpdrive_readiness.go b/internal/media/providers/s3/warpdrive_readiness.go
+new file mode 100644
+index 0000000..86f3a70
+--- /dev/null
++++ b/internal/media/providers/s3/warpdrive_readiness.go
+@@ -0,0 +1,43 @@
++package s3
++
++import (
++	"context"
++	"errors"
++	"net/http"
++	"path/filepath"
++	"time"
++
++	"github.com/knadh/listmonk/internal/media"
++	"github.com/rhnvrm/simples3"
++)
++
++var probeClient = &http.Client{
++	Timeout:       4 * time.Second,
++	CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
++}
++
++func (c *Client) ProbeReadiness(ctx context.Context, filename string) error {
++	if filename == "" {
++		return media.ErrReadinessUnchecked
++	}
++	if filepath.Base(filename) != filename {
++		return errors.New("invalid media sample")
++	}
++	signed := c.s3.GeneratePresignedURL(simples3.PresignedInput{
++		Bucket: c.opts.Bucket, ObjectKey: c.makeBucketPath(filename),
++		Method: http.MethodHead, ExpirySeconds: 15,
++	})
++	request, err := http.NewRequestWithContext(ctx, http.MethodHead, signed, nil)
++	if err != nil {
++		return err
++	}
++	response, err := probeClient.Do(request)
++	if err != nil {
++		return err
++	}
++	defer response.Body.Close()
++	if response.StatusCode < 200 || response.StatusCode >= 300 {
++		return errors.New("media object HEAD failed")
++	}
++	return nil
++}
+diff --git a/internal/media/providers/s3/warpdrive_readiness_test.go b/internal/media/providers/s3/warpdrive_readiness_test.go
+new file mode 100644
+index 0000000..1e7c945
+--- /dev/null
++++ b/internal/media/providers/s3/warpdrive_readiness_test.go
+@@ -0,0 +1,40 @@
++package s3
++
++import (
++	"context"
++	"errors"
++	"net/http"
++	"net/http/httptest"
++	"testing"
++	"time"
++
++	"github.com/knadh/listmonk/internal/media"
++)
++
++func TestReadinessUsesSignedHead(t *testing.T) {
++	requests := make(chan *http.Request, 1)
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		requests <- r
++		w.WriteHeader(http.StatusOK)
++	}))
++	defer server.Close()
++	store, err := NewS3Store(Opt{URL: server.URL, Bucket: "fixture-bucket", BucketPath: "mail",
++		Region: "us-east-1", AccessKey: "fixture", SecretKey: "fixture"})
++	if err != nil {
++		t.Fatal(err)
++	}
++	probe := store.(media.ReadinessProbe)
++	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
++	defer cancel()
++	if err := probe.ProbeReadiness(ctx, ""); !errors.Is(err, media.ErrReadinessUnchecked) {
++		t.Fatalf("empty bucket sample: %v", err)
++	}
++	if err := probe.ProbeReadiness(ctx, "sample.png"); err != nil {
++		t.Fatal(err)
++	}
++	got := <-requests
++	if got.Method != http.MethodHead || got.URL.Path != "/fixture-bucket/mail/sample.png" ||
++		got.URL.Query().Get("X-Amz-Signature") == "" {
++		t.Fatal("readiness did not use a scoped, authenticated HEAD")
++	}
++}
+diff --git a/internal/media/readiness.go b/internal/media/readiness.go
+new file mode 100644
+index 0000000..b1ab0ab
+--- /dev/null
++++ b/internal/media/readiness.go
+@@ -0,0 +1,12 @@
++package media
++
++import (
++	"context"
++	"errors"
++)
++
++var ErrReadinessUnchecked = errors.New("media storage has no probe sample")
++
++type ReadinessProbe interface {
++	ProbeReadiness(context.Context, string) error
++}
+diff --git a/internal/messenger/email/warpdrive_delivery.go b/internal/messenger/email/warpdrive_delivery.go
+index f7b0cf1..c57d871 100644
+--- a/internal/messenger/email/warpdrive_delivery.go
++++ b/internal/messenger/email/warpdrive_delivery.go
+@@ -72,66 +72,78 @@ func sendCampaignDelivery(server *Server, message smtppool.Email) models.Deliver
+ 		return models.DeliveryRetry
+ 	}
+ 
++	client, err := openCampaignSMTP(ctx, server)
++	if err != nil {
++		return beforeData(err)
++	}
++	defer client.Close()
++	if err := client.Mail(sender.Address); err != nil {
++		return beforeData(err)
++	}
++	if err := client.Rcpt(recipient.Address); err != nil {
++		return beforeData(err)
++	}
++	body, err := client.Data()
++	if err != nil {
++		return beforeData(err)
++	}
++	if _, err := body.Write(payload); err != nil {
++		// Close the connection, never the DATA writer, after a failed write.
++		return models.DeliveryUnknown
++	}
++	if err := body.Close(); err != nil {
++		if status, ok := smtpStatus(err); ok {
++			return status
++		}
++		return models.DeliveryUnknown
++	}
++	return models.DeliveryAccepted
++}
++
++func openCampaignSMTP(ctx context.Context, server *Server) (_ *smtp.Client, err error) {
+ 	addr := net.JoinHostPort(server.Host, strconv.Itoa(server.Port))
+ 	dialer := net.Dialer{Timeout: server.PoolWaitTimeout}
+ 	conn, err := dialer.DialContext(ctx, "tcp", addr)
+ 	if err != nil {
+-		return models.DeliveryRetry
++		return nil, err
+ 	}
+-	defer conn.Close()
++	defer func() {
++		if err != nil {
++			conn.Close()
++		}
++	}()
+ 	deadline, _ := ctx.Deadline()
+ 	if err := conn.SetDeadline(deadline); err != nil {
+-		return models.DeliveryRetry
++		return nil, err
+ 	}
+ 	if server.SSL == smtppool.SSLTLS {
+ 		secured := tls.Client(conn, server.TLSConfig)
+ 		if err := secured.HandshakeContext(ctx); err != nil {
+-			return models.DeliveryRetry
++			return nil, err
+ 		}
+ 		conn = secured
+ 	}
+ 
+ 	client, err := smtp.NewClient(conn, server.Host)
+ 	if err != nil {
+-		return beforeData(err)
++		return nil, err
+ 	}
+-	defer client.Close()
+ 	if server.HelloHostname != "" {
+ 		if err := client.Hello(server.HelloHostname); err != nil {
+-			return beforeData(err)
++			return nil, err
+ 		}
+ 	}
+ 	if server.SSL == smtppool.SSLSTARTTLS {
+ 		if err := client.StartTLS(server.TLSConfig); err != nil {
+-			return beforeData(err)
++			return nil, err
+ 		}
+ 	}
+ 	if server.Auth != nil {
+ 		if err := client.Auth(server.Auth); err != nil {
+-			return beforeData(err)
+-		}
+-	}
+-	if err := client.Mail(sender.Address); err != nil {
+-		return beforeData(err)
+-	}
+-	if err := client.Rcpt(recipient.Address); err != nil {
+-		return beforeData(err)
+-	}
+-	body, err := client.Data()
+-	if err != nil {
+-		return beforeData(err)
+-	}
+-	if _, err := body.Write(payload); err != nil {
+-		// Close the connection, never the DATA writer, after a failed write.
+-		return models.DeliveryUnknown
+-	}
+-	if err := body.Close(); err != nil {
+-		if status, ok := smtpStatus(err); ok {
+-			return status
++			return nil, err
+ 		}
+-		return models.DeliveryUnknown
+ 	}
+-	return models.DeliveryAccepted
++	return client, nil
+ }
+ 
+ func beforeData(err error) models.DeliveryOutcome {
+diff --git a/internal/messenger/email/warpdrive_readiness.go b/internal/messenger/email/warpdrive_readiness.go
+new file mode 100644
+index 0000000..4075bbd
+--- /dev/null
++++ b/internal/messenger/email/warpdrive_readiness.go
+@@ -0,0 +1,40 @@
++package email
++
++import (
++	"context"
++	"errors"
++
++	"github.com/knadh/listmonk/internal/sesfeedback"
++	"github.com/knadh/smtppool/v2"
++)
++
++var ErrRelayUnconfigured = errors.New("no campaign relay is configured")
++
++// ProbeCampaignRelay checks TLS, SMTP negotiation and configured authentication.
++// The SMTP transaction is never started.
++func (e *Emailer) ProbeCampaignRelay(ctx context.Context) error {
++	relays := e.pools[""]
++	if len(relays) == 0 {
++		return ErrRelayUnconfigured
++	}
++	config, err := sesfeedback.ConfigFromEnv()
++	if err != nil {
++		return err
++	}
++	for _, relay := range relays {
++		if config.Enabled() && (relay.Host != config.SMTPHost() || relay.SSL == smtppool.SSLNone ||
++			relay.TLSSkipVerify || relay.Auth == nil) {
++			return ErrRelayUnconfigured
++		}
++		client, err := openCampaignSMTP(ctx, relay)
++		if err != nil {
++			return err
++		}
++		err = client.Noop()
++		client.Close()
++		if err != nil {
++			return err
++		}
++	}
++	return nil
++}

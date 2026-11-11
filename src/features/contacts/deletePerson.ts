@@ -2,6 +2,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { persons } from "@/db/schema";
+import { detachNewsletterPersonLinks } from "@/features/newsletter/identity/lifecycle";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import { err, ok, type Result } from "@/types/result";
@@ -28,7 +29,8 @@ export async function deletePerson(
     const [current] = await tx
       .select()
       .from(persons)
-      .where(and(eq(persons.id, id), isNull(persons.deletedAt)));
+      .where(and(eq(persons.id, id), isNull(persons.deletedAt)))
+      .for("update");
 
     if (current === undefined || canSee(actor, toVisibleRecord(current)) === false) {
       return err(new AppError(ERROR_IDS.CONTACT_NOT_FOUND, "not found", { id }));
@@ -36,6 +38,11 @@ export async function deletePerson(
     if (!can(actor, "contact.delete", toVisibleRecord(current))) {
       return err(new AppError(ERROR_IDS.PERM_DENIED, "contact.delete required", { id }));
     }
+
+    const detached = await detachNewsletterPersonLinks(tx, id, signal, {
+      reason: "person_archived",
+    });
+    if (!detached.ok) return detached;
 
     const [row] = await tx
       .update(persons)

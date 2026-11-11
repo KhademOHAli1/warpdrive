@@ -20,6 +20,7 @@ import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { newsletterConfigured } from "@/features/newsletter/listmonkClient";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/privacy/requestPath";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
@@ -66,7 +67,12 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         modules={navigation.modules}
         canViewWork={navigation.canViewWork}
         canViewProjects={projects !== null && (projects.enabled || projects.canEnable)}
-        canViewCampaigns={ctx.actor.type === "admin" && newsletterConfigured()}
+        canViewCampaigns={hasNewsletterPermission(ctx.actor, "view") && newsletterConfigured()}
+        campaignCapabilities={{
+          edit: hasNewsletterPermission(ctx.actor, "edit"),
+          send: hasNewsletterPermission(ctx.actor, "send"),
+          operate: hasNewsletterPermission(ctx.actor, "operate"),
+        }}
       >
         <CurrencyProvider currency={baseCurrency}>
           <ActionErrorProvider>

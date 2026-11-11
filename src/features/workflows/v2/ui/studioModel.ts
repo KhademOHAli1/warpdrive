@@ -90,6 +90,9 @@ export function initialConfig(type: ActionBlockKind): Record<string, BlockJson> 
         ],
         instructions: "",
       };
+    case "NEWSLETTER_CONSENT_STATUS":
+    case "NEWSLETTER_INVITE":
+      return { personId: "", listId: "", ...(type === "NEWSLETTER_INVITE" ? { linkId: "" } : {}) };
     case "SEND_EMAIL":
     case "DRAFT_EMAIL":
       return { accountId: "", to: [], cc: [], bcc: [], subject: "", bodyHtml: "", attachments: [] };
@@ -135,6 +138,7 @@ export function portsForNode(node: WorkflowV2Node): string[] {
   return outputPorts(node);
 }
 export function studioSetupHref(type: ActionBlockKind) {
+  if (type === "NEWSLETTER_CONSENT_STATUS" || type === "NEWSLETTER_INVITE") return "/campaigns";
   return type === "SEND_EMAIL" || type === "DRAFT_EMAIL"
     ? "/settings/email-sync"
     : "/settings/workflow-runtime";
@@ -326,6 +330,16 @@ function triggerOutputs(
 ) {
   const trigger = definition.trigger;
   const config = trigger.config;
+  if (
+    trigger.type === "newsletter.identity.verified" ||
+    trigger.type === "newsletter.consent.confirmed"
+  ) {
+    add(["personId"], labels.output, "string");
+    add(["linkId"], labels.output, "string");
+    if (trigger.type === "newsletter.consent.confirmed") add(["listId"], labels.output, "number");
+    add(["occurredAt"], labels.output, "instant");
+    return;
+  }
   const entityFields = fields[textValue(config.objectName)] ?? [];
   if (trigger.type === "manual" && config.availability === "bulk") {
     add(["recordIds"], "IDs", "array");
@@ -350,6 +364,15 @@ const knownOutputs: Partial<Record<ActionBlockKind, readonly [string, string][]>
   DELAY: [["resumedAt", "instant"]],
   WAIT_FOR_EVENT: [["hasTimedOut", "boolean"]],
   SEND_CHAT_MESSAGE: [["approved", "boolean"]],
+  NEWSLETTER_CONSENT_STATUS: [
+    ["state", "string"],
+    ["confirmed", "boolean"],
+    ["linkId", "string"],
+  ],
+  NEWSLETTER_INVITE: [
+    ["state", "string"],
+    ["id", "string"],
+  ],
   SEND_EMAIL: [
     ["status", "string"],
     ["messageId", "string"],

@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import {
   type BlockJson,
+  isNewsletterTrigger,
   TRIGGER_BLOCK_KINDS,
   type WorkflowV2Document,
   type WorkflowV2Studio,
   type WorkflowV2Trigger,
 } from "@/features/blocks/contracts";
+import { newsletterListId } from "@/features/blocks/schemas";
 import { useSharedBlocksMessages } from "@/features/blocks/sharedBlocksMessages";
 import { BlockField } from "@/features/blocks/ui/BlockField";
 import { MASK_CLASS } from "@/features/observability/replayMasking";
@@ -24,6 +26,7 @@ export function triggerLabelKey(type: WorkflowV2Trigger["type"]) {
   return type === "schedule" ? "cron" : type;
 }
 export function initialTriggerConfig(type: WorkflowV2Trigger["type"]): Record<string, BlockJson> {
+  if (isNewsletterTrigger(type)) return {};
   if (type.startsWith("record.")) return { objectName: "deal", updatedFields: [] };
   if (type === "manual") return { availability: "global" };
   if (type === "schedule") return { mode: "interval", intervalMinutes: 60 };
@@ -128,7 +131,12 @@ export function StudioTrigger({
           ariaLabel={L.changeTrigger}
           value={trigger.type}
           disabled={disabled}
-          options={TRIGGER_BLOCK_KINDS.map((type) => ({
+          options={TRIGGER_BLOCK_KINDS.filter(
+            (type) =>
+              !isNewsletterTrigger(type) ||
+              studio.newsletterEvents === true ||
+              type === trigger.type,
+          ).map((type) => ({
             value: type,
             label: L.triggers[triggerLabelKey(type)] ?? type,
           }))}
@@ -139,6 +147,26 @@ export function StudioTrigger({
           }}
         />
       </BlockField>
+      {trigger.type === "newsletter.consent.confirmed" && (
+        <BlockField label={L.fields.listId ?? ""}>
+          <Input
+            aria-label={L.fields.listId}
+            type="number"
+            min={1}
+            max={2_147_483_647}
+            value={textValue(config.listId)}
+            disabled={disabled}
+            onChange={(event) => {
+              const parsed = newsletterListId.safeParse(Number(event.target.value));
+              const raw = event.target.value;
+              onChange({
+                ...trigger,
+                config: raw === "" ? {} : { listId: parsed.success ? parsed.data : raw },
+              });
+            }}
+          />
+        </BlockField>
+      )}
       {(trigger.type.startsWith("record.") ||
         (trigger.type === "manual" && config.availability !== "global")) && (
         <BlockField label={L.fields.objectName ?? ""}>

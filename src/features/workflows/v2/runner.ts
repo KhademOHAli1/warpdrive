@@ -12,12 +12,13 @@ import {
 } from "@/db/schema/workflowV2";
 import { resolveBlockConfig } from "@/features/blocks/bindings";
 import { findSharedBlock } from "@/features/blocks/catalog";
-import type {
-  BlockOutput,
-  WorkflowV2Adapters,
-  WorkflowV2Definition,
-  WorkflowV2Node,
-  WorkflowV2Token,
+import {
+  type BlockOutput,
+  isNewsletterTrigger,
+  type WorkflowV2Adapters,
+  type WorkflowV2Definition,
+  type WorkflowV2Node,
+  type WorkflowV2Token,
 } from "@/features/blocks/contracts";
 import { blockOutputSchema, validateResolvedBlockConfig } from "@/features/blocks/schemas";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -25,6 +26,7 @@ import { hydrateActor } from "@/server/hydrateActor";
 import { err } from "@/types/result";
 import { canWorkflow } from "../access";
 import { executeFlowNode, type FlowOutcome, finishFlowStep, recoverIterationFailure } from "./flow";
+import { newsletterPersonVisible } from "./newsletterAuthority";
 import { pureBlockReadiness } from "./readiness";
 import { V2_ERROR } from "./shared";
 import { boundSourcesVisible } from "./sourceAuthority";
@@ -321,6 +323,20 @@ async function existingExecution(
     ? saveRun(db, run, "failed", "E_WORKFLOW_V2_CURSOR")
     : { runId: run.id, status: run.status, externalEffectId: effect.id };
 }
+function newsletterTriggerVisible(
+  db: Db,
+  actor: PermSetUser,
+  definition: WorkflowV2Definition,
+  trigger: BlockOutput,
+  signal: AbortSignal,
+): Promise<boolean> {
+  if (!isNewsletterTrigger(definition.trigger.type)) return Promise.resolve(true);
+  const personId = trigger.personId;
+  return typeof personId === "string" && trigger.eventName === definition.trigger.type
+    ? newsletterPersonVisible(db, actor, personId, "view", signal)
+    : Promise.resolve(false);
+}
+
 async function prepareStep(
   db: Db,
   runId: string,
@@ -349,6 +365,8 @@ async function prepareStep(
         ),
       );
     if (version === undefined) return saveRun(tx, run, "failed", V2_ERROR.missing);
+    if (!(await newsletterTriggerVisible(tx, actor, version.definition, run.trigger, signal)))
+      return saveRun(tx, run, "cancelled", V2_ERROR.denied);
     const token = run.state.queue[0];
     if (token === undefined) return saveRun(tx, run, "succeeded");
     const node = version.definition.nodes.find((row) => row.id === token.nodeId);
@@ -455,6 +473,7 @@ export async function executeWorkflowV2Effect(
       return null;
     }
     if (
+      !(await newsletterTriggerVisible(tx, actor, version.definition, run.trigger, signal)) ||
       !(await boundSourcesVisible(
         tx,
         actor,

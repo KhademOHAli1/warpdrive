@@ -1,7 +1,7 @@
 // markWon / markLost: dedicated won/lost workspace actions.
 // Reuses loadEditableDeal (the single shared deal-auth authority) and mirrors the
 // publishBoardEvent pattern from updateDeal so the board reflects transitions.
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import type { z } from "zod";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
 import { CHANGE_FIELD_STATUS } from "@/constants/changeLogFields";
@@ -11,6 +11,7 @@ import { deals, lostReasons } from "@/db/schema";
 import type { Deal } from "@/db/schema/deals";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import { recordNewsletterWin } from "@/features/newsletter/attribution/repository";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
@@ -27,7 +28,8 @@ export async function markWon(
     const editable = await loadEditableDeal(tx, actor, dealId, signal);
     if (editable.ok === false) return editable;
 
-    const oldStatus = editable.value.deal.status;
+    const before = editable.value.deal;
+    const oldStatus = before.status;
 
     const [row] = await tx
       .update(deals)
@@ -38,14 +40,25 @@ export async function markWon(
         lostReason: null,
         lostReasonId: null,
       })
-      .where(eq(deals.id, dealId))
+      .where(
+        and(
+          eq(deals.id, dealId),
+          eq(deals.status, oldStatus),
+          sql`${deals.personId} IS NOT DISTINCT FROM ${before.personId}::uuid`,
+          isNull(deals.deletedAt),
+        ),
+      )
       .returning();
 
     if (row === undefined) {
-      throw new AppError(ERROR_IDS.DB_INVARIANT, "markWon: UPDATE RETURNING produced undefined", {
-        dealId,
-      });
+      return err(
+        new AppError(ERROR_IDS.DEAL_PRECONDITION, "Deal was modified by a concurrent request", {
+          dealId,
+        }),
+      );
     }
+
+    await recordNewsletterWin(tx, before, row, signal);
 
     await recordChange(
       tx,

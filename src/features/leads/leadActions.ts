@@ -6,6 +6,8 @@ import { leads } from "@/db/schema/leads";
 import { settings } from "@/db/schema/system";
 import { validateCustomFieldsForCreate } from "@/features/custom-fields/validateForTarget";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { authorizeNewsletterExposure } from "@/features/newsletter/attribution/repository";
+import { newsletterLeadSources } from "@/features/newsletter/attribution/schema";
 import {
   type EntityCreateSession,
   resolveOwnerId,
@@ -98,30 +100,49 @@ export async function createLead(
   }
   signal.throwIfAborted();
 
-  const [row] = await db
-    .insert(leads)
-    .values({
-      title: input.title,
-      value: input.value === null ? null : String(input.value),
-      currency: input.currency ?? cfg?.baseCurrency ?? "USD",
-      personId: input.personId,
-      orgId: input.orgId,
-      expectedCloseDate: input.expectedCloseDate,
-      labels: input.labels,
-      customFields: customFields.value,
-      sourceChannel: input.sourceChannel,
-      sourceChannelId: input.sourceChannelId,
-      sourceOrigin: input.sourceOrigin,
-      ownerId: ownerResult.value,
-      visibilityLevel: level,
-      visibilityGroupId,
-    })
-    .returning();
-  if (row === undefined) {
-    throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "createLead: insert returned no rows");
-  }
-  await syncEntityLabelNames(db, "lead", row.id, row.labels, signal);
-  return ok(row);
+  const insert = async (tx: Db): Promise<Result<typeof leads.$inferSelect, AppError>> => {
+    const exposure =
+      input.newsletterExposureId === undefined
+        ? null
+        : await authorizeNewsletterExposure(
+            tx,
+            input.newsletterExposureId,
+            input.personId,
+            session.userId,
+            signal,
+          );
+    if (exposure !== null && !exposure.ok) return exposure;
+    const [row] = await tx
+      .insert(leads)
+      .values({
+        title: input.title,
+        value: input.value === null ? null : String(input.value),
+        currency: input.currency ?? cfg?.baseCurrency ?? "USD",
+        personId: input.personId,
+        orgId: input.orgId,
+        expectedCloseDate: input.expectedCloseDate,
+        labels: input.labels,
+        customFields: customFields.value,
+        sourceChannel: input.sourceChannel,
+        sourceChannelId: input.sourceChannelId,
+        sourceOrigin: input.sourceOrigin,
+        ownerId: ownerResult.value,
+        visibilityLevel: level,
+        visibilityGroupId,
+      })
+      .returning();
+    if (row === undefined) {
+      throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "createLead: insert returned no rows");
+    }
+    if (exposure?.ok) {
+      await tx
+        .insert(newsletterLeadSources)
+        .values({ leadId: row.id, exposureId: exposure.value.id });
+    }
+    await syncEntityLabelNames(tx, "lead", row.id, row.labels, signal);
+    return ok(row);
+  };
+  return input.newsletterExposureId === undefined ? insert(db) : db.transaction(insert);
 }
 
 export async function archiveLead(

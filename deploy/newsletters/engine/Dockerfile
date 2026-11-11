@@ -12,7 +12,7 @@ RUN sh /engine/build.sh /listmonk-source.tar.gz /listmonk-upstream /out
 
 FROM upstream
 LABEL org.opencontainers.image.title="Warpdrive newsletter engine" \
-      org.opencontainers.image.version="6.2.0-consent.1" \
+      org.opencontainers.image.version="6.2.0-crm.1" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
       org.opencontainers.image.source="https://github.com/knadh/listmonk/tree/ef0a75872463f10a4848af6c547d1c057405453a"
 COPY --from=build /out/listmonk /listmonk/listmonk

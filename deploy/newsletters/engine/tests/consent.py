@@ -289,7 +289,7 @@ def prove(fixture):
     assert_equal(status, 200, "authenticated capabilities")
     assert_equal(json.loads(body)["data"], {
         "consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1,
-        "campaignRevision": 1,
+        "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1,
     }, "derived capabilities")
     status, source = fixture.request("/public/static/warpdrive-engine-source.tar.gz")
     assert_equal(status, 200, "source archive response")

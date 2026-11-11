@@ -13,6 +13,10 @@ import { listDefs } from "@/features/custom-fields/defsRepo";
 import { midpoint } from "@/features/deals/boardPosition";
 import { validateDealCustomFieldsForCreate } from "@/features/deals/dealCustomFieldsValidation";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import {
+  carryNewsletterLeadSource,
+  readNewsletterLeadSource,
+} from "@/features/newsletter/attribution/repository";
 import { resolveVisibilityGroup } from "@/features/permissions/entityCreate";
 import { admitPipelineWrite } from "@/features/pipelines/admitPipelineWrite";
 import { publishBoardEvent } from "@/server/realtime/events";
@@ -200,6 +204,14 @@ export async function convertLead(
         .orderBy(desc(deals.boardPosition))
         .limit(1);
       const position = midpoint(bottom?.pos ?? null, null);
+      const newsletterSource = await readNewsletterLeadSource(tx, lead.id, signal);
+      const matchingNewsletterSource =
+        newsletterSource !== undefined && newsletterSource.personId === refs.value.personId;
+      const dropObsoleteCampaignSource =
+        newsletterSource !== undefined &&
+        !matchingNewsletterSource &&
+        lead.sourceChannel === "campaign" &&
+        lead.sourceChannelId === String(newsletterSource.campaignId);
 
       const [deal] = await tx
         .insert(deals)
@@ -210,8 +222,8 @@ export async function convertLead(
           currency: lead.currency,
           expectedCloseDate: lead.expectedCloseDate,
           labels: lead.labels,
-          sourceChannel: lead.sourceChannel,
-          sourceChannelId: lead.sourceChannelId,
+          sourceChannel: dropObsoleteCampaignSource ? null : lead.sourceChannel,
+          sourceChannelId: dropObsoleteCampaignSource ? null : lead.sourceChannelId,
           pipelineId,
           stageId,
           boardPosition: position,
@@ -253,6 +265,9 @@ export async function convertLead(
         )
         .returning({ id: leads.id });
       if (updated === undefined) throw new ConvertConflict();
+      if (matchingNewsletterSource) {
+        await carryNewsletterLeadSource(tx, lead.id, deal.id, newsletterSource.exposureId, signal);
+      }
 
       await recordChange(
         tx,

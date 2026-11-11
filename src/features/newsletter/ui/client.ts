@@ -18,7 +18,14 @@ function pendingPrefix(actorId: string): string {
   return `warpdrive:newsletter:pending:v1:${actorId}:`;
 }
 
-function pendingScope(operation: string, { id, status }: Input): string {
+function pendingScope(operation: string, { id, status, deliveryId }: Input): string {
+  if (
+    operation === "delivery.resolve" &&
+    typeof deliveryId === "string" &&
+    uuidPattern.test(deliveryId)
+  ) {
+    return `${operation}:${deliveryId}`;
+  }
   if (
     operation === "campaigns.status" &&
     typeof id === "number" &&
@@ -108,8 +115,16 @@ function rejectedInput(error: unknown): boolean {
   return data?.code === "BAD_REQUEST";
 }
 
-export function useNewsletterRead<T>(operation: string, input: Input = {}, enabled = true) {
-  const query = trpc.newsletter.read.useQuery({ operation, input }, { enabled, retry: false });
+export function useNewsletterRead<T>(
+  operation: string,
+  input: Input = {},
+  enabled = true,
+  refetchInterval?: number,
+) {
+  const query = trpc.newsletter.read.useQuery(
+    { operation, input },
+    { enabled, retry: false, refetchInterval },
+  );
   return { ...query, data: query.data as T | undefined };
 }
 

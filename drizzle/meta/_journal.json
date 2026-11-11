@@ -799,6 +799,20 @@
       "when": 1794351591224,
       "tag": "0113_newsletter_operation_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 114,
+      "version": "7",
+      "when": 1794354940685,
+      "tag": "0114_newsletter_crm_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 115,
+      "version": "7",
+      "when": 1794355637086,
+      "tag": "0115_newsletter_attribution",
+      "breakpoints": true
     }
   ]
 }

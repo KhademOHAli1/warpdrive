@@ -1,0 +1,130 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index ef24a86..2dc4f8d 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,12 +102,13 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+ 		g.POST("/api/warpdrive/crm-identity/bindings/:id/revoke", pm(crmIdentityApi(a.hasUUID(a.crmRevokeBinding, "id")), "warpdrive:identity_verify"))
+ 		g.POST("/api/warpdrive/crm-identity/grants", pm(crmIdentityApi(a.crmReadGrants), "warpdrive:identity_verify"))
++		g.GET("/api/warpdrive/attribution/:id", pm(crmIdentityApi(a.hasUUID(a.getCRMDeliveryExposures, "id")), "warpdrive:identity_verify"))
+ 		g.POST("/api/warpdrive/crm-identity/erasures", pm(crmIdentityApi(a.crmEraseBinding), "warpdrive:identity_erase"))
+ 		g.GET("/api/warpdrive/crm-identity/erasures/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadErasure, "id")), "warpdrive:identity_erase"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+diff --git a/cmd/warpdrive_delivery_attribution.go b/cmd/warpdrive_delivery_attribution.go
+new file mode 100644
+index 0000000..648096f
+--- /dev/null
++++ b/cmd/warpdrive_delivery_attribution.go
+@@ -0,0 +1,69 @@
++package main
++
++import (
++	"context"
++	"net/http"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/labstack/echo/v4"
++)
++
++type crmDeliveryExposure struct {
++	DeliveryID    string    `db:"delivery_id" json:"deliveryId"`
++	CampaignID    int       `db:"campaign_id" json:"campaignId"`
++	CampaignName  string    `db:"campaign_name" json:"campaignName"`
++	BindingID     string    `db:"binding_id" json:"bindingId"`
++	GrantID       string    `db:"grant_id" json:"grantId"`
++	PurposeListID int       `db:"purpose_list_id" json:"purposeListId"`
++	AcceptedAt    time.Time `db:"accepted_at" json:"acceptedAt"`
++}
++
++// A source observation uses an actual SMTP acknowledgement and the sealed grant.
++// No recipient address, SMTP message ID or tracking activity crosses this boundary.
++const crmDeliveryExposureQuery = `
++	SELECT delivery.id::text AS delivery_id, campaign.id AS campaign_id, campaign.name AS campaign_name,
++	       consent.binding_uuid::text AS binding_id, consent.grant_uuid::text AS grant_id,
++	       audience.purpose_list_id, delivery.smtp_accepted_at AS accepted_at
++	FROM warpdrive_crm_identity_challenges AS binding
++	JOIN warpdrive_crm_consent_grants AS consent ON consent.binding_uuid = binding.binding_uuid
++	JOIN warpdrive_campaign_audience_members AS member
++	  ON member.grant_uuid = consent.grant_uuid AND member.subscriber_uuid = consent.subscriber_uuid
++	JOIN warpdrive_campaign_audiences AS audience
++	  ON audience.campaign_id = member.campaign_id AND audience.purpose_list_id = consent.purpose_list_id
++	JOIN warpdrive_delivery_recipients AS delivery
++	  ON delivery.campaign_id = audience.campaign_id AND delivery.subscriber_id = consent.subscriber_id
++	 AND delivery.subscriber_uuid = consent.subscriber_uuid
++	 AND delivery.address_digest = sha256(convert_to(consent.email, 'UTF8'))
++	JOIN subscribers AS current_subscriber
++	  ON current_subscriber.id = consent.subscriber_id AND current_subscriber.uuid = consent.subscriber_uuid
++	 AND current_subscriber.email = consent.email
++	JOIN campaigns AS campaign ON campaign.id = audience.campaign_id
++	WHERE binding.challenge_uuid = $1::uuid AND binding.purpose = 'identity' AND binding.revoked_at IS NULL
++	  AND binding.subscriber_uuid = consent.subscriber_uuid AND binding.email = consent.email
++	  AND binding.verified_at <= consent.granted_at
++	  AND delivery.smtp_accepted_at IS NOT NULL AND delivery.state = 'accepted'
++	  AND audience.sealed_at <= delivery.smtp_accepted_at AND consent.granted_at <= delivery.smtp_accepted_at
++	  AND (consent.revoked_at IS NULL OR consent.revoked_at > delivery.smtp_accepted_at)
++	  AND ($2::uuid IS NULL OR delivery.id = $2::uuid)
++	ORDER BY delivery.smtp_accepted_at DESC, delivery.id DESC LIMIT 100
++`
++
++func (a *App) getCRMDeliveryExposures(c echo.Context) error {
++	var deliveryID *string
++	if raw := c.QueryParam("delivery_id"); raw != "" {
++		id, err := uuid.FromString(raw)
++		if err != nil {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++		normalized := id.String()
++		deliveryID = &normalized
++	}
++	ctx, cancel := context.WithTimeout(c.Request().Context(), deliveryDBTimeout)
++	defer cancel()
++	results := make([]crmDeliveryExposure, 0)
++	if err := a.db.SelectContext(ctx, &results, crmDeliveryExposureQuery, c.Param("id"), deliveryID); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable, "Campaign exposure evidence is unavailable")
++	}
++	return c.JSON(http.StatusOK, okResp{results})
++}
+diff --git a/cmd/warpdrive_delivery_store.go b/cmd/warpdrive_delivery_store.go
+index c56601d..185ba2f 100644
+--- a/cmd/warpdrive_delivery_store.go
++++ b/cmd/warpdrive_delivery_store.go
+@@ -64,6 +64,23 @@ func installDeliverySchema(db *sqlx.DB) error {
+ 			return err
+ 		}
+ 	}
++	version, err = tx.ExecContext(ctx, "INSERT INTO warpdrive_delivery_migrations(version) VALUES (2) ON CONFLICT DO NOTHING")
++	if err != nil {
++		return err
++	}
++	addAttribution, err := version.RowsAffected()
++	if err != nil {
++		return err
++	}
++	if addAttribution > 0 {
++		if _, err := tx.ExecContext(ctx, `
++			ALTER TABLE warpdrive_delivery_recipients ADD COLUMN smtp_accepted_at TIMESTAMPTZ;
++			CREATE INDEX warpdrive_crm_attribution_grant_binding_idx ON warpdrive_crm_consent_grants(binding_uuid);
++			CREATE INDEX warpdrive_crm_attribution_member_grant_idx ON warpdrive_campaign_audience_members(grant_uuid);
++		`); err != nil {
++			return err
++		}
++	}
+ 	return tx.Commit()
+ }
+ 
+@@ -315,6 +332,7 @@ func (s *store) FinishDelivery(campaignID int, lease models.DeliveryLease, outco
+ 		if err := tx.GetContext(ctx, &state, `
+ 			UPDATE warpdrive_delivery_recipients
+ 			SET state = CASE WHEN $4 = 'retry' AND attempts < 3 THEN 'pending' WHEN $4 = 'retry' THEN 'rejected' ELSE $4 END,
++			    smtp_accepted_at = CASE WHEN $4 = 'accepted' THEN COALESCE(smtp_accepted_at, clock_timestamp()) ELSE smtp_accepted_at END,
+ 			    available_at = clock_timestamp() + (attempts * INTERVAL '30 seconds'),
+ 			    lease_token = NULL, lease_until = NULL, updated_at = NOW()
+ 			WHERE campaign_id = $1 AND id = $2 AND lease_token = $3 AND state = 'submitting'

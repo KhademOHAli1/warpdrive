@@ -12,6 +12,7 @@ import { Button, buttonVariants } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import { EngineReadinessCard } from "@/features/newsletter/delivery/EngineReadinessCard";
 import { useNewsletterRead, useNewsletterWrite } from "../ui/client";
 import { cleanupKinds, type MaintenanceSnapshot } from "./contracts";
 import { adminMessages } from "./messages";
@@ -256,6 +257,7 @@ export function MaintenanceClient({
   }
   return (
     <>
+      <EngineReadinessCard />
       <Retention data={data} L={L} />
       <CleanupCard today={today} weekAgo={weekAgo} L={L} />
       <ExportCard today={today} monthAgo={monthAgo} L={L} />

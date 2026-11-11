@@ -45,6 +45,7 @@ const membership = minimalList.extend({
 });
 export const subscriber = z.object({
   id: audienceId,
+  recordProof: z.string().optional(),
   email: z.string(),
   name: z.string(),
   status: subscriberStatus,
@@ -58,6 +59,31 @@ export const subscriber = z.object({
     .transform((value) => value ?? []),
 });
 export type Subscriber = z.infer<typeof subscriber>;
+
+export const subscriberExportSections = ["profile", "memberships", "activity"] as const;
+export type SubscriberExportSection = (typeof subscriberExportSections)[number];
+
+export type SubscriberActivityItem = {
+  key: string;
+  kind: "view" | "click";
+  campaignName: string | null;
+  count: number;
+  lastAt: string;
+};
+
+export type SubscriberActivity = { items: SubscriberActivityItem[]; truncated: boolean };
+export type SubscriberExport = { filename: string; contents: string };
+
+export type ListSignupEmbed =
+  | { status: "ready"; url: string; html: string }
+  | {
+      status:
+        | "signupDisabled"
+        | "listUnavailable"
+        | "originMismatch"
+        | "verificationRequired"
+        | "serviceUnsupported";
+    };
 
 export const bounce = z.object({
   id: audienceId,

@@ -8,12 +8,20 @@ export type WorkspaceBrand = {
   accentColor: string | null;
   foregroundColor: string;
 };
+export type CampaignCapabilities = {
+  edit: boolean;
+  send: boolean;
+  operate: boolean;
+};
+const noCampaignCapabilities: CampaignCapabilities = { edit: false, send: false, operate: false };
+
 type WorkspaceShell = {
   brand: WorkspaceBrand;
   modules: string[];
   canViewWork: boolean;
   canViewProjects: boolean;
   canViewCampaigns: boolean;
+  campaignCapabilities: CampaignCapabilities;
 };
 const defaults: WorkspaceShell = {
   brand: { displayName: APP_NAME, iconUrl: null, accentColor: null, foregroundColor: "#ffffff" },
@@ -21,6 +29,7 @@ const defaults: WorkspaceShell = {
   canViewWork: false,
   canViewProjects: false,
   canViewCampaigns: false,
+  campaignCapabilities: noCampaignCapabilities,
 };
 const Context = createContext(defaults);
 export function WorkspaceShellProvider({
@@ -29,6 +38,7 @@ export function WorkspaceShellProvider({
   canViewWork,
   canViewProjects = false,
   canViewCampaigns = false,
+  campaignCapabilities = noCampaignCapabilities,
   children,
 }: {
   brand: WorkspaceBrand;
@@ -36,10 +46,20 @@ export function WorkspaceShellProvider({
   canViewWork: boolean;
   canViewProjects?: boolean;
   canViewCampaigns?: boolean;
+  campaignCapabilities?: CampaignCapabilities;
   children: ReactNode;
 }) {
   return (
-    <Context.Provider value={{ brand, modules, canViewWork, canViewProjects, canViewCampaigns }}>
+    <Context.Provider
+      value={{
+        brand,
+        modules,
+        canViewWork,
+        canViewProjects,
+        canViewCampaigns,
+        campaignCapabilities,
+      }}
+    >
       {children}
     </Context.Provider>
   );

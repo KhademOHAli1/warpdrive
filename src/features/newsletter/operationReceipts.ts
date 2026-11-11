@@ -104,6 +104,7 @@ export async function finishNewsletterReceipt(
 
 const entityResults = new Set([
   "campaigns.create",
+  "campaigns.clone",
   "campaigns.update",
   "campaigns.status",
   "lists.create",

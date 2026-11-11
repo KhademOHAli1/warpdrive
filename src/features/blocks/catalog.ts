@@ -17,6 +17,8 @@ const effects: Record<ActionBlockKind, BlockEffect> = {
   CODE: "external",
   LOGIC_FUNCTION: "external",
   SEND_EMAIL: "external",
+  NEWSLETTER_CONSENT_STATUS: "external",
+  NEWSLETTER_INVITE: "external",
   SEND_CHAT_MESSAGE: "database",
   DRAFT_EMAIL: "database",
   CREATE_CALENDAR_EVENT: "database",
@@ -48,7 +50,16 @@ function category(kind: ActionBlockKind): SharedBlockDescriptor["category"] {
     ].includes(kind)
   )
     return "data";
-  if (["SEND_EMAIL", "SEND_CHAT_MESSAGE", "DRAFT_EMAIL", "CREATE_CALENDAR_EVENT"].includes(kind))
+  if (
+    [
+      "SEND_EMAIL",
+      "SEND_CHAT_MESSAGE",
+      "DRAFT_EMAIL",
+      "CREATE_CALENDAR_EVENT",
+      "NEWSLETTER_CONSENT_STATUS",
+      "NEWSLETTER_INVITE",
+    ].includes(kind)
+  )
     return "communication";
   if (["FILTER", "IF_ELSE", "CODE", "LOGIC_FUNCTION"].includes(kind)) return "logic";
   if (["FORM", "ITERATOR", "DELAY", "WAIT_FOR_EVENT"].includes(kind)) return "flow";

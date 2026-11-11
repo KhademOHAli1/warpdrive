@@ -9,6 +9,8 @@ import { deals } from "@/db/schema/deals";
 import { stages } from "@/db/schema/stages";
 import { settings } from "@/db/schema/system";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { authorizeNewsletterExposure } from "@/features/newsletter/attribution/repository";
+import { newsletterDealSources } from "@/features/newsletter/attribution/schema";
 import {
   type EntityCreateSession,
   resolveOwnerId,
@@ -135,6 +137,18 @@ export async function createDeal(
       }
     }
 
+    const exposure =
+      input.newsletterExposureId === undefined
+        ? null
+        : await authorizeNewsletterExposure(
+            tx,
+            input.newsletterExposureId,
+            input.personId,
+            session.userId,
+            signal,
+          );
+    if (exposure !== null && !exposure.ok) return exposure;
+
     // Board position: insert at bottom of stage column (max existing pos + 1).
     const [bottom] = await tx
       .select({ pos: deals.boardPosition })
@@ -174,6 +188,11 @@ export async function createDeal(
       throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "createDeal: insert returned no rows");
     }
 
+    if (exposure?.ok) {
+      await tx
+        .insert(newsletterDealSources)
+        .values({ dealId: row.id, exposureId: exposure.value.id });
+    }
     await syncEntityLabelNames(tx, "deal", row.id, row.labels, signal);
 
     await publishBoardEvent(

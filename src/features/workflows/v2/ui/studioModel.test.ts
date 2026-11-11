@@ -24,13 +24,14 @@ function node(id: string, type: WorkflowV2Node["type"]): WorkflowV2Node {
 }
 const labels = { wholeRecord: "Whole record", wholeList: "Whole list", output: "Output" };
 describe("workflow studio graph authoring", () => {
-  it("gives all 21 action kinds structured, isolated draft configurations", () => {
-    expect(ACTION_BLOCK_KINDS).toHaveLength(21);
+  it("gives every action kind a structured draft configuration", () => {
     for (const type of ACTION_BLOCK_KINDS)
       expect(Object.keys(initialConfig(type)).length).toBeGreaterThan(0);
     expect(initialConfig("CODE")).toHaveProperty("sourceCode");
     expect(initialConfig("SEND_EMAIL")).toHaveProperty("accountId");
     expect(initialConfig("FORM")).toHaveProperty("fields");
+    expect(initialConfig("NEWSLETTER_CONSENT_STATUS")).toEqual({ personId: "", listId: "" });
+    expect(initialConfig("NEWSLETTER_INVITE")).toEqual({ personId: "", listId: "", linkId: "" });
   });
   it("keeps ordered branch routes and removes only edges from a deleted route", () => {
     const branch = node("branch", "IF_ELSE");

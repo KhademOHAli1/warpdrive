@@ -1,0 +1,368 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index 390d4de..c8fee35 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+@@ -168,6 +168,8 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.DELETE("/api/lists/:id", hasID(a.DeleteList))
+ 
+ 		g.GET("/api/campaigns", pm(a.GetCampaigns, "campaigns:get_all", "campaigns:get"))
++		g.GET("/api/warpdrive/audiences/:id", pm(hasID(a.GetWarpdriveAudience), "campaigns:get_all"))
++		g.PUT("/api/warpdrive/audiences/:id", pm(hasID(a.SealWarpdriveAudience), "campaigns:manage_all"))
+ 		g.GET("/api/campaigns/running/stats", pm(a.GetRunningCampaignStats, "campaigns:get_all", "campaigns:get"))
+ 		g.GET("/api/campaigns/:id", pm(hasID(a.GetCampaign), "campaigns:get_all", "campaigns:get"))
+ 		g.GET("/api/campaigns/analytics/:type", pm(a.GetCampaignViewAnalytics, "campaigns:get_analytics"))
+diff --git a/cmd/install.go b/cmd/install.go
+index 8933885..194e639 100644
+--- a/cmd/install.go
++++ b/cmd/install.go
+@@ -60,6 +60,13 @@ func install(lastVer string, db *sqlx.DB, fs stuffbin.FileSystem, prompt, idempo
+ 		lo.Fatalf("error migrating DB schema: %v", err)
+ 	}
+ 
++	if err := migrateCRMIdentity(db); err != nil {
++		lo.Fatal("could not initialize newsletter CRM identity")
++	}
++	if err := initWarpdriveAudiences(db); err != nil {
++		lo.Fatal("could not initialize approved CRM audiences")
++	}
++
+ 	// Load the queries.
+ 	q := prepareQueries(qMap, db, ko)
+ 
+diff --git a/cmd/main.go b/cmd/main.go
+index e95146a..86ed4ce 100644
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -182,6 +182,10 @@ func init() {
+ 		lo.Fatal("could not initialize newsletter CRM identity")
+ 	}
+ 
++	if err := initWarpdriveAudiences(db); err != nil {
++		lo.Fatal("could not initialize approved CRM audiences")
++	}
++
+ 	// Read the SQL queries from the queries file.
+ 	qMap := readQueries(queryFilePath, fs)
+ 
+diff --git a/cmd/warpdrive_audiences.go b/cmd/warpdrive_audiences.go
+new file mode 100644
+index 0000000..aa95317
+--- /dev/null
++++ b/cmd/warpdrive_audiences.go
+@@ -0,0 +1,215 @@
++package main
++
++import (
++	"context"
++	"database/sql"
++	_ "embed"
++	"encoding/json"
++	"errors"
++	"io"
++	"net/http"
++	"regexp"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
++	"github.com/knadh/listmonk/internal/auth"
++	"github.com/labstack/echo/v4"
++)
++
++const maxWarpdriveAudienceMembers = 1000
++
++//go:embed warpdrive_audiences.sql
++var warpdriveAudienceSchema string
++
++var warpdriveAudienceDigest = regexp.MustCompile("^[0-9a-f]{64}$")
++
++func initWarpdriveAudiences(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(167312043, 45)"); err != nil {
++		return err
++	}
++	if _, err := tx.ExecContext(ctx, warpdriveAudienceSchema); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
++
++type warpdriveAudience struct {
++	ManifestUUID uuid.UUID `db:"manifest_uuid" json:"manifest_uuid"`
++	PurposeList  int       `db:"purpose_list_id" json:"purpose_list_id"`
++	ScopeDigest  string    `db:"scope_digest" json:"-"`
++	SealedAt     time.Time `db:"sealed_at" json:"sealed_at"`
++	Size         int       `db:"size" json:"size"`
++}
++
++type warpdriveAudienceMember struct {
++	SubscriberUUID uuid.UUID `json:"subscriber_uuid"`
++	GrantUUID      uuid.UUID `json:"grant_uuid"`
++}
++
++type warpdriveAudienceRequest struct {
++	ManifestUUID     uuid.UUID                 `json:"manifest_uuid"`
++	PurposeList      int                       `json:"purpose_list_id"`
++	ScopeDigest      string                    `json:"scope_digest"`
++	ExpectedRevision json.RawMessage           `json:"expected_updated_at"`
++	Members          []warpdriveAudienceMember `json:"members"`
++}
++
++const warpdriveAudienceByCampaign = `
++SELECT audience.manifest_uuid, audience.purpose_list_id, audience.scope_digest, audience.sealed_at,
++    (SELECT count(*) FROM warpdrive_campaign_audience_members WHERE campaign_id = audience.campaign_id) AS size
++FROM warpdrive_campaign_audiences AS audience
++WHERE campaign_id = $1`
++
++func (a *App) GetWarpdriveAudience(c echo.Context) error {
++	if auth.GetUser(c).Type != auth.UserTypeAPI {
++		return echo.NewHTTPError(http.StatusForbidden)
++	}
++	ctx, cancel := context.WithTimeout(c.Request().Context(), 5*time.Second)
++	defer cancel()
++	var out warpdriveAudience
++	switch err := a.db.GetContext(ctx, &out, warpdriveAudienceByCampaign, getID(c)); {
++	case errors.Is(err, sql.ErrNoRows):
++		return c.JSON(http.StatusOK, okResp{nil})
++	case err != nil:
++		return echo.NewHTTPError(http.StatusServiceUnavailable, "Approved audience is unavailable")
++	default:
++		return c.JSON(http.StatusOK, okResp{out})
++	}
++}
++
++func (a *App) SealWarpdriveAudience(c echo.Context) error {
++	if auth.GetUser(c).Type != auth.UserTypeAPI {
++		return echo.NewHTTPError(http.StatusForbidden)
++	}
++	body := http.MaxBytesReader(c.Response(), c.Request().Body, 120*1024)
++	defer body.Close()
++	decoder := json.NewDecoder(body)
++	decoder.DisallowUnknownFields()
++	var req warpdriveAudienceRequest
++	if err := decoder.Decode(&req); err != nil {
++		return echo.NewHTTPError(http.StatusBadRequest, "Invalid approved audience")
++	}
++	if err := decoder.Decode(new(any)); err != io.EOF {
++		return echo.NewHTTPError(http.StatusBadRequest, "Invalid approved audience")
++	}
++	if req.ManifestUUID.IsNil() || req.PurposeList < 1 || !warpdriveAudienceDigest.MatchString(req.ScopeDigest) ||
++		len(req.Members) < 1 || len(req.Members) > maxWarpdriveAudienceMembers {
++		return echo.NewHTTPError(http.StatusBadRequest, "Invalid approved audience")
++	}
++	recipients := make(map[uuid.UUID]struct{}, len(req.Members))
++	for _, member := range req.Members {
++		_, duplicate := recipients[member.SubscriberUUID]
++		if member.SubscriberUUID.IsNil() || member.GrantUUID.IsNil() || duplicate {
++			return echo.NewHTTPError(http.StatusBadRequest, "Invalid approved audience member")
++		}
++		recipients[member.SubscriberUUID] = struct{}{}
++	}
++	revision, err := requestedCampaignRevision(req.ExpectedRevision)
++	if err != nil || revision == nil {
++		return echo.NewHTTPError(http.StatusBadRequest, "A reviewed campaign revision is required")
++	}
++
++	ctx, cancel := context.WithTimeout(c.Request().Context(), 8*time.Second)
++	defer cancel()
++	tx, err := a.db.BeginTxx(ctx, nil)
++	if err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	defer tx.Rollback()
++
++	id := getID(c)
++	var editable bool
++	err = tx.GetContext(ctx, &editable, `SELECT status = 'draft' AND type = 'regular'
++        AND started_at IS NULL AND last_subscriber_id = 0 AND updated_at IS NOT DISTINCT FROM $2::timestamptz
++        FROM campaigns WHERE id = $1 FOR UPDATE`, id, revision)
++	if errors.Is(err, sql.ErrNoRows) {
++		return echo.NewHTTPError(http.StatusNotFound)
++	}
++	if err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++
++	var previous warpdriveAudience
++	if err := tx.GetContext(ctx, &previous, warpdriveAudienceByCampaign, id); err != nil && !errors.Is(err, sql.ErrNoRows) {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	if previous.ManifestUUID == req.ManifestUUID {
++		if previous.ScopeDigest != req.ScopeDigest || previous.PurposeList != req.PurposeList || previous.Size != len(req.Members) {
++			return echo.NewHTTPError(http.StatusConflict, "This approval is already in use")
++		}
++		return c.JSON(http.StatusOK, okResp{previous})
++	}
++	if !editable {
++		return echo.NewHTTPError(http.StatusConflict, "Review the current draft before approving an audience")
++	}
++
++	var listName string
++	err = tx.GetContext(ctx, &listName, `SELECT name FROM lists
++        WHERE id = $1 AND status = 'active' AND optin = 'double' FOR SHARE`, req.PurposeList)
++	if errors.Is(err, sql.ErrNoRows) {
++		return echo.NewHTTPError(http.StatusConflict, "The consent list is unavailable")
++	}
++	if err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++
++	if _, err := tx.ExecContext(ctx, `INSERT INTO warpdrive_campaign_audiences
++        (campaign_id, manifest_uuid, purpose_list_id, scope_digest)
++        VALUES ($1, $2, $3, $4)
++        ON CONFLICT (campaign_id) DO UPDATE SET manifest_uuid = excluded.manifest_uuid,
++            purpose_list_id = excluded.purpose_list_id, scope_digest = excluded.scope_digest,
++            sealed_at = clock_timestamp()`, id, req.ManifestUUID, req.PurposeList, req.ScopeDigest); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	if _, err := tx.ExecContext(ctx, "DELETE FROM warpdrive_campaign_audience_members WHERE campaign_id = $1", id); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	members, err := json.Marshal(req.Members)
++	if err != nil {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	result, err := tx.ExecContext(ctx, `INSERT INTO warpdrive_campaign_audience_members
++        (campaign_id, subscriber_uuid, grant_uuid)
++        SELECT $1, member.subscriber_uuid, member.grant_uuid
++        FROM jsonb_to_recordset($3::jsonb) AS member(subscriber_uuid uuid, grant_uuid uuid)
++        JOIN warpdrive_crm_consent_grants AS consent ON consent.grant_uuid = member.grant_uuid
++            AND consent.subscriber_uuid = member.subscriber_uuid AND consent.purpose_list_id = $2
++        JOIN subscribers AS subscriber ON subscriber.id = consent.subscriber_id
++            AND subscriber.uuid = consent.subscriber_uuid AND subscriber.email::text = consent.email
++        JOIN subscriber_lists AS membership ON membership.subscriber_id = subscriber.id AND membership.list_id = $2
++        WHERE consent.revoked_at IS NULL AND subscriber.status = 'enabled' AND membership.status = 'confirmed'
++        FOR SHARE OF consent, subscriber, membership`, id, req.PurposeList, string(members))
++	if err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	count, err := result.RowsAffected()
++	if err != nil || count != int64(len(req.Members)) {
++		return echo.NewHTTPError(http.StatusConflict, "The eligible audience changed. Refresh the preview.")
++	}
++
++	if _, err := tx.ExecContext(ctx, "DELETE FROM campaign_lists WHERE campaign_id = $1", id); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	if _, err := tx.ExecContext(ctx, "INSERT INTO campaign_lists (campaign_id, list_id, list_name) VALUES ($1, $2, $3)", id, req.PurposeList, listName); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	if _, err := tx.ExecContext(ctx, "UPDATE campaigns SET updated_at = clock_timestamp() WHERE id = $1", id); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	var out warpdriveAudience
++	if err := tx.GetContext(ctx, &out, warpdriveAudienceByCampaign, id); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	if err := tx.Commit(); err != nil {
++		return echo.NewHTTPError(http.StatusServiceUnavailable)
++	}
++	return c.JSON(http.StatusOK, okResp{out})
++}
+diff --git a/cmd/warpdrive_audiences.sql b/cmd/warpdrive_audiences.sql
+new file mode 100644
+index 0000000..89d337f
+--- /dev/null
++++ b/cmd/warpdrive_audiences.sql
+@@ -0,0 +1,44 @@
++CREATE TABLE IF NOT EXISTS warpdrive_campaign_audiences (
++    campaign_id integer PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
++    manifest_uuid uuid NOT NULL UNIQUE,
++    purpose_list_id integer NOT NULL,
++    scope_digest text NOT NULL CHECK (scope_digest ~ '^[0-9a-f]{64}$'),
++    sealed_at timestamptz NOT NULL DEFAULT clock_timestamp()
++);
++
++CREATE TABLE IF NOT EXISTS warpdrive_campaign_audience_members (
++    campaign_id integer NOT NULL REFERENCES warpdrive_campaign_audiences(campaign_id) ON DELETE CASCADE,
++    subscriber_uuid uuid NOT NULL,
++    grant_uuid uuid NOT NULL,
++    PRIMARY KEY (campaign_id, subscriber_uuid),
++    UNIQUE (campaign_id, grant_uuid)
++);
++
++CREATE OR REPLACE FUNCTION warpdrive_campaign_recipient_allowed(
++    p_campaign_id integer,
++    p_subscriber_id integer,
++    p_subscriber_uuid uuid,
++    p_email text
++) RETURNS boolean LANGUAGE sql STABLE AS $$
++    SELECT NOT EXISTS (
++        SELECT 1 FROM warpdrive_campaign_audiences WHERE campaign_id = p_campaign_id
++    ) OR EXISTS (
++        SELECT 1
++        FROM warpdrive_campaign_audiences AS audience
++        JOIN warpdrive_campaign_audience_members AS member USING (campaign_id)
++        JOIN warpdrive_crm_consent_grants AS consent
++          ON consent.grant_uuid = member.grant_uuid
++         AND consent.subscriber_uuid = member.subscriber_uuid
++         AND consent.purpose_list_id = audience.purpose_list_id
++        JOIN lists AS list ON list.id = audience.purpose_list_id
++        JOIN subscriber_lists AS membership
++          ON membership.list_id = list.id AND membership.subscriber_id = p_subscriber_id
++        WHERE audience.campaign_id = p_campaign_id
++          AND member.subscriber_uuid = p_subscriber_uuid
++          AND consent.subscriber_id = p_subscriber_id
++          AND consent.email = p_email
++          AND consent.revoked_at IS NULL
++          AND list.status = 'active' AND list.optin = 'double'
++          AND membership.status = 'confirmed'
++    )
++$$;
+diff --git a/queries/campaigns.sql b/queries/campaigns.sql
+index cf913f0..10c6523 100644
+--- a/queries/campaigns.sql
++++ b/queries/campaigns.sql
+@@ -212,6 +212,7 @@ counts AS (
+             END
+         )
+     JOIN subscribers s ON (s.id = sl.subscriber_id AND s.status = 'enabled')
++    WHERE warpdrive_campaign_recipient_allowed(camps.id, s.id, s.uuid, s.email::text)
+     GROUP BY camps.id
+ ),
+ updateCounts AS (
+@@ -351,6 +352,7 @@ subs AS (
+             AND s.id <= $4
+              -- Dispatch only to enabled subscribers.
+             AND s.status = 'enabled'
++            AND warpdrive_campaign_recipient_allowed($1, s.id, s.uuid, s.email::text)
+             AND (
+                 -- If it's an optin campaign and the list is double-optin, only pick unconfirmed subscribers.
+                 ($2 = 'optin' AND sl.status = 'unconfirmed' AND campLists.optin = 'double')
+@@ -386,6 +388,7 @@ SELECT EXISTS (
+     JOIN subscribers s ON s.id = sl.subscriber_id
+     WHERE c.id = $1 AND c.status = 'running'
+       AND s.id = $2 AND s.email = $3 AND s.uuid = $4 AND s.status = 'enabled'
++      AND warpdrive_campaign_recipient_allowed(c.id, s.id, s.uuid, s.email::text)
+       AND CASE
+           WHEN c.type = 'optin' THEN l.optin = 'double' AND sl.status = 'unconfirmed'
+           WHEN l.optin = 'double' THEN sl.status = 'confirmed'
+@@ -443,6 +446,13 @@ WITH camp AS (
+         updated_at=NOW()
+     WHERE id = $1 AND status IN ('draft', 'scheduled', 'paused')
+       AND updated_at IS NOT DISTINCT FROM $21::TIMESTAMPTZ
++      AND NOT EXISTS (
++          SELECT 1 FROM warpdrive_campaign_audiences AS audience
++          WHERE audience.campaign_id = $1
++            AND ARRAY[audience.purpose_list_id] <> ARRAY(
++                SELECT DISTINCT unnest FROM unnest($14::INT[]) ORDER BY unnest
++            )
++      )
+       AND (
+           (started_at IS NULL AND sent = 0)
+           OR ARRAY(

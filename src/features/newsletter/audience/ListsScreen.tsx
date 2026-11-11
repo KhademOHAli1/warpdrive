@@ -27,6 +27,7 @@ import {
   AudienceWriteError,
 } from "./components";
 import type { AudiencePage, MailingList } from "./contracts";
+import { ListSignupDialog } from "./ListSignupDialog";
 import { useAudienceMessages } from "./messages";
 
 function ListEditor({ row, close }: { row: MailingList | null; close: () => void }) {
@@ -229,6 +230,7 @@ export function ListsScreen() {
   const [filters, setFilters] = useState<ListFilters>({});
   const [editor, setEditor] = useState<{ row: MailingList | null } | null>(null);
   const [deleting, setDeleting] = useState<MailingList | null>(null);
+  const [signup, setSignup] = useState<MailingList | null>(null);
   const read = useNewsletterRead<AudiencePage<MailingList>>("lists.page", {
     page,
     search,
@@ -307,10 +309,15 @@ export function ListsScreen() {
             </td>
             <td className="px-4 py-3">{format.number(row.subscriber_count)}</td>
             <td className="px-4 py-3">
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 <Button variant="ghost" size="sm" onClick={() => setEditor({ row })}>
                   {L.edit}
                 </Button>
+                {row.type === "public" && row.status === "active" && (
+                  <Button variant="ghost" size="sm" onClick={() => setSignup(row)}>
+                    {L.signupEmbed}
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -331,6 +338,7 @@ export function ListsScreen() {
         onPageChange={setPage}
       />
       {editor && <ListEditor row={editor.row} close={() => setEditor(null)} />}
+      {signup && <ListSignupDialog row={signup} close={() => setSignup(null)} />}
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => {

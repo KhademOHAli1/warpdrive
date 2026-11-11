@@ -1,0 +1,821 @@
+diff --git a/cmd/crm_identity.go b/cmd/crm_identity.go
+new file mode 100644
+index 0000000..51cd1dd
+--- /dev/null
++++ b/cmd/crm_identity.go
+@@ -0,0 +1,602 @@
++package main
++
++import (
++	"context"
++	"crypto/rand"
++	"crypto/sha256"
++	"crypto/subtle"
++	"database/sql"
++	_ "embed"
++	"encoding/base64"
++	"encoding/json"
++	"errors"
++	"html/template"
++	"net/http"
++	"net/url"
++	"os"
++	"strings"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
++	"github.com/knadh/listmonk/internal/auth"
++	"github.com/knadh/listmonk/internal/notifs"
++	"github.com/labstack/echo/v4"
++	"github.com/lib/pq"
++)
++
++//go:embed crm_identity.sql
++var crmIdentitySchema string
++
++func migrateCRMIdentity(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(416340, 1)`); err != nil {
++		return err
++	}
++	if _, err := tx.ExecContext(ctx, crmIdentitySchema); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
++
++const crmChallengePath = "/subscription/crm-verify/"
++const crmChallengeFields = `challenge_uuid, binding_uuid, purpose, subscriber_id, subscriber_uuid,
++    email, purpose_list_id, token_digest, expires_at, verified_at, revoked_at`
++
++var crmVerifyPage = template.Must(template.New("verify").Parse(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Confirm newsletter request</title>
++<main><h1>Confirm newsletter request</h1>{{if .Token}}<p>{{.Message}}</p><form method="post" action="{{.Path}}">
++<input name="token" type="hidden" value="{{.Token}}"><button type="submit">Confirm</button></form>{{else}}<p>{{.Message}}</p>{{end}}</main></html>`))
++
++type crmChallenge struct {
++	ID             string     `db:"challenge_uuid" json:"id"`
++	BindingID      string     `db:"binding_uuid" json:"bindingId"`
++	Purpose        string     `db:"purpose" json:"purpose"`
++	SubscriberID   int        `db:"subscriber_id" json:"subscriberId"`
++	SubscriberUUID string     `db:"subscriber_uuid" json:"subscriberUuid"`
++	Email          string     `db:"email" json:"email"`
++	ListID         *int       `db:"purpose_list_id" json:"listId"`
++	TokenDigest    []byte     `db:"token_digest" json:"-"`
++	ExpiresAt      time.Time  `db:"expires_at" json:"expiresAt"`
++	VerifiedAt     *time.Time `db:"verified_at" json:"verifiedAt"`
++	RevokedAt      *time.Time `db:"revoked_at" json:"-"`
++	State          string     `db:"-" json:"state"`
++}
++
++type crmChallengeRequest struct {
++	ID        string `json:"id"`
++	BindingID string `json:"bindingId"`
++	Purpose   string `json:"purpose"`
++	Email     string `json:"email"`
++	ListID    *int   `json:"listId"`
++}
++
++type crmSubscriber struct {
++	ID    int    `db:"id"`
++	UUID  string `db:"uuid"`
++	Email string `db:"email"`
++}
++
++func (p crmChallenge) result() crmChallenge {
++	p.State = "pending"
++	switch {
++	case p.RevokedAt != nil:
++		p.State = "detached"
++	case p.VerifiedAt != nil && p.Purpose == "newsletter":
++		p.State = "confirmed"
++	case p.VerifiedAt != nil:
++		p.State = "verified"
++	case !p.ExpiresAt.After(time.Now()):
++		p.State = "expired"
++	}
++	return p
++}
++
++func crmIdentityApi(next echo.HandlerFunc) echo.HandlerFunc {
++	return func(c echo.Context) error {
++		if auth.GetUser(c).Type != auth.UserTypeAPI {
++			return echo.NewHTTPError(http.StatusForbidden)
++		}
++		c.Response().Header().Set("Cache-Control", "no-store")
++		return next(c)
++	}
++}
++
++func crmReadJSON(c echo.Context, request any) error {
++	decoder := json.NewDecoder(http.MaxBytesReader(c.Response(), c.Request().Body, 16384))
++	decoder.DisallowUnknownFields()
++	if err := decoder.Decode(request); err != nil {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	return nil
++}
++
++func crmDenied() error {
++	return echo.NewHTTPError(http.StatusConflict, "Newsletter identity or consent changed")
++}
++func crmUnavailable() error {
++	return echo.NewHTTPError(http.StatusServiceUnavailable, "Newsletter identity is unavailable")
++}
++
++func crmLookup(ctx context.Context, db sqlx.QueryerContext, id string, locked bool) (crmChallenge, error) {
++	var result crmChallenge
++	query := `SELECT ` + crmChallengeFields + ` FROM warpdrive_crm_identity_challenges WHERE challenge_uuid=$1`
++	if locked {
++		query += ` FOR UPDATE`
++	}
++	err := sqlx.GetContext(ctx, db, &result, query, id)
++	return result, err
++}
++
++func crmLockSubscriber(ctx context.Context, tx *sqlx.Tx, sub crmSubscriber) error {
++	var id int
++	err := tx.GetContext(ctx, &id, `SELECT id FROM subscribers WHERE id=$1 AND uuid=$2 AND email=$3 AND status='enabled' FOR NO KEY UPDATE`, sub.ID, sub.UUID, sub.Email)
++	if errors.Is(err, sql.ErrNoRows) {
++		return crmDenied()
++	}
++	if err != nil {
++		return crmUnavailable()
++	}
++	return nil
++}
++
++func (p crmChallenge) subscriber() crmSubscriber {
++	return crmSubscriber{p.SubscriberID, p.SubscriberUUID, p.Email}
++}
++
++func crmClaimOperation(ctx context.Context, tx *sqlx.Tx, id string) error {
++	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,416341))`, id); err != nil {
++		return crmUnavailable()
++	}
++	return nil
++}
++
++func crmUnshared(ctx context.Context, tx *sqlx.Tx, subID int, bindingID string) (bool, error) {
++	var alone bool
++	err := tx.GetContext(ctx, &alone, `SELECT NOT EXISTS (SELECT 1 FROM warpdrive_crm_identity_challenges
++      WHERE subscriber_id=$1 AND purpose='identity' AND verified_at IS NOT NULL AND revoked_at IS NULL AND binding_uuid<>$2)`, subID, bindingID)
++	return alone, err
++}
++
++func (a *App) crmIssueChallenge(c echo.Context) error {
++	var req crmChallengeRequest
++	if err := crmReadJSON(c, &req); err != nil {
++		return err
++	}
++	req.ID, req.BindingID = strings.ToLower(req.ID), strings.ToLower(req.BindingID)
++	if !reUUID.MatchString(req.ID) || !reUUID.MatchString(req.BindingID) || len(req.Email) > 254 {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	if !((req.Purpose == "identity" && req.ID == req.BindingID && req.ListID == nil) ||
++		(req.Purpose == "newsletter" && req.ID != req.BindingID && req.ListID != nil && *req.ListID > 0)) {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	email, err := a.importer.SanitizeEmail(req.Email)
++	if err != nil {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	req.Email = email
++	if os.Getenv("NEWSLETTER_DELIVERY_ENABLED") != "true" {
++		return echo.NewHTTPError(http.StatusPreconditionFailed, "Newsletter verification delivery is disabled")
++	}
++	origin, err := url.Parse(a.urlCfg.RootURL)
++	if err != nil || origin.Host == "" || (origin.Scheme != "https" && !(origin.Scheme == "http" && (origin.Hostname() == "127.0.0.1" || origin.Hostname() == "localhost"))) {
++		return crmUnavailable()
++	}
++
++	challenge, token, err := a.crmAdmitChallenge(c.Request().Context(), req)
++	if err != nil {
++		return err
++	}
++	if token != "" {
++		var eligible bool
++		err := a.db.GetContext(c.Request().Context(), &eligible, `SELECT EXISTS (
++          SELECT 1 FROM warpdrive_crm_identity_challenges c JOIN subscribers s ON s.id=c.subscriber_id
++          WHERE c.challenge_uuid=$1 AND c.revoked_at IS NULL AND s.uuid=c.subscriber_uuid AND s.email=c.email AND s.status='enabled')`, challenge.ID)
++		if err != nil || !eligible {
++			return crmUnavailable()
++		}
++		origin.Path, origin.RawQuery, origin.Fragment = crmChallengePath+challenge.ID, url.Values{"token": {token}}.Encode(), ""
++		data := struct {
++			URL        string
++			Newsletter bool
++		}{origin.String(), req.Purpose == "newsletter"}
++		// A durable claim permits one enqueue attempt. An uncertain attempt is inspected, never re-enqueued.
++		if err := notifs.Notify([]string{challenge.Email}, "Confirm your newsletter request", "warpdrive-crm-identity", data, nil); err != nil {
++			return crmUnavailable()
++		}
++	}
++	return c.JSON(http.StatusOK, okResp{challenge.result()})
++}
++
++func (a *App) crmAdmitChallenge(ctx context.Context, req crmChallengeRequest) (crmChallenge, string, error) {
++	tx, err := a.db.BeginTxx(ctx, nil)
++	if err != nil {
++		return crmChallenge{}, "", crmUnavailable()
++	}
++	defer tx.Rollback()
++	if err := crmClaimOperation(ctx, tx, req.ID); err != nil {
++		return crmChallenge{}, "", err
++	}
++	current, err := crmLookup(ctx, tx, req.ID, false)
++	if err == nil {
++		sameList := current.ListID == nil && req.ListID == nil || current.ListID != nil && req.ListID != nil && *current.ListID == *req.ListID
++		if current.BindingID != req.BindingID || current.Purpose != req.Purpose || !strings.EqualFold(current.Email, req.Email) || !sameList {
++			return crmChallenge{}, "", crmDenied()
++		}
++		return current, "", nil
++	}
++	if !errors.Is(err, sql.ErrNoRows) {
++		return crmChallenge{}, "", crmUnavailable()
++	}
++
++	var subscriber crmSubscriber
++	if req.Purpose == "identity" {
++		u, err := uuid.NewV4()
++		if err != nil {
++			return crmChallenge{}, "", crmUnavailable()
++		}
++		err = tx.GetContext(ctx, &subscriber, `INSERT INTO subscribers AS s(uuid,email,name,status) VALUES($1,$2,$3,'enabled')
++            ON CONFLICT (lower(email)) DO UPDATE SET name=s.name WHERE s.status='enabled' RETURNING s.id,s.uuid,s.email`, u, req.Email, "Newsletter subscriber")
++		if errors.Is(err, sql.ErrNoRows) {
++			return crmChallenge{}, "", crmDenied()
++		}
++		if err != nil {
++			return crmChallenge{}, "", crmUnavailable()
++		}
++		var recent bool
++		if err := tx.GetContext(ctx, &recent, `SELECT EXISTS (SELECT 1 FROM warpdrive_crm_identity_challenges WHERE subscriber_id=$1
++            AND created_at > clock_timestamp()-interval '1 minute')`, subscriber.ID); err != nil {
++			return crmChallenge{}, "", crmUnavailable()
++		}
++		if recent {
++			return crmChallenge{}, "", crmDenied()
++		}
++	} else {
++		subscriber, err = crmReserveNewsletterPurpose(ctx, tx, req)
++		if err != nil {
++			return crmChallenge{}, "", err
++		}
++	}
++
++	raw := make([]byte, 32)
++	if _, err := rand.Read(raw); err != nil {
++		return crmChallenge{}, "", crmUnavailable()
++	}
++	digest := sha256.Sum256(raw)
++	var challenge crmChallenge
++	if err := tx.GetContext(ctx, &challenge, `INSERT INTO warpdrive_crm_identity_challenges
++      (challenge_uuid,binding_uuid,purpose,subscriber_id,subscriber_uuid,email,purpose_list_id,token_digest,expires_at)
++      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp()+interval '30 minutes') RETURNING `+crmChallengeFields,
++		req.ID, req.BindingID, req.Purpose, subscriber.ID, subscriber.UUID, subscriber.Email, req.ListID, digest[:]); err != nil {
++		return crmChallenge{}, "", crmUnavailable()
++	}
++	if err := tx.Commit(); err != nil {
++		return crmChallenge{}, "", crmUnavailable()
++	}
++	return challenge, base64.RawURLEncoding.EncodeToString(raw), nil
++}
++
++func crmReserveNewsletterPurpose(ctx context.Context, tx *sqlx.Tx, req crmChallengeRequest) (crmSubscriber, error) {
++	binding, err := crmLookup(ctx, tx, req.BindingID, false)
++	if err != nil || binding.Purpose != "identity" || binding.VerifiedAt == nil || binding.RevokedAt != nil || !strings.EqualFold(binding.Email, req.Email) {
++		return crmSubscriber{}, crmDenied()
++	}
++	sub := binding.subscriber()
++	if err := crmLockSubscriber(ctx, tx, sub); err != nil {
++		return crmSubscriber{}, err
++	}
++	binding, err = crmLookup(ctx, tx, req.BindingID, true)
++	if err != nil || binding.RevokedAt != nil {
++		return crmSubscriber{}, crmDenied()
++	}
++	alone, err := crmUnshared(ctx, tx, sub.ID, req.BindingID)
++	if err != nil || !alone {
++		return crmSubscriber{}, crmDenied()
++	}
++	var listID int
++	if err := tx.GetContext(ctx, &listID, `SELECT id FROM lists WHERE id=$1 AND status='active' AND optin='double' FOR SHARE`, req.ListID); err != nil {
++		return crmSubscriber{}, crmDenied()
++	}
++	// Existing unsubscribe is never overwritten. A pending scoped invitation is consumed only by its own token.
++	res, err := tx.ExecContext(ctx, `INSERT INTO subscriber_lists(subscriber_id,list_id,status,meta)
++        VALUES($1,$2,'unconfirmed',jsonb_build_object('warpdrive_crm_invite',$3::text))
++        ON CONFLICT (subscriber_id,list_id) DO UPDATE SET meta=subscriber_lists.meta || EXCLUDED.meta
++        WHERE subscriber_lists.status<>'unsubscribed' AND NOT EXISTS (
++            SELECT 1 FROM warpdrive_crm_identity_challenges c WHERE c.challenge_uuid::text=subscriber_lists.meta->>'warpdrive_crm_invite'
++            AND c.revoked_at IS NULL AND c.verified_at IS NULL AND c.expires_at>clock_timestamp())`, sub.ID, listID, req.ID)
++	if err != nil {
++		return crmSubscriber{}, crmUnavailable()
++	}
++	n, err := res.RowsAffected()
++	if err != nil || n != 1 {
++		return crmSubscriber{}, crmDenied()
++	}
++	return sub, nil
++}
++
++func (a *App) crmReadChallenge(c echo.Context) error {
++	result, err := crmLookup(c.Request().Context(), a.db, c.Param("id"), false)
++	if errors.Is(err, sql.ErrNoRows) {
++		return echo.NewHTTPError(http.StatusNotFound)
++	}
++	if err != nil {
++		return crmUnavailable()
++	}
++	return c.JSON(http.StatusOK, okResp{result.result()})
++}
++
++func crmRenderVerification(c echo.Context, status int, token, message string) error {
++	header := c.Response().Header()
++	header.Set("Cache-Control", "no-store")
++	header.Set("Referrer-Policy", "no-referrer")
++	header.Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'")
++	header.Set(echo.HeaderContentType, "text/html; charset=utf-8")
++	c.Response().WriteHeader(status)
++	return crmVerifyPage.Execute(c.Response(), struct{ Token, Path, Message string }{token, crmChallengePath + c.Param("id"), message})
++}
++
++func (a *App) crmVerifyChallenge(c echo.Context) error {
++	token := c.QueryParam("token")
++	if c.Request().Method == http.MethodPost {
++		c.Request().Body = http.MaxBytesReader(c.Response(), c.Request().Body, 2048)
++		if err := c.Request().ParseForm(); err != nil {
++			return crmRenderVerification(c, http.StatusBadRequest, "", "This verification link is unavailable.")
++		}
++		token = c.Request().PostForm.Get("token")
++	}
++	raw, err := base64.RawURLEncoding.Strict().DecodeString(token)
++	if err != nil || len(raw) != 32 {
++		return crmRenderVerification(c, http.StatusNotFound, "", "This verification link is unavailable.")
++	}
++	digest := sha256.Sum256(raw)
++	ctx := c.Request().Context()
++	proof, err := crmLookup(ctx, a.db, c.Param("id"), false)
++	if err != nil || subtle.ConstantTimeCompare(proof.TokenDigest, digest[:]) != 1 || proof.result().State != "pending" {
++		return crmRenderVerification(c, http.StatusNotFound, "", "This verification link is unavailable.")
++	}
++	if c.Request().Method != http.MethodPost {
++		message := "Confirm control of this mailbox for the Warpdrive contact association. This does not subscribe you to a list."
++		if proof.Purpose == "newsletter" {
++			var listName string
++			if err := a.db.GetContext(ctx, &listName, `SELECT name FROM lists WHERE id=$1 AND status='active' AND optin='double'`, proof.ListID); err != nil {
++				return crmRenderVerification(c, http.StatusNotFound, "", "This verification link is unavailable.")
++			}
++			message = "Confirm this mailbox’s subscription to " + listName + "."
++		}
++		return crmRenderVerification(c, http.StatusOK, token, message)
++	}
++	if err := a.crmConfirmChallenge(ctx, proof); err != nil {
++		return crmRenderVerification(c, http.StatusConflict, "", "This verification link is unavailable.")
++	}
++	return crmRenderVerification(c, http.StatusOK, "", "Your confirmation was recorded.")
++}
++
++func (a *App) crmConfirmChallenge(ctx context.Context, proof crmChallenge) error {
++	tx, err := a.db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if err := crmLockSubscriber(ctx, tx, proof.subscriber()); err != nil {
++		return err
++	}
++	current, err := crmLookup(ctx, tx, proof.ID, true)
++	if err != nil || current.result().State != "pending" {
++		return crmDenied()
++	}
++	if proof.Purpose == "newsletter" {
++		if err := crmConfirmPurpose(ctx, tx, current); err != nil {
++			return err
++		}
++	} else {
++		alone, err := crmUnshared(ctx, tx, current.SubscriberID, current.BindingID)
++		if err != nil {
++			return err
++		}
++		if !alone {
++			if _, err := tx.ExecContext(ctx, `UPDATE warpdrive_crm_consent_grants SET revoked_at=clock_timestamp() WHERE subscriber_id=$1 AND revoked_at IS NULL`, current.SubscriberID); err != nil {
++				return err
++			}
++		}
++	}
++	if _, err := tx.ExecContext(ctx, `UPDATE warpdrive_crm_identity_challenges SET verified_at=clock_timestamp() WHERE challenge_uuid=$1`, proof.ID); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
++
++func crmConfirmPurpose(ctx context.Context, tx *sqlx.Tx, proof crmChallenge) error {
++	binding, err := crmLookup(ctx, tx, proof.BindingID, false)
++	if err != nil || binding.RevokedAt != nil || binding.VerifiedAt == nil {
++		return crmDenied()
++	}
++	alone, err := crmUnshared(ctx, tx, proof.SubscriberID, proof.BindingID)
++	if err != nil || !alone {
++		return crmDenied()
++	}
++	var listID int
++	if err := tx.GetContext(ctx, &listID, `SELECT id FROM lists WHERE id=$1 AND status='active' AND optin='double' FOR SHARE`, proof.ListID); err != nil {
++		return crmDenied()
++	}
++	res, err := tx.ExecContext(ctx, `UPDATE subscriber_lists SET status='confirmed', updated_at=clock_timestamp(), meta=meta-'warpdrive_crm_invite'
++        WHERE subscriber_id=$1 AND list_id=$2 AND status<>'unsubscribed' AND meta->>'warpdrive_crm_invite'=$3`, proof.SubscriberID, listID, proof.ID)
++	if err != nil {
++		return err
++	}
++	if n, err := res.RowsAffected(); err != nil || n != 1 {
++		return crmDenied()
++	}
++	if _, err := tx.ExecContext(ctx, `UPDATE warpdrive_crm_consent_grants SET revoked_at=clock_timestamp()
++        WHERE binding_uuid=$1 AND purpose_list_id=$2 AND revoked_at IS NULL`, proof.BindingID, listID); err != nil {
++		return err
++	}
++	_, err = tx.ExecContext(ctx, `INSERT INTO warpdrive_crm_consent_grants(grant_uuid,binding_uuid,subscriber_id,subscriber_uuid,email,purpose_list_id,granted_at)
++      VALUES($1,$2,$3,$4,$5,$6,clock_timestamp())`, proof.ID, proof.BindingID, proof.SubscriberID, proof.SubscriberUUID, proof.Email, listID)
++	return err
++}
++
++func (a *App) crmRevokeBinding(c echo.Context) error {
++	ctx := c.Request().Context()
++	tx, err := a.db.BeginTxx(ctx, nil)
++	if err != nil {
++		return crmUnavailable()
++	}
++	defer tx.Rollback()
++	id := c.Param("id")
++	if err := crmClaimOperation(ctx, tx, id); err != nil {
++		return err
++	}
++	proof, err := crmLookup(ctx, tx, id, false)
++	if errors.Is(err, sql.ErrNoRows) {
++		return c.JSON(http.StatusOK, okResp{true})
++	}
++	if err != nil || proof.Purpose != "identity" {
++		return crmDenied()
++	}
++	if _, err := tx.ExecContext(ctx, `SELECT id FROM subscribers WHERE id=$1 FOR NO KEY UPDATE`, proof.SubscriberID); err != nil {
++		return crmUnavailable()
++	}
++	if _, err := tx.ExecContext(ctx, `UPDATE warpdrive_crm_identity_challenges SET revoked_at=clock_timestamp()
++      WHERE binding_uuid=$1 AND revoked_at IS NULL`, id); err != nil {
++		return crmUnavailable()
++	}
++	if _, err := tx.ExecContext(ctx, `UPDATE warpdrive_crm_consent_grants SET revoked_at=clock_timestamp()
++      WHERE binding_uuid=$1 AND revoked_at IS NULL`, id); err != nil {
++		return crmUnavailable()
++	}
++	if err := tx.Commit(); err != nil {
++		return crmUnavailable()
++	}
++	return c.JSON(http.StatusOK, okResp{true})
++}
++
++type crmGrant struct {
++	GrantID        string `db:"grant_uuid" json:"grantUuid"`
++	BindingID      string `db:"binding_uuid" json:"bindingUuid"`
++	SubscriberID   int    `db:"subscriber_id" json:"subscriberId"`
++	SubscriberUUID string `db:"subscriber_uuid" json:"subscriberUuid"`
++	Email          string `db:"email" json:"email"`
++	ListID         int    `db:"purpose_list_id" json:"purposeListId"`
++}
++
++func (a *App) crmReadGrants(c echo.Context) error {
++	var req struct {
++		BindingIDs []string `json:"bindingIds"`
++		ListID     int      `json:"listId"`
++	}
++	if err := crmReadJSON(c, &req); err != nil {
++		return err
++	}
++	if req.ListID <= 0 || len(req.BindingIDs) == 0 || len(req.BindingIDs) > 500 {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	for _, id := range req.BindingIDs {
++		if !reUUID.MatchString(id) {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++	}
++	rows := []crmGrant{}
++	if err := a.db.SelectContext(c.Request().Context(), &rows, `SELECT g.grant_uuid,g.binding_uuid,g.subscriber_id,g.subscriber_uuid,g.email,g.purpose_list_id
++      FROM warpdrive_crm_consent_grants g
++      JOIN subscribers s ON s.id=g.subscriber_id AND s.uuid=g.subscriber_uuid AND s.email=g.email AND s.status='enabled'
++      JOIN lists l ON l.id=g.purpose_list_id AND l.optin='double' AND l.status='active'
++      JOIN subscriber_lists sl ON sl.subscriber_id=s.id AND sl.list_id=l.id AND sl.status='confirmed'
++      WHERE g.binding_uuid=ANY($1::UUID[]) AND g.purpose_list_id=$2 AND g.revoked_at IS NULL`, pq.Array(req.BindingIDs), req.ListID); err != nil {
++		return crmUnavailable()
++	}
++	return c.JSON(http.StatusOK, okResp{rows})
++}
++
++type crmErasure struct {
++	ID        string    `db:"operation_uuid" json:"id"`
++	BindingID string    `db:"binding_uuid" json:"bindingId"`
++	ErasedAt  time.Time `db:"erased_at" json:"erasedAt"`
++}
++
++func (a *App) crmReadErasure(c echo.Context) error {
++	var receipt crmErasure
++	if err := a.db.GetContext(c.Request().Context(), &receipt, `SELECT operation_uuid,binding_uuid,erased_at FROM warpdrive_crm_erasure_receipts WHERE operation_uuid=$1`, c.Param("id")); err != nil {
++		if errors.Is(err, sql.ErrNoRows) {
++			return echo.NewHTTPError(http.StatusNotFound)
++		}
++		return crmUnavailable()
++	}
++	return c.JSON(http.StatusOK, okResp{receipt})
++}
++
++func (a *App) crmEraseBinding(c echo.Context) error {
++	var req struct {
++		ID        string `json:"id"`
++		BindingID string `json:"bindingId"`
++	}
++	if err := crmReadJSON(c, &req); err != nil {
++		return err
++	}
++	req.ID, req.BindingID = strings.ToLower(req.ID), strings.ToLower(req.BindingID)
++	if !reUUID.MatchString(req.ID) || !reUUID.MatchString(req.BindingID) {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	ctx := c.Request().Context()
++	tx, err := a.db.BeginTxx(ctx, nil)
++	if err != nil {
++		return crmUnavailable()
++	}
++	defer tx.Rollback()
++	if err := crmClaimOperation(ctx, tx, req.ID); err != nil {
++		return err
++	}
++	var receipt crmErasure
++	err = tx.GetContext(ctx, &receipt, `SELECT operation_uuid,binding_uuid,erased_at FROM warpdrive_crm_erasure_receipts WHERE operation_uuid=$1`, req.ID)
++	if err == nil {
++		if receipt.BindingID != req.BindingID {
++			return crmDenied()
++		}
++		return c.JSON(http.StatusOK, okResp{receipt})
++	}
++	if !errors.Is(err, sql.ErrNoRows) {
++		return crmUnavailable()
++	}
++	proof, err := crmLookup(ctx, tx, req.BindingID, false)
++	if err != nil || proof.Purpose != "identity" || proof.VerifiedAt == nil {
++		return crmDenied()
++	}
++	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended(lower($1),416340))`, proof.Email); err != nil {
++		return crmUnavailable()
++	}
++	// Erasure may also finish a current blocklisted mailbox. It never acts on a replaced address.
++	var id int
++	if err := tx.GetContext(ctx, &id, `SELECT id FROM subscribers WHERE id=$1 AND uuid=$2 AND email=$3 FOR UPDATE`, proof.SubscriberID, proof.SubscriberUUID, proof.Email); err != nil {
++		return crmDenied()
++	}
++	var shared bool
++	if err := tx.GetContext(ctx, &shared, `SELECT EXISTS (SELECT 1 FROM warpdrive_crm_identity_challenges
++      WHERE subscriber_id=$1 AND purpose='identity' AND verified_at IS NOT NULL AND binding_uuid<>$2)`, id, req.BindingID); err != nil || shared {
++		return crmDenied()
++	}
++	if _, err := tx.ExecContext(ctx, `INSERT INTO warpdrive_crm_suppressions(address_digest) VALUES(warpdrive_crm_address_digest($1)) ON CONFLICT DO NOTHING`, proof.Email); err != nil {
++		return crmUnavailable()
++	}
++	if _, err := tx.ExecContext(ctx, `DELETE FROM subscribers WHERE id=$1`, id); err != nil {
++		return crmUnavailable()
++	}
++	if _, err := tx.ExecContext(ctx, `DELETE FROM warpdrive_crm_consent_grants WHERE subscriber_id=$1`, id); err != nil {
++		return crmUnavailable()
++	}
++	if _, err := tx.ExecContext(ctx, `DELETE FROM warpdrive_crm_identity_challenges WHERE subscriber_id=$1`, id); err != nil {
++		return crmUnavailable()
++	}
++	if err := tx.GetContext(ctx, &receipt, `INSERT INTO warpdrive_crm_erasure_receipts(operation_uuid,binding_uuid) VALUES($1,$2)
++      RETURNING operation_uuid,binding_uuid,erased_at`, req.ID, req.BindingID); err != nil {
++		return crmUnavailable()
++	}
++	if err := tx.Commit(); err != nil {
++		return crmUnavailable()
++	}
++	return c.JSON(http.StatusOK, okResp{receipt})
++}
+diff --git a/cmd/crm_identity.sql b/cmd/crm_identity.sql
+new file mode 100644
+index 0000000..dd74884
+--- /dev/null
++++ b/cmd/crm_identity.sql
+@@ -0,0 +1,115 @@
++CREATE TABLE IF NOT EXISTS warpdrive_crm_identity_challenges (
++    challenge_uuid UUID PRIMARY KEY,
++    binding_uuid UUID NOT NULL,
++    purpose TEXT NOT NULL CHECK (purpose IN ('identity', 'newsletter')),
++    subscriber_id INT NOT NULL,
++    subscriber_uuid UUID NOT NULL,
++    email TEXT NOT NULL,
++    purpose_list_id INT,
++    token_digest BYTEA NOT NULL CHECK (octet_length(token_digest) = 32),
++    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
++    expires_at TIMESTAMPTZ NOT NULL,
++    verified_at TIMESTAMPTZ,
++    revoked_at TIMESTAMPTZ,
++    CHECK ((purpose = 'identity' AND purpose_list_id IS NULL AND challenge_uuid = binding_uuid)
++        OR (purpose = 'newsletter' AND purpose_list_id IS NOT NULL AND challenge_uuid <> binding_uuid))
++);
++CREATE INDEX IF NOT EXISTS warpdrive_crm_challenge_subscriber_idx ON warpdrive_crm_identity_challenges(subscriber_id, purpose);
++CREATE INDEX IF NOT EXISTS warpdrive_crm_challenge_binding_idx ON warpdrive_crm_identity_challenges(binding_uuid);
++
++CREATE TABLE IF NOT EXISTS warpdrive_crm_consent_grants (
++    grant_uuid UUID PRIMARY KEY,
++    binding_uuid UUID NOT NULL,
++    subscriber_id INT NOT NULL,
++    subscriber_uuid UUID NOT NULL,
++    email TEXT NOT NULL,
++    purpose_list_id INT NOT NULL,
++    granted_at TIMESTAMPTZ NOT NULL,
++    revoked_at TIMESTAMPTZ
++);
++CREATE INDEX IF NOT EXISTS warpdrive_crm_grant_binding_idx ON warpdrive_crm_consent_grants(binding_uuid, purpose_list_id) WHERE revoked_at IS NULL;
++CREATE INDEX IF NOT EXISTS warpdrive_crm_grant_membership_idx ON warpdrive_crm_consent_grants(subscriber_id, purpose_list_id) WHERE revoked_at IS NULL;
++CREATE INDEX IF NOT EXISTS warpdrive_crm_grant_purpose_idx ON warpdrive_crm_consent_grants(purpose_list_id) WHERE revoked_at IS NULL;
++
++CREATE TABLE IF NOT EXISTS warpdrive_crm_erasure_receipts (
++    operation_uuid UUID PRIMARY KEY,
++    binding_uuid UUID NOT NULL,
++    erased_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
++);
++CREATE TABLE IF NOT EXISTS warpdrive_crm_suppression_key (
++    id BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(id),
++    key BYTEA NOT NULL CHECK (octet_length(key) = 32)
++);
++INSERT INTO warpdrive_crm_suppression_key(key) VALUES(gen_random_bytes(32)) ON CONFLICT (id) DO NOTHING;
++CREATE TABLE IF NOT EXISTS warpdrive_crm_suppressions (
++    address_digest BYTEA PRIMARY KEY CHECK (octet_length(address_digest) = 32),
++    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
++);
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_address_digest(address TEXT) RETURNS BYTEA
++LANGUAGE SQL STABLE AS $$
++    SELECT hmac(convert_to(lower(address), 'UTF8'), key, 'sha256') FROM warpdrive_crm_suppression_key WHERE id;
++$$;
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_refuse_erased_mailbox() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++BEGIN
++    IF TG_OP = 'UPDATE' AND NEW.email IS NOT DISTINCT FROM OLD.email THEN
++        RETURN NEW;
++    END IF;
++    PERFORM pg_advisory_xact_lock(hashtextextended(lower(NEW.email), 416340));
++    IF EXISTS (SELECT 1 FROM warpdrive_crm_suppressions WHERE address_digest=warpdrive_crm_address_digest(NEW.email)) THEN
++        RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='Suppressed mailbox';
++    END IF;
++    RETURN NEW;
++END;
++$$;
++DROP TRIGGER IF EXISTS warpdrive_crm_suppressed_mailbox ON subscribers;
++CREATE TRIGGER warpdrive_crm_suppressed_mailbox BEFORE INSERT OR UPDATE OF email ON subscribers
++FOR EACH ROW EXECUTE FUNCTION warpdrive_crm_refuse_erased_mailbox();
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_revoke_membership() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++BEGIN
++    IF TG_OP = 'DELETE' OR NEW.status <> 'confirmed' OR NEW.subscriber_id <> OLD.subscriber_id OR NEW.list_id <> OLD.list_id THEN
++        UPDATE warpdrive_crm_consent_grants SET revoked_at=clock_timestamp()
++        WHERE subscriber_id=OLD.subscriber_id AND purpose_list_id=OLD.list_id AND revoked_at IS NULL;
++    END IF;
++    IF TG_OP = 'DELETE' OR NEW.status = 'unsubscribed' THEN
++        UPDATE warpdrive_crm_identity_challenges SET revoked_at=clock_timestamp()
++        WHERE challenge_uuid::text=OLD.meta->>'warpdrive_crm_invite' AND revoked_at IS NULL;
++    END IF;
++    RETURN NULL;
++END;
++$$;
++DROP TRIGGER IF EXISTS warpdrive_crm_revoke_membership ON subscriber_lists;
++CREATE TRIGGER warpdrive_crm_revoke_membership AFTER UPDATE OF status, subscriber_id, list_id OR DELETE ON subscriber_lists
++FOR EACH ROW EXECUTE FUNCTION warpdrive_crm_revoke_membership();
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_revoke_mailbox() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++BEGIN
++    IF TG_OP = 'DELETE' OR NEW.status <> 'enabled' OR NEW.email IS DISTINCT FROM OLD.email OR NEW.uuid IS DISTINCT FROM OLD.uuid THEN
++        UPDATE warpdrive_crm_consent_grants SET revoked_at=clock_timestamp()
++        WHERE subscriber_id=OLD.id AND revoked_at IS NULL;
++        UPDATE warpdrive_crm_identity_challenges SET revoked_at=clock_timestamp()
++        WHERE subscriber_id=OLD.id AND revoked_at IS NULL;
++    END IF;
++    RETURN NULL;
++END;
++$$;
++DROP TRIGGER IF EXISTS warpdrive_crm_revoke_mailbox ON subscribers;
++CREATE TRIGGER warpdrive_crm_revoke_mailbox AFTER UPDATE OF status, email, uuid OR DELETE ON subscribers
++FOR EACH ROW EXECUTE FUNCTION warpdrive_crm_revoke_mailbox();
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_revoke_purpose() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++BEGIN
++    IF TG_OP = 'DELETE' OR NEW.status <> 'active' OR NEW.optin <> 'double' THEN
++        UPDATE warpdrive_crm_consent_grants SET revoked_at=clock_timestamp()
++        WHERE purpose_list_id=OLD.id AND revoked_at IS NULL;
++        UPDATE warpdrive_crm_identity_challenges SET revoked_at=clock_timestamp()
++        WHERE purpose_list_id=OLD.id AND revoked_at IS NULL;
++    END IF;
++    RETURN NULL;
++END;
++$$;
++DROP TRIGGER IF EXISTS warpdrive_crm_revoke_purpose ON lists;
++CREATE TRIGGER warpdrive_crm_revoke_purpose AFTER UPDATE OF status, optin OR DELETE ON lists
++FOR EACH ROW EXECUTE FUNCTION warpdrive_crm_revoke_purpose();
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index 7a5472f..390d4de 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,8 +102,14 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1}})
+ 		}, "settings:get"))
++		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
++		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
++		g.POST("/api/warpdrive/crm-identity/bindings/:id/revoke", pm(crmIdentityApi(a.hasUUID(a.crmRevokeBinding, "id")), "warpdrive:identity_verify"))
++		g.POST("/api/warpdrive/crm-identity/grants", pm(crmIdentityApi(a.crmReadGrants), "warpdrive:identity_verify"))
++		g.POST("/api/warpdrive/crm-identity/erasures", pm(crmIdentityApi(a.crmEraseBinding), "warpdrive:identity_erase"))
++		g.GET("/api/warpdrive/crm-identity/erasures/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadErasure, "id")), "warpdrive:identity_erase"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+ 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
+ 		g.GET("/api/dashboard/counts", a.GetDashboardCounts)
+@@ -277,6 +283,10 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/subscription/optin/:subUUID", optin)
+ 		g.HEAD("/subscription/optin/:subUUID", optin)
+ 		g.POST("/subscription/optin/:subUUID", optin)
++		crmVerify := noIndex(a.hasUUID(a.crmVerifyChallenge, "id"))
++		g.GET("/subscription/crm-verify/:id", crmVerify)
++		g.HEAD("/subscription/crm-verify/:id", crmVerify)
++		g.POST("/subscription/crm-verify/:id", crmVerify)
+ 		g.POST("/subscription/export/:subUUID", a.hasUUID(a.hasSub(a.SelfExportSubscriberData), "subUUID"))
+ 		g.POST("/subscription/wipe/:subUUID", a.hasUUID(a.hasSub(a.WipeSubscriberData), "subUUID"))
+ 		g.GET("/link/:linkUUID/:campUUID/:subUUID", noIndex(a.hasUUID(a.LinkRedirect, "linkUUID", "campUUID", "subUUID")))
+diff --git a/cmd/main.go b/cmd/main.go
+index acede3d..e95146a 100644
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -178,6 +178,10 @@ func init() {
+ 		checkUpgrade(db)
+ 	}
+ 
++	if err := migrateCRMIdentity(db); err != nil {
++		lo.Fatal("could not initialize newsletter CRM identity")
++	}
++
+ 	// Read the SQL queries from the queries file.
+ 	qMap := readQueries(queryFilePath, fs)
+ 
+diff --git a/permissions.json b/permissions.json
+index e6a01bf..715dce6 100644
+--- a/permissions.json
++++ b/permissions.json
+@@ -16,7 +16,9 @@
+             "subscribers:manage",
+             "subscribers:import",
+             "subscribers:sql_query",
+-            "tx:send"
++            "tx:send",
++            "warpdrive:identity_verify",
++            "warpdrive:identity_erase"
+         ]
+     },
+     {
+diff --git a/queries/subscribers.sql b/queries/subscribers.sql
+index 51a4e90..88a4203 100644
+--- a/queries/subscribers.sql
++++ b/queries/subscribers.sql
+@@ -263,7 +263,7 @@ listIDs AS (
+ UPDATE subscriber_lists SET status='confirmed', meta=meta || $3, updated_at=NOW()
+     WHERE subscriber_id = (SELECT id FROM eligibleSubscriber)
+       AND list_id = ANY(SELECT id FROM listIDs)
+-      AND status = 'unconfirmed';
++      AND status = 'unconfirmed' AND NOT (meta ? 'warpdrive_crm_invite');
+ 
+ -- name: unsubscribe-subscribers-from-lists
+ WITH listIDs AS (
+diff --git a/static/email-templates/warpdrive-crm-identity.html b/static/email-templates/warpdrive-crm-identity.html
+new file mode 100644
+index 0000000..5e627d7
+--- /dev/null
++++ b/static/email-templates/warpdrive-crm-identity.html
+@@ -0,0 +1,12 @@
++{{ define "warpdrive-crm-identity" }}
++{{ template "header" . }}
++<h2>Confirm your newsletter request</h2>
++{{ if .Newsletter }}
++<p>Review and confirm the requested newsletter subscription for this mailbox.</p>
++{{ else }}
++<p>Confirm control of this mailbox for the Warpdrive contact association. This does not subscribe you to a list.</p>
++{{ end }}
++<p><a href="{{ .URL }}" class="button">Review request</a></p>
++<p>This link expires in 30 minutes. You can ignore this email if you did not request it.</p>
++{{ template "footer" }}
++{{ end }}

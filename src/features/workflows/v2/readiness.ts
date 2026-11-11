@@ -1,14 +1,16 @@
+import { z } from "zod";
 import type { Db } from "@/db/client";
 import { blockReferences, resolveBlockConfig } from "@/features/blocks/bindings";
 import { findSharedBlock } from "@/features/blocks/catalog";
-import type {
-  BlockReadiness,
-  WorkflowV2Adapters,
-  WorkflowV2Definition,
-  WorkflowV2Node,
-  WorkflowV2Trigger,
+import {
+  type BlockReadiness,
+  isNewsletterTrigger,
+  type WorkflowV2Adapters,
+  type WorkflowV2Definition,
+  type WorkflowV2Node,
+  type WorkflowV2Trigger,
 } from "@/features/blocks/contracts";
-import { validateResolvedBlockConfig } from "@/features/blocks/schemas";
+import { newsletterListId, validateResolvedBlockConfig } from "@/features/blocks/schemas";
 import type { PermSetUser } from "@/features/permissions/effective";
 
 import { validSchedule } from "./cron";
@@ -19,8 +21,14 @@ const nativeObjects = new Set(["deal", "lead", "person", "organization", "activi
 function validNativeObject(value: unknown) {
   return typeof value === "string" && nativeObjects.has(value);
 }
+const confirmedTriggerConfig = z.strictObject({ listId: newsletterListId.optional() });
+const identityTriggerConfig = z.strictObject({});
 export function validWorkflowV2Trigger(trigger: WorkflowV2Trigger): boolean {
   const { type, config } = trigger;
+  if (isNewsletterTrigger(type))
+    return (
+      type === "newsletter.consent.confirmed" ? confirmedTriggerConfig : identityTriggerConfig
+    ).safeParse(config).success;
   if (type === "schedule") return validSchedule(config);
   if (type === "webhook") {
     const authenticated =

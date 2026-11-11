@@ -93,6 +93,25 @@ const base = z.object({
   NEWSLETTER_API_USER: z.string().trim().default(""),
   NEWSLETTER_API_TOKEN: z.string().default(""),
   NEWSLETTER_DELIVERY_ENABLED: boolFromString.default(false),
+  NEWSLETTER_PUBLIC_SIGNUP_ENABLED: boolFromString.default(false),
+  NEWSLETTER_PUBLIC_ORIGIN: z
+    .string()
+    .trim()
+    .default("")
+    .refine((value) => {
+      if (value === "") return true;
+      if (!URL.canParse(value)) return false;
+      const url = new URL(value);
+      return (
+        url.protocol === "https:" &&
+        url.username === "" &&
+        url.password === "" &&
+        url.pathname === "/" &&
+        url.search === "" &&
+        url.hash === ""
+      );
+    }, "Set the exact HTTPS origin of the public newsletter.")
+    .transform((value) => (value === "" ? value : new URL(value).origin)),
   NEWSLETTER_TEST_RECIPIENTS: z
     .string()
     .max(4096)

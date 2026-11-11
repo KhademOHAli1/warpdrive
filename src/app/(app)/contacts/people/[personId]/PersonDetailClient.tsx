@@ -3,21 +3,24 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import { MergeDialog } from "@/features/contacts/MergeDialog";
+import { personNewsletterMessages } from "@/features/contacts/personNewsletterMessages";
 import type { PersonDetail } from "@/features/contacts/personsRepo";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { RecordLink } from "@/features/navigation/RecordLink";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { PersonDetailHeader } from "../../ContactDetailHeader";
 import styles from "../../ContactDetailLayout.module.css";
 import { ContactTimelinePanel, FilesPanel, TabStrip } from "../../contactDetail.shared";
+import { PersonNewsletterPanel } from "./PersonNewsletterPanel";
 import { PersonSidebar } from "./PersonSidebar";
 
 // No page-level Email tab: linked mail is now a card in the Activity timeline, reachable under
 // its Email filter, the way the deal workspace shows it.
-type Tab = "activity" | "files";
+type Tab = "activity" | "files" | "newsletter";
 
 const TABS: readonly Tab[] = ["activity", "files"];
+const TABS_WITH_NEWSLETTER: readonly Tab[] = [...TABS, "newsletter"];
 
 type FollowerRef = { id: string; name: string; avatarUrl: string | null };
 
@@ -28,6 +31,9 @@ interface PersonDetailClientProps {
   hiddenBuiltins?: ReadonlySet<string>;
   canMerge: boolean;
   canDelete?: boolean;
+  canViewNewsletter?: boolean;
+  canManageNewsletter?: boolean;
+  canCreateAttributedLead?: boolean;
   baseCurrency: string;
   followers?: FollowerRef[];
   isFollowedBySelf?: boolean;
@@ -40,18 +46,24 @@ export function PersonDetailClient({
   hiddenBuiltins,
   canMerge,
   canDelete = false,
+  canViewNewsletter = false,
+  canManageNewsletter = false,
+  canCreateAttributedLead = false,
   baseCurrency,
   followers = [],
   isFollowedBySelf = false,
 }: PersonDetailClientProps) {
   const tContacts = useAppTranslations("contacts");
+  const newsletterLabels = personNewsletterMessages[useLocale()];
 
   const TAB_LABELS: Record<Tab, string> = {
     activity: tContacts("activity"),
     files: tContacts("files"),
+    newsletter: newsletterLabels.title,
   };
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("activity");
+  const [selectedTab, setTab] = useState<Tab>("activity");
+  const tab = selectedTab === "newsletter" && !canViewNewsletter ? "activity" : selectedTab;
   const [merging, setMerging] = useState(false);
 
   const utils = trpc.useUtils();
@@ -137,13 +149,26 @@ export function PersonDetailClient({
             }}
           />
 
-          <TabStrip tabs={TABS} labels={TAB_LABELS} active={tab} onSelect={setTab} />
+          <TabStrip
+            tabs={canViewNewsletter ? TABS_WITH_NEWSLETTER : TABS}
+            labels={TAB_LABELS}
+            active={tab}
+            onSelect={setTab}
+          />
 
           <div role="tabpanel" className="pt-1">
             {tab === "activity" && (
               <ContactTimelinePanel entityType="person" entityId={person.id} />
             )}
             {tab === "files" && <FilesPanel entityType="person" entityId={person.id} />}
+            {tab === "newsletter" && (
+              <PersonNewsletterPanel
+                key={person.id}
+                personId={person.id}
+                canManage={canManageNewsletter}
+                canCreateLead={canCreateAttributedLead}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import type { Db } from "@/db/client";
 import type { Person } from "@/db/schema";
 import { persons, users } from "@/db/schema";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { detachRemovedNewsletterAddresses } from "@/features/newsletter/identity/lifecycle";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -164,7 +165,8 @@ export async function updatePerson(
     const [current] = await tx
       .select()
       .from(persons)
-      .where(and(eq(persons.id, input.id), isNull(persons.deletedAt)));
+      .where(and(eq(persons.id, input.id), isNull(persons.deletedAt)))
+      .for("update");
 
     if (current === undefined || canSee(actor, toVisibleRecord(current)) === false) {
       return err(new AppError(ERROR_IDS.CONTACT_NOT_FOUND, "not found", { id: input.id }));
@@ -183,15 +185,11 @@ export async function updatePerson(
       primary: e.primary === true,
     }));
 
-    let resolvedCustomFields: Record<string, unknown> = current.customFields as Record<
-      string,
-      unknown
-    >;
-    if (input.customFields !== undefined) {
-      const cfResult = await validateContactCustomFields(db, "person", input.customFields, signal);
-      if (cfResult.ok === false) return cfResult;
-      resolvedCustomFields = cfResult.value;
-    }
+    const customFields =
+      input.customFields === undefined
+        ? ok(current.customFields as Record<string, unknown>)
+        : await validateContactCustomFields(db, "person", input.customFields, signal);
+    if (!customFields.ok) return customFields;
 
     const resolvedOrgId = input.orgId === undefined ? current.orgId : input.orgId;
 
@@ -208,6 +206,15 @@ export async function updatePerson(
     // Owner transfer (CO-3): gated by deal.changeOwner/admin; ignored otherwise.
     const ownerResult = await resolveOwnerUpdate(tx, actor, input.ownerId, current.ownerId, signal);
     if (ownerResult.ok === false) return ownerResult;
+
+    const detached = await detachRemovedNewsletterAddresses(
+      tx,
+      current.id,
+      current.emails,
+      resolvedEmails,
+      signal,
+    );
+    if (!detached.ok) return detached;
 
     // See resolvePersonName's docstring for the first/last vs. name precedence rules
     // (Finding 1: a direct `{ name }` edit must re-derive first/last, not leave them stale).
@@ -226,7 +233,7 @@ export async function updatePerson(
         orgId: resolvedOrgId,
         ownerId: ownerResult.value,
         primaryEmail: derivePrimaryEmail(resolvedEmails),
-        customFields: resolvedCustomFields,
+        customFields: customFields.value,
         // Add-labels (spec B5): omitted -> leave untouched (mirrors deals' coalesce).
         labels: input.labels ?? current.labels,
       })

@@ -35,6 +35,15 @@ import /etc/caddy/Caddyfile
 		method GET HEAD POST
 		path_regexp subscriberPreference ^/subscription/(optin/[0-9a-fA-F-]{36}|[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36})$
 	}
+	@crmIdentityVerification {
+		method GET HEAD POST
+		path_regexp crmIdentityVerification ^/subscription/crm-verify/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+	}
+	@sesFeedback {
+		method POST
+		path_regexp sesFeedback ^/webhooks/warpdrive/ses$
+		expression `"{$NEWSLETTER_SES_FEEDBACK_ENABLED:false}" == "true"`
+	}
 	@recipientMessage {
 		method GET HEAD
 		path /campaign/* /link/*
@@ -51,6 +60,20 @@ import /etc/caddy/Caddyfile
 		}
 	}
 	handle @subscriptionPreferences {
+		header Cache-Control "no-store"
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+	handle @crmIdentityVerification {
+		header Cache-Control "no-store"
+		reverse_proxy newsletter-engine:9000 {
+			header_up -Authorization
+			header_up -Cookie
+		}
+	}
+	handle @sesFeedback {
 		header Cache-Control "no-store"
 		reverse_proxy newsletter-engine:9000 {
 			header_up -Authorization

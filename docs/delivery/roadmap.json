@@ -80117,6 +80117,31 @@
       "observed_stage": "source implementation and isolated qualification",
       "priority": "P0",
       "notes": "Campaigns foundation, consent and mutation recovery. The broader CRM and provider integration has separate scope and acceptance."
+    },
+    {
+      "id": "integration/newsletter-crm-consent-and-delivery",
+      "title": "Connect CRM newsletter identity, audiences and delivery",
+      "module": "integrations",
+      "kind": "deliverable",
+      "parent": "programme/integrations",
+      "source_tasks": [],
+      "acceptance": [
+        "Verify Person mailboxes and purpose-scoped consent through affirmative confirmation. Reconcile lifecycle events and preserve suppression on CRM edits, merges, imports and approved erasure.",
+        "Use current CRM visibility for audience preview and exact grants for approved recipient selection. Apply delegated campaign permissions and Workflow authority.",
+        "Preserve qualified campaign provenance through native lead creation, conversion and deal outcome. Keep dashboard reporting outside this increment.",
+        "Persist recipient delivery and recover safely from interruption. Verify provider feedback, operational readiness, and remaining native campaign and subscriber behavior with synthetic fixtures.",
+        "Review and qualify the exact integration revision and confirm the resulting Main checks."
+      ],
+      "dependencies": [
+        "integration/newsletter-campaign-foundation"
+      ],
+      "evidence": [],
+      "owner": "KhademOHAli1",
+      "owner_role": "Campaigns integration maintainer",
+      "observed_status": "in-progress",
+      "observed_stage": "source implementation and isolated qualification",
+      "priority": "P0",
+      "notes": "Scope from the Warpdrive and Listmonk migration goal. Installed provider credentials and production acceptance require separate evidence."
     }
   ],
   "aliases": {

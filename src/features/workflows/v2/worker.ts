@@ -1,7 +1,13 @@
 import type { PgBoss } from "pg-boss";
 import type { Db } from "@/db/client";
+import { checkNewsletterDelivery } from "@/features/newsletter/delivery/monitor";
+import {
+  drainNewsletterIdentityEvents,
+  synchronizeNewsletterIdentity,
+} from "@/features/newsletter/identity/events";
 import { getBoss } from "@/jobs/boss";
 import { createWorkflowV2Adapters } from "./adapters";
+import { admitNewsletterWorkflowEvent } from "./newsletterEvents";
 import { drainWorkflowV2RecordOutbox } from "./recordOutbox";
 import { advanceWorkflowV2Run } from "./runner";
 import { reconcileWorkflowV2 } from "./scheduling";
@@ -45,6 +51,22 @@ export async function registerWorkflowV2Jobs(boss: PgBoss, db: Db): Promise<void
     const outbox = await drainWorkflowV2RecordOutbox(db, adapters, signal);
     const ready = await reconcileWorkflowV2(db, adapters, signal);
     for (const id of new Set([...outbox, ...ready])) await enqueue(boss, id);
+    const syncSignal = AbortSignal.any([signal, AbortSignal.timeout(15_000)]);
+    try {
+      await synchronizeNewsletterIdentity(db, syncSignal);
+    } catch {
+      signal.throwIfAborted();
+      console.warn("Newsletter identity sync did not complete");
+    }
+    await checkNewsletterDelivery(signal);
+    await drainNewsletterIdentityEvents(
+      db,
+      async (event) => {
+        const runs = await admitNewsletterWorkflowEvent(db, adapters, event, signal);
+        for (const id of new Set(runs)) await enqueue(boss, id);
+      },
+      signal,
+    );
   });
   await boss.schedule(RECONCILE, "* * * * *", {}, { tz: "UTC" });
   await boss.send(RECONCILE, {});

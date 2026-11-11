@@ -3,7 +3,7 @@ import type { NewsletterExecution } from "@/features/newsletter/operation";
 import type { Campaign } from "./model";
 import { campaignWrites } from "./operations";
 
-const engine = vi.hoisted(() => ({ json: vi.fn() }));
+const engine = vi.hoisted(() => ({ json: vi.fn(), text: vi.fn() }));
 vi.mock("@/config/env", () => ({
   env: { NEWSLETTER_TEST_RECIPIENTS: ["tester+capture@example.test"] },
 }));
@@ -12,6 +12,7 @@ vi.mock("@/features/newsletter/listmonkClient", () => ({
 }));
 
 const context = {
+  actor: { type: "admin" },
   signal: AbortSignal.timeout(1_000),
   requireDelivery: () => undefined,
 } as NewsletterExecution;
@@ -49,7 +50,10 @@ function row(overrides: Partial<Campaign> = {}): Campaign {
   };
 }
 
-beforeEach(() => engine.json.mockReset());
+beforeEach(() => {
+  engine.json.mockReset();
+  engine.text.mockReset();
+});
 
 describe("campaign dispatch protections", () => {
   it("rejects alternate test recipients before querying or dispatching", async () => {
@@ -128,11 +132,32 @@ describe("campaign dispatch protections", () => {
   });
 
   it("passes the exact reviewed revision to the engine for saves and delivery starts", async () => {
-    const reviewed = row({ updated_at: "2026-11-10T20:00:00.123456Z" });
+    const reviewed = row({
+      status: "draft",
+      sent: 0,
+      started_at: null,
+      updated_at: "2026-11-10T20:00:00.123456Z",
+    });
     engine.json
       .mockResolvedValueOnce(reviewed)
       .mockResolvedValueOnce(reviewed)
       .mockResolvedValueOnce(reviewed)
+      .mockResolvedValueOnce({
+        ready: true,
+        database: { status: "ready" },
+        scheduler: { status: "ready", lastScanAt: null },
+        relay: { status: "ready", checkedAt: null },
+        media: { status: "ready", checkedAt: null },
+        limits: {
+          workers: 1,
+          perWorkerMessagesPerSecond: 2,
+          messagesPerSecond: 2,
+          batchSize: 20,
+          queueCapacity: 4,
+          clamped: false,
+        },
+        feedback: { status: "disabled", lastEventAt: null },
+      })
       .mockResolvedValueOnce({ ...reviewed, status: "running" });
     await campaignWrites["campaigns.update"].run(
       {
@@ -156,7 +181,7 @@ describe("campaign dispatch protections", () => {
         body: expect.objectContaining({ expected_updated_at: reviewed.updated_at }),
       }),
     );
-    expect(engine.json).toHaveBeenNthCalledWith(4, "PUT", "/api/campaigns/9/status", {
+    expect(engine.json).toHaveBeenNthCalledWith(5, "PUT", "/api/campaigns/9/status", {
       body: { status: "running", expected_updated_at: reviewed.updated_at },
     });
   });
@@ -188,4 +213,97 @@ describe("campaign dispatch protections", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(engine.json).not.toHaveBeenCalled();
   });
+});
+
+it("previews an explicitly selected default instead of the draft's old template", async () => {
+  engine.json.mockResolvedValueOnce([
+    { id: 4, name: "Old template", type: "campaign", subject: "", is_default: false },
+    { id: 11, name: "Default template", type: "campaign", subject: "", is_default: true },
+  ]);
+  engine.text.mockResolvedValueOnce("<p>Default preview</p>");
+  await expect(
+    campaignWrites["campaigns.preview"].run(
+      {
+        id: 9,
+        body: "Draft",
+        content_type: "html",
+        template_id: null,
+      },
+      context,
+    ),
+  ).resolves.toBe("<p>Default preview</p>");
+  expect(engine.text).toHaveBeenCalledWith("POST", "/api/campaigns/9/preview", {
+    body: new URLSearchParams({ body: "Draft", content_type: "html", template_id: "11" }),
+  });
+});
+
+it("requires an approved CRM audience for delegated launch", async () => {
+  engine.json.mockResolvedValueOnce(row()).mockResolvedValueOnce(null);
+  await expect(
+    campaignWrites["campaigns.status"].run(
+      {
+        id: 9,
+        status: "running",
+        confirmed: true,
+        expectedUpdatedAt: row().updated_at,
+      },
+      { ...context, actor: { ...context.actor, type: "regular" } },
+    ),
+  ).rejects.toMatchObject({
+    code: "PRECONDITION_FAILED",
+  });
+  expect(engine.json).toHaveBeenCalledTimes(2);
+});
+
+it("keeps the saved message revision fixed after delivery has started", async () => {
+  engine.json.mockResolvedValueOnce(row());
+  await expect(
+    campaignWrites["campaigns.update"].run(
+      {
+        id: 9,
+        name: "Changed message",
+        subject: "Subject",
+        lists: [1],
+        expectedUpdatedAt: row().updated_at,
+      },
+      context,
+    ),
+  ).rejects.toMatchObject({ code: "CONFLICT" });
+  expect(engine.json).toHaveBeenCalledTimes(1);
+});
+
+it("duplicates sealed content into a fresh approval and clears the managed reply route", async () => {
+  engine.json
+    .mockResolvedValueOnce(
+      row({
+        attribs: {
+          warpdrive_reply_routing: {
+            version: 1,
+            mailboxId: "3ac1291b-a304-403b-a50e-059d35184cea",
+          },
+        },
+        headers: [{ "Reply-To": "disconnected@example.test" }, { "X-Fixture": "visible" }],
+      }),
+    )
+    .mockResolvedValueOnce({
+      manifest_uuid: "1c2cb2ba-7d0c-48e0-936a-54cb3626be58",
+      purpose_list_id: 1,
+      sealed_at: "2026-11-10T20:00:00Z",
+      size: 1,
+    })
+    .mockResolvedValueOnce(row({ id: 15, status: "draft", started_at: null, sent: 0 }));
+  await expect(
+    campaignWrites["campaigns.clone"].run({ id: 9, name: "Draft copy" }, context),
+  ).resolves.toMatchObject({ id: 15 });
+  expect(engine.json).toHaveBeenNthCalledWith(
+    3,
+    "POST",
+    "/api/campaigns",
+    expect.objectContaining({
+      body: expect.objectContaining({
+        attribs: { warpdrive_crm_approval_required: true },
+        headers: [{ "X-Fixture": "visible" }],
+      }),
+    }),
+  );
 });

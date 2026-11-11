@@ -1,0 +1,161 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index 2dc4f8d..b98820f 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+diff --git a/cmd/public.go b/cmd/public.go
+index 6cc20c8..8812b0d 100644
+--- a/cmd/public.go
++++ b/cmd/public.go
+@@ -83,8 +83,9 @@ type msgTpl struct {
+ 
+ type subFormTpl struct {
+ 	publicTpl
+-	Lists   []models.List
+-	Captcha struct {
++	ScopedList string
++	Lists      []models.List
++	Captcha    struct {
+ 		Enabled    bool
+ 		Provider   string
+ 		Key        string
+@@ -410,6 +411,22 @@ func (a *App) confirmOptinSubscription(c echo.Context, subUUID string, lists []m
+ 		makeMsgTpl(a.i18n.T("public.subConfirmedTitle"), "", a.i18n.Ts("public.subConfirmed")))
+ }
+ 
++// embeddedSignupList recognizes a single list scope on the existing public form route.
++func (a *App) embeddedSignupList(c echo.Context) (*models.List, error) {
++	values, scoped := c.QueryParams()["l"]
++	if !scoped {
++		return nil, nil
++	}
++	if len(values) != 1 || !reUUID.MatchString(values[0]) {
++		return nil, echo.NewHTTPError(http.StatusNotFound)
++	}
++	list, err := a.core.GetList(0, values[0])
++	if err != nil || list.Type != models.ListTypePublic || list.Status != models.ListStatusActive {
++		return nil, echo.NewHTTPError(http.StatusNotFound)
++	}
++	return &list, nil
++}
++
+ // SubscriptionFormPage handles subscription requests coming from public
+ // HTML subscription forms.
+ func (a *App) SubscriptionFormPage(c echo.Context) error {
+@@ -418,11 +435,21 @@ func (a *App) SubscriptionFormPage(c echo.Context) error {
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.invalidFeature")))
+ 	}
+ 
+-	// Get all public lists from the DB.
+-	lists, err := a.core.GetLists(models.ListTypePublic, models.ListStatusActive, true, nil)
++	var lists []models.List
++	var scopedList string
++	list, err := a.embeddedSignupList(c)
+ 	if err != nil {
+-		return c.Render(http.StatusInternalServerError, tplMessage,
+-			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.errorFetchingLists")))
++		return err
++	}
++	if list != nil {
++		lists = []models.List{*list}
++		scopedList = list.UUID
++	} else {
++		lists, err = a.core.GetLists(models.ListTypePublic, models.ListStatusActive, true, nil)
++		if err != nil {
++			return c.Render(http.StatusInternalServerError, tplMessage,
++				makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.errorFetchingLists")))
++		}
+ 	}
+ 
+ 	// There are no public lists available for subscription.
+@@ -431,7 +458,7 @@ func (a *App) SubscriptionFormPage(c echo.Context) error {
+ 			makeMsgTpl(a.i18n.T("public.errorTitle"), "", a.i18n.Ts("public.noListsAvailable")))
+ 	}
+ 
+-	out := subFormTpl{}
++	out := subFormTpl{ScopedList: scopedList}
+ 	out.Title = a.i18n.T("public.sub")
+ 	out.Lists = lists
+ 
+@@ -493,7 +520,15 @@ func (a *App) SubscriptionForm(c echo.Context) error {
+ 		}
+ 	}
+ 
+-	hasOptin, err := a.processSubForm(c)
++	list, err := a.embeddedSignupList(c)
++	if err != nil {
++		return err
++	}
++	var scopedList string
++	if list != nil {
++		scopedList = list.UUID
++	}
++	hasOptin, err := a.processSubForm(c, scopedList)
+ 	if err != nil {
+ 		e, ok := err.(*echo.HTTPError)
+ 		if !ok {
+@@ -529,7 +564,7 @@ func (a *App) PublicSubscription(c echo.Context) error {
+ 		return echo.NewHTTPError(http.StatusBadRequest, a.i18n.T("public.invalidFeature"))
+ 	}
+ 
+-	hasOptin, err := a.processSubForm(c)
++	hasOptin, err := a.processSubForm(c, "")
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -714,7 +749,7 @@ func drawTransparentImage(h, w int) []byte {
+ // processSubForm processes an incoming form/public API subscription request.
+ // The bool indicates whether there was subscription to an optin list so that
+ // an appropriate message can be shown.
+-func (a *App) processSubForm(c echo.Context) (bool, error) {
++func (a *App) processSubForm(c echo.Context, scopedList string) (bool, error) {
+ 	// Get and validate fields.
+ 	var req struct {
+ 		Name          string   `form:"name" json:"name"`
+@@ -725,6 +760,9 @@ func (a *App) processSubForm(c echo.Context) (bool, error) {
+ 		return false, err
+ 	}
+ 
++	if scopedList != "" {
++		req.FormListUUIDs = []string{scopedList}
++	}
+ 	if len(req.FormListUUIDs) == 0 {
+ 		return false, echo.NewHTTPError(http.StatusBadRequest, a.i18n.T("public.noListsSelected"))
+ 	}
+diff --git a/static/public/templates/subscription-form.html b/static/public/templates/subscription-form.html
+index 9258213..a6d1b5d 100644
+--- a/static/public/templates/subscription-form.html
++++ b/static/public/templates/subscription-form.html
+@@ -3,7 +3,7 @@
+ <section>
+     <h2>{{ L.T "public.subTitle" }}</h2>
+ 
+-    <form method="post" action="" class="form">
++    <form method="post" action="{{ if .Data.ScopedList }}?l={{ .Data.ScopedList }}{{ end }}" class="form">
+         <div>
+             <p>
+                 <label for="email">{{ L.T "subscribers.email" }}</label>
+@@ -20,8 +20,13 @@
+                 <h2>{{ L.T "globals.terms.lists" }}</h2>
+                 {{ range $i, $l := .Data.Lists }}
+                     <li>
+-                        <input checked="true" id="l-{{ $l.UUID}}" type="checkbox" name="l" value="{{ $l.UUID }}" >
+-                        <label for="l-{{ $l.UUID}}">{{ $l.Name }}</label>
++                        {{ if $.Data.ScopedList }}
++                            <input type="hidden" name="l" value="{{ $l.UUID }}">
++                            <span>{{ $l.Name }}</span>
++                        {{ else }}
++                            <input checked="true" id="l-{{ $l.UUID}}" type="checkbox" name="l" value="{{ $l.UUID }}" >
++                            <label for="l-{{ $l.UUID}}">{{ $l.Name }}</label>
++                        {{ end }}
+                         {{ if ne $l.Description "" }}
+                             <p class="description">{{ $l.Description }}</p>
+                         {{ end }}

@@ -1,0 +1,29 @@
+diff --git a/cmd/campaigns.go b/cmd/campaigns.go
+index d6bfd29..b7a2e31 100644
+--- a/cmd/campaigns.go
++++ b/cmd/campaigns.go
+@@ -228,6 +228,8 @@ func (a *App) PreviewCampaignArchive(c echo.Context) error {
+ 		return err
+ 	}
+ 
++	// Preview requests must not record views or clicks on the published campaign.
++	camp.UUID = dummySubscriber.UUID
+ 	camp.ArchiveMeta = json.RawMessage([]byte(c.FormValue("archive_meta")))
+ 
+ 	// "Compile" the campaign template with appropriate data.
+diff --git a/cmd/public.go b/cmd/public.go
+index 6cc20c8..04b63cd 100644
+--- a/cmd/public.go
++++ b/cmd/public.go
+@@ -548,8 +548,9 @@ func (a *App) LinkRedirect(c echo.Context) error {
+ 		campUUID = c.Param("campUUID")
+ 	)
+ 
+-	// If tracking is globally disabled, resolve the URL without recording a click.
+-	if a.cfg.Privacy.DisableTracking {
++	// Preview links use the dummy campaign UUID. Resolve their destination without
++	// writing a click, just as when tracking is disabled for the installation.
++	if campUUID == dummyUUID || a.cfg.Privacy.DisableTracking {
+ 		url, err := a.core.GetLinkURL(linkUUID)
+ 		if err != nil {
+ 			e := err.(*echo.HTTPError)

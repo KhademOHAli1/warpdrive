@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
+import type { PersonNewsletterSummary } from "@/features/newsletter/identity/contracts";
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -20,6 +22,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  sessionStorage.clear();
 });
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => {}, push: () => {} }) }));
@@ -37,8 +40,21 @@ vi.mock("@/features/contacts/actions", () => ({
 // the person-scope anchor seam (dealId/leadId/personId/orgId) is actually exercised end to end,
 // not just asserted against a stub. RichTextBody (TipTap) is mocked the same way
 // ActivityComposerInline.test.tsx mocks it: a plain textarea stands in for the rich editor.
-const { createActivityAction } = vi.hoisted(() => ({
+const { createActivityAction, newsletterPersonQuery, newsletterBeginProof } = vi.hoisted(() => ({
   createActivityAction: vi.fn(() => Promise.resolve({ ok: true as const })),
+  newsletterBeginProof: vi.fn(),
+  newsletterPersonQuery: vi.fn(() => ({
+    data: {
+      personId: "pe1",
+      engineAvailable: true,
+      deliveryAvailable: true,
+      eligibleLists: [],
+      addresses: [],
+    } as PersonNewsletterSummary,
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  })),
 }));
 vi.mock("@/features/activities/actions", () => ({ createActivityAction }));
 vi.mock("@/features/email/composer/RichTextBody", () => ({
@@ -56,6 +72,15 @@ vi.mock("@/lib/trpc-client", () => ({
       },
     },
     email: { listMessagesForContact: { useQuery: () => ({ data: [], isError: false }) } },
+    newsletter: {
+      identity: {
+        person: { useQuery: newsletterPersonQuery },
+        beginProof: { useMutation: () => ({ mutateAsync: newsletterBeginProof }) },
+        reconcile: { useMutation: () => ({ mutateAsync: vi.fn() }) },
+        invite: { useMutation: () => ({ mutateAsync: vi.fn() }) },
+        detach: { useMutation: () => ({ mutateAsync: vi.fn() }) },
+      },
+    },
     files: { listForEntity: { useQuery: () => ({ data: [] }) } },
     useUtils: () => ({
       activities: {
@@ -135,6 +160,81 @@ const person = {
 import { PersonDetailClient } from "./PersonDetailClient";
 
 describe("PersonDetailClient", () => {
+  it("opens Newsletter only for authorized People and reads only when selected", async () => {
+    const props = {
+      person: person as never,
+      orgName: "Acme Inc",
+      defs: [],
+      canMerge: true,
+      baseCurrency: "USD",
+    };
+    const { rerender } = render(<PersonDetailClient {...props} />);
+    expect(screen.queryByRole("tab", { name: "Newsletter" })).not.toBeInTheDocument();
+    expect(newsletterPersonQuery).not.toHaveBeenCalled();
+
+    rerender(<PersonDetailClient {...props} canViewNewsletter />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("tab", { name: "Newsletter" }));
+    expect(newsletterPersonQuery).toHaveBeenCalledWith({ personId: "pe1" }, expect.anything());
+    expect(screen.getByText("No email addresses on this contact.")).toBeInTheDocument();
+  });
+
+  it("requests verification only after review and reuses the operation ID after a lost response", async () => {
+    const normalRead = newsletterPersonQuery.getMockImplementation();
+    newsletterPersonQuery.mockReturnValue({
+      data: {
+        personId: person.id,
+        engineAvailable: true,
+        deliveryAvailable: true,
+        eligibleLists: [],
+        addresses: [{ address: "jane@acme.com", links: [] }],
+      },
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    newsletterBeginProof
+      .mockRejectedValueOnce(new Error("Synthetic lost response"))
+      .mockResolvedValueOnce({ id: "test-claim", state: "pending" });
+    try {
+      render(
+        <NativeActorProvider actorId="viewer">
+          <PersonDetailClient
+            person={person as never}
+            orgName="Acme Inc"
+            defs={[]}
+            canMerge
+            baseCurrency="USD"
+            canViewNewsletter
+            canManageNewsletter
+          />
+        </NativeActorProvider>,
+      );
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("tab", { name: "Newsletter" }));
+      await user.click(screen.getByRole("button", { name: "Verify address" }));
+      const dialog = within(screen.getByRole("dialog"));
+      expect(newsletterBeginProof).not.toHaveBeenCalled();
+      const submit = dialog.getByRole("button", { name: "Verify address" });
+      expect(submit).toBeDisabled();
+      await user.type(dialog.getByLabelText(/Evidence reference/), "CASE-12");
+      await user.click(submit);
+      expect(await dialog.findByRole("alert")).toHaveTextContent("Check this operation");
+      await user.click(submit);
+      await waitFor(() => expect(newsletterBeginProof).toHaveBeenCalledTimes(2));
+      const [first, second] = newsletterBeginProof.mock.calls.map(([command]) => command);
+      expect(first).toMatchObject({
+        personId: person.id,
+        address: "jane@acme.com",
+        evidenceReference: "CASE-12",
+      });
+      expect(first.operationId).toEqual(second.operationId);
+      expect(await screen.findByText("Newsletter status updated.")).toBeInTheDocument();
+    } finally {
+      if (normalRead !== undefined) newsletterPersonQuery.mockImplementation(normalRead);
+    }
+  });
+
   it("renders linked deals in the sidebar and opens the main panel on Activity", async () => {
     render(
       <PersonDetailClient

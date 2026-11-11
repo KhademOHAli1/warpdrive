@@ -34,19 +34,26 @@ const labels = {
   },
 };
 
-export function campaignNavigation(locale: keyof typeof labels) {
+export function campaignNavigation(
+  locale: keyof typeof labels,
+  access: { edit: boolean; operate: boolean },
+) {
   const text = labels[locale];
   return {
     actions: text.actions,
     name: text.campaigns,
     items: [
       { href: "/campaigns", label: text.all, exact: true },
-      { href: "/campaigns/new", label: text.create },
+      ...(access.edit ? [{ href: "/campaigns/new", label: text.create }] : []),
       { href: "/campaigns/media", label: text.media },
       { href: "/campaigns/templates", label: text.templates },
       { href: "/campaigns/analytics", label: text.analytics },
-      { href: "/campaigns/lists", label: text.lists },
-      { href: "/campaigns/subscribers", label: text.subscribers },
+      ...(access.operate
+        ? [
+            { href: "/campaigns/lists", label: text.lists },
+            { href: "/campaigns/subscribers", label: text.subscribers },
+          ]
+        : []),
     ],
   };
 }

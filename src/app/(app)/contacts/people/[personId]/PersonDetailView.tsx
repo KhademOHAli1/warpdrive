@@ -9,6 +9,7 @@ import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo"
 import { resolveCustomFieldRefLabels } from "@/features/custom-fields/refLabels";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import { can } from "@/features/permissions/can";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
@@ -78,6 +79,9 @@ export async function PersonDetailView({
         hiddenBuiltins={hidden.person}
         canMerge={canMerge}
         canDelete={canDelete}
+        canViewNewsletter={hasNewsletterPermission(actor, "view")}
+        canManageNewsletter={hasNewsletterPermission(actor, "consent")}
+        canCreateAttributedLead={actor.type === "admin" || actor.flags.has("deal.create")}
         baseCurrency={baseCurrency}
         followers={followers}
         isFollowedBySelf={isFollowedBySelf}

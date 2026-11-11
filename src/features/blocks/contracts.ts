@@ -6,6 +6,8 @@ export const ACTION_BLOCK_KINDS = [
   "CODE",
   "LOGIC_FUNCTION",
   "SEND_EMAIL",
+  "NEWSLETTER_CONSENT_STATUS",
+  "NEWSLETTER_INVITE",
   "SEND_CHAT_MESSAGE",
   "DRAFT_EMAIL",
   "CREATE_CALENDAR_EVENT",
@@ -26,6 +28,17 @@ export const ACTION_BLOCK_KINDS = [
   "WAIT_FOR_EVENT",
 ] as const;
 export type ActionBlockKind = (typeof ACTION_BLOCK_KINDS)[number];
+export const NEWSLETTER_TRIGGER_KINDS = [
+  "newsletter.identity.verified",
+  "newsletter.consent.confirmed",
+] as const;
+
+export function isNewsletterTrigger(
+  value: string,
+): value is (typeof NEWSLETTER_TRIGGER_KINDS)[number] {
+  return NEWSLETTER_TRIGGER_KINDS.some((kind) => kind === value);
+}
+
 export const TRIGGER_BLOCK_KINDS = [
   "record.created",
   "record.updated",
@@ -34,6 +47,7 @@ export const TRIGGER_BLOCK_KINDS = [
   "manual",
   "schedule",
   "webhook",
+  ...NEWSLETTER_TRIGGER_KINDS,
 ] as const;
 export type TriggerBlockKind = (typeof TRIGGER_BLOCK_KINDS)[number];
 export type BlockJson =
@@ -101,6 +115,7 @@ export interface WorkflowV2Studio {
     outputs: BlockFieldDescriptor[];
   }[];
   readiness: Partial<Record<ActionBlockKind, BlockReadiness>>;
+  newsletterEvents?: boolean;
 }
 export type WorkflowV2ExternalStudio = Pick<WorkflowV2Studio, "accounts" | "models" | "functions">;
 export interface WorkflowV2Node {

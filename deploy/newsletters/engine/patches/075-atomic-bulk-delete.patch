@@ -1,0 +1,77 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index f0defe9..30ccbed 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -103,7 +103,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive/readiness", pm(a.GetWarpdriveReadiness, "settings:get"))
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+diff --git a/internal/core/campaigns.go b/internal/core/campaigns.go
+index 416ae24..21365ab 100644
+--- a/internal/core/campaigns.go
++++ b/internal/core/campaigns.go
+@@ -341,23 +341,50 @@ func (c *Core) DeleteCampaign(id int) error {
+ 
+ // DeleteCampaigns deletes multiple campaigns by IDs or by query.
+ func (c *Core) DeleteCampaigns(ids []int, query string, hasAllPerm bool, permittedLists []int) error {
+-	var queryStr string
++	if len(ids) == 0 {
++		// Preserve the upstream filtered-query behavior. Only explicit selections require
++		// the whole requested set to be removed together.
++		_, err := c.q.DeleteCampaigns.Exec(pq.Array(ids), makeSearchString(query), hasAllPerm, pq.Array(permittedLists))
++		if err != nil {
++			return c.campaignBulkDeleteError(err)
++		}
++		return nil
++	}
+ 
+-	if len(ids) > 0 {
+-		queryStr = ""
+-	} else {
+-		queryStr = makeSearchString(query)
++	selected := make(map[int]struct{}, len(ids))
++	for _, id := range ids {
++		selected[id] = struct{}{}
+ 	}
+ 
+-	if _, err := c.q.DeleteCampaigns.Exec(pq.Array(ids), queryStr, hasAllPerm, pq.Array(permittedLists)); err != nil {
+-		c.log.Printf("error deleting campaigns: %v", err)
+-		return echo.NewHTTPError(http.StatusInternalServerError,
+-			c.i18n.Ts("globals.messages.errorDeleting", "name", "{globals.terms.campaigns}", "error", pqErrMsg(err)))
++	tx, err := c.db.Beginx()
++	if err != nil {
++		return c.campaignBulkDeleteError(err)
+ 	}
++	defer tx.Rollback()
+ 
++	result, err := tx.Stmtx(c.q.DeleteCampaigns).Exec(pq.Array(ids), "", hasAllPerm, pq.Array(permittedLists))
++	if err != nil {
++		return c.campaignBulkDeleteError(err)
++	}
++	deleted, err := result.RowsAffected()
++	if err != nil {
++		return c.campaignBulkDeleteError(err)
++	}
++	if deleted != int64(len(selected)) {
++		return echo.NewHTTPError(http.StatusConflict, "The selected campaigns changed or include a campaign retained for recipient links")
++	}
++	if err := tx.Commit(); err != nil {
++		return c.campaignBulkDeleteError(err)
++	}
+ 	return nil
+ }
+ 
++func (c *Core) campaignBulkDeleteError(err error) error {
++	c.log.Printf("error deleting campaigns: %v", err)
++	return echo.NewHTTPError(http.StatusInternalServerError,
++		c.i18n.Ts("globals.messages.errorDeleting", "name", "{globals.terms.campaigns}", "error", pqErrMsg(err)))
++}
++
+ // CampaignHasLists checks if a campaign has any of the given list IDs.
+ func (c *Core) CampaignHasLists(id int, listIDs []int) (bool, error) {
+ 	has := false

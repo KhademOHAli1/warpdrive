@@ -1,0 +1,1220 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index b98820f..44aad6d 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+@@ -245,6 +245,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		// Public unauthenticated endpoints.
+ 		g := e.Group("")
+ 
++		g.POST("/webhooks/warpdrive/ses", echo.WrapHandler(a.sesFeedback))
+ 		if a.cfg.BounceWebhooksEnabled {
+ 			// Public bounce endpoints for webservices like SES.
+ 			g.POST("/webhooks/service/:service", a.BounceWebhook)
+diff --git a/cmd/main.go b/cmd/main.go
+index 69b08d4..9ead35d 100644
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -5,6 +5,7 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"log"
++	"net/http"
+ 	"os"
+ 	"os/signal"
+ 	"strings"
+@@ -25,6 +26,7 @@ import (
+ 	"github.com/knadh/listmonk/internal/manager"
+ 	"github.com/knadh/listmonk/internal/media"
+ 	"github.com/knadh/listmonk/internal/messenger/email"
++	"github.com/knadh/listmonk/internal/sesfeedback"
+ 	"github.com/knadh/listmonk/internal/subimporter"
+ 	"github.com/knadh/listmonk/models"
+ 	"github.com/knadh/paginator"
+@@ -53,6 +55,7 @@ type App struct {
+ 	log        *log.Logger
+ 	bufLog     *buflog.BufLog
+ 
++	sesFeedback   http.Handler
+ 	about         about
+ 	fnOptinNotify func(models.Subscriber, []int) (int, error)
+ 
+@@ -202,6 +205,13 @@ func main() {
+ 	if err := installDeliverySchema(db); err != nil {
+ 		lo.Fatalf("error initializing durable campaign delivery: %v", err)
+ 	}
++	if err := sesfeedback.Install(db); err != nil {
++		lo.Fatal("could not initialize SES feedback receipts")
++	}
++	sesConfig, err := sesfeedback.ConfigFromEnv()
++	if err != nil {
++		lo.Fatal("invalid SES feedback configuration")
++	}
+ 
+ 	var (
+ 		// Initialize static global config.
+@@ -304,6 +314,7 @@ func main() {
+ 			AllowAll:       true,
+ 		}),
+ 
++		sesFeedback:   sesfeedback.NewHandler(db, sesConfig, lo),
+ 		fnOptinNotify: fbOptinNotify,
+ 		about:         initAbout(queries, db),
+ 		chReload:      chReload,
+diff --git a/cmd/warpdrive_delivery_store.go b/cmd/warpdrive_delivery_store.go
+index 185ba2f..e724c8a 100644
+--- a/cmd/warpdrive_delivery_store.go
++++ b/cmd/warpdrive_delivery_store.go
+@@ -329,7 +329,7 @@ func releaseLease(ctx context.Context, tx *sqlx.Tx, campaignID int, lease models
+ func (s *store) FinishDelivery(campaignID int, lease models.DeliveryLease, outcome models.DeliveryOutcome) (string, error) {
+ 	var state string
+ 	err := campaignDeliveryTx(s.db, campaignID, func(ctx context.Context, tx *sqlx.Tx, _ string) error {
+-		if err := tx.GetContext(ctx, &state, `
++		err := tx.GetContext(ctx, &state, `
+ 			UPDATE warpdrive_delivery_recipients
+ 			SET state = CASE WHEN $4 = 'retry' AND attempts < 3 THEN 'pending' WHEN $4 = 'retry' THEN 'rejected' ELSE $4 END,
+ 			    smtp_accepted_at = CASE WHEN $4 = 'accepted' THEN COALESCE(smtp_accepted_at, clock_timestamp()) ELSE smtp_accepted_at END,
+@@ -337,7 +337,19 @@ func (s *store) FinishDelivery(campaignID int, lease models.DeliveryLease, outco
+ 			    lease_token = NULL, lease_until = NULL, updated_at = NOW()
+ 			WHERE campaign_id = $1 AND id = $2 AND lease_token = $3 AND state = 'submitting'
+ 			RETURNING state
+-		`, campaignID, lease.DeliveryID, lease.LeaseToken, outcome); err != nil {
++		`, campaignID, lease.DeliveryID, lease.LeaseToken, outcome)
++		if errors.Is(err, sql.ErrNoRows) {
++			// SES may prove acceptance while the original worker still awaits its
++			// SMTP result. Record native SMTP provenance without incrementing twice.
++			return tx.GetContext(ctx, &state, `
++				UPDATE warpdrive_delivery_recipients
++				SET smtp_accepted_at = CASE WHEN $3 = 'accepted' THEN COALESCE(smtp_accepted_at, clock_timestamp())
++				                            ELSE smtp_accepted_at END
++				WHERE campaign_id=$1 AND id=$2 AND state='accepted' AND ses_message_id IS NOT NULL
++				RETURNING state
++			`, campaignID, lease.DeliveryID, outcome)
++		}
++		if err != nil {
+ 			return err
+ 		}
+ 		switch state {
+diff --git a/internal/manager/warpdrive_delivery.go b/internal/manager/warpdrive_delivery.go
+index a5f6763..b999477 100644
+--- a/internal/manager/warpdrive_delivery.go
++++ b/internal/manager/warpdrive_delivery.go
+@@ -76,6 +76,7 @@ func (m *Manager) dispatchCampaignDelivery(msg CampaignMessage, out models.Messa
+ 	}
+ 
+ 	out.Headers.Set("Message-ID", messageID)
++	out.DeliveryID = msg.lease.DeliveryID
+ 	transport := m.messengers[msg.Campaign.Messenger].(deliveryMessenger)
+ 	state, err := m.store.FinishDelivery(msg.Campaign.ID, msg.lease, transport.PushCampaignDelivery(out))
+ 	if err != nil {
+diff --git a/internal/messenger/email/warpdrive_delivery.go b/internal/messenger/email/warpdrive_delivery.go
+index 3ab13e4..f7b0cf1 100644
+--- a/internal/messenger/email/warpdrive_delivery.go
++++ b/internal/messenger/email/warpdrive_delivery.go
+@@ -11,6 +11,8 @@ import (
+ 	"strconv"
+ 	"time"
+ 
++	"github.com/gofrs/uuid/v5"
++	"github.com/knadh/listmonk/internal/sesfeedback"
+ 	"github.com/knadh/listmonk/models"
+ 	"github.com/knadh/smtppool/v2"
+ )
+@@ -24,6 +26,19 @@ func (e *Emailer) PushCampaignDelivery(message models.Message) models.DeliveryOu
+ 	envelope.Headers.Del(hdrBcc)
+ 	envelope.Headers.Del(hdrCc)
+ 	envelope.Bcc, envelope.Cc = nil, nil
++	config, err := sesfeedback.ConfigFromEnv()
++	if err != nil {
++		return models.DeliveryRejected
++	}
++	if config.Enabled() {
++		deliveryID, err := uuid.FromString(message.DeliveryID)
++		if err != nil || deliveryID.String() != message.DeliveryID ||
++			server.Host != config.SMTPHost() || server.SSL == smtppool.SSLNone || server.TLSSkipVerify {
++			return models.DeliveryRejected
++		}
++		envelope.Headers.Set("X-SES-CONFIGURATION-SET", config.ConfigurationSet)
++		envelope.Headers.Set("X-SES-MESSAGE-TAGS", "warpdrive_delivery="+message.DeliveryID)
++	}
+ 	return sendCampaignDelivery(server, envelope)
+ }
+ 
+diff --git a/internal/sesfeedback/feedback.go b/internal/sesfeedback/feedback.go
+new file mode 100644
+index 0000000..d926a26
+--- /dev/null
++++ b/internal/sesfeedback/feedback.go
+@@ -0,0 +1,372 @@
++package sesfeedback
++
++import (
++	"bytes"
++	"context"
++	"crypto/sha256"
++	"database/sql"
++	_ "embed"
++	"encoding/json"
++	"errors"
++	"io"
++	"log"
++	"net/http"
++	"net/mail"
++	"regexp"
++	"strings"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
++)
++
++//go:embed schema.sql
++var schema string
++
++const maxEventBytes = 1 << 20
++
++var (
++	messageIDPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,128}$`)
++	errUnexpected    = errors.New("unexpected SES feedback")
++)
++
++type feedback struct {
++	topic, snsID string
++	deliveryID   string
++	messageID    string
++	email        string
++	kind         string
++	timestamp    time.Time
++}
++
++type recipient struct {
++	Address string `json:"emailAddress"`
++}
++
++func parseFeedback(config Config, sns envelope) (feedback, error) {
++	var event struct {
++		EventType string
++		Mail      struct {
++			MessageID        string `json:"messageId"`
++			Destination      []string
++			SendingAccountID string `json:"sendingAccountId"`
++			SourceARN        string `json:"sourceArn"`
++			Tags             map[string][]string
++		}
++		Bounce *struct {
++			BounceType        string
++			Timestamp         time.Time
++			BouncedRecipients []recipient
++		}
++		Complaint *struct {
++			Timestamp            time.Time
++			ComplainedRecipients []recipient
++		}
++	}
++	if json.Unmarshal([]byte(sns.Message), &event) != nil || event.Mail.SendingAccountID != config.Account ||
++		!strings.HasPrefix(event.Mail.SourceARN, "arn:aws:ses:"+config.Region+":"+config.Account+":identity/") ||
++		!messageIDPattern.MatchString(event.Mail.MessageID) || len(event.Mail.Destination) != 1 ||
++		!singleTag(event.Mail.Tags["ses:configuration-set"], config.ConfigurationSet) {
++		return feedback{}, errUnexpected
++	}
++	deliveryTags := event.Mail.Tags["warpdrive_delivery"]
++	if len(deliveryTags) != 1 {
++		return feedback{}, errUnexpected
++	}
++	deliveryID, err := uuid.FromString(deliveryTags[0])
++	if err != nil || deliveryID.String() != deliveryTags[0] {
++		return feedback{}, errUnexpected
++	}
++	email := event.Mail.Destination[0]
++	addr, err := mail.ParseAddress(email)
++	if err != nil || addr.Address != email || len(email) > 320 {
++		return feedback{}, errUnexpected
++	}
++	result := feedback{topic: sns.TopicARN, snsID: sns.MessageID, deliveryID: deliveryID.String(),
++		messageID: event.Mail.MessageID, email: email}
++	switch event.EventType {
++	case "Bounce":
++		if event.Bounce == nil || len(event.Bounce.BouncedRecipients) != 1 ||
++			!strings.EqualFold(event.Bounce.BouncedRecipients[0].Address, email) {
++			return feedback{}, errUnexpected
++		}
++		switch event.Bounce.BounceType {
++		case "Permanent":
++			result.kind = "hard"
++		case "Transient", "Undetermined":
++			result.kind = "soft"
++		default:
++			return feedback{}, errUnexpected
++		}
++		result.timestamp = event.Bounce.Timestamp
++	case "Complaint":
++		if event.Complaint == nil || len(event.Complaint.ComplainedRecipients) > 1 {
++			return feedback{}, errUnexpected
++		}
++		// Some providers redact the complaining address. The signed SES
++		// envelope still names exactly one recipient of this message.
++		if len(event.Complaint.ComplainedRecipients) == 1 {
++			reported := event.Complaint.ComplainedRecipients[0].Address
++			if reported != "" && !strings.EqualFold(reported, email) {
++				return feedback{}, errUnexpected
++			}
++		}
++		result.kind = "complaint"
++		result.timestamp = event.Complaint.Timestamp
++	default:
++		return feedback{}, errUnexpected
++	}
++	envelopeTime, _ := time.Parse(time.RFC3339Nano, sns.Timestamp)
++	if result.timestamp.IsZero() || result.timestamp.After(envelopeTime.Add(5*time.Minute)) {
++		return feedback{}, errUnexpected
++	}
++	return result, nil
++}
++
++func singleTag(tags []string, expected string) bool {
++	return len(tags) == 1 && tags[0] == expected
++}
++
++func Install(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(900731613, 50)"); err != nil {
++		return err
++	}
++	res, err := tx.ExecContext(ctx, "INSERT INTO warpdrive_delivery_migrations(version) VALUES (3) ON CONFLICT DO NOTHING")
++	if err != nil {
++		return err
++	}
++	n, err := res.RowsAffected()
++	if err != nil {
++		return err
++	}
++	if n == 1 {
++		if _, err := tx.ExecContext(ctx, schema); err != nil {
++			return err
++		}
++	}
++	return tx.Commit()
++}
++
++type handler struct {
++	db     *sqlx.DB
++	config Config
++	verify *verifier
++	log    *log.Logger
++}
++
++func NewHandler(db *sqlx.DB, config Config, log *log.Logger) http.Handler {
++	if !config.Enabled() {
++		return http.NotFoundHandler()
++	}
++	return &handler{db: db, config: config, verify: newVerifier(config), log: log}
++}
++
++func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
++	w.Header().Set("Cache-Control", "no-store")
++	if r.Method != http.MethodPost {
++		w.WriteHeader(http.StatusMethodNotAllowed)
++		return
++	}
++	raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxEventBytes))
++	if err != nil {
++		var limit *http.MaxBytesError
++		if errors.As(err, &limit) {
++			w.WriteHeader(http.StatusRequestEntityTooLarge)
++		} else {
++			w.WriteHeader(http.StatusBadRequest)
++		}
++		return
++	}
++	var sns envelope
++	if json.Unmarshal(raw, &sns) != nil {
++		w.WriteHeader(http.StatusBadRequest)
++		return
++	}
++	ctx, cancel := context.WithTimeout(r.Context(), 12*time.Second)
++	defer cancel()
++	if err := h.verify.verify(ctx, sns, r.Header); err != nil {
++		writeVerificationError(w, err)
++		return
++	}
++	if sns.Type != "Notification" {
++		if sns.Type == "SubscriptionConfirmation" {
++			if err := h.verify.confirm(ctx, sns); err != nil {
++				writeVerificationError(w, err)
++				return
++			}
++		}
++		kind := "unsubscribe"
++		if sns.Type == "SubscriptionConfirmation" {
++			kind = "subscription"
++		}
++		_, err = h.db.ExecContext(ctx, `
++			INSERT INTO warpdrive_ses_feedback(topic_arn, sns_id, kind, outcome) VALUES ($1, $2, $3, 'confirmed')
++			ON CONFLICT DO NOTHING
++		`, sns.TopicARN, sns.MessageID, kind)
++	} else {
++		event, parseErr := parseFeedback(h.config, sns)
++		if parseErr != nil {
++			w.WriteHeader(http.StatusBadRequest)
++			return
++		}
++		err = h.persist(ctx, event)
++	}
++	if err != nil {
++		h.log.Print("could not persist SES feedback")
++		w.WriteHeader(http.StatusServiceUnavailable)
++		return
++	}
++	w.WriteHeader(http.StatusNoContent)
++}
++
++func writeVerificationError(w http.ResponseWriter, err error) {
++	if errors.Is(err, ErrUnavailable) {
++		w.WriteHeader(http.StatusServiceUnavailable)
++	} else {
++		w.WriteHeader(http.StatusForbidden)
++	}
++}
++
++func (h *handler) persist(ctx context.Context, event feedback) error {
++	tx, err := h.db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	// A campaign lock serializes SES reconciliation with the sender and other
++	// feedback for the same recipient. A mismatched envelope never changes it.
++	var campaignID int
++	err = tx.GetContext(ctx, &campaignID, `
++		SELECT c.id FROM campaigns c JOIN warpdrive_delivery_recipients d ON d.campaign_id=c.id
++		WHERE d.id=$1 FOR UPDATE OF c
++	`, event.deliveryID)
++	if err != nil && !errors.Is(err, sql.ErrNoRows) {
++		return err
++	}
++	row, err := tx.ExecContext(ctx, `
++		INSERT INTO warpdrive_ses_feedback(topic_arn, sns_id, delivery_id, kind, outcome)
++		VALUES ($1, $2, $3, $4, 'unmatched') ON CONFLICT DO NOTHING
++	`, event.topic, event.snsID, event.deliveryID, event.kind)
++	if err != nil {
++		return err
++	}
++	inserted, err := row.RowsAffected()
++	if err != nil {
++		return err
++	}
++	if campaignID != 0 && inserted == 1 {
++		outcome, err := recordForDelivery(ctx, tx, campaignID, event)
++		if err != nil {
++			return err
++		}
++		if _, err := tx.ExecContext(ctx, "UPDATE warpdrive_ses_feedback SET outcome=$3 WHERE topic_arn=$1 AND sns_id=$2",
++			event.topic, event.snsID, outcome); err != nil {
++			return err
++		}
++	}
++	return tx.Commit()
++}
++
++func recordForDelivery(ctx context.Context, tx *sqlx.Tx, campaignID int, event feedback) (string, error) {
++	var receipt struct {
++		SubscriberID   sql.NullInt64  `db:"subscriber_id"`
++		SubscriberUUID sql.NullString `db:"subscriber_uuid"`
++		AddressDigest  []byte         `db:"address_digest"`
++		SESMessageID   sql.NullString `db:"ses_message_id"`
++		State          string
++	}
++	if err := tx.GetContext(ctx, &receipt, `
++		SELECT subscriber_id, subscriber_uuid, address_digest, ses_message_id, state
++		FROM warpdrive_delivery_recipients WHERE id=$1 AND message_id IS NOT NULL AND attempts>0
++	`, event.deliveryID); err != nil {
++		if errors.Is(err, sql.ErrNoRows) {
++			return "unmatched", nil
++		}
++		return "", err
++	}
++	digest := sha256.Sum256([]byte(event.email))
++	if !receipt.SubscriberID.Valid || !bytes.Equal(receipt.AddressDigest, digest[:]) ||
++		(receipt.SESMessageID.Valid && receipt.SESMessageID.String != event.messageID) {
++		return "unmatched", nil
++	}
++
++	var duplicate bool
++	if err := tx.GetContext(ctx, &duplicate, `
++		SELECT EXISTS (SELECT 1 FROM warpdrive_ses_feedback
++		               WHERE delivery_id=$1 AND kind=$2 AND outcome IN ('stale', 'recorded', 'suppressed'))
++	`, event.deliveryID, event.kind); err != nil {
++		return "", err
++	}
++	if duplicate {
++		return "duplicate", nil
++	}
++
++	suppression := event.kind == "hard" || event.kind == "complaint"
++	if suppression {
++		// The same lock and keyed digest are used by the engine's mailbox
++		// erasure/import fence. The raw address is never written to feedback.
++		if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtextextended(lower($1),416340))", event.email); err != nil {
++			return "", err
++		}
++	}
++	var currentSubscriber int
++	err := tx.GetContext(ctx, &currentSubscriber, `
++		SELECT id FROM subscribers WHERE id=$1 AND uuid=$2 AND email=$3 FOR NO KEY UPDATE
++	`, receipt.SubscriberID, receipt.SubscriberUUID, event.email)
++	if err != nil && !errors.Is(err, sql.ErrNoRows) {
++		return "", err
++	}
++
++	// Erasure can anonymize the receipt while the subscriber lock is acquired.
++	update, err := tx.ExecContext(ctx, `
++		UPDATE warpdrive_delivery_recipients SET ses_message_id=$2, state='accepted',
++		    lease_token=NULL, lease_until=NULL, updated_at=NOW()
++		WHERE id=$1 AND address_digest=$3
++	`, event.deliveryID, event.messageID, digest[:])
++	if err != nil {
++		return "", err
++	}
++	count, err := update.RowsAffected()
++	if err != nil {
++		return "", err
++	}
++	if count == 0 {
++		return "unmatched", nil
++	}
++	if receipt.State != "accepted" {
++		if _, err := tx.ExecContext(ctx, "UPDATE campaigns SET sent=sent+1, updated_at=NOW() WHERE id=$1", campaignID); err != nil {
++			return "", err
++		}
++	}
++	if suppression {
++		if _, err := tx.ExecContext(ctx, `
++			INSERT INTO warpdrive_crm_suppressions(address_digest) VALUES(warpdrive_crm_address_digest($1))
++			ON CONFLICT DO NOTHING
++		`, event.email); err != nil {
++			return "", err
++		}
++	}
++	if currentSubscriber == 0 {
++		return "stale", nil
++	}
++	if _, err := tx.ExecContext(ctx, `
++		INSERT INTO bounces(subscriber_id, campaign_id, type, source, created_at) VALUES ($1, $2, $3, 'ses', $4)
++	`, currentSubscriber, campaignID, event.kind, event.timestamp); err != nil {
++		return "", err
++	}
++	if suppression {
++		if _, err := tx.ExecContext(ctx, "UPDATE subscribers SET status='blocklisted', updated_at=NOW() WHERE id=$1",
++			currentSubscriber); err != nil {
++			return "", err
++		}
++		return "suppressed", nil
++	}
++	return "recorded", nil
++}
+diff --git a/internal/sesfeedback/feedback_test.go b/internal/sesfeedback/feedback_test.go
+new file mode 100644
+index 0000000..0adb1f2
+--- /dev/null
++++ b/internal/sesfeedback/feedback_test.go
+@@ -0,0 +1,355 @@
++package sesfeedback
++
++import (
++	"context"
++	"crypto"
++	"crypto/rand"
++	"crypto/rsa"
++	"crypto/sha256"
++	"crypto/x509"
++	"encoding/base64"
++	"encoding/json"
++	"encoding/pem"
++	"errors"
++	"fmt"
++	"io"
++	"log"
++	"math/big"
++	"net/http"
++	"net/http/httptest"
++	"net/url"
++	"os"
++	"slices"
++	"strings"
++	"sync/atomic"
++	"testing"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
++	_ "github.com/lib/pq"
++)
++
++const testTopic = "arn:aws:sns:us-east-1:123456789012:WarpdriveFeedback"
++const testSet = "WarpdriveFixture"
++
++type roundTripFunc func(*http.Request) (*http.Response, error)
++
++func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
++
++type signedFixture struct {
++	t            *testing.T
++	verification *verifier
++	key          *rsa.PrivateKey
++	certURL      string
++	gets         atomic.Int64
++}
++
++func newSignedFixture(t *testing.T) *signedFixture {
++	t.Helper()
++	config, err := ParseConfig(testTopic, testSet)
++	must(t, err)
++	key, err := rsa.GenerateKey(rand.Reader, 2048)
++	must(t, err)
++	now := time.Now()
++	certificate := &x509.Certificate{SerialNumber: big.NewInt(1), NotBefore: now.Add(-90 * 24 * time.Hour),
++		NotAfter: now.Add(30 * 24 * time.Hour), KeyUsage: x509.KeyUsageDigitalSignature}
++	der, err := x509.CreateCertificate(rand.Reader, certificate, certificate, &key.PublicKey, key)
++	must(t, err)
++	cert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}))
++	f := &signedFixture{t: t, verification: newVerifier(config), key: key,
++		certURL: "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-11112222333344445555666677778888.pem"}
++	f.verification.client.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
++		f.gets.Add(1)
++		switch {
++		case r.Method != http.MethodGet:
++			return nil, errors.New("unexpected verification method")
++		case r.URL.String() == f.certURL:
++			return response(cert), nil
++		case r.URL.Host == config.snsHost() && r.URL.Query().Get("Action") == "ConfirmSubscription":
++			return response("<ConfirmSubscriptionResponse/>"), nil
++		default:
++			return nil, fmt.Errorf("fixture would have accessed an unexpected URL")
++		}
++	})
++	return f
++}
++
++func response(body string) *http.Response {
++	return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(body))}
++}
++
++func must(t *testing.T, err error) {
++	t.Helper()
++	if err != nil {
++		t.Fatal(err)
++	}
++}
++
++func randomID() string { return uuid.Must(uuid.NewV4()).String() }
++
++func (f *signedFixture) envelope(event string) envelope {
++	return envelope{Type: "Notification", TopicARN: testTopic, MessageID: randomID(),
++		Timestamp: time.Now().UTC().Format(time.RFC3339Nano), SignatureVersion: "2",
++		Message: event, SigningCertURL: f.certURL}
++}
++
++func (f *signedFixture) sign(message envelope) envelope {
++	// Construct the field-sorted fixture separately from the verifier.
++	fields := map[string]string{"Type": message.Type, "Message": message.Message, "MessageId": message.MessageID,
++		"TopicArn": message.TopicARN, "Timestamp": message.Timestamp}
++	if message.Type == "Notification" && message.Subject != nil {
++		fields["Subject"] = *message.Subject
++	}
++	if message.Type != "Notification" {
++		fields["SubscribeURL"], fields["Token"] = message.SubscribeURL, message.Token
++	}
++	keys := make([]string, 0, len(fields))
++	for key := range fields {
++		keys = append(keys, key)
++	}
++	slices.Sort(keys)
++	var canonical strings.Builder
++	for _, key := range keys {
++		fmt.Fprintf(&canonical, "%s\n%s\n", key, fields[key])
++	}
++	digest := sha256.Sum256([]byte(canonical.String()))
++	signed, err := rsa.SignPKCS1v15(rand.Reader, f.key, crypto.SHA256, digest[:])
++	must(f.t, err)
++	message.Signature = base64.StdEncoding.EncodeToString(signed)
++	return message
++}
++
++func snsRequest(message envelope) *http.Request {
++	raw, _ := json.Marshal(message)
++	req := httptest.NewRequest(http.MethodPost, "/webhooks/warpdrive/ses", strings.NewReader(string(raw)))
++	req.Header.Set("X-Amz-Sns-Message-Type", message.Type)
++	req.Header.Set("X-Amz-Sns-Message-Id", message.MessageID)
++	req.Header.Set("X-Amz-Sns-Topic-Arn", message.TopicARN)
++	return req
++}
++
++func requestStatus(h http.Handler, message envelope) int {
++	response := httptest.NewRecorder()
++	h.ServeHTTP(response, snsRequest(message))
++	return response.Code
++}
++
++func TestSNSv2Validation(t *testing.T) {
++	f := newSignedFixture(t)
++	subject := "Verified fixture"
++	original := f.envelope("event containing\nnewlines")
++	original.Subject = &subject
++	signed := f.sign(original)
++	must(t, f.verification.verify(context.Background(), signed, snsRequest(signed).Header))
++	if f.gets.Load() != 1 {
++		t.Fatal("regional cert fetched exactly once")
++	}
++
++	invalid := []func(*envelope){
++		func(m *envelope) { m.Message = "tampered" },
++		func(m *envelope) { m.SignatureVersion = "1" },
++		func(m *envelope) { m.SigningCertURL = strings.Replace(m.SigningCertURL, "us-east-1", "us-west-2", 1) },
++		func(m *envelope) {
++			m.SigningCertURL = strings.Replace(m.SigningCertURL, "amazonaws.com", "amazonaws.com.example.test", 1)
++		},
++		func(m *envelope) { m.SigningCertURL = strings.Replace(m.SigningCertURL, "https://", "http://", 1) },
++		func(m *envelope) { m.SigningCertURL += "?ignored=yes" },
++		func(m *envelope) { m.SigningCertURL = "https://sns.us-east-1.amazonaws.com@127.0.0.1/fake.pem" },
++		func(m *envelope) { m.TopicARN += "Unexpected" },
++	}
++	for i, alter := range invalid {
++		candidate := signed
++		alter(&candidate)
++		if err := f.verification.verify(context.Background(), candidate, snsRequest(candidate).Header); !errors.Is(err, ErrDenied) {
++			t.Fatalf("forgery %d returned %v", i, err)
++		}
++	}
++	if f.gets.Load() != 1 {
++		t.Fatal("untrusted certificate targets caused a network request")
++	}
++	confirmation := f.envelope("Confirm synthetic subscription")
++	confirmation.Type = "SubscriptionConfirmation"
++	confirmation.Token = "0123456789abcdef0123456789abcdef"
++	confirmation.SubscribeURL = "https://" + f.verification.config.snsHost() + "/?" + url.Values{
++		"Action": {"ConfirmSubscription"}, "TopicArn": {testTopic}, "Token": {confirmation.Token},
++	}.Encode()
++	confirmation = f.sign(confirmation)
++	must(t, f.verification.verify(context.Background(), confirmation, snsRequest(confirmation).Header))
++	must(t, f.verification.confirm(context.Background(), confirmation))
++	confirmation.SubscribeURL = strings.Replace(confirmation.SubscribeURL, "ConfirmSubscription", "Unsubscribe", 1)
++	if err := f.verification.confirm(context.Background(), confirmation); !errors.Is(err, ErrDenied) {
++		t.Fatal("confirmation accepted a different AWS action")
++	}
++}
++
++type testJob struct {
++	delivery, email      string
++	campaign, subscriber int
++}
++
++func seedJob(t *testing.T, db *sqlx.DB, email, state string) testJob {
++	t.Helper()
++	job := testJob{email: email, delivery: randomID()}
++	must(t, db.Get(&job.campaign, `
++		INSERT INTO campaigns(uuid,name,subject,from_email,body,status,messenger,sent)
++		VALUES(gen_random_uuid(),'SES fixture','SES fixture','sender@example.test','Synthetic','paused','email',
++		       CASE WHEN $1='accepted' THEN 1 ELSE 0 END) RETURNING id
++	`, state))
++	must(t, db.Get(&job.subscriber, "INSERT INTO subscribers(uuid,email,name) VALUES(gen_random_uuid(),$1,'Synthetic') RETURNING id", email))
++	_, err := db.Exec("INSERT INTO warpdrive_delivery_runs(campaign_id) VALUES($1)", job.campaign)
++	must(t, err)
++	_, err = db.Exec(`
++		INSERT INTO warpdrive_delivery_recipients(id,campaign_id,subscriber_id,subscriber_uuid,address_digest,
++		    state,lease_token,lease_until,message_id,attempts)
++		SELECT $1,$2,id,uuid,sha256(convert_to(email,'UTF8')),$4,
++		       CASE WHEN $4='submitting' THEN gen_random_uuid() END,
++		       CASE WHEN $4='submitting' THEN NOW()+INTERVAL '1 minute' END,
++		       '<fixture@example.test>',1 FROM subscribers WHERE id=$3
++	`, job.delivery, job.campaign, job.subscriber, state)
++	must(t, err)
++	return job
++}
++
++func (f *signedFixture) event(job testJob, email, kind, providerID string, age time.Duration) envelope {
++	now := time.Now().Add(-age).UTC()
++	eventType := "Bounce"
++	detail := map[string]any{
++		"bounce": map[string]any{"bounceType": kind, "timestamp": now,
++			"bouncedRecipients": []recipient{{Address: email}}},
++	}
++	if kind == "Complaint" {
++		eventType = kind
++		detail = map[string]any{"complaint": map[string]any{"timestamp": now,
++			"complainedRecipients": []recipient{{Address: ""}}}}
++	}
++	detail["eventType"] = eventType
++	detail["mail"] = map[string]any{"messageId": providerID, "sendingAccountId": "123456789012",
++		"sourceArn":   "arn:aws:ses:us-east-1:123456789012:identity/example.test",
++		"destination": []string{email}, "tags": map[string][]string{
++			"ses:configuration-set": {testSet}, "warpdrive_delivery": {job.delivery},
++		}}
++	raw, err := json.Marshal(detail)
++	must(f.t, err)
++	return f.sign(f.envelope(string(raw)))
++}
++
++func checkValue(t *testing.T, db *sqlx.DB, want any, query string, args ...any) {
++	t.Helper()
++	switch target := want.(type) {
++	case int:
++		var actual int
++		must(t, db.Get(&actual, query, args...))
++		if actual != target {
++			t.Fatalf("got %d, want %d", actual, target)
++		}
++	case string:
++		var actual string
++		must(t, db.Get(&actual, query, args...))
++		if actual != target {
++			t.Fatalf("got %s, want %s", actual, target)
++		}
++	case bool:
++		var actual bool
++		must(t, db.Get(&actual, query, args...))
++		if actual != target {
++			t.Fatalf("got %t, want %t", actual, target)
++		}
++	default:
++		t.Fatal("unexpected fixture assertion type")
++	}
++}
++
++func TestSignedSESFeedbackWithPostgres(t *testing.T) {
++	dsn := os.Getenv("WARPDRIVE_SES_FIXTURE_DSN")
++	if dsn == "" {
++		t.Skip("disposable PostgreSQL fixture not requested")
++	}
++	if !strings.HasPrefix(dsn, "host=/tmp/lm-ses-") || !strings.Contains(dsn, "dbname=consent user=consentproof sslmode=disable") {
++		t.Fatal("use the disposable fixture runner")
++	}
++	db, err := sqlx.Connect("postgres", dsn)
++	must(t, err)
++	defer db.Close()
++	f := newSignedFixture(t)
++	h := &handler{db: db, config: f.verification.config, verify: f.verification, log: log.New(io.Discard, "", 0)}
++
++	job := seedJob(t, db, "bounce@example.test", "submitting")
++	hard := f.event(job, job.email, "Permanent", "provider-first", 0)
++	repeat := hard
++	repeat.MessageID = randomID()
++	repeat = f.sign(repeat)
++	statuses := make(chan int, 3)
++	for _, event := range []envelope{hard, hard, repeat} {
++		go func() { statuses <- requestStatus(h, event) }()
++	}
++	for range 3 {
++		if status := <-statuses; status != http.StatusNoContent {
++			t.Fatalf("valid/concurrent feedback returned %d", status)
++		}
++	}
++	checkValue(t, db, 2, "SELECT COUNT(*) FROM warpdrive_ses_feedback WHERE delivery_id=$1", job.delivery)
++	checkValue(t, db, 1, "SELECT COUNT(*) FROM bounces WHERE campaign_id=$1", job.campaign)
++	checkValue(t, db, 1, "SELECT sent FROM campaigns WHERE id=$1", job.campaign)
++	checkValue(t, db, "blocklisted", "SELECT status FROM subscribers WHERE id=$1", job.subscriber)
++	checkValue(t, db, true, `SELECT state='accepted' AND ses_message_id='provider-first' AND smtp_accepted_at IS NULL
++		FROM warpdrive_delivery_recipients WHERE id=$1`, job.delivery)
++	checkValue(t, db, true, "SELECT EXISTS (SELECT 1 FROM warpdrive_crm_suppressions WHERE address_digest=warpdrive_crm_address_digest($1))", job.email)
++
++	stale := seedJob(t, db, "old@example.test", "accepted")
++	_, err = db.Exec("UPDATE subscribers SET email='new@example.test' WHERE id=$1", stale.subscriber)
++	must(t, err)
++	late := f.event(stale, stale.email, "Complaint", "provider-late", 10*24*time.Hour)
++	if status := requestStatus(h, late); status != http.StatusNoContent {
++		t.Fatalf("late signed complaint returned %d", status)
++	}
++	checkValue(t, db, "enabled", "SELECT status FROM subscribers WHERE id=$1", stale.subscriber)
++	checkValue(t, db, "stale", "SELECT outcome FROM warpdrive_ses_feedback WHERE sns_id=$1", late.MessageID)
++	checkValue(t, db, true, "SELECT EXISTS (SELECT 1 FROM warpdrive_crm_suppressions WHERE address_digest=warpdrive_crm_address_digest($1))", stale.email)
++
++	mismatch := seedJob(t, db, "true-envelope@example.test", "unknown")
++	wrong := f.event(mismatch, "different-envelope@example.test", "Complaint", "provider-wrong", 0)
++	if status := requestStatus(h, wrong); status != http.StatusNoContent {
++		t.Fatalf("well-formed unmatched feedback returned %d", status)
++	}
++	checkValue(t, db, "unknown", "SELECT state FROM warpdrive_delivery_recipients WHERE id=$1", mismatch.delivery)
++	checkValue(t, db, "unmatched", "SELECT outcome FROM warpdrive_ses_feedback WHERE sns_id=$1", wrong.MessageID)
++	forged := f.event(mismatch, mismatch.email, "Complaint", "provider-forged", 0)
++	forged.Message += " "
++	if status := requestStatus(h, forged); status != http.StatusForbidden {
++		t.Fatalf("forged feedback returned %d", status)
++	}
++	checkValue(t, db, 0, "SELECT COUNT(*) FROM warpdrive_ses_feedback WHERE sns_id=$1", forged.MessageID)
++
++	temporary := seedJob(t, db, "soft@example.test", "accepted")
++	soft := f.event(temporary, temporary.email, "Transient", "provider-soft", 0)
++	if status := requestStatus(h, soft); status != http.StatusNoContent {
++		t.Fatalf("soft feedback returned %d", status)
++	}
++	checkValue(t, db, "enabled", "SELECT status FROM subscribers WHERE id=$1", temporary.subscriber)
++	checkValue(t, db, "soft", "SELECT type FROM bounces WHERE campaign_id=$1", temporary.campaign)
++
++	retry := seedJob(t, db, "retry-feedback@example.test", "unknown")
++	_, err = db.Exec(fmt.Sprintf(`
++		CREATE FUNCTION reject_synthetic_bounce() RETURNS trigger LANGUAGE plpgsql AS $$
++		BEGIN RAISE EXCEPTION 'fixture rejects first event'; END;
++		$$;
++		CREATE TRIGGER reject_synthetic_bounce BEFORE INSERT ON bounces FOR EACH ROW
++		WHEN (NEW.campaign_id=%d) EXECUTE FUNCTION reject_synthetic_bounce();
++	`, retry.campaign))
++	must(t, err)
++	retriable := f.event(retry, retry.email, "Permanent", "provider-retry", 0)
++	if status := requestStatus(h, retriable); status != http.StatusServiceUnavailable {
++		t.Fatalf("database failure returned %d", status)
++	}
++	checkValue(t, db, 0, "SELECT COUNT(*) FROM warpdrive_ses_feedback WHERE sns_id=$1", retriable.MessageID)
++	checkValue(t, db, "enabled", "SELECT status FROM subscribers WHERE id=$1", retry.subscriber)
++	checkValue(t, db, "unknown", "SELECT state FROM warpdrive_delivery_recipients WHERE id=$1", retry.delivery)
++	_, err = db.Exec("DROP TRIGGER reject_synthetic_bounce ON bounces")
++	must(t, err)
++	if status := requestStatus(h, retriable); status != http.StatusNoContent {
++		t.Fatalf("SNS retry returned %d", status)
++	}
++	checkValue(t, db, "blocklisted", "SELECT status FROM subscribers WHERE id=$1", retry.subscriber)
++	checkValue(t, db, 1, "SELECT sent FROM campaigns WHERE id=$1", retry.campaign)
++}
+diff --git a/internal/sesfeedback/schema.sql b/internal/sesfeedback/schema.sql
+new file mode 100644
+index 0000000..d731101
+--- /dev/null
++++ b/internal/sesfeedback/schema.sql
+@@ -0,0 +1,13 @@
++ALTER TABLE warpdrive_delivery_recipients ADD COLUMN IF NOT EXISTS ses_message_id TEXT;
++
++CREATE TABLE IF NOT EXISTS warpdrive_ses_feedback (
++    topic_arn TEXT NOT NULL,
++    sns_id UUID NOT NULL,
++    delivery_id UUID,
++    kind TEXT NOT NULL CHECK (kind IN ('hard', 'soft', 'complaint', 'subscription', 'unsubscribe')),
++    outcome TEXT NOT NULL CHECK (outcome IN ('unmatched', 'stale', 'recorded', 'suppressed', 'duplicate', 'confirmed')),
++    received_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
++    PRIMARY KEY (topic_arn, sns_id)
++);
++CREATE INDEX IF NOT EXISTS warpdrive_ses_feedback_delivery
++    ON warpdrive_ses_feedback (delivery_id, kind) WHERE outcome IN ('stale', 'recorded', 'suppressed');
+diff --git a/internal/sesfeedback/sns.go b/internal/sesfeedback/sns.go
+new file mode 100644
+index 0000000..8e70908
+--- /dev/null
++++ b/internal/sesfeedback/sns.go
+@@ -0,0 +1,267 @@
++package sesfeedback
++
++import (
++	"context"
++	"crypto"
++	"crypto/rsa"
++	"crypto/sha256"
++	"crypto/tls"
++	"crypto/x509"
++	"encoding/base64"
++	"encoding/pem"
++	"errors"
++	"io"
++	"net"
++	"net/http"
++	"net/url"
++	"os"
++	"regexp"
++	"strings"
++	"sync"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++)
++
++var (
++	topicPattern    = regexp.MustCompile(`^arn:aws:sns:([a-z]{2}(?:-[a-z0-9]+)+-[0-9]+):([0-9]{12}):[A-Za-z0-9_-]{1,256}$`)
++	setPattern      = regexp.MustCompile(`^[A-Za-z0-9_-]{1,64}$`)
++	certificatePath = regexp.MustCompile(`^/SimpleNotificationService-[a-fA-F0-9]{32,64}\.pem$`)
++	tokenPattern    = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
++	ErrDenied       = errors.New("SNS authentication rejected")
++	ErrUnavailable  = errors.New("SNS verification temporarily unavailable")
++)
++
++type Config struct {
++	TopicARN         string
++	ConfigurationSet string
++	Region           string
++	Account          string
++}
++
++func (c Config) Enabled() bool    { return c.TopicARN != "" }
++func (c Config) SMTPHost() string { return "email-smtp." + c.Region + ".amazonaws.com" }
++func (c Config) snsHost() string  { return "sns." + c.Region + ".amazonaws.com" }
++
++func ParseConfig(topic, set string) (Config, error) {
++	parts := topicPattern.FindStringSubmatch(topic)
++	if len(parts) == 0 || !setPattern.MatchString(set) {
++		return Config{}, errors.New("invalid SNS topic ARN or SES configuration set")
++	}
++	return Config{TopicARN: topic, ConfigurationSet: set, Region: parts[1], Account: parts[2]}, nil
++}
++
++var ConfigFromEnv = sync.OnceValues(func() (Config, error) {
++	if os.Getenv("NEWSLETTER_SES_FEEDBACK_ENABLED") != "true" {
++		return Config{}, nil
++	}
++	return ParseConfig(os.Getenv("NEWSLETTER_SES_TOPIC_ARN"), os.Getenv("NEWSLETTER_SES_CONFIGURATION_SET"))
++})
++
++type envelope struct {
++	Type             string
++	MessageID        string `json:"MessageId"`
++	TopicARN         string `json:"TopicArn"`
++	Subject          *string
++	Message          string
++	Timestamp        string
++	SignatureVersion string
++	Signature        string
++	SigningCertURL   string
++	SubscribeURL     string
++	Token            string
++}
++
++func (e envelope) canonical() string {
++	var content strings.Builder
++	appendField := func(key, value string) {
++		content.WriteString(key)
++		content.WriteByte('\n')
++		content.WriteString(value)
++		content.WriteByte('\n')
++	}
++	appendField("Message", e.Message)
++	appendField("MessageId", e.MessageID)
++	if e.Type == "Notification" && e.Subject != nil {
++		appendField("Subject", *e.Subject)
++	}
++	if e.Type != "Notification" {
++		appendField("SubscribeURL", e.SubscribeURL)
++	}
++	appendField("Timestamp", e.Timestamp)
++	if e.Type != "Notification" {
++		appendField("Token", e.Token)
++	}
++	appendField("TopicArn", e.TopicARN)
++	appendField("Type", e.Type)
++	return content.String()
++}
++
++type verifier struct {
++	config       Config
++	client       *http.Client
++	mu           sync.Mutex
++	certificates map[string]*x509.Certificate
++	fetchSlots   chan struct{}
++}
++
++func newVerifier(config Config) *verifier {
++	return &verifier{
++		config: config,
++		client: &http.Client{
++			Timeout:       5 * time.Second,
++			CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
++			Transport: &http.Transport{
++				DialContext:     (&net.Dialer{Timeout: 3 * time.Second}).DialContext,
++				MaxConnsPerHost: 4,
++				IdleConnTimeout: 30 * time.Second,
++				TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12},
++			},
++		},
++		certificates: make(map[string]*x509.Certificate),
++		fetchSlots:   make(chan struct{}, 4),
++	}
++}
++
++func (v *verifier) verify(ctx context.Context, message envelope, headers http.Header) error {
++	if message.TopicARN != v.config.TopicARN || message.SignatureVersion != "2" || message.Message == "" {
++		return ErrDenied
++	}
++	switch message.Type {
++	case "Notification", "SubscriptionConfirmation", "UnsubscribeConfirmation":
++	default:
++		return ErrDenied
++	}
++	for field, value := range map[string]string{
++		"X-Amz-Sns-Message-Type": message.Type, "X-Amz-Sns-Message-Id": message.MessageID,
++		"X-Amz-Sns-Topic-Arn": message.TopicARN,
++	} {
++		if headers.Get(field) != value {
++			return ErrDenied
++		}
++	}
++	if _, err := uuid.FromString(message.MessageID); err != nil {
++		return ErrDenied
++	}
++	stamp, err := time.Parse(time.RFC3339Nano, message.Timestamp)
++	if err != nil || stamp.After(time.Now().Add(5*time.Minute)) {
++		return ErrDenied
++	}
++	if message.Subject != nil && strings.ContainsAny(*message.Subject, "\r\n") {
++		return ErrDenied
++	}
++	if message.Type != "Notification" && (message.SubscribeURL == "" || strings.ContainsAny(message.SubscribeURL, "\r\n") ||
++		len(message.Token) < 16 || len(message.Token) > 2048 || !tokenPattern.MatchString(message.Token)) {
++		return ErrDenied
++	}
++	signature, err := base64.StdEncoding.Strict().DecodeString(message.Signature)
++	if err != nil || len(signature) < 256 || len(signature) > 1024 {
++		return ErrDenied
++	}
++	certURL, err := v.parseSNSURL(message.SigningCertURL)
++	if err != nil || certURL.RawQuery != "" || certURL.ForceQuery || !certificatePath.MatchString(certURL.Path) {
++		return ErrDenied
++	}
++	certificate, err := v.getCertificate(ctx, certURL)
++	if err != nil {
++		return err
++	}
++	key, ok := certificate.PublicKey.(*rsa.PublicKey)
++	if !ok || key.N.BitLen() < 2048 || stamp.Before(certificate.NotBefore) || stamp.After(certificate.NotAfter) ||
++		(certificate.KeyUsage != 0 && certificate.KeyUsage&x509.KeyUsageDigitalSignature == 0) {
++		return ErrDenied
++	}
++	digest := sha256.Sum256([]byte(message.canonical()))
++	if rsa.VerifyPKCS1v15(key, crypto.SHA256, digest[:], signature) != nil {
++		return ErrDenied
++	}
++	return nil
++}
++
++func (v *verifier) parseSNSURL(raw string) (*url.URL, error) {
++	u, err := url.Parse(raw)
++	if err != nil || u.Scheme != "https" || u.Host != v.config.snsHost() || u.User != nil ||
++		u.Opaque != "" || u.Fragment != "" || u.RawPath != "" || strings.Contains(raw, "#") {
++		return nil, ErrDenied
++	}
++	return u, nil
++}
++
++func (v *verifier) getCertificate(ctx context.Context, u *url.URL) (*x509.Certificate, error) {
++	key := u.String()
++	v.mu.Lock()
++	certificate := v.certificates[key]
++	v.mu.Unlock()
++	if certificate != nil {
++		return certificate, nil
++	}
++
++	select {
++	case v.fetchSlots <- struct{}{}:
++		defer func() { <-v.fetchSlots }()
++	default:
++		return nil, ErrUnavailable
++	}
++	request, err := http.NewRequestWithContext(ctx, http.MethodGet, key, nil)
++	if err != nil {
++		return nil, ErrDenied
++	}
++	// The platform trust store verifies the HTTPS chain for the exact regional
++	// SNS service. Only the AWS-controlled signing certificate path is accepted.
++	response, err := v.client.Do(request)
++	if err != nil {
++		return nil, ErrUnavailable
++	}
++	defer response.Body.Close()
++	if response.StatusCode == 429 || response.StatusCode >= 500 {
++		return nil, ErrUnavailable
++	}
++	if response.StatusCode != 200 {
++		return nil, ErrDenied
++	}
++	raw, err := io.ReadAll(io.LimitReader(response.Body, (32<<10)+1))
++	if err != nil {
++		return nil, ErrUnavailable
++	}
++	block, _ := pem.Decode(raw)
++	if len(raw) > 32<<10 || block == nil || block.Type != "CERTIFICATE" {
++		return nil, ErrDenied
++	}
++	certificate, err = x509.ParseCertificate(block.Bytes)
++	if err != nil {
++		return nil, ErrDenied
++	}
++	v.mu.Lock()
++	if len(v.certificates) >= 8 {
++		clear(v.certificates)
++	}
++	v.certificates[key] = certificate
++	v.mu.Unlock()
++	return certificate, nil
++}
++
++func (v *verifier) confirm(ctx context.Context, message envelope) error {
++	u, err := v.parseSNSURL(message.SubscribeURL)
++	if err != nil || u.Path != "/" {
++		return ErrDenied
++	}
++	query, err := url.ParseQuery(u.RawQuery)
++	if err != nil || len(query) != 3 || len(query["Action"]) != 1 || len(query["TopicArn"]) != 1 ||
++		len(query["Token"]) != 1 || query.Get("Action") != "ConfirmSubscription" ||
++		query.Get("TopicArn") != v.config.TopicARN || query.Get("Token") != message.Token {
++		return ErrDenied
++	}
++	request, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
++	if err != nil {
++		return ErrDenied
++	}
++	response, err := v.client.Do(request)
++	if err != nil {
++		return ErrUnavailable
++	}
++	defer response.Body.Close()
++	if response.StatusCode < 200 || response.StatusCode >= 300 {
++		return ErrUnavailable
++	}
++	return nil
++}
+diff --git a/models/messages.go b/models/messages.go
+index 5dad966..6857d7f 100644
+--- a/models/messages.go
++++ b/models/messages.go
+@@ -20,6 +20,7 @@ type Message struct {
+ 	Attachments []Attachment
+ 
+ 	Subscriber Subscriber
++	DeliveryID string `json:"-"`
+ 
+ 	// Campaign is generally the same instance for a large number of subscribers.
+ 	Campaign *Campaign
+diff --git a/queries/campaigns.sql b/queries/campaigns.sql
+index 25e85b4..2ae0234 100644
+--- a/queries/campaigns.sql
++++ b/queries/campaigns.sql
+@@ -389,6 +389,9 @@ SELECT EXISTS (
+     WHERE c.id = $1 AND c.status = 'running'
+       AND s.id = $2 AND s.email = $3 AND s.uuid = $4 AND s.status = 'enabled'
+       AND warpdrive_campaign_recipient_allowed(c.id, s.id, s.uuid, s.email::text)
++      AND NOT EXISTS (
++          SELECT 1 FROM warpdrive_crm_suppressions WHERE address_digest=warpdrive_crm_address_digest(s.email)
++      )
+       AND CASE
+           WHEN c.type = 'optin' THEN l.optin = 'double' AND sl.status = 'unconfirmed'
+           WHEN l.optin = 'double' THEN sl.status = 'confirmed'
+@@ -398,8 +401,11 @@ SELECT EXISTS (
+ 
+ -- name: campaign-test-recipient-eligible
+ SELECT EXISTS (
+-    SELECT 1 FROM subscribers
++    SELECT 1 FROM subscribers s
+     WHERE id = $1 AND email = $2 AND uuid = $3 AND status = 'enabled'
++      AND NOT EXISTS (
++          SELECT 1 FROM warpdrive_crm_suppressions WHERE address_digest=warpdrive_crm_address_digest(s.email)
++      )
+ );
+ 
+ -- name: delete-campaign-views
