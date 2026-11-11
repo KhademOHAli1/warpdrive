@@ -33,7 +33,7 @@ const monitor = createNewsletterReadinessMonitor(
     ),
   (state, level) => {
     const event = { event: "newsletter.delivery.readiness", level, readiness: state };
-    if (level === "warn") console.warn(event);
+    if (level === "warn") process.stderr.write(`${JSON.stringify(event)}\n`);
     else process.stdout.write(`${JSON.stringify(event)}\n`);
   },
 );
