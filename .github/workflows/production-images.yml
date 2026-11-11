@@ -154,6 +154,21 @@ jobs:
           python3 scripts/deployment/registry_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/registry-smoke"
+      - name: Verify active worker drain and retained work in final image
+        run: |
+          python3 scripts/deployment/drain_smoke.py \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/worker-drain"
+      - name: Verify authenticated realtime drain and fresh resubscription
+        run: |
+          python3 scripts/deployment/ws_drain_smoke.py \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/realtime-drain"
+      - name: Rehearse same-version Web switching through owned Caddy
+        run: |
+          python3 scripts/deployment/web_switch_smoke.py \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/web-switch"
       - name: Retain exact tested bundle for main candidate publication
         if: success() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

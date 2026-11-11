@@ -364,7 +364,7 @@ class ImageSmoke:
     def start_container(self, component: str, image: str, command: list[str], *,
                         environment: dict[str, str] | None = None, mount: str | None = None,
                         pull: str = "never", memory: str = "768m", network: str | None = None,
-                        readonly: bool = False) -> str:
+                        readonly: bool = False, tmpfs: tuple[str, ...] = ()) -> str:
         name = f"{self.prefix}-{component}"
         self.resources.append(("container", name))
         self.containers[component] = name
@@ -384,6 +384,8 @@ class ImageSmoke:
             args.append("--read-only")
         if mount:
             args += ["--mount", mount]
+        for specification in tmpfs:
+            args += ["--tmpfs", specification]
         for key, value in sorted((self.env if environment is None else environment).items()):
             args += ["--env", f"{key}={value}"]
         args += [image, *command]

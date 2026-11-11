@@ -35,9 +35,10 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers
 // can enqueue, then registers all job handlers and cron schedules.
-export async function startWorker(): Promise<PgBoss> {
+export async function startWorker(observe?: (boss: PgBoss) => void): Promise<PgBoss> {
   const boss = new PgBoss(env.DATABASE_URL);
   observeBossErrors(boss, "worker");
+  observe?.(boss);
   await boss.start();
   // Publish the live boss before registering handlers so producers that run
   // during registration (e.g. initial sync enqueues) already see a live boss.

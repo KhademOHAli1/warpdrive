@@ -124,6 +124,8 @@ services:
   ws:
     build: *app-build
     restart: unless-stopped
+    # Runtime reports a bounded drain outcome before its own 15-second deadline.
+    stop_grace_period: 30s
     command: ["bun", "dist/ws.mjs"]
     env_file: .env
     healthcheck:
@@ -143,6 +145,8 @@ services:
   worker:
     build: *app-build
     restart: unless-stopped
+    # Leave room for the runtime's 60-second active-job drain and nonzero timeout exit.
+    stop_grace_period: 75s
     command: ["bun", "dist/worker.mjs"]
     env_file: .env
     depends_on:

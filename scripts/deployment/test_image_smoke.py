@@ -167,6 +167,18 @@ class ImageIdentityTests(unittest.TestCase):
 
 
 class ProcessAndCleanupTests(unittest.TestCase):
+    def test_explicit_bounded_tmpfs_does_not_change_default_container_mounts(self):
+        docker = FakeDocker()
+        value = harness(docker)
+        specifications = ("/data:rw,noexec,nosuid,nodev,size=16m", "/config:rw,noexec,nosuid,nodev,size=16m")
+        value.start_container("caddy", "caddy:test", ["caddy", "adapt"], environment={}, readonly=True, tmpfs=specifications)
+        created = docker.calls[-1]
+        self.assertEqual([created[index + 1] for index, argument in enumerate(created) if argument == "--tmpfs"], list(specifications))
+        self.assertIn("--read-only", created)
+        self.assertFalse(any(argument in {"--volume", "-v"} for argument in created))
+        value.start_container("web", "web:test", ["bun", "next", "start"])
+        self.assertNotIn("--tmpfs", docker.calls[-1])
+
     def test_ready_log_cannot_override_a_failed_process_or_oom(self):
         for running, code, oom in ((False, 1, False), (False, 0, False), (True, 0, True)):
             docker = FakeDocker()
