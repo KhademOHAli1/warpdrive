@@ -1,0 +1,101 @@
+name: Production newsletter engine qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/newsletters/engine/**"
+      - "scripts/deployment/engine_image_smoke.py"
+      - "scripts/deployment/test_engine_image_smoke.py"
+      - "scripts/deployment/image_smoke.py"
+      - "scripts/deployment/registry_smoke.py"
+      - ".github/workflows/production-engine.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "deploy/newsletters/engine/**"
+      - "scripts/deployment/engine_image_smoke.py"
+      - "scripts/deployment/test_engine_image_smoke.py"
+      - "scripts/deployment/image_smoke.py"
+      - "scripts/deployment/registry_smoke.py"
+      - ".github/workflows/production-engine.yml"
+  workflow_dispatch:
+
+# No registry publication, deployment environment or production credential input.
+permissions:
+  contents: read
+
+concurrency:
+  group: production-engine-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: Final Linux newsletter engine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      ENGINE_IMAGE: warpdrive-engine-ci:${{ github.run_id }}-${{ github.run_attempt }}
+      REVISION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check loader and qualifier failure guards
+        run: |
+          python3 -B -m unittest discover -s scripts/deployment -p test_engine_image_smoke.py -v
+          python3 -B -m unittest discover -s deploy/newsletters/engine/migration-tests -p test_verify.py -v
+          sh -n deploy/newsletters/engine/nonroot-entrypoint.sh
+          sh -n deploy/newsletters/engine/build.sh
+      - name: Admit native runner and reviewed engine context
+        id: inputs
+        run: |
+          test "$(uname -m)" = x86_64
+          python3 -c 'import shutil; assert shutil.disk_usage(".").free >= 16*1024**3, "Engine build requires 16 GiB available on the disposable runner"'
+          context_sha=$(python3 -B scripts/deployment/engine_image_smoke.py --context-digest)
+          printf 'context_sha=%s\n' "$context_sha" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/production-engine"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+        with:
+          driver: docker-container
+          driver-opts: |
+            memory=2g
+            memory-swap=2g
+            cpu-period=100000
+            cpu-quota=200000
+      - name: Build exact final Linux engine image
+        timeout-minutes: 20
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: deploy/newsletters/engine
+          file: deploy/newsletters/engine/Dockerfile
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.ENGINE_IMAGE }}
+          labels: |
+            org.opencontainers.image.revision=${{ env.REVISION }}
+            io.warpdrive.engine.context.sha256=${{ steps.inputs.outputs.context_sha }}
+      - name: Qualify actual final-image migration and runtime boundaries
+        timeout-minutes: 12
+        run: |
+          python3 -B scripts/deployment/engine_image_smoke.py \
+            --image "$ENGINE_IMAGE" --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-engine/smoke"
+      - name: Retain exact tested local image without rebuilding or publishing
+        if: success() && github.event_name != 'pull_request'
+        run: |
+          image_id=$(python3 -c 'import json,os; r=json.load(open(os.path.join(os.environ["RUNNER_TEMP"],"production-engine/smoke/report.json"))); assert r["success"] and r["cleanup"]["success"]; print(r["image"]["id"])')
+          docker image save "$image_id" --output "$RUNNER_TEMP/production-engine/engine-image.tar"
+          sha256sum "$RUNNER_TEMP/production-engine/engine-image.tar" > "$RUNNER_TEMP/production-engine/engine-image.tar.sha256"
+      - name: Preserve final-image evidence and failed-first diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: production-engine-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/production-engine/
+          if-no-files-found: warn
+          retention-days: 3
+          compression-level: 0

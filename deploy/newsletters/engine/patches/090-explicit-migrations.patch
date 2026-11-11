@@ -1,0 +1,578 @@
+diff --git a/cmd/init.go b/cmd/init.go
+--- a/cmd/init.go
++++ b/cmd/init.go
+@@ -170,6 +170,7 @@
+ 	f.Bool("install", false, "setup database (first time)")
+ 	f.Bool("idempotent", false, "make --install run only if the database isn't already setup")
+ 	f.Bool("upgrade", false, "upgrade database to the current version")
++	f.Bool("migrate", false, "explicitly install or upgrade newsletter schema and verify receipt (offline, --yes required)")
+ 	f.Bool("version", false, "show current version of the build")
+ 	f.Bool("new-config", false, "generate sample config file (at path given in --config)")
+ 	f.String("static-dir", "", "(optional) path to directory with static files")
+diff --git a/cmd/main.go b/cmd/main.go
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -145,49 +145,28 @@
+ 	// Initialize the embedded filesystem with static assets.
+ 	fs = initFS(appDir, frontendDir, ko.String("static-dir"), ko.String("i18n-dir"))
+ 
+-	// Installer mode? This runs before the SQL queries are loaded and prepared
+-	// as the installer needs to work on an empty DB.
+-	if ko.Bool("install") {
+-		// Save the version of the last listed migration.
+-		install(migList[len(migList)-1].version, db, fs, !ko.Bool("yes"), ko.Bool("idempotent"))
++	// Every mutating installation/upgrade path is explicit and fenced. Ordinary
++	// startup performs only read-only schema admission before preparing queries.
++	modeCount := 0
++	for _, flag := range []string{"migrate", "install", "upgrade"} {
++		if ko.Bool(flag) {
++			modeCount++
++		}
++	}
++	if modeCount > 1 || (ko.Bool("idempotent") && !ko.Bool("install")) {
++		lo.Fatal("choose one explicit migration mode; --idempotent requires --install")
++	}
++	if modeCount == 1 {
++		explicitEngineMigration()
+ 		os.Exit(0)
+ 	}
+-
+-	// Is this a nightly build?
+-	isNightly := strings.Contains(versionString, "nightly")
+-
+-	// Check if the DB schema is installed.
+-	if ok, err := checkSchema(db); err != nil {
+-		log.Fatalf("error checking schema in DB: %v", err)
+-	} else if !ok {
+-		lo.Fatal("the database does not appear to be setup. Run --install.")
+-	}
+-
+-	if ko.Bool("upgrade") {
+-		// Even on explicit upgrade runs, for nightly builds, do not record the last
+-		// migration version in the DB.
+-		lo.Printf("running upgrade...")
+-		upgrade(db, fs, !ko.Bool("yes"), !isNightly)
+-		os.Exit(0)
+-	}
+-
+-	// For nightly builds, always auto-run pending migrations without
+-	// recording the last version in the DB. Migrations are idempotent, and between
+-	// nightly releases, they may change multiple times.
+-	if isNightly {
+-		lo.Printf("auto-running all migrations for nightly %s since last major version", versionString)
+-		upgrade(db, fs, false, false)
+-	} else {
+-		// Before the queries are prepared, see if there are pending upgrades.
+-		checkUpgrade(db)
+-	}
+-
+-	if err := migrateCRMIdentity(db); err != nil {
+-		lo.Fatal("could not initialize newsletter CRM identity")
+-	}
+-
+-	if err := initWarpdriveAudiences(db); err != nil {
+-		lo.Fatal("could not initialize approved CRM audiences")
++	var err error
++	runtimeSchemaFence, err = acquireSchemaFence(db, false)
++	if err != nil {
++		lo.Fatal(err)
++	}
++	if err = admitEngineSchema(db); err != nil {
++		lo.Fatalf("newsletter schema admission refused: %v; backup, stop runtimes and run --migrate --yes", err)
+ 	}
+ 
+ 	// Read the SQL queries from the queries file.
+@@ -203,18 +182,6 @@
+ }
+ 
+ func main() {
+-	if err := installDeliverySchema(db); err != nil {
+-		lo.Fatalf("error initializing durable campaign delivery: %v", err)
+-	}
+-	if err := sesfeedback.Install(db); err != nil {
+-		lo.Fatal("could not initialize SES feedback receipts")
+-	}
+-	if err := installReadinessIndex(db); err != nil {
+-		lo.Fatal("could not initialize campaign delivery rates")
+-	}
+-	if err := installOperationalEvents(db); err != nil {
+-		lo.Fatal("could not initialize newsletter operational events")
+-	}
+ 	sesConfig, err := sesfeedback.ConfigFromEnv()
+ 	if err != nil {
+ 		lo.Fatal("invalid SES feedback configuration")
+@@ -359,18 +326,25 @@
+ 		// Stop the HTTP server.
+ 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+ 		defer cancel()
+-		srv.Shutdown(ctx)
++		if err := srv.Shutdown(ctx); err != nil {
++			lo.Fatal("could not stop newsletter HTTP server; stopping process with schema fence held")
++		}
+ 
+ 		// Close the campaign manager.
+ 		mgr.Close()
+ 
+-		// Close the DB pool.
+-		db.Close()
+-
+-		// Close the messenger pool.
++		// Close provider connections as part of the reload attempt. Manager.Close
++		// does not await every pipe/worker; other callbacks may still use the pool.
+ 		for _, m := range app.messengers {
+ 			m.Close()
+ 		}
++
++		// Retain the DB pool, its reserved shared fence session, and heartbeat
++		// throughout reload. Releasing the fence here could admit migration while
++		// old pipes, cron, bounce or importer callbacks still execute. Successful
++		// syscall.Exec atomically replaces all old Go code and closes its database
++		// sockets (Go network sockets are close-on-exec). Exec failure is fatal,
++		// with the fence still held; never resume the old runtime unfenced.
+ 
+ 		// Signal the close.
+ 		closerWait <- true
+diff --git a/cmd/install.go b/cmd/install.go
+--- a/cmd/install.go
++++ b/cmd/install.go
+@@ -51,7 +51,7 @@
+ 			}
+ 		} else {
+ 			lo.Println("skipping install as database appears to be already setup")
+-			os.Exit(0)
++			return
+ 		}
+ 	}
+ 
+diff --git a/cmd/warpdrive_migrations.go b/cmd/warpdrive_migrations.go
+new file mode 100644
+--- /dev/null
++++ b/cmd/warpdrive_migrations.go
+@@ -0,0 +1,421 @@
++package main
++
++import (
++	"context"
++	"crypto/sha256"
++	"database/sql"
++	_ "embed"
++	"encoding/hex"
++	"errors"
++	"fmt"
++	"strings"
++	"sync"
++	"time"
++
++	"github.com/jmoiron/sqlx"
++	"github.com/knadh/listmonk/internal/sesfeedback"
++)
++
++// The build recipe hashes the verified upstream schema and final patched installer
++// sources before compiling. A raw/unprepared source build cannot qualify a schema.
++//
++//go:embed warpdrive_installer.sha256
++var warpdriveInstallerDigest string
++
++const engineSchemaVersion = 1
++const engineUpstreamVersion = "v6.2.0"
++const engineFenceClass = 900731613
++const engineFenceKey = 90
++
++var runtimeSchemaFence *schemaFence
++
++// This is a cooperative lifecycle guard, not hard fencing of every pool session.
++// Supported upgrades additionally require externally verified offline maintenance.
++type schemaFence struct {
++	conn    *sqlx.Conn
++	done    chan struct{}
++	stopped chan struct{}
++	once    sync.Once
++}
++
++func acquireSchemaFence(db *sqlx.DB, exclusive bool) (*schemaFence, error) {
++	// One reserved connection is charged to the configured pool for the entire
++	// runtime. Unbounded pools and max_open=1 are deliberately unsupported.
++	if db.Stats().MaxOpenConnections < 2 {
++		return nil, errors.New("schema fence requires finite db.max_open >= 2")
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	conn, err := db.Connx(ctx)
++	if err != nil {
++		return nil, errors.New("schema fence connection unavailable")
++	}
++	lock := "SELECT pg_advisory_lock_shared($1, $2)"
++	if exclusive {
++		lock = "SELECT pg_advisory_lock($1, $2)"
++	}
++	if _, err = conn.ExecContext(ctx, lock, engineFenceClass, engineFenceKey); err != nil {
++		conn.Close()
++		return nil, errors.New("schema fence unavailable: stop runtimes before migrating; retry only after verifying ownership")
++	}
++	f := &schemaFence{conn: conn, done: make(chan struct{}), stopped: make(chan struct{})}
++	go f.watch(exclusive)
++	return f, nil
++}
++
++func (f *schemaFence) watch(exclusive bool) {
++	defer close(f.stopped)
++	ticker := time.NewTicker(time.Second)
++	defer ticker.Stop()
++	mode := "ShareLock"
++	if exclusive {
++		mode = "ExclusiveLock"
++	}
++	for {
++		select {
++		case <-f.done:
++			return
++		case <-ticker.C:
++			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
++			var held bool
++			err := f.conn.GetContext(ctx, &held, `SELECT EXISTS (
++				SELECT 1 FROM pg_locks WHERE locktype='advisory' AND pid=pg_backend_pid()
++				AND classid=$1::oid AND objid=$2::oid AND objsubid=2 AND granted AND mode=$3
++			)`, engineFenceClass, engineFenceKey, mode)
++			cancel()
++			if err != nil || !held {
++				// Exit the process, including its other pooled connections and any
++				// provider work. Never keep serving with unknown fence ownership.
++				lo.Fatal("database schema fence lost; stopping engine")
++			}
++		}
++	}
++}
++
++func (f *schemaFence) close() error {
++	if f == nil {
++		return nil
++	}
++	f.once.Do(func() { close(f.done) })
++	<-f.stopped
++	// Conn.Close returns a session to its pool; explicitly release session locks
++	// first. Errors remain fatal; process exit closes the uncertain session.
++	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
++	defer cancel()
++	if _, err := f.conn.ExecContext(ctx, "SELECT pg_advisory_unlock_all()"); err != nil {
++		return errors.New("could not release schema fence")
++	}
++	return f.conn.Close()
++}
++
++func expectedInstallerDigest() (string, error) {
++	v := strings.TrimSpace(warpdriveInstallerDigest)
++	if len(v) != 64 || strings.ToLower(v) != v {
++		return "", errors.New("missing installer content fingerprint; use verified build recipe")
++	}
++	if _, err := hex.DecodeString(v); err != nil {
++		return "", errors.New("invalid installer content fingerprint")
++	}
++	return v, nil
++}
++
++// Keep this projection read-only and deterministic. It binds the actual public
++// schema, including columns/defaults, constraints, indexes, enum labels, function
++// definitions and triggers. Data, grants, owners and sequence counters are not
++// part of the receipt. A PostgreSQL upgrade may require explicit requalification.
++const engineCatalogSQL = `
++SELECT COALESCE(jsonb_agg(jsonb_build_array(kind,name,definition) ORDER BY kind,name,definition), '[]'::jsonb)::text
++FROM (
++ SELECT 'relation' AS kind, c.relname AS name,
++ jsonb_build_array(c.relkind,c.relrowsecurity,c.relforcerowsecurity,c.relreplident)::text AS definition
++ FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
++ WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','S','f')
++ UNION ALL
++ SELECT 'column', c.relname||'.'||a.attname,
++ jsonb_build_array(a.attnum,format_type(a.atttypid,a.atttypmod),a.attnotnull,a.attidentity,a.attgenerated,pg_get_expr(d.adbin,d.adrelid))::text
++ FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
++ LEFT JOIN pg_attrdef d ON d.adrelid=c.oid AND d.adnum=a.attnum
++ WHERE n.nspname='public' AND a.attnum>0 AND NOT a.attisdropped AND c.relkind IN ('r','p','v','m','f')
++ UNION ALL
++ SELECT 'constraint', c.relname||'.'||x.conname, pg_get_constraintdef(x.oid,true)
++ FROM pg_constraint x JOIN pg_class c ON c.oid=x.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'
++ UNION ALL
++ SELECT 'index', c.relname, pg_get_indexdef(i.indexrelid)||':'||i.indisvalid::text||':'||i.indisready::text
++ FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'
++ UNION ALL
++ SELECT 'enum', t.typname||'.'||e.enumsortorder::text, e.enumlabel
++ FROM pg_enum e JOIN pg_type t ON t.oid=e.enumtypid JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname='public'
++ UNION ALL
++ SELECT 'function', p.proname||'('||pg_get_function_identity_arguments(p.oid)||')', pg_get_functiondef(p.oid)
++ FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.prokind IN ('f','p')
++ UNION ALL
++ SELECT 'trigger', c.relname||'.'||t.tgname, pg_get_triggerdef(t.oid,true)||':'||t.tgenabled::text
++ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
++ WHERE n.nspname='public' AND NOT t.tgisinternal
++ UNION ALL
++ SELECT 'policy', c.relname||'.'||p.polname,
++ jsonb_build_array(p.polcmd,p.polpermissive,
++ ARRAY(SELECT CASE WHEN role_id=0 THEN 'PUBLIC' ELSE pg_get_userbyid(role_id)::text END FROM unnest(p.polroles) AS roles(role_id) ORDER BY 1),
++ pg_get_expr(p.polqual,p.polrelid),pg_get_expr(p.polwithcheck,p.polrelid))::text
++ FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'
++ UNION ALL
++ SELECT 'sequence', c.relname,
++ jsonb_build_array(format_type(s.seqtypid,NULL),s.seqstart,s.seqincrement,s.seqmax,s.seqmin,s.seqcache,s.seqcycle)::text
++ FROM pg_sequence s JOIN pg_class c ON c.oid=s.seqrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'
++ UNION ALL
++ SELECT 'view', c.relname, pg_get_viewdef(c.oid,true)
++ FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('v','m')
++) AS objects`
++
++type engineSchemaReceipt struct {
++	Version   int    `db:"version"`
++	Upstream  string `db:"upstream_version"`
++	Installer string `db:"installer_sha256"`
++	Catalog   string `db:"catalog_sha256"`
++}
++
++func catalogDigest(ctx context.Context, tx *sqlx.Tx) (string, error) {
++	var projection string
++	if err := tx.GetContext(ctx, &projection, engineCatalogSQL); err != nil {
++		return "", err
++	}
++	digest := sha256.Sum256([]byte(projection))
++	return hex.EncodeToString(digest[:]), nil
++}
++
++// Validate required extension objects independently of a claimed version marker.
++// This prevents a failed/externally damaged versioned step acquiring a new receipt.
++const engineRequiredSQL = `SELECT
++ (SELECT COALESCE(value->>-1,'') FROM settings WHERE key='migrations')='v6.2.0'
++ AND (SELECT array_agg(version ORDER BY version) FROM warpdrive_delivery_migrations)=ARRAY[1,2,3,4,5]
++ AND NOT EXISTS (SELECT 1 FROM unnest(ARRAY[
++ 'warpdrive_crm_identity_challenges','warpdrive_crm_consent_grants','warpdrive_crm_erasure_receipts',
++ 'warpdrive_crm_suppression_key','warpdrive_crm_suppressions','warpdrive_crm_consent_events',
++ 'warpdrive_crm_consent_events_pending_idx','warpdrive_campaign_audiences','warpdrive_campaign_audience_members',
++ 'warpdrive_delivery_runs','warpdrive_delivery_recipients','warpdrive_ses_feedback','warpdrive_ses_feedback_delivery',
++ 'warpdrive_delivery_smtp_recent','warpdrive_operational_events','warpdrive_operational_events_pending_idx',
++ 'warpdrive_crm_attribution_grant_binding_idx','warpdrive_crm_attribution_member_grant_idx',
++ 'warpdrive_delivery_subscriber','warpdrive_delivery_ready','warpdrive_delivery_active','warpdrive_delivery_outstanding','warpdrive_delivery_unknown'
++ ]) AS required(name) WHERE to_regclass('public.'||name) IS NULL)
++ AND NOT EXISTS (SELECT 1 FROM (VALUES ('smtp_accepted_at','timestamp with time zone'),('ses_message_id','text')) AS required(name,type)
++ WHERE NOT EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid='public.warpdrive_delivery_recipients'::regclass
++ AND a.attname=required.name AND format_type(a.atttypid,a.atttypmod)=required.type AND NOT a.attisdropped))
++ AND NOT EXISTS (SELECT 1 FROM unnest(ARRAY[
++ 'warpdrive_crm_address_digest(text)','warpdrive_crm_refuse_erased_mailbox()',
++ 'warpdrive_crm_revoke_membership()','warpdrive_crm_revoke_mailbox()','warpdrive_crm_revoke_purpose()',
++ 'warpdrive_crm_consent_scope(uuid,uuid,integer,uuid,integer)','warpdrive_crm_record_revocation()',
++ 'warpdrive_campaign_recipient_allowed(integer,integer,uuid,text)','warpdrive_delivery_anonymize_recipient()',
++ 'warpdrive_enqueue_operational(text,text,text,timestamp with time zone)','warpdrive_record_delivery_operational()',
++ 'warpdrive_enqueue_feedback_operational(uuid,text,text,timestamp with time zone)','warpdrive_record_feedback_operational()'
++ ]) AS required(signature) WHERE to_regprocedure('public.'||signature) IS NULL)
++ AND NOT EXISTS (SELECT 1 FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid JOIN pg_namespace n ON n.oid=c.relnamespace
++ WHERE n.nspname='public' AND (NOT i.indisvalid OR NOT i.indisready))
++ AND NOT EXISTS (SELECT 1 FROM unnest(ARRAY[
++ 'warpdrive_crm_suppressed_mailbox','warpdrive_crm_revoke_membership','warpdrive_crm_revoke_mailbox',
++ 'warpdrive_crm_revoke_purpose','warpdrive_crm_record_revocation','warpdrive_delivery_anonymize_recipient',
++ 'warpdrive_record_delivery_operational','warpdrive_record_feedback_operational'
++ ]) AS required(name) WHERE NOT EXISTS (
++ SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
++ WHERE n.nspname='public' AND t.tgname=required.name AND t.tgenabled IN ('O','A')))`
++
++func checkEngineSchema(ctx context.Context, tx *sqlx.Tx, requireReceipt bool) error {
++	var schema string
++	if err := tx.GetContext(ctx, &schema, "SELECT current_schema()"); err != nil || schema != "public" {
++		return errors.New("engine requires public schema")
++	}
++	var valid bool
++	if err := tx.GetContext(ctx, &valid, engineRequiredSQL); err != nil || !valid {
++		return errors.New("required newsletter schema objects missing or incompatible")
++	}
++	if !requireReceipt {
++		return nil
++	}
++	expected, err := expectedInstallerDigest()
++	if err != nil {
++		return err
++	}
++	var receipt engineSchemaReceipt
++	if err := tx.GetContext(ctx, &receipt, "SELECT version,upstream_version,installer_sha256,catalog_sha256 FROM public.warpdrive_engine_schema WHERE singleton"); err != nil {
++		return errors.New("explicit migration receipt missing")
++	}
++	if receipt.Version != engineSchemaVersion || receipt.Upstream != engineUpstreamVersion || receipt.Installer != expected {
++		return errors.New("explicit migration receipt incompatible with this executable")
++	}
++	actual, err := catalogDigest(ctx, tx)
++	if err != nil || actual != receipt.Catalog {
++		return errors.New("installed newsletter schema differs from migration receipt")
++	}
++	return nil
++}
++
++func admitEngineSchema(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
++	if err != nil {
++		return errors.New("read-only newsletter schema admission unavailable")
++	}
++	defer tx.Rollback()
++	if err := checkEngineSchema(ctx, tx, true); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
++
++func explicitEngineMigration() {
++	if _, err := expectedInstallerDigest(); err != nil {
++		lo.Fatal(err)
++	}
++	if !ko.Bool("yes") {
++		lo.Fatal("explicit newsletter migrations require --yes after backup and verified offline maintenance")
++	}
++	var schema string
++	if err := db.Get(&schema, "SELECT current_schema()"); err != nil || schema != "public" {
++		lo.Fatal("explicit newsletter migration requires public schema before any writes")
++	}
++	fence, err := acquireSchemaFence(db, true)
++	if err != nil {
++		lo.Fatal(err)
++	}
++	defer func() {
++		if err := fence.close(); err != nil {
++			lo.Fatal(err)
++		}
++	}()
++	// Upstream installers contain Fatal exits and multiple committed steps. Bound
++	// the whole operation; any interruption leaves no new acceptance receipt.
++	deadman := time.AfterFunc(3*time.Minute, func() { lo.Fatal("explicit newsletter migration deadline exceeded; outcome requires inspection") })
++	defer deadman.Stop()
++	var exists bool
++	if err := db.Get(&exists, "SELECT to_regclass('public.warpdrive_engine_schema') IS NOT NULL"); err != nil {
++		lo.Fatal("could not inspect migration receipt")
++	}
++	if exists {
++		var receipt engineSchemaReceipt
++		if err := db.Get(&receipt, "SELECT version,upstream_version,installer_sha256,catalog_sha256 FROM public.warpdrive_engine_schema WHERE singleton"); err != nil {
++			lo.Fatal("invalid explicit migration receipt")
++		}
++		if receipt.Version > engineSchemaVersion || receipt.Version < 1 || receipt.Upstream != engineUpstreamVersion {
++			lo.Fatal("unsupported explicit migration receipt version")
++		}
++		expected, _ := expectedInstallerDigest()
++		if receipt.Installer == expected {
++			if err := admitEngineSchema(db); err != nil {
++				lo.Fatal("installed newsletter schema drifted; inspect and restore before retrying explicit migration")
++			}
++			if ko.Bool("install") && !ko.Bool("idempotent") {
++				lo.Fatal("destructive reinstall refused; use a new empty database for restore")
++			}
++			lo.Println("explicit newsletter schema already qualified; no changes")
++			return
++		}
++	}
++	// Reject unknown/future installed upstream versions before any installer can
++	// write, including the compatibility --install path.
++	var installed bool
++	if err := db.Get(&installed, "SELECT to_regclass('public.settings') IS NOT NULL"); err != nil {
++		lo.Fatal("could not inspect upstream version")
++	}
++	if installed {
++		if ko.Bool("install") && !ko.Bool("idempotent") {
++			lo.Fatal("destructive reinstall refused; use a new empty database for restore")
++		}
++		last, err := getLastMigrationVersion(db)
++		if err != nil || !hasKnownEngineVersion(last) {
++			lo.Fatal("unsupported upstream newsletter schema version")
++		}
++	} else {
++		var count int
++		if err := db.Get(&count, "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f','S')"); err != nil || count != 0 {
++			lo.Fatal("fresh newsletter install requires an empty public schema; inspect partial outcome")
++		}
++	}
++	if ko.Bool("install") {
++		if installed {
++			// --install --idempotent must complete the same recognized upstream
++			// upgrade boundary before extensions, rather than skip into a partial
++			// extension upgrade against an older base schema.
++			upgrade(db, fs, false, true)
++		} else {
++			install(migList[len(migList)-1].version, db, fs, false, ko.Bool("idempotent"))
++		}
++	} else {
++		ok, err := checkSchema(db)
++		if err != nil {
++			lo.Fatal("could not inspect upstream newsletter schema")
++		}
++		if !ok {
++			if ko.Bool("upgrade") {
++				lo.Fatal("upstream newsletter schema missing; use --migrate for a fresh database")
++			}
++			// Never interpret a partly installed or unrelated database as empty.
++			var count int
++			if err := db.Get(&count, "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f','S')"); err != nil || count != 0 {
++				lo.Fatal("fresh newsletter install requires an empty public schema; inspect partial outcome")
++			}
++			install(migList[len(migList)-1].version, db, fs, false, false)
++		} else {
++			last, _, err := getPendingMigrations(db)
++			if err != nil || last == "v0.0.0" || (last != engineUpstreamVersion && !hasKnownEngineVersion(last)) {
++				lo.Fatal("unsupported upstream newsletter schema version")
++			}
++			upgrade(db, fs, false, true)
++		}
++	}
++	for _, step := range []struct {
++		name string
++		run  func(*sqlx.DB) error
++	}{
++		{"CRM identity and consent outbox", migrateCRMIdentity}, {"approved CRM audiences", initWarpdriveAudiences},
++		{"durable delivery and legacy holds", installDeliverySchema}, {"SES feedback", sesfeedback.Install},
++		{"delivery readiness index", installReadinessIndex}, {"operational outbox", installOperationalEvents},
++	} {
++		if err := step.run(db); err != nil {
++			lo.Fatalf("explicit newsletter migration failed at %s; no new qualification receipt", step.name)
++		}
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		lo.Fatal("could not begin migration receipt transaction")
++	}
++	defer tx.Rollback()
++	if _, err = tx.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS public.warpdrive_engine_schema (
++	 singleton BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(singleton), version INTEGER NOT NULL,
++	 upstream_version TEXT NOT NULL, installer_sha256 TEXT NOT NULL CHECK(installer_sha256 ~ '^[a-f0-9]{64}$'),
++	 catalog_sha256 TEXT NOT NULL CHECK(catalog_sha256 ~ '^[a-f0-9]{64}$'), installed_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
++	)`); err != nil {
++		lo.Fatal("could not create migration receipt")
++	}
++	if err = checkEngineSchema(ctx, tx, false); err != nil {
++		lo.Fatal(err)
++	}
++	catalog, err := catalogDigest(ctx, tx)
++	if err != nil {
++		lo.Fatal("could not fingerprint installed newsletter schema")
++	}
++	installer, _ := expectedInstallerDigest()
++	if _, err = tx.ExecContext(ctx, `INSERT INTO public.warpdrive_engine_schema(singleton,version,upstream_version,installer_sha256,catalog_sha256)
++	 VALUES(TRUE,$1,$2,$3,$4) ON CONFLICT(singleton) DO UPDATE SET version=EXCLUDED.version,
++	 upstream_version=EXCLUDED.upstream_version,installer_sha256=EXCLUDED.installer_sha256,
++	 catalog_sha256=EXCLUDED.catalog_sha256,installed_at=clock_timestamp()`, engineSchemaVersion, engineUpstreamVersion, installer, catalog); err != nil {
++		lo.Fatal("could not write migration receipt")
++	}
++	if err = tx.Commit(); err != nil {
++		lo.Fatal("newsletter migration receipt commit unknown; inspect before resuming writers")
++	}
++	if err = admitEngineSchema(db); err != nil {
++		lo.Fatal(fmt.Errorf("newsletter migration readback failed: %w", err))
++	}
++	lo.Println("explicit newsletter migration complete; receipt verified")
++}
++
++func hasKnownEngineVersion(version string) bool {
++	for _, migration := range migList {
++		if version == migration.version {
++			return true
++		}
++	}
++	return false
++}
+diff --git a/cmd/warpdrive_installer.sha256 b/cmd/warpdrive_installer.sha256
+new file mode 100644
+--- /dev/null
++++ b/cmd/warpdrive_installer.sha256
+@@ -0,0 +1 @@
++UNBUILT

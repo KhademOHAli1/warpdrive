@@ -1,0 +1,151 @@
+{
+  "allOwnedProcessesReaped": true,
+  "build": {
+    "cleanupPassed": true,
+    "elapsedSeconds": 5.331,
+    "limits": {
+      "diskReserveBytes": 8589934592,
+      "goBuildParallelism": 2,
+      "gomaxprocs": 2,
+      "gomemlimit": "768MiB",
+      "groupRssWatchdogBytes": 2684354560,
+      "growthBytes": 3221225472,
+      "seconds": 900
+    },
+    "peakGroupRssBytes": 4800512,
+    "peakGrowthBytes": 0
+  },
+  "checks": [
+    {
+      "name": "fresh-explicit-migrate-noop",
+      "passed": true,
+      "seconds": 1.544
+    },
+    {
+      "name": "pinned-schema-legacy-campaign-fence",
+      "passed": true,
+      "seconds": 1.597
+    },
+    {
+      "name": "explicit-upgrade-and-no-write-migrate",
+      "passed": true,
+      "seconds": 4.076
+    },
+    {
+      "name": "missing-future-receipt-and-catalog-rejection",
+      "passed": true,
+      "seconds": 15.263
+    },
+    {
+      "name": "restricted-runtime-no-ddl",
+      "passed": true,
+      "seconds": 5.67
+    },
+    {
+      "name": "rls-policy-sequence-config-drift-rejected",
+      "passed": true,
+      "seconds": 10.914
+    },
+    {
+      "name": "runtime-excludes-migration",
+      "passed": true,
+      "seconds": 9.173
+    },
+    {
+      "name": "real-migration-excludes-startup",
+      "passed": true,
+      "seconds": 9.369
+    },
+    {
+      "name": "runtime-exits-on-fence-session-loss",
+      "passed": true,
+      "seconds": 7.56
+    }
+  ],
+  "compiler": "go version go1.26.1 darwin/arm64",
+  "correspondingSourceArchiveSha256": "b13ee54f51c68af217ac194a92ab0398b5f851dc21ee1487b697a8b0f65cde93",
+  "deploymentAuthorized": false,
+  "engineSha256": "21ab61714545f16632c10f449ba3137e59c0d90230b07f9f4cbf50206868eb00",
+  "failedFirstSupervisor": {
+    "cleanupPassed": true,
+    "outcome": "failed-before-evidence-finalization",
+    "rawReportSha256": "750f8f9b665a8971feed99da24a5cc31b25e14e20d5d553ae2707be186504ca8",
+    "reason": "Owned fixture disappeared during du sampling after nine checks printed passed. Observer now retries bounded transient deletion; this failed attempt is not qualification."
+  },
+  "fixtureRemoved": true,
+  "installerSha256": "059c3b43147a4c0d208abca903a77a83ba87660bf63f97be74a3cf58072d07ed",
+  "kind": "warpdrive-native-engine-migration-evidence",
+  "notQualified": [
+    "production installation, backup restore or provider delivery",
+    "old packed-binary installed upgrade (legacy test starts from pinned schema)",
+    "container image packaging, ingress or orchestrator behavior",
+    "hard online writer fencing; supported DDL still requires independently verified offline maintenance"
+  ],
+  "observedAt": "2026-11-11T22:43:54.528753+00:00",
+  "platform": "darwin/arm64",
+  "postgres": "postgres (PostgreSQL) 16.10 (Homebrew)",
+  "rawSanitizedReportSha256": "6b55ec911a665368841301a5f066137e008d2ee5aa3d9960e9790e536f86e19e",
+  "runtime": {
+    "cleanupPassed": true,
+    "elapsedSeconds": 67.837,
+    "limits": {
+      "diskReserveBytes": 8589934592,
+      "growthBytes": 3221225472,
+      "rssWatchdogBytes": 2684354560,
+      "seconds": 300
+    },
+    "peakGrowthBytes": 88338432,
+    "peakOwnedRssBytes": 265175040
+  },
+  "schemaVersion": 1,
+  "scope": "native synthetic packed-engine migration and lifecycle admission",
+  "sourceArchiveSha256": "52119464c87ed71a60d46f7097ddb304967d344fc1954769388a1e2d764b659b",
+  "sourcePins": {
+    "deploy/newsletters/engine/.dockerignore": "4858eaa66f09bec9c5464e3cbee2af57fe726295ebc0451975e9dd98d8307195",
+    "deploy/newsletters/engine/.gitattributes": "7ba725dc2ef307e4d5465c3a61efc9e9a92417ea4e8c9ccff041642ab0d0b0b9",
+    "deploy/newsletters/engine/Dockerfile": "431c349c543fb6a0e07827bb8eefdeb7d80ed1135779a545d355de58008e447f",
+    "deploy/newsletters/engine/README.md": "8c127694682add8bfaede77b490182b2a6e94692072b8c0745ee6292af102ddb",
+    "deploy/newsletters/engine/build-assets.go": "38de0a7221530ae3f968b869a78a349c224ee976860857c8da6e95cde22339ba",
+    "deploy/newsletters/engine/build.sh": "52df8e012d1bcae35f015488d631ab38012b0e4fc9d23c98931144f3603f2af2",
+    "deploy/newsletters/engine/dispatch-tests/README.md": "9b9989208eb28590a6a77abca4d733fd13c421635b0133396563a38ef661f099",
+    "deploy/newsletters/engine/dispatch-tests/verify-races.py": "4ef1076f0557b2c51a5b9f4de4f9e59217e517207ab492ee7f66dc323d589e9b",
+    "deploy/newsletters/engine/dispatch-tests/verify-sql.py": "35f3c3cfe10519462b0205d94112ca1f518e4e5e92e3f26ef9396a8154564f12",
+    "deploy/newsletters/engine/durability-tests/README.md": "daa6e219c279b99cac2dea4515479b76814ce26e0baa584452f33065678966e6",
+    "deploy/newsletters/engine/durability-tests/verify.py": "55dbaba5685b9fc480ddf1f322cff2b8537ba82ecfe788b7458b76355de56aaf",
+    "deploy/newsletters/engine/feedback-tests/README.md": "f1c84940d7688bb515849270e0736147697d5ef5790c1f01033dda902495451f",
+    "deploy/newsletters/engine/feedback-tests/verify.py": "bd597c2a1632d55ac1c7d30c4806adfaf3b802f7487e6cc9108f6dcfd3d5bcc1",
+    "deploy/newsletters/engine/migration-tests/README.md": "33b7c309c198bc9cd6e10c085393b3d7d2dc7c4800333f721788dfc125fc8bdb",
+    "deploy/newsletters/engine/migration-tests/test_verify.py": "88ecfd4250441377659a1b4b8d321a565b393910bdb2cb3e46a24de5b3c66fd2",
+    "deploy/newsletters/engine/migration-tests/verify.py": "7e12f3c2d16e5c2e38f84499dfd3330af2e0c52a383121b9a54c2087f4277ab4",
+    "deploy/newsletters/engine/nonroot-entrypoint.sh": "da457db169026cb9e9c56539943b0ee5a6a7fc47f29d1279cd28f65850f3efe4",
+    "deploy/newsletters/engine/operational-tests/README.md": "c233f73987eb0121bf77d6376247c9837dac9946d28b950a81a526fa0545a434",
+    "deploy/newsletters/engine/operational-tests/verify.py": "13a9ecf1c687b3ffbf3b01a5a042761bd07b6a8ad9685c470bb146fc728711e0",
+    "deploy/newsletters/engine/patches/010-optin-confirmation.patch": "e923400b7a536048e45a0db9af09aaf1f07a708c0fdf554db1f3587d559dbff7",
+    "deploy/newsletters/engine/patches/020-dispatch.patch": "d62cd3c9f6f5d9d61f2e06fa4fc809331e5ca78ff603105cba66bf30b93ae17f",
+    "deploy/newsletters/engine/patches/025-list-consent-mode.patch": "e6b21c8d882b9a3932e3278782a1f23ff43003e0abddef28f52fe28b04e95009",
+    "deploy/newsletters/engine/patches/027-public-subscriber-update.patch": "794eff7897ad7de0d55199759b001b8e082d6626a97ad637f5a63e9e420aca89",
+    "deploy/newsletters/engine/patches/030-campaign-revision.patch": "6dd780ecee9ce2a82eb22675157ea1fdfd990c6159d9e517d39856fa652dc078",
+    "deploy/newsletters/engine/patches/035-affirmative-optin.patch": "bd0e82622a84ed02e2f7b868f2b0ff35fa320320d68b320b9e3139d444c018e6",
+    "deploy/newsletters/engine/patches/040-crm-identity.patch": "15d4528cc1809ae2d9e74f94e73e41e76a49a2c2bb93e3bbfc6236188cb90b01",
+    "deploy/newsletters/engine/patches/045-sealed-crm-audiences.patch": "b61b2a92bbd5b7c5be79bad9ec09f63290f60cf61e851c4c375b7befc9337d4f",
+    "deploy/newsletters/engine/patches/050-durable-delivery.patch": "fff28273f3b8f5e4cc76116d7c196c98c313756f00086dda14d0da6e09b27f0c",
+    "deploy/newsletters/engine/patches/055-crm-attribution.patch": "64c901d1a3a4a910afc6a7cc52f3ccf833849ea41e04b618067dece46c81ecd5",
+    "deploy/newsletters/engine/patches/057-archive-preview.patch": "2e8ba1256328f8b701b44e5abd7293814fc81332a649a3753ba222360ec118cc",
+    "deploy/newsletters/engine/patches/058-public-list-embed.patch": "cc0798e212b79a1a12098e6f2a269a9a77a535b948a33ab1d0fe1b3d1e24c837",
+    "deploy/newsletters/engine/patches/060-ses-feedback.patch": "cc4a2648986e3f6078265df5d5e739e18c1ea6877b8f5fc011e7d83a00491fe6",
+    "deploy/newsletters/engine/patches/070-readiness.patch": "aa2626e24b5c38e952d65bc67fe60a40a9b414a06f61cbab1c3d8dd1a77c6cc4",
+    "deploy/newsletters/engine/patches/075-atomic-bulk-delete.patch": "12951717d8e773bd5bc05dfc3341ce9d969c2bb32ee31d9f4f34dcfd1a42da62",
+    "deploy/newsletters/engine/patches/080-consent-revocation-events.patch": "0111f5d8622a209faf746fa608bd61b3366137a2cb0b12d5f6fa2bde6dcf8daa",
+    "deploy/newsletters/engine/patches/085-inapp-operational-events.patch": "39188c79690082696562e41afa444e70eadc069890a457b5c2f912eb30771316",
+    "deploy/newsletters/engine/patches/090-explicit-migrations.patch": "f63f4e65e83b603fe7af0d3628a616b31487033e0e1f8aa913806f1f9444a759",
+    "deploy/newsletters/engine/readiness-tests/README.md": "7a34d788d0f3fbda1a2a167c12befaebc789d459f76aecf79e3cfc8cf19ffb09",
+    "deploy/newsletters/engine/readiness-tests/verify.py": "de27d8cdadef573bbc98c92971206c2eca774ac58b7ba6ddb1ef5c7625fe7487",
+    "deploy/newsletters/engine/tests/audience-parity.py": "a699fef44f41aef695e65d5f83761bfec55fa6ab984e06c57e10d36bd6f52a42",
+    "deploy/newsletters/engine/tests/consent-events.py": "8154d1853351a02f854192d31240ecffe00b044401424379bcf56ae170a6145c",
+    "deploy/newsletters/engine/tests/consent.py": "95f04cdc8cb1096b28af59a5cd89eaf0012f4fbeeb861661173d77df64775692",
+    "deploy/newsletters/engine/tests/crm-identity.py": "4f2e212c812c461566a7174dc5baefb46354ba2dda91b17b9e4237cf176f5a2f",
+    "deploy/newsletters/engine/tests/public-subscriber-update.py": "c5e02604fb5b272a47d8e6fc90df1271dd4be261d88aad82a83e4b2507e86850"
+  },
+  "toolchainArchiveSha256": "353df43a7811ce284c8938b5f3c7df40b7bfb6f56cb165b150bc40b5e2dd541f",
+  "upstreamBinarySha256": "5c767b63d4a7baaf5f79c73cbf7b14bbd2daaddc4c8a9617d7689d0f9e16d967"
+}

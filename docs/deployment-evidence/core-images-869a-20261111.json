@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "kind": "hosted-final-image-qualification-summary",
+  "workflowRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43115202944",
+  "headRevision": "869a17d97288928cbe029e4d02bb019620c9f5e0",
+  "testedMergeRevision": "eb77eaf7e36cb5ae61e84b7ee77bb913022535f2",
+  "artifact": {
+    "id": 13899800283,
+    "bytes": 2062247,
+    "sha256": "1487b4cbd4edac7463f49a453638268860df963df6f8d210f1301a1230849de0"
+  },
+  "candidateSchemaVersion": 2,
+  "components": {
+    "web": {
+      "sourceRevision": "eb77eaf7e36cb5ae61e84b7ee77bb913022535f2",
+      "inputSha256": "bb9404204f5335d140d5287de19d8a350b243fcb782bd2451b8fa14c70e516bf",
+      "inputPolicySha256": "f22157923d418ebb85ebe835fa873f512de44241b18cbfcaa4387b31d6f7ae03",
+      "imageId": "sha256:6250c8200f0c1c4db9189caa744359827bc98aa2280e5350dbdf8883ea1dea24"
+    },
+    "worker": {
+      "sourceRevision": "eb77eaf7e36cb5ae61e84b7ee77bb913022535f2",
+      "inputSha256": "e1c2f85beedacf32bc671317f73d1b6add94b24109a6df696c2e11e9326473e9",
+      "inputPolicySha256": "f22157923d418ebb85ebe835fa873f512de44241b18cbfcaa4387b31d6f7ae03",
+      "imageId": "sha256:01a5bea65281323fc6086be15ffa08714a18907225b54148fe6d9a01cef1310b"
+    },
+    "realtime": {
+      "sourceRevision": "eb77eaf7e36cb5ae61e84b7ee77bb913022535f2",
+      "inputSha256": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+      "inputPolicySha256": "f22157923d418ebb85ebe835fa873f512de44241b18cbfcaa4387b31d6f7ae03",
+      "imageId": "sha256:03f593f1629de95755a628ff5df19168b1e61713013578c38610eaaa3246e0f1"
+    },
+    "migrator": {
+      "sourceRevision": "eb77eaf7e36cb5ae61e84b7ee77bb913022535f2",
+      "inputSha256": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992",
+      "inputPolicySha256": "f22157923d418ebb85ebe835fa873f512de44241b18cbfcaa4387b31d6f7ae03",
+      "imageId": "sha256:8a4d4408fc24653d575b479204c5143104c997213a23708edc35a4c6f88d440d"
+    }
+  },
+  "reports": {
+    "smoke/report.json": {
+      "sha256": "21d89dacfe101b1bc4e47fef7fc9919103dbca7532ecf9730813fc7bc5ae5628",
+      "checks": [
+        {
+          "name": "final-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "runtime-packaging-and-nonroot",
+          "status": "passed"
+        },
+        {
+          "name": "disposable-isolation",
+          "status": "passed"
+        },
+        {
+          "name": "canonical-fresh-and-repeat-migration",
+          "status": "passed"
+        },
+        {
+          "name": "web-startup-http-assets-and-stability",
+          "status": "passed"
+        },
+        {
+          "name": "realtime-unauthenticated-rejection",
+          "status": "passed"
+        },
+        {
+          "name": "worker-durable-job-across-restart",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "registry-smoke/report.json": {
+      "sha256": "d633111baf2d64fee51120e1b5cdb4864595f31ed3795e1689542106b94877cb",
+      "checks": [
+        {
+          "name": "tested-bundle-load-and-source-identities",
+          "status": "passed"
+        },
+        {
+          "name": "owned-loopback-registry-and-capacity",
+          "status": "passed"
+        },
+        {
+          "name": "production-buildx-adapter-definite-tag-absence",
+          "status": "passed"
+        },
+        {
+          "name": "exact-tested-image-publication",
+          "status": "passed"
+        },
+        {
+          "name": "independent-immutable-manifest-and-config-readback",
+          "status": "passed"
+        },
+        {
+          "name": "production-buildx-adapter-readback",
+          "status": "passed"
+        },
+        {
+          "name": "mutable-source-tag-cannot-change-tested-publication",
+          "status": "passed"
+        },
+        {
+          "name": "registry-conflict-preserves-accepted-candidate",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "worker-drain/report.json": {
+      "sha256": "17c80f36029e8254f08a49d825ecce8b45deb5953329832dbd5091d25aaa4a65",
+      "checks": [
+        {
+          "name": "verified-bundle-and-exact-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-fresh-database-and-real-worker",
+          "status": "passed"
+        },
+        {
+          "name": "real-active-handler-held-by-bounded-lock",
+          "status": "passed"
+        },
+        {
+          "name": "sigterm-drains-inflight-and-stops-consuming",
+          "status": "passed"
+        },
+        {
+          "name": "replacement-worker-completes-retained-job",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "worker-overrun/report.json": {
+      "sha256": "89d8523de8f25df17db44208ffd185340d41d006d26a6516e98e444af9d91f98",
+      "checks": [
+        {
+          "name": "verified-bundle-and-exact-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-fresh-database-and-real-worker",
+          "status": "passed"
+        },
+        {
+          "name": "real-expired-job-and-still-blocked-callback",
+          "status": "passed"
+        },
+        {
+          "name": "sigterm-waits-for-expired-callback-without-completing-or-replaying-job",
+          "status": "passed"
+        },
+        {
+          "name": "replacement-worker-completes-retained-job",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "realtime-drain/report.json": {
+      "sha256": "b3b9a98aef54aa424ea0d6fc3249ee07d1f4503eaf01e50e0e33b656c750371b",
+      "checks": [
+        {
+          "name": "verified-bundle-and-exact-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-database-and-native-realtime-listener",
+          "status": "passed"
+        },
+        {
+          "name": "synthetic-live-native-session-and-ticket-fixture",
+          "status": "passed"
+        },
+        {
+          "name": "authenticated-subscription-relay-and-single-use-ticket",
+          "status": "passed"
+        },
+        {
+          "name": "sigterm-cooperative-authenticated-peer-close",
+          "status": "passed"
+        },
+        {
+          "name": "same-image-restart-fresh-authenticated-relay",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "web-switch/report.json": {
+      "sha256": "94da919b7b37f81e4d5f2e0f05db6799defa79742e995c290a8a249a335f2f69",
+      "checks": [
+        {
+          "name": "verified-native-tested-bundle",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-services-and-generated-caddy",
+          "status": "passed"
+        },
+        {
+          "name": "actual-caddy-cas-rejection-preserves-traffic",
+          "status": "passed"
+        },
+        {
+          "name": "real-candidate-readiness-rejection",
+          "status": "passed"
+        },
+        {
+          "name": "actual-web-switch-and-idempotent-readback",
+          "status": "passed"
+        },
+        {
+          "name": "actual-apply-lost-ack-readback-without-replay",
+          "status": "passed"
+        },
+        {
+          "name": "bounded-native-container-memory-observations",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "browser-realtime/report.json": {
+      "sha256": "6d9c95058034044c691e94dfbdea36a14056b2e4227c440c9a825aca3a8d5278",
+      "checks": [
+        {
+          "name": "exact-final-images-and-source-producer-binding",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-tls-browser-and-database-profile",
+          "status": "passed"
+        },
+        {
+          "name": "native-password-identity-no-forged-session",
+          "status": "passed"
+        },
+        {
+          "name": "persistent-tab-reconnect-resync-and-live-notification",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    }
+  },
+  "passedChecks": 42,
+  "boundaryChecks": [
+    {
+      "name": "actual-operations-ui-namespace-registration",
+      "passed": true,
+      "before": {
+        "web": "9d845655a67b34388da64b40ab7a9f949b0d39aab0f63eca04e6a2ea20127d66",
+        "worker": "e1c2f85beedacf32bc671317f73d1b6add94b24109a6df696c2e11e9326473e9",
+        "realtime": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+        "migrator": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992"
+      },
+      "after": {
+        "web": "bb9404204f5335d140d5287de19d8a350b243fcb782bd2451b8fa14c70e516bf",
+        "worker": "e1c2f85beedacf32bc671317f73d1b6add94b24109a6df696c2e11e9326473e9",
+        "realtime": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+        "migrator": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992"
+      }
+    },
+    {
+      "name": "existing-table-controls-ui-copy",
+      "passed": true,
+      "before": {
+        "web": "bb9404204f5335d140d5287de19d8a350b243fcb782bd2451b8fa14c70e516bf",
+        "worker": "e1c2f85beedacf32bc671317f73d1b6add94b24109a6df696c2e11e9326473e9",
+        "realtime": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+        "migrator": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992"
+      },
+      "after": {
+        "web": "c74226890081d1a247f51f051363aa0d7f01a1f21fd97c72b09ee5817ef5fa5f",
+        "worker": "e1c2f85beedacf32bc671317f73d1b6add94b24109a6df696c2e11e9326473e9",
+        "realtime": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+        "migrator": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992"
+      }
+    },
+    {
+      "name": "notification-mail-copy-positive-control",
+      "passed": true,
+      "before": {
+        "web": "bb9404204f5335d140d5287de19d8a350b243fcb782bd2451b8fa14c70e516bf",
+        "worker": "e1c2f85beedacf32bc671317f73d1b6add94b24109a6df696c2e11e9326473e9",
+        "realtime": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+        "migrator": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992"
+      },
+      "after": {
+        "web": "6844cdb2075f93bee2f0e3a56c2af13a1c329bd15c7750053180c9245a9e2af5",
+        "worker": "457674357a0542d5ac303f4a548fae6d693fb19b3fa41b2af1abfd1f87f8b0f6",
+        "realtime": "df501bbb1eda8ec7acb3fb9e95209fe29e39f5333fe8a7c3ab77fd6b68d6a1ef",
+        "migrator": "324d20f4ff8da22d66e5ccccfc8988de67f1d7454d69052896d5b184e6ea8992"
+      }
+    }
+  ],
+  "deploymentAuthorized": false,
+  "notQualified": [
+    "Newsletter engine changes in the follow-up commit.",
+    "Mixed component reuse or worker-only Web compilation avoidance.",
+    "New Operations admin browser journey, collector transport or installed monitoring.",
+    "Cross-version rollback, production registry publication, staging, installation or recovery."
+  ],
+  "fullBrowserRun": {
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43115771620",
+    "conclusion": "success"
+  },
+  "fullSourceRun": {
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43115767552",
+    "stateAtObservation": "PostgreSQL integration tests running; not qualification yet"
+  }
+}
