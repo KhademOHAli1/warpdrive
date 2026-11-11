@@ -230,7 +230,7 @@ def smtp_fixture(engine, mailpit, postgres_bin, directory, stack):
         "campaignRevision": 1,
         "crmIdentity": 1,
         "crmAudiences": 1,
-        "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1,
+        "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1,
     }, "The derived engine contract is required"
     return sql, origin, token, pit
 
