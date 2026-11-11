@@ -8,6 +8,8 @@ def record_publication(api, evidence, release_id):
     ref = api.request(f"repos/{repo}/git/ref/tags/{tag}")
     if published.get("draft") is not False or published.get("prerelease") is not False or published.get("tag_name") != tag or ref["object"].get("type") != "commit" or ref["object"].get("sha") != revision:
         raise GateError("Publication receipts require an independently verified stable published release and exact commit tag")
+    if evidence.get("release_track") == "newsletter":
+        return published["html_url"]
     milestone = evidence["milestone"]["number"]
     current = [i for i in api.pages(f"repos/{repo}/issues?milestone={milestone}&state=all") if not i.get("pull_request")]
     if {i["number"] for i in current} != {i["number"] for i in evidence["issues"]} or any(i.get("state") != "closed" or i.get("state_reason") != "completed" for i in current):

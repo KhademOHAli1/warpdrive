@@ -7,14 +7,21 @@ import json
 import re
 
 from release_gates import TECHNICAL_KINDS, agent_identity, https_evidence, nonempty, repository_path
+from release_newsletter import (
+    PLAN_DIRECTORY, POLICY_PATH, QUALIFICATION_PATH,
+    validate_newsletter_proposal, validate_qualification,
+)
 from release_support import GateError, SHA, load_candidate_json, run, scope_hash, version_tuple
 
 
 def validate_plan(package, plan, archive, items, mapping, policy):
-    if plan.get("release_track") not in (None, "core", "mail"):
+    if plan.get("release_track") not in (None, "core", "mail", "newsletter"):
         raise GateError("Unknown release track")
     if plan.get("schema_version") != 1 or package.get("version") != plan.get("version"):
         raise GateError("Active release plan must match the package version")
+    if plan.get("release_track") == "newsletter":
+        validate_newsletter_proposal(package, plan, archive, items, mapping, policy)
+        return
     version = version_tuple(plan["version"])
     if plan.get("release_track") != "mail":
         if version[:2] == (1, 5) or version == (1, 6, 0):
@@ -118,13 +125,34 @@ def main():
     plan = read("docs/delivery/releases/next.json")
     items = {item["id"]: item for item in read("docs/delivery/roadmap.json")["items"]}
     mapping = read("docs/delivery/issue-map.json")["issues"]
-    policy = read("docs/delivery/mail-release-policy.json")
-    archive_path = f"docs/delivery/releases/mail/{plan['version']}.json"
-    archive = read(archive_path) if plan.get("release_track") == "mail" else None
-    validate_plan(read("package.json"), plan, archive, items, mapping, policy)
+    newsletter = plan.get("release_track") == "newsletter"
+    policy = read(POLICY_PATH if newsletter else "docs/delivery/mail-release-policy.json")
+    plan_directory = PLAN_DIRECTORY if newsletter else "docs/delivery/releases/mail"
+    archive_path = f"{plan_directory}/{plan['version']}.json"
+    archive = read(archive_path) if plan.get("release_track") in ("mail", "newsletter") else None
+    package = read("package.json")
+    validate_plan(package, plan, archive, items, mapping, policy)
     changed = set(run("git", "diff", "--name-only", base, candidate, "--").splitlines())
     # Historical accepted inventories do not become new acceptance claims on every feature push.
     proposal_changed = bool(changed & {"docs/delivery/releases/next.json", archive_path})
+    newsletter_checked = False
+    if newsletter:
+        package_version_changed = (
+            "package.json" in changed
+            and load_candidate_json(base, "package.json").get("version") != package.get("version")
+        )
+        if proposal_changed or package_version_changed or changed & {POLICY_PATH, QUALIFICATION_PATH}:
+            raw = run("git", "show", f"{candidate}:{QUALIFICATION_PATH}", binary=True)
+            if hashlib.sha256(raw).hexdigest() != plan["qualification"]["sha256"]:
+                raise GateError("Newsletter qualification report digest differs from the release plan")
+            validate_qualification(
+                json.loads(raw), items, candidate, policy,
+                lambda cut, source: run("git", "show", f"{cut}:{source}", binary=True),
+                lambda ancestor, descendant: run(
+                    "git", "merge-base", "--is-ancestor", ancestor, descendant
+                ) == "",
+            )
+            newsletter_checked = True
     technical_policy = read("docs/delivery/technical-acceptance-policy.json")
     eligibility = technical_policy["items"]
     human_only = set(technical_policy["human_only_ids"]) | set(
@@ -153,6 +181,7 @@ def main():
         raise GateError("A new technical release proposal needs its full-scope independent source review")
     print(json.dumps({"result": "passed", "revision": candidate, "version": plan["version"],
                       "source_reviews_checked": sorted(validated),
+                      "newsletter_qualification_checked": newsletter_checked,
                       "limits": "Pre-merge proposal coherence only. No issue acceptance, main CI, publication or deployment attested."}))
 
 

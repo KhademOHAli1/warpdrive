@@ -255,6 +255,14 @@ actionlint .github/workflows/delivery.yml .github/workflows/delivery-acceptance.
 
 These standard-library tests do not install dependencies, build the app, start services, or access a database/provider. They exercise importer reconciliation and release gating with isolated API fixtures. The exact-main CI run and actual user acceptance remain required before any release.
 
+## Newsletter source release 1.6.1
+
+On 11 November 2026, the user explicitly authorized version `1.6.1` publication after the newsletter implementation and Main integration. The newsletter track publishes the qualified source for `integration/newsletter-campaign-foundation` and `integration/newsletter-crm-consent-and-delivery` under `newsletter-release-policy.json`.
+
+The per-version plan is `docs/delivery/releases/newsletter/1.6.1.json`. Its active copy at `releases/next.json` must match. The plan pins the raw SHA256 of `newsletter-qualification-1.6.1.json`. That independent report records each canonical criterion, source hashes at the reviewed and selected revisions, actual isolated runtime evidence, successful Main workflows and pending operational work. The runtime gate requires the current Main revision, full application and browser qualification, all four managed CodeQL languages and the blocking-findings check.
+
+The source archive retains the complete canonical commit ledger and identifies other source context. The report and release manifest declare source qualification. Live provider, installation and deployment qualification stay recorded as pending. Canonical issue acceptance keeps its existing records. Publication verifies the version, direct commit tag, release assets and checksums through the standard prepare, draft and publish modes.
+
 ## MAIL task releases: 1.5.x, then the full programme at 1.6.0
 
 The user authorized completion-order MAIL releases on 3 November 2026. Each release-ready mail deliverable receives the next unreserved `1.5.x` patch, starting at `1.5.1`; its MAIL number does not determine the patch number. Version `1.6.0` is reserved for the entire unchanged `programme/mail` scope. Later versions such as `1.6.1` remain available to the ordinary core track and its own gates. Parent/package tracking items are not accepted merely because one child was released.

@@ -18,6 +18,8 @@ The core-CRM release remains independent. Its first stable publication still req
 
 All source-history commits remain accounted for. Selected release scope needs its own acceptance; unrelated retained source remains explicitly unreleased context under the existing track rules. Fresh application/schema delivery cannot be hidden as historical context. See [release operations](release-operations.md) for the authoritative plan schema and publication procedure.
 
+The user authorized the bounded newsletter source release `1.6.1` on 11 November 2026. Its committed `newsletter-release-policy.json` requires independent source qualification, exact Main checks and all four managed CodeQL language analyses. Its release manifest records pending provider and installation qualification and the actual canonical issue states.
+
 ## Single check contexts and exact-revision evidence
 
 Retain one authored source for each of these eight PR check contexts; do not revive a parallel `browser.yml` or `security.yml` job with a duplicate context:

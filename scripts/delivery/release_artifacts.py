@@ -7,7 +7,39 @@ from release_support import GateError, run
 
 PUBLICATION_BODY_MAX_BYTES = 120000
 
+def newsletter_notes(evidence):
+    record = evidence["qualification"]["record"]
+    report_url = f"https://github.com/{evidence['repository']}/blob/{evidence['revision']}/{evidence['qualification']['path']}"
+    rows = [f"# Warpdrive {evidence['version']}", "", "<!-- warpdrive:release-track:newsletter -->",
+            f"Source revision `{evidence['revision']}`.", "", "## Qualified newsletter scope", "",
+            record["summary"], ""]
+    rows += [f"- [#{item['number']} {item['title']}]({item['url']}) · source state `{item['source_state']}`."
+             for item in evidence["issues"]]
+    rows += ["", f"[Source qualification record]({report_url})", "", "## Verified checks", ""]
+    rows += [f"- [{check['name']}]({check['url']})" for check in record["checks"]]
+    rows += [f"- [{check['workflow']}]({check['url']}) · {', '.join(check['jobs'])}"
+             for check in evidence["ci"]]
+    rows += ["", "## Pending operational work", "", record["limitations"], "",
+             "Live provider and installation acceptance remain pending. Deployment requires its own authorization."]
+    context = evidence.get("unreleased_context", [])
+    if context:
+        rows += ["", "## Unreleased source context", "",
+                 "The complete source archive retains the following delivery history and its recorded status."]
+        rows += [f"- [#{item['number']} {item['title']}]({item['url']}) · source state `{item['source_state']}` · source origins {', '.join(item['source_context_origins']).replace('_', ' ')}."
+                 for item in context]
+    rows += ["", "## Complete source-history ledger", ""]
+    for commit in evidence["commits"]:
+        selected = ", ".join(f"#{number}" for number in commit["qualified_issues"]) or "none"
+        context = sorted(set(commit["unreleased_issues"] + commit["unreleased_contributions"]))
+        pending = ", ".join(f"#{number}" for number in context) or "none"
+        rows.append(f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} · qualified scope {selected} · unreleased context {pending}.")
+    rows.append("")
+    return "\n".join(rows)
+
+
 def notes(evidence):
+    if evidence.get("release_track") == "newsletter":
+        return newsletter_notes(evidence)
     rows = [f"# Warpdrive {evidence['version']}", "", f"Revision: `{evidence['revision']}`", f"Milestone: [{evidence['milestone']['title']}]({evidence['milestone']['url']})", "", "## Accepted deliveries", ""]
     if evidence.get("release_track") == "mail":
         rows[2:2] = ["<!-- warpdrive:release-track:mail -->", f"MAIL {evidence['mail_mode']} release; primary issue #{evidence['primary_issue']}.", "This publication accepts only the recorded scope; a technical patch does not accept the full mail programme or a human user journey.", ""]
@@ -56,6 +88,20 @@ def publication_notes(evidence, full_notes=None):
     if len(full.encode("utf-8")) <= PUBLICATION_BODY_MAX_BYTES:
         return full
     base = f"https://github.com/{evidence['repository']}/releases/download/v{evidence['version']}"
+    if evidence.get("release_track") == "newsletter":
+        rows = [f"# Warpdrive {evidence['version']}", "", "<!-- warpdrive:release-track:newsletter -->",
+                f"Source revision `{evidence['revision']}`.", "", "## Qualified newsletter scope", "",
+                evidence["qualification"]["record"]["summary"], ""]
+        rows += [f"- [#{item['number']} {item['title']}]({item['url']})" for item in evidence["issues"]]
+        rows += ["", "## Pending operational work", "", evidence["qualification"]["record"]["limitations"],
+                 "", "## Complete release evidence", "",
+                 f"- [Full release notes]({base}/release-notes.md)",
+                 f"- [Source qualification and complete history]({base}/traceability.json)",
+                 f"- [Artifact checksums]({base}/SHA256SUMS)", ""]
+        summary = "\n".join(rows)
+        if len(summary.encode("utf-8")) > PUBLICATION_BODY_MAX_BYTES:
+            raise GateError("Newsletter publication summary exceeds 120000 UTF-8 bytes")
+        return summary
     rows = [f"# Warpdrive {evidence['version']}", "",
             f"Revision: `{evidence['revision']}`", ""]
     if evidence.get("release_track") == "mail":
