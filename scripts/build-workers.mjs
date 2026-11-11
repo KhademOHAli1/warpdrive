@@ -56,6 +56,43 @@ export function parseBuildArguments(args) {
   return { entries: selectBuildEntries(component), list };
 }
 
+// Discovery and production compilation deliberately share this complete option set.
+export function buildOptionsForEntry(entry, root = process.cwd()) {
+  return {
+    absWorkingDir: resolve(root),
+    entryPoints: [entry.in],
+    outfile: entry.out,
+    bundle: true,
+    platform: "node",
+    format: "esm",
+    target: "node22",
+    packages: "external",
+    preserveSymlinks: true,
+    tsconfig: "tsconfig.json",
+    logLevel: "info",
+  };
+}
+
+export async function discoverBuildGraphs(component, { root = process.cwd(), build } = {}) {
+  const selected = selectBuildEntries(component);
+  const compile = build ?? (await import("esbuild")).build;
+  const graphs = [];
+  for (const entry of selected) {
+    const result = await compile({
+      ...buildOptionsForEntry(entry, root),
+      metafile: true,
+      write: false,
+      logLevel: "silent",
+    });
+    if (!Array.isArray(result.warnings) || result.warnings.length !== 0)
+      throw new Error(`Input graph warnings for ${entry.in}`);
+    if (result.metafile?.inputs === undefined || Object.keys(result.metafile.inputs).length === 0)
+      throw new Error(`Missing input graph for ${entry.in}`);
+    graphs.push({ entry, metafile: result.metafile });
+  }
+  return graphs;
+}
+
 async function main() {
   const options = parseBuildArguments(process.argv.slice(2));
   if (options.list) {
@@ -64,20 +101,7 @@ async function main() {
   }
   // Selection and --list need no installed dependencies and create no build outputs.
   const { build } = await import("esbuild");
-  await Promise.all(
-    options.entries.map((entry) =>
-      build({
-        entryPoints: [entry.in],
-        outfile: entry.out,
-        bundle: true,
-        platform: "node",
-        format: "esm",
-        target: "node22",
-        packages: "external",
-        logLevel: "info",
-      }),
-    ),
-  );
+  await Promise.all(options.entries.map((entry) => build(buildOptionsForEntry(entry))));
 }
 
 if (

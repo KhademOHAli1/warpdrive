@@ -10,6 +10,9 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from test_candidate import fixture as image_fixture
+from test_component_inputs import fixture as input_fixture
+from candidate import create_candidate
 
 from candidate import COMPONENTS, PENDING, SMOKE_CHECKS
 from registry_absence import AbsenceError
@@ -96,6 +99,23 @@ class FakeRegistry:
 
 
 class RegistryCandidateTest(unittest.TestCase):
+    def test_v2_preserves_fresh_component_source_inputs_and_still_refuses_relabeling(self):
+        report, inspections = image_fixture()
+        # Bind the fixture to this test's source revision and actual fake registry IDs.
+        report["expectedRevision"] = REVISION
+        for name in COMPONENTS:
+            report["images"][name]["revision"] = REVISION
+            inspections[name]["Config"]["Labels"]["org.opencontainers.image.revision"] = REVISION
+        self.candidate = create_candidate(REVISION, report, "d" * 64, inspections,
+                                          input_receipt=input_fixture(self.directory))
+        result = self.promote()
+        for name in COMPONENTS:
+            self.assertEqual(result["components"][name]["sourceRevision"], REVISION)
+            self.assertEqual(result["components"][name]["inputSha256"], self.candidate["components"][name]["inputSha256"])
+        self.candidate["components"]["worker"]["sourceRevision"] = "f" * 40
+        with self.assertRaises(RegistryError):
+            self.promote()
+
     def setUp(self):
         scratch = tempfile.TemporaryDirectory(prefix="warpdrive-registry-unit-")
         self.addCleanup(scratch.cleanup)

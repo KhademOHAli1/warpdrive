@@ -35,10 +35,9 @@ const queue = {
   lastProgressAtMs: null,
 };
 const batch = (observations: unknown[] = [component]) => ({
-  schemaVersion: 1,
+  schemaVersion: 2,
   generationId: binding.generationId,
   sequence: 1,
-  eventId,
   observedAtMs: now,
   observations,
 });
@@ -52,7 +51,7 @@ describe("operations batch admission", () => {
     expect(admitted.value.binding).toEqual(binding);
     expect(operationsReceiptKeys(admitted.value)).toEqual({
       sequenceKey: `${binding.installationId}/${binding.sourceId}/${binding.generationId}/1`,
-      eventKey: `${binding.installationId}/${binding.sourceId}/${eventId}`,
+      eventKey: `${binding.installationId}/${binding.sourceId}/${binding.generationId}/1`,
     });
     expect(admit({ ...batch(), workspaceId: binding.installationId })).toEqual({
       ok: false,
@@ -80,12 +79,16 @@ describe("operations batch admission", () => {
       ok: false,
       error: "invalid_payload",
     });
+    expect(admit({ ...batch(), schemaVersion: 1, eventId })).toEqual({
+      ok: false,
+      error: "invalid_payload",
+    });
     expect(
       admitOperationsBatch(JSON.stringify(batch()), { ...binding, sourceId: "invalid" }, now),
     ).toEqual({ ok: false, error: "invalid_source_binding" });
   });
 
-  it("isolates installations, sources and generations in sequence receipts while preserving event dedup across rotations", () => {
+  it("isolates installations, sources and server-enrolled generations in event identity", () => {
     const admitted = admit(batch());
     if (!admitted.ok) throw new Error("Expected fixture admission");
     const first = operationsReceiptKeys(admitted.value);
@@ -95,7 +98,7 @@ describe("operations batch admission", () => {
       batch: { ...admitted.value.batch, generationId: eventId },
     });
     expect(anotherGeneration.sequenceKey).not.toBe(first.sequenceKey);
-    expect(anotherGeneration.eventKey).toBe(first.eventKey);
+    expect(anotherGeneration.eventKey).not.toBe(first.eventKey);
     const anotherInstallation = operationsReceiptKeys({
       ...admitted.value,
       binding: { ...binding, installationId: eventId },
@@ -136,17 +139,19 @@ describe("operations batch admission", () => {
       admit(batch([component, { ...component, state: "failed", reason: "unavailable" }])).ok,
     ).toBe(false);
     expect(admit(batch([component, { ...component, component: "worker" }])).ok).toBe(true);
-    const distinct = Array.from({ length: 100 }, (_, index) => ({
+    const distinct = ["web", "worker", "realtime", "newsletter_engine"].map((component) => ({
       kind: "heartbeat",
-      component: "worker",
-      processGeneration: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+      component,
+      processGeneration: eventId,
       state: "healthy",
       reason: "ok",
       uptimeMs: 100,
       activeCallbacks: 0,
     }));
     expect(admit(batch(distinct)).ok).toBe(true);
-    expect(admit(batch([...distinct, component])).ok).toBe(false);
+    expect(
+      admit(batch([distinct[0], { ...distinct[0], processGeneration: binding.generationId }])).ok,
+    ).toBe(false);
   });
 
   it("admits bounded source skew and old evidence without renewing its timestamp", () => {

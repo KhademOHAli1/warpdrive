@@ -203,7 +203,7 @@ export function operationsObservationKey(observation: OperationsObservation): st
     case "provider":
       return `provider:${observation.provider}`;
     case "heartbeat":
-      return `heartbeat:${observation.component}:${observation.processGeneration}`;
+      return `heartbeat:${observation.component}`;
     case "queue":
       return `queue:${observation.queue}`;
     case "observer":
@@ -215,10 +215,9 @@ export function operationsObservationKey(observation: OperationsObservation): st
 
 export const operationsBatchSchema = z
   .strictObject({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     generationId: identity,
     sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
-    eventId: identity,
     observedAtMs: timestamp,
     observations: z.array(operationsObservationSchema).min(1).max(OPERATIONS_MAX_BATCH_SIZE),
   })
@@ -293,16 +292,18 @@ export function admitOperationsBatch(
   return ok({ binding: binding.data, batch: parsed.data, receivedAtMs });
 }
 
-/** Persist both unique keys and the complete canonical payload fingerprint atomically.
- * These keys provide namespaces, not durable replay enforcement or a signature.
+/** V2 event identity is the server-enrolled generation and monotonic sequence.
+ * Bounded receipt retention cannot safely support arbitrary eternal nonce indexes.
+ * Expired sequences must be rejected using durable source high-water state.
  */
 export function operationsReceiptKeys(value: BoundOperationsBatch): {
   sequenceKey: string;
   eventKey: string;
 } {
   const source = `${value.binding.installationId}/${value.binding.sourceId}`;
+  const eventKey = `${source}/${value.batch.generationId}/${value.batch.sequence}`;
   return {
-    sequenceKey: `${source}/${value.batch.generationId}/${value.batch.sequence}`,
-    eventKey: `${source}/${value.batch.eventId}`,
+    sequenceKey: eventKey,
+    eventKey,
   };
 }

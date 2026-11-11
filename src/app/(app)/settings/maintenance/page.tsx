@@ -3,6 +3,7 @@ import {
   newsletterMaintenanceDates,
   requireNewsletterAdmin,
 } from "@/features/newsletter/admin/server";
+import { OperationsMaintenance } from "@/features/operations/ui/OperationsMaintenance";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 
@@ -13,6 +14,7 @@ export default async function CampaignMaintenancePage() {
     <SettingsPage className="max-w-5xl">
       <SettingsHeading title={L.maintenance} description={L.maintenanceInfo} scope="workspace" />
       <MaintenanceClient {...dates} />
+      <OperationsMaintenance />
     </SettingsPage>
   );
 }

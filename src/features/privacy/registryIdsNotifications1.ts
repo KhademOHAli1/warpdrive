@@ -3,7 +3,7 @@ export const notificationsIds1: string[] = [
   // Shared selectors/rendering cover authored Workflow messages and fixed-code in-app operations.
   "sourceReview:src/constants/notificationDefaults.ts#a7ad4a831d244365c7ccf591df7d02c3a55dccd6e2e9d0ec038dbd4d36eace9b",
   "sourceReview:src/constants/notificationTypes.ts#252be240979a4e8f7901f885f1d064bf56e6bec49b1980c42abb0489f9038521",
-  "sourceReview:src/features/notifications/email/render.ts#eb2f5096878de7cbcfd3be913bdabd941a7b93977ba132a1947b4cea920bd2b7",
+  "sourceReview:src/features/notifications/email/render.ts#934f385677dee72fa82e3e899571da754408fac982228dda4799e2046e892cc5",
   "sourceReview:src/features/notifications/ui/PreferencesForm.tsx#74d6b09cc1355194739da0711a9d3c8715b055e8dea851f531f537b7b0d227d6",
   "sourceReview:src/features/notifications/ui/deepLink.ts#0a509c02cc33d535ab37d1648ac1667b654454a540dd37bf55878290ca3ba8d6",
   "sourceReview:src/features/notifications/ui/notificationText.ts#4374b4e2b31507a1f8adcbaa1082ea5a82ada6445f08d7281efa67371ce740cd",
@@ -34,4 +34,11 @@ export const notificationsIds1: string[] = [
   "derived:src/app/(app)/settings/notifications/usePreferenceChanges.ts",
   "sourceReview:src/app/(app)/settings/notifications/usePreferenceChanges.ts#2faaf333050df2d8ba0871b9a8f121b5195ac9b5f1d2a57211c06d0258301a06",
   "writer:src/app/(app)/settings/notifications/usePreferenceChanges.ts#delete:type",
+  "sourceReview:src/features/notifications/email/catalog.ts#bdce0237614d190dcc7a7ea5b9ebc56d04eadc493387b51ee5c31ab2ba6fd1b4",
+  "sourceReview:src/features/notifications/messages/notificationEmail.en.json#1a5f6c07bb1889fbd843e32859be2c9f2acda8909a0d44c14662a482144ddfd8",
+  "sourceReview:src/features/notifications/messages/notificationEmail.de.json#629a1101a91eb1c14e1b382ea5c8d2bdc5a5ab2f2894cce86d2b21e6ac4ac509",
+  "sourceReview:src/features/notifications/messages/notificationEmail.fa.json#9ab672a5a57a8577f499fb5c0ca3b3020cc2e05011677155ee46c6cedead5c50",
+  "sourceReview:src/features/notifications/messages/notifications.en.json#fe410223be673fc28a4c4da28107620bb62afe47c2c0558c4e5057b0d939ad6a",
+  "sourceReview:src/features/notifications/messages/notifications.de.json#4f9ebb28829812f35fd62e24f35f73eca88620e8083e485756c90cb961aac442",
+  "sourceReview:src/features/notifications/messages/notifications.fa.json#a6c16e7aa245444e4679920310d45a133c71135e55d576ec4c53f6a3f308fb29",
 ];

@@ -1,0 +1,51 @@
+{
+  "open": "باز کردن: {link}",
+  "openAction": "باز کردن در Warpdrive",
+  "recipientFallback": "کاربر گرامی",
+  "activityFallback": "فعالیت",
+  "mention": {
+    "subject": "در Warpdrive از شما نام برده شد",
+    "line": "{recipient}، در Warpdrive از شما نام برده شده است."
+  },
+  "activity_assigned": {
+    "subject": "فعالیتی در Warpdrive به شما واگذار شد",
+    "line": "{recipient}، یک فعالیت به شما واگذار شده است."
+  },
+  "activity_reminder": {
+    "subject": "یادآوری: موعد انجام {activitySubject} نزدیک است",
+    "line": "{recipient}، موعد انجام فعالیت «{activitySubject}» نزدیک است."
+  },
+  "deal_followed_update": {
+    "subject": "تغییری در فرصت فروشِ دنبال‌شده ایجاد شد",
+    "line": "{recipient}، یکی از فرصت‌های فروشی که دنبال می‌کنید به‌روز شده است."
+  },
+  "email_open": {
+    "subject": "ایمیل شما باز شد",
+    "line": "{recipient}، ایمیل شما باز شده است."
+  },
+  "email_click": {
+    "subject": "روی پیوندی در ایمیل شما کلیک شد",
+    "line": "{recipient}، روی یکی از پیوندهای ایمیل شما کلیک شده است."
+  },
+  "deal_won": {
+    "subject": "فرصت فروش با موفقیت بسته شد",
+    "line": "{recipient}، وضعیت یک فرصت فروش به «موفق» تغییر کرد."
+  },
+  "deal_lost": {
+    "subject": "فرصت فروش ناموفق شد",
+    "line": "{recipient}، وضعیت یک فرصت فروش به «ناموفق» تغییر کرد."
+  },
+  "comment_reply": {
+    "subject": "به نظر شما در Warpdrive پاسخ داده شد",
+    "line": "{recipient}، به نظر شما پاسخی داده شده است."
+  },
+  "deal_email_received": {
+    "subject": "ایمیل تازه برای فرصت فروش",
+    "subjectWithTitle": "ایمیل تازه برای فرصت فروش: {subject}",
+    "line": "{recipient}، ایمیل تازه‌ای برای یکی از فرصت‌های فروشی که دنبال می‌کنید رسیده است."
+  },
+  "generic": {
+    "subject": "اعلان Warpdrive",
+    "line": "{recipient}، اعلان تازه‌ای دارید."
+  }
+}

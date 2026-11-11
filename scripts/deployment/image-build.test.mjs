@@ -5,7 +5,12 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { parseBuildArguments, selectBuildEntries } from "../build-workers.mjs";
+import {
+  buildOptionsForEntry,
+  discoverBuildGraphs,
+  parseBuildArguments,
+  selectBuildEntries,
+} from "../build-workers.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -79,6 +84,46 @@ test("the CLI entrypoint still runs when invoked through a symlinked scripts dir
     assert.deepEqual(readdirSync(isolated), ["scripts"]);
   } finally {
     rmSync(isolated, { recursive: true, force: true });
+  }
+});
+
+test("discovery shares production entry/options and explicitly never writes bundles", async () => {
+  const calls = [];
+  const graphs = await discoverBuildGraphs("worker", {
+    root,
+    build: (options) => {
+      calls.push(options);
+      return Promise.resolve({
+        warnings: [],
+        metafile: { inputs: { [options.entryPoints[0]]: { bytes: 1, imports: [] } } },
+      });
+    },
+  });
+  assert.deepEqual(
+    graphs.map((graph) => graph.entry),
+    selectBuildEntries("worker"),
+  );
+  for (const [index, entry] of selectBuildEntries("worker").entries()) {
+    assert.deepEqual(calls[index], {
+      ...buildOptionsForEntry(entry, root),
+      metafile: true,
+      write: false,
+      logLevel: "silent",
+    });
+    assert.equal(calls[index].packages, "external");
+    assert.equal(calls[index].preserveSymlinks, true);
+  }
+});
+
+test("warnings and missing metafiles cannot be treated as complete fresh input graphs", async () => {
+  for (const result of [
+    { warnings: [{}], metafile: { inputs: { a: {} } } },
+    { warnings: [] },
+    { warnings: [], metafile: { inputs: {} } },
+  ]) {
+    await assert.rejects(
+      discoverBuildGraphs("realtime", { root, build: () => Promise.resolve(result) }),
+    );
   }
 });
 

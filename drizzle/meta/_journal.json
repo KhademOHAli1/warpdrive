@@ -827,6 +827,13 @@
       "when": 1794394517750,
       "tag": "0117_newsletter_operational_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1794434085411,
+      "tag": "0118_operations_monitoring",
+      "breakpoints": true
     }
   ]
 }

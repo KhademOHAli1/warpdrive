@@ -15,6 +15,18 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
     [
+      "operations_installation",
+      "operations_sources",
+      "operations_receipts",
+      "operations_current",
+      "operations_incidents",
+      "operations_transitions",
+    ],
+    "unsupported",
+    "Installation/source/process/recovery identifiers, typed operational observations, fingerprints and incident history require dedicated subject/provenance and safe-projection review. Opaque identifiers and bounded product-history pruning do not establish anonymization, subject discovery or physical/backup erasure. Native administrator product reads and durable source high-water are not privacy-case scope or lifecycle adapters.",
+  ),
+  ...group(
+    [
       "calendars",
       "calendar_members",
       "activity_reminder_settings",

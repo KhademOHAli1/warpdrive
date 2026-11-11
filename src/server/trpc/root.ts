@@ -15,6 +15,7 @@ import { leadRouter } from "@/features/leads/leadRouter";
 import { newsletterRouter } from "@/features/newsletter/router";
 import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
+import { operationsRouter } from "@/features/operations/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
 import { versionRouter } from "@/features/release/router";
 import { savedFiltersRouter } from "@/features/saved-filters/router";
@@ -47,6 +48,7 @@ export const appRouter = router({
   newsletter: newsletterRouter,
   notifications: notificationsRouter,
   oauth: oauthRouter,
+  operations: operationsRouter,
   savedFilters: savedFiltersRouter,
   search: searchRouter,
   stats: statsRouter,

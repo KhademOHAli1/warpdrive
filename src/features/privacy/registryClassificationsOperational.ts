@@ -46,7 +46,7 @@ export const operationalClassifications = {
     retention:
       "No universal notification retention mandate; metadata, queued payloads and sent copies require reviewed policy.",
     externalEffects:
-      "Other notification kinds can use pg-boss and the configured delivery boundary; external delivery requires installation proof. The newsletter_operational kind calls only the direct transactional in-app producer and ID-only realtime event. Its default, saved and resolved email preferences are forced false, including stale stored values; email admission therefore rejects it. Generic email rendering is a fallback, not permission to enqueue or submit it.",
+      "The standalone EN/DE/FA mail catalog preserves existing template text, English/blank-translation fallback, recipient/activity-subject/link interpolation, HTML escaping and Persian bidi isolation. The UI catalog re-exports the same notifications.email namespace, while worker rendering no longer imports unrelated UI messages. This source-dependency extraction adds no notification type, recipient selection, queued delivery, provider operation or privacy capability. Other notification kinds can use pg-boss and the configured delivery boundary; external delivery requires installation proof. The newsletter_operational kind calls only the direct transactional in-app producer and ID-only realtime event. Its default, saved and resolved email preferences are forced false, including stale stored values; email admission therefore rejects it. Generic email rendering is a fallback, not permission to enqueue or submit it.",
     erasureTask: "DPL-16",
   },
   privacy: {

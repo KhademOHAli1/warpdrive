@@ -266,7 +266,14 @@ export default tseslint.config(
 
   // Node tooling shares one explicit type graph while retaining the type-aware rules above.
   {
-    files: ["*.mjs", "scripts/*.mjs", ".env.example.test.ts"],
+    files: [
+      "*.mjs",
+      "scripts/*.mjs",
+      "scripts/deployment/component_inputs.mjs",
+      "scripts/deployment/component_inputs.test.mjs",
+      "scripts/deployment/component_boundaries.mjs",
+      ".env.example.test.ts",
+    ],
     languageOptions: {
       parserOptions: {
         projectService: false,

@@ -64,6 +64,28 @@ jobs:
             --migration-bytes 1073741824 --temporary-bytes 4294967296 \
             --reserve-bytes 4294967296
           test "$(uname -m)" = x86_64
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Install locked source tooling on the disposable runner
+        env:
+          NODE_ENV: development
+          BUN_OPTIONS: --no-env-file
+        run: bun --no-env-file install --frozen-lockfile
+      - name: Verify fresh component inputs before image compilation
+        run: |
+          node --test scripts/deployment/component_inputs.test.mjs
+          mkdir -p "$RUNNER_TEMP/production-images"
+          node scripts/deployment/component_boundaries.mjs \
+            --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
+            --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin \
+            > "$RUNNER_TEMP/production-images/component-boundaries.json"
+          node scripts/deployment/component_inputs.mjs \
+            --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
+            --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin \
+            > "$RUNNER_TEMP/production-images/component-inputs.json"
+          python3 scripts/deployment/component_inputs.py \
+            --receipt "$RUNNER_TEMP/production-images/component-inputs.json" --root "$GITHUB_WORKSPACE"
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
       - name: Build final Web image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -143,6 +165,7 @@ jobs:
             --revision "$REVISION" \
             --report "$RUNNER_TEMP/production-images/smoke/report.json" \
             --inspections "$RUNNER_TEMP/production-images/inspections" \
+            --inputs "$RUNNER_TEMP/production-images/component-inputs.json" \
             --output "$RUNNER_TEMP/production-images/candidate.json"
       - name: Bundle the exact tested image IDs without rebuilding
         run: |
@@ -176,15 +199,11 @@ jobs:
           python3 scripts/deployment/web_switch_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/web-switch"
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-        with:
-          bun-version-file: package.json
-      - name: Install locked source producer and browser tooling on the disposable runner
+      - name: Install locked browser tooling on the disposable runner
         env:
           NODE_ENV: development
           BUN_OPTIONS: --no-env-file
         run: |
-          bun --no-env-file install --frozen-lockfile
           bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
           bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
       - name: Verify persistent browser recovery after realtime-only restart

@@ -60,9 +60,13 @@ import integrationsPersian from "@/features/integrations/messages/integrations.f
 import leadsGerman from "@/features/leads/messages/leads.de.json";
 import leadsEnglish from "@/features/leads/messages/leads.en.json";
 import leadsPersian from "@/features/leads/messages/leads.fa.json";
+import { notificationEmailMessagesForLocale } from "@/features/notifications/email/catalog";
 import notificationsGerman from "@/features/notifications/messages/notifications.de.json";
 import notificationsEnglish from "@/features/notifications/messages/notifications.en.json";
 import notificationsPersian from "@/features/notifications/messages/notifications.fa.json";
+import operationsGerman from "@/features/operations/messages/operations.de.json";
+import operationsEnglish from "@/features/operations/messages/operations.en.json";
+import operationsPersian from "@/features/operations/messages/operations.fa.json";
 import pipelineLifecycleGerman from "@/features/pipelines/messages/lifecycle.de.json";
 import pipelineLifecycleEnglish from "@/features/pipelines/messages/lifecycle.en.json";
 import pipelineLifecyclePersian from "@/features/pipelines/messages/lifecycle.fa.json";
@@ -125,7 +129,8 @@ const english = {
   sales: salesEnglish,
   filters: filtersEnglish,
   tableControls: tableEnglish,
-  notifications: notificationsEnglish,
+  notifications: { ...notificationsEnglish, email: notificationEmailMessagesForLocale("en") },
+  operations: operationsEnglish,
   privacyRequest: privacyEnglish,
 };
 const persian: typeof english = mergeMessages(english, {
@@ -158,7 +163,8 @@ const persian: typeof english = mergeMessages(english, {
   sales: salesPersian,
   filters: filtersPersian,
   tableControls: tablePersian,
-  notifications: notificationsPersian,
+  notifications: { ...notificationsPersian, email: notificationEmailMessagesForLocale("fa") },
+  operations: operationsPersian,
   privacyRequest: privacyPersian,
 });
 const german: typeof english = mergeMessages(english, {
@@ -191,7 +197,8 @@ const german: typeof english = mergeMessages(english, {
   sales: salesGerman,
   filters: filtersGerman,
   tableControls: tableGerman,
-  notifications: notificationsGerman,
+  notifications: { ...notificationsGerman, email: notificationEmailMessagesForLocale("de") },
+  operations: operationsGerman,
   privacyRequest: privacyGerman,
 });
 const catalogs = { en: english, fa: persian, de: german } satisfies Record<Locale, typeof english>;

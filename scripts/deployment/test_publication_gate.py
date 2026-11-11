@@ -9,7 +9,7 @@ from unittest.mock import patch
 import zipfile
 
 import publication_gate as gate
-from bundle import ARCHIVE, MANIFEST, METADATA_FILES, create_bundle
+from bundle import ARCHIVE, MANIFEST, METADATA_FILES, create_bundle, metadata_files
 from candidate import CandidateError
 from test_bundle import FakeDocker, write_candidate
 from test_candidate import SHA
@@ -106,6 +106,29 @@ class AdmissionTests(unittest.TestCase):
 
 
 class DownloadTests(unittest.TestCase):
+    def test_v2_api_bound_archive_retains_input_receipts_and_rejects_self_consistent_substitution(self):
+        source = self.root / "v2-source"
+        write_candidate(source, version=2)
+        producer = self.admission["producer"]
+        bundle = self.root / "v2-bundle"
+        create_bundle(source, bundle, expected_revision=SHA, docker=FakeDocker(),
+                      origin={"kind": "github-actions", "repository": gate.REPO, **producer})
+        archive = self.root / "v2-source.zip"
+        with zipfile.ZipFile(archive, "w") as output:
+            for name in (*metadata_files(2), ARCHIVE, MANIFEST):
+                output.write(bundle / name, name)
+        self.raw = archive.read_bytes()
+        self.admission["artifact"].update({"digest": "sha256:" + hashlib.sha256(self.raw).hexdigest(), "sizeBytes": len(self.raw)})
+        destination = self.root / "v2-downloaded"
+        loaded = gate.download_verified(self.admission, destination, expected_revision=SHA, runner=self.runner)
+        self.assertEqual(loaded["candidate"]["schemaVersion"], 2)
+        self.assertTrue((destination / "component-inputs.json").is_file())
+        manifest = json.loads((destination / MANIFEST).read_text())
+        manifest["releaseRevision"] = "f" * 40
+        (destination / MANIFEST).write_text(json.dumps(manifest))
+        with self.assertRaises(CandidateError):
+            gate.verify_downloaded(self.admission, destination, expected_revision=SHA)
+
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()
         self.addCleanup(self.scratch.cleanup)

@@ -92,7 +92,7 @@ async function command(expected) {
   }, 60000);
 }
 async function observation() {
-  return page.evaluate(() => window.__warpdriveRealtimeProof);
+  return await page.evaluate(() => window.__warpdriveRealtimeProof);
 }
 function notificationOps(values) {
   return values.filter((value) =>

@@ -114,10 +114,9 @@ describe("operations freshness projection", () => {
     ];
     const admitted = admitOperationsBatch(
       JSON.stringify({
-        schemaVersion: 1,
+        schemaVersion: 2,
         generationId,
         sequence: 1,
-        eventId: identity,
         observedAtMs: now,
         observations,
       }),
