@@ -42,6 +42,7 @@ export const studioTriggers: Record<
   "record.created_or_updated": { key: "upserted", icon: "pencil-plus" },
   "newsletter.identity.verified": { key: "newsletter.identity.verified", icon: "mail-plus" },
   "newsletter.consent.confirmed": { key: "newsletter.consent.confirmed", icon: "mail-plus" },
+  "newsletter.consent.revoked": { key: "newsletter.consent.revoked", icon: "mail-plus" },
 };
 
 export const studioActionGroups = ["data", "ai", "flow", "core", "human", "other"] as const;

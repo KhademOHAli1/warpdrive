@@ -83,6 +83,7 @@ describe("Listmonk server boundary", () => {
             sesFeedback: 1,
             readiness: 1,
             atomicBulk: 1,
+            consentEvents: 1,
           },
         }),
       )

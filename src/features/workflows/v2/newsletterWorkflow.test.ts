@@ -41,4 +41,22 @@ describe("newsletter workflow contracts", () => {
       }),
     ).toBe(false);
   });
+
+  it("registers revocation triggers with an optional positive numeric list ID", () => {
+    expect(validWorkflowV2Trigger({ type: "newsletter.consent.revoked", config: {} })).toBe(true);
+    expect(
+      validWorkflowV2Trigger({ type: "newsletter.consent.revoked", config: { listId: 4 } }),
+    ).toBe(true);
+    for (const listId of [0, -1, 1.5, "4", 2_147_483_648]) {
+      expect(
+        validWorkflowV2Trigger({ type: "newsletter.consent.revoked", config: { listId } }),
+      ).toBe(false);
+    }
+    expect(
+      validWorkflowV2Trigger({
+        type: "newsletter.consent.revoked",
+        config: { email: "arbitrary@example.test" },
+      }),
+    ).toBe(false);
+  });
 });

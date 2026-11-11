@@ -21,13 +21,13 @@ const nativeObjects = new Set(["deal", "lead", "person", "organization", "activi
 function validNativeObject(value: unknown) {
   return typeof value === "string" && nativeObjects.has(value);
 }
-const confirmedTriggerConfig = z.strictObject({ listId: newsletterListId.optional() });
+const consentTriggerConfig = z.strictObject({ listId: newsletterListId.optional() });
 const identityTriggerConfig = z.strictObject({});
 export function validWorkflowV2Trigger(trigger: WorkflowV2Trigger): boolean {
   const { type, config } = trigger;
   if (isNewsletterTrigger(type))
     return (
-      type === "newsletter.consent.confirmed" ? confirmedTriggerConfig : identityTriggerConfig
+      type === "newsletter.identity.verified" ? identityTriggerConfig : consentTriggerConfig
     ).safeParse(config).success;
   if (type === "schedule") return validSchedule(config);
   if (type === "webhook") {

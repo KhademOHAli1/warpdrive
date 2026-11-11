@@ -1,5 +1,6 @@
 import type { Db } from "@/db/client";
 import type { WorkflowV2Adapters } from "@/features/blocks/contracts";
+import { newsletterListId } from "@/features/blocks/schemas";
 import type { PersonNewsletterEvent } from "@/features/newsletter/identity/contracts";
 import { admitWorkflowV2Event } from "./events";
 import { newsletterPersonVisible } from "./newsletterAuthority";
@@ -10,7 +11,10 @@ export function admitNewsletterWorkflowEvent(
   event: PersonNewsletterEvent,
   signal: AbortSignal,
 ) {
-  if (event.event === "newsletter.consent.confirmed" && event.listId === null)
+  if (
+    event.event !== "newsletter.identity.verified" &&
+    !newsletterListId.safeParse(event.listId).success
+  )
     return Promise.resolve([]);
   return admitWorkflowV2Event(
     db,

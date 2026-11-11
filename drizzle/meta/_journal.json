@@ -813,6 +813,13 @@
       "when": 1794355637086,
       "tag": "0115_newsletter_attribution",
       "breakpoints": true
+    },
+    {
+      "idx": 116,
+      "version": "7",
+      "when": 1794359459431,
+      "tag": "0116_newsletter_consent_revocations",
+      "breakpoints": true
     }
   ]
 }

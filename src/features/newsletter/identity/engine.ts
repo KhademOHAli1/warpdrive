@@ -26,6 +26,15 @@ const grant = z.object({
   email: z.email(),
   purposeListId: id,
 });
+const revocation = z.object({
+  id: uuid,
+  grantUuid: uuid,
+  bindingUuid: uuid,
+  purposeListId: id,
+  scopeDigest: z.string().regex(/^[0-9a-f]{64}$/),
+  occurredAt: instant,
+});
+export type EngineConsentRevocation = z.output<typeof revocation>;
 const erasure = z.object({ id: uuid, bindingId: uuid, erasedAt: instant });
 const minimalLists = z.object({
   results: z.array(
@@ -74,7 +83,7 @@ async function missing<T>(read: () => Promise<T>): Promise<T | null> {
 export async function connectNewsletterIdentity(signal: AbortSignal) {
   const client = createListmonkClient(signal);
   const capability = z
-    .object({ crmIdentity: z.literal(1) })
+    .object({ crmIdentity: z.literal(1), consentEvents: z.literal(1) })
     .safeParse(await client.json("GET", "/api/warpdrive-capabilities"));
   if (!capability.success) throw new TRPCError({ code: "PRECONDITION_FAILED" });
   return {
@@ -93,6 +102,15 @@ export async function connectNewsletterIdentity(signal: AbortSignal) {
       z
         .array(grant)
         .parse(await client.json("POST", `${prefix}/grants`, { body: { bindingIds, listId } })),
+    revocations: async () =>
+      z
+        .array(revocation)
+        .max(50)
+        .parse(await client.json("GET", `${prefix}/revocations`)),
+    acknowledgeRevocations: async (ids: string[]) =>
+      z
+        .literal(true)
+        .parse(await client.json("POST", `${prefix}/revocations/ack`, { body: { ids } })),
     erasure: (id: string) =>
       missing(async () => erasure.parse(await client.json("GET", `${prefix}/erasures/${id}`))),
     erase: async (id: string, bindingId: string) =>

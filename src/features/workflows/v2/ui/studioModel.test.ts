@@ -167,4 +167,27 @@ describe("workflow studio graph authoring", () => {
     });
     expect(choices.some((choice) => choice.group === "other")).toBe(false);
   });
+
+  it("offers only the governed revocation trigger fields with their persisted types", () => {
+    const graph: WorkflowV2Definition = {
+      schemaVersion: 2,
+      trigger: { type: "newsletter.consent.revoked", config: { listId: 4 } },
+      nodes: [node("check", "FILTER")],
+      edges: [],
+      entryNodeIds: ["check"],
+    };
+    const { choices, references } = studioVariables(graph, "check", {}, labels);
+    expect(choices.map(({ path, type }) => ({ path, type }))).toEqual([
+      { path: "", type: "object" },
+      { path: "personId", type: "string" },
+      { path: "linkId", type: "string" },
+      { path: "listId", type: "number" },
+      { path: "occurredAt", type: "instant" },
+    ]);
+    expect(references.get("$trigger:listId")).toEqual({
+      kind: "reference",
+      nodeId: "$trigger",
+      path: ["listId"],
+    });
+  });
 });

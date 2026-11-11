@@ -16,10 +16,16 @@ import { advanceWorkflowV2Run } from "./runner";
 
 const signal = () => AbortSignal.timeout(10_000);
 
-async function publish(db: Db, actor: PermSetUser, listId: number, adapters: WorkflowV2Adapters) {
+async function publish(
+  db: Db,
+  actor: PermSetUser,
+  listId: number | undefined,
+  adapters: WorkflowV2Adapters,
+  type: PersonNewsletterEvent["event"] = "newsletter.consent.confirmed",
+) {
   const definition: WorkflowV2Definition = {
     schemaVersion: 2,
-    trigger: { type: "newsletter.consent.confirmed", config: { listId } },
+    trigger: { type, config: listId === undefined ? {} : { listId } },
     nodes: [
       {
         id: "check",
@@ -94,6 +100,62 @@ it("admits a verified event once for its selected list and rechecks Person acces
       ["$workflowV2", "eventName", "linkId", "listId", "occurredAt", "personId"].sort(),
     );
     await db.update(persons).set({ deletedAt: new Date() }).where(eq(persons.id, personId));
+    expect((await advanceWorkflowV2Run(db, runId, adapters, signal())).status).toBe("cancelled");
+    expect(
+      await admitNewsletterWorkflowEvent(db, adapters, { ...event, id: randomUUID() }, signal()),
+    ).toEqual([]);
+  });
+});
+
+it("matches a revoked consent event by list, replays it once and fences a deleted Person", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, { isAdmin: true });
+    const actor: PermSetUser = {
+      id: user.id,
+      type: "admin",
+      isActive: true,
+      flags: new Set(),
+      groupIds: new Set(),
+    };
+    const personId = randomUUID();
+    await db
+      .insert(persons)
+      .values({ id: personId, name: "Revoked contact", ownerId: user.id, visibilityLevel: "all" });
+    const adapters: WorkflowV2Adapters = {
+      native: () => Promise.resolve(err("unexpected_native")),
+      external: () => Promise.resolve(err({ id: "unexpected_external" })),
+      readiness: () => Promise.resolve({ state: "ready" }),
+    };
+    await publish(db, actor, 4, adapters, "newsletter.consent.revoked");
+    await publish(db, actor, undefined, adapters, "newsletter.consent.revoked");
+    await publish(db, actor, 5, adapters, "newsletter.consent.revoked");
+    await publish(db, actor, 4, adapters);
+    const event: PersonNewsletterEvent = {
+      id: randomUUID(),
+      personId,
+      linkId: randomUUID(),
+      listId: 4,
+      event: "newsletter.consent.revoked",
+      occurredAt: new Date(Date.now() + 100),
+      originRunId: null,
+    };
+    const admitted = await admitNewsletterWorkflowEvent(db, adapters, event, signal());
+    expect(admitted).toHaveLength(2);
+    expect(new Set(await admitNewsletterWorkflowEvent(db, adapters, event, signal()))).toEqual(
+      new Set(admitted),
+    );
+    const runs = await db.select().from(workflowV2Runs);
+    expect(runs).toHaveLength(2);
+    expect(
+      runs.every((run) => run.trigger.eventName === event.event && run.trigger.listId === 4),
+    ).toBe(true);
+    expect(
+      await admitNewsletterWorkflowEvent(db, adapters, { ...event, listId: null }, signal()),
+    ).toEqual([]);
+
+    await db.update(persons).set({ deletedAt: new Date() }).where(eq(persons.id, personId));
+    const [runId] = admitted;
+    if (runId === undefined) throw new Error("Revoked event was not admitted");
     expect((await advanceWorkflowV2Run(db, runId, adapters, signal())).status).toBe("cancelled");
     expect(
       await admitNewsletterWorkflowEvent(db, adapters, { ...event, id: randomUUID() }, signal()),

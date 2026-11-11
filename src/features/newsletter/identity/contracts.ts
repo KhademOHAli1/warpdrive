@@ -44,7 +44,10 @@ export type PersonNewsletterEvent = {
   personId: string;
   linkId: string;
   listId: number | null;
-  event: "newsletter.identity.verified" | "newsletter.consent.confirmed";
+  event:
+    | "newsletter.identity.verified"
+    | "newsletter.consent.confirmed"
+    | "newsletter.consent.revoked";
   occurredAt: Date;
   originRunId: string | null;
 };

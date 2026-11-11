@@ -133,9 +133,15 @@ export const newsletterPersonEvents = pgTable(
     originRunId: uuid("origin_run_id"),
     event: text("event")
       .notNull()
-      .$type<"newsletter.identity.verified" | "newsletter.consent.confirmed">(),
+      .$type<
+        | "newsletter.identity.verified"
+        | "newsletter.consent.confirmed"
+        | "newsletter.consent.revoked"
+      >(),
     occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+    grantId: uuid("grant_id"),
+    sourceDigest: text("source_digest"),
   },
   (t) => [
     index("newsletter_person_events_link_idx").on(t.linkId, t.occurredAt),
@@ -143,10 +149,15 @@ export const newsletterPersonEvents = pgTable(
       .on(t.occurredAt, t.id)
       .where(sql`${t.deliveredAt} IS NULL`),
     check(
+      "newsletter_person_revocation_scope_ck",
+      sql`(${t.event} = 'newsletter.consent.revoked' AND ${t.grantId} IS NOT NULL AND ${t.sourceDigest} IS NOT NULL AND ${t.sourceDigest} ~ '^[0-9a-f]{64}$')
+        OR (${t.event} <> 'newsletter.consent.revoked' AND ${t.grantId} IS NULL AND ${t.sourceDigest} IS NULL)`,
+    ),
+    check(
       "newsletter_person_event_type_ck",
       sql`
       (${t.event} = 'newsletter.identity.verified' AND ${t.listId} IS NULL)
-      OR (${t.event} = 'newsletter.consent.confirmed' AND ${t.listId} IS NOT NULL AND ${t.listId} > 0)
+      OR (${t.event} IN ('newsletter.consent.confirmed', 'newsletter.consent.revoked') AND ${t.listId} IS NOT NULL AND ${t.listId} > 0)
     `,
     ),
   ],

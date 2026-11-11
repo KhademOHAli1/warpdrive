@@ -37,6 +37,7 @@ const caps = {
   sesFeedback: 1,
   readiness: 1,
   atomicBulk: 1,
+  consentEvents: 1,
 };
 const uuid = "a21453b2-6289-4a40-949b-2d2b7a53a176";
 const date = "2026-10-06T17:28:00Z";

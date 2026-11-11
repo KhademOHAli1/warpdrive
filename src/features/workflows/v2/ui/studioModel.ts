@@ -332,11 +332,12 @@ function triggerOutputs(
   const config = trigger.config;
   if (
     trigger.type === "newsletter.identity.verified" ||
-    trigger.type === "newsletter.consent.confirmed"
+    trigger.type === "newsletter.consent.confirmed" ||
+    trigger.type === "newsletter.consent.revoked"
   ) {
     add(["personId"], labels.output, "string");
     add(["linkId"], labels.output, "string");
-    if (trigger.type === "newsletter.consent.confirmed") add(["listId"], labels.output, "number");
+    if (trigger.type !== "newsletter.identity.verified") add(["listId"], labels.output, "number");
     add(["occurredAt"], labels.output, "instant");
     return;
   }

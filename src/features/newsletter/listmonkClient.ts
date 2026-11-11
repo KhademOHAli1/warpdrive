@@ -20,6 +20,7 @@ const consentContract = z.object({
   sesFeedback: z.literal(1),
   readiness: z.literal(1),
   atomicBulk: z.literal(1),
+  consentEvents: z.literal(1),
 });
 
 export class NewsletterConnectionError extends Error {

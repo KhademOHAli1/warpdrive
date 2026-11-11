@@ -58,7 +58,9 @@ export const personNewsletterMessages = {
     events: {
       "newsletter.identity.verified": "Newsletter identity verified",
       "newsletter.consent.confirmed": "Newsletter subscription confirmed",
+      "newsletter.consent.revoked": "Newsletter consent revoked",
     },
+    acceptedCampaign: "Campaign accepted by the mail relay · {campaign}",
   },
   de: {
     attribution: {
@@ -121,7 +123,9 @@ export const personNewsletterMessages = {
     events: {
       "newsletter.identity.verified": "Newsletter-Identität verifiziert",
       "newsletter.consent.confirmed": "Newsletter-Abonnement bestätigt",
+      "newsletter.consent.revoked": "Newsletter-Einwilligung widerrufen",
     },
+    acceptedCampaign: "Kampagne vom Mailserver angenommen · {campaign}",
   },
   fa: {
     attribution: {
@@ -181,6 +185,8 @@ export const personNewsletterMessages = {
     events: {
       "newsletter.identity.verified": "هویت مشترک خبرنامه تأیید شد",
       "newsletter.consent.confirmed": "اشتراک خبرنامه تأیید شد",
+      "newsletter.consent.revoked": "رضایت دریافت خبرنامه لغو شد",
     },
+    acceptedCampaign: "کمپین توسط سرور ایمیل پذیرفته شد · {campaign}",
   },
 } as const;

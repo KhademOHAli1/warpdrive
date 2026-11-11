@@ -231,6 +231,7 @@ const en = {
     webhook: "Webhook",
     "newsletter.identity.verified": "Newsletter identity verified",
     "newsletter.consent.confirmed": "Newsletter subscription confirmed",
+    "newsletter.consent.revoked": "Newsletter consent revoked",
   } as Record<string, string>,
   fields: {
     objectName: "Object",
@@ -569,6 +570,7 @@ const de: Copy = {
     webhook: "Webhook",
     "newsletter.identity.verified": "Newsletter-Identität verifiziert",
     "newsletter.consent.confirmed": "Newsletter-Abonnement bestätigt",
+    "newsletter.consent.revoked": "Newsletter-Einwilligung widerrufen",
   },
   fields: {
     objectName: "Objekt",
@@ -900,6 +902,7 @@ const fa: Copy = {
     webhook: "وب‌هوک",
     "newsletter.identity.verified": "هویت مشترک خبرنامه تأیید شد",
     "newsletter.consent.confirmed": "اشتراک خبرنامه تأیید شد",
+    "newsletter.consent.revoked": "رضایت دریافت خبرنامه لغو شد",
   },
   fields: {
     objectName: "شیء",

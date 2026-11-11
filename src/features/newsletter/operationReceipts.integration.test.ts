@@ -67,6 +67,7 @@ function engine(write: () => Promise<Response>, compatible = true) {
             sesFeedback: 1,
             readiness: 1,
             atomicBulk: 1,
+            consentEvents: 1,
           })
         : new Response(null, { status: 404 });
     }

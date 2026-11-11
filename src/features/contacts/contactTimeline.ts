@@ -14,6 +14,7 @@ import {
   type NoteItem,
 } from "@/features/deal-workspace/historyTimeline";
 import type { Locale } from "@/features/i18n/registry";
+import { readPersonNewsletterAttribution } from "@/features/newsletter/attribution/service";
 import { listPersonNewsletterEvents } from "@/features/newsletter/identity/events";
 import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -78,14 +79,26 @@ export async function contactTimeline(
     numberingSystem,
   );
   if (entityType === "person" && hasNewsletterPermission(actor, "view")) {
-    const events = await listPersonNewsletterEvents(db, actor, entityId, signal);
-    const labels = personNewsletterMessages[locale].events;
+    const [events, campaigns] = await Promise.all([
+      listPersonNewsletterEvents(db, actor, entityId, signal),
+      readPersonNewsletterAttribution(db, actor, entityId, signal),
+    ]);
+    const messages = personNewsletterMessages[locale];
     for (const event of events) {
       items.push({
         kind: "event",
         id: `newsletter:${event.id}`,
         at: event.occurredAt,
-        label: labels[event.event],
+        label: messages.events[event.event],
+        actorName: null,
+      });
+    }
+    for (const campaign of campaigns.exposures) {
+      items.push({
+        kind: "event",
+        id: `newsletter:delivery:${campaign.bindingId}:${campaign.deliveryId}`,
+        at: campaign.acceptedAt,
+        label: messages.acceptedCampaign.replace("{campaign}", campaign.campaignName),
         actorName: null,
       });
     }

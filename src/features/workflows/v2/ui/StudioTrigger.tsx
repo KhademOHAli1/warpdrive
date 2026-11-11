@@ -147,7 +147,8 @@ export function StudioTrigger({
           }}
         />
       </BlockField>
-      {trigger.type === "newsletter.consent.confirmed" && (
+      {(trigger.type === "newsletter.consent.confirmed" ||
+        trigger.type === "newsletter.consent.revoked") && (
         <BlockField label={L.fields.listId ?? ""}>
           <Input
             aria-label={L.fields.listId}

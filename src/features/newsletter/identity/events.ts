@@ -1,5 +1,8 @@
+import { createHash } from "node:crypto";
+import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, isNull, lt, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { persons } from "@/db/schema/persons";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import {
@@ -9,6 +12,7 @@ import {
 } from "../schema/personAddresses";
 import { requireIdentityPermission, requireNewsletterPerson } from "./authority";
 import type { PersonNewsletterEvent } from "./contracts";
+import { connectNewsletterIdentity, type EngineConsentRevocation } from "./engine";
 import { reconcileNewsletterIdentity } from "./write";
 
 const projection = {
@@ -109,6 +113,7 @@ export async function synchronizeNewsletterIdentity(db: Db, signal: AbortSignal)
       await synchronizeClaim(db, row, signal);
     }),
   ]);
+  await synchronizeNewsletterRevocations(db, signal);
 }
 
 async function synchronizeClaim(
@@ -119,4 +124,106 @@ async function synchronizeClaim(
   signal.throwIfAborted();
   const actor = await hydrateActor(db, row.actorId, signal);
   if (actor !== null) await reconcileNewsletterIdentity(db, actor, row.personId, row.id, signal);
+}
+
+function scopeDigest(
+  row: { subscriberId: number | null; subscriberUuid: string | null },
+  event: EngineConsentRevocation,
+): string {
+  return createHash("sha256")
+    .update(
+      [
+        event.bindingUuid,
+        event.grantUuid,
+        row.subscriberId,
+        row.subscriberUuid,
+        event.purposeListId,
+      ].join(":"),
+    )
+    .digest("hex");
+}
+
+async function persistRevocation(db: Db, event: EngineConsentRevocation): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [reference] = await tx
+      .select({ personId: links.personId })
+      .from(links)
+      .where(eq(links.id, event.bindingUuid));
+    if (reference === undefined) return; // An erased Person is a terminal orphan.
+    // Read the link and invite again after the Person fence so completed erasure cannot be repopulated.
+    const [person] = await tx
+      .select({ id: persons.id })
+      .from(persons)
+      .where(eq(persons.id, reference.personId))
+      .for("update");
+    if (person === undefined) return;
+    const [scope] = await tx
+      .select({ link: links, command: commands })
+      .from(links)
+      .innerJoin(commands, eq(commands.linkId, links.id))
+      .where(
+        and(
+          eq(links.id, event.bindingUuid),
+          eq(links.personId, person.id),
+          eq(commands.id, event.grantUuid),
+          eq(commands.kind, "invite"),
+          eq(commands.listId, event.purposeListId),
+        ),
+      );
+    if (
+      scope === undefined ||
+      scope.link.detachedReason === "erasure" ||
+      scope.link.subscriberId === null ||
+      scope.link.subscriberUuid === null ||
+      scopeDigest(scope.link, event) !== event.scopeDigest
+    )
+      return;
+    const [stored] = await tx
+      .insert(events)
+      .values({
+        id: event.id,
+        linkId: scope.link.id,
+        listId: event.purposeListId,
+        event: "newsletter.consent.revoked",
+        occurredAt: event.occurredAt,
+        grantId: event.grantUuid,
+        sourceDigest: event.scopeDigest,
+      })
+      .onConflictDoNothing()
+      .returning({ id: events.id });
+    if (stored === undefined) {
+      const [prior] = await tx.select().from(events).where(eq(events.id, event.id));
+      if (
+        prior?.event !== "newsletter.consent.revoked" ||
+        prior.linkId !== event.bindingUuid ||
+        prior.listId !== event.purposeListId ||
+        prior.grantId !== event.grantUuid ||
+        prior.sourceDigest !== event.scopeDigest ||
+        prior.occurredAt.getTime() !== event.occurredAt.getTime()
+      )
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Newsletter consent event scope changed",
+        });
+    }
+    // A lost confirmation acknowledgement must never later project consent after its revocation.
+    await tx
+      .update(commands)
+      .set({ state: "suppressed", resolvedAt: event.occurredAt })
+      .where(and(eq(commands.id, event.grantUuid), eq(commands.state, "pending")));
+  });
+}
+
+/** The engine records facts for an already-authorized invite; delivery never grants actor authority. */
+export async function synchronizeNewsletterRevocations(db: Db, signal: AbortSignal): Promise<void> {
+  signal.throwIfAborted();
+  const engine = await connectNewsletterIdentity(signal);
+  const pending = await engine.revocations();
+  for (const event of pending) {
+    signal.throwIfAborted();
+    await persistRevocation(db, event);
+  }
+  // Acknowledgement follows committed persistence (or a terminal erased/orphan/unrelated decision).
+  // If it is lost, the engine replays the same UUID and the local insert validates its prior scope.
+  if (pending.length > 0) await engine.acknowledgeRevocations(pending.map(({ id }) => id));
 }

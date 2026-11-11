@@ -31,6 +31,7 @@ export type ActionBlockKind = (typeof ACTION_BLOCK_KINDS)[number];
 export const NEWSLETTER_TRIGGER_KINDS = [
   "newsletter.identity.verified",
   "newsletter.consent.confirmed",
+  "newsletter.consent.revoked",
 ] as const;
 
 export function isNewsletterTrigger(
