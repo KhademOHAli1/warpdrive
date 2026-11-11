@@ -18,14 +18,17 @@
 // alongside the visibility filter. Rows whose type the user disabled in-app are hidden
 // from the feed and unread count. The notification row is still stored so email-only
 // delivery keeps working (the email-dispatch job loads the row by id).
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { notifications } from "@/db/schema";
 import type { Notification } from "@/db/schema/notifications";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
 import { getPreferences as getAccountPreferences } from "@/features/identity/preferencesRepo";
+import { operationalNoticeSchema } from "@/features/newsletter/delivery/operationalContracts";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { AuthUser } from "@/features/permissions/types";
+import { hydrateActor } from "@/server/hydrateActor";
 import type { NotificationFeedItem } from "@/types/notification";
 import {
   hasNotificationCalendarAccess,
@@ -64,6 +67,15 @@ async function isVisible(
   signal: AbortSignal,
 ): Promise<boolean> {
   signal.throwIfAborted();
+  if (row.type === "newsletter_operational") {
+    return (
+      hasNewsletterPermission(await hydrateActor(db, user.id, signal), "operate") &&
+      row.entityType === null &&
+      row.entityId === null &&
+      row.actorId === null &&
+      operationalNoticeSchema.safeParse(row.payload).success
+    );
+  }
   if (!hasNotificationCalendarAccess(row, calendarAccess)) return false;
   if (!hasNotificationReminderAccess(row, reminderAccess)) return false;
   if (row.entityType === null || row.entityId === null) return true;
@@ -149,6 +161,16 @@ export async function markRead(
   signal: AbortSignal,
 ): Promise<void> {
   signal.throwIfAborted();
+  const [notice] = await db
+    .select({ type: notifications.type })
+    .from(notifications)
+    .where(and(eq(notifications.id, notificationId), eq(notifications.userId, user.id)))
+    .limit(1);
+  if (
+    notice?.type === "newsletter_operational" &&
+    !hasNewsletterPermission(await hydrateActor(db, user.id, signal), "operate")
+  )
+    return;
   await db
     .update(notifications)
     .set({ readAt: new Date() })
@@ -167,5 +189,13 @@ export async function markAllRead(db: Db, user: AuthUser, signal: AbortSignal): 
   await db
     .update(notifications)
     .set({ readAt: new Date() })
-    .where(and(eq(notifications.userId, user.id), isNull(notifications.readAt)));
+    .where(
+      and(
+        eq(notifications.userId, user.id),
+        isNull(notifications.readAt),
+        hasNewsletterPermission(await hydrateActor(db, user.id, signal), "operate")
+          ? undefined
+          : ne(notifications.type, "newsletter_operational"),
+      ),
+    );
 }

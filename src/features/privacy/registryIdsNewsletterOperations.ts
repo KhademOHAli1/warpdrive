@@ -1,0 +1,27 @@
+// Reviewed fixed-code operational stores, event ACK protocol, in-app projection and health queue.
+// Pure decoder/UI/delegate pins supplement discovered calls; no subject lifecycle authority follows.
+export const newsletterOperationalIds = [
+  "derived:src/features/newsletter/delivery/monitor.ts",
+  "derived:src/features/newsletter/delivery/operationalContracts.ts",
+  "derived:src/features/newsletter/delivery/operationalRepository.ts",
+  "queue:newsletter-operations-monitor",
+  "sourceReview:drizzle/0117_newsletter_operational_visibility.sql#f54679cd5e7dd46d7859f2a845d032d60cd6663aefea2be059ac188ba21386c5",
+  "sourceReview:src/db/schema/newsletterOperational.ts#267361d88960bfcd2d5c178880f91c8146b345dc4fba94aff824f6eccd51b0a6",
+  "sourceReview:src/features/newsletter/admin/LogsClient.tsx#5f9ee7110fd8a1817697a22fad263663982db329accca0c48ebb7b74b624b009",
+  "sourceReview:src/features/newsletter/delivery/EngineReadinessCard.tsx#aeec7dfe5aff6533d087578306837f94dc32dd36d830af0fe798ca991199fbf0",
+  "sourceReview:src/features/newsletter/delivery/monitor.ts#3851e9a2f01e99214e4b14c5fe1a2acd889d483ed93c8a3339289d768a6259fb",
+  "sourceReview:src/features/newsletter/delivery/operationalContracts.ts#b29dbfc2bf03ec7ee94448cc1db4beabbf0a8a686b9fd0a3d65035987d668980",
+  "sourceReview:src/features/newsletter/delivery/operationalMessages.ts#0cecce39e593670e759119094a5a5f83c0c3d64fa9d70cb9112922819df41416",
+  "sourceReview:src/features/newsletter/delivery/operationalRepository.ts#f20e48d73e5a603c4b29568655f80c46fc5f7010facfc70563b9a90c228586e3",
+  "sourceReview:src/features/newsletter/delivery/operationalStatus.ts#fc6981d70856231514392cad80f9eeb1df6f3ed464efb6b04929546d81f05931",
+  "sourceReview:src/features/newsletter/delivery/operationalSync.ts#39ce29db5813526569c98e9608a43f1c425c4f641d0e54bd0c3561601ba53b1d",
+  "sourceReview:src/features/newsletter/delivery/operations.ts#6aae0abe992c15b1f702938933452c2af08d479d9c63ae373bc6b2872eda02ed",
+  "table:newsletter_operational_receipts",
+  "table:newsletter_operational_state",
+  "writer:src/features/newsletter/delivery/monitor.ts#write:dynamic",
+  "writer:src/features/newsletter/delivery/operationalRepository.ts#execute:sql",
+  "writer:src/features/newsletter/delivery/operationalRepository.ts#insert:receipts",
+  "writer:src/features/newsletter/delivery/operationalRepository.ts#insert:states",
+  "writer:src/features/newsletter/delivery/operationalRepository.ts#update:states",
+  "writer:src/features/workflows/v2/worker.ts#send:NEWSLETTER_OPERATIONS",
+];

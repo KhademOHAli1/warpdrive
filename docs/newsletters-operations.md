@@ -1,6 +1,6 @@
 # Newsletter installation evidence and operations
 
-Use this worksheet for the two remaining installation gates in the newsletter implementation plan. Version 1.6.1 records qualified source and isolated runtime evidence. This runbook prepares later operational qualification. Every live gate below starts **Pending**.
+Use this worksheet for the two remaining installation gates in the newsletter implementation plan. Version 1.6.1 records qualified source and isolated runtime evidence. Current source adds engine patch 085 and native CRM operational visibility; those additions require matching app and engine installation evidence. This runbook prepares that qualification. Every live gate below starts **Pending**.
 
 The current retained local preflight used loopback SMTP capture, disabled SES feedback and closed public signup. Its readiness result establishes that local configuration. The selected provider, sending domain, authorized inbox and target installation are pending.
 
@@ -21,7 +21,7 @@ Keep an installation-specific copy in the approved evidence destination. Record 
 | Relay endpoint, port, TLS/authentication policy and credential-store reference | Pending                        |
 | Feedback adapter and account/topic/configuration references, where applicable  | Pending                        |
 | Media backend, filesystem root or bucket/prefix and versioning policy          | Pending                        |
-| Existing alert/log destination, receiver and worker/ingress health checks      | Pending                        |
+| Current CRM operator, in-app notification preference and worker/UI access     | Pending                        |
 | Protected backup destination, access owner, retention and restore target       | Pending                        |
 | CRM/engine database connection-profile references and encryption-key custody   | Pending                        |
 | Public signup activation decision and authorized delivery decision             | Pending; signup remains closed |
@@ -34,14 +34,14 @@ For each row record the installation, app/engine revisions, UTC time, operator, 
 
 | Gate                                   | Expected proof                                                                                                                                                                          | Retained reference and live result                |
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Installed engine and permissions       | Private engine capabilities, database migration state, app connection, intended delegated permissions and anonymous public admin/API rejection                                          | Pending                                           |
+| Installed engine and permissions       | Private engine capabilities including `operationalEvents:1`, matching app/engine migrations, app connection, intended permissions and anonymous public admin/API rejection            | Pending                                           |
 | Sending identity and public host       | Provider-approved sender/domain records, required DNS verification, HTTPS certificate, exact Root URL and protected signup configuration                                                | Pending                                           |
 | Authorized inbox delivery              | Approved test recipient, exact campaign/audience revision, SMTP acceptance receipt and actual received message headers/body with sender authentication and intended Reply-To            | Pending                                           |
 | Confirmation and one-click unsubscribe | Public GET leaves consent pending; affirmative confirmation updates the exact purpose; a delivered one-click unsubscribe revokes that grant and reaches the native consent history      | Pending                                           |
 | Public media                           | A known campaign asset resolves anonymously at its stable URL with expected content type and bytes                                                                                      | Pending                                           |
-| Bounce and complaint feedback          | Selected authenticated adapter, exact delivery match, persisted feedback, hard-bounce/complaint suppression and corresponding native revocation; retain soft-bounce behavior separately | Pending                                           |
-| Relay credential rotation              | Old credential rejected after revocation, new credential accepted after engine reload, readiness transition timestamps and authentication-only protocol evidence                        | Pending                                           |
-| Alerts and process health              | Outage alert received at the selected destination, deduplicated repeated state, recovery resolves that incident, and separate worker/ingress health alert receipt                       | Pending                                           |
+| Bounce and complaint feedback          | Authenticated adapter, exact match, persisted feedback, hard-bounce/complaint suppression and native revocation plus Logs/bell facts; retain soft/unmatched behavior separately         | Pending                                           |
+| Relay credential rotation              | Revoked credential rejected, replacement accepted after reload, actual in-app incident/recovery and repeat/restart dedupe, with all mail-producing work held and no envelope commands  | Pending                                           |
+| Internal monitoring and worker health  | CRM Logs/bell outage and recovery, durable repeat/restart dedupe, operator-only visibility, no email, and Maintenance becoming stale after a stopped worker while the UI stays accessible | Pending                                          |
 | Coordinated backup and restore         | CRM dump, engine dump, media/object versions, migration/revision and receipt inventories, checksums, isolated passive restore and content/state comparisons                             | Pending                                           |
 | Upgrade and rollback                   | Matching pre-upgrade restore set, passive old/new engine observation, preserved current suppression and unresolved delivery records, reconciliation before any resumption               | Pending                                           |
 | Activation                             | Recorded decision for the qualified installation, reviewed schedules/limits and exact flag changes                                                                                      | Pending; `NEWSLETTER_PUBLIC_SIGNUP_ENABLED=false` |
@@ -78,7 +78,27 @@ curl --disable --config "$newsletter_curl_config" \
 
 While passive, expect `scheduler.status=passive` and `ready=false`; inspect the component results. A successful authentication probe qualifies relay access. Retain inbox evidence separately for delivery.
 
-The worker checks readiness during its initial reconciliation run and scheduled minute reconciliation, after Workflow and identity work. It emits one JSON line per readiness fingerprint transition when delivery is enabled and the integration is configured. An unavailable relay with otherwise healthy non-SES components produces this stderr event.
+### Internal CRM monitoring
+
+The worker owns a dedicated `newsletter-operations-monitor` queue. It submits an initial job and schedules it every minute, independently of Workflow and identity reconciliation. Each job has a 45-second signal; native database work also uses bounded lock and statement timeouts. An unconfigured integration does no monitoring work. A configured integration consumes operational facts even while delivery is disabled; relay readiness monitoring is paused in that mode.
+
+Current source requires engine capability `operationalEvents:1`, engine delivery schema migration 5 and CRM migration `0117_newsletter_operational_visibility`. The engine records terminal failures, uncertain submissions, reviewed resolutions and signed bounce/complaint facts in `warpdrive_operational_events`. The source transition and its event commit together. A campaign-locked background sweep observes retained issues and expired submitting leases without changing delivery/campaign receipts or sending messages, including in passive mode.
+
+The worker reads authenticated `GET /api/warpdrive/operational-events?limit=100` using `settings:get`. It validates the fixed kind/reason pair, UUID, count and timestamp, then commits the native receipt, aggregate audit entry and eligible in-app notices in one CRM transaction. Only after that commit does it acknowledge the exact UUIDs through `POST /api/warpdrive/operational-events/ack`, using `settings:manage`. Each run handles at most three pages. A failed CRM transaction leaves the engine events unacknowledged. Lost responses, concurrent polls and restarts replay the same source identities; conflicting content for an existing UUID is rejected. Retain acknowledged source identities and native receipts for deduplication. No timestamp cursor discards later commits.
+
+Each engine event contains only `id,kind,reason,count,occurred_at`, with `count=1`. GET returns at most 100 events and a `pending` flag. ACK accepts one strict `event_ids` array of 1–100 canonical UUIDs, deduplicates IDs and ignores unknown IDs; replay returns the same distinct known-ID count. Invalid or duplicate properties, invalid UUIDs and trailing JSON fail before acknowledgement. Both routes return `Cache-Control: no-store`.
+
+These endpoints remain private and are absent from the public ingress allowlist. GET is a pure read; ACK changes transport acknowledgement only. A user's bell seen/unseen state is separate. Neither acknowledgement nor marking a notification read resolves a delivery, authorizes a resend or establishes consent.
+
+**Settings → Logs** and the notification bell show safe aggregate facts: readiness incidents and recovery; rejected or uncertain delivery; reviewed resolutions; and bounce/complaint feedback. Only current active administrators have newsletter operational authority. Notification production and feed/unread exposure check that current authority, and the in-app preference controls bell visibility. No operational email is queued or sent, including when a stale preference requests email. There is no email alarm destination to configure. Payloads contain fixed category/reason/count values rather than recipients, campaign content, provider bodies, credentials or raw errors.
+
+An unmatched signed feedback fact requests review only and makes no Person attribution or suppression claim. A later exact match remains a distinct fact. `provider_accepted` means actual SMTP or verified provider handoff for a previously reported issue; inbox delivery needs separate evidence. Operator acceptance/rejection retains its own reason. Repeated readiness failures preserve durable incident state across restarts. Pausing preserves an open incident, and a later ready observation records recovery once.
+
+**Settings → Maintenance** also reads `admin.operationalStatus`, returning `status` (`current`, `stale` or `unchecked`), `checkedAt` and `lastPolledAt`. While the page is active, this CRM-only status query refreshes every 60 seconds. Both a completed worker check and a successful event sync must be no older than five minutes to show current. A missing state is unchecked; an expired or missing successful-sync timestamp is stale. Thus a stopped worker becomes visible on the accessible Maintenance page even when the engine itself remains ready. This read does not run the worker, acknowledge events or advance its timestamps. **Check again** refreshes this status and the separate engine readiness read. If the CRM or its database is unavailable, it cannot display an in-app incident; retain that availability limit in the installation evidence.
+
+### Supplemental process evidence
+
+The worker also emits one JSON line when a persisted readiness incident changes or recovers. An unavailable relay with otherwise healthy non-SES components produces this stderr event.
 
 ```text
 {"event":"newsletter.delivery.readiness","level":"warn","readiness":"ready/ready/unavailable/ready/disabled"}
@@ -90,11 +110,11 @@ Recovery produces this stdout event.
 {"event":"newsletter.delivery.readiness","level":"info","readiness":"ready"}
 ```
 
-Other outage fingerprints join database/scheduler/relay/media/feedback statuses in that order. A failed readiness request produces `unreachable`. Repeated identical states produce no heartbeat. A worker restart resets its prior state to ready and can emit the current outage again. Disabled or unconfigured installations skip the probe and event.
+Other outage fingerprints join database/scheduler/relay/media/feedback statuses in that order. A failed readiness request produces `unreachable`; an unavailable or invalid operational feed produces `events_unavailable`. Repeated identical states and worker restarts do not duplicate a persisted incident. Ordinary samples update the stored check time without another notice or JSON transition line.
 
-Route these worker stdout/stderr records through the installation's existing log monitoring. Use installation plus `event` as the incident identity, update its recorded fingerprint and deduplicate repeats. Resolve it on `level=info` with `readiness=ready`. Retain collector timestamps, the sanitized readiness responses and destination receipt IDs. Use separate worker/process and public-ingress health alerts to cover a stopped worker or unavailable subscriber host.
+Retain stdout/stderr JSON and sanitized readiness responses as supplemental technical evidence. Existing process-log collection can retain these records; an external alert receiver or email alarm is not an installation gate. Qualify the actual CRM Logs/bell incident and recovery, and the Maintenance worker-staleness behavior. Check public HTTPS/ingress availability separately in the public-host gate.
 
-**Settings → Logs** reads the audit store through `newsletter.read` operation `admin.logs`. Its optional filters are `source` (`campaigns` or `workspace`), `outcome` (`requested`, `succeeded`, `failed`, `unknown`) and `cursor` (`at` ISO timestamp and UUID `id`). The response is `{rows,next}`, with at most 30 rows from the last 90 days. Each row has `id,at,action,source,outcome,correlationId`. Use the returned cursor unchanged for the next page. Retain operation IDs and reviewed evidence references for unresolved writes. Collect readiness transitions from the worker process log destination.
+**Settings → Logs** reads the audit store through `newsletter.read` operation `admin.logs`. Its optional filters are `source` (`campaigns` or `workspace`), `outcome` (`requested`, `succeeded`, `failed`, `unknown`) and `cursor` (`at` ISO timestamp and UUID `id`). The response is `{rows,next}`, with at most 30 rows from the last 90 days. Each row has `id,at,action,source,outcome,correlationId` and optional validated operational `detail` containing `category,reason,count`. Raw audit payloads are excluded. Use the returned cursor unchanged for the next page. Retain operation IDs and reviewed evidence references for unresolved writes.
 
 ## Relay credential rotation
 
@@ -105,10 +125,10 @@ Use the selected provider's authorized credential interface and protected engine
 3. Revoke the old credential at the provider. Perform a fresh engine readiness read after the probe cache expires or after a controlled restart. Retain `relay.status=unavailable` and the provider's sanitized authentication rejection evidence.
 4. Apply the replacement through the private engine SMTP settings. The tested engine operation is `PUT /api/settings/smtp` with the complete approved relay array; it reloads the engine. Use protected request input or the private operator UI. Keep the credential out of shell arguments, terminal transcripts, shared JSON and command tracing.
 5. Wait for reload health and a fresh `relay.status=ready` authentication probe. Retain the new credential reference, reload/revision evidence and protocol evidence showing zero SMTP envelope commands. Confirm that the revoked credential remains rejected.
-6. Use a bounded alert test window. Keep every campaign paused, review due schedules, pause all mail-producing workflows/jobs, hold invitations/imports and keep public signup false. Enable delivery for the engine and monitoring worker during this window and verify that the worker is reconciling. Introduce a provider-approved authentication failure condition through the private relay settings, reload, and wait for an eligible worker sample to emit the outage event. Retain its actual destination receipt. Restore the valid replacement credential, reload, and wait for a fresh successful relay probe and the worker's recovery event to resolve the incident. Repeated identical outage samples should preserve one incident. Disable delivery again when the window ends. Direct probes during disabled delivery supply component evidence; the enabled worker window supplies alert evidence.
+6. Use a separately authorized, bounded authentication-only monitoring window. Keep every campaign paused, review due schedules, hold all mail-producing workflows/jobs and invitations/imports, verify no queued or in-flight engine messages, and keep public signup false. The dedicated operational queue must run while all mail-producing work remains held. For relay monitoring, `NEWSLETTER_DELIVERY_ENABLED=true` also activates the engine scheduler; permit that change only after verifying every hold. Introduce a provider-approved authentication failure through private relay settings, reload, and wait for an eligible worker sample. Retain the actual CRM Logs incident and the bell notice for a current operator with in-app notifications enabled. Repeated samples and a controlled worker restart must preserve one incident. Restore the valid replacement credential, reload, and retain the fresh successful relay probe plus the in-app recovery. Verify that a replay creates no duplicate notice and that SMTP evidence contains zero MAIL, RCPT and DATA commands. Disable delivery again when the window ends. Direct probes during disabled delivery supply component evidence; the worker window supplies the internal incident/recovery proof.
 7. Review schedules, effective limits, consent and held delivery receipts before any separately authorized resumption. Record the outcome and leave signup closed until its activation decision.
 
-The retained fixture exercised a loopback SMTP AUTH server and engine reload. The selected provider's credential lifecycle, account policies, alert routing and installation remain Pending.
+The retained fixture exercised a loopback SMTP AUTH server and engine reload. It does not qualify this newer in-app path on a live installation. The selected provider's credential lifecycle, account policies and installed internal incident/recovery checks remain Pending.
 
 ## Coordinated snapshot
 
@@ -133,7 +153,7 @@ tar -C "$newsletter_media_root" -czf "$newsletter_backup_dir/newsletter-media.ta
 
 Write `snapshot.json` in the backup destination with the installation ID, cut UTC time, app/engine revisions and digests, PostgreSQL/tool versions, migration versions, media location and credential/encryption-key custody references. Record the service configuration needed to remain passive after restore.
 
-The CRM dump contains operation receipts, identity commands/events and native attribution. The engine dump contains subscribers, suppression, consent grants/events, campaign state, recipient delivery receipts and feedback. For a current engine, retain these read-only receipt inventories with the snapshot.
+The CRM dump contains operation receipts, identity commands/events, native attribution, `newsletter_operational_state`, `newsletter_operational_receipts`, audit entries, stored in-app notices and notification preferences. The engine dump contains subscribers, suppression, consent grants/events, campaign state, recipient delivery receipts, feedback and the `warpdrive_operational_events` outbox with acknowledgement/source-dedupe metadata. Preserve this matching pair so a restored ACK cannot hide a lost native projection or recreate notices already consumed. For the current app/engine schema, retain these read-only summaries with the snapshot; exact identities remain in the protected dumps.
 
 ```sh
 "$newsletter_pg_bin/psql" --dbname=service=newsletter_crm_source -X --set=ON_ERROR_STOP=1 --csv \
@@ -142,6 +162,15 @@ The CRM dump contains operation receipts, identity commands/events and native at
 "$newsletter_pg_bin/psql" --dbname=service=newsletter_engine_source -X --set=ON_ERROR_STOP=1 --csv \
   --command='SELECT state,count(*) FROM warpdrive_delivery_recipients GROUP BY state ORDER BY state' \
   > "$newsletter_backup_dir/engine-receipts.csv"
+"$newsletter_pg_bin/psql" --dbname=service=newsletter_crm_source -X --set=ON_ERROR_STOP=1 --csv \
+  --command='SELECT fingerprint,incident_open,problem,last_polled_at,checked_at FROM newsletter_operational_state ORDER BY engine_key' \
+  > "$newsletter_backup_dir/crm-operational-state.csv"
+"$newsletter_pg_bin/psql" --dbname=service=newsletter_crm_source -X --set=ON_ERROR_STOP=1 --csv \
+  --command='SELECT kind,reason,count(*) FROM newsletter_operational_receipts GROUP BY kind,reason ORDER BY kind,reason' \
+  > "$newsletter_backup_dir/crm-operational-receipts.csv"
+"$newsletter_pg_bin/psql" --dbname=service=newsletter_engine_source -X --set=ON_ERROR_STOP=1 --csv \
+  --command='SELECT kind,reason,acknowledged_at IS NOT NULL AS acknowledged,count(*) FROM warpdrive_operational_events GROUP BY kind,reason,acknowledged_at IS NOT NULL ORDER BY kind,reason,acknowledged' \
+  > "$newsletter_backup_dir/engine-operational-outbox.csv"
 ```
 
 For S3, substitute the selected backend's versioned object export and content-checksum manifest for the filesystem tar. Record the bucket/prefix and exact object versions. Keep the snapshot and keys in their approved protected destinations.
@@ -156,7 +185,9 @@ import sys
 
 root = Path(sys.argv[1])
 names = ("crm.dump", "newsletter.dump", "newsletter-media.tar.gz",
-         "snapshot.json", "crm-receipts.csv", "engine-receipts.csv")
+         "snapshot.json", "crm-receipts.csv", "engine-receipts.csv",
+         "crm-operational-state.csv", "crm-operational-receipts.csv",
+         "engine-operational-outbox.csv")
 lines = []
 for name in names:
     digest = sha256()
@@ -234,6 +265,8 @@ set -eu
 ```
 
 Keep app and workflow workers stopped until their restored database, stable encryption keys and intended database ownership/grants are checked. Readiness should show database ready and scheduler passive. Check intended restore-directory ownership and compare exact media bytes at the restore origin, memberships, suppression, pending campaigns and delivery/operation receipt states and counts. Record zero outbound message transactions during inspection. Filesystem readiness probes create temporary files only in the relocated restore directory.
+
+With engine 085, passive startup may append operational facts for retained rejected/unknown or expired submitting receipts. It must preserve every delivery/campaign receipt field and must not resend. Compare the source receipts separately from this outbox-only catch-up. Before starting a restored CRM worker, reconcile native operational receipts, audit/notices, engine acknowledgement metadata and post-cut facts as one set. Preserve acknowledged source identities. The read-only Maintenance status may correctly show stale while that worker is stopped.
 
 For rollback, first preserve the post-upgrade databases, media and provider delivery receipts as another checksummed set. Restore the matching pre-upgrade pair and media into isolated targets, select the retained compatible app/engine binaries, and use the passive launch above. Retain the newer targets and their post-cut suppression and unresolved receipts. An older snapshot can contain earlier consent and delivery states. Reconcile subsequent opt-outs, complaints, suppressions and accepted/unknown submissions against authoritative provider records before resuming. Hold every unresolved submission for operator review. Keep signup closed.
 

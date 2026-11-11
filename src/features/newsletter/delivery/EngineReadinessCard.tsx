@@ -9,10 +9,18 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useNewsletterRead } from "../ui/client";
+import type { OperationalSyncSnapshot } from "./operationalStatus";
 import type { EngineReadiness } from "./readiness";
 
 const copy = {
   en: {
+    syncTitle: "CRM event monitoring",
+    syncCurrent: "Recent worker check and event sync",
+    syncStale:
+      "CRM monitoring is stale. Check the worker and logs; engine readiness alone does not confirm monitoring.",
+    syncUnchecked: "CRM monitoring has not completed a check yet.",
+    checkedAt: "Last worker check",
+    lastPolledAt: "Last successful event sync",
     title: "Delivery readiness",
     refresh: "Check again",
     unavailable: "Could not check the engine.",
@@ -39,6 +47,13 @@ const copy = {
     batch: "per batch",
   },
   de: {
+    syncTitle: "CRM-Ereignisüberwachung",
+    syncCurrent: "Aktuelle Worker-Prüfung und Ereignissynchronisierung",
+    syncStale:
+      "Die CRM-Überwachung ist veraltet. Worker und Protokolle prüfen; Versandbereitschaft bestätigt keine laufende Überwachung.",
+    syncUnchecked: "Die CRM-Überwachung hat noch keine Prüfung abgeschlossen.",
+    checkedAt: "Letzte Worker-Prüfung",
+    lastPolledAt: "Letzte erfolgreiche Ereignissynchronisierung",
     title: "Versandbereitschaft",
     refresh: "Erneut prüfen",
     unavailable: "Der Versanddienst konnte nicht geprüft werden.",
@@ -65,6 +80,13 @@ const copy = {
     batch: "pro Stapel",
   },
   fa: {
+    syncTitle: "پایش رویدادهای CRM",
+    syncCurrent: "بررسی پردازشگر و همگام‌سازی رویدادها به‌روز است",
+    syncStale:
+      "پایش CRM قدیمی است. پردازشگر و گزارش‌ها را بررسی کنید؛ آمادگی ارسال به‌تنهایی پایش را تأیید نمی‌کند.",
+    syncUnchecked: "هنوز بررسی پایش CRM کامل نشده است.",
+    checkedAt: "آخرین بررسی پردازشگر",
+    lastPolledAt: "آخرین همگام‌سازی موفق رویدادها",
     title: "آمادگی ارسال",
     refresh: "بررسی دوباره",
     unavailable: "بررسی سرویس ارسال ممکن نبود.",
@@ -94,10 +116,57 @@ const copy = {
 
 const checks = ["database", "scheduler", "relay", "media", "feedback"] as const;
 
+function SyncStatus({
+  data,
+  isError,
+  L,
+}: {
+  data: OperationalSyncSnapshot | undefined;
+  isError: boolean;
+  L: (typeof copy)[keyof typeof copy];
+}) {
+  return (
+    <div className="space-y-1 border-t pt-3">
+      <p className="font-medium">{L.syncTitle}</p>
+      <p role={isError || data?.status === "stale" ? "alert" : "status"}>
+        {isError
+          ? L.unavailable
+          : data === undefined
+            ? L.loading
+            : data.status === "current"
+              ? L.syncCurrent
+              : data.status === "stale"
+                ? L.syncStale
+                : L.syncUnchecked}
+      </p>
+      {data !== undefined &&
+        (["checkedAt", "lastPolledAt"] as const).map((key) => (
+          <p key={key} className="text-muted-foreground">
+            {L[key]} ·{" "}
+            {data[key] === null ? (
+              "—"
+            ) : (
+              <time dateTime={data[key]} dir="ltr">
+                {data[key]}
+              </time>
+            )}
+          </p>
+        ))}
+    </div>
+  );
+}
+
 export function EngineReadinessCard() {
   const L = copy[useLocale()];
   const read = useNewsletterRead<EngineReadiness>("admin.readiness");
   const data = read.data;
+  const sync = useNewsletterRead<OperationalSyncSnapshot>(
+    "admin.operationalStatus",
+    {},
+    true,
+    60_000,
+  );
+  const syncData = sync.data;
   return (
     <SettingsCard>
       <SettingsCardHeader title={L.title} />
@@ -134,11 +203,15 @@ export function EngineReadinessCard() {
             {data.limits.clamped && <p className="text-muted-foreground">{L.clamped}</p>}
           </>
         )}
+        <SyncStatus data={syncData} isError={sync.isError} L={L} />
         <Button
           variant="outline"
           size="sm"
           disabled={read.isFetching}
-          onClick={() => void read.refetch()}
+          onClick={() => {
+            void read.refetch();
+            void sync.refetch();
+          }}
         >
           {L.refresh}
         </Button>

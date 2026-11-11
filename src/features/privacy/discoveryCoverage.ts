@@ -90,6 +90,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Actor-scoped campaign command IDs, keyed intent fingerprints and reviewed outcome references require a dedicated provenance and retention adapter. A staff actor recorded in a receipt does not identify subscribers or other people in a campaign. Keep admitted and unknown receipts fenced for replay safety. The operational Logs screen grants no generic discovery, disclosure or erasure authority.",
   ),
   ...group(
+    ["newsletter_operational_state", "newsletter_operational_receipts"],
+    "unsupported",
+    "Installation health state contains fixed diagnostics and check/sync timestamps; event receipts retain opaque native event UUIDs, fixed kinds/reasons and timestamps for restart-safe ACK deduplication. No mailbox, Person, campaign, provider response or message content is copied. Opaque UUIDs can still correlate to engine facts and are not reviewed subject identity. Staff-recipient notification rows remain a separate personal-metadata store. Keep replay tombstones fenced; no generic discovery, export, erasure or automatic retention/purge adapter is enabled.",
+  ),
+  ...group(
     ["newsletter_identity_commands", "newsletter_person_addresses", "newsletter_person_events"],
     "unsupported",
     "Newsletter commands, verified mailbox bindings and purpose-scoped events require a dedicated subject and provenance projection. The approved exact-mailbox erasure action uses its own reviewed privacy scope and retains a keyed engine suppression record. Ordinary contact visibility grants no general privacy discovery or disclosure authority.",

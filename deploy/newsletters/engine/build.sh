@@ -11,7 +11,8 @@ for required in 010-optin-confirmation.patch 020-dispatch.patch 025-list-consent
     027-public-subscriber-update.patch 030-campaign-revision.patch 035-affirmative-optin.patch \
     040-crm-identity.patch 045-sealed-crm-audiences.patch 050-durable-delivery.patch \
     055-crm-attribution.patch 057-archive-preview.patch 058-public-list-embed.patch \
-    060-ses-feedback.patch 070-readiness.patch 075-atomic-bulk-delete.patch 080-consent-revocation-events.patch; do
+    060-ses-feedback.patch 070-readiness.patch 075-atomic-bulk-delete.patch 080-consent-revocation-events.patch \
+    085-inapp-operational-events.patch; do
     if [ ! -s "$context/patches/$required" ]; then
         echo "Required Listmonk patch is missing: $required" >&2
         exit 2
@@ -46,7 +47,7 @@ for patch_file in "$context"/patches/*.patch; do
     git apply --check "$patch_file"
     git apply "$patch_file"
 done
-if ! grep -Fq 'map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1}' cmd/handlers.go; then
+if ! grep -Fq 'map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1, "operationalEvents": 1}' cmd/handlers.go; then
     echo "The derived engine is missing a required Warpdrive capability" >&2
     exit 1
 fi
@@ -63,7 +64,7 @@ cp LICENSE "$work/corresponding-source/LICENSE"
 cp "$context"/.dockerignore "$context"/.gitattributes "$context"/Dockerfile "$context"/README.md "$context"/build.sh \
     "$context"/build-assets.go "$work/corresponding-source/"
 cp -R "$context"/patches "$work/corresponding-source/"
-for directory in tests dispatch-tests durability-tests feedback-tests readiness-tests; do
+for directory in tests dispatch-tests durability-tests feedback-tests readiness-tests operational-tests; do
     if [ -d "$context/$directory" ]; then
         cp -R "$context/$directory" "$work/corresponding-source/"
     fi

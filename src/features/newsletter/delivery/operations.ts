@@ -1,13 +1,28 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { newsletterOperationalState } from "@/db/schema";
 import { recordAudit } from "@/features/identity/audit";
-import { defineOperation } from "../operation";
+import { defineLocalOperation, defineOperation } from "../operation";
 import { hasNewsletterPermission } from "../permissions";
 import { deliveryStatus, reviewReferencePattern } from "./contracts";
+import { OPERATIONAL_ENGINE_KEY } from "./operationalRepository";
+import { operationalSyncSnapshot } from "./operationalStatus";
 import { readEngineReadiness } from "./readiness";
 
 const campaign = z.strictObject({ id: z.number().int().positive().max(2_147_483_647) });
 
 export const deliveryReads = {
+  "admin.operationalStatus": defineLocalOperation(z.strictObject({}), async (_input, context) => {
+    const [state] = await context.db
+      .select({
+        checkedAt: newsletterOperationalState.checkedAt,
+        lastPolledAt: newsletterOperationalState.lastPolledAt,
+      })
+      .from(newsletterOperationalState)
+      .where(eq(newsletterOperationalState.engineKey, OPERATIONAL_ENGINE_KEY))
+      .limit(1);
+    return operationalSyncSnapshot(state);
+  }),
   "admin.readiness": defineOperation(z.strictObject({}), (client) => readEngineReadiness(client)),
   "delivery.status": defineOperation(campaign, async (client, { id }, { actor }) => {
     const status = deliveryStatus.parse(await client.json("GET", `/api/warpdrive-delivery/${id}`));

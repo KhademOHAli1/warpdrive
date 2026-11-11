@@ -40,7 +40,8 @@
       "deal_lost": "Verkaufschance verloren",
       "comment_reply": "Antworten auf Kommentare",
       "deal_email_received": "Neue E-Mails zu meinen Verkaufschancen",
-      "workflow_message": "Workflow-Nachrichten"
+      "workflow_message": "Workflow-Nachrichten",
+      "newsletter_operational": "Newsletter-Betrieb"
     }
   },
   "email": {
@@ -93,5 +94,31 @@
       "subject": "Benachrichtigung von Warpdrive",
       "line": "{recipient}, Sie haben eine neue Benachrichtigung."
     }
+  },
+  "operations": {
+    "unavailable": "Newsletter-Vorgang benötigt Aufmerksamkeit",
+    "eventCount": "{count, plural, one {# Ereignis} other {# Ereignisse}}",
+    "database_unavailable": "Newsletter-Datenbank ist nicht verfügbar",
+    "database_migration": "Newsletter-Datenbank benötigt ein Upgrade",
+    "scheduler_starting": "Newsletter-Versand startet",
+    "scheduler_stale": "Newsletter-Versand prüft seine Warteschlange nicht mehr",
+    "relay_unconfigured": "Newsletter-Versandrelay muss eingerichtet werden",
+    "relay_unavailable": "Newsletter-Versandrelay ist nicht verfügbar",
+    "media_unavailable": "Newsletter-Medien sind nicht verfügbar",
+    "media_unchecked": "Newsletter-Medien konnten nicht geprüft werden",
+    "feedback_unconfirmed": "Newsletter-Rückmeldeverbindung ist nicht bestätigt",
+    "service_unreachable": "Newsletter-Dienst konnte nicht erreicht werden",
+    "events_unavailable": "Newsletter-Ereignissynchronisierung benötigt Aufmerksamkeit",
+    "recovered": "Newsletter-Dienst ist wieder verfügbar",
+    "delivery_rejected": "Ablehnung einer Newsletter-Zustellung erfasst",
+    "submission_unknown": "Newsletter-Übermittlung muss geprüft werden; das Ergebnis ist unbekannt",
+    "operator_accepted": "Prüfung hat eine angenommene Übermittlung erfasst",
+    "operator_rejected": "Prüfung hat eine abgelehnte Übermittlung erfasst",
+    "provider_accepted": "Newsletter-Übergabe an den Anbieter bestätigt",
+    "hard_bounce": "Dauerhafter Newsletter-Rückläufer erfasst",
+    "soft_bounce": "Temporärer Newsletter-Rückläufer erfasst",
+    "unmatched_bounce": "Nicht zugeordnete Newsletter-Rückmeldung muss geprüft werden",
+    "complaint": "Newsletter-Spambeschwerde erfasst",
+    "unmatched_complaint": "Nicht zugeordnete Newsletter-Beschwerde muss geprüft werden"
   }
 }

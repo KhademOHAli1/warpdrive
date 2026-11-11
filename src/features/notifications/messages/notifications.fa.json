@@ -40,7 +40,8 @@
       "deal_lost": "فرصت فروش ناموفق",
       "comment_reply": "پاسخ به دیدگاه‌های من",
       "deal_email_received": "ایمیل تازه دربارهٔ فرصت‌های فروش من",
-      "workflow_message": "پیام‌های گردش کار"
+      "workflow_message": "پیام‌های گردش کار",
+      "newsletter_operational": "عملیات خبرنامه"
     }
   },
   "email": {
@@ -93,5 +94,31 @@
       "subject": "اعلان Warpdrive",
       "line": "{recipient}، اعلان تازه‌ای دارید."
     }
+  },
+  "operations": {
+    "unavailable": "عملیات خبرنامه نیاز به بررسی دارد",
+    "eventCount": "{count, plural, one {# رویداد} other {# رویداد}}",
+    "database_unavailable": "پایگاه داده خبرنامه در دسترس نیست",
+    "database_migration": "پایگاه داده خبرنامه نیاز به ارتقا دارد",
+    "scheduler_starting": "فرستنده خبرنامه در حال راه‌اندازی است",
+    "scheduler_stale": "فرستنده خبرنامه دیگر صف را بررسی نمی‌کند",
+    "relay_unconfigured": "رله ارسال خبرنامه نیاز به تنظیم دارد",
+    "relay_unavailable": "رله ارسال خبرنامه در دسترس نیست",
+    "media_unavailable": "رسانه خبرنامه در دسترس نیست",
+    "media_unchecked": "بررسی رسانه خبرنامه ممکن نبود",
+    "feedback_unconfirmed": "اتصال بازخورد خبرنامه تأیید نشده است",
+    "service_unreachable": "اتصال به سرویس خبرنامه ممکن نبود",
+    "events_unavailable": "همگام‌سازی رویدادهای خبرنامه نیاز به بررسی دارد",
+    "recovered": "سرویس خبرنامه دوباره در دسترس است",
+    "delivery_rejected": "رد شدن ارسال خبرنامه ثبت شد",
+    "submission_unknown": "ارسال خبرنامه نیاز به بررسی دارد؛ نتیجه نامشخص است",
+    "operator_accepted": "بررسی، پذیرش ارسال را ثبت کرد",
+    "operator_rejected": "بررسی، رد شدن ارسال را ثبت کرد",
+    "provider_accepted": "تحویل خبرنامه به ارائه‌دهنده تأیید شد",
+    "hard_bounce": "برگشت دائمی خبرنامه ثبت شد",
+    "soft_bounce": "برگشت موقت خبرنامه ثبت شد",
+    "unmatched_bounce": "بازخورد برگشت خبرنامه بدون تطبیق نیاز به بررسی دارد",
+    "complaint": "شکایت هرزنامه خبرنامه ثبت شد",
+    "unmatched_complaint": "بازخورد شکایت خبرنامه بدون تطبیق نیاز به بررسی دارد"
   }
 }

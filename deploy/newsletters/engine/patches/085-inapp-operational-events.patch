@@ -1,0 +1,535 @@
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index c38f85b..33574f4 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,8 +102,10 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive/readiness", pm(a.GetWarpdriveReadiness, "settings:get"))
++		g.GET("/api/warpdrive/operational-events", pm(a.GetWarpdriveOperationalEvents, "settings:get"))
++		g.POST("/api/warpdrive/operational-events/ack", pm(a.AcknowledgeWarpdriveOperationalEvents, "settings:manage"))
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1, "operationalEvents": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+diff --git a/cmd/main.go b/cmd/main.go
+index b040094..caf559b 100644
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -212,6 +212,9 @@ func main() {
+ 	if err := installReadinessIndex(db); err != nil {
+ 		lo.Fatal("could not initialize campaign delivery rates")
+ 	}
++	if err := installOperationalEvents(db); err != nil {
++		lo.Fatal("could not initialize newsletter operational events")
++	}
+ 	sesConfig, err := sesfeedback.ConfigFromEnv()
+ 	if err != nil {
+ 		lo.Fatal("invalid SES feedback configuration")
+@@ -327,6 +330,13 @@ func main() {
+ 		needsUserSetup: !hasUsers,
+ 	}
+ 
++	operationalCtx, stopOperational := context.WithCancel(context.Background())
++	operationalDone := make(chan struct{})
++	go func() {
++		defer close(operationalDone)
++		app.monitorOperationalEvents(operationalCtx)
++	}()
++
+ 	// Star the update checker.
+ 	if ko.Bool("app.check_updates") {
+ 		go app.checkUpdates(versionString, time.Hour*24)
+@@ -343,6 +353,9 @@ func main() {
+ 
+ 	closerWait := make(chan bool)
+ 	<-awaitReload(chReload, closerWait, func() {
++		stopOperational()
++		<-operationalDone
++
+ 		// Stop the HTTP server.
+ 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+ 		defer cancel()
+diff --git a/cmd/warpdrive_delivery_http.go b/cmd/warpdrive_delivery_http.go
+index 3271344..6ae0c99 100644
+--- a/cmd/warpdrive_delivery_http.go
++++ b/cmd/warpdrive_delivery_http.go
+@@ -79,6 +79,9 @@ func (a *App) ResolveWarpdriveDelivery(c echo.Context) error {
+ 	}
+ 	changed := false
+ 	err = campaignDeliveryTx(a.db, id, func(ctx context.Context, tx *sqlx.Tx, _ string) error {
++		if _, err := tx.ExecContext(ctx, "SELECT set_config('warpdrive.operational_operator', 'true', true)"); err != nil {
++			return err
++		}
+ 		res, err := tx.ExecContext(ctx, `
+ 			UPDATE warpdrive_delivery_recipients
+ 			SET state = $3, lease_token = NULL, lease_until = NULL, updated_at = NOW()
+diff --git a/cmd/warpdrive_operational_events.go b/cmd/warpdrive_operational_events.go
+new file mode 100644
+index 0000000..cc639bd
+--- /dev/null
++++ b/cmd/warpdrive_operational_events.go
+@@ -0,0 +1,225 @@
++package main
++
++import (
++	"context"
++	"database/sql"
++	_ "embed"
++	"encoding/json"
++	"errors"
++	"io"
++	"net/http"
++	"net/url"
++	"strconv"
++	"time"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
++	"github.com/labstack/echo/v4"
++	"github.com/lib/pq"
++)
++
++//go:embed warpdrive_operational_events.sql
++var operationalEventsSchema string
++
++const operationalEventLimit = 100
++
++type operationalEvent struct {
++	ID         string    `db:"id" json:"id"`
++	Kind       string    `db:"kind" json:"kind"`
++	Reason     string    `db:"reason" json:"reason"`
++	Count      int       `db:"count" json:"count"`
++	OccurredAt time.Time `db:"occurred_at" json:"occurred_at"`
++}
++
++func installOperationalEvents(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if _, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(900731613, 50)"); err != nil {
++		return err
++	}
++	res, err := tx.ExecContext(ctx, "INSERT INTO warpdrive_delivery_migrations(version) VALUES (5) ON CONFLICT DO NOTHING")
++	if err != nil {
++		return err
++	}
++	inserted, err := res.RowsAffected()
++	if err != nil {
++		return err
++	}
++	if inserted == 1 {
++		if _, err = tx.ExecContext(ctx, operationalEventsSchema); err != nil {
++			return err
++		}
++	}
++	return tx.Commit()
++}
++
++func operationalUnavailable() error {
++	return echo.NewHTTPError(http.StatusServiceUnavailable, "Newsletter operational events are unavailable")
++}
++
++func (a *App) GetWarpdriveOperationalEvents(c echo.Context) error {
++	limit := operationalEventLimit
++	query, err := url.ParseQuery(c.Request().URL.RawQuery)
++	if err != nil {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	for key, values := range query {
++		if key != "limit" || len(values) != 1 {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++		parsed, err := strconv.Atoi(values[0])
++		if err != nil || parsed < 1 || parsed > operationalEventLimit {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++		limit = parsed
++	}
++	ctx, cancel := context.WithTimeout(c.Request().Context(), deliveryDBTimeout)
++	defer cancel()
++	events := []operationalEvent{}
++	if err := a.db.SelectContext(ctx, &events, `
++		SELECT id, kind, reason, count, occurred_at FROM warpdrive_operational_events
++		WHERE acknowledged_at IS NULL ORDER BY sequence LIMIT $1
++	`, limit+1); err != nil {
++		return operationalUnavailable()
++	}
++	pending := len(events) > limit
++	if pending {
++		events = events[:limit]
++	}
++	c.Response().Header().Set("Cache-Control", "no-store")
++	return c.JSON(http.StatusOK, okResp{struct {
++		Events  []operationalEvent `json:"events"`
++		Pending bool               `json:"pending"`
++	}{events, pending}})
++}
++
++func (a *App) AcknowledgeWarpdriveOperationalEvents(c echo.Context) error {
++	var req struct {
++		IDs []string `json:"event_ids"`
++	}
++	decoder := json.NewDecoder(http.MaxBytesReader(c.Response(), c.Request().Body, 16384))
++	opening, err := decoder.Token()
++	if err != nil || opening != json.Delim('{') {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	seenIDs := false
++	for decoder.More() {
++		key, err := decoder.Token()
++		if err != nil || key != "event_ids" || seenIDs {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++		seenIDs = true
++		if err := decoder.Decode(&req.IDs); err != nil {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++	}
++	closing, err := decoder.Token()
++	if err != nil || closing != json.Delim('}') {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	if err := decoder.Decode(new(any)); !errors.Is(err, io.EOF) || len(req.IDs) == 0 || len(req.IDs) > operationalEventLimit {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	ids := make([]string, 0, len(req.IDs))
++	seen := make(map[string]bool, len(req.IDs))
++	for _, raw := range req.IDs {
++		id, err := uuid.FromString(raw)
++		if err != nil || id == uuid.Nil || id.String() != raw {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++		if !seen[raw] {
++			ids = append(ids, raw)
++			seen[raw] = true
++		}
++	}
++	ctx, cancel := context.WithTimeout(c.Request().Context(), deliveryDBTimeout)
++	defer cancel()
++	var count int
++	if err := a.db.GetContext(ctx, &count, `
++		WITH changed AS (
++			UPDATE warpdrive_operational_events SET acknowledged_at=clock_timestamp()
++			WHERE id=ANY($1::uuid[]) AND acknowledged_at IS NULL RETURNING id
++		)
++		SELECT count(*) FROM warpdrive_operational_events WHERE id=ANY($1::uuid[])
++	`, pq.Array(ids)); err != nil {
++		return operationalUnavailable()
++	}
++	c.Response().Header().Set("Cache-Control", "no-store")
++	return c.JSON(http.StatusOK, okResp{struct {
++		Acknowledged int `json:"acknowledged"`
++	}{count}})
++}
++
++// This bounded, outbox-only maintenance preserves all receipt and campaign states.
++// Lock the campaign before re-reading an expired fact, as the existing sender and
++// signed provider reconciliation do, so acceptance cannot race a stale issue.
++func sweepOperationalEvents(parent context.Context, db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(parent, deliveryDBTimeout)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	var campaignID int
++	err = tx.GetContext(ctx, &campaignID, `
++		SELECT c.id FROM campaigns c WHERE EXISTS (
++			SELECT 1 FROM warpdrive_delivery_recipients d WHERE d.campaign_id=c.id
++			AND (d.state IN ('unknown', 'rejected') OR (d.state='submitting' AND d.lease_until<=clock_timestamp()))
++			AND NOT EXISTS (SELECT 1 FROM warpdrive_operational_events e WHERE e.event_key IN (
++				digest('delivery:' || d.id || ':delivery.failed', 'sha256'),
++				digest('delivery:' || d.id || ':delivery.uncertain', 'sha256')))
++		) ORDER BY c.id LIMIT 1 FOR UPDATE OF c SKIP LOCKED
++	`)
++	if err != nil && !errors.Is(err, sql.ErrNoRows) {
++		return err
++	}
++	if err == nil {
++		if _, err = tx.ExecContext(ctx, `
++			SELECT warpdrive_enqueue_operational(
++				'delivery:' || d.id || CASE WHEN d.state='rejected' THEN ':delivery.failed' ELSE ':delivery.uncertain' END,
++				CASE WHEN d.state='rejected' THEN 'delivery.failed' ELSE 'delivery.uncertain' END,
++				CASE WHEN d.state='rejected' THEN 'delivery_rejected' ELSE 'submission_unknown' END,
++				CASE WHEN d.state='submitting' THEN d.lease_until ELSE d.updated_at END)
++			FROM warpdrive_delivery_recipients d WHERE d.campaign_id=$1
++			AND (d.state IN ('unknown', 'rejected') OR (d.state='submitting' AND d.lease_until<=clock_timestamp()))
++			AND NOT EXISTS (SELECT 1 FROM warpdrive_operational_events e WHERE e.event_key IN (
++				digest('delivery:' || d.id || ':delivery.failed', 'sha256'),
++				digest('delivery:' || d.id || ':delivery.uncertain', 'sha256')))
++			ORDER BY d.id LIMIT 100
++		`, campaignID); err != nil {
++			return err
++		}
++	}
++	if _, err = tx.ExecContext(ctx, `
++		SELECT warpdrive_enqueue_feedback_operational(f.delivery_id, f.kind, f.outcome, f.received_at)
++		FROM warpdrive_ses_feedback f
++		WHERE f.delivery_id IS NOT NULL AND f.kind IN ('hard', 'soft', 'complaint') AND f.outcome!='duplicate'
++		AND NOT EXISTS (SELECT 1 FROM warpdrive_operational_events e
++		                WHERE e.event_key=digest('feedback:' || f.delivery_id || ':' || f.kind || CASE WHEN f.outcome='unmatched' THEN ':unmatched' ELSE ':matched' END, 'sha256'))
++		ORDER BY f.received_at, f.sns_id LIMIT 100
++	`); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
++
++func (a *App) monitorOperationalEvents(ctx context.Context) {
++	ticker := time.NewTicker(30 * time.Second)
++	defer ticker.Stop()
++	for {
++		if err := sweepOperationalEvents(ctx, a.db); err != nil && ctx.Err() == nil {
++			a.log.Print("could not enqueue newsletter operational events")
++		}
++		select {
++		case <-ctx.Done():
++			return
++		case <-ticker.C:
++		}
++	}
++}
+diff --git a/cmd/warpdrive_operational_events.sql b/cmd/warpdrive_operational_events.sql
+new file mode 100644
+index 0000000..b77d8f8
+--- /dev/null
++++ b/cmd/warpdrive_operational_events.sql
+@@ -0,0 +1,104 @@
++-- Opaque source identities deliberately survive recipient/campaign erasure.
++CREATE TABLE warpdrive_operational_events (
++    sequence BIGSERIAL PRIMARY KEY,
++    id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
++    event_key BYTEA NOT NULL UNIQUE CHECK (octet_length(event_key) = 32),
++    kind TEXT NOT NULL,
++    reason TEXT NOT NULL,
++    count SMALLINT NOT NULL DEFAULT 1 CHECK (count = 1),
++    occurred_at TIMESTAMPTZ NOT NULL,
++    acknowledged_at TIMESTAMPTZ,
++    CHECK (
++        (kind = 'delivery.failed' AND reason = 'delivery_rejected') OR
++        (kind = 'delivery.uncertain' AND reason = 'submission_unknown') OR
++        (kind = 'delivery.resolved' AND reason IN ('operator_accepted', 'operator_rejected', 'provider_accepted', 'delivery_rejected')) OR
++        (kind = 'feedback.bounce' AND reason IN ('hard_bounce', 'soft_bounce', 'unmatched_bounce')) OR
++        (kind = 'feedback.complaint' AND reason IN ('complaint', 'unmatched_complaint'))
++    )
++);
++CREATE INDEX warpdrive_operational_events_pending_idx
++    ON warpdrive_operational_events(sequence) WHERE acknowledged_at IS NULL;
++
++CREATE FUNCTION warpdrive_enqueue_operational(source TEXT, event_kind TEXT, event_reason TEXT, at TIMESTAMPTZ)
++RETURNS VOID LANGUAGE SQL AS $$
++    INSERT INTO warpdrive_operational_events(event_key, kind, reason, occurred_at)
++    VALUES(digest(source, 'sha256'), event_kind, event_reason, at)
++    ON CONFLICT (event_key) DO NOTHING;
++$$;
++
++CREATE FUNCTION warpdrive_record_delivery_operational() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE
++    operator_review BOOLEAN := COALESCE(current_setting('warpdrive.operational_operator', TRUE), '') = 'true';
++    resolution TEXT;
++BEGIN
++    IF TG_OP = 'UPDATE' THEN
++        IF NEW.state = OLD.state THEN RETURN NULL; END IF;
++        -- The existing read contract already projects an expired submission as
++        -- unknown. Record that fact before an immediate operator/sender outcome.
++        IF OLD.state = 'submitting' AND OLD.lease_until <= clock_timestamp() THEN
++            PERFORM warpdrive_enqueue_operational('delivery:' || NEW.id || ':delivery.uncertain',
++                'delivery.uncertain', 'submission_unknown', OLD.lease_until);
++        END IF;
++    END IF;
++    IF NEW.state IN ('accepted', 'rejected') AND EXISTS (
++        SELECT 1 FROM warpdrive_operational_events
++        WHERE event_key IN (digest('delivery:' || NEW.id || ':delivery.failed', 'sha256'),
++                            digest('delivery:' || NEW.id || ':delivery.uncertain', 'sha256'))
++    ) THEN
++        resolution := CASE
++            WHEN operator_review AND NEW.state = 'accepted' THEN 'operator_accepted'
++            WHEN operator_review THEN 'operator_rejected'
++            WHEN NEW.state = 'accepted' THEN 'provider_accepted'
++            ELSE 'delivery_rejected' END;
++        PERFORM warpdrive_enqueue_operational('delivery:' || NEW.id || ':delivery.resolved',
++            'delivery.resolved', resolution, clock_timestamp());
++    ELSIF NEW.state = 'rejected' THEN
++        PERFORM warpdrive_enqueue_operational('delivery:' || NEW.id || ':delivery.failed',
++            'delivery.failed', 'delivery_rejected', NEW.updated_at);
++    ELSIF NEW.state = 'unknown' THEN
++        PERFORM warpdrive_enqueue_operational('delivery:' || NEW.id || ':delivery.uncertain',
++            'delivery.uncertain', 'submission_unknown', NEW.updated_at);
++    END IF;
++    RETURN NULL;
++END;
++$$;
++CREATE TRIGGER warpdrive_record_delivery_operational
++    AFTER INSERT OR UPDATE OF state ON warpdrive_delivery_recipients
++    FOR EACH ROW EXECUTE FUNCTION warpdrive_record_delivery_operational();
++
++CREATE FUNCTION warpdrive_enqueue_feedback_operational(delivery UUID, feedback_kind TEXT, outcome TEXT, at TIMESTAMPTZ)
++RETURNS VOID LANGUAGE plpgsql AS $$
++DECLARE
++    event_kind TEXT;
++    event_reason TEXT;
++BEGIN
++    IF delivery IS NULL OR feedback_kind NOT IN ('hard', 'soft', 'complaint') OR outcome = 'duplicate' THEN RETURN; END IF;
++    event_kind := CASE WHEN feedback_kind = 'complaint' THEN 'feedback.complaint' ELSE 'feedback.bounce' END;
++    event_reason := CASE
++        WHEN outcome = 'unmatched' AND feedback_kind = 'complaint' THEN 'unmatched_complaint'
++        WHEN outcome = 'unmatched' THEN 'unmatched_bounce'
++        WHEN feedback_kind = 'hard' THEN 'hard_bounce'
++        WHEN feedback_kind = 'soft' THEN 'soft_bounce'
++        ELSE 'complaint' END;
++    PERFORM warpdrive_enqueue_operational('feedback:' || delivery || ':' || feedback_kind || CASE WHEN outcome='unmatched' THEN ':unmatched' ELSE ':matched' END,
++        event_kind, event_reason, at);
++END;
++$$;
++
++CREATE FUNCTION warpdrive_record_feedback_operational() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE item RECORD;
++BEGIN
++    -- Defer until the signed handler's insert + exact-match update are complete.
++    -- Both source receipt and event still commit or roll back together.
++    SELECT delivery_id, kind, outcome, received_at INTO item
++        FROM warpdrive_ses_feedback WHERE topic_arn = NEW.topic_arn AND sns_id = NEW.sns_id;
++    IF FOUND THEN
++        PERFORM warpdrive_enqueue_feedback_operational(item.delivery_id, item.kind, item.outcome, item.received_at);
++    END IF;
++    RETURN NULL;
++END;
++$$;
++CREATE CONSTRAINT TRIGGER warpdrive_record_feedback_operational
++    AFTER INSERT OR UPDATE ON warpdrive_ses_feedback
++    DEFERRABLE INITIALLY DEFERRED
++    FOR EACH ROW EXECUTE FUNCTION warpdrive_record_feedback_operational();
+diff --git a/cmd/warpdrive_readiness.go b/cmd/warpdrive_readiness.go
+index 12fcd78..3952a76 100644
+--- a/cmd/warpdrive_readiness.go
++++ b/cmd/warpdrive_readiness.go
+@@ -122,8 +122,10 @@ func (a *App) checkDatabaseReadiness(ctx context.Context) string {
+ 		   AND to_regclass('warpdrive_ses_feedback') IS NOT NULL
+            AND to_regclass('warpdrive_crm_consent_events') IS NOT NULL
+            AND to_regclass('warpdrive_crm_consent_events_pending_idx') IS NOT NULL
++           AND to_regclass('warpdrive_operational_events') IS NOT NULL
++           AND to_regclass('warpdrive_operational_events_pending_idx') IS NOT NULL
+ 		   AND to_regclass('warpdrive_delivery_smtp_recent') IS NOT NULL
+-		   AND (SELECT count(*) FROM warpdrive_delivery_migrations WHERE version IN (1, 2, 3, 4)) = 4
++		   AND (SELECT count(*) FROM warpdrive_delivery_migrations WHERE version IN (1, 2, 3, 4, 5)) = 5
+ 	`)
+ 	var dbError *pq.Error
+ 	switch {
+diff --git a/internal/sesfeedback/operational_events_test.go b/internal/sesfeedback/operational_events_test.go
+new file mode 100644
+index 0000000..611eb47
+--- /dev/null
++++ b/internal/sesfeedback/operational_events_test.go
+@@ -0,0 +1,104 @@
++package sesfeedback
++
++import (
++	"fmt"
++	"io"
++	"log"
++	"net/http"
++	"os"
++	"strings"
++	"testing"
++
++	"github.com/jmoiron/sqlx"
++)
++
++func TestSignedOperationalOutboxWithPostgres(t *testing.T) {
++	dsn := os.Getenv("WARPDRIVE_SES_FIXTURE_DSN")
++	if dsn == "" {
++		t.Skip("disposable PostgreSQL fixture not requested")
++	}
++	if !strings.HasPrefix(dsn, "host=/tmp/lm-ses-") || !strings.Contains(dsn, "dbname=consent user=consentproof sslmode=disable") {
++		t.Fatal("use the disposable fixture runner")
++	}
++	db, err := sqlx.Connect("postgres", dsn)
++	must(t, err)
++	defer db.Close()
++	f := newSignedFixture(t)
++	h := &handler{db: db, config: f.verification.config, verify: f.verification, log: log.New(io.Discard, "", 0)}
++	job := seedJob(t, db, "operational-hard@example.test", "unknown")
++	hard := f.event(job, job.email, "Permanent", "operational-hard", 0)
++	if status := requestStatus(h, hard); status != http.StatusNoContent {
++		t.Fatalf("signed hard feedback returned %d", status)
++	}
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':hard:matched','sha256') AND reason='hard_bounce'`, job.delivery)
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('delivery:' || $1 || ':delivery.resolved','sha256') AND reason='provider_accepted'`, job.delivery)
++	repeat := hard
++	repeat.MessageID = randomID()
++	repeat = f.sign(repeat)
++	if status := requestStatus(h, repeat); status != http.StatusNoContent {
++		t.Fatalf("semantic duplicate returned %d", status)
++	}
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':hard:matched','sha256')`, job.delivery)
++
++	unmatched := seedJob(t, db, "operational-unmatched@example.test", "unknown")
++	complaint := f.event(unmatched, "different-operational@example.test", "Complaint", "operational-unmatched", 0)
++	if status := requestStatus(h, complaint); status != http.StatusNoContent {
++		t.Fatalf("signed unmatched complaint returned %d", status)
++	}
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':complaint:unmatched','sha256') AND reason='unmatched_complaint'`, unmatched.delivery)
++	checkValue(t, db, "unknown", "SELECT state FROM warpdrive_delivery_recipients WHERE id=$1", unmatched.delivery)
++	checkValue(t, db, "enabled", "SELECT status FROM subscribers WHERE id=$1", unmatched.subscriber)
++	forged := f.event(unmatched, unmatched.email, "Complaint", "operational-forged", 0)
++	forged.Message += " "
++	if status := requestStatus(h, forged); status != http.StatusForbidden {
++		t.Fatalf("forged signature returned %d", status)
++	}
++	checkValue(t, db, 0, "SELECT count(*) FROM warpdrive_ses_feedback WHERE sns_id=$1", forged.MessageID)
++	matched := f.event(unmatched, unmatched.email, "Complaint", "operational-matched", 0)
++	if status := requestStatus(h, matched); status != http.StatusNoContent {
++		t.Fatalf("later exact matched complaint returned %d", status)
++	}
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':complaint:matched','sha256') AND reason='complaint'`, unmatched.delivery)
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':complaint:unmatched','sha256') AND reason='unmatched_complaint'`, unmatched.delivery)
++	checkValue(t, db, "blocklisted", "SELECT status FROM subscribers WHERE id=$1", unmatched.subscriber)
++	matched.MessageID = randomID()
++	matched = f.sign(matched)
++	if status := requestStatus(h, matched); status != http.StatusNoContent {
++		t.Fatalf("matched complaint duplicate returned %d", status)
++	}
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':complaint:matched','sha256')`, unmatched.delivery)
++
++	rollback := seedJob(t, db, "operational-rollback@example.test", "unknown")
++	_, err = db.Exec(fmt.Sprintf(`
++		CREATE FUNCTION reject_operational_fixture() RETURNS trigger LANGUAGE plpgsql AS $$
++		BEGIN RAISE EXCEPTION 'synthetic outbox unavailable'; END; $$;
++		CREATE TRIGGER reject_operational_fixture BEFORE INSERT ON warpdrive_operational_events FOR EACH ROW
++		WHEN (NEW.event_key=digest('feedback:%s:hard:matched','sha256')) EXECUTE FUNCTION reject_operational_fixture();
++	`, rollback.delivery))
++	must(t, err)
++	defer db.Exec("DROP TRIGGER IF EXISTS reject_operational_fixture ON warpdrive_operational_events; DROP FUNCTION IF EXISTS reject_operational_fixture()")
++	retriable := f.event(rollback, rollback.email, "Permanent", "operational-rollback", 0)
++	if status := requestStatus(h, retriable); status != http.StatusServiceUnavailable {
++		t.Fatalf("outbox failure returned %d", status)
++	}
++	checkValue(t, db, 0, "SELECT count(*) FROM warpdrive_ses_feedback WHERE sns_id=$1", retriable.MessageID)
++	checkValue(t, db, 0, "SELECT count(*) FROM bounces WHERE campaign_id=$1", rollback.campaign)
++	checkValue(t, db, "unknown", "SELECT state FROM warpdrive_delivery_recipients WHERE id=$1", rollback.delivery)
++	checkValue(t, db, "enabled", "SELECT status FROM subscribers WHERE id=$1", rollback.subscriber)
++	_, err = db.Exec("DROP TRIGGER reject_operational_fixture ON warpdrive_operational_events")
++	must(t, err)
++	if status := requestStatus(h, retriable); status != http.StatusNoContent {
++		t.Fatalf("outbox recovery returned %d", status)
++	}
++	checkValue(t, db, 1, `SELECT count(*) FROM warpdrive_operational_events
++		WHERE event_key=digest('feedback:' || $1 || ':hard:matched','sha256')`, rollback.delivery)
++	checkValue(t, db, false, `SELECT EXISTS (SELECT 1 FROM warpdrive_operational_events
++		WHERE row_to_json(warpdrive_operational_events)::text LIKE '%@example.test%')`)
++}

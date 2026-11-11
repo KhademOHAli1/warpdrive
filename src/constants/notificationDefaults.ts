@@ -16,6 +16,12 @@ export const DEFAULT_EMAIL_BY_TYPE: Record<NotificationType, boolean> = {
   email_click: false,
   deal_email_received: false,
   workflow_message: false,
+  newsletter_operational: false,
 };
 
 export const DEFAULT_IN_APP = true;
+
+/** Operational notices intentionally have no email channel, even with a stale stored preference. */
+export function supportsNotificationEmail(type: NotificationType): boolean {
+  return type !== "newsletter_operational";
+}

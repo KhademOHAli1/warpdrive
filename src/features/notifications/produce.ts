@@ -2,6 +2,8 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { wsChannel } from "@/constants/wsChannels";
 import { notifications } from "@/db/schema";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
+import { operationalNoticeSchema } from "@/features/newsletter/delivery/operationalContracts";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import { hydrateActor } from "@/server/hydrateActor";
 import { publishEvent } from "@/server/notify";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
@@ -9,6 +11,7 @@ import type { CreateNotificationInput } from "@/types/notification";
 import { err, ok, type Result } from "@/types/result";
 
 import { canReadNotificationCalendar } from "./calendarPrivacy";
+import { resolveDelivery } from "./preferences";
 
 type ProduceOk = { notificationId: string } | { suppressed: true };
 
@@ -27,6 +30,19 @@ export async function createNotification(
   const recipientUser = await hydrateActor(db, input.recipientId, signal);
   if (recipientUser === null) {
     return ok({ suppressed: true });
+  }
+
+  if (input.type === "newsletter_operational") {
+    if (
+      !hasNewsletterPermission(recipientUser, "operate") ||
+      input.entityType !== null ||
+      input.entityId !== null ||
+      input.actorId !== null ||
+      !operationalNoticeSchema.safeParse(input.payload).success
+    )
+      return ok({ suppressed: true });
+    const delivery = await resolveDelivery(db, input.recipientId, input.type, signal);
+    if (!delivery.inApp) return ok({ suppressed: true });
   }
 
   if (!(await canReadNotificationCalendar(db, recipientUser, input, signal))) {

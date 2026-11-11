@@ -36,4 +36,6 @@ pnpm-debug.log*
 # Tests and docs are not needed at runtime.
 **/*.test.ts
 **/*.test-helpers.ts
+# Required for typechecking the disposable integration-profile smoke script.
+!src/features/auth/session.test-helpers.ts
 docs

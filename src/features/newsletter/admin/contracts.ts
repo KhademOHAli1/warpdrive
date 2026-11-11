@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { OperationalNotice } from "../delivery/operationalContracts";
 
 export const settingsSections = [
   "general",
@@ -213,6 +214,7 @@ export interface LogEntry {
   source: "campaigns" | "workspace";
   outcome: LogOutcome;
   correlationId: string | null;
+  detail?: OperationalNotice;
 }
 export interface LogPage {
   rows: LogEntry[];

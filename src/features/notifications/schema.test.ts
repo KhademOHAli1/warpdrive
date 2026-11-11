@@ -38,6 +38,7 @@ describe("phase 5 schema", () => {
           "email_open",
           "mention",
           "workflow_message",
+          "newsletter_operational",
         ].sort(),
       );
     });

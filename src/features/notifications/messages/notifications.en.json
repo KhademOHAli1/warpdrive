@@ -40,7 +40,8 @@
       "deal_lost": "Deal lost",
       "comment_reply": "Comment replies",
       "deal_email_received": "New email on my deals",
-      "workflow_message": "Workflow messages"
+      "workflow_message": "Workflow messages",
+      "newsletter_operational": "Newsletter operations"
     }
   },
   "email": {
@@ -93,5 +94,31 @@
       "subject": "Warpdrive notification",
       "line": "{recipient}, you have a new notification."
     }
+  },
+  "operations": {
+    "unavailable": "Newsletter operation needs attention",
+    "eventCount": "{count, plural, one {# event} other {# events}}",
+    "database_unavailable": "Newsletter database is unavailable",
+    "database_migration": "Newsletter database needs an upgrade",
+    "scheduler_starting": "Newsletter sender is starting",
+    "scheduler_stale": "Newsletter sender stopped checking its queue",
+    "relay_unconfigured": "Newsletter sending relay needs configuration",
+    "relay_unavailable": "Newsletter sending relay is unavailable",
+    "media_unavailable": "Newsletter media is unavailable",
+    "media_unchecked": "Newsletter media could not be checked",
+    "feedback_unconfirmed": "Newsletter feedback connection is not confirmed",
+    "service_unreachable": "Newsletter service could not be reached",
+    "events_unavailable": "Newsletter event synchronization needs attention",
+    "recovered": "Newsletter service recovered",
+    "delivery_rejected": "Newsletter delivery rejection recorded",
+    "submission_unknown": "Newsletter submission needs review; its outcome is unknown",
+    "operator_accepted": "Delivery review recorded an accepted submission",
+    "operator_rejected": "Delivery review recorded a rejected submission",
+    "provider_accepted": "Newsletter handoff to the provider confirmed",
+    "hard_bounce": "Permanent newsletter bounce recorded",
+    "soft_bounce": "Temporary newsletter bounce recorded",
+    "unmatched_bounce": "Unmatched newsletter bounce feedback needs review",
+    "complaint": "Newsletter spam complaint recorded",
+    "unmatched_complaint": "Unmatched newsletter complaint feedback needs review"
   }
 }

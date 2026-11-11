@@ -20,6 +20,7 @@ const EXPECTED_EMAIL_DEFAULT: Record<NotificationType, boolean> = {
   email_click: false,
   deal_email_received: false,
   workflow_message: false,
+  newsletter_operational: false,
 };
 
 describe("notification preferences", () => {

@@ -56,6 +56,7 @@ export * from "./mailConnectionChecks";
 export * from "./mailLabels";
 export * from "./mailRemote";
 export * from "./mentions";
+export * from "./newsletterOperational";
 export * from "./notes";
 export * from "./notificationPreferences";
 export * from "./notifications";

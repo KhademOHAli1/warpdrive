@@ -289,7 +289,7 @@ def prove(fixture):
     assert_equal(status, 200, "authenticated capabilities")
     assert_equal(json.loads(body)["data"], {
         "consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1,
-        "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1,
+        "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1, "operationalEvents": 1,
     }, "derived capabilities")
     status, source = fixture.request("/public/static/warpdrive-engine-source.tar.gz")
     assert_equal(status, 200, "source archive response")
@@ -299,7 +299,8 @@ def prove(fixture):
             "patches/010-optin-confirmation.patch", "patches/020-dispatch.patch",
             "patches/025-list-consent-mode.patch", "patches/027-public-subscriber-update.patch",
             "patches/030-campaign-revision.patch", "patches/035-affirmative-optin.patch",
-            "patches/080-consent-revocation-events.patch", "tests/consent-events.py",
+            "patches/080-consent-revocation-events.patch", "patches/085-inapp-operational-events.patch",
+            "operational-tests/verify.py", "operational-tests/README.md", "tests/consent-events.py",
             "tests/public-subscriber-update.py",
         ):
             archive.getmember(name)
