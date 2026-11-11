@@ -82,7 +82,9 @@ COPY --chown=bun:bun --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
-COPY package.json next.config.ts ./
+# Include the config's local helper graph and avoid runtime TS module resolution.
+COPY --from=build /app/dist/next.config.mjs ./next.config.mjs
+COPY package.json ./
 # Application and curated component notices accompany the distributed runtime.
 COPY LICENSE ./LICENSE
 COPY third-party ./third-party

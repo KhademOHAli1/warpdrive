@@ -7,6 +7,8 @@ import { build } from "esbuild";
 // The Docker runtime ships a prod-only node_modules for these external requires to resolve against.
 // Output is .mjs so the bundled workers have an explicit ESM format.
 const entries = [
+  // Production loads this without a source checkout or Next's TS require hook.
+  { in: "next.config.ts", out: "dist/next.config.mjs" },
   { in: "src/features/workflows/v2/codeWorker.ts", out: "dist/workflow-code-worker.mjs" },
   { in: "src/entrypoints/ws.ts", out: "dist/ws.mjs" },
   { in: "src/entrypoints/worker.ts", out: "dist/worker.mjs" },
