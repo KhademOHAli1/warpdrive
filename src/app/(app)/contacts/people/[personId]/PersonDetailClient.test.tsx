@@ -43,18 +43,16 @@ vi.mock("@/features/contacts/actions", () => ({
 const { createActivityAction, newsletterPersonQuery, newsletterBeginProof } = vi.hoisted(() => ({
   createActivityAction: vi.fn(() => Promise.resolve({ ok: true as const })),
   newsletterBeginProof: vi.fn(),
-  newsletterPersonQuery: vi.fn(() => ({
-    data: {
+  newsletterPersonQuery: vi.fn(() => {
+    const data: PersonNewsletterSummary = {
       personId: "pe1",
       engineAvailable: true,
       deliveryAvailable: true,
       eligibleLists: [],
       addresses: [],
-    } as PersonNewsletterSummary,
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
-  })),
+    };
+    return { data, isPending: false, isError: false, refetch: vi.fn() };
+  }),
 }));
 vi.mock("@/features/activities/actions", () => ({ createActivityAction }));
 vi.mock("@/features/email/composer/RichTextBody", () => ({

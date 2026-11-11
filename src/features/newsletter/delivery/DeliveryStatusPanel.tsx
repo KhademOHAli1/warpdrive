@@ -5,6 +5,7 @@ import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { Tip } from "@/components/ui/tooltip";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { receiptMessages } from "../admin/receiptMessages";
 import { panelClass, WriteMessage } from "../campaigns/ui";
@@ -84,6 +85,13 @@ export function DeliveryStatusPanel({ campaignId, live }: { campaignId: number; 
   const selected = status.review.find((receipt) => receipt.id === deliveryId);
   const peak = Math.max(1, ...status.rates.map((point) => point.accepted));
   const evidenceReference = reference.trim();
+  const rateTime = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  });
+  const rateCount = new Intl.NumberFormat(locale);
 
   function resolve(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -133,15 +141,21 @@ export function DeliveryStatusPanel({ campaignId, live }: { campaignId: number; 
         <figure className="grid gap-2 border-t pt-3">
           <figcaption className="text-sm font-medium">{m.rate}</figcaption>
           <ol className="flex h-20 items-end gap-1" aria-label={m.rate}>
-            {status.rates.map((point) => (
-              <li
-                key={point.minute}
-                className="min-w-1 flex-1 rounded-t-sm bg-action"
-                style={{ height: `${(point.accepted / peak) * 100}%` }}
-                aria-label={`${point.minute.slice(11, 16)} UTC · ${point.accepted}`}
-                title={`${point.minute.slice(11, 16)} UTC · ${point.accepted}`}
-              />
-            ))}
+            {status.rates.map((point) => {
+              const label = `${rateTime.format(new Date(point.minute))} · ${rateCount.format(point.accepted)}`;
+              return (
+                <li
+                  key={point.minute}
+                  className="min-h-px min-w-1 flex-1"
+                  style={{ height: `${(point.accepted / peak) * 100}%` }}
+                  aria-label={label}
+                >
+                  <Tip label={label}>
+                    <span aria-hidden className="block size-full rounded-t-sm bg-action" />
+                  </Tip>
+                </li>
+              );
+            })}
           </ol>
         </figure>
       )}

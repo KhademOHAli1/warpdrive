@@ -41,6 +41,24 @@ export function useReplyRoutingMessages() {
   return messages[useLocale()];
 }
 
+function mailboxOptions(
+  mailboxId: string | null,
+  mailboxes: ReplyMailbox[],
+  loading: boolean,
+  m: ReturnType<typeof useReplyRoutingMessages>,
+) {
+  const options = [{ value: "", label: m.manual }];
+  if (mailboxId !== null && !mailboxes.some(({ id }) => id === mailboxId)) {
+    options.push({ value: mailboxId, label: loading ? m.loading : m.unavailable });
+  }
+  for (const { id, address, displayName } of mailboxes) {
+    const label =
+      displayName === undefined || displayName === "" ? address : `${displayName} · ${address}`;
+    options.push({ value: id, label });
+  }
+  return options;
+}
+
 export function ReplyRoutingField({
   mailboxId,
   mailboxes,
@@ -72,16 +90,6 @@ export function ReplyRoutingField({
       </div>
     );
   }
-  const options = [{ value: "", label: m.manual }];
-  if (mailboxId !== null && !mailboxes.some(({ id }) => id === mailboxId)) {
-    options.push({ value: mailboxId, label: loading ? m.loading : m.unavailable });
-  }
-  for (const mailbox of mailboxes) {
-    options.push({
-      value: mailbox.id,
-      label: mailbox.displayName ? `${mailbox.displayName} · ${mailbox.address}` : mailbox.address,
-    });
-  }
   const hint = loading
     ? m.loading
     : failed
@@ -95,8 +103,8 @@ export function ReplyRoutingField({
       <Select
         ariaLabel={m.label}
         value={mailboxId ?? ""}
-        options={options}
-        onChange={(id) => onChange(id || null)}
+        options={mailboxOptions(mailboxId, mailboxes, loading, m)}
+        onChange={(id) => onChange(id === "" ? null : id)}
         disabled={disabled}
       />
       <p className="text-xs text-muted-foreground" aria-live="polite">

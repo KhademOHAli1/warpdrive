@@ -47,7 +47,7 @@ test("reads a full CRM audience through bounded engine batches and excludes unav
         id: personId,
         ownerId,
         name: "Synthetic contact",
-        visibilityLevel: "owner",
+        visibilityLevel: "owner" as const,
         emails: [
           {
             label: "Work",
@@ -71,7 +71,9 @@ test("reads a full CRM audience through bounded engine batches and excludes unav
       })),
     );
 
-    const byBinding = new Map(records.map(({ grant }) => [grant.bindingUuid, grant]));
+    const byBinding = new Map<string, NewsletterGrant>(
+      records.map(({ grant }) => [grant.bindingUuid, grant]),
+    );
     provider.grants.mockImplementation((bindingIds, purpose) => {
       expect(purpose).toBe(listId);
       expect(bindingIds.length).toBeLessThanOrEqual(400);

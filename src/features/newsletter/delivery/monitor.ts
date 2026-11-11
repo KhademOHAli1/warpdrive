@@ -32,8 +32,9 @@ const monitor = createNewsletterReadinessMonitor(
       createListmonkClient(AbortSignal.any([signal, AbortSignal.timeout(8_000)])),
     ),
   (state, level) => {
-    if (level === "warn") console.warn("Newsletter delivery unavailable", { readiness: state });
-    else console.info("Newsletter delivery recovered", { readiness: state });
+    const event = { event: "newsletter.delivery.readiness", level, readiness: state };
+    if (level === "warn") console.warn(event);
+    else process.stdout.write(`${JSON.stringify(event)}\n`);
   },
 );
 

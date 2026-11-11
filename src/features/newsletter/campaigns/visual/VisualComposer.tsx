@@ -100,18 +100,19 @@ function BlockRow({
   onMove: (index: number) => void;
   onRemove: () => void;
 }) {
-  const drag = useSortable({ id: block.id, disabled });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } =
+    useSortable({ id: block.id, disabled });
   return (
     <li
-      ref={drag.setNodeRef}
-      style={{ transform: CSS.Transform.toString(drag.transform), transition: drag.transition }}
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
       className="grid gap-2 rounded-md border bg-card p-3"
     >
       <div className="flex items-center gap-2">
         <Button
-          ref={drag.setActivatorNodeRef}
-          {...drag.attributes}
-          {...drag.listeners}
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
           className="touch-none"
           variant="ghost"
           size="sm"

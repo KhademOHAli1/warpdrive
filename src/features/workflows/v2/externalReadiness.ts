@@ -72,6 +72,22 @@ async function aiReadiness(
     return needs("classification_questions");
   return ready;
 }
+
+function newsletterReadiness(actor: PermSetUser, node: WorkflowV2Node): BlockReadiness {
+  const access = newsletterActionAccess(node.type);
+  if (access === null) return ready;
+  if (!hasNewsletterPermission(actor, access)) return { state: "forbidden" };
+  if (!newsletterConfigured() || (access === "consent" && !env.NEWSLETTER_DELIVERY_ENABLED))
+    return { state: "needs_connection", reason: "newsletter_setup" };
+  if (
+    node.config.personId === undefined ||
+    node.config.listId === undefined ||
+    (access === "consent" && node.config.linkId === undefined)
+  )
+    return needs("invalid_configuration");
+  return ready;
+}
+
 export async function externalActionReadiness(
   db: Db,
   actor: PermSetUser,
@@ -79,21 +95,8 @@ export async function externalActionReadiness(
   signal: AbortSignal,
 ): Promise<BlockReadiness> {
   if (!actor.isActive) return { state: "forbidden" };
-  const newsletterAccess = newsletterActionAccess(node.type);
-  if (newsletterAccess !== null) {
-    if (!hasNewsletterPermission(actor, newsletterAccess)) return { state: "forbidden" };
-    if (
-      !newsletterConfigured() ||
-      (newsletterAccess === "consent" && !env.NEWSLETTER_DELIVERY_ENABLED)
-    )
-      return { state: "needs_connection", reason: "newsletter_setup" };
-    if (
-      node.config.personId === undefined ||
-      node.config.listId === undefined ||
-      (newsletterAccess === "consent" && node.config.linkId === undefined)
-    )
-      return needs("invalid_configuration");
-  }
+  const newsletter = newsletterReadiness(actor, node);
+  if (newsletter.state !== "ready") return newsletter;
   let references: boolean;
   try {
     references = blockReferences(node.config).length > 0;

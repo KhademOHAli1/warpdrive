@@ -125,22 +125,18 @@ function draftOf(campaign?: Campaign): Draft {
   };
 }
 
+function sendAtValue(input: string, previous: Campaign["send_at"] | undefined): string | null {
+  if (input === "") return null;
+  if (previous != null && input === localInputValue(previous)) return previous;
+  const scheduled = new Date(input);
+  return Number.isNaN(scheduled.getTime()) ? null : scheduled.toISOString();
+}
+
 function toPayload(
   draft: Draft,
   previous: Campaign | undefined,
   replyAddress: string | undefined,
 ): RoutedCampaignFields | null {
-  const previousInputTime = localInputValue(previous?.send_at);
-  const hasExistingTime = previous?.send_at != null && draft.sendAt === previousInputTime;
-  const scheduledTime = draft.sendAt ? new Date(draft.sendAt) : null;
-  const sendAt =
-    scheduledTime === null
-      ? null
-      : hasExistingTime
-        ? previous.send_at
-        : Number.isNaN(scheduledTime.getTime())
-          ? null
-          : scheduledTime.toISOString();
   let headers: unknown;
   let attribs: unknown;
   try {
@@ -165,7 +161,7 @@ function toPayload(
     from_email: draft.fromEmail,
     ...(tracksReplyRouting ? { replyToMailboxId: draft.replyToMailboxId } : {}),
     messenger: draft.messenger,
-    send_at: sendAt,
+    send_at: sendAtValue(draft.sendAt, previous?.send_at),
     content_type: draft.contentType,
     body: draft.body,
     body_source: draft.contentType === "visual" ? draft.bodySource || null : null,
