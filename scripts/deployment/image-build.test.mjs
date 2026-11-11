@@ -1,0 +1,121 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { parseBuildArguments, selectBuildEntries } from "../build-workers.mjs";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+test("default builder preserves every existing entrypoint", () => {
+  assert.deepEqual(
+    selectBuildEntries().map((entry) => entry.out),
+    [
+      "dist/next.config.mjs",
+      "dist/workflow-code-worker.mjs",
+      "dist/ws.mjs",
+      "dist/worker.mjs",
+      "dist/migrate.mjs",
+      "dist/sweep-spam.mjs",
+      "dist/auth-operator.mjs",
+    ],
+  );
+});
+
+test("non-web selections exclude Next configuration and retain required child workers", () => {
+  assert.deepEqual(selectBuildEntries("realtime"), [
+    { in: "src/entrypoints/ws.ts", out: "dist/ws.mjs" },
+  ]);
+  for (const component of ["worker", "realtime", "migrator"])
+    assert.ok(!selectBuildEntries(component).some((entry) => entry.in === "next.config.ts"));
+  for (const component of ["worker", "web"])
+    assert.ok(
+      selectBuildEntries(component).some((entry) => entry.out === "dist/workflow-code-worker.mjs"),
+    );
+  assert.ok(selectBuildEntries("migrator").some((entry) => entry.out === "dist/auth-operator.mjs"));
+});
+
+test("invalid or ambiguous selection fails before importing esbuild or writing outputs", () => {
+  for (const args of [
+    ["--component"],
+    ["--component", "--list"],
+    ["--component", "unknown"],
+    ["--component", "worker", "--component", "web"],
+    ["--list", "--list"],
+    ["--unknown"],
+  ])
+    assert.throws(() => parseBuildArguments(args));
+});
+
+test("list command runs without build dependencies or a source checkout", () => {
+  const isolated = mkdtempSync(join(tmpdir(), "warpdrive-build-selection-"));
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [join(root, "scripts/build-workers.mjs"), "--component", "realtime", "--list"],
+      { cwd: isolated, encoding: "utf8", timeout: 5_000 },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), selectBuildEntries("realtime"));
+    assert.deepEqual(readdirSync(isolated), []);
+  } finally {
+    rmSync(isolated, { recursive: true, force: true });
+  }
+});
+
+test("the CLI entrypoint still runs when invoked through a symlinked scripts directory", () => {
+  const isolated = mkdtempSync(join(tmpdir(), "warpdrive-build-symlink-"));
+  try {
+    symlinkSync(join(root, "scripts"), join(isolated, "scripts"), "dir");
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/build-workers.mjs", "--component", "migrator", "--list"],
+      { cwd: isolated, encoding: "utf8", timeout: 5_000 },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), selectBuildEntries("migrator"));
+    assert.deepEqual(readdirSync(isolated), ["scripts"]);
+  } finally {
+    rmSync(isolated, { recursive: true, force: true });
+  }
+});
+
+test("non-web Docker targets cannot reach the Next build stage", () => {
+  const dockerfile = readFileSync(join(root, "deploy/images/Dockerfile"), "utf8");
+  const stages = new Map();
+  let current;
+  for (const line of dockerfile.split("\n")) {
+    const from = /^FROM\s+(\S+)\s+AS\s+(\S+)$/i.exec(line);
+    if (from) {
+      current = { base: from[1], lines: [] };
+      stages.set(from[2], current);
+    } else if (current) current.lines.push(line);
+  }
+  function dependencies(name, visited = new Set()) {
+    if (visited.has(name) || !stages.has(name)) return visited;
+    visited.add(name);
+    const stage = stages.get(name);
+    dependencies(stage.base, visited);
+    for (const line of stage.lines) {
+      const copy = /^COPY\s/.test(line) ? /\s--from=(\S+)/.exec(line) : null;
+      if (copy) dependencies(copy[1], visited);
+    }
+    return visited;
+  }
+  for (const component of ["worker", "realtime", "migrator"]) {
+    const required = dependencies(component);
+    assert.ok(required.has(`${component}-build`));
+    assert.ok(required.has("runtime-base"));
+    assert.ok(required.has("prod-deps"));
+    assert.ok(required.has("deps"));
+    assert.ok(!required.has("web-build"));
+    assert.ok(
+      [...required].every(
+        (name) => !stages.get(name).lines.some((line) => /next build|\/\.next/.test(line)),
+      ),
+    );
+  }
+  assert.ok(dependencies("web").has("web-build"));
+});

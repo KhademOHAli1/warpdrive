@@ -1,4 +1,6 @@
-import { build } from "esbuild";
+import { realpathSync } from "node:fs";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Transpile + bundle ONLY our own source (the `@/*` graph) for the server entrypoints into
 // one file each, resolving npm packages at runtime from node_modules (packages: "external"). We
@@ -17,17 +19,69 @@ const entries = [
   { in: "scripts/auth-operator.ts", out: "dist/auth-operator.mjs" },
 ];
 
-await Promise.all(
-  entries.map((entry) =>
-    build({
-      entryPoints: [entry.in],
-      outfile: entry.out,
-      bundle: true,
-      platform: "node",
-      format: "esm",
-      target: "node22",
-      packages: "external",
-      logLevel: "info",
-    }),
-  ),
-);
+const componentOutputs = {
+  // Browser/SSR requests can run workflow simulations; operator commands remain available
+  // in the web image for the existing operator runbooks.
+  web: ["next.config", "workflow-code-worker", "sweep-spam", "auth-operator"],
+  worker: ["workflow-code-worker", "worker", "sweep-spam"],
+  realtime: ["ws"],
+  migrator: ["migrate", "auth-operator"],
+};
+
+export function selectBuildEntries(component = "all") {
+  if (component === "all") return entries.map((entry) => ({ ...entry }));
+  if (!Object.hasOwn(componentOutputs, component))
+    throw new Error(`Unknown component: ${component}`);
+  const outputs = new Set(componentOutputs[component].map((name) => `dist/${name}.mjs`));
+  return entries.filter((entry) => outputs.has(entry.out)).map((entry) => ({ ...entry }));
+}
+
+export function parseBuildArguments(args) {
+  let component = "all";
+  let specifiedComponent = false;
+  let list = false;
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] === "--component" && !specifiedComponent) {
+      if (args[index + 1] === undefined || args[index + 1].startsWith("--"))
+        throw new Error("--component requires a component name");
+      component = args[index + 1];
+      specifiedComponent = true;
+      index += 1;
+    } else if (args[index] === "--list" && !list) {
+      list = true;
+    } else {
+      throw new Error(`Unknown or repeated argument: ${args[index]}`);
+    }
+  }
+  return { entries: selectBuildEntries(component), list };
+}
+
+async function main() {
+  const options = parseBuildArguments(process.argv.slice(2));
+  if (options.list) {
+    console.log(JSON.stringify(options.entries));
+    return;
+  }
+  // Selection and --list need no installed dependencies and create no build outputs.
+  const { build } = await import("esbuild");
+  await Promise.all(
+    options.entries.map((entry) =>
+      build({
+        entryPoints: [entry.in],
+        outfile: entry.out,
+        bundle: true,
+        platform: "node",
+        format: "esm",
+        target: "node22",
+        packages: "external",
+        logLevel: "info",
+      }),
+    ),
+  );
+}
+
+if (
+  process.argv[1] &&
+  realpathSync(resolve(process.argv[1])) === realpathSync(fileURLToPath(import.meta.url))
+)
+  await main();

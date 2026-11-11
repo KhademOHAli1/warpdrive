@@ -1,0 +1,161 @@
+name: Production image qualification
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'docs-site/**'
+      - 'site/**'
+      - '**/*.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'docs-site/**'
+      - 'site/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+# This workflow neither publishes images nor receives production credentials.
+permissions:
+  contents: read
+
+concurrency:
+  group: production-images-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tooling:
+    name: Deployment tooling checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Test component selection and failure admission
+        run: |
+          node --test scripts/deployment/image-build.test.mjs
+          python3 -m unittest discover -s scripts/deployment -p 'test_*.py' -v
+
+  images:
+    name: Final production image smoke
+    needs: tooling
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      IMAGE_PREFIX: warpdrive-ci
+      IMAGE_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
+      REVISION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Admit native disposable runner disk budget
+        # Initial CI budget, not a production sizing declaration. Runtime admission uses
+        # measured candidate expansion, migration/WAL and operating-reserve inputs.
+        run: |
+          available=$(python3 -c 'import os; s=os.statvfs("."); print(s.f_bavail*s.f_frsize)')
+          python3 scripts/deployment/candidate.py capacity \
+            --available-bytes "$available" --candidate-bytes 6442450944 \
+            --migration-bytes 1073741824 --temporary-bytes 2147483648 \
+            --reserve-bytes 4294967296
+          test "$(uname -m)" = x86_64
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Build final Web image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Dockerfile
+          target: web
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/web:${{ env.IMAGE_TAG }}
+          build-args: |
+            APP_COMMIT=${{ env.REVISION }}
+            NEXT_PUBLIC_WS_URL=same-origin
+          cache-from: type=gha,scope=warpdrive-production-web
+          cache-to: type=gha,mode=max,scope=warpdrive-production-web
+      - name: Build final Worker image without Next compilation
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Dockerfile
+          target: worker
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/worker:${{ env.IMAGE_TAG }}
+          build-args: APP_COMMIT=${{ env.REVISION }}
+          cache-from: type=gha,scope=warpdrive-production-worker
+          cache-to: type=gha,mode=max,scope=warpdrive-production-worker
+      - name: Build final Realtime image without Next compilation
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Dockerfile
+          target: realtime
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/realtime:${{ env.IMAGE_TAG }}
+          build-args: APP_COMMIT=${{ env.REVISION }}
+          cache-from: type=gha,scope=warpdrive-production-realtime
+          cache-to: type=gha,mode=max,scope=warpdrive-production-realtime
+      - name: Build final Migrator image without Next compilation
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Dockerfile
+          target: migrator
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/migrator:${{ env.IMAGE_TAG }}
+          build-args: APP_COMMIT=${{ env.REVISION }}
+          cache-from: type=gha,scope=warpdrive-production-migrator
+          cache-to: type=gha,mode=max,scope=warpdrive-production-migrator
+      - name: Exercise actual final images with no source mounts
+        run: |
+          python3 scripts/deployment/image_smoke.py \
+            --web-image "$IMAGE_PREFIX/web:$IMAGE_TAG" \
+            --worker-image "$IMAGE_PREFIX/worker:$IMAGE_TAG" \
+            --realtime-image "$IMAGE_PREFIX/realtime:$IMAGE_TAG" \
+            --migrator-image "$IMAGE_PREFIX/migrator:$IMAGE_TAG" \
+            --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/smoke"
+      - name: Bind smoke evidence to exact inspected image IDs
+        run: |
+          mkdir -p "$RUNNER_TEMP/production-images/inspections"
+          for component in web worker realtime migrator; do
+            docker image inspect "$IMAGE_PREFIX/$component:$IMAGE_TAG" \
+              > "$RUNNER_TEMP/production-images/inspections/$component.json"
+          done
+          python3 scripts/deployment/candidate.py record \
+            --revision "$REVISION" \
+            --report "$RUNNER_TEMP/production-images/smoke/report.json" \
+            --inspections "$RUNNER_TEMP/production-images/inspections" \
+            --output "$RUNNER_TEMP/production-images/candidate.json"
+      - name: Retain the same tested images for trusted revision follow-up
+        if: github.event_name != 'pull_request'
+        run: |
+          docker image save --output "$RUNNER_TEMP/production-images/core-images.tar" \
+            "$IMAGE_PREFIX/web:$IMAGE_TAG" "$IMAGE_PREFIX/worker:$IMAGE_TAG" \
+            "$IMAGE_PREFIX/realtime:$IMAGE_TAG" "$IMAGE_PREFIX/migrator:$IMAGE_TAG"
+          cd "$RUNNER_TEMP/production-images"
+          sha256sum core-images.tar candidate.json smoke/report.json > SHA256SUMS
+      - name: Preserve qualification and failed-first evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: production-images-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/production-images/
+          if-no-files-found: warn
+          retention-days: 3
+          compression-level: 0
