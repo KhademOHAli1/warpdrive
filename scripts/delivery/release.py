@@ -17,6 +17,7 @@ from release_links import load_commit_links
 from release_security import verify_release_code_scanning
 from release_publication import record_publication
 from release_mail import is_mail_version, mail_release_gate, next_mail_patch
+from release_newsletter import CODEQL_CATEGORIES, newsletter_release_gate
 
 def require_revision(revision):
     if not SHA.fullmatch(revision):
@@ -57,6 +58,9 @@ def commit_references(api, repo, revision, base, overrides=None):
     return rows
 
 def release_gate(api, plan, policy, allow_published=False):
+    if plan.get("release_track") == "newsletter":
+        return newsletter_release_gate(api, plan, policy, require_revision, commit_references,
+                                       allow_published=allow_published)
     if plan.get("release_track") == "mail":
         return mail_release_gate(api, plan, policy, require_revision, commit_references,
                                  allow_published=allow_published)
@@ -120,6 +124,7 @@ def trusted_release_policy(revision):
 
 def publish(api, plan, evidence, directory, mode):
     repo, revision, tag = evidence["repository"], evidence["revision"], "v" + evidence["version"]
+    security_options = {"categories": CODEQL_CATEGORIES} if evidence.get("release_track") == "newsletter" else {}
     releases = api.pages(f"repos/{repo}/releases")
     current = next((r for r in releases if r["tag_name"] == tag), None)
     if current and current.get("prerelease") is not False:
@@ -127,7 +132,7 @@ def publish(api, plan, evidence, directory, mode):
     if not current or current.get("draft") is True:
         # Fresh draft/publication only: historical acceptance and immutable receipt
         # repair must not require an old revision to remain the current main tip.
-        print(json.dumps({"release_security": verify_release_code_scanning(api, repo, revision)}, sort_keys=True))
+        print(json.dumps({"release_security": verify_release_code_scanning(api, repo, revision, **security_options)}, sort_keys=True))
         # Validate body packaging before creating a tag or changing a draft.
         body = publication_notes(evidence, full_notes=notes(evidence))
     # gh release --verify-tag prevents GitHub from silently tagging the default branch tip.
@@ -157,7 +162,7 @@ def publish(api, plan, evidence, directory, mode):
         if canonical_json(latest) != canonical_json(evidence):
             raise GateError("Release evidence changed during preparation; rerun the draft action")
         # Named-main findings are mutable live evidence; reread immediately before publish.
-        print(json.dumps({"release_security": verify_release_code_scanning(api, repo, revision)}, sort_keys=True))
+        print(json.dumps({"release_security": verify_release_code_scanning(api, repo, revision, **security_options)}, sort_keys=True))
         api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"draft": False, "prerelease": False, "make_latest": "true"})
     reread = api.request(f"repos/{repo}/releases/{current['id']}")
     if reread["draft"] != (mode != "publish") or reread["tag_name"] != tag or reread.get("prerelease") is not False:

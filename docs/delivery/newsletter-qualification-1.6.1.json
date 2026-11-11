@@ -1,0 +1,636 @@
+{
+  "schema_version": 1,
+  "qualification_type": "newsletter_source_and_isolated_runtime",
+  "result": "qualified",
+  "version": "1.6.1",
+  "reviewed_revision": "684096b56f1962c04d919aebcb78352e198da9f9",
+  "reviewed_tree": "8272057bbd2655ad82d81fe38807f1ad68de122c",
+  "reviewed_pr_head": "485009e24c0109bad75d48c5ffaa96fc931bc9fc",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1c770-123f-7572-941e-a635c2b76e55",
+    "task_id": "/root/settings"
+  },
+  "parent_session_id": "01a1c76a-89dc-7453-aedb-1baa663cdcb6",
+  "provenance_limit": "Reviewer identity is the actual child Codex thread and delegated task path reported by the runtime. The parent session is recorded separately. These declarations carry no independent cryptographic or human reviewer authentication.",
+  "acceptance_claimed": false,
+  "user_journey_accepted": false,
+  "provider_installation_accepted": false,
+  "deployment_performed": false,
+  "live_provider_status": "pending",
+  "local_public_signup_enabled": false,
+  "summary": "All nine original acceptance clauses are qualified for reviewed newsletter source and retained isolated synthetic runtime scope. Exact Main hosted tests, source review, matching product/engine/migration pins and bounded local evidence support the 1.6.1 publication record.",
+  "limitations": "Live provider DNS, inbox delivery, installed bounce/complaint ingress, monitoring alerts and provider credential/restore procedures require operational qualification. Synthetic signed SES fixtures do not establish AWS installation acceptance. The focused newsletter browser journeys predate the final080/Main revision and supplement exact-Main CI plus local authenticated HTTP/API verification. The hosted full browser run covers its repository smoke packs. Three existing unit tests were skipped in the Main full suite. Canonical issue acceptance and human journey acceptance remain separate. Dashboard reporting remains deferred in the approved scope.",
+  "scopes": [
+    {
+      "canonical_id": "integration/newsletter-campaign-foundation",
+      "issue": 1011,
+      "scope_sha256": "6f9747c4e29df10e6bec6e34d2bc6b2a0b5f17f8f2ed9280b71d6f4710f15a3a",
+      "criteria": [
+        {
+          "id": "AC1",
+          "result": "qualified",
+          "notes": "Native Actions navigation, Campaigns operations, current staff authority, CSRF checks and private engine compatibility are implemented. Exact Main CI covers the adapter and permission boundaries. The retained local Main proof records native password/TOTP and all six authenticated newsletter/settings pages.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/components/shell/LeftNav.tsx",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/router.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/listmonkClient.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/permissions.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390"
+          ],
+          "local_evidence_refs": ["main-http", "browser-campaigns", "browser-roles"]
+        },
+        {
+          "id": "AC2",
+          "result": "qualified",
+          "notes": "Engine confirmation requires an affirmative POST. Global status, current list membership, archived-list state and late eligibility are rechecked. List mode downgrade is rejected and historical campaign/list unsubscribe references are retained. Synthetic engine regression sources cover mixed-list confirmation, suppression, concurrent unsubscribe and retention.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/tests/consent.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/tests/public-subscriber-update.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/dispatch-tests/verify-sql.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/dispatch-tests/verify-races.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/scripts/newsletters/engine-smoke.py"
+          ],
+          "local_evidence_refs": ["engine080", "migration-plan"]
+        },
+        {
+          "id": "AC3",
+          "result": "qualified",
+          "notes": "Durable app operation IDs bind actor, operation and canonical input. Concurrent/retried mutations replay a minimal result or retain unknown for operator reconciliation. Compatibility gates reject unsupported engine writes. Current PostgreSQL CI passes the four receipt regressions. The isolated restore and rotation records preserve suppression and uncertain receipts.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/operationReceipts.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/operationReceipts.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/listmonkClient.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/scripts/newsletters/restore-smoke.py",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390"
+          ],
+          "local_evidence_refs": ["rotation-rollback080", "lab-refresh"]
+        },
+        {
+          "id": "AC4",
+          "result": "qualified",
+          "notes": "Reviewed all original clauses against exact merged Main. PR head 485009e2 and Main 684096b5 share tree 8272057bbd2655ad82d81fe38807f1ad68de122c. Both supplied Main full qualification workflows completed successfully. Retained synthetic PostgreSQL/Mailpit/ingress qualification and the final native/container engine contract supplement those hosted results.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/pull/1012",
+            "https://github.com/KhademOHAli1/warpdrive/pull/1015",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942469",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/Caddyfile",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/scripts/newsletters/engine-smoke.py"
+          ],
+          "local_evidence_refs": [
+            "engine080",
+            "rotation-rollback080",
+            "migration-plan",
+            "main-http"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical_id": "integration/newsletter-crm-consent-and-delivery",
+      "issue": 1013,
+      "scope_sha256": "9c156a3d81e2e532feb0eb5590510ddc1be7f3ae145cc4caee505587677a6e28",
+      "criteria": [
+        {
+          "id": "AC1",
+          "result": "qualified",
+          "notes": "Mailbox proof and purpose grants are separate affirmative confirmations. Exact source includes the durable engine revocation outbox, scoped native event commit before acknowledgement, replay deduplication and erasure tombstone handling. CRM edits, merges, deletes and import updates call the revocation lifecycle. Main CI passes three identity, six revocation and one approved-erasure PostgreSQL tests. The earlier focused browser proof completed a real synthetic mailbox confirmation journey.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/identity/write.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/identity/events.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/identity/lifecycle.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/import/commitHelpers.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/identity/revocations.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/identity/erasure.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/tests/consent-events.py",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390"
+          ],
+          "local_evidence_refs": ["browser-person", "engine080"]
+        },
+        {
+          "id": "AC2",
+          "result": "qualified",
+          "notes": "Saved People views reuse the current CRM visibility predicate. Approval binds reviewed scope and exact grants. The engine sealed-audience predicate checks current address, subscriber identity, unrevoked grant and confirmed active double opt-in membership. Delegated author/send/consent boundaries and Workflow authority are checked server-side, with test mode preventing invitation effects. Main CI includes the Workflow action/event and audience regressions.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/crmAudience/peopleSource.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/crmAudience/approval.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/patches/045-sealed-crm-audiences.patch",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/permissions.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/workflows/v2/newsletterActions.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/workflows/v2/newsletterEvents.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390"
+          ],
+          "local_evidence_refs": ["browser-roles"]
+        },
+        {
+          "id": "AC3",
+          "result": "qualified",
+          "notes": "Attribution requires exact verified binding and actual SMTP acceptance provenance. Native lead creation uses current authority and durable request identity. Conversion retains the reviewed same-Person source and native Won records one qualified outcome. Main CI passes native attribution and the two conversion/outcome lineage regressions. Dashboard reporting remains deferred within the approved increment.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/patches/055-crm-attribution.patch",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/attribution/native.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/attribution/native.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/attribution/lineage.integration.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/leads/leadConvert.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/deal-workspace/wonLost.ts",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390"
+          ],
+          "local_evidence_refs": []
+        },
+        {
+          "id": "AC4",
+          "result": "qualified",
+          "notes": "Engine recipient admission, leases, submission and SMTP outcome reconciliation are durable. Regression sources cover pause/resume, lost response, SIGKILL, bounded retry and atomic admission. SES feedback uses configured topic/signature verification, delivery correlation, durable deduplication and suppression transactions. Synthetic readiness, source archive, relay rotation, passive restore/rollback, subscriber parity, bulk suppression and browser composition proofs are retained. Real provider and installation checks remain pending.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/durability-tests/verify.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/feedback-tests/verify.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/readiness-tests/verify.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/tests/audience-parity.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/src/features/newsletter/audience/recordsAndBulk.test.ts",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/scripts/newsletters/restore-smoke.py",
+            "https://github.com/KhademOHAli1/warpdrive/blob/684096b56f1962c04d919aebcb78352e198da9f9/deploy/newsletters/engine/patches/060-ses-feedback.patch",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390"
+          ],
+          "local_evidence_refs": [
+            "engine080",
+            "rotation-rollback080",
+            "browser-campaigns",
+            "lab-refresh",
+            "migration-plan"
+          ]
+        },
+        {
+          "id": "AC5",
+          "result": "qualified",
+          "notes": "Independently reviewed the exact merged source and pinned the release policy product, engine and migration paths, plus relevant regression sources. Main full CRM/site/documentation and full browser qualification both succeeded at reviewed revision 684096b56f1962c04d919aebcb78352e198da9f9. This report records source and synthetic runtime qualification.",
+          "evidence": [
+            "https://github.com/KhademOHAli1/warpdrive/pull/1015",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390",
+            "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942469",
+            "https://github.com/KhademOHAli1/warpdrive/tree/684096b56f1962c04d919aebcb78352e198da9f9"
+          ],
+          "local_evidence_refs": ["main-http", "final-qualification-summary"]
+        }
+      ]
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "deploy/newsletters/Caddyfile",
+      "sha256": "0138c59b8213ad71c70c9282d46aaaf58b1ec0c1c53195bc1184517a0d6dc624"
+    },
+    {
+      "path": "deploy/newsletters/engine/Dockerfile",
+      "sha256": "89377bfa604f6ad4400f5ad0144994f84788a88bd83668bf8a5066acc97f3bd2"
+    },
+    {
+      "path": "deploy/newsletters/engine/build.sh",
+      "sha256": "22ce25bf50c2822144a41e252ce1e11a4cc3b8796a21051ca0a8261c320dd6db"
+    },
+    {
+      "path": "deploy/newsletters/engine/dispatch-tests/verify-races.py",
+      "sha256": "4ef1076f0557b2c51a5b9f4de4f9e59217e517207ab492ee7f66dc323d589e9b"
+    },
+    {
+      "path": "deploy/newsletters/engine/dispatch-tests/verify-sql.py",
+      "sha256": "35f3c3cfe10519462b0205d94112ca1f518e4e5e92e3f26ef9396a8154564f12"
+    },
+    {
+      "path": "deploy/newsletters/engine/durability-tests/verify.py",
+      "sha256": "55dbaba5685b9fc480ddf1f322cff2b8537ba82ecfe788b7458b76355de56aaf"
+    },
+    {
+      "path": "deploy/newsletters/engine/feedback-tests/verify.py",
+      "sha256": "bd597c2a1632d55ac1c7d30c4806adfaf3b802f7487e6cc9108f6dcfd3d5bcc1"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/010-optin-confirmation.patch",
+      "sha256": "e923400b7a536048e45a0db9af09aaf1f07a708c0fdf554db1f3587d559dbff7"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/020-dispatch.patch",
+      "sha256": "d62cd3c9f6f5d9d61f2e06fa4fc809331e5ca78ff603105cba66bf30b93ae17f"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/025-list-consent-mode.patch",
+      "sha256": "e6b21c8d882b9a3932e3278782a1f23ff43003e0abddef28f52fe28b04e95009"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/027-public-subscriber-update.patch",
+      "sha256": "794eff7897ad7de0d55199759b001b8e082d6626a97ad637f5a63e9e420aca89"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/030-campaign-revision.patch",
+      "sha256": "6dd780ecee9ce2a82eb22675157ea1fdfd990c6159d9e517d39856fa652dc078"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/035-affirmative-optin.patch",
+      "sha256": "bd0e82622a84ed02e2f7b868f2b0ff35fa320320d68b320b9e3139d444c018e6"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/040-crm-identity.patch",
+      "sha256": "15d4528cc1809ae2d9e74f94e73e41e76a49a2c2bb93e3bbfc6236188cb90b01"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/045-sealed-crm-audiences.patch",
+      "sha256": "b61b2a92bbd5b7c5be79bad9ec09f63290f60cf61e851c4c375b7befc9337d4f"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/050-durable-delivery.patch",
+      "sha256": "fff28273f3b8f5e4cc76116d7c196c98c313756f00086dda14d0da6e09b27f0c"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/055-crm-attribution.patch",
+      "sha256": "64c901d1a3a4a910afc6a7cc52f3ccf833849ea41e04b618067dece46c81ecd5"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/057-archive-preview.patch",
+      "sha256": "2e8ba1256328f8b701b44e5abd7293814fc81332a649a3753ba222360ec118cc"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/058-public-list-embed.patch",
+      "sha256": "cc0798e212b79a1a12098e6f2a269a9a77a535b948a33ab1d0fe1b3d1e24c837"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/060-ses-feedback.patch",
+      "sha256": "cc4a2648986e3f6078265df5d5e739e18c1ea6877b8f5fc011e7d83a00491fe6"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/070-readiness.patch",
+      "sha256": "aa2626e24b5c38e952d65bc67fe60a40a9b414a06f61cbab1c3d8dd1a77c6cc4"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/075-atomic-bulk-delete.patch",
+      "sha256": "12951717d8e773bd5bc05dfc3341ce9d969c2bb32ee31d9f4f34dcfd1a42da62"
+    },
+    {
+      "path": "deploy/newsletters/engine/patches/080-consent-revocation-events.patch",
+      "sha256": "0111f5d8622a209faf746fa608bd61b3366137a2cb0b12d5f6fa2bde6dcf8daa"
+    },
+    {
+      "path": "deploy/newsletters/engine/readiness-tests/verify.py",
+      "sha256": "de27d8cdadef573bbc98c92971206c2eca774ac58b7ba6ddb1ef5c7625fe7487"
+    },
+    {
+      "path": "deploy/newsletters/engine/tests/audience-parity.py",
+      "sha256": "a699fef44f41aef695e65d5f83761bfec55fa6ab984e06c57e10d36bd6f52a42"
+    },
+    {
+      "path": "deploy/newsletters/engine/tests/consent-events.py",
+      "sha256": "8154d1853351a02f854192d31240ecffe00b044401424379bcf56ae170a6145c"
+    },
+    {
+      "path": "deploy/newsletters/engine/tests/consent.py",
+      "sha256": "3b50f614da8389194a1d4b3e063ea7146e97519355a2ec0f54ca976054cf54a8"
+    },
+    {
+      "path": "deploy/newsletters/engine/tests/crm-identity.py",
+      "sha256": "4f2e212c812c461566a7174dc5baefb46354ba2dda91b17b9e4237cf176f5a2f"
+    },
+    {
+      "path": "deploy/newsletters/engine/tests/public-subscriber-update.py",
+      "sha256": "c5e02604fb5b272a47d8e6fc90df1271dd4be261d88aad82a83e4b2507e86850"
+    },
+    {
+      "path": "docker-compose.newsletters.yml",
+      "sha256": "4cbc1388914083c38af38ffb84753206336b6a4eface563d0d9174f1dcc665d3"
+    },
+    {
+      "path": "drizzle/0113_newsletter_operation_receipts.sql",
+      "sha256": "88da45a5155f52bab066896ac11a71d767b571ccf21458a7952be1ce3232246d"
+    },
+    {
+      "path": "drizzle/0114_newsletter_crm_identity.sql",
+      "sha256": "ba92cc6c73cf5381e0cd340da2874e56b894cf5921252d056c35ce955cc25007"
+    },
+    {
+      "path": "drizzle/0115_newsletter_attribution.sql",
+      "sha256": "a69828dff3db9f3e4cf77ade47609cb8d0eed7083204355b78e9ec82ef3859c5"
+    },
+    {
+      "path": "drizzle/0116_newsletter_consent_revocations.sql",
+      "sha256": "cba5cdb86f364aeed9d6d6f26e9f211f6fa6be4a582675126b07634f3fdbe50a"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "sha256": "f275383c7a9e05e6aeba4bbe88e9c796aade3417f0e5854bd25b7a9b004bc3c4"
+    },
+    {
+      "path": "scripts/newsletters/engine-smoke.py",
+      "sha256": "7b40216c3846a34c22896a5ee60ea2a7697283d139920c0943aa23c67775d7e5"
+    },
+    {
+      "path": "scripts/newsletters/restore-smoke.py",
+      "sha256": "6cca732abfe907d7efde946f421b8e5873bf6f6617c88396e8032a91169fc008"
+    },
+    {
+      "path": "src/components/shell/LeftNav.tsx",
+      "sha256": "abf2616ceb55d12340aa5c8515440ce157cdf4fa8bb5ee2664195a5daae1e187"
+    },
+    {
+      "path": "src/features/contacts/contactTimeline.ts",
+      "sha256": "f068f590f58161261980305a4f89fd8af65728c4586df41670719e48f2dbf5c1"
+    },
+    {
+      "path": "src/features/contacts/deletePerson.ts",
+      "sha256": "4f57a4e7ad36f58309e22a0fc62789ab0e267abc2c875150cd8af3a1d947ed4d"
+    },
+    {
+      "path": "src/features/contacts/merge.ts",
+      "sha256": "aa344c37bebcbb4d366515701ef011bb4602b79a306a3815bc3420cf117e81d2"
+    },
+    {
+      "path": "src/features/contacts/personsRepo.ts",
+      "sha256": "f5dc9e999b59ea26dffd6617df27c1711ad3bf9f5799b6cb913da9cad1d83d14"
+    },
+    {
+      "path": "src/features/deal-workspace/wonLost.ts",
+      "sha256": "bf8093bd887fbb81e87a32531f2a9d5767e515776c587a92eb9d2dbfc4b4d0e4"
+    },
+    {
+      "path": "src/features/import/commitHelpers.ts",
+      "sha256": "51e525478be89ed649f3994106ac02a0f24b86a93fb8e9dae823be563c0ce607"
+    },
+    {
+      "path": "src/features/leads/leadConvert.ts",
+      "sha256": "cc926747d198d4f5431f056055f503ea5a6e825fcdf543cf358e52364c42f69c"
+    },
+    {
+      "path": "src/features/newsletter/admin/operations.ts",
+      "sha256": "78ab80f65f5b41dd04aa6f522e69628bc00f661c89bc57fca76de4978ab00c82"
+    },
+    {
+      "path": "src/features/newsletter/attribution/lineage.integration.test.ts",
+      "sha256": "0de74797c65911881f52181bc0b5644d30ab07bc45661fb7ead55d524be287aa"
+    },
+    {
+      "path": "src/features/newsletter/attribution/native.integration.test.ts",
+      "sha256": "def422006a0fd1465c0a873e09f7b97724c11050821d1ed721dfc1dfee86c57b"
+    },
+    {
+      "path": "src/features/newsletter/attribution/native.ts",
+      "sha256": "f5e3c59f2075fd7caa9a082b48c7d8dbd95c2f16cea6bf517a1340f84e910249"
+    },
+    {
+      "path": "src/features/newsletter/attribution/repository.ts",
+      "sha256": "feb0586bc155f710b20b466bc66eba38349b7ffc32291a06f73e6542de248b94"
+    },
+    {
+      "path": "src/features/newsletter/attribution/schema.ts",
+      "sha256": "45285842e62153861aa5d5bc902a2877a46da8a12e73df1d8363622b91e99583"
+    },
+    {
+      "path": "src/features/newsletter/attribution/service.ts",
+      "sha256": "3dd6b53aea092fccd6c725c3e26ec3d1098ad38d1420d2fea749e4988bfdc221"
+    },
+    {
+      "path": "src/features/newsletter/audience/operations.ts",
+      "sha256": "d873dbb109920a84c62023ec259641bc68e7ddcd7aeac1457693c294d5657615"
+    },
+    {
+      "path": "src/features/newsletter/audience/recordsAndBulk.test.ts",
+      "sha256": "d0bcffbf80d2897bdab28b7cc702f2ed93373ff0ee3a4c6e6d1b07ac94afee2f"
+    },
+    {
+      "path": "src/features/newsletter/audience/signupEmbed.ts",
+      "sha256": "91371532a1694ce011b36e4592a096732087b7a92aa06e32cb55a85be32f26da"
+    },
+    {
+      "path": "src/features/newsletter/audience/subscriberRecords.ts",
+      "sha256": "3248d8c463a5e1fea9f7054f47f25c49345689372d5961abcae595b131f18186"
+    },
+    {
+      "path": "src/features/newsletter/campaigns/CampaignEditor.tsx",
+      "sha256": "27e64129fddaeea27fe5dffc74978adb5d4ab4d19e657668caaf023dfe84abcc"
+    },
+    {
+      "path": "src/features/newsletter/campaigns/operations.ts",
+      "sha256": "d1f22b5d5576304bb289431edc1f970ebc9c77a7b42ccc5d9a43ba29ef517854"
+    },
+    {
+      "path": "src/features/newsletter/campaigns/visual/blocks.test.ts",
+      "sha256": "2fc0b91a2217e1bc7f1c51063e66c45669ca82a481aa2b47b1d6b9f2fe132d8f"
+    },
+    {
+      "path": "src/features/newsletter/campaigns/visual/blocks.ts",
+      "sha256": "cfa6f4c085ff94ec165727512bda4377bfec25bc9fae656b6a0ef1e2d44feb64"
+    },
+    {
+      "path": "src/features/newsletter/crmAudience/approval.ts",
+      "sha256": "763f1ee20bfb06b9dc489d38d5c6600aca61b235511c8532cabb7006e816f75e"
+    },
+    {
+      "path": "src/features/newsletter/crmAudience/operations.ts",
+      "sha256": "cf2555eec9ff47366eaea25be9e35cd1b980f1be3d69254251a9f0d42cacd70b"
+    },
+    {
+      "path": "src/features/newsletter/crmAudience/peopleSource.ts",
+      "sha256": "8d9c8d8424950dbe999cd5d29951d1f5a209055bf2be4ab799402c64304b1626"
+    },
+    {
+      "path": "src/features/newsletter/delivery/operations.ts",
+      "sha256": "1eeb462455abf29657cc3112760701a6f74de25f419c7add699e6c8a8d6cebe4"
+    },
+    {
+      "path": "src/features/newsletter/delivery/readiness.ts",
+      "sha256": "5d759f8d2510f5bc062ae7a53348b4d53cb10ffb2c08e95cbe5da9ec9170ae5a"
+    },
+    {
+      "path": "src/features/newsletter/identity/authority.ts",
+      "sha256": "497a4e97322c7dc63e2497530756a13dfd7c7f309c240ae2711a6f4d92dcfb96"
+    },
+    {
+      "path": "src/features/newsletter/identity/erasure.integration.test.ts",
+      "sha256": "445905d08af9e180abc0628af5f2e19a1733c41702eb7f270465e8963c70929e"
+    },
+    {
+      "path": "src/features/newsletter/identity/erasure.ts",
+      "sha256": "ef181ec4a2fec465034ce7312d6bbdec0087d7835ba6ecb164673b99c16016d9"
+    },
+    {
+      "path": "src/features/newsletter/identity/events.ts",
+      "sha256": "2413fa3d9eb00127d013190b096d68c87dc7313879a819b99520ccaed192355a"
+    },
+    {
+      "path": "src/features/newsletter/identity/grantBatching.integration.test.ts",
+      "sha256": "9c468aff8d82950bb48e244546a2c24aaf9c0e410316bf46f3f99079286d0a17"
+    },
+    {
+      "path": "src/features/newsletter/identity/lifecycle.ts",
+      "sha256": "cf26464f8bf0b18481060242476153043116bde8fe9f84b8d44996fa59167eff"
+    },
+    {
+      "path": "src/features/newsletter/identity/revocations.integration.test.ts",
+      "sha256": "0a0ed56e469cac30e80cdb553c54f616eb3f934020d860f5c9e6cb1d76d4fc28"
+    },
+    {
+      "path": "src/features/newsletter/identity/service.integration.test.ts",
+      "sha256": "6a78d959c3b2478b4666a83fb5983e70aba7dd6738d0950a542255fa85cbc68f"
+    },
+    {
+      "path": "src/features/newsletter/identity/service.ts",
+      "sha256": "e1b7077936ce175570f0bca1362e5353b31bd338ef55b4492dbc5030211994f2"
+    },
+    {
+      "path": "src/features/newsletter/identity/write.ts",
+      "sha256": "32e0c3590a3ce7a3686a196085e827636831de92145f94c198dbe9a08a6aeeda"
+    },
+    {
+      "path": "src/features/newsletter/listmonkClient.test.ts",
+      "sha256": "3d9ad63843602311f5f113a47aa839224eddb7fcce2ade4ceda68b358fe2ea0a"
+    },
+    {
+      "path": "src/features/newsletter/listmonkClient.ts",
+      "sha256": "cc21279b58b3cf8f79ed9b65b582008c339bc15c9a28b0dd85079d529e15b572"
+    },
+    {
+      "path": "src/features/newsletter/operationReceipts.integration.test.ts",
+      "sha256": "44197bcd4dc0c1c72f57d04ac3a4290c775b972c8889246d975baa7cae5c6384"
+    },
+    {
+      "path": "src/features/newsletter/operationReceipts.ts",
+      "sha256": "cf30f39320b08656d29445c31dc4de67738b1aeebc2514dc008a1d133ffaab18"
+    },
+    {
+      "path": "src/features/newsletter/operationReceiptsPolicy.ts",
+      "sha256": "3ed4ccbabac9649199fa15ed2e75bbbcfb7ca1152eba0660b4f92385def16f1b"
+    },
+    {
+      "path": "src/features/newsletter/permissions.test.ts",
+      "sha256": "9c0d144203449b455cdb071c8c866bb0adc46749a6b64de9c025465d581fe69a"
+    },
+    {
+      "path": "src/features/newsletter/permissions.ts",
+      "sha256": "24c428cb9f1a3d8ac4b59e5139d3c2095172daa46f871d2079369980cbd8c5f0"
+    },
+    {
+      "path": "src/features/newsletter/replyRouting/routing.test.ts",
+      "sha256": "098ded7f56bea49d24bef8907bc4e4ba683cdf1ed961796043fde22ae22cf542"
+    },
+    {
+      "path": "src/features/newsletter/replyRouting/routing.ts",
+      "sha256": "85df02c019b5644d52f659fcaefa5c108732ca922283fe417d4f4b53dcbaf90e"
+    },
+    {
+      "path": "src/features/newsletter/router.test.ts",
+      "sha256": "18917a62cbcecd37a1bfdc4f9a09432fddec7f8ca9c17bda5ac640e1dafdf4d9"
+    },
+    {
+      "path": "src/features/newsletter/router.ts",
+      "sha256": "8f7ec7bacc0b8475549d42804989f4870ac9d031d6184342fa8b8a699d049840"
+    },
+    {
+      "path": "src/features/newsletter/schema/operationReceipts.ts",
+      "sha256": "72a974da475d645c6cfb769a21554168902cb1897166beec62b023d38bc0d696"
+    },
+    {
+      "path": "src/features/newsletter/schema/personAddresses.ts",
+      "sha256": "9fbc8adc33c578b58859ee3f8aa869ba09edeb6139da24cb68527fd041cdc200"
+    },
+    {
+      "path": "src/features/workflows/v2/newsletterActions.integration.test.ts",
+      "sha256": "2d85de1612ebb0ff510db68e244ed5cbb5bf34243a0b6bdbf94adde681f6989a"
+    },
+    {
+      "path": "src/features/workflows/v2/newsletterActions.ts",
+      "sha256": "a550582954e0f2e0fbc02381adb4abd66890ebb269cc779bbaeb78a9cd7e4a10"
+    },
+    {
+      "path": "src/features/workflows/v2/newsletterEvents.integration.test.ts",
+      "sha256": "6096b1acb8b0d75d9097e352019ec226dfb99dd74f538ecd7a6a947488d61010"
+    },
+    {
+      "path": "src/features/workflows/v2/newsletterEvents.ts",
+      "sha256": "eed6dffde2383102777b3e8737b781f34631a33294bd20fb59fcb0cec417c4ea"
+    },
+    {
+      "path": "src/features/workflows/v2/worker.ts",
+      "sha256": "b0ab5d7f68da5e8e1efd240ed9df615d6894bead64cf9d0c89ad2f26927672bb"
+    }
+  ],
+  "checks": [
+    {
+      "name": "Exact Main full CRM, documentation and marketing qualification",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942390",
+      "revision": "684096b56f1962c04d919aebcb78352e198da9f9",
+      "details": "14,171 unit tests passed with three existing skips. 4,695 PostgreSQL tests passed. Types, translations, lint, application production build and server entrypoint build passed."
+    },
+    {
+      "name": "Exact Main full browser qualification",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/42943942469",
+      "revision": "684096b56f1962c04d919aebcb78352e198da9f9",
+      "details": "Disposable PostgreSQL, native synthetic browser actor, production application build and serial repository browser smoke packs completed successfully."
+    },
+    {
+      "name": "Reviewed PR source tree equals merged Main source tree",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/pull/1015",
+      "details": "Both revisions resolve to source tree 8272057bbd2655ad82d81fe38807f1ad68de122c."
+    }
+  ],
+  "engine_artifact": {
+    "native_sha256": "a656c7ac70bc02a37cf849a602f2edcb7256087e0f5b0b5ad770ca5ab5fa8dc4",
+    "source_archive_sha256": "f1c65f765a0b0216c89f3ed211fbbee8d5fbd508b50798d237bbc5b9be4466c1",
+    "source_archive_matches_reviewed_engine_inputs": true,
+    "linux_container_image": "sha256:d734e5386daf2b81e3c434b62f26726de0f98d7b0b7a82abde80d01dc84aded4"
+  },
+  "local_evidence": [
+    {
+      "id": "final-qualification-summary",
+      "path": "/Users/ali/Documents/Codex/2026-11-10/find/work/newsletter-crm/qualification-final.json",
+      "sha256": "44fd4fe27d55f62b9fb329d4d91bdb495fbf99fe2688c2964c4893722127bcb7",
+      "declared_scope": "Aggregate retained qualification receipt at exact Main. Individual CI results were independently reread from GitHub."
+    },
+    {
+      "id": "main-http",
+      "path": "/Users/ali/Developer/warpdrive-newsletter-lab-20261110/local-main-newsletter-proof.json",
+      "sha256": "1b92291ec675a57e67f321317cab8f7ce7dd5aea6aba3c6bb333e3c0d3aeeab0",
+      "declared_scope": "Exact Main native password and TOTP sign-in, six authenticated HTTP200 pages and engine configured/connected/contract/delivery state. This is a local synthetic lab."
+    },
+    {
+      "id": "lab-refresh",
+      "path": "/Users/ali/Developer/warpdrive-newsletter-lab-20261110/refresh-backups/20261111T020914Z-684096b56f19/manifest.json",
+      "sha256": "c4782599dc5755b2f0934217c3bbd913a455bfa90a070494a3891539867148ae",
+      "declared_scope": "Verified forward migration and local restart, private dual database and media backups, unchanged preexisting fixture counts, capture-only SMTP and closed public signup. No database backup contents are included in this report."
+    },
+    {
+      "id": "engine080",
+      "path": "/Users/ali/Documents/Codex/2026-11-10/find/work/newsletter-crm/container/proof-080.json",
+      "sha256": "5a754de96368192112ce7c35e88be1d49a574f8e4859bac3f1bf15ed80c4bc83",
+      "declared_scope": "Final Linux engine container contract. Anonymous403, all fourteen capability fields including consentEvents1, database ready, passive scheduler and empty revocation read. Passive mode is the recorded container test scope."
+    },
+    {
+      "id": "rotation-rollback080",
+      "path": "/Users/ali/Documents/Codex/2026-11-10/find/work/newsletter-crm/operations080.jsonl",
+      "sha256": "a899d797ec337048cb575d6f196c2ad0fc18548bad5608e2cdedce41b2daf21f",
+      "declared_scope": "Disposable PostgreSQL17 synthetic relay credential rotation and passive rollback/upgrade. Old credentials were rejected after revocation. Suppression and unknown receipts survived in a separate restored database. SMTP envelope command count was zero."
+    },
+    {
+      "id": "browser-person",
+      "path": "/private/tmp/warpdrive-newsletter-browser.qoDTdW/browser-evidence-gcf4ysnd/results.json",
+      "sha256": "5db46b12fa570e3ac861130cc1994e34b1482244fcd826b7b768b25c28004dc5",
+      "declared_scope": "Earlier pre-merge isolated browser fixture with packed075 engine. Real native password/TOTP, Person Newsletter pending proof, Mailpit capture, affirmative public POST and native verification reconciliation passed. Final080/Main was subsequently checked through CI and local authenticated HTTP/API proof."
+    },
+    {
+      "id": "browser-campaigns",
+      "path": "/private/tmp/warpdrive-newsletter-browser.qoDTdW/browser-evidence-fxx2hxqw/results.json",
+      "sha256": "9010b2a686514fe9e26ae37b0b893618e97df3e8e13cffb87c7de247a9506800",
+      "declared_scope": "Earlier pre-merge isolated browser fixture with packed075 engine. Actions navigation, visual block move/reload and inline preview, readiness/effective limits and native Campaigns audit filter passed."
+    },
+    {
+      "id": "browser-roles",
+      "path": "/private/tmp/warpdrive-newsletter-browser.qoDTdW/browser-evidence-nmcvabtp/results.json",
+      "sha256": "7980d877681536d87ded9b4831645229f28178037d24c99d8737e3ba0e62063a",
+      "declared_scope": "Earlier pre-merge isolated browser fixture with packed075 engine. Edit-only operator could save drafts, lacked delivery controls, received403 for protected delivery operation and404 for Logs."
+    },
+    {
+      "id": "migration-plan",
+      "path": "/Users/ali/Documents/Codex/2026-11-10/find/outputs/Warpdrive_Listmonk_Implementation_Plan.md",
+      "sha256": "6c58f8b99066363278f2dc8a5a784339c98f93104db71db3e9ff78bde9343051",
+      "declared_scope": "Retained migration owner summary of the completed local engine, public ingress, media/analytics, restore, recovery and parity regressions. This is a summary receipt rather than a new test run."
+    }
+  ]
+}

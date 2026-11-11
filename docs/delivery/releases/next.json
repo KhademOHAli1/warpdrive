@@ -1,13 +1,14 @@
 {
   "schema_version": 1,
-  "release_track": "mail",
-  "mail_mode": "incremental",
-  "version": "1.5.1",
-  "primary_issue": 272,
-  "canonical_id": "integration/MAIL-001",
-  "milestone": 2,
-  "issues": [272],
-  "journeys": {},
+  "release_track": "newsletter",
+  "version": "1.6.1",
+  "primary_issue": 1013,
+  "canonical_id": "integration/newsletter-crm-consent-and-delivery",
+  "issues": [1011, 1013],
+  "qualification": {
+    "path": "docs/delivery/newsletter-qualification-1.6.1.json",
+    "sha256": "4d577af9db38be7f2e8582ed67b81b8b01543521346edafa512907b3c624ea02"
+  },
   "commit_issues": {},
   "delivery_scope": {}
 }
