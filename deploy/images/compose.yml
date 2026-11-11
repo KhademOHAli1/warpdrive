@@ -1,0 +1,22 @@
+# Image-only overlay for the existing single-box topology. Merge AFTER docker-compose.yml:
+# docker compose -f docker-compose.yml -f deploy/images/compose.yml config
+# Requires Docker Compose support for !reset. An ordinary image update must never fall back
+# to building source on the target host. Release admission must validate immutable digests.
+# Inherited migration/bucket cold-start gates remain until an explicit release controller
+# takes responsibility for coordinating upgrades; this file does not change those gates.
+services:
+  app:
+    build: !reset null
+    image: "${WARPDRIVE_WEB_IMAGE:?set WARPDRIVE_WEB_IMAGE}"
+
+  ws:
+    build: !reset null
+    image: "${WARPDRIVE_REALTIME_IMAGE:?set WARPDRIVE_REALTIME_IMAGE}"
+
+  worker:
+    build: !reset null
+    image: "${WARPDRIVE_WORKER_IMAGE:?set WARPDRIVE_WORKER_IMAGE}"
+
+  migrate:
+    build: !reset null
+    image: "${WARPDRIVE_MIGRATOR_IMAGE:?set WARPDRIVE_MIGRATOR_IMAGE}"

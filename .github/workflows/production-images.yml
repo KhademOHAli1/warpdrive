@@ -4,17 +4,17 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - 'docs-site/**'
-      - 'site/**'
-      - '**/*.md'
+      - "docs/**"
+      - "docs-site/**"
+      - "site/**"
+      - "**/*.md"
   pull_request:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - 'docs-site/**'
-      - 'site/**'
-      - '**/*.md'
+      - "docs/**"
+      - "docs-site/**"
+      - "site/**"
+      - "**/*.md"
   workflow_dispatch:
 
 # This workflow neither publishes images nor receives production credentials.

@@ -13,13 +13,13 @@ and [OPS-011](https://github.com/KhademOHAli1/warpdrive/issues/492); they do not
 
 ## Phase requirements and proof
 
-| Phase | Required implementation | Proof required before completion |
-| --- | --- | --- |
-| 1: release safety | Off-production build, immutable artifacts, actual final-image tests, capacity admission, retained accepted image/configuration | Final production image survives startup without checkout files; failed candidate preserves accepted runtime; exact revision and resource evidence |
-| 2: modular releases | Independent Web, Worker, Realtime, Migrator, newsletter and ingress references/build paths; explicit migrations | UI-only deployment leaves unrelated services unchanged; worker build never compiles Next; database/storage lifecycle unchanged by application updates |
-| 3: CI/CD and operations | Isolated staging, same-artifact promotion, serialized resumable controller, candidate routing, drain, rollback and recovery | Fresh install, populated upgrade, repetition, interruption, restart, compatibility, rollback and restore rehearsals; unknown outcomes held for inspection |
-| 4: Web/API and feature boundaries | Bounded Core API extraction, authorization/data ownership, versioned API/event/job contracts, dependency-aware builds | Supported old/new combinations, affected workspace isolation, open-browser deployment behavior and a feature addition shipping without unrelated rebuilds/restarts |
-| 5: recovery and availability | Encrypted off-host recovery sets, key custody, independent availability detection, host-loss recovery procedure | Actual restored databases/media/keys/queue and provider reconciliation; measured recovery; accurate single-host limits; additional infrastructure only if needed and authorized |
+| Phase                             | Required implementation                                                                                                        | Proof required before completion                                                                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1: release safety                 | Off-production build, immutable artifacts, actual final-image tests, capacity admission, retained accepted image/configuration | Final production image survives startup without checkout files; failed candidate preserves accepted runtime; exact revision and resource evidence                               |
+| 2: modular releases               | Independent Web, Worker, Realtime, Migrator, newsletter and ingress references/build paths; explicit migrations                | UI-only deployment leaves unrelated services unchanged; worker build never compiles Next; database/storage lifecycle unchanged by application updates                           |
+| 3: CI/CD and operations           | Isolated staging, same-artifact promotion, serialized resumable controller, candidate routing, drain, rollback and recovery    | Fresh install, populated upgrade, repetition, interruption, restart, compatibility, rollback and restore rehearsals; unknown outcomes held for inspection                       |
+| 4: Web/API and feature boundaries | Bounded Core API extraction, authorization/data ownership, versioned API/event/job contracts, dependency-aware builds          | Supported old/new combinations, affected workspace isolation, open-browser deployment behavior and a feature addition shipping without unrelated rebuilds/restarts              |
+| 5: recovery and availability      | Encrypted off-host recovery sets, key custody, independent availability detection, host-loss recovery procedure                | Actual restored databases/media/keys/queue and provider reconciliation; measured recovery; accurate single-host limits; additional infrastructure only if needed and authorized |
 
 All phases also need Maintenance/Logs/bell visibility for installed component revisions,
 deployment outcomes, feature/provider incidents and recovery, worker heartbeat/queue age,
@@ -32,17 +32,26 @@ substitute for authorized target installation and recovery acceptance.
 
 `deploy/images/Dockerfile` supplies four targets:
 
-| Target | Runtime | Build boundary |
-| --- | --- | --- |
-| `web` | Next browser assets, SSR, existing BFF/Server Actions/auth adapters | Next production compilation plus Web runtime helpers |
-| `worker` | Existing background handlers and code-worker child process | Transpilation only; no Next build or `.next` dependency |
-| `realtime` | Existing authenticated WebSocket server | Transpilation only |
-| `migrator` | Canonical SQL migrator and auth operator tooling | Transpilation plus immutable migration files |
+| Target     | Runtime                                                             | Build boundary                                          |
+| ---------- | ------------------------------------------------------------------- | ------------------------------------------------------- |
+| `web`      | Next browser assets, SSR, existing BFF/Server Actions/auth adapters | Next production compilation plus Web runtime helpers    |
+| `worker`   | Existing background handlers and code-worker child process          | Transpilation only; no Next build or `.next` dependency |
+| `realtime` | Existing authenticated WebSocket server                             | Transpilation only                                      |
+| `migrator` | Canonical SQL migrator and auth operator tooling                    | Transpilation plus immutable migration files            |
 
 The legacy root Dockerfile and production Compose remain available while the new path is
 qualified. This increment does not change the running installation. The newsletter engine and
 its public ingress protection remain independent; moving engine migrations out of startup and
 qualifying their updated deployment sequence are subsequent work.
+
+`deploy/images/compose.yml` is an image-only overlay for `docker-compose.yml`. It requires
+independent `WARPDRIVE_WEB_IMAGE`, `WARPDRIVE_WORKER_IMAGE`, `WARPDRIVE_REALTIME_IMAGE` and
+`WARPDRIVE_MIGRATOR_IMAGE` references and removes their source-build definitions. Daemon-free
+checks render the actual merged Compose model with synthetic interpolation, proving that an
+individual image change leaves other service settings unchanged. Existing cold-start migration
+and bucket gates remain intact. This model check does not prove a running selective deployment
+or validate registry provenance; the release controller must enforce verified immutable digests
+and explicit migration sequencing before the overlay is used on an installation.
 
 Each target uses the locked production dependency tree. Npm packages remain external because
 some load runtime data files. Smaller per-component dependency sets and standalone Next output
