@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import io
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -51,6 +54,29 @@ class Process:
 
 
 class AdmissionTests(unittest.TestCase):
+    def test_cli_imports_do_not_create_unknown_python_source_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "scripts/deployment"
+            target.mkdir(parents=True)
+            for source in Path(smoke.__file__).parent.glob("*.py"):
+                shutil.copyfile(source, target / source.name)
+            for path in smoke.SOURCE_HARNESS:
+                file = root / path
+                if not file.exists():
+                    file.parent.mkdir(parents=True, exist_ok=True)
+                    file.write_text("committed synthetic fixture placeholder\n")
+            def host(arguments):
+                return subprocess.run(arguments, cwd=root, capture_output=True, text=True, timeout=10, check=True).stdout
+            host(["git", "init", "--quiet"])
+            host(["git", "add", "."])
+            host(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "synthetic source"])
+            env = {key: value for key, value in os.environ.items() if key != "PYTHONDONTWRITEBYTECODE"}
+            subprocess.run([sys.executable, str(target / "browser_realtime_smoke.py"), "--help"], cwd=root,
+                           env=env, capture_output=True, text=True, timeout=10, check=True)
+            self.assertEqual(list(root.rglob("__pycache__")), [])
+            smoke.admit_source(host, host(["git", "rev-parse", "HEAD"]).strip())
+
     def test_exact_source_rejects_untracked_substitution_including_ignored_source(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

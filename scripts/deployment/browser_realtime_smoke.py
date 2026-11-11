@@ -23,6 +23,10 @@ import time
 from urllib.parse import urlsplit
 import uuid
 
+# Keep the source-bound harness from manufacturing ignored files during imports.
+# Earlier fixture invocations on the hosted runner use PYTHONDONTWRITEBYTECODE too.
+sys.dont_write_bytecode = True
+
 try:
     from .bundle import load_bundle
     from .image_smoke import ImageSmoke, SmokeError, COMPONENTS, OWNER_LABEL, HEALTH_PROBE, sanitized_log, utc_now, validate_revision
