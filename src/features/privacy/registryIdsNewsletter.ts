@@ -41,7 +41,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/campaigns/visual/blocks.ts#cfa6f4c085ff94ec165727512bda4377bfec25bc9fae656b6a0ef1e2d44feb64",
   "sourceReview:src/features/newsletter/crmAudience/approval.ts#763f1ee20bfb06b9dc489d38d5c6600aca61b235511c8532cabb7006e816f75e",
   "sourceReview:src/features/newsletter/crmAudience/operations.ts#cf2555eec9ff47366eaea25be9e35cd1b980f1be3d69254251a9f0d42cacd70b",
-  "sourceReview:src/features/newsletter/delivery/monitor.ts#de90229949e467faeee893a0b4fd0aa6739036f709302cd11675d599b59cceba",
+  "sourceReview:src/features/newsletter/delivery/monitor.ts#d2e39389991a891c2e7f0ce7e3f0a84ec461cdc1d542d440221ff56b3f117d9b",
   "sourceReview:src/features/newsletter/identity/authority.ts#497a4e97322c7dc63e2497530756a13dfd7c7f309c240ae2711a6f4d92dcfb96",
   "sourceReview:src/features/newsletter/identity/erasure.ts#ef181ec4a2fec465034ce7312d6bbdec0087d7835ba6ecb164673b99c16016d9",
   "sourceReview:src/features/newsletter/identity/events.ts#2413fa3d9eb00127d013190b096d68c87dc7313879a819b99520ccaed192355a",
