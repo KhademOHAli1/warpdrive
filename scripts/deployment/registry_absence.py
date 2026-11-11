@@ -105,7 +105,8 @@ def _scope(challenge, repository):
     return fields["scope"]
 
 
-def _credentials(environment, runner):
+def _docker_config(environment):
+    """Read only the existing bounded regular Docker config through the safe file boundary."""
     _require(isinstance(environment, dict))
     directory = environment.get("DOCKER_CONFIG")
     if not directory:
@@ -125,6 +126,11 @@ def _credentials(environment, runner):
     except Exception:
         raise AbsenceError("existing Docker credentials are unavailable") from None
     _require(isinstance(config, dict))
+    return config
+
+
+def _credentials(environment, runner):
+    config = _docker_config(environment)
     helpers = config.get("credHelpers", {})
     _require(isinstance(helpers, dict))
     helper = helpers.get("ghcr.io") or config.get("credsStore")
