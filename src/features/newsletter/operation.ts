@@ -11,12 +11,13 @@ export type NewsletterExecution = {
   configured: boolean;
   deliveryEnabled: boolean;
   requireDelivery: () => void;
+  operationId?: string;
   onMutationDispatch?: () => void;
 };
 
 type PreparedOperation = {
   input: unknown;
-  execute: () => Promise<unknown>;
+  execute: (authorizedContext?: NewsletterExecution) => Promise<unknown>;
 };
 
 export type NewsletterOperation = {
@@ -33,7 +34,10 @@ export function defineLocalOperation<S extends z.ZodType>(
     if (!input.success) {
       throw new TRPCError({ code: "BAD_REQUEST", message: "Check the campaign form values." });
     }
-    return { input: input.data, execute: () => run(input.data, context) };
+    return {
+      input: input.data,
+      execute: (authorizedContext = context) => run(input.data, authorizedContext),
+    };
   }
   return {
     prepare,

@@ -7,12 +7,14 @@ import { BlockField } from "@/features/blocks/ui/BlockField";
 import { StudioAiFields } from "./StudioAiFields";
 import { StudioCommunicationFields } from "./StudioCommunicationFields";
 import { StudioFlowFields } from "./StudioFlowFields";
+import { StudioBound } from "./StudioFormControls";
 import { StudioHumanFields } from "./StudioHumanFields";
 import { StudioIntegrationFields } from "./StudioIntegrationFields";
 import { StudioNativeFields } from "./StudioNativeFields";
+import { StudioRecordOptions } from "./StudioRecordPicker";
 import type { StudioFormProps } from "./studioFormTypes";
 import styles from "./studioInspector.module.css";
-import { studioSetupHref } from "./studioModel";
+import { studioSetupHref, textValue } from "./studioModel";
 
 export function WorkflowStudioInspector(
   props: StudioFormProps & { onNodeChange: (node: WorkflowV2Node) => void; onRemove: () => void },
@@ -34,6 +36,23 @@ export function WorkflowStudioInspector(
       case "DELAY":
       case "WAIT_FOR_EVENT":
         return <StudioFlowFields {...props} kind={props.node.type} />;
+      case "NEWSLETTER_CONSENT_STATUS":
+      case "NEWSLETTER_INVITE":
+        return (
+          <>
+            <StudioBound {...props} name="personId" type="string" />
+            <StudioRecordOptions
+              objectName="person"
+              selected={[textValue(props.node.config.personId)]}
+              disabled={props.disabled}
+              onChoose={(personId) => props.onChange({ ...props.node.config, personId })}
+            />
+            <StudioBound {...props} name="listId" type="number" />
+            {props.node.type === "NEWSLETTER_INVITE" && (
+              <StudioBound {...props} name="linkId" type="string" />
+            )}
+          </>
+        );
       case "SEND_EMAIL":
       case "DRAFT_EMAIL":
       case "SEND_CHAT_MESSAGE":

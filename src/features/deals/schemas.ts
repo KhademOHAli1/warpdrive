@@ -32,6 +32,7 @@ export const dealCreateInput = z.object({
     .nullable()
     .default(null),
   sourceChannelId: z.string().max(255).nullable().default(null),
+  newsletterExposureId: z.uuid().optional(),
   // Honored only for actors with deal.changeOwner; otherwise ignored (see createDeal).
   ownerId: z.string().uuid().optional(),
   // status is intentionally NOT accepted here: a new deal is always 'open'. Closing (won/

@@ -78,7 +78,7 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/constants/fileEntityTypes.ts#26dbf1d91c4f492ab56a8eabfaa5996301b5a6f3dee8ca31b044c3f17b768667",
   "sourceReview:src/constants/filterOps.ts#aebe2848b86d030bbf1fe4289ebbb5df14ca1df7037a90b34565092ffaebe80d",
   "sourceReview:src/constants/jobNames.ts#d0127c227389488f1a2a7ea13fbb29aee77571f876f87719c3b6c28e6b445f73",
-  "sourceReview:src/constants/permissionFlags.ts#c62f2d5f52b45e50fa230043761ea883abe92f7b0b3c5020607a3d2f1f8ba983",
+  "sourceReview:src/constants/permissionFlags.ts#65cc3e76e26901cc95589459b8653a5d7d332cc5c76860d270b8562b0706a790",
   "sourceReview:src/db/schema/activities.ts#2af776ea8d7c742614cc8fdbc4fcd54870160f6b34a043a6530fcd30163634ad",
   "sourceReview:src/db/schema/activityGuests.ts#aada3b846147eab2f690f2bd37ea4473762b4ae7ec43ff55f2846574dcbe3ff7",
   "sourceReview:src/db/schema/activityParticipants.ts#e1b94aa0d346d7043b1f1462913ca31a2e604fc90ed138568696586ab6e58933",

@@ -9,8 +9,12 @@ import { recordAudit } from "@/features/identity/audit";
 import type { AppContext } from "@/server/trpc/context";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { settingsReads, settingsWrites } from "./admin/operations";
+import { newsletterAttributionRouter } from "./attribution/router";
 import { audienceReads, audienceWrites } from "./audience/operations";
 import { campaignReads, campaignWrites } from "./campaigns/operations";
+import { crmAudienceReads, crmAudienceWrites } from "./crmAudience/operations";
+import { deliveryReads, deliveryWrites } from "./delivery/operations";
+import { newsletterIdentityRouter } from "./identity/router";
 import { createListmonkClient, newsletterConfigured } from "./listmonkClient";
 import { defineLocalOperation, type NewsletterExecution } from "./operation";
 import {
@@ -25,6 +29,11 @@ import {
   resolveNewsletterReceipt,
 } from "./operationReceipts";
 import { needsNewsletterReceipt } from "./operationReceiptsPolicy";
+import {
+  hasNewsletterPermission,
+  type NewsletterAccess,
+  newsletterOperationAccess,
+} from "./permissions";
 
 const status = defineLocalOperation(z.strictObject({}), async (_input, context) => {
   let connected = false;
@@ -47,9 +56,24 @@ const status = defineLocalOperation(z.strictObject({}), async (_input, context) 
 });
 
 const reads = new Map(
-  Object.entries({ "system.status": status, ...campaignReads, ...audienceReads, ...settingsReads }),
+  Object.entries({
+    "system.status": status,
+    ...campaignReads,
+    ...audienceReads,
+    ...crmAudienceReads,
+    ...deliveryReads,
+    ...settingsReads,
+  }),
 );
-const writes = new Map(Object.entries({ ...campaignWrites, ...audienceWrites, ...settingsWrites }));
+const writes = new Map(
+  Object.entries({
+    ...campaignWrites,
+    ...audienceWrites,
+    ...crmAudienceWrites,
+    ...deliveryWrites,
+    ...settingsWrites,
+  }),
+);
 
 const operationId = z.uuid().transform((value) => value.toLowerCase());
 
@@ -61,8 +85,12 @@ const command = z.strictObject({
   input: z.record(z.string(), z.unknown()),
 });
 
-function execution(ctx: AppContext, requestSignal: AbortSignal | undefined): NewsletterExecution {
-  if (ctx.actor?.type !== "admin" || !ctx.actor.isActive || ctx.session === null) {
+function execution(
+  ctx: AppContext,
+  requestSignal: AbortSignal | undefined,
+  access: NewsletterAccess,
+): NewsletterExecution {
+  if (ctx.actor === null || ctx.session === null || !hasNewsletterPermission(ctx.actor, access)) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   const timeout = AbortSignal.timeout(15_000);
@@ -97,12 +125,17 @@ function publicError(error: unknown): TRPCError {
 async function withNewsletterActor<T>(
   context: NewsletterExecution,
   session: NativeSessionRef,
+  access: NewsletterAccess,
   run: (current: NewsletterExecution) => Promise<T>,
 ): Promise<T> {
   try {
     return await withCurrentAuthority(context.db, "read", context.signal, async (tx) => {
       const current = await currentNativeActor(tx, session, context.signal);
-      if (current?.actor.type !== "admin" || current.actor.id !== context.actor.id) {
+      if (
+        current === null ||
+        current.actor.id !== context.actor.id ||
+        !hasNewsletterPermission(current.actor, access)
+      ) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       return run({ ...context, db: tx, actor: current.actor });
@@ -133,8 +166,10 @@ async function audit(
 }
 
 export const newsletterRouter = router({
+  attribution: newsletterAttributionRouter,
+  identity: newsletterIdentityRouter,
   read: protectedProcedure.input(command).query(async ({ ctx, input, signal }) => {
-    const context = execution(ctx, signal);
+    const context = execution(ctx, signal, newsletterOperationAccess(input.operation, "read"));
     const operation = reads.get(input.operation);
     if (!operation) throw new TRPCError({ code: "NOT_FOUND" });
     try {
@@ -146,8 +181,8 @@ export const newsletterRouter = router({
   receipt: protectedProcedure
     .input(z.strictObject({ operationId }))
     .query(async ({ ctx, input, signal }) => {
-      const context = execution(ctx, signal);
-      return withNewsletterActor(context, ctx.session, (current) =>
+      const context = execution(ctx, signal, "view");
+      return withNewsletterActor(context, ctx.session, "view", (current) =>
         readNewsletterReceipt(current.db, {
           actorId: current.actor.id,
           operationId: input.operationId,
@@ -159,9 +194,9 @@ export const newsletterRouter = router({
       newsletterResolutionSchema.extend({ operationId, csrfToken: z.string().max(128).nullable() }),
     )
     .mutation(async ({ ctx, input, signal }) => {
-      const context = execution(ctx, signal);
+      const context = execution(ctx, signal, "view");
       if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
-      return withNewsletterActor(context, ctx.session, async (current) => {
+      return withNewsletterActor(context, ctx.session, "view", async (current) => {
         const key = { actorId: current.actor.id, operationId: input.operationId };
         const { receipt, recorded } = await resolveNewsletterReceipt(current.db, key, input);
         if (recorded) await audit(current, "operations.resolve", key.operationId, "succeeded");
@@ -176,7 +211,8 @@ export const newsletterRouter = router({
       }),
     )
     .mutation(async ({ ctx, input, signal }) => {
-      const context = execution(ctx, signal);
+      const access = newsletterOperationAccess(input.operation, "write");
+      const context = execution(ctx, signal, access);
       if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
       const operation = writes.get(input.operation);
       if (!operation) throw new TRPCError({ code: "NOT_FOUND" });
@@ -190,20 +226,27 @@ export const newsletterRouter = router({
       const correlationId = input.operationId ?? randomUUID();
       const key = { actorId: context.actor.id, operationId: correlationId };
       const dispatch = { started: false };
-      const prepared = operation.prepare(input.input, {
+      const executionContext = {
         ...context,
+        operationId: correlationId,
         onMutationDispatch: () => {
           dispatch.started = true;
         },
-      });
+      };
+      const prepared = operation.prepare(input.input, executionContext);
       const intent = durable ? newsletterIntent(key, input.operation, prepared.input) : null;
-      const admission = await withNewsletterActor(context, ctx.session, async (current) => {
-        const receipt = intent === null ? null : await admitNewsletterReceipt(current.db, intent);
-        if (receipt?.admitted !== false) {
-          await audit(current, input.operation, correlationId, "requested");
-        }
-        return receipt;
-      });
+      const { admission, actor } = await withNewsletterActor(
+        context,
+        ctx.session,
+        access,
+        async (current) => {
+          const receipt = intent === null ? null : await admitNewsletterReceipt(current.db, intent);
+          if (receipt?.admitted !== false) {
+            await audit(current, input.operation, correlationId, "requested");
+          }
+          return { admission: receipt, actor: current.actor };
+        },
+      );
       if (admission?.admitted === false) {
         return replayNewsletterResult(admission.state, admission.result);
       }
@@ -211,7 +254,7 @@ export const newsletterRouter = router({
       let result: unknown;
       try {
         context.signal.throwIfAborted();
-        result = await prepared.execute();
+        result = await prepared.execute({ ...executionContext, actor });
         if (durable) {
           await finishNewsletterReceipt(context.db, key, {
             state: "succeeded",

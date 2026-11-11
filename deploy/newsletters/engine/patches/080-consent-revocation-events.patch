@@ -1,0 +1,161 @@
+diff --git a/cmd/crm_identity.go b/cmd/crm_identity.go
+index 51cd1dd..d529a60 100644
+--- a/cmd/crm_identity.go
++++ b/cmd/crm_identity.go
+@@ -39,7 +39,7 @@ func migrateCRMIdentity(db *sqlx.DB) error {
+ 	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(416340, 1)`); err != nil {
+ 		return err
+ 	}
+-	if _, err := tx.ExecContext(ctx, crmIdentitySchema); err != nil {
++	if _, err := tx.ExecContext(ctx, crmIdentitySchema+"\n"+crmRevocationSchema); err != nil {
+ 		return err
+ 	}
+ 	return tx.Commit()
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index 30ccbed..c38f85b 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -103,12 +103,14 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive/readiness", pm(a.GetWarpdriveReadiness, "settings:get"))
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+ 		g.POST("/api/warpdrive/crm-identity/bindings/:id/revoke", pm(crmIdentityApi(a.hasUUID(a.crmRevokeBinding, "id")), "warpdrive:identity_verify"))
+ 		g.POST("/api/warpdrive/crm-identity/grants", pm(crmIdentityApi(a.crmReadGrants), "warpdrive:identity_verify"))
++		g.GET("/api/warpdrive/crm-identity/revocations", pm(crmIdentityApi(a.crmReadRevocations), "warpdrive:identity_verify"))
++		g.POST("/api/warpdrive/crm-identity/revocations/ack", pm(crmIdentityApi(a.crmAcknowledgeRevocations), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/attribution/:id", pm(crmIdentityApi(a.hasUUID(a.getCRMDeliveryExposures, "id")), "warpdrive:identity_verify"))
+ 		g.POST("/api/warpdrive/crm-identity/erasures", pm(crmIdentityApi(a.crmEraseBinding), "warpdrive:identity_erase"))
+ 		g.GET("/api/warpdrive/crm-identity/erasures/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadErasure, "id")), "warpdrive:identity_erase"))
+diff --git a/cmd/crm_revocations.go b/cmd/crm_revocations.go
+new file mode 100644
+--- /dev/null
++++ b/cmd/crm_revocations.go
+@@ -0,0 +1,59 @@
++package main
++
++import (
++	"net/http"
++	"strings"
++	"time"
++
++	_ "embed"
++
++	"github.com/labstack/echo/v4"
++	"github.com/lib/pq"
++)
++
++//go:embed crm_revocations.sql
++var crmRevocationSchema string
++
++type crmRevocation struct {
++	ID          string    `db:"event_uuid" json:"id"`
++	GrantID     string    `db:"grant_uuid" json:"grantUuid"`
++	BindingID   string    `db:"binding_uuid" json:"bindingUuid"`
++	ListID      int       `db:"purpose_list_id" json:"purposeListId"`
++	ScopeDigest string    `db:"scope_digest" json:"scopeDigest"`
++	OccurredAt  time.Time `db:"occurred_at" json:"occurredAt"`
++}
++
++func (a *App) crmReadRevocations(c echo.Context) error {
++	rows := []crmRevocation{}
++	if err := a.db.SelectContext(c.Request().Context(), &rows, `
++        SELECT event_uuid,grant_uuid,binding_uuid,purpose_list_id,scope_digest,occurred_at
++        FROM warpdrive_crm_consent_events WHERE acknowledged_at IS NULL ORDER BY sequence LIMIT 50`); err != nil {
++		return crmUnavailable()
++	}
++	c.Response().Header().Set("Cache-Control", "no-store")
++	return c.JSON(http.StatusOK, okResp{rows})
++}
++
++func (a *App) crmAcknowledgeRevocations(c echo.Context) error {
++	var req struct {
++		IDs []string `json:"ids"`
++	}
++	if err := crmReadJSON(c, &req); err != nil {
++		return err
++	}
++	if len(req.IDs) == 0 || len(req.IDs) > 50 {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	for index, id := range req.IDs {
++		if !reUUID.MatchString(id) {
++			return echo.NewHTTPError(http.StatusBadRequest)
++		}
++		req.IDs[index] = strings.ToLower(id)
++	}
++	if _, err := a.db.ExecContext(c.Request().Context(), `
++        UPDATE warpdrive_crm_consent_events SET acknowledged_at=clock_timestamp()
++        WHERE event_uuid=ANY($1::uuid[]) AND acknowledged_at IS NULL`, pq.Array(req.IDs)); err != nil {
++		return crmUnavailable()
++	}
++	return c.JSON(http.StatusOK, okResp{true})
++}
+diff --git a/cmd/crm_revocations.sql b/cmd/crm_revocations.sql
+new file mode 100644
+--- /dev/null
++++ b/cmd/crm_revocations.sql
+@@ -0,0 +1,47 @@
++-- A minimal outbox survives grant/subscriber erasure without retaining a mailbox or subscriber UUID.
++CREATE TABLE IF NOT EXISTS warpdrive_crm_consent_events (
++    sequence BIGSERIAL PRIMARY KEY,
++    event_uuid UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
++    grant_uuid UUID NOT NULL UNIQUE,
++    binding_uuid UUID NOT NULL,
++    purpose_list_id INT NOT NULL,
++    scope_digest TEXT NOT NULL CHECK (scope_digest ~ '^[0-9a-f]{64}$'),
++    occurred_at TIMESTAMPTZ NOT NULL,
++    acknowledged_at TIMESTAMPTZ
++);
++CREATE INDEX IF NOT EXISTS warpdrive_crm_consent_events_pending_idx
++    ON warpdrive_crm_consent_events(sequence) WHERE acknowledged_at IS NULL;
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_consent_scope(
++    binding UUID, grant_id UUID, subscriber_id INT, subscriber_uuid UUID, list_id INT
++) RETURNS TEXT LANGUAGE SQL IMMUTABLE STRICT AS $$
++    SELECT encode(digest(binding::text || ':' || grant_id::text || ':' ||
++        subscriber_id::text || ':' || subscriber_uuid::text || ':' || list_id::text, 'sha256'), 'hex');
++$$;
++
++CREATE OR REPLACE FUNCTION warpdrive_crm_record_revocation() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE at TIMESTAMPTZ;
++BEGIN
++    at := OLD.revoked_at;
++    IF TG_OP = 'UPDATE' THEN
++        IF OLD.revoked_at IS NOT NULL OR NEW.revoked_at IS NULL THEN RETURN NULL; END IF;
++        at := NEW.revoked_at;
++    END IF;
++    INSERT INTO warpdrive_crm_consent_events(grant_uuid,binding_uuid,purpose_list_id,scope_digest,occurred_at)
++    VALUES(OLD.grant_uuid,OLD.binding_uuid,OLD.purpose_list_id,
++        warpdrive_crm_consent_scope(OLD.binding_uuid,OLD.grant_uuid,OLD.subscriber_id,OLD.subscriber_uuid,OLD.purpose_list_id),
++        COALESCE(at,clock_timestamp()))
++    ON CONFLICT (grant_uuid) DO NOTHING;
++    RETURN NULL;
++END;
++$$;
++DROP TRIGGER IF EXISTS warpdrive_crm_record_revocation ON warpdrive_crm_consent_grants;
++CREATE TRIGGER warpdrive_crm_record_revocation AFTER UPDATE OF revoked_at OR DELETE
++    ON warpdrive_crm_consent_grants FOR EACH ROW EXECUTE FUNCTION warpdrive_crm_record_revocation();
++
++-- Upgrades project earlier revocations once, preserving their original occurrence time.
++INSERT INTO warpdrive_crm_consent_events(grant_uuid,binding_uuid,purpose_list_id,scope_digest,occurred_at)
++SELECT grant_uuid,binding_uuid,purpose_list_id,
++    warpdrive_crm_consent_scope(binding_uuid,grant_uuid,subscriber_id,subscriber_uuid,purpose_list_id),revoked_at
++FROM warpdrive_crm_consent_grants WHERE revoked_at IS NOT NULL
++ON CONFLICT (grant_uuid) DO NOTHING;
+diff --git a/cmd/warpdrive_readiness.go b/cmd/warpdrive_readiness.go
+--- a/cmd/warpdrive_readiness.go
++++ b/cmd/warpdrive_readiness.go
+@@ -120,6 +120,8 @@
+ 		   AND to_regclass('warpdrive_campaign_audiences') IS NOT NULL
+ 		   AND to_regclass('warpdrive_delivery_recipients') IS NOT NULL
+ 		   AND to_regclass('warpdrive_ses_feedback') IS NOT NULL
++           AND to_regclass('warpdrive_crm_consent_events') IS NOT NULL
++           AND to_regclass('warpdrive_crm_consent_events_pending_idx') IS NOT NULL
+ 		   AND to_regclass('warpdrive_delivery_smtp_recent') IS NOT NULL
+ 		   AND (SELECT count(*) FROM warpdrive_delivery_migrations WHERE version IN (1, 2, 3, 4)) = 4
+ 	`)

@@ -124,15 +124,17 @@ const intentV1 = z
     labels: labelsV1,
     sourceChannel: z.enum(channelsV1).nullable().default(null),
     sourceChannelId: z.string().max(255).nullable().default(null),
+    newsletterExposureId: uuidV1.optional(),
     ownerId: uuidV1.optional(),
     visibilityGroupId: uuidV1.optional(),
     customFields: customFieldsV1,
   })
-  .transform(({ currency, ownerId, visibilityGroupId, ...deal }) => ({
+  .transform(({ currency, ownerId, visibilityGroupId, newsletterExposureId, ...deal }) => ({
     ...deal,
     ...(currency === undefined ? {} : { currency }),
     ...(ownerId === undefined ? {} : { ownerId }),
     ...(visibilityGroupId === undefined ? {} : { visibilityGroupId }),
+    ...(newsletterExposureId === undefined ? {} : { newsletterExposureId }),
   }));
 export const nativeDealCreateEnvelopeV1 = z.strictObject({
   protocolVersion: z.literal(1),

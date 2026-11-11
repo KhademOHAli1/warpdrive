@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -11,17 +12,34 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import { AudiencePanel } from "@/features/newsletter/crmAudience/AudiencePanel";
+import type { SealedAudience } from "@/features/newsletter/crmAudience/contracts";
+import { audienceMessages } from "@/features/newsletter/crmAudience/messages";
+import { DeliveryStatusPanel } from "@/features/newsletter/delivery/DeliveryStatusPanel";
+import {
+  managedReplyRouting,
+  type ReplyMailbox,
+  type RoutedCampaignFields,
+  replyToValues,
+  routedCampaignFields,
+  withoutManagedReplyRouting,
+  withoutReplyTo,
+} from "@/features/newsletter/replyRouting/contracts";
+import {
+  ReplyRoutingField,
+  useReplyRoutingMessages,
+} from "@/features/newsletter/replyRouting/ReplyRoutingField";
 import { useNewsletterRead, useNewsletterWrite } from "@/features/newsletter/ui/client";
 import { useFormatters } from "@/lib/useFormatters";
 import { useCampaignMessages } from "./messages";
 import {
   type Campaign,
-  type CampaignFields,
   campaignContentType,
-  campaignFields,
   campaign as campaignSchema,
   campaignTransitions,
   canEditCampaign,
+  crmApprovalRequiredAttribute,
   type DeliveryConfig,
   type MediaItem,
   type Page,
@@ -37,6 +55,8 @@ import {
   QueryState,
   WriteMessage,
 } from "./ui";
+import { readVisualBlocks } from "./visual/blocks";
+import { VisualComposer } from "./visual/VisualComposer";
 
 interface Choice {
   id: number;
@@ -50,6 +70,7 @@ interface Draft {
   lists: Choice[];
   media: { id: number; filename: string }[];
   fromEmail: string;
+  replyToMailboxId: string | null;
   messenger: string;
   sendAt: string;
   contentType: Campaign["content_type"];
@@ -71,6 +92,7 @@ function localInputValue(value: string | null | undefined) {
 }
 
 function draftOf(campaign?: Campaign): Draft {
+  const replyRouting = managedReplyRouting(campaign?.attribs);
   return {
     name: campaign?.name ?? "",
     subject: campaign?.subject ?? "",
@@ -83,6 +105,7 @@ function draftOf(campaign?: Campaign): Draft {
         item.id === null ? [] : [{ id: item.id, filename: item.filename }],
       ) ?? [],
     fromEmail: campaign?.from_email ?? "",
+    replyToMailboxId: replyRouting.state === "managed" ? replyRouting.mailboxId : null,
     messenger: campaign?.messenger ?? "email",
     sendAt: localInputValue(campaign?.send_at),
     contentType: campaign?.content_type ?? "richtext",
@@ -91,23 +114,29 @@ function draftOf(campaign?: Campaign): Draft {
     altbody: campaign?.altbody ?? "",
     templateId: campaign?.template_id ?? null,
     tags: campaign?.tags.join(", ") ?? "",
-    headers: JSON.stringify(campaign?.headers ?? [], null, 2),
-    attributes: JSON.stringify(campaign?.attribs ?? {}, null, 2),
+    headers: JSON.stringify(
+      replyRouting.state === "manual"
+        ? (campaign?.headers ?? [])
+        : withoutReplyTo(campaign?.headers ?? []),
+      null,
+      2,
+    ),
+    attributes: JSON.stringify(withoutManagedReplyRouting(campaign?.attribs), null, 2),
   };
 }
 
-function toPayload(draft: Draft, previous: Campaign | undefined): CampaignFields | null {
-  const previousInputTime = localInputValue(previous?.send_at);
-  const hasExistingTime = previous?.send_at != null && draft.sendAt === previousInputTime;
-  const scheduledTime = draft.sendAt ? new Date(draft.sendAt) : null;
-  const sendAt =
-    scheduledTime === null
-      ? null
-      : hasExistingTime
-        ? previous.send_at
-        : Number.isNaN(scheduledTime.getTime())
-          ? null
-          : scheduledTime.toISOString();
+function sendAtValue(input: string, previous: Campaign["send_at"] | undefined): string | null {
+  if (input === "") return null;
+  if (previous != null && input === localInputValue(previous)) return previous;
+  const scheduled = new Date(input);
+  return Number.isNaN(scheduled.getTime()) ? null : scheduled.toISOString();
+}
+
+function toPayload(
+  draft: Draft,
+  previous: Campaign | undefined,
+  replyAddress: string | undefined,
+): RoutedCampaignFields | null {
   let headers: unknown;
   let attribs: unknown;
   try {
@@ -117,14 +146,22 @@ function toPayload(draft: Draft, previous: Campaign | undefined): CampaignFields
   } catch {
     return null;
   }
-  const result = campaignFields.safeParse({
+  if (draft.replyToMailboxId !== null) {
+    const parsed = routedCampaignFields.shape.headers.safeParse(headers);
+    if (!parsed.success || replyAddress === undefined) return null;
+    headers = [...withoutReplyTo(parsed.data ?? []), { "Reply-To": replyAddress }];
+  }
+  const tracksReplyRouting =
+    draft.replyToMailboxId !== null || managedReplyRouting(previous?.attribs).state !== "manual";
+  const result = routedCampaignFields.safeParse({
     name: draft.name,
     subject: draft.subject,
     lists: draft.lists.map((list) => list.id),
     media: draft.media.map((item) => item.id),
     from_email: draft.fromEmail,
+    ...(tracksReplyRouting ? { replyToMailboxId: draft.replyToMailboxId } : {}),
     messenger: draft.messenger,
-    send_at: sendAt,
+    send_at: sendAtValue(draft.sendAt, previous?.send_at),
     content_type: draft.contentType,
     body: draft.body,
     body_source: draft.contentType === "visual" ? draft.bodySource || null : null,
@@ -341,8 +378,21 @@ function AttachmentPicker({
   );
 }
 
-function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: boolean }) {
+function DeliveryControls({
+  campaign,
+  dirty,
+  approvedAudience,
+}: {
+  campaign: Campaign;
+  dirty: boolean;
+  approvedAudience: boolean;
+}) {
   const m = useCampaignMessages();
+  const L = audienceMessages[useLocale()];
+  const { campaignCapabilities } = useWorkspaceShell();
+  const needsApproval =
+    (!campaignCapabilities.operate || campaign.attribs?.[crmApprovalRequiredAttribute] === true) &&
+    !approvedAudience;
   const router = useRouter();
   const config = useNewsletterRead<{ deliveryEnabled: boolean }>("system.status");
   const write = useNewsletterWrite();
@@ -396,7 +446,7 @@ function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: bool
     ),
   ];
   const delivery = config.data?.deliveryEnabled === true;
-  const transitions = campaignTransitions(campaign);
+  const transitions = campaignCapabilities.send ? campaignTransitions(campaign) : [];
   const editable = canEditCampaign(campaign.status);
   return (
     <section className={`${panelClass} grid gap-3 p-4`}>
@@ -408,7 +458,8 @@ function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: bool
             variant={status === "cancelled" ? "destructive" : "outline"}
             disabled={
               write.isPending ||
-              ((dirty || !delivery) && (status === "running" || status === "scheduled"))
+              ((dirty || !delivery || needsApproval) &&
+                (status === "running" || status === "scheduled"))
             }
             onClick={() => {
               setReviewedRevision(campaign.updated_at);
@@ -418,17 +469,28 @@ function DeliveryControls({ campaign, dirty }: { campaign: Campaign; dirty: bool
             {labels[status]}
           </Button>
         ))}
-        {campaign.status !== "running" && campaign.status !== "scheduled" && (
-          <Button variant="outline" disabled={write.isPending} onClick={() => setAction("delete")}>
-            {m.delete}
-          </Button>
-        )}
+        {campaignCapabilities.operate &&
+          campaign.status !== "running" &&
+          campaign.status !== "scheduled" && (
+            <Button
+              variant="outline"
+              disabled={write.isPending}
+              onClick={() => setAction("delete")}
+            >
+              {m.delete}
+            </Button>
+          )}
       </div>
-      {!delivery && editable && (
+      {campaignCapabilities.send && needsApproval && editable && (
+        <p className="text-sm text-muted-foreground">{L.approveFirst}</p>
+      )}
+      {campaignCapabilities.send && !delivery && editable && (
         <p className="text-sm text-muted-foreground">{m.deliveryDisabled}</p>
       )}
-      {dirty && editable && <p className="text-sm text-muted-foreground">{m.saveFirst}</p>}
-      {editable && (
+      {campaignCapabilities.send && dirty && editable && (
+        <p className="text-sm text-muted-foreground">{m.saveFirst}</p>
+      )}
+      {campaignCapabilities.send && editable && (
         <form
           className="grid max-w-lg gap-2"
           onSubmit={(event) => {
@@ -504,26 +566,47 @@ function ArchiveControls({
 }) {
   const m = useCampaignMessages();
   const write = useNewsletterWrite();
+  const render = useNewsletterWrite<string>();
+  const [preview, setPreview] = useState<string | null>(null);
   const [archive, setArchive] = useState(campaign.archive);
   const [slug, setSlug] = useState(campaign.archive_slug ?? "");
   const [template, setTemplate] = useState(String(campaign.archive_template_id ?? ""));
   const [metadata, setMetadata] = useState(JSON.stringify(campaign.archive_meta ?? {}, null, 2));
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
-  function save(event: FormEvent) {
-    event.preventDefault();
+  function readMetadata() {
     let meta: unknown;
     try {
       meta = JSON.parse(metadata);
     } catch {
       setError(m.invalidJson);
-      return;
+      return null;
     }
     if (typeof meta !== "object" || meta === null || Array.isArray(meta)) {
       setError(m.invalidJson);
-      return;
+      return null;
     }
     setError("");
+    return meta;
+  }
+
+  function previewArchive() {
+    const meta = readMetadata();
+    if (meta === null) return;
+    void render
+      .run("campaigns.archivePreview", {
+        id: campaign.id,
+        templateId: template === "" ? null : Number(template),
+        metadata: meta,
+      })
+      .then(setPreview)
+      .catch(() => undefined);
+  }
+
+  function save(event: FormEvent) {
+    event.preventDefault();
+    const meta = readMetadata();
+    if (meta === null) return;
     setSaved(false);
     void write
       .run("campaigns.archive", {
@@ -584,9 +667,21 @@ function ArchiveControls({
             onChange={(event) => setMetadata(event.target.value)}
           />
         </Field>
-        <Button variant="outline" className="w-fit" type="submit" disabled={write.isPending}>
-          {m.save}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" type="submit" disabled={write.isPending}>
+            {m.save}
+          </Button>
+          <Button
+            variant="outline"
+            type="button"
+            disabled={render.isPending}
+            onClick={previewArchive}
+          >
+            {m.archivePreview}
+          </Button>
+        </div>
+        {preview !== null && <NewsletterPreview body={preview} />}
+        <WriteMessage error={render.error} />
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}
@@ -612,6 +707,8 @@ function CampaignForm({
   reloadCampaign: () => Promise<Campaign | undefined>;
 }) {
   const m = useCampaignMessages();
+  const replyMessages = useReplyRoutingMessages();
+  const { campaignCapabilities } = useWorkspaceShell();
   const f = useFormatters();
   const router = useRouter();
   const [draft, setDraft] = useState(() => draftOf(initial));
@@ -624,11 +721,26 @@ function CampaignForm({
   const write = useNewsletterWrite<{ id: number } | Campaign>();
   const render = useNewsletterWrite<string>();
   const saving = write.isPending || restoring;
-  const disabled = initial !== undefined && !canEditCampaign(initial.status);
+  const disabled =
+    !campaignCapabilities.edit ||
+    (initial !== undefined &&
+      (!canEditCampaign(initial.status) || initial.started_at != null || initial.sent > 0));
+  const mailboxQuery = useNewsletterRead<ReplyMailbox[]>("campaigns.replyMailboxes", {}, !disabled);
+  const mailboxes = mailboxQuery.data ?? [];
+  const replyAddress = mailboxes.find(({ id }) => id === draft.replyToMailboxId)?.address;
+  const seal = useNewsletterRead<SealedAudience | null>(
+    "crmAudience.seal",
+    { campaignId: initial?.id },
+    initial !== undefined,
+  );
+  const sealed = seal.data ?? null;
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
   const currentDraft = initial === undefined ? baseline : draftOf(initial);
   const sameRemoteFields = JSON.stringify(currentDraft) === JSON.stringify(baseline);
   const expectedRevision = sameRemoteFields ? initial?.updated_at : revision;
+  const visual =
+    draft.contentType === "visual" ? readVisualBlocks(draft.bodySource, draft.body) : null;
+
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => {
     setSaved(false);
     setDraft((current) => ({ ...current, [key]: value }));
@@ -637,6 +749,23 @@ function CampaignForm({
   const templateOptions = templates
     .filter((item) => item.type === "campaign")
     .map((item) => ({ value: String(item.id), label: item.name }));
+
+  async function reloadApprovedAudience() {
+    setRestoring(true);
+    try {
+      const current = await reloadCampaign();
+      if (current === undefined) {
+        setFormError(m.loadError);
+        return;
+      }
+      const savedDraft = draftOf(current);
+      setRevision(current.updated_at);
+      setBaseline(savedDraft);
+      setDraft((previous) => ({ ...previous, lists: savedDraft.lists }));
+    } finally {
+      setRestoring(false);
+    }
+  }
 
   function save(event: FormEvent) {
     event.preventDefault();
@@ -649,7 +778,11 @@ function CampaignForm({
       setFormError(m.dateError);
       return;
     }
-    const input = toPayload(draft, initial);
+    if (draft.replyToMailboxId !== null && (replyAddress === undefined || mailboxQuery.isError)) {
+      setFormError(replyMessages.saveError);
+      return;
+    }
+    const input = toPayload(draft, initial, replyAddress);
     if (!input) {
       setFormError(m.invalidJson);
       return;
@@ -760,6 +893,16 @@ function CampaignForm({
                 onChange={(event) => set("fromEmail", event.target.value)}
               />
             </Field>
+            <ReplyRoutingField
+              mailboxId={draft.replyToMailboxId}
+              mailboxes={mailboxes}
+              loading={mailboxQuery.isLoading}
+              failed={mailboxQuery.isError}
+              readOnly={disabled}
+              disabled={saving}
+              savedAddress={replyToValues(initial?.headers ?? [])[0]}
+              onChange={(value) => set("replyToMailboxId", value)}
+            />
             <div className="grid gap-1.5 text-sm font-medium">
               <p>{m.messenger}</p>
               <Select
@@ -790,7 +933,7 @@ function CampaignForm({
           <CampaignAudience
             selected={draft.lists}
             choices={lists}
-            disabled={disabled || saving}
+            disabled={disabled || saving || sealed !== null}
             onChange={(value) => set("lists", value)}
           />
           <div className="grid gap-3 sm:grid-cols-2">
@@ -820,12 +963,23 @@ function CampaignForm({
               </div>
             )}
           </div>
-          <MessageBody
-            draft={draft}
-            onChange={(value) => set("body", value)}
-            disabled={disabled || saving}
-          />
-          {draft.contentType === "visual" && (
+          {visual === null ? (
+            <MessageBody
+              draft={draft}
+              onChange={(value) => set("body", value)}
+              disabled={disabled || saving}
+            />
+          ) : (
+            <VisualComposer
+              blocks={visual}
+              disabled={disabled || saving}
+              onChange={(body, bodySource) => {
+                setSaved(false);
+                setDraft((current) => ({ ...current, body, bodySource }));
+              }}
+            />
+          )}
+          {draft.contentType === "visual" && visual === null && (
             <Field label={m.source} htmlFor="campaign-body-source">
               <Textarea
                 id="campaign-body-source"
@@ -903,10 +1057,30 @@ function CampaignForm({
           </div>
         )}
       </form>
-      {initial && (
-        <DeliveryControls campaign={initial} dirty={dirty || !sameRemoteFields || saving} />
+      {initial !== undefined && (sealed !== null || campaignCapabilities.edit) && (
+        <AudiencePanel
+          campaignId={initial.id}
+          sealed={sealed}
+          canApprove={
+            campaignCapabilities.edit && initial.status === "draft" && initial.started_at == null
+          }
+          unsaved={dirty || !sameRemoteFields || saving}
+          onApproved={reloadApprovedAudience}
+        />
       )}
-      {initial && <ArchiveControls campaign={initial} templates={templates} />}
+      {initial !== undefined && (
+        <DeliveryControls
+          campaign={initial}
+          dirty={dirty || !sameRemoteFields || saving}
+          approvedAudience={sealed !== null}
+        />
+      )}
+      {initial !== undefined && (
+        <DeliveryStatusPanel campaignId={initial.id} live={initial.status === "running"} />
+      )}
+      {initial !== undefined && campaignCapabilities.operate && (
+        <ArchiveControls campaign={initial} templates={templates} />
+      )}
     </div>
   );
 }

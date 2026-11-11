@@ -21,9 +21,24 @@ import {
   subscriptionStatus,
 } from "./contracts";
 import { projectImportLogs, validatedCsv } from "./importContent";
+import { listSignupRead } from "./signupEmbed";
+import {
+  engineSubscriberRecord,
+  projectSubscriberRecord,
+  subscriberRecordReads,
+  subscriberRecordWrites,
+} from "./subscriberRecords";
 
 const empty = z.strictObject({}).default({});
 const byId = z.strictObject({ id: audienceId });
+const bulk = z.strictObject({
+  ids: z
+    .array(audienceId)
+    .min(1)
+    .max(audiencePageSize)
+    .transform((ids) => [...new Set(ids)].sort((a, b) => a - b)),
+  confirmed: z.literal(true),
+});
 const pageInput = { page: z.number().int().positive().max(10_000).default(1) };
 const search = z.string().trim().max(200).default("");
 const listIds = z
@@ -65,7 +80,7 @@ function pageOf<T extends z.ZodType>(schema: T) {
 }
 
 const listPage = pageOf(mailingList);
-const subscriberPage = pageOf(subscriber);
+const subscriberPage = pageOf(engineSubscriberRecord);
 const bouncePage = pageOf(bounce);
 const minimalLists = z.union([
   z.object({ results: z.array(minimalList) }),
@@ -99,6 +114,8 @@ function checkListIds(ids: number[], current: { id: number }[]) {
 }
 
 export const audienceReads = {
+  ...subscriberRecordReads,
+  "lists.signupEmbed": listSignupRead,
   "lists.minimal": defineOperation(empty, async (client) => {
     return (await activeLists(client)).map(({ id, name }) => ({ id, name }));
   }),
@@ -119,8 +136,11 @@ export const audienceReads = {
       return listPage.parse(await client.json<unknown>("GET", "/api/lists", { query }));
     },
   ),
-  "subscribers.get": defineOperation(byId, async (client, { id }) =>
-    subscriber.parse(await client.json("GET", `/api/subscribers/${id}`)),
+  "subscribers.get": defineOperation(byId, async (client, { id }, context) =>
+    projectSubscriberRecord(
+      engineSubscriberRecord.parse(await client.json("GET", `/api/subscribers/${id}`)),
+      context.actor.id,
+    ),
   ),
   "subscribers.page": defineOperation(
     z.strictObject({
@@ -129,13 +149,17 @@ export const audienceReads = {
       listId: audienceId.optional(),
       subscriptionStatus: subscriptionStatus.optional(),
     }),
-    async (client, input) => {
+    async (client, input, context) => {
       const query = paging(input.page);
       if (input.search !== "") query.set("search", literalSubscriberSearch(input.search));
       if (input.listId !== undefined) query.set("list_id", String(input.listId));
       if (input.subscriptionStatus !== undefined)
         query.set("subscription_status", input.subscriptionStatus);
-      return subscriberPage.parse(await client.json<unknown>("GET", "/api/subscribers", { query }));
+      const page = subscriberPage.parse(await client.json("GET", "/api/subscribers", { query }));
+      return {
+        ...page,
+        results: page.results.map((row) => projectSubscriberRecord(row, context.actor.id)),
+      };
     },
   ),
   "subscribers.bounces": defineOperation(
@@ -158,6 +182,7 @@ export const audienceReads = {
 };
 
 export const audienceWrites = {
+  ...subscriberRecordWrites,
   "lists.create": defineOperation(listFields, async (client, body) =>
     mailingList.parse(await client.json<unknown>("POST", "/api/lists", { body })),
   ),
@@ -219,6 +244,20 @@ export const audienceWrites = {
   ),
   "subscribers.blocklist": defineOperation(byId, async (client, { id }) =>
     z.boolean().parse(await client.json<unknown>("PUT", `/api/subscribers/${id}/blocklist`)),
+  ),
+  "subscribers.bulkBlocklist": defineOperation(bulk, async (client, { ids }) =>
+    z
+      .literal(true)
+      .parse(await client.json("PUT", "/api/subscribers/blocklist", { body: { ids } })),
+  ),
+  "subscribers.bulkUnsubscribe": defineOperation(
+    bulk.extend({ listId: audienceId }),
+    async (client, { ids, listId }) =>
+      z.literal(true).parse(
+        await client.json("PUT", "/api/subscribers/lists", {
+          body: { ids, target_list_ids: [listId], action: "unsubscribe" },
+        }),
+      ),
   ),
   "subscribers.optin": defineOperation(byId, async (client, { id }, context) => {
     context.requireDelivery();

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const id = z.number().int().positive().max(2_147_483_647);
 export const emptyInput = z.object({}).strict();
+export const crmApprovalRequiredAttribute = "warpdrive_crm_approval_required";
 export const idInput = z.object({ id }).strict();
 export const pageInput = z
   .object({

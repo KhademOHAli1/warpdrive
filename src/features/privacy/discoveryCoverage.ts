@@ -90,6 +90,21 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Actor-scoped campaign command IDs, keyed intent fingerprints and reviewed outcome references require a dedicated provenance and retention adapter. A staff actor recorded in a receipt does not identify subscribers or other people in a campaign. Keep admitted and unknown receipts fenced for replay safety. The operational Logs screen grants no generic discovery, disclosure or erasure authority.",
   ),
   ...group(
+    ["newsletter_identity_commands", "newsletter_person_addresses", "newsletter_person_events"],
+    "unsupported",
+    "Newsletter commands, verified mailbox bindings and purpose-scoped events require a dedicated subject and provenance projection. The approved exact-mailbox erasure action uses its own reviewed privacy scope and retains a keyed engine suppression record. Ordinary contact visibility grants no general privacy discovery or disclosure authority.",
+  ),
+  ...group(
+    [
+      "newsletter_exposure_receipts",
+      "newsletter_lead_sources",
+      "newsletter_deal_sources",
+      "newsletter_attributed_wins",
+    ],
+    "unsupported",
+    "Campaign acceptance receipts and lead, deal and win provenance require a dedicated relationship and retention adapter. A campaign recipient, contact and deal participant can represent different subjects. Report reads respect current product visibility. No generic privacy discovery or erasure capability is registered for these stores.",
+  ),
+  ...group(
     ["email_read_intents"],
     "unsupported",
     "Actor-bound read-operation bindings, mailbox/thread references, dispatch claims and outcome timestamps require a dedicated subject/provenance and safe-projection adapter. Mailbox ownership or current administration does not establish receipt disclosure or erasure authority. Supported disconnect, deactivation, reconnect and trash retain receipts; physical purge and automatic cleanup remain inactive. Admitted/unknown barriers cannot be expired, reset, taken over or pruned. This coverage declaration grants no lifecycle execution capability.",

@@ -2,17 +2,31 @@ import { TRPCError } from "@trpc/server";
 import sharp from "sharp";
 import { z } from "zod";
 import { env } from "@/config/env";
-import { defineOperation } from "@/features/newsletter/operation";
+import { sealedAudience } from "@/features/newsletter/crmAudience/contracts";
+import { requireReadyDelivery } from "@/features/newsletter/delivery/readiness";
+import type { ListmonkClient } from "@/features/newsletter/listmonkClient";
+import { defineLocalOperation, defineOperation } from "@/features/newsletter/operation";
+import {
+  managedReplyRouting,
+  routedCampaignFields,
+  withoutManagedReplyRouting,
+  withoutReplyTo,
+} from "@/features/newsletter/replyRouting/contracts";
+import {
+  campaignReplyRouting,
+  listReplyMailboxes,
+  requireCurrentReplyRouting,
+} from "@/features/newsletter/replyRouting/routing";
 import {
   analyticsLink,
   analyticsMetric,
   analyticsPoint,
   campaign,
   campaignContentType,
-  campaignFields,
   campaignStatus,
   campaignTransitions,
   canEditCampaign,
+  crmApprovalRequiredAttribute,
   deliveryConfig,
   emptyInput,
   id,
@@ -42,12 +56,6 @@ function dispatchStarted(campaign: { started_at?: string | null; sent: number })
   return campaign.started_at != null || campaign.sent > 0;
 }
 
-function sameAudience(previous: { id: number | null }[], requested: number[]) {
-  const saved = new Set(previous.flatMap(({ id }) => (id === null ? [] : [id])));
-  const selected = new Set(requested);
-  return saved.size === selected.size && [...saved].every((id) => selected.has(id));
-}
-
 function checkRecipientHeaders(headers: Record<string, string>[] = []) {
   for (const header of headers) {
     for (const key of Object.keys(header)) {
@@ -69,6 +77,20 @@ const templateList = z
   .array(templateItem)
   .nullable()
   .transform((rows) => rows ?? []);
+async function defaultCampaignTemplate(client: ListmonkClient): Promise<number> {
+  const templates = templateList.parse(
+    await client.json("GET", "/api/templates", { query: new URLSearchParams({ no_body: "true" }) }),
+  );
+  const template = templates.find((item) => item.type === "campaign" && item.is_default);
+  if (template === undefined) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "Set a default campaign template.",
+    });
+  }
+  return template.id;
+}
+
 const confirmed = z.literal(true);
 const confirmedId = idInput.extend({ confirmed });
 const revision = z.iso.datetime({ offset: true }).nullable();
@@ -157,6 +179,9 @@ export const campaignReads = {
   "campaigns.config": defineOperation(emptyInput, async (client) =>
     deliveryConfig.parse(await client.json("GET", "/api/config")),
   ),
+  "campaigns.replyMailboxes": defineLocalOperation(emptyInput, (_input, context) =>
+    listReplyMailboxes(context),
+  ),
   "media.list": defineOperation(pageInput, async (client, input) =>
     mediaPage.parse(await client.json("GET", "/api/media", { query: queryPage(input) })),
   ),
@@ -195,9 +220,23 @@ export const campaignWrites = {
       .strict(),
     async (client, input) => {
       const body = new URLSearchParams({ body: input.body, content_type: input.content_type });
-      if (input.template_id != null) body.set("template_id", String(input.template_id));
+      if (input.content_type !== "visual") {
+        const templateId =
+          input.template_id === null ? await defaultCampaignTemplate(client) : input.template_id;
+        if (templateId !== undefined) body.set("template_id", String(templateId));
+      }
       return client.text("POST", `/api/campaigns/${input.id}/preview`, { body });
     },
+  ),
+  "campaigns.archivePreview": defineOperation(
+    idInput.extend({ templateId: id.nullable(), metadata: z.record(z.string(), z.json()) }),
+    async (client, input) =>
+      client.text("POST", `/api/campaigns/${input.id}/preview/archive`, {
+        body: new URLSearchParams({
+          template_id: String(input.templateId ?? (await defaultCampaignTemplate(client))),
+          archive_meta: JSON.stringify(input.metadata),
+        }),
+      }),
   ),
   "templates.preview": defineOperation(
     templateFields.pick({ type: true, body: true }),
@@ -206,35 +245,93 @@ export const campaignWrites = {
         body: new URLSearchParams({ template_type: input.type, body: input.body }),
       }),
   ),
-  "campaigns.create": defineOperation(campaignFields, async (client, input) => {
-    checkRecipientHeaders(input.headers);
-    return idInput.strip().parse(
-      await client.json("POST", "/api/campaigns", {
-        body: {
-          ...input,
-          type: "regular",
-        },
-      }),
-    );
-  }),
+  "campaigns.create": defineOperation(
+    routedCampaignFields,
+    async (client, { replyToMailboxId, headers, attribs, ...input }, context) => {
+      const routing = await campaignReplyRouting(context, { replyToMailboxId, headers, attribs });
+      checkRecipientHeaders(routing.headers);
+      return idInput.strip().parse(
+        await client.json("POST", "/api/campaigns", {
+          body: { ...input, ...routing, type: "regular" },
+        }),
+      );
+    },
+  ),
+  "campaigns.clone": defineOperation(
+    idInput.extend({ name: z.string().trim().min(1).max(255) }),
+    async (client, input) => {
+      const source = campaign.parse(await client.json("GET", `/api/campaigns/${input.id}`));
+      const seal = sealedAudience.parse(
+        await client.json("GET", `/api/warpdrive/audiences/${input.id}`),
+      );
+      const lists = source.lists.flatMap(({ id }) => (id === null ? [] : [id]));
+      requireState(source.type === "regular" && lists.length > 0);
+      const headers =
+        managedReplyRouting(source.attribs).state === "manual"
+          ? source.headers
+          : withoutReplyTo(source.headers);
+      checkRecipientHeaders(headers);
+      return campaign.parse(
+        await client.json("POST", "/api/campaigns", {
+          body: {
+            name: input.name,
+            subject: source.subject,
+            type: "regular",
+            lists,
+            media: source.media.flatMap(({ id }) => (id === null ? [] : [id])),
+            from_email: source.from_email,
+            messenger: source.messenger,
+            body: source.body,
+            body_source: source.body_source,
+            content_type: source.content_type,
+            altbody: source.altbody,
+            template_id: source.template_id,
+            tags: source.tags,
+            headers,
+            attribs: {
+              ...withoutManagedReplyRouting(source.attribs),
+              ...(seal === null ? {} : { [crmApprovalRequiredAttribute]: true }),
+            },
+          },
+        }),
+      );
+    },
+  ),
   "campaigns.update": defineOperation(
-    campaignFields.extend({ id, expectedUpdatedAt: revision }),
-    async (client, { id: campaignId, expectedUpdatedAt, ...input }) => {
+    routedCampaignFields.extend({ id, expectedUpdatedAt: revision }),
+    async (
+      client,
+      { id: campaignId, expectedUpdatedAt, replyToMailboxId, headers, attribs, ...input },
+      context,
+    ) => {
       const path = `/api/campaigns/${campaignId}` as const;
       const current = campaign.parse(await client.json("GET", path));
       requireState(canEditCampaign(current.status));
       requireState(current.updated_at === expectedUpdatedAt);
-      if (dispatchStarted(current) && !sameAudience(current.lists, input.lists)) {
+      if (dispatchStarted(current)) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "The campaign's original audience is retained for recipient unsubscribe links.",
+          message: "Duplicate this campaign to change a message that has started delivery.",
         });
       }
-      checkRecipientHeaders(input.headers);
+      const protectedAttributes =
+        current.attribs?.[crmApprovalRequiredAttribute] === true
+          ? {
+              ...(attribs ?? withoutManagedReplyRouting(current.attribs)),
+              [crmApprovalRequiredAttribute]: true,
+            }
+          : attribs;
+      const routing = await campaignReplyRouting(
+        context,
+        { replyToMailboxId, headers, attribs: protectedAttributes },
+        current,
+      );
+      checkRecipientHeaders(routing.headers);
       return campaign.parse(
         await client.json("PUT", path, {
           body: {
             ...input,
+            ...routing,
             type: current.type,
             expected_updated_at: expectedUpdatedAt,
             media:
@@ -250,7 +347,25 @@ export const campaignWrites = {
     const path = `/api/campaigns/${input.id}` as const;
     const current = campaign.parse(await client.json("GET", path));
     requireState(campaignTransitions(current).includes(input.status));
-    if (startsDelivery) requireState(input.expectedUpdatedAt === current.updated_at);
+    if (startsDelivery) {
+      requireState(input.expectedUpdatedAt === current.updated_at);
+      await requireCurrentReplyRouting(context, current);
+      if (
+        context.actor.type !== "admin" ||
+        current.attribs?.[crmApprovalRequiredAttribute] === true
+      ) {
+        const audience = sealedAudience.parse(
+          await client.json("GET", `/api/warpdrive/audiences/${input.id}`),
+        );
+        if (audience === null) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Approve a CRM audience before starting delivery.",
+          });
+        }
+      }
+      await requireReadyDelivery(client);
+    }
     return campaign.parse(
       await client.json("PUT", `${path}/status`, {
         body: {
@@ -329,6 +444,26 @@ export const campaignWrites = {
     }
     return client.json("DELETE", path);
   }),
+  "campaigns.bulkDelete": defineOperation(
+    z.strictObject({ ids: z.array(id).min(1).max(50), confirmed }),
+    async (client, input) => {
+      const ids = [...new Set(input.ids)];
+      const selected = await Promise.all(
+        ids.map(async (id) => campaign.parse(await client.json("GET", `/api/campaigns/${id}`))),
+      );
+      requireState(
+        selected.every(
+          (item) =>
+            !dispatchStarted(item) && item.status !== "running" && item.status !== "scheduled",
+        ),
+      );
+      return z.boolean().parse(
+        await client.json("DELETE", "/api/campaigns", {
+          query: new URLSearchParams(ids.map((id) => ["id", String(id)])),
+        }),
+      );
+    },
+  ),
   "media.upload": defineOperation(upload, async (client, input) => {
     const bytes = await validateImageUpload(input);
     const form = new FormData();

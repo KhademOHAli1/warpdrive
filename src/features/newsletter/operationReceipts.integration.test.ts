@@ -59,6 +59,15 @@ function engine(write: () => Promise<Response>, compatible = true) {
             listConsentMode: 1,
             publicSubscriberUpdate: 1,
             campaignRevision: 1,
+            crmIdentity: 1,
+            crmAudiences: 1,
+            durableDelivery: 1,
+            crmAttribution: 1,
+            listEmbed: 1,
+            sesFeedback: 1,
+            readiness: 1,
+            atomicBulk: 1,
+            consentEvents: 1,
           })
         : new Response(null, { status: 404 });
     }

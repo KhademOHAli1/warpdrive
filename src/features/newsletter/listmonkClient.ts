@@ -12,6 +12,15 @@ const consentContract = z.object({
   listConsentMode: z.literal(1),
   publicSubscriberUpdate: z.literal(1),
   campaignRevision: z.literal(1),
+  crmIdentity: z.literal(1),
+  crmAudiences: z.literal(1),
+  durableDelivery: z.literal(1),
+  crmAttribution: z.literal(1),
+  listEmbed: z.literal(1),
+  sesFeedback: z.literal(1),
+  readiness: z.literal(1),
+  atomicBulk: z.literal(1),
+  consentEvents: z.literal(1),
 });
 
 export class NewsletterConnectionError extends Error {

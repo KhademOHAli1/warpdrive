@@ -6,7 +6,12 @@ import {
   workflowV2TriggerReceipts,
   workflowV2Waits,
 } from "@/db/schema/workflowV2";
-import type { BlockOutput, WorkflowV2Adapters } from "@/features/blocks/contracts";
+import {
+  type BlockOutput,
+  isNewsletterTrigger,
+  type WorkflowV2Adapters,
+  type WorkflowV2Trigger,
+} from "@/features/blocks/contracts";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { canWorkflow } from "../access";
@@ -58,6 +63,15 @@ export async function eventChain(
   if (workflowIds.includes(workflowId) || depth >= 8) return null;
   return { depth: depth + 1, workflowIds: [...workflowIds, workflowId] };
 }
+function recordTriggerMatches(trigger: WorkflowV2Trigger, objectName: string, action: string) {
+  return (
+    trigger.config.objectName === objectName &&
+    (trigger.type === `record.${action}` ||
+      (trigger.type === "record.created_or_updated" &&
+        (action === "created" || action === "updated")))
+  );
+}
+
 export async function admitWorkflowV2Event(
   db: Db,
   event: WorkflowV2Event,
@@ -65,10 +79,12 @@ export async function admitWorkflowV2Event(
   projectEvent: EventProjection,
   signal: AbortSignal,
 ): Promise<string[]> {
+  const newsletterEvent = isNewsletterTrigger(event.eventName);
   if (
-    !/^(deal|lead|person|organization|activity)\.(created|updated|deleted)$/.test(
-      event.eventName,
-    ) ||
+    (!newsletterEvent &&
+      !/^(deal|lead|person|organization|activity)\.(created|updated|deleted)$/.test(
+        event.eventName,
+      )) ||
     event.eventKey.length > 200
   )
     return [];
@@ -96,16 +112,10 @@ export async function admitWorkflowV2Event(
       const version = await publishedWorkflowV2(tx, workflow.id, workflow.publishedNumber);
       if (version === null || event.occurredAt < version.createdAt) return null;
       const trigger = version.definition.trigger;
-      const wanted = `record.${action}`;
-      if (
-        trigger.type !== wanted &&
-        !(
-          trigger.type === "record.created_or_updated" &&
-          (action === "created" || action === "updated")
-        )
-      )
-        return null;
-      if (trigger.config.objectName !== objectName) return null;
+      const matches = newsletterEvent
+        ? trigger.type === event.eventName
+        : recordTriggerMatches(trigger, objectName ?? "", action ?? "");
+      if (!matches) return null;
       const actor = await hydrateActor(tx, workflow.ownerId, signal);
       if (actor === null || !canWorkflow(actor, "run", workflow.ownerId)) return null;
       const chain = await eventChain(tx, workflow.id, event.originRunId);
@@ -113,7 +123,10 @@ export async function admitWorkflowV2Event(
       const payload = await projectEvent(tx, actor, event, signal);
       if (
         payload === null ||
-        (action === "updated" && !changedFieldsMatch(trigger.config.updatedFields, payload))
+        (action === "updated" && !changedFieldsMatch(trigger.config.updatedFields, payload)) ||
+        (newsletterEvent &&
+          trigger.config.listId !== undefined &&
+          trigger.config.listId !== payload.listId)
       )
         return null;
       const [existing] = await tx

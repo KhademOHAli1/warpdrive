@@ -2,14 +2,16 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
 import { workflowsV2, workflowV2Versions } from "@/db/schema/workflowV2";
-import type {
-  WorkflowV2Adapters,
-  WorkflowV2Definition,
-  WorkflowV2LibraryEntry,
-  WorkflowV2PublishedManualLaunch,
-  WorkflowV2Trigger,
+import {
+  isNewsletterTrigger,
+  type WorkflowV2Adapters,
+  type WorkflowV2Definition,
+  type WorkflowV2LibraryEntry,
+  type WorkflowV2PublishedManualLaunch,
+  type WorkflowV2Trigger,
 } from "@/features/blocks/contracts";
 import { parseWorkflowV2Draft, validateWorkflowV2 } from "@/features/blocks/validation";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
@@ -125,6 +127,11 @@ export async function publishWorkflowV2(
     const definition = validateWorkflowV2(workflow.draft);
     if (!definition.ok || definition.value.nodes.length === 0) return err(V2_ERROR.invalid);
     if (!validWorkflowV2Trigger(definition.value.trigger)) return err(V2_ERROR.notReady);
+    if (
+      isNewsletterTrigger(definition.value.trigger.type) &&
+      !hasNewsletterPermission(currentActor, "view")
+    )
+      return err(V2_ERROR.denied);
     const readiness = await workflowV2Readiness(
       tx,
       currentActor,

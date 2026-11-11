@@ -14,10 +14,14 @@ import {
   type NoteItem,
 } from "@/features/deal-workspace/historyTimeline";
 import type { Locale } from "@/features/i18n/registry";
+import { readPersonNewsletterAttribution } from "@/features/newsletter/attribution/service";
+import { listPersonNewsletterEvents } from "@/features/newsletter/identity/events";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { NumberingSystem } from "@/lib/numberingSystem";
 import { toRefActor } from "./actorAdapters";
+import { personNewsletterMessages } from "./personNewsletterMessages";
 
 export interface ContactTimelineResult {
   items: HistoryItem[];
@@ -66,14 +70,39 @@ export async function contactTimeline(
   const changelog = await listChangeLog(db, entityType, entityId, signal);
   signal.throwIfAborted();
 
-  return {
-    items: buildHistoryTimeline(
-      activityItems,
-      changelog,
-      noteItems,
-      undefined,
-      locale,
-      numberingSystem,
-    ),
-  };
+  const items = buildHistoryTimeline(
+    activityItems,
+    changelog,
+    noteItems,
+    undefined,
+    locale,
+    numberingSystem,
+  );
+  if (entityType === "person" && hasNewsletterPermission(actor, "view")) {
+    const [events, campaigns] = await Promise.all([
+      listPersonNewsletterEvents(db, actor, entityId, signal),
+      readPersonNewsletterAttribution(db, actor, entityId, signal),
+    ]);
+    const messages = personNewsletterMessages[locale];
+    for (const event of events) {
+      items.push({
+        kind: "event",
+        id: `newsletter:${event.id}`,
+        at: event.occurredAt,
+        label: messages.events[event.event],
+        actorName: null,
+      });
+    }
+    for (const campaign of campaigns.exposures) {
+      items.push({
+        kind: "event",
+        id: `newsletter:delivery:${campaign.bindingId}:${campaign.deliveryId}`,
+        at: campaign.acceptedAt,
+        label: messages.acceptedCampaign.replace("{campaign}", campaign.campaignName),
+        actorName: null,
+      });
+    }
+    items.sort((left, right) => right.at.getTime() - left.at.getTime());
+  }
+  return { items };
 }

@@ -3,6 +3,7 @@
 import { FileImage } from "lucide-react";
 import Image from "next/image";
 import { type FormEvent, useRef, useState } from "react";
+import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useNewsletterRead, useNewsletterWrite } from "@/features/newsletter/ui/client";
@@ -39,6 +40,7 @@ function readBase64(file: File) {
 
 export function MediaLibrary() {
   const m = useCampaignMessages();
+  const { campaignCapabilities } = useWorkspaceShell();
   const [text, setText] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -103,36 +105,38 @@ export function MediaLibrary() {
   return (
     <section className="mx-auto max-w-screen-2xl space-y-4 p-4 sm:p-6">
       <CampaignHeading title={m.media} />
-      <form
-        className={`${panelClass} grid items-end gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto]`}
-        onSubmit={(event) => {
-          void upload(event);
-        }}
-      >
-        <div className="grid max-w-xl gap-1.5">
-          <Field label={m.file} htmlFor="campaign-media-upload">
-            <Input
-              ref={input}
-              id="campaign-media-upload"
-              type="file"
-              accept={imageTypes.join(",")}
-              aria-describedby="campaign-media-size"
-              disabled={uploading || write.isPending}
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            />
-          </Field>
-          <p id="campaign-media-size" className="text-xs text-muted-foreground">
-            {m.uploadHelp}
-          </p>
-        </div>
-        <Button
-          type="submit"
-          className="w-fit self-start sm:self-center"
-          disabled={!file || uploading || write.isPending}
+      {campaignCapabilities.edit && (
+        <form
+          className={`${panelClass} grid items-end gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto]`}
+          onSubmit={(event) => {
+            void upload(event);
+          }}
         >
-          {m.upload}
-        </Button>
-      </form>
+          <div className="grid max-w-xl gap-1.5">
+            <Field label={m.file} htmlFor="campaign-media-upload">
+              <Input
+                ref={input}
+                id="campaign-media-upload"
+                type="file"
+                accept={imageTypes.join(",")}
+                aria-describedby="campaign-media-size"
+                disabled={uploading || write.isPending}
+                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              />
+            </Field>
+            <p id="campaign-media-size" className="text-xs text-muted-foreground">
+              {m.uploadHelp}
+            </p>
+          </div>
+          <Button
+            type="submit"
+            className="w-fit self-start sm:self-center"
+            disabled={!file || uploading || write.isPending}
+          >
+            {m.upload}
+          </Button>
+        </form>
+      )}
       <WriteMessage error={write.error} success={notice} />
       {localError && (
         <p role="alert" className="text-sm text-destructive">
@@ -209,14 +213,16 @@ export function MediaLibrary() {
                           {m.copyUrl}
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={write.isPending}
-                        onClick={() => setTarget(item.id)}
-                      >
-                        {m.delete}
-                      </Button>
+                      {campaignCapabilities.operate && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={write.isPending}
+                          onClick={() => setTarget(item.id)}
+                        >
+                          {m.delete}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </li>

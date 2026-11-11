@@ -6,6 +6,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Select } from "@/components/ui/Select";
 import { useNewsletterRead, useNewsletterWrite } from "@/features/newsletter/ui/client";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
@@ -24,8 +25,10 @@ import {
   subscriptionStatus,
 } from "./contracts";
 import { type AudienceMessages, useAudienceMessages } from "./messages";
+import { SubscriberBulkActions } from "./SubscriberBulkActions";
 import { SubscriberEditor } from "./SubscriberEditor";
 import { SubscriberMemberships } from "./SubscriberMemberships";
+import { SubscriberRecordsDialog } from "./SubscriberRecordsDialog";
 
 type SubscriberCommand = "blocklist" | "optin";
 
@@ -39,18 +42,33 @@ function SubscriberRow({
   row,
   edit,
   manage,
+  inspect,
+  selected,
+  select,
   confirm,
   pending,
 }: {
   row: Subscriber;
   edit: (row: Subscriber) => void;
   manage: (id: number) => void;
+  inspect: (row: Subscriber & { recordProof: string }) => void;
+  selected: boolean;
+  select: (checked: boolean) => void;
   confirm: (kind: SubscriberCommand, id: number) => void;
   pending: boolean;
 }) {
   const L = useAudienceMessages();
+  const recordProof = row.recordProof;
   return (
     <tr className="hover:bg-muted/30">
+      <td className="px-4 py-3">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={select}
+          label={`${L.selectSubscriber} ${row.email}`}
+          disabled={pending}
+        />
+      </td>
       <td className="min-w-40 px-4 py-3 font-medium">
         <bdi dir="auto">{row.name}</bdi>
       </td>
@@ -85,6 +103,11 @@ function SubscriberRow({
           <Button variant="ghost" size="sm" onClick={() => manage(row.id)}>
             {L.manageMemberships}
           </Button>
+          {recordProof !== undefined && (
+            <Button variant="ghost" size="sm" onClick={() => inspect({ ...row, recordProof })}>
+              {L.subscriberActivity}
+            </Button>
+          )}
           {row.status !== "blocklisted" && (
             <Button
               variant="ghost"
@@ -119,6 +142,8 @@ export function SubscribersScreen() {
   const [subStatus, setSubStatus] = useState("");
   const [editor, setEditor] = useState<{ row: Subscriber | null } | null>(null);
   const [memberships, setMemberships] = useState<number | null>(null);
+  const [records, setRecords] = useState<(Subscriber & { recordProof: string }) | null>(null);
+  const [selection, setSelection] = useState<number[]>([]);
   const [confirmation, setConfirmation] = useState<{ kind: SubscriberCommand; id: number } | null>(
     null,
   );
@@ -131,7 +156,14 @@ export function SubscribersScreen() {
   const lists = useNewsletterRead<MinimalList[]>("lists.minimal");
   const write = useNewsletterWrite();
   const rows = read.data?.results ?? [];
+  const ids = rows.map((row) => row.id);
+  const selected = ids.filter((id) => selection.includes(id));
   const copy = commandCopy(L, confirmation?.kind);
+
+  function changePage(value: number) {
+    setSelection([]);
+    setPage(value);
+  }
 
   function runConfirmed() {
     if (!confirmation) return;
@@ -156,7 +188,7 @@ export function SubscribersScreen() {
         <AudienceSearch
           onSearch={(value) => {
             setSearch(value);
-            setPage(1);
+            changePage(1);
           }}
         />
         <Select
@@ -166,7 +198,7 @@ export function SubscribersScreen() {
           contentClassName={`${BLOCK_CLASS} ph-no-capture`}
           onChange={(value) => {
             setListId(value);
-            setPage(1);
+            changePage(1);
           }}
           options={[
             { value: "", label: L.listFilter },
@@ -179,7 +211,7 @@ export function SubscribersScreen() {
           triggerClassName="w-auto min-w-40"
           onChange={(value) => {
             setSubStatus(value);
-            setPage(1);
+            changePage(1);
           }}
           options={[
             { value: "", label: L.subscriptionFilter },
@@ -189,8 +221,27 @@ export function SubscribersScreen() {
         <AudienceRefresh read={read} />
       </div>
       <AudienceWriteError error={write.error} />
+      {selected.length > 0 && (
+        <SubscriberBulkActions
+          ids={selected}
+          lists={lists.data ?? []}
+          filteredList={listId}
+          clear={() => setSelection([])}
+          busy={read.isFetching}
+        />
+      )}
       <AudienceTable
         labels={[L.name, L.email, L.status, L.lists, L.actions]}
+        leadingHeader={
+          <Checkbox
+            label={L.selectPage}
+            checked={
+              selected.length > 0 && (selected.length === ids.length ? true : "indeterminate")
+            }
+            disabled={ids.length === 0 || read.isFetching}
+            onCheckedChange={(checked) => setSelection(checked ? ids : [])}
+          />
+        }
         empty={L.emptySubscribers}
         read={read}
         count={rows.length}
@@ -202,6 +253,13 @@ export function SubscribersScreen() {
             pending={write.isPending}
             edit={(value) => setEditor({ row: value })}
             manage={setMemberships}
+            inspect={setRecords}
+            selected={selected.includes(row.id)}
+            select={(checked) =>
+              setSelection((previous) =>
+                checked ? [...previous, row.id] : previous.filter((id) => id !== row.id),
+              )
+            }
             confirm={(kind, id) => setConfirmation({ kind, id })}
           />
         ))}
@@ -210,12 +268,13 @@ export function SubscribersScreen() {
         page={page}
         total={read.data?.total ?? 0}
         busy={read.isFetching}
-        onPageChange={setPage}
+        onPageChange={changePage}
       />
       {editor && <SubscriberEditor row={editor.row} close={() => setEditor(null)} />}
       {memberships !== null && (
         <SubscriberMemberships id={memberships} close={() => setMemberships(null)} />
       )}
+      {records && <SubscriberRecordsDialog row={records} close={() => setRecords(null)} />}
       <ConfirmDialog
         open={confirmation !== null}
         onOpenChange={(open) => {

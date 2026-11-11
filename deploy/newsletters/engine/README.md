@@ -7,7 +7,7 @@ Listmonk is licensed under the [GNU AGPL v3](https://github.com/knadh/listmonk/b
 Build the container with BuildKit.
 
 ```sh
-docker build -t warpdrive-newsletter-engine:6.2.0-consent.1 ./deploy/newsletters/engine
+docker build -t warpdrive-newsletter-engine:6.2.0-crm.1 ./deploy/newsletters/engine
 ```
 
 To build a native development binary, supply the verified source tarball and the same platform's verified Listmonk v6.2.0 release binary. Use Go 1.26.1 and a fresh output directory. The script reads the upstream binary's embedded admin assets.
@@ -29,4 +29,10 @@ Opening a confirmation link presents the form even when the legacy `app.show_opt
 
 The list update locks the current list row and rejects a double-to-single opt-in change with HTTP 409. Single-to-double changes and edits that preserve the current opt-in mode remain supported.
 
-The build requires the opt-in confirmation, dispatch, list consent mode, public subscriber update, campaign revision, and affirmative opt-in patches. Warpdrive checks `consent: 2`, `dispatch: 1`, `listConsentMode: 1`, `publicSubscriberUpdate: 1`, and `campaignRevision: 1` on the authenticated `GET /api/warpdrive-capabilities` response before admitting writes that require the derived engine.
+The authenticated `GET /api/warpdrive-capabilities` response proves the required consent, dispatch, CRM identity, approved audience and durable recipient delivery capabilities. The image applies the CRM and audience schema on first install and when opening an existing Listmonk database.
+
+An approved CRM audience references immutable grants for the selected double opt-in list. Unsubscribing, suppressing a subscriber, changing a verified address or archiving the list can exclude previously approved recipients. A fresh grant does not revive a recipient in an earlier audience.
+
+The delivery ledger records recipient admission and the scan cursor in one transaction. It retries leases that expire before submission. A lost SMTP acknowledgement stays unresolved until an operator verifies it. Operators can inspect the delivery ledger and record an accepted or rejected outcome in Warpdrive.
+
+The consent event outbox records each exact grant revocation once, including revocations caused by unsubscribe, suppression, address changes and archived lists. It retains a scope digest for reconciliation after subscriber erasure. The native worker persists the event against its original approved binding and purpose before acknowledging it. Upgrades backfill earlier retained revocations with their original occurrence time. The `consentEvents` capability and readiness checks require this schema.

@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -24,7 +25,15 @@ import {
 
 type Editor = number | "new";
 
-function TemplateForm({ template, onDone }: { template?: TemplateItem; onDone: () => void }) {
+function TemplateForm({
+  template,
+  onDone,
+  readOnly = false,
+}: {
+  template?: TemplateItem;
+  onDone: () => void;
+  readOnly?: boolean;
+}) {
   const m = useCampaignMessages();
   const [name, setName] = useState(template?.name ?? "");
   const [type, setType] = useState<TemplateItem["type"]>(template?.type ?? "campaign");
@@ -40,7 +49,7 @@ function TemplateForm({ template, onDone }: { template?: TemplateItem; onDone: (
 
   function save(event: FormEvent) {
     event.preventDefault();
-    if (write.isPending) return;
+    if (readOnly || write.isPending) return;
     if (type === "campaign_visual" && source) {
       try {
         JSON.parse(source);
@@ -72,8 +81,10 @@ function TemplateForm({ template, onDone }: { template?: TemplateItem; onDone: (
 
   return (
     <form onSubmit={save} className={`${panelClass} grid gap-4 p-4 sm:p-5`}>
-      <h2 className="text-base font-semibold">{template ? m.editTemplate : m.newTemplate}</h2>
-      <fieldset disabled={write.isPending} className="grid gap-4">
+      <h2 className="text-base font-semibold">
+        {readOnly ? template?.name : template ? m.editTemplate : m.newTemplate}
+      </h2>
+      <fieldset disabled={readOnly || write.isPending} className="grid gap-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={m.name} htmlFor="newsletter-template-name">
             <Input
@@ -135,9 +146,11 @@ function TemplateForm({ template, onDone }: { template?: TemplateItem; onDone: (
         )}
       </fieldset>
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={write.isPending}>
-          {m.save}
-        </Button>
+        {!readOnly && (
+          <Button type="submit" disabled={write.isPending}>
+            {m.save}
+          </Button>
+        )}
         <Button variant="outline" onClick={requestPreview} disabled={render.isPending || !body}>
           {m.preview}
         </Button>
@@ -158,6 +171,7 @@ function TemplateForm({ template, onDone }: { template?: TemplateItem; onDone: (
 
 export function TemplateLibrary() {
   const m = useCampaignMessages();
+  const { campaignCapabilities } = useWorkspaceShell();
   const [editor, setEditor] = useState<Editor | null>(null);
   const [target, setTarget] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
@@ -186,7 +200,11 @@ export function TemplateLibrary() {
     <section className="mx-auto max-w-screen-xl space-y-4 p-4 sm:p-6">
       <CampaignHeading
         title={m.templates}
-        actions={<Button onClick={() => setEditor("new")}>{m.newTemplate}</Button>}
+        actions={
+          campaignCapabilities.edit ? (
+            <Button onClick={() => setEditor("new")}>{m.newTemplate}</Button>
+          ) : undefined
+        }
       />
       {editor === "new" && <TemplateForm key="new" onDone={() => setEditor(null)} />}
       {typeof editor === "number" && (
@@ -198,7 +216,12 @@ export function TemplateLibrary() {
           }}
         >
           {detail.data && (
-            <TemplateForm key={editor} template={detail.data} onDone={() => setEditor(null)} />
+            <TemplateForm
+              key={editor}
+              template={detail.data}
+              readOnly={!campaignCapabilities.edit}
+              onDone={() => setEditor(null)}
+            />
           )}
         </QueryState>
       )}
@@ -236,23 +259,25 @@ export function TemplateLibrary() {
                     </td>
                     <td className={cellClass}>
                       <div className="flex flex-wrap gap-1">
-                        {item.type === "campaign" && !item.is_default && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={write.isPending}
-                            onClick={() => {
-                              setNotice("");
-                              void write
-                                .run("templates.default", { id: item.id })
-                                .then(() => setNotice(m.saved))
-                                .catch(() => undefined);
-                            }}
-                          >
-                            {m.makeDefault}
-                          </Button>
-                        )}
-                        {!item.is_default && (
+                        {campaignCapabilities.operate &&
+                          item.type === "campaign" &&
+                          !item.is_default && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={write.isPending}
+                              onClick={() => {
+                                setNotice("");
+                                void write
+                                  .run("templates.default", { id: item.id })
+                                  .then(() => setNotice(m.saved))
+                                  .catch(() => undefined);
+                              }}
+                            >
+                              {m.makeDefault}
+                            </Button>
+                          )}
+                        {campaignCapabilities.operate && !item.is_default && (
                           <Button
                             variant="ghost"
                             size="sm"

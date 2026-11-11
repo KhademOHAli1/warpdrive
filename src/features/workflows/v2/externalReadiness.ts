@@ -1,14 +1,18 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { env } from "@/config/env";
 import type { Db } from "@/db/client";
 import { workflowV2LogicFunctions } from "@/db/schema/workflowV2Functions";
 import { blockReferences, resolveBlockConfig } from "@/features/blocks/bindings";
 import type { BlockOutput, BlockReadiness, WorkflowV2Node } from "@/features/blocks/contracts";
 import { validateResolvedBlockConfig } from "@/features/blocks/schemas";
 import { listActorMailboxes } from "@/features/email/mailAccountsRepo";
+import { newsletterConfigured } from "@/features/newsletter/listmonkClient";
+import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { classificationSchema } from "./aiActions";
 import { workflowHttpsUrl } from "./httpTransport";
+import { newsletterActionAccess } from "./newsletterAuthority";
 import { validResponseSchema } from "./responseSchema";
 import { readAiRuntimeMetadata } from "./runtime";
 
@@ -68,6 +72,22 @@ async function aiReadiness(
     return needs("classification_questions");
   return ready;
 }
+
+function newsletterReadiness(actor: PermSetUser, node: WorkflowV2Node): BlockReadiness {
+  const access = newsletterActionAccess(node.type);
+  if (access === null) return ready;
+  if (!hasNewsletterPermission(actor, access)) return { state: "forbidden" };
+  if (!newsletterConfigured() || (access === "consent" && !env.NEWSLETTER_DELIVERY_ENABLED))
+    return { state: "needs_connection", reason: "newsletter_setup" };
+  if (
+    node.config.personId === undefined ||
+    node.config.listId === undefined ||
+    (access === "consent" && node.config.linkId === undefined)
+  )
+    return needs("invalid_configuration");
+  return ready;
+}
+
 export async function externalActionReadiness(
   db: Db,
   actor: PermSetUser,
@@ -75,6 +95,8 @@ export async function externalActionReadiness(
   signal: AbortSignal,
 ): Promise<BlockReadiness> {
   if (!actor.isActive) return { state: "forbidden" };
+  const newsletter = newsletterReadiness(actor, node);
+  if (newsletter.state !== "ready") return newsletter;
   let references: boolean;
   try {
     references = blockReferences(node.config).length > 0;

@@ -69,12 +69,14 @@ export function AudienceReadError({ read }: { read: ReadState }) {
 
 export function AudienceTable({
   labels,
+  leadingHeader,
   children,
   empty,
   read,
   count,
 }: {
   labels: string[];
+  leadingHeader?: ReactNode;
   children: ReactNode;
   empty: string;
   read: ReadState;
@@ -86,6 +88,11 @@ export function AudienceTable({
       <table className="w-full text-sm">
         <thead className="border-b bg-muted/40">
           <tr>
+            {leadingHeader !== undefined && (
+              <th scope="col" className="w-12 px-4 py-3">
+                {leadingHeader}
+              </th>
+            )}
             {labels.map((label) => (
               <th key={label} scope="col" className="px-4 py-3 text-start font-medium">
                 {label}
@@ -97,7 +104,7 @@ export function AudienceTable({
           {children}
           {count === 0 && (
             <tr>
-              <td colSpan={labels.length}>
+              <td colSpan={labels.length + (leadingHeader === undefined ? 0 : 1)}>
                 {read.error !== null ? (
                   <AudienceReadError read={read} />
                 ) : (
@@ -211,6 +218,8 @@ export function AudienceWriteError({ error }: { error: { message: string } | nul
     "Campaign delivery is disabled.": L.deliveryDisabled,
     audience_invalid_csv: L.invalidCsv,
     audience_no_pending_optin: L.optinUnavailable,
+    audience_subscriber_changed: L.subscriberChanged,
+    audience_export_unavailable: L.subscriberExportUnavailable,
   };
   return (
     <p role="alert" className="text-sm text-destructive">

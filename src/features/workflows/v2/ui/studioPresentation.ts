@@ -18,6 +18,8 @@ export const studioActions: Record<ActionBlockKind, Appearance> = {
   DELAY: { group: "flow", icon: "player-pause" },
   WAIT_FOR_EVENT: { group: "flow", icon: "clock" },
   SEND_EMAIL: { group: "core", icon: "send", stroke: 1.6 },
+  NEWSLETTER_CONSENT_STATUS: { group: "core", icon: "search", stroke: 1.6 },
+  NEWSLETTER_INVITE: { group: "core", icon: "mail-plus", stroke: 1.6 },
   DRAFT_EMAIL: { group: "core", icon: "mail-plus", stroke: 1.6 },
   CREATE_CALENDAR_EVENT: { group: "core", icon: "calendar-event", stroke: 1.6 },
   HTTP_REQUEST: { group: "core", icon: "world", stroke: 1.6 },
@@ -38,6 +40,9 @@ export const studioTriggers: Record<
   "record.updated": { key: "updated", icon: "refresh-dot" },
   "record.deleted": { key: "deleted", icon: "trash" },
   "record.created_or_updated": { key: "upserted", icon: "pencil-plus" },
+  "newsletter.identity.verified": { key: "newsletter.identity.verified", icon: "mail-plus" },
+  "newsletter.consent.confirmed": { key: "newsletter.consent.confirmed", icon: "mail-plus" },
+  "newsletter.consent.revoked": { key: "newsletter.consent.revoked", icon: "mail-plus" },
 };
 
 export const studioActionGroups = ["data", "ai", "flow", "core", "human", "other"] as const;

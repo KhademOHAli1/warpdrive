@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { Organization, Person } from "@/db/schema";
@@ -6,6 +6,7 @@ import { organizations, persons } from "@/db/schema";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { lockImportMutation } from "@/features/import/importLock";
 import { repointMappings } from "@/features/import/repointMappings";
+import { detachNewsletterPersonLinks } from "@/features/newsletter/identity/lifecycle";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import {
@@ -33,20 +34,25 @@ export async function mergePersons(
 
   return db.transaction(async (tx) => {
     await lockImportMutation(tx, signal);
-    const [survivor] = await tx
+    const candidates = await tx
       .select()
       .from(persons)
-      .where(and(eq(persons.id, args.survivorId), isNull(persons.deletedAt)));
-    const [merged] = await tx
-      .select()
-      .from(persons)
-      .where(and(eq(persons.id, args.mergedId), isNull(persons.deletedAt)));
+      .where(and(inArray(persons.id, [args.survivorId, args.mergedId]), isNull(persons.deletedAt)))
+      .orderBy(asc(persons.id))
+      .for("update");
+    const survivor = candidates.find(({ id }) => id === args.survivorId);
+    const merged = candidates.find(({ id }) => id === args.mergedId);
     if (survivor === undefined || merged === undefined) {
       return err(new AppError(ERROR_IDS.CONTACT_NOT_FOUND, "not found", args));
     }
 
     const gate = gateMerge(actor, "person", survivor, merged, args);
     if (gate.ok === false) return gate;
+
+    const detached = await detachNewsletterPersonLinks(tx, merged.id, signal, {
+      reason: "person_merged",
+    });
+    if (!detached.ok) return detached;
 
     await repointPersonFks(tx, args.survivorId, args.mergedId);
     await repointMappings(tx, "person", args.survivorId, args.mergedId, signal);

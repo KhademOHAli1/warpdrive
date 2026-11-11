@@ -15,3 +15,15 @@
 !dispatch-tests/**/*.py
 !dispatch-tests/**/*.sql
 !dispatch-tests/**/*.sh
+!durability-tests/
+!durability-tests/**/*.py
+!durability-tests/**/*.go
+!durability-tests/**/*.md
+!feedback-tests/
+!feedback-tests/**/*.py
+!feedback-tests/**/*.go
+!feedback-tests/**/*.md
+!readiness-tests/
+!readiness-tests/**/*.py
+!readiness-tests/**/*.go
+!readiness-tests/**/*.md

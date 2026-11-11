@@ -6,11 +6,13 @@ x-newsletter-unconfigured: &newsletter-unconfigured
   NEWSLETTER_API_TOKEN: ""
   NEWSLETTER_API_TOKEN_FILE: ""
   NEWSLETTER_DELIVERY_ENABLED: "false"
+  NEWSLETTER_PUBLIC_SIGNUP_ENABLED: "false"
+  NEWSLETTER_PUBLIC_ORIGIN: ""
   NEWSLETTER_TEST_RECIPIENTS: ""
 
 services:
   newsletter-engine:
-    image: warpdrive-newsletter-engine:6.2.0-consent.1
+    image: warpdrive-newsletter-engine:6.2.0-crm.1
     build:
       context: ./deploy/newsletters/engine
     pull_policy: build
@@ -38,6 +40,9 @@ services:
       LISTMONK_db__max_lifetime: "300s"
       NEWSLETTER_DELIVERY_ENABLED: ${NEWSLETTER_DELIVERY_ENABLED:-false}
       NEWSLETTER_TEST_RECIPIENTS: ${NEWSLETTER_TEST_RECIPIENTS:-}
+      NEWSLETTER_SES_FEEDBACK_ENABLED: ${NEWSLETTER_SES_FEEDBACK_ENABLED:-false}
+      NEWSLETTER_SES_TOPIC_ARN: ${NEWSLETTER_SES_TOPIC_ARN:-}
+      NEWSLETTER_SES_CONFIGURATION_SET: ${NEWSLETTER_SES_CONFIGURATION_SET:-}
       LISTMONK_ADMIN_USER: ${NEWSLETTER_BOOTSTRAP_USER:-}
       LISTMONK_ADMIN_PASSWORD: ${NEWSLETTER_BOOTSTRAP_PASSWORD:-}
       TZ: Etc/UTC
@@ -48,13 +53,15 @@ services:
         condition: service_healthy
 
   app:
-    environment:
+    environment: &newsletter-app-connection
       NEWSLETTER_BASE_URL: http://newsletter-engine:9000
       NEWSLETTER_API_USER: ${NEWSLETTER_API_USER:-}
       NEWSLETTER_API_TOKEN: ${NEWSLETTER_API_TOKEN:-}
       NEWSLETTER_API_TOKEN_FILE: ""
       NEWSLETTER_DELIVERY_ENABLED: ${NEWSLETTER_DELIVERY_ENABLED:-false}
       NEWSLETTER_TEST_RECIPIENTS: ${NEWSLETTER_TEST_RECIPIENTS:-}
+      NEWSLETTER_PUBLIC_SIGNUP_ENABLED: ${NEWSLETTER_PUBLIC_SIGNUP_ENABLED:-false}
+      NEWSLETTER_PUBLIC_ORIGIN: https://${NEWSLETTER_PUBLIC_DOMAIN:?set NEWSLETTER_PUBLIC_DOMAIN}
 
   migrate:
     environment: *newsletter-unconfigured
@@ -63,7 +70,7 @@ services:
     environment: *newsletter-unconfigured
 
   worker:
-    environment: *newsletter-unconfigured
+    environment: *newsletter-app-connection
 
   createbuckets:
     environment: *newsletter-unconfigured
@@ -71,6 +78,7 @@ services:
   caddy:
     environment:
       NEWSLETTER_PUBLIC_DOMAIN: ${NEWSLETTER_PUBLIC_DOMAIN:?set NEWSLETTER_PUBLIC_DOMAIN}
+      NEWSLETTER_SES_FEEDBACK_ENABLED: ${NEWSLETTER_SES_FEEDBACK_ENABLED:-false}
       NEWSLETTER_PUBLIC_SIGNUP_ENABLED: ${NEWSLETTER_PUBLIC_SIGNUP_ENABLED:-false}
       NEWSLETTER_DELIVERY_ENABLED: ${NEWSLETTER_DELIVERY_ENABLED:-false}
     volumes:

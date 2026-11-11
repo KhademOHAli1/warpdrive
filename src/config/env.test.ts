@@ -110,6 +110,23 @@ describe("env boundary", () => {
     );
   });
 
+  test("admits only a complete HTTPS origin for public newsletter signup", () => {
+    const result = parseEnv({
+      ...process.env,
+      NEWSLETTER_PUBLIC_ORIGIN: "https://newsletter.example.test/",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok)
+      expect(result.value.NEWSLETTER_PUBLIC_ORIGIN).toBe("https://newsletter.example.test");
+    for (const value of [
+      "http://newsletter.example.test",
+      "https://newsletter.example.test/public",
+      "https://user:password@newsletter.example.test/",
+      "https://newsletter.example.test/?extra",
+    ])
+      expect(parseEnv({ ...process.env, NEWSLETTER_PUBLIC_ORIGIN: value }).ok).toBe(false);
+  });
+
   describe("Docker secret <VAR>_FILE resolution", () => {
     let dir: string;
 

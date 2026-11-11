@@ -112,7 +112,12 @@ const formField = z
     objectName: objectName.optional(),
   })
   .passthrough();
+export const newsletterListId = z.number().int().positive().max(2_147_483_647);
+const newsletterPerson = { personId: z.uuid(), listId: newsletterListId };
+
 const configs = {
+  NEWSLETTER_CONSENT_STATUS: z.strictObject({ ...newsletterPerson, linkId: z.uuid().optional() }),
+  NEWSLETTER_INVITE: z.strictObject({ ...newsletterPerson, linkId: z.uuid() }),
   CREATE_RECORD: z.object({ objectName, fields }),
   UPDATE_RECORD: z.object({ objectName, recordId, fields }),
   DELETE_RECORD: z.object({ objectName, recordId }),

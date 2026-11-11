@@ -25,6 +25,7 @@ export const leadCreateInput = z.object({
     .default(null),
   sourceChannelId: z.string().max(255).nullable().default(null),
   sourceOrigin: z.string().max(60).default("manually_created"),
+  newsletterExposureId: z.uuid().optional(),
   ownerId: z.string().uuid().optional(),
   visibilityGroupId: z.string().uuid().optional(),
   customFields: z.record(z.string(), z.unknown()).optional(),

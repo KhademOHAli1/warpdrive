@@ -1,0 +1,1406 @@
+diff --git a/cmd/campaigns.go b/cmd/campaigns.go
+index a6d2437..d6bfd29 100644
+--- a/cmd/campaigns.go
++++ b/cmd/campaigns.go
+@@ -393,6 +393,11 @@ func (a *App) UpdateCampaignStatus(c echo.Context) error {
+ 	if err != nil {
+ 		return err
+ 	}
++	if req.Status == models.CampaignStatusRunning || req.Status == models.CampaignStatusScheduled {
++		if err := a.checkDeliveryResume(c, id); err != nil {
++			return err
++		}
++	}
+ 	// Update the campaign status in the DB.
+ 	out, err := a.core.UpdateCampaignStatus(id, req.Status, revision)
+ 	if err != nil {
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+index c8fee35..ef24a86 100644
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1}})
+ 		}, "settings:get"))
+ 		g.POST("/api/warpdrive/crm-identity/challenges", pm(crmIdentityApi(a.crmIssueChallenge), "warpdrive:identity_verify"))
+ 		g.GET("/api/warpdrive/crm-identity/challenges/:id", pm(crmIdentityApi(a.hasUUID(a.crmReadChallenge, "id")), "warpdrive:identity_verify"))
+@@ -170,6 +170,8 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
+ 		g.GET("/api/campaigns", pm(a.GetCampaigns, "campaigns:get_all", "campaigns:get"))
+ 		g.GET("/api/warpdrive/audiences/:id", pm(hasID(a.GetWarpdriveAudience), "campaigns:get_all"))
+ 		g.PUT("/api/warpdrive/audiences/:id", pm(hasID(a.SealWarpdriveAudience), "campaigns:manage_all"))
++		g.GET("/api/warpdrive-delivery/:id", pm(hasID(a.GetWarpdriveDelivery), "campaigns:get_all", "campaigns:get"))
++		g.POST("/api/warpdrive-delivery/:id/resolve", pm(hasID(a.ResolveWarpdriveDelivery), "campaigns:manage_all", "campaigns:manage"))
+ 		g.GET("/api/campaigns/running/stats", pm(a.GetRunningCampaignStats, "campaigns:get_all", "campaigns:get"))
+ 		g.GET("/api/campaigns/:id", pm(hasID(a.GetCampaign), "campaigns:get_all", "campaigns:get"))
+ 		g.GET("/api/campaigns/analytics/:type", pm(a.GetCampaignViewAnalytics, "campaigns:get_analytics"))
+diff --git a/cmd/init.go b/cmd/init.go
+index 044ac0f..d0b04b9 100644
+--- a/cmd/init.go
++++ b/cmd/init.go
+@@ -614,7 +614,7 @@ func initCampaignManager(msgrs []manager.Messenger, q *models.Queries, u *UrlCon
+ 		SlidingWindowRate:     ko.Int("app.message_sliding_window_rate"),
+ 		ScanInterval:          time.Second * 5,
+ 		ScanCampaigns:         !ko.Bool("passive"),
+-	}, newManagerStore(q, co, md), i, lo)
++	}, newManagerStore(db, q, co, md), i, lo)
+ 
+ 	// Attach all messengers to the campaign manager.
+ 	for _, m := range msgrs {
+diff --git a/cmd/main.go b/cmd/main.go
+index 86ed4ce..69b08d4 100644
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -199,6 +199,10 @@ func init() {
+ }
+ 
+ func main() {
++	if err := installDeliverySchema(db); err != nil {
++		lo.Fatalf("error initializing durable campaign delivery: %v", err)
++	}
++
+ 	var (
+ 		// Initialize static global config.
+ 		cfg = initConstConfig(ko)
+diff --git a/cmd/manager_store.go b/cmd/manager_store.go
+index 455b6c8..7f32b60 100644
+--- a/cmd/manager_store.go
++++ b/cmd/manager_store.go
+@@ -5,6 +5,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
+ 	"github.com/knadh/listmonk/internal/core"
+ 	"github.com/knadh/listmonk/internal/manager"
+ 	"github.com/knadh/listmonk/internal/media"
+@@ -15,6 +16,7 @@ import (
+ // store implements DataSource over the primary
+ // database.
+ type store struct {
++	db      *sqlx.DB
+ 	queries *models.Queries
+ 	core    *core.Core
+ 	media   media.Store
+@@ -28,8 +30,9 @@ type runningCamp struct {
+ 	ListID           int    `db:"list_id"`
+ }
+ 
+-func newManagerStore(q *models.Queries, c *core.Core, m media.Store) *store {
++func newManagerStore(db *sqlx.DB, q *models.Queries, c *core.Core, m media.Store) *store {
+ 	return &store{
++		db:      db,
+ 		queries: q,
+ 		core:    c,
+ 		media:   m,
+@@ -45,40 +48,6 @@ func (s *store) NextCampaigns(currentIDs []int64, sentCounts []int64) ([]*models
+ 	return out, err
+ }
+ 
+-// NextSubscribers retrieves a subset of subscribers of a given campaign.
+-// Since batches are processed sequentially, the retrieval is ordered by ID,
+-// and every batch takes the last ID of the last batch and fetches the next
+-// batch above that.
+-func (s *store) NextSubscribers(campID, limit int) ([]models.Subscriber, error) {
+-	var camps []runningCamp
+-	if err := s.queries.GetRunningCampaign.Select(&camps, campID); err != nil {
+-		return nil, err
+-	}
+-
+-	var listIDs []int
+-	for _, c := range camps {
+-		listIDs = append(listIDs, c.ListID)
+-	}
+-
+-	if len(listIDs) == 0 {
+-		return nil, nil
+-	}
+-
+-	var out []models.Subscriber
+-	err := s.queries.NextCampaignSubscribers.Select(&out, camps[0].CampaignID, camps[0].CampaignType, camps[0].LastSubscriberID, camps[0].MaxSubscriberID, pq.Array(listIDs), limit)
+-	return out, err
+-}
+-
+-// CampaignRecipientEligible checks current consent and the queued address.
+-func (s *store) CampaignRecipientEligible(campID int, sub models.Subscriber) (bool, error) {
+-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+-	defer cancel()
+-
+-	var eligible bool
+-	err := s.queries.CampaignRecipientEligible.GetContext(ctx, &eligible, campID, sub.ID, sub.Email, sub.UUID)
+-	return eligible, err
+-}
+-
+ // CampaignTestRecipientEligible checks that the approved test address still identifies an enabled subscriber.
+ func (s *store) CampaignTestRecipientEligible(sub models.Subscriber) (bool, error) {
+ 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+@@ -102,12 +71,6 @@ func (s *store) UpdateCampaignStatus(campID int, status string) error {
+ 	return err
+ }
+ 
+-// UpdateCampaignCounts updates a campaign's status.
+-func (s *store) UpdateCampaignCounts(campID int, toSend int, sent int, lastSubID int) error {
+-	_, err := s.queries.UpdateCampaignCounts.Exec(campID, toSend, sent, lastSubID)
+-	return err
+-}
+-
+ // GetAttachment fetches a media attachment blob.
+ func (s *store) GetAttachment(mediaID int) (models.Attachment, error) {
+ 	m, err := s.core.GetMedia(mediaID, "", "", s.media)
+diff --git a/cmd/warpdrive_delivery.sql b/cmd/warpdrive_delivery.sql
+new file mode 100644
+index 0000000..297cb07
+--- /dev/null
++++ b/cmd/warpdrive_delivery.sql
+@@ -0,0 +1,61 @@
++CREATE TABLE IF NOT EXISTS warpdrive_delivery_runs (
++    campaign_id INTEGER PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
++    revision BYTEA,
++    recipient_ceiling INTEGER NOT NULL DEFAULT 0,
++    exhausted BOOLEAN NOT NULL DEFAULT FALSE,
++    hold TEXT NOT NULL DEFAULT '' CHECK (hold IN ('', 'legacy', 'revision_changed'))
++);
++
++CREATE TABLE IF NOT EXISTS warpdrive_delivery_recipients (
++    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
++    campaign_id INTEGER NOT NULL REFERENCES warpdrive_delivery_runs(campaign_id) ON DELETE CASCADE,
++    subscriber_id INTEGER REFERENCES subscribers(id) ON DELETE SET NULL,
++    subscriber_uuid UUID,
++    address_digest BYTEA,
++    state TEXT NOT NULL DEFAULT 'pending'
++        CHECK (state IN ('pending', 'leased', 'submitting', 'accepted', 'rejected', 'unknown', 'suppressed')),
++    available_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
++    lease_token UUID,
++    lease_until TIMESTAMPTZ,
++    message_id TEXT,
++    attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts BETWEEN 0 AND 3),
++    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
++    UNIQUE (campaign_id, subscriber_id),
++    CHECK ((state IN ('leased', 'submitting')) = (lease_token IS NOT NULL AND lease_until IS NOT NULL)),
++    CHECK ((subscriber_id IS NULL AND subscriber_uuid IS NULL AND address_digest IS NULL)
++        OR (subscriber_id IS NOT NULL AND subscriber_uuid IS NOT NULL AND address_digest IS NOT NULL))
++);
++
++CREATE OR REPLACE FUNCTION warpdrive_delivery_anonymize_recipient() RETURNS TRIGGER LANGUAGE plpgsql AS $$
++BEGIN
++    NEW.subscriber_uuid := NULL;
++    NEW.address_digest := NULL;
++    IF NEW.state IN ('pending', 'leased') THEN
++        NEW.state := 'suppressed';
++        NEW.lease_token := NULL;
++        NEW.lease_until := NULL;
++    END IF;
++    NEW.updated_at := NOW();
++    RETURN NEW;
++END;
++$$;
++
++CREATE OR REPLACE TRIGGER warpdrive_delivery_anonymize_recipient
++    BEFORE UPDATE OF subscriber_id ON warpdrive_delivery_recipients
++    FOR EACH ROW WHEN (OLD.subscriber_id IS NOT NULL AND NEW.subscriber_id IS NULL)
++    EXECUTE FUNCTION warpdrive_delivery_anonymize_recipient();
++
++CREATE INDEX IF NOT EXISTS warpdrive_delivery_subscriber
++    ON warpdrive_delivery_recipients (subscriber_id) WHERE subscriber_id IS NOT NULL;
++CREATE INDEX IF NOT EXISTS warpdrive_delivery_ready
++    ON warpdrive_delivery_recipients (campaign_id, available_at, subscriber_id)
++    WHERE state = 'pending';
++CREATE INDEX IF NOT EXISTS warpdrive_delivery_active
++    ON warpdrive_delivery_recipients (campaign_id, lease_until)
++    WHERE state IN ('leased', 'submitting');
++CREATE INDEX IF NOT EXISTS warpdrive_delivery_outstanding
++    ON warpdrive_delivery_recipients (campaign_id)
++    WHERE state IN ('pending', 'leased', 'submitting');
++CREATE INDEX IF NOT EXISTS warpdrive_delivery_unknown
++    ON warpdrive_delivery_recipients (campaign_id, updated_at, id)
++    WHERE state = 'unknown';
+diff --git a/cmd/warpdrive_delivery_http.go b/cmd/warpdrive_delivery_http.go
+new file mode 100644
+index 0000000..64136eb
+--- /dev/null
++++ b/cmd/warpdrive_delivery_http.go
+@@ -0,0 +1,118 @@
++package main
++
++import (
++	"context"
++	"database/sql"
++	"encoding/json"
++	"errors"
++	"net/http"
++
++	"github.com/gofrs/uuid/v5"
++	"github.com/jmoiron/sqlx"
++	"github.com/knadh/listmonk/internal/auth"
++	"github.com/labstack/echo/v4"
++)
++
++type deliveryState struct {
++	Hold   string          `db:"hold" json:"hold"`
++	Counts json.RawMessage `db:"counts" json:"counts"`
++	Review json.RawMessage `db:"review" json:"review"`
++}
++
++func (a *App) GetWarpdriveDelivery(c echo.Context) error {
++	id := getID(c)
++	if err := a.checkCampaignPerm(auth.PermTypeGet, id, c); err != nil {
++		return err
++	}
++	ctx, cancel := context.WithTimeout(c.Request().Context(), deliveryDBTimeout)
++	defer cancel()
++	var status deliveryState
++	if err := a.db.GetContext(ctx, &status, `
++		WITH projected AS MATERIALIZED (
++			SELECT id, message_id, attempts, updated_at,
++			       CASE WHEN state = 'submitting' AND lease_until <= clock_timestamp() THEN 'unknown' ELSE state END AS state
++			FROM warpdrive_delivery_recipients WHERE campaign_id = $1
++		), counters AS (
++			SELECT state, COUNT(*) AS count FROM projected GROUP BY state
++		)
++		SELECT COALESCE((SELECT hold FROM warpdrive_delivery_runs WHERE campaign_id = $1), '') AS hold,
++		       COALESCE((SELECT jsonb_object_agg(state, count) FROM counters), '{}'::jsonb) AS counts,
++		       COALESCE((SELECT jsonb_agg(to_jsonb(r)) FROM (
++		           SELECT id, message_id, attempts, updated_at FROM projected
++		           WHERE state = 'unknown' ORDER BY updated_at, id LIMIT 100
++		       ) AS r), '[]'::jsonb) AS review
++	`, id); err != nil {
++		a.log.Printf("could not read delivery receipts for campaign %d: %v", id, err)
++		return echo.NewHTTPError(http.StatusInternalServerError)
++	}
++	return c.JSON(http.StatusOK, okResp{status})
++}
++
++func (a *App) ResolveWarpdriveDelivery(c echo.Context) error {
++	id := getID(c)
++	if err := a.checkCampaignPerm(auth.PermTypeManage, id, c); err != nil {
++		return err
++	}
++	var req struct {
++		DeliveryID string `json:"delivery_id"`
++		Outcome    string `json:"outcome"`
++	}
++	if err := c.Bind(&req); err != nil {
++		return err
++	}
++	deliveryID, err := uuid.FromString(req.DeliveryID)
++	if err != nil || (req.Outcome != "accepted" && req.Outcome != "rejected") {
++		return echo.NewHTTPError(http.StatusBadRequest)
++	}
++	changed := false
++	err = campaignDeliveryTx(a.db, id, func(ctx context.Context, tx *sqlx.Tx, _ string) error {
++		res, err := tx.ExecContext(ctx, `
++			UPDATE warpdrive_delivery_recipients
++			SET state = $3, lease_token = NULL, lease_until = NULL, updated_at = NOW()
++			WHERE campaign_id = $1 AND id = $2 AND (
++				state = 'unknown' OR (state = 'submitting' AND lease_until <= clock_timestamp())
++			)
++		`, id, deliveryID.String(), req.Outcome)
++		if err != nil {
++			return err
++		}
++		count, err := res.RowsAffected()
++		if err != nil {
++			return err
++		}
++		changed = count == 1
++		if changed && req.Outcome == "accepted" {
++			_, err := tx.ExecContext(ctx, "UPDATE campaigns SET sent = sent + 1, updated_at = NOW() WHERE id = $1", id)
++			return err
++		}
++		return nil
++	})
++	if err != nil {
++		a.log.Printf("could not resolve a delivery for campaign %d: %v", id, err)
++		return echo.NewHTTPError(http.StatusInternalServerError)
++	}
++	if !changed {
++		return echo.NewHTTPError(http.StatusConflict, "The delivery is no longer awaiting review.")
++	}
++	return c.JSON(http.StatusOK, okResp{true})
++}
++
++func (a *App) checkDeliveryResume(c echo.Context, id int) error {
++	ctx, cancel := context.WithTimeout(c.Request().Context(), deliveryDBTimeout)
++	defer cancel()
++	var blocked bool
++	if err := a.db.GetContext(ctx, &blocked, `
++		SELECT r.hold != '' OR EXISTS (
++			SELECT 1 FROM warpdrive_delivery_recipients WHERE campaign_id = $1
++			AND (state = 'unknown' OR (state = 'submitting' AND lease_until <= clock_timestamp()))
++		)
++		FROM warpdrive_delivery_runs r WHERE r.campaign_id = $1
++	`, id); err != nil && !errors.Is(err, sql.ErrNoRows) {
++		a.log.Printf("could not check delivery holds for campaign %d: %v", id, err)
++		return echo.NewHTTPError(http.StatusInternalServerError)
++	}
++	if blocked {
++		return echo.NewHTTPError(http.StatusConflict, "Review the campaign delivery hold before resuming.")
++	}
++	return nil
++}
+diff --git a/cmd/warpdrive_delivery_store.go b/cmd/warpdrive_delivery_store.go
+new file mode 100644
+index 0000000..c56601d
+--- /dev/null
++++ b/cmd/warpdrive_delivery_store.go
+@@ -0,0 +1,359 @@
++package main
++
++import (
++	"bytes"
++	"context"
++	"crypto/sha256"
++	"database/sql"
++	_ "embed"
++	"errors"
++	"time"
++
++	"github.com/jmoiron/sqlx"
++	"github.com/knadh/listmonk/models"
++	"github.com/lib/pq"
++)
++
++//go:embed warpdrive_delivery.sql
++var deliverySchema string
++
++const deliveryDBTimeout = 5 * time.Second
++
++func installDeliverySchema(db *sqlx.DB) error {
++	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(900731613, 50)"); err != nil {
++		return err
++	}
++	if _, err := tx.ExecContext(ctx, `
++		CREATE TABLE IF NOT EXISTS warpdrive_delivery_migrations (
++			version INTEGER PRIMARY KEY, installed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
++		)
++	`); err != nil {
++		return err
++	}
++	version, err := tx.ExecContext(ctx, "INSERT INTO warpdrive_delivery_migrations(version) VALUES (1) ON CONFLICT DO NOTHING")
++	if err != nil {
++		return err
++	}
++	first, err := version.RowsAffected()
++	if err != nil {
++		return err
++	}
++	if first > 0 {
++		if _, err := tx.ExecContext(ctx, deliverySchema); err != nil {
++			return err
++		}
++		// A cursor from the old volatile queue cannot establish who actually received mail.
++		if _, err := tx.ExecContext(ctx, `
++			WITH held AS (
++				INSERT INTO warpdrive_delivery_runs(campaign_id, hold)
++				SELECT id, 'legacy' FROM campaigns
++				WHERE status IN ('running', 'scheduled', 'paused')
++				  AND (started_at IS NOT NULL OR sent > 0 OR last_subscriber_id > 0)
++				ON CONFLICT DO NOTHING RETURNING campaign_id
++			)
++			UPDATE campaigns SET status = 'paused', updated_at = NOW()
++			WHERE id IN (SELECT campaign_id FROM held) AND status != 'paused'
++		`); err != nil {
++			return err
++		}
++	}
++	return tx.Commit()
++}
++
++// Every state transition takes the campaign lock before touching its deliveries.
++func campaignDeliveryTx(db *sqlx.DB, id int, action func(context.Context, *sqlx.Tx, string) error) error {
++	ctx, cancel := context.WithTimeout(context.Background(), deliveryDBTimeout)
++	defer cancel()
++	tx, err := db.BeginTxx(ctx, nil)
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++	var status string
++	if err := tx.GetContext(ctx, &status, "SELECT status FROM campaigns WHERE id = $1 FOR UPDATE", id); err != nil {
++		return err
++	}
++	if err := action(ctx, tx, status); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
++
++func pauseDeliveryRun(ctx context.Context, tx *sqlx.Tx, id int) error {
++	_, err := tx.ExecContext(ctx, "UPDATE campaigns SET status = 'paused', updated_at = NOW() WHERE id = $1 AND status = 'running'", id)
++	return err
++}
++
++func (s *store) PrepareDeliveryRun(id int, revision []byte) (bool, error) {
++	ready := false
++	err := campaignDeliveryTx(s.db, id, func(ctx context.Context, tx *sqlx.Tx, status string) error {
++		if status != models.CampaignStatusRunning {
++			return nil
++		}
++		if _, err := tx.ExecContext(ctx, `
++			INSERT INTO warpdrive_delivery_runs(campaign_id, revision, recipient_ceiling)
++			SELECT id, $2, max_subscriber_id FROM campaigns WHERE id = $1
++			ON CONFLICT DO NOTHING
++		`, id, revision); err != nil {
++			return err
++		}
++		var run struct {
++			Revision []byte
++			Hold     string
++		}
++		if err := tx.GetContext(ctx, &run, "SELECT revision, hold FROM warpdrive_delivery_runs WHERE campaign_id = $1", id); err != nil {
++			return err
++		}
++		if run.Hold == "" && !bytes.Equal(run.Revision, revision) {
++			run.Hold = "revision_changed"
++			if _, err := tx.ExecContext(ctx, "UPDATE warpdrive_delivery_runs SET hold = $2 WHERE campaign_id = $1", id, run.Hold); err != nil {
++				return err
++			}
++		}
++		if run.Hold != "" {
++			return pauseDeliveryRun(ctx, tx, id)
++		}
++		ready = true
++		return nil
++	})
++	return ready, err
++}
++
++func (s *store) NextSubscribers(id, limit int) ([]models.DeliveryLease, error) {
++	var leased []models.DeliveryLease
++	limit = min(limit, 200)
++	err := campaignDeliveryTx(s.db, id, func(ctx context.Context, tx *sqlx.Tx, status string) error {
++		if status != models.CampaignStatusRunning {
++			return nil
++		}
++		if _, err := tx.ExecContext(ctx, `
++			UPDATE warpdrive_delivery_recipients
++			SET state = CASE state WHEN 'submitting' THEN 'unknown' ELSE 'pending' END,
++			    lease_token = NULL, lease_until = NULL, updated_at = NOW()
++			WHERE campaign_id = $1 AND state IN ('leased', 'submitting') AND lease_until <= clock_timestamp()
++		`, id); err != nil {
++			return err
++		}
++		var run struct {
++			Hold             string
++			Exhausted        bool
++			Unknown          bool
++			Open             int
++			RecipientCeiling int `db:"recipient_ceiling"`
++		}
++		if err := tx.GetContext(ctx, &run, `
++			SELECT r.hold, r.exhausted, r.recipient_ceiling,
++			       EXISTS (SELECT 1 FROM warpdrive_delivery_recipients WHERE campaign_id = $1 AND state = 'unknown') AS unknown,
++			       (SELECT COUNT(*) FROM warpdrive_delivery_recipients WHERE campaign_id = $1 AND state IN ('pending', 'leased', 'submitting')) AS open
++			FROM warpdrive_delivery_runs r WHERE r.campaign_id = $1
++		`, id); err != nil {
++			return err
++		}
++		if run.Hold != "" || run.Unknown {
++			return pauseDeliveryRun(ctx, tx, id)
++		}
++		if !run.Exhausted && run.Open < limit {
++			if err := s.admitDeliveryBatch(ctx, tx, id, limit-run.Open, run.RecipientCeiling); err != nil {
++				return err
++			}
++		}
++
++		// The queue stores a digest, never a second copy of the subscriber's address.
++		if _, err := tx.ExecContext(ctx, `
++			UPDATE warpdrive_delivery_recipients d SET state = 'suppressed', updated_at = NOW()
++			WHERE d.campaign_id = $1 AND d.state = 'pending'
++			  AND NOT EXISTS (
++			    SELECT 1 FROM subscribers s WHERE s.id = d.subscriber_id AND s.uuid = d.subscriber_uuid
++			      AND sha256(convert_to(s.email, 'UTF8')) = d.address_digest
++			  )
++		`, id); err != nil {
++			return err
++		}
++		return tx.SelectContext(ctx, &leased, `
++			WITH candidates AS (
++				SELECT d.id FROM warpdrive_delivery_recipients d
++				JOIN subscribers s ON s.id = d.subscriber_id AND s.uuid = d.subscriber_uuid
++				  AND sha256(convert_to(s.email, 'UTF8')) = d.address_digest
++				WHERE d.campaign_id = $1 AND d.state = 'pending' AND d.available_at <= clock_timestamp()
++				ORDER BY d.subscriber_id LIMIT $2 FOR UPDATE OF d SKIP LOCKED
++			), claims AS (
++				UPDATE warpdrive_delivery_recipients d
++				SET state = 'leased', lease_token = gen_random_uuid(),
++				    lease_until = clock_timestamp() + INTERVAL '5 minutes', updated_at = NOW()
++				FROM candidates c WHERE d.id = c.id
++				RETURNING d.id, d.lease_token, d.subscriber_id
++			)
++			SELECT s.*, claims.id::TEXT AS delivery_id, claims.lease_token::TEXT AS lease_token
++			FROM claims JOIN subscribers s ON s.id = claims.subscriber_id ORDER BY s.id
++		`, id, limit)
++	})
++	return leased, err
++}
++
++func (s *store) admitDeliveryBatch(ctx context.Context, tx *sqlx.Tx, id, limit, ceiling int) error {
++	var campaigns []runningCamp
++	if err := tx.StmtxContext(ctx, s.queries.GetRunningCampaign).SelectContext(ctx, &campaigns, id); err != nil {
++		return err
++	}
++	var selected []models.Subscriber
++	if len(campaigns) > 0 {
++		listIDs := make([]int, 0, len(campaigns))
++		for _, campaign := range campaigns {
++			listIDs = append(listIDs, campaign.ListID)
++		}
++		campaign := campaigns[0]
++		// This statement advances the upstream cursor. It commits only with the receipts below.
++		if err := tx.StmtxContext(ctx, s.queries.NextCampaignSubscribers).SelectContext(ctx, &selected, id, campaign.CampaignType,
++			campaign.LastSubscriberID, ceiling, pq.Array(listIDs), limit); err != nil {
++			return err
++		}
++	}
++	if len(selected) == 0 {
++		_, err := tx.ExecContext(ctx, "UPDATE warpdrive_delivery_runs SET exhausted = TRUE WHERE campaign_id = $1", id)
++		return err
++	}
++	ids := make([]int, 0, len(selected))
++	uuids := make([]string, 0, len(selected))
++	digests := make(pq.ByteaArray, 0, len(selected))
++	for _, recipient := range selected {
++		ids = append(ids, recipient.ID)
++		uuids = append(uuids, recipient.UUID)
++		digest := sha256.Sum256([]byte(recipient.Email))
++		digests = append(digests, digest[:])
++	}
++	_, err := tx.ExecContext(ctx, `
++		INSERT INTO warpdrive_delivery_recipients(campaign_id, subscriber_id, subscriber_uuid, address_digest)
++		SELECT $1, id, uuid, address_digest FROM unnest($2::INTEGER[], $3::UUID[], $4::BYTEA[]) AS v(id, uuid, address_digest)
++		ON CONFLICT (campaign_id, subscriber_id) DO NOTHING
++	`, id, pq.Array(ids), pq.Array(uuids), digests)
++	return err
++}
++
++func (s *store) BeginDelivery(campaignID int, lease models.DeliveryLease, messageID string) (bool, error) {
++	started := false
++	err := campaignDeliveryTx(s.db, campaignID, func(ctx context.Context, tx *sqlx.Tx, status string) error {
++		if status != models.CampaignStatusRunning {
++			return releaseLease(ctx, tx, campaignID, lease, "pending")
++		}
++		// Serialize the global identity check with suppression and address changes. The
++		// existing campaign predicate also checks current list membership and CRM grant.
++		var id int
++		err := tx.GetContext(ctx, &id, "SELECT id FROM subscribers WHERE id = $1 FOR NO KEY UPDATE", lease.ID)
++		if errors.Is(err, sql.ErrNoRows) {
++			return releaseLease(ctx, tx, campaignID, lease, "suppressed")
++		}
++		if err != nil {
++			return err
++		}
++		// Lock the selected subscription and list rows before reading their consent.
++		var lists []int
++		if err := tx.SelectContext(ctx, &lists, `
++			SELECT sl.list_id FROM subscriber_lists sl
++			JOIN campaign_lists cl ON cl.list_id = sl.list_id AND cl.campaign_id = $1
++			JOIN lists l ON l.id = sl.list_id
++			WHERE sl.subscriber_id = $2 ORDER BY sl.list_id FOR SHARE OF l, sl
++		`, campaignID, lease.ID); err != nil {
++			return err
++		}
++		var eligible bool
++		if err := tx.StmtxContext(ctx, s.queries.CampaignRecipientEligible).GetContext(
++			ctx, &eligible, campaignID, lease.ID, lease.Email, lease.UUID,
++		); err != nil {
++			return err
++		}
++		if !eligible {
++			return releaseLease(ctx, tx, campaignID, lease, "suppressed")
++		}
++		digest := sha256.Sum256([]byte(lease.Email))
++		result, err := tx.ExecContext(ctx, `
++			UPDATE warpdrive_delivery_recipients
++			SET state = 'submitting', lease_until = clock_timestamp() + INTERVAL '90 seconds',
++			    message_id = $4, attempts = attempts + 1, updated_at = NOW()
++			WHERE campaign_id = $1 AND id = $2 AND lease_token = $3 AND state = 'leased'
++			  AND lease_until > clock_timestamp() AND subscriber_uuid = $5 AND address_digest = $6
++			  AND (message_id IS NULL OR message_id = $4)
++		`, campaignID, lease.DeliveryID, lease.LeaseToken, messageID, lease.UUID, digest[:])
++		if err != nil {
++			return err
++		}
++		count, err := result.RowsAffected()
++		started = count == 1
++		return err
++	})
++	return started, err
++}
++
++func (s *store) ReleaseDelivery(campaignID int, lease models.DeliveryLease, reject bool) error {
++	state := "pending"
++	if reject {
++		state = "rejected"
++	}
++	return campaignDeliveryTx(s.db, campaignID, func(ctx context.Context, tx *sqlx.Tx, _ string) error {
++		return releaseLease(ctx, tx, campaignID, lease, state)
++	})
++}
++
++func releaseLease(ctx context.Context, tx *sqlx.Tx, campaignID int, lease models.DeliveryLease, state string) error {
++	_, err := tx.ExecContext(ctx, `
++		UPDATE warpdrive_delivery_recipients
++		SET state = $4, lease_token = NULL, lease_until = NULL, updated_at = NOW()
++		WHERE campaign_id = $1 AND id = $2 AND lease_token = $3 AND state = 'leased'
++	`, campaignID, lease.DeliveryID, lease.LeaseToken, state)
++	return err
++}
++
++func (s *store) FinishDelivery(campaignID int, lease models.DeliveryLease, outcome models.DeliveryOutcome) (string, error) {
++	var state string
++	err := campaignDeliveryTx(s.db, campaignID, func(ctx context.Context, tx *sqlx.Tx, _ string) error {
++		if err := tx.GetContext(ctx, &state, `
++			UPDATE warpdrive_delivery_recipients
++			SET state = CASE WHEN $4 = 'retry' AND attempts < 3 THEN 'pending' WHEN $4 = 'retry' THEN 'rejected' ELSE $4 END,
++			    available_at = clock_timestamp() + (attempts * INTERVAL '30 seconds'),
++			    lease_token = NULL, lease_until = NULL, updated_at = NOW()
++			WHERE campaign_id = $1 AND id = $2 AND lease_token = $3 AND state = 'submitting'
++			RETURNING state
++		`, campaignID, lease.DeliveryID, lease.LeaseToken, outcome); err != nil {
++			return err
++		}
++		switch state {
++		case "accepted":
++			_, err := tx.ExecContext(ctx, "UPDATE campaigns SET sent = sent + 1, updated_at = NOW() WHERE id = $1", campaignID)
++			return err
++		case "unknown":
++			return pauseDeliveryRun(ctx, tx, campaignID)
++		}
++		return nil
++	})
++	return state, err
++}
++
++func (s *store) FinalizeDeliveryRun(campaignID int) (bool, error) {
++	finished := false
++	err := campaignDeliveryTx(s.db, campaignID, func(ctx context.Context, tx *sqlx.Tx, status string) error {
++		if status != models.CampaignStatusRunning {
++			return nil
++		}
++		result, err := tx.ExecContext(ctx, `
++			UPDATE campaigns SET status = 'finished', updated_at = NOW() WHERE id = $1
++			AND EXISTS (SELECT 1 FROM warpdrive_delivery_runs WHERE campaign_id = $1 AND exhausted AND hold = '')
++			AND NOT EXISTS (
++				SELECT 1 FROM warpdrive_delivery_recipients
++				WHERE campaign_id = $1 AND state IN ('pending', 'leased', 'submitting', 'unknown')
++			)
++		`, campaignID)
++		if err != nil {
++			return err
++		}
++		count, err := result.RowsAffected()
++		finished = count == 1
++		return err
++	})
++	return finished, err
++}
+diff --git a/internal/manager/manager.go b/internal/manager/manager.go
+index c37cb0a..160418e 100644
+--- a/internal/manager/manager.go
++++ b/internal/manager/manager.go
+@@ -49,14 +49,17 @@ const (
+ // that provides subscriber and campaign records.
+ type Store interface {
+ 	NextCampaigns(currentIDs []int64, sentCounts []int64) ([]*models.Campaign, error)
+-	NextSubscribers(campID, limit int) ([]models.Subscriber, error)
+-	CampaignRecipientEligible(campID int, sub models.Subscriber) (bool, error)
++	NextSubscribers(campID, limit int) ([]models.DeliveryLease, error)
++	PrepareDeliveryRun(campID int, revision []byte) (bool, error)
++	BeginDelivery(campID int, lease models.DeliveryLease, messageID string) (bool, error)
++	FinishDelivery(campID int, lease models.DeliveryLease, outcome models.DeliveryOutcome) (string, error)
++	ReleaseDelivery(campID int, lease models.DeliveryLease, reject bool) error
++	FinalizeDeliveryRun(campID int) (bool, error)
+ 	CampaignTestRecipientEligible(sub models.Subscriber) (bool, error)
+ 	GetCampaign(campID int) (*models.Campaign, error)
+ 	GetAttachment(mediaID int) (models.Attachment, error)
+ 	GetInlineAttachmentByFilename(filename string) (models.Attachment, string, error)
+ 	UpdateCampaignStatus(campID int, status string) error
+-	UpdateCampaignCounts(campID int, toSend int, sent int, lastSubID int) error
+ 	CreateLink(url string) (string, error)
+ 	BlocklistSubscriber(id int64) error
+ 	DeleteSubscriber(id int64) error
+@@ -126,7 +129,8 @@ type CampaignMessage struct {
+ 	unsubURL string
+ 	headers  models.Headers
+ 
+-	pipe *pipe
++	pipe  *pipe
++	lease models.DeliveryLease
+ }
+ 
+ // Config has parameters for configuring the manager.
+@@ -190,8 +194,8 @@ func New(cfg Config, store Store, i *i18n.I18n, l *log.Logger) *Manager {
+ 		tpls:         make(map[int]*models.Template),
+ 		links:        make(map[string]string),
+ 		nextPipes:    make(chan *pipe, 1000),
+-		campMsgQ:     make(chan CampaignMessage, cfg.Concurrency*cfg.MessageRate*2),
+-		msgQ:         make(chan models.Message, cfg.Concurrency*cfg.MessageRate*2),
++		campMsgQ:     make(chan CampaignMessage, min(cfg.Concurrency, 64)*2),
++		msgQ:         make(chan models.Message, min(cfg.Concurrency, 64)*2),
+ 		slidingStart: time.Now(),
+ 	}
+ 	m.tplFuncs = m.makeGnericFuncMap()
+@@ -453,8 +457,8 @@ func (m *Manager) scanCampaigns(tick time.Duration) {
+ 
+ 	// Periodically scan the data source for campaigns to process.
+ 	for range t.C {
+-		ids, counts := m.getCurrentCampaigns()
+-		campaigns, err := m.store.NextCampaigns(ids, counts)
++		ids := m.activeCampaignIDs()
++		campaigns, err := m.store.NextCampaigns(ids, make([]int64, len(ids)))
+ 		if err != nil {
+ 			m.log.Printf("error fetching campaigns: %v", err)
+ 			continue
+@@ -496,17 +500,11 @@ func TestRecipientApproved(address string) bool {
+ 	return false
+ }
+ 
+-func (m *Manager) dispatchEligible(msg CampaignMessage) (bool, error) {
+-	if msg.pipe == nil {
+-		if !TestRecipientApproved(msg.to) {
+-			return false, nil
+-		}
+-		return m.store.CampaignTestRecipientEligible(msg.Subscriber)
+-	}
+-	if msg.pipe.stopped.Load() {
++func (m *Manager) testRecipientEligible(msg CampaignMessage) (bool, error) {
++	if !TestRecipientApproved(msg.to) {
+ 		return false, nil
+ 	}
+-	return m.store.CampaignRecipientEligible(msg.Campaign.ID, msg.Subscriber)
++	return m.store.CampaignTestRecipientEligible(msg.Subscriber)
+ }
+ 
+ // worker is a blocking function that perpetually listents to events (message) on different
+@@ -524,7 +522,7 @@ func (m *Manager) worker() {
+ 
+ 			// If the campaign has ended or stopped, ignore the message.
+ 			if msg.pipe != nil && msg.pipe.stopped.Load() {
+-				// Reduce the message counter on the pipe.
++				m.releaseCampaignLease(msg, false)
+ 				msg.pipe.wg.Done()
+ 				continue
+ 			}
+@@ -569,46 +567,19 @@ func (m *Manager) worker() {
+ 			// Set the headers.
+ 			out.Headers = h
+ 
+-			// The last consent snapshot is immediately before the external handoff.
+-			// A provider that accepts a message cannot be recalled by a later unsubscribe.
+-			eligible, checkErr := m.dispatchEligible(msg)
+-			if checkErr != nil || !eligible || (msg.pipe != nil && msg.pipe.stopped.Load()) {
+-				if checkErr != nil {
+-					m.log.Printf("campaign %d recipient %d consent check failed: %v", msg.Campaign.ID, msg.Subscriber.ID, checkErr)
+-				}
+-				if msg.pipe != nil {
+-					if checkErr != nil {
+-						msg.pipe.Stop(true)
+-					}
+-					msg.pipe.wg.Done()
+-				}
++			if msg.pipe != nil {
++				m.dispatchCampaignDelivery(msg, out)
++				msg.pipe.wg.Done()
+ 				continue
+ 			}
+ 
+-			// Push the message to the messenger.
+-			err := m.messengers[msg.Campaign.Messenger].Push(out)
+-			if err != nil {
+-				m.log.Printf("error sending message in campaign %s: subscriber %d: %v", msg.Campaign.Name, msg.Subscriber.ID, err)
++			// Test sends have an independent allowlist and never affect live receipts.
++			eligible, err := m.testRecipientEligible(msg)
++			if err != nil || !eligible {
++				continue
+ 			}
+-
+-			// Increment the send rate or the error counter if there was an error.
+-			if msg.pipe != nil {
+-				if err != nil {
+-					// Call the error callback, which keeps track of the error count
+-					// and stops the campaign if the error count exceeds the threshold.
+-					msg.pipe.OnError()
+-				} else {
+-					id := uint64(msg.Subscriber.ID)
+-					for previous := msg.pipe.lastID.Load(); id > previous; previous = msg.pipe.lastID.Load() {
+-						if msg.pipe.lastID.CompareAndSwap(previous, id) {
+-							break
+-						}
+-					}
+-					msg.pipe.rate.Incr(1)
+-					msg.pipe.sent.Add(1)
+-				}
+-				// Cleanup can run as soon as the last message is done.
+-				msg.pipe.wg.Done()
++			if err := m.messengers[msg.Campaign.Messenger].Push(out); err != nil {
++				m.log.Printf("error sending campaign test for campaign %d", msg.Campaign.ID)
+ 			}
+ 
+ 		// Arbitrary message.
+@@ -625,26 +596,14 @@ func (m *Manager) worker() {
+ 	}
+ }
+ 
+-// getCurrentCampaigns returns the IDs of campaigns currently being processed
+-// and their sent counts.
+-func (m *Manager) getCurrentCampaigns() ([]int64, []int64) {
+-	// Needs to return an empty slice in case there are no campaigns.
++func (m *Manager) activeCampaignIDs() []int64 {
+ 	m.pipesMut.RLock()
+ 	defer m.pipesMut.RUnlock()
+-
+-	var (
+-		ids    = make([]int64, 0, len(m.pipes))
+-		counts = make([]int64, 0, len(m.pipes))
+-	)
++	ids := make([]int64, 0, len(m.pipes))
+ 	for _, p := range m.pipes {
+ 		ids = append(ids, int64(p.camp.ID))
+-
+-		// Get the sent counts for campaigns and reset them to 0
+-		// as in the database, they're stored cumulatively (sent += $newSent).
+-		counts = append(counts, p.sent.Swap(0))
+ 	}
+-
+-	return ids, counts
++	return ids
+ }
+ 
+ // trackLink register a URL and return its UUID to be used in message templates
+diff --git a/internal/manager/pipe.go b/internal/manager/pipe.go
+index 3b4dafe..8c4f04a 100644
+--- a/internal/manager/pipe.go
++++ b/internal/manager/pipe.go
+@@ -14,8 +14,6 @@ type pipe struct {
+ 	camp       *models.Campaign
+ 	rate       *ratecounter.RateCounter
+ 	wg         *sync.WaitGroup
+-	sent       atomic.Int64
+-	lastID     atomic.Uint64
+ 	errors     atomic.Uint64
+ 	stopped    atomic.Bool
+ 	withErrors atomic.Bool
+@@ -25,12 +23,13 @@ type pipe struct {
+ 
+ // newPipe adds a campaign to the process queue.
+ func (m *Manager) newPipe(c *models.Campaign) (*pipe, error) {
+-	// Validate messenger.
+-	if _, ok := m.messengers[c.Messenger]; !ok {
+-		m.store.UpdateCampaignStatus(c.ID, models.CampaignStatusCancelled)
+-		return nil, fmt.Errorf("unknown messenger %s on campaign %s", c.Messenger, c.Name)
++	// A scheduled send must use a transport that reports acknowledgement safely.
++	if _, ok := m.messengers[c.Messenger].(deliveryMessenger); !ok {
++		_ = m.store.UpdateCampaignStatus(c.ID, models.CampaignStatusPaused)
++		return nil, fmt.Errorf("no durable SMTP transport for campaign %d", c.ID)
+ 	}
+ 
++	body, templateBody := c.Body, c.TemplateBody
+ 	// Resolve any inline images before compiling the template.
+ 	if err := m.LoadInlineImages(c); err != nil {
+ 		return nil, err
+@@ -46,6 +45,18 @@ func (m *Manager) newPipe(c *models.Campaign) (*pipe, error) {
+ 		return nil, err
+ 	}
+ 
++	revision, err := deliveryRevision(c, body, templateBody, m.cfg)
++	if err != nil {
++		return nil, err
++	}
++	ready, err := m.store.PrepareDeliveryRun(c.ID, revision)
++	if err != nil {
++		return nil, err
++	}
++	if !ready {
++		return nil, fmt.Errorf("campaign %d is held or no longer running", c.ID)
++	}
++
+ 	// Add the campaign to the active map.
+ 	p := &pipe{
+ 		camp: c,
+@@ -97,10 +108,13 @@ func (p *pipe) NextSubscribers() (bool, error) {
+ 		p.m.cfg.SlidingWindowDuration.Seconds() > 1
+ 
+ 	// Push messages.
+-	for _, s := range subs {
+-		msg, err := p.newMessage(s)
++	for _, lease := range subs {
++		msg, err := p.newMessage(lease)
+ 		if err != nil {
+-			p.m.log.Printf("error rendering message (%s) (%s): %v", p.camp.Name, s.Email, err)
++			p.m.log.Printf("error rendering delivery %s for campaign %d", lease.DeliveryID, p.camp.ID)
++			if err := p.m.store.ReleaseDelivery(p.camp.ID, lease, true); err != nil {
++				return false, err
++			}
+ 			continue
+ 		}
+ 
+@@ -174,13 +188,14 @@ func (p *pipe) Stop(withErrors bool) {
+ // newMessage returns a campaign message while internally incrementing the
+ // number of messages in the pipe wait group so that the status of every
+ // message can be atomically tracked.
+-func (p *pipe) newMessage(s models.Subscriber) (CampaignMessage, error) {
+-	msg, err := p.m.NewCampaignMessage(p.camp, s)
++func (p *pipe) newMessage(lease models.DeliveryLease) (CampaignMessage, error) {
++	msg, err := p.m.NewCampaignMessage(p.camp, lease.Subscriber)
+ 	if err != nil {
+ 		return msg, err
+ 	}
+ 
+ 	msg.pipe = p
++	msg.lease = lease
+ 	p.wg.Add(1)
+ 
+ 	return msg, nil
+@@ -196,11 +211,6 @@ func (p *pipe) cleanup() {
+ 		p.m.pipesMut.Unlock()
+ 	}()
+ 
+-	// Update campaign's 'sent count.
+-	if err := p.m.store.UpdateCampaignCounts(p.camp.ID, 0, int(p.sent.Load()), int(p.lastID.Load())); err != nil {
+-		p.m.log.Printf("error updating campaign counts (%s): %v", p.camp.Name, err)
+-	}
+-
+ 	// The campaign was auto-paused due to errors.
+ 	if p.withErrors.Load() {
+ 		if err := p.m.store.UpdateCampaignStatus(p.camp.ID, models.CampaignStatusPaused); err != nil {
+@@ -219,26 +229,12 @@ func (p *pipe) cleanup() {
+ 		return
+ 	}
+ 
+-	// Campaign wasn't manually stopped and subscribers were naturally exhausted.
+-	// Fetch the up-to-date campaign status from the DB.
+-	c, err := p.m.store.GetCampaign(p.camp.ID)
++	finished, err := p.m.store.FinalizeDeliveryRun(p.camp.ID)
+ 	if err != nil {
+-		p.m.log.Printf("error fetching campaign (%s) for ending: %v", p.camp.Name, err)
++		p.m.log.Printf("error finalizing campaign %d: %v", p.camp.ID, err)
+ 		return
+ 	}
+-
+-	// If a running campaign has exhausted subscribers, it's finished.
+-	if c.Status == models.CampaignStatusRunning || c.Status == models.CampaignStatusScheduled {
+-		c.Status = models.CampaignStatusFinished
+-		if err := p.m.store.UpdateCampaignStatus(p.camp.ID, models.CampaignStatusFinished); err != nil {
+-			p.m.log.Printf("error finishing campaign (%s): %v", p.camp.Name, err)
+-		} else {
+-			p.m.log.Printf("campaign (%s) finished", p.camp.Name)
+-		}
+-	} else {
+-		p.m.log.Printf("finish processing campaign (%s)", p.camp.Name)
++	if finished {
++		_ = p.m.sendNotif(p.camp, models.CampaignStatusFinished, "")
+ 	}
+-
+-	// Notify admin.
+-	_ = p.m.sendNotif(c, c.Status, "")
+ }
+diff --git a/internal/manager/warpdrive_delivery.go b/internal/manager/warpdrive_delivery.go
+new file mode 100644
+index 0000000..a5f6763
+--- /dev/null
++++ b/internal/manager/warpdrive_delivery.go
+@@ -0,0 +1,94 @@
++package manager
++
++import (
++	"crypto/sha256"
++	"encoding/json"
++	"fmt"
++	"net/mail"
++	"slices"
++	"strings"
++
++	"github.com/knadh/listmonk/models"
++)
++
++type deliveryMessenger interface {
++	PushCampaignDelivery(models.Message) models.DeliveryOutcome
++}
++
++// deliveryRevision keeps a restart from silently switching shared template or
++// media bytes for the recipients still pending in this run.
++func deliveryRevision(c *models.Campaign, body, templateBody string, config Config) ([]byte, error) {
++	attachments := make([]string, 0, len(c.Attachments))
++	for _, file := range c.Attachments {
++		attachments = append(attachments, fmt.Sprintf("%s:%s:%x", file.Name, file.Header.Get("Content-Type"), sha256.Sum256(file.Content)))
++	}
++	slices.Sort(attachments)
++	revision, err := json.Marshal(struct {
++		CampaignFields  []string
++		Headers         models.Headers
++		Attributes      models.JSON
++		Attachments     []string
++		TrackingOptions []bool
++		PublicURLs      []string
++	}{
++		CampaignFields:  []string{c.Type, c.UUID, c.Name, c.Subject, c.FromEmail, c.Messenger, c.ContentType, body, templateBody, c.AltBody.String},
++		Headers:         c.Headers,
++		Attributes:      c.Attribs,
++		Attachments:     attachments,
++		TrackingOptions: []bool{config.DisableTracking, config.IndividualTracking, config.UnsubHeader},
++		PublicURLs:      []string{config.RootURL, config.UnsubURL, config.OptinURL, config.LinkTrackURL, config.ViewTrackURL, config.MessageURL, config.ArchiveURL},
++	})
++	if err != nil {
++		return nil, err
++	}
++	digest := sha256.Sum256(revision)
++	return digest[:], nil
++}
++
++func (m *Manager) releaseCampaignLease(msg CampaignMessage, reject bool) {
++	if err := m.store.ReleaseDelivery(msg.Campaign.ID, msg.lease, reject); err != nil {
++		m.log.Printf("error releasing delivery %s for campaign %d", msg.lease.DeliveryID, msg.Campaign.ID)
++	}
++}
++
++func (m *Manager) dispatchCampaignDelivery(msg CampaignMessage, out models.Message) {
++	if msg.pipe.stopped.Load() {
++		m.releaseCampaignLease(msg, false)
++		return
++	}
++	from, err := mail.ParseAddress(out.From)
++	if err != nil {
++		m.releaseCampaignLease(msg, true)
++		msg.pipe.OnError()
++		return
++	}
++	domain := from.Address[strings.LastIndexByte(from.Address, '@')+1:]
++	messageID := "<warpdrive-" + msg.lease.DeliveryID + "@" + domain + ">"
++	started, err := m.store.BeginDelivery(msg.Campaign.ID, msg.lease, messageID)
++	if err != nil {
++		// The commit may have succeeded. Do not send without a confirmed lease.
++		m.log.Printf("could not authorize delivery %s for campaign %d", msg.lease.DeliveryID, msg.Campaign.ID)
++		msg.pipe.Stop(true)
++		return
++	}
++	if !started {
++		return
++	}
++
++	out.Headers.Set("Message-ID", messageID)
++	transport := m.messengers[msg.Campaign.Messenger].(deliveryMessenger)
++	state, err := m.store.FinishDelivery(msg.Campaign.ID, msg.lease, transport.PushCampaignDelivery(out))
++	if err != nil {
++		m.log.Printf("could not persist delivery %s for campaign %d", msg.lease.DeliveryID, msg.Campaign.ID)
++		msg.pipe.Stop(true)
++		return
++	}
++	switch state {
++	case "accepted":
++		msg.pipe.rate.Incr(1)
++	case "rejected":
++		msg.pipe.OnError()
++	case "unknown":
++		msg.pipe.Stop(false)
++	}
++}
+diff --git a/internal/manager/warpdrive_dispatch_test.go b/internal/manager/warpdrive_dispatch_test.go
+index cc4be98..c7daf6b 100644
+--- a/internal/manager/warpdrive_dispatch_test.go
++++ b/internal/manager/warpdrive_dispatch_test.go
+@@ -17,9 +17,10 @@ type consentStore struct {
+ 	eligible bool
+ 	err      error
+ 	checked  int
++	accepted int
+ }
+ 
+-func (s *consentStore) CampaignRecipientEligible(id int, sub models.Subscriber) (bool, error) {
++func (s *consentStore) checkRecipient(id int, sub models.Subscriber) (bool, error) {
+ 	if id != 5 || sub.ID != 7 || sub.Email != "reader+fixture@example.test" {
+ 		return false, errors.New("wrong queued recipient")
+ 	}
+@@ -28,7 +29,18 @@ func (s *consentStore) CampaignRecipientEligible(id int, sub models.Subscriber)
+ }
+ 
+ func (s *consentStore) CampaignTestRecipientEligible(sub models.Subscriber) (bool, error) {
+-	return s.CampaignRecipientEligible(5, sub)
++	return s.checkRecipient(5, sub)
++}
++
++func (s *consentStore) BeginDelivery(id int, lease models.DeliveryLease, _ string) (bool, error) {
++	return s.checkRecipient(id, lease.Subscriber)
++}
++
++func (s *consentStore) FinishDelivery(_ int, _ models.DeliveryLease, outcome models.DeliveryOutcome) (string, error) {
++	if outcome == models.DeliveryAccepted {
++		s.accepted++
++	}
++	return string(outcome), nil
+ }
+ 
+ type captureMessenger struct {
+@@ -41,6 +53,11 @@ func (m *captureMessenger) Push(message models.Message) error {
+ 	return nil
+ }
+ 
++func (m *captureMessenger) PushCampaignDelivery(message models.Message) models.DeliveryOutcome {
++	_ = m.Push(message)
++	return models.DeliveryAccepted
++}
++
+ func TestCampaignWorkerRechecksConsentBeforeTransport(t *testing.T) {
+ 	for _, scenario := range []struct {
+ 		name           string
+@@ -73,7 +90,7 @@ func TestCampaignWorkerRechecksConsentBeforeTransport(t *testing.T) {
+ 			}
+ 			sub := models.Subscriber{Base: models.Base{ID: 7}, Email: "reader+fixture@example.test"}
+ 			campaign := &models.Campaign{Base: models.Base{ID: 5}, Messenger: "email"}
+-			message := CampaignMessage{Campaign: campaign, Subscriber: sub, to: sub.Email}
++			message := CampaignMessage{Campaign: campaign, Subscriber: sub, to: sub.Email, from: "sender@example.test", lease: models.DeliveryLease{Subscriber: sub, DeliveryID: "fixture"}}
+ 			if !scenario.testMessage {
+ 				message.pipe = &pipe{
+ 					camp: campaign,
+@@ -91,7 +108,7 @@ func TestCampaignWorkerRechecksConsentBeforeTransport(t *testing.T) {
+ 				t.Fatalf("checks=%d, transport=%d", s.checked, len(capture.sent))
+ 			}
+ 			if message.pipe != nil {
+-				if message.pipe.sent.Load() != int64(scenario.expectedSends) {
++				if s.accepted != scenario.expectedSends {
+ 					t.Fatal("skipped recipient counted as sent")
+ 				}
+ 				if (scenario.lookupError != nil) != message.pipe.withErrors.Load() {
+diff --git a/internal/messenger/email/email.go b/internal/messenger/email/email.go
+index 8e54c9b..486116a 100644
+--- a/internal/messenger/email/email.go
++++ b/internal/messenger/email/email.go
+@@ -40,7 +40,8 @@ type Server struct {
+ 	//lint:ignore SA5008 ,squash is needed by koanf/mapstructure config unmarshal.
+ 	smtppool.Opt `json:",squash"`
+ 
+-	pool *smtppool.Pool
++	pool          *smtppool.Pool
++	campaignSlots chan struct{}
+ }
+ 
+ // Emailer is the SMTP e-mail messenger.
+@@ -109,6 +110,7 @@ func New(name string, servers ...Server) (*Emailer, error) {
+ 		}
+ 
+ 		s.pool = pool
++		s.campaignSlots = make(chan struct{}, s.MaxConns)
+ 
+ 		// Add to the global list (empty key) and to each from-address
+ 		// bucket. Duplicate keys across servers are fine and get round-robin'd.
+@@ -130,6 +132,11 @@ func (e *Emailer) Name() string {
+ 
+ // Push pushes a message to the server.
+ func (e *Emailer) Push(m models.Message) error {
++	srv, message := e.prepareMessage(m)
++	return srv.pool.Send(message)
++}
++
++func (e *Emailer) prepareMessage(m models.Message) (*Server, smtppool.Email) {
+ 	// Pick the from-address-routed pool if there is one, else default
+ 	// to the full pool (empty key) for roundrobin.
+ 	pool := e.pools[""]
+@@ -226,7 +233,7 @@ func (e *Emailer) Push(m models.Message) error {
+ 		}
+ 	}
+ 
+-	return srv.pool.Send(em)
++	return srv, em
+ }
+ 
+ func stripCampaignRecipientHeaders(headers textproto.MIMEHeader) {
+diff --git a/internal/messenger/email/warpdrive_delivery.go b/internal/messenger/email/warpdrive_delivery.go
+new file mode 100644
+index 0000000..3ab13e4
+--- /dev/null
++++ b/internal/messenger/email/warpdrive_delivery.go
+@@ -0,0 +1,140 @@
++package email
++
++import (
++	"context"
++	"crypto/tls"
++	"errors"
++	"net"
++	"net/mail"
++	"net/smtp"
++	"net/textproto"
++	"strconv"
++	"time"
++
++	"github.com/knadh/listmonk/models"
++	"github.com/knadh/smtppool/v2"
++)
++
++const campaignSMTPTimeout = 30 * time.Second
++
++// PushCampaignDelivery attempts exactly one SMTP transaction. A lost DATA
++// response is ambiguous and may never trigger a transport-level retry.
++func (e *Emailer) PushCampaignDelivery(message models.Message) models.DeliveryOutcome {
++	server, envelope := e.prepareMessage(message)
++	envelope.Headers.Del(hdrBcc)
++	envelope.Headers.Del(hdrCc)
++	envelope.Bcc, envelope.Cc = nil, nil
++	return sendCampaignDelivery(server, envelope)
++}
++
++func sendCampaignDelivery(server *Server, message smtppool.Email) models.DeliveryOutcome {
++	if len(message.To) != 1 {
++		return models.DeliveryRejected
++	}
++	recipient, err := mail.ParseAddress(message.To[0])
++	if err != nil {
++		return models.DeliveryRejected
++	}
++	senderValue := message.Sender
++	if senderValue == "" {
++		senderValue = message.From
++	}
++	sender, err := mail.ParseAddress(senderValue)
++	if err != nil {
++		return models.DeliveryRejected
++	}
++	payload, err := message.Bytes()
++	if err != nil {
++		return models.DeliveryRejected
++	}
++
++	ctx, cancel := context.WithTimeout(context.Background(), campaignSMTPTimeout)
++	defer cancel()
++	select {
++	case server.campaignSlots <- struct{}{}:
++		defer func() { <-server.campaignSlots }()
++	case <-ctx.Done():
++		return models.DeliveryRetry
++	}
++
++	addr := net.JoinHostPort(server.Host, strconv.Itoa(server.Port))
++	dialer := net.Dialer{Timeout: server.PoolWaitTimeout}
++	conn, err := dialer.DialContext(ctx, "tcp", addr)
++	if err != nil {
++		return models.DeliveryRetry
++	}
++	defer conn.Close()
++	deadline, _ := ctx.Deadline()
++	if err := conn.SetDeadline(deadline); err != nil {
++		return models.DeliveryRetry
++	}
++	if server.SSL == smtppool.SSLTLS {
++		secured := tls.Client(conn, server.TLSConfig)
++		if err := secured.HandshakeContext(ctx); err != nil {
++			return models.DeliveryRetry
++		}
++		conn = secured
++	}
++
++	client, err := smtp.NewClient(conn, server.Host)
++	if err != nil {
++		return beforeData(err)
++	}
++	defer client.Close()
++	if server.HelloHostname != "" {
++		if err := client.Hello(server.HelloHostname); err != nil {
++			return beforeData(err)
++		}
++	}
++	if server.SSL == smtppool.SSLSTARTTLS {
++		if err := client.StartTLS(server.TLSConfig); err != nil {
++			return beforeData(err)
++		}
++	}
++	if server.Auth != nil {
++		if err := client.Auth(server.Auth); err != nil {
++			return beforeData(err)
++		}
++	}
++	if err := client.Mail(sender.Address); err != nil {
++		return beforeData(err)
++	}
++	if err := client.Rcpt(recipient.Address); err != nil {
++		return beforeData(err)
++	}
++	body, err := client.Data()
++	if err != nil {
++		return beforeData(err)
++	}
++	if _, err := body.Write(payload); err != nil {
++		// Close the connection, never the DATA writer, after a failed write.
++		return models.DeliveryUnknown
++	}
++	if err := body.Close(); err != nil {
++		if status, ok := smtpStatus(err); ok {
++			return status
++		}
++		return models.DeliveryUnknown
++	}
++	return models.DeliveryAccepted
++}
++
++func beforeData(err error) models.DeliveryOutcome {
++	if status, ok := smtpStatus(err); ok {
++		return status
++	}
++	return models.DeliveryRetry
++}
++
++func smtpStatus(err error) (models.DeliveryOutcome, bool) {
++	var reply *textproto.Error
++	if errors.As(err, &reply) {
++		switch reply.Code / 100 {
++		case 4:
++			return models.DeliveryRetry, true
++		case 5:
++			return models.DeliveryRejected, true
++		}
++	}
++	return models.DeliveryUnknown, false
++}
+diff --git a/models/warpdrive_delivery.go b/models/warpdrive_delivery.go
+new file mode 100644
+index 0000000..b8dc05a
+--- /dev/null
++++ b/models/warpdrive_delivery.go
+@@ -0,0 +1,17 @@
++package models
++
++// DeliveryLease is one fenced claim on a persisted campaign recipient.
++type DeliveryLease struct {
++	Subscriber
++	DeliveryID string `db:"delivery_id"`
++	LeaseToken string `db:"lease_token"`
++}
++
++type DeliveryOutcome string
++
++const (
++	DeliveryAccepted DeliveryOutcome = "accepted"
++	DeliveryRetry    DeliveryOutcome = "retry"
++	DeliveryRejected DeliveryOutcome = "rejected"
++	DeliveryUnknown  DeliveryOutcome = "unknown"
++)
+diff --git a/queries/campaigns.sql b/queries/campaigns.sql
+index 10c6523..25e85b4 100644
+--- a/queries/campaigns.sql
++++ b/queries/campaigns.sql
+@@ -219,7 +219,7 @@ updateCounts AS (
+     WITH uc (campaign_id, sent_count) AS (SELECT * FROM unnest($1::INT[], $2::INT[]))
+     UPDATE campaigns
+     SET sent = sent + uc.sent_count
+-    FROM uc WHERE campaigns.id = uc.campaign_id
++    FROM uc WHERE campaigns.id = uc.campaign_id AND uc.sent_count > 0
+ ),
+ u AS (
+     -- For each campaign, update the to_send count and set the max_subscriber_id.
+@@ -511,6 +511,7 @@ UPDATE campaigns SET
+     updated_at = NOW()
+ WHERE id = $1 AND status = $3::campaign_status
+   AND ($5::BOOLEAN OR updated_at IS NOT DISTINCT FROM $4::TIMESTAMPTZ)
++  AND ($2 != 'draft' OR (started_at IS NULL AND sent = 0 AND last_subscriber_id = 0))
+ RETURNING status, updated_at;
+ 
+ -- name: update-campaign-archive
