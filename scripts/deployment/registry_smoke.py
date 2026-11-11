@@ -27,8 +27,10 @@ import uuid
 
 try:
     from .image_smoke import Docker, SmokeError, COMPONENTS, admit_endpoint, image_metadata, sanitized_log, utc_now, validate_reference, validate_revision
+    from .loopback_forwarder import ForwarderError, owned_bridge_forwarder
 except ImportError:
     from image_smoke import Docker, SmokeError, COMPONENTS, admit_endpoint, image_metadata, sanitized_log, utc_now, validate_reference, validate_revision
+    from loopback_forwarder import ForwarderError, owned_bridge_forwarder
 
 
 OWNER_LABEL = "io.warpdrive.registry-smoke.owner"
@@ -67,14 +69,26 @@ def loopback_authority(value: str) -> str:
     return value
 
 
-def registry_binding(raw: Any) -> str:
-    bindings = raw.get("5000/tcp") if isinstance(raw, dict) else None
-    if not isinstance(bindings, list) or len(bindings) != 1 or not isinstance(bindings[0], dict):
-        raise RegistrySmokeError("Registry fixture requires exactly one published listener")
-    binding = bindings[0]
-    if binding.get("HostIp") != "127.0.0.1":
-        raise RegistrySmokeError("Registry fixture is not bound exclusively to IPv4 loopback")
-    return loopback_authority(f"127.0.0.1:{binding.get('HostPort', '')}")
+def endpoint_diagnostics(network_rows: Any, container_rows: Any, network_name: str) -> dict:
+    """Retain narrow nonsecret shape facts, never full inspect/config/environment data."""
+    network = network_rows[0] if isinstance(network_rows, list) and len(network_rows) == 1 and isinstance(network_rows[0], dict) else {}
+    container = container_rows[0] if isinstance(container_rows, list) and len(container_rows) == 1 and isinstance(container_rows[0], dict) else {}
+    settings = container.get("NetworkSettings") or {}
+    attachments = settings.get("Networks") or {}
+    endpoint = attachments.get(network_name) if isinstance(attachments, dict) else {}
+    endpoint = endpoint if isinstance(endpoint, dict) else {}
+    def identifier(value):
+        return value if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) else "unavailable"
+    address = endpoint.get("IPAddress")
+    address = address if isinstance(address, str) and re.fullmatch(r"[0-9.]{7,15}", address) else "unavailable"
+    return {"networkId": identifier(network.get("Id")), "containerId": identifier(container.get("Id")),
+            "internal": network.get("Internal") if type(network.get("Internal")) is bool else None,
+            "bridgeDriver": network.get("Driver") == "bridge", "localScope": network.get("Scope") == "local",
+            "attachmentCount": len(attachments) if isinstance(attachments, dict) else None,
+            "expectedAttachmentPresent": network_name in attachments,
+            "endpointNetworkId": identifier(endpoint.get("NetworkID")), "containerIPv4": address,
+            "dockerPublishedPortCount": sum(bool(value) for value in (settings.get("Ports") or {}).values()),
+            "networkMembershipCount": len(network.get("Containers") or {})}
 
 
 class IsolatedDocker(Docker):
@@ -151,12 +165,13 @@ class RegistryClient:
                     raise RegistrySmokeError("Registry response exceeds the metadata bound")
                 return content, response.headers, response.status
         except HTTPError as error:
-            if error.code != 404:
-                raise RegistrySmokeError("Registry API rejected the bounded request") from error
-            content = error.read(65537)
-            if len(content) > 65536:
-                raise RegistrySmokeError("Registry error response exceeds its bound") from error
-            return content, error.headers, error.code
+            with error:
+                if error.code != 404:
+                    raise RegistrySmokeError("Registry API rejected the bounded request") from error
+                content = error.read(65537)
+                if len(content) > 65536:
+                    raise RegistrySmokeError("Registry error response exceeds its bound") from error
+                return content, error.headers, error.code
         except (URLError, OSError, ValueError) as error:
             raise RegistrySmokeError("Local registry API outcome is unavailable") from error
 
@@ -264,10 +279,12 @@ class RegistrySmoke:
         self.disk_limit = 0
         self.client = None
         self.adapter = None
+        self.forwarder = None
         self.report = {"schemaVersion": 1, "kind": "warpdrive-local-registry-smoke",
                        "success": False, "revision": self.revision, "startedAt": utc_now(),
                        "checks": [], "images": {}, "limitations": LIMITATIONS,
-                       "failure": None, "diagnostics": {}, "cleanup": {"success": False, "errors": []}}
+                       "failure": None, "diagnostics": {}, "endpointMetadata": {},
+                       "cleanup": {"success": False, "errors": []}}
 
     def check(self, name, function):
         try:
@@ -331,7 +348,7 @@ class RegistrySmoke:
         self.docker.run([
             "run", "--detach", "--pull", "missing", "--name", self.registry_name,
             "--label", f"{OWNER_LABEL}={self.prefix}", "--network", network,
-            "--publish", "127.0.0.1::5000", "--memory", "384m", "--memory-swap", "384m",
+            "--memory", "384m", "--memory-swap", "384m",
             "--cpus", "1", "--pids-limit", "128", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
             "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=16m",
             "--mount", f"type=volume,source={volume},target=/var/lib/registry",
@@ -339,9 +356,16 @@ class RegistrySmoke:
             "--env", f"REGISTRY_HTTP_SECRET={self.registry_secret}", "registry:2",
         ], timeout=120)
         self.owned_registry()
-        authority = registry_binding(self.docker.json([
-            "container", "inspect", self.registry_name, "--format", "{{json .NetworkSettings.Ports}}",
-        ]))
+        network_rows = self.docker.json(["network", "inspect", network])
+        container_rows = self.docker.json(["container", "inspect", self.registry_name])
+        self.report["endpointMetadata"] = endpoint_diagnostics(network_rows, container_rows, network)
+        self.forwarder = owned_bridge_forwarder(
+            self.docker, owner_label=OWNER_LABEL, owner=self.prefix, network_name=network,
+            container_name=self.registry_name, port=5000, max_connections=8,
+        ).start()
+        authority = loopback_authority(self.forwarder.authority)
+        self.report["endpointMetadata"] = {**self.forwarder.target_metadata, "access": "owned-host-loopback-forwarder",
+                                           "authority": authority}
         self.client = RegistryClient(authority)
         self.adapter = RegistryAdapter(self, self.client)
         deadline = self.clock() + 45
@@ -363,6 +387,7 @@ class RegistrySmoke:
         self.capacity()
         self.repository_prefix = authority + "/" + self.prefix + "-accepted"
         return {"authority": authority, "loopbackOnly": True, "internalNetwork": True,
+                "dockerPublishedPorts": 0, "access": "owned-host-loopback-forwarder",
                 "diskAdmissionLimitBytes": self.disk_limit, "operatingReserveBytes": 1024 ** 3}
 
     def capacity(self):
@@ -539,12 +564,20 @@ class RegistrySmoke:
             state = self.docker.json(["container", "inspect", self.registry_name, "--format", "{{json .State}}"], timeout=5)
             logs = self.docker.run(["logs", "--tail", "80", self.registry_name], timeout=5, check=False)
             return {"state": {key: state[key] for key in ("Running", "ExitCode", "OOMKilled") if isinstance(state.get(key), (bool, int))},
+                    "endpointMetadata": self.report["endpointMetadata"],
+                    "forwarder": self.forwarder.snapshot() if self.forwarder is not None else None,
                     "log": sanitized_log((logs.stdout or "") + (logs.stderr or ""), [self.registry_secret])}
         except Exception:
             return {"status": "unavailable-or-unowned"}
 
     def cleanup(self):
         errors = []
+        if self.forwarder is not None:
+            try:
+                self.forwarder.close()
+                self.report["forwarder"] = self.forwarder.snapshot()
+            except Exception:
+                errors.append("owned loopback forwarder cleanup failed")
         for reference, expected_id in reversed(list(self.owned_tags.items())):
             try:
                 rows = self.docker.json(["image", "inspect", reference])
@@ -586,7 +619,7 @@ class RegistrySmoke:
             except ImportError:
                 from registry_candidate import RegistryError
             # Both error families expose fixed safe messages, never command argv or credentials.
-            self.report["failure"] = str(error) if isinstance(error, (SmokeError, RegistryError)) else type(error).__name__
+            self.report["failure"] = str(error) if isinstance(error, (SmokeError, RegistryError, ForwarderError)) else type(error).__name__
             self.report["diagnostics"] = self.diagnostics()
         finally:
             errors = self.cleanup()

@@ -18,7 +18,11 @@ all required smoke checks must agree. Symlinks, substitutions and unexpected mem
 Successful non-PR runs retain one bundle for three days. PR runs retain small diagnostic
 evidence. The short-lived bundle is a candidate transport, not accepted-production retention
 or an off-host recovery set. The native image job also runs a registry rehearsal against its
-own internal network and loopback registry. That rehearsal checks actual publication/readback,
+own internal network and loopback registry. A bounded host relay connects only its OS-assigned
+IPv4 loopback listener to the independently inspected owned registry address; the registry has
+no Docker-published port or external network. This preserves isolation on Docker's internal-only
+networks, which have no external gateway ([Docker networking](https://docs.docker.com/compose/how-tos/networking/#internal-networks)).
+That rehearsal checks actual publication/readback,
 the shipping Buildx adapter, source-alias drift, conflicting remote tags and owned cleanup.
 Passing it establishes that fixture's behavior, not GHCR or deployment qualification.
 

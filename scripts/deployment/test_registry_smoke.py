@@ -125,13 +125,17 @@ class AdmissionTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(smoke.RegistrySmokeError):
                 smoke.loopback_authority(value)
 
-    def test_docker_port_metadata_must_prove_one_loopback_binding(self):
-        self.assertEqual(smoke.registry_binding({"5000/tcp": [{"HostIp": "127.0.0.1", "HostPort": "49152"}]}),
-                         "127.0.0.1:49152")
-        for value in ({}, {"5000/tcp": []}, {"5000/tcp": [{"HostIp": "0.0.0.0", "HostPort": "5000"}]},
-                      {"5000/tcp": [{"HostIp": "127.0.0.1", "HostPort": "5000"}] * 2}):
-            with self.subTest(value=value), self.assertRaises(smoke.RegistrySmokeError):
-                smoke.registry_binding(value)
+    def test_endpoint_diagnostics_record_safe_network_shape_without_environment(self):
+        network = [{"Id": "1" * 64, "Internal": True, "Driver": "bridge", "Scope": "local", "Containers": {}}]
+        container = [{"Id": "2" * 64, "Config": {"Env": ["REGISTRY_HTTP_SECRET=private"]},
+                      "NetworkSettings": {"Ports": {"5000/tcp": None}, "Networks": {"owned": {
+                          "NetworkID": "1" * 64, "IPAddress": "172.30.0.2"}}}}]
+        result = smoke.endpoint_diagnostics(network, container, "owned")
+        self.assertTrue(result["internal"])
+        self.assertEqual(result["attachmentCount"], 1)
+        self.assertEqual(result["dockerPublishedPortCount"], 0)
+        self.assertNotIn("private", json.dumps(result))
+        self.assertNotIn("Env", json.dumps(result))
 
     def test_private_auth_config_keeps_admitted_unix_endpoint_without_inherited_credentials(self):
         calls = []
@@ -210,13 +214,24 @@ class RegistryReadbackTests(unittest.TestCase):
     def test_only_explicit_manifest_unknown_404_is_definite_tag_absence(self):
         for body, accepted in (({"errors": [{"code": "MANIFEST_UNKNOWN"}]}, True),
                                ({"errors": [{"code": "UNAUTHORIZED"}]}, False), ({}, False)):
-            error = HTTPError("http://127.0.0.1:5000", 404, "missing", {}, io.BytesIO(json.dumps(body).encode()))
+            stream = io.BytesIO(json.dumps(body).encode())
+            error = HTTPError("http://127.0.0.1:5000", 404, "missing", {}, stream)
             client = smoke.RegistryClient("127.0.0.1:5000", Opener([error]))
             if accepted:
                 self.assertIsNone(client.manifest("127.0.0.1:5000/web:missing"))
             else:
                 with self.assertRaises(smoke.RegistrySmokeError):
                     client.manifest("127.0.0.1:5000/web:missing")
+            self.assertTrue(stream.closed)
+
+    def test_rejected_or_oversized_error_responses_close_their_owned_connection(self):
+        for status, body in ((500, b"error"), (404, b"x" * 65537)):
+            stream = io.BytesIO(body)
+            error = HTTPError("http://127.0.0.1:5000", status, "rejected", {}, stream)
+            client = smoke.RegistryClient("127.0.0.1:5000", Opener([error]))
+            with self.subTest(status=status), self.assertRaises(smoke.RegistrySmokeError):
+                client.manifest("127.0.0.1:5000/web:missing")
+            self.assertTrue(stream.closed)
 
     def test_independent_config_readback_binds_bytes_revision_and_platform(self):
         config = json.dumps({"os": "linux", "architecture": "amd64", "config": {
@@ -319,6 +334,27 @@ class OwnershipAndFailureTests(unittest.TestCase):
         self.assertEqual(removals, [["container", "rm", "--force", "owned-registry"],
                                     ["network", "rm", "owned-network"], ["volume", "rm", "owned-data"]])
         self.assertFalse(any("prune" in args for args in value.docker.calls))
+
+    def test_forwarder_cleanup_runs_first_and_failure_prevents_clean_result(self):
+        value = fixture()
+        sequence = []
+
+        def failed_close():
+            sequence.append("forwarder-close")
+            raise smoke.ForwarderError("Owned socket cleanup failed")
+
+        value.forwarder = SimpleNamespace(close=failed_close)
+        value.resources = [("container", "owned-registry")]
+        original = value.docker.run
+
+        def run(arguments, **options):
+            if arguments[:2] == ["container", "rm"]:
+                sequence.append("container-remove")
+            return original(arguments, **options)
+
+        value.docker.run = run
+        self.assertEqual(value.cleanup(), ["owned loopback forwarder cleanup failed"])
+        self.assertEqual(sequence, ["forwarder-close", "container-remove"])
 
     def test_real_publisher_reconciliation_preserves_content_ids_after_owned_source_tag_drift(self):
         try:
