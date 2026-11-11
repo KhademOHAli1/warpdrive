@@ -5,6 +5,7 @@ export * from "@/features/agency-projects/schema/agencyProjectSettings";
 export * from "@/features/agency-projects/schema/agencyProjects";
 export * from "@/features/billing/schema";
 export * from "@/features/company-profile/schema";
+export * from "@/features/newsletter/schema/operationReceipts";
 export * from "@/features/work-profile/schema";
 export * from "./activities";
 export * from "./activityGuests";

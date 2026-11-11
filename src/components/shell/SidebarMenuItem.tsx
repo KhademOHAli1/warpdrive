@@ -46,6 +46,7 @@ function SidebarLinkTooltip({
 export interface SidebarChild {
   href: string;
   label: string;
+  exact?: boolean;
 }
 export interface SidebarItem {
   href: string;
@@ -143,26 +144,28 @@ export function SidebarMenuItem({
           aria-hidden={!open}
           inert={!open}
         >
-          {children.map((child) => (
-            <Link
-              key={child.href}
-              href={child.href}
-              prefetch={false}
-              tabIndex={open ? undefined : -1}
-              className={cn(
-                styles.subnavLink,
-                matchesSection(pathname, child.href)
-                  ? styles.subnavLinkActive
-                  : styles.subnavLinkInactive,
-              )}
-              aria-current={matchesSection(pathname, child.href) ? "page" : undefined}
-              onClick={(event) => {
-                if (isPrimaryClick(event)) onNavigate?.();
-              }}
-            >
-              {child.label}
-            </Link>
-          ))}
+          {children.map((child) => {
+            const activeChild =
+              child.exact === true ? pathname === child.href : matchesSection(pathname, child.href);
+            return (
+              <Link
+                key={child.href}
+                href={child.href}
+                prefetch={false}
+                tabIndex={open ? undefined : -1}
+                className={cn(
+                  styles.subnavLink,
+                  activeChild ? styles.subnavLinkActive : styles.subnavLinkInactive,
+                )}
+                aria-current={activeChild ? "page" : undefined}
+                onClick={(event) => {
+                  if (isPrimaryClick(event)) onNavigate?.();
+                }}
+              >
+                {child.label}
+              </Link>
+            );
+          })}
         </CollapsibleContent>
       )}
     </Collapsible>

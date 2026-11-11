@@ -1,0 +1,17 @@
+**
+!.dockerignore
+!.gitattributes
+!Dockerfile
+!README.md
+!build.sh
+!build-assets.go
+!patches/
+!patches/*.patch
+!tests/
+!tests/*.py
+!dispatch-tests/
+!dispatch-tests/**/*.go
+!dispatch-tests/**/*.md
+!dispatch-tests/**/*.py
+!dispatch-tests/**/*.sql
+!dispatch-tests/**/*.sh

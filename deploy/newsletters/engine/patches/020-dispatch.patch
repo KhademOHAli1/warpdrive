@@ -1,0 +1,772 @@
+diff --git a/cmd/campaigns.go b/cmd/campaigns.go
+--- a/cmd/campaigns.go
++++ b/cmd/campaigns.go
+@@ -14,6 +14,7 @@
+ 	"time"
+ 
+ 	"github.com/knadh/listmonk/internal/auth"
++	"github.com/knadh/listmonk/internal/manager"
+ 	"github.com/knadh/listmonk/internal/notifs"
+ 	"github.com/knadh/listmonk/models"
+ 	"github.com/labstack/echo/v4"
+@@ -542,9 +543,15 @@
+ 		return echo.NewHTTPError(http.StatusBadRequest, a.i18n.T("campaigns.noSubsToTest"))
+ 	}
+ 
+-	// Sanitize subscriber e-mails.
++	// Validate all requested addresses before enqueuing any message.
++	approved := make(map[string]bool, len(req.SubscriberEmails))
+ 	for i := range req.SubscriberEmails {
+-		req.SubscriberEmails[i] = strings.ToLower(strings.TrimSpace(req.SubscriberEmails[i]))
++		addr := strings.ToLower(strings.TrimSpace(req.SubscriberEmails[i]))
++		if !manager.TestRecipientApproved(addr) {
++			return echo.NewHTTPError(http.StatusForbidden, "Test recipient is not approved for this installation")
++		}
++		req.SubscriberEmails[i] = addr
++		approved[addr] = true
+ 	}
+ 
+ 	// Get the subscribers from the DB by their e-mails.
+@@ -557,14 +564,14 @@
+ 	user := auth.GetUser(c)
+ 	validSubs := subs[:0]
+ 	for _, s := range subs {
+-		if err := a.hasSubPerm(user, []int{s.ID}); err == nil {
++		if err := a.hasSubPerm(user, []int{s.ID}); err == nil && s.Status == models.SubscriberStatusEnabled {
+ 			validSubs = append(validSubs, s)
+ 		}
+ 	}
+ 	subs = validSubs
+ 
+ 	// No subscribers.
+-	if len(subs) == 0 {
++	if len(subs) != len(approved) {
+ 		return echo.NewHTTPError(http.StatusBadRequest, a.i18n.T("campaigns.noKnownSubsToTest"))
+ 	}
+ 
+diff --git a/cmd/handlers.go b/cmd/handlers.go
+--- a/cmd/handlers.go
++++ b/cmd/handlers.go
+@@ -102,7 +102,7 @@
+ 		g.GET("/api/health", a.HealthCheck)
+ 		g.GET("/api/config", a.GetServerConfig)
+ 		g.GET("/api/warpdrive-capabilities", pm(func(c echo.Context) error {
+-			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1}})
++			return c.JSON(http.StatusOK, okResp{map[string]int{"consent": 1, "dispatch": 1}})
+ 		}, "settings:get"))
+ 		g.GET("/api/lang/:lang", a.GetI18nLang)
+ 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
+diff --git a/cmd/manager_store.go b/cmd/manager_store.go
+--- a/cmd/manager_store.go
++++ b/cmd/manager_store.go
+@@ -1,6 +1,9 @@
+ package main
+ 
+ import (
++	"context"
++	"time"
++
+ 	"github.com/gofrs/uuid/v5"
+ 	"github.com/knadh/listmonk/internal/core"
+ 	"github.com/knadh/listmonk/internal/manager"
+@@ -64,6 +67,26 @@
+ 	var out []models.Subscriber
+ 	err := s.queries.NextCampaignSubscribers.Select(&out, camps[0].CampaignID, camps[0].CampaignType, camps[0].LastSubscriberID, camps[0].MaxSubscriberID, pq.Array(listIDs), limit)
+ 	return out, err
++}
++
++// CampaignRecipientEligible checks current consent and the queued address.
++func (s *store) CampaignRecipientEligible(campID int, sub models.Subscriber) (bool, error) {
++	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
++	defer cancel()
++
++	var eligible bool
++	err := s.queries.CampaignRecipientEligible.GetContext(ctx, &eligible, campID, sub.ID, sub.Email, sub.UUID)
++	return eligible, err
++}
++
++// CampaignTestRecipientEligible checks that the approved test address still identifies an enabled subscriber.
++func (s *store) CampaignTestRecipientEligible(sub models.Subscriber) (bool, error) {
++	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
++	defer cancel()
++
++	var eligible bool
++	err := s.queries.CampaignTestRecipientEligible.GetContext(ctx, &eligible, sub.ID, sub.Email, sub.UUID)
++	return eligible, err
+ }
+ 
+ // GetCampaign fetches a campaign from the database.
+diff --git a/internal/core/campaigns.go b/internal/core/campaigns.go
+--- a/internal/core/campaigns.go
++++ b/internal/core/campaigns.go
+@@ -212,7 +212,8 @@
+ 
+ // UpdateCampaign updates a campaign.
+ func (c *Core) UpdateCampaign(id int, o models.Campaign, listIDs []int, mediaIDs []int) (models.Campaign, error) {
+-	_, err := c.q.UpdateCampaign.Exec(id,
++	var changed int
++	err := c.q.UpdateCampaign.Get(&changed, id,
+ 		o.Name,
+ 		o.Subject,
+ 		o.FromEmail,
+@@ -238,6 +239,10 @@
+ 			c.i18n.Ts("globals.messages.errorUpdating", "name", "{globals.terms.campaign}", "error", pqErrMsg(err)))
+ 	}
+ 
++	if changed != 1 {
++		return models.Campaign{}, echo.NewHTTPError(http.StatusConflict, "Campaign changed or its dispatched audience is retained")
++	}
++
+ 	out, err := c.GetCampaign(id, "", "")
+ 	if err != nil {
+ 		return models.Campaign{}, err
+@@ -285,20 +290,15 @@
+ 		return models.Campaign{}, echo.NewHTTPError(http.StatusBadRequest, errMsg)
+ 	}
+ 
+-	res, err := c.q.UpdateCampaignStatus.Exec(cm.ID, status)
+-	if err != nil {
++	if err := c.q.UpdateCampaignStatusIfCurrent.Get(&cm, cm.ID, status, cm.Status, cm.UpdatedAt); err != nil {
++		if err == sql.ErrNoRows {
++			return models.Campaign{}, echo.NewHTTPError(http.StatusConflict, "Campaign changed before the status update")
++		}
+ 		c.log.Printf("error updating campaign status: %v", err)
+-
+ 		return models.Campaign{}, echo.NewHTTPError(http.StatusInternalServerError,
+ 			c.i18n.Ts("globals.messages.errorUpdating", "name", "{globals.terms.campaign}", "error", pqErrMsg(err)))
+ 	}
+ 
+-	if n, _ := res.RowsAffected(); n == 0 {
+-		return models.Campaign{}, echo.NewHTTPError(http.StatusBadRequest,
+-			c.i18n.Ts("globals.messages.notFound", "name", "{globals.terms.campaign}", "error", pqErrMsg(err)))
+-	}
+-
+-	cm.Status = status
+ 	return cm, nil
+ }
+ 
+@@ -325,8 +325,7 @@
+ 	}
+ 
+ 	if n, _ := res.RowsAffected(); n == 0 {
+-		return echo.NewHTTPError(http.StatusBadRequest,
+-			c.i18n.Ts("globals.messages.notFound", "name", "{globals.terms.campaign}"))
++		return echo.NewHTTPError(http.StatusConflict, "Campaign is active, retained for historical recipient links, or missing")
+ 	}
+ 
+ 	return nil
+diff --git a/internal/core/lists.go b/internal/core/lists.go
+--- a/internal/core/lists.go
++++ b/internal/core/lists.go
+@@ -208,10 +208,29 @@
+ 		queryStr = makeSearchString(query)
+ 	}
+ 
+-	if _, err := c.q.DeleteLists.Exec(pq.Array(ids), queryStr, getAll, pq.Array(permittedIDs)); err != nil {
+-		c.log.Printf("error deleting lists: %v", err)
+-		return echo.NewHTTPError(http.StatusInternalServerError,
+-			c.i18n.Ts("globals.messages.errorDeleting", "name", "{globals.terms.lists}", "error", pqErrMsg(err)))
+-	}
+-	return nil
+-}
++	tx, err := c.db.Beginx()
++	if err != nil {
++		return err
++	}
++	defer tx.Rollback()
++
++	var selected []int
++	if err := tx.Stmtx(c.q.LockListsForDeletion).Select(&selected, pq.Array(ids), queryStr, getAll, pq.Array(permittedIDs)); err != nil {
++		return err
++	}
++	if len(selected) == 0 {
++		return tx.Commit()
++	}
++
++	var referenced bool
++	if err := tx.Stmtx(c.q.CampaignReferencesLists).Get(&referenced, pq.Array(selected)); err != nil {
++		return err
++	}
++	if referenced {
++		return echo.NewHTTPError(http.StatusConflict, "This list is referenced by a campaign. Archive it to preserve recipient links.")
++	}
++	if _, err := tx.Stmtx(c.q.DeleteLists).Exec(pq.Array(selected)); err != nil {
++		return err
++	}
++	return tx.Commit()
++}
+diff --git a/internal/manager/manager.go b/internal/manager/manager.go
+--- a/internal/manager/manager.go
++++ b/internal/manager/manager.go
+@@ -9,6 +9,7 @@
+ 	"log"
+ 	"net/textproto"
+ 	"net/url"
++	"os"
+ 	"path"
+ 	"regexp"
+ 	"strings"
+@@ -49,6 +50,8 @@
+ type Store interface {
+ 	NextCampaigns(currentIDs []int64, sentCounts []int64) ([]*models.Campaign, error)
+ 	NextSubscribers(campID, limit int) ([]models.Subscriber, error)
++	CampaignRecipientEligible(campID int, sub models.Subscriber) (bool, error)
++	CampaignTestRecipientEligible(sub models.Subscriber) (bool, error)
+ 	GetCampaign(campID int) (*models.Campaign, error)
+ 	GetAttachment(mediaID int) (models.Attachment, error)
+ 	GetInlineAttachmentByFilename(filename string) (models.Attachment, string, error)
+@@ -482,6 +485,30 @@
+ 	}
+ }
+ 
++// TestRecipientApproved is an exact installation allowlist, empty by default.
++func TestRecipientApproved(address string) bool {
++	for _, allowed := range strings.Split(os.Getenv("NEWSLETTER_TEST_RECIPIENTS"), ",") {
++		allowed = strings.TrimSpace(allowed)
++		if allowed != "" && strings.EqualFold(allowed, address) {
++			return true
++		}
++	}
++	return false
++}
++
++func (m *Manager) dispatchEligible(msg CampaignMessage) (bool, error) {
++	if msg.pipe == nil {
++		if !TestRecipientApproved(msg.to) {
++			return false, nil
++		}
++		return m.store.CampaignTestRecipientEligible(msg.Subscriber)
++	}
++	if msg.pipe.stopped.Load() {
++		return false, nil
++	}
++	return m.store.CampaignRecipientEligible(msg.Campaign.ID, msg.Subscriber)
++}
++
+ // worker is a blocking function that perpetually listents to events (message) on different
+ // queues and processes them.
+ func (m *Manager) worker() {
+@@ -542,6 +569,22 @@
+ 			// Set the headers.
+ 			out.Headers = h
+ 
++			// The last consent snapshot is immediately before the external handoff.
++			// A provider that accepts a message cannot be recalled by a later unsubscribe.
++			eligible, checkErr := m.dispatchEligible(msg)
++			if checkErr != nil || !eligible || (msg.pipe != nil && msg.pipe.stopped.Load()) {
++				if checkErr != nil {
++					m.log.Printf("campaign %d recipient %d consent check failed: %v", msg.Campaign.ID, msg.Subscriber.ID, checkErr)
++				}
++				if msg.pipe != nil {
++					if checkErr != nil {
++						msg.pipe.Stop(true)
++					}
++					msg.pipe.wg.Done()
++				}
++				continue
++			}
++
+ 			// Push the message to the messenger.
+ 			err := m.messengers[msg.Campaign.Messenger].Push(out)
+ 			if err != nil {
+@@ -550,21 +593,22 @@
+ 
+ 			// Increment the send rate or the error counter if there was an error.
+ 			if msg.pipe != nil {
+-				// Mark the message as done.
+-				msg.pipe.wg.Done()
+-
+ 				if err != nil {
+ 					// Call the error callback, which keeps track of the error count
+ 					// and stops the campaign if the error count exceeds the threshold.
+ 					msg.pipe.OnError()
+ 				} else {
+ 					id := uint64(msg.Subscriber.ID)
+-					if id > msg.pipe.lastID.Load() {
+-						msg.pipe.lastID.Store(uint64(msg.Subscriber.ID))
++					for previous := msg.pipe.lastID.Load(); id > previous; previous = msg.pipe.lastID.Load() {
++						if msg.pipe.lastID.CompareAndSwap(previous, id) {
++							break
++						}
+ 					}
+ 					msg.pipe.rate.Incr(1)
+ 					msg.pipe.sent.Add(1)
+ 				}
++				// Cleanup can run as soon as the last message is done.
++				msg.pipe.wg.Done()
+ 			}
+ 
+ 		// Arbitrary message.
+@@ -597,8 +641,7 @@
+ 
+ 		// Get the sent counts for campaigns and reset them to 0
+ 		// as in the database, they're stored cumulatively (sent += $newSent).
+-		counts = append(counts, p.sent.Load())
+-		p.sent.Store(0)
++		counts = append(counts, p.sent.Swap(0))
+ 	}
+ 
+ 	return ids, counts
+diff --git a/internal/manager/warpdrive_dispatch_test.go b/internal/manager/warpdrive_dispatch_test.go
+new file mode 100644
+--- /dev/null
++++ b/internal/manager/warpdrive_dispatch_test.go
+@@ -0,0 +1,109 @@
++package manager
++
++import (
++	"errors"
++	"io"
++	"log"
++	"sync"
++	"testing"
++	"time"
++
++	"github.com/knadh/listmonk/models"
++	"github.com/paulbellamy/ratecounter"
++)
++
++type consentStore struct {
++	Store
++	eligible bool
++	err      error
++	checked  int
++}
++
++func (s *consentStore) CampaignRecipientEligible(id int, sub models.Subscriber) (bool, error) {
++	if id != 5 || sub.ID != 7 || sub.Email != "reader+fixture@example.test" {
++		return false, errors.New("wrong queued recipient")
++	}
++	s.checked++
++	return s.eligible, s.err
++}
++
++func (s *consentStore) CampaignTestRecipientEligible(sub models.Subscriber) (bool, error) {
++	return s.CampaignRecipientEligible(5, sub)
++}
++
++type captureMessenger struct {
++	Messenger
++	sent []models.Message
++}
++
++func (m *captureMessenger) Push(message models.Message) error {
++	m.sent = append(m.sent, message)
++	return nil
++}
++
++func TestCampaignWorkerRechecksConsentBeforeTransport(t *testing.T) {
++	for _, scenario := range []struct {
++		name           string
++		eligible       bool
++		lookupError    error
++		testMessage    bool
++		approved       string
++		expectedChecks int
++		expectedSends  int
++	}{
++		{name: "eligible", eligible: true, expectedChecks: 1, expectedSends: 1},
++		{name: "revoked after queue", expectedChecks: 1},
++		{name: "lookup error fails closed", lookupError: errors.New("unavailable"), expectedChecks: 1},
++		{name: "test address denied by default", testMessage: true},
++		{name: "test domain wildcard denied", testMessage: true, approved: "*@example.test"},
++		{name: "exact approved plus alias", eligible: true, testMessage: true, approved: " reader+Fixture@example.test ", expectedChecks: 1, expectedSends: 1},
++		{name: "approved test address loses eligibility", testMessage: true, approved: "reader+fixture@example.test", expectedChecks: 1},
++	} {
++		t.Run(scenario.name, func(t *testing.T) {
++			t.Setenv("NEWSLETTER_TEST_RECIPIENTS", scenario.approved)
++			s := &consentStore{eligible: scenario.eligible, err: scenario.lookupError}
++			capture := &captureMessenger{}
++			manager := &Manager{
++				cfg:        Config{MessageRate: 10},
++				store:      s,
++				messengers: map[string]Messenger{"email": capture},
++				log:        log.New(io.Discard, "", 0),
++				campMsgQ:   make(chan CampaignMessage, 1),
++				msgQ:       make(chan models.Message),
++			}
++			sub := models.Subscriber{Base: models.Base{ID: 7}, Email: "reader+fixture@example.test"}
++			campaign := &models.Campaign{Base: models.Base{ID: 5}, Messenger: "email"}
++			message := CampaignMessage{Campaign: campaign, Subscriber: sub, to: sub.Email}
++			if !scenario.testMessage {
++				message.pipe = &pipe{
++					camp: campaign,
++					m:    manager,
++					wg:   &sync.WaitGroup{},
++					rate: ratecounter.NewRateCounter(time.Minute),
++				}
++				message.pipe.wg.Add(1)
++			}
++			manager.campMsgQ <- message
++			close(manager.campMsgQ)
++			manager.worker()
++
++			if s.checked != scenario.expectedChecks || len(capture.sent) != scenario.expectedSends {
++				t.Fatalf("checks=%d, transport=%d", s.checked, len(capture.sent))
++			}
++			if message.pipe != nil {
++				if message.pipe.sent.Load() != int64(scenario.expectedSends) {
++					t.Fatal("skipped recipient counted as sent")
++				}
++				if (scenario.lookupError != nil) != message.pipe.withErrors.Load() {
++					t.Fatal("lookup failure did not pause the pipe")
++				}
++			}
++			if len(capture.sent) == 1 {
++				to := capture.sent[0].To
++				if len(to) != 1 || to[0] != sub.Email {
++					t.Fatalf("unexpected admitted envelope %v", to)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/messenger/email/email.go b/internal/messenger/email/email.go
+--- a/internal/messenger/email/email.go
++++ b/internal/messenger/email/email.go
+@@ -194,6 +194,12 @@
+ 		em.Headers.Del(hdrReturnPath)
+ 	}
+ 
++	// Campaign recipients are admitted one at a time. Neither configured relay
++	// headers nor campaign custom headers may add or misrepresent recipients.
++	if m.Campaign != nil {
++		stripCampaignRecipientHeaders(em.Headers)
++	}
++
+ 	// If the `Bcc` header is set, it should be set on the Envelope
+ 	if bcc := em.Headers.Get(hdrBcc); bcc != "" {
+ 		for _, part := range strings.Split(bcc, ",") {
+@@ -223,6 +229,15 @@
+ 	return srv.pool.Send(em)
+ }
+ 
++func stripCampaignRecipientHeaders(headers textproto.MIMEHeader) {
++	for key := range headers {
++		normalized := strings.ToLower(strings.TrimSpace(key))
++		if normalized == "to" || normalized == "cc" || normalized == "bcc" || strings.HasPrefix(normalized, "resent-") {
++			delete(headers, key)
++		}
++	}
++}
++
+ // Flush flushes the message queue to the server.
+ func (e *Emailer) Flush() error {
+ 	return nil
+diff --git a/internal/messenger/email/warpdrive_recipient_headers_test.go b/internal/messenger/email/warpdrive_recipient_headers_test.go
+new file mode 100644
+--- /dev/null
++++ b/internal/messenger/email/warpdrive_recipient_headers_test.go
+@@ -0,0 +1,21 @@
++package email
++
++import (
++	"net/textproto"
++	"testing"
++)
++
++func TestCampaignHeadersCannotExpandOrReplaceEnvelope(t *testing.T) {
++	headers := textproto.MIMEHeader{
++		"Cc":               {"extra@example.test"},
++		"BCC":              {"hidden@example.test"},
++		"To":               {"different@example.test"},
++		"Resent-To":        {"resend@example.test"},
++		"Reply-To":         {"reply@example.test"},
++		"List-Unsubscribe": {"<https://newsletter.example.test/subscription/example>"},
++	}
++	stripCampaignRecipientHeaders(headers)
++	if len(headers) != 2 || headers.Get("Reply-To") == "" || headers.Get("List-Unsubscribe") == "" {
++		t.Fatalf("unexpected retained header keys: %v", headers)
++	}
++}
+diff --git a/models/queries.go b/models/queries.go
+--- a/models/queries.go
++++ b/models/queries.go
+@@ -50,14 +50,16 @@
+ 	DeleteSubscriptionsByQuery             string     `query:"delete-subscriptions-by-query"`
+ 	UnsubscribeSubscribersFromListsByQuery string     `query:"unsubscribe-subscribers-from-lists-by-query"`
+ 
+-	CreateList      *sqlx.Stmt `query:"create-list"`
+-	QueryLists      string     `query:"query-lists"`
+-	GetLists        *sqlx.Stmt `query:"get-lists"`
+-	GetListsByOptin *sqlx.Stmt `query:"get-lists-by-optin"`
+-	GetListTypes    *sqlx.Stmt `query:"get-list-types"`
+-	UpdateList      *sqlx.Stmt `query:"update-list"`
+-	UpdateListsDate *sqlx.Stmt `query:"update-lists-date"`
+-	DeleteLists     *sqlx.Stmt `query:"delete-lists"`
++	CreateList              *sqlx.Stmt `query:"create-list"`
++	QueryLists              string     `query:"query-lists"`
++	GetLists                *sqlx.Stmt `query:"get-lists"`
++	GetListsByOptin         *sqlx.Stmt `query:"get-lists-by-optin"`
++	GetListTypes            *sqlx.Stmt `query:"get-list-types"`
++	UpdateList              *sqlx.Stmt `query:"update-list"`
++	UpdateListsDate         *sqlx.Stmt `query:"update-lists-date"`
++	LockListsForDeletion    *sqlx.Stmt `query:"lock-lists-for-deletion"`
++	CampaignReferencesLists *sqlx.Stmt `query:"campaign-references-lists"`
++	DeleteLists             *sqlx.Stmt `query:"delete-lists"`
+ 
+ 	CreateCampaign        *sqlx.Stmt `query:"create-campaign"`
+ 	QueryCampaigns        string     `query:"query-campaigns"`
+@@ -80,17 +82,20 @@
+ 	ExportCampaignViews        *sqlx.Stmt `query:"export-campaign-views"`
+ 	ExportCampaignLinkClicks   *sqlx.Stmt `query:"export-campaign-link-clicks"`
+ 
+-	NextCampaigns            *sqlx.Stmt `query:"next-campaigns"`
+-	GetRunningCampaign       *sqlx.Stmt `query:"get-running-campaign"`
+-	NextCampaignSubscribers  *sqlx.Stmt `query:"next-campaign-subscribers"`
+-	GetOneCampaignSubscriber *sqlx.Stmt `query:"get-one-campaign-subscriber"`
+-	UpdateCampaign           *sqlx.Stmt `query:"update-campaign"`
+-	UpdateCampaignStatus     *sqlx.Stmt `query:"update-campaign-status"`
+-	UpdateCampaignCounts     *sqlx.Stmt `query:"update-campaign-counts"`
+-	UpdateCampaignArchive    *sqlx.Stmt `query:"update-campaign-archive"`
+-	RegisterCampaignView     *sqlx.Stmt `query:"register-campaign-view"`
+-	DeleteCampaign           *sqlx.Stmt `query:"delete-campaign"`
+-	DeleteCampaigns          *sqlx.Stmt `query:"delete-campaigns"`
++	NextCampaigns                 *sqlx.Stmt `query:"next-campaigns"`
++	CampaignRecipientEligible     *sqlx.Stmt `query:"campaign-recipient-eligible"`
++	CampaignTestRecipientEligible *sqlx.Stmt `query:"campaign-test-recipient-eligible"`
++	GetRunningCampaign            *sqlx.Stmt `query:"get-running-campaign"`
++	NextCampaignSubscribers       *sqlx.Stmt `query:"next-campaign-subscribers"`
++	GetOneCampaignSubscriber      *sqlx.Stmt `query:"get-one-campaign-subscriber"`
++	UpdateCampaign                *sqlx.Stmt `query:"update-campaign"`
++	UpdateCampaignStatusIfCurrent *sqlx.Stmt `query:"update-campaign-status-if-current"`
++	UpdateCampaignStatus          *sqlx.Stmt `query:"update-campaign-status"`
++	UpdateCampaignCounts          *sqlx.Stmt `query:"update-campaign-counts"`
++	UpdateCampaignArchive         *sqlx.Stmt `query:"update-campaign-archive"`
++	RegisterCampaignView          *sqlx.Stmt `query:"register-campaign-view"`
++	DeleteCampaign                *sqlx.Stmt `query:"delete-campaign"`
++	DeleteCampaigns               *sqlx.Stmt `query:"delete-campaigns"`
+ 
+ 	InsertMedia *sqlx.Stmt `query:"insert-media"`
+ 	GetMedia    *sqlx.Stmt `query:"get-media"`
+diff --git a/queries/campaigns.sql b/queries/campaigns.sql
+--- a/queries/campaigns.sql
++++ b/queries/campaigns.sql
+@@ -185,12 +185,13 @@
+     LEFT JOIN templates ON (templates.id = campaigns.template_id)
+     WHERE (status='running' OR (status='scheduled' AND NOW() >= campaigns.send_at))
+     AND NOT(campaigns.id = ANY($1::INT[]))
++    FOR UPDATE OF campaigns SKIP LOCKED
+ ),
+ campLists AS (
+     -- Get the list_ids and their optin statuses for the campaigns found in the previous step.
+     SELECT lists.id AS list_id, campaign_id, optin FROM lists
+     INNER JOIN campaign_lists ON (campaign_lists.list_id = lists.id)
+-    WHERE campaign_lists.campaign_id = ANY(SELECT id FROM camps)
++    WHERE campaign_lists.campaign_id = ANY(SELECT id FROM camps) AND lists.status = 'active'
+ ),
+ campMedia AS (
+     -- Get the list_ids and their optin statuses for the campaigns found in the previous step.
+@@ -210,7 +211,7 @@
+                 ELSE sl.status != 'unsubscribed'
+             END
+         )
+-    JOIN subscribers s ON (s.id = sl.subscriber_id AND s.status != 'blocklisted')
++    JOIN subscribers s ON (s.id = sl.subscriber_id AND s.status = 'enabled')
+     GROUP BY camps.id
+ ),
+ updateCounts AS (
+@@ -222,14 +223,17 @@
+ u AS (
+     -- For each campaign, update the to_send count and set the max_subscriber_id.
+     UPDATE campaigns AS ca
+-    SET to_send = co.to_send,
+-        status = (CASE WHEN status != 'running' THEN 'running' ELSE status END),
+-        max_subscriber_id = co.max_subscriber_id,
+-        started_at=(CASE WHEN ca.started_at IS NULL THEN NOW() ELSE ca.started_at END)
+-    FROM (SELECT * FROM counts) co
+-    WHERE ca.id = co.campaign_id
+-)
+-SELECT camps.*, campMedia.media_id FROM camps LEFT JOIN campMedia ON (campMedia.campaign_id = camps.id);
++    SET to_send = COALESCE(co.to_send, 0),
++        status = 'running',
++        max_subscriber_id = COALESCE(co.max_subscriber_id, 0),
++        started_at = COALESCE(ca.started_at, NOW())
++    FROM camps LEFT JOIN counts co ON co.campaign_id = camps.id
++    WHERE ca.id = camps.id
++    RETURNING ca.id
++)
++SELECT camps.*, campMedia.media_id FROM camps
++JOIN u ON u.id = camps.id
++LEFT JOIN campMedia ON campMedia.campaign_id = camps.id;
+ 
+ -- name: get-campaign-analytics-unique-counts
+ WITH intval AS (
+@@ -313,7 +317,7 @@
+     FROM campaigns
+     JOIN campaign_lists ON (campaign_lists.campaign_id = campaigns.id)
+     JOIN lists ON (lists.id = campaign_lists.list_id)
+-    WHERE campaigns.id = $1 AND campaigns.status='running';
++    WHERE campaigns.id = $1 AND campaigns.status='running' AND lists.status='active';
+ 
+ -- name: next-campaign-subscribers
+ -- Returns a batch of subscribers in a given campaign starting from the last checkpoint
+@@ -330,7 +334,7 @@
+ WITH campLists AS (
+     SELECT lists.id AS list_id, optin FROM lists
+     LEFT JOIN campaign_lists ON campaign_lists.list_id = lists.id
+-    WHERE campaign_lists.campaign_id = $1
++    WHERE campaign_lists.campaign_id = $1 AND lists.status='active'
+ ),
+ subs AS (
+     SELECT s.*
+@@ -345,8 +349,8 @@
+             AND s.id > $3
+              -- max_subscriber_id
+             AND s.id <= $4
+-             -- Subscriber should not be blacklisted.
+-            AND s.status != 'blocklisted'
++             -- Dispatch only to enabled subscribers.
++            AND s.status = 'enabled'
+             AND (
+                 -- If it's an optin campaign and the list is double-optin, only pick unconfirmed subscribers.
+                 ($2 = 'optin' AND sl.status = 'unconfirmed' AND campLists.optin = 'double')
+@@ -370,6 +374,30 @@
+     WHERE (SELECT COUNT(id) FROM subs) > 0 AND id=$1
+ )
+ SELECT * FROM subs;
++
++-- name: campaign-recipient-eligible
++-- Recheck the queued recipient after throttling, immediately before transport handoff.
++SELECT EXISTS (
++    SELECT 1
++    FROM campaigns c
++    JOIN campaign_lists cl ON cl.campaign_id = c.id
++    JOIN lists l ON l.id = cl.list_id AND l.status = 'active'
++    JOIN subscriber_lists sl ON sl.list_id = l.id
++    JOIN subscribers s ON s.id = sl.subscriber_id
++    WHERE c.id = $1 AND c.status = 'running'
++      AND s.id = $2 AND s.email = $3 AND s.uuid = $4 AND s.status = 'enabled'
++      AND CASE
++          WHEN c.type = 'optin' THEN l.optin = 'double' AND sl.status = 'unconfirmed'
++          WHEN l.optin = 'double' THEN sl.status = 'confirmed'
++          ELSE sl.status != 'unsubscribed'
++      END
++);
++
++-- name: campaign-test-recipient-eligible
++SELECT EXISTS (
++    SELECT 1 FROM subscribers
++    WHERE id = $1 AND email = $2 AND uuid = $3 AND status = 'enabled'
++);
+ 
+ -- name: delete-campaign-views
+ DELETE FROM campaign_views WHERE created_at < $1;
+@@ -413,24 +441,39 @@
+         archive_meta=$18,
+         body_source=$20,
+         updated_at=NOW()
+-    WHERE id = $1 RETURNING id
++    WHERE id = $1 AND status IN ('draft', 'scheduled', 'paused')
++      AND (
++          (started_at IS NULL AND sent = 0)
++          OR ARRAY(
++              SELECT DISTINCT list_id FROM campaign_lists
++              WHERE campaign_id = $1 AND list_id IS NOT NULL ORDER BY list_id
++          ) = ARRAY(SELECT DISTINCT unnest FROM unnest($14::INT[]) ORDER BY unnest)
++      )
++    RETURNING id, started_at, sent
+ ),
+ clists AS (
+-    -- Reset list relationships
+-    DELETE FROM campaign_lists WHERE campaign_id = $1 AND NOT(list_id = ANY($14))
++    -- Historical links use these exact associations for one-click unsubscribe.
++    DELETE FROM campaign_lists
++    USING camp
++    WHERE campaign_id = camp.id AND camp.started_at IS NULL AND camp.sent = 0
++      AND NOT(list_id = ANY($14::INT[]))
+ ),
+ med AS (
+-    DELETE FROM campaign_media WHERE campaign_id = $1
+-    AND ( media_id IS NULL or NOT(media_id = ANY($19))) RETURNING media_id
++    DELETE FROM campaign_media USING camp WHERE campaign_id = camp.id
++    AND (media_id IS NULL OR NOT(media_id = ANY($19::INT[])))
+ ),
+ medi AS (
+     INSERT INTO campaign_media (campaign_id, media_id, filename)
+-        (SELECT $1 AS campaign_id, id, filename FROM media WHERE id=ANY($19::INT[]))
++        (SELECT camp.id, media.id, filename FROM media CROSS JOIN camp WHERE media.id=ANY($19::INT[]))
+         ON CONFLICT (campaign_id, media_id) DO NOTHING
+-)
+-INSERT INTO campaign_lists (campaign_id, list_id, list_name)
+-    (SELECT $1 as campaign_id, id, name FROM lists WHERE id=ANY($14::INT[]))
+-    ON CONFLICT (campaign_id, list_id) DO UPDATE SET list_name = EXCLUDED.list_name;
++),
++linked AS (
++    INSERT INTO campaign_lists (campaign_id, list_id, list_name)
++        (SELECT camp.id, lists.id, name FROM lists CROSS JOIN camp
++         WHERE lists.id=ANY($14::INT[]) AND camp.started_at IS NULL AND camp.sent = 0)
++        ON CONFLICT (campaign_id, list_id) DO UPDATE SET list_name = EXCLUDED.list_name
++)
++SELECT COUNT(*) FROM camp;
+ 
+ -- name: update-campaign-counts
+ UPDATE campaigns SET
+@@ -444,12 +487,19 @@
+ UPDATE campaigns SET
+     status=(
+         CASE
+-            WHEN send_at IS NOT NULL AND $2 = 'running' THEN 'scheduled'
++            WHEN send_at > NOW() AND $2 = 'running' THEN 'scheduled'
+             ELSE $2::campaign_status
+         END
+     ),
+     updated_at=NOW()
+-WHERE id = $1;
++WHERE id = $1 AND status = 'running';
++
++-- name: update-campaign-status-if-current
++UPDATE campaigns SET
++    status = CASE WHEN send_at > NOW() AND $2 = 'running' THEN 'scheduled' ELSE $2::campaign_status END,
++    updated_at = NOW()
++WHERE id = $1 AND status = $3::campaign_status AND updated_at IS NOT DISTINCT FROM $4::TIMESTAMPTZ
++RETURNING status, updated_at;
+ 
+ -- name: update-campaign-archive
+ UPDATE campaigns SET
+@@ -461,11 +511,13 @@
+     WHERE id=$1;
+ 
+ -- name: delete-campaign
+-DELETE FROM campaigns WHERE id=$1;
++DELETE FROM campaigns WHERE id=$1 AND started_at IS NULL AND sent=0
++    AND status NOT IN ('running', 'scheduled');
+ 
+ -- name: delete-campaigns
+ DELETE FROM campaigns c
+-WHERE (
++WHERE c.started_at IS NULL AND c.sent=0 AND c.status NOT IN ('running', 'scheduled')
++AND (
+     CASE
+         WHEN CARDINALITY($1::INT[]) > 0 THEN id = ANY($1)
+         ELSE $2 = '' OR TO_TSVECTOR(CONCAT(name, ' ', subject)) @@ TO_TSQUERY($2) OR CONCAT(c.name, ' ', c.subject) ILIKE $2
+diff --git a/queries/lists.sql b/queries/lists.sql
+--- a/queries/lists.sql
++++ b/queries/lists.sql
+@@ -76,8 +76,10 @@
+ -- name: update-lists-date
+ UPDATE lists SET updated_at=NOW() WHERE id = ANY($1);
+ 
+--- name: delete-lists
+-DELETE FROM lists
++-- name: lock-lists-for-deletion
++-- Take the list-row locks before checking references in the transaction's next statement.
++-- A concurrent campaign association must take a foreign-key key-share lock on the list.
++SELECT id FROM lists
+ WHERE CASE
+     WHEN CARDINALITY($1::INT[]) > 0 THEN id = ANY($1)
+     ELSE ($2 = '' OR to_tsvector(name) @@ to_tsquery($2))
+@@ -85,5 +87,12 @@
+ AND CASE
+     -- Optional list IDs based on user permission.
+     WHEN $3 = TRUE THEN TRUE ELSE id = ANY($4::INT[])
+-END;
++END
++ORDER BY id FOR UPDATE;
+ 
++-- name: campaign-references-lists
++SELECT EXISTS (SELECT 1 FROM campaign_lists WHERE list_id = ANY($1::INT[]));
++
++-- name: delete-lists
++DELETE FROM lists WHERE id = ANY($1::INT[]);
++

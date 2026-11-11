@@ -51,6 +51,7 @@ import { kpiInventoryEntry } from "./registryKpis";
 import { mailInventoryEntries } from "./registryMail";
 import { mailSharedInventoryEntries } from "./registryMailShared";
 import { migrationInventoryEntry } from "./registryMigrations";
+import { newsletterInventoryEntry } from "./registryNewsletter";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import type { RegistryEntry } from "./registryTypes";
@@ -84,6 +85,7 @@ export const registryEntries: RegistryEntry[] = [
   workflowBlocksInventoryEntry,
   workflowRuntimeInventoryEntry,
   migrationInventoryEntry,
+  newsletterInventoryEntry,
   ...mailInventoryEntries,
   ...mailSharedInventoryEntries,
   salesToolingInventoryEntry,

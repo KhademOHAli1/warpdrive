@@ -18,5 +18,6 @@ export function testEnvInput(): NodeJS.ProcessEnv {
       ),
     ),
     NODE_ENV: env.NODE_ENV,
+    NEWSLETTER_TEST_RECIPIENTS: env.NEWSLETTER_TEST_RECIPIENTS.join(","),
   };
 }

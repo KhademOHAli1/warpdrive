@@ -13,12 +13,14 @@ type WorkspaceShell = {
   modules: string[];
   canViewWork: boolean;
   canViewProjects: boolean;
+  canViewCampaigns: boolean;
 };
 const defaults: WorkspaceShell = {
   brand: { displayName: APP_NAME, iconUrl: null, accentColor: null, foregroundColor: "#ffffff" },
   modules: [] as string[],
   canViewWork: false,
   canViewProjects: false,
+  canViewCampaigns: false,
 };
 const Context = createContext(defaults);
 export function WorkspaceShellProvider({
@@ -26,16 +28,18 @@ export function WorkspaceShellProvider({
   modules,
   canViewWork,
   canViewProjects = false,
+  canViewCampaigns = false,
   children,
 }: {
   brand: WorkspaceBrand;
   modules: string[];
   canViewWork: boolean;
   canViewProjects?: boolean;
+  canViewCampaigns?: boolean;
   children: ReactNode;
 }) {
   return (
-    <Context.Provider value={{ brand, modules, canViewWork, canViewProjects }}>
+    <Context.Provider value={{ brand, modules, canViewWork, canViewProjects, canViewCampaigns }}>
       {children}
     </Context.Provider>
   );
@@ -44,6 +48,6 @@ export function useWorkspaceShell() {
   return useContext(Context);
 }
 export function useWorkspaceNavigation() {
-  const { modules, canViewWork, canViewProjects } = useWorkspaceShell();
-  return workspaceNavItems(modules, canViewWork, canViewProjects);
+  const { modules, canViewWork, canViewProjects, canViewCampaigns } = useWorkspaceShell();
+  return workspaceNavItems(modules, canViewWork, canViewProjects, canViewCampaigns);
 }

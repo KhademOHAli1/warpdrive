@@ -11,10 +11,12 @@ export function workspaceNavItems(
   modules: readonly string[],
   canViewWork: boolean,
   canViewProjects = false,
+  canViewCampaigns = false,
 ) {
   const configured = modules.length > 0;
   const showSales = !configured || modules.includes("sales");
   return NAV_ITEMS.filter((item) => {
+    if (item.key === "campaigns" && !canViewCampaigns) return false;
     if (item.key === "projects" && !canViewProjects) return false;
     if (item.key === "work" && !canViewWork) return false;
     if (!configured) return true;

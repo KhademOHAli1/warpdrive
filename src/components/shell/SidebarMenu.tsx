@@ -1,10 +1,11 @@
 "use client";
 
-import { BriefcaseBusiness, Folders, GitBranch, LayoutDashboard } from "lucide-react";
+import { BriefcaseBusiness, Folders, GitBranch, LayoutDashboard, Megaphone } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DOCS_SITE_URL } from "@/constants/docs";
 import type { NavKey } from "@/constants/nav";
-import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
+import { campaignNavigation } from "@/features/newsletter/ui/navigation";
 import { cn } from "@/lib/utils";
 import styles from "./LeftNav.module.css";
 import {
@@ -29,6 +30,7 @@ const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   inbox: InboxIcon,
   settings: SettingsIcon,
   workflows: GitBranch,
+  campaigns: Megaphone,
 };
 
 export function SidebarMenu({
@@ -47,6 +49,8 @@ export function SidebarMenu({
   const messages = useMessages();
   const t = useAppTranslations("shell.sidebar");
   const activities = useAppTranslations("activities");
+  const campaignNav = campaignNavigation(useLocale());
+  const campaign = navItems.find((item) => item.key === "campaigns");
   function children(key: NavKey): SidebarChild[] | undefined {
     if (key === "contacts")
       return [
@@ -59,6 +63,7 @@ export function SidebarMenu({
         { href: "/activities/list", label: activities("list") },
         { href: "/activities/calendar", label: activities("calendar") },
       ];
+    if (key === "campaigns") return campaignNav.items;
     return undefined;
   }
   function menuItem(item: (typeof navItems)[number]) {
@@ -113,9 +118,22 @@ export function SidebarMenu({
           </p>
           <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
             {navItems
-              .filter((item) => item.key !== "settings" && item.key !== "workflows")
+              .filter(
+                (item) =>
+                  item.key !== "settings" && item.key !== "workflows" && item.key !== "campaigns",
+              )
               .map(menuItem)}
           </div>
+          {campaign && (
+            <>
+              <p className={styles.sidebarSectionTitle} aria-hidden={!expanded}>
+                {campaignNav.actions}
+              </p>
+              <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
+                {menuItem(campaign)}
+              </div>
+            </>
+          )}
         </div>
         <div className={styles.utilityNav}>
           {expanded && (

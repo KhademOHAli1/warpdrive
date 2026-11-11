@@ -3,11 +3,13 @@ import {
   Building2,
   CreditCard,
   Eye,
+  FileText,
   Globe2,
   ListChecks,
   type LucideIcon,
   Mail,
   MailCheck,
+  Megaphone,
   Palette,
   Plug,
   ShieldCheck,
@@ -18,12 +20,14 @@ import {
   User,
   Users,
   UsersRound,
+  Wrench,
 } from "lucide-react";
 import { authScreensMessagesForLocale } from "@/features/auth/authScreensMessages";
 import { managementMessagesForLocale } from "@/features/auth/management/messages";
 import { billingMessagesForLocale } from "@/features/billing/messages";
 import type { Locale } from "@/features/i18n/registry";
 import type { SettingsMessages } from "@/features/identity/settingsMessages";
+import { adminMessages } from "@/features/newsletter/admin/messages";
 import { privacyRequestMessagesForLocale } from "@/features/privacy/privacyRequestMessages";
 import { workflowRuntimeMessages } from "@/features/workflows/v2/workflowRuntimeMessages";
 
@@ -56,6 +60,7 @@ export function settingsNavSections(
   const managementLabel = managementMessagesForLocale(locale).title;
   const privacyLabel = privacyRequestMessagesForLocale(locale).workspaceTitle;
   const billingLabel = billingMessagesForLocale(locale).title;
+  const newsletter = adminMessages(locale);
   return [
     {
       id: "personal",
@@ -85,6 +90,13 @@ export function settingsNavSections(
               { href: "/settings/teams", label: L.teams, icon: UsersRound },
               { href: "/settings/permission-sets", label: L.permissionSets, icon: ShieldCheck },
               { href: "/settings/visibility-groups", label: L.visibilityGroups, icon: Eye },
+              ...(isAdmin
+                ? [
+                    { href: "/settings/campaigns", label: newsletter.settings, icon: Megaphone },
+                    { href: "/settings/maintenance", label: newsletter.maintenance, icon: Wrench },
+                    { href: "/settings/logs", label: newsletter.logs, icon: FileText },
+                  ]
+                : []),
             ],
           },
           {
