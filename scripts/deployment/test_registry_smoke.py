@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from types import SimpleNamespace
 from urllib.error import HTTPError
+from unittest.mock import patch
 
 try:
     from . import registry_smoke as smoke
@@ -30,6 +31,8 @@ def inspected(identifier):
 
 class FakeDocker:
     def __init__(self):
+        self.environment = {}
+        self.runner = object()
         self.calls = []
         self.owner = None
         self.foreign = False
@@ -285,7 +288,9 @@ class RegistryReadbackTests(unittest.TestCase):
         tag = candidate_tag(value.repository_prefix, "web", SHA, IDS["web"])
         command = ("buildx", "imagetools", "inspect", "--format", "{{json .Manifest}}", tag)
         value.docker.buildx_errors[command] = (1, "ERROR: manifest unknown: manifest unknown")
-        result = value.production_transport_absence()
+        with patch("registry_candidate.confirm_absent") as probe:
+            result = value.production_transport_absence()
+            probe.assert_called_once_with(tag, environment={}, runner=value.docker.runner)
         self.assertTrue(result["definiteMissingTag"])
         self.assertEqual(result["newPushes"], 0)
         self.assertFalse(any("push" in args for args in value.docker.calls))

@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 
 from candidate import COMPONENTS, PENDING, SMOKE_CHECKS
+from registry_absence import AbsenceError
 from registry_candidate import (
     DockerRegistryAdapter, PromotionUnknown, RegistryConflict, RegistryError, RemoteImage,
     candidate_tag, content_hash, promote_candidate, validate_repository_prefix,
@@ -335,23 +336,29 @@ class RegistryCandidateTest(unittest.TestCase):
 
 
 class DockerRegistryAdapterTest(unittest.TestCase):
-    def test_explicit_manifest_unknown_is_absent_but_auth_network_or_plain404_are_indeterminate(self):
-        for detail, absent in (
-            ("MANIFEST_UNKNOWN: manifest unknown", True),
-            ("manifest unknown: unauthorized", False),
-            ("unexpected status 404 Not Found", False),
-            ("lookup registry: no such host", False),
-            ("connection timed out", False),
-        ):
+    def test_head_not_found_requires_independent_structured_registry_get_absence(self):
+        for detail in ("MANIFEST_UNKNOWN: manifest unknown", "not found", "unexpected status 404 Not Found"):
             with self.subTest(detail=detail):
                 docker = SimpleNamespace(run=lambda *_args, **_kw: SimpleNamespace(
-                    returncode=1, stderr=detail, stdout=""))
+                    returncode=1, stderr=detail, stdout=""), environment={}, runner=object())
                 adapter = DockerRegistryAdapter(docker)
-                if absent:
+                with patch("registry_candidate.confirm_absent") as probe:
                     self.assertIsNone(adapter.resolve_tag("ghcr.io/example/app:candidate-fixture"))
-                else:
+                    probe.assert_called_once_with("ghcr.io/example/app:candidate-fixture",
+                                                  environment={}, runner=docker.runner)
+                with patch("registry_candidate.confirm_absent", side_effect=AbsenceError("absence not established")):
                     with self.assertRaises(RegistryError):
                         adapter.resolve_tag("ghcr.io/example/app:candidate-fixture")
+
+    def test_auth_network_or_unrecognized_cli_errors_do_not_authorize_an_absence_probe(self):
+        for detail in ("manifest unknown: unauthorized", "lookup registry: no such host",
+                       "connection timed out", "unknown command buildx"):
+            docker = SimpleNamespace(run=lambda *_args, **_kw: SimpleNamespace(
+                returncode=1, stderr=detail, stdout=""), environment={}, runner=object())
+            with self.subTest(detail=detail), patch("registry_candidate.confirm_absent") as probe:
+                with self.assertRaises(RegistryError):
+                    DockerRegistryAdapter(docker).resolve_tag("ghcr.io/example/app:candidate-fixture")
+                probe.assert_not_called()
 
     def test_registry_digest_is_read_from_descriptor_not_hash_of_rendered_json(self):
         calls = []

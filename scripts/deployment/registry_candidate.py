@@ -23,6 +23,7 @@ from typing import Any, Protocol
 
 from candidate import COMPONENTS, PENDING, SMOKE_CHECKS
 from image_smoke import Docker
+from registry_absence import AbsenceError, confirm_absent
 
 
 REVISION = re.compile(r"[0-9a-f]{40}\Z")
@@ -239,7 +240,16 @@ class DockerRegistryAdapter:
                 "unauthorized", "forbidden", "denied", "authentication", "timeout", "timed out",
                 "connection", "certificate", "tls", "lookup", "no such host",
             ))
-            if not denied and re.search(r"\bmanifest[ _]unknown\b", detail):
+            # Buildx resolves through HEAD and can collapse the registry's error
+            # body into plain "not found". Confirm a structured V2 GET response;
+            # neither that CLI text nor a generic HTTP 404 establishes absence.
+            if not denied and re.search(r"\b(?:manifest[ _]unknown|not found|404)\b", detail):
+                environment = getattr(self.docker, "environment", None)
+                require(isinstance(environment, dict), "admitted Docker credential environment required")
+                try:
+                    confirm_absent(tag, environment=environment, runner=self.docker.runner)
+                except AbsenceError as error:
+                    raise RegistryError(str(error)) from error
                 return None
             raise RegistryError("registry tag resolution is indeterminate")
         metadata = decode_json(result.stdout)

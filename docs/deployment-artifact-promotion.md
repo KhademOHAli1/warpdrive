@@ -86,6 +86,15 @@ requires independent operator reconciliation before publication is allowed again
 history to bypass an unknown outcome. Registry policy must prevent external tag overwrites;
 immutable digest readback remains mandatory even when a candidate tag exists.
 
+Buildx can reduce a missing-tag HEAD response to plain `not found`. The shipping adapter
+confirms absence with a bounded registry V2 GET and requires the structured `MANIFEST_UNKNOWN`
+error; a generic 404, authentication error or transport failure holds publication. This read
+path supports GHCR over verified TLS and the owned loopback fixture. GHCR credentials come from
+the existing Docker configuration or configured credential helper; token realm, service and
+repository scope are fixed to GHCR. Credentials remain in memory and request headers, never
+command arguments, receipts or logs. The local fixture does not qualify GHCR authentication,
+permissions or provider durability.
+
 A late main or CI change holds final acceptance while preserving actual registry receipts.
 Registry candidates still carry `deploymentAuthorized: false`, unassessed compatibility and
 outstanding release/installation gates. Accepted-runtime retention, staging, compatible rollback,
