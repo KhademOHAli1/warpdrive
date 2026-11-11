@@ -87,8 +87,9 @@ runtime, wrong architecture, incomplete components or failed resource cleanup. I
 record deliberately retains unassessed compatibility and outstanding release/installation
 gates. It cannot authorize promotion. Non-PR runs also retain the tested images in one archive
 with checksums and short retention; PRs retain small diagnostic evidence rather than duplicate
-multi-gigabyte archives. Registry digests, attestation, retained accepted production references
-and promotion verification still need implementation.
+multi-gigabyte archives. [Candidate publication](deployment-artifact-promotion.md) binds that
+retained bundle to registry digest readback without rebuilding. It remains distinct from
+release attestation, accepted-production reference retention and deployment promotion.
 
 ## Capacity and failure handling
 
@@ -118,8 +119,8 @@ An unavailable command response leaves an unknown phase; it does not justify bli
 
 ## Remaining rollout boundaries
 
-This first increment does not implement the production deployment controller, registry
-promotion, populated-version upgrade coverage, complete authenticated final-image browser
+These image and candidate-publication increments do not implement the production deployment
+controller, staging promotion, populated-version upgrade coverage, complete authenticated final-image browser
 journeys, shutdown qualification, feature health UI, API extraction or installed off-host
 recovery. Those requirements remain part of phases 1–5 above. Existing full source CI, browser
 qualification, managed security findings, review and exact-main evidence remain required.
