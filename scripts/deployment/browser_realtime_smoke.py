@@ -29,11 +29,13 @@ sys.dont_write_bytecode = True
 
 try:
     from .bundle import load_bundle
+    from .component_inputs import content_hash as input_receipt_hash, load_receipt as load_input_receipt, verify_current as verify_current_inputs
     from .image_smoke import ImageSmoke, SmokeError, COMPONENTS, OWNER_LABEL, HEALTH_PROBE, sanitized_log, utc_now, validate_revision
     from .loopback_forwarder import owned_bridge_forwarder
     from .registry_smoke import IsolatedDocker
 except ImportError:
     from bundle import load_bundle
+    from component_inputs import content_hash as input_receipt_hash, load_receipt as load_input_receipt, verify_current as verify_current_inputs
     from image_smoke import ImageSmoke, SmokeError, COMPONENTS, OWNER_LABEL, HEALTH_PROBE, sanitized_log, utc_now, validate_revision
     from loopback_forwarder import owned_bridge_forwarder
     from registry_smoke import IsolatedDocker
@@ -42,19 +44,27 @@ LISTENER_PROBE = """import {connect} from 'node:net';await new Promise((resolve,
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_HARNESS = ("scripts/deployment/browser_realtime_smoke.py", "scripts/deployment/test_browser_realtime_smoke.py",
-                  "scripts/browser-realtime.mjs", "scripts/browser-realtime-fixture.mjs")
+                  "scripts/browser-realtime.mjs", "scripts/browser-realtime-fixture.mjs", "scripts/browser-operations.mjs")
 PHASES = {
     "initial-ready": {"nativeLogin": True, "realTicket": True, "realAuth": True, "userAndPipelineSubscribed": True, "unread": 0, "persistentMounts": True},
     "offline-refetch-settled": {"disconnectObserved": True, "bothNotificationQueriesCompleted": True, "inflight": 0},
     "offline-notice-hidden": {"unread": 0, "producedAfterDisconnectRefetch": True},
     "missed-notice-recovered": {"freshRealTicket": True, "realReauth": True, "userAndPipelineResubscribed": True, "unread": 1, "ackRefetchCompleted": True, "persistentMounts": True},
-    "complete": {"nativePasswordLogin": True, "persistentMounts": True, "missedNoticeRecovered": True, "liveRelayResumed": True, "unread": 2, "maxActiveSockets": 1, "pageErrors": 0},
+    "realtime-ready-for-operations": {"persistentMounts": True, "liveRelayResumed": True},
+    "operations-ready": {"nativeAdminLogin": True, "nativeAdminMfa": True, "realFactsRendered": True, "staleAndUnknown": True, "nullAgeNotZero": True, "recoveredIncident": True, "metadataOnlyReceipts": True},
+    "operations-denied": {"api403Both": True, "allPrivateSectionsHidden": True, "mountedDocuments": True},
+    "operations-restored": {"explicitRefreshBoth": True, "currentAdminReads": True, "noAutomaticRestoration": True, "boardRetained": True},
+    "complete": {"nativePasswordLogin": True, "persistentMounts": True, "missedNoticeRecovered": True, "liveRelayResumed": True, "unread": 2, "maxActiveSockets": 1, "pageErrors": 0, "operationsQualified": True},
 }
+OPERATIONS_FLAGS = {"nativeAdminPasswordLogin", "nativeAdminMfa", "realRepositoryFacts", "maintenanceFields", "staleAndUnknown",
+                    "sourceEnrollmentDistinction", "nullAgeNotZero", "recoveredIncident", "metadataOnlyReceipts",
+                    "mounted403HiddenBoth", "explicitRefreshRestoredBoth", "noAutomaticRestoration", "boardRetained"}
 LIMITATIONS = [
     "One synthetic nonadmin persistent browser tab on exact final images; no production deployment acceptance.",
-    "Native password login is exercised; MFA ceremony, public TLS/ingress and external providers are not qualified.",
+    "Native password and synthetic administrator TOTP enrollment/verification are exercised; installed SSO/MFA, public TLS/ingress, recovery-code storage and external providers are not qualified.",
     "Same-image realtime recovery only; old/new API compatibility, host failover and data recovery remain separate gates.",
     "Source-bound actual notification producer uses an owned database relay; no provider/email worker is started.",
+    "Separate synthetic native administrator tabs exercise real Operations reads; fenced test-only role mutations do not qualify administrator-management UI or installed monitoring.",
 ]
 
 
@@ -71,6 +81,21 @@ def admit_source(host, revision):
     if (host(["git", "status", "--porcelain", "--untracked-files=all"]).strip()
             or host(["git", "ls-files", "--others", "--", "src", "scripts", "patches", "deploy", "public"]).strip()):
         raise BrowserRealtimeError("Uncommitted fixture source cannot establish exact revision binding")
+
+
+def admit_bundle_source(root, directory, candidate, revision):
+    # The producer imports application code too. A quiet Git diff or harness-only
+    # check cannot prove those bytes when index optimization flags hide changes.
+    if candidate.get("schemaVersion") != 2:
+        raise BrowserRealtimeError("Current browser journeys require a Version2 source-input bundle")
+    receipt = load_input_receipt(Path(directory) / "component-inputs.json")
+    provenance = candidate.get("inputProvenance")
+    if (not isinstance(provenance, dict) or provenance.get("state") != "current-source-inputs-bound"
+            or provenance.get("receiptSha256") != input_receipt_hash(receipt)
+            or provenance.get("inputPolicySha256") != receipt.get("inputPolicySha256")):
+        raise BrowserRealtimeError("Browser input receipt differs from the retained candidate")
+    verify_current_inputs(root, receipt, expected_revision=revision)
+    return {"freshInputReceipt": True, "rawHeadBlobBinding": True}
 
 
 def admit_message(value):
@@ -97,16 +122,36 @@ def admit_profile(profile, environment):
                 "DISABLE_TELEMETRY": "true", "DISABLE_UPDATE_CHECK": "true", "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9"}
     if (not valid or any(environment.get(key) != value for key, value in required.items()) or environment.get("DATABASE_URL_FILE")
             or not re.fullmatch(r"[a-f0-9]{40}", str(profile.get("revision", "")))
-            or not str(profile.get("email", "")).endswith("@example.invalid") or len(str(profile.get("password", ""))) < 20):
+            or any(not isinstance(profile.get(key), str) or not profile[key].endswith("@example.invalid") for key in ("email", "adminEmail"))
+            or profile["email"] == profile["adminEmail"]
+            or any(not isinstance(profile.get(key), str) or len(profile[key]) < 20 for key in ("password", "adminPassword"))
+            or any(not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", str(profile.get(key, ""))) for key in ("actorId", "adminId", "pipelineId", "permissionId"))
+            or len({profile[key] for key in ("actorId", "adminId", "pipelineId", "permissionId")}) != 4):
         raise BrowserRealtimeError("Persistent browser/source fixture profile was not admitted")
+
+
+def admit_fixture_result(value, action, revision):
+    facts = {
+        "seed": {"nativePasswordIdentity": True, "nativeAdminPasswordIdentity": True, "forgedSession": False},
+        "offline": {"actualProducer": True, "notificationCount": 1, "emailEnabled": False},
+        "online": {"actualProducer": True, "notificationCount": 2, "emailEnabled": False},
+        "operations-seed": {"actualOperationsRepository": True, "enrolledSources": 2, "receipts": 4, "currentObservations": 4, "recoveredIncidents": 1},
+        "operations-revoke": {"committedAuthorityChange": True, "nativeMfaSession": True, "admin": False, "fixtureMutationOnly": True},
+        "operations-regrant": {"committedAuthorityChange": True, "nativeMfaSession": True, "admin": True, "fixtureMutationOnly": True},
+    }
+    expected = {"ok": True, "action": action, "sourceRevision": revision, **facts.get(action, {})}
+    if action not in facts or not isinstance(value, dict) or set(value) != set(expected) or any(type(value[key]) is not type(wanted) or value[key] != wanted for key, wanted in expected.items()):
+        raise BrowserRealtimeError("Complete secret-free source fixture result is required")
+    return value
 
 
 def admit_result(value, revision):
     keys = {"schemaVersion", "success", "revision", "nativePasswordLogin", "persistentDocumentAndMounts", "freshRealTicketAndAuth",
-            "missedNoticeRecoveredAfterAckRefetch", "resumedRealNotificationFrame", "unread", "maxActiveSockets", "metrics", "notificationFrameCount", "limitations"}
+            "missedNoticeRecoveredAfterAckRefetch", "resumedRealNotificationFrame", "unread", "maxActiveSockets", "metrics", "notificationFrameCount", "limitations", "operations"}
     flags = ("success", "nativePasswordLogin", "persistentDocumentAndMounts", "freshRealTicketAndAuth", "missedNoticeRecoveredAfterAckRefetch", "resumedRealNotificationFrame")
     metrics = value.get("metrics") if isinstance(value, dict) else None
     metric_names = {"pageErrors", "blockedRequests", "blockedWebSockets", "loginResponses", "ticketRequests", "ticketResponses", "mainNavigations", "notificationRequests"}
+    operations = value.get("operations") if isinstance(value, dict) else None
     if (not isinstance(value, dict) or set(value) != keys or type(value.get("schemaVersion")) is not int or value["schemaVersion"] != 1 or value.get("revision") != revision
             or any(value.get(key) is not True for key in flags) or type(value.get("unread")) is not int or value["unread"] != 2
             or type(value.get("maxActiveSockets")) is not int or value["maxActiveSockets"] != 1
@@ -114,6 +159,11 @@ def admit_result(value, revision):
             or not isinstance(metrics, dict) or set(metrics) != metric_names or any(type(number) is not int or number < 0 for number in metrics.values())
             or any(metrics[key] for key in ("pageErrors", "blockedRequests", "blockedWebSockets"))
             or metrics["loginResponses"] < 1 or metrics["ticketResponses"] < 2
+            or not isinstance(operations, dict) or set(operations) != OPERATIONS_FLAGS | {"forbiddenResponses", "readResponses", "regrantIdleWindowMs"}
+            or any(operations[key] is not True for key in OPERATIONS_FLAGS)
+            or type(operations["forbiddenResponses"]) is not int or operations["forbiddenResponses"] < 4
+            or type(operations["readResponses"]) is not int or operations["readResponses"] < 8
+            or type(operations["regrantIdleWindowMs"]) is not int or not 65000 <= operations["regrantIdleWindowMs"] <= 75000
             or not isinstance(value.get("limitations"), list) or not value["limitations"]):
         raise BrowserRealtimeError("Complete secret-free persistent browser recovery result is required")
     return value
@@ -165,7 +215,7 @@ class BrowserProcess:
                     raise BrowserRealtimeError("Persistent browser did not complete its bounded phase")
 
     def send(self, command):
-        if command not in {"offline", "offline-produced", "restart", "online-produced"}:
+        if command not in {"offline", "offline-produced", "restart", "online-produced", "operations-seeded", "operations-revoked", "operations-regranted"}:
             raise BrowserRealtimeError("Invalid browser coordination command")
         try:
             self.process.stdin.write(json.dumps({"command": command}) + "\n")
@@ -245,12 +295,17 @@ class BrowserRealtimeSmoke:
             if not path.is_file():
                 raise BrowserRealtimeError("Locked root application and browser dependencies must already be installed")
         loaded = load_bundle(self.bundle_dir, expected_revision=self.revision)
+        self.candidate = loaded["candidate"]
+        self.verify_source_inputs()
         images = {name: loaded["candidate"]["components"][name]["imageId"] for name in COMPONENTS}
         self.docker.run(["image", "load", "--input", str(loaded["archivePath"])], timeout=300)
         self.fixture = ImageSmoke(self.docker, images, self.output_dir / "fixture", self.revision)
         self.fixture.inspect_images()
         self.report["images"] = self.fixture.report["images"]
         return {"sourceRevisionBound": True, "exactFinalImages": True, "archiveSha256": loaded["provenance"]["archiveSha256"], "rebuilds": 0}
+
+    def verify_source_inputs(self):
+        return admit_bundle_source(ROOT, self.bundle_dir, self.candidate, self.revision)
 
     def setup(self):
         isolation = self.fixture.create_environment()
@@ -297,6 +352,7 @@ class BrowserRealtimeSmoke:
         browser_dir.mkdir(mode=0o700)
         self.profile = {"revision": self.revision, "baseUrl": base, "databasePort": database_port,
             "actorId": str(uuid.uuid4()), "pipelineId": str(uuid.uuid4()), "permissionId": str(uuid.uuid4()),
+            "adminId": str(uuid.uuid4()), "adminEmail": "operations-" + secrets.token_hex(8) + "@example.invalid", "adminPassword": secrets.token_urlsafe(32),
             "email": "realtime-" + secrets.token_hex(8) + "@example.invalid", "password": secrets.token_urlsafe(32),
             "pipelineName": "Browser Realtime Pipeline", "offlineTitle": "Realtime offline " + secrets.token_hex(6),
             "onlineTitle": "Realtime online " + secrets.token_hex(6), "outputDir": str(browser_dir.resolve())}
@@ -309,22 +365,20 @@ class BrowserRealtimeSmoke:
                 "workersStarted": 0, "dockerPublishedPorts": 0, "sameOriginRealtime": True}
 
     def produce(self, action):
+        if action not in {"seed", "offline", "online", "operations-seed", "operations-revoke", "operations-regrant"}:
+            raise BrowserRealtimeError("Unknown source fixture action")
         raw = self.host(["bun", "--no-env-file", str(ROOT / "scripts/browser-realtime-fixture.mjs"), action], environment=self.source_env, timeout=40)
         try:
             result = json.loads(raw)
         except ValueError as error:
             raise BrowserRealtimeError("Source fixture emitted invalid safe result") from error
-        if result.get("ok") is not True or result.get("action") != action or result.get("sourceRevision") != self.revision:
-            raise BrowserRealtimeError("Source fixture action was not proven")
-        if action != "seed" and (result.get("actualProducer") is not True or result.get("emailEnabled") is not False):
-            raise BrowserRealtimeError("Actual in-app-only notification production was not proven")
-        return result
+        return admit_fixture_result(result, action, self.revision)
 
     def seed(self):
         result = self.produce("seed")
         if result.get("forgedSession") is not False or result.get("nativePasswordIdentity") is not True:
             raise BrowserRealtimeError("Native password identity seed was not proven")
-        return {"sourceBoundNativePasswordIdentity": True, "forgedSession": False}
+        return {"sourceBoundNativePasswordIdentity": True, "sourceBoundNativeAdminPasswordIdentity": True, "forgedSession": False}
 
     def journey(self):
         environment = {**self.host_env, "BROWSER_REALTIME_PROFILE": str(self.profile_path)}
@@ -354,6 +408,8 @@ class BrowserRealtimeSmoke:
         self.browser.wait("missed-notice-recovered", 90)
         self.produce("online")
         self.browser.send("online-produced")
+        self.browser.wait("realtime-ready-for-operations", 60)
+        self.operations_journey()
         self.browser.wait("complete", 60)
         self.browser.finished()
         result = admit_result(json.loads((self.output_dir / "browser/browser.json").read_text()), self.revision)
@@ -363,7 +419,20 @@ class BrowserRealtimeSmoke:
                 raise BrowserRealtimeError("Browser journey changed an exact tested component image")
             self.fixture.assert_running(self.fixture.containers[name])
         return {"persistentNativeUiTab": True, "freshRealTicketAndAuth": True, "missedNoticeResynced": True,
-                "liveStreamResumed": True, "unread": result["unread"], "maxActiveSockets": result["maxActiveSockets"], "pageErrors": 0}
+                "liveStreamResumed": True, "unread": result["unread"], "maxActiveSockets": result["maxActiveSockets"], "pageErrors": 0,
+                "nativeOperationsAdminUi": True, "nativeAdminMfa": True, "mountedApi403Both": True,
+                "explicitRefreshRestoredBoth": True, "noAutomaticRestoration": True}
+
+    def operations_journey(self):
+        self.produce("operations-seed")
+        self.browser.send("operations-seeded")
+        self.browser.wait("operations-ready", 60)
+        self.produce("operations-revoke")
+        self.browser.send("operations-revoked")
+        self.browser.wait("operations-denied", 30)
+        self.produce("operations-regrant")
+        self.browser.send("operations-regranted")
+        self.browser.wait("operations-restored", 100)
 
     def cleanup(self):
         errors = []
@@ -387,11 +456,12 @@ class BrowserRealtimeSmoke:
                 self.check("isolated-tls-browser-and-database-profile", self.setup)
                 self.check("native-password-identity-no-forged-session", self.seed)
                 self.check("persistent-tab-reconnect-resync-and-live-notification", self.journey)
+                self.check("source-inputs-unchanged-after-browser", self.verify_source_inputs)
             except Exception as error:
                 self.report["failure"] = str(error) if isinstance(error, SmokeError) else type(error).__name__
                 secrets_to_mask = list(self.fixture.env.values()) if self.fixture is not None else []
                 if hasattr(self, "profile"):
-                    secrets_to_mask += [self.profile["password"], self.source_env["DATABASE_URL"]]
+                    secrets_to_mask += [self.profile["password"], self.profile["adminPassword"], self.source_env["DATABASE_URL"]]
                 self.report["diagnostics"] = {"containers": self.fixture.failure_diagnostics() if self.fixture is not None else [],
                     "browserStderr": sanitized_log("".join(self.browser.errors), secrets_to_mask) if self.browser is not None else None}
             finally:

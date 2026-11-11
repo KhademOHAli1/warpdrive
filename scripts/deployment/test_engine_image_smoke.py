@@ -83,12 +83,36 @@ class NonrootEntrypointTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertNotIn("synthetic-content", result.stdout + result.stderr)
 
-    def test_invalid_environment_key_fails_closed(self):
+    def test_invalid_enumerated_environment_key_fails_before_exec(self):
         with tempfile.TemporaryDirectory() as folder:
-            secret = Path(folder) / "secret"
-            secret.write_text("synthetic-content")
-            result = self.invoke({"LISTMONK_bad-key_FILE": str(secret)}, "sh", "-c", "exit 0")
+            # Some /bin/sh implementations discard invalid inherited names before
+            # running the script. Supply the actual enumeration boundary explicitly
+            # so every platform exercises the loader's rejection, not shell startup.
+            enumerator = Path(folder) / "env"
+            enumerator.write_text("#!/bin/sh\nprintf '%s\\n' 'LISTMONK_bad-key_FILE=/opaque-secret'\n")
+            enumerator.chmod(0o700)
+            marker = Path(folder) / "command-executed"
+            result = self.invoke({"PATH": folder + ":/usr/bin:/bin", "COMMAND_MARKER": str(marker)},
+                                 "sh", "-c", 'printf reached > "$COMMAND_MARKER"')
             self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "Newsletter secret file is missing, unreadable or invalid\n")
+            self.assertFalse(marker.exists())
+
+    def test_invalid_inherited_key_never_loads_or_exposes_its_file(self):
+        with tempfile.TemporaryDirectory() as folder:
+            secret = Path(folder) / "private-secret-path"
+            secret.write_text("synthetic-private-content")
+            result = self.invoke({"LISTMONK_bad-key_FILE": str(secret)},
+                                 "sh", "-c", 'printf "%s" "${LISTMONK_bad_key:-command-safe}"')
+            # Dash removes this inherited name; shells retaining it reach the
+            # loader's fixed rejection. Neither path can load/export its contents.
+            self.assertIn(result.returncode, (0, 1))
+            self.assertEqual(result.stdout, "command-safe" if result.returncode == 0 else "")
+            self.assertEqual(result.stderr, "" if result.returncode == 0 else
+                             "Newsletter secret file is missing, unreadable or invalid\n")
+            self.assertNotIn(str(secret), result.stdout + result.stderr)
+            self.assertNotIn("synthetic-private-content", result.stdout + result.stderr)
 
     def test_startup_never_invokes_user_or_ownership_tools(self):
         with tempfile.TemporaryDirectory() as folder:

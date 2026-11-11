@@ -40,7 +40,7 @@ success.
 | `ws_drain_smoke.py`                 | Authenticate a synthetic live session, subscribe and deliver a real relay event, require cooperative shutdown and exit zero, then authenticate and subscribe again after restarting the same image                                                        | Directly signed fixture tickets do not prove HTTP ticket issuance, login/MFA journeys, browser reconnection or offline replay    |
 | `web_switch_smoke.py`               | Real Caddy compare-and-swap rejection, rejected candidate preserving accepted traffic, same-version Web switching, idempotent readback and recovery after injected acknowledgement loss                                                                   | Same image/configuration/schema only; no old/new compatibility, automatic rollback, populated upgrade or production switch proof |
 | `drain_smoke.py --scenario overrun` | Expire a real blocked handler, retain its exact failed job/query identity through SIGTERM, release the query and restart to complete only the subsequently queued job                                                                                     | Expiry precedes shutdown; pool closure can itself hold the query, so this does not isolate callback-tracker causality            |
-| `browser_realtime_smoke.py`         | Native password login in a persistent Board/Bell tab, realtime-only restart, missed-notice recovery after fresh ticket/auth/subscription ACKs, then an actual live notification event                                                                     | Synthetic same-image journey; no MFA ceremony, cross-version compatibility or public ingress qualification                       |
+| `browser_realtime_smoke.py`         | Native password login in a persistent Board/Bell tab, realtime-only restart, missed-notice recovery after fresh ticket/auth/subscription ACKs, then an actual live notification event                                                                     | Synthetic same-image journey; no installed SSO/MFA, cross-version compatibility or public ingress qualification                  |
 
 The Web switch fixture retains the accepted Web instance and pins worker, realtime, PostgreSQL
 and Caddy container identities/restart counts. A background observer checks proxied traffic.
@@ -49,6 +49,15 @@ temporary storage; no anonymous volume is admitted. Owned host loopback relays r
 internal fixture ports without adding an external network. Admin requests use fixed paths,
 origin, body limits and timeouts. The rehearsal does not alter the production Caddyfile or
 newsletter ingress allowlist.
+
+The current browser qualifier also uses a separate synthetic administrator's actual password
+and TOTP enrollment/verification UI. Its mounted Maintenance and Logs tabs read real bounded
+Operations fixtures, observe API403 after a fenced role revocation, retain denial for a real
+65-second polling interval after regrant, and recover only after explicit Refresh. MFA keys,
+codes, cookies, raw API payloads and Playwright exception details are excluded from artifacts.
+Version2 input receipts are freshly resolved and checked against raw HEAD blobs before and
+after the journey. This additional journey requires its own hosted result; installed SSO/MFA,
+administrator management, provider delivery and installation monitoring remain separate gates.
 
 Runtime identity compares every executable, configuration, resource and mount field except
 the explicit slot hostname and operation label. Environment bindings compare independently

@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { createInterface } from "node:readline";
+import { qualifyOperations } from "./browser-operations.mjs";
 
 const profile = JSON.parse(readFileSync(process.env.BROWSER_REALTIME_PROFILE, "utf8"));
 const origin = new URL(profile.baseUrl);
@@ -15,6 +16,10 @@ if (
   !isAbsolute(profile.outputDir) ||
   !/^[a-f0-9]{40}$/.test(profile.revision || "") ||
   !profile.email?.endsWith("@example.invalid") ||
+  !profile.adminEmail?.endsWith("@example.invalid") ||
+  profile.adminEmail === profile.email ||
+  typeof profile.adminPassword !== "string" ||
+  profile.adminPassword.length < 20 ||
   typeof profile.password !== "string" ||
   profile.password.length < 20
 ) {
@@ -60,7 +65,7 @@ const successful = {};
 const deadline = setTimeout(() => {
   console.error('{"event":"browser.realtime.deadline"}');
   process.exit(2);
-}, 180000);
+}, 300000);
 function operations(request) {
   const url = new URL(request.url());
   if (!url.pathname.startsWith("/api/trpc/")) return [];
@@ -390,6 +395,26 @@ try {
     fullPage: false,
   });
   const observed = await observation();
+  stage = "operations-native-admin-qualification";
+  emit("realtime-ready-for-operations", { persistentMounts: true, liveRelayResumed: true });
+  await command("operations-seeded");
+  const operationsProof = await qualifyOperations({
+    browser,
+    profile,
+    base,
+    wsUrl,
+    metrics,
+    emit,
+    command,
+    until,
+    fail,
+    unchanged,
+  });
+  await unchanged();
+  fail(
+    metrics.pageErrors === 0 && metrics.blockedRequests === 0 && metrics.blockedWebSockets === 0,
+    "Operations browser error/isolation proof failed",
+  );
   const result = {
     schemaVersion: 1,
     success: true,
@@ -403,9 +428,11 @@ try {
     maxActiveSockets: observed.maxActive,
     metrics,
     notificationFrameCount: observed.notificationFrames,
+    operations: operationsProof,
     limitations: [
-      "Synthetic nonadmin password identity; no MFA ceremony or old/new release compatibility qualification.",
+      "Synthetic nonadmin realtime identity; old/new release compatibility remains unqualified.",
       "Self-signed isolated TLS fixture; no public ingress/provider acceptance.",
+      "Separate native administrator password/TOTP UI and test-only fenced role mutations qualify synthetic read revocation, not installed SSO/MFA, recovery-code storage, administrator-management UI or installed monitoring acceptance.",
     ],
   };
   writeFileSync(join(profile.outputDir, "browser.json"), JSON.stringify(result, null, 2) + "\n", {
@@ -419,6 +446,7 @@ try {
     unread: 2,
     maxActiveSockets: observed.maxActive,
     pageErrors: metrics.pageErrors,
+    operationsQualified: true,
   });
 } catch {
   writeFileSync(
