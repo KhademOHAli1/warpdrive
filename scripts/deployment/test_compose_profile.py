@@ -136,15 +136,46 @@ class ImageComposeProfileTest(unittest.TestCase):
                 self.assertEqual(model["services"][service]["image"], SYNTHETIC_ENV[variable])
 
     def test_service_env_paths_are_confined_to_the_empty_scratch_fixture(self) -> None:
-        model = self.model()
+        result = self.render()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        model = json.loads(result.stdout)
+        # v2 can resolve an empty service env file out of the rendered model while
+        # v5 retains env_file. Prove invocation confinement for both representations.
+        for flag, expected in (
+            ("--project-directory", self.directory),
+            ("--env-file", self.directory / "synthetic-interpolation.env"),
+        ):
+            self.assertEqual(result.args.count(flag), 1)
+            self.assertEqual(
+                Path(result.args[result.args.index(flag) + 1]).resolve(),
+                expected.resolve(),
+            )
+        self.assertNotIn(str(ROOT / ".env"), json.dumps(model))
         for service in ("app", "ws", "worker", "migrate", "createbuckets"):
             with self.subTest(service=service):
-                env_files = model["services"][service]["env_file"]
-                paths = [entry["path"] if isinstance(entry, dict) else entry for entry in env_files]
-                self.assertEqual(
-                    [Path(path).resolve() for path in paths],
-                    [self.service_env.resolve()],
-                )
+                rendered_service = model["services"][service]
+                if "env_file" in rendered_service:
+                    env_files = rendered_service["env_file"]
+                    paths = [
+                        entry["path"] if isinstance(entry, dict) else entry
+                        for entry in env_files
+                    ]
+                    self.assertEqual(
+                        [Path(path).resolve() for path in paths],
+                        [self.service_env.resolve()],
+                    )
+                else:
+                    # The only configured app environment entry comes from the base
+                    # Compose file; an empty fixture must introduce no other values.
+                    expected_environment = (
+                        {"AUTH_TRUSTED_PROXY_HEADER": "x-real-ip"}
+                        if service == "app"
+                        else {}
+                    )
+                    self.assertEqual(
+                        rendered_service.get("environment", {}),
+                        expected_environment,
+                    )
         self.assertEqual(self.service_env.read_text(encoding="utf-8"), "")
 
     def test_merge_preserves_ingress_stateful_services_auth_and_cold_start_gates(self) -> None:
