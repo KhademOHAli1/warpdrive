@@ -130,7 +130,12 @@ class AuthenticationTests(unittest.TestCase):
         (self.directory / "config.json").write_text(json.dumps(value))
 
     def auth(self):
-        self.config({"auths": {"ghcr.io": {"auth": base64.b64encode(("fixture-user:" + SECRET).encode()).decode()}}})
+        # Credential-bearing fixtures remain in memory. Filesystem tests below
+        # exercise the real reader with non-sensitive configuration only.
+        config = {"auths": {"ghcr.io": {"auth": base64.b64encode(("fixture-user:" + SECRET).encode()).decode()}}}
+        reader = patch.object(absence, "_docker_config", return_value=config)
+        reader.start()
+        self.addCleanup(reader.stop)
 
     def test_ghcr_bound_challenge_token_and_one_bearer_retry(self):
         self.auth()
@@ -147,6 +152,7 @@ class AuthenticationTests(unittest.TestCase):
         self.assertEqual(retry.full_url, initial.full_url)
         self.assertEqual(retry.get_header("Authorization"), "Bearer " + TOKEN)
         self.assertEqual(len(opener.calls), 3)
+        self.assertEqual(list(self.directory.iterdir()), [])
 
     def test_pull_push_scope_and_reordered_challenge_fields_stay_repository_bound(self):
         self.auth()
@@ -222,8 +228,12 @@ class AuthenticationTests(unittest.TestCase):
                 self.assertEqual(calls, [])
 
     def test_missing_invalid_or_nonregular_credentials_hold_without_network_retry(self):
-        for value in ({}, {"auths": {"ghcr.io": {"auth": "invalid!"}}}):
-            self.config(value)
+        self.config({})
+        opener = Opener(challenged())
+        with self.assertRaises(absence.AbsenceError):
+            absence.confirm_absent(TAG, environment=self.environment, opener=opener)
+        self.assertEqual(len(opener.calls), 1)
+        with patch.object(absence, "_docker_config", return_value={"auths": {"ghcr.io": {"auth": "invalid!"}}}):
             opener = Opener(challenged())
             with self.assertRaises(absence.AbsenceError):
                 absence.confirm_absent(TAG, environment=self.environment, opener=opener)
@@ -243,6 +253,44 @@ class AuthenticationTests(unittest.TestCase):
             opener = Opener(challenged(), *responses)
             with self.subTest(responses=responses), self.assertRaises(absence.AbsenceError):
                 absence.confirm_absent(TAG, environment=self.environment, opener=opener)
+
+
+class DockerConfigReaderTests(unittest.TestCase):
+    def setUp(self):
+        self.scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(self.scratch.cleanup)
+        self.directory = Path(self.scratch.name)
+        self.environment = {"DOCKER_CONFIG": str(self.directory)}
+
+    def test_real_regular_file_reader_preserves_safe_open_flags_and_nonsecret_json(self):
+        value = {"credsStore": "fixture-helper"}
+        (self.directory / "config.json").write_text(json.dumps(value))
+        actual_open = absence.os.open
+        with patch.object(absence.os, "open", wraps=actual_open) as opened:
+            self.assertEqual(absence._docker_config(self.environment), value)
+        flags = opened.call_args.args[1]
+        self.assertEqual(flags & getattr(os, "O_NOFOLLOW", 0), getattr(os, "O_NOFOLLOW", 0))
+        self.assertEqual(flags & getattr(os, "O_NONBLOCK", 0), getattr(os, "O_NONBLOCK", 0))
+
+    def test_oversized_malformed_duplicate_or_nonobject_files_are_rejected(self):
+        for text in (" " * (absence.MAX_BYTES + 1), "{invalid", "[]",
+                     '{"credsStore":"first","credsStore":"second"}'):
+            (self.directory / "config.json").write_text(text)
+            with self.subTest(length=len(text)), self.assertRaises(absence.AbsenceError):
+                absence._docker_config(self.environment)
+
+    def test_reader_refuses_symlink_and_nonregular_fifo_without_following_or_blocking(self):
+        target = self.directory / "harmless.json"
+        target.write_text("{}")
+        path = self.directory / "config.json"
+        path.symlink_to(target)
+        with self.assertRaises(absence.AbsenceError):
+            absence._docker_config(self.environment)
+        path.unlink()
+        os.mkfifo(path)
+        with self.assertRaises(absence.AbsenceError):
+            absence._docker_config(self.environment)
+        self.assertEqual(target.read_text(), "{}")
 
 
 if __name__ == "__main__":
