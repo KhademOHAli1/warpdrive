@@ -1,0 +1,228 @@
+{
+  "kind": "independent-source-review-of-intentional-fixture-plaintext",
+  "observedAt": "2026-11-12T02:56:29.214483+00:00",
+  "reviewer": "/root/queue_review",
+  "scope": [
+    "Current annotated Engine fixture sink for py/clear-text-storage-sensitive-data (#23 at source7062239)",
+    "Owned historical-image media HTTP transport diff versus cbe3a80a"
+  ],
+  "verdict": "No concrete blocker found in the scoped media transport diff. The generated-only engine-secret applicability conclusion remains valid at the current annotated source. Recovery conclusions remain historical at their prior pins; current peer recovery changes were not reviewed in this refresh.",
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "8fd841e75db709596fa24fa6f7e7adcc88429c92969974a3d23567c37191e1c3",
+    "scripts/deployment/test_engine_image_smoke.py": "8649e49f9481afb8fa24aa066848f5b85a297d21fa2023a270cbeb62118e95a8"
+  },
+  "method": {
+    "readOnly": true,
+    "testsRun": false,
+    "heavyTestsRun": false,
+    "dismissalsOrAnnotationsAppliedByReviewer": false,
+    "reviewOccurredAfterExistingEngineAnnotation": true,
+    "reviewedActualCallers": true,
+    "baselineCommit": "cbe3a80a",
+    "byteIdenticalSegmentsAgainstBaseline": {
+      "write_synthetic_secret": true,
+      "__init__": true,
+      "qualify": true
+    }
+  },
+  "findings": [
+    {
+      "alert": 23,
+      "path": "scripts/deployment/engine_image_smoke.py",
+      "sink": "write_synthetic_secret: payload.write(password)",
+      "callerTrace": [
+        "EngineImageSmoke.__init__ generates a new secrets.token_urlsafe(32) password; no CLI/environment/installation-password argument is accepted for it.",
+        "EngineImageSmoke.qualify admits native Linux/amd64 host and Docker daemon plus a real writable /dev/shm tmpfs mount before creating the secret fixture.",
+        "The sole non-unit call passes self.pg_env[POSTGRES_PASSWORD] to the helper in its new TemporaryDirectory. All other references are synthetic unit controls.",
+        "Engine commands replace the direct password with a deliberately wrong fixture value and bind the exact secret inode readonly at /run/engine-db-password to qualify the real _FILE loader."
+      ],
+      "fileAuthority": [
+        "Owned real directory with exact0700 mode",
+        "Exclusive no-follow regular-file creation,0600 mode before any payload byte",
+        "Flush then0444 for nonroot image read, with private0700 host parent retained",
+        "No disk fallback from admitted tmpfs"
+      ],
+      "artifactAndCleanup": [
+        "Secret path is outside output_dir; engine evidence artifact upload selects production-engine output only.",
+        "Inherited diagnostics redact the generated password via POSTGRES_PASSWORD and sensitive environment values; raw runtime environment is not retained.",
+        "Owned Docker resources are removed before TemporaryDirectory cleanup; cleanup errors make report.success false.",
+        "No registry publication or live deployment credential input is present in this workflow."
+      ],
+      "intrinsicBoundary": "The real _FILE loader must receive the actual password bytes. Encrypting/substituting that mounted payload would stop testing this file-secret contract. This does not imply plaintext filesystem storage is required for every possible credential API.",
+      "priorAlertIdentity": 21,
+      "reviewState": "Current annotated Engine source only; inherited generated-password caller and lifecycle segments byte-identical to baseline."
+    }
+  ],
+  "annotationConditions": [
+    "Exactly one inline annotation for py/clear-text-storage-sensitive-data per intentional sink, with an adjacent source-linked rationale; no whole-file/query/workflow exclusion or alert dismissal.",
+    "Keep source-to-sink dataflow visible. Do not rename, encode or indirect inputs merely to evade analysis.",
+    "Retain generated-only caller scope, private file authority, separate artifact roots, redacted diagnostics and failure-sensitive cleanup; re-review any new caller or external credential/source input.",
+    "Keep existing CodeQL categories, all-severity dependency audit, blocking high/critical-security/error criteria and paginated finding reader unchanged.",
+    "An annotation is still a real narrowing of scanner coverage at that generic sink. Review and test new flows rather than assuming this annotation proves them safe.",
+    "Re-run actual CodeQL on the exact changed source and inspect current named-ref findings; this review itself does not resolve existing GitHub alerts or establish a clean security gate."
+  ],
+  "residualLimits": [
+    "Generated test credentials are still plaintext while in use. Host root and the same OS user can inspect process/filesystem/container state.",
+    "tmpfs is not a no-swap guarantee; engine report correctly leaves swapPolicyAttested false. Recovery test temporary files may use disk.",
+    "Unlink/TemporaryDirectory cleanup is not secure erasure. SIGKILL/host failure can bypass Python finally blocks; ephemeral runner teardown is an additional lifecycle boundary, not installed secret-custody proof.",
+    "Helpers accept general bytes/strings and cannot prove random provenance by type alone; the generated-only conclusion is based on all inspected current callers and their pinned sources.",
+    "No new runtime, live Docker, crypto, cleanup or CodeQL run was executed by this read-only review."
+  ],
+  "canonicalAcceptanceClaim": false,
+  "securityGateCleanClaim": false,
+  "refreshedAt": "2026-11-12T02:56:29.214483+00:00",
+  "refreshReview": {
+    "reason": "Independent refresh before media-transport integration and exception hash-guard update.",
+    "reviewOccurredAfterOneEngineAnnotation": true,
+    "noFabricatedUnannotatedCurrentPin": true,
+    "currentSourcePinsCoverOnly": [
+      "scripts/deployment/engine_image_smoke.py",
+      "scripts/deployment/test_engine_image_smoke.py"
+    ],
+    "baselineFunctionSegmentsUnchanged": {
+      "write_synthetic_secret": true,
+      "__init__": true,
+      "qualify": true
+    },
+    "mediaTransportFindings": [
+      "Request uses a fixed POST /api/media endpoint at127.0.0.1:9000 inside the ownership-checked historical container; no new configurable host, proxy, redirect, external endpoint or credential input.",
+      "Generated Basic authorization is regex/size checked; generated boundary and fixed synthetic PNG enter bounded binary stdin. Shell script and argv are fixed and contain no credential or payload interpolation.",
+      "Shared Docker wrapper admits only bytes<=8192 and uses binary subprocess I/O; nc response is capped by head at16385 bytes before host buffering, then parser enforces16384 total,4096 header,8192 decoded body and finite header/chunk counts.",
+      "Parser rejects ambiguous duplicate framing, simultaneous Content-Length/Transfer-Encoding, unsupported transfer coding/extensions/trailers, truncated/extra bytes, invalid headers/status and malformed chunk terminators.",
+      "Only HTTP200 can continue; JSON/filename is bounded and exact uploaded PNG bytes must still match the owned media read. Exceptions and reports retain finite phase/status, not raw HTTP bodies or Basic values.",
+      "Pipeline success alone is insufficient and nc failures may be masked by the last pipeline command, but a missing/malformed response cannot pass; the existing parsed200 response plus actual media-byte witness remains the acceptance condition.",
+      "Actual BusyBox nc availability/duplex behavior and old-image HTTP response compatibility still require native final-image qualification; no such run was performed by this source review."
+    ],
+    "generatedOnlySecretScopeChanged": false,
+    "newArtifactOrCleanupScope": false,
+    "actionableBlockerFound": false,
+    "recoveryPeerSourcesNotRefreshed": {
+      "scripts/deployment/test_recovery.py": {
+        "historicalReviewedSha256": "e125145e5c0dacb0dca8f9b946168ea69aa8c7bc0fa4e02e56e58af8105025d9",
+        "currentObservedSha256": "8cdea435955bcf53d2040c260cfe0c47ff3ec504bb12b4fb547eda0d40bd4fef"
+      },
+      "scripts/deployment/recovery.py": {
+        "historicalReviewedSha256": "4b252deb3800845b625866d451fe9c2a7c2642e7780960c44fefc8ef65a8adae",
+        "currentObservedSha256": "a0744c9b4a28e34190820b6e08d5b2dc17847b45a6695a01d7dd43563923410b"
+      }
+    },
+    "securityGateCleanClaim": false,
+    "canonicalAcceptanceClaim": false
+  },
+  "reviewHistory": [
+    {
+      "observedAt": "2026-11-12T01:36:57.263912+00:00",
+      "refreshedAt": "2026-11-12T01:42:23.116453+00:00",
+      "scope": [
+        "CodeQL #21 py/clear-text-storage-sensitive-data engine fixture sink",
+        "CodeQL #22 py/clear-text-storage-sensitive-data recovery test helper sink"
+      ],
+      "verdict": "Current inspected flows are generated fixture data; narrow query-specific annotation is defensible under the listed conditions. This is a scanner exception assessment, not a clean finding gate or canonical acceptance.",
+      "sourceSha256": {
+        "scripts/deployment/engine_image_smoke.py": "255ab66cb2194d4e5de8a18a352fd35519499e771e655423dd89e573459333f8",
+        "scripts/deployment/test_engine_image_smoke.py": "ce25d69adbbe04bfcef3bc92ee33aa23946d3630e47f33d6cde06dc64f8f95b3",
+        "scripts/deployment/test_recovery.py": "e125145e5c0dacb0dca8f9b946168ea69aa8c7bc0fa4e02e56e58af8105025d9",
+        "scripts/deployment/recovery.py": "4b252deb3800845b625866d451fe9c2a7c2642e7780960c44fefc8ef65a8adae",
+        "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
+        ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417",
+        ".github/workflows/recovery-qualification.yml": "fc8f5de02b386d776161e471b5fbd6ddfa86a3f18fdd7593d8a8d17fac9a19ac"
+      },
+      "method": {
+        "readOnly": true,
+        "heavyTestsRun": false,
+        "dismissalsOrAnnotationsApplied": false,
+        "reviewedActualCallers": true
+      },
+      "findings": [
+        {
+          "alert": 21,
+          "path": "scripts/deployment/engine_image_smoke.py",
+          "sink": "write_synthetic_secret: payload.write(password)",
+          "callerTrace": [
+            "EngineImageSmoke.__init__ generates a new secrets.token_urlsafe(32) password; no CLI/environment/installation-password argument is accepted for it.",
+            "EngineImageSmoke.qualify admits native Linux/amd64 host and Docker daemon plus a real writable /dev/shm tmpfs mount before creating the secret fixture.",
+            "The sole non-unit call passes self.pg_env[POSTGRES_PASSWORD] to the helper in its new TemporaryDirectory. All other references are synthetic unit controls.",
+            "Engine commands replace the direct password with a deliberately wrong fixture value and bind the exact secret inode readonly at /run/engine-db-password to qualify the real _FILE loader."
+          ],
+          "fileAuthority": [
+            "Owned real directory with exact0700 mode",
+            "Exclusive no-follow regular-file creation,0600 mode before any payload byte",
+            "Flush then0444 for nonroot image read, with private0700 host parent retained",
+            "No disk fallback from admitted tmpfs"
+          ],
+          "artifactAndCleanup": [
+            "Secret path is outside output_dir; engine evidence artifact upload selects production-engine output only.",
+            "Inherited diagnostics redact the generated password via POSTGRES_PASSWORD and sensitive environment values; raw runtime environment is not retained.",
+            "Owned Docker resources are removed before TemporaryDirectory cleanup; cleanup errors make report.success false.",
+            "No registry publication or live deployment credential input is present in this workflow."
+          ],
+          "intrinsicBoundary": "The real _FILE loader must receive the actual password bytes. Encrypting/substituting that mounted payload would stop testing this file-secret contract. This does not imply plaintext filesystem storage is required for every possible credential API."
+        },
+        {
+          "alert": 22,
+          "path": "scripts/deployment/test_recovery.py",
+          "sink": "put: os.write(descriptor, value[offset:])",
+          "callerTrace": [
+            "Fixture constructs its own TemporaryDirectory, local source members, synthetic configuration, random plaintext marker and two newly generated restic password files.",
+            "All put callsites use literals, newly generated secrets.token_hex values, or file bytes read from that same owned fake snapshot; negative DNS/URI inputs remain synthetic observer fixtures.",
+            "RealResticDescriptorTests and RealResticTests use only those temporary source/key/repository/restore paths. Environment input selects a restic executable/opt-in flag, not a key, source-data file or remote repository.",
+            "Recovery Command replaces inherited environment with an allowlist; restic --repo and --password-file are explicit generated local fixture paths. No ambient RESTIC_PASSWORD or provider credential is inherited."
+          ],
+          "fileAuthority": [
+            "Absolute descriptor walk with O_NOFOLLOW for each ancestor",
+            "At least one owned0700 private ancestor required",
+            "Leaf must be owned single-link regular file, no-follow/nonblocking open",
+            "Existing inode is restricted to0600 before truncation or payload write; key writes retain0600"
+          ],
+          "artifactAndCleanup": [
+            "The real workflow keeps fixtures/results under private and uploads only reports, with sanitized diagnostics.",
+            "Fixture.close removes the entire temporary tree and asserts absence; workflow tracks descendant processes, requires fixture emptiness and cleanup, and retains no plaintext source/key artifact.",
+            "The encryption test deliberately scans actual repository bytes for the random source marker, verifies restore, wrong-key failure and tamper rejection.",
+            "This is local synthetic cryptographic/descriptor qualification; it proves neither off-host custody nor restored installed application acceptance."
+          ],
+          "intrinsicBoundary": "A plaintext source marker is necessary to test that real file backup encrypts that marker and restores identical bytes. Real restic reads the generated password via the adapter\u2019s explicitly qualified password-file contract. Using generated fixtures rather than installation secrets is the relevant scope boundary."
+        }
+      ],
+      "refreshReview": {
+        "reason": "Parent requested refresh after recovery preflight/failure-fact source freeze; earlier recovery-test/workflow pins were stale.",
+        "changedSources": {
+          "scripts/deployment/test_recovery.py": {
+            "previous": "ea23a1793fb4738853b4d46edb2bca740167c9520a977484d5ff4ca2c9b78ff1",
+            "current": "e125145e5c0dacb0dca8f9b946168ea69aa8c7bc0fa4e02e56e58af8105025d9"
+          },
+          ".github/workflows/recovery-qualification.yml": {
+            "previous": "47c42fed6cf961d2ea1408d106dc8d0dc4ce071ddd6f9706634aa499b4754cc5",
+            "current": "fc8f5de02b386d776161e471b5fbd6ddfa86a3f18fdd7593d8a8d17fac9a19ac"
+          }
+        },
+        "putCallsitesReviewed": 27,
+        "sinkImplementationChanged": false,
+        "newInstallationSecretOrExternalRepositoryInputs": false,
+        "observations": [
+          "Recovery put implementation remains the reviewed descriptor/nofollow/singlelink/mode-beforewrite helper; all callsites still use literal/random or owned snapshot fixture bytes.",
+          "New finite diagnostic controls use only generated marker literals, owned temporary result paths and a dynamically assembled synthetic unittest module; no user secret or installation endpoint is introduced.",
+          "Descriptor preflight records only booleans/finite facts; it now parses an exact same-record JSON restore-root error for the generated /proc/self/fd locator and does not equate a failed restore with an empty target.",
+          "StderrObservedCommand observes at most64KiB in memory around the real unchanged Command path; no raw stream enters probeFacts.",
+          "Workflow runner retains sanitized failureFacts/probeFacts on success and failure; generated private fixture files/results stay separate from the reports-only artifact upload.",
+          "Engine fixture, helper tests, production recovery adapter, shared image diagnostics and engine workflow hashes are unchanged from the prior read-only review."
+        ],
+        "verdict": "Prior conditional intentional-fixture-only applicability verdict remains valid for these refreshed exact sources.",
+        "annotationsPresentAtReview": false,
+        "testsRunForThisRefresh": false,
+        "canonicalAcceptanceClaim": false,
+        "securityGateCleanClaim": false
+      },
+      "historicalOnly": true,
+      "annotationPresentDuringThatReview": false,
+      "reasonPreserved": "Independent source review before the engine-only annotation, including subsequent recovery diagnostic refresh; these are real historical pins, not reconstructed annotated-source pins."
+    }
+  ],
+  "currentAnnotations": {
+    "engineQuery": "py/clear-text-storage-sensitive-data",
+    "engineCount": 1,
+    "recoveryCount": 0,
+    "annotationUnchangedFromBaseline": true,
+    "adjacentRationaleReference": "docs/deployment-evidence/fixture-codeql-exception-20261112.json",
+    "appliedByThisReviewer": false
+  }
+}

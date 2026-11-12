@@ -4,8 +4,8 @@
   "queryId": "py/clear-text-storage-sensitive-data",
   "annotatedPath": "scripts/deployment/engine_image_smoke.py",
   "sourceSha256": {
-    "scripts/deployment/engine_image_smoke.py": "cb76d0ddf6a5084108fefa6f7ef7683cf8a56c35bb585269dee630fd80dec40e",
-    "scripts/deployment/test_engine_image_smoke.py": "ce25d69adbbe04bfcef3bc92ee33aa23946d3630e47f33d6cde06dc64f8f95b3",
+    "scripts/deployment/engine_image_smoke.py": "8fd841e75db709596fa24fa6f7e7adcc88429c92969974a3d23567c37191e1c3",
+    "scripts/deployment/test_engine_image_smoke.py": "8649e49f9481afb8fa24aa066848f5b85a297d21fa2023a270cbeb62118e95a8",
     "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
     ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
   },
@@ -16,12 +16,11 @@
     "severity": "high/error"
   },
   "independentReview": {
-    "path": "docs/deployment-evidence/fixture-plaintext-review-20261112.json",
-    "sha256": "525752ea48b56ab5747903fbf8175c3a321da140f58690d15aa75c6d3b43fd8c",
+    "path": "docs/deployment-evidence/fixture-engine-transport-review-20261112.json",
+    "sha256": "d18a7e964db7107b10d75a41faec1f8c5944bc8fa01d401f0394f19e167f589d",
     "reviewer": "/root/queue_review",
-    "scope": "Independent process/source review of current generated-only callers; not human acceptance or cryptographic reviewer authentication."
+    "scope": "Independent current annotated engine/caller and binary HTTP transport review; unchanged shared sources retain prior reviewed history. No human/canonical/security-gate acceptance."
   },
-  "commentOnlyChangeFromReviewedEngineSha256": "255ab66cb2194d4e5de8a18a352fd35519499e771e655423dd89e573459333f8",
   "rationale": [
     "The mounted plaintext is required by the real nonroot _FILE loader contract; its password is generated internally for an owned isolated database, never supplied by a deployment/user credential argument.",
     "Native host/daemon and writable tmpfs admission precede creation. The owned parent is0700; exclusive nofollow file creation is0600 before payload and0444 only for readonly nonroot container access.",
@@ -36,5 +35,6 @@
   ],
   "syntaxReference": "https://codeql.github.com/docs/codeql-overview/codeql-changelog/codeql-cli-2.12.0/",
   "securityGateCleanClaim": false,
-  "canonicalAcceptanceClaim": false
+  "canonicalAcceptanceClaim": false,
+  "initialUnannotatedEngineSourceSha256": "255ab66cb2194d4e5de8a18a352fd35519499e771e655423dd89e573459333f8"
 }

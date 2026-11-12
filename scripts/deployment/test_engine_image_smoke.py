@@ -1,5 +1,6 @@
 """Loader/qualification guards only; final Linux containers require native CI."""
 from pathlib import Path
+import base64
 import importlib.util
 import gzip
 import io
@@ -493,37 +494,66 @@ class SyntheticSecretStorageTests(unittest.TestCase):
 
 
 class HistoricalMediaTransportTests(unittest.TestCase):
+    def response(self, body=None, status=200, chunked=False):
+        body = json.dumps({"data": {"filename": "fixture.png"}}).encode() if body is None else body
+        if chunked:
+            framing = b"Transfer-Encoding: chunked"
+            body = f"{len(body):x}\r\n".encode() + body + b"\r\n0\r\n\r\n"
+        else:
+            framing = f"Content-Length: {len(body)}".encode()
+        return f"HTTP/1.1 {status} fixture\r\n".encode() + framing + b"\r\n\r\n" + body
+
     def fixture(self):
         value = object.__new__(smoke.EngineImageSmoke)
         value.serve = SimpleNamespace(name="owned-historical-engine")
         value.report = {}
-        value.auth = {"Authorization": "Basic synthetic-api-header"}
+        value.auth = {"Authorization": "Basic " + base64.b64encode(b"consent-proof-api:synthetic-token").decode()}
         value.owned = Mock()
         value.media_bytes = Mock(return_value=smoke.UPGRADE_PNG)
-        def result(arguments, **options):
-            if arguments[:2] == ["exec", "--interactive"]:
-                return subprocess.CompletedProcess(arguments, 0, b"", b"")
-            return subprocess.CompletedProcess(arguments, 0, json.dumps({"data": {"filename": "fixture.png"}}), "")
-        value.docker = SimpleNamespace(run=Mock(side_effect=result))
+        value.docker = SimpleNamespace(run=Mock(return_value=subprocess.CompletedProcess([], 0, self.response(), b"")))
         return value
 
-    def test_staging_uses_owned_fixed_target_and_binary_stdin_without_daemon_copy(self):
+    def test_fixed_loopback_binary_stdin_and_prebuffer_response_cap_preserve_full_png(self):
         value = self.fixture()
-        body = b"\x00\xff$(not-shell-code)\r\n"
-        value.stage_old_media_body(body)
+        self.assertEqual(value.upload_old_media(), "fixture.png")
         value.owned.assert_called_once_with("owned-historical-engine")
-        value.docker.run.assert_called_once_with(["exec", "--interactive", "owned-historical-engine", "sh", "-ec",
-            "umask 077; cat > /tmp/upgrade-upload.body"], input_bytes=body, timeout=10, check=False)
+        call = value.docker.run.call_args
+        self.assertEqual(call.args[0], ["exec", "--interactive", "owned-historical-engine", "sh", "-ec",
+            "nc -w 5 127.0.0.1 9000 2>/dev/null | head -c 16385"])
+        self.assertIn(f"head -c {smoke.MEDIA_RESPONSE_LIMIT + 1}", call.args[0][-1])
+        self.assertEqual(call.kwargs["timeout"], 10)
+        self.assertIs(call.kwargs["check"], False)
+        request = call.kwargs["input_bytes"]
+        self.assertIsInstance(request, bytes)
+        header, body = request.split(b"\r\n\r\n", 1)
+        self.assertTrue(header.startswith(b"POST /api/media HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n"))
+        self.assertIn(b"Connection: close\r\n", header)
+        self.assertIn(f"Content-Length: {len(body)}".encode(), header)
+        self.assertIn(value.auth["Authorization"].encode(), header)
+        self.assertIn(smoke.UPGRADE_PNG, body)
+        self.assertIn(b"\x00", body)
+        boundary = header.split(b"boundary=", 1)[1].split(b"\r\n", 1)[0]
+        self.assertTrue(body.endswith(b"\r\n--" + boundary + b"--\r\n"))
+        self.assertLess(body.find(b"\x00"), len(body) - len(boundary) - 8)
+        self.assertNotIn("synthetic-token", str(call.args))
+        self.assertNotIn(value.auth["Authorization"], str(call.args))
+        self.assertNotIn("--post-file", str(call.args))
+        self.assertLessEqual(len(request), smoke.MEDIA_REQUEST_LIMIT)
 
-    def test_empty_oversized_or_nonbinary_staging_rejects_before_control(self):
+    def test_request_header_injection_or_oversize_rejects_before_control(self):
+        for authorization in ("Basic value\r\nInjected: private", "Bearer private", "Basic " + "A" * 2049, None):
+            value = self.fixture()
+            value.auth["Authorization"] = authorization
+            with self.subTest(authorization=authorization is None), self.assertRaises(smoke.SmokeError):
+                value.upload_old_media()
+            value.owned.assert_not_called()
+            value.docker.run.assert_not_called()
         value = self.fixture()
-        for body in (b"", b"x" * 8193, "not binary"):
-            with self.subTest(kind=type(body).__name__), self.assertRaises(smoke.SmokeError):
-                value.stage_old_media_body(body)
-        value.owned.assert_not_called()
+        with patch.object(smoke, "UPGRADE_PNG", b"x" * smoke.MEDIA_REQUEST_LIMIT), self.assertRaises(smoke.SmokeError):
+            value.upload_old_media()
         value.docker.run.assert_not_called()
 
-    def test_failed_staging_stops_before_authenticated_upload_and_keeps_safe_subphase(self):
+    def test_failed_transport_never_retains_body_credentials_or_raw_errors(self):
         for failure in (subprocess.CompletedProcess([], 1, b"synthetic-sensitive-output", b"synthetic-sensitive-output"),
                         smoke.SmokeError("transport synthetic-sensitive-output")):
             value = self.fixture()
@@ -531,39 +561,93 @@ class HistoricalMediaTransportTests(unittest.TestCase):
             with self.subTest(failure=type(failure).__name__), self.assertRaises(smoke.SmokeError) as raised:
                 value.upload_old_media()
             self.assertNotIn("synthetic-sensitive-output", str(raised.exception))
-            self.assertEqual(value.report["supportedOldUpgradePhase"], "media-payload-staging")
+            self.assertEqual(value.report["supportedOldUpgradePhase"], "media-api-upload")
             self.assertEqual(value.docker.run.call_count, 1)
             value.media_bytes.assert_not_called()
 
-    def test_actual_api_upload_and_exact_binary_media_check_remain_required(self):
+    def test_actual_api_response_and_exact_binary_media_check_remain_required(self):
         value = self.fixture()
         self.assertEqual(value.upload_old_media(), "fixture.png")
-        self.assertEqual(value.docker.run.call_count, 2)
-        staging, upload = value.docker.run.call_args_list
-        body = staging.kwargs["input_bytes"]
-        self.assertIn(smoke.UPGRADE_PNG, body)
-        self.assertIn(b'filename="fixture.png"', body)
-        self.assertFalse(any(call.args[0][0] == "cp" for call in value.docker.run.call_args_list))
-        self.assertEqual(upload.args[0][-1], "http://127.0.0.1:9000/api/media")
-        self.assertIn("--post-file", upload.args[0])
-        self.assertIn("Authorization: Basic synthetic-api-header", upload.args[0])
-        self.assertEqual(upload.kwargs, {"timeout": 10, "check": False})
+        self.assertEqual(value.docker.run.call_count, 1)
         value.media_bytes.assert_called_once_with("fixture.png")
         self.assertEqual(value.report["supportedOldUpgradePhase"], "media-byte-verification")
-        self.assertNotIn("synthetic-api-header", json.dumps(value.report))
+        self.assertEqual(value.report["supportedOldMediaHttpStatus"], 200)
+        self.assertNotIn(value.auth["Authorization"], json.dumps(value.report))
+        value = self.fixture()
+        value.docker.run.return_value.stdout = self.response(chunked=True)
+        self.assertEqual(value.upload_old_media(), "fixture.png")
 
     def test_api_failure_or_changed_media_cannot_qualify(self):
         value = self.fixture()
-        value.docker.run.side_effect = [subprocess.CompletedProcess([], 0, b"", b""),
-                                       subprocess.CompletedProcess([], 1, "private response", "private response")]
-        with self.assertRaisesRegex(smoke.SmokeError, "API upload did not succeed"):
+        value.docker.run.return_value.stdout = self.response(b"private diagnostic body", status=403)
+        with self.assertRaisesRegex(smoke.SmokeError, r"upload rejected \(status 403\)") as raised:
             value.upload_old_media()
+        self.assertNotIn("private diagnostic body", str(raised.exception))
+        self.assertNotIn("private diagnostic body", json.dumps(value.report))
+        self.assertEqual(value.report["supportedOldMediaHttpStatus"], 403)
         self.assertEqual(value.report["supportedOldUpgradePhase"], "media-api-upload")
         value.media_bytes.assert_not_called()
         value = self.fixture()
         value.media_bytes.return_value = b"changed binary media"
         with self.assertRaisesRegex(smoke.SmokeError, "preserve exact uploaded bytes"):
             value.upload_old_media()
+
+    def test_bad_json_filename_or_framing_never_reaches_the_media_read(self):
+        for raw in (self.response(b"private-not-json"), self.response(b'{"data":{"filename":"../escape"}}'),
+                    self.response(b'{"data":{"filename":true}}'), b"private malformed HTTP",
+                    self.response(b"[" * 1500 + b"]" * 1500)):
+            value = self.fixture()
+            value.docker.run.return_value.stdout = raw
+            with self.subTest(prefix=raw[:12]), self.assertRaises(smoke.SmokeError) as raised:
+                value.upload_old_media()
+            self.assertNotIn("private", str(raised.exception))
+            value.media_bytes.assert_not_called()
+
+
+class BoundedMediaHttpTests(unittest.TestCase):
+    def test_content_length_and_bounded_chunked_controls(self):
+        response = HistoricalMediaTransportTests().response
+        body = b'{"data":{"filename":"fixture.png"}}'
+        self.assertEqual(smoke.parse_media_http_response(response(body)), (200, body))
+        self.assertEqual(smoke.parse_media_http_response(response(body, chunked=True)), (200, body))
+        split = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n2\r\n{}\r\n1\r\n \r\n0\r\n\r\n"
+        self.assertEqual(smoke.parse_media_http_response(split), (200, b"{} "))
+
+    def test_framing_duplicates_conflicts_truncation_or_missing_length_reject(self):
+        for raw in (
+            b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Length: 2\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nTransfer-Encoding: chunked\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\ntransfer-encoding: chunked\r\n\r\n0\r\n\r\n",
+            b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\nContent-Length: 1\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\nContent-Length: 02\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\nContent-Length: +2\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\n\r\n{}",
+            b"HTTP/1.1 999 private\r\nContent-Length: 0\r\n\r\n",
+            b"HTTP/1.1 200 OK\r\n Content-Length: 2\r\n\r\n{}",
+            b"HTTP/1.1 200 OK\r\nContent-Length: 2\nInjected: private\r\n\r\n{}",
+        ):
+            with self.subTest(raw=raw[:30]), self.assertRaises(smoke.SmokeError):
+                smoke.parse_media_http_response(raw)
+
+    def test_chunk_errors_extensions_trailers_oversize_or_excess_count_reject(self):
+        header = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n"
+        for body in (b"zz\r\nx\r\n0\r\n\r\n", b"2\r\nx\r\n0\r\n\r\n", b"1;ignored\r\nx\r\n0\r\n\r\n",
+                     b"1\r\nx\r\n0\r\nX-Trailer: private\r\n\r\n", b"0\r\n\r\nextra", b"10000000\r\n",
+                     b"1\r\nx\r\n" * 128 + b"0\r\n\r\n"):
+            with self.subTest(prefix=body[:20]), self.assertRaises(smoke.SmokeError):
+                smoke.parse_media_http_response(header + body)
+        with self.assertRaises(smoke.SmokeError):
+            smoke.parse_media_http_response(header.replace(b"chunked", b"gzip") + b"0\r\n\r\n")
+
+    def test_response_header_and_decoded_body_budgets_reject(self):
+        response = HistoricalMediaTransportTests().response
+        for raw in (b"x" * (smoke.MEDIA_RESPONSE_LIMIT + 1),
+                    b"HTTP/1.1 200 OK\r\nX-Padding: " + b"x" * smoke.MEDIA_HEADER_LIMIT + b"\r\nContent-Length: 0\r\n\r\n",
+                    response(b"x" * (smoke.MEDIA_BODY_LIMIT + 1)),
+                    response(b"x" * (smoke.MEDIA_BODY_LIMIT + 1), chunked=True)):
+            with self.subTest(length=len(raw)), self.assertRaises(smoke.SmokeError):
+                smoke.parse_media_http_response(raw)
 
 
 class SupportedOldAdmissionTests(unittest.TestCase):

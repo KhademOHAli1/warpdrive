@@ -48,15 +48,27 @@ class FixtureSecretExceptionTests(unittest.TestCase):
         self.assertIs(review["securityGateCleanClaim"], False)
         self.assertIs(review["canonicalAcceptanceClaim"], False)
         witness = review["independentReview"]
-        self.assertEqual(witness["path"], "docs/deployment-evidence/fixture-plaintext-review-20261112.json")
+        self.assertIn(witness["path"], {
+            "docs/deployment-evidence/fixture-plaintext-review-20261112.json",
+            "docs/deployment-evidence/fixture-engine-transport-review-20261112.json",
+        })
         prior = json.loads(pinned_source(ROOT / witness["path"], witness["sha256"]))
         self.assertEqual(prior["reviewer"], "/root/queue_review")
         for name in SOURCES - {SINK}:
-            self.assertEqual(review["sourceSha256"][name], prior["sourceSha256"][name])
+            reviewed = {prior["sourceSha256"][name]} if name in prior["sourceSha256"] else {
+                historical["sourceSha256"][name] for historical in prior.get("reviewHistory", [])
+                if name in historical["sourceSha256"]
+            }
+            self.assertIn(review["sourceSha256"][name], reviewed)
         source = pinned_source(ROOT / SINK, review["sourceSha256"][SINK])
         self.assertEqual(source.count(ANNOTATION), 1)
-        self.assertEqual(hashlib.sha256(source.replace(ANNOTATION, b"")).hexdigest(),
-                         prior["sourceSha256"][SINK])
+        if prior["method"].get("reviewOccurredAfterExistingEngineAnnotation") is True:
+            self.assertEqual(review["sourceSha256"][SINK], prior["sourceSha256"][SINK])
+            self.assertEqual(prior["currentAnnotations"]["engineCount"], 1)
+            self.assertIs(prior["currentAnnotations"]["appliedByThisReviewer"], False)
+        else:
+            self.assertEqual(hashlib.sha256(source.replace(ANNOTATION, b"")).hexdigest(),
+                             prior["sourceSha256"][SINK])
         return review
 
     def test_exact_reviewed_sources_and_single_sink_annotation(self):

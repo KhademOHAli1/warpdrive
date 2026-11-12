@@ -84,6 +84,81 @@ def png_chunk(kind, payload):
 
 UPGRADE_PNG = (b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
                + png_chunk(b"IDAT", zlib.compress(b"\x00\x30\x70\x90")) + png_chunk(b"IEND", b""))
+MEDIA_REQUEST_LIMIT = 8192
+MEDIA_RESPONSE_LIMIT = 16384
+MEDIA_HEADER_LIMIT = 4096
+MEDIA_BODY_LIMIT = 8192
+
+
+def media_upload_request(authorization, boundary):
+    if (not isinstance(authorization, str) or len(authorization) > 2048
+            or re.fullmatch(r"Basic [A-Za-z0-9+/]+={0,2}", authorization) is None
+            or not isinstance(boundary, str) or re.fullmatch(r"engine-upgrade-[a-f0-9]{24}", boundary) is None):
+        raise SmokeError("Historical media request headers are invalid")
+    body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="fixture.png"\r\n'
+            'Content-Type: image/png\r\n\r\n').encode("ascii") + UPGRADE_PNG + f"\r\n--{boundary}--\r\n".encode("ascii")
+    header = ("POST /api/media HTTP/1.1\r\nHost: 127.0.0.1:9000\r\nConnection: close\r\n"
+              "Accept: application/json\r\nAuthorization: " + authorization
+              + "\r\nContent-Type: multipart/form-data; boundary=" + boundary
+              + f"\r\nContent-Length: {len(body)}\r\n\r\n").encode("ascii")
+    request = header + body
+    if len(request) > MEDIA_REQUEST_LIMIT:
+        raise SmokeError("Historical media request exceeds the synthetic fixture bound")
+    return request
+
+
+def parse_media_http_response(raw):
+    """Decode one finite HTTP/1.x response, without retaining arbitrary response text."""
+    def invalid():
+        raise SmokeError("Historical media HTTP response is invalid or ambiguous")
+    if not isinstance(raw, bytes) or not raw or len(raw) > MEDIA_RESPONSE_LIMIT:
+        invalid()
+    end = raw.find(b"\r\n\r\n")
+    if end < 0 or end > MEDIA_HEADER_LIMIT:
+        invalid()
+    lines = raw[:end].split(b"\r\n")
+    status = re.fullmatch(rb"HTTP/1\.[01] ([1-5][0-9]{2})(?: [\x20-\x7e]*)?", lines[0])
+    if status is None or len(lines) > 65:
+        invalid()
+    headers = {}
+    for line in lines[1:]:
+        name, colon, value = line.partition(b":")
+        if (not colon or re.fullmatch(rb"[!#$%&'*+.^_`|~0-9A-Za-z-]+", name) is None
+                or any(char < 32 and char != 9 or char > 126 for char in value)):
+            invalid()
+        name = name.lower()
+        if name in {b"content-length", b"transfer-encoding"} and name in headers:
+            invalid()
+        headers[name] = value.strip(b" \t")
+    body = raw[end + 4:]
+    length, transfer = headers.get(b"content-length"), headers.get(b"transfer-encoding")
+    if length is not None and transfer is not None:
+        invalid()
+    if transfer is not None:
+        if transfer.lower() != b"chunked":
+            invalid()
+        decoded, position = bytearray(), 0
+        for _ in range(128):
+            line_end = body.find(b"\r\n", position)
+            size = body[position:line_end] if line_end >= position else b""
+            # Chunk extensions/trailers are unnecessary for this fixed JSON API.
+            if re.fullmatch(rb"[0-9A-Fa-f]{1,8}", size) is None:
+                invalid()
+            count = int(size, 16)
+            position = line_end + 2
+            if count == 0:
+                if body[position:] != b"\r\n":
+                    invalid()
+                return int(status[1]), bytes(decoded)
+            if len(decoded) + count > MEDIA_BODY_LIMIT or body[position + count:position + count + 2] != b"\r\n":
+                invalid()
+            decoded.extend(body[position:position + count])
+            position += count + 2
+        invalid()
+    if (length is None or re.fullmatch(rb"0|[1-9][0-9]{0,5}", length) is None
+            or int(length) > MEDIA_BODY_LIMIT or len(body) != int(length)):
+        invalid()
+    return int(status[1]), body
 
 OLD_INITIAL_SEED = """
 UPDATE settings SET value='false'::jsonb WHERE key IN ('app.check_updates','app.cache_slow_queries','maintenance.db.vacuum');
@@ -761,44 +836,36 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
 
     def upload_old_media(self):
         boundary = "engine-upgrade-" + secrets.token_hex(12)
-        body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="fixture.png"\r\n'
-                'Content-Type: image/png\r\n\r\n').encode() + UPGRADE_PNG + f"\r\n--{boundary}--\r\n".encode()
-        self.report["supportedOldUpgradePhase"] = "media-payload-staging"
-        self.stage_old_media_body(body)
+        self.report["supportedOldUpgradePhase"] = "media-api-request"
+        request = media_upload_request(self.auth["Authorization"], boundary)
         self.report["supportedOldUpgradePhase"] = "media-api-upload"
-        result = self.docker.run(["exec", self.serve.name, "wget", "-q", "-T", "5", "-O", "-",
-                                  "--header", "Authorization: " + self.auth["Authorization"],
-                                  "--header", "Content-Type: multipart/form-data; boundary=" + boundary,
-                                  "--post-file", "/tmp/upgrade-upload.body", "http://127.0.0.1:9000/api/media"], timeout=10, check=False)
-        if result.returncode != 0:
-            raise SmokeError("Historical media API upload did not succeed")
+        self.owned(self.serve.name)
+        # BusyBox wget --post-file uses strlen/%s and truncates this PNG at NUL.
+        # Both request and response use binary streams. The script/loopback target
+        # are fixed; headers and payload enter only stdin, never shell code/argv.
         try:
-            media = json.loads(result.stdout)["data"]
+            result = self.docker.run(["exec", "--interactive", self.serve.name, "sh", "-ec",
+                "nc -w 5 127.0.0.1 9000 2>/dev/null | head -c 16385"],
+                input_bytes=request, timeout=10, check=False)
+        except SmokeError:
+            raise SmokeError("Historical media API transport did not finish") from None
+        if result.returncode != 0:
+            raise SmokeError("Historical media API transport did not succeed")
+        status, response = parse_media_http_response(result.stdout)
+        self.report["supportedOldMediaHttpStatus"] = status
+        if status != 200:
+            raise SmokeError(f"Historical media API upload rejected (status {status})")
+        try:
+            media = json.loads(response)["data"]
             filename = media["filename"]
-        except (ValueError, KeyError, TypeError) as error:
-            raise SmokeError("Historical media API did not return a bounded fixture filename") from error
+        except (ValueError, KeyError, TypeError, RecursionError):
+            raise SmokeError("Historical media API did not return a bounded fixture filename") from None
         if not isinstance(filename, str) or not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,199}", filename):
             raise SmokeError("Historical media filename is unsafe")
         self.report["supportedOldUpgradePhase"] = "media-byte-verification"
         if self.media_bytes(filename) != UPGRADE_PNG:
             raise SmokeError("Historical media API did not preserve exact uploaded bytes")
         return filename
-
-    def stage_old_media_body(self, body):
-        if not isinstance(body, bytes) or not body or len(body) > 8192:
-            raise SmokeError("Historical media request body exceeds the synthetic fixture bound")
-        self.owned(self.serve.name)
-        # Docker's archive/cp write path rejects read-only rootfs even for this
-        # HostConfig.Tmpfs destination. Write through the running mount namespace
-        # instead. Binary data stays on stdin; no payload or credential is shell code.
-        command = ["exec", "--interactive", self.serve.name, "sh", "-ec",
-                   "umask 077; cat > /tmp/upgrade-upload.body"]
-        try:
-            result = self.docker.run(command, input_bytes=body, timeout=10, check=False)
-        except SmokeError:
-            raise SmokeError("Historical media payload staging did not finish") from None
-        if result.returncode != 0:
-            raise SmokeError("Historical media payload staging did not succeed")
 
     def media_bytes(self, filename):
         if not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,199}", filename):
