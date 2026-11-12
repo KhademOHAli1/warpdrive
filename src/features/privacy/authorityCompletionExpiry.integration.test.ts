@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { privacyCases } from "@/db/schema";
+import { privacyCaseEvents, privacyCases } from "@/db/schema";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { ok } from "@/types/result";
 import { authorityFixture, authoritySignal } from "./authority.test-helpers";
@@ -78,6 +78,61 @@ test("own intake blocked after case insertion denies on expiry without a committ
     signal,
     (db, operationSignal) => createOwnPrivacyCase(db, fixture.actor, input, operationSignal),
   );
+}, 30_000);
+
+test("failed observation at the real intake barrier cancels before unlock and preserves all cases and events", async ({
+  signal,
+}) => {
+  const fixture = await authorityFixture(h, []);
+  const input = intake();
+  const beforeCases = await h.db
+    .select({ id: privacyCases.id })
+    .from(privacyCases)
+    .orderBy(privacyCases.id);
+  const beforeEvents = await h.db
+    .select({ id: privacyCaseEvents.id })
+    .from(privacyCaseEvents)
+    .orderBy(privacyCaseEvents.id);
+  const observationFailure = new Error(
+    "INJECTED: completion-expiry observation failed at native wait",
+  );
+  let nativeBarrierObserved = false;
+  let operationSignal: AbortSignal | undefined;
+  await expect(
+    exerciseCompletionExpiry(
+      h,
+      fixture.session.id,
+      {
+        relation: "privacy_case_events",
+        mode: "RowExclusiveLock",
+        queryPattern: "insert into %privacy_case_events%",
+        caseWriteBeforeWait: true,
+      },
+      signal,
+      (db, ownedSignal) => {
+        operationSignal = ownedSignal;
+        return createOwnPrivacyCase(db, fixture.actor, input, ownedSignal);
+      },
+      () => {
+        nativeBarrierObserved = true;
+        expect(operationSignal?.aborted).toBe(false);
+        throw observationFailure;
+      },
+    ),
+    // Identity proves the original observation failure survived, without an
+    // aggregate cleanup/state failure being mistaken for this expected fault.
+  ).rejects.toBe(observationFailure);
+  expect(nativeBarrierObserved).toBe(true);
+  expect(operationSignal?.aborted).toBe(true);
+  expect(
+    await h.db.select({ id: privacyCases.id }).from(privacyCases).orderBy(privacyCases.id),
+  ).toEqual(beforeCases);
+  expect(
+    await h.db
+      .select({ id: privacyCaseEvents.id })
+      .from(privacyCaseEvents)
+      .orderBy(privacyCaseEvents.id),
+  ).toEqual(beforeEvents);
 }, 30_000);
 
 test("own verification blocked after entry authentication denies on expiry without proof/case/event writes", async ({

@@ -119,3 +119,21 @@ is not a claim that accepted traffic was restored. Populated upgrades, migration
 newsletter cutovers, open-browser assets/Server Actions, cross-version contracts, encrypted
 off-host recovery and installation monitoring remain programme requirements. Thousands of
 workspaces remains optional future headroom, not a capacity acceptance gate.
+
+## Native completion-expiry test cleanup
+
+The completion-expiry integration helper must cancel its owned operation before releasing a
+native table barrier when observation fails. Releasing the barrier while the session remains
+valid can otherwise let a synthetic intake commit during failed-test cleanup. The helper
+retains the original observation error, waits for the operation to drain and requires the
+complete cases/proofs/events/jobs snapshot to remain unchanged. PID, backend start and exact
+transaction start bind the held transaction; failure diagnostics contain finite categories
+and lock/expiry booleans, never credentials, session IDs or query payloads.
+
+`docs/deployment-evidence/privacy-expiry-native-20261112.json` binds four passing actual
+PostgreSQL16/Bun tests: three strict expiry/forbidden/rollback cases and an injected failure
+after the real intake barrier, proving cancellation-before-unlock and unchanged state. The
+run applied all119 migrations, cloned the real test template, took12.283 seconds and peaked
+at451,461,120 bytes of sampled combined RSS. Client sessions, server process, socket and
+temporary cluster cleanup passed. The original source706 transient witness loss remains
+unclassified; this evidence does not waive a future observation failure or replace full CI.

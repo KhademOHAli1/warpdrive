@@ -35,6 +35,7 @@ type Identity = { pid: number; backendStart: string };
 type Expiry = { expiresAt: string; expiresEpochMs: string };
 type Witness = Identity &
   Expiry & {
+    transactionStart: string | null;
     active: boolean;
     transactionOpen: boolean;
     waiting: boolean;
@@ -50,12 +51,83 @@ type Witness = Identity &
 const held = (row: Witness) =>
   row.active &&
   row.transactionOpen &&
+  row.transactionStart !== null &&
   row.waiting &&
   row.blockedByHolder &&
   row.waitingTargetLock &&
   row.blockerHeld &&
   row.blockerIdentityMatches &&
   row.sessionLockHeld;
+
+type Observation = {
+  kind:
+    | "waiting"
+    | "expired"
+    | "settled"
+    | "setup_deadline"
+    | "observation_deadline"
+    | "barrier_lost";
+  reason?: "backend_missing" | "held_predicate_failed" | "backend_changed" | "transaction_changed";
+  witness?: Witness;
+  outcome?: Outcome;
+};
+
+function outcomeKind(outcome?: Outcome) {
+  if (outcome === undefined) return null;
+  if (outcome.kind === "rejected") return "rejected";
+  if (outcome.value.ok) return "resolved_ok";
+  return outcome.value.error === "forbidden" ? "resolved_forbidden" : "resolved_error";
+}
+
+function witnessFacts(witness?: Witness, original?: Witness) {
+  if (witness === undefined) return null;
+  return {
+    active: witness.active,
+    transactionOpen: witness.transactionOpen,
+    transactionStartPresent: witness.transactionStart !== null,
+    waiting: witness.waiting,
+    blockedByHolder: witness.blockedByHolder,
+    waitingTargetLock: witness.waitingTargetLock,
+    blockerHeld: witness.blockerHeld,
+    blockerIdentityMatches: witness.blockerIdentityMatches,
+    sessionLockHeld: witness.sessionLockHeld,
+    caseWriteHeld: witness.caseWriteHeld,
+    sessionActive: witness.sessionActive,
+    sessionExpired: witness.sessionExpired,
+    appExpiryReached:
+      /^\d{1,16}$/u.test(witness.expiresEpochMs) &&
+      BigInt(Date.now()) >= BigInt(witness.expiresEpochMs),
+    pidMatches: original === undefined ? null : witness.pid === original.pid,
+    backendStartMatches:
+      original === undefined ? null : witness.backendStart === original.backendStart,
+    transactionStartMatches:
+      original === undefined ? null : witness.transactionStart === original.transactionStart,
+    nativeExpiryMatches:
+      original === undefined
+        ? null
+        : witness.expiresAt === original.expiresAt &&
+          witness.expiresEpochMs === original.expiresEpochMs,
+  };
+}
+
+/** Finite observation facts only: never serialize a query, actor/session ID or exception. */
+function observationFacts(observation: Observation, original?: Witness) {
+  return JSON.stringify({
+    kind: observation.kind,
+    reason: observation.reason ?? null,
+    outcome: outcomeKind(observation.outcome),
+    witness: witnessFacts(observation.witness, original),
+  });
+}
+
+function lostBarrier(witness: Witness | undefined, original: Witness): Observation["reason"] {
+  if (witness === undefined) return "backend_missing";
+  if (!held(witness)) return "held_predicate_failed";
+  if (witness.pid !== original.pid || witness.backendStart !== original.backendStart)
+    return "backend_changed";
+  if (witness.transactionStart !== original.transactionStart) return "transaction_changed";
+  return undefined;
+}
 
 async function observe(
   observer: PoolClient,
@@ -67,7 +139,8 @@ async function observe(
 ) {
   signal.throwIfAborted();
   const result = await observer.query<Witness>(
-    `SELECT a.pid,a.backend_start::text AS "backendStart",a.state='active' AS active,
+    `SELECT a.pid,a.backend_start::text AS "backendStart",a.xact_start::text AS "transactionStart",
+    a.state='active' AS active,
     a.xact_start IS NOT NULL AS "transactionOpen",a.wait_event_type='Lock' AS waiting,
     $2=ANY(pg_blocking_pids(a.pid)) AS "blockedByHolder",
     EXISTS(SELECT 1 FROM pg_locks WHERE pid=a.pid AND relation=$4::regclass
@@ -126,13 +199,15 @@ async function firstWait(
 ) {
   return raceObservation(outcome, signal, async (watching) => {
     const deadline = performance.now() + 2000;
+    let last: Witness | undefined;
     while (performance.now() < deadline) {
       const witness = await read(watching);
+      last = witness;
       if (witness !== undefined && held(witness)) return { kind: "waiting" as const, witness };
       // Poll spacing is never success; only the actual native witness can satisfy the barrier.
       await delay(10, undefined, { signal: watching });
     }
-    return { kind: "setup_deadline" as const };
+    return { kind: "setup_deadline" as const, witness: last };
   });
 }
 
@@ -144,15 +219,13 @@ async function heldThroughExpiry(
 ) {
   return raceObservation(outcome, signal, async (watching) => {
     const deadline = performance.now() + 4000;
+    let last: Witness | undefined;
     while (performance.now() < deadline) {
       const witness = await read(watching);
-      if (
-        witness === undefined ||
-        !held(witness) ||
-        witness.pid !== original.pid ||
-        witness.backendStart !== original.backendStart
-      )
-        return { kind: "barrier_lost" as const };
+      last = witness;
+      const reason = lostBarrier(witness, original);
+      if (reason !== undefined) return { kind: "barrier_lost" as const, reason, witness };
+      assert(witness !== undefined, "OBSERVATION: missing held witness");
       assert.equal(witness.expiresAt, original.expiresAt, "SETUP: native expiry changed");
       assert.equal(
         witness.expiresEpochMs,
@@ -165,7 +238,7 @@ async function heldThroughExpiry(
         return { kind: "expired" as const, witness };
       await delay(20, undefined, { signal: watching });
     }
-    return { kind: "observation_deadline" as const };
+    return { kind: "observation_deadline" as const, witness: last };
   });
 }
 
@@ -201,6 +274,7 @@ export async function exerciseCompletionExpiry(
   let outcome: Promise<Outcome> | undefined;
   let before: unknown;
   let primary: { error: unknown } | undefined;
+  const ownedOperation = new AbortController();
   const cleanupFailures: unknown[] = [];
   const releaseBlocker = async () => {
     const owned = blocker;
@@ -240,7 +314,11 @@ export async function exerciseCompletionExpiry(
     ).rows[0];
     assert(expiry !== undefined, "SETUP: missing native session expiry");
     signal.throwIfAborted();
-    const operationSignal = AbortSignal.any([signal, AbortSignal.timeout(15_000)]);
+    const operationSignal = AbortSignal.any([
+      signal,
+      ownedOperation.signal,
+      AbortSignal.timeout(15_000),
+    ]);
     outcome = operation(drizzle(mutationPool, { schema }), operationSignal).then(
       (value) => ({ kind: "resolved" as const, value }),
       (reason: unknown) => ({ kind: "rejected" as const, reason }),
@@ -250,11 +328,11 @@ export async function exerciseCompletionExpiry(
     const first = await firstWait(outcome, signal, read);
     assert(
       first.kind !== "setup_deadline",
-      "SETUP/TIMING: native target-table barrier not observed",
+      `SETUP/TIMING: native target-table barrier not observed ${observationFacts(first)}`,
     );
     assert(
       first.kind === "waiting",
-      "SETUP/PRECONDITION: operation settled before the native barrier",
+      `SETUP/PRECONDITION: operation settled before the native barrier ${observationFacts(first)}`,
     );
     expect(first.witness.pid).not.toBe(holder.pid);
     expect(first.witness.expiresAt).toBe(expiry.expiresAt);
@@ -268,11 +346,11 @@ export async function exerciseCompletionExpiry(
     const expired = await heldThroughExpiry(outcome, signal, first.witness, read);
     assert(
       expired.kind !== "observation_deadline",
-      "OBSERVATION/CLOCK: held native/app expiry was not witnessed",
+      `OBSERVATION/CLOCK: held native/app expiry was not witnessed ${observationFacts(expired, first.witness)}`,
     );
     assert(
       expired.kind === "expired",
-      "OBSERVATION/BARRIER: same native transaction must remain held through expiry",
+      `OBSERVATION/BARRIER: same native transaction must remain held through expiry ${observationFacts(expired, first.witness)}`,
     );
     expect(expired.witness.sessionActive).toBe(false);
     expect(BigInt(Date.now()) >= BigInt(expired.witness.expiresEpochMs)).toBe(true);
@@ -288,6 +366,9 @@ export async function exerciseCompletionExpiry(
     expect(result).toEqual({ kind: "resolved", value: { ok: false, error: "forbidden" } });
   } catch (error) {
     primary = { error };
+    // An observation failure is still a failure. Cancel the owned domain operation
+    // before releasing its native barrier, so a still-valid session cannot commit.
+    ownedOperation.abort(new Error("Completion-expiry observation failed"));
   } finally {
     const retain = async (effect: () => Promise<unknown>) => {
       try {
@@ -297,7 +378,8 @@ export async function exerciseCompletionExpiry(
       }
     };
     const cleanup = (async () => {
-      // Release our barrier FIRST, then drain the exact settled domain outcome before observing rows.
+      // Failed observations have already cancelled the owned operation. Release
+      // only after cancellation, then drain its rollback before observing rows.
       await retain(releaseBlocker);
       await retain(async () => {
         await outcome;
