@@ -100,6 +100,42 @@ still need explicit component-input policies.
 
 ## Controller boundaries
 
+The independent Web rehearsal adds a separate two-generation controller and source gate.
+It preserves the original same-image rehearsal and four-image bundle format. A same-repository
+pull request can opt in with the `web-release-rehearsal` label. After the workflow reaches the
+default branch, the manual input can also run the rehearsal on a reviewed branch.
+
+```sh
+gh workflow run production-images.yml --ref REVIEWED_BRANCH -f web_release_rehearsal=true
+```
+
+The run first qualifies the baseline images. It then creates an owned Git worktree with one
+reviewed presentation change, verifies the exact source delta and retained component inputs,
+and builds one additional `web` target. The extra Web build uses the same recipe and receives
+a distinct source-derived `NEXT_DEPLOYMENT_ID`. The run independently verifies the inputs
+again and binds the resulting immutable image ID to the source and baseline bundle records.
+The four-image archive remains the original baseline. The additional Web image is exercised
+on the disposable runner and is neither published nor promoted to an installed environment.
+
+The controller requires a separate trusted adapter to authenticate the first accepted baseline
+and the exact two-image qualification. It serializes a target's route changes, persists the
+switch and rollback intents before issuing them, and accepts only independently observed
+generation-bound health. A lost acknowledgement holds further changes until the matching
+healthy generation is read back. A confirmed switch with a definite candidate failure can
+restore the retained healthy route. The adapter must use a single mutation authority and a
+compare-and-swap operation with one effect. Both Web generations must carry the same schema
+and be qualified to run concurrently during the transition.
+
+The Caddy subroute uses generation-marked static assets and hydrated Server Actions to keep
+their originating artifacts available. It rejects unknown or conflicting mutation selectors
+before forwarding. The two current URL form targets and existing API handlers remain ordinary
+routes. Keep the outer ingress policies and WebSocket route ahead of the Web subroute.
+
+This first source profile covers the reviewed layout and copy changes. Changes to the shared
+dependency lock, executable UI, backend contracts, or ingress policy require separate input
+and compatibility qualification. The installed baseline resolver, durable artifact custody,
+Web-only promotion and installed acceptance remain separate work.
+
 `web_switch.py` exposes a controller engine without a deployment CLI. It admits only a fixed
 isolated rehearsal using the same image, source, configuration and schema in separate slots.
 It keeps a target-wide lock, immutable operation binding, checksummed phase records and a

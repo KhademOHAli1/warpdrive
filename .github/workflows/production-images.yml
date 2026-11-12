@@ -9,6 +9,7 @@ on:
       - "site/**"
       - "**/*.md"
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     branches: [main]
     paths-ignore:
       - "docs/**"
@@ -16,6 +17,11 @@ on:
       - "site/**"
       - "**/*.md"
   workflow_dispatch:
+    inputs:
+      web_release_rehearsal:
+        description: Build one additional Web image and rehearse a presentation-only rollout
+        type: boolean
+        default: false
 
 # This workflow neither publishes images nor receives production credentials.
 permissions:
@@ -28,6 +34,7 @@ concurrency:
 jobs:
   tooling:
     name: Deployment tooling checks
+    if: github.event.action != 'labeled' || github.event.label.name == 'web-release-rehearsal'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
@@ -54,6 +61,7 @@ jobs:
       IMAGE_PREFIX: warpdrive-ci
       IMAGE_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
       REVISION: ${{ github.sha }}
+      WEB_RELEASE_REHEARSAL: ${{ (github.event_name == 'workflow_dispatch' && inputs.web_release_rehearsal) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'web-release-rehearsal')) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -218,6 +226,58 @@ jobs:
           python3 scripts/deployment/browser_realtime_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/browser-realtime"
+      - name: Verify source inputs of one presentation-only candidate
+        if: env.WEB_RELEASE_REHEARSAL == 'true'
+        id: web-release-source
+        run: |
+          scratch="$RUNNER_TEMP/warpdrive-web-release"
+          manifest_sha=$(sha256sum "$RUNNER_TEMP/image-bundle/bundle.json" | cut -d ' ' -f 1)
+          changed=$(python3 scripts/deployment/web_release_rehearsal.py \
+            --root "$GITHUB_WORKSPACE" --scratch "$scratch" \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --baseline-manifest-sha256 "$manifest_sha")
+          test "${#changed}" -eq 40
+          cp "$scratch/source-delta.json" "$RUNNER_TEMP/production-images/web-release-source.json"
+          printf 'revision=%s\nbaseline-manifest-sha=%s\ncontext=%s\n' \
+            "$changed" "$manifest_sha" "$scratch/source" >> "$GITHUB_OUTPUT"
+      - name: Build only the presentation candidate Web image
+        if: env.WEB_RELEASE_REHEARSAL == 'true'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: ${{ steps.web-release-source.outputs.context }}
+          file: ${{ steps.web-release-source.outputs.context }}/deploy/images/Dockerfile
+          target: web
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/web-release:${{ env.IMAGE_TAG }}
+          build-args: |
+            APP_COMMIT=${{ steps.web-release-source.outputs.revision }}
+            NEXT_PUBLIC_WS_URL=same-origin
+          cache-from: type=gha,scope=warpdrive-production-web
+      - name: Rehearse mixed-image Web rollout and restoration
+        if: env.WEB_RELEASE_REHEARSAL == 'true'
+        env:
+          WEB_REVISION: ${{ steps.web-release-source.outputs.revision }}
+          BASELINE_MANIFEST_SHA: ${{ steps.web-release-source.outputs.baseline-manifest-sha }}
+        run: |
+          web_image=$(docker image inspect --format '{{.Id}}' "$IMAGE_PREFIX/web-release:$IMAGE_TAG")
+          python3 scripts/deployment/web_release_rehearsal.py \
+            --root "$GITHUB_WORKSPACE" --scratch "$RUNNER_TEMP/warpdrive-web-release" \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
+            --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" --verify-built-image "$web_image" \
+            > "$RUNNER_TEMP/production-images/web-release-build.json"
+          python3 scripts/deployment/web_mixed_image_smoke.py \
+            --bundle-dir "$RUNNER_TEMP/image-bundle" --baseline-revision "$REVISION" \
+            --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" \
+            --new-web-image-id "$web_image" --new-web-revision "$WEB_REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/web-release" --browser
+      - name: Clean up only the owned presentation source checkout
+        if: always() && env.WEB_RELEASE_REHEARSAL == 'true'
+        run: |
+          python3 scripts/deployment/web_release_rehearsal.py \
+            --root "$GITHUB_WORKSPACE" --scratch "$RUNNER_TEMP/warpdrive-web-release" --cleanup
       - name: Retain exact tested bundle for main candidate publication
         if: success() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
