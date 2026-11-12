@@ -194,6 +194,9 @@ def write_synthetic_secret(directory: Path, password: str) -> Path:
     # the payload owner-only while writing, then allow the image's nonroot UID
     # to read the mounted inode; the host parent directory remains mode0700.
     with open(target, "x", encoding="utf-8", opener=private_opener) as payload:
+        # Generated-only native fixture; the real _FILE test requires these bytes.
+        # Scope/pin guard: docs/deployment-evidence/fixture-codeql-exception-20261112.json
+        # codeql[py/clear-text-storage-sensitive-data]
         payload.write(password)
         payload.flush()
         os.fchmod(payload.fileno(), 0o444)

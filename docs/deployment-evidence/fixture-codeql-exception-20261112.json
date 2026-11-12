@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "source-bound-fixture-only-scanner-exception",
+  "queryId": "py/clear-text-storage-sensitive-data",
+  "annotatedPath": "scripts/deployment/engine_image_smoke.py",
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "cb76d0ddf6a5084108fefa6f7ef7683cf8a56c35bb585269dee630fd80dec40e",
+    "scripts/deployment/test_engine_image_smoke.py": "ce25d69adbbe04bfcef3bc92ee33aa23946d3630e47f33d6cde06dc64f8f95b3",
+    "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "observedFinding": {
+    "number": 23,
+    "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/23",
+    "sourceHead": "7062239ef858f5a67dce321b796a1bbd568a7827",
+    "severity": "high/error"
+  },
+  "independentReview": {
+    "path": "docs/deployment-evidence/fixture-plaintext-review-20261112.json",
+    "sha256": "525752ea48b56ab5747903fbf8175c3a321da140f58690d15aa75c6d3b43fd8c",
+    "reviewer": "/root/queue_review",
+    "scope": "Independent process/source review of current generated-only callers; not human acceptance or cryptographic reviewer authentication."
+  },
+  "commentOnlyChangeFromReviewedEngineSha256": "255ab66cb2194d4e5de8a18a352fd35519499e771e655423dd89e573459333f8",
+  "rationale": [
+    "The mounted plaintext is required by the real nonroot _FILE loader contract; its password is generated internally for an owned isolated database, never supplied by a deployment/user credential argument.",
+    "Native host/daemon and writable tmpfs admission precede creation. The owned parent is0700; exclusive nofollow file creation is0600 before payload and0444 only for readonly nonroot container access.",
+    "Plaintext is outside retained artifact roots, diagnostics redact its generated value, and cleanup failure prevents qualification success.",
+    "Exactly one query-specific sink annotation is applied; the recovery test helper has no annotation. Dataflow, all CodeQL categories, existing blocking thresholds and paginated findings checks stay visible/unchanged."
+  ],
+  "expiry": "Deployment tooling pins all four authority/caller sources and scans direct/import-aliased Python callers under executable source roots. Changes require refreshed independent review before qualification; this is not a general Python sandbox.",
+  "residuals": [
+    "This is an explicit local scanner-coverage exception. Same-user/root access, possible tmpfs swap and abrupt host/process termination remain lifecycle limits.",
+    "Source-hash review records are auditable process evidence, not cryptographic approval. New callers or credential inputs require review.",
+    "Exact-revision CodeQL and current named-ref finding readback are still required; this record does not close an alert."
+  ],
+  "syntaxReference": "https://codeql.github.com/docs/codeql-overview/codeql-changelog/codeql-cli-2.12.0/",
+  "securityGateCleanClaim": false,
+  "canonicalAcceptanceClaim": false
+}
