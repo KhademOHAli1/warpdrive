@@ -64,6 +64,36 @@ the new release identity. Mixed-source assembly still needs authenticated origin
 qualification receipts, safe unchanged-component selection, unchanged original image labels
 and a newly tested assembly. Input hashes alone authorize none of those actions.
 
+## Advisory build planning
+
+`scripts/deployment/component_plan.py` compares a freshly generated all-Core receipt with a
+historical receipt and its complete version 2 image candidate. It verifies the current checkout
+against the exact selected Git revision and repeats discovery before returning advice. For
+example, with receipt paths outside the checkout and every path component free of symlinks:
+
+```sh
+python3 scripts/deployment/component_plan.py \
+  --root "$PWD" --expected-revision "$(git rev-parse HEAD)" \
+  --current-receipt "$input_work/component-inputs.json" \
+  --historical-receipt "$input_work/original-component-inputs.json" \
+  --historical-candidate "$input_work/original-image-candidate.json" \
+  > "$input_work/build-plan.json"
+```
+
+The result separates `buildComponents` from unqualified `retainCandidates` and reports whether
+the advised build set contains Web/Next. Missing or unsupported historical identity requires
+fresh builds; changed shared inputs, build context or policy rebuild all Core components.
+Malformed evidence rejects the plan. Each retained declaration preserves the original image
+ID, runtime identity and source revision. The planner performs no build, image readback,
+publication or deployment, and does not authenticate caller-supplied historical JSON.
+
+Every plan retains `deploymentAuthorized: false` and explicit pending gates for original
+artifact authentication/custody, mixed-assembly qualification, current CI/security admission
+and promotion integration. Engine and ingress planning remain pending. The focused tests cover
+selection and rejection rules; they do not prove an actual selective build or installed release.
+
+## Guarded Web inputs
+
 Web retains the conservative repository inventory and all four actual helper entries, except
 three guarded paths: `src/server/worker.ts`, `src/features/release/job.ts`, and the accompanying
 `src/features/privacy/registryIdsInfrastructure2.ts` review ledger. Identical explicit Tailwind
