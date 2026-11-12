@@ -131,9 +131,9 @@ transaction start bind the held transaction; failure diagnostics contain finite 
 and lock/expiry booleans, never credentials, session IDs or query payloads.
 
 `docs/deployment-evidence/privacy-expiry-native-20261112.json` binds four passing actual
-PostgreSQL16/Bun tests: three strict expiry/forbidden/rollback cases and an injected failure
+PostgreSQL 16/Bun tests: three strict expiry/forbidden/rollback cases and an injected failure
 after the real intake barrier, proving cancellation-before-unlock and unchanged state. The
-run applied all119 migrations, cloned the real test template, took12.283 seconds and peaked
-at451,461,120 bytes of sampled combined RSS. Client sessions, server process, socket and
+run applied all 119 migrations, cloned the real test template, took 12.283 seconds and peaked
+at 451,461,120 bytes of sampled combined RSS. Client sessions, server process, socket and
 temporary cluster cleanup passed. The original source706 transient witness loss remains
 unclassified; this evidence does not waive a future observation failure or replace full CI.
