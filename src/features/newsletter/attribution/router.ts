@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor } from "@/features/auth/currentNativeActor";
-import { guardCsrf } from "@/features/identity/actions/shared";
+import { validateRequestCsrf } from "@/server/trpc/request-csrf";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { createLeadFromNewsletterExposure } from "./native";
 import { readPersonNewsletterAttribution } from "./service";
@@ -35,7 +35,8 @@ export const newsletterAttributionRouter = router({
       }),
     )
     .mutation(async ({ ctx, input, signal }) => {
-      if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!validateRequestCsrf(ctx.csrf, input.csrfToken).ok)
+        throw new TRPCError({ code: "FORBIDDEN" });
       return createLeadFromNewsletterExposure(ctx.db, ctx.session, input, bound(signal));
     }),
 });

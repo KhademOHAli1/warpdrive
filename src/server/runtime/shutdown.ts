@@ -10,7 +10,7 @@ type SignalSource = {
 export type ShutdownStep = { name: string; run(): Promise<void> | void };
 export type ShutdownOutcome = {
   event: "runtime.shutdown";
-  source: "worker" | "realtime";
+  source: "worker" | "realtime" | "core-api";
   status: "drained" | "failed" | "timed_out";
   step: string | null;
   exitCode: 0 | 1;
@@ -48,8 +48,9 @@ export function installSignalShutdown(options: ShutdownOptions) {
 
   async function execute(): Promise<ShutdownOutcome> {
     let timedOut = false;
+    const deadlineAt = performance.now() + options.timeoutMs;
     let step: string | null = null;
-    const deadlineExpired = (): boolean => timedOut;
+    const deadlineExpired = (): boolean => timedOut || performance.now() >= deadlineAt;
     const outcome = (status: ShutdownOutcome["status"]): ShutdownOutcome => ({
       event: "runtime.shutdown",
       source: options.source,
@@ -72,6 +73,7 @@ export function installSignalShutdown(options: ShutdownOptions) {
           if (deadlineExpired()) return outcome("timed_out");
           step = current.name;
           await current.run();
+          if (deadlineExpired()) return outcome("timed_out");
         }
         return outcome("drained");
       } catch {

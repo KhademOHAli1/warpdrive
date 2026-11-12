@@ -54,6 +54,21 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("portable request authentication context", () => {
+  it("installs the process-owned Web resolver for anonymous and authenticated requests", async () => {
+    const resolver = vi.fn();
+    const anonymous = await createContextFromRequest(request(), db, resolver);
+    expect(anonymous.readWebIdentity).toBe(resolver);
+    auth.load.mockResolvedValue(ok({ userId: "native-user", sessionId: "internal-handle" }));
+    auth.hydrate.mockResolvedValue(actor("native-user"));
+    const authenticated = await createContextFromRequest(
+      request("wd_sid=credential"),
+      db,
+      resolver,
+    );
+    expect(authenticated.readWebIdentity).toBe(resolver);
+    expect(resolver).not.toHaveBeenCalled();
+    expect((await createContextFromRequest(request(), db)).readWebIdentity).toBeUndefined();
+  });
   it("does not treat actor/session headers or an absent cookie as authentication", async () => {
     const context = await createContextFromRequest(request(), db);
     expect(context).toMatchObject({ db, session: null, actor: null });

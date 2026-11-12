@@ -19,6 +19,37 @@ function deferred() {
 afterEach(() => vi.useRealTimers());
 
 describe("bounded signal shutdown", () => {
+  it("does not advance dependencies after elapsed time even before a deadline timer runs", async () => {
+    let now = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
+    const database = vi.fn();
+    try {
+      const shutdown = installSignalShutdown({
+        source: "core-api",
+        timeoutMs: 100,
+        signals: new EventEmitter(),
+        exit: vi.fn(),
+        report: vi.fn(),
+        steps: [
+          {
+            name: "http",
+            run: () => {
+              now = 101;
+            },
+          },
+          { name: "database", run: database },
+        ],
+      });
+      expect(await shutdown.request()).toMatchObject({
+        status: "timed_out",
+        step: "http",
+        exitCode: 1,
+      });
+      expect(database).not.toHaveBeenCalled();
+    } finally {
+      clock.mockRestore();
+    }
+  });
   it("shares one drain across repeated/reentrant signals and closes in order", async () => {
     const signals = new EventEmitter();
     const active = deferred();

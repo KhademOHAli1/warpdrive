@@ -18,6 +18,26 @@ export const QUEUE_SCHEMA_VERSION = 46;
 const MIGRATION_TIMEOUT_MS = 180_000;
 const READ_TIMEOUT_MS = 5_000;
 const MIGRATION_LOCK = "warpdrive:core-migrations";
+export type QueueOperationPhase =
+  | "query"
+  | "reader-close"
+  | "admission"
+  | "producer-start"
+  | "producer-stop";
+/** Internal ownership registration: synchronous and non-throwing, before awaiting actual work. */
+export type QueueOperationObserver = (
+  operation: Promise<unknown>,
+  phase: QueueOperationPhase,
+) => void;
+
+function ownedOperation<T>(
+  operation: Promise<T>,
+  phase: QueueOperationPhase,
+  observe?: QueueOperationObserver,
+): Promise<T> {
+  observe?.(operation, phase);
+  return operation;
+}
 
 type QueueReader = Pick<
   PgBoss,
@@ -89,12 +109,16 @@ async function boundedCall<T>(
   }
 }
 
-export async function stopUnadmittedBoss(boss: PgBoss): Promise<void> {
-  await boundedCall(
+export async function stopUnadmittedBoss(
+  boss: PgBoss,
+  observe?: QueueOperationObserver,
+): Promise<void> {
+  const stopping = ownedOperation(
     boss.stop({ graceful: false, timeout: 1_000 }),
-    AbortSignal.timeout(10_000),
-    10_000,
+    "producer-stop",
+    observe,
   );
+  await boundedCall(stopping, AbortSignal.timeout(10_000), 10_000);
 }
 
 export async function closeMigrationPool(pool: Pool): Promise<void> {
@@ -104,13 +128,18 @@ export async function closeMigrationPool(pool: Pool): Promise<void> {
 export async function startAdmittedRuntimeBoss(
   boss: PgBoss,
   admit: () => Promise<void>,
+  observe?: QueueOperationObserver,
 ): Promise<void> {
   try {
-    await boundedCall(admit(), AbortSignal.timeout(30_000), 30_000);
-    await boundedCall(boss.start(), AbortSignal.timeout(30_000), 30_000);
+    const admission = admit();
+    observe?.(admission, "admission");
+    await boundedCall(admission, AbortSignal.timeout(30_000), 30_000);
+    const starting = boss.start();
+    observe?.(starting, "producer-start");
+    await boundedCall(starting, AbortSignal.timeout(30_000), 30_000);
     installRuntimeQueueAssertions(boss);
   } catch (error) {
-    await stopUnadmittedBoss(boss);
+    await stopUnadmittedBoss(boss, observe);
     throw error;
   }
 }
@@ -120,6 +149,7 @@ async function withQueueReader<T>(
   connectionString: string,
   read: (reader: QueueReader, pool: Pool) => Promise<T>,
   signal: AbortSignal,
+  observe?: QueueOperationObserver,
 ): Promise<T> {
   let failedRead = false;
   const assertReadable = () => {
@@ -142,7 +172,9 @@ async function withQueueReader<T>(
       async executeSql(text, values) {
         try {
           signal.throwIfAborted();
-          const result = await pool.query(text, values);
+          const query = pool.query(text, values);
+          observe?.(query, "query");
+          const result = await query;
           signal.throwIfAborted();
           return result;
         } catch (error) {
@@ -155,22 +187,31 @@ async function withQueueReader<T>(
     },
   });
   const reader: QueueReader = {
-    schemaVersion: () => probe.schemaVersion(),
-    detectSchemaDrift: () => probe.detectSchemaDrift(),
-    getBamStatus: () => probe.getBamStatus(),
-    getQueues: (names, options) => probe.getQueues(names, options),
-    getQueue: (name) => probe.getQueue(name),
-    async assertCatalogCoverage() {
-      assertReadable();
-      await assertQueueCatalogCoverage(pool, signal);
-      assertReadable();
+    schemaVersion: () => ownedOperation(probe.schemaVersion(), "query", observe),
+    detectSchemaDrift: () => ownedOperation(probe.detectSchemaDrift(), "query", observe),
+    getBamStatus: () => ownedOperation(probe.getBamStatus(), "query", observe),
+    getQueues: (names, options) =>
+      ownedOperation(probe.getQueues(names, options), "query", observe),
+    getQueue: (name) => ownedOperation(probe.getQueue(name), "query", observe),
+    assertCatalogCoverage() {
+      return ownedOperation(
+        (async () => {
+          assertReadable();
+          await assertQueueCatalogCoverage(pool, signal, observe);
+          assertReadable();
+        })(),
+        "query",
+        observe,
+      );
     },
   };
   try {
     signal.throwIfAborted();
     return await read(reader, pool);
   } finally {
-    await boundedCall(pool.end(), AbortSignal.timeout(READ_TIMEOUT_MS));
+    const closing = pool.end();
+    observe?.(closing, "reader-close");
+    await boundedCall(closing, AbortSignal.timeout(READ_TIMEOUT_MS));
     assertReadable();
   }
 }
@@ -225,42 +266,62 @@ export function queueCatalogCoverageMatches(evidence: QueueCatalogEvidence): boo
   );
 }
 
-async function assertQueueCatalogCoverage(pool: Pool, signal: AbortSignal): Promise<void> {
+async function assertQueueCatalogCoverage(
+  pool: Pool,
+  signal: AbortSignal,
+  observe?: QueueOperationObserver,
+): Promise<void> {
   const tables = Object.keys(QUEUE_CATALOG_TABLES);
   signal.throwIfAborted();
-  const columns = await pool.query<QueueCatalogEvidence["columns"][number]>(
-    `
+  const columns = await ownedOperation(
+    pool.query<QueueCatalogEvidence["columns"][number]>(
+      `
     SELECT c.relname AS "table",a.attname AS "column" FROM pg_attribute a
     JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname=$1 AND c.relname=ANY($2::text[]) AND c.relkind IN ('r','p')
       AND a.attnum>0 AND NOT a.attisdropped`,
-    [QUEUE_SCHEMA, tables],
+      [QUEUE_SCHEMA, tables],
+    ),
+    "query",
+    observe,
   );
   signal.throwIfAborted();
-  const constraints = await pool.query<QueueCatalogEvidence["constraints"][number]>(
-    `
+  const constraints = await ownedOperation(
+    pool.query<QueueCatalogEvidence["constraints"][number]>(
+      `
     SELECT c.relname AS "table",count(*)::integer AS count FROM pg_constraint k
     JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname=$1 AND c.relname=ANY($2::text[]) AND k.contype<>'n' GROUP BY c.relname`,
-    [QUEUE_SCHEMA, tables],
+      [QUEUE_SCHEMA, tables],
+    ),
+    "query",
+    observe,
   );
   signal.throwIfAborted();
-  const functions = await pool.query<QueueCatalogEvidence["functions"][number]>(
-    `
+  const functions = await ownedOperation(
+    pool.query<QueueCatalogEvidence["functions"][number]>(
+      `
     SELECT p.proname AS name,oidvectortypes(p.proargtypes) AS arguments,
       format_type(p.prorettype,NULL) AS returns,l.lanname AS language,p.provolatile AS volatility,
       p.prosecdef AS "securityDefiner",pg_get_functiondef(p.oid) AS definition
     FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang
     WHERE n.nspname=$1 AND p.proname=ANY($2::text[])`,
-    [QUEUE_SCHEMA, Object.keys(QUEUE_CATALOG_FUNCTIONS)],
+      [QUEUE_SCHEMA, Object.keys(QUEUE_CATALOG_FUNCTIONS)],
+    ),
+    "query",
+    observe,
   );
   signal.throwIfAborted();
-  const enumLabels = await pool.query<{ label: string }>(
-    `
+  const enumLabels = await ownedOperation(
+    pool.query<{ label: string }>(
+      `
     SELECT e.enumlabel AS label FROM pg_enum e JOIN pg_type t ON t.oid=e.enumtypid
     JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname=$1 AND t.typname='job_state'
     ORDER BY e.enumsortorder`,
-    [QUEUE_SCHEMA],
+      [QUEUE_SCHEMA],
+    ),
+    "query",
+    observe,
   );
   if (
     !queueCatalogCoverageMatches({
@@ -302,6 +363,7 @@ export async function assertQueueSchema(reader: QueueReader, signal: AbortSignal
 export async function assertRuntimeQueueSchema(
   connectionString: string,
   signal?: AbortSignal,
+  observe?: QueueOperationObserver,
 ): Promise<void> {
   const bounded = remainingSignal(signal, 30_000);
   try {
@@ -309,6 +371,7 @@ export async function assertRuntimeQueueSchema(
       connectionString,
       (reader) => assertQueueSchema(reader, bounded),
       bounded,
+      observe,
     );
   } catch {
     rejectAdmission();

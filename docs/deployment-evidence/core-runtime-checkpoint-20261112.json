@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 1,
+  "kind": "optional-core-source-checkpoint",
+  "verifiedAt": "2026-11-12T06:25:57.205364+00:00",
+  "baseCommit": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+  "fullyQualifiedNativeCore": false,
+  "finalCoreImageQualified": false,
+  "deploymentAuthorized": false,
+  "sourceVerification": {
+    "success": true,
+    "scope": "configured-full-typecheck-and-changed-source-typed-eslint-only",
+    "stages": [
+      {
+        "name": "typecheck",
+        "success": true,
+        "exitCode": 0,
+        "seconds": 8.318,
+        "sampledPeakRssBytes": 3597352960
+      },
+      {
+        "name": "eslint",
+        "success": true,
+        "exitCode": 0,
+        "seconds": 12.196,
+        "sampledPeakRssBytes": 3924787200
+      }
+    ],
+    "sourceSha256": {
+      "scripts/deployment/web_inputs.mjs": "7e20466c594f8730d866e8d923443f552ddb1190738881ac1bee99a2bf9196e2",
+      "src/app/api/runtime/web-identity/route.test.ts": "d3d539731662af4cf64e4c756db50bed842c1d3f2827aaa40a2a0036511f4685",
+      "src/app/api/runtime/web-identity/route.ts": "76be9a424c01d701cb2eb7ffa50ace8fe4b88ae4945b94c1b3f611bd0477f789",
+      "src/config/coreEnv.ts": "767ddc642e2fb9aef126748060ce67611fd6fe0ae4fd0627d29a6e8aca7de484",
+      "src/config/env.test.ts": "75e8769c2adf370c18163b97f5b66eb98980d6c3569a870817800e8ab66af7e0",
+      "src/config/env.ts": "78874662c9127d8a2c9687d69414714f38c7d977640755f4a5e142b0b7f39560",
+      "src/constants/errorIds.ts": "8ea8f9b5fb513c50c1bd1c6e185be8fda4b96e6108e8446e55d84aadc859694f",
+      "src/db/client.ts": "c29de5acdeeccbd9a2854bceb185648faaaa950f1f5f9fb9c168f30d701a9327",
+      "src/db/corePoolProfile.test.ts": "682973d162e6e78bdcdc667e13a4b33b48008a4027b450855b9a7a042f4695bf",
+      "src/db/corePoolProfile.ts": "46030bfc906ddf591bbaea919d877203f0e9d7c0ace56846fd9a26b9a225c686",
+      "src/db/coreRoleAdmission.harness.ts": "aadcc06784dea90486060409427c98728ce8fd927d3ae6d59cdb002778bf3177",
+      "src/db/coreRoleAdmission.test.ts": "f9e3400451d69d827d87b0037b2237a84a0ef1a4e75e88209e691d76936349fb",
+      "src/db/coreRoleAdmission.ts": "f0a4441b9297bbafefd082d1ba6fe9a9bf7ba6d6069339e6ba11a262c35f63e2",
+      "src/entrypoints/core-api.ts": "6f156057442ec0e20bd5a0095f9f6f53df4a766f11f042414a495cb4abfd129f",
+      "src/features/newsletter/attribution/router.ts": "7d55b08b4101a6752fecb6e8f756fde4c352854897210339d5c9f72e29ec1cbd",
+      "src/features/newsletter/identity/router.ts": "a3446e212b43bd0dea0737b90d5f9c64eddbc4baaa8c4360bc40e1db5b9a67a6",
+      "src/features/privacy/registryAnalytics.ts": "eeaaaa3a72855a9efd8e96333af467b7a96d85fbb3ffacc3f83800ca0794473e",
+      "src/features/privacy/registryEntries.ts": "b1fe903211986be6695051965f887a50eb64b3f65977ca9847a1779c53e9af0f",
+      "src/features/privacy/registryIdsCoreHttp1.ts": "cc42dbaf34984d357330202b0cc3f01087a963f3612605c32418656f8bbd301f",
+      "src/features/privacy/registryIdsCoreHttp2.ts": "3634c0a2e1b046867b1c12fb761873af902109f663b9cdee8659628c798d848b",
+      "src/features/privacy/registryIdsInfrastructure2.ts": "02477c24d608fd3db33779d499908f98555cf42151189d0c51c22523630a3be8",
+      "src/features/privacy/registryIdsNewsletter.ts": "25771d259f124f5689123a5bb4ccf614d564caf53f64e6a2a726589f31e53fc5",
+      "src/features/privacy/registryIdsProtectedSecrets1.ts": "4018cf8e65d4689195da19c6b98d7f8badaaf4267cc9b0e56223335530ed75f3",
+      "src/features/privacy/registryIdsSales1.ts": "f81809b8cd229ed2ee8d3a3899a23408f175e97c4604452a48c163cb1f5879de",
+      "src/features/release/router.ts": "7e35d9e8c093a07ca5a3e1c93f9a87838de6bb512254126919c5f255c477d72f",
+      "src/features/release/webIdentity.test.ts": "88301ce9cb2230302fd5140e0315b7768bacd171e24d90b6fadd101f3132451e",
+      "src/features/release/webIdentity.ts": "b0ebdbe96ada99be4209571d736d8f9b201787de8128d78d9f3ff32ae6640a7a",
+      "src/features/release/webVersion.test.ts": "81cbad3c5bb1e25e5cbe7429d35fddd2ac23eb5e6e4558627ccb8cc019a04858",
+      "src/features/release/webVersion.ts": "78f1c8610d2ee6a92225f0007868b532ec95e662c7f01241787f004356fea414",
+      "src/features/stats/router.ts": "8d680b7c71adcc80379bfae83f259b6e1f656e9604524d3a7497ed19fcef3b12",
+      "src/features/stats/savedPerformanceRouter.ts": "364fb47cc463408847bf5805aee70a5ba17e83e342e1932e4c01f98ed3e6b3e5",
+      "src/jobs/appInstrumentation.test.ts": "3cf59b61668dcf4b7da6cf6ab8d7e7a2ec84bb6e8d81a9743b8fea1952b078d4",
+      "src/jobs/appInstrumentation.ts": "c852970df879c3a5d0cfa382191063a45449651443fac49b2c3d657ed32018b2",
+      "src/jobs/bossObserver.test.ts": "b7a88aabc3a4a601a96aae552986379068f1c60c8039bfa02b17ab28d2ed6f48",
+      "src/jobs/bossObserver.ts": "6efa1a10cad7f19ba66b5538f4309de783a66c4053ff16be76a0a3e83514ee84",
+      "src/jobs/coreProducer.ts": "c5b94783fa5dda8c010d870c8d4f787e923627bf9025ea298f2e68990d6b5864",
+      "src/jobs/schemaContract.integration.test.ts": "0ca8478401888bb4234432fe25c1464b9f968a4eb1b7feb5f389c03448da16da",
+      "src/jobs/schemaContract.ts": "ad7a9e5d45b6004890feb8cf0073a2f74588ef0126b3a65dbc95a62e8ea74bed",
+      "src/server/runtime/queueOwnership.test.ts": "231e6c513af72a5db9a82c53e634e373d4794f24d21b72a59d7dd1f1204d498a",
+      "src/server/runtime/queueOwnership.ts": "02400e4371fe1cb1d3f1c324a9f2198dfbaca48cb0a53cd6f086d23ff2148c9b",
+      "src/server/runtime/shutdown.test.ts": "b469221ef4445daaa32cde7bb70cd90dbfb5b8e664eac3f58a9199c7e09bac9a",
+      "src/server/runtime/shutdown.ts": "783aeb1045f3bc3494f7aa6c74c98018783373cd2e47185ef0db11b867bf0923",
+      "src/server/trpc/context-core.test.ts": "160ea8d256ae31aeb1c72717c9ad2df6167722aafe7c9a9e2feab8085ca4e06d",
+      "src/server/trpc/context-core.ts": "cebdd52391d1c424b00cd421a9af21105b4951dff9d046bac138737d5509212e",
+      "src/server/trpc/core-http-mutations.harness.ts": "dae1ec673560ce6379b22406fc0b2cd4df4ac52048df172ff9355abbac1dcead",
+      "src/server/trpc/core-http-mutations.test.ts": "fd65a6531e69216489c3cf1b6e4140df45b4b8ea598d61cedb697c1dcfd98f60",
+      "src/server/trpc/core-http.harness.ts": "497b9e23df0116f56f87e8e12ac96ba6e6a32bb71009d6552e9b4c3f4fb01a68",
+      "src/server/trpc/core-runtime.test.ts": "c7eb4c92c9ea45ae053c965e883ceb911be28367cf6a51da6da843254718f774",
+      "src/server/trpc/core-runtime.ts": "0110bcc936408f047fc852efe65ab4f6787c6870b4191f5247425f5717b202db",
+      "src/server/trpc/core-service.harness.ts": "f7e3ad041e517349e87cb670de2548818c0150bc46a1b5c123025326d6929418",
+      "src/server/trpc/core-service.ts": "c3e05a3e76a83e84eb2cc93e70068e6f3097ae35cb7c7c52f9b5b1e080b5336c",
+      "bun.lock": "1990ed96cac5ddfce101a4b68668a287e8109615b2feb8eac307d9d578c14e1e",
+      "package.json": "52b2aac9702b21d26c0ec76d20ae3923305af1685eddf2ea44198fe368667fa3",
+      "AGENTS.md": "246aa50dfb42d99b449d5bedfcb0aa731ba749de5965cd93c85045fbb7628c5b",
+      "tsconfig.json": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb",
+      "tsconfig.typecheck.json": "0f4a3ebc7013449817cf60aeb54124423e21bba58bcaf87f17d534d3c4611b0d",
+      ".typecheck/env.d.ts": "04041615a04dc6e9ae25bb771b250656e901d1b749ae3c1f37d7fa47097bc9cb"
+    },
+    "frozenFilesChanged": [],
+    "cleanup": {
+      "dependencyEntrypointsUnchanged": true,
+      "allStageGroupsClean": true,
+      "dependencyTargetUnchanged": true,
+      "lockfileUnchanged": true,
+      "ownedTranspilerCacheRemoved": true
+    },
+    "measurementLimit": "Final compiler run used an existing incremental cache; this is not a cold-build cost claim."
+  },
+  "focusedUnits": {
+    "files": 16,
+    "passed": 194,
+    "failed": 0
+  },
+  "componentGuardTests": {
+    "passed": 28,
+    "failed": 0
+  },
+  "nativeRole": {
+    "success": true,
+    "seconds": 2.015,
+    "cleanupSeconds": 0.2,
+    "peakOwnedRssBytes": 114196480,
+    "peakScratchBytes": 48452053,
+    "peakLogBytes": 16883,
+    "ownedProcessGroupsClean": true,
+    "listenerClosed": true,
+    "fixtureRemoved": true,
+    "before": {
+      "src/db/coreRoleAdmission.ts": "f0a4441b9297bbafefd082d1ba6fe9a9bf7ba6d6069339e6ba11a262c35f63e2",
+      "src/db/coreRoleAdmission.test.ts": "f9e3400451d69d827d87b0037b2237a84a0ef1a4e75e88209e691d76936349fb",
+      "src/db/coreRoleAdmission.harness.ts": "aadcc06784dea90486060409427c98728ce8fd927d3ae6d59cdb002778bf3177"
+    },
+    "after": {
+      "src/db/coreRoleAdmission.ts": "f0a4441b9297bbafefd082d1ba6fe9a9bf7ba6d6069339e6ba11a262c35f63e2",
+      "src/db/coreRoleAdmission.test.ts": "f9e3400451d69d827d87b0037b2237a84a0ef1a4e75e88209e691d76936349fb",
+      "src/db/coreRoleAdmission.harness.ts": "aadcc06784dea90486060409427c98728ce8fd927d3ae6d59cdb002778bf3177"
+    },
+    "sourceUnchanged": true,
+    "postgresVersion": "postgres (PostgreSQL) 16.10 (Homebrew)",
+    "bunVersion": "1.4.4",
+    "scope": "synthetic disposable PG16 role/profile SQL only; no migrations/full-router/image/production"
+  },
+  "nativeRolePassedCases": 45,
+  "nativeHttp": {
+    "success": true,
+    "scope": "shared-context-fetch-adapter-selected-real-native-cookie-HTTP-reads-and-four-mutation-adapters",
+    "runtimeRoleProfile": "isolated-fixture-owner-not-production-role-qualification",
+    "checks": [
+      {
+        "name": "full-router-import-without-Next-request-globals",
+        "passed": true
+      },
+      {
+        "name": "native-password-issued-cookie-denials",
+        "passed": true
+      },
+      {
+        "name": "native-pending-admin-wrong-factor-and-real-mfa",
+        "passed": true
+      },
+      {
+        "name": "interleaved-actor-visibility-permissions",
+        "passed": true
+      },
+      {
+        "name": "direct-http-superjson-parity",
+        "passed": true
+      },
+      {
+        "name": "live-deactivation-denial",
+        "passed": true
+      },
+      {
+        "name": "batching-timing-expected-errors",
+        "passed": true
+      },
+      {
+        "name": "mutation-csrf-denials-without-effects",
+        "passed": true
+      },
+      {
+        "name": "mutation-identity-detach-remote-and-local",
+        "passed": true
+      },
+      {
+        "name": "mutation-attributed-lead-durable-replay",
+        "passed": true
+      },
+      {
+        "name": "mutation-period-forecast-available-captured-roster",
+        "passed": true
+      },
+      {
+        "name": "mutation-saved-report-create-remove",
+        "passed": true
+      }
+    ],
+    "mutations": {
+      "deniedCommands": 60,
+      "identityDeniedProcedureCount": 6,
+      "denialVariants": [
+        "missing-server-facts",
+        "missing-cookie-token",
+        "missing-input-token",
+        "wrong-token",
+        "wrong-origin",
+        "wrong-site"
+      ],
+      "businessStateUnchangedOnDenial": true,
+      "engineUnchangedOnDenial": true,
+      "detachCommittedAndAudited": true,
+      "attributedLeadCreatedAndReplayed": true,
+      "forecastAvailableFromCapturedRoster": true,
+      "savedReportCreatedAndRemoved": true,
+      "engine": {
+        "requests": 5,
+        "revokes": 1,
+        "exposureReads": 1,
+        "unexpected": 0
+      },
+      "ownedBusinessRowsRemoved": true,
+      "fullDatabaseDropRequired": true
+    },
+    "resources": {
+      "deadlineSeconds": 180,
+      "workBudgetSeconds": 150,
+      "cleanupReserveSeconds": 30,
+      "combinedRssLimitBytes": 1073741824,
+      "bunRssLimitBytes": 536870912,
+      "engineFixtureRssLimitBytes": 134217728,
+      "commandLogLimitBytes": 2097152,
+      "fixtureScratchLimitBytes": 536870912,
+      "limitation": "Sampled owned RSS watchdog, not OS memory/network sandbox",
+      "sampledPeakCombinedRssBytes": 492437504,
+      "sampledPeakBunRssBytes": 337625088,
+      "sampledPeakEngineRssBytes": 17612800,
+      "sampledPeakCommandLogBytes": 2233,
+      "sampledPeakFixtureScratchBytes": 97000924,
+      "successfulSamples": 25,
+      "limitExceeded": false
+    },
+    "cleanup": {
+      "engineStopSucceeded": true,
+      "engineProcessGone": true,
+      "coreProcessGroupGone": true,
+      "engineSocketClosed": true,
+      "stopSucceeded": true,
+      "postgresProcessGone": true,
+      "postgresSocketClosed": true,
+      "coreHttpSocketClosed": true,
+      "fixtureDirectoryGone": true
+    },
+    "durationSeconds": 3.928,
+    "sourceSha256": {
+      "src/server/trpc/context-core.ts": "cebdd52391d1c424b00cd421a9af21105b4951dff9d046bac138737d5509212e",
+      "src/server/trpc/request-csrf.ts": "9a113a43d3b4b217199da964c5aaa08a1a4fc4a4b642d6db1883b7a5bb2901ac",
+      "src/server/trpc/http.ts": "906474961077990cd3fee779863ce96d5c377a4b8b8dd64186812e9572b56bb4",
+      "src/server/trpc/context.ts": "22faaad47768c509a085efc815c0e8aafe11ebb663a3053fc28e9277afc4885f",
+      "src/server/trpc/root.ts": "8c2b69db8b02735b8bf3a01b05fef03ae56fd2ac874c4fa5ebfd0dea27c3ac29",
+      "src/server/trpc/trpc.ts": "f18719f864a9599c56fc6af040479a8796618847d1accc9a4227fff0ae4df491",
+      "src/server/runtime/shutdown.ts": "783aeb1045f3bc3494f7aa6c74c98018783373cd2e47185ef0db11b867bf0923",
+      "src/config/env.ts": "78874662c9127d8a2c9687d69414714f38c7d977640755f4a5e142b0b7f39560",
+      "src/constants/errorIds.ts": "8ea8f9b5fb513c50c1bd1c6e185be8fda4b96e6108e8446e55d84aadc859694f",
+      "src/db/client.ts": "c29de5acdeeccbd9a2854bceb185648faaaa950f1f5f9fb9c168f30d701a9327",
+      "src/db/corePoolProfile.ts": "46030bfc906ddf591bbaea919d877203f0e9d7c0ace56846fd9a26b9a225c686",
+      "src/config/coreEnv.ts": "767ddc642e2fb9aef126748060ce67611fd6fe0ae4fd0627d29a6e8aca7de484",
+      "src/features/auth/session.ts": "f79a2b1968c668dbeb1f144b2aa2c33b88e5e704ea95cb4995688c09cecb9b0a",
+      "src/features/auth/currentAuthority.ts": "58a84b6fabb7455f408bddd1e6f3c5ef021874970e13cc34a15dc5ce1f9a031b",
+      "src/features/auth/currentNativeActor.ts": "4664b85d7952e93cfdfe2475018b8ea69ddbc829aca6b0002590915fc60f5aee",
+      "src/app/api/trpc/[trpc]/route.ts": "68845465e7539daec91a532e1f1b4c5f79ddfc7274c71a701037f9ebead579fe",
+      "src/app/api/runtime/web-identity/route.ts": "76be9a424c01d701cb2eb7ffa50ace8fe4b88ae4945b94c1b3f611bd0477f789",
+      "src/features/release/router.ts": "7e35d9e8c093a07ca5a3e1c93f9a87838de6bb512254126919c5f255c477d72f",
+      "src/features/release/webIdentity.ts": "b0ebdbe96ada99be4209571d736d8f9b201787de8128d78d9f3ff32ae6640a7a",
+      "src/features/release/webVersion.ts": "78f1c8610d2ee6a92225f0007868b532ec95e662c7f01241787f004356fea414",
+      "src/features/newsletter/router.ts": "7f79ea56bd7868df515b32708cc8649559735882fbf9f3ad8463bd228658671e",
+      "src/server/trpc/core-http.harness.ts": "497b9e23df0116f56f87e8e12ac96ba6e6a32bb71009d6552e9b4c3f4fb01a68",
+      "src/server/trpc/core-http-mutations.harness.ts": "dae1ec673560ce6379b22406fc0b2cd4df4ac52048df172ff9355abbac1dcead",
+      "src/features/newsletter/identity/router.ts": "a3446e212b43bd0dea0737b90d5f9c64eddbc4baaa8c4360bc40e1db5b9a67a6",
+      "src/features/newsletter/attribution/router.ts": "7d55b08b4101a6752fecb6e8f756fde4c352854897210339d5c9f72e29ec1cbd",
+      "src/features/stats/router.ts": "8d680b7c71adcc80379bfae83f259b6e1f656e9604524d3a7497ed19fcef3b12",
+      "src/features/stats/savedPerformanceRouter.ts": "364fb47cc463408847bf5805aee70a5ba17e83e342e1932e4c01f98ed3e6b3e5"
+    },
+    "sourceUnchanged": true,
+    "fullNativeServiceQualified": false
+  },
+  "realCoreProcess": {
+    "firstSupervisorCleanPass": false,
+    "firstSupervisorFinalization": "PermissionError while signaling inferred residual process group; exact group not retained",
+    "firstSupervisorSourcePreserved": true,
+    "assertionReports": [
+      {
+        "event": "core.service.proof",
+        "status": "pass",
+        "authenticatedOwners": 2,
+        "crossOwnerDenials": 2,
+        "positiveMutations": 2,
+        "mutationCsrfDenials": 1,
+        "versionRefreshWithoutRestart": true,
+        "liveRegistryConsumers": 0,
+        "repeatedSignalDrain": true,
+        "negativeStartupCases": 3,
+        "timingResponses": 42,
+        "postRequests": 3,
+        "childFacts": {
+          "children": 4,
+          "logBytes": 389,
+          "allExited": true
+        }
+      }
+    ],
+    "recordedNativeHandles": [
+      24332, 24346, 24361, 24394, 24406, 24411, 24420, 24435, 24668, 24682, 24689
+    ],
+    "recordedHandlesLiveAfterRecovery": [],
+    "openFixtureHandlesAfterRecovery": false,
+    "listenersIndependentlyClosed": {
+      "62760": true,
+      "62763": true,
+      "62770": true,
+      "62834": true,
+      "62876": true,
+      "62904": true
+    },
+    "fixtureAndPrivateConfigurationRemoved": true,
+    "sourceFileCount": 1239,
+    "finalHarnessSha256": "f7e3ad041e517349e87cb670de2548818c0150bc46a1b5c123025326d6929418",
+    "nativeBeforeHashMapUnavailable": true,
+    "sampledResourcePeakReceiptUnavailable": true,
+    "timestamps": {
+      "postgresStartedAt": "2026-11-12 06:14:13.738 UTC",
+      "postgresFastShutdownAt": "2026-11-12 06:14:49.587 UTC",
+      "postgresStoppedAt": "2026-11-12 06:14:49.670 UTC",
+      "driverLogModifiedAt": "2026-11-12T06:14:48.468816+00:00"
+    },
+    "scope": "selected real Core entrypoint assertions passed; initial supervisor did not complete cleanly; separate owned cleanup verification only; no native rerun",
+    "preservedChildShutdownOutcomes": {
+      "negative_old": [
+        {
+          "event": "runtime.shutdown",
+          "source": "core-api",
+          "status": "failed",
+          "step": "runtime",
+          "exitCode": 1
+        }
+      ],
+      "negative_owner": [
+        {
+          "event": "runtime.shutdown",
+          "source": "core-api",
+          "status": "failed",
+          "step": "runtime",
+          "exitCode": 1
+        }
+      ],
+      "negative_malformed": [
+        {
+          "event": "runtime.shutdown",
+          "source": "core-api",
+          "status": "failed",
+          "step": "runtime",
+          "exitCode": 1
+        }
+      ],
+      "positive": [
+        {
+          "event": "runtime.shutdown",
+          "source": "core-api",
+          "status": "drained",
+          "step": "runtime",
+          "exitCode": 0
+        }
+      ]
+    },
+    "postgresStartToStoppedSecondsFromLog": 35.932,
+    "measuredTotalDurationUnavailable": true,
+    "manualSignalsNeeded": false
+  },
+  "receiptSha256": {
+    "core-service-integrated-verification/report.json": "f713ced2ad78c9274075cfd16d5a4c4fbc3c876a067e238ca12068445ca6f117",
+    "core-role-admission-qualification/native-report.json": "8fff455d6f62778d9df89dea5ee64426a04574a53548b08db6a2e065feb91a6f",
+    "core-api-http-proof/report.json": "d31cd1a681cf135b1761c6ac33c65aef04e8442a2b887620bacf8c57ae6b12ac",
+    "core-service-native-proof/cleanup-recovery-receipt.json": "6dfab00af2b22a80c98a2c874ab1720da638f6c68fe19f6e9b8af812ecc28cd1"
+  },
+  "remainingGates": [
+    "Repair the external native supervisor finalizer and rerun with retained full source/resource/automated cleanup receipts.",
+    "Run exact new-commit CI/security; the e927 results are historical separate evidence.",
+    "Implement and qualify the optional Core image, provenance and ingress profile with old/new contracts.",
+    "Complete exclusive domain ownership/selective shipping and bounded batch/output contracts.",
+    "Complete staging/promotion/resumption/rollback and applicable installed/off-host recovery acceptance."
+  ]
+}

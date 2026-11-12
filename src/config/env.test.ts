@@ -5,6 +5,55 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { parseEnv } from "./env";
 
 describe("env boundary", () => {
+  test("ignores inactive Core-only settings for legacy processes", () => {
+    const parsed = parseEnv({
+      ...process.env,
+      RUNTIME_COMPONENT: undefined,
+      CORE_DB_MAX: "0",
+      CORE_PORT: "",
+      CORE_WEB_ORIGIN: "invalid",
+    });
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.RUNTIME_COMPONENT).toBe("web");
+      expect(parsed.value.CORE_DB_MAX).toBe(8);
+    }
+  });
+  test("requires accepted Web metadata origin and no migration credential for Core", () => {
+    const candidate = {
+      ...process.env,
+      RUNTIME_COMPONENT: "core-api",
+      CORE_WEB_ORIGIN: "http://ingress.internal:8080",
+      MIGRATION_DATABASE_URL: "",
+      MIGRATION_DATABASE_URL_FILE: undefined,
+    };
+    expect(parseEnv(candidate).ok).toBe(true);
+    for (const CORE_WEB_ORIGIN of [
+      "",
+      "http://user:secret@ingress/",
+      "http://ingress/path",
+      "http://ingress/?x",
+    ])
+      expect(parseEnv({ ...candidate, CORE_WEB_ORIGIN }).ok).toBe(false);
+    expect(
+      parseEnv({ ...candidate, MIGRATION_DATABASE_URL: "postgres://owner:secret@db/main" }).ok,
+    ).toBe(false);
+  });
+
+  test("validates finite Core pool settings and allows margin for server timeouts", () => {
+    const candidate = {
+      ...process.env,
+      RUNTIME_COMPONENT: "core-api",
+      CORE_WEB_ORIGIN: "https://app.example.com",
+      MIGRATION_DATABASE_URL: "",
+      MIGRATION_DATABASE_URL_FILE: undefined,
+    };
+    for (const value of ["0", "3", "17", "Infinity", "1.5", ""])
+      expect(parseEnv({ ...candidate, CORE_DB_MAX: value }).ok).toBe(false);
+    expect(parseEnv({ ...candidate, CORE_DB_QUERY_MS: "30000" }).ok).toBe(false);
+    expect(parseEnv({ ...candidate, CORE_DB_MAX: "8", CORE_PRODUCER_DB_MAX: "2" }).ok).toBe(true);
+  });
+
   test("loads a valid env from process.env (vitest.setup defaults)", async () => {
     const { env } = await import("./env");
     expect(env.BASE_URL).toBe("https://app.example.com");

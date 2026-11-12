@@ -4,6 +4,30 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { startAppBoss } from "./appInstrumentation";
 
 describe("startAppBoss", () => {
+  it("retains actual startup ownership and the Core failure observer before publishing", async () => {
+    const boss = new PgBoss("postgres://fixture:synthetic-secret@127.0.0.1/unused");
+    const failing = vi.fn();
+    const actual = Promise.resolve(boss);
+    const admission = Promise.resolve();
+    const owned: Promise<unknown>[] = [];
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(boss, "start").mockImplementation(() => {
+      boss.emit("error", new Error("sensitive synthetic diagnostics"));
+      return actual;
+    });
+    await startAppBoss({
+      createBoss: () => boss,
+      admit: () => admission,
+      setBoss: () => undefined,
+      source: "core-api",
+      onFailure: failing,
+      observeStartup: (operation) => {
+        owned.push(operation);
+      },
+    });
+    expect(failing).toHaveBeenCalledExactlyOnceWith();
+    expect(owned).toEqual([admission, actual]);
+  });
   afterEach(() => vi.restoreAllMocks());
   it("starts a boss and publishes it before returning", async () => {
     let didStart = false;

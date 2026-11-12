@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { guardCsrf } from "@/features/identity/actions/shared";
+import { type RequestCsrfFacts, validateRequestCsrf } from "@/server/trpc/request-csrf";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import {
   createSavedPerformanceReport,
@@ -20,8 +20,8 @@ const save = z.strictObject({
 const remove = id.extend({ csrfToken });
 const signal = () => AbortSignal.timeout(15_000);
 
-async function requireCsrf(token: string | null): Promise<void> {
-  if (!(await guardCsrf(token)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+function requireCsrf(facts: RequestCsrfFacts | undefined, token: string | null): void {
+  if (!validateRequestCsrf(facts, token).ok) throw new TRPCError({ code: "FORBIDDEN" });
 }
 
 export const savedPerformanceRouter = router({
@@ -39,7 +39,7 @@ export const savedPerformanceRouter = router({
       ),
     ),
   create: protectedProcedure.input(save).mutation(async ({ ctx, input }) => {
-    await requireCsrf(input.csrfToken);
+    requireCsrf(ctx.csrf, input.csrfToken);
     return createSavedPerformanceReport(
       ctx.db,
       { actor: ctx.actor, session: ctx.session },
@@ -48,7 +48,7 @@ export const savedPerformanceRouter = router({
     );
   }),
   remove: protectedProcedure.input(remove).mutation(async ({ ctx, input }) => {
-    await requireCsrf(input.csrfToken);
+    requireCsrf(ctx.csrf, input.csrfToken);
     return removeSavedPerformanceReport(
       ctx.db,
       { actor: ctx.actor, session: ctx.session },

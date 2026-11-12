@@ -3,6 +3,7 @@ import { createConnection, createServer, type Socket } from "node:net";
 import { Pool } from "pg";
 import { PgBoss } from "pg-boss";
 import { describe, expect, it, vi } from "vitest";
+import { admitCoreRuntimeRole } from "@/db/coreRoleAdmission";
 import { applyCoreMigrations } from "@/db/migrate";
 import { makeTestDb } from "@/test/db";
 import { startAppBoss } from "./appInstrumentation";
@@ -114,6 +115,22 @@ describe("explicit queue migration and non-owner runtime", () => {
         "REINDEX TABLE pgboss.queue",
       ])
         await expect(runtimePool.query(statement)).rejects.toMatchObject({ code: "42501" });
+      const roleProfile = {
+        expectedRole: role,
+        appSchema: "public",
+        queueSchema: "pgboss",
+        queryTimeoutMs: 5_000,
+      };
+      const admitRole = () =>
+        admitCoreRuntimeRole((configuration) => runtimePool.query(configuration), roleProfile);
+      expect(await admitRole()).toEqual({ ok: true, profile: "core-runtime-dml-v1" });
+      await h.pool.query(`GRANT SELECT ON pgboss.queue TO "${role}" WITH GRANT OPTION`);
+      try {
+        expect(await admitRole()).toEqual({ ok: false, reason: "grant_option" });
+      } finally {
+        await h.pool.query(`REVOKE GRANT OPTION FOR SELECT ON pgboss.queue FROM "${role}"`);
+      }
+      expect(await admitRole()).toEqual({ ok: true, profile: "core-runtime-dml-v1" });
       const before = await fingerprint(h.pool);
       const published = vi.fn();
       await startAppBoss({

@@ -28,6 +28,12 @@ import {
   sessionTokenFromCookie,
 } from "@/features/auth/better/sessionToken";
 import { readAuthPolicy } from "@/features/auth/management/policy";
+import {
+  admitCoreMutationEngine,
+  type CoreHttpMutationFacts,
+  type CoreMutationEngineFixture,
+  runCoreHttpMutationChecks,
+} from "./core-http-mutations.harness";
 import type { AppRouter } from "./root";
 
 interface LoopbackServer {
@@ -65,6 +71,7 @@ interface HarnessState {
   server: LoopbackServer | null;
   stage: string;
   seeded: boolean;
+  missingCsrfFacts: boolean;
 }
 interface NativeResidue {
   rateLimits: number;
@@ -76,11 +83,14 @@ export interface CoreHttpHarnessReport {
   success: boolean;
   checks: { name: string; passed: true }[];
   failureStage?: string;
+  failureKind?: string;
+  ownedHttpOrigin?: string;
   blockedFetchAttempts: number;
   unexpectedErrors: number;
   cleanupSuccess: boolean;
   databaseDropRequired: true;
   nativeResidue?: NativeResidue;
+  mutations?: CoreHttpMutationFacts;
   seconds: number;
   limitations: string[];
 }
@@ -482,7 +492,14 @@ async function startHarness(
   await seedAccounts(db, fixture);
   const handler = createTrpcHttpHandler({
     router: appRouter,
-    createContext: ({ req }) => createContextFromRequest(req, db),
+    createContext: async ({ req }) => {
+      const context = await createContextFromRequest(req, db);
+      if (!state.missingCsrfFacts) return context;
+      // Private server-side fixture mode: no request field can activate this.
+      const withoutFacts = { ...context };
+      delete withoutFacts.csrf;
+      return withoutFacts;
+    },
     captureError: () => {
       report.unexpectedErrors += 1;
     },
@@ -506,6 +523,7 @@ async function exerciseHarness(
   fixture: Fixture,
   state: HarnessState,
   report: CoreHttpHarnessReport,
+  engine: CoreMutationEngineFixture,
 ): Promise<void> {
   const origin = state.origin;
   assert(origin !== null, "Owned HTTP listener missing");
@@ -543,6 +561,24 @@ async function exerciseHarness(
   );
   assert.equal(report.blockedFetchAttempts, 0, "Selected flows must not attempt provider fetch");
   report.checks.push({ name: state.stage, passed: true });
+  report.mutations = await runCoreHttpMutationChecks({
+    db,
+    origin,
+    adminCookie: issued(fixture, "mfa").cookie,
+    adminId: fixture.userIds[2],
+    engine,
+    setMissingCsrfFacts: (missing) => {
+      state.missingCsrfFacts = missing;
+    },
+    stage: (name) => {
+      state.stage = name;
+    },
+    passed: (name) => {
+      report.checks.push({ name, passed: true });
+    },
+  });
+  assert.equal(report.unexpectedErrors, 0, "All mutation errors must remain expected");
+  assert.equal(report.blockedFetchAttempts, 0, "Mutations must use only owned fixture origins");
 }
 
 async function removeFixture(db: Db, fixture: Fixture): Promise<void> {
@@ -620,12 +656,22 @@ async function cleanupHarness(
 }
 
 /** Caller owns and MUST drop the dedicated migrated DB/cluster and close its pool/process. */
-export async function runCoreHttpHarness(db: Db): Promise<CoreHttpHarnessReport> {
+export async function runCoreHttpHarness(
+  db: Db,
+  engine: CoreMutationEngineFixture,
+): Promise<CoreHttpHarnessReport> {
   await admitDatabase(db);
+  admitCoreMutationEngine(engine);
   const fixture = newFixture(),
     originalFetch = globalThis.fetch,
     started = performance.now();
-  const state: HarnessState = { origin: null, server: null, stage: "import-router", seeded: false };
+  const state: HarnessState = {
+    origin: null,
+    server: null,
+    stage: "import-router",
+    seeded: false,
+    missingCsrfFacts: false,
+  };
   const report: CoreHttpHarnessReport = {
     kind: "warpdrive-core-http-cookie-seam",
     success: false,
@@ -637,13 +683,15 @@ export async function runCoreHttpHarness(db: Db): Promise<CoreHttpHarnessReport>
     seconds: 0,
     limitations: [
       "Owned source-level Bun HTTP/native-gateway-issued cookies/PostgreSQL evidence, not deployed API/image/rollout acceptance.",
-      "Selected RPC reads only; queue startup/dispatch and exclusive API write ownership are separate gates.",
+      "Selected RPC reads and four mutation adapters; queue startup/dispatch, destructive erasure and exclusive API write ownership are separate gates.",
+      "Engine effects use an admitted owned loopback HTTP fixture, not an installed Engine/provider; capture proposal exists only inside the disposable owner database.",
       "Fetch blocking is not an OS network sandbox; anonymous native audit/rate/verification residue is reported and requires caller-owned database teardown.",
     ],
   };
   globalThis.fetch = (input, init) => {
     const address = input instanceof Request ? input.url : String(input);
-    if (state.origin === null || new URL(address).origin !== state.origin) {
+    const requestOrigin = new URL(address).origin;
+    if (requestOrigin !== state.origin && requestOrigin !== engine.engineOrigin) {
       report.blockedFetchAttempts += 1;
       return Promise.reject(new TypeError("Provider fetch blocked by Core HTTP harness"));
     }
@@ -651,11 +699,13 @@ export async function runCoreHttpHarness(db: Db): Promise<CoreHttpHarnessReport>
   };
   try {
     await startHarness(db, fixture, state, report);
-    await exerciseHarness(db, fixture, state, report);
+    await exerciseHarness(db, fixture, state, report, engine);
     report.success = true;
-  } catch {
+  } catch (error) {
     report.failureStage = state.stage;
+    report.failureKind = error instanceof Error ? error.name : "UnknownFailure";
   } finally {
+    if (state.origin !== null) report.ownedHttpOrigin = state.origin;
     await cleanupHarness(db, fixture, state, report, originalFetch);
     report.success = report.success && report.cleanupSuccess;
     report.seconds = Math.round((performance.now() - started) / 10) / 100;

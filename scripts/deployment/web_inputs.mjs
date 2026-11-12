@@ -19,7 +19,7 @@ const REVIEWED = {
   "postcss.config.mjs": "b783348d5618047d0f37e12acd15c5a2c5f02809d8711e0764c9cea52750346c",
   "src/config/developmentCache.ts":
     "a568b3224411d19865ae771d72d13c67cf4d87509789806b46e33992f2472697",
-  "src/config/env.ts": "3f60b2d4fb85f9f3f0534f91e71d27dd654b3b5988e0844e58a63c000838f59b",
+  "src/config/env.ts": "78874662c9127d8a2c9687d69414714f38c7d977640755f4a5e142b0b7f39560",
   "src/features/release/currentVersion.ts":
     "98fe2b01a8ad364ca2db966af5378fd941560130dc22310f549c5705c3345ac2",
   "src/features/workflows/v2/codeSandbox.ts":
@@ -34,7 +34,7 @@ const REVIEWED_NEXT_WITHOUT_MESSAGE_LIST =
 // needs review. This is not a filename-only exception for future global/reflective loaders.
 const REVIEWED_HOST_GLOBAL_SYNTAX = {
   "src/jobs/boss.ts": "93a20735512e6f5fb7c69ffb64627b10d130ca418b93176714fec8553f7881ee",
-  "src/db/client.ts": "958f6adb2b9c32c41ab82f0884b3281c0fd2baf7261ef67db6d9244b3d88c432",
+  "src/db/client.ts": "c49205ba7ca411efa48411bc7528d605bfaa855df0e5a3020dc8fc6affbb3fc7",
   "src/server/rateLimitGuard.ts":
     "1bc990b58d49ba79231d1fe04fd678194a98c306df69173e395b14e0e2996f2a",
   "src/features/workflows/v2/codeWorker.ts":
