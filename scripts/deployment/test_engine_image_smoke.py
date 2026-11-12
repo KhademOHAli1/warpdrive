@@ -311,7 +311,7 @@ class CleanupQualificationTests(unittest.TestCase):
             docker = SimpleNamespace(json=Mock(return_value={"os": "linux", "architecture": "amd64", "root": directory}))
             value = smoke.EngineImageSmoke(docker, "synthetic:only", "a" * 40, Path(directory) / "evidence")
             for name in ("inspect_image", "create_environment", "packaging", "empty_runtime", "initialize",
-                         "migration_excludes_runtime", "readiness"):
+                         "migration_excludes_runtime", "readiness", "supported_old_upgrade"):
                 setattr(value, name, Mock(return_value={}))
             value.cleanup = Mock(return_value=["owned cleanup deliberately failed"])
             value.failure_diagnostics = Mock(return_value=[])
@@ -327,6 +327,143 @@ class CleanupQualificationTests(unittest.TestCase):
             self.assertFalse(report["cleanup"]["success"])
             self.assertEqual(len(report["checks"]), len(smoke.REQUIRED_CHECKS))
             self.assertFalse(value.secret_file.exists())
+
+
+class SupportedOldAdmissionTests(unittest.TestCase):
+    def old_image(self):
+        raw = ImageAdmissionTests().image()
+        raw[0]["Config"].update(User="", Entrypoint=["docker-entrypoint.sh"])
+        raw[0]["Config"]["Labels"].update({"org.opencontainers.image.revision": smoke.OLD_REVISION,
+                                          smoke.CONTEXT_LABEL: smoke.OLD_CONTEXT_SHA})
+        return raw
+
+    def test_old_root_identity_is_honest_and_never_admitted_as_new(self):
+        raw = self.old_image()
+        result = smoke.engine_metadata(raw, smoke.OLD_REVISION, smoke.OLD_CONTEXT_SHA, legacy=True)
+        self.assertEqual(result["revision"], smoke.OLD_REVISION)
+        self.assertEqual(result["user"], "root-default")
+        self.assertTrue(result["legacyRootFixture"])
+        with self.assertRaises(smoke.SmokeError):
+            smoke.engine_metadata(raw, "a" * 40, "c" * 64)
+
+    def test_old_original_revision_cannot_be_overwritten(self):
+        raw = self.old_image()
+        raw[0]["Config"]["Labels"]["org.opencontainers.image.revision"] = "a" * 40
+        with self.assertRaises(smoke.SmokeError):
+            smoke.engine_metadata(raw, smoke.OLD_REVISION, smoke.OLD_CONTEXT_SHA, legacy=True)
+        with self.assertRaisesRegex(smoke.SmokeError, "cannot be relabeled"):
+            smoke.engine_metadata(raw, "a" * 40, smoke.OLD_CONTEXT_SHA, legacy=True)
+
+    def test_unpinned_historical_context_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "patches").mkdir()
+            for name in ("Dockerfile", "build.sh", "patches/085-inapp-operational-events.patch"):
+                (root / name).write_text("not original historical content")
+            with self.assertRaisesRegex(smoke.SmokeError, "39-file baseline"):
+                smoke.context_record(root, legacy=True)
+
+    def test_wrong_checkout_head_refuses_before_context_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "old-context"
+            with patch.object(smoke.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, b"a" * 40 + b"\n", b"")) as run:
+                with self.assertRaisesRegex(smoke.SmokeError, "original pinned revision"):
+                    smoke.prepare_old_context(Path(directory), output)
+            self.assertFalse(output.exists())
+            self.assertEqual(run.call_count, 1)
+
+    def test_changed_commit_object_refuses_before_context_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "old-context"
+            with patch.object(smoke.subprocess, "run", side_effect=[
+                subprocess.CompletedProcess([], 0, smoke.OLD_REVISION.encode() + b"\n", b""),
+                subprocess.CompletedProcess([], 0, b"tampered commit object", b""),
+            ]):
+                with self.assertRaisesRegex(smoke.SmokeError, "commit object"):
+                    smoke.prepare_old_context(Path(directory), output)
+            self.assertFalse(output.exists())
+
+
+class SupportedOldWriterFenceTests(unittest.TestCase):
+    def fixture(self):
+        value = object.__new__(smoke.EngineImageSmoke)
+        value.prefix = "owned"
+        value.old_binary_retired = False
+        value.report = {"oldImage": {"id": "sha256:" + "b" * 64}}
+        value.docker = SimpleNamespace(run=Mock(return_value=subprocess.CompletedProcess([], 0, "", "")))
+        value.owned = Mock()
+        value.sql = Mock(return_value="0")
+        return value
+
+    def test_unknown_or_live_old_process_holds_cutover(self):
+        for state in ({"Running": True, "Pid": 55, "OOMKilled": False},
+                      {"Running": False, "OOMKilled": False},
+                      {"Running": False, "Pid": 0, "OOMKilled": True}):
+            value = self.fixture()
+            value.state = Mock(return_value=state)
+            with self.subTest(state=state), self.assertRaises(smoke.SmokeError):
+                value.verify_old_stopped(SimpleNamespace(name="owned-old"), "owned_legacy")
+            self.assertFalse(value.old_binary_retired)
+            value.docker.run.assert_not_called()
+            value.sql.assert_not_called()
+
+    def test_old_database_session_keeps_migration_held(self):
+        value = self.fixture()
+        value.state = Mock(return_value={"Running": False, "Pid": 0, "OOMKilled": False})
+        value.sql.return_value = "1"
+        def observe(check, *_args, **_kwargs):
+            if not check():
+                raise AssertionError("old session remains")
+        with patch.object(smoke.NATIVE, "wait_until", side_effect=observe):
+            with self.assertRaisesRegex(AssertionError, "old session remains"):
+                value.verify_old_stopped(SimpleNamespace(name="owned-old"), "owned_legacy")
+        self.assertFalse(value.old_binary_retired)
+
+    def test_a_second_running_old_container_keeps_migration_held(self):
+        value = self.fixture()
+        value.state = Mock(side_effect=[{"Running": False, "Pid": 0, "OOMKilled": False}, {"Running": True}])
+        value.docker.run.return_value.stdout = "owned-extra-old\n"
+        with self.assertRaisesRegex(smoke.SmokeError, "still running"):
+            value.verify_old_stopped(SimpleNamespace(name="owned-old"), "owned_legacy")
+        self.assertFalse(value.old_binary_retired)
+        value.sql.assert_not_called()
+
+    def test_verified_stop_permanently_retires_old_binary(self):
+        value = self.fixture()
+        value.state = Mock(return_value={"Running": False, "Pid": 0, "OOMKilled": False})
+        proof = value.verify_old_stopped(SimpleNamespace(name="owned-old"), "owned_legacy")
+        self.assertTrue(value.old_binary_retired)
+        self.assertEqual(proof["oldDatabaseSessions"], 0)
+        with self.assertRaisesRegex(smoke.SmokeError, "Retired historical engine"):
+            value.engine(["--passive"], legacy=True)
+
+    def test_offline_handoff_has_no_recursive_or_foreign_path_escape(self):
+        value = self.fixture()
+        value.old_binary_retired, value.uploads_volume = True, "owned-media"
+        for command in (["chown", "65532:65532", "/etc"], ["chown", "65532:65532", "/listmonk/uploads/../escape"],
+                        ["chown", "65532:65532", "-R"], ["chown", "65532:65532"]):
+            with self.subTest(command=command), self.assertRaises(smoke.SmokeError):
+                value.engine([], {}, legacy=True, offline_media=True, entry_command=command)
+        value.docker.run.assert_not_called()
+
+
+class UpgradeWitnessTests(unittest.TestCase):
+    def test_first_upgrade_preserves_rows_while_adding_only_receipt(self):
+        before = {"table:campaigns": "a", "table:receipts": "b", "schema": "old", "sequence:event": "3:true"}
+        after = {**before, "table:warpdrive_engine_schema": "new receipt", "schema": "new", "sequence:event": "4:true"}
+        self.assertTrue(smoke.preserved_rows(before, after, added_receipt=True))
+        for change in ({**after, "table:receipts": "mutated unknown receipt"},
+                       {key: value for key, value in after.items() if key != "table:campaigns"},
+                       {**after, "table:unexpected": "unreviewed"}):
+            with self.subTest(change=change):
+                self.assertFalse(smoke.preserved_rows(before, change, added_receipt=True))
+        self.assertFalse(smoke.preserved_rows({}, {"table:warpdrive_engine_schema": "only receipt"}, added_receipt=True))
+
+    def test_media_scope_is_bounded_to_owned_flat_fixture_tree(self):
+        for path in ("/listmonk/uploads", "/listmonk/uploads/fixture.png", "/listmonk/uploads/thumbs/fixture.png"):
+            self.assertTrue(smoke.valid_media_path(path))
+        for path in ("/etc", "/listmonk/uploads/../x", "/listmonk/uploads/x\ny", "/listmonk/uploads/a/b/c", "--recursive"):
+            self.assertFalse(smoke.valid_media_path(path))
 
 
 if __name__ == "__main__":

@@ -21,12 +21,14 @@ import secrets
 import signal
 import shutil
 import subprocess
+import struct
 import sys
 import tarfile
 import tempfile
 import time
 from types import SimpleNamespace
 import uuid
+import zlib
 
 try:
     from .image_smoke import ImageSmoke, OWNER_LABEL, SmokeError, validate_reference, validate_revision, utc_now
@@ -40,9 +42,12 @@ CONTEXT = REPO / "deploy/newsletters/engine"
 UPSTREAM_SHA = "52119464c87ed71a60d46f7097ddb304967d344fc1954769388a1e2d764b659b"
 UPSTREAM_SOURCE = "https://github.com/knadh/listmonk/tree/ef0a75872463f10a4848af6c547d1c057405453a"
 CONTEXT_LABEL = "io.warpdrive.engine.context.sha256"
+OLD_REVISION = "35c40339b8068a489247080e61430d17bfbfdb26"
+OLD_TREE = "72c4eb357e6981315909fb134c021f1c5eaa2025"
+OLD_CONTEXT_SHA = "1e935b4f2ad94158db9cb3482f2fa874d90e80a289bb65099991a79769b92626"
 LIMITATIONS = [
     "Disposable Linux/amd64 final-image fixture only; no production deployment or existing-volume ownership transition.",
-    "Legacy upgrade starts from pinned upstream schema, not an older installed packed binary.",
+    "Historical packed upgrade is synthetic baseline35c40339 only; it does not qualify an actual installed VPS or arbitrary older versions.",
     "No external SMTP/provider delivery, public ingress, backup restore or installed monitoring qualification.",
     "Advisory lifecycle locks are cooperative; supported DDL still requires independently verified offline maintenance.",
 ]
@@ -52,11 +57,82 @@ REQUIRED_CHECKS = (
     "explicit-upgrade-and-no-write", "receipt-and-index-drift-rejection", "restricted-role-no-ddl-startup",
     "rls-policy-sequence-drift-rejection", "runtime-excludes-migration", "migration-excludes-actual-runtime",
     "fence-loss-exits-and-restarts", "final-image-health-and-readiness",
+    "supported-old-packed-binary-upgrade",
 )
 
 
 def digest(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
+
+
+def valid_media_path(path: str) -> bool:
+    return (isinstance(path, str) and re.fullmatch(r"/listmonk/uploads(?:/[A-Za-z0-9_.-]{1,200}){0,2}", path) is not None
+            and not any(part in {".", ".."} for part in Path(path).parts))
+
+
+def preserved_rows(before: dict, after: dict, *, added_receipt: bool = False) -> bool:
+    old = {key: value for key, value in before.items() if key.startswith("table:")}
+    new = {key: value for key, value in after.items() if key.startswith("table:")}
+    expected = set(old) | ({"table:warpdrive_engine_schema"} if added_receipt else set())
+    return bool(old) and set(new) == expected and all(new.get(key) == value for key, value in old.items())
+
+
+def png_chunk(kind, payload):
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload))
+
+
+UPGRADE_PNG = (b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+               + png_chunk(b"IDAT", zlib.compress(b"\x00\x30\x70\x90")) + png_chunk(b"IEND", b""))
+
+OLD_INITIAL_SEED = """
+UPDATE settings SET value='false'::jsonb WHERE key IN ('app.check_updates','app.cache_slow_queries','maintenance.db.vacuum');
+UPDATE settings SET value='\"/listmonk/uploads\"'::jsonb WHERE key='upload.filesystem.upload_path';
+UPDATE settings SET value=jsonb_set(jsonb_set(value,'{0,host}','\"127.0.0.1\"'),'{0,port}','1') WHERE key='smtp';
+INSERT INTO campaigns(id,uuid,name,subject,from_email,body,status,messenger,sent,started_at,last_subscriber_id,max_subscriber_id,to_send)
+VALUES(999,gen_random_uuid(),'Old packed legacy cursor','Synthetic','sender@example.test','Synthetic','running','email',1,clock_timestamp(),7,9203,2);
+"""
+
+OLD_WITNESSES = """
+INSERT INTO lists(id,uuid,name,type,optin) VALUES(9101,gen_random_uuid(),'Synthetic upgrade purpose','private','double');
+INSERT INTO subscribers(id,uuid,email,name,status) VALUES
+ (9201,'00000000-0000-4000-8000-000000009201','upgrade-active@example.test','Synthetic active','enabled'),
+ (9202,'00000000-0000-4000-8000-000000009202','upgrade-blocked@example.test','Synthetic blocked','enabled'),
+ (9203,'00000000-0000-4000-8000-000000009203','upgrade-rejected@example.test','Synthetic rejected','enabled');
+INSERT INTO subscriber_lists(subscriber_id,list_id,status) VALUES(9201,9101,'confirmed'),(9202,9101,'confirmed');
+INSERT INTO warpdrive_crm_identity_challenges(challenge_uuid,binding_uuid,purpose,subscriber_id,subscriber_uuid,email,token_digest,expires_at,verified_at) VALUES
+ ('00000000-0000-4000-8000-000000009301','00000000-0000-4000-8000-000000009301','identity',9201,'00000000-0000-4000-8000-000000009201','upgrade-active@example.test',decode(repeat('ab',32),'hex'),clock_timestamp()+interval '1 hour',clock_timestamp()),
+ ('00000000-0000-4000-8000-000000009302','00000000-0000-4000-8000-000000009302','identity',9202,'00000000-0000-4000-8000-000000009202','upgrade-blocked@example.test',decode(repeat('ab',32),'hex'),clock_timestamp()+interval '1 hour',clock_timestamp());
+INSERT INTO warpdrive_crm_consent_grants(grant_uuid,binding_uuid,subscriber_id,subscriber_uuid,email,purpose_list_id,granted_at) VALUES
+ ('00000000-0000-4000-8000-000000009401','00000000-0000-4000-8000-000000009301',9201,'00000000-0000-4000-8000-000000009201','upgrade-active@example.test',9101,clock_timestamp()),
+ ('00000000-0000-4000-8000-000000009402','00000000-0000-4000-8000-000000009302',9202,'00000000-0000-4000-8000-000000009202','upgrade-blocked@example.test',9101,clock_timestamp());
+UPDATE subscriber_lists SET status='unsubscribed' WHERE subscriber_id=9202 AND list_id=9101;
+UPDATE subscribers SET status='blocklisted' WHERE id=9202;
+INSERT INTO warpdrive_crm_suppressions(address_digest) VALUES(warpdrive_crm_address_digest('upgrade-erased@example.test'));
+INSERT INTO campaigns(id,uuid,name,subject,from_email,body,status,messenger,sent,started_at,last_subscriber_id,max_subscriber_id,to_send)
+VALUES(9301,gen_random_uuid(),'Durable upgrade witnesses','Synthetic','sender@example.test','Synthetic','paused','email',0,clock_timestamp(),9202,9203,3);
+INSERT INTO warpdrive_delivery_runs(campaign_id,recipient_ceiling,exhausted) VALUES(9301,9203,true);
+INSERT INTO warpdrive_delivery_recipients(id,campaign_id,subscriber_id,subscriber_uuid,address_digest,state,attempts,message_id)
+ SELECT '00000000-0000-4000-8000-000000009501',9301,id,uuid,sha256(convert_to(email,'UTF8')),'pending',0,NULL FROM subscribers WHERE id=9201;
+INSERT INTO warpdrive_delivery_recipients(id,campaign_id,subscriber_id,subscriber_uuid,address_digest,state,attempts,message_id)
+ SELECT '00000000-0000-4000-8000-000000009502',9301,id,uuid,sha256(convert_to(email,'UTF8')),'unknown',1,'<upgrade-unknown@example.test>' FROM subscribers WHERE id=9202;
+INSERT INTO warpdrive_delivery_recipients(id,campaign_id,subscriber_id,subscriber_uuid,address_digest,state,attempts,message_id)
+ SELECT '00000000-0000-4000-8000-000000009503',9301,id,uuid,sha256(convert_to(email,'UTF8')),'rejected',1,'<upgrade-rejected@example.test>' FROM subscribers WHERE id=9203;
+UPDATE warpdrive_operational_events SET acknowledged_at=clock_timestamp() WHERE kind='delivery.failed';
+"""
+
+OLD_WITNESS_CHECK = """SELECT
+ (SELECT status='paused' AND sent=1 AND last_subscriber_id=7 FROM campaigns WHERE id=999)
+ AND (SELECT hold='legacy' FROM warpdrive_delivery_runs WHERE campaign_id=999)
+ AND (SELECT count(*)=5 FROM warpdrive_delivery_migrations WHERE version IN(1,2,3,4,5))
+ AND (SELECT count(*)=1 FROM warpdrive_crm_consent_grants WHERE subscriber_id=9201 AND revoked_at IS NULL)
+ AND (SELECT count(*)=1 FROM warpdrive_crm_consent_grants WHERE subscriber_id=9202 AND revoked_at IS NOT NULL)
+ AND (SELECT count(*)=1 FROM warpdrive_crm_consent_events WHERE grant_uuid='00000000-0000-4000-8000-000000009402')
+ AND EXISTS(SELECT 1 FROM warpdrive_crm_suppressions WHERE address_digest=warpdrive_crm_address_digest('upgrade-erased@example.test'))
+ AND (SELECT count(*)=1 FROM warpdrive_delivery_recipients WHERE state='pending' AND attempts=0 AND lease_token IS NULL AND lease_until IS NULL AND subscriber_id=9201)
+ AND (SELECT count(*)=1 FROM warpdrive_delivery_recipients WHERE state='unknown' AND attempts=1 AND message_id='<upgrade-unknown@example.test>' AND lease_token IS NULL AND lease_until IS NULL AND subscriber_id=9202)
+ AND (SELECT count(*)=1 FROM warpdrive_operational_events WHERE kind='delivery.uncertain' AND acknowledged_at IS NULL AND event_key=digest('delivery:00000000-0000-4000-8000-000000009502:delivery.uncertain','sha256'))
+ AND (SELECT count(*)=1 FROM warpdrive_operational_events WHERE kind='delivery.failed' AND acknowledged_at IS NOT NULL AND event_key=digest('delivery:00000000-0000-4000-8000-000000009503:delivery.failed','sha256'))
+"""
 
 
 def required_checks_passed(checks) -> bool:
@@ -97,7 +173,7 @@ def bounded_tar(path: Path, payload_limit: int, member_limit: int):
             yield archive
 
 
-def context_record(context: Path = CONTEXT) -> dict:
+def context_record(context: Path = CONTEXT, *, legacy: bool = False) -> dict:
     files = {}
     total = 0
     for path in sorted(context.rglob("*")):
@@ -112,15 +188,65 @@ def context_record(context: Path = CONTEXT) -> dict:
         if path.stat().st_size > 2 * 1024**2 or total > 8 * 1024**2 or len(files) >= 256:
             raise SmokeError("Engine build context exceeds its reviewed resource bound")
         files[relative] = digest(path.read_bytes())
-    required = {"Dockerfile", "build.sh", "nonroot-entrypoint.sh", "patches/090-explicit-migrations.patch",
-                "migration-tests/verify.py", "migration-tests/test_verify.py"}
+    required = ({"Dockerfile", "build.sh", "patches/085-inapp-operational-events.patch"} if legacy else
+                {"Dockerfile", "build.sh", "nonroot-entrypoint.sh", "patches/090-explicit-migrations.patch",
+                 "migration-tests/verify.py", "migration-tests/test_verify.py"})
     if not required <= files.keys():
         raise SmokeError("Engine context is missing required migration/nonroot inputs")
     encoded = json.dumps(files, sort_keys=True, separators=(",", ":")).encode()
-    return {"sha256": digest(encoded), "files": files}
+    value = {"sha256": digest(encoded), "files": files}
+    if legacy and (len(files) != 39 or value["sha256"] != OLD_CONTEXT_SHA):
+        raise SmokeError("Historical engine context does not match the reviewed39-file baseline")
+    return value
 
 
-def engine_metadata(raw, revision: str, context_sha: str) -> dict:
+def prepare_old_context(checkout: Path, output: Path) -> dict:
+    """Materialize only verified historical blobs; never execute historical code."""
+    def git(*args):
+        result = subprocess.run(["git", "--no-replace-objects", "-C", str(checkout), *args],
+                                capture_output=True, timeout=15, check=False)
+        if result.returncode:
+            raise SmokeError("Historical engine Git source verification failed")
+        return result.stdout
+    if git("rev-parse", "HEAD").decode().strip() != OLD_REVISION:
+        raise SmokeError("Historical checkout must identify its original pinned revision")
+    commit = git("cat-file", "commit", OLD_REVISION)
+    if hashlib.sha1(b"commit " + str(len(commit)).encode() + b"\0" + commit).hexdigest() != OLD_REVISION:
+        raise SmokeError("Historical Git commit object differs from pinned identity")
+    if git("rev-parse", OLD_REVISION + ":deploy/newsletters/engine").decode().strip() != OLD_TREE:
+        raise SmokeError("Historical engine Git tree differs from reviewed baseline")
+    prefix = "deploy/newsletters/engine/"
+    records = git("ls-tree", "-rz", OLD_REVISION, "--", prefix).split(b"\0")
+    if len([row for row in records if row]) != 39:
+        raise SmokeError("Historical engine Git source has unexpected file count")
+    output.mkdir(parents=True, exist_ok=False)
+    try:
+        for row in records:
+            if not row:
+                continue
+            header, raw_name = row.split(b"\t", 1)
+            mode, kind, oid = header.split()
+            name = raw_name.decode()
+            if kind != b"blob" or mode not in {b"100644", b"100755"} or not name.startswith(prefix):
+                raise SmokeError("Historical context contains an unsupported Git object")
+            relative = Path(name[len(prefix):])
+            if relative.is_absolute() or ".." in relative.parts:
+                raise SmokeError("Historical context path is unsafe")
+            raw = git("cat-file", "blob", oid.decode())
+            if len(raw) > 2 * 1024**2 or hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest() != oid.decode():
+                raise SmokeError("Historical context blob identity/size is invalid")
+            path = output / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("xb") as target:
+                target.write(raw)
+            path.chmod(0o755 if mode == b"100755" else 0o644)
+        return {"revision": OLD_REVISION, "tree": OLD_TREE, **context_record(output, legacy=True)}
+    except BaseException:
+        shutil.rmtree(output)
+        raise
+
+
+def engine_metadata(raw, revision: str, context_sha: str, *, legacy: bool = False) -> dict:
     if not isinstance(raw, list) or len(raw) != 1 or not isinstance(raw[0], dict):
         raise SmokeError("Engine image inspection is invalid")
     image = raw[0]
@@ -128,9 +254,14 @@ def engine_metadata(raw, revision: str, context_sha: str) -> dict:
     labels = config.get("Labels") or {}
     if image.get("Os") != "linux" or image.get("Architecture") != "amd64":
         raise SmokeError("Engine qualification requires the actual Linux/amd64 final image")
-    if config.get("User") != "65532:65532":
+    if legacy and (revision != OLD_REVISION or context_sha != OLD_CONTEXT_SHA):
+        raise SmokeError("Historical image cannot be relabeled as the candidate revision")
+    if not legacy and config.get("User") != "65532:65532":
         raise SmokeError("Engine image must default to numeric nonroot user 65532:65532")
-    if config.get("Entrypoint") != ["/usr/local/bin/warpdrive-engine-entrypoint.sh"] or config.get("Cmd") != ["./listmonk"]:
+    if legacy and config.get("User") not in {None, ""}:
+        raise SmokeError("Historical baseline must retain its original root-default image configuration")
+    entrypoint = ["docker-entrypoint.sh"] if legacy else ["/usr/local/bin/warpdrive-engine-entrypoint.sh"]
+    if config.get("Entrypoint") != entrypoint or config.get("Cmd") != ["./listmonk"]:
         raise SmokeError("Engine default entrypoint/CMD does not match the qualified command contract")
     if config.get("WorkingDir") != "/listmonk" or config.get("Volumes"):
         raise SmokeError("Unexpected engine working directory or anonymous volume")
@@ -146,7 +277,8 @@ def engine_metadata(raw, revision: str, context_sha: str) -> dict:
     if not re.fullmatch(r"sha256:[a-f0-9]{64}", image_id):
         raise SmokeError("Engine image has no immutable local image ID")
     return {"id": image_id, "revision": revision, "contextSha256": context_sha,
-            "user": config["User"], "platform": "linux/amd64", "upstreamSource": UPSTREAM_SOURCE}
+            "user": config.get("User") or "root-default", "legacyRootFixture": legacy,
+            "platform": "linux/amd64", "upstreamSource": UPSTREAM_SOURCE}
 
 
 def installer_fingerprint(source: Path) -> str:
@@ -161,7 +293,7 @@ def installer_fingerprint(source: Path) -> str:
     return digest(checksums.encode())
 
 
-def verify_source_archive(path: Path, expected: dict, destination: Path) -> str:
+def verify_source_archive(path: Path, expected: dict, destination: Path, *, patch_context: Path = CONTEXT, legacy: bool = False) -> str:
     maximum = len(expected["files"]) + 2
     with bounded_tar(path, 64 * 1024**2, maximum) as archive:
         entries = {}
@@ -199,10 +331,13 @@ def verify_source_archive(path: Path, expected: dict, destination: Path) -> str:
                 raise SmokeError("Pinned source member is unsafe")
             member.name = str(Path(*parts))
             tar.extract(member, source, filter="data")
-    for patch in sorted((CONTEXT / "patches").glob("*.patch")):
+    for patch in sorted((patch_context / "patches").glob("*.patch")):
         result = subprocess.run(["git", "apply", str(patch)], cwd=source, capture_output=True, timeout=10)
         if result.returncode:
             raise SmokeError("Reviewed engine patches do not apply to archived source")
+    if legacy:
+        files = {p.relative_to(source).as_posix(): digest(p.read_bytes()) for p in sorted(source.rglob("*")) if p.is_file()}
+        return digest(json.dumps(files, sort_keys=True, separators=(",", ":")).encode())
     return installer_fingerprint(source)
 
 
@@ -250,13 +385,19 @@ class ContainerProcess:
 
 
 class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
-    def __init__(self, docker, image: str, revision: str, output: Path):
+    def __init__(self, docker, image: str, revision: str, output: Path,
+                 old_image: str | None = None, old_context: Path | None = None):
         self.docker, self.image = docker, validate_reference(image)
         self.expected_revision, self.output_dir = validate_revision(revision), output
         self.prefix = "wd-engine-" + uuid.uuid4().hex[:12]
         self.resources, self.containers = [], {}
         self.clock, self.sleep = time.monotonic, time.sleep
         self.context = context_record()
+        self.old_image = validate_reference(old_image) if old_image else None
+        self.old_context_path = old_context
+        self.old_context = context_record(old_context, legacy=True) if old_context is not None else None
+        self.uploads_volume = None
+        self.old_binary_retired = False
         self.counter, self.serve = 0, None
         self.pg_bin, self.socket, self.root = Path("/usr/local/bin"), Path("/var/run/postgresql"), output
         password = secrets.token_urlsafe(32)
@@ -290,7 +431,20 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
         self.owned(name)
         return ImageSmoke.state(self, name)
 
-    def engine(self, flags, environment=None, missing_file=False, entry_command=None):
+    def owned_volume(self, name):
+        if ("volume", name) not in self.resources:
+            raise SmokeError("Unowned engine media volume refused")
+        labels = self.docker.json(["volume", "inspect", name, "--format", "{{json .Labels}}"])
+        if not isinstance(labels, dict) or labels.get(OWNER_LABEL) != self.prefix:
+            raise SmokeError("Engine media volume ownership changed")
+
+    def engine(self, flags, environment=None, missing_file=False, entry_command=None, *, legacy=False, offline_media=False):
+        if legacy and self.old_binary_retired and not offline_media:
+            raise SmokeError("Retired historical engine cannot execute after the offline cutover fence")
+        if offline_media:
+            if (not legacy or not self.old_binary_retired or self.uploads_volume is None or not entry_command or len(entry_command) < 3 or entry_command[:2] != ["chown", "65532:65532"]
+                    or len(entry_command) > 18 or any(not valid_media_path(path) for path in entry_command[2:])):
+                raise SmokeError("Offline media handoff is limited to explicit owned fixture paths")
         self.counter += 1
         name = f"{self.prefix}-engine-{self.counter}"
         self.resources.append(("container", name))
@@ -299,9 +453,15 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
                 "--network", self.report["resources"]["network"], "--memory", "256m", "--memory-swap", "256m",
                 "--cpus", "1", "--pids-limit", "96", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
                 "--read-only", "--log-opt", "max-size=1m", "--log-opt", "max-file=1",
-                "--tmpfs", "/tmp:rw,nosuid,nodev,size=16m,uid=65532,gid=65532,mode=0700"]
+                "--tmpfs", "/tmp:rw,nosuid,nodev,size=16m,uid=" + ("0,gid=0" if legacy else "65532,gid=65532") + ",mode=0700"]
+        if offline_media:
+            args += ["--cap-add", "CHOWN"]
+        if self.uploads_volume is not None:
+            self.owned_volume(self.uploads_volume)
+            args += ["--mount", f"type=volume,source={self.uploads_volume},target=/listmonk/uploads"]
         if entry_command is None:
-            args += ["--tmpfs", "/listmonk/uploads:rw,nosuid,nodev,size=16m,uid=65532,gid=65532,mode=0700"]
+            if self.uploads_volume is None:
+                args += ["--tmpfs", "/listmonk/uploads:rw,nosuid,nodev,size=16m,uid=65532,gid=65532,mode=0700"]
             # Every database command authenticates through the real *_FILE loader.
             # A wrong direct value prevents a loader bypass from passing.
             env["LISTMONK_db__password"] = "deliberately-wrong-synthetic-password"
@@ -310,7 +470,8 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
                 args += ["--mount", f"type=bind,source={self.secret_file},target=/run/engine-db-password,readonly"]
         for key, value in sorted(env.items()):
             args += ["--env", f"{key}={value}"]
-        args += [self.report["image"]["id"], *(entry_command if entry_command is not None else ["./listmonk", "--config", "", *flags])]
+        selected_image = self.report["oldImage"]["id"] if legacy else self.report["image"]["id"]
+        args += [selected_image, *(entry_command if entry_command is not None else ["./listmonk", "--config", "", *flags])]
         self.docker.run(args, timeout=60)
         self.owned(name)
         return ContainerProcess(self, name)
@@ -512,6 +673,209 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
             self.stop_engine()
         return {"healthSurvived": True, "databaseReady": True, "passiveIsNotDeliveryReady": True, "anonymousDenied": True}
 
+    def legacy_packaging(self):
+        if self.old_image is None or self.old_context is None or self.old_context_path is None:
+            raise SmokeError("Supported-old packed upgrade requires the pinned historical image and context")
+        self.report["oldImage"] = engine_metadata(self.docker.json(["image", "inspect", self.old_image]),
+                                                OLD_REVISION, self.old_context["sha256"], legacy=True)
+        self.report["oldSource"] = {"revision": OLD_REVISION, "tree": OLD_TREE, **self.old_context}
+        probe = self.engine([], {}, legacy=True, entry_command=["sh", "-ec", "test $(id -u) = 0; test -x ./listmonk; test -r warpdrive-engine-source.tar.gz"])
+        if probe.wait() != 0:
+            raise SmokeError("Historical root-default packed image could not run its actual packaging probe")
+        copies = {}
+        for name in ("listmonk", "warpdrive-engine-source.tar.gz"):
+            target = self.output_dir / ("old-" + name)
+            self.owned(probe.name)
+            self.docker.run(["cp", probe.name + ":/listmonk/" + name, str(target)], timeout=20)
+            if not target.is_file() or target.stat().st_size > 64 * 1024**2:
+                raise SmokeError("Historical packed artifact exceeds qualification bound")
+            copies[name] = {"sha256": digest(target.read_bytes()), "bytes": target.stat().st_size}
+        binary = (self.output_dir / "old-listmonk").read_bytes()
+        if binary[:6] != b"\x7fELF\x02\x01" or int.from_bytes(binary[18:20], "little") != 62:
+            raise SmokeError("Historical packed image is not the actual amd64 ELF baseline")
+        with tempfile.TemporaryDirectory(prefix="old-engine-source-check-") as folder:
+            source_sha = verify_source_archive(self.output_dir / "old-warpdrive-engine-source.tar.gz", self.old_context,
+                                               Path(folder), patch_context=self.old_context_path, legacy=True)
+        self.report["oldArtifacts"] = copies
+        self.report["oldSource"]["reconstructedPatchedSourceSha256"] = source_sha
+        return {"observedUid": 0, "rootAllowedOnlyForOwnedHistoricalFixture": True,
+                "sourceArchiveMatchesOriginalContext": True}
+
+    def upload_old_media(self):
+        boundary = "engine-upgrade-" + secrets.token_hex(12)
+        body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="fixture.png"\r\n'
+                'Content-Type: image/png\r\n\r\n').encode() + UPGRADE_PNG + f"\r\n--{boundary}--\r\n".encode()
+        with tempfile.TemporaryDirectory(prefix="engine-upgrade-body-") as folder:
+            path = Path(folder) / "upload.body"
+            path.write_bytes(body)
+            self.owned(self.serve.name)
+            self.docker.run(["cp", str(path), self.serve.name + ":/tmp/upgrade-upload.body"], timeout=10)
+        result = self.docker.run(["exec", self.serve.name, "wget", "-q", "-T", "5", "-O", "-",
+                                  "--header", "Authorization: " + self.auth["Authorization"],
+                                  "--header", "Content-Type: multipart/form-data; boundary=" + boundary,
+                                  "--post-file", "/tmp/upgrade-upload.body", "http://127.0.0.1:9000/api/media"], timeout=10)
+        try:
+            media = json.loads(result.stdout)["data"]
+            filename = media["filename"]
+        except (ValueError, KeyError, TypeError) as error:
+            raise SmokeError("Historical media API did not return a bounded fixture filename") from error
+        if not isinstance(filename, str) or not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,199}", filename):
+            raise SmokeError("Historical media filename is unsafe")
+        if self.media_bytes(filename) != UPGRADE_PNG:
+            raise SmokeError("Historical media API did not preserve exact uploaded bytes")
+        return filename
+
+    def media_bytes(self, filename):
+        if not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,199}", filename):
+            raise SmokeError("Upgrade media read is limited to its bounded synthetic filename")
+        self.owned(self.serve.name)
+        # Binary media never passes text decoding. The fixed shell script accepts
+        # only an argv URL; no path, credential or user data becomes shell code.
+        result = self.docker.run(["exec", self.serve.name, "sh", "-ec",
+                                  'wget -q -T 5 -O /tmp/upgrade-media-read "$1"; base64 /tmp/upgrade-media-read',
+                                  "engine-upgrade-media", "http://127.0.0.1:9000/uploads/" + filename], timeout=10)
+        if len(result.stdout) > 8192:
+            raise SmokeError("Upgrade media exceeds the synthetic fixture bound")
+        try:
+            return base64.b64decode("".join(result.stdout.split()), validate=True)
+        except ValueError as error:
+            raise SmokeError("Upgrade media did not return valid bounded bytes") from error
+
+    def verify_old_stopped(self, old_process, application_name):
+        state = self.state(old_process.name)
+        if state["Running"] or state.get("Pid") != 0 or state.get("OOMKilled"):
+            raise SmokeError("Historical runtime stop is unverified; migration is held")
+        names = self.docker.run(["container", "ls", "--filter", "label=" + OWNER_LABEL + "=" + self.prefix,
+                                 "--filter", "ancestor=" + self.report["oldImage"]["id"], "--format", "{{.Names}}"], timeout=10).stdout.splitlines()
+        for name in names:
+            self.owned(name)
+            if self.state(name)["Running"]:
+                raise SmokeError("A historical fixture process is still running; migration is held")
+        NATIVE.wait_until(lambda: self.sql("SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='" + application_name + "'") == "0",
+                          "historical database sessions closed before cutover", seconds=5)
+        self.old_binary_retired = True
+        return {"containerStopped": True, "pid": 0, "oldDatabaseSessions": 0, "runningHistoricalFixtureContainers": 0}
+
+    def start_legacy_postgres(self, volume, image_id):
+        if not re.fullmatch(r"sha256:[a-f0-9]{64}", image_id):
+            raise SmokeError("Historical PostgreSQL fixture must use the already-inspected immutable fixture image")
+        self.owned_volume(volume)
+        name = self.prefix + "-legacy-postgres"
+        self.resources.append(("container", name))
+        args = ["run", "--detach", "--pull", "never", "--name", name, "--label", f"{OWNER_LABEL}={self.prefix}",
+                "--network", self.report["resources"]["network"], "--memory", "512m", "--memory-swap", "512m",
+                "--cpus", "1", "--pids-limit", "192", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+                "--log-opt", "max-size=1m", "--log-opt", "max-file=1",
+                "--mount", f"type=volume,source={volume},target=/var/lib/postgresql/data"]
+        # The official PG entrypoint needs only these bootstrap capabilities on
+        # this fresh owned volume, matching the original fixture's initialization.
+        for capability in ("CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"):
+            args += ["--cap-add", capability]
+        for key, value in sorted(self.pg_env.items()):
+            args += ["--env", key + "=" + value]
+        self.docker.run([*args, image_id], timeout=60)
+        self.containers["legacy-postgres"] = name
+        self.owned(name)
+        return name
+
+    def supported_old_upgrade(self):
+        legacy_packaging = self.legacy_packaging()
+        self.stop_engine()
+        original = (self.env, self.auth, self.serve, self.containers["postgres"], self.uploads_volume)
+        original_cluster = self.sql("SELECT system_identifier::text FROM pg_control_system()")
+        self.owned(original[3])
+        postgres_image = self.docker.run(["container", "inspect", original[3], "--format", "{{.Image}}"], timeout=5).stdout.strip()
+        cluster_volume, media_volume = self.prefix + "-legacy-pgdata", self.prefix + "-legacy-media"
+        for volume in (cluster_volume, media_volume):
+            self.resources.append(("volume", volume))
+            self.docker.run(["volume", "create", "--label", f"{OWNER_LABEL}={self.prefix}", volume])
+        legacy_pg = self.start_legacy_postgres(cluster_volume, postgres_image)
+        self.containers["postgres"] = legacy_pg
+        self.env = {**original[0], "LISTMONK_db__host": legacy_pg}
+        self.uploads_volume = media_volume
+        try:
+            self.wait_for(lambda: self.docker.run(["exec", legacy_pg, "pg_isready", "-U", "consentproof", "-d", "consent"],
+                                                 check=False, timeout=5).returncode == 0,
+                          "separate historical PostgreSQL", 60, legacy_pg)
+            if self.sql("SELECT system_identifier::text FROM pg_control_system()") == original_cluster:
+                raise SmokeError("Historical baseline must use its own independently initialized PostgreSQL cluster")
+            installed = self.engine(["--install", "--yes"], legacy=True)
+            if installed.wait() != 0:
+                raise SmokeError("Historical packed binary could not initialize its own database")
+            logs = self.docker.run(["logs", installed.name], timeout=5)
+            token = re.search(r'export LISTMONK_ADMIN_API_TOKEN="([^"]+)"', logs.stdout + logs.stderr)
+            if token is None:
+                raise SmokeError("Historical fixture API credential was not minted")
+            self.auth = {"Authorization": "Basic " + base64.b64encode(("consent-proof-api:" + token[1]).encode()).decode()}
+            for env in (self.env, original[0]):
+                env["IMAGE_SMOKE_OLD_API_TOKEN"] = token[1]
+                env["IMAGE_SMOKE_OLD_AUTH_TOKEN"] = self.auth["Authorization"]
+            self.sql(OLD_INITIAL_SEED)
+            application_name = "legacy_engine_" + secrets.token_hex(8)
+            self.env["LISTMONK_db__params"] = "connect_timeout=3 application_name=" + application_name
+            self.serve = self.engine(["--passive"], legacy=True)
+            NATIVE.wait_until(self.healthy, "actual historical packed runtime", seconds=12)
+            if self.sql("SELECT c.status||':'||r.hold||':'||c.sent||':'||c.last_subscriber_id FROM campaigns c JOIN warpdrive_delivery_runs r ON r.campaign_id=c.id WHERE c.id=999") != "paused:legacy:1:7":
+                raise SmokeError("Actual historical runtime did not establish its genuine legacy campaign hold")
+            self.sql(OLD_WITNESSES)
+            filename = self.upload_old_media()
+            if self.sql(OLD_WITNESS_CHECK) != "t":
+                raise SmokeError("Historical consent/delivery/operational preservation witnesses are incomplete")
+            self.owned(self.serve.name)
+            paths = self.docker.run(["exec", self.serve.name, "find", "/listmonk/uploads", "-maxdepth", "2", "-print"], timeout=5).stdout.splitlines()
+            if not paths or len(paths) > 16 or any(not valid_media_path(path) for path in paths):
+                raise SmokeError("Historical media tree exceeds bounded ownership handoff")
+            links = self.docker.run(["exec", self.serve.name, "find", "/listmonk/uploads", "-maxdepth", "2", "-type", "l", "-print"], timeout=5).stdout.strip()
+            if links:
+                raise SmokeError("Historical fixture media contains an unsupported symbolic link")
+            old_process = self.serve
+            self.stop_engine()
+            stopped = self.verify_old_stopped(old_process, application_name)
+            if self.sql("SELECT to_regclass('public.warpdrive_engine_schema') IS NULL") != "t":
+                raise SmokeError("Historical baseline unexpectedly already has the new explicit migration receipt")
+            before = self.snapshot()
+            # This explicit, offline handoff touches only the new owned fixture
+            # volume. It is not automatic migration of an installed upload store.
+            handed = self.engine([], {}, legacy=True, offline_media=True, entry_command=["chown", "65532:65532", *paths])
+            if handed.wait() != 0:
+                raise SmokeError("Owned offline media ownership handoff failed")
+            self.env["LISTMONK_db__params"] = "connect_timeout=3 application_name=new_engine_upgrade"
+            result = self.command(["--migrate", "--yes"])
+            if result.returncode != 0:
+                raise SmokeError("New final-image migrator did not upgrade actual historical packed data")
+            receipt = self.receipt()
+            upgraded = self.snapshot()
+            if not preserved_rows(before, upgraded, added_receipt=True) or self.sql(OLD_WITNESS_CHECK) != "t":
+                raise SmokeError("Historical data/receipts/writer holds changed across explicit upgrade")
+            self.migrate()
+            if self.snapshot() != upgraded:
+                raise SmokeError("Repeated supported-old migration changed durable data, catalog or sequence state")
+            NATIVE.prove_restricted_no_ddl_start(self)
+            self.ready()
+            self.sleep(6)
+            self.assert_running(self.serve.name)
+            if self.media_bytes(filename) != UPGRADE_PNG or self.sql(OLD_WITNESS_CHECK) != "t":
+                raise SmokeError("New passive runtime changed historical writer holds or media bytes")
+            self.stop_engine()
+            after = self.snapshot()
+            if not preserved_rows(upgraded, after) or self.receipt() != receipt:
+                raise SmokeError("New passive/read-only admission changed preserved historical row or receipt state")
+            return {"oldRevision": OLD_REVISION, "oldImageId": self.report["oldImage"]["id"],
+                    "newImageId": self.report["image"]["id"], "oldPackaging": legacy_packaging,
+                    "separatePostgresCluster": True, "postgresFixtureImageId": postgres_image, "oldStoppedBeforeMigration": stopped,
+                    "oldLegacyHoldEstablishedAndPreserved": True, "pendingUnknownAndAcknowledgedReceiptsPreserved": True,
+                    "consentRevocationAndKeyedSuppressionPreserved": True,
+                    "historicalTableRows": {key: value for key, value in before.items() if key.startswith("table:")},
+                    "media": {"filename": filename, "bytes": len(UPGRADE_PNG), "sha256": digest(UPGRADE_PNG)},
+                    "fixtureOnlyOfflineMediaOwnershipHandoff": True, "repeatMigrationNoWrites": True,
+                    "newRestrictedRoleAdmission": True, "passiveWitnessWindowSeconds": 6,
+                    "installedVpsUpgradeQualified": False}
+        finally:
+            try:
+                self.stop_engine()
+            finally:
+                self.env, self.auth, self.serve, self.containers["postgres"], self.uploads_volume = original
+
     def qualify(self):
         self.output_dir.mkdir(parents=True, exist_ok=False)
         previous_signals = {kind: signal.getsignal(kind) for kind in (signal.SIGALRM, signal.SIGTERM, signal.SIGINT)}
@@ -519,7 +883,7 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
             raise SmokeError("Final-image engine qualification deadline exceeded")
         for kind in previous_signals:
             signal.signal(kind, expired)
-        signal.alarm(600)
+        signal.alarm(900)
         try:
             self.secret_directory = tempfile.TemporaryDirectory(prefix="wd-engine-secret-")
             self.secret_file = Path(self.secret_directory.name) / "db-password"
@@ -549,6 +913,7 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
                 ("migration-excludes-actual-runtime", self.migration_excludes_runtime),
                 ("fence-loss-exits-and-restarts", lambda: NATIVE.prove_runtime_fence_loss(self)),
                 ("final-image-health-and-readiness", self.readiness),
+                ("supported-old-packed-binary-upgrade", self.supported_old_upgrade),
             ):
                 self.capacity()
                 self.check(name, operation)
@@ -581,7 +946,7 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
         if available < 8 * 1024**3 or growth > 3 * 1024**3:
             raise SmokeError("Owned engine fixture exceeded disk growth/reserve admission")
         self.report["capacity"] = {"availableBytes": available, "maxObservedGrowthBytes": max(growth, self.report.get("capacity", {}).get("maxObservedGrowthBytes", 0)),
-                                   "growthLimitBytes": 3 * 1024**3, "reserveBytes": 8 * 1024**3, "deadlineSeconds": 600}
+                                   "growthLimitBytes": 3 * 1024**3, "reserveBytes": 8 * 1024**3, "deadlineSeconds": 900}
 
     def archived_schema(self):
         raw = self.legacy_schema
@@ -595,18 +960,28 @@ def main(arguments=None):
     parser.add_argument("--image")
     parser.add_argument("--expected-revision")
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--old-image", help="Actual packed image built from the pinned supported-old revision")
+    parser.add_argument("--old-context", type=Path, help="Verified original historical context, with no rewritten inputs")
+    parser.add_argument("--old-checkout", type=Path, help="Checkout whose HEAD is the pinned supported-old commit")
+    parser.add_argument("--prepare-old-context", type=Path, help="Materialize only Git-verified historical engine blobs into a new directory")
     parser.add_argument("--context-digest", action="store_true", help="Print deterministic reviewed build-context fingerprint only")
     args = parser.parse_args(arguments)
+    if args.prepare_old_context is not None:
+        if args.old_checkout is None:
+            parser.error("--prepare-old-context requires --old-checkout")
+        print(json.dumps(prepare_old_context(args.old_checkout, args.prepare_old_context), sort_keys=True))
+        return 0
     if args.context_digest:
         print(context_record()["sha256"])
         return 0
-    if not all((args.image, args.expected_revision, args.output_dir)):
-        parser.error("--image, --expected-revision and --output-dir are required")
+    if not all((args.image, args.expected_revision, args.output_dir, args.old_image, args.old_context)):
+        parser.error("--image, --expected-revision, --output-dir, --old-image and --old-context are required")
     validate_reference(args.image)
     validate_revision(args.expected_revision)
+    validate_reference(args.old_image)
     with tempfile.TemporaryDirectory(prefix="wd-engine-docker-") as directory:
         docker = IsolatedDocker(Path(directory) / "config")
-        fixture = EngineImageSmoke(docker, args.image, args.expected_revision, args.output_dir)
+        fixture = EngineImageSmoke(docker, args.image, args.expected_revision, args.output_dir, args.old_image, args.old_context)
         return 0 if fixture.qualify() else 1
 
 

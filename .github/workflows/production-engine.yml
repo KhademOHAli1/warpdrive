@@ -33,10 +33,11 @@ jobs:
   engine:
     name: Final Linux newsletter engine
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       ENGINE_IMAGE: warpdrive-engine-ci:${{ github.run_id }}-${{ github.run_attempt }}
+      OLD_ENGINE_IMAGE: warpdrive-engine-old-ci:${{ github.run_id }}-${{ github.run_attempt }}
       REVISION: ${{ github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -56,6 +57,25 @@ jobs:
           context_sha=$(python3 -B scripts/deployment/engine_image_smoke.py --context-digest)
           printf 'context_sha=%s\n' "$context_sha" >> "$GITHUB_OUTPUT"
           mkdir -p "$RUNNER_TEMP/production-engine"
+      - name: Read exact supported-old source without changing candidate checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 5
+        with:
+          ref: 35c40339b8068a489247080e61430d17bfbfdb26
+          path: .engine-upgrade-baseline
+          fetch-depth: 1
+          sparse-checkout: deploy/newsletters/engine
+          persist-credentials: false
+      - name: Verify original commit tree and every historical context blob
+        id: old_inputs
+        run: |
+          python3 -B scripts/deployment/engine_image_smoke.py \
+            --old-checkout "$GITHUB_WORKSPACE/.engine-upgrade-baseline" \
+            --prepare-old-context "$RUNNER_TEMP/engine-old-context" \
+            > "$RUNNER_TEMP/production-engine/old-source.json"
+          old_sha=$(python3 -c 'import json,os; r=json.load(open(os.path.join(os.environ["RUNNER_TEMP"],"production-engine/old-source.json"))); assert r["revision"]=="35c40339b8068a489247080e61430d17bfbfdb26"; print(r["sha256"])')
+          printf 'context_sha=%s\n' "$old_sha" >> "$GITHUB_OUTPUT"
+          rm -rf -- "$GITHUB_WORKSPACE/.engine-upgrade-baseline"
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
         with:
           driver: docker-container
@@ -64,6 +84,20 @@ jobs:
             memory-swap=2g
             cpu-period=100000
             cpu-quota=200000
+      - name: Build actual supported-old packed image from unchanged historical recipe
+        timeout-minutes: 20
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: ${{ runner.temp }}/engine-old-context
+          file: ${{ runner.temp }}/engine-old-context/Dockerfile
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.OLD_ENGINE_IMAGE }}
+          labels: |
+            org.opencontainers.image.revision=35c40339b8068a489247080e61430d17bfbfdb26
+            io.warpdrive.engine.context.sha256=${{ steps.old_inputs.outputs.context_sha }}
       - name: Build exact final Linux engine image
         timeout-minutes: 20
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -79,10 +113,11 @@ jobs:
             org.opencontainers.image.revision=${{ env.REVISION }}
             io.warpdrive.engine.context.sha256=${{ steps.inputs.outputs.context_sha }}
       - name: Qualify actual final-image migration and runtime boundaries
-        timeout-minutes: 12
+        timeout-minutes: 17
         run: |
           python3 -B scripts/deployment/engine_image_smoke.py \
             --image "$ENGINE_IMAGE" --expected-revision "$REVISION" \
+            --old-image "$OLD_ENGINE_IMAGE" --old-context "$RUNNER_TEMP/engine-old-context" \
             --output-dir "$RUNNER_TEMP/production-engine/smoke"
       - name: Retain exact tested local image without rebuilding or publishing
         if: success() && github.event_name != 'pull_request'
