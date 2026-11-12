@@ -273,6 +273,32 @@ jobs:
             --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" \
             --new-web-image-id "$web_image" --new-web-revision "$WEB_REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/web-release" --browser
+      - name: Verify the tested Web image can be archived independently
+        if: env.WEB_RELEASE_REHEARSAL == 'true'
+        env:
+          WEB_REVISION: ${{ steps.web-release-source.outputs.revision }}
+        run: |
+          web_image=$(docker image inspect --format '{{.Id}}' "$IMAGE_PREFIX/web-release:$IMAGE_TAG")
+          scratch="$RUNNER_TEMP/warpdrive-web-release"
+          web_archive="$scratch/web-image.tar"
+          available=$(python3 -c 'import os; s=os.statvfs(os.environ["RUNNER_TEMP"]); print(s.f_bavail*s.f_frsize)')
+          python3 scripts/deployment/candidate.py capacity \
+            --available-bytes "$available" --candidate-bytes 3221225472 \
+            --migration-bytes 0 --temporary-bytes 0 --reserve-bytes 4294967296
+          test ! -e "$web_archive"
+          trap 'rm -f -- "$web_archive"' EXIT
+          docker image save --platform linux/amd64 --output "$web_archive" "$web_image"
+          PYTHONPATH=scripts/deployment python3 - "$scratch" "$web_image" "$WEB_REVISION" \
+            > "$RUNNER_TEMP/production-images/web-release-archive.json" <<'PY'
+          import json
+          from pathlib import Path
+          import sys
+          from web_candidate import verify_saved_web_image
+
+          result = verify_saved_web_image(Path(sys.argv[1]), expected_image_id=sys.argv[2],
+                                          expected_revision=sys.argv[3])
+          print(json.dumps(result, sort_keys=True))
+          PY
       - name: Clean up only the owned presentation source checkout
         if: always() && env.WEB_RELEASE_REHEARSAL == 'true'
         run: |

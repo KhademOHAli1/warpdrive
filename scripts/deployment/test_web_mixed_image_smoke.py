@@ -6,8 +6,8 @@ import unittest
 
 from web_generation_routes import WebGeneration
 from web_mixed_image_smoke import (
-    HEADER, LoginAssets, MixedCaddyTarget, browser_message, common_web_configuration,
-    generation_configs, observe_asset, observe_identity, read_web_image,
+    HEADER, LoginAssets, MixedCaddyTarget, RolloutBrowser, browser_message, common_web_configuration,
+    generation_configs, observe_asset, observe_identity, owned_resources_absent, read_web_image,
 )
 from web_switch import DefiniteRejected, content_hash
 from web_switch_smoke import WebSwitchSmokeError
@@ -44,7 +44,9 @@ class MixedImageTests(unittest.TestCase):
 
     def test_only_reviewed_build_stamp_and_env_order_are_ignored(self):
         old, new = image(), image(AFTER)
-        for row in (old, new):
+        for row, image_id in ((old, IMAGE), (new, "sha256:" + "2" * 64)):
+            row["Image"] = image_id
+            row["Config"]["Image"] = image_id
             row["HostConfig"] = {"ReadonlyRootfs": False}
         new["Config"]["Env"].reverse()
         new["Config"]["Env"][2] = "APP_VERSION=1.6.2"
@@ -52,9 +54,26 @@ class MixedImageTests(unittest.TestCase):
         self.assertEqual(original, common_web_configuration(new, AFTER.deployment_id[3:]))
         new["Config"]["Env"][-1] = "DATABASE_URL=unrelated"
         self.assertNotEqual(original, common_web_configuration(new, AFTER.deployment_id[3:]))
+        new["Config"]["Image"] = IMAGE
+        with self.assertRaisesRegex(WebSwitchSmokeError, "immutable image ID"):
+            common_web_configuration(new, AFTER.deployment_id[3:])
+        new["Config"]["Image"] = new["Image"]
         new["Config"]["Env"].append("DATABASE_URL=fixture")
         with self.assertRaisesRegex(WebSwitchSmokeError, "unique"):
             common_web_configuration(new, AFTER.deployment_id[3:])
+
+    def test_owned_cleanup_uses_typed_lists_and_exact_names(self):
+        responses = {}
+
+        def run(arguments, **_):
+            return SimpleNamespace(stdout=responses.get((arguments[0], arguments[-3]), ""))
+
+        docker = SimpleNamespace(run=run)
+        resources = [("network", "own-net"), ("container", "own-web"), ("volume", "own-db")]
+        responses["network", "name=own-net"] = '"own-net-unrelated"\n'
+        self.assertTrue(owned_resources_absent(docker, resources, "own"))
+        responses["network", "name=own-net"] += '"own-net"\n'
+        self.assertFalse(owned_resources_absent(docker, resources, "own"))
 
     def test_login_requires_same_origin_stamped_asset_inventory(self):
         generation = BEFORE.deployment_id
@@ -123,12 +142,47 @@ class MixedImageTests(unittest.TestCase):
         with self.assertRaisesRegex(WebSwitchSmokeError, "differs"):
             target.read_route()
 
+    def test_fault_stops_only_the_candidate_after_acknowledged_caddy_write(self):
+        docs = {item.deployment_id: {"fixture": item.target} for item in (BEFORE, AFTER)}
+        slots = {item.deployment_id: {"route": {"generation": item.deployment_id,
+                 "fingerprint": content_hash(docs[item.deployment_id])}, "runtime": {"name": item.target}}
+                 for item in (BEFORE, AFTER)}
+        before, after = (slots[item.deployment_id]["route"] for item in (BEFORE, AFTER))
+        calls = []
+        response = 412
+
+        def patch(*_, **kwargs):
+            calls.append(("patch", kwargs))
+            return response, {}, b""
+
+        admin = SimpleNamespace(config=lambda: (docs[BEFORE.deployment_id], "old-etag"), request=patch)
+        target = MixedCaddyTarget(SimpleNamespace(admin=admin, browser=None,
+                                  stop_candidate=lambda name: calls.append(("stop", name))), slots, docs, {})
+        target.stop_after_switch = AFTER.deployment_id
+        with self.assertRaises(DefiniteRejected):
+            target.compare_and_swap_route(before, after)
+        self.assertEqual([call[0] for call in calls], ["patch"])
+        self.assertEqual(target.stop_after_switch, AFTER.deployment_id)
+
+        response = 200
+        target.compare_and_swap_route(before, after)
+        self.assertEqual(calls[1:], [("patch", {"value": docs[AFTER.deployment_id], "etag": "old-etag"}),
+                                      ("stop", AFTER.target)])
+        self.assertIsNone(target.stop_after_switch)
+
     def test_requires_exact_secret_free_typed_browser_phases(self):
         active = {"phase": "pre-switch-ready", "oldSocketActive": True}
         self.assertEqual(browser_message(active), active)
         for bad in ({**active, "oldSocketActive": 1}, {**active, "unexpected": "secret"}, {"phase": []}):
             with self.subTest(bad=bad), self.assertRaises(WebSwitchSmokeError):
                 browser_message(bad)
+
+    def test_browser_failure_reports_only_fixed_stage_names(self):
+        browser = RolloutBrowser.__new__(RolloutBrowser)
+        browser.errors = ["raw browser diagnostic", '{"event":"browser.web-rollout.failed","stage":"external-url"}',
+                          '{"event":"browser.web-rollout.failed","stage":"old-tab-server-action","details":"unsafe"}',
+                          '{"event":"browser.web-rollout.failed","stage":"old-tab-server-action"}']
+        self.assertEqual(browser.failure_stages(), ["old-tab-server-action"])
 
 
 if __name__ == "__main__":

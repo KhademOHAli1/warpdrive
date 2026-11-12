@@ -51,6 +51,7 @@ function readProfile() {
 
 function switchControl() {
   const input = createInterface({ input: process.stdin });
+  /** @type {{ expected: "pre-switch" | "switched" | null, received: boolean, invalid: boolean, ended: boolean }} */
   const state = { expected: null, received: false, invalid: false, ended: false };
   input.on("line", (line) => {
     try {
@@ -156,6 +157,18 @@ async function confinedContext(browser, profile, metrics) {
 }
 
 function observePage(page, previous, current, metrics) {
+  /** @type {{
+   *   oldAsset: string | null,
+   *   oldLogin: boolean,
+   *   oldTicket: boolean,
+   *   freshTicket: boolean,
+   *   navigations: number,
+   *   savePath: string | null,
+   *   actionPosts: number,
+   *   action: object | null,
+   *   actionOk: boolean,
+   *   finishedAt: number,
+   * }} */
   const traffic = {
     oldAsset: null,
     oldLogin: false,

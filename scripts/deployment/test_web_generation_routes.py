@@ -364,6 +364,18 @@ class NativeRoutingTests(unittest.TestCase):
         self.assertEqual(target.writes, [CURRENT.deployment_id])
         self.assert_target("GET", "/_next/static/old.js?dpl=" + PREVIOUS.deployment_id, "previous")
 
+    def test_first_stamped_web_fences_unstamped_or_retired_page_actions(self):
+        self.addCleanup(self.restore_fixture)
+        _, etag = self.read_admin()
+        self.assertEqual(self.patch_admin(self.fixture_handler(CURRENT, None), etag), 200)
+        self.assert_target("GET", "/board", "current")
+        self.assert_target("POST", "/board", "current", (("Next-Action", ACTION),
+                           ("X-Deployment-Id", CURRENT.deployment_id)))
+        self.assert_rejected("POST", "/board", (("Next-Action", ACTION),))
+        self.assert_rejected("POST", "/board", (("Next-Action", ACTION),
+                             ("X-Deployment-Id", PREVIOUS.deployment_id)))
+        self.assert_rejected("GET", "/_next/static/old.js?dpl=" + PREVIOUS.deployment_id)
+
     def assert_target(self, method, path, expected, headers=(), body=b""):
         status, result, _ = self.request(method, path, headers, body)
         self.assertEqual(status, 200, result)

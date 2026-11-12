@@ -126,6 +126,11 @@ restore the retained healthy route. The adapter must use a single mutation autho
 compare-and-swap operation with one effect. Both Web generations must carry the same schema
 and be qualified to run concurrently during the transition.
 
+The fixture also stops its owned candidate immediately after an acknowledged route switch.
+It requires automatic restoration of the prior Web generation, two route writes in total,
+and read-only repetition of the completed operation. The restored Web and retained backend
+identities are independently checked after the failure.
+
 The Caddy subroute uses generation-marked static assets and hydrated Server Actions to keep
 their originating artifacts available. It rejects unknown or conflicting mutation selectors
 before forwarding. The two current URL form targets and existing API handlers remain ordinary
@@ -135,6 +140,29 @@ This first source profile covers the reviewed layout and copy changes. Changes t
 dependency lock, executable UI, backend contracts, or ingress policy require separate input
 and compatibility qualification. The installed baseline resolver, durable artifact custody,
 Web-only promotion and installed acceptance remain separate work.
+
+The legacy transition has a separate PostgreSQL integration test. It checks the installed
+1.5.1 ledger prefix through `0109` against its ordered SQL hashes, seeds synthetic CRM and
+workflow rows plus a pending job in the incumbent queue inventory on schema 46, and runs the
+current application and queue migrator twice. The test verifies preservation of the prior ledger and seeded rows,
+admission of the current queue catalog, and an unchanged second application. The live
+database is used only to identify the prefix. A populated restore with installed runtime
+and ingress qualification is a separate acceptance step.
+
+`traefik_web_relay.py` compiles a private Web relay for installations that terminate TLS at
+Traefik. The Docker-provider profile overlays two Web routers through the file provider and
+keeps the incumbent TLS, middleware, HTTP redirect and higher-priority Realtime route. The
+unsafe route disables connection reuse on both hops. A single stamped generation can fence
+unstamped page actions during the first platform transition. Installing the relay with the
+legacy Web still serving and moving the application to a migrated database are distinct
+operations. The installed adapter must verify and fence the incumbent write path before the
+first incompatible transition.
+
+`web_candidate.py` can retain one tested Web image with a source-bound build receipt, the
+original four-image baseline pin, and the native mixed-image qualification. The modern Docker
+archive reader verifies that the Docker and OCI records agree on one image and that its bytes
+match the recorded config and layer digests. The disposable workflow tests the archive reader
+with a real saved image. Trusted release production and registry publication remain separate.
 
 `web_switch.py` exposes a controller engine without a deployment CLI. It admits only a fixed
 isolated rehearsal using the same image, source, configuration and schema in separate slots.

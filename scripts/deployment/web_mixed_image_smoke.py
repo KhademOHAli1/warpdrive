@@ -34,7 +34,7 @@ from web_rollout import rollout_web
 from web_switch import DefiniteRejected, HASH, IMAGE, canonical, content_hash
 from web_switch_smoke import (
     ADMIN_HOST, CADDY_TMPFS, GENERATION_HEADER, MAX_HTTP_BYTES, MIB, FixtureHTTP, NoRedirect,
-    WebSwitchSmoke, WebSwitchSmokeError, caddy_image, caddy_storage, canonical_environment, fixture_caddyfile,
+    WebSwitchSmoke, WebSwitchSmokeError, caddy_image, caddy_storage, canonical_environment, changed_fields, fixture_caddyfile,
     memory_budget, require, runtime_config,
 )
 
@@ -47,6 +47,9 @@ BROWSER_PHASES = {
     "pre-switch-ready": {"oldSocketActive": True},
     "complete": {"freshTicket": True, "resubscribed": True, "persistentDraft": True, "oldAction": True, "actionPosts": 1},
 }
+BROWSER_FAILURES = {"profile", "browser-start", "native-login-and-draft", "pre-switch-socket",
+                    "waiting-for-switch", "persistent-reconnect", "old-tab-server-action",
+                    "current-rendered-presentation", "browser-close"}
 HEALTH = "/api/health"
 IDENTITY = "/api/runtime/web-identity"
 LOGIN = "/login"
@@ -60,8 +63,9 @@ LIMITS = {"postgres": 512, "worker": 1024, "realtime": 768, "web-a": 1536, "web-
 LIMITATIONS = [
     "Owned staging fixture with a fresh database and retained Core images.",
     "Explicit reverse rollout through the same controller and running Web slots.",
+    "Automatic restoration after an owned candidate stops following an acknowledged route switch.",
     "Sampled CSS and JavaScript byte readback, public identity, and database health.",
-    "Production installation, automatic failure rollback, populated upgrades, Engine, and external providers remain outside this evidence.",
+    "Production installation, populated upgrades, Engine, and external providers remain outside this evidence.",
 ]
 
 
@@ -71,6 +75,9 @@ def build_environment(entries):
 
 def common_web_configuration(row, revision):
     config = runtime_config(row)
+    require(isinstance(row.get("Image"), str) and IMAGE.fullmatch(row["Image"])
+            and config["Config"].pop("Image", None) == row["Image"],
+            "Web container must launch by its independently observed immutable image ID")
     env = build_environment(config["Config"]["Env"])
     require(env.get("APP_COMMIT") == revision and env.get("NEXT_DEPLOYMENT_ID") == "wd-" + revision,
             "Web runtime build stamps differ from its immutable source")
@@ -78,6 +85,21 @@ def common_web_configuration(row, revision):
             "Web runtime OCI revision label differs")
     config["Config"]["Env"] = sorted(f"{key}={value}" for key, value in env.items() if key not in BUILD_ENV)
     return config
+
+
+def owned_resources_absent(docker, resources, owner):
+    for kind, fields, extra in (("container", ".Names", ["--all"]), ("network", ".Name", []), ("volume", ".Name", [])):
+        matches = {name for resource, name in resources if resource == kind}
+        label = f"label={OWNER_LABEL}={owner}"
+        queries = [label, *(f"name={name}" for name in sorted(matches))]
+        for query in queries:
+            response = docker.run([kind, "ls", *extra, "--filter", query,
+                                   "--format", "{{json " + fields + "}}"], timeout=5)
+            require(len(response.stdout) <= 65536, "Docker cleanup inventory exceeds its bound")
+            names = [json.loads(line) for line in response.stdout.splitlines()]
+            if any(not isinstance(name, str) or query == label or name in matches for name in names):
+                return False
+    return True
 
 
 def read_web_image(docker, image_id, revision):
@@ -243,6 +265,19 @@ class RolloutBrowser(BrowserProcess):
         self.process.stdin.write(json.dumps({"command": command}) + "\n")
         self.process.stdin.flush()
 
+    def failure_stages(self):
+        stages = []
+        for line in list(self.errors):
+            try:
+                value = json.loads(line)
+            except (ValueError, RecursionError):
+                continue
+            if (isinstance(value, dict) and set(value) == {"event", "stage"}
+                    and value["event"] == "browser.web-rollout.failed"
+                    and isinstance(value["stage"], str) and value["stage"] in BROWSER_FAILURES):
+                stages.append(value["stage"])
+        return stages
+
 
 class MixedCaddyTarget:
     """One sole-writer Caddy instance; the two generation configs are immutable."""
@@ -250,6 +285,7 @@ class MixedCaddyTarget:
     def __init__(self, smoke, slots, documents, qualification):
         self.smoke, self.slots, self.documents, self.qualification = smoke, slots, documents, qualification
         self.patches = []
+        self.stop_after_switch = None
 
     def verify_qualification(self, plan, *, initialize):
         if (plan["qualificationSha256"] != content_hash(self.qualification)
@@ -295,13 +331,16 @@ class MixedCaddyTarget:
         current, etag = self.read_route()
         if current != expected:
             raise DefiniteRejected("Caddy route changed before this operation issued its PATCH")
-        require(desired == self.slots[desired["generation"]]["route"] and len(self.patches) < 2,
+        require(desired == self.slots[desired["generation"]]["route"] and len(self.patches) < 4,
                 "unexpected or repeated fixture route mutation")
         self.patches.append({"from": expected["generation"], "to": desired["generation"]})
         status, _, _ = self.smoke.admin.request("PATCH", value=self.documents[desired["generation"]], etag=etag)
         if status == 412:
             raise DefiniteRejected("Caddy rejected the original route ETag")
         require(status == 200, "Caddy route mutation has an unresolved outcome")
+        if self.stop_after_switch == desired["generation"]:
+            self.stop_after_switch = None
+            self.smoke.stop_candidate(self.slots[desired["generation"]]["runtime"]["name"])
         if browser:
             browser.send("switched")
 
@@ -385,7 +424,9 @@ class MixedWebSmoke(WebSwitchSmoke):
         rows = {name: self.owned(name) for name in (self.web_a, self.web_b)}
         self.web_start_times = {name: self.started(row) for name, row in rows.items()}
         common = [common_web_configuration(row, self.web_images[name]["sourceRevision"]) for name, row in rows.items()]
-        require(common[0] == common[1], "Web runtime configuration differs outside the reviewed build stamps")
+        if common[0] != common[1]:
+            self.report["diagnostics"].append({"webConfigChangedFields": changed_fields(*common)})
+            raise WebSwitchSmokeError("Web runtime configuration differs outside the reviewed image identity and build stamps")
         return {"isolation": isolation, "migrations": migrations, "schemaSha256": self.schema_sha,
                 "commonWebConfigSha256": content_hash(common[0]), "availableMemoryBytes": admission["availableBytes"],
                 "fixtureMemoryLimitBytes": limit, "hostReserveBytes": 1024 * MIB}
@@ -501,7 +542,7 @@ class MixedWebSmoke(WebSwitchSmoke):
         return {"qualification": self.qualification, "qualificationSha256": content_hash(self.qualification),
                 "caddyStorage": self.storage, "relays": [item.target_metadata for item in self.relays]}
 
-    def read_ingress(self, active):
+    def read_ingress(self, active, *, include_retained=True):
         slot = self.target.slots[active]
         require(self.target.read_route()[0] == slot["route"] and self.target.observe_health(slot, proxied=True)["healthy"],
                 "active generation differs from the independently observed healthy ingress")
@@ -510,7 +551,9 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(count == direct["pageAssetCount"] and paths == {kind: value["path"] for kind, value in direct["assets"].items()}
                 and observe_identity(self.traffic, active, proxied=True) == direct["identity"],
                 "proxied login inventory or Web version differs from the direct runtime")
-        for generation, value in self.direct_readback.items():
+        asset_generations = self.generations if include_retained else (active,)
+        for generation in asset_generations:
+            value = self.direct_readback[generation]
             for kind, asset in value["assets"].items():
                 require(observe_asset(self.traffic, generation, kind, asset["path"], proxied=True) == asset,
                         "pinned ingress asset bytes differ from its direct Web image")
@@ -521,15 +564,18 @@ class MixedWebSmoke(WebSwitchSmoke):
                 and not headers.get_all(HEADER, []), "unknown generation escaped the compiled before-forward rejection")
         require(self.schema() == self.schema_sha and self.backend_fingerprint() == self.qualification["backendFingerprint"],
                 "database schema or protected runtime identities changed")
-        return {"activeGeneration": active, "identity": direct["identity"], "verifiedAssetGenerations": list(self.generations),
+        return {"activeGeneration": active, "identity": direct["identity"], "verifiedAssetGenerations": list(asset_generations),
                 "verifiedAssetsPerGeneration": 2, "unknownGenerationStatus": status,
                 "backendFingerprint": self.qualification["backendFingerprint"], "schemaSha256": self.schema_sha}
 
-    def transition(self, operation, before, after, *, initialize=False):
-        plan = {"schemaVersion": 1, "kind": "warpdrive-web-rollout", "operationId": operation,
+    def rollout_plan(self, operation, before, after):
+        return {"schemaVersion": 1, "kind": "warpdrive-web-rollout", "operationId": operation,
                 "targetKey": self.fixture.prefix, "before": self.target.slots[before], "after": self.target.slots[after],
                 "backendFingerprint": self.qualification["backendFingerprint"],
                 "qualificationSha256": content_hash(self.qualification)}
+
+    def transition(self, operation, before, after, *, initialize=False):
+        plan = self.rollout_plan(operation, before, after)
         state_dir = self.private / "rollout-state"
         count = len(self.target.patches)
         receipt = rollout_web(plan, state_dir=state_dir, target=self.target, initialize=initialize)
@@ -538,6 +584,30 @@ class MixedWebSmoke(WebSwitchSmoke):
         repeated = rollout_web(plan, state_dir=state_dir, target=self.target)
         require(repeated == receipt and len(self.target.patches) == count + 1, "repeated operation issued another route mutation")
         return {"receipt": receipt, "ingress": self.read_ingress(after), "routeWrites": 1, "repeatReadOnly": True}
+
+    def stop_candidate(self, name):
+        require(name == self.web_b, "fault may stop only the owned new Web runtime")
+        row = self.owned(name)
+        require(row["State"].get("Running") is True, "new Web candidate must be running before the injected fault")
+        self.docker.run(["stop", "--time", "10", row["Id"]], timeout=20)
+        require(self.web_runtime(name, self.schema())["running"] is False,
+                "owned new Web candidate did not stop")
+
+    def automatic_rollback(self, before, after):
+        count = len(self.target.patches)
+        plan = self.rollout_plan("candidate-fault", before, after)
+        state_dir = self.private / "rollout-state"
+        self.target.stop_after_switch = after
+        receipt = rollout_web(plan, state_dir=state_dir, target=self.target)
+        require(receipt["state"] == "rolled-back" and receipt["acceptedGeneration"] == before
+                and self.target.stop_after_switch is None
+                and self.target.patches[count:] == [{"from": before, "to": after}, {"from": after, "to": before}]
+                and self.web_runtime(self.web_b, self.schema())["running"] is False,
+                "candidate fault did not restore the retained Web route exactly once")
+        require(rollout_web(plan, state_dir=state_dir, target=self.target) == receipt
+                and len(self.target.patches) == count + 2, "repeated rollback operation issued another route mutation")
+        return {"receipt": receipt, "ingress": self.read_ingress(before, include_retained=False),
+                "routeWrites": 2, "candidateStopped": True, "repeatReadOnly": True}
 
     def verify_browser_source(self):
         admit_source(self.host, self.revision)
@@ -636,11 +706,8 @@ class MixedWebSmoke(WebSwitchSmoke):
             try:
                 if self.fixture.cleanup():
                     errors.append("owned-docker-cleanup")
-                for kind, name in self.fixture.resources:
-                    result = self.docker.run([kind, "inspect", name], timeout=5, check=False)
-                    if result.returncode == 0 or "no such" not in result.stderr.lower():
-                        errors.append("owned-docker-absence-readback")
-                        break
+                if not owned_resources_absent(self.docker, self.fixture.resources, self.fixture.prefix):
+                    errors.append("owned-docker-absence-readback")
             except Exception:
                 errors.append("owned-docker-cleanup-readback")
         return {"success": not errors, "errors": errors, "closedRelays": relay_results,
@@ -659,12 +726,15 @@ class MixedWebSmoke(WebSwitchSmoke):
             if self.args.browser:
                 self.check("persistent-old-tab-action-and-fresh-realtime-after-switch", self.finish_browser)
             self.check("rollback-to-retained-web-generation", lambda: self.transition("rollback", after, before))
+            self.check("stopped-candidate-automatically-restores-retained-web", lambda: self.automatic_rollback(before, after))
         except Exception as error:
             self.report["failure"] = {"check": self.report["checks"][-1]["name"], "type": type(error).__name__}
             if isinstance(error, WebSwitchSmokeError):
                 self.report["failure"]["reason"] = str(error)
         finally:
             self.report["cleanup"] = self.cleanup()
+            if self.report["failure"] is not None and self.browser is not None:
+                self.report["failure"]["browserStages"] = self.browser.failure_stages()
             self.report["finishedAt"] = utc_now()
             self.report["success"] = self.report["failure"] is None and self.report["cleanup"]["success"]
             with (self.output_dir / "report.json").open("x", encoding="utf-8") as report:

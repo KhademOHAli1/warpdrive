@@ -91,13 +91,13 @@ def _reject(expression: str) -> dict[str, Any]:
 
 
 def compile_web_generation_routes(
-    *, current: WebGeneration, previous: WebGeneration,
+    *, current: WebGeneration, previous: WebGeneration | None = None,
 ) -> dict[str, Any]:
     """Replace only the existing Web fallback's reverse_proxy with this handler."""
-    if current.deployment_id == previous.deployment_id or current.target == previous.target:
+    if previous is not None and (current.deployment_id == previous.deployment_id or current.target == previous.target):
         raise ValueError("Web generations need distinct deployment IDs and target aliases")
 
-    generations = (current, previous)
+    generations = (current,) if previous is None else (current, previous)
     routes = [
         _route(f"{_SAFE} && {_STATIC} && {_dpl_is(generation)} && {_selectors_allow(generation)}",
                _proxy(generation, safe=True))
