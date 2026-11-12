@@ -140,14 +140,21 @@ class Docker:
         self.context = context
 
     def run(self, arguments: list[str], *, timeout: int = 30,
-            check: bool = True) -> Any:
+            check: bool = True, input_bytes: bytes | None = None) -> Any:
+        # Optional finite binary stdin preserves bytes without putting them in argv.
+        # Ordinary calls retain their existing text output and runner arguments.
+        if input_bytes is not None and (not isinstance(input_bytes, bytes) or len(input_bytes) > 8192):
+            raise SmokeError("Docker stdin must be bounded binary data")
         command = ["docker"]
         if self.context is not None:
             command += ["--context", self.context]
         command += arguments
         try:
-            result = self.runner(command, capture_output=True, text=True, timeout=timeout,
-                                 env=self.environment, check=False)
+            options = {"capture_output": True, "text": input_bytes is None, "timeout": timeout,
+                       "env": self.environment, "check": False}
+            if input_bytes is not None:
+                options["input"] = input_bytes
+            result = self.runner(command, **options)
         except (OSError, subprocess.TimeoutExpired) as error:
             raise SmokeError(f"Docker {arguments[0]} did not complete") from error
         if check and result.returncode != 0:

@@ -5,6 +5,7 @@ import gzip
 import io
 import json
 import os
+import stat
 import subprocess
 import tarfile
 import tempfile
@@ -320,13 +321,249 @@ class CleanupQualificationTests(unittest.TestCase):
                       "prove_policy_and_sequence_drift", "prove_runtime_excludes_migration", "prove_runtime_fence_loss")}
             value.archived_schema = Mock(return_value=b"unused synthetic schema")
             with patch.multiple(smoke.NATIVE, **native), patch.object(smoke.shutil, "disk_usage", return_value=SimpleNamespace(free=20*1024**3)), \
-                 patch.object(smoke.platform, "system", return_value="Linux"), patch.object(smoke.platform, "machine", return_value="x86_64"):
+                 patch.object(smoke.platform, "system", return_value="Linux"), patch.object(smoke.platform, "machine", return_value="x86_64"), \
+                 patch.object(smoke, "admit_secret_tmpfs", return_value=Path(directory)):
                 self.assertFalse(value.qualify())
             report = json.loads((value.output_dir / "report.json").read_text())
             self.assertFalse(report["success"])
             self.assertFalse(report["cleanup"]["success"])
             self.assertEqual(len(report["checks"]), len(smoke.REQUIRED_CHECKS))
             self.assertFalse(value.secret_file.exists())
+
+
+class SyntheticSecretStorageTests(unittest.TestCase):
+    def mount_record(self, root, *, filesystem="tmpfs", options="rw,nosuid,nodev", device=None):
+        metadata = root.stat()
+        device = device or f"{os.major(metadata.st_dev)}:{os.minor(metadata.st_dev)}"
+        mountpoint = str(root.resolve()).replace("\\", "\\134").replace(" ", "\\040")
+        return f"25 1 {device} / {mountpoint} {options} - {filesystem} shm rw,size=65536k\n"
+
+    def test_mount_admission_requires_matching_writable_tmpfs_including_escaped_path(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder) / "tmpfs with space"
+            root.mkdir()
+            mountinfo = Path(folder) / "mountinfo"
+            mountinfo.write_text(self.mount_record(root))
+            self.assertEqual(smoke.admit_secret_tmpfs(root, mountinfo), root.resolve())
+
+    def test_disk_readonly_missing_malformed_or_ambiguous_mount_never_falls_back(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder) / "backing"
+            root.mkdir()
+            mountinfo = Path(folder) / "mountinfo"
+            cases = (self.mount_record(root, filesystem="ext4"), self.mount_record(root, options="ro"),
+                     self.mount_record(root, device="98765:43210"), "", "malformed mount record\n",
+                     self.mount_record(root) * 2, "x" * (256 * 1024 + 1))
+            with patch.object(smoke.tempfile, "TemporaryDirectory") as fallback:
+                for raw in cases:
+                    mountinfo.write_text(raw)
+                    with self.subTest(record=raw[:80]), self.assertRaises(smoke.SmokeError):
+                        smoke.admit_secret_tmpfs(root, mountinfo)
+                mountinfo.unlink()
+                with self.assertRaises(smoke.SmokeError):
+                    smoke.admit_secret_tmpfs(root, mountinfo)
+                fallback.assert_not_called()
+
+    def test_symbolic_or_unavailable_mount_root_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder) / "backing"
+            root.mkdir()
+            mountinfo = Path(folder) / "mountinfo"
+            mountinfo.write_text(self.mount_record(root))
+            symbolic = Path(folder) / "symbolic"
+            symbolic.symlink_to(root, target_is_directory=True)
+            for candidate in (symbolic, Path(folder) / "missing", mountinfo):
+                with self.subTest(path=candidate.name), self.assertRaises(smoke.SmokeError):
+                    smoke.admit_secret_tmpfs(candidate, mountinfo)
+
+    def test_exclusive_private_creation_preserves_exact_payload_and_loader_contract(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            original_open = os.open
+            created = []
+            def observe_open(path, flags, mode):
+                descriptor = original_open(path, flags, mode)
+                created.append((flags, stat.S_IMODE(os.fstat(descriptor).st_mode)))
+                return descriptor
+            previous_umask = os.umask(0)
+            try:
+                with patch.object(smoke.os, "open", side_effect=observe_open):
+                    path = smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+            finally:
+                os.umask(previous_umask)
+            self.assertEqual(len(created), 1)
+            self.assertTrue(created[0][0] & os.O_EXCL)
+            self.assertTrue(created[0][0] & os.O_NOFOLLOW)
+            self.assertEqual(created[0][1], 0o600)
+            self.assertEqual(stat.S_IMODE(directory.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o444)
+            self.assertEqual(path.read_text(), "synthetic-file-fixture-value")
+            result = NonrootEntrypointTests().invoke({"LISTMONK_db__password": "deliberately-wrong-value",
+                "LISTMONK_db__password_FILE": str(path)}, "sh", "-c", 'printf "%s" "$LISTMONK_db__password"')
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "synthetic-file-fixture-value")
+            self.assertEqual(result.stderr, "")
+
+    def test_container_keeps_readonly_inode_mount_and_deliberately_wrong_direct_value(self):
+        with tempfile.TemporaryDirectory() as directory:
+            docker = SimpleNamespace(run=Mock())
+            value = smoke.EngineImageSmoke(docker, "synthetic:only", "a" * 40, Path(directory) / "evidence")
+            value.secret_file = smoke.write_synthetic_secret(Path(directory), value.pg_env["POSTGRES_PASSWORD"])
+            value.report["image"]["id"] = "sha256:" + "b" * 64
+            value.owned = Mock()
+            value.engine(["--version"])
+            arguments = docker.run.call_args.args[0]
+            self.assertIn(f"type=bind,source={value.secret_file},target=/run/engine-db-password,readonly", arguments)
+            self.assertIn("LISTMONK_db__password_FILE=/run/engine-db-password", arguments)
+            self.assertIn("LISTMONK_db__password=deliberately-wrong-synthetic-password", arguments)
+            self.assertFalse(any(value.pg_env["POSTGRES_PASSWORD"] in argument for argument in arguments))
+
+    def test_existing_file_or_symbolic_target_cannot_be_overwritten(self):
+        for symbolic in (False, True):
+            with self.subTest(symbolic=symbolic), tempfile.TemporaryDirectory() as folder:
+                directory = Path(folder)
+                original = directory / "original"
+                original.write_text("do not overwrite")
+                target = directory / "db-password"
+                if symbolic:
+                    target.symlink_to(original)
+                else:
+                    target.write_text("do not overwrite")
+                with self.assertRaises(FileExistsError):
+                    smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assertEqual(original.read_text(), "do not overwrite")
+                self.assertEqual(target.read_text(), "do not overwrite")
+
+    def test_nonprivate_or_symbolic_parent_rejects_before_creation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            directory.chmod(0o755)
+            try:
+                with self.assertRaisesRegex(smoke.SmokeError, "not private"):
+                    smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assertFalse((directory / "db-password").exists())
+            finally:
+                directory.chmod(0o700)
+            symbolic = directory / "symbolic"
+            symbolic.symlink_to(directory, target_is_directory=True)
+            with self.assertRaisesRegex(smoke.SmokeError, "not private"):
+                smoke.write_synthetic_secret(symbolic, "synthetic-file-fixture-value")
+
+    def qualifier(self, directory, daemon):
+        value = smoke.EngineImageSmoke(SimpleNamespace(json=Mock(return_value=daemon)),
+            "synthetic:only", "a" * 40, Path(directory) / "evidence")
+        value.cleanup = Mock(return_value=[])
+        value.failure_diagnostics = Mock(return_value=[])
+        return value
+
+    def test_native_admission_precedes_any_secret_storage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            value = self.qualifier(directory, {"os": "linux", "architecture": "amd64", "root": directory})
+            with patch.object(smoke.platform, "system", return_value="Darwin"), \
+                 patch.object(smoke, "admit_secret_tmpfs") as backing, patch.object(smoke, "write_synthetic_secret") as write:
+                self.assertFalse(value.qualify())
+            backing.assert_not_called()
+            write.assert_not_called()
+            self.assertIsNone(value.secret_directory)
+
+    def test_unadmitted_backing_fails_before_write_with_no_disk_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            value = self.qualifier(directory, {"os": "linux", "architecture": "amd64", "root": directory})
+            with patch.object(smoke.platform, "system", return_value="Linux"), patch.object(smoke.platform, "machine", return_value="x86_64"), \
+                 patch.object(smoke, "admit_secret_tmpfs", side_effect=smoke.SmokeError("fixture backing refused")), \
+                 patch.object(smoke, "write_synthetic_secret") as write, patch.object(smoke.tempfile, "TemporaryDirectory") as fallback:
+                self.assertFalse(value.qualify())
+            write.assert_not_called()
+            fallback.assert_not_called()
+            self.assertIsNone(value.secret_directory)
+
+    def test_provisioning_error_cleans_private_directory_without_retaining_payload(self):
+        with tempfile.TemporaryDirectory() as directory:
+            value = self.qualifier(directory, {"os": "linux", "architecture": "amd64", "root": directory})
+            original = smoke.write_synthetic_secret
+            def interrupted(parent, password):
+                original(parent, password)
+                raise OSError("synthetic provisioning interruption")
+            with patch.object(smoke.platform, "system", return_value="Linux"), patch.object(smoke.platform, "machine", return_value="x86_64"), \
+                 patch.object(smoke, "admit_secret_tmpfs", return_value=Path(directory)), \
+                 patch.object(smoke, "write_synthetic_secret", side_effect=interrupted):
+                self.assertFalse(value.qualify())
+            self.assertFalse(Path(value.secret_directory.name).exists())
+            self.assertNotIn(value.pg_env["POSTGRES_PASSWORD"], (value.output_dir / "report.json").read_text())
+
+
+class HistoricalMediaTransportTests(unittest.TestCase):
+    def fixture(self):
+        value = object.__new__(smoke.EngineImageSmoke)
+        value.serve = SimpleNamespace(name="owned-historical-engine")
+        value.report = {}
+        value.auth = {"Authorization": "Basic synthetic-api-header"}
+        value.owned = Mock()
+        value.media_bytes = Mock(return_value=smoke.UPGRADE_PNG)
+        def result(arguments, **options):
+            if arguments[:2] == ["exec", "--interactive"]:
+                return subprocess.CompletedProcess(arguments, 0, b"", b"")
+            return subprocess.CompletedProcess(arguments, 0, json.dumps({"data": {"filename": "fixture.png"}}), "")
+        value.docker = SimpleNamespace(run=Mock(side_effect=result))
+        return value
+
+    def test_staging_uses_owned_fixed_target_and_binary_stdin_without_daemon_copy(self):
+        value = self.fixture()
+        body = b"\x00\xff$(not-shell-code)\r\n"
+        value.stage_old_media_body(body)
+        value.owned.assert_called_once_with("owned-historical-engine")
+        value.docker.run.assert_called_once_with(["exec", "--interactive", "owned-historical-engine", "sh", "-ec",
+            "umask 077; cat > /tmp/upgrade-upload.body"], input_bytes=body, timeout=10, check=False)
+
+    def test_empty_oversized_or_nonbinary_staging_rejects_before_control(self):
+        value = self.fixture()
+        for body in (b"", b"x" * 8193, "not binary"):
+            with self.subTest(kind=type(body).__name__), self.assertRaises(smoke.SmokeError):
+                value.stage_old_media_body(body)
+        value.owned.assert_not_called()
+        value.docker.run.assert_not_called()
+
+    def test_failed_staging_stops_before_authenticated_upload_and_keeps_safe_subphase(self):
+        for failure in (subprocess.CompletedProcess([], 1, b"synthetic-sensitive-output", b"synthetic-sensitive-output"),
+                        smoke.SmokeError("transport synthetic-sensitive-output")):
+            value = self.fixture()
+            value.docker.run = Mock(return_value=failure, side_effect=failure if isinstance(failure, Exception) else None)
+            with self.subTest(failure=type(failure).__name__), self.assertRaises(smoke.SmokeError) as raised:
+                value.upload_old_media()
+            self.assertNotIn("synthetic-sensitive-output", str(raised.exception))
+            self.assertEqual(value.report["supportedOldUpgradePhase"], "media-payload-staging")
+            self.assertEqual(value.docker.run.call_count, 1)
+            value.media_bytes.assert_not_called()
+
+    def test_actual_api_upload_and_exact_binary_media_check_remain_required(self):
+        value = self.fixture()
+        self.assertEqual(value.upload_old_media(), "fixture.png")
+        self.assertEqual(value.docker.run.call_count, 2)
+        staging, upload = value.docker.run.call_args_list
+        body = staging.kwargs["input_bytes"]
+        self.assertIn(smoke.UPGRADE_PNG, body)
+        self.assertIn(b'filename="fixture.png"', body)
+        self.assertFalse(any(call.args[0][0] == "cp" for call in value.docker.run.call_args_list))
+        self.assertEqual(upload.args[0][-1], "http://127.0.0.1:9000/api/media")
+        self.assertIn("--post-file", upload.args[0])
+        self.assertIn("Authorization: Basic synthetic-api-header", upload.args[0])
+        self.assertEqual(upload.kwargs, {"timeout": 10, "check": False})
+        value.media_bytes.assert_called_once_with("fixture.png")
+        self.assertEqual(value.report["supportedOldUpgradePhase"], "media-byte-verification")
+        self.assertNotIn("synthetic-api-header", json.dumps(value.report))
+
+    def test_api_failure_or_changed_media_cannot_qualify(self):
+        value = self.fixture()
+        value.docker.run.side_effect = [subprocess.CompletedProcess([], 0, b"", b""),
+                                       subprocess.CompletedProcess([], 1, "private response", "private response")]
+        with self.assertRaisesRegex(smoke.SmokeError, "API upload did not succeed"):
+            value.upload_old_media()
+        self.assertEqual(value.report["supportedOldUpgradePhase"], "media-api-upload")
+        value.media_bytes.assert_not_called()
+        value = self.fixture()
+        value.media_bytes.return_value = b"changed binary media"
+        with self.assertRaisesRegex(smoke.SmokeError, "preserve exact uploaded bytes"):
+            value.upload_old_media()
 
 
 class SupportedOldAdmissionTests(unittest.TestCase):

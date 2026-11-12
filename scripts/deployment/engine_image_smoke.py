@@ -20,6 +20,7 @@ import re
 import secrets
 import signal
 import shutil
+import stat
 import subprocess
 import struct
 import sys
@@ -146,6 +147,60 @@ def admit_native_platform(system: str, machine: str, daemon) -> None:
             or not isinstance(daemon, dict) or daemon.get("os") != "linux"
             or str(daemon.get("architecture", "")).lower() not in {"x86_64", "amd64"}):
         raise SmokeError("Engine qualification requires native Linux/amd64 host and Docker daemon")
+
+
+def admit_secret_tmpfs(root: Path = Path("/dev/shm"), mountinfo: Path = Path("/proc/self/mountinfo")) -> Path:
+    """Require the actual Linux tmpfs mount; never fall back to a disk temp directory."""
+    try:
+        if root.is_symlink():
+            raise OSError("symbolic mount root")
+        selected = root.resolve(strict=True)
+        metadata = selected.stat()
+        if not stat.S_ISDIR(metadata.st_mode):
+            raise OSError("not a directory")
+        with mountinfo.open("rb") as source:
+            raw = source.read(256 * 1024 + 1)
+        if len(raw) > 256 * 1024:
+            raise OSError("mount table bound")
+        matches = []
+        for line in raw.decode("utf-8").splitlines():
+            before, separator, after = line.partition(" - ")
+            fields, filesystem = before.split(), after.split()
+            if not separator or len(fields) < 6 or len(filesystem) < 3:
+                raise OSError("invalid mount table")
+            mountpoint = re.sub(r"\\([0-7]{3})", lambda match: chr(int(match[1], 8)), fields[4])
+            if mountpoint == str(selected):
+                matches.append((fields[2], fields[5].split(","), filesystem[0]))
+        device = f"{os.major(metadata.st_dev)}:{os.minor(metadata.st_dev)}"
+        if len(matches) != 1 or matches[0][0] != device or "rw" not in matches[0][1] or matches[0][2] != "tmpfs":
+            raise OSError("unsupported secret backing")
+        return selected
+    except (OSError, ValueError, UnicodeError):
+        raise SmokeError("Synthetic file-secret fixture requires an admitted writable host tmpfs") from None
+
+
+def write_synthetic_secret(directory: Path, password: str) -> Path:
+    """Preserve the real plaintext _FILE contract inside a private, admitted fixture."""
+    metadata = directory.lstat()
+    if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid()
+            or stat.S_IMODE(metadata.st_mode) != 0o700):
+        raise SmokeError("Synthetic file-secret directory is not private")
+    target = directory / "db-password"
+
+    def private_opener(path, flags):
+        return os.open(path, flags | os.O_NOFOLLOW, 0o600)
+
+    # Exclusive creation prevents overwriting/following a pre-existing file. Keep
+    # the payload owner-only while writing, then allow the image's nonroot UID
+    # to read the mounted inode; the host parent directory remains mode0700.
+    with open(target, "x", encoding="utf-8", opener=private_opener) as payload:
+        payload.write(password)
+        payload.flush()
+        os.fchmod(payload.fileno(), 0o444)
+        written = os.fstat(payload.fileno())
+        if not stat.S_ISREG(written.st_mode) or written.st_nlink != 1 or stat.S_IMODE(written.st_mode) != 0o444:
+            raise SmokeError("Synthetic file-secret inode is not admitted")
+    return target
 
 
 class ExpandedTarReader:
@@ -705,15 +760,15 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
         boundary = "engine-upgrade-" + secrets.token_hex(12)
         body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="fixture.png"\r\n'
                 'Content-Type: image/png\r\n\r\n').encode() + UPGRADE_PNG + f"\r\n--{boundary}--\r\n".encode()
-        with tempfile.TemporaryDirectory(prefix="engine-upgrade-body-") as folder:
-            path = Path(folder) / "upload.body"
-            path.write_bytes(body)
-            self.owned(self.serve.name)
-            self.docker.run(["cp", str(path), self.serve.name + ":/tmp/upgrade-upload.body"], timeout=10)
+        self.report["supportedOldUpgradePhase"] = "media-payload-staging"
+        self.stage_old_media_body(body)
+        self.report["supportedOldUpgradePhase"] = "media-api-upload"
         result = self.docker.run(["exec", self.serve.name, "wget", "-q", "-T", "5", "-O", "-",
                                   "--header", "Authorization: " + self.auth["Authorization"],
                                   "--header", "Content-Type: multipart/form-data; boundary=" + boundary,
-                                  "--post-file", "/tmp/upgrade-upload.body", "http://127.0.0.1:9000/api/media"], timeout=10)
+                                  "--post-file", "/tmp/upgrade-upload.body", "http://127.0.0.1:9000/api/media"], timeout=10, check=False)
+        if result.returncode != 0:
+            raise SmokeError("Historical media API upload did not succeed")
         try:
             media = json.loads(result.stdout)["data"]
             filename = media["filename"]
@@ -721,9 +776,26 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
             raise SmokeError("Historical media API did not return a bounded fixture filename") from error
         if not isinstance(filename, str) or not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,199}", filename):
             raise SmokeError("Historical media filename is unsafe")
+        self.report["supportedOldUpgradePhase"] = "media-byte-verification"
         if self.media_bytes(filename) != UPGRADE_PNG:
             raise SmokeError("Historical media API did not preserve exact uploaded bytes")
         return filename
+
+    def stage_old_media_body(self, body):
+        if not isinstance(body, bytes) or not body or len(body) > 8192:
+            raise SmokeError("Historical media request body exceeds the synthetic fixture bound")
+        self.owned(self.serve.name)
+        # Docker's archive/cp write path rejects read-only rootfs even for this
+        # HostConfig.Tmpfs destination. Write through the running mount namespace
+        # instead. Binary data stays on stdin; no payload or credential is shell code.
+        command = ["exec", "--interactive", self.serve.name, "sh", "-ec",
+                   "umask 077; cat > /tmp/upgrade-upload.body"]
+        try:
+            result = self.docker.run(command, input_bytes=body, timeout=10, check=False)
+        except SmokeError:
+            raise SmokeError("Historical media payload staging did not finish") from None
+        if result.returncode != 0:
+            raise SmokeError("Historical media payload staging did not succeed")
 
     def media_bytes(self, filename):
         if not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,199}", filename):
@@ -885,10 +957,6 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
             signal.signal(kind, expired)
         signal.alarm(900)
         try:
-            self.secret_directory = tempfile.TemporaryDirectory(prefix="wd-engine-secret-")
-            self.secret_file = Path(self.secret_directory.name) / "db-password"
-            self.secret_file.write_text(self.pg_env["POSTGRES_PASSWORD"])
-            self.secret_file.chmod(0o444)
             daemon = self.docker.json(["info", "--format", '{"os":{{json .OSType}},"architecture":{{json .Architecture}},"root":{{json .DockerRootDir}}}'], timeout=10)
             admit_native_platform(platform.system(), platform.machine(), daemon)
             self.report["nativePlatform"] = {"host": "linux/amd64", "daemon": "linux/amd64"}
@@ -897,6 +965,12 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
                 raise SmokeError("Engine qualification requires a native host-visible Docker root")
             self.initial_free = shutil.disk_usage(self.docker_root).free
             self.capacity()
+            backing = admit_secret_tmpfs()
+            self.secret_directory = tempfile.TemporaryDirectory(prefix="wd-engine-secret-", dir=backing)
+            self.secret_file = write_synthetic_secret(Path(self.secret_directory.name), self.pg_env["POSTGRES_PASSWORD"])
+            self.report["syntheticSecretStorage"] = {"filesystem": "tmpfs", "privateParentMode": "0700",
+                                                      "mountedFileMode": "0444", "diskFallback": False,
+                                                      "swapPolicyAttested": False}
             self.check("immutable-final-engine-image", self.inspect_image)
             self.check("owned-internal-fixture", self.create_environment)
             self.check("actual-final-image-packaging", self.packaging)

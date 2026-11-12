@@ -10,11 +10,14 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import Mock
 
 try:
     from . import image_smoke as smoke
+    from .registry_smoke import IsolatedDocker
 except ImportError:
     import image_smoke as smoke
+    from registry_smoke import IsolatedDocker
 
 
 SHA = "a" * 40
@@ -122,6 +125,54 @@ class AdmissionTests(unittest.TestCase):
         with self.assertRaises(smoke.SmokeError) as raised:
             docker.run(["run", "--env", "SECRET=hidden"])
         self.assertNotIn("hidden", str(raised.exception))
+
+    def test_finite_binary_stdin_uses_existing_pinned_context_without_text_conversion(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment = "admitted-local", {"DOCKER_CONFIG": "/owned/empty-auth"}
+        docker.runner = Mock(return_value=subprocess.CompletedProcess([], 0, b"", b""))
+        body = b"\x00\xff$(not-shell-code)\r\n"
+        result = docker.run(["exec", "--interactive", "owned", "cat"], input_bytes=body, timeout=7)
+        docker.runner.assert_called_once_with(["docker", "--context", "admitted-local", "exec", "--interactive", "owned", "cat"],
+            capture_output=True, text=False, timeout=7, env=docker.environment, check=False, input=body)
+        self.assertEqual(result.stdout, b"")
+
+    def test_binary_stdin_preserves_isolated_endpoint_and_empty_auth_configuration(self):
+        docker = object.__new__(IsolatedDocker)
+        docker.context, docker.endpoint = None, "unix:///owned/docker.sock"
+        docker.environment = {"DOCKER_CONFIG": "/owned/empty-auth"}
+        docker.runner = Mock(return_value=subprocess.CompletedProcess([], 0, b"", b""))
+        docker.run(["exec", "--interactive", "owned", "cat"], input_bytes=b"fixture")
+        self.assertEqual(docker.runner.call_args.args[0], ["docker", "--host", "unix:///owned/docker.sock",
+            "exec", "--interactive", "owned", "cat"])
+        self.assertEqual(docker.runner.call_args.kwargs["env"], {"DOCKER_CONFIG": "/owned/empty-auth"})
+        self.assertEqual(docker.runner.call_args.kwargs["input"], b"fixture")
+
+    def test_oversized_or_nonbinary_stdin_rejects_before_spawn(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment, docker.runner = "local", {}, Mock()
+        for body in (b"x" * 8193, "sensitive-nonbinary-input", bytearray(b"content")):
+            with self.subTest(kind=type(body).__name__), self.assertRaises(smoke.SmokeError) as raised:
+                docker.run(["exec", "owned", "cat"], input_bytes=body)
+            self.assertEqual(str(raised.exception), "Docker stdin must be bounded binary data")
+        docker.runner.assert_not_called()
+
+    def test_binary_stdin_failure_or_timeout_never_exposes_payload_or_process_output(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment = "local", {}
+        body = b"synthetic-sensitive-body"
+        for error in (None, subprocess.TimeoutExpired(["docker", "exec"], 1, output=body), OSError("synthetic-sensitive-body")):
+            docker.runner = Mock(return_value=subprocess.CompletedProcess([], 1, body, body), side_effect=error)
+            with self.subTest(error=type(error).__name__), self.assertRaises(smoke.SmokeError) as raised:
+                docker.run(["exec", "owned", "cat"], input_bytes=body, timeout=1)
+            self.assertNotIn(body.decode(), str(raised.exception))
+
+    def test_normal_text_calls_keep_the_existing_runner_and_return_contract(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment = "local", {}
+        docker.runner = Mock(return_value=subprocess.CompletedProcess([], 0, "ordinary text", ""))
+        self.assertEqual(docker.run(["version"]).stdout, "ordinary text")
+        self.assertNotIn("input", docker.runner.call_args.kwargs)
+        self.assertIs(docker.runner.call_args.kwargs["text"], True)
 
     def test_rejects_flags_shell_fragments_and_abbreviated_revision(self):
         for value in ("--privileged", "image;echo", "image\n--network=host", "$(command)"):

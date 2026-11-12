@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-linux-core-final-image-qualification",
+  "sourceHead": "7e0543b94e55cefa6be6b06bcd4e51e9a4cb879b",
+  "testedMerge": "72e5093c2a6541233681f1a24c964c0f4bf18443",
+  "run": {
+    "id": 43132118962,
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43132118962",
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 13905859386,
+    "bytes": 2069642,
+    "sha256": "d478da65b530d08edda53471cc496695409d58705eee98e8475d01c51123e639",
+    "apiDigestMatched": true
+  },
+  "suites": {
+    "browser-realtime": {
+      "passed": 5,
+      "cleanup": true
+    },
+    "realtime-drain": {
+      "passed": 6,
+      "cleanup": true
+    },
+    "registry-smoke": {
+      "passed": 8,
+      "cleanup": true
+    },
+    "smoke": {
+      "passed": 7,
+      "cleanup": true
+    },
+    "web-switch": {
+      "passed": 7,
+      "cleanup": true
+    },
+    "worker-drain": {
+      "passed": 5,
+      "cleanup": true
+    },
+    "worker-overrun": {
+      "passed": 5,
+      "cleanup": true
+    }
+  },
+  "totalPassedChecks": 43,
+  "nativeBrowser": {
+    "persistentNativeUiTab": true,
+    "freshRealTicketAndAuth": true,
+    "missedNoticeResynced": true,
+    "liveStreamResumed": true,
+    "unread": 2,
+    "maxActiveSockets": 1,
+    "pageErrors": 0,
+    "nativeOperationsAdminUi": true,
+    "nativeAdminMfa": true,
+    "mountedApi403Both": true,
+    "explicitRefreshRestoredBoth": true,
+    "noAutomaticRestoration": true
+  },
+  "freshMigrationAndRuntimeRole": {
+    "successfulRuns": 2,
+    "canonicalMigrationCount": 119,
+    "emptyFiles": true,
+    "runtimeRole": "smoke_runtime",
+    "ownerCredentialsRuntime": false,
+    "deniedDdl": 5
+  },
+  "images": {
+    "web": {
+      "id": "sha256:6eb250fd9fa4e0c71293d38c8373ee2e98cf1c1990c5df5c9eafff6a7d74e131",
+      "revision": "72e5093c2a6541233681f1a24c964c0f4bf18443",
+      "user": "bun",
+      "repoDigests": []
+    },
+    "worker": {
+      "id": "sha256:e91911e803cf6fe8c2267c288044e24bd310aeaf3d59993a2a15c40f9ad933c6",
+      "revision": "72e5093c2a6541233681f1a24c964c0f4bf18443",
+      "user": "bun",
+      "repoDigests": []
+    },
+    "realtime": {
+      "id": "sha256:1510a193f21be3e6c407813789a06b099967e5dc93733374ccd4687fc5007dc7",
+      "revision": "72e5093c2a6541233681f1a24c964c0f4bf18443",
+      "user": "bun",
+      "repoDigests": []
+    },
+    "migrator": {
+      "id": "sha256:0325526fdc648a09cb31791e22390268b00b9945c531bea88ac59019b75be73d",
+      "revision": "72e5093c2a6541233681f1a24c964c0f4bf18443",
+      "user": "bun",
+      "repoDigests": []
+    }
+  },
+  "limitations": [
+    "Owned synthetic Linux fixtures; no production deployment or installed/provider acceptance.",
+    "Current-source artifact source policy is the Version2 policy at the tested commit; no mixed-source component reuse.",
+    "Same-version traffic switching is not cross-version rollback.",
+    "Current head security findings, Engine old-packed upgrade and recovery qualification remain separate open gates."
+  ]
+}
