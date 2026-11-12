@@ -23,7 +23,7 @@ COMPONENTS = ("web", "worker", "realtime", "migrator")
 TOP_KEYS = {"schemaVersion", "kind", "inputPolicySha256", "policy", "context", "components"}
 COMPONENT_KEYS = {"inputPolicySha256", "componentInputSha256", "graphInputs", "inputs", "helperEntries", "graphKind", "limitations"}
 POLICY_KEYS = {"version", "context", "sharedFiles", "sharedTrees", "rootTsconfigFiles", "runtimeAssets", "limits", "policySources", "entries", "esbuild", "web", "revision"}
-POLICY_SOURCES = {"scripts/build-workers.mjs", "scripts/deployment/component_inputs.mjs"}
+POLICY_SOURCES = {"scripts/build-workers.mjs", "scripts/deployment/component_inputs.mjs", "scripts/deployment/web_inputs.mjs"}
 HASH = re.compile(r"[a-f0-9]{64}\Z")
 # Match the retained bundle metadata ceiling, so oversize evidence holds before builds.
 MAX_JSON_BYTES = 4 * 1024 * 1024
@@ -133,7 +133,7 @@ def validate_receipt(value, *, components=COMPONENTS):
             and value["inputPolicySha256"] == content_hash(policy), "input policy digest differs")
     require(isinstance(value["components"], dict) and set(value["components"]) == set(components), "complete selected component inventory required")
     source_records = _records(policy["policySources"])
-    require(set(source_records) == POLICY_SOURCES, "both discovery policy source files required")
+    require(set(source_records) == POLICY_SOURCES, "complete discovery policy source files required")
     shared = policy["sharedFiles"]
     require(isinstance(shared, list) and 0 < len(shared) <= 128 and all(isinstance(path, str) for path in shared)
             and len(set(shared)) == len(shared), "bounded shared input declaration required")

@@ -9,6 +9,7 @@ import {
   discoverBuildGraphs,
   selectBuildEntries,
 } from "../build-workers.mjs";
+import { guardWebInputs, WEB_EXCLUSIONS, WEB_INPUT_POLICY } from "./web_inputs.mjs";
 
 export const COMPONENTS = ["web", "worker", "realtime", "migrator"];
 const SHARED = [
@@ -21,6 +22,7 @@ const SHARED = [
   "deploy/images/Dockerfile",
   "scripts/build-workers.mjs",
   "scripts/deployment/component_inputs.mjs",
+  "scripts/deployment/web_inputs.mjs",
 ];
 const SHARED_TREES = ["patches", "third-party"];
 // These are app assets outside static imports. External npm runtime data stays in the entire
@@ -61,13 +63,18 @@ const LIMITS = {
   totalBytes: 256 * 1024 * 1024,
   graphInputs: 10_000,
 };
-const POLICY_FILES = ["scripts/build-workers.mjs", "scripts/deployment/component_inputs.mjs"];
+const POLICY_FILES = [
+  "scripts/build-workers.mjs",
+  "scripts/deployment/component_inputs.mjs",
+  "scripts/deployment/web_inputs.mjs",
+];
 const BUILTINS = new Set(builtinModules.flatMap((name) => [name, `node:${name}`]));
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const WEB_LIMITATIONS = [
   "Conservative repository-source inventory, not a discovered Next production graph.",
-  "Includes backend, helper, test and documentation sources conservatively; worker-only Web reuse is not qualified.",
-  "Tailwind automatic source discovery and Next instrumentation/type qualification are not isolated; complete release CI remains required.",
+  "Only three reviewed worker/privacy source paths are omitted, with a fresh static reachability guard and identical Tailwind exclusions.",
+  "Unknown resolver, configuration, filesystem or dynamic module edges reject discovery; this is a bounded first-party source contract, not arbitrary JavaScript proof.",
+  "Next type qualification, actual image equivalence, reuse planning and hosted conditional shipping require separate release gates.",
 ];
 
 export class ComponentInputError extends Error {}
@@ -356,7 +363,44 @@ async function inventoryPass(root, components) {
     const paths = [...shared, ...graph];
     for (const tree of RUNTIME_ASSETS[component].trees)
       paths.push(...(await treeFiles(root, tree)));
-    if (component === "web") paths.push(...(await treeFiles(root, "", { web: true })));
+    if (component === "web") {
+      const repositoryFiles = await treeFiles(root, "", { web: true });
+      const sourceInputs = await hashFiles(root, repositoryFiles);
+      const sourceByPath = new Map(sourceInputs.map((input) => [input.path, input]));
+      await guardWebInputs({
+        root,
+        files: repositoryFiles,
+        helperEntries: selectBuildEntries("web"),
+        manifest,
+        production,
+        lock: lock.config,
+        fail,
+        read: async (path) => {
+          const before = sourceByPath.get(path);
+          if (!before) fail(`Unbounded Web graph source: ${path}`);
+          const full = await checkedPath(root, path);
+          const handle = await open(full, constants.O_RDONLY | constants.O_NOFOLLOW);
+          try {
+            const opened = await handle.stat();
+            if (!opened.isFile() || opened.size !== before.bytes || opened.size > LIMITS.fileBytes)
+              fail(`Unbounded/changed Web graph source: ${path}`);
+            const bytes = await handle.readFile();
+            const after = await handle.stat();
+            if (
+              bytes.length !== before.bytes ||
+              sha256(bytes) !== before.sha256 ||
+              after.size !== opened.size ||
+              after.mtimeMs !== opened.mtimeMs
+            )
+              fail(`Web graph source changed while reading: ${path}`);
+            return bytes.toString("utf8");
+          } finally {
+            await handle.close();
+          }
+        },
+      });
+      paths.push(...repositoryFiles.filter((path) => !WEB_EXCLUSIONS.includes(path)));
+    }
     result[component] = { graphInputs: graph, inputs: await hashFiles(root, paths) };
   }
   return result;
@@ -408,7 +452,7 @@ export async function generateComponentInputs({
       discovery: { metafile: true, write: false, logLevel: "silent" },
     },
     web: {
-      mode: "conservative-repository-sources-not-next-graph",
+      ...WEB_INPUT_POLICY,
       excludedNames: [...SKIP_DIRECTORIES].sort(),
       excludedFiles: [".env* except .env.example", "*.log", ".DS_Store"],
     },

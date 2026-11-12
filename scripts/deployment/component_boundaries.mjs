@@ -13,6 +13,9 @@ const CATALOG = "src/features/i18n/catalog.ts";
 const NEXT = "next.config.ts";
 const UI_COPY = "src/components/data-table/messages/tableControls.en.json";
 const MAIL_COPY = "src/features/notifications/messages/notificationEmail.en.json";
+const WORKER = "src/server/worker.ts";
+const RELEASE_JOB = "src/features/release/job.ts";
+const REVIEW_LEDGER = "src/features/privacy/registryIdsInfrastructure2.ts";
 const hashes = (receipt) =>
   Object.fromEntries(
     COMPONENTS.map((component) => [component, receipt.components[component].componentInputSha256]),
@@ -24,14 +27,53 @@ function changed(before, after) {
 }
 
 async function copySnapshot(root, destination, receipt) {
-  // The conservative Web inventory includes every declared Core input and bounds both
-  // count and bytes. Check each copied byte against that already resolved inventory.
-  const copied = new Set(receipt.components.web.inputs.map((input) => input.path));
+  // Web can omit guarded worker-only inputs. Copy the hash-consistent union so this
+  // real-source proof retains every backend input under the same global resource caps.
+  const copied = new Map();
   for (const component of COMPONENTS) {
-    for (const input of receipt.components[component].inputs)
-      assert(copied.has(input.path), `Web snapshot omitted ${component} input ${input.path}`);
+    for (const input of receipt.components[component].inputs) {
+      if (copied.has(input.path))
+        assert.deepEqual(copied.get(input.path), input, "Component source contents disagree");
+      else copied.set(input.path, input);
+    }
   }
-  for (const input of receipt.components.web.inputs) {
+  const supplemental = [];
+  // The source-review ledger accompanies a legitimate worker edit but is deliberately
+  // absent from runtime inputs. Retain the declared omissions as bounded fixture
+  // sources too, so this proof changes the real ledger rather than fabricating one.
+  for (const path of receipt.policy.web.exclusions) {
+    if (copied.has(path)) continue;
+    const handle = await open(join(root, path), constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      const before = await handle.stat();
+      assert(
+        before.isFile() && before.size <= receipt.policy.limits.fileBytes,
+        "Supplemental source is not a bounded regular file",
+      );
+      const bytes = await handle.readFile();
+      const after = await handle.stat();
+      assert(
+        before.ino === after.ino &&
+          before.size === after.size &&
+          before.mtimeMs === after.mtimeMs &&
+          before.ctimeMs === after.ctimeMs &&
+          bytes.length === before.size,
+        "Supplemental source changed while reading",
+      );
+      const input = { path, bytes: bytes.length, sha256: sha256(bytes) };
+      copied.set(path, input);
+      supplemental.push(input);
+    } finally {
+      await handle.close();
+    }
+  }
+  assert(copied.size <= receipt.policy.limits.files, "Snapshot union exceeds source count cap");
+  assert(
+    [...copied.values()].reduce((total, input) => total + input.bytes, 0) <=
+      receipt.policy.limits.totalBytes,
+    "Snapshot union exceeds source byte cap",
+  );
+  for (const input of copied.values()) {
     const handle = await open(join(root, input.path), constants.O_RDONLY | constants.O_NOFOLLOW);
     let bytes;
     try {
@@ -54,6 +96,7 @@ async function copySnapshot(root, destination, receipt) {
     join(destination, "node_modules"),
     "dir",
   );
+  return supplemental;
 }
 
 function removeExactlyOnce(text, line) {
@@ -78,12 +121,12 @@ export async function qualifyComponentBoundaries(options) {
     checks: [],
     limitations: [
       "Input dependency boundaries in an owned real-source snapshot, not runtime or image qualification.",
-      "Web still uses the conservative repository inventory; worker-only Web reuse is not qualified.",
+      "Web uses a conservative inventory with three guarded omissions; actual image equivalence and reuse remain separate gates.",
       "No component reuse, deployment, API/WS/job compatibility or installed acceptance is authorized.",
     ],
   };
   try {
-    await copySnapshot(root, snapshot, current);
+    report.supplementalSources = await copySnapshot(root, snapshot, current);
     const discover = () => generateComponentInputs({ ...options, root: snapshot });
     const saved = new Map();
     for (const path of [
@@ -151,6 +194,50 @@ export async function qualifyComponentBoundaries(options) {
       after: hashes(afterUiCopy),
     });
     await writeFile(join(snapshot, UI_COPY), uiOriginal);
+
+    const workerOriginal = await readFile(join(snapshot, WORKER), "utf8");
+    const jobOriginal = await readFile(join(snapshot, RELEASE_JOB), "utf8");
+    const ledgerOriginal = await readFile(join(snapshot, REVIEW_LEDGER), "utf8");
+    const registration =
+      "  await registerReleaseCheckJob(boss);\n  await registerWorkflowJobs(boss, db);";
+    assert.equal(
+      workerOriginal.split(registration).length,
+      2,
+      "One real registration pair required",
+    );
+    const worker = workerOriginal.replace(
+      registration,
+      "  await registerWorkflowJobs(boss, db);\n  await registerReleaseCheckJob(boss);",
+    );
+    const timeout = "AbortSignal.timeout(RELEASE_FETCH_TIMEOUT_MS)";
+    assert.equal(jobOriginal.split(timeout).length, 2, "One real release timeout required");
+    const job = jobOriginal.replace(timeout, "AbortSignal.timeout(RELEASE_FETCH_TIMEOUT_MS * 2)");
+    let ledger = ledgerOriginal;
+    for (const [path, bytes] of [
+      [WORKER, worker],
+      [RELEASE_JOB, job],
+    ]) {
+      const pattern = new RegExp(`sourceReview:${path.replaceAll(".", "\\.")}#[a-f0-9]{64}`, "gu");
+      assert.equal([...ledger.matchAll(pattern)].length, 1, "One actual review hash required");
+      ledger = ledger.replace(pattern, `sourceReview:${path}#${sha256(bytes)}`);
+      await writeFile(join(snapshot, path), bytes);
+    }
+    assert.notEqual(ledger, ledgerOriginal, "Both actual source-review hashes must change");
+    await writeFile(join(snapshot, REVIEW_LEDGER), ledger);
+    const afterWorker = await discover();
+    assert.deepEqual(changed(afterRegistration, afterWorker), ["worker"]);
+    report.checks.push({
+      name: "actual-worker-registration-and-release-job-with-required-review-hashes",
+      passed: true,
+      before: hashes(afterRegistration),
+      after: hashes(afterWorker),
+    });
+    for (const [path, bytes] of [
+      [WORKER, workerOriginal],
+      [RELEASE_JOB, jobOriginal],
+      [REVIEW_LEDGER, ledgerOriginal],
+    ])
+      await writeFile(join(snapshot, path), bytes);
 
     const mail = JSON.parse(await readFile(join(snapshot, MAIL_COPY), "utf8"));
     assert.equal(typeof mail.recipientFallback, "string");

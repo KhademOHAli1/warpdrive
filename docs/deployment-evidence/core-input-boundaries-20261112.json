@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "warpdrive-real-source-component-boundaries",
+  "success": true,
+  "inputPolicySha256": "94e5f85bc628695c74bc16152d7e48f81bee2b22931376914e4eada0653d1b99",
+  "sourceInputs": {
+    "web": "ea5f8936a09577255b8f57945843c502f6327d86fba101164f9137649d881184",
+    "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+    "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+    "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+  },
+  "checks": [
+    {
+      "name": "actual-operations-ui-namespace-registration",
+      "passed": true,
+      "before": {
+        "web": "2326f379a068fee5d848ce9c36040aea6446f098b5b6ed655b97940f2587da54",
+        "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      },
+      "after": {
+        "web": "ea5f8936a09577255b8f57945843c502f6327d86fba101164f9137649d881184",
+        "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      }
+    },
+    {
+      "name": "existing-table-controls-ui-copy",
+      "passed": true,
+      "before": {
+        "web": "ea5f8936a09577255b8f57945843c502f6327d86fba101164f9137649d881184",
+        "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      },
+      "after": {
+        "web": "724f1eb28fcfca998a02a382a5e4113328940c98a3ea29351266962fc740a1e1",
+        "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      }
+    },
+    {
+      "name": "actual-worker-registration-and-release-job-with-required-review-hashes",
+      "passed": true,
+      "before": {
+        "web": "ea5f8936a09577255b8f57945843c502f6327d86fba101164f9137649d881184",
+        "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      },
+      "after": {
+        "web": "ea5f8936a09577255b8f57945843c502f6327d86fba101164f9137649d881184",
+        "worker": "81a8e14655776fa4fe6279bf6ff48649ddbd71ba989d833693cc94654d3d5a8f",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      }
+    },
+    {
+      "name": "notification-mail-copy-positive-control",
+      "passed": true,
+      "before": {
+        "web": "ea5f8936a09577255b8f57945843c502f6327d86fba101164f9137649d881184",
+        "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      },
+      "after": {
+        "web": "07f645ad7ef5205028c18036c76188790bbe2b5a50fdc6bddf45e4510bef6880",
+        "worker": "29dfce1a8d0c35c258218e5532b30c2c7e4272eafe12c441b46471b9a6af30be",
+        "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+      }
+    }
+  ],
+  "limitations": [
+    "Input dependency boundaries in an owned real-source snapshot, not runtime or image qualification.",
+    "Web uses a conservative inventory with three guarded omissions; actual image equivalence and reuse remain separate gates.",
+    "No component reuse, deployment, API/WS/job compatibility or installed acceptance is authorized."
+  ],
+  "supplementalSources": [
+    {
+      "path": "src/features/privacy/registryIdsInfrastructure2.ts",
+      "bytes": 10602,
+      "sha256": "82f7a6a304d8f8692a0f458acd4961f5f4475303b381e7765e988b5953c7c28f"
+    }
+  ],
+  "cleanupSuccess": true,
+  "seconds": 57.41,
+  "sourceBaseHead": "7e0543b94e55cefa6be6b06bcd4e51e9a4cb879b",
+  "qualificationScope": "Working-tree source dependency boundaries; no raw-HEAD artifact binding, Next/output equivalence, image reuse or installed acceptance.",
+  "qualifiedSourceSha256": {
+    "scripts/deployment/component_boundaries.mjs": "1aa67830b80207e9f0182d0e36985c65981935e5632a25131ecafb7d9297ccbd",
+    "scripts/deployment/component_inputs.mjs": "d5025724257eb9e31d40d7bb02c2c169f8fd90bee707e2e60aab4649f1893d94",
+    "scripts/deployment/component_inputs.py": "5e57941be031fccd74229b0351ca462f982a9270fae51b0af5d723bb6abc3653",
+    "scripts/deployment/web_inputs.mjs": "19bbf35e77d77e985976185c8e2f84f31acf6c2c99b5c81049d9ecf9066c4b8d",
+    "src/app/globals.css": "00a07bbdf606a2b3a43a2b585ac2608498aa47f2e87d1df5d37fcf1611b03271"
+  }
+}

@@ -34,7 +34,7 @@ python3 scripts/deployment/component_inputs.py \
 
 Omit `--component` from both commands for all four Core images. These commands discover and
 verify inputs; they do not compile Next, build an image, publish or deploy. Receipt output must
-remain outside the checkout because the current Web fallback inventories repository sources.
+remain outside the checkout because Web conservatively inventories repository sources.
 
 The Python verifier recomputes recursively key-sorted compact UTF-8 JSON hashes, opens files
 beneath a directory descriptor without following symlink ancestors, and bounds the fresh
@@ -64,28 +64,48 @@ the new release identity. Mixed-source assembly still needs authenticated origin
 qualification receipts, safe unchanged-component selection, unchanged original image labels
 and a newly tested assembly. Input hashes alone authorize none of those actions.
 
-Web currently uses a conservative repository-source inventory plus its actual helper graphs.
-This intentionally includes more than the Next application graph while Tailwind discovery and
-development instrumentation remain coupled. UI files outside backend dependency graphs can
-leave backend input hashes unchanged. General worker-only changes skipping Next compilation
-remain unqualified. Newsletter Engine and ingress inputs, explicit engine migration execution,
-cross-version API/WS/job/asset compatibility and installed release acceptance remain separate
-programme requirements.
+Web retains the conservative repository inventory and all four actual helper entries, except
+three guarded paths: `src/server/worker.ts`, `src/features/release/job.ts`, and the accompanying
+`src/features/privacy/registryIdsInfrastructure2.ts` review ledger. Identical explicit Tailwind
+exclusions keep those source files out of CSS discovery. All other Worker source remains a Web
+input unless it receives a separately qualified boundary.
+
+`web_inputs.mjs` freshly traverses reviewed App file conventions, optional proxy/instrumentation
+roots, helper and implicit next-intl inputs. It follows conservative type/value, re-export,
+literal loader, stylesheet and asset edges. Competing local Next/TypeScript resolution candidates
+are all traversed; unsupported explicit extension substitution, nested package resolver scopes,
+unreviewed configuration and opaque host/module access reject omission admission. Audited host
+cache/transpiler/browser contracts are explicit policy inputs. Source reads and parsed graph
+bytes are bounded. These are checks of a reviewed first-party source profile, not a discovered
+Next production graph or a general JavaScript sandbox.
+
+UI files outside backend dependency graphs can leave backend input hashes unchanged. The two
+guarded Worker entry/job edits now have source and CSS boundary evidence, but skipping Next in
+shipping still requires actual Next/type/output qualification, authenticated original artifacts,
+mixed-source assembly testing and a qualified conditional build/promotion path. Newsletter
+Engine and ingress inputs, cross-version API/WS/job/asset compatibility and installed release
+acceptance remain separate programme requirements.
 
 ## Real source boundary regression
 
-`scripts/deployment/component_boundaries.mjs` copies the bounded current source inventory
+`scripts/deployment/component_boundaries.mjs` copies the bounded union of all four source inventories
 into its own temporary directory, verifying every copied byte. It uses the existing dependency
 installation without writing into it. Only the temporary copy is changed, and it is removed
-after the check. Fresh production dependency discovery verifies three cases:
+after the check. Guarded omissions absent from runtime inventories are separately read, hashed
+and bounded as fixture companions, including the real review ledger. Fresh production dependency
+discovery checks four cases:
 
 - Registering the actual Operations UI namespace, including all three catalogs and the Next
   declaration, changes Web inputs while Worker, Realtime and Migrator inputs stay identical.
 - Editing existing table-control UI copy has the same boundary.
+- Reordering actual Worker registrations and changing the release job timeout, together with
+  both required real source-review hashes, changes Worker alone.
 - Editing notification email copy changes Worker and Web inputs; Realtime and Migrator stay
   identical. Notification mail catalogs are physically separate from UI catalogs, and UI
   assembly preserves the existing `notifications.email` namespace and locale fallback.
 
-The final-image workflow retains the boundary report alongside its input receipt. A local
-working-tree run passed all three cases in 23 seconds on 11 November 2026. This is source
-dependency evidence; the exact committed Linux image and complete release gates still apply.
+The final-image workflow retains the boundary report alongside its input receipt. The earlier
+Linux qualification covered the original three cases. The expanded guard also has isolated
+real-source negative controls for competing TS/JS modules, nested package mapping, extension
+substitution and indirect host constructors. All of this is source dependency evidence; actual
+Linux Next/images, retained-component reuse and complete release gates remain separate.

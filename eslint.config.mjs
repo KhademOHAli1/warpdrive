@@ -271,6 +271,8 @@ export default tseslint.config(
       "scripts/*.mjs",
       "scripts/deployment/component_inputs.mjs",
       "scripts/deployment/component_inputs.test.mjs",
+      "scripts/deployment/web_inputs.mjs",
+      "scripts/deployment/web_inputs.test.mjs",
       "scripts/deployment/component_boundaries.mjs",
       ".env.example.test.ts",
     ],

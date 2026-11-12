@@ -3,6 +3,12 @@
 @import "shadcn/tailwind.css";
 @import "../components/ui/iconDirection.css";
 
+/* Keep these exact worker/privacy omissions aligned with scripts/deployment/web_inputs.mjs.
+ * Tailwind scans source text independently of the JavaScript runtime import graph. */
+@source not "../server/worker.ts";
+@source not "../features/release/job.ts";
+@source not "../features/privacy/registryIdsInfrastructure2.ts";
+
 /*
  * Bind `dark:` to the `.dark` class, which is where the dark palette below is declared.
  * Tailwind v4's stock variant is `@media (prefers-color-scheme: dark)` instead, so without

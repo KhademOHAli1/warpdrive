@@ -48,6 +48,8 @@ function fixture() {
     "drizzle/0000.sql": "CREATE TABLE fixture (id int);",
     "drizzle/meta/_journal.json": "{}",
     "next.config.ts": "export default {};",
+    "src/app/globals.css":
+      '@import "tailwindcss";\n@source not "../server/worker.ts";\n@source not "../features/release/job.ts";\n@source not "../features/privacy/registryIdsInfrastructure2.ts";\n',
     "src/shared/backend.ts": "export const backend = 1;",
     "src/shared/code.ts": "export const code = 1;",
     "src/shared/spam.ts": "export const spam = 1;",
@@ -61,7 +63,11 @@ function fixture() {
     "src/ui/Card.tsx": "export const Card = () => <div className='grid'/>;",
   };
   for (const [name, contents] of Object.entries(files)) put(name, contents);
-  for (const path of ["scripts/build-workers.mjs", "scripts/deployment/component_inputs.mjs"]) {
+  for (const path of [
+    "scripts/build-workers.mjs",
+    "scripts/deployment/component_inputs.mjs",
+    "scripts/deployment/web_inputs.mjs",
+  ]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     copyFileSync(join(repository, path), join(root, path));
   }
@@ -171,6 +177,51 @@ void test("new imports are resolved on every collection and their subsequent cha
     assert.ok(added.components.worker.graphInputs.includes("src/newlyImported.ts"));
     f.put("src/newlyImported.ts", "export const added = 2;");
     assert.deepEqual(changed(added, await f.collect()), ["web", "worker"]);
+  } finally {
+    f.close();
+  }
+});
+
+void test("exact worker registration/job changes and their privacy review companion leave Web inputs unchanged", async () => {
+  const f = fixture();
+  try {
+    f.put(
+      "src/server/worker.ts",
+      'import {job} from "@/features/release/job"; export const registration = job;',
+    );
+    f.put("src/features/release/job.ts", "export const job = 1;");
+    f.put("src/features/privacy/registryIdsInfrastructure2.ts", 'export const review = "initial";');
+    f.put(
+      "src/entrypoints/worker.ts",
+      'import {registration} from "@/server/worker"; export {registration};',
+    );
+    const original = await f.collect();
+    const workerSource =
+      'import {job} from "@/features/release/job"; export const registration = job + 1;';
+    f.put("src/server/worker.ts", workerSource);
+    f.put(
+      "src/features/privacy/registryIdsInfrastructure2.ts",
+      `export const review = "${createHash("sha256").update(workerSource).digest("hex")}";`,
+    );
+    const afterRegistration = await f.collect();
+    assert.deepEqual(changed(original, afterRegistration), ["worker"]);
+    const jobSource = "export const job = 2;";
+    f.put("src/features/release/job.ts", jobSource);
+    f.put(
+      "src/features/privacy/registryIdsInfrastructure2.ts",
+      `export const review = "${createHash("sha256").update(jobSource).digest("hex")}";`,
+    );
+    assert.deepEqual(changed(afterRegistration, await f.collect()), ["worker"]);
+    f.put(
+      "src/features/workflows/v2/codeWorker.ts",
+      'import {code} from "@/shared/code"; export const child = code + 1;',
+    );
+    assert.deepEqual(changed(afterRegistration, await f.collect()), ["web", "worker"]);
+    f.put(
+      "src/app/page.tsx",
+      'import "@/server/worker"; export default function Page(){return null;}',
+    );
+    await assert.rejects(f.collect(), /Web reaches omitted source/u);
   } finally {
     f.close();
   }
