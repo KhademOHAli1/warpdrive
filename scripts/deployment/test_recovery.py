@@ -12,6 +12,7 @@ import stat
 import sys
 import tempfile
 import time
+import tracemalloc
 import unittest
 from unittest.mock import patch
 
@@ -210,7 +211,7 @@ class FakeRestic:
         record = self.store.snapshots[snapshot]
         r.require(record["tag"] == tag and record["files"][str(path)] == manifest, "Synthetic snapshot binding differs")
 
-    def restore(self, snapshot, target, budget):
+    def restore(self, snapshot, target, budget, *, inventory):
         r.require(not self.restore_failure, "Synthetic restore failed")
         record = self.store.snapshots[snapshot]
         for entry in sorted(record["inventory"]["entries"], key=lambda value: len(Path(value["path"]).parts)):
@@ -410,6 +411,27 @@ class RecoveryTests(unittest.TestCase):
             self.fixture.capture(reconcile=True)
         receipt = self.fixture.capture(reconcile=True, target=self.fixture.root / "fresh-restore")
         self.assertTrue(receipt["sourceUnchanged"])
+        self.assertEqual(self.fixture.store.backups, 1)
+
+    def test_actual_partial_stream_failure_is_unknown_and_reconciles_without_backup_replay(self):
+        restore = self.fixture.reader.restore
+        def failed_stream(snapshot, target, budget, *, inventory):
+            descriptor = os.open("partial", os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=target.fd)
+            try:
+                r.Command().stream([sys.executable, "-c", "import sys;sys.stdout.buffer.write(b'abc');raise SystemExit(3)"],
+                                   descriptor, expected_bytes=3, expected_sha256=r.digest(b"abc"))
+            finally:
+                os.close(descriptor)
+        self.fixture.reader.restore = failed_stream
+        with self.assertRaises(r.RecoveryUnknown):
+            self.fixture.capture()
+        self.assertEqual((self.fixture.root / "restore/partial").read_bytes(), b"abc")
+        with self.assertRaises(r.RecoveryError):
+            self.fixture.capture()
+        self.fixture.reader.restore = restore
+        with self.assertRaises(r.RecoveryError):
+            self.fixture.capture(reconcile=True)
+        self.assertTrue(self.fixture.capture(reconcile=True, target=self.fixture.root / "fresh-stream-target")["sourceUnchanged"])
         self.assertEqual(self.fixture.store.backups, 1)
 
     def test_manifest_and_journal_tampering_prevent_replay(self):
@@ -661,6 +683,9 @@ class DockerObservationTests(unittest.TestCase):
 class StderrObservedCommand(r.Command):
     """Passive bounded observation; the real process and exit status are unchanged."""
     def run(self, arguments, **kwargs):
+        if "restore" in arguments and getattr(self, "before_restore", None) is not None:
+            callback, self.before_restore = self.before_restore, None
+            callback()
         self.standard_error = bytearray()
         popen, read = r.subprocess.Popen, r.os.read
         observed = None
@@ -679,8 +704,14 @@ class StderrObservedCommand(r.Command):
         with patch("recovery.subprocess.Popen", start), patch("recovery.os.read", receive):
             return super().run(arguments, **kwargs)
 
+    def stream(self, arguments, descriptor, **kwargs):
+        if getattr(self, "before_dump", None) is not None:
+            callback, self.before_dump = self.before_dump, None
+            callback()
+        return super().stream(arguments, descriptor, **kwargs)
 
-def exact_root_removal_rejected(standard_error, locator):
+
+def exact_root_removal_rejected(standard_error, locator, *, expected_item="/"):
     """Match one versioned restic JSON root error, never unrelated substrings."""
     prefix = "/proc/self/fd/"
     descriptor = locator.removeprefix(prefix)
@@ -693,7 +724,7 @@ def exact_root_removal_rejected(standard_error, locator):
             record = json.loads(line)
         except (json.JSONDecodeError, UnicodeDecodeError):
             continue
-        if not isinstance(record, dict) or record.get("message_type") != "error" or record.get("during") != "restore" or record.get("item") != "/":
+        if not isinstance(record, dict) or record.get("message_type") != "error" or record.get("during") != "restore" or record.get("item") != expected_item:
             continue
         error = record.get("error")
         message = error.get("message") if isinstance(error, dict) else None
@@ -703,12 +734,49 @@ def exact_root_removal_rejected(standard_error, locator):
 
 
 class DescriptorDiagnosticTests(unittest.TestCase):
+    def test_restore_argument_preserves_raw_dot_through_actual_process_argv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = r.RestoreTarget(Path(directory).resolve() / "restore")
+            try:
+                target.create()
+                with patch("recovery.sys.platform", "linux"):
+                    argument = target.argument()
+                self.assertEqual(argument, f"/proc/self/fd/{target.fd}/.")
+                self.assertIsInstance(argument, str)
+                output = r.Command().run([sys.executable, "-c", "import sys;print(sys.argv[1])", argument], pass_fds=(target.fd,))
+                self.assertEqual(output.decode().rstrip("\n"), argument)
+            finally:
+                target.close()
+
+    def test_restore_argument_rejects_persistent_leaf_and_parent_replacement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "source"
+            source.mkdir(mode=0o700)
+            for replacement in ("leaf", "parent"):
+                with self.subTest(replacement=replacement):
+                    parent = root / replacement
+                    parent.mkdir(mode=0o700)
+                    target = r.RestoreTarget(parent / "restore")
+                    try:
+                        target.create()
+                        moved = parent if replacement == "parent" else target.path
+                        moved.rename(root / (replacement + "-old"))
+                        moved.symlink_to(source, target_is_directory=True)
+                        with self.assertRaises(OSError):
+                            target.argument()
+                        self.assertEqual(list(source.iterdir()), [])
+                    finally:
+                        target.close()
+
     def test_only_same_record_exact_terminal_root_can_establish_removal_failure(self):
         def record(path, *, item="/", message=None):
             return json.dumps({"message_type": "error", "during": "restore", "item": item,
                                "error": {"message": message or f"failed to remove stale item: remove {path}: operation not permitted"}}).encode()
         locator = "/proc/self/fd/5"
         self.assertTrue(exact_root_removal_rejected(record(locator), locator))
+        self.assertTrue(exact_root_removal_rejected(record(locator, item="/descriptor-root-file.data"), locator,
+                                                   expected_item="/descriptor-root-file.data"))
         for raw in (record(locator + "0"), record(locator + "/child"), record(locator, item="/child"),
                     record(locator, message=f"mentioned {locator}") + b"\n" + record(locator + "/child"),
                     b"failed to remove stale item: remove /proc/self/fd/5: operation not permitted"):
@@ -770,6 +838,79 @@ sys.argv=['runner','owned_failure_probe.Case']
             ])
             self.assertNotIn("generated-private-fixture-message", json.dumps(value))
 
+    def test_streams_multi_megabyte_output_with_bounded_python_memory_and_private_writes(self):
+        chunk = b"x" * 65536
+        hasher = r.hashlib.sha256()
+        for _ in range(64):
+            hasher.update(chunk)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory).resolve() / "output"
+            descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            sizes, modes, write = [], [], os.write
+            def observed_write(fd, value):
+                if fd == descriptor:
+                    sizes.append(len(value))
+                    modes.append(stat.S_IMODE(os.fstat(fd).st_mode))
+                return write(fd, value)
+            tracemalloc.start()
+            try:
+                with patch("os.write", observed_write):
+                    value = r.Command().stream([sys.executable, "-c", "import sys;chunk=b'x'*65536\nfor _ in range(64): sys.stdout.buffer.write(chunk)"],
+                                               descriptor, expected_bytes=4 * 1024**2, expected_sha256=hasher.hexdigest(), seconds=10)
+                _, peak = tracemalloc.get_traced_memory()
+                self.assertLess(peak, 2 * 1024**2)
+                self.assertEqual(value, {"bytes": 4 * 1024**2, "sha256": hasher.hexdigest()})
+                self.assertTrue(sizes and max(sizes) <= 65536)
+                self.assertEqual(set(modes), {0o600})
+            finally:
+                tracemalloc.stop()
+                os.close(descriptor)
+
+    def test_stream_rejects_overrun_short_digest_nonzero_stderr_and_timeout(self):
+        cases = [
+            ("import sys;sys.stdout.buffer.write(b'abcd')", 3, r.digest(b"abc"), 5),
+            ("import sys;sys.stdout.buffer.write(b'ab')", 3, r.digest(b"abc"), 5),
+            ("import sys;sys.stdout.buffer.write(b'abc')", 3, r.digest(b"xyz"), 5),
+            ("import sys;sys.stdout.buffer.write(b'abc');raise SystemExit(3)", 3, r.digest(b"abc"), 5),
+            ("import sys;sys.stderr.buffer.write(b'x'*65537)", 0, r.digest(b""), 5),
+            ("import os,time;os.write(1,b'a');time.sleep(2)", 1, r.digest(b"a"), 0.05),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            for index, (program, size, checksum, seconds) in enumerate(cases):
+                with self.subTest(index=index):
+                    descriptor = os.open(Path(directory).resolve() / str(index), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                    try:
+                        with self.assertRaises(r.RecoveryError):
+                            r.Command().stream([sys.executable, "-c", program], descriptor,
+                                               expected_bytes=size, expected_sha256=checksum, seconds=seconds)
+                        self.assertLessEqual(os.fstat(descriptor).st_size, size)
+                        self.assertEqual(stat.S_IMODE(os.fstat(descriptor).st_mode), 0o600)
+                    finally:
+                        os.close(descriptor)
+
+    def test_stream_refuses_existing_offset_and_propagates_partial_sink_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            descriptor = os.open(Path(directory).resolve() / "output", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            try:
+                os.lseek(descriptor, 1, os.SEEK_SET)
+                with self.assertRaises(r.RecoveryError):
+                    r.Command().stream([sys.executable, "-c", "pass"], descriptor, expected_bytes=0, expected_sha256=r.digest(b""))
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                write, calls = os.write, []
+                def failed_sink(fd, value):
+                    if fd == descriptor:
+                        calls.append(True)
+                        if len(calls) > 1:
+                            raise OSError("generated-sink-failure")
+                        return write(fd, value[:1])
+                    return write(fd, value)
+                with patch("os.write", failed_sink), self.assertRaises(OSError):
+                    r.Command().stream([sys.executable, "-c", "import sys;sys.stdout.buffer.write(b'abc')"], descriptor,
+                                       expected_bytes=3, expected_sha256=r.digest(b"abc"))
+                self.assertEqual(os.fstat(descriptor).st_size, 1)
+            finally:
+                os.close(descriptor)
+
     def test_output_and_deadline_are_bounded(self):
         command = r.Command()
         with self.assertRaises(r.RecoveryError):
@@ -788,6 +929,172 @@ sys.argv=['runner','owned_failure_probe.Case']
     def test_inspection_diagnostics_are_not_silently_treated_as_success(self):
         with self.assertRaises(r.RecoveryError):
             r.Command().run([sys.executable, "-c", "import sys; sys.stderr.write('warning')"], reject_stderr=True)
+
+
+def file_entry(path, value, mode=0o640):
+    return {"path": path, "kind": "file", "mode": mode, "uid": os.getuid(), "gid": os.getgid(),
+            "bytes": len(value), "sha256": r.digest(value)}
+
+
+class HybridCommand:
+    def __init__(self, entries, contents):
+        self.entries, self.contents = entries, contents
+        self.calls, self.streams = [], []
+        self.before_stream, self.exit_code = None, 0
+
+    def run(self, arguments, **kwargs):
+        self.calls.append(arguments)
+        if arguments[-1] == "version":
+            return b"restic 0.18.0 generated-unit-adapter\n"
+        if "ls" in arguments:
+            rows = [{"struct_type": "snapshot"}] + [
+                {"path": row["path"], "type": "file" if row["kind"] == "file" else "dir", "uid": row["uid"],
+                 "gid": row["gid"], "mode": r.restic_file_mode(row["mode"]), "size": row.get("bytes", 0)}
+                for row in self.entries]
+            return b"\n".join(r.canonical(row) for row in rows)
+        if "stats" in arguments:
+            return b'{"total_size":1}'
+        return b"{}"
+
+    def stream(self, arguments, descriptor, **kwargs):
+        self.streams.append(arguments)
+        if self.before_stream is not None:
+            callback, self.before_stream = self.before_stream, None
+            callback()
+        value = self.contents[arguments[-1]]
+        program = f"import sys;sys.stdout.buffer.write({value!r});raise SystemExit({self.exit_code})"
+        return r.Command().stream([sys.executable, "-c", program], descriptor, **kwargs)
+
+
+class HybridRestoreTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name).resolve()
+        self.key = self.root / "key"
+        put(self.key, b"generated-only-hybrid-unit-password-0000000000\n")
+        self.repository = self.root / "repository"
+        self.repository.mkdir(mode=0o700)
+        self.handle = r.DirectoryHandle(self.repository, private_parent=True)
+        self.addCleanup(self.handle.close)
+        self.budget = {**r.DEFAULT_LIMITS, "repositoryBytes": 2 * 1024**2}
+
+    def adapter(self, entries, contents):
+        command = HybridCommand(entries, contents)
+        adapter = r.Restic(sys.executable, str(self.repository), self.key, command=command)
+        adapter.directory = self.handle
+        return adapter, command
+
+    def inventory(self, entries):
+        return {"roots": [row["path"] for row in entries], "entries": entries,
+                "bytes": sum(row.get("bytes", 0) for row in entries)}
+
+    def target(self, name):
+        target = r.RestoreTarget(self.root / name)
+        target.create()
+        self.addCleanup(target.close)
+        return target
+
+    def test_literal_patterns_and_original_dump_names_complete_owned_file_metadata(self):
+        path, value = r"/literal*?[x]\tail", b"generated-root-file"
+        entry = file_entry(path, value)
+        inventory = self.inventory([entry])
+        adapter, command = self.adapter([entry], {path: value})
+        target = self.target("restore")
+        adapter.restore("a" * 64, target, self.budget, inventory=inventory)
+        bulk = next(call for call in command.calls if "restore" in call)
+        self.assertEqual(bulk[-2:], ["--exclude", r"/literal\*\?\[x\]\\tail"])
+        self.assertEqual(command.streams[0][-3:], ["dump", "a" * 64, path])
+        self.assertNotIn("--target", command.streams[0])
+        self.assertEqual(r.scan([path], self.budget, anchor=target.fd), inventory)
+        self.assertEqual(r.root_exclude_pattern("/trailing\\"), "/trailing\\\\")
+        self.assertEqual(r.root_exclude_pattern("/!,$# space ü"), "/!,$# space ü")
+        self.assertEqual(r.restic_file_mode(0o7755), 0o755 | (1 << 23) | (1 << 22) | (1 << 20))
+        with self.assertRaises(r.RecoveryError):
+            r.root_exclude_pattern("/nested/file")
+
+    def test_changed_missing_extra_and_invalid_snapshot_members_reject_before_payload(self):
+        entry = file_entry("/fixture", b"value")
+        cases = [[], [dict(entry, bytes=6)], [dict(entry, mode=0o600)], [dict(entry, uid=entry["uid"] + 1)], [dict(entry, kind="directory")],
+                 [dict(entry, path="/other")], [entry, entry]]
+        for index, actual in enumerate(cases):
+            with self.subTest(index=index):
+                adapter, command = self.adapter(actual, {"/fixture": b"value"})
+                target = self.target("reject-" + str(index))
+                with self.assertRaises(r.RecoveryError):
+                    adapter.restore("a" * 64, target, self.budget, inventory=self.inventory([entry]))
+                self.assertEqual(os.listdir(target.fd), [])
+                self.assertFalse(command.streams)
+                self.assertFalse(any("restore" in call for call in command.calls))
+        for inventory in (self.inventory([dict(entry, sha256="invalid")]), self.inventory([entry, entry]),
+                          {"roots": ["/fixture"], "entries": [entry], "bytes": 0}):
+            with self.assertRaises(r.RecoveryError):
+                r.root_restore_files(inventory, self.budget)
+        # An inventory omitting an actual root member must not bulk-restore it.
+        nested = file_entry("/nested/file", b"nested")
+        adapter, command = self.adapter([entry, nested], {"/fixture": b"value"})
+        target = self.target("omitted")
+        with self.assertRaises(r.RecoveryError):
+            adapter.restore("a" * 64, target, self.budget, inventory=self.inventory([nested]))
+        self.assertEqual(os.listdir(target.fd), [])
+
+    def test_existing_symlink_regular_and_hardlink_outputs_are_never_truncated(self):
+        original = self.root / "original"
+        put(original, b"preserve")
+        entry = file_entry("/fixture", b"value")
+        for kind in ("symlink", "regular", "hardlink"):
+            with self.subTest(kind=kind):
+                target = self.target(kind)
+                destination = target.path / "fixture"
+                if kind == "symlink":
+                    destination.symlink_to(original)
+                elif kind == "hardlink":
+                    os.link(original, destination)
+                else:
+                    put(destination, b"preserve")
+                adapter, command = self.adapter([entry], {"/fixture": b"value"})
+                with self.assertRaises(OSError):
+                    adapter.restore("a" * 64, target, self.budget, inventory=self.inventory([entry]))
+                self.assertEqual(original.read_bytes(), b"preserve")
+                self.assertEqual(destination.read_bytes(), b"preserve")
+                self.assertFalse(command.streams)
+
+    def test_digest_or_lost_response_keeps_private_partial_file_and_no_metadata_promotion(self):
+        entry = file_entry("/fixture", b"value", mode=0o644)
+        for index, (payload, exit_code) in enumerate(((b"wrong", 0), (b"value", 3))):
+            target = self.target("failed-" + str(index))
+            adapter, command = self.adapter([entry], {"/fixture": payload})
+            command.exit_code = exit_code
+            with self.assertRaises(r.ResticFailure) as failure:
+                adapter.restore("a" * 64, target, self.budget, inventory=self.inventory([entry]))
+            self.assertEqual(failure.exception.operation, "root-file-restore")
+            self.assertEqual(stat.S_IMODE((target.path / "fixture").stat().st_mode), 0o600)
+
+    def test_root_and_output_leaf_substitution_do_not_redirect_descriptor_writes(self):
+        entry, value = file_entry("/fixture", b"value"), b"value"
+        source = self.root / "source"
+        source.mkdir(mode=0o700)
+        put(source / "sentinel", b"preserve")
+        adapter, command = self.adapter([entry], {"/fixture": value})
+        target = self.target("replaceable")
+        def replace_root():
+            target.path.rename(self.root / "original-target")
+            target.path.symlink_to(source, target_is_directory=True)
+        command.before_stream = replace_root
+        with self.assertRaises(OSError):
+            adapter.restore("a" * 64, target, self.budget, inventory=self.inventory([entry]))
+        self.assertEqual(r.scan(["/fixture"], self.budget, anchor=target.fd), self.inventory([entry]))
+        self.assertEqual(list(source.iterdir()), [source / "sentinel"])
+        target = self.target("leaf-replaceable")
+        adapter, command = self.adapter([entry], {"/fixture": value})
+        def replace_leaf():
+            (target.path / "fixture").rename(target.path / "held-output")
+            (target.path / "fixture").symlink_to(source / "sentinel")
+        command.before_stream = replace_leaf
+        with self.assertRaises(OSError):
+            adapter.restore("a" * 64, target, self.budget, inventory=self.inventory([entry]))
+        self.assertEqual((target.path / "held-output").read_bytes(), value)
+        self.assertEqual((source / "sentinel").read_bytes(), b"preserve")
 
 
 @unittest.skipUnless(sys.platform.startswith("linux"), "Linux live descriptor mechanism")
@@ -826,12 +1133,223 @@ class LinuxDescriptorTests(unittest.TestCase):
                 handle.close()
 
 
+def verified_static_binary(path, maximum, expected_sha256=None):
+    descriptor = r.open_path(Path(path))
+    with os.fdopen(descriptor, "rb") as source:
+        before = os.fstat(source.fileno())
+        r.require(stat.S_ISREG(before.st_mode) and before.st_uid == os.geteuid()
+                  and stat.S_IMODE(before.st_mode) == 0o700 and 64 <= before.st_size <= maximum,
+                  "Owned bounded private executable required")
+        header = source.read(64)
+        r.require(header[:6] == b"\x7fELF\x02\x01" and int.from_bytes(header[16:18], "little") in {2, 3}
+                  and int.from_bytes(header[18:20], "little") == 62 and int.from_bytes(header[20:24], "little") == 1,
+                  "Native AMD64 ELF required")
+        offset = int.from_bytes(header[32:40], "little")
+        size, count = int.from_bytes(header[54:56], "little"), int.from_bytes(header[56:58], "little")
+        r.require(size == 56 and 1 <= count <= 128 and offset >= 64 and offset + size * count <= before.st_size,
+                  "Invalid ELF program headers")
+        source.seek(offset)
+        headers = source.read(size * count)
+        kinds = [int.from_bytes(headers[index:index + 4], "little") for index in range(0, len(headers), size)]
+        r.require(1 in kinds and 3 not in kinds, "Static executable without an interpreter required")
+        source.seek(0)
+        hasher = r.hashlib.sha256()
+        while chunk := source.read(1024**2):
+            hasher.update(chunk)
+        after = os.fstat(source.fileno())
+        r.require((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+                  == (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns), "Executable changed while checking")
+        checksum = hasher.hexdigest()
+        r.require(expected_sha256 is None or checksum == expected_sha256, "Executable hash differs")
+        return {"sha256": checksum, "bytes": before.st_size}
+
+
+def make_private_namespace(root):
+    parent = r.DirectoryHandle(root)
+    try:
+        metadata = os.fstat(parent.fd)
+        r.require(metadata.st_uid == os.geteuid() and stat.S_IMODE(metadata.st_mode) == 0o700,
+                  "Private owned fixture root required before mutation")
+        os.mkdir("mixed-namespace", 0o700, dir_fd=parent.fd)
+        child = os.open("mixed-namespace", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent.fd)
+        try:
+            # Restic's packer uses Linux /tmp when no TMPDIR is set. Keep its
+            # scratch inside the private namespace and outside explicit backup roots.
+            os.mkdir("tmp", 0o700, dir_fd=child)
+            scratch = os.stat("tmp", dir_fd=child, follow_symlinks=False)
+            r.require(stat.S_ISDIR(scratch.st_mode) and scratch.st_uid == os.geteuid()
+                      and stat.S_IMODE(scratch.st_mode) == 0o700, "Private namespace temporary directory required")
+        finally:
+            os.close(child)
+        parent.check()
+        return root / "mixed-namespace"
+    finally:
+        parent.close()
+
+
+class StaticFixtureTests(unittest.TestCase):
+    def test_static_elf_hash_bounds_and_link_admission(self):
+        raw = bytearray(120)
+        raw[:6] = b"\x7fELF\x02\x01"
+        for offset, size, value in ((16, 2, 2), (18, 2, 62), (20, 4, 1), (32, 8, 64), (54, 2, 56), (56, 2, 1), (64, 4, 1)):
+            raw[offset:offset + size] = value.to_bytes(size, "little")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            path = root / "binary"
+            put(path, bytes(raw), 0o700)
+            self.assertEqual(verified_static_binary(path, 1024), {"sha256": r.digest(raw), "bytes": 120})
+            for maximum, expected in ((119, None), (1024, "0" * 64)):
+                with self.assertRaises(r.RecoveryError):
+                    verified_static_binary(path, maximum, expected)
+            raw[64:68] = (3).to_bytes(4, "little")
+            put(path, bytes(raw), 0o700)
+            with self.assertRaises(r.RecoveryError):
+                verified_static_binary(path, 1024)
+            alias = root / "alias"
+            alias.symlink_to(path)
+            with self.assertRaises(OSError):
+                verified_static_binary(alias, 1024)
+            fifo = root / "fifo"
+            os.mkfifo(fifo, 0o700)
+            with self.assertRaises(r.RecoveryError):
+                verified_static_binary(fifo, 1024)
+
+    def test_chroot_producer_refuses_without_explicit_hosted_admission_before_mutation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            with patch.dict(os.environ, {"WARPDRIVE_RECOVERY_CHROOT_FIXTURE": "0"}), self.assertRaises(r.RecoveryError):
+                owned_mixed_snapshot(root, Path(sys.executable), r.Command(), r.DEFAULT_LIMITS, {})
+            self.assertEqual(list(root.iterdir()), [])
+
+    def test_namespace_creation_refuses_symlink_or_nonprivate_root_before_mutation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "source"
+            source.mkdir(mode=0o700)
+            alias = root / "alias"
+            alias.symlink_to(source, target_is_directory=True)
+            with self.assertRaises(OSError):
+                make_private_namespace(alias)
+            source.chmod(0o755)
+            with self.assertRaises(r.RecoveryError):
+                make_private_namespace(source)
+            self.assertEqual(list(source.iterdir()), [])
+            source.chmod(0o700)
+            self.assertEqual(make_private_namespace(source), source / "mixed-namespace")
+            self.assertEqual(stat.S_IMODE((source / "mixed-namespace").stat().st_mode), 0o700)
+            scratch = (source / "mixed-namespace/tmp").lstat()
+            self.assertTrue(stat.S_ISDIR(scratch.st_mode))
+            self.assertEqual((scratch.st_uid, stat.S_IMODE(scratch.st_mode)), (os.geteuid(), 0o700))
+
+
+def owned_mixed_snapshot(root, binary, command, budget, progress):
+    """Hosted-only producer; no mount, network, service or host '/' writes."""
+    r.require(sys.platform.startswith("linux") and os.environ.get("WARPDRIVE_RECOVERY_CHROOT_FIXTURE") == "1",
+              "Explicit hosted-only chroot fixture required")
+    progress["mixedProducerStage"] = "static-admission"
+    uid, gid = os.getuid(), os.getgid()
+    r.require(uid != 0 and uid == os.geteuid() and gid == os.getegid(), "Unprivileged fixture controller required")
+    expected = os.environ.get("WARPDRIVE_RECOVERY_RESTIC_SHA256", "")
+    r.require(r.HASH.fullmatch(expected), "Verified downloaded restic hash required")
+    binary_proof = verified_static_binary(binary, 64 * 1024**2, expected)
+    for tool in ("/usr/bin/env", "/usr/bin/cc", "/usr/bin/sudo", "/usr/bin/timeout", "/usr/sbin/chroot"):
+        path = Path(tool).resolve(strict=True)
+        descriptor = r.open_path(path)
+        try:
+            metadata = os.fstat(descriptor)
+            r.require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == 0 and not metadata.st_mode & 0o022
+                      and metadata.st_mode & 0o111, "Trusted fixed hosted tool required")
+        finally:
+            os.close(descriptor)
+    r.require(command.run(["/usr/bin/timeout", "--version"], seconds=3).startswith(b"timeout (GNU coreutils) "),
+              "Fixed GNU timeout required")
+    r.require(command.run(["/usr/sbin/chroot", "--version"], seconds=3).startswith(b"chroot (GNU coreutils) "),
+              "Fixed GNU chroot required")
+    namespace = make_private_namespace(root)
+    handle = r.DirectoryHandle(namespace, private_parent=True)
+    try:
+        metadata = os.fstat(handle.fd)
+        r.require(metadata.st_uid == uid and stat.S_IMODE(metadata.st_mode) == 0o700, "Private owned namespace required")
+        # A hard link retains the already verified immutable executable bytes
+        # without an extra28MiB copy. Both names are checked before/after use.
+        os.link(binary, namespace / "restic")
+        identity_source = (b"#include <unistd.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n"
+                           b"int main(int n,char**v){if(n!=3&&n!=4)return 90;unsigned long u=strtoul(v[1],0,10),g=strtoul(v[2],0,10);"
+                           b"if(!u||getuid()!=u||geteuid()!=u||getgid()!=g||getegid()!=g)return 91;"
+                           b"puts(\"warpdrive-drop-ok\");fflush(stdout);if(n==4){if(strcmp(v[3],\"hold\"))return 92;sleep(30);return 93;}return 0;}\n")
+        put(namespace / "identity.c", identity_source)
+        progress["mixedProducerStage"] = "identity-compilation"
+        compiler = ["/usr/bin/env", "TMPDIR=" + str(namespace), "/usr/bin/cc"]
+        command.run([*compiler, "-pipe", "-Os", "-c", str(namespace / "identity.c"), "-o", str(namespace / "identity.o")], seconds=5)
+        command.run([*compiler, "-static", str(namespace / "identity.o"), "-o", str(namespace / "identity")], seconds=5)
+        (namespace / "identity").chmod(0o700)
+        identity_proof = verified_static_binary(namespace / "identity", 1024**2)
+        namespace_argument = str(namespace)
+        prefix = ["/usr/bin/sudo", "-n", "--", "/usr/bin/timeout", "--signal=TERM", "--kill-after=1s", "3s",
+                  "/usr/sbin/chroot", f"--userspec={uid}:{gid}", namespace_argument]
+        def launch(arguments):
+            handle.check()
+            current = os.fstat(handle.fd)
+            r.require(current.st_uid == uid and stat.S_IMODE(current.st_mode) == 0o700, "Namespace authority changed")
+            r.require(command.deadline - time.monotonic() >= 6, "Insufficient time for bounded privileged launcher")
+            value = command.run([*prefix, *arguments], seconds=6)
+            handle.check()
+            return value
+        progress["mixedProducerStage"] = "identity-drop-proof"
+        r.require(launch(["/identity", str(uid), str(gid)]) == b"warpdrive-drop-ok\n", "Exact privilege drop was not proved")
+        progress["mixedProducerStage"] = "privileged-launcher-timeout-proof"
+        try:
+            launch(["/identity", str(uid), str(gid), "hold"])
+        except r.RecoveryCommandFailure as error:
+            r.require(error.exit_code == 124, "Privileged launcher did not reach its GNU timeout boundary")
+        else:
+            raise r.RecoveryError("Privileged launcher timeout was not proved")
+        progress["mixedProducerStage"] = "pinned-version-proof"
+        r.require(launch(["/restic", "version"]).startswith(b"restic 0.18.0 "), "Pinned namespace binary required")
+        key = namespace / "key"
+        put(key, secrets.token_hex(32).encode() + b"\n")
+        repository = namespace / "repository"
+        repository.mkdir(mode=0o700)
+        command.run([str(binary), "--repo", str(repository), "--password-file", str(key), "--no-cache", "init", "--repository-version", "2"], seconds=10)
+        names = [r"literal*?[x]\tail", "trailing\\", "!,$# space ü", "empty"]
+        for index, name in enumerate(names):
+            put(namespace / name, b"" if name == "empty" else f"generated mixed root {index}".encode(), 0o640 + index)
+        for directory in ("nested", "literalzzxtail"):
+            (namespace / directory).mkdir(mode=0o700)
+            put(namespace / directory / names[0], ("generated nested " + directory).encode(), 0o640)
+        physical = [namespace / name for name in [*names, "nested", "literalzzxtail"]]
+        captured = r.scan(physical, budget)
+        inventory = {"roots": ["/" + str(Path(path).relative_to(namespace)) for path in captured["roots"]],
+                     "entries": [{**row, "path": "/" + str(Path(row["path"]).relative_to(namespace))} for row in captured["entries"]],
+                     "bytes": captured["bytes"]}
+        progress["mixedProducerStage"] = "mixed-backup"
+        raw = launch(["/restic", "--repo", "/repository", "--password-file", "/key", "--no-cache", "--json", "backup",
+                      "--read-concurrency", "1", "--host", "warpdrive-recovery", "--tag", "warpdrive-mixed-preflight", *inventory["roots"]])
+        summaries = [row for line in raw.splitlines() if (row := r.document(line)).get("message_type") == "summary"]
+        r.require(len(summaries) == 1 and isinstance(summaries[0].get("snapshot_id"), str)
+                  and r.HASH.fullmatch(summaries[0]["snapshot_id"]), "Full mixed snapshot ID required")
+        verified_static_binary(binary, 64 * 1024**2, binary_proof["sha256"])
+        verified_static_binary(namespace / "restic", 64 * 1024**2, binary_proof["sha256"])
+        verified_static_binary(namespace / "identity", 1024**2, identity_proof["sha256"])
+        r.require(r.scan(physical, budget) == captured, "Mixed source changed during backup")
+        r.require(sum(path.stat().st_size for path in namespace.rglob("*") if path.is_file()) <= 64 * 1024**2,
+                  "Mixed producer binary scratch exceeds its cap")
+        return {"snapshot": summaries[0]["snapshot_id"], "repository": repository, "key": key,
+                "inventory": inventory, "physical": physical, "captured": captured,
+                "proof": {"identityProbeSourceSha256": r.digest(identity_source), "identityProbeSha256": identity_proof["sha256"],
+                          "pinnedResticStaticHashVerified": True, "exactPrivilegeDropProvedBeforeBackup": True,
+                          "privilegedLauncherTimeoutProvedBeforeBackup": True,
+                          "boundedPrivilegedLaunchHandlesTerminal": True}}
+    finally:
+        handle.close()
+
+
 @unittest.skipUnless(sys.platform.startswith("linux") and os.environ.get("WARPDRIVE_RECOVERY_CRYPTO_FIXTURE") == "1",
                      "Explicit native Linux descriptor/restic fixture only")
 class RealResticDescriptorTests(unittest.TestCase):
-    def test_terminal_descriptor_restore_root_rejected_without_source_mutation(self):
-        # Diagnostic only: prove actual restic behavior, with no real-path
-        # fallback or product target-locator change. The full roundtrip follows.
+    def test_terminal_descriptor_rejection_and_dot_restore_keep_held_inode_authority(self):
+        # The original terminal symlink is tested independently of the product
+        # RestoreTarget's raw '/.' locator. The full roundtrip follows.
         self.probe_facts = {}
         with tempfile.TemporaryDirectory(prefix="warpdrive-restic-descriptor-") as directory:
             root = Path(directory).resolve()
@@ -846,16 +1364,20 @@ class RealResticDescriptorTests(unittest.TestCase):
             repository.mkdir(mode=0o700)
             binary = Path(os.environ["WARPDRIVE_RECOVERY_RESTIC"]).resolve(strict=True)
             command = StderrObservedCommand()
-            command.deadline = time.monotonic() + 25
+            command.deadline = time.monotonic() + 45
+            budget = {**r.DEFAULT_LIMITS, "bytes": 2 * 1024**2, "fileBytes": 2 * 1024**2,
+                      "files": 64, "deadline": command.deadline}
+            inventory = r.scan([source], budget)
             command.run([str(binary), "--repo", str(repository), "--password-file", str(key),
                          "--no-cache", "init", "--repository-version", "2"], seconds=10)
             adapter = r.Restic(binary, str(repository), key, command=command, seconds=10)
             handle = r.DirectoryHandle(repository, private_parent=True)
-            target = r.RestoreTarget(root / "restore")
+            raw_target = root / "restore"
+            raw_target.mkdir(mode=0o700)
+            target = r.DirectoryHandle(raw_target, private_parent=True)
             try:
                 adapter.directory = handle
                 snapshot = adapter.backup([source], "warpdrive-descriptor-preflight")
-                target.create()
                 locator = target.argument()
                 self.assertEqual(locator, f"/proc/self/fd/{target.fd}")
                 self.assertTrue(stat.S_ISLNK(os.lstat(locator).st_mode))
@@ -863,7 +1385,7 @@ class RealResticDescriptorTests(unittest.TestCase):
                                  (os.fstat(target.fd).st_dev, os.fstat(target.fd).st_ino))
                 self.probe_facts["terminalDescriptorIsSymlinkToPinnedDirectory"] = True
                 with self.assertRaises(r.ResticFailure) as failure:
-                    adapter.restore(snapshot, target, {"repositoryBytes": 2 * 1024**2})
+                    adapter.restore(snapshot, target, {**budget, "repositoryBytes": 2 * 1024**2}, inventory=inventory)
                 self.probe_facts["actualResticRootRemovalRejected"] = exact_root_removal_rejected(command.standard_error, locator)
                 self.probe_facts["restoreTargetContainsEntries"] = bool(os.listdir(target.fd))
                 self.assertEqual(r.failure_fact(failure.exception),
@@ -881,7 +1403,144 @@ class RealResticDescriptorTests(unittest.TestCase):
                 self.assertEqual(adapter.find("warpdrive-descriptor-preflight"), [snapshot])
                 self.assertEqual(marker.read_bytes(), value)
                 self.probe_facts["sourceAndSnapshotUnchanged"] = True
-                self.assertLess(sum(p.stat().st_size for p in root.rglob("*") if p.is_file()), 2 * 1024**2)
+                dot_target = r.RestoreTarget(root / "dot-restore")
+                try:
+                    dot_target.create()
+                    dot_locator = dot_target.argument()
+                    self.assertEqual(dot_locator, f"/proc/self/fd/{dot_target.fd}/.")
+                    self.assertTrue(stat.S_ISDIR(os.lstat(dot_locator).st_mode))
+                    identity = (os.fstat(dot_target.fd).st_dev, os.fstat(dot_target.fd).st_ino)
+                    adapter.restore(snapshot, dot_target, {**budget, "repositoryBytes": 2 * 1024**2}, inventory=inventory)
+                    self.assertEqual((os.stat(dot_locator).st_dev, os.stat(dot_locator).st_ino), identity)
+                    self.assertEqual(r.scan([source], budget, anchor=dot_target.fd), inventory)
+                    self.probe_facts["rawDotRestoredBytesModesOwnershipAtPinnedInode"] = True
+                finally:
+                    dot_target.close()
+                parent = root / "replaceable-parent"
+                parent.mkdir(mode=0o700)
+                renamed_target = r.RestoreTarget(parent / "restore")
+                try:
+                    renamed_target.create()
+                    identity = (os.fstat(renamed_target.fd).st_dev, os.fstat(renamed_target.fd).st_ino)
+                    def substitute_after_argument_admission():
+                        renamed_target.path.rename(parent / "original-target")
+                        renamed_target.path.symlink_to(source, target_is_directory=True)
+                        parent.rename(root / "original-parent")
+                        parent.symlink_to(source, target_is_directory=True)
+                    command.before_restore = substitute_after_argument_admission
+                    with self.assertRaises(OSError):
+                        adapter.restore(snapshot, renamed_target, {**budget, "repositoryBytes": 2 * 1024**2}, inventory=inventory)
+                    self.assertEqual((os.fstat(renamed_target.fd).st_dev, os.fstat(renamed_target.fd).st_ino), identity)
+                    self.assertEqual(r.scan([source], budget, anchor=renamed_target.fd), inventory)
+                    self.assertEqual(r.scan([source], budget), inventory)
+                    self.assertFalse((source / "restore").exists())
+                    self.probe_facts["actualResticKeptPinnedInodeAcrossLeafAndParentReplacement"] = True
+                    self.probe_facts["postCommandPathSubstitutionRejected"] = True
+                finally:
+                    renamed_target.close()
+                # stdin supplies an actual root-level snapshot file without
+                # creating any file in the host's '/'. This admitted layout is
+                # a REQUIRED passing gate, not an expected-failure exception.
+                root_file = "/descriptor-root-file.data"
+                root_value = b"owned-native-direct-root-file-preflight"
+                raw = adapter.run("backup", "--read-concurrency", "1", "--host", "warpdrive-recovery",
+                                  "--tag", "warpdrive-root-file-preflight", "--stdin", "--stdin-filename", root_file,
+                                  data=root_value)
+                summaries = [row for line in raw.splitlines() if (row := r.document(line)).get("message_type") == "summary"]
+                self.assertEqual(len(summaries), 1)
+                root_snapshot = summaries[0].get("snapshot_id")
+                self.assertTrue(isinstance(root_snapshot, str) and r.HASH.fullmatch(root_snapshot))
+                self.assertEqual(r.document(adapter.run("cat", "snapshot", root_snapshot))["paths"], [root_file])
+                root_target = r.RestoreTarget(root / "direct-root-restore")
+                expected = {"roots": [root_file], "bytes": len(root_value), "entries": [
+                    {"path": root_file, "mode": 0o644, "uid": os.getuid(), "gid": os.getgid(),
+                     "kind": "file", "bytes": len(root_value), "sha256": r.digest(root_value)},
+                ]}
+                try:
+                    root_target.create()
+                    identity = (os.fstat(root_target.fd).st_dev, os.fstat(root_target.fd).st_ino)
+                    self.probe_facts["directRootFilePassingCompatibilityRequired"] = True
+                    try:
+                        adapter.restore(root_snapshot, root_target, {**budget, "repositoryBytes": 2 * 1024**2}, inventory=expected)
+                    except r.ResticFailure:
+                        self.probe_facts["directRootFileFailureMatchedDescriptorRootRemoval"] = exact_root_removal_rejected(
+                            command.standard_error, f"/proc/self/fd/{root_target.fd}", expected_item=root_file)
+                        raise
+                    self.assertEqual(r.scan([root_file], budget, anchor=root_target.fd), expected)
+                    self.assertEqual((os.fstat(root_target.fd).st_dev, os.fstat(root_target.fd).st_ino), identity)
+                    self.probe_facts["directRootFileRestoredBytesModesOwnershipAtPinnedInode"] = True
+                finally:
+                    root_target.close()
+                mixed = owned_mixed_snapshot(root, binary, command, budget, self.probe_facts)
+                self.probe_facts.update(mixed["proof"])
+                mixed_adapter = r.Restic(binary, str(mixed["repository"]), mixed["key"], command=command, seconds=10)
+                mixed_handle = r.DirectoryHandle(mixed["repository"], private_parent=True)
+                try:
+                    mixed_adapter.directory = mixed_handle
+                    mixed_inventory = mixed["inventory"]
+                    metadata = r.document(mixed_adapter.run("cat", "snapshot", mixed["snapshot"]))
+                    self.assertEqual(set(metadata["paths"]), set(mixed_inventory["roots"]))
+                    expected_members = {row["path"]: row for row in mixed_inventory["entries"]}
+                    seen = set()
+                    for line in mixed_adapter.run("ls", mixed["snapshot"]).splitlines():
+                        member = r.document(line)
+                        if member.get("struct_type") == "snapshot":
+                            continue
+                        self.assertIn(member["path"], expected_members)
+                        self.assertNotIn(member["path"], seen)
+                        seen.add(member["path"])
+                        wanted = expected_members[member["path"]]
+                        self.assertEqual(member["type"], "file" if wanted["kind"] == "file" else "dir")
+                        self.assertEqual((member["uid"], member["gid"]), (wanted["uid"], wanted["gid"]))
+                        expected_mode = r.restic_file_mode(wanted["mode"]) | ((1 << 31) if wanted["kind"] == "directory" else 0)
+                        self.assertEqual(member.get("mode", 0), expected_mode)
+                        if wanted["kind"] == "file":
+                            self.assertEqual(member["size"], wanted["bytes"])
+                    self.assertEqual(seen, set(expected_members))
+                    self.probe_facts["mixedSnapshotExactMemberMetadataVerified"] = True
+                    mixed_target = r.RestoreTarget(root / "mixed-restore")
+                    try:
+                        mixed_target.create()
+                        self.probe_facts["mixedProducerStage"] = "mixed-hybrid-restore"
+                        mixed_adapter.restore(mixed["snapshot"], mixed_target, {**budget, "repositoryBytes": 2 * 1024**2},
+                                              inventory=mixed_inventory)
+                        self.assertEqual(r.scan(mixed_inventory["roots"], budget, anchor=mixed_target.fd), mixed_inventory)
+                        self.probe_facts["mixedMetacharacterRootAndNestedFilesRestored"] = True
+                    finally:
+                        mixed_target.close()
+                    mixed_parent = root / "mixed-replaceable-parent"
+                    mixed_parent.mkdir(mode=0o700)
+                    mixed_target = r.RestoreTarget(mixed_parent / "restore")
+                    try:
+                        mixed_target.create()
+                        source_alias = mixed["physical"][-2]
+                        def substitute_during_stream():
+                            mixed_target.path.rename(mixed_parent / "original-target")
+                            mixed_target.path.symlink_to(source_alias, target_is_directory=True)
+                            mixed_parent.rename(root / "mixed-original-parent")
+                            mixed_parent.symlink_to(source_alias, target_is_directory=True)
+                        command.before_dump = substitute_during_stream
+                        self.probe_facts["mixedProducerStage"] = "mixed-stream-substitution"
+                        with self.assertRaises(OSError):
+                            mixed_adapter.restore(mixed["snapshot"], mixed_target, {**budget, "repositoryBytes": 2 * 1024**2},
+                                                  inventory=mixed_inventory)
+                        first = r.root_restore_files(mixed_inventory, budget)[0]
+                        root_files = {row["path"] for row in r.root_restore_files(mixed_inventory, budget)}
+                        partial_roots = [path for path in mixed_inventory["roots"] if path not in root_files] + [first["path"]]
+                        partial_roots.sort(key=lambda path: (len(Path(path).parts), path))
+                        partial_entries = [row for row in mixed_inventory["entries"]
+                                           if any(Path(row["path"]).is_relative_to(Path(path)) for path in partial_roots)]
+                        partial_inventory = {"roots": partial_roots, "entries": partial_entries,
+                                             "bytes": sum(row.get("bytes", 0) for row in partial_entries)}
+                        self.assertEqual(r.scan(partial_roots, budget, anchor=mixed_target.fd), partial_inventory)
+                        self.assertEqual(r.scan(mixed["physical"], budget), mixed["captured"])
+                        self.probe_facts["mixedStreamKeptHeldInodeUnderLeafAndParentSubstitution"] = True
+                    finally:
+                        mixed_target.close()
+                finally:
+                    mixed_adapter.directory = None
+                    mixed_handle.close()
+                self.assertLess(sum(p.stat().st_size for p in root.rglob("*") if p.is_file()), 64 * 1024**2)
             finally:
                 adapter.directory = None
                 target.close()

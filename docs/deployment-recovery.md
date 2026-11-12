@@ -134,8 +134,23 @@ guarantee.
 
 Local repository and restore-parent paths are opened without following symlink ancestors;
 their directory descriptors remain held through mutation. Linux child commands receive the
-pinned repository and target through `/proc/self/fd` descriptors. The local synthetic macOS
+pinned repository through `/proc/self/fd/N` and the restore target through the raw absolute
+string `/proc/self/fd/N/.`. The final `/.` makes restic inspect the held directory rather
+than the terminal procfs symlink; it must not be normalized through `Path` or `resolve`.
+There is no replaceable child component or real-path fallback. The local synthetic macOS
 test uses checked private-parent paths and does not qualify that Linux path mechanism.
+
+Direct-root regular files in the authenticated manifest receive exact rooted, literal-safe
+exclusions from the bulk restore. Their exact snapshot membership, size, mode and ownership
+are checked before any payload write. Each is then read with `restic dump` using its original
+path and immutable snapshot ID. The parent opens a new `0600`, exclusive, no-follow regular
+file relative to the held target descriptor and streams at most 64 KiB per chunk while
+counting bytes and SHA256. It requires exact length, digest, command success and all resource
+guards before applying and checking ownership/mode and fsyncing the file and directory.
+Existing output objects are never followed or truncated. Large file limits are unchanged;
+file contents are not buffered to the file-size limit, and PostgreSQL trees remain bulk
+restores. The complete manifest/inventory and unchanged captured source are verified after
+both restore paths; partial files remain quarantined on any failure.
 `separateCredentialFileReadback` records a separate file and uncached repository read, not
 independent credentials, operators or physical custody. Different existing restic passwords
 are allowed when both authenticate the same fixed repository.
@@ -172,5 +187,31 @@ full encrypted roundtrip. It uses another generated source, key, repository and 
 target; checks that the descriptor still refers to its reserved directory; and observes
 actual restic output in memory for a fixed root-removal failure signature. Reports retain
 only booleans and finite failure facts. A failed restore may have written target children;
-the owned target stays quarantined until fixture cleanup. This diagnostic does not change
-the production locator, accept a real-path fallback, or replace a successful roundtrip.
+the owned target stays quarantined until fixture cleanup. The diagnostic additionally
+requires an actual restore through the raw `/.` locator with bytes, modes and ownership
+verified at the held inode. Another actual restore replaces both the admitted target name
+and its parent with symlinks after argument admission: writes must stay at the held inode,
+captured source bytes must stay unchanged, and the post-command path check must reject the
+substitution. These controls do not replace the full encrypted roundtrip or establish
+installation recovery.
+
+The same native compatibility gate must also restore a generated file directly under the
+snapshot's `/`, with bytes, mode, ownership and held-inode identity verified. Restic's
+`--stdin --stdin-filename` creates that snapshot without writing to the host's `/`.
+Root-level configuration files remain admitted; they are not rejected to make a smaller
+fixture pass. Upstream restic normalizes a root file's parent back to the bare descriptor
+path even when the target uses `/.`, which is why those exact files use the descriptor-owned
+streaming path. Until this required root-file gate and the full encrypted fixture both
+pass, the hybrid correction remains unqualified.
+
+The hosted-only mixed-snapshot fixture also includes literal glob characters, a trailing
+backslash, punctuation, spaces, Unicode, an empty root file, a nested file with the same
+basename and a directory that a wrongly escaped pattern would match. One actual snapshot
+contains all members; exact metadata and complete restored bytes are required. A private
+owned chroot produces it with the verified static restic binary, fixed GNU `--userspec`,
+and an actual static identity probe before backup. Each privileged launch has a fixed GNU
+timeout (3 seconds, then a 1-second kill grace); its exact handle must terminate. An actual
+timeout probe runs before backup, and unknown cleanup authority or remaining processes
+fails the fixture. No mount, service, network operation or host-root file write is needed.
+Source bytes stay within 2 MiB and binary scratch within 64 MiB under the unchanged outer
+90-second/1-GiB watchdog. This remains synthetic source qualification, not installed recovery.

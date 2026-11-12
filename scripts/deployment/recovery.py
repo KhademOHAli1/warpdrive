@@ -66,7 +66,8 @@ class ResticFailure(RecoveryError):
     """Finite diagnostic facts only; command streams and arguments stay private."""
     def __init__(self, operation, error):
         require(operation in {"repository-identity", "snapshot-write", "snapshot-find", "snapshot-metadata",
-                              "manifest-read", "snapshot-members", "repository-budget", "repository-integrity", "isolated-restore"},
+                              "manifest-read", "snapshot-members", "repository-budget", "repository-integrity", "isolated-restore",
+                              "root-file-restore"},
                 "Unknown recovery operation")
         reason = "command-nonzero" if isinstance(error, RecoveryCommandFailure) else "command-guard"
         self.operation, self.reason = operation, reason
@@ -225,7 +226,10 @@ class RestoreTarget:
                     == (os.fstat(self.fd).st_dev, os.fstat(self.fd).st_ino), "Restore target path changed")
         finally:
             os.close(child)
-        return f"/proc/self/fd/{self.fd}" if sys.platform.startswith("linux") else str(self.path)
+        # Keep a raw absolute string: the final '.' makes restic's initial
+        # Lstat inspect the pinned directory instead of the procfs symlink.
+        # Path/resolve normalization would remove that final component.
+        return f"/proc/self/fd/{self.fd}/." if sys.platform.startswith("linux") else str(self.path)
 
     def close(self):
         if self.fd is not None:
@@ -340,6 +344,34 @@ def scan(paths, budget, *, anchor=None, forbidden=()):
 class Command:
     """Owned process group, bounded streams/time/RSS; no shell or inherited secrets."""
     def run(self, arguments, *, data=None, seconds=60, maximum=MAX_METADATA, reject_stderr=False, pass_fds=()):
+        return self._run(arguments, data=data, seconds=seconds, maximum=maximum,
+                         reject_stderr=reject_stderr, pass_fds=pass_fds)
+
+    def stream(self, arguments, descriptor, *, expected_bytes, expected_sha256, seconds=60, pass_fds=()):
+        require(type(expected_bytes) is int and expected_bytes >= 0
+                and isinstance(expected_sha256, str) and HASH.fullmatch(expected_sha256), "Invalid streamed file expectation")
+        info = os.fstat(descriptor)
+        require(stat.S_ISREG(info.st_mode) and info.st_uid == os.geteuid() and info.st_nlink == 1
+                and info.st_size == 0 and os.lseek(descriptor, 0, os.SEEK_CUR) == 0 and stat.S_IMODE(info.st_mode) == 0o600,
+                "Stream requires a new private single-link regular file")
+        total, hasher = 0, hashlib.sha256()
+        def consume(chunk):
+            nonlocal total
+            require(total + len(chunk) <= expected_bytes, "Stream exceeds authenticated file size")
+            offset = 0
+            while offset < len(chunk):
+                written = os.write(descriptor, chunk[offset:])
+                require(written > 0, "Stream sink made no progress")
+                hasher.update(chunk[offset:offset + written])
+                total += written
+                offset += written
+        self._run(arguments, seconds=seconds, pass_fds=pass_fds, stdout_sink=consume)
+        require(total == expected_bytes and os.fstat(descriptor).st_size == total and hasher.hexdigest() == expected_sha256,
+                "Stream bytes differ from authenticated file expectation")
+        return {"bytes": total, "sha256": hasher.hexdigest()}
+
+    def _run(self, arguments, *, data=None, seconds=60, maximum=MAX_METADATA,
+             reject_stderr=False, pass_fds=(), stdout_sink=None):
         require(data is None or len(data) <= 128 * 1024, "Command input exceeds its bound")
         environment = {"PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin",
                        "LC_ALL": "C", "TZ": "UTC", "GOMAXPROCS": "2", "GOMEMLIMIT": "256MiB"}
@@ -366,8 +398,11 @@ class Command:
                         pending = None
                 for stream in readable:
                     chunk = os.read(stream.fileno(), 65536)
+                    require(time.monotonic() - started < seconds, "Recovery command deadline exceeded")
                     if not chunk:
                         del streams[stream]
+                    elif stream is process.stdout and stdout_sink is not None:
+                        stdout_sink(chunk)
                     else:
                         streams[stream].extend(chunk)
                         require(len(output) <= maximum and len(errors) <= 64 * 1024, "Recovery command output exceeded its bound")
@@ -378,6 +413,7 @@ class Command:
                           if len(fields := line.split()) == 2 and int(fields[0]) == process.pid)
                 require(rss <= 768 * 1024**2, "Recovery command RSS budget exceeded")
             exit_code = process.wait(timeout=5)
+            require(time.monotonic() - started < seconds, "Recovery command deadline exceeded")
             if exit_code != 0:
                 raise RecoveryCommandFailure(exit_code)
             require(not reject_stderr or not errors, "Recovery inspection emitted diagnostics and is unknown")
@@ -389,6 +425,21 @@ class Command:
                 try:
                     os.killpg(process.pid, signum)
                 except ProcessLookupError:
+                    break
+                except PermissionError:
+                    # Darwin may reject signaling a group whose members have
+                    # already become zombies. Never infer that from EPERM:
+                    # wait for the exact leader and independently refuse any
+                    # remaining live group member (including privileged ones).
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        raise RecoveryError("Owned command termination cannot be established") from None
+                    rows = subprocess.run(["/bin/ps", "-axo", "pgid=,stat="], capture_output=True,
+                                          text=True, check=True, timeout=3).stdout.splitlines()
+                    require(not any(len(fields := line.split()) == 2 and int(fields[0]) == process.pid
+                                    and not fields[1].startswith("Z") for line in rows),
+                            "Owned command has a live group member without cleanup authority")
                     break
                 try:
                     process.wait(timeout=3)
@@ -623,6 +674,49 @@ def password_file(path):
     return path, (info.st_dev, info.st_ino), digest(value)
 
 
+def root_restore_files(inventory, budget):
+    """Select root regular files only from a complete bounded captured inventory."""
+    require(isinstance(inventory, dict) and set(inventory) == {"roots", "entries", "bytes"}
+            and isinstance(inventory["roots"], list) and isinstance(inventory["entries"], list)
+            and len(inventory["roots"]) <= budget["files"] and len(inventory["entries"]) <= budget["files"],
+            "Complete bounded restore inventory required")
+    roots = [absolute(path) for path in inventory["roots"]]
+    require(roots and len(set(roots)) == len(roots), "Invalid restore roots")
+    seen, selected, total = set(), [], 0
+    for row in inventory["entries"]:
+        require(isinstance(row, dict) and row.get("kind") in {"file", "directory"}, "Unsupported restore inventory member")
+        keys = {"path", "kind", "mode", "uid", "gid"} | ({"bytes", "sha256"} if row["kind"] == "file" else set())
+        require(set(row) == keys, "Incomplete restore inventory member")
+        path = absolute(row["path"])
+        require(path not in seen and any(path.is_relative_to(root) for root in roots), "Duplicate or unbound restore member")
+        seen.add(path)
+        require(type(row["mode"]) is int and 0 <= row["mode"] <= 0o7777
+                and all(type(row[key]) is int and 0 <= row[key] < 2**32 for key in ("uid", "gid")),
+                "Invalid restore metadata")
+        if row["kind"] == "file":
+            require(type(row["bytes"]) is int and 0 <= row["bytes"] <= budget["fileBytes"]
+                    and isinstance(row["sha256"], str) and HASH.fullmatch(row["sha256"]), "Invalid restore file expectation")
+            total += row["bytes"]
+            if path.parent == Path("/"):
+                selected.append(dict(row))
+    require(all(root in seen for root in roots) and type(inventory["bytes"]) is int
+            and total == inventory["bytes"] <= budget["bytes"], "Restore inventory byte or root binding differs")
+    return sorted(selected, key=lambda row: row["path"])
+
+
+def root_exclude_pattern(path):
+    path = absolute(path)
+    require(path.parent == Path("/"), "Only direct-root regular files can be excluded from bulk restore")
+    # Linux filepath.Match escaping; a rooted pattern cannot be negated by '!'.
+    return "/" + "".join("\\" + character if character in "\\*?[]" else character for character in path.name)
+
+
+def restic_file_mode(mode):
+    # Go os.FileMode stores these three Unix permission flags in high bits.
+    return ((mode & 0o777) | ((1 << 23) if mode & 0o4000 else 0)
+            | ((1 << 22) if mode & 0o2000 else 0) | ((1 << 20) if mode & 0o1000 else 0))
+
+
 class Restic:
     def __init__(self, binary, repository, key_file, command=None, seconds=3600):
         self.binary = str(Path(binary).resolve(strict=True))
@@ -710,9 +804,74 @@ class Restic:
             seen.add(path)
         require(seen == set(expected), "Snapshot omitted a required recovery member")
 
-    def restore(self, snapshot, target, budget):
+    def _validate_root_members(self, snapshot, entries):
+        expected, seen = {entry["path"]: entry for entry in entries}, set()
+        for line in self.run("ls", snapshot).splitlines():
+            row = document(line)
+            if row.get("struct_type") == "snapshot":
+                continue
+            path = absolute(row.get("path"))
+            require(row.get("type") in {"file", "dir"}, "Snapshot has an unsupported restore member")
+            if path.parent != Path("/") or row["type"] == "dir":
+                continue
+            require(str(path) in expected and str(path) not in seen, "Snapshot root-file membership differs")
+            wanted = expected[str(path)]
+            require(type(row.get("size")) is int and row["size"] == wanted["bytes"]
+                    and all(type(row.get(key)) is int and row[key] == wanted[key] for key in ("uid", "gid"))
+                    and type(row.get("mode", 0)) is int and row.get("mode", 0) == restic_file_mode(wanted["mode"]),
+                    "Snapshot root-file metadata differs")
+            seen.add(str(path))
+        require(seen == set(expected), "Snapshot omitted a required root file")
+
+    def _restore_root_file(self, snapshot, target, entry):
+        target.argument()
+        path = absolute(entry["path"])
+        require(path.parent == Path("/"), "Streaming output must be a direct-root regular file")
+        repository = self.directory.argument() if self.directory is not None else self.repository
+        descriptors = (self.directory.fd,) if self.directory is not None else ()
+        require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key changed before file read")
+        descriptor = os.open(path.name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_NONBLOCK,
+                             0o600, dir_fd=target.fd)
+        try:
+            metadata = os.fstat(descriptor)
+            require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.geteuid() and metadata.st_nlink == 1,
+                    "Root-file output is not a new owned regular file")
+            identity = (metadata.st_dev, metadata.st_ino)
+            os.fchmod(descriptor, 0o600)
+            try:
+                self.command.stream([self.binary, "--repo", repository, "--password-file", str(self.key),
+                                     "--no-cache", "--limit-download", "16384", "dump", snapshot, str(path)],
+                                    descriptor, expected_bytes=entry["bytes"], expected_sha256=entry["sha256"],
+                                    seconds=self.seconds, pass_fds=descriptors)
+            except RecoveryError as error:
+                raise ResticFailure("root-file-restore", error) from None
+            os.fchown(descriptor, entry["uid"], entry["gid"])
+            os.fchmod(descriptor, entry["mode"])
+            os.fsync(descriptor)
+            metadata = os.fstat(descriptor)
+            require((metadata.st_dev, metadata.st_ino) == identity and metadata.st_nlink == 1
+                    and metadata.st_size == entry["bytes"] and stat.S_IMODE(metadata.st_mode) == entry["mode"]
+                    and metadata.st_uid == entry["uid"] and metadata.st_gid == entry["gid"], "Restored root-file metadata differs")
+            visible = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=target.fd)
+            try:
+                require((os.fstat(visible).st_dev, os.fstat(visible).st_ino) == identity,
+                        "Restored root-file path changed")
+            finally:
+                os.close(visible)
+            os.fsync(target.fd)
+            target.argument()
+            require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key changed during file read")
+            if self.directory is not None:
+                self.directory.check()
+        finally:
+            os.close(descriptor)
+
+    def restore(self, snapshot, target, budget, *, inventory):
         require(not self.repository.startswith("/") or self.directory is not None,
                 "Local restore requires a retained repository directory descriptor")
+        require(isinstance(snapshot, str) and HASH.fullmatch(snapshot), "Immutable full restore snapshot required")
+        entries = root_restore_files(inventory, budget)
+        self._validate_root_members(snapshot, entries)
         stats = document(self.run("stats", "--mode", "raw-data"))
         require(type(stats.get("total_size")) is int and stats["total_size"] <= budget["repositoryBytes"],
                 "Repository integrity read exceeds its resource budget")
@@ -722,16 +881,19 @@ class Restic:
         repository = self.directory.argument() if self.directory is not None else self.repository
         descriptors = (target.fd,) + ((self.directory.fd,) if self.directory is not None else ())
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key changed before restore")
+        exclusions = [argument for entry in entries for argument in ("--exclude", root_exclude_pattern(entry["path"]))]
         try:
             self.command.run([self.binary, "--repo", repository, "--password-file", str(self.key), "--no-cache", "--json",
                               "--limit-download", "16384", "restore", snapshot, "--target", target.argument(),
-                              "--overwrite", "never", "--verify"], seconds=self.seconds, pass_fds=descriptors)
+                              "--overwrite", "never", "--verify", *exclusions], seconds=self.seconds, pass_fds=descriptors)
         except RecoveryError as error:
             raise ResticFailure("isolated-restore", error) from None
         target.argument()
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key changed during restore")
         if self.directory is not None:
             self.directory.check()
+        for entry in entries:
+            self._restore_root_file(snapshot, target, entry)
 
 
 class Journal:
@@ -884,7 +1046,7 @@ def _finish(plan, journal, observer, primary, reader, target, prepared, snapshot
                                       "restoreTarget": str(target.path),
                                       "restoreTargetDevice": os.fstat(target.fd).st_dev,
                                       "restoreTargetInode": os.fstat(target.fd).st_ino})
-    reader.restore(snapshot, target, plan["limits"])
+    reader.restore(snapshot, target, plan["limits"], inventory=inventory)
     _verify_restore(target, manifest_path, manifest, inventory, budget)
     require(observer.observe(plan)["fingerprint"] == value["coldFingerprint"]
             and scan(inventory["roots"], budget, forbidden=_forbidden_sources(primary, reader)) == inventory,

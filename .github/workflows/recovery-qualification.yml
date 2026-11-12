@@ -181,7 +181,7 @@ jobs:
                       break
           def cleanup_owned():
               for signum in (signal.SIGTERM, signal.SIGKILL):
-                  until = time.monotonic() + 2
+                  until = time.monotonic() + 2.5
                   while True:
                       reap()
                       snapshot = processes()
@@ -193,7 +193,10 @@ jobs:
                           if current is not None and current["birth"] == known[pid]:
                               try:
                                   os.kill(pid, signum)
-                              except ProcessLookupError:
+                              except (ProcessLookupError, PermissionError):
+                                  # The only privileged launcher is fixed GNU
+                                  # timeout(3s + kill-after1s) around chroot. Wait
+                                  # for its self-bound; never assume EPERM clean.
                                   pass
                       if time.monotonic() >= until:
                           break
@@ -273,6 +276,9 @@ jobs:
                                  "RECOVERY_RESULT": str(result_path), "WARPDRIVE_RECOVERY_RESTIC": str(root / "tools/restic")}
                   if name in {"descriptor-preflight", "crypto"}:
                       environment["WARPDRIVE_RECOVERY_CRYPTO_FIXTURE"] = "1"
+                  if name == "descriptor-preflight":
+                      environment["WARPDRIVE_RECOVERY_CHROOT_FIXTURE"] = "1"
+                      environment["WARPDRIVE_RECOVERY_RESTIC_SHA256"] = json.loads((reports / "download.json").read_bytes())["binarySha256"]
                   child = subprocess.Popen([sys.executable, "-B", "-c", runner, selection],
                                            cwd=repo / "scripts/deployment", env=environment,
                                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-recovery-hybrid-source-review",
+  "reviewer": "ci_artifacts",
+  "sourceApproval": true,
+  "scope": "four-frozen-source-files-only",
+  "sourceSha256": {
+    "scripts/deployment/recovery.py": "23d2570ef83c6e8d94fba06f84ef2deca41962c1f4c156eac14c93ff1ad49152",
+    "scripts/deployment/test_recovery.py": "2ee69d0993f4194226058859e48d97fad9e8140b28a67ad5604efd2960ada74d",
+    ".github/workflows/recovery-qualification.yml": "ee9a9b053fd275c8b28c6b51dba234ee91f1a255e3168c89fdb75ed21a7cdd2a",
+    "docs/deployment-recovery.md": "a0e50c89db1692dba12cefc56a77f7604430bb06ac06c736d6c07469531994fd"
+  },
+  "openFindings": [],
+  "closedFindings": [
+    {
+      "priority": 2,
+      "name": "missing-private-chroot-tmp",
+      "closedBySourceReview": true,
+      "file": "scripts/deployment/test_recovery.py",
+      "line": 1174,
+      "closure": "Private owned tmp directory created through held nofollow namespace descriptor before privileged launch; explicit backup roots exclude scratch."
+    }
+  ],
+  "reviewedControls": [
+    "same-held-directory-FD-with-raw-terminal-dot",
+    "authenticated-direct-root-regular-file-inventory-and-literal-exclusions",
+    "bounded-actual-dump-stream-to-exclusive-nofollow-private-leaf-FDs",
+    "size-digest-status-metadata-inode-and-full-inventory-readback",
+    "unknown-quarantine-no-backup-replay",
+    "hosted-only-fixed-timeout-numeric-userspec-chroot-producer",
+    "static-executable-hash-and-ELF-admission",
+    "real-identity-and-timeout-probes-required-before-backup",
+    "one-mixed-snapshot-with-root-metacharacter-neighbor-and-nested-controls",
+    "actual-stream-substitution-with-held-inode-and-source-readback",
+    "subreaper-birth-identity-cleanup-with-unknown-privileged-survivor-refusal",
+    "private-fixture-and-key-roots-excluded-from-artifact-upload"
+  ],
+  "reviewerExecuted": {
+    "tests": false,
+    "nativeRestic": false,
+    "compiler": false,
+    "chroot": false,
+    "sudo": false,
+    "docker": false,
+    "sourceEdits": false,
+    "commits": false
+  },
+  "rootReportedValidation": {
+    "tests": 59,
+    "passed": 56,
+    "explicitSkips": 3,
+    "seconds": 3.852,
+    "diffCheck": true
+  },
+  "acceptance": {
+    "nativeHybridQualified": false,
+    "linuxDockerObservationQualified": false,
+    "installedRecoveryAccepted": false,
+    "offHostAccepted": false,
+    "keyCustodyAccepted": false,
+    "applicationRecoveryAccepted": false,
+    "writerResumptionAuthorized": false,
+    "securityGateClosed": false
+  },
+  "limitations": [
+    "Source approval is for these exact four hashes only.",
+    "Hosted native producer, actual mixed hybrid restore, full crypto and privileged cleanup remain unproven for these bytes.",
+    "Root reported local unit results are not independent native execution evidence."
+  ]
+}
