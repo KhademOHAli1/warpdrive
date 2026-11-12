@@ -26,6 +26,8 @@ const { chromium } = await import("../tools/browser-smoke/node_modules/playwrigh
 const { default: pg } = await import("pg");
 
 const origin = "https://127.0.0.1:3443";
+const seededPipelinePath = "/pipeline/00000000-0000-4000-8000-000000000503";
+const seededPipelineName = "CI Pipeline";
 const password = "CI-browser-only-password-2026!";
 const regionalCookieNames = [
   "warpdrive_locale",
@@ -411,8 +413,10 @@ async function nativeLogin(page, context, config, entry) {
   await page.locator('input[name="email"]').fill(config.actor.email);
   await page.locator('input[name="password"]').fill(password);
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL((url) => !/^\/(login|auth)(\/|$)/.test(url.pathname));
-  await page.getByRole("main").waitFor({ state: "visible" });
+  await page.waitForURL(`${origin}${seededPipelinePath}`);
+  const sales = catalog(`src/features/deals/messages/sales.${config.locale}.json`);
+  const boardName = sales.board_arg0_2d402.replace("{arg0}", seededPipelineName);
+  await page.getByRole("main", { name: boardName, exact: true }).waitFor({ state: "visible" });
   await page.waitForLoadState("networkidle");
   await assertDocument(page, config);
   report.nativeLogins.push({
@@ -513,8 +517,8 @@ async function assertCalendar(page, config, entry) {
   const messages = calendarMessages(config.locale);
   await statusPage(page, "/activities/calendar");
   await assertDocument(page, config);
-  await page.getByRole("main").waitFor({ state: "visible" });
   await page
+    .locator("main[data-app-content]")
     .getByRole("heading", { name: messages.title, exact: true })
     .waitFor({ state: "visible" });
   entry.calendar = {

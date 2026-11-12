@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-source-bound-generated-fixture-file-mode-review",
+  "reviewer": "/root/modular_images",
+  "reviewedAtUtc": "2026-11-12T23:53:43Z",
+  "checkout": "/Users/ali/Developer/warpdrive-deployment-safe-20261111",
+  "comparisonRevision": "fe13b6860a83cb5e903ee5d0c51b7d2b00f5837b",
+  "verdict": "scoped-source-approval-with-open-qualification-gates",
+  "blockingFindings": [],
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "7de91a5d98b353be0224697c23ad4dd276c815543f72baf5d3f0824d82a1f676",
+    "scripts/deployment/test_engine_image_smoke.py": "ebb01c3644d18957948e8c4e83b81f00bed288440e1631f5d8390f9dd21c7887",
+    "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "historicalIndependentReview": {
+    "path": "docs/deployment-evidence/fixture-engine-fd-review-20261112.json",
+    "sha256": "2c034d34d2495ae2a1be0f17e719af7f9bc0aef031426e35de050d2aced4f5de",
+    "reviewer": "/root/planner_review",
+    "unchangedFromComparisonRevision": true,
+    "previousTestSourceSha256": "8bc8dbe8f3a066fb20a80daa8ac2fac23dccf8e374a5db0077ff6f04254c8e3b"
+  },
+  "method": {
+    "productOrTestEditsByReviewer": false,
+    "plaintextSinkRemainsDirectAndVisible": true,
+    "exactByteComparison": "The reviewed test file is exactly the comparison-revision file with its three occurrences of mode=0o777 replaced by mode=0o600. The remaining three source pins match the historical review and the comparison revision.",
+    "boundedAstCallerScan": {
+      "roots": ["root Python files", "src", "scripts", "deploy", "tools"],
+      "files": 121,
+      "bytes": 1801071,
+      "directAndImportAliasedCallerFiles": [
+        "scripts/deployment/engine_image_smoke.py",
+        "scripts/deployment/test_engine_image_smoke.py"
+      ],
+      "runtimeCallCount": 1,
+      "testCallCount": 15,
+      "scope": "Direct, attribute and imported-name-alias calls only."
+    },
+    "focusedTests": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover -s scripts/deployment -p test_engine_image_smoke.py",
+      "passed": 68,
+      "failures": 0
+    }
+  },
+  "currentAnnotations": {
+    "engineQueryAnnotationCount": 0,
+    "sinkStatement": "payload.write(password)"
+  },
+  "reviewedFileModeBehavior": [
+    "Only the default argument in three test spies forwarding os.open changed. Flags, explicit modes, directory descriptors, callback ordering, descriptor tracking and assertions remain byte-identical.",
+    "The helper opens existing ancestor directories with O_DIRECTORY and O_NOFOLLOW without O_CREAT. Changing the spies' default mode has no file-creation effect on those calls.",
+    "The helper explicitly supplies mode0600 with O_CREAT, O_EXCL and O_NOFOLLOW for db-password. Each spy still forwards the supplied mode. The zero-umask control still observes the actual created inode's permissions, while missing-mode creation through a spy would now default to owner read/write permissions.",
+    "The generated-only runtime call, literal plaintext write, final mode0444, private parent, read-only mount, exact payload and failure-cleanup controls remain unchanged. The Engine build context has no changes relative to the comparison revision."
+  ],
+  "managedScannerStatus": {
+    "findingsUnderReview": [24, 25, 26],
+    "findingAttribution": "Root supplied the exact comparison-revision Python CodeQL findings at the three forwarding call sites. This review inspected source and ran focused local controls.",
+    "exactChangedSourceManagedAnalysisRequired": true,
+    "findingDismissedByReviewer": false
+  },
+  "scope": "Source and focused test verification only. The prior descriptor, same-UID, Docker pathname-bind and crash/swap residuals remain applicable. Native qualification and exact-ref managed finding status require independent readback.",
+  "securityGateCleanClaim": false,
+  "findingClosedClaim": false,
+  "canonicalAcceptanceClaim": false,
+  "deploymentAuthorized": false
+}

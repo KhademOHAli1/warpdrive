@@ -342,7 +342,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
 
     def tracked_open(self, descriptors, before=None):
         original = os.open
-        def opened(path, flags, mode=0o777, *, dir_fd=None):
+        def opened(path, flags, mode=0o600, *, dir_fd=None):
             if before is not None:
                 before(path, flags, dir_fd)
             descriptor = original(path, flags, mode, dir_fd=dir_fd)
@@ -410,7 +410,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
             directory = Path(folder).resolve()
             original_open = os.open
             created, descriptors = [], []
-            def observe_open(path, flags, mode=0o777, *, dir_fd=None):
+            def observe_open(path, flags, mode=0o600, *, dir_fd=None):
                 descriptor = original_open(path, flags, mode, dir_fd=dir_fd)
                 descriptors.append(descriptor)
                 if flags & os.O_CREAT:
@@ -711,7 +711,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
             directory = Path(folder).resolve()
             descriptors, created, removed = [], [], []
             original_open, original_unlink = os.open, os.unlink
-            def opened(path, flags, mode=0o777, *, dir_fd=None):
+            def opened(path, flags, mode=0o600, *, dir_fd=None):
                 descriptor = original_open(path, flags, mode, dir_fd=dir_fd)
                 descriptors.append(descriptor)
                 if flags & os.O_CREAT:

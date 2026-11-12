@@ -4,7 +4,7 @@
   "queryId": "py/clear-text-storage-sensitive-data",
   "sourceSha256": {
     "scripts/deployment/engine_image_smoke.py": "7de91a5d98b353be0224697c23ad4dd276c815543f72baf5d3f0824d82a1f676",
-    "scripts/deployment/test_engine_image_smoke.py": "8bc8dbe8f3a066fb20a80daa8ac2fac23dccf8e374a5db0077ff6f04254c8e3b",
+    "scripts/deployment/test_engine_image_smoke.py": "ebb01c3644d18957948e8c4e83b81f00bed288440e1631f5d8390f9dd21c7887",
     "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
     ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
   },
@@ -17,10 +17,10 @@
     "state": "open"
   },
   "independentReview": {
-    "path": "docs/deployment-evidence/fixture-engine-fd-review-20261112.json",
-    "sha256": "2c034d34d2495ae2a1be0f17e719af7f9bc0aef031426e35de050d2aced4f5de",
-    "reviewer": "/root/planner_review",
-    "scope": "Current descriptor-hardening and generated-only caller review; not native, human or security-gate acceptance."
+    "path": "docs/deployment-evidence/fixture-engine-file-mode-review-20261113.json",
+    "sha256": "884be9cbe5b0282b85bc5abcbe0281893b8e6d980ed42519e693a30c77454f3c",
+    "reviewer": "/root/modular_images",
+    "scope": "Private default permissions in the three fixture wrappers, exact source and caller continuity with the original descriptor-hardening review."
   },
   "rationale": [
     "The actual _FILE probe requires generated plaintext bytes. Runtime callers accept no deployment/user credential input; all current callers were independently reviewed.",
