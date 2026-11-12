@@ -78,6 +78,7 @@ jobs:
         run: bun --no-env-file install --frozen-lockfile
       - name: Verify fresh component inputs before image compilation
         run: |
+          RUN_IMAGE_CONTEXT_IMPORT_CHECK=1 node --test --test-name-pattern 'Docker context keeps local TypeScript imports' scripts/deployment/image-build.test.mjs
           node --test scripts/deployment/component_inputs.test.mjs scripts/deployment/web_inputs.test.mjs
           mkdir -p "$RUNNER_TEMP/production-images"
           node scripts/deployment/component_boundaries.mjs \
@@ -202,7 +203,7 @@ jobs:
         run: |
           python3 scripts/deployment/web_switch_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
-            --output-dir "$RUNNER_TEMP/production-images/web-switch"
+            --output-dir "$RUNNER_TEMP/production-images/web-switch" --require-web-generation
       - name: Install locked browser tooling on the disposable runner
         env:
           NODE_ENV: development

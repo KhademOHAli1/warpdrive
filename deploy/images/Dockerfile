@@ -31,6 +31,7 @@ RUN printf '%s\n' "$APP_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
 # origin; an explicit URL is still inlined, and an explicit empty arg disables realtime.
 RUN NODE_ENV=production \
     APP_COMMIT=${APP_COMMIT} \
+    NEXT_DEPLOYMENT_ID=wd-${APP_COMMIT} \
     DATABASE_URL=postgres://build:build@localhost:5432/build \
     GOOGLE_OAUTH_CLIENT_ID=build \
     GOOGLE_OAUTH_CLIENT_SECRET=build \
@@ -83,6 +84,7 @@ ARG APP_COMMIT
 ARG APP_VERSION=
 RUN printf '%s\n' "$APP_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
 ENV APP_COMMIT=${APP_COMMIT} APP_VERSION=${APP_VERSION}
+ENV NEXT_DEPLOYMENT_ID=wd-${APP_COMMIT}
 LABEL org.opencontainers.image.revision=${APP_COMMIT} \
       org.opencontainers.image.title="Warpdrive Web"
 EXPOSE 3000

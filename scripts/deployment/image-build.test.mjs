@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import {
@@ -13,6 +14,7 @@ import {
 } from "../build-workers.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const relativeName = (path) => relative(root, path).split(sep).join("/");
 
 test("default builder preserves every existing entrypoint", () => {
   assert.deepEqual(
@@ -163,4 +165,85 @@ test("non-web Docker targets cannot reach the Next build stage", () => {
     );
   }
   assert.ok(dependencies("web").has("web-build"));
+});
+
+function omittedContextImports(ts, options, files, omitted) {
+  const context = {
+    ...ts.sys,
+    fileExists: (path) => !omitted.has(relativeName(path)) && ts.sys.fileExists(path),
+  };
+  const cache = ts.createModuleResolutionCache(root, (name) => name, options);
+  const contextCache = ts.createModuleResolutionCache(root, (name) => name, options);
+  const mismatches = [];
+  for (const path of files) {
+    const references = ts.preProcessFile(readFileSync(path, "utf8"), true, true);
+    for (const { fileName: specifier } of references.importedFiles) {
+      if (!specifier.startsWith(".") && !specifier.startsWith("@/")) continue;
+      const original = ts.resolveModuleName(specifier, path, options, ts.sys, cache).resolvedModule;
+      if (!original || !omitted.has(relativeName(original.resolvedFileName))) continue;
+      const inContext = ts.resolveModuleName(
+        specifier,
+        path,
+        options,
+        context,
+        contextCache,
+      ).resolvedModule;
+      const outcome = inContext
+        ? `resolves instead to ${relativeName(inContext.resolvedFileName)}`
+        : "missing in Docker";
+      mismatches.push(
+        `${relativeName(path)} imports ${specifier} -> ${relativeName(original.resolvedFileName)} (excluded; ${outcome})`,
+      );
+    }
+  }
+  return mismatches;
+}
+
+test("Docker context keeps local TypeScript imports", {
+  skip: process.env.RUN_IMAGE_CONTEXT_IMPORT_CHECK !== "1",
+}, async () => {
+  const { default: ts } = await import("typescript");
+  // Use the Docker-ignore matcher already installed by our locked Testcontainers.
+  const requireFromTestcontainers = createRequire(import.meta.resolve("testcontainers"));
+  const dockerIgnore = requireFromTestcontainers("@balena/dockerignore");
+  const listing = spawnSync("git", ["ls-files", "-z"], {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 4 * 1024 * 1024,
+    timeout: 5_000,
+  });
+  assert.equal(listing.status, 0, listing.stderr);
+  const tracked = new Set(listing.stdout.split("\0").filter(Boolean));
+  const dockerfileIgnore = join(root, "deploy/images/Dockerfile.dockerignore");
+  const ignoreFile = ts.sys.fileExists(dockerfileIgnore)
+    ? dockerfileIgnore
+    : join(root, ".dockerignore");
+  const ignore = dockerIgnore().add(readFileSync(ignoreFile, "utf8"));
+  const omitted = new Set([...tracked].filter((name) => ignore.ignores(name)));
+  const inContext = (path) => {
+    const name = relativeName(path);
+    return tracked.has(name) && !omitted.has(name);
+  };
+
+  const configPath = join(root, "tsconfig.json");
+  const config = ts.readConfigFile(configPath, (path) => ts.sys.readFile(path));
+  assert.equal(config.error, undefined);
+  const parsed = ts.parseJsonConfigFileContent(
+    config.config,
+    {
+      ...ts.sys,
+      readDirectory: (...args) => ts.sys.readDirectory(...args).filter(inContext),
+    },
+    root,
+    undefined,
+    configPath,
+  );
+  assert.deepEqual(parsed.errors, []);
+  const files = parsed.fileNames.filter(inContext);
+  assert.ok(files.length > 0, "Docker context has no TypeScript sources");
+  const mismatches = omittedContextImports(ts, parsed.options, files, omitted);
+  assert.ok(
+    mismatches.length === 0,
+    `Docker source context changes ${mismatches.length} local TypeScript imports:\n${mismatches.slice(0, 20).join("\n")}`,
+  );
 });

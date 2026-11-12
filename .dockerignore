@@ -35,9 +35,10 @@ pnpm-debug.log*
 .idea
 .DS_Store
 
-# Tests and docs are not needed at runtime.
+# Source-only fixtures and docs are not needed in the image build context.
 **/*.test.ts
 **/*.test-helpers.ts
+**/*.harness.ts
 # Required for typechecking the disposable integration-profile smoke script.
 !src/features/auth/session.test-helpers.ts
 docs

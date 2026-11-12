@@ -421,10 +421,30 @@ class CaddySwitchAdapter:
         return {**actual, "healthy": healthy and generation == actual["generation"]}
 
 
+WEB_GENERATION_PROBE = r"""
+const generation = `wd-${process.env.APP_COMMIT}`;
+if (!/^wd-[a-f0-9]{40}$/.test(generation) || process.env.NEXT_DEPLOYMENT_ID !== generation)
+    throw Error('Web runtime generation mismatch');
+const origin = 'http://127.0.0.1:3000';
+const page = await fetch(origin + '/login', {redirect:'error',signal:AbortSignal.timeout(8000)});
+if (page.status !== 200) throw Error('Web generation page did not render');
+const html = await page.text();
+if (!html.includes(`data-dpl-id="${generation}"`)) throw Error('Web generation stamp is missing');
+const assets = [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
+    .map(match => new URL(match[1].replaceAll('&amp;', '&'), origin))
+    .filter(url => url.origin === origin && url.pathname.startsWith('/_next/static/') && /\.(?:js|css)$/.test(url.pathname));
+if (!assets.some(url => url.pathname.endsWith('.css')) || !assets.some(url => url.pathname.endsWith('.js')) ||
+    assets.some(url => url.searchParams.getAll('dpl').join(',') !== generation))
+    throw Error('Static assets do not carry the Web generation');
+console.log(JSON.stringify({generation,assets:assets.length}));
+"""
+
+
 class WebSwitchSmoke:
-    def __init__(self, docker, bundle_dir, expected_revision, output_dir):
+    def __init__(self, docker, bundle_dir, expected_revision, output_dir, *, require_web_generation=False):
         self.docker, self.bundle_dir = docker, bundle_dir
         self.revision, self.output_dir = validate_revision(expected_revision), Path(output_dir)
+        self.require_web_generation = require_web_generation
         self.fixture = None
         self.relays, self.web_names, self.protected_names = [], set(), []
         self.runtime_configs = {}
@@ -686,6 +706,9 @@ class WebSwitchSmoke:
         try:
             self.check("verified-native-tested-bundle", self.load)
             self.check("isolated-services-and-generated-caddy", self.setup)
+            if self.require_web_generation:
+                self.check("immutable-web-generation-on-page-and-assets", lambda: self.fixture.probe(
+                    self.web_a, WEB_GENERATION_PROBE, timeout=12))
             self.check("actual-caddy-cas-rejection-preserves-traffic", self.cas)
             self.check("real-candidate-readiness-rejection", self.reject)
             self.check("actual-web-switch-and-idempotent-readback", self.successful)
@@ -730,11 +753,13 @@ def main(arguments=None):
     parser.add_argument("--bundle-dir", type=Path, required=True)
     parser.add_argument("--expected-revision", type=validate_revision, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--require-web-generation", action="store_true")
     args = parser.parse_args(arguments)
     try:
         with tempfile.TemporaryDirectory(prefix="wd-web-switch-auth-") as directory:
             passed = WebSwitchSmoke(IsolatedDocker(Path(directory) / "docker"), args.bundle_dir,
-                                    args.expected_revision, args.output_dir).run()
+                                    args.expected_revision, args.output_dir,
+                                    require_web_generation=args.require_web_generation).run()
     except (SmokeError, engine.SwitchError, OSError, ValueError) as error:
         print(f"Native isolated Web switch rehearsal rejected: {error}", file=sys.stderr)
         return 1
