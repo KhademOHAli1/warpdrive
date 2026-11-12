@@ -60,6 +60,14 @@ fails its tests. No workflow test is silently skipped.
 
 ## Upstream private deployment boundary
 
+The additional `Production image qualification` workflow now builds the Web, Worker,
+Realtime and Migrator final targets on a disposable native Linux runner and runs their
+packaged commands without a source checkout mounted into the containers. Its two contexts,
+`Deployment tooling checks` and `Final production image smoke`, supplement the existing
+source gates. See [modular deployment qualification](deployment-redesign.md) for commands,
+coverage and outstanding acceptance. This workflow neither publishes images nor deploys
+services. Its candidate records retain unassessed compatibility and installation gates.
+
 The original public release (`624f623`) already omitted `.github/workflows/deploy.yml`. Its
 remaining `deployWorkflow.test.ts` referred to private deployment infrastructure and PNPM
 commands that this public checkout could not execute. That file is replaced by the public CI

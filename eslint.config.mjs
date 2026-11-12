@@ -44,6 +44,7 @@ export default tseslint.config(
           allowDefaultProject: [
             "*.mjs",
             "scripts/*.mjs",
+            "scripts/deployment/image-build.test.mjs",
             ".env.example.test.ts",
             "src/features/demo/*.ts",
           ],

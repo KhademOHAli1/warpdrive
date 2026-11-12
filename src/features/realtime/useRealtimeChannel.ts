@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { clientEnv } from "@/config/clientEnv";
 import { trpc } from "@/lib/trpc-client";
+import { resolveRealtimeUrl } from "./realtimeUrl";
 import { type ChannelHandler, WsMultiplexer } from "./wsMultiplexer";
 
 // One multiplexer per tab. The ticket minter is a mutable reference kept fresh by every mounted
@@ -13,7 +14,9 @@ let ticketMinter: (() => Promise<string>) | null = null;
 
 function getMultiplexer(): WsMultiplexer {
   if (multiplexer === null) {
-    multiplexer = new WsMultiplexer(clientEnv.WS_PUBLIC_URL, () =>
+    // Called from the subscription effect, never during SSR or module initialization.
+    const url = resolveRealtimeUrl(clientEnv.WS_PUBLIC_URL, window.location);
+    multiplexer = new WsMultiplexer(url, () =>
       ticketMinter !== null
         ? ticketMinter()
         : Promise.reject(new Error("no realtime ticket minter")),

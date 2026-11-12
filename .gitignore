@@ -29,3 +29,5 @@ docs/parity-captures/
 
 # Local/CI browser failure evidence; never commit fixture traces or screenshots.
 /test-results/browser-smoke/
+/test-results/image-smoke/
+**/__pycache__/
