@@ -33,6 +33,8 @@ services:
       LISTMONK_db__database: warpdrive_newsletters
       LISTMONK_db__password: ${NEWSLETTER_POSTGRES_PASSWORD:?set NEWSLETTER_POSTGRES_PASSWORD}
       LISTMONK_db__ssl_mode: disable
+      # Make the effective connection authority explicit for offline recovery admission.
+      LISTMONK_db__params: ""
       LISTMONK_db__max_open: "20"
       LISTMONK_db__max_idle: "5"
       LISTMONK_db__max_lifetime: "300s"

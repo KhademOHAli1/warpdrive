@@ -1,0 +1,318 @@
+name: Cold recovery tooling qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/deployment/recovery.py"
+      - "scripts/deployment/test_recovery.py"
+      - "docs/deployment-recovery.md"
+      - ".github/workflows/recovery-qualification.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/deployment/recovery.py"
+      - "scripts/deployment/test_recovery.py"
+      - "docs/deployment-recovery.md"
+      - ".github/workflows/recovery-qualification.yml"
+  workflow_dispatch:
+
+# Synthetic local files only: no Docker, production/provider credentials or publication.
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recovery:
+    name: Linux recovery descriptors and encrypted restore
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      GOMAXPROCS: "2"
+      GOMEMLIMIT: 256MiB
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Download and verify official restic 0.18.0 into task storage
+        timeout-minutes: 2
+        run: |
+          python3 -B - <<'PY'
+          import bz2
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import shutil
+          import time
+          import urllib.request
+
+          assert platform.system() == "Linux" and platform.machine() == "x86_64"
+          assert shutil.disk_usage(os.environ["RUNNER_TEMP"]).free >= 1024**3
+          root = Path(os.environ["RUNNER_TEMP"]) / "recovery-qualification"
+          root.mkdir(mode=0o700)
+          reports, tools = root / "reports", root / "tools"
+          reports.mkdir(mode=0o700)
+          tools.mkdir(mode=0o700)
+          # Official v0.18.0 SHA256SUMS, release asset 241370566 (9,806,593 bytes).
+          expected = "98f6dd8bf5b59058d04bfd8dab58e196cc2a680666ccee90275a3b722374438e"
+          url = "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_amd64.bz2"
+          report = {"success": False, "version": "0.18.0", "assetSha256": expected,
+                    "assetBytes": 9806593, "source": url,
+                    "checksumSource": "https://github.com/restic/restic/releases/download/v0.18.0/SHA256SUMS"}
+          try:
+              archive = tools / "restic.bz2"
+              hasher, total, started = hashlib.sha256(), 0, time.monotonic()
+              with urllib.request.urlopen(url, timeout=15) as response, archive.open("xb") as target:
+                  assert response.geturl().startswith("https://")
+                  while chunk := response.read(1024**2):
+                      total += len(chunk)
+                      assert total <= 9806593 and time.monotonic() - started <= 45
+                      hasher.update(chunk)
+                      target.write(chunk)
+              assert total == 9806593 and hasher.hexdigest() == expected
+              binary = tools / "restic"
+              binary_hash, expanded = hashlib.sha256(), 0
+              with bz2.open(archive, "rb") as source, binary.open("xb") as target:
+                  while chunk := source.read(1024**2):
+                      expanded += len(chunk)
+                      assert expanded <= 64 * 1024**2
+                      binary_hash.update(chunk)
+                      target.write(chunk)
+              with binary.open("rb") as source:
+                  elf = source.read(20)
+              assert elf[:6] == b"\x7fELF\x02\x01" and int.from_bytes(elf[18:20], "little") == 62
+              binary.chmod(0o700)
+              report.update(success=True, binarySha256=binary_hash.hexdigest(), binaryBytes=expanded)
+          finally:
+              (reports / "download.json").write_text(json.dumps(report, indent=2) + "\n")
+          PY
+      - name: Run bounded native Linux guards and actual encrypted recovery fixture
+        timeout-minutes: 2
+        run: |
+          python3 -B - <<'PY'
+          import ctypes
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import select
+          import shutil
+          import signal
+          import subprocess
+          import sys
+          import time
+
+          repo = Path.cwd()
+          root = Path(os.environ["RUNNER_TEMP"]) / "recovery-qualification"
+          reports, private = root / "reports", root / "private"
+          private.mkdir(mode=0o700)
+          fixtures = private / "fixtures"
+          fixtures.mkdir(mode=0o700)
+          paths = ["scripts/deployment/recovery.py", "scripts/deployment/test_recovery.py",
+                   "docs/deployment-recovery.md", ".github/workflows/recovery-qualification.yml"]
+          revision = os.environ["GITHUB_SHA"]
+          def pins():
+              result = {}
+              for name in paths:
+                  path = repo / name
+                  assert path.is_file() and not path.is_symlink() and path.stat().st_size <= 512 * 1024
+                  raw = path.read_bytes()
+                  blob = subprocess.run(["git", "--no-replace-objects", "cat-file", "blob", f"{revision}:{name}"],
+                                        check=True, capture_output=True, timeout=5).stdout
+                  assert raw == blob
+                  result[name] = hashlib.sha256(raw).hexdigest()
+              assert subprocess.run(["git", "rev-parse", "HEAD"], check=True, capture_output=True,
+                                    text=True, timeout=5).stdout.strip() == revision
+              return result
+          def processes():
+              result = {}
+              for path in Path("/proc").iterdir():
+                  if not path.name.isdigit():
+                      continue
+                  try:
+                      raw = (path / "stat").read_text()
+                      fields = raw[raw.rfind(")") + 2:].split()
+                      result[int(path.name)] = {"parent": int(fields[1]), "group": int(fields[2]),
+                                                "birth": fields[19], "rss": int(fields[21]) * os.sysconf("SC_PAGE_SIZE")}
+                  except (FileNotFoundError, ProcessLookupError, PermissionError):
+                      pass
+              return result
+          def sanitized(raw):
+              value = raw.decode("utf8", errors="replace").replace(str(private), "[owned-private-root]")
+              value = re.sub(r"(?im)^.*(?:password|secret|authorization|token|private.key).*$", "[redacted-sensitive-diagnostic]", value)
+              value = re.sub(r"[A-Za-z0-9_+/=-]{24,}", "[redacted-opaque]", value)
+              return "".join(c for c in value if c in "\n\t" or ord(c) >= 32)[-32768:]
+          # PR_SET_CHILD_SUBREAPER: newly orphaned sessions are adopted here even
+          # if no sampling pass observed their original parent/child relationship.
+          libc = ctypes.CDLL(None, use_errno=True)
+          libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
+          libc.prctl.restype = ctypes.c_int
+          assert libc.prctl(36, 1, 0, 0, 0) == 0
+          before = pins()
+          started = time.monotonic()
+          deadline = started + 90
+          known = {}
+          def owned(snapshot):
+              active = {pid for pid, row in snapshot.items()
+                        if row["parent"] == os.getpid() or (pid in known and known[pid] == row["birth"])}
+              for _ in range(32):
+                  added = {pid for pid, row in snapshot.items() if row["parent"] in active}
+                  if added <= active:
+                      break
+                  active.update(added)
+              for pid in active:
+                  if pid in snapshot:
+                      known[pid] = snapshot[pid]["birth"]
+              return active
+          def reap():
+              while True:
+                  try:
+                      pid, _ = os.waitpid(-1, os.WNOHANG)
+                  except ChildProcessError:
+                      break
+                  if pid == 0:
+                      break
+          def cleanup_owned():
+              for signum in (signal.SIGTERM, signal.SIGKILL):
+                  until = time.monotonic() + 2
+                  while True:
+                      reap()
+                      snapshot = processes()
+                      remaining = owned(snapshot)
+                      if not remaining:
+                          return []
+                      for pid in remaining:
+                          current = processes().get(pid)
+                          if current is not None and current["birth"] == known[pid]:
+                              try:
+                                  os.kill(pid, signum)
+                              except ProcessLookupError:
+                                  pass
+                      if time.monotonic() >= until:
+                          break
+                      time.sleep(0.05)
+              reap()
+              return list(owned(processes()))
+          peak_rss = 0
+          outcomes = []
+          report = {"success": False, "revision": revision, "scope": "owned-synthetic-files-on-native-linux",
+                    "offHostAccepted": False, "keyCustodyAccepted": False, "applicationRecoveryAccepted": False,
+                    "linuxDockerObservationQualified": False, "linuxDescriptorPathQualified": False,
+                    "limits": {"seconds": 90, "cleanupSeconds": 6, "syntheticSourceBytes": 2 * 1024**2,
+                               "rssWatchdogBytes": 1024**3}}
+          runner = """import json,os,sys,unittest
+          from pathlib import Path
+          suite=unittest.defaultTestLoader.loadTestsFromName(sys.argv[1])
+          def ids(value):
+              for item in value:
+                  if isinstance(item,unittest.TestSuite): yield from ids(item)
+                  else: yield item.id()
+          selected=list(ids(suite))
+          result=unittest.TextTestRunner(verbosity=2).run(suite)
+          value={'success':result.wasSuccessful(),'tests':result.testsRun,'failures':len(result.failures),
+                 'errors':len(result.errors),'skipped':[test.id() for test,_ in result.skipped],
+                 'selected':selected}
+          Path(os.environ['RECOVERY_RESULT']).write_text(json.dumps(value))
+          raise SystemExit(0 if result.wasSuccessful() else 1)
+          """
+          try:
+              # Deliberately do not sample this grandchild before killing its
+              # parent. This reproduces the new-session cleanup race directly.
+              probe_code = ("import subprocess,sys,time; "
+                            "p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(30)'],"
+                            "start_new_session=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL); "
+                            "print(p.pid,flush=True); time.sleep(30)")
+              probe = subprocess.Popen([sys.executable, "-B", "-c", probe_code], stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL, start_new_session=True)
+              try:
+                  assert select.select([probe.stdout], [], [], 2)[0]
+                  grandchild = int(probe.stdout.readline())
+              finally:
+                  probe.terminate()
+                  try:
+                      probe.wait(timeout=2)
+                  except subprocess.TimeoutExpired:
+                      probe.kill()
+                      probe.wait(timeout=2)
+                  probe.stdout.close()
+              adopted = processes().get(grandchild)
+              assert adopted is not None and adopted["parent"] == os.getpid()
+              assert not cleanup_owned() and grandchild not in processes()
+              report["unsampledNewSessionCleanupProbePassed"] = True
+              for name, selection in [("guards", "test_recovery"), ("crypto", "test_recovery.RealResticTests")]:
+                  result_path = private / f"{name}-result.json"
+                  environment = {"PATH": "/usr/bin:/bin", "LC_ALL": "C", "TZ": "UTC", "GOMAXPROCS": "2",
+                                 "GOMEMLIMIT": "256MiB", "PYTHONDONTWRITEBYTECODE": "1", "TMPDIR": str(fixtures),
+                                 "RECOVERY_RESULT": str(result_path), "WARPDRIVE_RECOVERY_RESTIC": str(root / "tools/restic")}
+                  if name == "crypto":
+                      environment["WARPDRIVE_RECOVERY_CRYPTO_FIXTURE"] = "1"
+                  child = subprocess.Popen([sys.executable, "-B", "-c", runner, selection],
+                                           cwd=repo / "scripts/deployment", env=environment,
+                                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
+                  captured = bytearray()
+                  try:
+                      while True:
+                          snapshot = processes()
+                          active = owned(snapshot)
+                          peak_rss = max(peak_rss, sum(snapshot[pid]["rss"] for pid in active if pid in snapshot))
+                          assert time.monotonic() < deadline and peak_rss <= 1024**3
+                          readable, _, _ = select.select([child.stdout], [], [], 0.1)
+                          if readable:
+                              chunk = os.read(child.stdout.fileno(), 16384)
+                              if not chunk:
+                                  break
+                              captured.extend(chunk)
+                              assert len(captured) <= 256 * 1024
+                      code = child.wait(timeout=max(0.1, deadline - time.monotonic()))
+                      result = json.loads(result_path.read_bytes())
+                      assert code == 0 and result["success"]
+                      if name == "guards":
+                          expected = "test_recovery.LinuxDescriptorTests.test_inherited_repository_and_target_descriptors_do_not_follow_substituted_paths"
+                          assert expected in result["selected"] and expected not in result["skipped"]
+                      else:
+                          assert result["tests"] == 1 and not result["skipped"]
+                      outcomes.append({"name": name, "tests": result["tests"], "skipped": len(result["skipped"]), "passed": True})
+                  finally:
+                      (reports / f"{name}-diagnostic.log").write_text(sanitized(captured))
+                      if child.poll() is None:
+                          child.terminate()
+                          try:
+                              child.wait(timeout=2)
+                          except subprocess.TimeoutExpired:
+                              child.kill()
+                              child.wait(timeout=2)
+                      child.stdout.close()
+              after = pins()
+              assert before == after
+              assert not list(fixtures.iterdir())
+              report.update(success=True, sourceSha256=after, sourceUnchanged=True, outcomes=outcomes,
+                            linuxDescriptorPathQualified=True, encryptedLocalRestoreQualified=True)
+          finally:
+              # The subreaper also discovers children born between sample and
+              # runner termination. Birth checks precede every signal.
+              remaining = cleanup_owned()
+              report["ownedProcessesRemaining"] = len(remaining)
+              if not remaining:
+                  shutil.rmtree(fixtures)
+              report["fixtureCleanupSuccess"] = not fixtures.exists()
+              report["success"] = report["success"] and not remaining and report["fixtureCleanupSuccess"]
+              report.update(seconds=round(time.monotonic() - started, 3), peakOwnedRssBytes=peak_rss)
+              (reports / "qualification.json").write_text(json.dumps(report, indent=2) + "\n")
+          assert report["success"]
+          PY
+      - name: Retain sanitized recovery evidence including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: recovery-qualification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/recovery-qualification/reports/
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 0
