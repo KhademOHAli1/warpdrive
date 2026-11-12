@@ -52,7 +52,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/operation.ts#b561669e1b4e53201d5c7b713ce7aba03039870b66351a35281cd8f41e2edda1",
   "sourceReview:src/features/newsletter/operationReceipts.ts#cf30f39320b08656d29445c31dc4de67738b1aeebc2514dc008a1d133ffaab18",
   "sourceReview:src/features/newsletter/operationReceiptsPolicy.ts#3ed4ccbabac9649199fa15ed2e75bbbcfb7ca1152eba0660b4f92385def16f1b",
-  "sourceReview:src/features/newsletter/router.ts#8f7ec7bacc0b8475549d42804989f4870ac9d031d6184342fa8b8a699d049840",
+  "sourceReview:src/features/newsletter/router.ts#7f79ea56bd7868df515b32708cc8649559735882fbf9f3ad8463bd228658671e",
   "sourceReview:src/features/newsletter/schema/operationReceipts.ts#72a974da475d645c6cfb769a21554168902cb1897166beec62b023d38bc0d696",
   "sourceReview:src/features/newsletter/schema/personAddresses.ts#9fbc8adc33c578b58859ee3f8aa869ba09edeb6139da24cb68527fd041cdc200",
   "sourceReview:src/features/newsletter/ui/client.ts#219b149a4ffc1e3f0307aef917126fcc53f93b7b110bb54aaa76e9c3caaa3847",

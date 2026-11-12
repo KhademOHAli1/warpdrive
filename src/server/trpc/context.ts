@@ -1,19 +1,10 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { cache } from "react";
-import { type Db, db } from "@/db/client";
-import { loadLiveSessionByToken, SESSION_COOKIE } from "@/features/auth/session";
-import {
-  type LocalePreferenceFallback,
-  readLocalePreferenceCookies,
-} from "@/features/i18n/localePreferenceCookies";
-import { type HydratedActor, hydrateActor } from "@/server/hydrateActor";
+import { db } from "@/db/client";
+import { type AppContext, createCoreContext } from "./context-core";
+import { readRequestCsrf } from "./request-csrf";
 
-export interface AppContext {
-  db: Db;
-  session: { userId: string; sessionId: string } | null;
-  actor: HydratedActor | null;
-  localeFallback?: LocalePreferenceFallback;
-}
+export type { AppContext } from "./context-core";
 
 /**
  * Resolve the caller from the session cookie. Costs a session lookup plus actor hydration
@@ -25,15 +16,6 @@ export interface AppContext {
  * cache() is a pass-through, so behaviour there is unchanged.
  */
 export const createContext = cache(async (): Promise<AppContext> => {
-  const jar = await cookies();
-  const sid = jar.get(SESSION_COOKIE)?.value ?? null;
-  if (sid === null) return { db, session: null, actor: null };
-
-  // One timeout signal for the whole context build so it is cancellable end to end.
-  const signal = AbortSignal.timeout(5000);
-  const live = await loadLiveSessionByToken(db, sid, signal);
-  if (!live.ok) return { db, session: null, actor: null };
-
-  const actor = await hydrateActor(db, live.value.userId, signal);
-  return { db, session: live.value, actor, localeFallback: readLocalePreferenceCookies(jar) };
+  const [jar, requestHeaders] = await Promise.all([cookies(), headers()]);
+  return createCoreContext({ db, cookies: jar, csrf: readRequestCsrf(requestHeaders, jar) });
 });

@@ -25,6 +25,7 @@ import { authenticationIds1 } from "./registryIdsAuthentication1";
 import { authenticationIds2 } from "./registryIdsAuthentication2";
 import { candidateDiscoveryIds1 } from "./registryIdsCandidateDiscovery1";
 import { contentIds1 } from "./registryIdsContent1";
+import { coreHttpIds1, coreHttpQualificationIds1 } from "./registryIdsCoreHttp1";
 import { calendarUndoIds1, crmIds1 } from "./registryIdsCrm1";
 import { crmIds2 } from "./registryIdsCrm2";
 import { crmIds3 } from "./registryIdsCrm3";
@@ -141,6 +142,45 @@ export const registryEntries: RegistryEntry[] = [
   classifyInventory(exportStorageIds1, exportStorageClassification),
   classifyInventory([...importsIds1], classifications.imports),
   classifyInventory([...infrastructureIds1, ...infrastructureIds2], classifications.infrastructure),
+  classifyInventory(coreHttpIds1, {
+    ...classifications.authentication,
+    owner: "Core HTTP request context",
+    categories: [
+      "opaque session cookie",
+      "hydrated actor",
+      "locale preferences",
+      "CSRF request facts",
+    ],
+    subjectRelation:
+      "The existing native cookie/session loader resolves the actor. Actor/session headers and serialized RPC inputs cannot supply request authority.",
+    purpose:
+      "Share request-local native authentication and Fetch tRPC handling while retaining the zero-argument React-cached Next adapter. Newsletter commands validate the existing input token against server-captured cookie, Origin, Host and Sec-Fetch-Site facts; missing facts deny the command.",
+    disclosure:
+      "Existing procedure authorization, error classification and wire shapes remain authoritative. Context creation creates no process-wide actor cache or new disclosure capability. Unexpected-error capture retains the existing actor/path/route contract.",
+    retention:
+      "Cookie, actor and CSRF facts remain request-local. React request caching remains confined to its Next adapter. Abort/deadline signals are cancellation requests, not proof of driver-side query termination or physical memory erasure.",
+    externalEffects:
+      "Existing session lookup and actor hydration read the configured database. This source seam adds no deployed API service, provider destination, queue, write replay or exclusive API data ownership; Server Actions and SSR retain their existing paths.",
+  }),
+  classifyInventory(coreHttpQualificationIds1, {
+    ...classifications.tooling,
+    owner: "Core HTTP qualification",
+    categories: [
+      "synthetic accounts and contacts",
+      "generated native cookies and TOTP",
+      "finite check results",
+    ],
+    subjectRelation:
+      "All accounts, permissions and private contact records are newly generated synthetic fixture data; their identifiers grant no access to installed customer data.",
+    purpose:
+      "Exercise genuine native password/TOTP issuance, selected authorized RPC reads and direct/HTTP parity on a caller-owned disposable loopback PostgreSQL database and Bun listener.",
+    disclosure:
+      "Reports retain check names, bounded counts and failure stages, never passwords, cookies, TOTP material, connection URLs or contact content. Generated credentials remain transient while the real authentication flow uses them.",
+    retention:
+      "The harness removes its named fixture rows and closes its listener. Anonymous native rate/security residue can remain, is counted, and requires caller-owned database/cluster teardown. The retained receipt separately proves that teardown; local fixture success is not installed acceptance.",
+    externalEffects:
+      "Explicit isolated loopback fixture inserts, credential aging/revocation, current-auth reads and cleanup deletes. Fetch permits only the owned listener origin during execution; this is not an OS network sandbox. CookieJar delete:name is in-memory bookkeeping and execute:sql reads current_database(). No live deployment, provider submission or customer erasure is authorized.",
+  }),
   classifyInventory([...notificationsIds1], classifications.notifications),
   classifyInventory([...observabilityIds1], classifications.observability),
   classifyInventory([...privacyIds1], classifications.privacy),

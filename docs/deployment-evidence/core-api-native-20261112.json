@@ -1,0 +1,88 @@
+{
+  "kind": "owned-native-cookie-core-api-http-seam",
+  "success": true,
+  "runtimeRoleProfile": "isolated-fixture-owner-not-production-role-qualification",
+  "scope": "shared-context-fetch-adapter-selected-real-native-cookie-HTTP-reads-only",
+  "finalImageQualification": false,
+  "deployedApiService": false,
+  "resources": {
+    "deadlineSeconds": 180,
+    "combinedRssLimitBytes": 1073741824,
+    "bunRssLimitBytes": 536870912,
+    "limitation": "Sampled owned RSS watchdog, not OS memory/network sandbox",
+    "sampledPeakCombinedRssBytes": 395460608,
+    "sampledPeakBunRssBytes": 286310400,
+    "limitExceeded": false
+  },
+  "cleanup": {
+    "stopSucceeded": true,
+    "postgresProcessGone": true,
+    "postgresSocketClosed": true,
+    "fixtureDirectoryGone": true
+  },
+  "admission": {
+    "freeMemoryPercent": 57,
+    "availableDiskBytes": 39088574464
+  },
+  "postgresVersion": "postgres (PostgreSQL) 16.10 (Homebrew)",
+  "proof": {
+    "kind": "warpdrive-core-http-cookie-seam",
+    "success": true,
+    "checks": [
+      {
+        "name": "full-router-import-without-Next-request-globals",
+        "passed": true
+      },
+      {
+        "name": "native-password-issued-cookie-denials",
+        "passed": true
+      },
+      {
+        "name": "native-pending-admin-wrong-factor-and-real-mfa",
+        "passed": true
+      },
+      {
+        "name": "interleaved-actor-visibility-permissions",
+        "passed": true
+      },
+      {
+        "name": "direct-http-superjson-parity",
+        "passed": true
+      },
+      {
+        "name": "live-deactivation-denial",
+        "passed": true
+      },
+      {
+        "name": "batching-timing-expected-errors",
+        "passed": true
+      }
+    ],
+    "blockedFetchAttempts": 0,
+    "unexpectedErrors": 0,
+    "cleanupSuccess": true,
+    "databaseDropRequired": true,
+    "seconds": 1.22,
+    "limitations": [
+      "Owned source-level Bun HTTP/native-gateway-issued cookies/PostgreSQL evidence, not deployed API/image/rollout acceptance.",
+      "Selected RPC reads only; queue startup/dispatch and exclusive API write ownership are separate gates.",
+      "Fetch blocking is not an OS network sandbox; anonymous native audit/rate/verification residue is reported and requires caller-owned database teardown."
+    ],
+    "nativeResidue": {
+      "rateLimits": 4,
+      "securityEvents": 1,
+      "verifications": 0
+    }
+  },
+  "sourceSha256": {
+    "src/server/trpc/context-core.ts": "13d8b7af34ce0935493d45abc444970c4a60fcfa2c33b014555a91eb3c04210b",
+    "src/server/trpc/request-csrf.ts": "9a113a43d3b4b217199da964c5aaa08a1a4fc4a4b642d6db1883b7a5bb2901ac",
+    "src/server/trpc/http.ts": "906474961077990cd3fee779863ce96d5c377a4b8b8dd64186812e9572b56bb4",
+    "src/server/trpc/context.ts": "22faaad47768c509a085efc815c0e8aafe11ebb663a3053fc28e9277afc4885f",
+    "src/app/api/trpc/[trpc]/route.ts": "68845465e7539daec91a532e1f1b4c5f79ddfc7274c71a701037f9ebead579fe",
+    "src/features/newsletter/router.ts": "7f79ea56bd7868df515b32708cc8649559735882fbf9f3ad8463bd228658671e",
+    "src/server/trpc/core-http.harness.ts": "928976baf683050a17648e5325b0f6effc4a1eb6b61e1f8d6ef7e208e1bc5e5d",
+    "src/features/auth/session.ts": "f79a2b1968c668dbeb1f144b2aa2c33b88e5e704ea95cb4995688c09cecb9b0a"
+  },
+  "durationSeconds": 3.262
+}
