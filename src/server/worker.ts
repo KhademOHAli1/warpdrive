@@ -14,6 +14,11 @@ import { registerWorkflowV2Jobs } from "@/features/workflows/v2/worker";
 import { registerWorkflowJobs } from "@/features/workflows/worker";
 import { setBoss } from "@/jobs/boss";
 import { observeBossErrors } from "@/jobs/bossObserver";
+import {
+  assertRuntimeQueueSchema,
+  runtimeQueueOptions,
+  startAdmittedRuntimeBoss,
+} from "@/jobs/schemaContract";
 
 // Register all job handlers and schedules. Called after boss.start() and
 // setBoss() so producers see the live boss before handlers are registered.
@@ -36,13 +41,14 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers
 // can enqueue, then registers all job handlers and cron schedules.
 export async function startWorker(observe?: (boss: PgBoss) => void): Promise<PgBoss> {
-  const boss = new PgBoss(env.DATABASE_URL);
+  const boss = new PgBoss({ connectionString: env.DATABASE_URL, ...runtimeQueueOptions("worker") });
   observeBossErrors(boss, "worker");
   observe?.(boss);
-  await boss.start();
+  await startAdmittedRuntimeBoss(boss, () => assertRuntimeQueueSchema(env.DATABASE_URL));
   // Publish the live boss before registering handlers so producers that run
   // during registration (e.g. initial sync enqueues) already see a live boss.
   setBoss(boss);
+  // The entrypoint already tracks every callback and owns drain/cleanup on registration failure.
   await registerAllJobs(boss);
   console.warn("worker (pg-boss) started");
   return boss;

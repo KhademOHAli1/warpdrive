@@ -60,6 +60,16 @@ describe("env boundary", () => {
     expect(result.ok).toBe(true);
   });
 
+  test("runtime configuration does not require migration owner credentials", () => {
+    const result = parseEnv({
+      ...process.env,
+      MIGRATION_DATABASE_URL: undefined,
+      MIGRATION_DATABASE_URL_FILE: undefined,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.MIGRATION_DATABASE_URL).toBe("");
+  });
+
   test("defaults APP_VERSION empty and DISABLE_UPDATE_CHECK false", () => {
     const result = parseEnv({ ...process.env });
     expect(result.ok).toBe(true);
@@ -136,6 +146,21 @@ describe("env boundary", () => {
 
     afterEach(() => {
       rmSync(dir, { recursive: true, force: true });
+    });
+
+    test("resolves the migrator-only owner secret without changing the runtime URL", () => {
+      const filePath = join(dir, "migration_database_url");
+      const ownerUrl = "postgres://fixture_owner:secret@127.0.0.1:5432/fixture";
+      writeFileSync(filePath, `${ownerUrl}\n`, "utf8");
+      const result = parseEnv({
+        ...process.env,
+        MIGRATION_DATABASE_URL: "postgres://unused:unused@127.0.0.1:5432/unused",
+        MIGRATION_DATABASE_URL_FILE: filePath,
+      });
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      expect(result.value.MIGRATION_DATABASE_URL).toBe(ownerUrl);
+      expect(result.value.DATABASE_URL).toBe(process.env.DATABASE_URL);
     });
 
     test("TOKEN_ENCRYPTION_KEY_FILE contents take preference over the plain var", () => {

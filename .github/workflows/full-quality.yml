@@ -83,6 +83,10 @@ jobs:
           bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
           bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
       - name: Apply canonical migrations to disposable database
+        env:
+          # Owner credentials exist only for this admitted disposable migration step.
+          MIGRATION_DATABASE_URL: postgres://smoke:smoke@127.0.0.1:5432/warpdrive_browser_smoke_ci
+          MIGRATION_DATABASE_URL_FILE: ""
         run: bun --no-env-file src/entrypoints/migrate.ts
       - name: Create the scoped synthetic browser actor through native auth storage
         run: bun --no-env-file scripts/browser-smoke-seed.mjs

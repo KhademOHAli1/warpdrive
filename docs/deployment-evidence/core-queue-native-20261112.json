@@ -1,0 +1,55 @@
+{
+  "kind": "source-only-native-postgresql16-queue-boundary",
+  "success": true,
+  "finalImageQualification": false,
+  "supported45UpgradeQualified": false,
+  "resources": {
+    "wallDeadlineSeconds": 180,
+    "sampledAggregateRssLimitBytes": 536870912,
+    "limitation": "Sampled owned process RSS abort guard, not a cgroup reservation.",
+    "sampledPeakRssBytes": 418136064,
+    "limitExceeded": false
+  },
+  "isolation": {
+    "externalDatabaseInputs": 0,
+    "providers": 0,
+    "loopbackOnly": true
+  },
+  "cleanup": {
+    "stopSucceeded": true,
+    "postgresProcessGone": true,
+    "fixtureDirectoryGone": true
+  },
+  "postgresVersion": "postgres (PostgreSQL) 16.10 (Homebrew)",
+  "tests": {
+    "success": true,
+    "numPassedTests": 6,
+    "numFailedTests": 0,
+    "numTotalTests": 6
+  },
+  "sourceSha256": {
+    "src/jobs/queueManifest.ts": "7ef0d96ab18234aa2aa06ad2f7d57a64789bebc62e2d03e18af28e400d8248a2",
+    "src/jobs/schemaContract.ts": "6869c04c5c64156f2c040c698d705c65ad3d5dd0e0d301a13f17c18aedcf759d",
+    "src/jobs/schemaContract.integration.test.ts": "e64116d3e8a4102bf6d04871d595dae8d616a50415ff0b083a1f340eee2386ca",
+    "src/jobs/appInstrumentation.ts": "31f9e7e8b549235ac112f3216ed7b36d84b6d2479fa1b5b12b472f9967d62dab",
+    "src/server/worker.ts": "0e6a839d4f378c048547a73d8eb7868aa433e9a23b2cfaf04482021f6e7e28f0",
+    "src/instrumentation.node.ts": "25687a61bf21a59b4ee4dd2df13c361dda00ed499df453f27294cf793dbddee6",
+    "src/db/migrate.ts": "47a5fc7dc203fee9074589a7cd95972301c536e098bbfa78c7dfd3f5c3cadb92"
+  },
+  "durationSeconds": 8.254,
+  "schemaVersion": 1,
+  "sourceBaseHead": "91503c017430a2f71226c91911d28df76e657bdd",
+  "review": {
+    "reviewerTask": "/root/queue_review",
+    "scope": "Independent source and retained native PostgreSQL proof review; not acceptance or release approval",
+    "resolvedFindings": [
+      "Actual startup query/transport deadlines and session cleanup",
+      "Reject swallowed or incomplete vendor catalog checks, including after migration"
+    ]
+  },
+  "limitations": [
+    "Source-only native PostgreSQL16 qualification; no built image or production/provider acceptance.",
+    "Genuine populated schema45 upgrade, interruption and offline old-writer fencing remain unqualified.",
+    "Compose role provisioning and final-image credential boundaries require separate qualification."
+  ]
+}

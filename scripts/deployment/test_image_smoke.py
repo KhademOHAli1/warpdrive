@@ -167,6 +167,74 @@ class ImageIdentityTests(unittest.TestCase):
 
 
 class ProcessAndCleanupTests(unittest.TestCase):
+    def test_only_migration_containers_receive_the_separate_owner_connection(self):
+        docker = FakeDocker()
+        value = harness(docker)
+        value.report["images"]["migrator"] = {"id": IMAGE_ID}
+        value.containers["postgres"] = "owned-postgres"
+        value.finished = lambda *_: None
+        original_run = docker.run
+
+        def run(args, **kwargs):
+            result = original_run(args, **kwargs)
+            if "-Atc" in args:
+                result.stdout = "119\n0\n"
+            elif args[0] == "logs":
+                result.stdout = json.dumps({"runtimeRole": "smoke_runtime",
+                                            "ownerCredentialsRuntime": False, "deniedDdl": 5})
+            return result
+
+        docker.run = run
+        detail = value.migrations()
+        self.assertEqual(detail["deniedDdl"], 5)
+        self.assertNotEqual(value.migration_url, value.env["DATABASE_URL"])
+        self.assertEqual(value.env["MIGRATION_DATABASE_URL"], "")
+        self.assertEqual(value.env["MIGRATION_DATABASE_URL_FILE"], "")
+        launches = [args for args in docker.calls if args[0] == "run"]
+        self.assertEqual(len(launches), 3)
+        for index, args in enumerate(launches):
+            environment = dict(args[offset + 1].split("=", 1)
+                               for offset, argument in enumerate(args) if argument == "--env")
+            self.assertIn("postgres://smoke_runtime:", environment["DATABASE_URL"])
+            self.assertEqual(environment["MIGRATION_DATABASE_URL"],
+                             value.migration_url if index < 2 else "")
+            self.assertEqual(environment["MIGRATION_DATABASE_URL_FILE"], "")
+        serialized = json.dumps(detail)
+        self.assertNotIn(value.runtime_password, serialized)
+        self.assertNotIn(value.migration_url, serialized)
+
+    def test_runtime_privilege_proof_is_required_after_owner_migration(self):
+        docker = FakeDocker()
+        value = harness(docker)
+        value.report["images"]["migrator"] = {"id": IMAGE_ID}
+        value.containers["postgres"] = "owned-postgres"
+        value.finished = lambda *_: None
+        original_run = docker.run
+
+        def run(args, **kwargs):
+            result = original_run(args, **kwargs)
+            if "-Atc" in args:
+                result.stdout = "119\n0\n"
+            elif args[0] == "logs":
+                result.stdout = json.dumps({"runtimeRole": "smoke_runtime",
+                                            "ownerCredentialsRuntime": False, "deniedDdl": 4})
+            return result
+
+        docker.run = run
+        with self.assertRaisesRegex(smoke.SmokeError, "privilege proof"):
+            value.migrations()
+
+        def malformed(args, **kwargs):
+            result = run(args, **kwargs)
+            if args[0] == "logs":
+                result.stdout = json.dumps({"runtimeRole": "smoke_runtime",
+                                            "ownerCredentialsRuntime": 0, "deniedDdl": 5.0})
+            return result
+
+        docker.run = malformed
+        with self.assertRaisesRegex(smoke.SmokeError, "privilege proof"):
+            value.migrations()
+
     def test_explicit_bounded_tmpfs_does_not_change_default_container_mounts(self):
         docker = FakeDocker()
         value = harness(docker)

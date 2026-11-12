@@ -114,12 +114,13 @@ def admit_profile(profile, environment):
         valid = (origin.scheme == "https" and origin.hostname == "127.0.0.1" and origin.port
                  and not origin.username and not origin.password and origin.path in {"", "/"} and not origin.query and not origin.fragment
                  and database.scheme == "postgres" and database.hostname == "127.0.0.1" and database.port == profile["databasePort"]
-                 and database.username == "smoke" and database.path == "/warpdrive_image_smoke" and not database.query and not database.fragment)
+                 and database.username == "smoke_runtime" and database.path == "/warpdrive_image_smoke" and not database.query and not database.fragment)
     except (KeyError, TypeError, ValueError):
         valid = False
     required = {"NODE_ENV": "production", "BUN_OPTIONS": "--no-env-file", "AUTH_GOOGLE_ENABLED": "false",
                 "NEWSLETTER_DELIVERY_ENABLED": "false", "NEWSLETTER_PUBLIC_SIGNUP_ENABLED": "false",
-                "DISABLE_TELEMETRY": "true", "DISABLE_UPDATE_CHECK": "true", "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9"}
+                "DISABLE_TELEMETRY": "true", "DISABLE_UPDATE_CHECK": "true", "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9",
+                "MIGRATION_DATABASE_URL": "", "MIGRATION_DATABASE_URL_FILE": ""}
     if (not valid or any(environment.get(key) != value for key, value in required.items()) or environment.get("DATABASE_URL_FILE")
             or not re.fullmatch(r"[a-f0-9]{40}", str(profile.get("revision", "")))
             or any(not isinstance(profile.get(key), str) or not profile[key].endswith("@example.invalid") for key in ("email", "adminEmail"))
@@ -128,6 +129,15 @@ def admit_profile(profile, environment):
             or any(not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", str(profile.get(key, ""))) for key in ("actorId", "adminId", "pipelineId", "permissionId"))
             or len({profile[key] for key in ("actorId", "adminId", "pipelineId", "permissionId")}) != 4):
         raise BrowserRealtimeError("Persistent browser/source fixture profile was not admitted")
+
+
+def source_runtime_environment(host_environment, application_environment, database_port):
+    source_db = urlsplit(application_environment["DATABASE_URL"])
+    if source_db.username != "smoke_runtime":
+        raise BrowserRealtimeError("Source producer requires the fixed restricted runtime database identity")
+    return {**host_environment, **application_environment,
+            "DATABASE_URL": f"postgres://smoke_runtime:{source_db.password}@127.0.0.1:{database_port}/warpdrive_image_smoke",
+            "MIGRATION_DATABASE_URL": "", "MIGRATION_DATABASE_URL_FILE": ""}
 
 
 def admit_fixture_result(value, action, revision):
@@ -343,11 +353,8 @@ class BrowserRealtimeSmoke:
                               "realtime browser fixture listener", 45, self.realtime)
         self.fixture.wait_for(lambda: self.docker.run(["exec", self.web, "bun", "--no-env-file", "-e", HEALTH_PROBE], timeout=10, check=False).returncode == 0,
                               "native browser Web HTTP readiness", 90, self.web)
-        from_image = self.fixture.env["DATABASE_URL"]
-        source_db = urlsplit(from_image)
         database_port = int(pg_forwarder.authority.split(":")[1])
-        self.source_env = {**self.host_env, **self.fixture.env,
-            "DATABASE_URL": f"postgres://smoke:{source_db.password}@127.0.0.1:{database_port}/warpdrive_image_smoke"}
+        self.source_env = source_runtime_environment(self.host_env, self.fixture.env, database_port)
         browser_dir = self.output_dir / "browser"
         browser_dir.mkdir(mode=0o700)
         self.profile = {"revision": self.revision, "baseUrl": base, "databasePort": database_port,

@@ -59,7 +59,7 @@ const channel = process.env.IMAGE_SMOKE_DRAIN_CHANNEL;
 if (!/^[a-z0-9_]{1,63}$/.test(channel || '')) throw Error('Invalid fixture channel');
 const control = new Client({connectionString:process.env.DATABASE_URL,application_name:'wd-drain-control',connectionTimeoutMillis:3000,query_timeout:5000});
 const blocker = new Client({connectionString:process.env.DATABASE_URL,application_name:'wd-drain-blocker',connectionTimeoutMillis:3000,query_timeout:5000});
-const boss = new PgBoss({connectionString:process.env.DATABASE_URL,max:1,schedule:false,supervise:false,application_name:'wd-drain-producer'});
+const boss = new PgBoss({connectionString:process.env.DATABASE_URL,max:1,migrate:false,createSchema:false,schedule:false,supervise:false,reindex:false,registerInstance:false,application_name:'wd-drain-producer'});
 const commands = [];
 let backgroundError = false, transaction = false;
 boss.on('error',()=> {backgroundError=true;});

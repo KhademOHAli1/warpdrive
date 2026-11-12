@@ -15,6 +15,7 @@ const SECRET_FILE_VARS = [
   "TOKEN_ENCRYPTION_KEY",
   "MINIO_SECRET_KEY",
   "DATABASE_URL",
+  "MIGRATION_DATABASE_URL",
   "OAUTH_SIGNING_KEY",
   "AUTH_SECRET",
   "AUTH_SMTP_PASSWORD",
@@ -60,6 +61,9 @@ const base = z.object({
   GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
   BASE_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
+  // Only the explicit one-shot migrator receives owner credentials. Runtime services
+  // parse the same shape without receiving or needing this secret.
+  MIGRATION_DATABASE_URL: z.string().trim().default(""),
   WS_TICKET_SECRET: z.string().min(32),
   WS_PUBLIC_URL: z.string().min(1),
   // Leave unset for the existing all-interface container listener; set explicitly for local use.

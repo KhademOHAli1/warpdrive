@@ -29,10 +29,11 @@ def profile():
 
 
 def environment():
-    return {"DATABASE_URL": "postgres://smoke:synthetic@127.0.0.1:49001/warpdrive_image_smoke",
+    return {"DATABASE_URL": "postgres://smoke_runtime:synthetic@127.0.0.1:49001/warpdrive_image_smoke",
             "NODE_ENV": "production", "BUN_OPTIONS": "--no-env-file", "AUTH_GOOGLE_ENABLED": "false",
             "NEWSLETTER_DELIVERY_ENABLED": "false", "NEWSLETTER_PUBLIC_SIGNUP_ENABLED": "false",
-            "DISABLE_TELEMETRY": "true", "DISABLE_UPDATE_CHECK": "true", "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9"}
+            "DISABLE_TELEMETRY": "true", "DISABLE_UPDATE_CHECK": "true", "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9",
+            "MIGRATION_DATABASE_URL": "", "MIGRATION_DATABASE_URL_FILE": ""}
 
 
 def result():
@@ -152,6 +153,9 @@ class AdmissionTests(unittest.TestCase):
                  ({**profile(), "baseUrl": "http://127.0.0.1:49000"}, environment()),
                  (profile(), {**environment(), "DATABASE_URL": "postgres://production:secret@127.0.0.1:49001/live"}),
                  (profile(), {**environment(), "DATABASE_URL_FILE": "/private/production"}),
+                 (profile(), {**environment(), "DATABASE_URL": "postgres://smoke:synthetic@127.0.0.1:49001/warpdrive_image_smoke"}),
+                 (profile(), {**environment(), "MIGRATION_DATABASE_URL": "postgres://smoke:private@127.0.0.1:49001/warpdrive_image_smoke"}),
+                 (profile(), {**environment(), "MIGRATION_DATABASE_URL_FILE": "/private/owner"}),
                  (profile(), {**environment(), "AUTH_SMTP_HOST": "provider.example.com"}),
                  (profile(), {**environment(), "NEWSLETTER_DELIVERY_ENABLED": "true"}),
                  ({**profile(), "adminEmail": "admin@production.example.com"}, environment()),
@@ -161,6 +165,24 @@ class AdmissionTests(unittest.TestCase):
         for value, env in cases:
             with self.subTest(value=value, env=env), self.assertRaises(smoke.BrowserRealtimeError):
                 smoke.admit_profile(value, env)
+        for key in ("MIGRATION_DATABASE_URL", "MIGRATION_DATABASE_URL_FILE"):
+            missing = environment()
+            del missing[key]
+            with self.subTest(missing=key), self.assertRaises(smoke.BrowserRealtimeError):
+                smoke.admit_profile(profile(), missing)
+
+    def test_source_forwarder_keeps_fixed_runtime_identity_and_removes_owner_credentials(self):
+        application = {**environment(), "DATABASE_URL": "postgres://smoke_runtime:synthetic@postgres:5432/warpdrive_image_smoke",
+                       "MIGRATION_DATABASE_URL": "postgres://smoke:owner-private@postgres:5432/warpdrive_image_smoke",
+                       "MIGRATION_DATABASE_URL_FILE": "/private/owner-url"}
+        forwarded = smoke.source_runtime_environment({"MIGRATION_DATABASE_URL": "host-owner-private"}, application, 49001)
+        self.assertEqual(forwarded["DATABASE_URL"], environment()["DATABASE_URL"])
+        self.assertEqual(forwarded["MIGRATION_DATABASE_URL"], "")
+        self.assertEqual(forwarded["MIGRATION_DATABASE_URL_FILE"], "")
+        smoke.admit_profile(profile(), forwarded)
+        for username in ("smoke", "postgres", "other_runtime"):
+            with self.subTest(username=username), self.assertRaises(smoke.BrowserRealtimeError):
+                smoke.source_runtime_environment({}, {**application, "DATABASE_URL": f"postgres://{username}:private@postgres:5432/warpdrive_image_smoke"}, 49001)
 
     def test_phase_requires_complete_proof_and_refuses_credentials_or_payload_fields(self):
         for phase, facts in smoke.PHASES.items():
@@ -233,12 +255,16 @@ class AdmissionTests(unittest.TestCase):
     def test_native_authenticator_uses_rfc6238_vectors_and_rejects_invalid_inputs(self):
         module = (smoke.ROOT / "scripts/browser-operations.mjs").as_uri()
         script = f"""import assert from 'node:assert/strict';
-const {{operationsTotp}} = await import({json.dumps(module)});
+const {{operationsTotp,operationsProgressStage}} = await import({json.dumps(module)});
 const key='GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
 for(const [seconds,code] of [[59,'287082'],[1111111109,'081804'],[1111111111,'050471'],[1234567890,'005924'],[2000000000,'279037'],[20000000000,'353130']])
   assert.equal(operationsTotp(key,seconds*1000),code);
 for(const invalid of ['',null,'bad key','A'.repeat(129)]) assert.throws(()=>operationsTotp(invalid,59000));
 for(const invalid of [-1,NaN,Infinity,1.5]) assert.throws(()=>operationsTotp(key,invalid));
+assert.equal(operationsProgressStage('operations-admin-setup-key-visible'),'operations-admin-setup-key-visible');
+for(const invalid of ['private-password', 'otpauth://private', null, {{secret:'private'}}]) {{
+  assert.throws(()=>operationsProgressStage(invalid),error=>error.message==='Unknown operations browser progress' && error.cause===undefined);
+}}
 """
         tested = subprocess.run(["node", "--input-type=module", "--eval", script], capture_output=True, text=True, timeout=10)
         self.assertEqual(tested.returncode, 0, "Native authenticator vector control failed")
@@ -252,7 +278,7 @@ for(const invalid of [-1,NaN,Infinity,1.5]) assert.throws(()=>operationsTotp(key
         private = "synthetic-private-password-TOTP-recovery-value"
         # Fault before importing Chromium. Keep actual admission, catch/report and
         # finally code; no browser, application server or mocked UI is exercised.
-        injected = source[:start] + 'try {\nthrow Object.assign(new Error(' + json.dumps("locator.fill call log " + private) + '),{cause:new Error(' + json.dumps(private) + '),stack:' + json.dumps("private Playwright stack " + private) + '});\n' + source[handler:]
+        injected = source[:start] + 'try {\nstage=operationsProgressStage("operations-admin-setup-key-visible");\nthrow Object.assign(new Error(' + json.dumps("locator.fill call log " + private) + '),{cause:new Error(' + json.dumps(private) + '),stack:' + json.dumps("private Playwright stack " + private) + '});\n' + source[handler:]
         injected = injected.replace('"./browser-operations.mjs"', json.dumps((smoke.ROOT / "scripts/browser-operations.mjs").as_uri()))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -266,7 +292,7 @@ for(const invalid of [-1,NaN,Infinity,1.5]) assert.throws(()=>operationsTotp(key
             tested = subprocess.run(["node", str(script)], env={**os.environ, "BROWSER_REALTIME_PROFILE": str(bound)}, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=10)
             self.assertEqual(tested.returncode, 1)
             self.assertEqual(tested.stdout, "")
-            self.assertEqual(tested.stderr.strip(), '{"event":"browser.realtime.failed","stage":"browser-start"}')
+            self.assertEqual(tested.stderr.strip(), '{"event":"browser.realtime.failed","stage":"operations-admin-setup-key-visible"}')
             raw = (output / "browser.json").read_text()
             self.assertNotIn(private, raw)
             self.assertNotIn("cause", raw)
@@ -274,6 +300,7 @@ for(const invalid of [-1,NaN,Infinity,1.5]) assert.throws(()=>operationsTotp(key
             recorded = json.loads(raw)
             self.assertEqual(set(recorded), {"schemaVersion", "success", "revision", "stage", "failure", "metrics"})
             self.assertFalse(recorded["success"])
+            self.assertEqual(recorded["stage"], "operations-admin-setup-key-visible")
             self.assertEqual(recorded["failure"], "Required persistent-tab realtime stage failed")
             self.assertEqual(recorded["metrics"], dict.fromkeys(result()["metrics"], 0))
             self.assertEqual(sorted(path.name for path in output.iterdir()), ["browser.json"])

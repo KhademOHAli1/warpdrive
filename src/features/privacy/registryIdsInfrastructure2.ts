@@ -1,5 +1,20 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds2: string[] = [
+  // Queue admission reads fixed schema/manifest catalogs; owner-only bootstrap runs
+  // reviewed vendor DDL. Diagnostics contain one fixed error code, never SQL or DSNs.
+  "log:src/jobs/schemaContract.ts#error",
+  "sourceReview:src/jobs/schemaContract.ts#6869c04c5c64156f2c040c698d705c65ad3d5dd0e0d301a13f17c18aedcf759d",
+  "writer:src/jobs/schemaContract.ts#query:SELECT count(*)::text AS count FROM pg_depend d JOIN pg_namespace n ON n.oid=d.refobjid WHERE d.refclassid='pg_namespace'::regclass AND n.nspname=$1",
+  "writer:src/jobs/schemaContract.ts#query:SELECT nspname FROM pg_namespace WHERE lower(nspname) = $1",
+  "writer:src/jobs/schemaContract.ts#query:SELECT pg_try_advisory_lock(hashtext($1)) AS acquired",
+  "writer:src/jobs/schemaContract.ts#query:SELECT to_regclass('pgboss.version')::text AS name",
+  "writer:src/jobs/schemaContract.ts#query:dynamic",
+  "writer:src/jobs/schemaContract.ts#query:text",
+  // The lexical inventory reports the schema constant and a colliding global `name`
+  // string as queue identifiers. These are reviewed discovery over-approximations;
+  // actual allowed queue names are the finite queueManifest.ts list, not these IDs.
+  "queue:pgboss",
+  "queue:/__i18n__/source.tsx",
   "derived:src/features/stats/analyticsInputContracts.ts",
   "sourceReview:src/features/realtime/wsMultiplexer.ts#802014a3dd9148ea8c73a0ae48962f2e3d3f730bbaedb30def527275a93b17c0",
   "sourceReview:src/features/release/constants.ts#61beb82d1c4406f396858787f3edf95829372b14d15329ad9c62b51e4bad4555",
@@ -29,7 +44,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/stats/ui/goalChartPoints.ts#1d53f601a1f6df7b7d8010d8c14a73555dc719c6b96cac07454f6f5d4fd85da9",
   "sourceReview:src/features/stats/wonDealStats.ts#d330e92a715fe6d670069e77520ed8fc5eb92689b2239cc33d107c252793e516",
   "sourceReview:src/features/stats/wonTrend.ts#e3803b0f3069aea3a464b181b655eec6124b2f15bf0c82d72e82a54fffa8f60a",
-  "sourceReview:src/instrumentation.node.ts#1ba9753ddf51847fe367540f92d73ad82f093dbbc8428abab195fc9687b9111a",
+  "sourceReview:src/instrumentation.node.ts#25687a61bf21a59b4ee4dd2df13c361dda00ed499df453f27294cf793dbddee6",
   "sourceReview:src/lib/dbCache.ts#b601a890606cc235bafb350caf8e12185436b4fe1b676f71dfc59bfad3df641d",
   "sourceReview:src/lib/queryClient.ts#bd984de0d8b1a5a392372bcd5f4c25985fa49b507d5dfd06c56bf037cddc468c",
   "sourceReview:src/server/hydrateActor.ts#9ffbe2a292f540dab520cbb2c68de53283fcfbb92bdff96f6532c9e429fa3030",
@@ -40,7 +55,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/server/realtime/channelVersions.ts#f8b1256bdb019fb77a9faca71c84b890aa7a1c7cd5abae0181791bd82fde00a2",
   "sourceReview:src/server/trpc/routers/identity.ts#eccc16c1f1f57fda9d0c7e4726801731733c56b8389fb2986c180feaa3551770",
   "sourceReview:src/server/unwrap.ts#8d0a01c2492bb554bae1f2819ef8002bfebe3f60ca5c4a84fc1a3086ddb274dc",
-  "sourceReview:src/server/worker.ts#d9bb16b38952b37a521925a771186a3d951c8aa63462aa4b61727b1358306166",
+  "sourceReview:src/server/worker.ts#0e6a839d4f378c048547a73d8eb7868aa433e9a23b2cfaf04482021f6e7e28f0",
   "sourceReview:src/server/ws/authorize.ts#5714d171700733844c6300130852f9c47b11cbc80c828ae8fbfe925f7a3ca77d",
   "sourceReview:src/server/ws/presence.ts#a38851622da81f3b92846c0f323a8a4f68531508e5eeb5ebd28bb3eff5dab4fd",
   "sourceReview:src/server/ws/presenceHub.ts#0431692af53d671943b70b4ad2db137ff4736285bb924f94845f808f4a8fd90c",

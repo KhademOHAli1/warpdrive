@@ -35,7 +35,8 @@ Fill it in. The deployment-specific values:
 | `WS_PUBLIC_URL`           | `ws://ws:8080` (internal compose address)                                   |
 | `MINIO_ENDPOINT`          | `https://s3.crm.example.com` (public: the browser uploads directly here)    |
 | `POSTGRES_PASSWORD`       | a unique generated password for a new database volume                       |
-| `DATABASE_URL`            | `postgres://warpdrive:<same-password>@postgres:5432/warpdrive`              |
+| `MIGRATION_DATABASE_URL`  | `postgres://warpdrive:<owner-password>@postgres:5432/warpdrive`             |
+| `DATABASE_URL`            | `postgres://warpdrive_runtime:<runtime-password>@postgres:5432/warpdrive`   |
 | `SEED_ADMIN_EMAIL`        | the first admin's email (required in production)                            |
 | `ALLOW_FIRST_LOGIN_ADMIN` | `false` (the env boundary rejects `true` in production)                     |
 | `AUTH_SECRET`             | a dedicated random secret of at least 32 characters, stable across restarts |
@@ -52,26 +53,66 @@ openssl rand -base64 32          # -> TOKEN_ENCRYPTION_KEY
 openssl rand -hex 32             # -> WS_TICKET_SECRET
 # a separate random secret for Better Auth
 openssl rand -hex 32             # -> AUTH_SECRET
-# a separate database password; hex needs no URL escaping in DATABASE_URL
-openssl rand -hex 32             # -> POSTGRES_PASSWORD and the password in DATABASE_URL
+# independent owner and runtime passwords; hex needs no URL escaping
+openssl rand -hex 32             # -> POSTGRES_PASSWORD and MIGRATION_DATABASE_URL password
+openssl rand -hex 32             # -> DATABASE_URL runtime password
 # MinIO credentials
 openssl rand -hex 16             # -> MINIO_ACCESS_KEY / MINIO_SECRET_KEY
 ```
 
-Hardening: any of `DATABASE_URL`, `TOKEN_ENCRYPTION_KEY`, `WS_TICKET_SECRET`,
+Hardening: any of `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `TOKEN_ENCRYPTION_KEY`, `WS_TICKET_SECRET`,
 `GOOGLE_OAUTH_CLIENT_SECRET`, `MINIO_SECRET_KEY`, `AUTH_SECRET`, `AUTH_SMTP_PASSWORD`,
 `AUTH_MICROSOFT_CLIENT_SECRET` and `AUTH_OIDC_PROVIDERS` may instead be supplied as `<VAR>_FILE` pointing
 at a file path (Docker secret), and the app reads the file contents at boot.
 
 ## 2. Bring it up
 
+On a fresh database, prepare the explicit app/queue schema before creating the runtime
+role. The one-shot migrator requires `MIGRATION_DATABASE_URL`; it never falls back to
+`DATABASE_URL` or ambient PostgreSQL credentials. These commands are the source checkout
+path; reviewed image-only shipping uses [the deployment redesign](deployment-redesign.md).
+
+```sh
+docker compose up -d postgres
+docker compose run --rm --build migrate
+docker compose exec postgres psql -U warpdrive -d warpdrive
+```
+
+In that owner session, for the default database/user names, create the separate login and
+enter its independently generated password at the `\password` prompt. If the role already
+exists, inspect its ownership and grants before changing it; do not rerun `CREATE ROLE` or
+rotate credentials as a recovery action. Use the actual migration owner for these grants.
+
+```sql
+CREATE ROLE warpdrive_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+\password warpdrive_runtime
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public, pgboss TO warpdrive_runtime;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public, pgboss TO warpdrive_runtime;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public, pgboss TO warpdrive_runtime;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public, pgboss TO warpdrive_runtime;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public, pgboss
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO warpdrive_runtime;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public, pgboss
+  GRANT USAGE, SELECT ON SEQUENCES TO warpdrive_runtime;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public, pgboss
+  GRANT EXECUTE ON FUNCTIONS TO warpdrive_runtime;
+\q
+```
+
+Then start the runtime tier:
+
 ```sh
 docker compose up -d --build
 ```
 
-Order is handled automatically: Postgres becomes healthy, `migrate` applies the schema and
+On subsequent starts, Postgres becomes healthy, `migrate` verifies/applies app and queue schema and
 `createbuckets` provisions the MinIO bucket, then `app`, `ws`, and `worker` start. Caddy waits for
 the app to report healthy, then fetches the TLS cert on first request to `https://<APP_DOMAIN>`.
+Runtime services clear migration URLs and PostgreSQL owner passwords from the shared environment;
+mount an owner secret only into the one-shot service. Runtime queue startup rejects missing,
+unfinished or incompatible schema instead of installing it. Supported populated upgrades,
+offline writer fencing and installed role provisioning still require their own release evidence.
 
 Check status:
 
@@ -144,12 +185,13 @@ is missing, and because two items are load-bearing assumptions rather than setti
 - **WebSocket bounds.** A socket that connects without authenticating is closed after 10s, frames
   are capped at 64 KB, and total connections at 1000 (`src/constants/wsLimits.ts`).
 - **Postgres credentials.** Compose requires `POSTGRES_PASSWORD`; there is no password fallback.
-  Set a unique value before the first start and use that same value in `DATABASE_URL`. Postgres
+  Set a unique value before the first start and use that value only in `MIGRATION_DATABASE_URL`. Postgres
   applies this setting only when it initializes a new `pgdata` volume. For an existing volume,
   first set `POSTGRES_PASSWORD` to the database's _current_ password before upgrading. Changing
   the environment variable alone does not rotate the database role. To rotate a historical
   default, change the role password in PostgreSQL, then update `POSTGRES_PASSWORD` and
-  `DATABASE_URL` together before restarting the application services. Keep Postgres off host
+  `MIGRATION_DATABASE_URL` together before rerunning migration. Rotate the separate runtime
+  role and `DATABASE_URL` together when needed. Keep Postgres off host
   ports in production.
 - **MCP client registration.** Open by default so MCP clients can self-onboard. See
   [mcp-server.md](mcp-server.md) for why you may want `OAUTH_REGISTRATION=disabled` once your

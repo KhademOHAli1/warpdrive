@@ -2,6 +2,41 @@
 // No screenshots, traces, cookies, request bodies or response payload artifacts.
 import { createHmac } from "node:crypto";
 
+const operationsStages = new Set([
+  "operations-browser-context",
+  "operations-admin-login-document",
+  "operations-admin-password-submit",
+  "operations-admin-enrollment-available",
+  "operations-admin-enrollment-password",
+  "operations-admin-enrollment-start",
+  "operations-admin-setup-key-visible",
+  "operations-admin-totp-submit",
+  "operations-admin-recovery-visible",
+  "operations-admin-recovery-acknowledge",
+  "operations-admin-workspace-ready",
+  "operations-maintenance-document",
+  "operations-maintenance-read",
+  "operations-logs-document",
+  "operations-facts-render",
+  "operations-recovered-incident",
+  "operations-initial-mounted",
+  "operations-role-revoke-await",
+  "operations-api403-maintenance",
+  "operations-api403-logs",
+  "operations-denied-mounted",
+  "operations-regrant-await",
+  "operations-regrant-hold",
+  "operations-resume-maintenance",
+  "operations-refresh-maintenance",
+  "operations-resume-logs",
+  "operations-refresh-logs",
+  "operations-restored-mounted",
+]);
+export function operationsProgressStage(value) {
+  if (!operationsStages.has(value)) throw Error("Unknown operations browser progress");
+  return value;
+}
+
 // RFC 6238 SHA-1/6-digit/30-second defaults used by the installed native plugin.
 // The displayed setup key and generated code exist only in this process memory.
 export function operationsTotp(secret, milliseconds = Date.now()) {
@@ -43,7 +78,9 @@ export async function qualifyOperations({
   until,
   fail,
   unchanged,
+  progress,
 }) {
+  progress("operations-browser-context");
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,
     serviceWorkers: "block",
@@ -157,49 +194,67 @@ export async function qualifyOperations({
     }
     const maintenance = await context.newPage();
     observe(maintenance);
+    progress("operations-admin-login-document");
     await maintenance.goto(`${base}/login`, { waitUntil: "domcontentloaded" });
+    progress("operations-admin-password-submit");
     await maintenance.locator('input[name="email"]').fill(profile.adminEmail);
     await maintenance.locator('input[name="password"]').fill(profile.adminPassword);
     await maintenance.locator('button[type="submit"]').click();
-    await maintenance
-      .getByRole("button", { name: "Set up authenticator", exact: true })
-      .waitFor({ state: "visible", timeout: 30000 });
-    await maintenance.getByLabel("Current password", { exact: true }).fill(profile.adminPassword);
-    await maintenance.getByRole("button", { name: "Set up authenticator", exact: true }).click();
+    progress("operations-admin-enrollment-available");
+    const enrollButton = maintenance.getByRole("button", {
+      name: "Set up authenticator",
+      exact: true,
+    });
+    await enrollButton.waitFor({ state: "visible", timeout: 30000 });
+    progress("operations-admin-enrollment-password");
+    // The current page also offers first-factor reauthentication in a separate
+    // panel with the same field label. Select the actual enrollment section.
+    const enrollment = enrollButton.locator("xpath=ancestor::section[1]");
+    await enrollment.getByLabel("Current password", { exact: true }).fill(profile.adminPassword);
+    progress("operations-admin-enrollment-start");
+    await enrollButton.click();
     const keyNode = maintenance
       .getByText("Setup key", { exact: true })
       .locator("..")
       .locator('p[dir="ltr"]');
+    progress("operations-admin-setup-key-visible");
     await keyNode.waitFor({ state: "visible" });
     let setupKey = await keyNode.textContent();
+    progress("operations-admin-totp-submit");
     await maintenance
       .getByLabel("Authenticator code", { exact: true })
       .fill(operationsTotp(setupKey));
     setupKey = "";
     await maintenance.getByRole("button", { name: "Verify code", exact: true }).click();
+    progress("operations-admin-recovery-visible");
     const recovery = maintenance.getByRole("region", { name: "Recovery codes", exact: true });
     await recovery.waitFor({ state: "visible" });
     fail(
       mfaWasVerified() && (await recovery.locator("li").count()) === 10,
       "Native administrator MFA ceremony was not proven",
     );
+    progress("operations-admin-recovery-acknowledge");
     // Disposable synthetic account: acknowledge the UI without exporting recovery codes.
     await recovery
       .getByRole("checkbox", { name: "I have stored my recovery codes safely", exact: true })
       .check();
     await recovery.getByRole("button", { name: "Continue", exact: true }).click();
+    progress("operations-admin-workspace-ready");
     await maintenance
       .getByRole("main", { name: `Board ${profile.pipelineName}`, exact: true })
       .waitFor({ state: "visible", timeout: 30000 });
     fail(nativeLogin, "Native administrator login response was not observed");
+    progress("operations-maintenance-document");
     await maintenance.goto(`${base}/settings/maintenance`, { waitUntil: "domcontentloaded" });
     await maintenance.bringToFront();
+    progress("operations-maintenance-read");
     await until(
       () =>
         !invalid && accepted["operations.observations"] > 0 && accepted["operations.sources"] > 0,
     );
     const logs = await context.newPage();
     observe(logs);
+    progress("operations-logs-document");
     await logs.goto(`${base}/settings/logs`, { waitUntil: "domcontentloaded" });
     const maintenanceCard = maintenance
       .locator("div.rounded-lg.bg-card")
@@ -249,6 +304,7 @@ export async function qualifyOperations({
         (await receipts.locator("article").count()) === 4
       );
     }
+    progress("operations-facts-render");
     await until(initialFacts);
     const age = queue
       .getByText("Oldest ready job (seconds)", { exact: true })
@@ -293,6 +349,7 @@ export async function qualifyOperations({
         .count()) === 2,
       "Maintenance page scope missing",
     );
+    progress("operations-recovered-incident");
     await logsCard.getByRole("checkbox", { name: "Open incidents only", exact: true }).uncheck();
     await until(
       async () =>
@@ -334,6 +391,7 @@ export async function qualifyOperations({
       );
       await unchanged();
     }
+    progress("operations-initial-mounted");
     await retained();
     emit("operations-ready", {
       nativeAdminLogin: true,
@@ -344,8 +402,10 @@ export async function qualifyOperations({
       recoveredIncident: true,
       metadataOnlyReceipts: true,
     });
+    progress("operations-role-revoke-await");
     await command("operations-revoked");
     const previousDenied = { ...forbidden };
+    progress("operations-api403-maintenance");
     await maintenance.bringToFront();
     await maintenanceCard.getByRole("button", { name: "Refresh", exact: true }).click();
     await until(
@@ -355,6 +415,7 @@ export async function qualifyOperations({
           (name) => forbidden[name] > previousDenied[name],
         ),
     );
+    progress("operations-api403-logs");
     await logs.bringToFront();
     await logsCard.getByRole("button", { name: "Refresh", exact: true }).click();
     const deniedMessage = "Operations data is available only to a current active administrator.";
@@ -370,13 +431,16 @@ export async function qualifyOperations({
         (await logsCard.locator("article,code,dl,section").count()) === 0,
       "Private cached operations facts survived API403",
     );
+    progress("operations-denied-mounted");
     await retained();
     emit("operations-denied", {
       api403Both: true,
       allPrivateSectionsHidden: true,
       mountedDocuments: true,
     });
+    progress("operations-regrant-await");
     await command("operations-regranted");
+    progress("operations-regrant-hold");
     // Cross the real 60-second polling interval without fake clocks or intercepted reads.
     const requestBaseline = operationRequests;
     const holdStarted = performance.now();
@@ -409,7 +473,9 @@ export async function qualifyOperations({
       }, 3000);
     }
     const previousAccepted = { ...accepted };
+    progress("operations-resume-maintenance");
     await deniedAfterResume(maintenance, maintenanceCard);
+    progress("operations-refresh-maintenance");
     await maintenanceCard.getByRole("button", { name: "Refresh", exact: true }).click();
     await until(
       () =>
@@ -418,7 +484,9 @@ export async function qualifyOperations({
           (name) => accepted[name] > previousAccepted[name],
         ),
     );
+    progress("operations-resume-logs");
     await deniedAfterResume(logs, logsCard);
+    progress("operations-refresh-logs");
     await logsCard.getByRole("button", { name: "Refresh", exact: true }).click();
     await until(
       async () =>
@@ -431,6 +499,7 @@ export async function qualifyOperations({
           "Recovered",
         )),
     );
+    progress("operations-restored-mounted");
     await retained();
     emit("operations-restored", {
       explicitRefreshBoth: true,

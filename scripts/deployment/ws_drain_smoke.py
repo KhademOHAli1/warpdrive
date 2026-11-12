@@ -44,7 +44,7 @@ def admit_seed_environment(environment):
     try:
         database = urlsplit(environment.get("DATABASE_URL", ""))
         admitted = (database.scheme == "postgres" and database.hostname == "postgres"
-                    and database.username == "smoke" and database.port == 5432
+                    and database.username == "smoke_runtime" and database.port == 5432
                     and database.path == "/warpdrive_image_smoke" and not database.query and not database.fragment)
     except ValueError:
         admitted = False
@@ -52,7 +52,8 @@ def admit_seed_environment(environment):
                 "DISABLE_TELEMETRY": "true", "DISABLE_UPDATE_CHECK": "true",
                 "NEWSLETTER_DELIVERY_ENABLED": "false", "NEWSLETTER_PUBLIC_SIGNUP_ENABLED": "false",
                 "AUTH_GOOGLE_ENABLED": "false", "AUTH_MAIL_TRANSPORT": "smtp",
-                "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9", "WS_PUBLIC_URL": "ws://realtime:8080"}
+                "AUTH_SMTP_HOST": "127.0.0.1", "AUTH_SMTP_PORT": "9", "WS_PUBLIC_URL": "ws://realtime:8080",
+                "MIGRATION_DATABASE_URL": "", "MIGRATION_DATABASE_URL_FILE": ""}
     if (not admitted or any(environment.get(key) != value for key, value in expected.items())
             or any(key.endswith("_FILE") and value for key, value in environment.items())
             or len(environment.get("WS_TICKET_SECRET", "")) < 32 or len(environment.get("AUTH_SECRET", "")) < 32):
@@ -87,11 +88,12 @@ import { Client } from 'pg';
 import { WebSocket } from 'ws';
 const source=new URL(process.env.DATABASE_URL);
 const controlChannel=process.env.IMAGE_SMOKE_WS_CONTROL;
-if(source.protocol!=='postgres:' || source.hostname!=='postgres' || source.username!=='smoke' || source.port!=='5432' ||
+if(source.protocol!=='postgres:' || source.hostname!=='postgres' || source.username!=='smoke_runtime' || source.port!=='5432' ||
    source.pathname!=='/warpdrive_image_smoke' || source.search || source.hash ||
    process.env.NODE_ENV!=='production' || process.env.BUN_OPTIONS!=='--no-env-file' ||
    process.env.DISABLE_TELEMETRY!=='true' || process.env.DISABLE_UPDATE_CHECK!=='true' ||
    process.env.NEWSLETTER_DELIVERY_ENABLED!=='false' || process.env.NEWSLETTER_PUBLIC_SIGNUP_ENABLED!=='false' ||
+   process.env.MIGRATION_DATABASE_URL!=='' || process.env.MIGRATION_DATABASE_URL_FILE!=='' ||
    !/^[a-z0-9_]{1,63}$/.test(controlChannel||'') || (process.env.WS_TICKET_SECRET||'').length<32 ||
    Object.entries(process.env).some(([name,value])=>name.endsWith('_FILE')&&value)) throw Error('Fixture target refused');
 const db=new Client({connectionString:process.env.DATABASE_URL,application_name:'wd-ws-drain-controller',connectionTimeoutMillis:3000,query_timeout:5000});

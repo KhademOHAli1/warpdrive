@@ -28,7 +28,7 @@ if (
   database.protocol !== "postgres:" ||
   database.hostname !== "127.0.0.1" ||
   database.port !== String(profile.databasePort) ||
-  database.username !== "smoke" ||
+  database.username !== "smoke_runtime" ||
   database.pathname !== "/warpdrive_image_smoke" ||
   database.search ||
   database.hash ||
@@ -41,6 +41,8 @@ if (
   process.env.AUTH_SMTP_HOST !== "127.0.0.1" ||
   process.env.AUTH_SMTP_PORT !== "9" ||
   process.env.DATABASE_URL_FILE ||
+  process.env.MIGRATION_DATABASE_URL !== "" ||
+  process.env.MIGRATION_DATABASE_URL_FILE !== "" ||
   !profile.email?.endsWith("@example.invalid") ||
   !profile.adminEmail?.endsWith("@example.invalid") ||
   profile.adminEmail === profile.email ||

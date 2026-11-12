@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { createInterface } from "node:readline";
-import { qualifyOperations } from "./browser-operations.mjs";
+import { operationsProgressStage, qualifyOperations } from "./browser-operations.mjs";
 
 const profile = JSON.parse(readFileSync(process.env.BROWSER_REALTIME_PROFILE, "utf8"));
 const origin = new URL(profile.baseUrl);
@@ -409,6 +409,9 @@ try {
     until,
     fail,
     unchanged,
+    progress: (value) => {
+      stage = operationsProgressStage(value);
+    },
   });
   await unchanged();
   fail(
