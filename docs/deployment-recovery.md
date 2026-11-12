@@ -201,8 +201,15 @@ snapshot's `/`, with bytes, mode, ownership and held-inode identity verified. Re
 Root-level configuration files remain admitted; they are not rejected to make a smaller
 fixture pass. Upstream restic normalizes a root file's parent back to the bare descriptor
 path even when the target uses `/.`, which is why those exact files use the descriptor-owned
-streaming path. Until this required root-file gate and the full encrypted fixture both
-pass, the hybrid correction remains unqualified.
+streaming path. The required root-file/mixed-descriptor gate and full encrypted fixture
+passed in [Linux run 43152511497](https://github.com/KhademOHAli1/warpdrive/actions/runs/43152511497)
+at source `4686be5e5957c4e5a3580c2935fd7a11807eeb2a` and tested merge
+`b98a12d57030c849afc021f21e5cf1a2c36d9ce0`. The API-digest-verified artifact and all four
+source pins are retained in `docs/deployment-evidence/recovery-linux-4686-20261112.json`.
+It records 59 executed passing tests, two explicit opt-in skips in the guard stage,
+53.596 seconds, sampled peak RSS 130,449,408 bytes and zero remaining owned processes.
+This closes the corrected-source Linux gate at that revision; off-host storage, key custody,
+coordinated restored applications and installed acceptance remain open.
 
 The hosted-only mixed-snapshot fixture also includes literal glob characters, a trailing
 backslash, punctuation, spaces, Unicode, an empty root file, a nested file with the same

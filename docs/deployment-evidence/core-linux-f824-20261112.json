@@ -195,9 +195,7 @@
       {
         "name": "actual-operations-ui-namespace-registration",
         "passed": true,
-        "changedComponents": [
-          "web"
-        ],
+        "changedComponents": ["web"],
         "before": {
           "web": "82536856a02583ccb858b6a790125ffadac78c1b8c3157e134a602a2c536e359",
           "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
@@ -214,9 +212,7 @@
       {
         "name": "existing-table-controls-ui-copy",
         "passed": true,
-        "changedComponents": [
-          "web"
-        ],
+        "changedComponents": ["web"],
         "before": {
           "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
           "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
@@ -233,9 +229,7 @@
       {
         "name": "actual-worker-registration-and-release-job-with-required-review-hashes",
         "passed": true,
-        "changedComponents": [
-          "worker"
-        ],
+        "changedComponents": ["worker"],
         "before": {
           "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
           "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
@@ -252,10 +246,7 @@
       {
         "name": "notification-mail-copy-positive-control",
         "passed": true,
-        "changedComponents": [
-          "web",
-          "worker"
-        ],
+        "changedComponents": ["web", "worker"],
         "before": {
           "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
           "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
