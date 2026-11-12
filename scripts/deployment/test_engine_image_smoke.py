@@ -310,6 +310,7 @@ class OwnershipAndCompletionTests(unittest.TestCase):
 class CleanupQualificationTests(unittest.TestCase):
     def test_cleanup_failure_prevents_mocked_phase_success(self):
         with tempfile.TemporaryDirectory() as directory:
+            directory = str(Path(directory).resolve())
             docker = SimpleNamespace(json=Mock(return_value={"os": "linux", "architecture": "amd64", "root": directory}))
             value = smoke.EngineImageSmoke(docker, "synthetic:only", "a" * 40, Path(directory) / "evidence")
             for name in ("inspect_image", "create_environment", "packaging", "empty_runtime", "initialize",
@@ -333,6 +334,33 @@ class CleanupQualificationTests(unittest.TestCase):
 
 
 class SyntheticSecretStorageTests(unittest.TestCase):
+    def assert_descriptors_closed(self, descriptors):
+        self.assertTrue(descriptors)
+        for descriptor in descriptors:
+            with self.subTest(descriptor=descriptor), self.assertRaises(OSError):
+                os.fstat(descriptor)
+
+    def tracked_open(self, descriptors, before=None):
+        original = os.open
+        def opened(path, flags, mode=0o777, *, dir_fd=None):
+            if before is not None:
+                before(path, flags, dir_fd)
+            descriptor = original(path, flags, mode, dir_fd=dir_fd)
+            descriptors.append(descriptor)
+            return descriptor
+        return opened
+
+    def private_tree(self, root):
+        ancestor, outside = root / "ancestor", root / "outside"
+        ancestor.mkdir(mode=0o700)
+        directory = ancestor / "private"
+        directory.mkdir(mode=0o700)
+        outside.mkdir(mode=0o700)
+        sentinel = outside / "db-password"
+        sentinel.write_text("outside sentinel must not change")
+        sentinel.chmod(0o600)
+        return ancestor, directory, outside, sentinel
+
     def mount_record(self, root, *, filesystem="tmpfs", options="rw,nosuid,nodev", device=None):
         metadata = root.stat()
         device = device or f"{os.major(metadata.st_dev)}:{os.minor(metadata.st_dev)}"
@@ -379,12 +407,17 @@ class SyntheticSecretStorageTests(unittest.TestCase):
 
     def test_exclusive_private_creation_preserves_exact_payload_and_loader_contract(self):
         with tempfile.TemporaryDirectory() as folder:
-            directory = Path(folder)
+            directory = Path(folder).resolve()
             original_open = os.open
-            created = []
-            def observe_open(path, flags, mode):
-                descriptor = original_open(path, flags, mode)
-                created.append((flags, stat.S_IMODE(os.fstat(descriptor).st_mode)))
+            created, descriptors = [], []
+            def observe_open(path, flags, mode=0o777, *, dir_fd=None):
+                descriptor = original_open(path, flags, mode, dir_fd=dir_fd)
+                descriptors.append(descriptor)
+                if flags & os.O_CREAT:
+                    created.append((path, flags, stat.S_IMODE(os.fstat(descriptor).st_mode), dir_fd))
+                else:
+                    self.assertTrue(flags & os.O_DIRECTORY)
+                    self.assertTrue(flags & os.O_NOFOLLOW)
                 return descriptor
             previous_umask = os.umask(0)
             try:
@@ -393,9 +426,13 @@ class SyntheticSecretStorageTests(unittest.TestCase):
             finally:
                 os.umask(previous_umask)
             self.assertEqual(len(created), 1)
-            self.assertTrue(created[0][0] & os.O_EXCL)
-            self.assertTrue(created[0][0] & os.O_NOFOLLOW)
-            self.assertEqual(created[0][1], 0o600)
+            self.assertEqual(created[0][0], "db-password")
+            self.assertTrue(created[0][1] & os.O_EXCL)
+            self.assertTrue(created[0][1] & os.O_NOFOLLOW)
+            self.assertEqual(created[0][2], 0o600)
+            self.assertIsNotNone(created[0][3])
+            self.assertGreater(len(descriptors), 1)
+            self.assert_descriptors_closed(descriptors)
             self.assertEqual(stat.S_IMODE(directory.stat().st_mode), 0o700)
             self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o444)
             self.assertEqual(path.read_text(), "synthetic-file-fixture-value")
@@ -407,6 +444,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
 
     def test_container_keeps_readonly_inode_mount_and_deliberately_wrong_direct_value(self):
         with tempfile.TemporaryDirectory() as directory:
+            directory = str(Path(directory).resolve())
             docker = SimpleNamespace(run=Mock())
             value = smoke.EngineImageSmoke(docker, "synthetic:only", "a" * 40, Path(directory) / "evidence")
             value.secret_file = smoke.write_synthetic_secret(Path(directory), value.pg_env["POSTGRES_PASSWORD"])
@@ -422,7 +460,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
     def test_existing_file_or_symbolic_target_cannot_be_overwritten(self):
         for symbolic in (False, True):
             with self.subTest(symbolic=symbolic), tempfile.TemporaryDirectory() as folder:
-                directory = Path(folder)
+                directory = Path(folder).resolve()
                 original = directory / "original"
                 original.write_text("do not overwrite")
                 target = directory / "db-password"
@@ -437,7 +475,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
 
     def test_nonprivate_or_symbolic_parent_rejects_before_creation(self):
         with tempfile.TemporaryDirectory() as folder:
-            directory = Path(folder)
+            directory = Path(folder).resolve()
             directory.chmod(0o755)
             try:
                 with self.assertRaisesRegex(smoke.SmokeError, "not private"):
@@ -449,6 +487,255 @@ class SyntheticSecretStorageTests(unittest.TestCase):
             symbolic.symlink_to(directory, target_is_directory=True)
             with self.assertRaisesRegex(smoke.SmokeError, "not private"):
                 smoke.write_synthetic_secret(symbolic, "synthetic-file-fixture-value")
+
+    def test_relative_and_parent_traversal_paths_are_not_runtime_fallbacks(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            directory = root / "private"
+            directory.mkdir(mode=0o700)
+            for candidate in (Path("private"), directory / ".." / "private"):
+                with self.subTest(path=candidate), self.assertRaises(smoke.SmokeError):
+                    smoke.write_synthetic_secret(candidate, "synthetic-file-fixture-value")
+            self.assertFalse((directory / "db-password").exists())
+
+    def test_symbolic_ancestor_rejects_before_any_leaf_creation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            ancestor, directory, outside, sentinel = self.private_tree(root)
+            symbolic = root / "symbolic"
+            symbolic.symlink_to(ancestor, target_is_directory=True)
+            descriptors = []
+            with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors)):
+                with self.assertRaises(smoke.SmokeError):
+                    smoke.write_synthetic_secret(symbolic / "private", "synthetic-file-fixture-value")
+            self.assert_descriptors_closed(descriptors)
+            self.assertFalse((directory / "db-password").exists())
+            self.assertEqual(sentinel.read_text(), "outside sentinel must not change")
+            self.assertEqual(stat.S_IMODE(sentinel.stat().st_mode), 0o600)
+
+    def test_private_directory_initial_witness_rejects_real_or_symbolic_replacement(self):
+        for symbolic in (False, True):
+            with self.subTest(symbolic=symbolic), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder).resolve()
+                _, directory, outside, _ = self.private_tree(root)
+                moved, swapped, descriptors = root / "held-private", [], []
+                def replace_after_initial_witness(path, _flags, dir_fd):
+                    if dir_fd is None and path == directory.anchor and not swapped:
+                        swapped.append(True)
+                        directory.rename(moved)
+                        if symbolic:
+                            directory.symlink_to(outside, target_is_directory=True)
+                        else:
+                            outside.rename(directory)
+                with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors, replace_after_initial_witness)):
+                    with self.assertRaises(smoke.SmokeError):
+                        smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assertEqual(swapped, [True])
+                self.assert_descriptors_closed(descriptors)
+                self.assertFalse((moved / "db-password").exists())
+                sentinel = directory / "db-password"
+                self.assertEqual(sentinel.read_text(), "outside sentinel must not change")
+                self.assertEqual(stat.S_IMODE(sentinel.stat().st_mode), 0o600)
+
+    def test_ancestor_open_rejects_real_or_symbolic_substitution_after_named_stat(self):
+        for symbolic in (False, True):
+            with self.subTest(symbolic=symbolic), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder).resolve()
+                ancestor, directory, outside, sentinel = self.private_tree(root)
+                replacement_private = outside / "private"
+                replacement_private.mkdir(mode=0o700)
+                moved, swapped, descriptors = root / "held-ancestor", [], []
+                def replace_before_ancestor_open(path, _flags, dir_fd):
+                    if dir_fd is not None and path == ancestor.name and not swapped:
+                        swapped.append(True)
+                        ancestor.rename(moved)
+                        if symbolic:
+                            ancestor.symlink_to(outside, target_is_directory=True)
+                        else:
+                            outside.rename(ancestor)
+                with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors, replace_before_ancestor_open)):
+                    with self.assertRaises((OSError, smoke.SmokeError)):
+                        smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assertEqual(swapped, [True])
+                self.assert_descriptors_closed(descriptors)
+                self.assertFalse((moved / "private/db-password").exists())
+                selected = outside if symbolic else ancestor
+                self.assertFalse((selected / "private/db-password").exists())
+                self.assertEqual((selected / sentinel.name).read_text(), "outside sentinel must not change")
+
+    def test_held_parent_prevents_write_through_late_real_or_symbolic_replacement(self):
+        for symbolic in (False, True):
+            with self.subTest(symbolic=symbolic), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder).resolve()
+                _, directory, outside, _ = self.private_tree(root)
+                moved, swapped, descriptors = root / "held-private", [], []
+                def replace_before_leaf_open(path, flags, dir_fd):
+                    if path == "db-password" and flags & os.O_CREAT and not swapped:
+                        self.assertIsNotNone(dir_fd)
+                        swapped.append(True)
+                        directory.rename(moved)
+                        if symbolic:
+                            directory.symlink_to(outside, target_is_directory=True)
+                        else:
+                            outside.rename(directory)
+                with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors, replace_before_leaf_open)):
+                    with self.assertRaises(smoke.SmokeError):
+                        smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assertEqual(swapped, [True])
+                self.assert_descriptors_closed(descriptors)
+                # Cleanup is relative to the held original directory, never its replacement.
+                self.assertFalse((moved / "db-password").exists())
+                sentinel = directory / "db-password"
+                self.assertEqual(sentinel.read_text(), "outside sentinel must not change")
+                self.assertEqual(stat.S_IMODE(sentinel.stat().st_mode), 0o600)
+
+    def test_named_leaf_real_symbolic_and_hardlink_substitution_never_receives_payload_or_cleanup(self):
+        for kind in ("regular", "symlink", "hardlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder).resolve()
+                _, directory, _, sentinel = self.private_tree(root)
+                target, moved, descriptors = directory / "db-password", root / "created-inode", []
+                original_fdopen = os.fdopen
+                def substitute_leaf(descriptor, *args, **kwargs):
+                    target.rename(moved)
+                    if kind == "regular":
+                        target.write_text("replacement must not change")
+                        target.chmod(0o600)
+                    elif kind == "symlink":
+                        target.symlink_to(sentinel)
+                    else:
+                        os.link(sentinel, target)
+                    return original_fdopen(descriptor, *args, **kwargs)
+                with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors)), \
+                     patch.object(smoke.os, "fdopen", side_effect=substitute_leaf):
+                    with self.assertRaisesRegex(smoke.SmokeError, "inode authority"):
+                        smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assert_descriptors_closed(descriptors)
+                self.assertEqual(moved.read_bytes(), b"")
+                self.assertEqual(target.read_text(), "replacement must not change" if kind == "regular" else "outside sentinel must not change")
+                self.assertEqual(sentinel.read_text(), "outside sentinel must not change")
+                self.assertEqual(stat.S_IMODE(sentinel.stat().st_mode), 0o600)
+
+    def test_new_hardlink_to_created_inode_rejects_before_plaintext_and_only_removes_owned_name(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder).resolve()
+            target, alias, descriptors = directory / "db-password", directory / "unexpected-alias", []
+            original_fdopen = os.fdopen
+            def alias_before_payload(descriptor, *args, **kwargs):
+                os.link(target, alias)
+                return original_fdopen(descriptor, *args, **kwargs)
+            with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors)), \
+                 patch.object(smoke.os, "fdopen", side_effect=alias_before_payload):
+                with self.assertRaisesRegex(smoke.SmokeError, "inode authority"):
+                    smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+            self.assert_descriptors_closed(descriptors)
+            self.assertFalse(target.exists())
+            self.assertEqual(alias.read_bytes(), b"")
+            self.assertEqual(stat.S_IMODE(alias.stat().st_mode), 0o600)
+
+    def test_post_write_directory_or_leaf_substitution_is_rejected_without_touching_sentinel(self):
+        for kind in ("directory", "leaf"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder).resolve()
+                _, directory, outside, sentinel = self.private_tree(root)
+                target, moved, descriptors = directory / "db-password", root / "held-created", []
+                original_chmod = os.fchmod
+                def substitute_after_flush(descriptor, mode):
+                    if kind == "directory":
+                        directory.rename(moved)
+                        directory.symlink_to(outside, target_is_directory=True)
+                    else:
+                        target.rename(moved)
+                        target.symlink_to(sentinel)
+                    original_chmod(descriptor, mode)
+                with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors)), \
+                     patch.object(smoke.os, "fchmod", side_effect=substitute_after_flush):
+                    with self.assertRaises(smoke.SmokeError):
+                        smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assert_descriptors_closed(descriptors)
+                self.assertEqual(sentinel.read_text(), "outside sentinel must not change")
+                self.assertEqual(stat.S_IMODE(sentinel.stat().st_mode), 0o600)
+                if kind == "directory":
+                    self.assertFalse((moved / "db-password").exists())
+                else:
+                    self.assertTrue(target.is_symlink())
+                    self.assertEqual(moved.read_text(), "synthetic-file-fixture-value")
+
+    def test_fdopen_and_partial_write_interruptions_close_descriptors_and_remove_only_owned_inode(self):
+        for stage in ("fdopen", "write", "close", "chmod", "interruption"):
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder).resolve()
+                _, directory, _, sentinel = self.private_tree(root)
+                descriptors = []
+                original_fdopen = os.fdopen
+                class InterruptedWriter:
+                    def __init__(self, wrapped):
+                        self.wrapped = wrapped
+                    def __enter__(self):
+                        return self
+                    def __exit__(self, *_error):
+                        self.wrapped.close()
+                        if stage == "close":
+                            raise InterruptedError("synthetic payload close interrupted")
+                    def fileno(self):
+                        return self.wrapped.fileno()
+                    def write(self, value):
+                        if stage != "write":
+                            return self.wrapped.write(value)
+                        self.wrapped.write(value[:4])
+                        self.wrapped.flush()
+                        raise InterruptedError("synthetic payload write interrupted")
+                    def flush(self):
+                        self.wrapped.flush()
+                def interrupted_fdopen(descriptor, *args, **kwargs):
+                    if stage == "interruption":
+                        raise KeyboardInterrupt("synthetic provisioning interrupted")
+                    if stage == "fdopen":
+                        raise InterruptedError("synthetic fdopen interrupted")
+                    wrapped = original_fdopen(descriptor, *args, **kwargs)
+                    return InterruptedWriter(wrapped) if stage in {"write", "close"} else wrapped
+                def interrupted_chmod(_descriptor, _mode):
+                    raise InterruptedError("synthetic chmod interrupted")
+                with patch.object(smoke.os, "open", side_effect=self.tracked_open(descriptors)), \
+                     patch.object(smoke.os, "fdopen", side_effect=interrupted_fdopen), \
+                     patch.object(smoke.os, "fchmod", side_effect=interrupted_chmod):
+                    with self.assertRaises(KeyboardInterrupt if stage == "interruption" else InterruptedError):
+                        smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+                self.assert_descriptors_closed(descriptors)
+                self.assertFalse((directory / "db-password").exists())
+                self.assertEqual(sentinel.read_text(), "outside sentinel must not change")
+                self.assertEqual(stat.S_IMODE(sentinel.stat().st_mode), 0o600)
+
+    def test_failure_cleanup_keeps_created_inode_and_parent_descriptors_until_owned_unlink(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder).resolve()
+            descriptors, created, removed = [], [], []
+            original_open, original_unlink = os.open, os.unlink
+            def opened(path, flags, mode=0o777, *, dir_fd=None):
+                descriptor = original_open(path, flags, mode, dir_fd=dir_fd)
+                descriptors.append(descriptor)
+                if flags & os.O_CREAT:
+                    created.append((descriptor, dir_fd))
+                return descriptor
+            def unlink_owned(path, *, dir_fd=None):
+                self.assertEqual(path, "db-password")
+                self.assertEqual(len(created), 1)
+                descriptor, parent = created[0]
+                self.assertEqual(dir_fd, parent)
+                self.assertTrue(stat.S_ISDIR(os.fstat(parent).st_mode))
+                current = os.fstat(descriptor)
+                named = os.stat(path, dir_fd=parent, follow_symlinks=False)
+                self.assertEqual((current.st_dev, current.st_ino), (named.st_dev, named.st_ino))
+                removed.append(True)
+                original_unlink(path, dir_fd=dir_fd)
+            with patch.object(smoke.os, "open", side_effect=opened), \
+                 patch.object(smoke.os, "fdopen", side_effect=InterruptedError("synthetic fdopen interrupted")), \
+                 patch.object(smoke.os, "unlink", side_effect=unlink_owned):
+                with self.assertRaises(InterruptedError):
+                    smoke.write_synthetic_secret(directory, "synthetic-file-fixture-value")
+            self.assertEqual(removed, [True])
+            self.assert_descriptors_closed(descriptors)
+            self.assertFalse((directory / "db-password").exists())
 
     def qualifier(self, directory, daemon):
         value = smoke.EngineImageSmoke(SimpleNamespace(json=Mock(return_value=daemon)),
@@ -480,6 +767,7 @@ class SyntheticSecretStorageTests(unittest.TestCase):
 
     def test_provisioning_error_cleans_private_directory_without_retaining_payload(self):
         with tempfile.TemporaryDirectory() as directory:
+            directory = str(Path(directory).resolve())
             value = self.qualifier(directory, {"os": "linux", "architecture": "amd64", "root": directory})
             original = smoke.write_synthetic_secret
             def interrupted(parent, password):

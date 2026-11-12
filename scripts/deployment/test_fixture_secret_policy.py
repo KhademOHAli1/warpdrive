@@ -1,4 +1,4 @@
-"""Expire one reviewed fixture-only scanner exception when its source scope changes."""
+"""Expire the intentional fixture-plaintext review when its source scope changes."""
 from __future__ import annotations
 
 import ast
@@ -20,11 +20,6 @@ SOURCES = {SINK, "scripts/deployment/test_engine_image_smoke.py",
            "scripts/deployment/image_smoke.py", ".github/workflows/production-engine.yml"}
 CALLERS = {SINK, "scripts/deployment/test_engine_image_smoke.py"}
 HELPER = "write_synthetic_secret"
-ANNOTATION = (
-    "        # Generated-only native fixture; the real _FILE test requires these bytes.\n"
-    "        # Scope/pin guard: docs/deployment-evidence/fixture-codeql-exception-20261112.json\n"
-    f"        # codeql[{QUERY}]\n"
-).encode()
 
 
 def pinned_source(path: Path, expected: str) -> bytes:
@@ -32,46 +27,36 @@ def pinned_source(path: Path, expected: str) -> bytes:
         raise ValueError("Reviewed fixture source is not a bounded regular file")
     raw = path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != expected:
-        raise ValueError("Fixture source changed; independent exception review must be refreshed")
+        raise ValueError("Fixture source changed; independent plaintext review must be refreshed")
     return raw
 
 
-class FixtureSecretExceptionTests(unittest.TestCase):
+class FixtureSecretReviewTests(unittest.TestCase):
     def review(self):
         self.assertFalse(REVIEW.is_symlink())
         self.assertLess(REVIEW.stat().st_size, 64 * 1024)
         review = json.loads(REVIEW.read_text())
-        self.assertEqual(review["schemaVersion"], 1)
+        self.assertEqual(review["schemaVersion"], 2)
+        self.assertEqual(review["kind"], "source-bound-intentional-fixture-plaintext-review")
         self.assertEqual(review["queryId"], QUERY)
-        self.assertEqual(review["annotatedPath"], SINK)
+        self.assertEqual(review["reviewedPath"], SINK)
         self.assertEqual(set(review["sourceSha256"]), SOURCES)
         self.assertIs(review["securityGateCleanClaim"], False)
         self.assertIs(review["canonicalAcceptanceClaim"], False)
         witness = review["independentReview"]
-        self.assertIn(witness["path"], {
-            "docs/deployment-evidence/fixture-plaintext-review-20261112.json",
-            "docs/deployment-evidence/fixture-engine-transport-review-20261112.json",
-        })
+        self.assertEqual(witness["path"], "docs/deployment-evidence/fixture-engine-fd-review-20261112.json")
         prior = json.loads(pinned_source(ROOT / witness["path"], witness["sha256"]))
-        self.assertEqual(prior["reviewer"], "/root/queue_review")
-        for name in SOURCES - {SINK}:
-            reviewed = {prior["sourceSha256"][name]} if name in prior["sourceSha256"] else {
-                historical["sourceSha256"][name] for historical in prior.get("reviewHistory", [])
-                if name in historical["sourceSha256"]
-            }
-            self.assertIn(review["sourceSha256"][name], reviewed)
-        source = pinned_source(ROOT / SINK, review["sourceSha256"][SINK])
-        self.assertEqual(source.count(ANNOTATION), 1)
-        if prior["method"].get("reviewOccurredAfterExistingEngineAnnotation") is True:
-            self.assertEqual(review["sourceSha256"][SINK], prior["sourceSha256"][SINK])
-            self.assertEqual(prior["currentAnnotations"]["engineCount"], 1)
-            self.assertIs(prior["currentAnnotations"]["appliedByThisReviewer"], False)
-        else:
-            self.assertEqual(hashlib.sha256(source.replace(ANNOTATION, b"")).hexdigest(),
-                             prior["sourceSha256"][SINK])
+        self.assertEqual(prior["reviewer"], "/root/planner_review")
+        self.assertEqual(review["sourceSha256"], prior["sourceSha256"])
+        self.assertEqual(prior["currentAnnotations"]["engineQueryAnnotationCount"], 0)
+        self.assertIs(prior["method"]["plaintextSinkRemainsDirectAndVisible"], True)
+        self.assertIs(prior["securityGateCleanClaim"], False)
+        self.assertIs(prior["canonicalAcceptanceClaim"], False)
+        self.assertIs(review["annotationAttempt"]["effectiveInObservedManagedAnalysis"], False)
+        self.assertIs(review["alertDismissalApplied"], False)
         return review
 
-    def test_exact_reviewed_sources_and_single_sink_annotation(self):
+    def test_exact_reviewed_sources_and_visible_unsuppressed_sink(self):
         review = self.review()
         for name, expected in review["sourceSha256"].items():
             self.assertRegex(expected, r"^[a-f0-9]{64}$")
@@ -79,11 +64,16 @@ class FixtureSecretExceptionTests(unittest.TestCase):
             if name != SINK:
                 continue
             comments = [token for token in tokenize.tokenize(io.BytesIO(raw).readline)
-                        if token.type == tokenize.COMMENT and "codeql[" in token.string]
-            self.assertEqual(len(comments), 1)
-            self.assertEqual(comments[0].string, f"# codeql[{QUERY}]")
-            following = raw.decode().splitlines()[comments[0].start[0]].strip()
-            self.assertEqual(following, "payload.write(password)")
+                        if token.type == tokenize.COMMENT
+                        and ("codeql[" in token.string or "lgtm[" in token.string)]
+            self.assertEqual(comments, [])
+            writer = next(node for node in ast.parse(raw).body
+                          if isinstance(node, ast.FunctionDef) and node.name == HELPER)
+            writes = [node for node in ast.walk(writer) if isinstance(node, ast.Call)
+                      and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
+                      and node.func.value.id == "payload" and node.func.attr == "write"]
+            self.assertEqual(len(writes), 1)
+            self.assertEqual(ast.dump(writes[0].args[0]), ast.dump(ast.Name(id="password", ctx=ast.Load())))
 
     def test_new_direct_or_import_aliased_callers_require_review(self):
         found = set()

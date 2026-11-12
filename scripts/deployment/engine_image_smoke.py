@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import argparse
 import base64
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 import gzip
 import hashlib
 import importlib.util
@@ -256,29 +256,94 @@ def admit_secret_tmpfs(root: Path = Path("/dev/shm"), mountinfo: Path = Path("/p
 
 def write_synthetic_secret(directory: Path, password: str) -> Path:
     """Preserve the real plaintext _FILE contract inside a private, admitted fixture."""
+    directory = Path(directory)
+    if (not directory.is_absolute() or len(directory.parts) > 128
+            or any(part == ".." for part in directory.parts)):
+        raise SmokeError("Synthetic file-secret directory path is not admitted")
     metadata = directory.lstat()
     if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid()
             or stat.S_IMODE(metadata.st_mode) != 0o700):
         raise SmokeError("Synthetic file-secret directory is not private")
     target = directory / "db-password"
+    def identity(value):
+        return value.st_dev, value.st_ino
+    directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    with ExitStack() as held:
+        parent = os.open(directory.anchor, directory_flags)
+        held.callback(os.close, parent)
+        lineage = []
+        for part in directory.parts[1:]:
+            named = os.stat(part, dir_fd=parent, follow_symlinks=False)
+            if not stat.S_ISDIR(named.st_mode):
+                raise SmokeError("Synthetic file-secret ancestor is not a real directory")
+            descriptor = os.open(part, directory_flags, dir_fd=parent)
+            held.callback(os.close, descriptor)
+            opened = os.fstat(descriptor)
+            if not stat.S_ISDIR(opened.st_mode) or identity(opened) != identity(named):
+                raise SmokeError("Synthetic file-secret ancestor authority changed")
+            lineage.append((parent, part, descriptor, opened))
+            parent = descriptor
 
-    def private_opener(path, flags):
-        return os.open(path, flags | os.O_NOFOLLOW, 0o600)
+        def directory_authority():
+            for ancestor, name, descriptor, witnessed in lineage:
+                opened = os.fstat(descriptor)
+                named = os.stat(name, dir_fd=ancestor, follow_symlinks=False)
+                if (not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(named.st_mode)
+                        or identity(opened) != identity(witnessed) or identity(named) != identity(witnessed)):
+                    raise SmokeError("Synthetic file-secret directory authority changed")
+            private = os.fstat(parent)
+            if (identity(private) != identity(metadata) or private.st_uid != os.geteuid()
+                    or stat.S_IMODE(private.st_mode) != 0o700):
+                raise SmokeError("Synthetic file-secret private directory authority changed")
 
-    # Exclusive creation prevents overwriting/following a pre-existing file. Keep
-    # the payload owner-only while writing, then allow the image's nonroot UID
-    # to read the mounted inode; the host parent directory remains mode0700.
-    with open(target, "x", encoding="utf-8", opener=private_opener) as payload:
-        # Generated-only native fixture; the real _FILE test requires these bytes.
-        # Scope/pin guard: docs/deployment-evidence/fixture-codeql-exception-20261112.json
-        # codeql[py/clear-text-storage-sensitive-data]
-        payload.write(password)
-        payload.flush()
-        os.fchmod(payload.fileno(), 0o444)
-        written = os.fstat(payload.fileno())
-        if not stat.S_ISREG(written.st_mode) or written.st_nlink != 1 or stat.S_IMODE(written.st_mode) != 0o444:
-            raise SmokeError("Synthetic file-secret inode is not admitted")
-    return target
+        def inode_authority(descriptor, created, mode):
+            opened = os.fstat(descriptor)
+            named = os.stat("db-password", dir_fd=parent, follow_symlinks=False)
+            for observed in (opened, named):
+                if (not stat.S_ISREG(observed.st_mode) or observed.st_uid != os.geteuid()
+                        or observed.st_nlink != 1 or stat.S_IMODE(observed.st_mode) != mode
+                        or identity(observed) != identity(created)):
+                    raise SmokeError("Synthetic file-secret inode authority changed")
+
+        directory_authority()
+        descriptor, created, complete = None, None, False
+        try:
+            # All ancestors stay open. Exclusive descriptor-relative creation can
+            # neither traverse a replaced parent nor overwrite an existing leaf.
+            descriptor = os.open("db-password", os.O_WRONLY | os.O_CREAT | os.O_EXCL
+                                 | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600, dir_fd=parent)
+            created = os.fstat(descriptor)
+            # Keep explicit descriptor ownership until the text wrapper has
+            # closed, so close/flush failures still clean only our created inode.
+            payload = os.fdopen(descriptor, "w", encoding="utf-8", closefd=False)
+            with payload:
+                directory_authority()
+                inode_authority(payload.fileno(), created, 0o600)
+                # Generated-only native fixture; the real _FILE test requires these bytes.
+                # Scope/pin review: docs/deployment-evidence/fixture-codeql-exception-20261112.json
+                payload.write(password)
+                payload.flush()
+                os.fchmod(payload.fileno(), 0o444)
+                directory_authority()
+                inode_authority(payload.fileno(), created, 0o444)
+            directory_authority()
+            inode_authority(descriptor, created, 0o444)
+            complete = True
+            return target
+        finally:
+            try:
+                if not complete and created is not None and descriptor is not None:
+                    try:
+                        remaining = os.stat("db-password", dir_fd=parent, follow_symlinks=False)
+                        opened = os.fstat(descriptor)
+                        if (stat.S_ISREG(remaining.st_mode) and remaining.st_uid == os.geteuid()
+                                and identity(remaining) == identity(created) == identity(opened)):
+                            os.unlink("db-password", dir_fd=parent)
+                    except FileNotFoundError:
+                        pass
+            finally:
+                if descriptor is not None:
+                    os.close(descriptor)
 
 
 class ExpandedTarReader:
