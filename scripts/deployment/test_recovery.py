@@ -1,14 +1,17 @@
 """Failure-focused recovery tests; the opt-in crypto case uses owned synthetic files."""
 from __future__ import annotations
 
+import ast
 import copy
 import json
 import os
 from pathlib import Path
 import secrets
 import shutil
+import stat
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -16,9 +19,97 @@ import recovery as r
 
 
 def put(path, value, mode=0o600):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(value)
-    path.chmod(mode)
+    """Write generated fixture bytes through owned, no-follow file authority.
+
+    Keys/markers intentionally remain visible dataflow inputs to the encryption
+    test. No caller-supplied installation or user secret is accepted by Fixture.
+    """
+    path = r.absolute(str(path))
+    parent = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+    private_ancestor = False
+    try:
+        for part in path.parts[1:-1]:
+            try:
+                os.mkdir(part, 0o700, dir_fd=parent)
+            except FileExistsError:
+                pass
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+            os.close(parent)
+            parent = child
+            metadata = os.fstat(parent)
+            private_ancestor |= metadata.st_uid == os.geteuid() and stat.S_IMODE(metadata.st_mode) == 0o700
+        r.require(private_ancestor, "Fixture writes require an owned private ancestor")
+        descriptor = os.open(path.name, os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600, dir_fd=parent)
+        try:
+            metadata = os.fstat(descriptor)
+            r.require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.geteuid() and metadata.st_nlink == 1,
+                      "Fixture writes require an owned single-link regular file")
+            # Restrict an existing file before truncation or any new payload byte.
+            os.fchmod(descriptor, 0o600)
+            os.ftruncate(descriptor, 0)
+            offset = 0
+            while offset < len(value):
+                written = os.write(descriptor, value[offset:])
+                r.require(written > 0, "Fixture write made no progress")
+                offset += written
+            os.fchmod(descriptor, mode)
+        finally:
+            os.close(descriptor)
+    finally:
+        os.close(parent)
+
+
+class FixtureFileAuthorityTests(unittest.TestCase):
+    def test_restricts_before_payload_even_with_permissive_umask(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory).resolve() / "fixture-key"
+            observed = []
+            write = os.write
+            def checked_write(descriptor, value):
+                observed.append(stat.S_IMODE(os.fstat(descriptor).st_mode))
+                return write(descriptor, value)
+            previous = os.umask(0)
+            try:
+                with patch("os.write", checked_write):
+                    put(path, b"generated-only-fixture-value")
+            finally:
+                os.umask(previous)
+            self.assertTrue(observed)
+            self.assertEqual(set(observed), {0o600})
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            path.chmod(0o644)
+            with patch("os.write", checked_write):
+                put(path, b"replacement-generated-only-value")
+            self.assertEqual(set(observed), {0o600})
+
+    def test_rejects_leaf_and_ancestor_symlinks_before_writing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            original = root / "original"
+            put(original, b"preserve")
+            leaf = root / "leaf"
+            leaf.symlink_to(original)
+            with self.assertRaises(OSError):
+                put(leaf, b"replace")
+            outside = root / "outside"
+            outside.mkdir(mode=0o700)
+            alias = root / "alias"
+            alias.symlink_to(outside, target_is_directory=True)
+            with self.assertRaises(OSError):
+                put(alias / "new" / "value", b"escape")
+            self.assertEqual(original.read_bytes(), b"preserve")
+            self.assertEqual(list(outside.iterdir()), [])
+
+    def test_rejects_hard_links_before_truncation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            original = root / "original"
+            put(original, b"preserve")
+            linked = root / "linked"
+            os.link(original, linked)
+            with self.assertRaises(r.RecoveryError):
+                put(linked, b"replace")
+            self.assertEqual(original.read_bytes(), b"preserve")
 
 
 class Fixture:
@@ -154,6 +245,23 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaises(r.RecoveryError):
             self.fixture.capture()
         self.assertEqual(self.fixture.store.backups, 0)
+
+    def test_finite_restic_failure_stays_unknown_and_never_replays_the_write(self):
+        backup = self.fixture.primary.backup
+        def failed_after_write(paths, tag):
+            backup(paths, tag)
+            raise r.ResticFailure("snapshot-write", r.RecoveryCommandFailure(1))
+        self.fixture.primary.backup = failed_after_write
+        with self.assertRaisesRegex(r.RecoveryUnknown, "snapshot-write:command-nonzero") as failure:
+            self.fixture.capture()
+        self.assertEqual(r.failure_fact(failure.exception), {"operation": "snapshot-write", "reason": "command-nonzero", "exitCode": 1})
+        with self.fixture.journal.lock():
+            retained = self.fixture.journal.read()[-1]
+        self.assertEqual(retained["state"], "UNKNOWN")
+        self.assertEqual(retained["failure"], {"operation": "snapshot-write", "reason": "command-nonzero", "exitCode": 1})
+        with self.assertRaises(r.RecoveryError):
+            self.fixture.capture()
+        self.assertEqual(self.fixture.store.backups, 1)
 
     def test_missing_member_and_extra_plan_key_rejected(self):
         for mutate in (lambda p: p["volumes"].pop("objects"), lambda p: p.update(stopped=True)):
@@ -550,7 +658,118 @@ class DockerObservationTests(unittest.TestCase):
             self.observe()
 
 
+class StderrObservedCommand(r.Command):
+    """Passive bounded observation; the real process and exit status are unchanged."""
+    def run(self, arguments, **kwargs):
+        self.standard_error = bytearray()
+        popen, read = r.subprocess.Popen, r.os.read
+        observed = None
+        def start(values, **options):
+            nonlocal observed
+            process = popen(values, **options)
+            if values is arguments:
+                observed = process.stderr.fileno()
+            return process
+        def receive(descriptor, maximum):
+            value = read(descriptor, maximum)
+            if descriptor == observed:
+                r.require(len(self.standard_error) + len(value) <= 64 * 1024, "Preflight diagnostics exceeded their bound")
+                self.standard_error.extend(value)
+            return value
+        with patch("recovery.subprocess.Popen", start), patch("recovery.os.read", receive):
+            return super().run(arguments, **kwargs)
+
+
+def exact_root_removal_rejected(standard_error, locator):
+    """Match one versioned restic JSON root error, never unrelated substrings."""
+    prefix = "/proc/self/fd/"
+    descriptor = locator.removeprefix(prefix)
+    if not locator.startswith(prefix) or not 1 <= len(descriptor) <= 10 or not descriptor.isascii() or not descriptor.isdecimal():
+        return False
+    messages = {f"failed to remove stale item: remove {locator}: {reason}"
+                for reason in ("operation not permitted", "permission denied", "read-only file system")}
+    for line in standard_error.splitlines():
+        try:
+            record = json.loads(line)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        if not isinstance(record, dict) or record.get("message_type") != "error" or record.get("during") != "restore" or record.get("item") != "/":
+            continue
+        error = record.get("error")
+        message = error.get("message") if isinstance(error, dict) else None
+        if isinstance(message, str) and message in messages:
+            return True
+    return False
+
+
+class DescriptorDiagnosticTests(unittest.TestCase):
+    def test_only_same_record_exact_terminal_root_can_establish_removal_failure(self):
+        def record(path, *, item="/", message=None):
+            return json.dumps({"message_type": "error", "during": "restore", "item": item,
+                               "error": {"message": message or f"failed to remove stale item: remove {path}: operation not permitted"}}).encode()
+        locator = "/proc/self/fd/5"
+        self.assertTrue(exact_root_removal_rejected(record(locator), locator))
+        for raw in (record(locator + "0"), record(locator + "/child"), record(locator, item="/child"),
+                    record(locator, message=f"mentioned {locator}") + b"\n" + record(locator + "/child"),
+                    b"failed to remove stale item: remove /proc/self/fd/5: operation not permitted"):
+            with self.subTest(raw=raw):
+                self.assertFalse(exact_root_removal_rejected(raw, locator))
+
+
 class CommandTests(unittest.TestCase):
+    def test_passive_preflight_observer_keeps_actual_command_failure(self):
+        command = StderrObservedCommand()
+        with self.assertRaises(r.RecoveryCommandFailure) as failure:
+            command.run([sys.executable, "-c", "import sys;sys.stderr.write('generated-preflight-marker');raise SystemExit(7)"])
+        self.assertEqual(failure.exception.exit_code, 7)
+        self.assertEqual(bytes(command.standard_error), b"generated-preflight-marker")
+
+    def test_nonzero_exit_retains_only_finite_status_not_command_streams(self):
+        with self.assertRaises(r.RecoveryCommandFailure) as failure:
+            r.Command().run([sys.executable, "-c", "import sys;sys.stderr.write('synthetic-private-command-marker');raise SystemExit(3)"])
+        self.assertEqual(failure.exception.exit_code, 3)
+        self.assertNotIn("synthetic-private-command-marker", str(failure.exception))
+        wrapped = r.ResticFailure("isolated-restore", failure.exception)
+        self.assertEqual(wrapped.operation, "isolated-restore")
+        self.assertEqual(wrapped.reason, "command-nonzero")
+        self.assertNotIn("synthetic-private-command-marker", str(wrapped))
+        self.assertEqual(r.failure_fact(wrapped), {"operation": "isolated-restore", "reason": "command-nonzero", "exitCode": 3})
+        self.assertEqual(r.failure_fact(ValueError("synthetic-private-command-marker")), {"operation": "verification", "reason": "guard-rejected"})
+
+    def test_actual_workflow_runner_retains_finite_facts_without_exception_payload(self):
+        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/recovery-qualification.yml").read_text()
+        start = workflow.index('          runner = """')
+        end = workflow.index('\n          """', start) + len('\n          """')
+        statement = "\n".join(line[10:] for line in workflow[start:end].splitlines())
+        runner = ast.literal_eval(ast.parse(statement).body[0].value)
+        prefix = '''import os,sys,types,unittest
+sys.path.insert(0,sys.argv[2])
+import recovery
+module=types.ModuleType('owned_failure_probe')
+class Case(unittest.TestCase):
+    def test_known(self):
+        raise recovery.RecoveryUnknown('generated-private-fixture-message',failure={
+            'operation':'snapshot-write','reason':'command-nonzero','exitCode':3})
+    def test_unclassified(self):
+        raise ValueError('generated-private-fixture-message')
+module.Case=Case
+sys.modules[module.__name__]=module
+os.environ['RECOVERY_RESULT']=sys.argv[1]
+sys.argv=['runner','owned_failure_probe.Case']
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            result = Path(directory).resolve() / "result.json"
+            with self.assertRaises(r.RecoveryCommandFailure) as failure:
+                r.Command().run([sys.executable, "-c", prefix + runner, str(result), str(Path(__file__).resolve().parent)], seconds=5)
+            self.assertEqual(failure.exception.exit_code, 1)
+            value = json.loads(result.read_bytes())
+            self.assertEqual((value["success"], value["tests"], value["errors"]), (False, 2, 2))
+            self.assertEqual(value["failureFacts"], [
+                {"operation": "snapshot-write", "reason": "command-nonzero", "exitCode": 3},
+                {"operation": "verification", "reason": "guard-rejected"},
+            ])
+            self.assertNotIn("generated-private-fixture-message", json.dumps(value))
+
     def test_output_and_deadline_are_bounded(self):
         command = r.Command()
         with self.assertRaises(r.RecoveryError):
@@ -605,6 +824,70 @@ class LinuxDescriptorTests(unittest.TestCase):
             finally:
                 target.close()
                 handle.close()
+
+
+@unittest.skipUnless(sys.platform.startswith("linux") and os.environ.get("WARPDRIVE_RECOVERY_CRYPTO_FIXTURE") == "1",
+                     "Explicit native Linux descriptor/restic fixture only")
+class RealResticDescriptorTests(unittest.TestCase):
+    def test_terminal_descriptor_restore_root_rejected_without_source_mutation(self):
+        # Diagnostic only: prove actual restic behavior, with no real-path
+        # fallback or product target-locator change. The full roundtrip follows.
+        self.probe_facts = {}
+        with tempfile.TemporaryDirectory(prefix="warpdrive-restic-descriptor-") as directory:
+            root = Path(directory).resolve()
+            source = root / "source"
+            source.mkdir(mode=0o700)
+            marker = source / "generated.data"
+            value = b"owned-native-descriptor-preflight"
+            put(marker, value)
+            key = root / "key"
+            put(key, secrets.token_hex(32).encode() + b"\n")
+            repository = root / "repository"
+            repository.mkdir(mode=0o700)
+            binary = Path(os.environ["WARPDRIVE_RECOVERY_RESTIC"]).resolve(strict=True)
+            command = StderrObservedCommand()
+            command.deadline = time.monotonic() + 25
+            command.run([str(binary), "--repo", str(repository), "--password-file", str(key),
+                         "--no-cache", "init", "--repository-version", "2"], seconds=10)
+            adapter = r.Restic(binary, str(repository), key, command=command, seconds=10)
+            handle = r.DirectoryHandle(repository, private_parent=True)
+            target = r.RestoreTarget(root / "restore")
+            try:
+                adapter.directory = handle
+                snapshot = adapter.backup([source], "warpdrive-descriptor-preflight")
+                target.create()
+                locator = target.argument()
+                self.assertEqual(locator, f"/proc/self/fd/{target.fd}")
+                self.assertTrue(stat.S_ISLNK(os.lstat(locator).st_mode))
+                self.assertEqual((os.stat(locator).st_dev, os.stat(locator).st_ino),
+                                 (os.fstat(target.fd).st_dev, os.fstat(target.fd).st_ino))
+                self.probe_facts["terminalDescriptorIsSymlinkToPinnedDirectory"] = True
+                with self.assertRaises(r.ResticFailure) as failure:
+                    adapter.restore(snapshot, target, {"repositoryBytes": 2 * 1024**2})
+                self.probe_facts["actualResticRootRemovalRejected"] = exact_root_removal_rejected(command.standard_error, locator)
+                self.probe_facts["restoreTargetContainsEntries"] = bool(os.listdir(target.fd))
+                self.assertEqual(r.failure_fact(failure.exception),
+                                 {"operation": "isolated-restore", "reason": "command-nonzero",
+                                  "exitCode": 1})
+                # Observe only a fixed signature and exact generated locator;
+                # no raw stream, key or path enters retained report fields.
+                self.assertTrue(self.probe_facts["actualResticRootRemovalRejected"])
+                # restic's error reporter may continue into children after a
+                # root error. Never equate command failure with an empty target.
+                restored = target.path / marker.relative_to("/")
+                if restored.exists():
+                    self.assertEqual(r.read_regular(restored), value)
+                target.argument()
+                self.assertEqual(adapter.find("warpdrive-descriptor-preflight"), [snapshot])
+                self.assertEqual(marker.read_bytes(), value)
+                self.probe_facts["sourceAndSnapshotUnchanged"] = True
+                self.assertLess(sum(p.stat().st_size for p in root.rglob("*") if p.is_file()), 2 * 1024**2)
+            finally:
+                adapter.directory = None
+                target.close()
+                handle.close()
+        self.assertFalse(root.exists())
+        self.probe_facts["fixtureCleanupSuccess"] = True
 
 
 @unittest.skipUnless(os.environ.get("WARPDRIVE_RECOVERY_CRYPTO_FIXTURE") == "1", "Explicit owned restic fixture only")

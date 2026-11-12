@@ -205,20 +205,38 @@ jobs:
           report = {"success": False, "revision": revision, "scope": "owned-synthetic-files-on-native-linux",
                     "offHostAccepted": False, "keyCustodyAccepted": False, "applicationRecoveryAccepted": False,
                     "linuxDockerObservationQualified": False, "linuxDescriptorPathQualified": False,
+                    "sourceSha256": before, "sourceUnchanged": False, "outcomes": outcomes,
                     "limits": {"seconds": 90, "cleanupSeconds": 6, "syntheticSourceBytes": 2 * 1024**2,
                                "rssWatchdogBytes": 1024**3}}
           runner = """import json,os,sys,unittest
+          import recovery
           from pathlib import Path
+          class Result(unittest.TextTestResult):
+              def __init__(self,*args,**kwargs):
+                  super().__init__(*args,**kwargs)
+                  self.failure_facts=[]
+                  self.probe_facts=[]
+              def addSuccess(self,test):
+                  if hasattr(test,'probe_facts'): self.probe_facts.append(test.probe_facts)
+                  super().addSuccess(test)
+              def addError(self,test,error):
+                  self.failure_facts.append(recovery.failure_fact(error[1]))
+                  if hasattr(test,'probe_facts'): self.probe_facts.append(test.probe_facts)
+                  super().addError(test,error)
+              def addFailure(self,test,error):
+                  self.failure_facts.append(recovery.failure_fact(error[1]))
+                  if hasattr(test,'probe_facts'): self.probe_facts.append(test.probe_facts)
+                  super().addFailure(test,error)
           suite=unittest.defaultTestLoader.loadTestsFromName(sys.argv[1])
           def ids(value):
               for item in value:
                   if isinstance(item,unittest.TestSuite): yield from ids(item)
                   else: yield item.id()
           selected=list(ids(suite))
-          result=unittest.TextTestRunner(verbosity=2).run(suite)
+          result=unittest.TextTestRunner(verbosity=2,resultclass=Result).run(suite)
           value={'success':result.wasSuccessful(),'tests':result.testsRun,'failures':len(result.failures),
                  'errors':len(result.errors),'skipped':[test.id() for test,_ in result.skipped],
-                 'selected':selected}
+                 'selected':selected,'failureFacts':result.failure_facts,'probeFacts':result.probe_facts}
           Path(os.environ['RECOVERY_RESULT']).write_text(json.dumps(value))
           raise SystemExit(0 if result.wasSuccessful() else 1)
           """
@@ -246,12 +264,14 @@ jobs:
               assert adopted is not None and adopted["parent"] == os.getpid()
               assert not cleanup_owned() and grandchild not in processes()
               report["unsampledNewSessionCleanupProbePassed"] = True
-              for name, selection in [("guards", "test_recovery"), ("crypto", "test_recovery.RealResticTests")]:
+              for name, selection in [("guards", "test_recovery"),
+                                      ("descriptor-preflight", "test_recovery.RealResticDescriptorTests"),
+                                      ("crypto", "test_recovery.RealResticTests")]:
                   result_path = private / f"{name}-result.json"
                   environment = {"PATH": "/usr/bin:/bin", "LC_ALL": "C", "TZ": "UTC", "GOMAXPROCS": "2",
                                  "GOMEMLIMIT": "256MiB", "PYTHONDONTWRITEBYTECODE": "1", "TMPDIR": str(fixtures),
                                  "RECOVERY_RESULT": str(result_path), "WARPDRIVE_RECOVERY_RESTIC": str(root / "tools/restic")}
-                  if name == "crypto":
+                  if name in {"descriptor-preflight", "crypto"}:
                       environment["WARPDRIVE_RECOVERY_CRYPTO_FIXTURE"] = "1"
                   child = subprocess.Popen([sys.executable, "-B", "-c", runner, selection],
                                            cwd=repo / "scripts/deployment", env=environment,
@@ -272,13 +292,15 @@ jobs:
                               assert len(captured) <= 256 * 1024
                       code = child.wait(timeout=max(0.1, deadline - time.monotonic()))
                       result = json.loads(result_path.read_bytes())
+                      outcomes.append({"name": name, "tests": result["tests"], "skipped": len(result["skipped"]),
+                                       "passed": code == 0 and result["success"], "failureFacts": result["failureFacts"],
+                                       "probeFacts": result["probeFacts"]})
                       assert code == 0 and result["success"]
                       if name == "guards":
                           expected = "test_recovery.LinuxDescriptorTests.test_inherited_repository_and_target_descriptors_do_not_follow_substituted_paths"
                           assert expected in result["selected"] and expected not in result["skipped"]
                       else:
                           assert result["tests"] == 1 and not result["skipped"]
-                      outcomes.append({"name": name, "tests": result["tests"], "skipped": len(result["skipped"]), "passed": True})
                   finally:
                       (reports / f"{name}-diagnostic.log").write_text(sanitized(captured))
                       if child.poll() is None:
@@ -295,6 +317,10 @@ jobs:
               report.update(success=True, sourceSha256=after, sourceUnchanged=True, outcomes=outcomes,
                             linuxDescriptorPathQualified=True, encryptedLocalRestoreQualified=True)
           finally:
+              try:
+                  report["sourceUnchanged"] = before == pins()
+              except BaseException:
+                  report["sourceUnchanged"] = False
               # The subreaper also discovers children born between sample and
               # runner termination. Birth checks precede every signal.
               remaining = cleanup_owned()

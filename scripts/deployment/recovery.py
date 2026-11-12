@@ -51,6 +51,36 @@ class RecoveryError(RuntimeError):
 
 class RecoveryUnknown(RecoveryError):
     """A backup may exist. Reconcile its exact manifest; never repeat the write."""
+    def __init__(self, message, *, failure=None):
+        self.failure = failure
+        super().__init__(message)
+
+
+class RecoveryCommandFailure(RecoveryError):
+    def __init__(self, exit_code):
+        self.exit_code = exit_code
+        super().__init__("Recovery command failed; outcome requires readback")
+
+
+class ResticFailure(RecoveryError):
+    """Finite diagnostic facts only; command streams and arguments stay private."""
+    def __init__(self, operation, error):
+        require(operation in {"repository-identity", "snapshot-write", "snapshot-find", "snapshot-metadata",
+                              "manifest-read", "snapshot-members", "repository-budget", "repository-integrity", "isolated-restore"},
+                "Unknown recovery operation")
+        reason = "command-nonzero" if isinstance(error, RecoveryCommandFailure) else "command-guard"
+        self.operation, self.reason = operation, reason
+        self.exit_code = error.exit_code if isinstance(error, RecoveryCommandFailure) else None
+        super().__init__(f"Recovery operation {operation} failed ({reason})")
+
+
+def failure_fact(error):
+    """Return fixed diagnostic fields; never serialize an exception or cause."""
+    if isinstance(error, RecoveryUnknown) and error.failure is not None:
+        return error.failure
+    if isinstance(error, ResticFailure):
+        return {"operation": error.operation, "reason": error.reason, "exitCode": error.exit_code}
+    return {"operation": "verification", "reason": "guard-rejected"}
 
 
 def require(value, message):
@@ -347,7 +377,9 @@ class Command:
                 rss = sum(int(fields[1]) * 1024 for line in rows
                           if len(fields := line.split()) == 2 and int(fields[0]) == process.pid)
                 require(rss <= 768 * 1024**2, "Recovery command RSS budget exceeded")
-            require(process.wait(timeout=5) == 0, "Recovery command failed; outcome requires readback")
+            exit_code = process.wait(timeout=5)
+            if exit_code != 0:
+                raise RecoveryCommandFailure(exit_code)
             require(not reject_stderr or not errors, "Recovery inspection emitted diagnostics and is unknown")
             return bytes(output)
         finally:
@@ -612,9 +644,17 @@ class Restic:
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key file changed")
         repository = self.directory.argument() if self.directory is not None else self.repository
         descriptors = (self.directory.fd,) if self.directory is not None else ()
-        raw = self.command.run([self.binary, "--repo", repository, "--password-file", str(self.key),
-                                 "--no-cache", "--json", "--limit-upload", "16384", "--limit-download", "16384", *args],
-                                data=data, seconds=self.seconds, maximum=maximum, pass_fds=descriptors)
+        operations = {"backup": "snapshot-write", "snapshots": "snapshot-find", "dump": "manifest-read",
+                      "ls": "snapshot-members", "stats": "repository-budget", "check": "repository-integrity"}
+        operation = ("repository-identity" if args[:2] == ("cat", "config") else "snapshot-metadata"
+                     if args[:2] == ("cat", "snapshot") else operations.get(args[0] if args else ""))
+        require(operation is not None, "Unknown restic operation")
+        try:
+            raw = self.command.run([self.binary, "--repo", repository, "--password-file", str(self.key),
+                                    "--no-cache", "--json", "--limit-upload", "16384", "--limit-download", "16384", *args],
+                                   data=data, seconds=self.seconds, maximum=maximum, pass_fds=descriptors)
+        except RecoveryError as error:
+            raise ResticFailure(operation, error) from None
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key file changed during command")
         if self.directory is not None:
             self.directory.check()
@@ -682,9 +722,12 @@ class Restic:
         repository = self.directory.argument() if self.directory is not None else self.repository
         descriptors = (target.fd,) + ((self.directory.fd,) if self.directory is not None else ())
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key changed before restore")
-        self.command.run([self.binary, "--repo", repository, "--password-file", str(self.key), "--no-cache", "--json",
-                          "--limit-download", "16384", "restore", snapshot, "--target", target.argument(),
-                          "--overwrite", "never", "--verify"], seconds=self.seconds, pass_fds=descriptors)
+        try:
+            self.command.run([self.binary, "--repo", repository, "--password-file", str(self.key), "--no-cache", "--json",
+                              "--limit-download", "16384", "restore", snapshot, "--target", target.argument(),
+                              "--overwrite", "never", "--verify"], seconds=self.seconds, pass_fds=descriptors)
+        except RecoveryError as error:
+            raise ResticFailure("isolated-restore", error) from None
         target.argument()
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key changed during restore")
         if self.directory is not None:
@@ -883,8 +926,9 @@ def capture(plan, journal, observer, primary, reader, target, *, reconcile=False
                 raise RecoveryUnknown("No unique manifest-bound snapshot can be reconciled; no write was replayed")
             try:
                 return _finish(plan, journal, observer, primary, reader, target, prepared, ids[0], deadline)
-            except RecoveryError:
-                raise RecoveryUnknown("Retained backup remains unverified; keep all writers stopped") from None
+            except RecoveryError as error:
+                raise RecoveryUnknown("Retained backup remains unverified; keep all writers stopped",
+                                      failure=failure_fact(error)) from None
         require(not reconcile, "There is no retained backup intent to reconcile")
         observation = observer.observe(plan)
         target = _preflight_paths(observation, journal, primary, reader, target, stack)
@@ -906,12 +950,15 @@ def capture(plan, journal, observer, primary, reader, target, *, reconcile=False
             journal.append("SNAPSHOT_REPORTED", {"planSha256": plan_hash, "snapshotId": snapshot})
             require(time.monotonic() - started <= plan["limits"]["seconds"], "Recovery operation deadline exceeded")
             return _finish(plan, journal, observer, primary, reader, target, prepared, snapshot, deadline)
-        except BaseException:
+        except BaseException as error:
+            failure = failure_fact(error)
             try:
-                journal.append("UNKNOWN", {"planSha256": plan_hash, "manifestSha256": digest(manifest)})
+                journal.append("UNKNOWN", {"planSha256": plan_hash, "manifestSha256": digest(manifest), "failure": failure})
             except BaseException:
                 pass  # The already-fsynced intent remains authoritative if reporting fails.
-            raise RecoveryUnknown("Backup outcome requires independent reconciliation; keep all writers stopped") from None
+            diagnostic = f" [{failure['operation']}:{failure['reason']}]"
+            raise RecoveryUnknown("Backup outcome requires independent reconciliation; keep all writers stopped" + diagnostic,
+                                  failure=failure) from None
 
 
 def main():

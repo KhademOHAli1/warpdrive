@@ -151,3 +151,26 @@ The opt-in synthetic crypto test uses a task-owned local repository, random synt
 two local password files and an isolated restore target. It checks encrypted storage,
 wrong-password rejection, tampered-ciphertext rejection and exact restored members. It does
 not establish off-host storage, cold Docker behavior or installation recovery.
+
+Fixture file writes require an owned private ancestor and use pinned, no-follow directory
+and regular-file descriptors. Files have mode `0600` before any payload is written; symlinks
+and multiply linked files are refused before truncation. The fixture still intentionally
+writes generated markers and disposable restic password files in clear text so the real
+encryption and readback contract can be tested. These are generated-only test inputs, not
+installation credentials, and their private temporary root is removed by cleanup. This
+permission boundary does not establish physical erasure or make a pending CodeQL finding
+resolved without a new exact-source security analysis.
+
+A failed restic operation retains a finite operation/reason category and numeric process
+status in its private `UNKNOWN` journal record. Raw command output, arguments, keys and
+configuration are excluded from that diagnostic. The category does not establish whether
+a snapshot was committed: independent manifest-bound reconciliation is still required and
+the backup write is never automatically repeated.
+
+The native Linux fixture runs a separate bounded descriptor-target diagnostic before the
+full encrypted roundtrip. It uses another generated source, key, repository and isolated
+target; checks that the descriptor still refers to its reserved directory; and observes
+actual restic output in memory for a fixed root-removal failure signature. Reports retain
+only booleans and finite failure facts. A failed restore may have written target children;
+the owned target stays quarantined until fixture cleanup. This diagnostic does not change
+the production locator, accept a real-path fallback, or replace a successful roundtrip.
