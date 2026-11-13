@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { DealsEmpty } from "./DealsEmpty";
 
 afterEach(cleanup);
@@ -60,4 +61,31 @@ it("blames the filter, not the pipeline, when a filter emptied the view", () => 
   expect(screen.getByRole("status")).toHaveTextContent(STRINGS.dealsList.emptyFilteredTitle);
   fireEvent.click(screen.getByRole("button", { name: STRINGS.dealsList.emptyFilteredAction }));
   expect(onClearFilters).toHaveBeenCalledOnce();
+});
+
+it("keeps both recovery actions in the localized unsure board state", () => {
+  const onClearFilters = vi.fn();
+  const onAdd = vi.fn();
+  render(
+    <LocaleProvider locale="de">
+      <DealsEmpty
+        variant="board"
+        kind="unsure"
+        onClearFilters={onClearFilters}
+        addSlot={
+          <button type="button" onClick={onAdd}>
+            Verkaufschance hinzufügen
+          </button>
+        }
+      />
+    </LocaleProvider>,
+  );
+
+  const empty = within(screen.getByRole("status"));
+  expect(empty.getByText("Hier gibt es nichts anzuzeigen")).toBeInTheDocument();
+  fireEvent.click(empty.getByRole("button", { name: "Filter zurücksetzen" }));
+  expect(onClearFilters).toHaveBeenCalledOnce();
+  expect(onAdd).not.toHaveBeenCalled();
+  fireEvent.click(empty.getByRole("button", { name: "Verkaufschance hinzufügen" }));
+  expect(onAdd).toHaveBeenCalledOnce();
 });
