@@ -181,21 +181,50 @@ describe("PeopleList", () => {
     expect(screen.getByRole("checkbox", { name: "Select all people" })).toBeChecked();
   });
 
-  it("clicking the Name header re-queries listPeople with the new sort", async () => {
-    listPeopleQuery.mockResolvedValue({ total: 2, rows: [] });
+  it("cycles the Email sort and exposes the active direction on its column header", async () => {
+    listPeopleQuery.mockResolvedValue({
+      total: 2,
+      rows: rows.map((row) => ({ ...row, phones: [] })),
+    });
     render(<PeopleList rows={rows} total={2} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Name" }));
+    const name = screen.getByRole("columnheader", { name: "Name" });
+    const email = screen.getByRole("columnheader", { name: "Email" });
+    const button = within(email).getByRole("button", { name: "Email" });
+    expect(name).toHaveAttribute("aria-sort", "ascending");
+    expect(email).toHaveAttribute("aria-sort", "none");
 
+    fireEvent.click(button);
     await vi.waitFor(() =>
-      expect(listPeopleQuery).toHaveBeenCalledWith(
+      expect(listPeopleQuery).toHaveBeenLastCalledWith(
         expect.objectContaining({
           offset: 0,
           limit: 50,
-          sort: { field: "name", dir: "asc" },
+          sort: { field: "primaryEmail", dir: "asc" },
         }),
       ),
     );
+    expect(name).toHaveAttribute("aria-sort", "none");
+    expect(email).toHaveAttribute("aria-sort", "ascending");
+    expect(within(button).getByText("▲")).toHaveAttribute("aria-hidden", "true");
+
+    fireEvent.click(button);
+    await vi.waitFor(() =>
+      expect(listPeopleQuery).toHaveBeenLastCalledWith(
+        expect.objectContaining({ sort: { field: "primaryEmail", dir: "desc" } }),
+      ),
+    );
+    expect(email).toHaveAttribute("aria-sort", "descending");
+    expect(within(button).getByText("▼")).toHaveAttribute("aria-hidden", "true");
+
+    fireEvent.click(button);
+    await vi.waitFor(() =>
+      expect(listPeopleQuery).toHaveBeenLastCalledWith(
+        expect.objectContaining({ sort: { field: "name", dir: "asc" } }),
+      ),
+    );
+    expect(name).toHaveAttribute("aria-sort", "ascending");
+    expect(email).toHaveAttribute("aria-sort", "none");
   });
 
   it("bulk-deletes the selected people and clears the selection", async () => {
