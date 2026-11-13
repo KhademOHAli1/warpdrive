@@ -54,9 +54,10 @@ Warpdrive keeps the existing `Documentation site checks` and
 [KhademOHAli1/warpdrive-docs](https://github.com/KhademOHAli1/warpdrive-docs)
 at the commit recorded in `docs-site/renderer.lock`. The
 [shared preparation action](../.github/actions/prepare-docs-renderer/action.yml) stages
-`docs-site/docs/` and `docs-site/public/img/` from the exact Warpdrive revision being
-checked. This lets a Warpdrive content pull request test its candidate revision against
-the pinned renderer.
+`docs-site/docs/`, `docs-site/public/img/`, and the shared color tokens from
+`src/app/globals.css` at the exact Warpdrive revision being checked. This lets a
+Warpdrive content or palette pull request test its candidate revision against the
+pinned renderer.
 
 The full workflow runs `check:export` against the generated static site. See
 [Public documentation hosting](development/public-docs-migration.md) for local preview
