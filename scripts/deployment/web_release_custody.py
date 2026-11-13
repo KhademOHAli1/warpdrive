@@ -130,8 +130,9 @@ def _fetch_payload(oras, digest, size, *, layout, output):
 
 
 def _verify_anonymous_denied(immutable):
-    # Before write this detects an already public package. After write it
-    # confirms the exact digest is accessible only with registry credentials.
+    # An existing private package gives an explicit authentication challenge.
+    # An empty namespace can return DENIED, which does not establish its
+    # visibility after package creation.
     from registry_absence import _NoRedirect, _get, _json, _scope
 
     repository = REPOSITORY.split("/", 1)[1]
@@ -144,9 +145,12 @@ def _verify_anonymous_denied(immutable):
             "The retained release digest is not proven to require authentication")
     token_url = "https://ghcr.io/token?" + urlencode({"service": "ghcr.io", "scope": f"repository:{repository}:pull"})
     token_status, _, raw = _get(transport, token_url, {"Accept": "application/json"})
-    errors = _json(raw).get("errors", [])
-    require(token_status == 403 and len(errors) == 1 and errors[0].get("code") == "DENIED",
-            "Anonymous GHCR pull authorization was not explicitly denied")
+    document = _json(raw)
+    errors = document.get("errors", []) if type(document) is dict else []
+    require(token_status == 401 and type(document) is dict and set(document) == {"errors"}
+            and type(errors) is list and len(errors) == 1 and type(errors[0]) is dict
+            and errors[0].get("code") == "UNAUTHORIZED",
+            "Anonymous GHCR pull authorization did not prove the required private package state")
 
 
 def retrieve(oras, destination, *, kind, digest, size, layout=None):

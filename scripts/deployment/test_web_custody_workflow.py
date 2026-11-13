@@ -86,6 +86,15 @@ class HistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(CandidateError, "write boundary"):
             self.check(api)
 
+    def test_resume_write_opportunity_cannot_be_mistaken_for_skipped_bootstrap(self):
+        api = API()
+        resume = {"name": custody.RESUME_STEP, "status": "completed", "conclusion": "failure"}
+        api.jobs[(41, 1)] = [job(41, 1, OLD_SHA, steps=[write_step("skipped"), resume])]
+        with self.assertRaisesRegex(CandidateError, "write boundary"):
+            self.check(api)
+        resume["conclusion"] = "skipped"
+        self.check(api)
+
     def test_queued_other_run_is_read_only_witness_only_if_never_started(self):
         api = API()
         api.rows.insert(0, run(43, 3, status="pending"))

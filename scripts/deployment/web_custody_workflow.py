@@ -24,6 +24,7 @@ WORKFLOW = "web-release-custody.yml"
 WORKFLOW_PATH = f".github/workflows/{WORKFLOW}"
 BOOTSTRAP_JOB = "Bootstrap verified Web artifact custody"
 WRITE_STEP = "Publish the three pinned custody objects"
+RESUME_STEP = "Resume only missing pinned custody objects"
 NOT_STARTED = {"queued", "pending", "requested", "waiting"}
 MAX_HISTORY = 100
 OBJECTS = (
@@ -84,9 +85,10 @@ def require_no_write_in_attempt(api, run, attempt):
     steps = job.get("steps")
     require(isinstance(steps, list) and 0 < len(steps) <= 16
             and all(isinstance(step, dict) for step in steps), "Earlier bootstrap steps are unavailable")
-    writes = [step for step in steps if step.get("name") == WRITE_STEP]
-    require(len(writes) == 1 and writes[0].get("status") == "completed"
-            and writes[0].get("conclusion") == "skipped",
+    writes = [step for step in steps if step.get("name") in (WRITE_STEP, RESUME_STEP)]
+    require(1 <= len(writes) <= 2 and len({step["name"] for step in writes}) == len(writes)
+            and any(step["name"] == WRITE_STEP for step in writes)
+            and all(step.get("status") == "completed" and step.get("conclusion") == "skipped" for step in writes),
             "Earlier bootstrap reached or may have reached the write boundary; use observe")
 
 
@@ -209,7 +211,7 @@ def execute(api, identity, mode, oras, runner_temp, evidence):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("preflight", "provider-check", "bootstrap", "observe"))
+    parser.add_argument("mode", choices=("preflight", "provider-check", "bootstrap", "observe", "resume-preflight", "resume"))
     parser.add_argument("--oras", type=Path)
     args = parser.parse_args(argv)
     evidence = None
@@ -221,6 +223,11 @@ def main(argv=None):
         require_selected_main(api, REPO, identity[0])
         if args.mode == "preflight":
             preflight(api, identity, runner_temp)
+            return 0
+        if args.mode == "resume-preflight":
+            from web_custody_resume import verify_resume_authority
+
+            verify_resume_authority(api, identity, runner_temp)
             return 0
         if args.mode == "provider-check":
             preflight(api, identity, runner_temp, staged=True)
@@ -239,7 +246,12 @@ def main(argv=None):
         evidence_path = runner_temp / "web-custody-evidence"
         evidence_path.mkdir(mode=0o700)
         evidence = evidence_path
-        execute(api, identity, args.mode, args.oras, runner_temp, evidence)
+        if args.mode == "resume":
+            from web_custody_resume import resume
+
+            resume(api, identity, args.oras, runner_temp, evidence)
+        else:
+            execute(api, identity, args.mode, args.oras, runner_temp, evidence)
     except (OSError, RuntimeError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError) as error:
         if evidence is not None and evidence.is_dir():
             set_evidence(evidence / "hold.json", "held", identity, args.mode, failureClass=type(error).__name__)
