@@ -171,6 +171,21 @@ def _validate(handoff):
     _require(handoff == compiled, "Web handoff bytes differ from the compiled two-URL change")
 
 
+def _binding(handoff, watched):
+    return {"kind": "warpdrive-traefik-web-handoff", "schemaVersion": 1,
+            "watchedDirectory": list(_identity(os.fstat(watched))),
+            "beforeSha256": handoff.before_sha256, "afterSha256": handoff.after_sha256}
+
+
+def verify_accepted_traefik_web_handoff(handoff, *, watched_dir, state_dir):
+    """Read back the exact accepted watched file and its durable journal."""
+    _validate(handoff)
+    with _locked_directory(watched_dir) as watched, _locked_directory(state_dir) as journal_dir:
+        _require(_journal_state(_journal(journal_dir), _binding(handoff, watched)) == "accepted"
+                 and _route(watched)[0] == handoff.after_document,
+                 "Accepted Traefik handoff or its watched route differs")
+
+
 def apply_traefik_web_handoff(
     handoff: TraefikWebHandoff, *, watched_dir: Path, state_dir: Path,
     observe: Callable[[], HandoffObservation], retained_before_healthy: Callable[[], bool] | None = None,
@@ -184,9 +199,7 @@ def apply_traefik_web_handoff(
     """
     _validate(handoff)
     with _locked_directory(watched_dir) as watched, _locked_directory(state_dir) as journal_dir:
-        binding = {"kind": "warpdrive-traefik-web-handoff", "schemaVersion": 1,
-                   "watchedDirectory": list(_identity(os.fstat(watched))),
-                   "beforeSha256": handoff.before_sha256, "afterSha256": handoff.after_sha256}
+        binding = _binding(handoff, watched)
         journal = _journal(journal_dir)
         state = _journal_state(journal, binding)
         route = _route(watched)

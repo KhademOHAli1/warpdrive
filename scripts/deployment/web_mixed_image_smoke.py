@@ -14,6 +14,7 @@ import queue
 import re
 import secrets
 import ssl
+import stat
 import subprocess
 import sys
 import tempfile
@@ -42,6 +43,10 @@ from web_switch_smoke import (
 HEADER = "X-Warpdrive-Fixture-Web-Generation"
 ROOT = Path(__file__).resolve().parents[2]
 BROWSER_SCRIPT = "scripts/browser-web-rollout.mjs"
+SEED_SCRIPT = "scripts/browser-realtime-fixture.mjs"
+REPEAT_BROWSER_PROFILE = "warpdrive-web-continuity-v2"
+REPEAT_OPTIONS = ("active_web_bundle", "active_web_publication_receipt",
+                  "active_web_publication_receipt_sha256", "seed_root", "harness_revision")
 BROWSER_PHASES = {
     "initial-ready": {"oldStatic": True, "nativeLogin": True, "draftReady": True, "subscribed": True},
     "pre-switch-ready": {"oldSocketActive": True},
@@ -67,6 +72,80 @@ LIMITATIONS = [
     "Sampled CSS and JavaScript byte readback, public identity, and database health.",
     "Production installation, populated upgrades, Engine, and external providers remain outside this evidence.",
 ]
+REPEAT_LIMITATIONS = [*LIMITATIONS, "Two Web slots qualify the authenticated active and candidate pair; "
+                      "the preceding retained Web slot is outside this browser fixture."]
+
+
+def repeat_mode(args):
+    selected = [getattr(args, name, None) is not None for name in REPEAT_OPTIONS]
+    if not any(selected):
+        return False
+    require(all(selected) and args.browser, "Repeat Web qualification requires every repeat input and the native browser")
+    require(HASH.fullmatch(args.active_web_publication_receipt_sha256)
+            and validate_revision(args.harness_revision) == args.harness_revision
+            and all(path.is_absolute() and path == path.resolve(strict=True)
+                    for path in (args.active_web_bundle, args.active_web_publication_receipt, args.seed_root)),
+            "Exact canonical repeat Web custody and seed paths required")
+    return True
+
+
+def repeat_baseline(args, backend):
+    # Avoid a module cycle: composite custody validates the earlier Web bundle
+    # using the V1 mixed report reader.
+    from web_composite_baseline import verify_web_composite_baseline
+    from web_release_inputs import _git, _tree, _verify_baseline_blobs
+
+    with os.fdopen(os.open(args.active_web_publication_receipt, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as stream:
+        info = os.fstat(stream.fileno())
+        require(stat.S_ISREG(info.st_mode) and 0 < info.st_size <= MAX_METADATA_BYTES,
+                "Bounded historical Web publication receipt required")
+        raw = stream.read(MAX_METADATA_BYTES + 1)
+        require(len(raw) == info.st_size and os.path.samestat(info, args.active_web_publication_receipt.lstat()),
+                "Historical Web publication receipt changed while reading")
+    composite = verify_web_composite_baseline(
+        web_receipt=raw, expected_web_receipt_sha256=args.active_web_publication_receipt_sha256,
+        web_bundle_dir=args.active_web_bundle, backend_bundle_dir=args.bundle_dir.resolve(),
+        expected_backend_manifest_sha256=args.baseline_manifest_sha256,
+    )
+    active, retained = composite["web"], composite["backend"]
+    require(retained["sourceRevision"] == args.baseline_revision
+            and retained["origin"] == backend["origin"] and retained["provenance"] == backend["provenance"]
+            and all(value == backend["candidate"]["components"][name] for name, value in retained["components"].items()),
+            "Composite Web baseline differs from the retained Core bundle")
+    before, after = active["sourceRevision"], args.new_web_revision
+    require(len({args.baseline_revision, before, after}) == 3
+            and active["image"]["imageId"] != args.new_web_image_id,
+            "Repeat qualification needs distinct Core, active Web and candidate sources")
+    _git(args.seed_root, "merge-base", "--is-ancestor", args.baseline_revision, before, allow_empty=True)
+    _git(args.seed_root, "merge-base", "--is-ancestor", before, after, allow_empty=True)
+    _verify_baseline_blobs(args.seed_root, _tree(args.seed_root, before), active["inputReceipt"])
+    return composite
+
+
+def verify_repeat_harness(root, host, revision):
+    """Verify executing toolkit bytes even when Git index flags hide worktree edits."""
+    from web_release_inputs import _git, _tree
+
+    admit_source(host, revision)
+    tree = _tree(root, revision)
+    tooling = ("scripts/deployment", "scripts/delivery", "tools/browser-smoke")
+    # The browser package has its own frozen install. Refuse other ignored
+    # files here as well, including importable Python bytecode.
+    require(not _git(root, "ls-files", "--others", "--", *tooling,
+                     ":(exclude)tools/browser-smoke/node_modules/**", allow_empty=True),
+            "Untracked repeat browser toolkit source is not admitted")
+    paths = {name for name in tree if name.startswith(tuple(directory + "/" for directory in tooling))}
+    paths.update((BROWSER_SCRIPT, "package.json"))
+    required = {"scripts/deployment/web_mixed_image_smoke.py", "tools/browser-smoke/package.json",
+                "tools/browser-smoke/bun.lock", BROWSER_SCRIPT, "package.json"}
+    require(required <= tree.keys(), "Repeat browser toolkit source is incomplete")
+    for name in sorted(paths):
+        mode, kind, identifier = tree[name]
+        require(mode in {"100644", "100755"} and kind == "blob", "Regular repeat browser toolkit source required")
+        raw = regular_file(root, name, MAX_METADATA_BYTES).read_bytes()
+        prefix = f"blob {len(raw)}\0".encode("ascii")
+        require(hashlib.sha1(prefix + raw, usedforsecurity=False).hexdigest() == identifier,
+                "Repeat browser toolkit differs from the exact reviewed source")
 
 
 def build_environment(entries):
@@ -235,17 +314,20 @@ def generation_configs(adapted, before, after):
     return {before.deployment_id: compile_config(before, after), after.deployment_id: compile_config(after, before)}
 
 
-def browser_message(value):
+def browser_message(value, *, repeat=False):
     require(isinstance(value, dict) and isinstance(value.get("phase"), str) and value["phase"] in BROWSER_PHASES,
             "unexpected browser control phase")
     expected = BROWSER_PHASES[value["phase"]]
+    if repeat and value["phase"] == "complete":
+        expected = {**expected, "freshStampedPage": True}
     require(set(value) == {"phase", *expected} and all(type(value[key]) is type(wanted) and value[key] == wanted
                                                      for key, wanted in expected.items()), "incomplete browser control proof")
     return value
 
 
 class RolloutBrowser(BrowserProcess):
-    def __init__(self, environment):
+    def __init__(self, environment, *, repeat=False):
+        self.repeat = repeat
         def run(_command, **options):
             return subprocess.Popen(["bun", "--no-env-file", str(ROOT / BROWSER_SCRIPT)], **options)
 
@@ -258,7 +340,7 @@ class RolloutBrowser(BrowserProcess):
         try:
             while line := stream.readline(4097):
                 require(len(line) <= 4096 and line.endswith("\n"), "oversized or incomplete browser control record")
-                self.messages.put_nowait(browser_message(json.loads(line)))
+                self.messages.put_nowait(browser_message(json.loads(line), repeat=self.repeat))
         except (ValueError, RuntimeError, queue.Full):
             self.invalid = True
 
@@ -351,12 +433,19 @@ class MixedWebSmoke(WebSwitchSmoke):
     def __init__(self, docker, args, private):
         super().__init__(docker, args.bundle_dir, args.baseline_revision, args.output_dir)
         self.args, self.private = args, private
+        self.repeat = repeat_mode(args)
+        self.seed_root = args.seed_root if self.repeat else ROOT
         self.browser = None
         self.host_environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR", "PLAYWRIGHT_BROWSERS_PATH") if key in os.environ}
         self.host_environment.update(BUN_OPTIONS="--no-env-file", BUN_RUNTIME_TRANSPILER_CACHE_PATH=str(private / "bun-cache"))
         self.report.update({"kind": "warpdrive-native-mixed-web-smoke", "scope": "owned-native-staging-fixture",
                             "limitations": LIMITATIONS, "deploymentAuthorized": False,
                             "browserContinuityQualified": False})
+        if self.repeat:
+            self.report.update({"schemaVersion": 2, "kind": "warpdrive-native-repeat-web-smoke",
+                                "limitations": REPEAT_LIMITATIONS, "browserProfile": {
+                                    "kind": REPEAT_BROWSER_PROFILE, "harnessRevision": args.harness_revision,
+                                    "seedRevision": self.revision}})
 
     def load(self):
         require(platform.system() == "Linux" and platform.machine() in {"x86_64", "amd64"},
@@ -374,6 +463,11 @@ class MixedWebSmoke(WebSwitchSmoke):
         images = {key: candidate["components"][key]["imageId"] for key in COMPONENTS}
         require(self.args.new_web_revision != self.revision and self.args.new_web_image_id not in images.values(),
                 "distinct newly built Web source and image required")
+        composite = repeat_baseline(self.args, loaded) if self.repeat else None
+        if composite is not None:
+            self.verify_browser_source(candidate)
+            require(composite["web"]["image"]["imageId"] not in images.values(),
+                    "Active Web image must differ from all retained original Core images")
         new = read_web_image(self.docker, self.args.new_web_image_id, self.args.new_web_revision)
         self.docker.run(["image", "load", "--input", str(loaded["archivePath"])], timeout=300)
         self.fixture = ImageSmoke(self.docker, images, self.private / "fixture", expected_revision=self.revision)
@@ -386,12 +480,44 @@ class MixedWebSmoke(WebSwitchSmoke):
         self.new_image = new
         self.assembly = {"baselineRevision": self.revision, "baselineOrigin": loaded["origin"],
                          "baselineImages": images, **loaded["provenance"], "newWeb": new, "fixtureBuilds": 0}
+        self.retained_images = images
+        if composite is not None:
+            from component_inputs import content_hash as input_hash
+            from web_candidate import ARCHIVE, MAX_ARCHIVE_BYTES
+
+            active, retained = composite["web"], composite["backend"]
+            active_image = {key: active["image"][key] for key in ("imageId", "sourceRevision", "generation")}
+            archive = regular_file(self.args.active_web_bundle, ARCHIVE, MAX_ARCHIVE_BYTES)
+            require(sha256(archive) == active["provenance"]["archiveSha256"],
+                    "Active Web archive differs from the authenticated bytes")
+            self.docker.run(["image", "load", "--input", str(archive)], timeout=300)
+            require(sha256(archive) == active["provenance"]["archiveSha256"],
+                    "Active Web archive changed during fixture load")
+            self.fixture.inspect_images()
+            require(all(self.fixture.report["images"][key]["id"] == value for key, value in images.items()),
+                    "Active Web load changed retained Core image identities")
+            require(read_web_image(self.docker, active_image["imageId"], active_image["sourceRevision"]) == active_image
+                    and read_web_image(self.docker, new["imageId"], new["sourceRevision"]) == new,
+                    "Active Web or candidate image differs after loading both archives")
+            self.old_image = active_image
+            self.report["revision"] = active["sourceRevision"]
+            self.assembly = {
+                "activeWebRevision": active["sourceRevision"], "activeWebImage": active_image,
+                "activeWebManifestSha256": active["provenance"]["bundleManifestSha256"],
+                "activeWebArchiveSha256": active["provenance"]["archiveSha256"],
+                "activeWebPublicationReceiptSha256": active["publicationReceiptSha256"],
+                "originalBackendRevision": retained["sourceRevision"],
+                "originalBackendManifestSha256": retained["provenance"]["bundleManifestSha256"],
+                "originalBackendArchiveSha256": retained["provenance"]["archiveSha256"],
+                "retainedBackendImages": {name: images[name] for name in ("worker", "realtime", "migrator")},
+                "newWeb": new, "fixtureBuilds": 0, "compositeSha256": input_hash(composite),
+            }
         self.report["images"] = self.assembly
         self.baseline_candidate = candidate
         return self.assembly
 
-    def host(self, arguments, *, environment=None, timeout=30, binary=False):
-        result = subprocess.run(arguments, cwd=ROOT, env=environment or self.host_environment, capture_output=True,
+    def host(self, arguments, *, environment=None, timeout=30, binary=False, root=ROOT):
+        result = subprocess.run(arguments, cwd=root, env=environment or self.host_environment, capture_output=True,
                                 text=not binary, timeout=timeout, check=False)
         require(result.returncode == 0 and len(result.stdout) <= 65536, "bounded host fixture command failed")
         return result.stdout
@@ -411,7 +537,7 @@ class MixedWebSmoke(WebSwitchSmoke):
         self.web_images = {self.web_a: self.old_image, self.web_b: self.new_image}
         self.start_caddy()
         self.fixture.realtime()
-        self.fixture.start_container("worker", self.assembly["baselineImages"]["worker"], ["bun", "dist/worker.mjs"], memory="1024m")
+        self.fixture.start_container("worker", self.retained_images["worker"], ["bun", "dist/worker.mjs"], memory="1024m")
         require(self.fixture.queue_helper("registered") == {"registered": True}, "retained worker did not register its queue")
         self.protected = self.protected_runtimes()
         self.schema_sha = self.schema()
@@ -430,6 +556,7 @@ class MixedWebSmoke(WebSwitchSmoke):
             self.report["diagnostics"].append({"webConfigChangedFields": changed_fields(*common)})
             raise WebSwitchSmokeError("Web runtime configuration differs outside the reviewed image identity and build stamps")
         return {"isolation": isolation, "migrations": migrations, "schemaSha256": self.schema_sha,
+                **({"migratorImageId": self.retained_images["migrator"]} if self.repeat else {}),
                 "commonWebConfigSha256": content_hash(common[0]), "availableMemoryBytes": admission["availableBytes"],
                 "fixtureMemoryLimitBytes": limit, "hostReserveBytes": 1024 * MIB}
 
@@ -450,7 +577,7 @@ class MixedWebSmoke(WebSwitchSmoke):
                 "restartCount": row.get("RestartCount"), "running": state.get("Running")}
 
     def protected_runtimes(self):
-        expected = {key: self.assembly["baselineImages"][key] for key in ("worker", "realtime")}
+        expected = {key: self.retained_images[key] for key in ("worker", "realtime")}
         expected["caddy"] = self.caddy_id
         result = {}
         for key in ("postgres", "worker", "realtime", "caddy"):
@@ -611,18 +738,28 @@ class MixedWebSmoke(WebSwitchSmoke):
         return {"receipt": receipt, "ingress": self.read_ingress(before, include_retained=False),
                 "routeWrites": 2, "candidateStopped": True, "repeatReadOnly": True}
 
-    def verify_browser_source(self):
-        admit_source(self.host, self.revision)
-        admit_bundle_source(ROOT, self.bundle_dir, self.baseline_candidate, self.revision)
-        for relative in (BROWSER_SCRIPT, "scripts/browser-realtime-fixture.mjs"):
-            committed = self.host(["git", "cat-file", "blob", f"{self.revision}:{relative}"], binary=True)
-            require(regular_file(ROOT, relative, 65536).read_bytes() == committed,
+    def verify_browser_source(self, candidate=None):
+        def seed_host(arguments, **kwargs):
+            return self.host(arguments, root=self.seed_root, **kwargs)
+
+        if self.repeat:
+            require(self.seed_root != ROOT, "Repeat seed and browser toolkit require separate exact checkouts")
+            require((self.seed_root / "node_modules/better-auth/package.json").is_file()
+                    and (ROOT / "tools/browser-smoke/node_modules/playwright/index.mjs").is_file(),
+                    "Locked repeat seed and browser dependencies required")
+            verify_repeat_harness(ROOT, self.host, self.args.harness_revision)
+        admit_source(seed_host, self.revision)
+        admit_bundle_source(self.seed_root, self.bundle_dir, candidate or self.baseline_candidate, self.revision)
+        for relative in ((SEED_SCRIPT,) if self.repeat else (BROWSER_SCRIPT, SEED_SCRIPT)):
+            committed = seed_host(["git", "cat-file", "blob", f"{self.revision}:{relative}"], binary=True)
+            require(regular_file(self.seed_root, relative, 65536).read_bytes() == committed,
                     "browser harness bytes differ from the bound baseline source")
 
     def start_browser(self):
         self.verify_browser_source()
-        require(all((ROOT / path).is_file() for path in ("node_modules/better-auth/package.json",
-                    "tools/browser-smoke/node_modules/playwright/index.mjs")), "locked browser and application dependencies required")
+        require((self.seed_root / "node_modules/better-auth/package.json").is_file()
+                and (ROOT / "tools/browser-smoke/node_modules/playwright/index.mjs").is_file(),
+                "locked browser and application dependencies required")
         database = self.forwarder(self.fixture.containers["postgres"], 5432)
         port = int(database.split(":")[-1])
         environment = source_runtime_environment(self.host_environment, self.fixture.env, port)
@@ -637,18 +774,22 @@ class MixedWebSmoke(WebSwitchSmoke):
         seed_path.write_text(json.dumps(seed), encoding="utf-8")
         seed_path.chmod(0o600)
         try:
-            result = self.host(["bun", "--no-env-file", str(ROOT / "scripts/browser-realtime-fixture.mjs"), "seed"],
-                               environment={**environment, "BROWSER_REALTIME_PROFILE": str(seed_path)}, timeout=40)
+            result = self.host(["bun", "--no-env-file", str(self.seed_root / SEED_SCRIPT), "seed"],
+                               environment={**environment, "BROWSER_REALTIME_PROFILE": str(seed_path)},
+                               timeout=40, root=self.seed_root)
             admit_fixture_result(json.loads(result), "seed", self.revision)
         finally:
             seed_path.unlink()
         self.browser_profile = {key: seed[key] for key in ("baseUrl", "actorId", "pipelineId", "pipelineName", "email", "password")}
-        self.browser_profile.update(previousRevision=self.revision, currentRevision=self.args.new_web_revision,
+        self.browser_profile.update(previousRevision=self.old_image["sourceRevision"], currentRevision=self.args.new_web_revision,
                                     activitySubject="Web rollout " + secrets.token_hex(12))
+        if self.repeat:
+            self.browser_profile["scenario"] = REPEAT_BROWSER_PROFILE
         self.browser_profile_path = self.private / "browser.json"
         self.browser_profile_path.write_text(json.dumps(self.browser_profile), encoding="utf-8")
         self.browser_profile_path.chmod(0o600)
-        self.browser = RolloutBrowser({**self.host_environment, "BROWSER_WEB_ROLLOUT_PROFILE": str(self.browser_profile_path)})
+        self.browser = RolloutBrowser({**self.host_environment, "BROWSER_WEB_ROLLOUT_PROFILE": str(self.browser_profile_path)},
+                                      repeat=self.repeat)
         self.browser_initial = self.browser.wait("initial-ready", timeout=90)
         require(self.activity_count() == 0, "synthetic browser Activity already exists before rollout")
         return {"freshBoundBaselineSeed": True, "forgedSession": False, "initial": self.browser_initial,
@@ -754,9 +895,18 @@ def main(arguments=None):
     parser.add_argument("--new-web-revision", type=validate_revision, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--browser", action="store_true", help="require the native persistent browser and durable Activity proof")
+    parser.add_argument("--active-web-bundle", type=Path)
+    parser.add_argument("--active-web-publication-receipt", type=Path)
+    parser.add_argument("--active-web-publication-receipt-sha256")
+    parser.add_argument("--seed-root", type=Path)
+    parser.add_argument("--harness-revision", type=validate_revision)
     args = parser.parse_args(arguments)
     if not HASH.fullmatch(args.baseline_manifest_sha256) or not IMAGE.fullmatch(args.new_web_image_id):
         parser.error("a full baseline manifest SHA-256 and immutable new Web image ID are required")
+    try:
+        repeat_mode(args)
+    except (OSError, ValueError, WebSwitchSmokeError) as error:
+        parser.error(str(error))
     try:
         require(platform.system() == "Linux" and platform.machine() in {"x86_64", "amd64"},
                 "native Linux AMD64 host required")

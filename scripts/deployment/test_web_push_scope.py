@@ -35,3 +35,14 @@ class PushScopeTests(TestCase):
         with patch("web_push_scope._tree", return_value={}), patch("web_push_scope._git"), \
                 patch("web_push_scope._presentation_delta", return_value=(["table-copy.json"], [])):
             self.assertFalse(independent_web_push(Path("/source"), "a" * 40, "b" * 40))
+
+    def test_repeat_profile_requires_existing_unchanged_qualification_and_baseline(self):
+        workflow = ".github/workflows/web-repeat-qualification.yml"
+        custody = "scripts/deployment/first-web-publication.receipt"
+        active = {workflow: ("100644", "blob", "1" * 40), custody: ("100644", "blob", "2" * 40)}
+        for before, after, expected in ((active, active, True), ({}, active, False), (active, {}, False)):
+            with self.subTest(expected=expected), patch("web_push_scope._tree", side_effect=[before, after]), \
+                    patch("web_push_scope._git"), \
+                    patch("web_push_scope._blob", side_effect=[("100644", b"  gap: 22px;\n"), ("100644", b"  gap: 20px;\n")]), \
+                    patch("web_push_scope._presentation_delta", return_value=([STYLE_FILE], [])):
+                self.assertIs(independent_web_push(Path("/source"), "a" * 40, "b" * 40), expected)

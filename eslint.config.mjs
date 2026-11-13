@@ -284,6 +284,20 @@ export default tseslint.config(
     },
   },
 
+  {
+    files: [
+      "scripts/deployment/web_presentation_policy.mjs",
+      "scripts/deployment/web_presentation_policy.test.mjs",
+      "scripts/deployment/web_repeat_presentation.mjs",
+    ],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: "./scripts/deployment/tsconfig.json",
+      },
+    },
+  },
+
   // env.test.ts spreads process.env to build production-config test inputs for
   // parseEnv. This is the ONLY test file that needs raw process.env; the ban
   // stays in force for all other test files. Placed last so it wins.
