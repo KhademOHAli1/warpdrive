@@ -33,6 +33,7 @@ type Configuration = {
   scratch: string;
   nonce: string;
   commonEnvironment: Record<string, string>;
+  bundleDirectory?: string;
 };
 type ChildExit = { code: number | null; signal: NodeJS.Signals | null };
 type ManagedChild = {
@@ -85,6 +86,12 @@ function loadConfiguration(): Configuration {
   );
   assert(/^[a-f0-9]{32}$/u.test(input.nonce), "Owned cluster marker required");
   validateScratch(path, input.scratch);
+  const bundleDirectory = input.bundleDirectory;
+  if (bundleDirectory !== undefined) {
+    assert(bundleDirectory === join(input.scratch, "runtime"));
+    const bundle = join(bundleDirectory, "dist/core-api.mjs");
+    assert(realpathSync(bundle) === bundle && lstatSync(bundle).isFile());
+  }
   const commonEnvironment: Record<string, string> = {};
   for (const [key, value] of Object.entries(input.commonEnvironment)) {
     assert(typeof value === "string", "Fixture environment values must be strings");
@@ -126,6 +133,7 @@ function loadConfiguration(): Configuration {
     scratch: input.scratch,
     nonce: input.nonce,
     commonEnvironment,
+    bundleDirectory,
   };
 }
 function deferred<Value>() {
@@ -355,16 +363,26 @@ function childManager(configuration: Configuration, metadataOrigin: string) {
     async start(name: string, owner = false): Promise<ManagedChild> {
       const port = await unusedPort(),
         origin = `http://127.0.0.1:${port}`;
+      const bundleDirectory = configuration.bundleDirectory;
       const child = spawn(
         process.execPath,
-        ["--no-env-file", "--smol", "run", "src/entrypoints/core-api.ts"],
+        bundleDirectory === undefined
+          ? ["--no-env-file", "--smol", "run", "src/entrypoints/core-api.ts"]
+          : ["--no-env-file", "--smol", "dist/core-api.mjs"],
         {
-          cwd: process.cwd(),
-          detached: true,
+          cwd: bundleDirectory ?? process.cwd(),
           stdio: ["ignore", "pipe", "pipe"],
           env: {
             ...configuration.commonEnvironment,
-            NODE_ENV: "test",
+            ...(bundleDirectory === undefined
+              ? { NODE_ENV: "test" }
+              : {
+                  NODE_ENV: "production",
+                  AUTH_MAIL_TRANSPORT: "smtp",
+                  AUTH_SMTP_HOST: "127.0.0.1",
+                  AUTH_SMTP_PORT: "1",
+                  SEED_ADMIN_EMAIL: "fixture-admin@example.test",
+                }),
             DATABASE_URL: owner ? configuration.owner : configuration.runtime,
             RUNTIME_COMPONENT: "core-api",
             CORE_HOST: "127.0.0.1",

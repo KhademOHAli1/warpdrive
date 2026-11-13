@@ -129,7 +129,8 @@ def extract_verified_zip(archive, destination, artifact):
 
 
 def retain(api, run_id, revision, output_dir, *, composite, previous_web, installed_lineage, accepted_plan,
-           expected_installed_lineage_sha256, expected_input_sha256, fetch=download):
+           expected_installed_lineage_sha256, expected_input_sha256, fetch=download,
+           core_acceptance=None, core_projection=None, expected_core_acceptance_sha256=None):
     """Retain a tested D ZIP only after exact hosted and private installed admission.
 
     The caller independently authenticates the two Web projections and the
@@ -142,7 +143,8 @@ def retain(api, run_id, revision, output_dir, *, composite, previous_web, instal
             and _matches(HASH, expected_input_sha256), "Exact functional Web composite and build input pin required")
     baseline, prior = deepcopy(composite), deepcopy(previous_web)
     verified = verify_web_successor_lineage(installed_lineage, expected_lineage_sha256=expected_installed_lineage_sha256,
-        accepted_plan=accepted_plan, active_web=baseline["web"], previous_web=prior, original_backend=baseline["backend"])
+        accepted_plan=accepted_plan, active_web=baseline["web"], previous_web=prior, original_backend=baseline["backend"],
+        core_acceptance=core_acceptance, core_projection=core_projection, expected_core_acceptance_sha256=expected_core_acceptance_sha256)
     require(revision not in {verified[side]["slot"]["runtime"]["sourceRevision"] for side in ("active", "previous")}
             and revision != baseline["backend"]["sourceRevision"], "Functional Web candidate must be a distinct source")
     output = Path(output_dir)

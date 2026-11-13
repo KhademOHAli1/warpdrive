@@ -155,3 +155,28 @@ accepted backend fingerprint before promotion. After the switch, compare the liv
 persisted routes, the public Web identity and both generations' stamped assets. Check a
 healthy rollback and reapply before sealing the accepted pair. A lost acknowledgement holds
 the same operation for readback and reconciliation.
+
+Private staging writes an intent before creating the candidate, records the exact
+created identity before starting it, and records readiness after direct probes.
+Each record is published atomically from a synced private file. A lost create or
+start reply leaves the same operation for observation. An exact already-running
+candidate can be reconciled from direct health and retained backend evidence. An
+observed stopped candidate leaves the operation held for the operator. Keep the
+existing receipt and runtime available while resolving that outcome.
+
+The standalone `installed_web_toolkit_transport.py` sends and receives a toolkit
+over an operator-selected stdio channel. Supply the independently admitted raw
+manifest SHA-256 and exact destination name. The receiver publishes a new private
+receipt directory atomically and checks the package without executing its source.
+Use readback against the same destination after an uncertain acknowledgement.
+The separate `installed_web_stage_ack.py` command observes a completed candidate
+under the installation locks and keeps the pinned archive open through final
+readback. Native use needs trusted receiver bytes and an authenticated SSH channel.
+The current manifest names the repository-owned functional Web and Core operators.
+The transport verifies their pinned Python source closure without importing any of
+the received modules. Use `installed_web_functional_operator.py` for stage, observation,
+promotion, rollback, reapply and sealing. For the first Web release after Core
+activation, supply the exact retained Core profile and the projected and accepted Core
+lineage pins alongside the historical Web pair. The qualification ZIP must already
+name the exact projected lineage hash. The private publication verifier checks the
+projected lineage against the independently pinned acceptance before retaining that ZIP.

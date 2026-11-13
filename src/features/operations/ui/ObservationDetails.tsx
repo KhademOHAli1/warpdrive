@@ -12,6 +12,7 @@ export function observationTarget(value: Observation, L: OperationsLabels): stri
   switch (value.kind) {
     case "component":
     case "heartbeat":
+    case "deployment":
       return L.components[value.component];
     case "feature":
       return L.features[value.feature];
@@ -25,6 +26,59 @@ export function observationTarget(value: Observation, L: OperationsLabels): stri
       return L.recoveryStages[value.stage];
   }
 }
+
+function DeploymentDetails({
+  observation,
+}: {
+  observation: Extract<Observation, { kind: "deployment" }>;
+}) {
+  const L = useOperationsLabels();
+  return (
+    <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+      <Metric label={L.deploymentOutcome}>{L.deploymentOutcomes[observation.outcome]}</Metric>
+      <Metric label={L.sourceRevision}>
+        {observation.sourceRevision === null ? (
+          L.unknownValue
+        ) : (
+          <OperationsCode>{observation.sourceRevision}</OperationsCode>
+        )}
+      </Metric>
+      <Metric label={L.proofHash}>
+        {observation.proofSha256 === null ? (
+          L.unknownValue
+        ) : (
+          <OperationsCode>{observation.proofSha256}</OperationsCode>
+        )}
+      </Metric>
+    </dl>
+  );
+}
+
+function HeartbeatDetails({
+  observation,
+}: {
+  observation: Extract<Observation, { kind: "heartbeat" }>;
+}) {
+  const L = useOperationsLabels();
+  const format = useOperationsFormat();
+  return (
+    <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+      <Metric label={L.generation}>
+        {observation.processGeneration === null ? (
+          L.unknownValue
+        ) : (
+          <OperationsCode>{observation.processGeneration}</OperationsCode>
+        )}
+      </Metric>
+      <Metric label={L.uptime}>{format.seconds(observation.uptimeMs)}</Metric>
+      <Metric label={L.activeCallbacks}>{format.number(observation.activeCallbacks)}</Metric>
+      {observation.sampledAtMs !== undefined && (
+        <Metric label={L.sampledAt}>{format.date(observation.sampledAtMs)}</Metric>
+      )}
+    </dl>
+  );
+}
+
 export function ObservationDetails({ observation }: { observation: Observation }) {
   const L = useOperationsLabels();
   const format = useOperationsFormat();
@@ -58,15 +112,9 @@ export function ObservationDetails({ observation }: { observation: Observation }
       );
     }
     case "heartbeat":
-      return (
-        <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
-          <Metric label={L.generation}>
-            <OperationsCode>{observation.processGeneration}</OperationsCode>
-          </Metric>
-          <Metric label={L.uptime}>{format.seconds(observation.uptimeMs)}</Metric>
-          <Metric label={L.activeCallbacks}>{format.number(observation.activeCallbacks)}</Metric>
-        </dl>
-      );
+      return <HeartbeatDetails observation={observation} />;
+    case "deployment":
+      return <DeploymentDetails observation={observation} />;
     case "queue":
       return (
         <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">

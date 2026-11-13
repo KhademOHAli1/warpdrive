@@ -1,9 +1,9 @@
 """Offline evidence for stage response recovery without replaying mutations."""
 
-from contextlib import nullcontext
 from copy import deepcopy
 from hashlib import sha256
-import json
+import io
+import os
 from pathlib import Path
 import stat
 from tempfile import TemporaryDirectory
@@ -11,9 +11,10 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
+import installed_web_stage
 from installed_docker import DockerNativeError
 from installed_web_runtime import WebRuntimeError, verify_candidate
-from installed_web_stage import start_private, write_record
+from installed_web_stage import read_record, start_private, write_record
 from installed_web_stage_readback import read_stage_acknowledgement
 from test_installed_web_operator import ALIAS, CONTAINER_ID, INGRESS, NETWORK_IDS, RUNTIME_SECRET, DockerReadback, candidate_fixture
 from web_switch import SwitchHeld
@@ -47,36 +48,30 @@ class InstalledWebStageReadbackTests(unittest.TestCase):
             _candidate_document=Mock(return_value=(self.document, self.backend)),
             _retained=Mock(return_value=(self.backend, {})), _stage_preimage=Mock(),
         )
-        # Keep native candidate/profile and network-peer validation real. Replace
-        # only the transport for direct health/identity and the root-owned file
-        # reader's UID assumption so the test can run without sudo.
+        # Keep native candidate, network-peer, lock, and receipt checks real.
+        # Substitute only the direct health transport and fixture owner UID.
         self.peer = self.enterContext(patch("installed_web_operator.read_direct_web", return_value=True))
-        self.enterContext(patch("installed_web_stage_readback.read_record", side_effect=self.fixture_read_record))
+        self.enterContext(patch("installed_web_stage.OWNER_UID", os.geteuid()))
 
-    @staticmethod
-    def fixture_read_record(path):
-        info = path.lstat()
-        if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or info.st_nlink != 1:
-            raise WebRuntimeError("Exact private regular stage receipt required")
-        return json.loads(path.read_bytes())
+    def stage_fixture(self):
+        created = deepcopy(self.row)
+        created["State"].update(Status="created", Running=False)
+        docker = Mock()
+        docker.create.return_value = CONTAINER_ID
+        docker.inspect.side_effect = (created, self.row)
+        return docker, created
+
+    def run_stage(self, docker, created):
+        return start_private(docker, operation=self.candidate, alias=ALIAS, document=self.document,
+                             qualification=self.release, verify_created=lambda row: row == created,
+                             ready=lambda row: verify_candidate(row, self.document, alias=ALIAS,
+                                                                network_ids=NETWORK_IDS, runtime_secret=RUNTIME_SECRET))
 
     def stage_with_lost_reply(self):
-        created_row = deepcopy(self.row)
-        created_row["State"].update(Status="created", Running=False)
-        runtime = verify_candidate(self.row, self.document, alias=ALIAS, network_ids=NETWORK_IDS,
-                                   runtime_secret=RUNTIME_SECRET)
-        stage = Mock()
-        stage.create.return_value = CONTAINER_ID
-        stage.inspect.side_effect = (created_row, self.row)
-
-        def lost_reply():
-            start_private(stage, operation=self.candidate, alias=ALIAS, document=self.document, qualification=self.release,
-                          verify_created=lambda row: row == created_row, ready=lambda row: runtime)
+        stage, created = self.stage_fixture()
+        with self.assertRaises(BrokenPipeError):
+            self.run_stage(stage, created)
             raise BrokenPipeError("synthetic lost SSH reply after native receipt")
-
-        with patch("installed_web_stage.exclusive", return_value=nullcontext()):
-            with self.assertRaises(BrokenPipeError):
-                lost_reply()
         stage.create.assert_called_once_with(ALIAS, self.document)
         stage.start.assert_called_once_with(CONTAINER_ID)
 
@@ -109,7 +104,7 @@ class InstalledWebStageReadbackTests(unittest.TestCase):
     def test_optional_created_record_can_be_absent_but_must_match_if_present(self):
         self.stage_with_lost_reply()
         created = self.candidate / "stage-created.json"
-        record = self.fixture_read_record(created)
+        record = read_record(created)
         created.unlink()
         self.assertEqual(self.verify()["candidateId"], CONTAINER_ID)
         write_record(created, {**record, "id": "a" * 64})
@@ -120,7 +115,7 @@ class InstalledWebStageReadbackTests(unittest.TestCase):
     def test_nonterminal_missing_or_untrusted_stage_receipts_hold(self):
         self.stage_with_lost_reply()
         ready = self.candidate / "stage-ready.json"
-        terminal = self.fixture_read_record(ready)
+        terminal = read_record(ready)
         ready.unlink()
         with self.assertRaises(FileNotFoundError):
             self.verify()
@@ -129,7 +124,7 @@ class InstalledWebStageReadbackTests(unittest.TestCase):
             self.verify()
         ready.unlink()
         ready.symlink_to("stage-intent.json")
-        with self.assertRaisesRegex(WebRuntimeError, "private regular stage receipt"):
+        with self.assertRaises(OSError):
             self.verify()
         self.assert_read_only()
 
@@ -183,3 +178,121 @@ class InstalledWebStageReadbackTests(unittest.TestCase):
         with self.assertRaises(DockerNativeError):
             self.verify()
         self.assert_read_only()
+
+    def test_partial_receipt_write_never_exposes_intent_or_invokes_docker(self):
+        class ShortWrite(io.BufferedWriter):
+            def write(self, data):
+                return super().write(data[:4])
+
+        stage, created = self.stage_fixture()
+        with patch("installed_web_stage.os.fdopen", side_effect=lambda fd, mode: ShortWrite(io.FileIO(fd, mode))):
+            with self.assertRaisesRegex(OSError, "Incomplete stage receipt write"):
+                self.run_stage(stage, created)
+        self.assertEqual(list(self.candidate.iterdir()), [])
+        self.assertEqual(stage.mock_calls, [])
+        ready = self.run_stage(stage, created)
+        self.assertEqual(ready["id"], CONTAINER_ID)
+        stage.create.assert_called_once_with(ALIAS, self.document)
+        stage.start.assert_called_once_with(CONTAINER_ID)
+
+    def test_failed_intent_directory_sync_holds_without_issuing_or_replaying_create(self):
+        stage, created = self.stage_fixture()
+        original_sync = os.fsync
+
+        def interrupt_sync(fd):
+            if stat.S_ISDIR(os.fstat(fd).st_mode):
+                raise OSError("synthetic interrupted directory sync")
+            original_sync(fd)
+
+        with patch("installed_web_stage.os.fsync", side_effect=interrupt_sync):
+            with self.assertRaisesRegex(OSError, "interrupted directory sync"):
+                self.run_stage(stage, created)
+        intent = self.candidate / "stage-intent.json"
+        self.assertEqual(read_record(intent)["alias"], ALIAS)
+        self.assertEqual(stage.mock_calls, [])
+        stage.inspect.side_effect = DockerNativeError("alias absent")
+        with self.assertRaisesRegex(DockerNativeError, "alias absent"):
+            self.run_stage(stage, created)
+        stage.inspect.assert_called_once_with(ALIAS)
+        stage.create.assert_not_called()
+        stage.start.assert_not_called()
+
+    def test_ready_publication_interruption_recovers_only_from_observed_runtime(self):
+        stage, created = self.stage_fixture()
+        original_sync = os.fsync
+        ready = self.candidate / "stage-ready.json"
+
+        def interrupt_sync(fd):
+            if stat.S_ISDIR(os.fstat(fd).st_mode) and ready.exists():
+                raise OSError("synthetic interrupted directory sync")
+            original_sync(fd)
+
+        with patch("installed_web_stage.os.fsync", side_effect=interrupt_sync):
+            with self.assertRaisesRegex(OSError, "interrupted directory sync"):
+                self.run_stage(stage, created)
+        self.assertEqual(ready.stat().st_nlink, 1)
+        self.assertEqual(list(self.candidate.glob(".web-stage-*")), [])
+        with patch("installed_web_stage.os.fsync", wraps=original_sync) as sync:
+            self.assertEqual(self.verify()["candidateId"], CONTAINER_ID)
+        self.assertGreaterEqual(sync.call_count, 2)
+        stage.inspect.side_effect = (self.row,)
+        self.assertEqual(self.run_stage(stage, created), read_record(ready))
+        stage.create.assert_called_once_with(ALIAS, self.document)
+        stage.start.assert_called_once_with(CONTAINER_ID)
+
+    def test_create_with_lost_response_keeps_stopped_slot_on_readback(self):
+        stage, created = self.stage_fixture()
+        stage.create.side_effect = DockerNativeError("synthetic lost create response")
+        with self.assertRaisesRegex(DockerNativeError, "lost create response"):
+            self.run_stage(stage, created)
+        self.assertFalse((self.candidate / "stage-created.json").exists())
+        stage.inspect.side_effect = (created, created)
+        with self.assertRaisesRegex(DockerNativeError, "not running"):
+            self.run_stage(stage, created)
+        self.assertEqual([call.args for call in stage.inspect.call_args_list], [(ALIAS,), (CONTAINER_ID,)])
+        self.assertFalse((self.candidate / "stage-ready.json").exists())
+        stage.create.assert_called_once_with(ALIAS, self.document)
+        stage.start.assert_not_called()
+
+    def test_start_with_lost_response_reconciles_running_slot_once(self):
+        stage, created = self.stage_fixture()
+        stage.start.side_effect = DockerNativeError("synthetic lost start response")
+        with self.assertRaisesRegex(DockerNativeError, "lost start response"):
+            self.run_stage(stage, created)
+        self.assertEqual(read_record(self.candidate / "stage-created.json")["id"], CONTAINER_ID)
+        self.assertFalse((self.candidate / "stage-ready.json").exists())
+        stage.inspect.side_effect = (self.row,)
+        self.assertEqual(self.run_stage(stage, created)["id"], CONTAINER_ID)
+        stage.create.assert_called_once_with(ALIAS, self.document)
+        stage.start.assert_called_once_with(CONTAINER_ID)
+
+    def test_final_receipt_excludes_existing_entries_and_rejects_extra_links(self):
+        path = self.candidate / "stage-intent.json"
+        original_publish = installed_web_stage._publish_record
+
+        def competing_publication(directory, temporary, name):
+            with path.open("xb") as competitor:
+                os.fchmod(competitor.fileno(), 0o600)
+                competitor.write(b'{"first":true}')
+            original_publish(directory, temporary, name)
+
+        with patch("installed_web_stage._publish_record", side_effect=competing_publication):
+            with self.assertRaises(FileExistsError):
+                write_record(path, {"first": False})
+        self.assertEqual(read_record(path), {"first": True})
+        self.assertEqual(list(self.candidate.glob(".web-stage-*")), [])
+        os.link(path, self.candidate / "other-link")
+        with self.assertRaisesRegex(WebRuntimeError, "Private bounded stage receipt"):
+            read_record(path)
+
+    def test_abandoned_temporary_bytes_are_ignored_and_parallel_stage_cannot_start(self):
+        abandoned = self.candidate / ".web-stage-0123456789abcdef01234567"
+        abandoned.write_bytes(b'{"part')
+        abandoned.chmod(0o600)
+        stage, created = self.stage_fixture()
+        with installed_web_stage.exclusive(self.candidate), self.assertRaises(BlockingIOError):
+            self.run_stage(stage, created)
+        self.assertEqual(stage.mock_calls, [])
+        self.assertEqual(self.run_stage(stage, created)["id"], CONTAINER_ID)
+        self.assertEqual(abandoned.read_bytes(), b'{"part')
+        self.assertEqual(self.verify()["candidateId"], CONTAINER_ID)

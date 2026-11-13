@@ -10,6 +10,7 @@ from unittest.mock import Mock, patch
 
 from installed_web_chain import REPOSITORY, _generation as read_generation
 from installed_web_lineage import _generation
+from installed_web_repeat import InstalledWebRepeat
 from installed_web_seal_readback import observe_functional_seal, read_seal_acknowledgement
 from test_web_rollout import slot
 from web_rollout import _record, _write_state
@@ -73,7 +74,9 @@ class FunctionalSealReadbackTests(unittest.TestCase):
         }
         for plan in self.plans.values():
             self.journal(plan)
-        self.controller = SimpleNamespace(plan=lambda phase: deepcopy(self.plans[phase]))
+        self.controller = SimpleNamespace(plan=lambda phase: deepcopy(self.plans[phase]), _chain=predecessor,
+            _core_activation_operation_id=None, _journal=lambda operation: self.journals / (operation + ".json"))
+        self.controller.verify_predecessor = lambda: InstalledWebRepeat.verify_predecessor(self.controller)
         final = self.plans["reapply"]
         self.plan_pin = content_hash(final)
         _write_state(self.state / "accepted-web-generation.json", _record(final, final["after"]))

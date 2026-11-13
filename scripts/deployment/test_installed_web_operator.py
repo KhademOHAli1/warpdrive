@@ -184,12 +184,12 @@ class FollowupTargetTests(unittest.TestCase):
         self.served = {content_hash(self.before_doc): self.forward["before"], content_hash(self.after_doc): self.forward["after"],
                        content_hash(self.restored_doc): self.reverse["after"]}
 
-    def target(self, plan, documents, generations=None):
+    def target(self, plan, documents, generations=None, core_alias=None):
         def probe(slot, *, proxied):
             observed = self.served[content_hash(self.admin.live)] if proxied else slot
             return {"healthy": True, "runtimeId": observed["runtime"]["runtimeId"], "generation": observed["route"]["generation"]}
 
-        return InstalledWebTarget(plan, admin=self.admin, documents=documents, generations=generations,
+        return InstalledWebTarget(plan, admin=self.admin, documents=documents, generations=generations, core_alias=core_alias,
             verify_release=lambda selected, **_options: selected == plan,
             observe_runtimes=lambda: {"beforeRuntime": plan["before"]["runtime"], "afterRuntime": plan["after"]["runtime"],
                                       "backendFingerprint": self.forward["backendFingerprint"]},
@@ -230,6 +230,47 @@ class FollowupTargetTests(unittest.TestCase):
         with self.assertRaisesRegex(SwitchConflict, "generation binding differs"):
             self.target(self.reverse, documents, ((self.old, self.new), (self.new, self.old)))
         self.assertEqual(self.admin.writes, [])
+
+    def test_optional_core_remains_the_only_rpc_upstream_through_forward_reverse_and_reapply(self):
+        from caddy_core_config import core_api_routes
+
+        alias = "fixture-core"
+        _generation_handler(self.before_doc)["routes"][1:1] = core_api_routes(alias, self.old)
+        _generation_handler(self.after_doc)["routes"][1:1] = core_api_routes(alias, self.new, self.old)
+        for side, document in (("before", self.before_doc), ("after", self.after_doc)):
+            self.forward[side]["route"]["fingerprint"] = content_hash(document)
+        reverse, reapply, restored = healthy_rollback(self.forward, self.documents, current=self.old,
+                                                     candidate=self.new, core_alias=alias)
+        self.assertEqual(_generation_handler(restored)["routes"][1:4], core_api_routes(alias, self.old, self.new))
+        self.assertEqual(_generation_handler(restored)["routes"][0], _generation_handler(self.before_doc)["routes"][0])
+        self.admin = Admin(self.before_doc)
+        self.served = {content_hash(self.before_doc): self.forward["before"], content_hash(self.after_doc): self.forward["after"],
+                       content_hash(restored): reverse["after"]}
+        qualified = ((self.old, None), (self.new, self.old))
+        with self.assertRaisesRegex(SwitchConflict, "private admin and non-Web"):
+            self.target(self.forward, self.documents)
+        with self.assertRaisesRegex(SwitchConflict, "independently admitted"):
+            self.target(self.forward, self.documents, core_alias=alias)
+        with self.assertRaisesRegex(SwitchConflict, "private admin and non-Web"):
+            self.target(self.forward, self.documents, qualified, core_alias="another-core")
+        changed = deepcopy(self.documents)
+        _generation_handler(changed["successorB"])["routes"][2]["handle"][1]["load_balancing"]["retries"] = 1
+        with self.assertRaisesRegex(SwitchConflict, "private admin and non-Web"):
+            self.target(self.forward, changed, qualified, core_alias=alias)
+        variants = (
+            (self.forward, self.before_doc, self.after_doc, qualified),
+            (reverse, self.after_doc, restored, ((self.new, self.old), (self.old, self.new))),
+            (reapply, restored, self.after_doc, ((self.old, self.new), (self.new, self.old))),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            clock = FakeClock()
+            for index, (plan, before, after, generations) in enumerate(variants):
+                target = self.target(plan, {"successorA": before, "successorB": after}, generations, core_alias=alias)
+                outcome = rollout_web(plan, state_dir=Path(directory) / "state", target=target,
+                                      initialize=index == 0, clock=clock.monotonic, sleep=clock.sleep)
+                self.assertEqual(outcome["state"], "accepted")
+                self.assertEqual(self.admin.live, after)
+        self.assertEqual(self.admin.writes, [self.after_doc, restored, self.after_doc])
 
 
 if __name__ == "__main__":

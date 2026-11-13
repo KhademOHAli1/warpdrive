@@ -7,6 +7,7 @@ from copy import deepcopy
 import json
 
 from caddy_admin import CaddyAdmin
+from caddy_core_config import core_api_routes
 from caddy_web_config import ADMIN_SOCKET, PROBE_RESPONSE_HEADER, _RELAY_ALIAS, _generation_handler, _probe_marker
 from traefik_web_relay import _caddy_config, _label, _peer_network
 from web_generation_routes import WebGeneration, compile_web_generation_routes
@@ -30,7 +31,7 @@ def _config_bytes(value):
     raise SwitchHeld("Bounded whole Caddy configuration required")
 
 
-def _validate_documents(before, after, plan, generations):
+def _validate_documents(before, after, plan, generations, core_alias=None):
     """Check both complete documents against the qualified active and retained slots."""
     try:
         gate = before["apps"]["http"]["servers"]["web-relay"]["routes"][0]["match"][0]
@@ -41,6 +42,8 @@ def _validate_documents(before, after, plan, generations):
         require(isinstance(host, str) and "." in host and len(host) <= 253 and all(_label(part) for part in host.split("."))
                 and _peer_network(peer.removesuffix("/32")) == peer and _RELAY_ALIAS.fullmatch(alias),
                 "Installed Caddy host, peer or alias differs")
+        require(core_alias is None or (_label(core_alias) and not _RELAY_ALIAS.fullmatch(core_alias)),
+                "Exact private Core relay alias required")
         if generations is None:
             candidate_url, = _generation_handler(after)["routes"][-1]["handle"][0]["upstreams"]
             candidate = WebGeneration(plan["after"]["route"]["generation"], candidate_url["dial"].removesuffix(":3000"))
@@ -56,7 +59,13 @@ def _validate_documents(before, after, plan, generations):
     for document, (active, retained) in zip((before, after), generations, strict=True):
         expected = _caddy_config(host, peer, compile_web_generation_routes(current=active, previous=retained))
         expected["admin"] = {"listen": f"unix/{ADMIN_SOCKET}|0600", "config": {"persist": True}}
-        _generation_handler(expected)["routes"].insert(0, _probe_marker(alias))
+        prefix = [_probe_marker(alias)]
+        if core_alias is not None:
+            try:
+                prefix.extend(core_api_routes(core_alias, active, retained))
+            except ValueError:
+                raise SwitchHeld("Exact Core and Web routing policy required") from None
+        _generation_handler(expected)["routes"][0:0] = prefix
         require(_config_bytes(document) == _config_bytes(expected),
                 "Both Caddy documents must preserve the private admin and non-Web configuration")
 
@@ -74,17 +83,19 @@ class InstalledWebTarget:
         self, plan: dict, *, admin: CaddyAdmin, documents: dict,
         verify_release: Callable[..., bool], observe_runtimes: Callable[[], dict],
         probe_health: Callable[..., dict], read_durable_config: Callable[[], dict],
-        generations: tuple | None = None,
+        generations: tuple | None = None, core_alias: str | None = None,
     ):
         self._plan = deepcopy(plan)
         _validate(self._plan)
+        require(core_alias is None or generations is not None,
+                "Core routing requires independently admitted Web generation bindings")
         require(type(documents) is dict and set(documents) == _DOCUMENT_KEYS,
                 "Exact compiled successor A and B documents required")
         self._configs = {side: _config_bytes(documents[key]) for side, key in (
             ("before", "successorA"), ("after", "successorB"),
         )}
         before, after = (json.loads(self._configs[side]) for side in ("before", "after"))
-        _validate_documents(before, after, self._plan, generations)
+        _validate_documents(before, after, self._plan, generations, core_alias)
         require(all(self._plan[side]["route"]["fingerprint"] == content_hash(document)
                     for side, document in (("before", before), ("after", after))),
                 "Caddy document fingerprints differ from the rollout plan")

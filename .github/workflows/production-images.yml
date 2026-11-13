@@ -22,6 +22,14 @@ on:
         description: Build one additional Web image and rehearse a presentation-only rollout
         type: boolean
         default: false
+      core_image_rehearsal:
+        description: Build and rehearse the optional standalone Core image
+        type: boolean
+        default: false
+      operations_collector_rehearsal:
+        description: Build and rehearse the optional Operations Collector image
+        type: boolean
+        default: false
 
 # This workflow neither publishes images nor receives production credentials.
 permissions:
@@ -76,6 +84,8 @@ jobs:
       IMAGE_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
       REVISION: ${{ github.sha }}
       WEB_RELEASE_REHEARSAL: ${{ (github.event_name == 'workflow_dispatch' && inputs.web_release_rehearsal) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'web-release-rehearsal')) }}
+      CORE_IMAGE_REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && inputs.core_image_rehearsal }}
+      OPERATIONS_COLLECTOR_REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && inputs.operations_collector_rehearsal }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -197,6 +207,60 @@ jobs:
             --migrator-image "$IMAGE_PREFIX/migrator:$IMAGE_TAG" \
             --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/smoke"
+      - name: Build optional standalone Core image
+        if: env.CORE_IMAGE_REHEARSAL == 'true'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Core.Dockerfile
+          target: core-api
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/core-api:${{ env.IMAGE_TAG }}
+          build-args: APP_COMMIT=${{ env.REVISION }}
+          cache-from: type=gha,scope=warpdrive-production-core-api
+          cache-to: type=gha,mode=max,scope=warpdrive-production-core-api
+      - name: Rehearse optional Core against exact Web and Migrator images
+        if: env.CORE_IMAGE_REHEARSAL == 'true'
+        run: |
+          report="$RUNNER_TEMP/production-images/smoke/report.json"
+          python3 -B scripts/deployment/core_image_smoke.py \
+            --core-image "$IMAGE_PREFIX/core-api:$IMAGE_TAG" \
+            --web-image "$(jq -er '.images.web.id' "$report")" \
+            --worker-image "$(jq -er '.images.worker.id' "$report")" \
+            --realtime-image "$(jq -er '.images.realtime.id' "$report")" \
+            --migrator-image "$(jq -er '.images.migrator.id' "$report")" \
+            --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/optional-core-smoke"
+      - name: Build optional Operations Collector image
+        if: env.OPERATIONS_COLLECTOR_REHEARSAL == 'true'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/OperationsCollector.Dockerfile
+          target: operations-collector
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.IMAGE_PREFIX }}/operations-collector:${{ env.IMAGE_TAG }}
+          build-args: APP_COMMIT=${{ env.REVISION }}
+          cache-from: type=gha,scope=warpdrive-production-operations-collector
+          cache-to: type=gha,mode=max,scope=warpdrive-production-operations-collector
+      - name: Rehearse collector admission and signed delivery in the final image
+        if: env.OPERATIONS_COLLECTOR_REHEARSAL == 'true'
+        run: |
+          report="$RUNNER_TEMP/production-images/smoke/report.json"
+          python3 -B scripts/deployment/operations_collector_image_smoke.py \
+            --collector-image "$IMAGE_PREFIX/operations-collector:$IMAGE_TAG" \
+            --web-image "$(jq -er '.images.web.id' "$report")" \
+            --worker-image "$(jq -er '.images.worker.id' "$report")" \
+            --realtime-image "$(jq -er '.images.realtime.id' "$report")" \
+            --migrator-image "$(jq -er '.images.migrator.id' "$report")" \
+            --expected-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/operations-collector-smoke"
       - name: Verify SDK packaging in exact final image IDs
         if: steps.image-inputs.outputs.profile == 'sdk'
         run: |
@@ -376,6 +440,22 @@ jobs:
                                           expected_revision=sys.argv[3])
           print(json.dumps(result, sort_keys=True))
           PY
+      - name: Rehearse both Web generations through one retained Core image
+        if: env.WEB_RELEASE_REHEARSAL == 'true' && env.CORE_IMAGE_REHEARSAL == 'true'
+        timeout-minutes: 12
+        env:
+          WEB_REVISION: ${{ steps.web-release-source.outputs.revision }}
+          BASELINE_MANIFEST_SHA: ${{ steps.web-release-source.outputs.baseline-manifest-sha }}
+        run: |
+          web_image=$(jq -er '.image.imageId' "$RUNNER_TEMP/production-images/web-release-archive.json")
+          core_image=$(jq -er '.coreImage.id' "$RUNNER_TEMP/production-images/optional-core-smoke/report.json")
+          test "$web_image" = "$(docker image inspect --format '{{.Id}}' "$IMAGE_PREFIX/web-release:$IMAGE_TAG")"
+          test "$core_image" = "$(docker image inspect --format '{{.Id}}' "$IMAGE_PREFIX/core-api:$IMAGE_TAG")"
+          python3 -B scripts/deployment/core_mixed_image_smoke.py \
+            --baseline-preloaded --bundle-dir "$RUNNER_TEMP/image-bundle" --baseline-revision "$REVISION" \
+            --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" --new-web-image-id "$web_image" \
+            --new-web-revision "$WEB_REVISION" --core-image-id "$core_image" --core-revision "$REVISION" \
+            --output-dir "$RUNNER_TEMP/production-images/core-mixed-web"
       - name: Clean up only the owned presentation source checkout
         if: always() && env.WEB_RELEASE_REHEARSAL == 'true'
         run: |

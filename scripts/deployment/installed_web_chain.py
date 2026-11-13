@@ -71,11 +71,13 @@ def _generation(path, digest, plan, side):
     return {"slot": deepcopy(slot), "alias": route.target, "provenance": deepcopy(provenance), "receiptSha256": digest}
 
 
-def _admit_journals(directory, plan):
+def _admit_journals(directory, plan, *, verified_pending=None):
     predecessor_found = False
     for index, path in enumerate(directory.iterdir()):
         require(index < 1000 and path.suffix == ".json" and _matches(NAME, path.stem),
                 "Unexpected or oversized installed Web rollout journal inventory")
+        if path == verified_pending:
+            continue
         journal = _state(path)
         require(type(journal) is dict and set(journal) == {"plan", "state"}
                 and isinstance(journal["state"], str) and journal["state"] in _TERMINAL,

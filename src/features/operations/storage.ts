@@ -1,4 +1,5 @@
 import { and, asc, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { operationsInstallation, operationsSources } from "@/db/schema";
@@ -11,6 +12,11 @@ import {
 export const OPERATIONS_TRANSACTION_DEADLINE_MS = 12_000;
 export const OPERATIONS_SOURCE_LIMIT = 16;
 export type OperationsSourceRole = typeof operationsSources.$inferSelect.role;
+export const operationsSourceRoleSchema = z.enum([
+  "host_collector",
+  "application_sampler",
+  "recovery_verifier",
+]);
 
 export function operationsInvariant(message: string): never {
   throw new AppError(ERROR_IDS.INTEGRATION_STATE_INVALID, message);
@@ -85,35 +91,92 @@ export async function operationsInstallationId(
   return installation?.id ?? null;
 }
 
+async function lockInstallation(tx: Db, installationId?: string) {
+  await tx
+    .insert(operationsInstallation)
+    .values({ singleton: true, installationId })
+    .onConflictDoNothing();
+  const [installation] = await tx
+    .select({ id: operationsInstallation.installationId })
+    .from(operationsInstallation)
+    .where(eq(operationsInstallation.singleton, true))
+    .for("update")
+    .limit(1);
+  if (!installation) operationsInvariant("Operations installation unavailable");
+  return installation.id;
+}
+
+async function sourceCount(tx: Db, installationId: string) {
+  const [row] = await tx
+    .select({ count: sql<number>`count(*)::int` })
+    .from(operationsSources)
+    .where(eq(operationsSources.installationId, installationId));
+  return row?.count ?? OPERATIONS_SOURCE_LIMIT;
+}
+
+/** Host-only exact enrollment. Retrying a committed binding does not consume a slot. */
+export async function provisionOperationsSource(
+  db: Db,
+  requested: { binding: OperationsSourceBinding; role: OperationsSourceRole },
+  signal: AbortSignal,
+): Promise<{ binding: OperationsSourceBinding; status: "created" | "existing" }> {
+  const binding = operationsSourceBindingSchema.parse(requested.binding);
+  const role = operationsSourceRoleSchema.parse(requested.role);
+  return operationsTransaction(db, signal, async (tx, bounded) => {
+    const installationId = await lockInstallation(tx, binding.installationId);
+    if (installationId !== binding.installationId)
+      operationsInvariant("Operations installation identity differs");
+    const [source] = await tx
+      .select({
+        role: operationsSources.role,
+        active: operationsSources.active,
+        generationId: operationsSources.currentGenerationId,
+      })
+      .from(operationsSources)
+      .where(
+        and(
+          eq(operationsSources.id, binding.sourceId),
+          eq(operationsSources.installationId, installationId),
+        ),
+      )
+      .for("update")
+      .limit(1);
+    if (source !== undefined) {
+      if (!source.active || source.role !== role || source.generationId !== binding.generationId)
+        operationsInvariant("Operations source binding differs from current enrollment");
+      return { binding, status: "existing" };
+    }
+    if ((await sourceCount(tx, installationId)) >= OPERATIONS_SOURCE_LIMIT)
+      operationsInvariant("Operations source budget exhausted");
+    bounded.throwIfAborted();
+    await tx.insert(operationsSources).values({
+      id: binding.sourceId,
+      installationId,
+      role,
+      currentGenerationId: binding.generationId,
+    });
+    return { binding, status: "created" };
+  });
+}
+
 /** Internal provisioning only. No router or HTTP endpoint exposes enrollment. */
 export async function enrollOperationsSource(
   db: Db,
   role: OperationsSourceRole,
   signal: AbortSignal,
 ): Promise<OperationsSourceBinding> {
-  if (!["host_collector", "application_sampler", "recovery_verifier"].includes(role))
+  if (!operationsSourceRoleSchema.safeParse(role).success)
     operationsInvariant("Unsupported operations source role");
   return operationsTransaction(db, signal, async (tx, bounded) => {
-    await tx.insert(operationsInstallation).values({ singleton: true }).onConflictDoNothing();
-    const [installation] = await tx
-      .select()
-      .from(operationsInstallation)
-      .where(eq(operationsInstallation.singleton, true))
-      .for("update")
-      .limit(1);
-    if (!installation) operationsInvariant("Operations installation unavailable");
-    const count = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(operationsSources)
-      .where(and(eq(operationsSources.installationId, installation.installationId)));
+    const installationId = await lockInstallation(tx);
     let reusableSourceId: string | undefined;
-    if ((count[0]?.count ?? OPERATIONS_SOURCE_LIMIT) >= OPERATIONS_SOURCE_LIMIT) {
+    if ((await sourceCount(tx, installationId)) >= OPERATIONS_SOURCE_LIMIT) {
       const [inactive] = await tx
         .select({ id: operationsSources.id })
         .from(operationsSources)
         .where(
           and(
-            eq(operationsSources.installationId, installation.installationId),
+            eq(operationsSources.installationId, installationId),
             eq(operationsSources.active, false),
           ),
         )
@@ -138,7 +201,7 @@ export async function enrollOperationsSource(
       reusableSourceId === undefined
         ? await tx
             .insert(operationsSources)
-            .values({ installationId: installation.installationId, ...values })
+            .values({ installationId, ...values })
             .returning()
         : await tx
             .update(operationsSources)
@@ -146,7 +209,7 @@ export async function enrollOperationsSource(
             .where(eq(operationsSources.id, reusableSourceId))
             .returning();
     if (!source) operationsInvariant("Operations source enrollment unavailable");
-    return { installationId: installation.installationId, sourceId: source.id, generationId };
+    return { installationId, sourceId: source.id, generationId };
   });
 }
 

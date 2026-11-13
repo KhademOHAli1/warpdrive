@@ -497,6 +497,8 @@ class DockerCommand:
             environment = []
             if service in {"app", "worker", "ws", "migrate"}:
                 environment.append("DATABASE_URL=postgres://synthetic@postgres/fixture")
+            if service == "core-api":
+                environment.extend(["RUNTIME_COMPONENT=core-api", "DATABASE_URL=postgres://synthetic@postgres/fixture"])
             if service == "newsletter-engine":
                 environment.extend(["LISTMONK_db__host=postgres", "LISTMONK_db__params="])
             hosts_file = docker_root / "containers" / expected["id"] / "hosts"
@@ -605,6 +607,93 @@ class DockerObservationTests(unittest.TestCase):
         migrate["Config"]["Env"] = [*original, "MIGRATION_DATABASE_URL=postgres://owner@postgres/fixture"]
         self.assertEqual(self.observe()["scope"], "observed-cold-local-compose")
 
+    def test_optional_core_is_a_cold_writer_bound_to_the_observed_cluster(self):
+        fixture = Fixture()
+        self.addCleanup(fixture.close)
+        fixture.plan["containers"]["core-api"] = {"id": "a" * 64, "imageId": "sha256:" + "b" * 64}
+        command = DockerCommand(fixture)
+        observer = r.DockerColdObserver("/bin/echo", sys.executable, command)
+        core = next(row for row in command.rows if row["Id"] == "a" * 64)
+        with patch("recovery.sys.platform", "linux"):
+            self.assertIn("core-api", {row["service"] for row in observer.observe(fixture.plan)["privateConfiguration"]})
+            for extra in (
+                ["DATABASE_URL=postgres://synthetic@external.example/fixture"],
+                ["DATABASE_URL=postgres://synthetic@postgres/fixture?host=elsewhere"],
+                ["DATABASE_URL=postgres://synthetic@postgres/fixture?sslcert=/tmp/external"],
+                ["DATABASE_URL=postgres://synthetic@postgres"],
+                ["DATABASE_URL=postgres://synthetic@postgres/fixture", "MIGRATION_DATABASE_URL=postgres://owner@postgres/fixture"],
+            ):
+                with self.subTest(extra=extra), self.assertRaises(r.RecoveryError):
+                    core["Config"]["Env"] = ["RUNTIME_COMPONENT=core-api", *extra]
+                    observer.observe(fixture.plan)
+
+    def collector_fixture(self):
+        service = "operations-collector"
+        fixture = Fixture()
+        self.addCleanup(fixture.close)
+        fixture.plan["containers"][service] = {"id": "a" * 64, "imageId": "sha256:" + "b" * 64}
+        command = DockerCommand(fixture)
+        row = next(row for row in command.rows if row["Id"] == "a" * 64)
+        config, socket_dir = fixture.root / "configuration" / "collector.json", fixture.root / "collector-socket"
+        socket_dir.mkdir(mode=0o700)
+        put(config, r.canonical({"databaseUrl": "postgres://synthetic@postgres/fixture",
+                                "socketPath": r.COLLECTOR_SOCKET_DIR + "/collector.sock"}))
+        fixture.plan["configurationFiles"].append(str(config))
+        row["Config"].update(User="1000:1000", Cmd=["bun", "--no-env-file", "dist/operations-collector.mjs",
+                                                    r.COLLECTOR_CONFIG])
+        row["HostConfig"].update(ReadonlyRootfs=True, Privileged=False)
+        row["Mounts"] = [{"Type": "bind", "Source": str(config), "Destination": r.COLLECTOR_CONFIG, "RW": False},
+                         {"Type": "bind", "Source": str(socket_dir), "Destination": r.COLLECTOR_SOCKET_DIR, "RW": True}]
+        observer = r.DockerColdObserver("/bin/echo", sys.executable, command)
+        self.enterContext(patch("recovery.sys.platform", "linux"))
+        self.enterContext(patch("recovery.COLLECTOR_UID", os.geteuid()))
+        return fixture, observer, row, config, socket_dir
+
+    def test_optional_collector_keeps_its_config_and_excludes_empty_socket_directory(self):
+        fixture, observer, row, config, socket_dir = self.collector_fixture()
+        first = observer.observe(fixture.plan)
+        self.assertIn(str(config), first["roots"])
+        self.assertNotIn(str(socket_dir), first["roots"])
+        collector = next(item for item in first["privateConfiguration"] if item["service"] == "operations-collector")
+        self.assertNotIn("postgres://", str(collector))
+        put(config, r.canonical({"databaseUrl": "postgres://synthetic@postgres/fixture",
+                                "socketPath": r.COLLECTOR_SOCKET_DIR + "/collector.sock", "sources": []}))
+        self.assertNotEqual(observer.observe(fixture.plan)["fingerprint"], first["fingerprint"])
+        row["State"]["Running"] = True
+        with self.assertRaisesRegex(r.RecoveryError, "cleanly stopped"):
+            observer.observe(fixture.plan)
+
+    def test_collector_rejects_external_database_and_mount_authority(self):
+        fixture, observer, row, config, socket_dir = self.collector_fixture()
+        for authority in ("elsewhere/fixture", "postgres/fixture?host=elsewhere", "postgres/fixture?sslcert=/tmp/file",
+                          "postgres:invalid/fixture", "postgres/fixture?sslmode"):
+            with self.subTest(authority=authority):
+                put(config, r.canonical({"databaseUrl": "postgres://synthetic@" + authority,
+                                        "socketPath": r.COLLECTOR_SOCKET_DIR + "/collector.sock"}))
+                with self.assertRaisesRegex(r.RecoveryError, "observed PostgreSQL bridge"):
+                    observer.observe(fixture.plan)
+        put(config, r.canonical({"databaseUrl": "postgres://synthetic@postgres/fixture",
+                                "socketPath": r.COLLECTOR_SOCKET_DIR + "/collector.sock"}))
+        row["Config"]["Env"] = ["PGHOST=elsewhere"]
+        with self.assertRaisesRegex(r.RecoveryError, "private configuration"):
+            observer.observe(fixture.plan)
+        row["Config"]["Env"] = []
+        row["HostConfig"]["UsernsMode"] = "host"
+        with self.assertRaisesRegex(r.RecoveryError, "UID mapping"):
+            observer.observe(fixture.plan)
+        row["HostConfig"]["UsernsMode"] = ""
+        row["Mounts"][0]["RW"] = True
+        with self.assertRaisesRegex(r.RecoveryError, "socket binds"):
+            observer.observe(fixture.plan)
+        row["Mounts"][0]["RW"] = False
+        put(socket_dir / "unexpected", b"stale")
+        with self.assertRaisesRegex(r.RecoveryError, "private and empty"):
+            observer.observe(fixture.plan)
+        (socket_dir / "unexpected").unlink()
+        fixture.plan["configurationFiles"].append(str(socket_dir))
+        with self.assertRaisesRegex(r.RecoveryError, "overlaps"):
+            observer.observe(fixture.plan)
+
     def test_engine_params_case_and_delimiter_aliases_cannot_override_authority(self):
         engine = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "newsletter-engine")
         for added in ("LISTMONK_db__params=host=external.example", "LISTMONK_DB__HOST=external.example",
@@ -630,6 +719,24 @@ class DockerObservationTests(unittest.TestCase):
         self.command.rows.append(extra)
         with self.assertRaises(r.RecoveryError):
             self.observe()
+
+    def test_outside_bind_cannot_bypass_named_volume_or_capture_root_admission(self):
+        postgres_path = next(volume["Mountpoint"] for volume in self.command.volumes
+                             if volume["Name"] == self.fixture.plan["volumes"]["postgres"])
+        alias = self.fixture.root / "outside-alias"
+        alias.symlink_to(postgres_path)
+        foreign = {"Id": "f" * 64, "Config": {"Labels": {"com.docker.compose.project": "unrelated"}},
+                   "NetworkSettings": {"Networks": {}}, "Mounts": []}
+        self.command.rows.append(foreign)
+        for source, writable in ((postgres_path, True), (postgres_path, False), (str(alias), True),
+                                 (str(self.fixture.configuration / "nested"), True),
+                                 (str(self.fixture.configuration.parent), True)):
+            with self.subTest(source=source, writable=writable):
+                foreign["Mounts"] = [{"Type": "bind", "Source": source, "RW": writable}]
+                with self.assertRaisesRegex(r.RecoveryError, "outside container shares"):
+                    self.observe()
+        foreign["Mounts"] = [{"Type": "bind", "Source": str(self.fixture.root / "unrelated"), "RW": True}]
+        self.assertEqual(self.observe()["scope"], "observed-cold-local-compose")
 
     def test_database_dns_overrides_and_alias_collisions_are_refused(self):
         app = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "app")

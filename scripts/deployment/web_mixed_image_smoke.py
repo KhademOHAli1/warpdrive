@@ -590,6 +590,11 @@ class MixedWebSmoke(WebSwitchSmoke):
                                     "kind": REPEAT_BROWSER_PROFILE, "harnessRevision": args.harness_revision,
                                     "seedRevision": self.revision}})
 
+    def prepare_baseline_images(self, loaded, images):
+        self.docker.run(["image", "load", "--input", str(loaded["archivePath"])], timeout=300)
+        self.fixture = ImageSmoke(self.docker, images, self.private / "fixture", expected_revision=self.revision)
+        self.fixture.inspect_images()
+
     def load(self):
         require(platform.system() == "Linux" and platform.machine() in {"x86_64", "amd64"},
                 "native Linux AMD64 host required")
@@ -615,9 +620,7 @@ class MixedWebSmoke(WebSwitchSmoke):
             require(composite["web"]["image"]["imageId"] not in images.values(),
                     "Active Web image must differ from all retained original Core images")
         new = read_web_image(self.docker, self.args.new_web_image_id, self.args.new_web_revision)
-        self.docker.run(["image", "load", "--input", str(loaded["archivePath"])], timeout=300)
-        self.fixture = ImageSmoke(self.docker, images, self.private / "fixture", expected_revision=self.revision)
-        self.fixture.inspect_images()
+        self.prepare_baseline_images(loaded, images)
         require(all(self.fixture.report["images"][key]["id"] == value for key, value in images.items()),
                 "loaded baseline component IDs differ from the tested candidate")
         require(read_web_image(self.docker, new["imageId"], new["sourceRevision"]) == new,
@@ -700,12 +703,15 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(result.returncode == 0 and len(result.stdout) <= 65536, "bounded host fixture command failed")
         return result.stdout
 
+    def runtime_memory_limit(self):
+        return sum(LIMITS.values()) * MIB
+
     def setup_runtimes(self):
         with Path("/proc/meminfo").open(encoding="ascii") as source:
             admission = memory_budget(source.read(65537))
         # Admit this fixture's actual concurrent set. One-shot migrators and Caddy
         # adaptation finish before Web/Caddy traffic and fit below the same peak.
-        limit = sum(LIMITS.values()) * MIB
+        limit = self.runtime_memory_limit()
         require(admission["availableBytes"] >= limit + MIB * 1024, "insufficient isolated fixture memory")
         self.fixture.output_dir.mkdir(mode=0o700)
         isolation = self.fixture.create_environment()
@@ -781,6 +787,9 @@ class MixedWebSmoke(WebSwitchSmoke):
         self.relays.append(forwarding)
         return forwarding.authority
 
+    def compile_documents(self, adapted, before, after):
+        return generation_configs(adapted, before, after)
+
     def start_caddy(self):
         before, after = (WebGeneration(self.web_images[name]["generation"], name) for name in (self.web_a, self.web_b))
         config = self.fixture.output_dir / "ingress"
@@ -810,7 +819,7 @@ class MixedWebSmoke(WebSwitchSmoke):
         base = json.loads(raw)
         require(base.get("admin", {}).get("origins") == [ADMIN_HOST] and base["admin"].get("enforce_origin") is True
                 and base["admin"].get("config", {}).get("persist") is False, "Caddy fixture admin constraints differ")
-        self.documents = generation_configs(base, before, after)
+        self.documents = self.compile_documents(base, before, after)
         (config / "config.json").write_bytes(canonical(self.documents[before.deployment_id]))
         self.caddy = self.fixture.start_container("caddy", self.caddy_id, ["caddy", "run", "--config", "/fixture/config.json"],
             environment={}, mount=bind, memory="256m", readonly=True, tmpfs=CADDY_TMPFS)

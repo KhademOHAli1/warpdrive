@@ -38,7 +38,7 @@ export interface OperationsRecordReceipt {
   admissionState: "ready" | "storage_pressure";
 }
 const allowedKinds: Record<OperationsSourceRole, readonly OperationsObservation["kind"][]> = {
-  host_collector: ["component", "heartbeat", "observer"],
+  host_collector: ["component", "heartbeat", "observer", "deployment"],
   application_sampler: ["feature", "provider", "heartbeat", "queue", "observer"],
   recovery_verifier: ["recovery", "observer"],
 };
@@ -48,7 +48,7 @@ const observerRoles: Record<OperationsSourceRole, readonly string[]> = {
   recovery_verifier: ["recovery_verifier"],
 };
 
-/** Internal authenticated-enrollment caller only. No HTTP ingestion endpoint exists.
+/** Internal authenticated-enrollment caller only. No public HTTP ingestion endpoint exists.
  * Expired identities below durable high-water return unknown/rejected, never a replayed success.
  */
 export async function recordOperationsBatch(

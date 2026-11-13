@@ -57,7 +57,8 @@ def read_seal_acknowledgement(install, *, controller, expected_plan_sha256, load
             and loaded["archiveSha256"] == provenance["archiveSha256"],
             "Functional seal differs from the exact selected Web artifact")
     pins = {name: sha256(raw[name]).hexdigest() for name in ("active", "previous")}
-    require(pins["previous"] == predecessor["active"]["receiptSha256"], "Retained Web generation receipt differs")
+    if getattr(install, "core_activation_operation_id", None) is None:
+        require(pins["previous"] == predecessor["active"]["receiptSha256"], "Retained Web generation receipt differs")
     accepted = {side: _generation(output / (side + ".json"), pins[side], plan, position)
                 for side, position in (("active", "after"), ("previous", "before"))}
     require(accepted["previous"]["provenance"] == predecessor["active"]["provenance"]
@@ -78,19 +79,19 @@ def read_seal_acknowledgement(install, *, controller, expected_plan_sha256, load
     require(sealed == expected_chain and raw["chain"] == canonical(expected_chain)
             and index == expected_index and raw["lineage"] == canonical(expected_index) + b"\n",
             "Completed functional Web seal differs from the exact accepted pair")
-    _verify_accepted_rollout(state, controller, plan, predecessor)
+    _verify_accepted_rollout(state, controller, plan)
     observed = {"beforeRuntime": before["runtime"], "afterRuntime": runtime, "backendFingerprint": plan["backendFingerprint"],
                 "route": after["route"], "aliases": {after["route"]["generation"]: accepted["active"]["alias"],
                                                     before["route"]["generation"]: accepted["previous"]["alias"]},
                 "liveConfigSha256": after["route"]["fingerprint"], "autosaveConfigSha256": after["route"]["fingerprint"],
                 "publicSourceRevision": runtime["sourceRevision"], "publicHealthy": True, "ingressReady": True}
     require(canonical(observe_installed()) == canonical(observed), "Native functional seal observation differs")
-    _verify_accepted_rollout(state, controller, plan, predecessor)
+    _verify_accepted_rollout(state, controller, plan)
     require(_records(output) == raw, "Completed functional Web seal changed during observation")
     return {"state": "sealed", "sourceRevision": runtime["sourceRevision"], "lineage": index}
 
 
-def _verify_accepted_rollout(state, controller, final, predecessor):
+def _verify_accepted_rollout(state, controller, final):
     operations = state / "web-rollouts"
     _directory(operations)
     _admit_journals(operations, final)
@@ -100,15 +101,7 @@ def _verify_accepted_rollout(state, controller, final, predecessor):
         _validate(plan)
         require(_state(operations / (plan["operationId"] + ".json")) == {"plan": plan, "state": "accepted"},
                 "Exact accepted functional Web phase journal required")
-    predecessor_id = predecessor["acceptedOperationId"]
-    prior = _state(operations / (predecessor_id + ".json"))
-    _validate(prior["plan"])
-    require(prior["state"] == "accepted" and prior["plan"]["operationId"] == predecessor_id
-            and content_hash(prior["plan"]) == predecessor["acceptedPlanSha256"]
-            and prior["plan"]["targetKey"] == predecessor["targetKey"]
-            and prior["plan"]["backendFingerprint"] == predecessor["backendFingerprint"]
-            and prior["plan"]["before"] == predecessor["previous"]["slot"]
-            and prior["plan"]["after"] == predecessor["active"]["slot"]
+    require(controller.verify_predecessor()
             and _state(state / "accepted-web-generation.json") == _record(final, final["after"]),
             "Native accepted Web lineage changed during seal readback")
 

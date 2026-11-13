@@ -8,6 +8,7 @@ import time
 
 from caddy_web_repeat import compile_repeat_web_configs
 from component_inputs import decode
+from installed_core_lineage import verify_projected_core_predecessor
 from installed_web_backend import observe_backend
 from installed_web_chain import _admit_journals, _directory, _state
 from installed_web_hops import observe_route_hints
@@ -21,7 +22,7 @@ from traefik_web_handoff import compile_traefik_web_handoff
 from traefik_web_handoff_state import verify_accepted_traefik_web_handoff
 from web_generation_routes import WebGeneration
 from web_rollout import _record, _validate
-from web_switch import NAME, SwitchHeld, _lock, canonical, content_hash
+from web_switch import HASH, NAME, SwitchHeld, _lock, _matches, canonical, content_hash
 
 
 def _document(profile, *, image, revision, alias):
@@ -98,18 +99,34 @@ class InstalledWebSuccessor:
     The class uses the original state directory and stable relay throughout.
     """
 
-    def __init__(self, docker, *, first, operation, binding, expected_binding_sha256, chain, chain_sha256, watched, preimage):
+    def __init__(self, docker, *, first, operation, binding, expected_binding_sha256, chain, chain_sha256, watched, preimage,
+                 retained_core=None, expected_retained_core_sha256=None,
+                 core_activation_operation_id=None, expected_core_activation_lineage_sha256=None):
         self.first, self.operation = map(Path, (first, operation))
         self.state, self.watched = self.first / "rollout", Path(watched)
         for path in (self.first, self.operation, self.state):
             _directory(path)
         require(not self.first.is_relative_to(self.operation) and not self.operation.is_relative_to(self.first)
                 and content_hash(binding) == expected_binding_sha256
-                and content_hash(chain) == chain_sha256 and chain["backendFingerprint"] == binding["backend"]["backendFingerprint"],
+                and content_hash(chain) == chain_sha256,
                 "Exact original installation authority and current Web chain required")
         self.docker, self.binding, self.chain, self.chain_sha256 = docker, deepcopy(binding), deepcopy(chain), chain_sha256
         self.inputs = self.binding["inputs"]
         self.network = self.inputs["networkIds"][INGRESS]
+        self.expected_backend = deepcopy(self.binding["backend"])
+        self.core_pin, self.core_alias = None, None
+        self.core_authority_sha256 = expected_retained_core_sha256
+        require((retained_core is None) == (expected_retained_core_sha256 is None)
+                and "core" not in self.expected_backend["processes"],
+                "Retained Core needs its own authority beside the original protected backend")
+        if retained_core is not None:
+            self._admit_core(retained_core, expected_retained_core_sha256, expected_binding_sha256)
+        require((core_activation_operation_id is None) == (expected_core_activation_lineage_sha256 is None)
+                and (core_activation_operation_id is None or retained_core is not None), "Paired Core activation lineage pins required")
+        self.core_activation_operation_id = core_activation_operation_id
+        self.core_activation_lineage_sha256 = expected_core_activation_lineage_sha256
+        require(self.chain["backendFingerprint"] == self.expected_backend["backendFingerprint"],
+                "Exact protected backend required for the current Web chain")
         self.aliases = {name: self.chain[name]["alias"] for name in ("active", "previous")}
         require(all(ALIAS.fullmatch(alias) for alias in self.aliases.values()) and len(set(self.aliases.values())) == 2,
                 "Both admitted Web generations must be distinct private runtime slots")
@@ -136,6 +153,26 @@ class InstalledWebSuccessor:
         self.web = TlsProbe(Endpoint(HOST, self.inputs["publicIP"]))
         self.storage = TlsProbe(Endpoint(S3, self.inputs["publicStorageIP"]))
 
+    def _admit_core(self, profile, expected_hash, original_hash):
+        keys = {"schemaVersion", "kind", "originalBindingSha256", "acceptedChainSha256", "corePin", "coreWitness"}
+        require(type(profile) is dict and set(profile) == keys and _matches(HASH, expected_hash)
+                and content_hash(profile) == expected_hash
+                and type(profile["schemaVersion"]) is int and profile["schemaVersion"] == 1
+                and profile["kind"] == "warpdrive-installed-retained-core"
+                and profile["originalBindingSha256"] == original_hash and profile["acceptedChainSha256"] == self.chain_sha256,
+                "Exact independently admitted retained Core authority required")
+        pin, witness = deepcopy(profile["corePin"]), deepcopy(profile["coreWitness"])
+        require(type(pin) is dict and type(pin.get("ingress")) is dict and type(pin.get("database")) is dict
+                and type(witness) is dict and isinstance(pin.get("id"), str) and pin["id"] == witness.get("id")
+                and pin["ingress"].get("networkId") == self.network
+                and pin["database"].get("networkId") == self.inputs["networkIds"][NETWORKS[1]]
+                and isinstance(pin["ingress"].get("alias"), str),
+                "Retained Core must use the admitted installation networks and process")
+        self.core_pin, self.core_alias = pin, pin["ingress"]["alias"]
+        facts = {"schemaSha256": self.expected_backend["schemaSha256"],
+                 "processes": {**self.expected_backend["processes"], "core": witness}}
+        self.expected_backend = {**facts, "backendFingerprint": content_hash(facts)}
+
     def _verify_ingress(self):
         verify_accepted_traefik_web_handoff(self.handoff, watched_dir=self.watched, state_dir=self.state)
         require(not os.path.lexists(self.watched / "warpdrive-maintenance.yaml"), "Installed maintenance route is active")
@@ -145,8 +182,11 @@ class InstalledWebSuccessor:
         return row
 
     def _backend(self):
-        observed = observe_backend(self.docker, self.binding["backendPins"])
-        require(observed == self.binding["backend"], "Protected original backend or schema changed")
+        if self.core_pin is None:
+            observed = observe_backend(self.docker, self.binding["backendPins"])
+        else:
+            observed = observe_backend(self.docker, self.binding["backendPins"], core_pin=self.core_pin)
+        require(observed == self.expected_backend, "Protected original backend or schema changed")
         return observed
 
     def backend(self):
@@ -184,11 +224,19 @@ class InstalledWebSuccessor:
         journal = _state(self.state / "web-rollouts" / (operation + ".json"))
         plan = journal["plan"]
         _validate(plan)
+        if self.core_activation_operation_id is None:
+            require(plan["backendFingerprint"] == self.chain["backendFingerprint"] and plan["after"] == self.chain["active"]["slot"],
+                    "Current accepted Web predecessor changed")
+            pointer = _record(plan, plan["after"])
+        else:
+            projection = verify_projected_core_predecessor(self.state, chain=self.chain, activation_operation_id=self.core_activation_operation_id,
+                expected_activation_lineage_sha256=self.core_activation_lineage_sha256)
+            require(projection.core_authority_sha256 == self.core_authority_sha256, "Projected lineage Core authority differs")
+            pointer = projection.accepted_pointer
         require(journal["state"] == "accepted" and plan["operationId"] == operation
                 and content_hash(plan) == self.chain["acceptedPlanSha256"] and plan["targetKey"] == self.chain["targetKey"]
-                and plan["backendFingerprint"] == self.chain["backendFingerprint"]
-                and plan["before"] == self.chain["previous"]["slot"] and plan["after"] == self.chain["active"]["slot"]
-                and _state(self.state / "accepted-web-generation.json") == _record(plan, plan["after"]),
+                and plan["before"] == self.chain["previous"]["slot"]
+                and _state(self.state / "accepted-web-generation.json") == pointer,
                 "Current accepted Web predecessor changed")
         if check_journals:
             operations = self.state / "web-rollouts"
@@ -206,7 +254,7 @@ class InstalledWebSuccessor:
         doc, _ = self._candidate_document(loaded, alias, revision)
         compile_repeat_web_configs(self.preimage, expected_sha256=sha256(self.preimage).hexdigest(), host=HOST,
             traefik_ip=self.inputs["edgeIP"], relay_alias=self.relay_alias, current=self.generations["active"],
-            previous=self.generations["previous"], candidate=WebGeneration("wd-" + revision, alias))
+            previous=self.generations["previous"], candidate=WebGeneration("wd-" + revision, alias), core_alias=self.core_alias)
         self._stage_preimage(check_journals=True)
         private = self.operation / "candidate"
         private.mkdir(mode=0o700, exist_ok=True)
@@ -286,4 +334,7 @@ class InstalledWebSuccessor:
             installed_bytes=self.preimage, expected_installed_sha256=sha256(self.preimage).hexdigest(), host=HOST,
             traefik_ip=self.inputs["edgeIP"], relay_alias=self.relay_alias, candidate_runtime=selected, candidate_alias=alias,
             qualification_sha256=content_hash(release), admin=self.admin, verify_release=verify_release, observe_installed=observe,
-            probe_health=health, read_durable_config=lambda: read_autosave(self.relay_dir), observe_candidate_failure=failure)
+            probe_health=health, read_durable_config=lambda: read_autosave(self.relay_dir), observe_candidate_failure=failure,
+            core_alias=self.core_alias, core_activation_operation_id=self.core_activation_operation_id,
+            expected_core_authority_sha256=self.core_authority_sha256 if self.core_activation_operation_id is not None else None,
+            expected_core_activation_lineage_sha256=self.core_activation_lineage_sha256)

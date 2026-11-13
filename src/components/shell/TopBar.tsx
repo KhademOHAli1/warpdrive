@@ -18,12 +18,14 @@ export async function TopBar({
   avatarUrl,
   appearance,
   workspaceBrand,
+  showOperations,
 }: {
   userId: string;
   userName?: string;
   avatarUrl?: string | null;
   appearance?: Appearance;
   workspaceBrand?: { displayName: string; iconUrl: string | null };
+  showOperations?: boolean;
 }): Promise<React.ReactNode> {
   const t = await getAppTranslations("shell");
   const name = workspaceBrand?.displayName ?? APP_NAME;
@@ -61,7 +63,7 @@ export async function TopBar({
         <GlobalAddMenu triggerClassName={styles.quickAddTrigger} />
       </div>
       <div className={styles.personal}>
-        <NotificationsBell userId={userId} />
+        <NotificationsBell userId={userId} showOperations={showOperations} />
         <span aria-hidden="true" className={styles.divider} />
         <KeyboardHelp
           title={t("keyboardHelp.title")}

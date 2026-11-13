@@ -161,7 +161,7 @@ def assert_membership(sql, sub_id, list_id, status):
     assert actual == status, f"Expected {status} membership, got {actual}"
 
 
-def smtp_fixture(engine, mailpit, postgres_bin, directory, stack):
+def smtp_fixture(engine, mailpit, postgres_bin, directory, stack, *, engine_stack=None):
     pg_port, smtp_port, pit_port, app_port = available_ports(4)
     environment = clean_env()
     db = directory / "db"
@@ -210,14 +210,16 @@ def smtp_fixture(engine, mailpit, postgres_bin, directory, stack):
     sql("".join(setting(k, v) for k, v in (
         ("app.root_url", origin), ("smtp", smtp), ("app.from_email", f"Fixture <sender@{DOMAIN}>"),
         ("app.notify_emails", []), ("app.show_optin_page", False),
+        ("app.check_updates", False),
         ("privacy.unsubscribe_header", True), ("app.concurrency", 1), ("app.batch_size", 20),
         ("app.message_rate", 2),
     )))
-    start(stack, [mailpit, "--listen", f"127.0.0.1:{pit_port}", "--smtp", f"127.0.0.1:{smtp_port}",
+    start(stack, [mailpit, "--disable-version-check", "--smtp-disable-rdns",
+                  "--listen", f"127.0.0.1:{pit_port}", "--smtp", f"127.0.0.1:{smtp_port}",
                   "--smtp-allowed-recipients", r"^[^@]+@example\.test$"],
           environment, directory, "mailpit")
     wait_for("Mailpit", lambda: http(pit, "/readyz")[0] == 200)
-    start(stack, [engine, "--config", config], {
+    start(stack if engine_stack is None else engine_stack, [engine, "--config", config], {
         **environment, "NEWSLETTER_TEST_RECIPIENTS": f"approved@{DOMAIN}",
     }, directory, "engine")
     wait_for("engine", lambda: http(origin, "/health")[0] == 200)

@@ -9,7 +9,8 @@ import type { NumberingSystem } from "@/lib/numberingSystem";
 
 // Router/stream/actions/trpc are mocked at the module boundary (mirrors DealSidebar.test.tsx)
 // so the dropdown renders purely off an empty feed without a QueryClientProvider or real DB.
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, refresh: vi.fn() }) }));
 vi.mock("./useNotificationStream", () => ({ useNotificationStream: () => undefined }));
 const markAllReadAction = vi.fn(() => Promise.resolve({ ok: true, value: {} }));
 vi.mock("@/features/notifications/actions", () => ({
@@ -17,6 +18,8 @@ vi.mock("@/features/notifications/actions", () => ({
   markAllReadAction: (...a: unknown[]) => markAllReadAction(...(a as [])),
 }));
 const reportError = vi.fn();
+const bellQuery = vi.fn(() => Promise.resolve({ hasOpenIncidents: true }));
+const operationsClient = { operations: { bell: { query: bellQuery } } };
 vi.mock("@/components/shell/ActionErrorProvider", () => ({
   useActionError: () => reportError,
 }));
@@ -24,6 +27,7 @@ vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     useUtils: () => ({
+      client: operationsClient,
       notifications: {
         feed: { invalidate: vi.fn() },
         unreadCount: { invalidate: vi.fn() },
@@ -42,9 +46,27 @@ afterEach(() => {
   cleanup();
   reportError.mockClear();
   markAllReadAction.mockClear();
+  bellQuery.mockClear();
+  push.mockClear();
 });
 
 describe("NotificationsBell", () => {
+  it("reads open operations incidents only while an administrator opens the bell", async () => {
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider locale="en">
+        <NotificationsBell userId="u1" showOperations />
+      </LocaleProvider>,
+    );
+    expect(bellQuery).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    const incidents = await screen.findByRole("button", { name: /open operations incidents/i });
+    expect(bellQuery).toHaveBeenCalledTimes(1);
+    await user.click(incidents);
+    expect(push).toHaveBeenCalledWith("/settings/logs");
+    expect(screen.queryByRole("button", { name: /open operations incidents/i })).toBeNull();
+  });
+
   it.each<{
     locale: Locale;
     numberingSystem?: NumberingSystem;
@@ -92,6 +114,7 @@ describe("NotificationsBell", () => {
     expect(trigger).toHaveClass("hover:bg-accent");
     expect(trigger.className).not.toMatch(/-gray-/);
     await user.click(trigger);
+    expect(bellQuery).not.toHaveBeenCalled();
     expect(await screen.findByText(/no notifications/i)).toHaveClass("text-muted-foreground");
     expect(screen.getByRole("button", { name: /mark all/i })).toHaveClass("text-link");
   });
