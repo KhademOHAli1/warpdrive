@@ -1,5 +1,9 @@
 # Condition groups and the default path
 
+This guide describes grouped conditions in the version 1 editor. For the
+version 2 studio's Filter and ordered If/Else blocks, see
+[Workflow blocks](../workflow-blocks.md).
+
 A condition chooses exactly one outgoing path. A matching expression takes **True**;
 a non-matching expression takes **Otherwise (default)**. Both connections must have
 one valid destination. Missing input, an unavailable source, an invalid comparison

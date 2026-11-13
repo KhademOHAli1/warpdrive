@@ -12,6 +12,19 @@ Its proposal wording describes the earlier planning state. The handoff approval
 authorizes implementation of all options, while the documented evidence gates
 still apply. The immutable original contains its original typography and names.
 
+## Status pointers, 13 November 2026
+
+- Follow the linked GitHub issues and Project for current delivery and acceptance.
+  The branch ownership, migration reservations, counts, and test runs below
+  describe the October and November checkpoints.
+- [Saved-view compatibility](view-compatibility.md) describes the retained
+  decoder behavior and the newer support for built-in columns and sorting on
+  People, Organizations, and Leads.
+- [Deal creation and stage movement](native-deal-stage-runtime-qualification-20261103.md)
+  and [calendar reminders](../activities/native-reminder-runtime-qualification-20261103.md)
+  record bounded local qualification. See [release operations](../delivery/release-operations.md)
+  for the release and installed acceptance gates.
+
 The active tracked goal belongs to implementation chat
 `01a19263-b767-7611-9ee3-f395e66557ac`. No token budget or delivery date was set.
 
