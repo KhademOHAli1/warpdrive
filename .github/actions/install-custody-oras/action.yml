@@ -1,0 +1,43 @@
+name: Install verified custody ORAS
+description: Pin and attest the official ORAS 1.3.6 Linux AMD64 release asset
+outputs:
+  binary:
+    description: Absolute path of the verified ORAS binary in runner temporary storage
+    value: ${{ steps.install.outputs.binary }}
+runs:
+  using: composite
+  steps:
+    - name: Verify and extract the official ORAS executable
+      id: install
+      shell: bash
+      run: |
+        test "$RUNNER_OS" = Linux
+        test "$RUNNER_ARCH" = X64
+        test "$(uname -m)" = x86_64
+        umask 077
+        folder=$(mktemp -d "$RUNNER_TEMP/custody-oras.XXXXXXXX")
+        archive="$folder/oras_1.3.6_linux_amd64.tar.gz"
+        url=https://github.com/oras-project/oras/releases/download/v1.3.6/oras_1.3.6_linux_amd64.tar.gz
+        digest=66fb0ad7206f3f6fa77ed5b552049d364ccf4b50b1684554f731f76302b52ca0
+        # GitHub release asset 673056256.
+        curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
+          --connect-timeout 15 --max-time 90 --max-filesize 4824717 --output "$archive" "$url"
+        test "$(wc -c < "$archive")" -eq 4824717
+        printf '%s  %s\n' "$digest" "$archive" | sha256sum --check --status
+        attestations="$folder/attestations.json"
+        curl --fail --silent --show-error --proto '=https' --connect-timeout 15 \
+          --max-time 30 --max-filesize 131072 --output "$attestations" \
+          "https://api.github.com/repos/oras-project/oras/attestations/sha256:$digest?per_page=5"
+        jq --exit-status '.attestations | select(length == 1) | .[0].bundle | select(type == "object")' \
+          "$attestations" > "$folder/bundle.json"
+        mkdir -m 0700 "$folder/gh"
+        env -u GH_TOKEN -u GITHUB_TOKEN -u GH_ENTERPRISE_TOKEN -u GITHUB_ENTERPRISE_TOKEN \
+          GH_CONFIG_DIR="$folder/gh" timeout 90s gh attestation verify "$archive" \
+          --bundle "$folder/bundle.json" --repo oras-project/oras \
+          --signer-workflow oras-project/oras/.github/workflows/release-github.yml \
+          --source-ref refs/tags/v1.3.6 --source-digest 9b1fc815f6b7fba743f08b9b5c5846639cc11d3c \
+          --deny-self-hosted-runners
+        tar -xOzf "$archive" oras > "$folder/oras"
+        test "$(wc -c < "$folder/oras")" -eq 12111998
+        chmod 0700 "$folder/oras"
+        printf 'binary=%s\n' "$folder/oras" >> "$GITHUB_OUTPUT"
