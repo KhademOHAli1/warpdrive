@@ -152,7 +152,9 @@ class WebHTTP:
         self.origin = ("https://" if certificate else "http://") + loopback_authority(authority)
         handlers = [ProxyHandler({}), NoRedirect()]
         if certificate:
-            handlers.append(HTTPSHandler(context=ssl.create_default_context(cafile=certificate)))
+            context = ssl.create_default_context(cafile=certificate)
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+            handlers.append(HTTPSHandler(context=context))
         self.opener = build_opener(*handlers)
 
     def get(self, path, limit=1024):
