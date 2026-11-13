@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { err, ok } from "@/types/result";
+import { EditableHeading } from "./EditableHeading";
 import { InlineDateField } from "./InlineDateField";
 import { InlineSelectField } from "./InlineSelectField";
 import { InlineTextField } from "./InlineTextField";
@@ -66,16 +67,21 @@ describe("InlineTextField (PD mechanism)", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
-  it("Enter commits when dirty", () => {
+  it("Enter commits a dirty draft after IME composition", async () => {
     const onSave = vi.fn(() => Promise.resolve(ok(undefined)));
     render(<InlineTextField label="Value" value="10" onSave={onSave} />);
     fireEvent.click(screen.getByRole("button", { name: "Edit Value" }));
     const input = screen.getByLabelText("Value");
     fireEvent.keyDown(input, { key: "Enter" });
     expect(onSave).not.toHaveBeenCalled();
-    fireEvent.change(input, { target: { value: "20" } });
-    fireEvent.keyDown(input, { key: "Enter" });
-    expect(onSave).toHaveBeenCalledWith("20", "en");
+    fireEvent.change(input, { target: { value: "東京" } });
+    expect(fireEvent.keyDown(input, { key: "Enter", isComposing: true })).toBe(true);
+    expect(fireEvent.keyDown(input, { key: "Enter", keyCode: 229 })).toBe(true);
+    expect(input).toHaveValue("東京");
+    expect(onSave).not.toHaveBeenCalled();
+    expect(fireEvent.keyDown(input, { key: "Enter" })).toBe(false);
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith("東京", "en"));
+    expect(onSave).toHaveBeenCalledTimes(1);
   });
 
   it("shows an inline error when the save fails", async () => {
@@ -93,6 +99,23 @@ describe("InlineTextField (PD mechanism)", () => {
     expect(prompt).toHaveClass("text-link");
     fireEvent.click(prompt);
     expect(screen.getByLabelText("Website")).toBeInTheDocument();
+  });
+});
+
+describe("EditableHeading", () => {
+  it("keeps an IME draft until explicit Enter and commits the trimmed title once", async () => {
+    const onCommit = vi.fn(() => Promise.resolve(ok(undefined)));
+    render(<EditableHeading label="Title" title="Old title" onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit Title" }));
+    const input = screen.getByRole("textbox", { name: "Edit Title" });
+    fireEvent.change(input, { target: { value: " 東京 " } });
+    expect(fireEvent.keyDown(input, { key: "Enter", isComposing: true })).toBe(true);
+    expect(fireEvent.keyDown(input, { key: "Enter", keyCode: 229 })).toBe(true);
+    expect(input).toHaveValue(" 東京 ");
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(fireEvent.keyDown(input, { key: "Enter" })).toBe(false);
+    await waitFor(() => expect(onCommit).toHaveBeenCalledWith("東京"));
+    expect(onCommit).toHaveBeenCalledTimes(1);
   });
 });
 

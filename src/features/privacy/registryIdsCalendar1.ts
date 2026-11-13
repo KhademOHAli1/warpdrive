@@ -16,7 +16,7 @@ export const calendarLocalIds: string[] = [
   "sourceReview:src/db/schema/calendarReminderIntents.ts#6d2058151adfa706cab7b8fad34ea46a8177e726b04c0f1a629c780d0f0b1d95",
   "sourceReview:src/db/schema/calendarReminderSettings.ts#c1b4b1f6bd6d33484923159dc77626a172ac66d51ad6a24043dea810993549d5",
   "sourceReview:src/db/schema/calendars.ts#39b48234186a6c2a1b930b150653186bd4a3bde122f317557f448c50b7b31299",
-  "sourceReview:src/features/activities/CalendarEventTimeZone.tsx#c12384234ad31979877bb8015c34c5746f37876f731b31d747bbf5c753a4e0f9",
+  "sourceReview:src/features/activities/CalendarEventTimeZone.tsx#07a1553bc4bb9954347d802f20cdf0d4ac3cf0286bb31899c30e22dd49be11e5",
   "sourceReview:src/features/activities/CalendarPersonalRemindersPanel.tsx#75c3c763cb16f2b901ff9107e936c82414aafb5c1a0b6903f708582dae088611",
   "sourceReview:src/features/activities/CalendarReminderDefaultsPanel.tsx#b5a6a643e87c08d64e0e139b0dc8298b34e84813cf8b676e022fc99958f6bf29",
   "sourceReview:src/features/activities/CalendarReminderRules.tsx#4b2e8af51b78deffe53a037b8a02c2862e90f61022df8eb342d700e62ec33892",

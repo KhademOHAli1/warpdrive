@@ -89,6 +89,7 @@ export function CalendarMeetingField({
         className="w-[min(22rem,calc(100vw-2rem))] space-y-4 p-4"
         onEscapeKeyDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
           if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
             event.preventDefault();
             event.stopPropagation();

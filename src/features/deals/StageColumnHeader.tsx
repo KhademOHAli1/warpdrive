@@ -6,9 +6,9 @@ import { Tip } from "@/components/ui/tooltip";
 import { MoneyTotals } from "@/features/currencies/MoneyTotals";
 import type { CurrencyTotal } from "@/features/currencies/money";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { useFormatters } from "@/lib/useFormatters";
 import { accentForOrder, funnelClip, tint } from "./boardStageHeader";
 import { StageColumnMenu, type StageColumnMenuProps } from "./StageColumnMenu";
+import { useBoardCurrency } from "./useBoardCurrency";
 
 type StageColumnHeaderProps = StageColumnMenuProps & {
   order: number;
@@ -21,7 +21,7 @@ export function StageColumnHeader(props: StageColumnHeaderProps): ReactNode {
   const { stageName, order, totalValue, dealCount, baseCurrency } = props;
   const direction = useDirection();
   const translateSales = useAppTranslations("sales");
-  const format = useFormatters();
+  const formatCurrency = useBoardCurrency();
   const accent = accentForOrder(order);
 
   return (
@@ -45,10 +45,10 @@ export function StageColumnHeader(props: StageColumnHeaderProps): ReactNode {
       <div className="col-span-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-xs text-muted-foreground">
         <Scale data-stage-metric-icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
         {props.currencyTotals !== undefined && props.currencyTotals.length > 0 ? (
-          <MoneyTotals totals={props.currencyTotals} />
+          <MoneyTotals totals={props.currencyTotals} formatCurrency={formatCurrency} />
         ) : (
           <bdi dir="auto" className="tabular-nums">
-            {format.currency(totalValue, baseCurrency)}
+            {formatCurrency(totalValue, baseCurrency)}
           </bdi>
         )}
         <span aria-hidden="true">·</span>

@@ -117,7 +117,7 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
           if (error !== null) setError(null);
         }}
         onKeyDown={(e) => {
-          if (query.trim().length === 0) return;
+          if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229 || !query.trim()) return;
           if (
             e.key === "Enter" ||
             e.key === "," ||

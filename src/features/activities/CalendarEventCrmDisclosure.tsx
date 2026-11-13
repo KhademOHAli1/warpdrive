@@ -2,11 +2,7 @@
 import { ChevronDown, Link2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/primitives/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { isActivityPriorityKey } from "@/constants/activityPriorities";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { CalendarEventCrmDetails } from "./CalendarEventCrmDetails";

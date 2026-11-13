@@ -2,11 +2,7 @@
 import { CalendarDays, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/primitives/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CalendarEditorSettings } from "./useCalendarEventSettings";

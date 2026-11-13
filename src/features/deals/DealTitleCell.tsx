@@ -30,6 +30,7 @@ export function DealTitleCell(props: DealTitleCellProps): React.ReactNode {
         className="w-full rounded border px-1 py-0.5 text-sm"
         onBlur={(e) => onCommit(e.currentTarget.value)}
         onKeyDown={(e) => {
+          if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
           if (e.key === "Enter") e.currentTarget.blur();
           if (e.key === "Escape") onCancelEdit();
         }}

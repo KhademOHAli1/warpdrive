@@ -26,7 +26,7 @@ export const crmIds2: string[] = [
   "sourceReview:src/features/deals/archiveDeal.ts#825977151c84753fd93ad654e10ecaaf0e8ce5d4177026ab8e318d55c6c97e43",
   "sourceReview:src/features/deals/Board.tsx#9564e6a297f270e165379630226165050a32cebb909206bd4e223b5d34da715b",
   "sourceReview:src/features/deals/boardFilter.ts#87fe2433e68c565dd995030880a6b99fd954c36bef48da832021caa44de4611d",
-  "sourceReview:src/features/deals/BoardSummary.tsx#b0f3a8a8bc88a20bc9c42ebb2350402da24ed70b04d5c1acc423872c59205073",
+  "sourceReview:src/features/deals/BoardSummary.tsx#a8af4d79e66ec7e0d04fb58f61efec4721272f533b819bfef24bcf3117d196fa",
   "sourceReview:src/features/deals/bulkActions.ts#cbe0296d22528d4c98b61f05a099e7a18f5fbdda724f8b7e513672bd04a341c5",
   "sourceReview:src/features/deals/createdVisibility.ts#4e930492d12b83c96f7633323b29b085a25c505141d0700f070ec4f57c6054ea",
   "sourceReview:src/features/deals/dealActions.ts#7582e036a129c4a28ceee4893d430f331d869dc3c6deea0a79fd57ee88c33bf9",

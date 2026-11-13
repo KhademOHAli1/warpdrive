@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 
 const push = vi.fn();
@@ -92,7 +93,9 @@ it.each(["fa", "de"] as const)(
         />
       </LocaleProvider>,
     );
-    expect(screen.getByRole("button", { name: E.delete })).toBeDisabled();
+    const deleteButton = screen.getByRole("button", { name: E.delete });
+    expect(deleteButton).toBeDisabled();
+    expect(deleteButton).toHaveAccessibleDescription(E.remoteActions.unavailable);
     expect(screen.getByRole("button", { name: E.archive })).not.toBeDisabled();
   },
 );
@@ -149,6 +152,55 @@ it("deletes to Gmail Trash after confirming, then returns to the inbox", async (
   await waitFor(() => expect(replace).toHaveBeenCalledWith("/inbox"));
   expect(push).not.toHaveBeenCalled();
   expect(invalidateAll).toHaveBeenCalled();
+});
+
+it.each(["en", "de", "fa"] as const)(
+  "opens the localized trash confirmation, focuses Cancel, and restores the trigger (%s)",
+  async (locale) => {
+    const user = userEvent.setup();
+    const E = emailMessagesForLocale(locale);
+    render(
+      <LocaleProvider locale={locale}>
+        <ReaderTopBar threadId="t1" canManage />
+      </LocaleProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: E.delete });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    const dialog = await screen.findByRole("alertdialog", { name: E.deleteConfirmTitle });
+    expect(dialog).toHaveAccessibleDescription(E.deleteConfirmBody);
+    expect(within(dialog).getByRole("button", { name: E.deleteConfirmAction })).toBeEnabled();
+    expect(within(dialog).getByRole("button", { name: E.deleteCancel })).toHaveFocus();
+    await user.keyboard(locale === "en" ? "{Escape}" : "{Enter}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(trashMock).not.toHaveBeenCalled();
+  },
+);
+
+it("sends one trash action when confirmation is repeated while the request is pending", async () => {
+  const user = userEvent.setup();
+  trashMock.mockReturnValueOnce(new Promise(() => undefined));
+  render(<ReaderTopBar threadId="t1" canManage />);
+  const trigger = screen.getByRole("button", { name: "Delete" });
+  await user.click(trigger);
+  const confirm = await screen.findByRole("button", { name: /move to trash/i });
+  act(() => {
+    confirm.click();
+    confirm.click();
+  });
+  expect(trashMock).toHaveBeenCalledExactlyOnceWith("csrf", { threadId: "t1" });
+  expect(trigger).toBeDisabled();
+});
+
+it("closes a stale confirmation when the reader moves to another thread", async () => {
+  const user = userEvent.setup();
+  const { rerender } = render(<ReaderTopBar threadId="t1" canManage />);
+  await user.click(screen.getByRole("button", { name: "Delete" }));
+  expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+  rerender(<ReaderTopBar threadId="t2" canManage />);
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(trashMock).not.toHaveBeenCalled();
 });
 
 it("refreshes the record timelines so a deleted thread leaves the deal and person pages", async () => {
