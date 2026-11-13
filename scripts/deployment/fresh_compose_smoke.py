@@ -22,6 +22,7 @@ import uuid
 from component_inputs import decode
 from fresh_compose_admission import COMPOSE, IMAGES, ROOT, VOLUME_MOUNTS, _pinned_images, _validate
 from image_smoke import Docker, ImageSmoke, SmokeError, WS_PROBE, image_metadata
+from installed_web_chain import _directory
 from loopback_forwarder import ForwarderError, owned_bridge_forwarder
 from web_switch import SwitchConflict, canonical, content_hash, require
 
@@ -140,8 +141,24 @@ def _native_host():
 def _write_env(path, values):
     require(all(isinstance(value, str) and "\n" not in value and "\r" not in value for value in values.values()),
             "Synthetic Compose values must each occupy one line")
-    path.write_text("".join(f"{key}={value}\n" for key, value in sorted(values.items())), encoding="utf-8")
-    path.chmod(0o600)
+    _directory(path.parent)
+    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        require(os.path.samestat(os.fstat(directory), path.parent.lstat()), "Private fixture directory changed")
+        descriptor = os.open(path.name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=directory)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+            info = os.fstat(output.fileno())
+            require(stat.S_ISREG(info.st_mode) and info.st_uid == os.geteuid() and info.st_nlink == 1
+                    and stat.S_IMODE(info.st_mode) == 0o600, "Private single-link fixture environment required")
+            raw = "".join(f"{key}={value}\n" for key, value in sorted(values.items()))
+            require(output.write(raw) == len(raw), "Incomplete fixture environment write")
+            output.flush()
+            os.fsync(output.fileno())
+            require(os.path.samestat(info, path.lstat()) and os.fstat(output.fileno()).st_nlink == 1
+                    and os.path.samestat(os.fstat(directory), path.parent.lstat()), "Private fixture environment changed")
+        os.fsync(directory)
+    finally:
+        os.close(directory)
 
 
 class FreshSmoke:

@@ -12,7 +12,7 @@ export const newsletterOperationalIds = [
   "sourceReview:src/features/newsletter/delivery/monitor.ts#3851e9a2f01e99214e4b14c5fe1a2acd889d483ed93c8a3339289d768a6259fb",
   "sourceReview:src/features/newsletter/delivery/operationalContracts.ts#39d056f99fb73343b7cccc4378ac507d39bea394fb02889a7913db9a51b6c476",
   "sourceReview:src/features/newsletter/delivery/operationalMessages.ts#0cecce39e593670e759119094a5a5f83c0c3d64fa9d70cb9112922819df41416",
-  "sourceReview:src/features/newsletter/delivery/operationalRepository.ts#b5e6d1421099de7126e21f8d5f711dd237970097e4c17b5fe027ea2212db5c25",
+  "sourceReview:src/features/newsletter/delivery/operationalRepository.ts#748516faac25a1a7454343799b2f8aad2117a9ff0a3cd076abdf0816e5e67dc1",
   "sourceReview:src/features/newsletter/delivery/operationalStatus.ts#fc6981d70856231514392cad80f9eeb1df6f3ed464efb6b04929546d81f05931",
   "sourceReview:src/features/newsletter/delivery/operationalSync.ts#39ce29db5813526569c98e9608a43f1c425c4f641d0e54bd0c3561601ba53b1d",
   "sourceReview:src/features/newsletter/delivery/operations.ts#6aae0abe992c15b1f702938933452c2af08d479d9c63ae373bc6b2872eda02ed",

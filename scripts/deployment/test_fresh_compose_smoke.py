@@ -2,8 +2,11 @@
 
 from copy import deepcopy
 from hashlib import sha256
+import io
+import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -22,6 +25,66 @@ class FreshComposeSmokeTests(unittest.TestCase):
         values = SYNTHETIC_ENV | FRESH_ENV
         self.baseline = {service: values[variable] for variable, names in IMAGES.items() for service in names}
         self.candidate = {**self.baseline, "app": "ghcr.io/example/candidate@sha256:" + "a" * 64}
+
+    def test_fixture_environment_is_private_before_first_byte_with_permissive_umask(self):
+        path = self.directory / "private.env"
+        observed = []
+
+        class CheckedWriter(io.TextIOWrapper):
+            def write(writer, value):
+                info = os.fstat(writer.fileno())
+                observed.append((stat.S_IMODE(info.st_mode), info.st_nlink, info.st_uid))
+                return super().write(value)
+
+        def checked_open(descriptor, mode, *, encoding):
+            return CheckedWriter(io.FileIO(descriptor, mode), encoding=encoding)
+
+        previous_umask = os.umask(0)
+        try:
+            with patch.object(smoke.os, "fdopen", side_effect=checked_open):
+                smoke._write_env(path, {"POSTGRES_PASSWORD": "generated-fixture-only", "A": "first"})
+        finally:
+            os.umask(previous_umask)
+        self.assertEqual(observed, [(0o600, 1, os.geteuid())])
+        self.assertEqual(path.read_text(), "A=first\nPOSTGRES_PASSWORD=generated-fixture-only\n")
+
+    def test_fixture_environment_refuses_existing_paths_and_unowned_parent_mode(self):
+        source = self.directory / "source"
+        source.write_text("preserve original bytes")
+        regular, symlink, linked = (self.directory / name for name in ("regular.env", "symlink.env", "linked.env"))
+        regular.write_text("existing environment")
+        symlink.symlink_to(source)
+        os.link(source, linked)
+        with patch.object(smoke.os, "fdopen", side_effect=AssertionError("Existing path reached a writer")):
+            for path in (regular, symlink, linked):
+                with self.subTest(path=path.name), self.assertRaises(FileExistsError):
+                    smoke._write_env(path, {"POSTGRES_PASSWORD": "generated-fixture-only"})
+        self.assertEqual(source.read_text(), "preserve original bytes")
+        self.assertEqual(regular.read_text(), "existing environment")
+        self.assertEqual(source.stat().st_nlink, 2)
+        self.directory.chmod(0o755)
+        with self.assertRaisesRegex(SwitchConflict, "private installed Web chain directory"):
+            smoke._write_env(self.directory / "uncreated.env", {"A": "value"})
+        self.assertFalse((self.directory / "uncreated.env").exists())
+
+    def test_interrupted_fixture_write_keeps_private_file_and_refuses_replacement(self):
+        path = self.directory / "interrupted.env"
+
+        class FailingWriter(io.TextIOWrapper):
+            def write(writer, _value):
+                self.assertEqual(stat.S_IMODE(os.fstat(writer.fileno()).st_mode), 0o600)
+                raise OSError("injected fixture write failure")
+
+        def failing_open(descriptor, mode, *, encoding):
+            return FailingWriter(io.FileIO(descriptor, mode), encoding=encoding)
+
+        with patch.object(smoke.os, "fdopen", side_effect=failing_open):
+            with self.assertRaisesRegex(OSError, "injected fixture write failure"):
+                smoke._write_env(path, {"POSTGRES_PASSWORD": "generated-fixture-only"})
+        self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(path.read_bytes(), b"")
+        with self.assertRaises(FileExistsError):
+            smoke._write_env(path, {"POSTGRES_PASSWORD": "replacement"})
 
     def test_actual_generated_four_file_fixture_plus_isolation_model(self):
         docker = shutil.which("docker")

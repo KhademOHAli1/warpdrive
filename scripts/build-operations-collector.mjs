@@ -1,5 +1,5 @@
-import { build } from "esbuild";
 import { isAbsolute } from "node:path";
+import { build } from "esbuild";
 import { buildOptionsForEntry } from "./build-workers.mjs";
 
 const args = process.argv.slice(2);

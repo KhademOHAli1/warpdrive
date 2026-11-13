@@ -100,11 +100,11 @@ no longer serve the old docs.
 
 ## Repository ownership
 
-| Repository | Owns |
-| --- | --- |
-| Warpdrive | CRM, public guides under `docs-site/docs/`, and their images under `docs-site/public/img/`. Operator guides and evidence stay in the repository documentation. |
-| Docs renderer | Fumadocs, its dependency lock, theme, search, export checks, and the static artifact for `docs.warpdrivecrm.com`. Hosting cutover remains pending. |
-| Marketing site | The current `site/` package and its dependency lock remain in Warpdrive. A separate repository and hosting migration will be considered independently. |
+| Repository     | Owns                                                                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Warpdrive      | CRM, public guides under `docs-site/docs/`, and their images under `docs-site/public/img/`. Operator guides and evidence stay in the repository documentation. |
+| Docs renderer  | Fumadocs, its dependency lock, theme, search, export checks, and the static artifact for `docs.warpdrivecrm.com`. Hosting cutover remains pending.             |
+| Marketing site | The current `site/` package and its dependency lock remain in Warpdrive. A separate repository and hosting migration will be considered independently.         |
 
 The renderer stages a reviewed Warpdrive commit and records the content commit,
 renderer commit and export digest together. Keep edit links pointing to the source

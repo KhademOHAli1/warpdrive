@@ -6,8 +6,13 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { selectBuildEntries } from "../build-workers.mjs";
-import { verifyWebFunctionalSource } from "./web_functional_source.mjs";
+import { verifyWebClientEffectProjection } from "./web_client_effect_projection.mjs";
+import {
+  inspectWebProjectionSnapshot,
+  verifyWebFunctionalSource,
+} from "./web_functional_source.mjs";
 import { WEB_SOURCE_RULES } from "./web_inputs.mjs";
+import { readWebGitTree } from "./web_presentation_policy.mjs";
 
 const MENU = "src/components/shell/LocalMenu.tsx";
 const CHILD = "src/components/shell/MenuCopy.tsx";
@@ -329,7 +334,7 @@ void test("orphan adapters and profiles that declare sensitive or duplicate path
     await assert.rejects(f.verify(revision, { profile: bad }), /Invalid exact|disjoint/u);
 });
 
-void test("full application Git tree admits a reviewed isolated renderer without mutating its real checkout", {
+void test("full application tree freezes registered SDK controls and isolates synthetic renderer effects", {
   timeout: 60_000,
 }, async (context) => {
   const root = await realpath(await mkdtemp(join(tmpdir(), "wd-functional-full-")));
@@ -355,6 +360,22 @@ void test("full application Git tree admits a reviewed isolated renderer without
       .trimEnd();
   }
   const base = git(source, "rev-parse", "HEAD");
+  const frozenControls = [
+    "src/components/ui/Checkbox.tsx",
+    "src/components/ui/Switch.tsx",
+    "src/components/ui/SdkCombobox.tsx",
+    "src/features/quick-add/GlobalAddMenu.tsx",
+  ];
+  const fixturePaths = [MENU, CHILD, STYLE, ADAPTER, "src/app/functional-policy-fixture/page.tsx"];
+  const sourceStatus = git(
+    source,
+    "status",
+    "--porcelain=v1",
+    "--untracked-files=all",
+    "--",
+    ...fixturePaths,
+    ...frozenControls,
+  );
   git(root, "init", "-q");
   const objects = git(source, "rev-parse", "--path-format=absolute", "--git-path", "objects");
   await writeFile(join(root, ".git/objects/info/alternates"), `${objects}\n`, { flag: "wx" });
@@ -389,10 +410,15 @@ void test("full application Git tree admits a reviewed isolated renderer without
     ADAPTER,
     'import { LocalMenu } from "./LocalMenu"; export const MenuView = () => <LocalMenu />;',
   );
-  await addObject(CHILD, '"use client"; export const MenuCopy = () => <span>Settings</span>;');
+  await addObject(
+    CHILD,
+    '"use client"; export function MenuCopy() { return <span>Settings</span>; }',
+  );
   await addObject(MENU, OLD);
   await addObject(STYLE, CSS);
-  const fullProfile = JSON.parse(git(source, "show", `${base}:scripts/deployment/web-functional-profile.json`));
+  const fullProfile = JSON.parse(
+    git(source, "show", `${base}:scripts/deployment/web-functional-profile.json`),
+  );
   const fixtureProfile = {
     version: 1,
     modules: [...profile.modules, ...fullProfile.modules].sort(),
@@ -400,22 +426,73 @@ void test("full application Git tree admits a reviewed isolated renderer without
     adapters: [...profile.adapters, ...fullProfile.adapters].sort(),
   };
   const baselineRevision = commitTree(base, "Synthetic reviewed adapter and island");
-  const keyboardOnly = NEXT.replace(/import \{ Menu,.*\n/u, "").replace(
-    / {4}<Menu open=.*?<\/Menu>\n/su,
-    "",
-  );
+  const keyboardOnly = NEXT.replace(/import \{ Menu,.*\n/u, "")
+    .replace(/ {4}<Menu open=.*?<\/Menu>\n/su, "")
+    .replace("type KeyboardEvent, ", "")
+    .replace("event: KeyboardEvent", "event");
   await addObject(MENU, keyboardOnly);
   const currentRevision = commitTree(baselineRevision, "Synthetic local keyboard interaction");
-  const result = await verifyWebFunctionalSource({
+  await assert.rejects(
+    verifyWebFunctionalSource({
+      root,
+      baselineRevision,
+      currentRevision,
+      profile: fixtureProfile,
+    }),
+    /Web SDK import outside the reviewed presentation island/u,
+  );
+  const rendererCuts = [
+    { from: ADAPTER, to: MENU, bindings: [{ name: "LocalMenu", local: "LocalMenu" }] },
+  ];
+  const before = readWebGitTree(root, baselineRevision);
+  const after = readWebGitTree(root, currentRevision);
+  const projectionPaths = new Set([ADAPTER, MENU]);
+  const oldGraph = await inspectWebProjectionSnapshot(root, before, projectionPaths);
+  const nextGraph = await inspectWebProjectionSnapshot(root, after, projectionPaths);
+  const clientEffects = await verifyWebClientEffectProjection({
     root,
     baselineRevision,
     currentRevision,
-    profile: fixtureProfile,
+    profile: {
+      version: 1,
+      rendererCuts,
+      beforeModules: [...profile.modules].sort(),
+      afterModules: [...profile.modules].sort(),
+      beforeStyles: profile.styles,
+      afterStyles: profile.styles,
+      capabilities: [],
+    },
   });
-  assert.ok(result.guardedWebPathCount > 1000);
+  assert.ok(nextGraph.guarded.length > 1000);
+  assert.deepEqual(nextGraph.guarded, oldGraph.guarded);
   assert.deepEqual(
-    result.changed.map(({ path }) => path),
-    [MENU],
+    [...after].filter(([path]) => path !== MENU),
+    [...before].filter(([path]) => path !== MENU),
   );
-  assert.equal(result.deploymentAuthorized, false);
+  assert.deepEqual(
+    [...nextGraph.edges].filter(([path]) => path !== MENU),
+    [...oldGraph.edges].filter(([path]) => path !== MENU),
+  );
+  assert.notEqual(clientEffects.baselineSubtreeSha256, clientEffects.candidateSubtreeSha256);
+  assert.equal(clientEffects.capabilityUses, 0);
+  assert.deepEqual(git(root, "diff", "--name-only", baselineRevision, currentRevision), MENU);
+  for (const path of frozenControls) {
+    const original = git(source, "rev-parse", `${base}:${path}`);
+    assert.equal(git(root, "rev-parse", `${baselineRevision}:${path}`), original);
+    assert.equal(git(root, "rev-parse", `${currentRevision}:${path}`), original);
+  }
+  assert.equal(git(source, "rev-parse", "HEAD"), base);
+  assert.equal(
+    git(
+      source,
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all",
+      "--",
+      ...fixturePaths,
+      ...frozenControls,
+    ),
+    sourceStatus,
+  );
+  assert.equal(clientEffects.deploymentAuthorized, false);
 });
