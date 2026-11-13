@@ -1,6 +1,7 @@
 """Fake HTTP/helper tests only: no registry, credential helper or provider is contacted."""
 import base64
 from email.message import Message
+from hashlib import sha256
 import io
 import json
 import os
@@ -19,6 +20,10 @@ CHALLENGE = f'Bearer realm="https://ghcr.io/token",service="ghcr.io",scope="{SCO
 MISSING = {"errors": [{"code": "MANIFEST_UNKNOWN", "message": "manifest unknown", "detail": {"Tag": "candidate-tested"}}]}
 SECRET = "private-fixture-secret-never-in-errors"
 TOKEN = "fixture-bearer-token"
+CUSTODY_REPOSITORY = "khademohali1/warpdrive-release-custody"
+CUSTODY_SCOPE = f"repository:{CUSTODY_REPOSITORY}:pull"
+CUSTODY_CHALLENGE = CHALLENGE.replace(SCOPE, CUSTODY_SCOPE)
+CUSTODY_MANIFEST = b'{"schemaVersion":2}'
 
 
 class Response(io.BytesIO):
@@ -253,6 +258,49 @@ class AuthenticationTests(unittest.TestCase):
             opener = Opener(challenged(), *responses)
             with self.subTest(responses=responses), self.assertRaises(absence.AbsenceError):
                 absence.confirm_absent(TAG, environment=self.environment, opener=opener)
+
+    def test_custody_precheck_reads_only_the_fixed_content_tag_with_explicit_scope(self):
+        self.auth()
+        for write_scope in (False, True):
+            with self.subTest(write_scope=write_scope):
+                challenge = CUSTODY_CHALLENGE if write_scope else CUSTODY_CHALLENGE.replace(':pull"', ':pull,push"')
+                opener = Opener(challenged(challenge), Response(200, {"token": TOKEN}), Response())
+                self.assertEqual(absence.precheck_custody_manifest(
+                    CUSTODY_MANIFEST, environment=self.environment, use_write_scope=write_scope, opener=opener), "absent")
+                initial, token, retry = (request for request, _ in opener.calls)
+                expected = f"https://ghcr.io/v2/{CUSTODY_REPOSITORY}/manifests/sha256-{sha256(CUSTODY_MANIFEST).hexdigest()}"
+                self.assertEqual((initial.full_url, retry.full_url), (expected, expected))
+                self.assertTrue(all(request.get_method() == "GET" and request.data is None
+                                    for request in (initial, token, retry)))
+                self.assertIsNone(initial.get_header("Authorization"))
+                self.assertEqual(retry.get_header("Authorization"), "Bearer " + TOKEN)
+                self.assertEqual(parse_qs(urlsplit(token.full_url).query)["scope"],
+                                 [CUSTODY_SCOPE + (",push" if write_scope else "")])
+
+    def test_custody_precheck_requires_an_exact_authenticated_manifest_match(self):
+        self.auth()
+        opener = Opener(challenged(CUSTODY_CHALLENGE), Response(200, {"token": TOKEN}),
+                        Response(200, raw=CUSTODY_MANIFEST))
+        self.assertEqual(absence.precheck_custody_manifest(
+            CUSTODY_MANIFEST, environment=self.environment, opener=opener), "present")
+        for responses in ((Response(200, raw=CUSTODY_MANIFEST),), (Response(),), (challenged(),),
+                          (challenged(CUSTODY_CHALLENGE), Response(403)),
+                          (challenged(CUSTODY_CHALLENGE), Response(200, {"token": TOKEN}), Response(403)),
+                          (challenged(CUSTODY_CHALLENGE), Response(200, {"token": TOKEN}),
+                           Response(404, {"errors": [{"code": "NAME_UNKNOWN"}]})),
+                          (challenged(CUSTODY_CHALLENGE), Response(200, {"token": TOKEN}),
+                           Response(200, raw=CUSTODY_MANIFEST + b"\n"))):
+            with self.subTest(responses=responses), self.assertRaises(absence.AbsenceError):
+                absence.precheck_custody_manifest(CUSTODY_MANIFEST, environment=self.environment,
+                                                 use_write_scope=True, opener=Opener(*responses))
+
+    def test_custody_precheck_rejects_invalid_inputs_before_any_request(self):
+        for manifest, scope in ((b"", False), (b"x" * 4097, False), ("text", False), (CUSTODY_MANIFEST, 1)):
+            opener = Opener()
+            with self.subTest(scope=scope), self.assertRaises(absence.AbsenceError):
+                absence.precheck_custody_manifest(manifest, environment=self.environment,
+                                                 use_write_scope=scope, opener=opener)
+            self.assertEqual(opener.calls, [])
 
 
 class DockerConfigReaderTests(unittest.TestCase):

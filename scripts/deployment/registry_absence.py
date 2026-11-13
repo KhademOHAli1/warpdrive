@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,9 @@ from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 MAX_BYTES = 65536
+OCI_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
+CUSTODY_REPOSITORY = "khademohali1/warpdrive-release-custody"
+CUSTODY_MANIFEST_MAX_BYTES = 4096
 SEGMENT = re.compile(r"[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*\Z")
 TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}\Z")
 HELPER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z")
@@ -177,11 +181,12 @@ def _missing(status, raw):
              and value["errors"][0].get("code") == "MANIFEST_UNKNOWN")
 
 
-def confirm_absent(tag, *, environment, runner=subprocess.run, opener=None):
-    """Return only on one exact structured MANIFEST_UNKNOWN404; otherwise hold."""
+def _manifest_response(tag, *, accept, environment, runner, opener, custody_write_scope=None):
     host, repository, url = _target(tag)
+    if custody_write_scope is not None:
+        _require(host == "ghcr.io" and repository == CUSTODY_REPOSITORY)
     transport = opener or build_opener(ProxyHandler({}), _NoRedirect())
-    headers = {"Accept": "application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"}
+    headers = {"Accept": accept}
     status, response_headers, raw = _get(transport, url, headers)
     _require(host != "ghcr.io" or status == 401)
     if status == 401:
@@ -189,6 +194,8 @@ def confirm_absent(tag, *, environment, runner=subprocess.run, opener=None):
         challenges = response_headers.get_all("WWW-Authenticate") if hasattr(response_headers, "get_all") else [response_headers.get("WWW-Authenticate")]
         _require(isinstance(challenges, list) and len(challenges) == 1)
         scope = _scope(challenges[0], repository)
+        if custody_write_scope is not None:
+            scope = f"repository:{repository}:pull" + (",push" if custody_write_scope else "")
         authorization = _credentials(environment, runner)
         token_url = "https://ghcr.io/token?" + urlencode({"service": "ghcr.io", "scope": scope})
         token_status, _, token_raw = _get(transport, token_url, {"Accept": "application/json", "Authorization": "Basic " + authorization})
@@ -199,4 +206,31 @@ def confirm_absent(tag, *, environment, runner=subprocess.run, opener=None):
         _require(isinstance(token, str) and 0 < len(token) <= 16384 and re.fullmatch(r"[A-Za-z0-9._~+/-]+=*", token)
                  and ("token" not in document or "access_token" not in document or document["token"] == document["access_token"]))
         status, _, raw = _get(transport, url, {**headers, "Authorization": "Bearer " + token})
+    return status, raw
+
+
+def confirm_absent(tag, *, environment, runner=subprocess.run, opener=None):
+    """Return only on one exact structured 404 MANIFEST_UNKNOWN; otherwise hold."""
+    status, raw = _manifest_response(
+        tag, accept=OCI_MANIFEST + ", application/vnd.docker.distribution.manifest.v2+json",
+        environment=environment, runner=runner, opener=opener)
     _missing(status, raw)
+
+
+def precheck_custody_manifest(expected_manifest, *, environment, use_write_scope=False, runner=subprocess.run,
+                             opener=None):
+    """Read the fixed GHCR custody tag with the caller's existing credentials.
+
+    An authorized bootstrap may request the repository's pull,push bearer
+    scope explicitly. This probe always uses GET and sends no manifest bytes.
+    """
+    _require(type(expected_manifest) is bytes and 0 < len(expected_manifest) <= CUSTODY_MANIFEST_MAX_BYTES
+             and type(use_write_scope) is bool)
+    tag = f"ghcr.io/{CUSTODY_REPOSITORY}:sha256-{sha256(expected_manifest).hexdigest()}"
+    status, raw = _manifest_response(tag, accept=OCI_MANIFEST, environment=environment, runner=runner,
+                                     opener=opener, custody_write_scope=use_write_scope)
+    if status == 200:
+        _require(raw == expected_manifest)
+        return "present"
+    _missing(status, raw)
+    return "absent"
