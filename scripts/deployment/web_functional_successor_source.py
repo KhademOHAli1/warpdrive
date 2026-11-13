@@ -38,7 +38,7 @@ def _changed(before, after):
 def _reviewed_tooling_path(path):
     # A checksum cannot turn application or runtime code into release tooling.
     return path.startswith(("scripts/deployment/", ".github/workflows/", "docs/delivery/")) or path in {
-        "eslint.config.mjs", "ciWorkflow.test.ts",
+        "eslint.config.mjs", "ciWorkflow.test.ts", "scripts/browser-web-rollout.mjs",
     }
 
 

@@ -118,6 +118,18 @@ class SwitchSuccessorSourceTests(unittest.TestCase):
                 self.verify()
             scan.assert_not_called()
 
+    def test_only_the_exact_browser_rollout_entry_can_enter_the_tooling_hop(self):
+        rollout = "scripts/browser-web-rollout.mjs"
+        self.stage(extra_tooling=lambda: self.put(rollout, "reviewed browser witness integration"))
+        with patch.object(source, "discover_web_sdk_full_receipt", return_value=self.fresh):
+            self.assertIn(rollout, {row["path"] for row in self.verify()["toolingChanges"]})
+        self.git("reset", "--hard", self.active)
+        self.stage(extra_tooling=lambda: self.put("scripts/browser-web-other.mjs", "unreviewed script"))
+        with patch.object(source, "discover_web_sdk_full_receipt") as scan:
+            with self.assertRaisesRegex(inputs.InputError, "unreviewed runtime boundary"):
+                self.verify()
+            scan.assert_not_called()
+
     def test_missing_tooling_delta_pin_and_wrong_candidate_blob_are_rejected(self):
         self.stage(edit_profile=lambda profile: profile["toolingChanges"].pop())
         with self.assertRaisesRegex(inputs.InputError, "Every active-to-tooling change"):
