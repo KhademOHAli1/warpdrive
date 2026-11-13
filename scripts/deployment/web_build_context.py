@@ -53,6 +53,12 @@ def prepare_context(root, revision, destination):
                     path = member.name
                     if member.isdir():
                         require(path in directory_paths and path not in directories, "Unexpected Git archive directory")
+                        directory = destination / path
+                        directory.mkdir(mode=0o700)
+                        # BuildKit preserves copied directory modes. The context
+                        # root is private, while runtime files must be readable
+                        # and traversable by the image's non-root user.
+                        directory.chmod(0o755)
                         directories.add(path)
                         continue
                     require(member.isfile() and path in tree and path not in files and 0 <= member.size <= MAX_FILE_BYTES,
@@ -64,12 +70,13 @@ def prepare_context(root, revision, destination):
                     mode, _, oid = tree[path]
                     require(len(data) == member.size and _blob_id(data) == oid, "Git archive changed tracked input bytes")
                     target = destination / path
-                    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                    require(target.parent == destination or target.parent.relative_to(destination).as_posix() in directories,
+                            "Git archive file appeared before its directory")
                     with target.open("xb") as output:
                         output.write(data)
                     target.chmod(0o755 if mode == "100755" else 0o644)
                     files.add(path)
-                require(files == tree.keys(), "Git archive omitted tracked Web build inputs")
+                require(files == tree.keys() and directories == directory_paths, "Git archive omitted tracked Web build inputs")
             require(process.wait(timeout=5) == 0, "Git archive did not complete")
         finally:
             if process.poll() is None:
@@ -83,15 +90,19 @@ def verify_context(root, revision, destination):
             and destination.stat().st_uid == os.geteuid() and stat.S_IMODE(destination.stat().st_mode) == 0o700
             and not destination.is_relative_to(root), "Separate owned build context required")
     tree = _context_tree(root, revision)
-    directories = {parent.as_posix() for path in tree for parent in Path(path).parents if parent != Path(".")}
+    expected_directories = {parent.as_posix() for path in tree for parent in Path(path).parents if parent != Path(".")}
+    directories = set()
     files = set()
     total = 0
     for base, names, members in os.walk(destination, followlinks=False):
         for name in names:
             path = Path(base, name)
             info = path.lstat()
+            relative = path.relative_to(destination).as_posix()
             require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.geteuid()
-                    and path.relative_to(destination).as_posix() in directories, "Unexpected Web context directory")
+                    and stat.S_IMODE(info.st_mode) == 0o755
+                    and relative in expected_directories, "Unexpected Web context directory or mode")
+            directories.add(relative)
         for name in members:
             path = Path(base, name)
             key = path.relative_to(destination).as_posix()
@@ -111,7 +122,8 @@ def verify_context(root, revision, destination):
                         and os.path.samestat(info, path.lstat()) and len(data) == info.st_size and _blob_id(data) == oid,
                         "Web context bytes differ from exact source")
             files.add(key)
-    require(files == tree.keys() and _context_tree(root, revision) == tree, "Web build context file inventory changed")
+    require(files == tree.keys() and directories == expected_directories and _context_tree(root, revision) == tree,
+            "Web build context inventory changed")
     return {"schemaVersion": 1, "kind": "warpdrive-web-build-context", "sourceRevision": revision,
             "gitInventorySha256": content_hash({path: list(record) for path, record in tree.items()}),
             "fileCount": len(tree), "contextDirectory": str(destination),

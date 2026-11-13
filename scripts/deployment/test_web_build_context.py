@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import subprocess
 from tempfile import TemporaryDirectory
@@ -50,6 +51,19 @@ class WebBuildContextTests(unittest.TestCase):
         extra.unlink()
         (self.context / "entry").write_text("changed source\n")
         with self.assertRaisesRegex(CandidateError, "bytes differ"):
+            verify_context(self.root, self.revision, self.context)
+
+    def test_context_subdirectories_stay_traversable_under_private_umask(self):
+        previous = os.umask(0o077)
+        try:
+            prepare_context(self.root, self.revision, self.context)
+        finally:
+            os.umask(previous)
+        self.assertEqual(self.context.stat().st_mode & 0o777, 0o700)
+        for path in (self.context / "deploy", self.context / "deploy/images"):
+            self.assertEqual(path.stat().st_mode & 0o777, 0o755)
+        (self.context / "deploy/images").chmod(0o700)
+        with self.assertRaisesRegex(CandidateError, "directory or mode"):
             verify_context(self.root, self.revision, self.context)
 
     def test_export_attribute_cannot_omit_tracked_input(self):
