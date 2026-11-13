@@ -392,9 +392,14 @@ void test("full application Git tree admits a reviewed isolated renderer without
   await addObject(CHILD, '"use client"; export const MenuCopy = () => <span>Settings</span>;');
   await addObject(MENU, OLD);
   await addObject(STYLE, CSS);
+  const fullProfile = JSON.parse(git(source, "show", `${base}:scripts/deployment/web-functional-profile.json`));
+  const fixtureProfile = {
+    version: 1,
+    modules: [...profile.modules, ...fullProfile.modules].sort(),
+    styles: [...profile.styles, ...fullProfile.styles].sort(),
+    adapters: [...profile.adapters, ...fullProfile.adapters].sort(),
+  };
   const baselineRevision = commitTree(base, "Synthetic reviewed adapter and island");
-  // The production SDK projection has a separate gate. This full-tree check
-  // exercises functional admission without assuming those files are integrated.
   const keyboardOnly = NEXT.replace(/import \{ Menu,.*\n/u, "").replace(
     / {4}<Menu open=.*?<\/Menu>\n/su,
     "",
@@ -405,7 +410,7 @@ void test("full application Git tree admits a reviewed isolated renderer without
     root,
     baselineRevision,
     currentRevision,
-    profile,
+    profile: fixtureProfile,
   });
   assert.ok(result.guardedWebPathCount > 1000);
   assert.deepEqual(
