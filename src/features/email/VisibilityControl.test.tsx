@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -53,5 +53,32 @@ describe("VisibilityControl", () => {
   it("uses the shadcn menu, never a native select", () => {
     const { container } = render(<VisibilityControl value="shared" onChange={vi.fn()} />);
     expect(container.querySelector("select")).toBeNull();
+  });
+
+  it("keeps reader menu events inside the control and disables the pending trigger", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onRowClick = vi.fn();
+    const onRowPointerDown = vi.fn();
+    const { rerender } = render(
+      // biome-ignore lint/a11y/noStaticElementInteractions: This test observes bubbling on a parent without adding an interactive element.
+      // biome-ignore lint/a11y/useKeyWithClickEvents: The parent observes click events and has no user action.
+      <div onClick={onRowClick} onPointerDown={onRowPointerDown}>
+        <VisibilityControl variant="reader" value="private" onChange={onChange} disabled={false} />
+      </div>,
+    );
+    const trigger = screen.getByRole("button", { name: "Private conversation" });
+    await user.click(trigger);
+    expect(onRowPointerDown).not.toHaveBeenCalled();
+    await user.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: "Shared" }));
+    expect(onChange.mock.calls).toEqual([["shared"]]);
+    expect(onRowClick).not.toHaveBeenCalled();
+
+    rerender(
+      <div>
+        <VisibilityControl variant="reader" value="private" onChange={onChange} disabled />
+      </div>,
+    );
+    expect(screen.getByRole("button", { name: "Private conversation" })).toBeDisabled();
   });
 });
