@@ -6,13 +6,13 @@ description: "Fill the gaps on people and organizations from Apollo, RocketReach
 
 # Enrichment
 
-Enrichment fills empty fields on a person or an organization from external
-lead-research providers: **Apollo**, **RocketReach**, and **GetProspect**.
+Enrichment suggests values for people and organizations from the external
+providers **Apollo**, **RocketReach**, and **GetProspect**.
 
 The **Fill the gaps** button appears on the deal workspace, the lead drawer, the
-person page, and the organization page. Clicking it queries every connected provider
-at once, merges what they return field by field, and opens a review dialog. Nothing
-is written to the record without an explicit **Apply**.
+person page, and the organization page. Warpdrive combines the responses from
+eligible providers and opens a review dialog. You choose which values to write to
+the record.
 
 ## The review dialog
 
@@ -27,7 +27,9 @@ every applied change lands in the record's change log attributed to you.
 
 ## Connecting providers
 
-`/settings/enrichment` configures providers, and is admin-only. Each provider has:
+Administrators configure providers at `/settings/enrichment`. Enabling a provider
+allows lookups to send the name, email address, or domain needed for that lookup
+to the provider. Each provider has:
 
 - an **enable toggle**, independent of the key, so a provider can be switched off
   without losing its credential
@@ -49,9 +51,10 @@ by default. For anything beyond that (job title, LinkedIn profile), create a
 
 ## Caching
 
-Each enrichment run is stored. Clicking the button again within the cache window
-(30 days by default, admin-configurable) reopens the stored result instead of
-spending provider credits again. **Refresh** in the dialog forces a real call.
+Warpdrive can reuse a saved result within the cache window, which defaults to
+30 days. Administrators can change the window or set it to zero to disable reuse.
+When available, **Refresh** starts a new lookup with eligible providers and can
+use provider credits.
 
 ## When a provider fails
 

@@ -8,62 +8,77 @@ description: "Upgrade a self-hosted Warpdrive deployment, take database and file
 
 ## Upgrading
 
-This maintained fork keeps Bun, localization, and UI changes on top of upstream
-Warpdrive. Check the deployment branch and remotes before updating; an upstream
-release number alone does not identify the fork's current code or migration state.
+Identify the revision and images your installation is running. Check the release
+notes for the target revision and confirm that they cover your database version,
+storage backend, and upgrade path. Select the exact tested source revision or
+immutable image references for your installation.
 
-```sh
-git status --short
-git remote -v
-git fetch origin
-git log --oneline HEAD..origin/main
-```
+The fork's [1.6.1 release notes](https://github.com/KhademOHAli1/warpdrive/releases/tag/v1.6.1)
+describe a bounded newsletter source release. Its GitHub assets are a source
+archive and supporting records. For an installed update, check the separately
+qualified images, migration path, and provider and installation results.
 
-Back up the database, files, and required runtime secrets, then rehearse the reviewed
-release and migrations in an isolated environment. Deploy from a clean checkout of
-the intended branch/revision. For a deployment tracking the fork's `main` branch:
+1. Rehearse the upgrade with a restored copy of your current installation in
+   isolation. Check the migrations, application workflows, and recovery procedure
+   there before scheduling the upgrade.
+2. Back up the database, private files, and required runtime keys together. For a
+   migration that requires downtime, stop incoming traffic and all database
+   writers, including the app, worker, Realtime, and any external integrations
+   that write to the database. Follow the sequence for the selected release.
+3. Run the release's migration step with its owner credentials and check the result
+   before starting the target runtime. The Compose dependency on `migrate` gates
+   startup of new processes. It leaves existing processes running unless you stop
+   them first. If migration fails, keep the runtime stopped and use the rehearsed
+   recovery procedure. Returning to an older image alone cannot reverse schema
+   changes.
+4. Check service status, sign-in, worker jobs, file access, and Realtime using the
+   updated installation. Verify the provider workflows you use before reopening
+   normal traffic.
 
-```sh
-git pull --ff-only origin main
-docker compose up -d --build
-```
+<span id="upgrading-from-minio" />
 
-Migrations are applied automatically by the one-shot `migrate` service before the app
-restarts, so there is no separate migration step.
+### Storage upgrades
+
+Check which object store and bucket the running installation uses before upgrading.
+If the target changes the storage backend, rehearse copying the private objects and
+verifying uploads and downloads before switching. The fork's Compose configuration
+described in [Installation](../setup.md) uses MinIO.
 
 ## The update banner
 
-Administrators see an in-app banner when a newer release is published on GitHub.
+When the update check is enabled, the worker looks for the fork's latest GitHub
+release. Administrators can see a banner when that version is newer than the
+running web version. Read the linked release notes to determine the scope.
 
 | Variable | Effect |
 | --- | --- |
-| `APP_VERSION` | The version reported as current. Usually stamped at build from the release tag. Falls back to `package.json`, then to `dev`, which disables the banner. |
+| `APP_VERSION` | For the source Compose build, a valid version stamp takes precedence over `package.json`. With neither, the app uses `dev` and skips the comparison. An independently deployed web component reports its own version. |
 | `DISABLE_UPDATE_CHECK` | Set `true` to disable the banner and the GitHub poll entirely. |
 
-`DISABLE_UPDATE_CHECK=true` disables release polling. It does not disable connected
-email, enrichment, telemetry, or other integrations; configure those separately.
+Configure email, enrichment, and telemetry separately from release polling.
 
 ## Backups
 
-Two volumes hold state, and **both** are needed for a usable restore. A database dump
-alone restores records whose attachments are gone.
+Keep a consistent recovery set containing the database, the private objects, and
+the keys and configuration needed to read them. Store the set securely outside the
+installation and verify a restore in isolation.
 
-Database:
+For the source Compose configuration, this command takes a logical database dump
+using the default role and database. Substitute the configured names:
 
 ```sh
-docker compose exec -T postgres pg_dump -U warpdrive warpdrive \
-  | gzip > backup-$(date +%F).sql.gz
+docker compose exec -T postgres pg_dump -U warpdrive -d warpdrive -Fc \
+  > "warpdrive-$(date +%F).dump"
 ```
 
-Files live in the `miniodata` volume; back that up alongside the database.
+Check that `pg_dump` exited successfully before retaining the file. Plan to
+recreate required database roles and grants as part of the restore. Back up the
+`miniodata` volume or the equivalent private bucket with your object store's
+supported procedure. Keep the source revision, migration journal, configuration,
+and restore checks with the recovery record.
 
-Test a restore before you need one.
-
-Record the source revision, migration journal, restore result, and service checks.
-A successful build or migration is not proof that mailbox delivery or other
-provider workflows work in the deployed environment. New workflow definitions and
-versions are database state; include them in database backups once their migration
-has been adopted. The visual executor is still in development.
+Verify that the restored workspace can read an attachment and use any encrypted
+configuration it needs. Check provider workflows on the intended installation.
 
 ## Logs
 
@@ -74,27 +89,29 @@ docker compose logs -f ws       # realtime
 docker compose logs -f caddy    # TLS and routing
 ```
 
-**`worker` is the one people forget.** Background work (mailbox sync, CSV imports,
-scheduled sends) runs only there. An import stuck at "uploaded" or mail that never
-arrives is usually a worker that is not running, not an application fault.
+For a stalled import, mailbox sync, or scheduled send, check whether the worker
+is running and inspect its logs before retrying.
 
 ## Reaching Postgres
 
-Postgres is deliberately not published to the host in production:
+In the source Compose setup, PostgreSQL is on the internal network. Open a shell
+session against the configured database from the deployment host:
 
 ```sh
-docker compose exec postgres psql -U warpdrive
+docker compose exec postgres psql -U warpdrive -d warpdrive
 ```
 
-MinIO's S3 API is reachable through Caddy at `https://s3.<APP_DOMAIN>`, because the
-browser needs it for presigned uploads. Its admin console stays internal, so forward a
-port temporarily to reach it.
+Caddy serves the storage API at the configured S3 hostname for signed transfers.
+Use private operator access for the storage console.
 
 ## Health
 
 ```sh
-curl -fsS https://<APP_DOMAIN>/api/health   # -> {"ok":true}
+curl -fsS https://crm.example.com/api/health
 ```
+
+Substitute your hostname. A response of `{"ok":true}` confirms that the app can
+reach the database. Check the worker, storage, and provider connections separately.
 
 ## Related
 

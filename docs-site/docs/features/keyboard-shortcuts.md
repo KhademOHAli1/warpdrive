@@ -1,21 +1,22 @@
 ---
 sidebar_position: 15
 title: Keyboard shortcuts
-description: "Warpdrive's keyboard shortcuts: navigation numbers, quick add, the nav rail, list navigation, and search."
+description: "Use the keyboard to navigate Warpdrive, open search and quick add, and browse activities."
 ---
 
 # Keyboard shortcuts
 
-Shortcuts fire only when you are not typing. While the caret is in a field, or a
-menu or dialog is open, bare keys do nothing.
+Move focus out of text fields before using single-key shortcuts. Close open menus
+or dialogs before using number keys to navigate. Select **Keyboard shortcuts** (the
+question-mark button in the top bar) to open help.
 
 ## Navigation
 
 | Key | Action |
 |---|---|
-| `1` to `7` | Jump to a primary nav item, in rail order: Pipeline, Leads, Contacts, Activities, Inbox, Performance, Settings |
-| `[` / `]` | Expand / collapse the nav rail |
-| `/` | Open search |
+| `1` to `9` | Open the corresponding sidebar destination in visible order. Available destinations depend on your workspace and access. |
+| `[` / `]` | Expand / collapse the sidebar |
+| `/` or `Command+K` (Mac) / `Ctrl+K` | Open search |
 
 ## Quick add
 
@@ -29,7 +30,7 @@ menu or dialog is open, bare keys do nothing.
 | Key | Action |
 |---|---|
 | `j` / `k` | Move the cursor down / up the list |
-| `Enter` | Open the row under the cursor |
+| `Enter` | Open the row under the cursor when focus is outside a link, button, or other control |
 
 ## Related
 

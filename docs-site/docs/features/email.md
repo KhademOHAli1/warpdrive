@@ -1,60 +1,45 @@
 ---
 sidebar_position: 6
 title: Email
-description: "Two-way Gmail in Warpdrive: connecting a mailbox, how sync works, how threads link to deals and contacts, composing, merge fields, scheduled send, and tracking."
+description: "Use your connected mailboxes, share conversations on CRM records, draft messages, and schedule sends."
 ---
 
 # Email
 
-Warpdrive connects to Gmail over OAuth so that mail sent and received about a deal
-shows up on the deal, without anyone copying and pasting.
-
-Each user connects their own mailbox. See
-[Email sync](../administration/email-sync.md) for connecting one.
+Connect your mailbox to send messages from Warpdrive and link conversations to
+deals and contacts. [Email sync](../administration/email-sync.md) explains how to
+connect Gmail and how to add an IMAP and SMTP mailbox when your installation
+offers that option.
 
 ## The Inbox
 
-`/inbox` lists the threads in your connected mailbox, and `/inbox/[threadId]` opens
-one.
+Open **Inbox** to read your conversations. Use the folders to find incoming,
+sent, draft, or queued mail.
 
-![The inbox](/img/screenshots/email/inbox.png)
+![Earlier Inbox layout](/img/screenshots/email/inbox.png)
 
 :::important
 **The Inbox folder is personal.** It shows only your own mail. Colleagues do not see
 your inbox, and you do not see theirs.
 
-Shared visibility happens on the **record**: a thread linked to a deal or a contact
-appears on that deal or contact for everyone who can see it. If you want a colleague
-to see a conversation, link it to the record, not forward it.
+To share a conversation in Warpdrive, link the thread to a deal or person and
+check that its visibility is **Shared**. Colleagues who can see a linked record
+can then see the shared thread.
 :::
 
 ## How sync works
 
-Connecting a mailbox stores Gmail's **current** history cursor and begins applying
-changes from that point forward.
+The first Gmail sync starts from Gmail's current history position. Later syncs
+bring in new mail and reflect moves to Trash and Spam. An IMAP connection
+imports the folders and history window selected at setup.
 
-:::caution
-**There is no backfill.** Mail already in the mailbox before you connect it is not
-imported. Only messages that arrive afterwards are synced.
-:::
-
-Sync then polls Gmail's history, pages through the changes, and advances the cursor
-only once every page has been applied. It processes added messages and Trash and
-Spam transitions, rather than reconciling every Gmail label, so mail Gmail marks as
-spam stays out of the Warpdrive Inbox.
-
-Sync runs in the background worker process. If mail stops arriving in Warpdrive but
-still arrives in Gmail, an absent worker is the first thing to check.
+Sync runs in the background. If new mail is missing, check your connection in
+**Settings > Email sync**.
 
 ### When a mailbox disconnects itself
 
-If Google rejects the stored credentials outright (an `invalid_grant` response),
-Warpdrive disconnects the mailbox and discards the token, because the grant will not
-recover on its own. Transient network failures and decryption errors do **not**
-disconnect it.
-
-Disconnecting is soft in both cases: the account row and everything already synced are
-kept, so reconnecting picks up where it left off.
+If Google revokes authorization, reconnect the affected mailbox in **Email sync**.
+Conversations already imported stay in Warpdrive.
 
 ## How threads link to records
 
@@ -74,10 +59,10 @@ interleaved with activities and notes. See
 
 ## Composing
 
-`/inbox/compose` opens a full-page composer, and the same composer is available in
-place on a deal or a contact.
+Compose from **Inbox**, a deal, or a contact. If you have multiple sending
+mailboxes, check the sender before you send or schedule the message.
 
-![The composer](/img/screenshots/email/compose.png)
+![Earlier email composer](/img/screenshots/email/compose.png)
 
 ### Merge fields
 
@@ -112,7 +97,9 @@ later by the background worker.
 
 ### Open tracking
 
-Outbound messages can be tracked, recording when a recipient opens them.
+The composer offers open and link tracking. Treat these events as signals:
+a mail client may block tracking, and a proxy or automated link check can
+generate an event.
 
 ## Signatures
 
@@ -121,8 +108,10 @@ appended at send. Resuming a draft therefore does not add it a second time.
 
 ## Permissions and visibility
 
-Mail is subject to the same visibility rules as the record it is linked to. Linking a
-thread to a deal makes it visible to everyone who can see that deal.
+A **Private** thread stays visible only to the mailbox owner, even when linked
+to a record. A **Shared** thread can be seen by anyone who can see at least one
+of its linked deals or people. Changing the thread visibility applies to the
+whole conversation.
 
 ## Related
 

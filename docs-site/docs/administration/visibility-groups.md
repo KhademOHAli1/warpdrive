@@ -21,7 +21,7 @@ For a given record and user, visibility can come from any of:
 
 - an explicit grant to that user,
 - ownership of the record,
-- ownership by a member of a team the user **manages**,
+- ownership by a member of a team the user manages, when the manager has `team.viewMembers`,
 - the record being marked visible to all, or
 - the record's visibility group matching one of the user's groups.
 
@@ -32,10 +32,9 @@ Any one of these is sufficient.
 A restricted pipeline is a **hard gate** for non-administrators, evaluated before
 everything above.
 
-If a user cannot see the pipeline, they cannot see its deals, and that holds even if
-they own a deal in it or were granted it explicitly. Restricting a pipeline is
-therefore the strongest control available, and also the easiest way to accidentally
-hide someone's own deals from them.
+Users outside the pipeline's visibility group cannot see its deals or activities
+that inherit its pipeline restriction. Ownership and explicit grants cannot override
+this gate.
 
 ## Visibility and aggregates
 
@@ -47,14 +46,15 @@ model working, not a reporting bug.
 
 ## Entities and activities
 
-Visibility for records and for activities is evaluated by separate rules. Restricting
-a record does not automatically restrict every activity referencing it.
+An activity follows the first linked record in this order: deal, person,
+organization. A linked deal also brings its pipeline restriction. For activities
+with none of those links, including activities linked only to a lead, the
+assignee and participants can see the activity.
 
 :::caution
 When configuring restricted access, verify the result by signing in as an account that
-holds the restricted configuration and checking each surface. This distinction between
-entity and activity scoping has been a repeated source of mistakes, and it is not
-visible from the configuration screen.
+holds the restricted configuration. Check the record, the Activities list and
+calendar, and the reports that use those records.
 :::
 
 ## Related

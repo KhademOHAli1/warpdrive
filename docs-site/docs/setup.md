@@ -6,21 +6,25 @@ description: "Deploy Warpdrive with Docker Compose, configure secure authenticat
 
 # Installation
 
-Warpdrive ships as a self-contained Docker Compose stack: the Next.js app, a
-WebSocket server, a background worker, Postgres, MinIO object storage, and a Caddy
-reverse proxy that terminates TLS with automatic Let's Encrypt certificates. One
-`docker compose up -d --build` brings up the whole thing.
+This guide covers a fresh installation built from a reviewed source revision
+using the fork's single-host Docker Compose configuration. The stack includes the
+web app, a WebSocket service, a background worker, PostgreSQL, S3-compatible
+storage, and Caddy for HTTPS. For an existing installation, follow the
+[upgrade guide](./operations/updating.md).
 
 ## Prerequisites
 
-Use the maintained fork's current `.env.example`, package manifests, and migration
-journal as the configuration source. Bun is the declared application runtime and
-package manager; local development needs the version in `package.json`.
+Start with a clean checkout of the [maintained fork](https://github.com/KhademOHAli1/warpdrive)
+at the exact revision you intend to run. Use the `.env.example`, Compose files, and
+migrations from that revision. Review the scope and checksums of any source archive
+you download from [GitHub Releases](https://github.com/KhademOHAli1/warpdrive/releases).
+Rehearse the setup before using it with customer data.
 
-The inherited Compose storage image references require operator review before a
-fresh installation. The root README records the known MinIO image availability
-limitation; an S3-compatible deployment needs valid image/service configuration,
-credentials, bucket provisioning, and browser-reachable upload URLs.
+Before starting Compose, confirm that both storage images (`minio` and
+`createbuckets`) are available for your host architecture and pin the versions
+you tested. If you use another S3-compatible service, adapt bucket provisioning,
+routing, and CORS to that service. The app needs a private bucket and a storage URL
+that both the app and the browser can reach.
 
 - A Linux box with Docker and the Compose plugin.
 - A domain name with an `A`/`AAAA` record pointing at the box's public IP, for the
@@ -29,7 +33,7 @@ credentials, bucket provisioning, and browser-reachable upload URLs.
   `s3.crm.example.com`), also pointing at the box. The browser uploads files (CSV
   imports, avatars, attachments) directly to MinIO through this hostname, so it needs
   its own DNS record and certificate. Skipping this breaks every upload.
-- Ports 80 and 443 open. Caddy needs port 80 for the ACME challenge.
+- Ports 80 and 443 reachable for Caddy's HTTPS setup.
 - An SMTP service that can deliver invitations, email verification, password resets,
   and security notices. Production requires SMTP; local capture does not send mail.
 - Optional Google, Microsoft, or OIDC provider credentials if you want provider
@@ -41,64 +45,69 @@ credentials, bucket provisioning, and browser-reachable upload URLs.
 cp .env.example .env
 ```
 
-Warpdrive reads `process.env` in exactly one module, which validates every variable
-with a schema and throws at import time. A misconfigured deployment fails loudly at
-boot rather than misbehaving hours later.
+Set the values in this section and the authentication settings below. The app
+validates its configuration on startup. Docker Compose also reads `.env` when
+resolving values in the Compose file.
 
 ### Deployment values
 
 | Variable | Value on the box |
 | --- | --- |
 | `APP_DOMAIN` | `crm.example.com`, the public hostname |
-| `ACME_EMAIL` | an address for Let's Encrypt expiry notices |
+| `ACME_EMAIL` | Contact address for Caddy's ACME account |
 | `BASE_URL` | `https://crm.example.com` |
 | `NEXT_PUBLIC_WS_URL` | `wss://crm.example.com/_ws` |
 | `WS_PUBLIC_URL` | `ws://ws:8080`, the internal Compose address |
 | `MINIO_ENDPOINT` | `https://s3.crm.example.com` |
-| `POSTGRES_PASSWORD` | A unique generated password; required by Compose on new and existing volumes |
-| `DATABASE_URL` | `postgres://warpdrive:<same-password>@postgres:5432/warpdrive` |
+| `POSTGRES_PASSWORD` | Password for the PostgreSQL owner account. With an existing volume, use its current password. |
+| `MIGRATION_DATABASE_URL` | Owner connection for the one-shot migrator, for example `postgres://warpdrive:<owner-password>@postgres:5432/warpdrive` |
+| `DATABASE_URL` | Separate runtime login without schema ownership, for example `postgres://warpdrive_runtime:<runtime-password>@postgres:5432/warpdrive` |
 | `SEED_ADMIN_EMAIL` | Intended first administrator's exact email, required in production |
 | `ALLOW_FIRST_LOGIN_ADMIN` | Keep `false`; first sign-in does not create an administrator |
 
-Three of these cause silent, confusing failures when set wrongly, so they are worth
-stating plainly:
-
-- **`MINIO_ENDPOINT` must be the public `https://s3.<domain>` URL**, not the internal
-  `minio` Compose alias. The browser POSTs presigned uploads directly to this address,
-  so an internal hostname is unreachable from where it actually gets used. Every
-  upload fails if this is wrong.
-- **`NEXT_PUBLIC_WS_URL` must be set at build time.** `NEXT_PUBLIC_*` variables are
-  inlined into the client bundle when the image is built, not read at runtime. If it
-  is missing, the app still starts and looks healthy, but the board, inbox,
-  notifications, and presence indicators silently never update.
-- **Bootstrap runs explicitly on the deployment host.** `SEED_ADMIN_EMAIL` identifies
-  its intended recipient; setting it does not create an account or promote a visitor.
-  The environment boundary rejects `ALLOW_FIRST_LOGIN_ADMIN=true` in production.
+- Set **`MINIO_ENDPOINT`** to the exact browser-facing URL used to sign uploads and
+  downloads. In this Compose setup, Caddy proxies `https://s3.crm.example.com`
+  to MinIO. MinIO allows cross-origin requests from `BASE_URL`.
+- Set **`NEXT_PUBLIC_WS_URL`** before building the source image. The build embeds
+  it in the browser bundle. If the value changes, rebuild the image before testing
+  realtime updates.
+- Set **`SEED_ADMIN_EMAIL`** to the first administrator's email. The host-side
+  bootstrap command below queues the invitation.
 
 ### Business values
 
 | Variable | Meaning |
 | --- | --- |
-| `BASE_CURRENCY` | Currency deal values are recorded in. Defaults to `USD`. |
+| `BASE_CURRENCY` | Default currency, `USD` if unset. Records may use other currencies. |
 | `MAX_FILE_BYTES` | Upload size ceiling. Defaults to `26214400` (25 MiB). |
 | `APP_VERSION` | Version shown as "current" by the update banner. |
 | `DISABLE_UPDATE_CHECK` | Set `true` to disable the update banner and its GitHub poll. |
+| `MCP_ENABLED` | Defaults to `true` and requires `OAUTH_SIGNING_KEY`. Set `false` if you do not need the MCP and OAuth endpoints. |
 
 ### Generate the secrets
 
 ```sh
 openssl rand -base64 32   # TOKEN_ENCRYPTION_KEY (32-byte base64 key)
+openssl rand -base64 32   # OAUTH_SIGNING_KEY (separate 32-byte base64 key when MCP is enabled)
 openssl rand -hex 32      # AUTH_SECRET (dedicated authentication secret)
 openssl rand -hex 32      # WS_TICKET_SECRET (>= 32 chars)
-openssl rand -hex 16      # MINIO_ACCESS_KEY / MINIO_SECRET_KEY
+openssl rand -hex 32      # PostgreSQL owner password
+openssl rand -hex 32      # PostgreSQL runtime password
+openssl rand -hex 16      # MINIO_ACCESS_KEY
+openssl rand -hex 16      # MINIO_SECRET_KEY
 ```
 
-`DATABASE_URL`, `TOKEN_ENCRYPTION_KEY`, `WS_TICKET_SECRET`, `AUTH_SECRET`,
+`DATABASE_URL`, `MIGRATION_DATABASE_URL`, `TOKEN_ENCRYPTION_KEY`, `WS_TICKET_SECRET`, `AUTH_SECRET`,
 `GOOGLE_OAUTH_CLIENT_SECRET`, `AUTH_MICROSOFT_CLIENT_SECRET`, `AUTH_SMTP_PASSWORD`,
 `AUTH_OIDC_PROVIDERS`, `OAUTH_SIGNING_KEY`, and `MINIO_SECRET_KEY` may each instead be
 supplied as `<VAR>_FILE` pointing at a file path, for use with Docker secrets. The app
-reads the file contents at boot. Keep the encryption key stable across upgrades, and
-give the app, worker, and operator process the same secrets and `BASE_URL`.
+reads the file contents at boot. Mount the migration owner secret only in the
+migration service. Keep encryption and signing keys stable across ordinary upgrades
+and share the required runtime secrets and `BASE_URL` with the app, worker, and
+administrator bootstrap process. Compose still needs the interpolation values it uses
+for the PostgreSQL and storage containers.
+
+<span id="2-set-up-google-oauth" />
 
 ## 2. Configure authentication and email
 
@@ -117,13 +126,13 @@ have configured a working provider; passkeys are enrolled after joining.
 | `AUTH_MAIL_TRANSPORT` | Set `smtp` in production; `capture` is for local development |
 | `AUTH_MAIL_FROM` | Sender email address accepted by your SMTP service |
 | `AUTH_SMTP_HOST`, `AUTH_SMTP_PORT` | SMTP host and port, commonly port `587` |
-| `AUTH_SMTP_SECURE` | `false` uses STARTTLS, required in production; `true` uses implicit TLS, commonly port `465` |
+| `AUTH_SMTP_SECURE` | Use `false` for STARTTLS, commonly port `587`, or `true` for implicit TLS, commonly port `465`. |
 | `AUTH_SMTP_USER`, `AUTH_SMTP_PASSWORD` | SMTP credentials when required by the service |
 | `AUTH_TRUSTED_PROXY_HEADER` | Defaults to `none` for direct/local runs; production Compose sets `x-real-ip` because Caddy overwrites that header with the TCP peer address |
 
-The regular worker delivers the encrypted authentication outbox every minute.
-Queueing a message is not proof of delivery. Check SMTP and worker health, then
-review delivery status in Security administration once an administrator can sign in.
+The worker checks the encrypted authentication outbox every minute. If an invitation
+doesn't arrive, check SMTP and the worker. An administrator can check delivery
+status in Security administration after signing in.
 Password joins require mailbox verification before application access. Administrators
 must also enroll and verify a strong factor, using an authenticator or a passkey.
 
@@ -144,9 +153,10 @@ issuer with its trailing slash removed. Use that ID in the registered callback.
 Native sign-in no longer uses the legacy `/auth/callback` URL.
 
 Every new account requires a valid, single-use invitation for its exact email
-address. A matching Workspace domain does not authorize a join.
-`GOOGLE_WORKSPACE_DOMAIN` is a legacy setting, not a domain restriction for native
-authentication; apply any tenant restrictions in your identity provider as well.
+address. To restrict Google sign-in to a Workspace domain, set
+`GOOGLE_WORKSPACE_DOMAIN` to that domain. The Google provider checks the verified
+hosted-domain claim. Leave it blank if you intend to invite Google accounts from
+different domains.
 
 ### Gmail connection is separate from sign-in
 
@@ -164,21 +174,60 @@ app is running.
 
 ## 3. Bring it up
 
+On a fresh database, start PostgreSQL and apply the schema with the migration owner.
+After this command succeeds, open a PostgreSQL session as the owner:
+
+```sh
+docker compose config --quiet
+docker compose up -d postgres
+docker compose run --rm --build migrate
+docker compose exec postgres psql -U warpdrive -d warpdrive
+```
+
+Use the default database and role names shown here or substitute your configured
+names. Create the runtime login and enter its password at the `\password` prompt.
+The table, sequence, and function grants cover both the existing schema and future
+objects created by this migration owner.
+
+```sql
+CREATE ROLE warpdrive_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+\password warpdrive_runtime
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public, pgboss TO warpdrive_runtime;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public, pgboss TO warpdrive_runtime;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public, pgboss TO warpdrive_runtime;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public, pgboss TO warpdrive_runtime;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public, pgboss
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO warpdrive_runtime;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public, pgboss
+  GRANT USAGE, SELECT ON SEQUENCES TO warpdrive_runtime;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public, pgboss
+  GRANT EXECUTE ON FUNCTIONS TO warpdrive_runtime;
+\q
+```
+
+Use the runtime login in `DATABASE_URL`. Start the stack after the grants are in place:
+
 ```sh
 docker compose up -d --build
 ```
 
-Startup order is handled for you. Postgres becomes healthy, a one-shot `migrate`
-service applies the schema and `createbuckets` provisions the MinIO bucket, then
-`app`, `ws`, and `worker` start. Caddy waits for the app to report healthy, then
-fetches a TLS certificate on the first request to `https://<APP_DOMAIN>`.
+Compose waits for PostgreSQL and a successful `migrate` run before starting
+`app`, `ws`, and `worker`. The app also waits for `createbuckets` to provision
+the private bucket. Caddy starts after the app passes its health check and the
+WebSocket service starts.
 
-Check it:
+Check service status and the public health endpoint. Substitute your hostname:
 
 ```sh
 docker compose ps
-curl -fsS https://<APP_DOMAIN>/api/health   # -> {"ok":true}
+curl -fsS https://crm.example.com/api/health
 ```
+
+Expect `{"ok":true}` when the web process can reach PostgreSQL. Verify invitation
+delivery, a test upload and download, and browser realtime separately.
+
+<span id="4-first-admin-login" />
 
 ## 4. Bootstrap the first administrator
 
@@ -221,17 +270,20 @@ for bootstrap restrictions and approved recovery procedures.
 
 ## Local development
 
-The base Compose file is production-only: no host ports, TLS through Caddy. For a
-local run, merge the development overrides, which expose host ports and drop Caddy:
+For a host-run development app, start only the backing services with the development
+override. Use a dedicated database and restrict access to the published development
+ports on your host:
 
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres minio createbuckets
 ```
 
-The app is then at `http://localhost:3000`, the MinIO console at
-`http://localhost:9001`, and Postgres at `localhost:5433`. Set
-`BASE_URL=http://localhost:3000` and `NEXT_PUBLIC_WS_URL=ws://localhost:8080` for this
-mode.
+Check the bucket provisioner exits successfully. In the host app's environment,
+use PostgreSQL on `localhost:5433`, `MINIO_ENDPOINT=http://localhost:9000`,
+`BASE_URL=http://localhost:3000`, and `WS_PUBLIC_URL` and `NEXT_PUBLIC_WS_URL`
+both set to `ws://localhost:8080`. Use `WS_HOST=127.0.0.1` for the host-run WebSocket
+process. Follow [Contributing](./contributing.md#running-locally) to migrate the
+database, grant runtime access, and start the app.
 
 Use `AUTH_MAIL_TRANSPORT=capture` only for development: it records a local delivery
 result without sending email. The source-checkout operator entry point is
@@ -241,7 +293,7 @@ Provider callbacks must match the local origin if you enable provider sign-in.
 ## Operating the deployment
 
 See [Updating](./operations/updating.md) for upgrades, backups, and day-to-day
-operation. Authentication cutover invalidates old application sessions and MCP
-grants; existing users sign in again and MCP clients request fresh authorization.
-The migration preserves CRM user UUIDs and existing Google subjects. Keep a
-restorable database backup before applying it.
+operation. If upgrading across the Better Auth cutover, review the migration and
+recovery sections of the [authentication operator runbook](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/auth-operations.md).
+Existing users sign in again and MCP clients request fresh authorization after
+that migration. Keep a restorable database backup before applying it.

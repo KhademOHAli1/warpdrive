@@ -6,8 +6,9 @@ description: "Configure Warpdrive for your team: labels, lost reasons, activity 
 
 # Company settings
 
-`/settings/company` holds the catalogs that the rest of the application draws from.
-Changing one changes the options everyone sees.
+Open **Settings > Workspace details** (`/settings/company`) for company identity,
+branding, legal details, and work profile. Open **Sales & workflow** in Settings
+for the shared catalogs described below.
 
 ## Labels
 
@@ -24,8 +25,8 @@ vocabulary. A default set is seeded on first run.
 `/settings/company/lost-reasons` manages the reasons offered when a deal is marked
 lost.
 
-Keeping this list short is what makes it useful. A dozen overlapping reasons produce
-data nobody analyses.
+Use distinct reasons that your team can apply consistently. Those reasons appear
+in the [Performance](../features/dashboard.md) breakdown for lost deals.
 
 :::note
 Marking a deal lost by **dragging it onto the Lost drop zone on the board** does not
@@ -42,9 +43,9 @@ such as call, meeting, and task.
 `/settings/company/pipelines` lists pipelines. Stages are edited from the pipeline
 itself, at `/pipeline/[id]/edit`. See [Pipeline](../features/pipeline.md).
 
-Pipelines can be restricted to a visibility group, which is the strongest access
-control available: a user who cannot see the pipeline cannot see any of its deals,
-even ones they own. See [Visibility groups](./visibility-groups.md).
+A pipeline can be restricted to a visibility group. Non-administrators outside
+that group cannot see the pipeline or its deals, even ones they own. See
+[Visibility groups](./visibility-groups.md).
 
 ## Who can change these
 

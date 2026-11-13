@@ -51,6 +51,8 @@ Review email delivery separately from invitation acceptance: a queued message ma
 still need SMTP or worker attention. Invitations and authentication messages support
 Persian, German, and English.
 
+<a id="accounts-are-bound-to-google-identity-not-email"></a>
+
 ### Account identity and sign-in methods
 
 The stable CRM user UUID remains the account's identity and record owner across
@@ -138,28 +140,33 @@ Teams exist to express management, not just grouping: a permission set can grant
 action over records owned by members of a team you manage. See
 [Permission sets](./permission-sets.md).
 
-A manager sees their members' records only when their permission set also includes the
-relevant view permission. Managing a team is not by itself a grant of visibility.
+Give the team manager `team.viewMembers` to make members' records visible to them
+where the visibility rules allow it. Give them the matching team-scoped capability
+for each action they should be able to perform.
 
 :::caution
 Creating a team and setting its roster are two separate operations, as are saving a
 team's details and its roster. If the second fails, the first has already applied. A
-failed save can leave a team created but empty, or renamed with an unchanged roster.
-Re-open the team and confirm before retrying.
+failed roster save can leave a team created but empty, or renamed with an unchanged
+roster. If the editor offers **Save members**, retry the roster there. If creation
+could not be confirmed, check the Teams list before trying again.
 :::
 
-Deleting a team has **no confirmation step** and removes its roster with it.
+Open the team, choose **Delete team**, and confirm. Deleting a team removes its
+membership assignments.
 
 ## Who can administer users
 
-Administrators can do everything below. Holders of `permissions.manage` who are not
-administrators can view the page and invite ordinary users, but cannot:
+Administrators can manage users, and people with `permissions.manage` can view the
+Users page and invite regular users. Only administrators can:
 
 - promote or demote administrators,
 - deactivate or reactivate anyone,
-- invite an administrator,
-- assign their own permission set, or
+- invite an administrator, or
 - assign a set containing high-risk permissions.
+
+Delegated managers cannot change their own permission set or an administrator's
+assignment.
 
 :::note
 The interface still renders those controls for a non-administrator holding

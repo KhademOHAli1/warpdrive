@@ -6,8 +6,8 @@ description: "The Warpdrive deal page: summary, inline editing, activities, note
 
 # Deal workspace
 
-`/deals/[dealId]` is the page for one deal. It is where the work actually happens once
-a deal exists on the [board](./pipeline.md).
+Open a deal from the [pipeline board](./pipeline.md) to review and update its
+details. The deal also has its own page at `/deals/[dealId]`.
 
 The page has three regions: a header with the stage progression, a summary sidebar of
 the deal's fields, and a main pane holding activity, notes, files, and email.
@@ -21,9 +21,9 @@ highlighted. Clicking a stage moves the deal there, the same operation as draggi
 card on the board.
 
 Marking the deal **Won** or **Lost** closes it. Closing removes it from the board and
-the list, since both show only open deals. Marking it lost asks for a reason and an
-optional comment, and both are kept on the status change in the deal's history, not
-only in the header chip.
+the list, since both show only open deals. When you mark a deal lost from its
+workspace, you can select a configured reason and add a comment. The deal's
+history records the information you enter.
 
 ## Summary and inline editing
 
@@ -58,13 +58,9 @@ pointer back to this deal. See [Collaboration](./collaboration.md).
 
 ## Files
 
-Files uploaded to the deal are listed with their size and uploader.
-
-Uploads go directly from the browser to object storage using a presigned URL, so the
-application server never proxies the bytes. The size ceiling is `MAX_FILE_BYTES`,
-25 MiB by default.
-
-See [Files](./files.md).
+Use **Files** to attach a document or download an existing attachment. The list
+shows each file's size and uploader. See [Files](./files.md) for upload limits and
+storage requirements.
 
 ## Email
 

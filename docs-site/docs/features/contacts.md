@@ -37,8 +37,9 @@ A person can belong to one organization. When setting it, existing organizations
 suggested so that people attach to a single record rather than creating near-duplicate
 companies.
 
-Deals link to both a person and an organization, which is what makes a company's page
-able to show every deal across all of its contacts.
+A deal can link to a primary person and an organization. It can also have
+additional people as [participants](./deal-workspace.md#participants). Contact
+pages show the related deals you have permission to see.
 
 ## Timeline
 
@@ -53,15 +54,15 @@ cancels. Custom fields appear alongside built-in ones. See
 
 ## Enrichment
 
-Both detail pages carry a **Fill the gaps** button that fills empty fields from
-connected data providers (Apollo, RocketReach, GetProspect), behind a review dialog.
-See [Enrichment](./enrichment.md).
+On a person or organization page, use **Fill the gaps** to review suggestions from
+the configured providers. Choose which values to apply. See
+[Enrichment](./enrichment.md).
 
 ## Email
 
-Threads linked to a person appear on their detail page. Linking is recorded on the
-thread, matching inbound mail on the sender and outbound mail on the recipient. See
-[Email](./email.md).
+Threads linked to a person appear on their detail page. Automatic linking uses the
+sender address for inbound mail and the external recipient address for eligible
+outbound mail. See [Email](./email.md).
 
 ## Visibility
 

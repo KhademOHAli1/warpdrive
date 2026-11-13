@@ -12,10 +12,8 @@ team. It covers pipeline management, a deal workspace, contacts and organization
 two-way Gmail, contact enrichment, user management, notifications, and a
 performance page with sales metrics and quota goals.
 
-The application and core CRM storage run on infrastructure you control. Connected
-mailbox and enrichment providers process the data used by those integrations. This
-maintained fork keeps upstream history and MIT attribution, and adds Bun plus
-Farsi/German localization.
+The application and CRM storage run on infrastructure you control. Connected
+mailbox and enrichment providers process the data used by those integrations.
 
 ## What it does
 
@@ -25,38 +23,36 @@ Farsi/German localization.
   participants, and the email thread history.
 - **Contacts.** People and organizations, linked to each other and to deals.
 - **Leads.** A separate inbox for unqualified prospects, convertible into deals.
-- **Email.** Two-way Gmail over OAuth: send from inside the CRM, and see replies on
-  the record they belong to.
+- **Email.** Connect a mailbox, send from the CRM, and link conversations to the
+  relevant records. See [Email sync](./administration/email-sync.md) for setup.
 - **Activities.** Calls, meetings, and tasks, in a list and on a calendar.
 - **Enrichment.** Fill empty fields on people and organizations from Apollo,
   RocketReach, and GetProspect, behind an explicit review step.
 - **Performance.** Sales metrics, a stage funnel built from real stage history, and
   quota goals with pace.
-- **AI access.** An OAuth-protected MCP server so assistants can read and update the
-  CRM under each user's own permissions.
+- **AI access.** If the installation enables MCP, authorized assistants can read and
+  update the CRM within the user's permissions.
 - **Administration.** Users, teams, permission sets, and visibility groups.
-- **Languages and region.** English, Farsi RTL, and German; independent Gregorian/
-  Iranian calendar, timezone, and digit preferences. See [Regional settings](./features/regional-settings.md).
+- **Languages and region.** English, Persian (right to left), and German. Choose
+  Gregorian or Solar Hijri calendar display, time zone, and digits independently.
+  See [Regional settings](./features/regional-settings.md).
 - **Currencies.** Native amounts on leads/deals and separate currency totals, without
   exchange-rate conversion.
 
+<span id="what-it-is-not" />
+
 ## Implementation scope
 
-Visual workflow automation is being implemented in stages. An early-access editor
-supports connectable nodes, conditional manual deal follow-up workflows, simulation, publication, background execution,
-and run history. Automatic triggers and advanced actions remain in development. See
-[Visual workflows](./features/automations.md) for the current boundary.
-
-The Google Calendar event editor, external calendar synchronization, conferencing
-providers, and advanced pipeline Insights have separate specifications. They are
-planned capabilities, not available integrations. Existing scheduled email,
-activity reminders, and basic performance reports remain available.
+See [Visual workflows](./features/automations.md) for the early-access workflow
+editor and the manual deal follow-up it supports. Availability can vary by
+installation and configuration. The release notes describe the scope of each
+published version. For external calendar and other provider connections, check
+the setup and availability in the relevant feature guide.
 
 ## Single-tenant by design
 
-Warpdrive is single-tenant: one deployment serves one company. There is no
-organization switcher and no cross-tenant data model, which is what keeps the
-permissions model comprehensible and the queries simple.
+One Warpdrive deployment serves one company. Use teams, permission sets, and
+visibility groups to manage access within that workspace.
 
 ## Where to go next
 

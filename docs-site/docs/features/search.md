@@ -6,26 +6,26 @@ description: "Global search in Warpdrive: what is searched, how results are grou
 
 # Search
 
-Search from the application header looks across deals, people, organizations, and
-leads at once.
+Select the search control in the header, press **Command+K** on macOS, or
+press **Ctrl+K** on Windows or Linux. Search looks across deals, people,
+organizations, and leads at once.
 
 ![Global search with grouped results](/img/screenshots/search/results.png)
 
-Results are grouped by record type, so a company name that matches both an
-organization and several deals shows both rather than burying one.
+Results are grouped by record type, with up to eight results per group.
+Add a more specific term if you do not see the record you are looking for.
 
 Organizations are also reachable by their **domain**: searching `example.com`, a
-full URL, or a pasted email address finds the organization holding that domain, and
-the domain is shown on the result row. A name match still ranks above an
-organization that merely shares the domain.
+full URL, or an email address can find an organization whose domain matches.
+The domain appears on the result row.
 
 Selecting a result opens that record.
 
 ## Visibility
 
-Search returns only records you can see. It is not a way around
-[visibility groups](../administration/visibility-groups.md), so a colleague finding a
-record you cannot find is a visibility difference rather than a search fault.
+Search applies your [visibility settings](../administration/visibility-groups.md).
+Archived leads and deals in archived pipelines are excluded. For archived leads,
+use the archived view of the leads inbox.
 
 ## Filters versus search
 

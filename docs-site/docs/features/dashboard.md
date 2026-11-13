@@ -10,8 +10,11 @@ description: "The Warpdrive Performance page: sales metrics, the stage funnel, q
 value over time, your applicable goals and a pipeline summary. **Pipeline** shows
 deal outcomes, funnel conversion, current stage values and lost reasons.
 **Activities** shows activity counters and the completion breakdown by type.
+If available in your installation, **Acquisition** shows recorded deal sources
+and lead-to-deal links, **Accounts** groups won value by linked organization, and
+**Forecast** shows scenarios for eligible deals.
 
-![The Performance page](/img/screenshots/dashboard/overview.png)
+![Earlier Performance layout](/img/screenshots/dashboard/overview.png)
 
 ## Metrics
 
@@ -19,12 +22,12 @@ The scoreboard shows won deal value and count, win rate, average won deal value,
 median sales cycle and completed activities. The individual reports retain added,
 won, lost and open deal counts and values, and separate activity counters.
 
-Use the pipeline, owner and currency filters to choose the report scope. Quick
-ranges offer the last 30 days, this month to date, this quarter to date and the
-current year to date. Custom start/end dates remain available. Presets use Gregorian
-date boundaries and the viewer's server-resolved current date; the date pickers
-continue to respect display preferences. A reversed range must be corrected
-before the report can load. Switching report tabs retains the selected filters.
+Use the pipeline, owner and currency filters to choose the report scope. Your
+role determines which owners you can report on. Choose a date range or enter
+custom dates. The help below the date filters identifies the calendar used by
+the month, quarter, and year presets. The presets end on today's date in your
+account time zone. Put the start date on or before the end date. Switching report
+tabs retains the selected filters.
 
 The monthly trend has a **Show monthly data** control for reading the same values
 in a visible table. The table remains available to assistive technology when the
@@ -39,25 +42,28 @@ dash rather than a zero.
 
 ## The funnel
 
-The stage funnel is built from the deals' actual stage history, so it reports how
-far a cohort of deals got, with median days in stage, rather than where open deals
-happen to be sitting. A deal that moved forward and then back still counts as having
-reached the far stage.
+The stage funnel follows visible deals created in the selected period. Each deal
+contributes through its furthest recorded stage. A deal that moves forward and
+later moves back still counts toward the furthest stage it reached. Median time
+in each stage uses the recorded stays in that stage. Use stage values for a
+snapshot of current open deals.
 
-"All pipelines" aggregates every pipeline you can see by stage position.
+**All pipelines** aggregates by stage position across visible pipelines. Select
+one pipeline if stage names or meanings differ across pipelines.
 
 ## Quota goals
 
 A goal names what is measured (for example deals won, by value or by count), who it
 applies to, and an interval, and carries a target. The Performance page shows each
-goal's progress for the current period as attainment plus **pace**: half the target
-booked a fifth of the way through the month reads as ahead, not as 50%.
+goal's progress for the current period. For goals with a pace indicator, pace
+compares progress with the share of the period that has elapsed. For example,
+half the target reached a fifth of the way through the period is ahead of pace.
 
 Periods anchor on the goal's start date rather than the calendar, so a quarterly
 goal starting in February runs February to April.
 
-Goals are managed on `/settings/goals`, behind the `goals.manage` permission.
-Reading them needs no permission.
+Manage goals in Settings (`/settings/goals`) with the `goals.manage` permission.
+The Performance page shows the goals available to your account.
 
 Goals keep their own dates and assignee scope independently of the report filters.
 A failed goals request is reported separately from a successful request with no goals.
@@ -79,10 +85,14 @@ When reconciling a disputed number, compare as the **same user**, then check
 
 ## Scope
 
-This page summarizes the currently supported metrics. The broader analytics
-roadmap tracks forecasting, saved reports and permission-safe record drill-down.
-The current views do not add forecasts, previous-period comparisons or currency
-conversion.
+Where **View contributing deals** is available, select it to inspect the deals
+behind a metric. Users with export permission can choose **Download CSV** from
+that view. Narrow the filters if the result is too large to export.
+
+Under **Saved Performance reports**, **Save current filters** stores the pipeline,
+owner, currency, and fixed dates for your account. Running the report again
+queries current data with those filters and checks your current access.
+Currency filters do not convert amounts between currencies.
 
 ## Related
 

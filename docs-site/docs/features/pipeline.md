@@ -25,20 +25,16 @@ activity indicator.
 
 ### Moving deals
 
-Drag a card to another stage, or to a new position within its current stage. The move
-is applied optimistically and reconciled with the server afterwards, so the board does
-not wait on a round trip.
-
-A pointer gesture only becomes a drag after **8 pixels of movement**. Below that
-threshold it is treated as a click, which opens the deal. This is what lets the same
-card be both clickable and draggable without the two competing.
+Drag a card onto another stage to move the deal. Click the card to open the deal.
 
 While dragging, three drop targets appear: **Won**, **Lost**, and **Move**.
 
 ![Dragging a deal, showing the Lost, Won, and Move drop targets](/img/screenshots/pipeline/board-drag.png)
 
-Won and Lost close the deal immediately. Move opens a stage picker, which is useful
-for sending a deal to a stage that is scrolled off screen.
+Drop the card on **Won** or **Lost** to close the deal. To select a loss reason
+or enter a comment, use **Lost** in the [deal workspace](./deal-workspace.md#stage-progression).
+Drop on **Move** to open a stage picker, which is useful when the destination
+column is off screen.
 
 :::note
 Closing a deal removes it from the board and the list, because both show only open
@@ -81,8 +77,9 @@ user. Row titles can be edited in place with the hover Edit control: Enter or cl
 away saves, Escape cancels. Blank titles, unchanged titles, and titles over 255
 characters are ignored rather than rejected with an error.
 
-The footer reports the number of deals and their total value **across the entire
-filtered result set**, not just the rows currently loaded.
+The footer reports the count and value of the full result set for server-side
+filters. When an owner filter is active, the footer reflects the matching rows
+loaded in the list.
 
 ### Bulk actions
 
@@ -127,25 +124,22 @@ would then be editing that person's record rather than the deal.
 
 ![Editing pipeline stages](/img/screenshots/pipeline/edit.png)
 
-You can rename the pipeline, rename stages, add stages, remove stages, and enable
-stage rotting.
+You can rename the pipeline, add and rename stages, drag stages into order, and
+enable stage rotting.
 
 **Rotting** flags a deal that has sat in one stage too long. Enabling it on a stage
 starts at 7 days, and the threshold has a minimum of 1 day.
 
 Two constraints apply when deleting a stage:
 
-- **A stage that still contains deals cannot be deleted.** This includes won, lost,
-  archived, and deleted deals, not only the open ones visible on the board. A stage
-  that looks empty can still refuse to delete for this reason.
-- **A pipeline must keep at least one stage.** The delete control is disabled when
-  only one stage remains.
+- To remove a stage containing deals, choose an existing stage in the same
+  pipeline to receive them. The editor counts closed and archived deals even
+  when the board looks empty.
+- A pipeline must keep at least one stage.
 
 :::caution
-Saving the stage editor runs as a sequence of separate operations: rename, then
-deletes, then creates, then updates. If a later operation fails, the earlier ones are
-**not** rolled back. If a save reports an error, re-open the editor and check what
-actually applied before retrying.
+The stage editor saves changes in separate steps. If a save reports an error,
+reopen the editor and check which changes were applied before retrying.
 :::
 
 Creating pipelines and editing stages requires administrator status or the
@@ -163,9 +157,9 @@ Two settings on `/settings/profile` change how the board behaves:
 
 ## Realtime
 
-The board updates in place as other people move, create, and close deals, over the
-shared WebSocket connection described in [Architecture](../architecture.md). If the
-board never updates for anyone, `NEXT_PUBLIC_WS_URL` is the first thing to check.
+The board updates as other people move, create, or close deals while the live
+connection is active. If updates stop for the whole team, ask your administrator
+to check the [Realtime service](../architecture.md).
 
 ## Related
 

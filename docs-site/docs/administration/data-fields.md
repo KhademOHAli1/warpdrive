@@ -1,33 +1,31 @@
 ---
 sidebar_position: 5
 title: Data fields
-description: "Add custom fields to Warpdrive deals, people, and organizations, and hide built-in fields you do not use."
+description: "Add custom fields to Warpdrive records and hide optional built-in fields your team does not use."
 ---
 
 # Data fields
 
-`/settings/fields` manages the fields available on deals, people, and organizations.
+Open **Settings > Data fields** (`/settings/fields`). Use the entity selector to
+choose deals, leads, people, organizations, or activities.
 
 ![Data fields settings](/img/screenshots/data-fields/list.png)
 
 ## Custom fields
 
-Custom fields are stored as JSONB rather than as new database columns, which is what
-allows adding one without a schema migration or a restart.
-
-A custom field appears on the record's detail page alongside the built-in fields, and
-is available in filters and in [CSV import](../features/import.md) column mapping.
+Select the entity before adding a field so it appears on the intended record
+type. Depending on the entity and field type, the field can also appear in
+filters or [CSV import](../features/import.md) column mapping.
 
 ## Hiding built-in fields
 
-Built-in fields can be hidden when your team does not use them, which shortens the
-detail pages and the import mapping step.
+Hide optional built-in fields to simplify supported add forms, record details,
+and import mapping. Warpdrive keeps their data and shows it again when you
+unhide the field. Locked identity fields such as a deal's title stay visible.
 
 :::note
-Some built-in fields are structural rather than optional. A deal's stage is the
-chevron bar in the header, and its value and pipeline sit in the header itself. These
-are required to create a record, so hiding them affects **import only**, not the
-creation form.
+Deal stage, value, and pipeline are part of the deal form and workspace header.
+Hiding them in Data fields affects import mapping and leaves those controls available.
 :::
 
 ## Related

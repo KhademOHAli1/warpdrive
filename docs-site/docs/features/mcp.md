@@ -15,11 +15,10 @@ existing permissions and visibility rules. Connecting an assistant never grants 
 access than you already have.
 
 :::important
-**The server has no delete tools for CRM records.** There is no way to delete,
-remove, archive, or destroy a deal, contact, lead, or activity through MCP. The one
-exception is the assistant's own unsent email drafts, which it can revise and
-delete, since unsent text in the actor's own mailbox is not a record anyone else
-can see.
+MCP can create and update CRM records and archive or restore leads. It can delete
+unsent drafts in your mailbox. Review write requests in your client before
+approving them. Email sending and permanent deletion of CRM records remain
+actions outside the MCP tool list.
 :::
 
 ## Enabling the server
@@ -39,10 +38,11 @@ OAUTH_SIGNING_KEY=<the-generated-base64-value>
 ```
 
 :::caution
-Keep `OAUTH_SIGNING_KEY` secret and stable. Rotating it invalidates every issued MCP
-token, so connected clients must reconnect. It is required whenever `MCP_ENABLED` is
-true, and the app will refuse to start without a valid 32-byte key. Docker secret
-deployments can instead point `OAUTH_SIGNING_KEY_FILE` at a file holding the key.
+Keep `OAUTH_SIGNING_KEY` secret and stable. Replacing it invalidates existing signed
+access tokens after every serving app instance uses the new key. Revoke affected
+clients separately to invalidate their refresh grants. When `MCP_ENABLED` is true,
+Warpdrive requires a valid 32-byte key at startup. For Docker secrets, set
+`OAUTH_SIGNING_KEY_FILE` to the file holding the key.
 :::
 
 Make sure `BASE_URL` is the public HTTPS origin your clients reach Warpdrive at. When
@@ -50,7 +50,9 @@ Make sure `BASE_URL` is the public HTTPS origin your clients reach Warpdrive at.
 
 ## Connecting a client
 
-The remote MCP endpoint is:
+Open **Settings > Connected apps > AI clients** and copy the MCP server URL.
+If your installation shows no URL, ask your operator to check the server
+configuration. The endpoint uses this format:
 
 ```text
 https://<your-domain>/api/mcp
@@ -64,16 +66,15 @@ are no API keys to copy.
 
 To connect from Claude or Claude Desktop:
 
-1. Open **Settings**, then **Connectors**.
-2. Select **Add custom connector**. Team and Enterprise owners may need to add it under
-   Organization connectors first.
-3. Enter a name such as `Warpdrive` and the endpoint URL above.
-4. Select **Connect**, sign in to Warpdrive, review the consent screen, and approve.
-5. Enable the Warpdrive tools you want from **Search and tools** in a conversation.
+1. Open **Customize > Connectors** and select **Add custom connector**.
+2. Enter a name such as `Warpdrive` and paste the server URL.
+3. Connect, sign in to Warpdrive, and review the consent screen.
+4. Enable the connector in a conversation. Your organization may need to approve it first.
 
-See Anthropic's [custom connector guide](https://support.anthropic.com/en/articles/11175166-about-custom-integrations-using-remote-mcp)
-for current client controls. Any MCP client that supports remote Streamable HTTP servers
-with OAuth can use the same endpoint.
+For current client controls and network requirements, see the
+[Claude custom connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
+Other clients can use the same endpoint if they support remote MCP over
+Streamable HTTP with OAuth and PKCE.
 
 ## Tools
 
@@ -93,16 +94,15 @@ with OAuth can use the same endpoint.
 **Write**
 
 - `create_deal`, `update_deal`, `move_deal_stage`
-- `create_lead`, `update_lead`, `convert_lead_to_deal`
+- `create_lead`, `update_lead`, `convert_lead_to_deal`, `archive_lead`
 - `create_person`, `update_person`
 - `create_organization`, `update_organization`
 - `create_activity`, `update_activity`, `complete_activity`
 - `add_note`
 - `create_email_draft`, `update_email_draft`, `delete_email_draft`
 
-The draft tools write into the actor's own connected mailbox and can link a draft to
-a deal or person, so an assistant can prepare outreach where it belongs. **There is
-no send tool**: drafts are written for review, and sending stays a human action.
+The draft tools use your connected mailbox and can link drafts to a deal or
+person. Review and send the draft from Warpdrive.
 
 ## Permissions and safety
 
@@ -113,17 +113,16 @@ the app. Every write is recorded in the change log, attributed to you, exactly l
 change made in the UI.
 
 :::tip
-Review the assistant's write requests before approving them in your client. The server
-has no delete tools for CRM records and no send tool, so the worst an approved write
-can do is create or change a record, never remove one or email anyone.
+Check the record, fields, and intended action before approving a write. Start with
+a read request to check that the client reaches the correct workspace.
 :::
 
 ## Revoking a connection
 
-Open **Settings**, then **Connected apps**. Each connected client is listed with when it
-connected and when it was last used. Select **Revoke** to invalidate all of its access
-and refresh tokens for your account. The client must complete the sign-in again before
-it can reach Warpdrive. You can also remove the connector from the client's own settings.
+Open **Settings > Connected apps > AI clients** and find the client under
+**Authorized apps**. Select **Revoke** and confirm to invalidate its access and
+refresh tokens for your account. The client must sign in again to reconnect.
+You can also remove the connector from the client's own settings.
 
 Authentication upgrades, account recovery and stricter MFA policies can also revoke existing
 grants. Reconnect the client, complete the required sign-in and MFA steps, and approve a new

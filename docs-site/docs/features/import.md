@@ -6,24 +6,26 @@ description: "Import deals, leads, people, and organizations into Warpdrive from
 
 # Import
 
-`/settings/import` holds import history; `/settings/import/new` starts one.
+Open **Import data** in Settings to see import history. Select **New import** to
+start. Your permission set must allow data import.
 
 ![The import wizard](/img/screenshots/import/wizard.png)
 
 ## The wizard
 
-Import is a stepper:
+The wizard takes you through four steps.
 
-1. **Upload** a CSV, by drag and drop or file picker, and choose its **Source**:
-   **CSV file** for any spreadsheet, or **Pipedrive export** for a file exported from
-   Pipedrive.
-2. **Map** its columns onto Warpdrive fields, including any
-   [custom fields](../administration/data-fields.md). Columns whose header matches a
-   field name are mapped for you; check them and change any that are wrong.
-3. **Preview** the parsed result.
-4. **Commit** the import.
+1. **Upload** a CSV file by dragging it in or using the file picker. Select the
+   **Source** and the record type under **Import as**. Use **CSV file** for a
+   general CSV export or **Pipedrive export** for a file from Pipedrive.
+2. Under **Map columns**, check the suggested matches and map any other columns
+   you want to keep, including [custom fields](../administration/data-fields.md).
+   When date options appear, choose the calendar and time zone used by the file.
+3. **Preview** the parsed result. Review the valid rows, errors, and warnings
+   before importing.
+4. Select **Import** to process the valid rows.
 
-Choosing **Pipedrive export** adds what a migration needs: a **Note** import target, the
+Choosing **Pipedrive export** adds the **Notes** import target, the
 Pipedrive ID column for safe re-runs, links between files, owners, deal history, and an
 option to create missing pipelines and stages. See
 [Migrating from Pipedrive](../guides/migrating-from-pipedrive.md) for the full walkthrough.
@@ -39,21 +41,22 @@ The file uploads directly from the browser to object storage using a presigned U
 then the import itself runs as a **background job**.
 
 :::caution
-Background jobs run only in the `worker` process. If an import stays at "uploaded" and
-never progresses, the worker is not running. Check with `docker compose ps` and
-`docker compose logs -f worker`.
-
-This is the single most common import problem, and it does not look like a worker
-problem from the interface.
+If an import stays at **Uploaded**, ask your administrator to check the background
+worker before you retry. The worker may be stopped or unable to process the job.
 :::
 
 Because it is a background job, a large import continues if you navigate away.
 
 ## Deduplication and linking
 
-Rows are matched against existing records rather than blindly inserted. Person and
-organization links are resolved find-or-create, so importing leads for a company that
-already exists attaches them to that company instead of creating a second one.
+For a people import, matching uses the person's primary email address. For an
+organization import, matching uses the organization name without regard to case.
+Choose **Skip the row** or **Update the existing contact** for matching contacts.
+Only records you can see are considered for matching.
+
+When importing linked people and organizations, Warpdrive reuses an eligible match
+or creates the missing contact when it has enough information. Keep the original
+IDs when re-running a Pipedrive export.
 
 ## Errors
 
@@ -67,8 +70,10 @@ in the downloadable report, and never stop the row from importing.
 
 ## Undo
 
-A completed import can be undone, which removes the records it created. This is what
-makes it safe to try an import on real data rather than rehearsing on a copy.
+From import history, **Undo** removes records created by a completed or partially
+completed batch when you have permission to delete them. Updates to existing
+contacts and any pipelines or stages created during the import remain in place.
+Use a small sample to check the mapping before importing your full file.
 
 ## Hidden fields
 

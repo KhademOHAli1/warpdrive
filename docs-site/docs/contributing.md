@@ -12,64 +12,93 @@ with upstream history retained from [sneg55/warpdrive](https://github.com/sneg55
 
 ## Running locally
 
+Use the Bun version declared in the root `package.json`. Start with a dedicated
+PostgreSQL database and private S3-compatible bucket. See the
+[local backing services](./setup.md#local-development) for a Compose example.
+
 ```sh
 bun install --frozen-lockfile
-cp .env.example .env    # fill in values
-bun run db:migrate
-bun run dev
+bun --no-env-file scripts/deployment/install-web-ui.mjs
+cp .env.example .env
 ```
 
-For a full stack with Postgres and MinIO in containers, see the local development
-section of [Installation](./setup.md).
+Configure `.env` for your local services, including the browser-facing app and
+WebSocket URLs. Give `MIGRATION_DATABASE_URL` the owner connection and
+`DATABASE_URL` a separate runtime login. Run the migration, then apply the
+[runtime grants](./setup.md#3-bring-it-up) as the migration owner:
+
+```sh
+bun run db:migrate
+```
+
+Start each process in a separate terminal from the repository root:
+
+```sh
+bun run dev --hostname 127.0.0.1
+```
+
+```sh
+bun src/entrypoints/worker.ts
+```
+
+```sh
+bun src/entrypoints/ws.ts
+```
+
+Use local mail capture when testing the outbox. For an invitation you can open,
+configure an SMTP test service and follow the [administrator bootstrap steps](./setup.md#4-bootstrap-the-first-administrator).
+The host-run equivalent of the packaged bootstrap command is `bun run auth:operator`.
 
 ## Tests
 
 ```sh
 bun run test:unit
+bun run test:integration
 ```
 
 Warpdrive is developed test-first. A bugfix begins with a failing test that reproduces
 the bug, and a feature begins with a test that expresses the next behavior.
 
-**Integration tests run against a real Postgres database, never a mocked one.** The
-reason is specific rather than dogmatic: mocked database tests pass while a migration
-is broken, which is exactly the failure a CRM cannot absorb.
+The integration suite starts a PostgreSQL test container and needs a running Docker
+daemon. It applies migrations to the test database.
 
 ## Conventions
 
 Most conventions are enforced by lint and by hooks rather than by review, so the
 fastest way to learn them is to run the linter. The ones that surprise people:
 
-- **One environment boundary.** `src/config/env.ts` is the only module that reads
-  `process.env`.
-- **Results over throws.** Operations that can fail return a discriminated union.
-  Throwing is for programmer errors only.
-- **Errors carry stable IDs** of the form `E_<DOMAIN>_<NNN>`, declared in one registry.
-- **Use the design system.** Interactive controls use the shadcn and Radix primitives.
-  Hand-rolled menus, dialogs, and native form controls are rejected, because they
-  silently lose focus trapping, keyboard navigation, and scroll locking.
-- **Organize by feature**, not by layer, and keep files small.
-- **No em dashes** in any file. A hook enforces this.
+- **Configuration.** Read validated server settings from `src/config/env.ts` and
+  build-time browser values from `src/config/clientEnv.ts`.
+- **Failures.** Handle expected failures through the shared result type. Use the
+  central error ID registry for application errors that need stable identifiers.
+- **Interactive controls.** Use the shared components and preserve focus handling
+  and keyboard navigation.
+- **Code layout.** Keep feature-specific implementation and tests with the feature.
+- **Checks.** Run `bun run lint` and `bun run typecheck` for application changes.
 
 See [Architecture](./architecture.md) for the reasoning behind these.
 
 ## Pull requests
 
-Contributions go to the public repository. Keep the change focused, include tests, and
-describe what behavior changed and why.
+Open a pull request against `main` from a work branch. Keep the change focused,
+include relevant tests and describe what changed, why, and how you verified it.
+Link the canonical issue for the work. See the repository's
+[delivery tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md)
+for traceability requirements.
 
 ## Documentation
 
-These docs are built with Docusaurus and live in `docs-site/` in the same repository.
-Every page has an "Edit this page" link at the bottom that opens the source file.
+Edit public guides in `docs-site/docs/`. Use the Bun version declared in
+`docs-site/package.json` and run these commands from the repository root:
 
 ```sh
+bun --cwd docs-site install --frozen-lockfile
 bun --cwd docs-site run start   # local preview with hot reload
 bun --cwd docs-site run build   # production build
 ```
 
-The build treats a **broken cross-link as an error**, so a renamed page fails the
-build rather than shipping a dead link.
+The build fails on broken page links. Preserve published routes and heading IDs,
+and check existing links and fragments in the rendered preview when editing.
 
 Screenshots are captured from a locally seeded demo instance rather than from
 production, so that no real customer data can reach a public site. The procedure is
@@ -88,7 +117,5 @@ Record current availability separately from proposals and test evidence. The roo
 `docs/README.md` indexes technical notes; `docs/workflows/status.md` tracks visual
 workflow implementation. Never refresh screenshots using real account/customer data.
 
-The documentation site has its own `package.json` and `bun.lock`. Install with its
-declared Bun version and `bun install --frozen-lockfile` before its build. Application
-checks, documentation builds, provider verification, and production deployment are
-separate results.
+Report the exact revision and checks you ran. Record application tests,
+documentation builds, provider verification, and production deployment separately.
