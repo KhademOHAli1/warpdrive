@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "intro",
+    "setup",
+    "architecture",
+    "features",
+    "administration",
+    "guides",
+    "operations",
+    "contributing"
+  ]
+}

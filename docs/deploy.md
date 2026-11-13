@@ -1,9 +1,11 @@
 # Deploying warpdrive to a single box
 
-warpdrive ships as a self-contained Docker Compose stack: the Next.js app, a WebSocket server, a
-background worker, Postgres, MinIO object storage, and a Caddy reverse proxy that terminates TLS
-with automatic Let's Encrypt certificates. One `docker compose up -d --build` brings up the whole
-thing. Design: `docs/superpowers/specs/2026-07-07-docker-single-box-deploy-design.md`.
+This guide covers the source-based single-host Docker Compose topology: the web app,
+WebSocket server, worker, one-shot migrator, PostgreSQL, MinIO and Caddy. On a new
+installation, initialize the database and its separate runtime role before starting the
+runtime services. Use the [modular deployment guide](deployment-redesign.md) for the
+separately qualified image path. Check the exact revision and topology your installation
+uses before following an upgrade procedure.
 
 ## Prerequisites
 
@@ -138,16 +140,16 @@ Before upgrading an existing installation, follow the
 
 ## Operating the box
 
-- **Update to a new version:** build the reviewed release images, then use the
-  [authentication migration cutover](../src/features/activities/providers/google/authorizationREADME.md#connection-generation-migration)
-  for releases that change Calendar authorization state. Compose's one-shot migration
-  dependency gates cold startup; it does not itself stop old application processes
-  before an upgrade migration runs. The connection-generation migration requires the
-  stopped-service sequence below that link, rather than an overlapping restart.
+- **Update to a new version:** identify the installed and target revisions and follow
+  the [upgrade guide](../docs-site/docs/operations/updating.mdx) for the topology in use.
+  Compose's one-shot migration dependency gates cold startup; it does not stop old
+  writers. For a release that changes Calendar authorization state, follow the
+  [connection-generation cutover](../src/features/activities/providers/google/authorizationREADME.md#connection-generation-migration).
 - **Logs:** `docker compose logs -f app` (or `ws` / `worker` / `caddy`).
-- **Backups:** the database lives in the `pgdata` volume. Take a dump on a schedule, e.g.
-  `docker compose exec -T postgres pg_dump -U warpdrive warpdrive | gzip > backup-$(date +%F).sql.gz`.
-  Uploaded files live in the `miniodata` volume; back that up too.
+- **Backups:** the database lives in the `pgdata` volume. A database-only dump omits
+  private uploaded objects, service configuration, and the encryption and signing
+  material needed to recover them. Preserve a consistent recovery set, then verify it
+  by restoring into an isolated installation. See [recovery](deployment-recovery.md).
 - **Reaching Postgres:** it is intentionally not published to the host in production. Use
   `docker compose exec postgres psql -U warpdrive`. MinIO's S3 API is reachable through Caddy at
   `https://s3.<APP_DOMAIN>` (the browser needs it for presigned uploads); its admin console stays

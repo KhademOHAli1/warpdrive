@@ -10,4 +10,9 @@ Counts refer to overdue activities and deals missing a step. They are not a dist
 
 Each page has its own observation and read ID. Complete means the single page contains every match from its own statement. Independent page reads cannot be combined into a snapshot export. The fixture definitions cover same-scope count/paging, due-time equality and civil days, revoked or unavailable scope, native clock shape and cap rejection. Native qualification, advanced rules and scoped records navigation remain open.
 
-The Pipeline tab publishes separate authorized counts and the account time zone used by the queue. The route omits all anchors and row evidence. The existing historical date range has no effect on these counts.
+In Performance → **Pipeline**, **Deal next actions** shows the separate
+**Overdue deal activities** and **Open deals without a next step** counts,
+alongside the account time zone and check time. Use the pipeline, owner, and
+currency filters to narrow the counts. The panel counts current work even when
+a past date range is selected. It returns aggregate counts and observation
+metadata.

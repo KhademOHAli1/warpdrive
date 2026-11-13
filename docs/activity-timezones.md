@@ -1,6 +1,13 @@
 # Activity dates, time zones and the Iranian calendar
 
-Timed activities store instants (`due_at` and optional `end_at`). The resolved account time zone controls input projection, hour lanes, current-day defaults, grouping, date filters, day-load counts, due labels and overdue checks. Profile timezone takes precedence over the saved UI preference; read-query view fallbacks support older accounts without saved preferences. Missing context defaults deterministically to UTC. The Gregorian or Iranian display calendar never changes stored instants or Gregorian ISO civil date values.
+Timed activities store instants (`due_at` and optional `end_at`). The resolved
+time zone controls input, hour lanes, current-day defaults, grouping, date filters,
+day-load counts, due labels and overdue checks. In browser mode, requests use
+the device time zone when available. Background work uses the saved account
+time zone. Outside browser mode, a valid profile time zone takes precedence
+over the saved UI preference. Older accounts can use a request fallback. UTC
+is the default when no valid zone is available. Switching the display calendar
+preserves the stored instants and Gregorian ISO civil dates.
 
 Forms freeze the draft timezone when opened and display its identifier and offset. A timezone preference change while the form remains open does not reinterpret the draft. Unchanged date/time inputs are omitted from patches, preserving seconds, milliseconds, an existing repeated-hour offset and duration. A new or changed clock time during a DST gap is rejected. A new ambiguous clock time uses the earlier occurrence and the form explains this choice; an untouched later occurrence keeps its original offset. Conversion uses the same Temporal polyfill in server and browser code.
 
@@ -8,4 +15,14 @@ New and date-edited all-day activities store canonical Gregorian `due_date` and 
 
 Migration `0076_activity_civil_dates.sql` only adds two nullable date columns. It has no default, backfill or timestamp rewrite. Older `all_day=true` rows with null canonical dates have no recoverable original timezone: the compatibility decoder projects the stored anchor into the current account timezone, and editors explain this uncertainty. Reading or saving unrelated fields does not backfill or rewrite these rows. A user-confirmed date/time edit establishes canonical metadata. Historic midnight timed records are not reclassified.
 
-Verification includes Tehran midnight/Nowruz, Esfand30, Berlin gap and repeated-hour edits, NewYork's23-hour civil day, identical month/week grouping, exact query bounds and timezone-independent all-day dates. Read-only PostgreSQL `VALUES` fixtures verify generated calendar/due-day predicates. `bun run scripts/check-activity-timezones.ts` also runs14 checks through the real repositories against transaction-local TEMP clones: create, update, edit DTOs, list/calendar, load counts, availability and temporal invariants. TEMP clones do not copy foreign keys, so these checks do not qualify referential-integrity or permission changes. Both checks leave stored user rows untouched. Existing reminders continue to use the saved compatibility anchor and lead interval; no historical queued reminders are rewritten by this migration.
+The source checks cover Tehran midnight and Nowruz, Esfand 30, Berlin's skipped
+and repeated hours, New York's 23-hour civil day, month and week grouping, query
+bounds, and all-day dates. Read-only PostgreSQL `VALUES` fixtures exercise
+calendar and due-day predicates. From the repository root,
+`bun run scripts/check-activity-timezones.ts` exercises the repositories with
+temporary table clones in a transaction. Run it against a disposable database
+with the repository migrations applied. The temporary clones omit foreign keys,
+so use separate tests for referential integrity and permission changes.
+Migration `0076` leaves previously queued reminders intact. For the newer native
+reminder path, see the dated
+[reminder qualification record](activities/native-reminder-runtime-qualification-20261103.md).
