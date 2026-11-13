@@ -45,6 +45,34 @@ STYLE_FILE = "src/components/shell/TopBar.module.css"
 COPY_FILES = tuple(f"src/components/data-table/messages/tableControls.{locale}.json"
                    for locale in ("de", "en", "fa"))
 COPY_KEY = "clearSelection"
+# The installed baseline may predate these release operators. Their exact blobs
+# are included in the Web input receipt, and may not enter a retained runtime's
+# graph. Shared build tooling and every application/runtime file remain subject
+# to their existing checks.
+RELEASE_TOOLING = frozenset({
+    ".github/workflows/production-images.yml",
+    ".github/workflows/web-image-qualification.yml",
+    "scripts/deployment/caddy_admin.py",
+    "scripts/deployment/caddy_web_config.py",
+    "scripts/deployment/test_caddy_admin.py",
+    "scripts/deployment/test_caddy_web_config.py",
+    "scripts/deployment/test_traefik_web_handoff.py",
+    "scripts/deployment/test_traefik_web_handoff_state.py",
+    "scripts/deployment/test_web_baseline.py",
+    "scripts/deployment/test_web_candidate.py",
+    "scripts/deployment/test_web_publication_gate.py",
+    "scripts/deployment/test_web_push_scope.py",
+    "scripts/deployment/test_web_release_build.py",
+    "scripts/deployment/test_web_release_inputs.py",
+    "scripts/deployment/traefik_web_handoff.py",
+    "scripts/deployment/traefik_web_handoff_state.py",
+    "scripts/deployment/web_baseline.py",
+    "scripts/deployment/web_candidate.py",
+    "scripts/deployment/web_publication_gate.py",
+    "scripts/deployment/web_push_scope.py",
+    "scripts/deployment/web_release_build.py",
+    "scripts/deployment/web_release_inputs.py",
+})
 STYLE_PROPERTIES = ("border-radius", "gap", "height", "padding-inline")
 STYLE_VALUE = re.compile(
     r"(?m)^( {2,4}(?:" + "|".join(STYLE_PROPERTIES) + r"): )([0-9]{1,3})(px;)$"
@@ -52,6 +80,11 @@ STYLE_VALUE = re.compile(
 MAX_STYLE_PX = 128
 MAX_PRESENTATION_BYTES = 64 * 1024
 GIT = ("git", "--no-replace-objects", "-c", "core.fsmonitor=false")
+
+
+def qualifies_topbar_browser_pair(old_css, new_css):
+    old_gap = b"  gap: 24px;\n"
+    return old_css.count(old_gap) == 1 and new_css == old_css.replace(old_gap, b"  gap: 22px;\n", 1)
 
 
 class WebReleaseInputError(ValueError):
@@ -237,9 +270,15 @@ def _plain_copy(raw):
 
 def _presentation_delta(root, before, after):
     changed = sorted(path for path in before.keys() | after.keys() if before.get(path) != after.get(path))
-    require(0 < len(changed) <= 1 + len(COPY_FILES) and set(changed) <= {STYLE_FILE, *COPY_FILES},
+    presentation = [path for path in changed if path not in RELEASE_TOOLING]
+    tooling = [path for path in changed if path in RELEASE_TOOLING]
+    require(0 < len(presentation) <= 1 + len(COPY_FILES) and set(presentation) <= {STYLE_FILE, *COPY_FILES},
             "Source delta exceeds the reviewed presentation-only profile")
-    for path in changed:
+    for path in tooling:
+        require(path in after and _regular_blob(after, path)[0] == "100644"
+                and (path not in before or _regular_blob(before, path)[0] == "100644"),
+                "Release tooling must remain a regular non-executable file")
+    for path in presentation:
         before_mode, previous = _blob(root, before, path, MAX_PRESENTATION_BYTES)
         after_mode, current = _blob(root, after, path, MAX_PRESENTATION_BYTES)
         require(before_mode == after_mode == "100644", "Presentation mode or file type changed")
@@ -254,7 +293,20 @@ def _presentation_delta(root, before, after):
             old_label, old_other = _plain_copy(previous)
             new_label, new_other = _plain_copy(current)
             require(old_label != new_label and old_other == new_other, "UI catalog changes exceed the reviewed copy key")
-    return changed
+    return presentation, tooling
+
+
+def web_input_delta(old, new):
+    """Identify presentation and bounded release tooling changes in verified Web inputs."""
+    old_inputs = {row["path"]: row for row in old["inputs"]}
+    new_inputs = {row["path"]: row for row in new["inputs"]}
+    require(old_inputs.keys() <= new_inputs.keys()
+            and new_inputs.keys() - old_inputs.keys() <= RELEASE_TOOLING, "Web input membership changed")
+    changed = sorted(path for path in new_inputs if old_inputs.get(path) != new_inputs[path])
+    presentation = [path for path in changed if path not in RELEASE_TOOLING]
+    tooling = [path for path in changed if path in RELEASE_TOOLING]
+    require(presentation and set(presentation) <= {STYLE_FILE, *COPY_FILES}, "Reviewed presentation paths required")
+    return presentation, tooling
 
 
 def verify_web_source_delta(root: Path, current_receipt: dict, *, expected_revision: str,
@@ -271,7 +323,7 @@ def verify_web_source_delta(root: Path, current_receipt: dict, *, expected_revis
     historical = inputs.validate_receipt(baseline_receipt)
     _git(root, "merge-base", "--is-ancestor", baseline_revision, expected_revision, allow_empty=True)
     before, after = _tree(root, baseline_revision), _tree(root, expected_revision)
-    changed = _presentation_delta(root, before, after)
+    changed, tooling = _presentation_delta(root, before, after)
     _verify_baseline_blobs(root, before, historical)
     inputs.verify_current(root, current_receipt, expected_revision=expected_revision)
     require(current_receipt["context"] == historical["context"]
@@ -284,10 +336,7 @@ def verify_web_source_delta(root: Path, current_receipt: dict, *, expected_revis
     require({key: value for key, value in old_web.items() if key not in {"inputs", "componentInputSha256"}}
             == {key: value for key, value in new_web.items() if key not in {"inputs", "componentInputSha256"}},
             "Web helper graph or discovery metadata changed")
-    old_inputs = {row["path"]: row for row in old_web["inputs"]}
-    new_inputs = {row["path"]: row for row in new_web["inputs"]}
-    require(old_inputs.keys() == new_inputs.keys()
-            and {path for path in old_inputs if old_inputs[path] != new_inputs[path]} == set(changed),
+    require(web_input_delta(old_web, new_web) == (changed, tooling),
             "Web inputs do not match the exact presentation source delta")
     # The complete raw tree delta already proves that every policy and Engine
     # path (including modes and membership) is the same at both revisions.
@@ -314,6 +363,7 @@ def verify_web_source_delta(root: Path, current_receipt: dict, *, expected_revis
         "currentWebInputSha256": new_web["componentInputSha256"],
         "inputPolicySha256": current_receipt["inputPolicySha256"],
         "changedPresentationPaths": changed,
+        **({"changedReleaseToolingPaths": tooling} if tooling else {}),
         "buildComponents": ["web"],
         "deploymentAuthorized": False,
     }

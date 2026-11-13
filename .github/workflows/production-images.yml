@@ -37,6 +37,8 @@ jobs:
     if: github.event.action != 'labeled' || github.event.label.name == 'web-release-rehearsal'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      independent_web: ${{ steps.scope.outputs.independent_web }}
     env:
       # Imported engine guards hash the original build context. Never write Python
       # bytecode into that context while collecting these tooling tests.
@@ -44,7 +46,18 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          fetch-depth: 2
           persist-credentials: false
+      - name: Select independent qualification for the reviewed Web-only push
+        if: github.event_name == 'push'
+        id: scope
+        env:
+          PREVIOUS_REVISION: ${{ github.event.before }}
+          CURRENT_REVISION: ${{ github.sha }}
+        run: |
+          if python3 -B scripts/deployment/web_push_scope.py "$PREVIOUS_REVISION" "$CURRENT_REVISION"; then
+            echo 'independent_web=true' >> "$GITHUB_OUTPUT"
+          fi
       - name: Test component selection and failure admission
         run: |
           node --test scripts/deployment/image-build.test.mjs
@@ -53,6 +66,7 @@ jobs:
   images:
     name: Final production image smoke
     needs: tooling
+    if: needs.tooling.outputs.independent_web != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
