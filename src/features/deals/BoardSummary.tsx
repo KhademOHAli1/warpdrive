@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { MoneyTotals } from "@/features/currencies/MoneyTotals";
 import type { CurrencyTotal } from "@/features/currencies/money";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { useFormatters } from "@/lib/useFormatters";
+import { useBoardCurrency } from "./useBoardCurrency";
 
 interface BoardSummaryProps {
   totalValue: string | null;
@@ -25,7 +25,7 @@ export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
 
   const { totalValue, dealCount, currency } = props;
-  const format = useFormatters();
+  const formatCurrency = useBoardCurrency();
   const [showTotal, setShowTotal] = useState(false);
 
   useEffect(() => {
@@ -62,9 +62,9 @@ export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
       {showTotal && (
         <span className="font-semibold text-foreground">
           {props.currencyTotals !== undefined && props.currencyTotals.length > 0 ? (
-            <MoneyTotals totals={props.currencyTotals} />
+            <MoneyTotals totals={props.currencyTotals} formatCurrency={formatCurrency} />
           ) : totalValue !== null ? (
-            format.currency(totalValue, currency)
+            formatCurrency(totalValue, currency)
           ) : null}
         </span>
       )}
