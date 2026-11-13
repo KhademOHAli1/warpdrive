@@ -285,8 +285,8 @@ void test("Checkbox and Quick Add Combobox independently select v3 without requi
   f.put(
     combobox,
     `"use client"; import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput,
-    ComboboxItem, ComboboxList, ComboboxTrigger } from "${comboImport}";
-    export function Card() { return <Combobox><ComboboxTrigger/><ComboboxContent><ComboboxInput/><ComboboxList><ComboboxItem/><ComboboxEmpty/></ComboboxList></ComboboxContent></Combobox>; }`,
+    ComboboxItem, ComboboxList, ComboboxTrigger, createComboboxController } from "${comboImport}";
+    export function Card() { return <Combobox controller={createComboboxController()}><ComboboxTrigger/><ComboboxContent><ComboboxInput/><ComboboxList><ComboboxItem/><ComboboxEmpty/></ComboboxList></ComboboxContent></Combobox>; }`,
   );
   const unused = await f.sdk(f.commit());
   assert.equal(unused.schemaVersion, 1);
