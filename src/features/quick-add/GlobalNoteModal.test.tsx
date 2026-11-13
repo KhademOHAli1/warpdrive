@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -13,6 +13,7 @@ const { capture, createNote, people, refresh } = vi.hoisted(() => ({
     data: [
       { id: "p1", name: "Ada" },
       { id: "p2", name: "Ada" },
+      { id: "p3", name: "Mina" },
     ],
   })),
   refresh: vi.fn(),
@@ -42,6 +43,30 @@ beforeEach(() => {
   popoverStyle = document.createElement("style");
   popoverStyle.textContent = "[popover] { display: block !important }";
   document.head.append(popoverStyle);
+});
+
+it("presses Enter on the current result immediately after changing the person search", async () => {
+  const user = userEvent.setup();
+  render(<GlobalAddMenu />);
+  await user.click(screen.getByRole("button", { name: "Quick add" }));
+  await user.click(screen.getByRole("menuitem", { name: /Note/ }));
+  const dialog = await screen.findByRole("dialog", { name: "New note" });
+  const picker = within(dialog).getByRole("button", { name: "Note target person" });
+  await user.click(picker);
+  const search = screen.getByRole("combobox", { name: "Search..." });
+
+  fireEvent.change(search, { target: { value: "Ada" } });
+  fireEvent.change(search, { target: { value: "Mina" } });
+  expect(screen.getByRole("option", { name: "Mina" })).toBeVisible();
+  fireEvent.keyDown(search, { key: "Enter" });
+  expect(picker).toHaveTextContent("Mina");
+
+  await user.click(picker);
+  expect(screen.getByRole("combobox", { name: "Search..." })).toHaveValue("");
+  await user.keyboard("{Escape}");
+  expect(dialog).toBeVisible();
+  expect(picker).toHaveTextContent("Mina");
+  expect(createNote).not.toHaveBeenCalled();
 });
 afterEach(() => {
   cleanup();

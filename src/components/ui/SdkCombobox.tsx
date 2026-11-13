@@ -8,6 +8,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxTrigger,
+  createComboboxController,
 } from "@ui-sdk/react/combobox";
 import { useRef, useState } from "react";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -32,7 +33,7 @@ export function SdkCombobox({
 }) {
   const t = useAppTranslations("sharedUi");
   const direction = useDirection();
-  const [query, setQuery] = useState("");
+  const [controller] = useState(() => createComboboxController<string>());
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
   const content = useRef<HTMLDivElement>(null);
   const restoreFocus = useRef(false);
@@ -41,18 +42,16 @@ export function SdkCombobox({
   return (
     <Combobox<string>
       value={selected?.value ?? null}
-      query={query}
+      controller={controller}
+      defaultQuery=""
       filter={(option, text) => option.label.toLowerCase().includes(text.toLowerCase())}
       autoHighlight="always"
       announcement={() => null}
       onValueChange={(next, { reason }) => {
         if (next !== null && reason === "item-press") onChange(next);
       }}
-      onQueryChange={(next, { reason }) => {
-        if (reason === "input-change") setQuery(next);
-      }}
       onOpenChange={(open, { reason }) => {
-        if (open) setQuery("");
+        if (open) controller.setQuery("");
         restoreFocus.current = !open && (reason === "item-press" || reason === "escape-key");
       }}
       onOpenChangeComplete={(open) => {
@@ -101,7 +100,7 @@ export function SdkCombobox({
               return;
             }
             if (event.currentTarget.hasAttribute("aria-activedescendant")) return;
-            const text = query.trim().toLowerCase();
+            const text = event.currentTarget.value.trim().toLowerCase();
             if (options.filter((option) => option.label.toLowerCase() === text).length > 1) {
               event.preventDefault();
             }
