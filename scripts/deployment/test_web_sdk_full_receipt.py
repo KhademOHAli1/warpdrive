@@ -201,13 +201,15 @@ class ReceiptTests(unittest.TestCase):
         with self.assertRaisesRegex(inputs.InputError, "isolated Web profile"):
             receipt.validate_web_sdk_full_receipt(rehash(bad), expected_revision=SHA)
 
-    def test_controls_dialog_backdrop_requires_v3_and_the_reviewed_wrapper(self):
+    def test_additional_dialog_bindings_require_v3_and_the_reviewed_wrapper(self):
         for version, path in ((2, "src/components/ui/SdkDialog.tsx"), (3, "src/components/ui/SdkDialog.tsx"),
                               (3, "src/components/ui/OtherDialog.tsx")):
             value = self._successor() if version == 2 else self._controls(COMBOBOX)
             value["web"]["sdkImports"][path] = ["@ui-sdk/react/dialog"]
-            value["web"]["sdkBindings"][path] = [{"specifier": "@ui-sdk/react/dialog", "exported": "DialogBackdrop",
-                                                 "local": "DialogBackdrop"}]
+            value["web"]["sdkBindings"][path] = [
+                {"specifier": "@ui-sdk/react/dialog", "exported": name, "local": name}
+                for name in ("DialogBackdrop", "createDialogController")
+            ]
             value["web"]["staticWebInputCount"] += 1
             if version == 3 and path == "src/components/ui/SdkDialog.tsx":
                 self.assertIs(receipt.validate_web_sdk_full_receipt(rehash(value), expected_revision=SHA), value)
