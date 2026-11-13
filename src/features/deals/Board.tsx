@@ -18,7 +18,6 @@ import { EVENTS } from "@/features/observability/events";
 import { SavedViewPending } from "@/features/saved-filters/SavedViewPending";
 import { SavedViewUnavailable } from "@/features/saved-filters/SavedViewUnavailable";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
-import { BoardEmpty } from "./BoardEmpty";
 import { BoardHeader } from "./BoardHeader";
 import { BoardStages } from "./BoardStages";
 import { boardAnnouncements } from "./boardAnnouncements";
@@ -26,6 +25,7 @@ import { boardEmptyKind } from "./boardEmptyKind";
 import type { BoardProps } from "./boardTypes";
 import { isBoardFiltered } from "./boardView";
 import { DealCard } from "./DealCard";
+import { DealsEmpty } from "./DealsEmpty";
 import { DragDropZones, zoneTransition } from "./DragDropZones";
 import { resolveNeighbors } from "./dragNeighbors";
 import { MoveDealDialog } from "./MoveDealDialog";
@@ -245,7 +245,12 @@ export function Board(props: BoardProps): React.ReactNode {
           }}
         >
           {emptyKind !== "none" && (
-            <BoardEmpty kind={emptyKind} onClearFilters={view.clearFilters} addSlot={addDeal} />
+            <DealsEmpty
+              variant="board"
+              kind={emptyKind}
+              onClearFilters={view.clearFilters}
+              addSlot={addDeal}
+            />
           )}
           {/* Only a board proven to be hiding cards drops its columns: the other two states may be
             an empty pipeline, whose columns are still the drop targets. */}
