@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "kind": "source-bound-intentional-fixture-plaintext-review",
+  "queryId": "py/clear-text-storage-sensitive-data",
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "7de91a5d98b353be0224697c23ad4dd276c815543f72baf5d3f0824d82a1f676",
+    "scripts/deployment/test_engine_image_smoke.py": "ebb01c3644d18957948e8c4e83b81f00bed288440e1631f5d8390f9dd21c7887",
+    "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "observedFinding": {
+    "number": 23,
+    "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/23",
+    "sourceHead": "f8248dbb58370b09cbedf8803c67342160cb166c",
+    "analysisId": 2148992115,
+    "severity": "high/error",
+    "state": "open"
+  },
+  "independentReview": {
+    "path": "docs/deployment-evidence/fixture-engine-file-mode-review-20261113.json",
+    "sha256": "884be9cbe5b0282b85bc5abcbe0281893b8e6d980ed42519e693a30c77454f3c",
+    "reviewer": "/root/modular_images",
+    "scope": "Private default permissions in the three fixture wrappers, exact source and caller continuity with the original descriptor-hardening review."
+  },
+  "rationale": [
+    "The actual _FILE probe requires generated plaintext bytes. Runtime callers accept no deployment/user credential input; all current callers were independently reviewed.",
+    "Native and actual tmpfs admission precede creation. Every ancestor stays descriptor-held and nofollow; private0700 parent identity and owned single-link0600 leaf are checked before literal payload.write(password), then0444 after flush and checked again after wrapper close.",
+    "The change closes the parent-name substitution gap and improves failure descriptor ownership. Plaintext stays visible; no encoding, source indirection or query/threshold/category exclusion is used.",
+    "The prior inline annotation did not clear managed alert23 and is removed. This review/source-expiry guard neither suppresses nor dismisses that alert. Exact new-source analysis and named-ref findings remain required."
+  ],
+  "expiry": "Deployment tooling pins all four authority/caller sources and scans direct/import-aliased Python callers under executable source roots. Changes require refreshed independent review before qualification; this is not a general Python sandbox.",
+  "residuals": [
+    "Generated credentials remain plaintext during the real fixture. Host root, runner UID and local Docker daemon remain trusted; tmpfs can swap and abrupt failure can bypass cleanup.",
+    "Later Docker bind resolves a pathname. Rechecking names does not prevent a later sameUID/root substitution; identity-checked failure stat/unlink is also not atomic against such an actor.",
+    "Generated credentials also exist in existing Docker CLI arguments/environments. Source-hash records are auditable process evidence, not cryptographic approval or installed secret-custody proof.",
+    "The nativef82416-check report belongs to its earlier writer source. Current hardened writer still requires exact-source native and security qualification."
+  ],
+  "syntaxReference": "https://codeql.github.com/docs/codeql-overview/codeql-changelog/codeql-cli-2.12.0/",
+  "securityGateCleanClaim": false,
+  "canonicalAcceptanceClaim": false,
+  "initialUnannotatedEngineSourceSha256": "255ab66cb2194d4e5de8a18a352fd35519499e771e655423dd89e573459333f8",
+  "reviewedPath": "scripts/deployment/engine_image_smoke.py",
+  "annotationAttempt": {
+    "effectiveInObservedManagedAnalysis": false,
+    "removedFromCurrentSource": true,
+    "queryId": "py/clear-text-storage-sensitive-data"
+  },
+  "alertDismissalApplied": false
+}

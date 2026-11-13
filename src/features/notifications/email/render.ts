@@ -1,9 +1,9 @@
 import { env } from "@/config/env";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
-import { createAppTranslator } from "@/features/i18n/catalog";
 import { directionForLocale, type Locale } from "@/features/i18n/registry";
 import { entityHref } from "@/features/notifications/entityHref";
 import type { NotificationRow } from "@/types/notification";
+import { createNotificationEmailTranslator } from "./catalog";
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => {
@@ -24,7 +24,7 @@ export function renderNotificationEmail(
   recipientName: string | null,
   locale: Locale = "en",
 ): { subject: string; text: string; html: string } {
-  const t = createAppTranslator(locale, "notifications.email");
+  const t = createNotificationEmailTranslator(locale);
   const isolate = (value: string): string => (locale === "fa" ? `\u2068${value}\u2069` : value);
   const path = entityHref(row.entityType, row.entityId);
   const link = path !== null ? `${env.BASE_URL}${path}` : env.BASE_URL;

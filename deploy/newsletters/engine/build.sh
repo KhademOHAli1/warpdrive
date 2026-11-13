@@ -12,7 +12,7 @@ for required in 010-optin-confirmation.patch 020-dispatch.patch 025-list-consent
     040-crm-identity.patch 045-sealed-crm-audiences.patch 050-durable-delivery.patch \
     055-crm-attribution.patch 057-archive-preview.patch 058-public-list-embed.patch \
     060-ses-feedback.patch 070-readiness.patch 075-atomic-bulk-delete.patch 080-consent-revocation-events.patch \
-    085-inapp-operational-events.patch; do
+    085-inapp-operational-events.patch 090-explicit-migrations.patch; do
     if [ ! -s "$context/patches/$required" ]; then
         echo "Required Listmonk patch is missing: $required" >&2
         exit 2
@@ -47,6 +47,26 @@ for patch_file in "$context"/patches/*.patch; do
     git apply --check "$patch_file"
     git apply "$patch_file"
 done
+# Bind receipts to the exact final installer inputs, including upstream migration
+# functions, every patched command path and embedded SQL. Paths and ordering are
+# stable across hosts; the generated digest itself is excluded to avoid recursion.
+installer_files="$work/installer-files"
+find internal/migrations -type f ! -name '*_test.go' -print > "$installer_files"
+find cmd -type f -name '*.sql' -print >> "$installer_files"
+printf '%s\n' schema.sql cmd/install.go cmd/upgrade.go cmd/main.go cmd/init.go \
+    cmd/warpdrive_migrations.go cmd/crm_identity.go cmd/warpdrive_audiences.go \
+    cmd/warpdrive_delivery_store.go cmd/warpdrive_readiness.go cmd/warpdrive_operational_events.go \
+    internal/sesfeedback/feedback.go internal/sesfeedback/schema.sql >> "$installer_files"
+sort -o "$installer_files" "$installer_files"
+if command -v sha256sum >/dev/null 2>&1; then
+    while IFS= read -r input; do sha256sum "$input"; done < "$installer_files" > "$work/installer-input-digests"
+    sha256sum "$work/installer-input-digests" > "$work/installer-digest"
+else
+    while IFS= read -r input; do shasum -a 256 "$input"; done < "$installer_files" > "$work/installer-input-digests"
+    shasum -a 256 "$work/installer-input-digests" > "$work/installer-digest"
+fi
+read -r installer_digest ignored < "$work/installer-digest"
+printf '%s\n' "$installer_digest" > cmd/warpdrive_installer.sha256
 if ! grep -Fq 'map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1, "publicSubscriberUpdate": 1, "campaignRevision": 1, "crmIdentity": 1, "crmAudiences": 1, "durableDelivery": 1, "crmAttribution": 1, "listEmbed": 1, "sesFeedback": 1, "readiness": 1, "atomicBulk": 1, "consentEvents": 1, "operationalEvents": 1}' cmd/handlers.go; then
     echo "The derived engine is missing a required Warpdrive capability" >&2
     exit 1
@@ -62,9 +82,9 @@ CGO_ENABLED=0 GOOS='' GOARCH='' "$go_command" build -trimpath -mod=readonly \
 cp "$source_tar" "$work/corresponding-source/listmonk-ef0a758.tar.gz"
 cp LICENSE "$work/corresponding-source/LICENSE"
 cp "$context"/.dockerignore "$context"/.gitattributes "$context"/Dockerfile "$context"/README.md "$context"/build.sh \
-    "$context"/build-assets.go "$work/corresponding-source/"
+    "$context"/build-assets.go "$context"/nonroot-entrypoint.sh "$work/corresponding-source/"
 cp -R "$context"/patches "$work/corresponding-source/"
-for directory in tests dispatch-tests durability-tests feedback-tests readiness-tests operational-tests; do
+for directory in tests dispatch-tests durability-tests feedback-tests readiness-tests operational-tests migration-tests; do
     if [ -d "$context/$directory" ]; then
         cp -R "$context/$directory" "$work/corresponding-source/"
     fi

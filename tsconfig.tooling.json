@@ -8,6 +8,15 @@
     "lib": ["ES2022"],
     "types": ["node"]
   },
-  "include": ["*.mjs", "scripts/*.mjs", ".env.example.test.ts"],
+  "include": [
+    "*.mjs",
+    "scripts/*.mjs",
+    "scripts/deployment/component_inputs.mjs",
+    "scripts/deployment/component_inputs.test.mjs",
+    "scripts/deployment/web_inputs.mjs",
+    "scripts/deployment/web_inputs.test.mjs",
+    "scripts/deployment/component_boundaries.mjs",
+    ".env.example.test.ts"
+  ],
   "exclude": ["node_modules", "site", "docs-site", ".runtime"]
 }

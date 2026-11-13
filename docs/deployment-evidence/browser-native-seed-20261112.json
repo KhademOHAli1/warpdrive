@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "source-only-native-pg16-browser-seed",
+  "success": true,
+  "finalImageQualification": false,
+  "nativeBrowserQualification": false,
+  "checks": {
+    "exactCopiedFixtureWithUnmodifiedAdmission": true,
+    "canonical119Migrated": true,
+    "oldParameterRegressionReproduced": true,
+    "actualBunSeedActionPassed": true,
+    "bothNativePasswordHashesVerified": true,
+    "uuidAndTextAccountBindingsMatch": true,
+    "noSessionOrAssuranceSeeded": true,
+    "originalNonadminSeedPreserved": true,
+    "canonicalReceipts119": true,
+    "nonemptyDatabaseReseedRejected": true,
+    "snapshotStillClean": true
+  },
+  "cleanup": {
+    "postgresStopped": true,
+    "ownedPortClosed": true,
+    "scratchRemoved": true
+  },
+  "lastStage": "git",
+  "parentRevision": "797ba7f715069fd3794b2485df18ebc17516bc1f",
+  "fixtureSha256": "882f109319bcddfa5b55eaf675be459f7c319779135e1752e6236c1b79601dd2",
+  "canonicalJournalSha256": "0e5663c1933c8ac291ac8cb059c01a3097562a43023043f466b0276df88e0b47",
+  "canonicalMigrationCount": 119,
+  "syntheticSnapshotRevision": "ae2cb969326c0f980b9edbbad1ff4a213465a735",
+  "postgresVersion": "pg_ctl (PostgreSQL) 16.10 (Homebrew)",
+  "peakOwnedRssBytes": 170688512,
+  "peakScratchAllocatedBytes": 151187456,
+  "minimumFreeDiskBytes": 36659847168,
+  "durationSeconds": 10.873
+}

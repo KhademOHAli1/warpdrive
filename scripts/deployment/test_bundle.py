@@ -4,12 +4,13 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from bundle import ARCHIVE, CandidateError, create_bundle, load_bundle
+from bundle import ARCHIVE, INPUT_RECEIPT, CandidateError, create_bundle, load_bundle
 from candidate import create_candidate, sha256
 from test_candidate import SHA, fixture
+from test_component_inputs import fixture as input_fixture
 
 
-def write_candidate(root):
+def write_candidate(root, *, version=1):
     report, inspections = fixture()
     (root / "smoke").mkdir(parents=True)
     (root / "inspections").mkdir()
@@ -17,7 +18,10 @@ def write_candidate(root):
     report_path.write_text(json.dumps(report))
     for name, value in inspections.items():
         (root / f"inspections/{name}.json").write_text(json.dumps([value]))
-    candidate = create_candidate(SHA, report, sha256(report_path), inspections)
+    receipt = input_fixture(root) if version == 2 else None
+    if receipt is not None:
+        (root / INPUT_RECEIPT).write_text(json.dumps(receipt))
+    candidate = create_candidate(SHA, report, sha256(report_path), inspections, input_receipt=receipt)
     (root / "candidate.json").write_text(json.dumps(candidate))
     return candidate
 
@@ -32,6 +36,18 @@ class FakeDocker:
 
 
 class BundleTests(unittest.TestCase):
+    def test_v2_retains_input_receipt_and_reconstructs_every_bound_component(self):
+        source = self.root / "v2-source"
+        candidate = write_candidate(source, version=2)
+        loaded = create_bundle(source, self.root / "v2-bundle", expected_revision=SHA, docker=self.docker)
+        self.assertEqual(loaded["candidate"], candidate)
+        self.assertTrue((self.root / "v2-bundle" / INPUT_RECEIPT).is_file())
+        self.assertEqual(json.loads((self.root / "v2-bundle/bundle.json").read_text())["releaseRevision"], SHA)
+        path = self.root / "v2-bundle" / INPUT_RECEIPT
+        path.write_bytes(path.read_bytes() + b"tampered")
+        with self.assertRaises(CandidateError):
+            load_bundle(path.parent, expected_revision=SHA)
+
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()
         self.addCleanup(self.scratch.cleanup)

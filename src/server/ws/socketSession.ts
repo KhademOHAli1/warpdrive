@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { WebSocket } from "ws";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { parseChannel } from "@/constants/wsChannels";
 import { WS_AUTH_TIMEOUT_MS, WS_CLOSE_AUTH_TIMEOUT, WS_HEARTBEAT_MS } from "@/constants/wsLimits";
 import type { Db } from "@/db/client";
@@ -74,6 +75,9 @@ export class SocketSession {
   private heartbeat: ReturnType<typeof setInterval> | null = null;
   // Deadline for presenting a ticket. Cleared on successful auth and on teardown.
   private authDeadline: ReturnType<typeof setTimeout> | null = null;
+  private draining = false;
+  private readonly pending = new Set<Promise<void>>();
+  private teardownPromise: Promise<void> | null = null;
 
   constructor(
     private readonly socket: WebSocket,
@@ -91,7 +95,25 @@ export class SocketSession {
     this.authDeadline.unref();
   }
 
-  async dispatch(text: string): Promise<void> {
+  private isDraining(): boolean {
+    return this.draining;
+  }
+
+  dispatch(text: string): Promise<void> {
+    if (this.isDraining()) return Promise.resolve();
+    return this.track(this.dispatchMessage(text));
+  }
+
+  private track(operation: Promise<void>): Promise<void> {
+    this.pending.add(operation);
+    void operation.then(
+      () => this.pending.delete(operation),
+      () => this.pending.delete(operation),
+    );
+    return operation;
+  }
+
+  private async dispatchMessage(text: string): Promise<void> {
     let msg: WsMsg;
     try {
       msg = JSON.parse(text) as WsMsg;
@@ -118,11 +140,13 @@ export class SocketSession {
 
   private async handleAuth(ticket: string): Promise<void> {
     const bound = await consumeTicketAndBind(this.deps.db, ticket, AbortSignal.timeout(5000));
+    if (this.isDraining()) return;
     if (!bound.ok) {
       this.socket.close(4401);
       return;
     }
     const loaded = await loadConn(this.deps.db, bound.value.userId, bound.value.sessionId);
+    if (this.isDraining()) return;
     if (!loaded.ok) {
       this.socket.close(4401);
       return;
@@ -147,19 +171,20 @@ export class SocketSession {
   private startHeartbeat(): void {
     const ms = this.deps.heartbeatMs ?? WS_HEARTBEAT_MS;
     this.heartbeat = setInterval(() => {
-      void this.checkLiveness();
+      if (!this.isDraining()) void this.track(this.checkLiveness());
     }, ms);
   }
 
   private async checkLiveness(): Promise<void> {
     const conn = this.conn;
-    if (conn === null) return;
+    if (conn === null || this.isDraining()) return;
     try {
       const live = await loadLiveSessionById(
         this.deps.db,
         conn.sessionId,
         AbortSignal.timeout(5000),
       );
+      if (this.isDraining()) return;
       if (!live.ok) {
         this.clearHeartbeat();
         this.socket.close(4401);
@@ -169,11 +194,12 @@ export class SocketSession {
       // demotion takes effect on the next heartbeat rather than only on reconnect (F8). The
       // per-recipient fan-out re-check (deliver) reads this refreshed conn.
       const refreshed = await loadConn(this.deps.db, conn.userId, conn.sessionId);
+      if (this.isDraining()) return;
       if (refreshed.ok) this.conn = refreshed.value;
-    } catch (e) {
+    } catch {
       // A transient DB error (or a pool closing during teardown) must not become an
       // unhandled rejection. Leave the socket as-is; the next heartbeat re-checks.
-      console.warn("ws heartbeat check failed; will retry next tick", e);
+      console.warn("ws heartbeat check failed; will retry next tick");
     }
   }
 
@@ -186,6 +212,7 @@ export class SocketSession {
 
   private async handleSubscribe(conn: WsConnection, channel: string): Promise<void> {
     const authz = await authorizeSubscribe(this.deps.db, conn, channel, AbortSignal.timeout(5000));
+    if (this.isDraining()) return;
     if (!authz.ok) {
       this.socket.send(JSON.stringify({ kind: "error", channel }));
       return;
@@ -195,18 +222,20 @@ export class SocketSession {
       return;
     }
     const listener: RelayListener = (event) => {
+      if (this.isDraining()) return;
       // Enqueue on the per-socket chain: delivery may await a live canSee re-check.
       // A failed re-check (DB error / abort) drops the event rather than reject the chain.
       // deliver() reads this.conn (refreshed by the heartbeat), NOT the subscribe-time
       // snapshot, so revoked group/admin authority stops delivery (F8).
       this.sendChain = this.sendChain
         .then(() => this.deliver(channel, event))
-        .catch((e: unknown) => {
-          console.warn("ws deliver failed; dropping event", e);
+        .catch(() => {
+          console.warn("ws deliver failed; dropping event");
         });
     };
     this.subs.set(channel, listener);
     await this.deps.relay.subscribe(channel, listener);
+    if (this.isDraining()) return;
 
     // Register presence AFTER relay subscribe so the socket is fully set up.
     if (isPresenceChannel(channel)) {
@@ -225,10 +254,11 @@ export class SocketSession {
     // Use the CURRENT connection authority (the heartbeat rehydrates admin/groups), so a
     // demoted or group-removed user stops receiving restricted events (F8).
     const conn = this.conn;
-    if (conn === null) return;
+    if (conn === null || this.isDraining()) return;
     const dealId = dealIdForFanout(channel, event);
     if (dealId !== null) {
       const authz = await authorizeDeal(this.deps.db, conn, dealId, AbortSignal.timeout(5000));
+      if (this.isDraining()) return;
       if (!authz.ok) return; // drop: no payload, no seq advance
     }
     const seq = this.nextSeqByChannel.get(channel) ?? 0;
@@ -244,6 +274,7 @@ export class SocketSession {
     if (listener === undefined) return;
     this.subs.delete(channel);
     await this.deps.relay.unsubscribe(channel, listener);
+    if (this.isDraining()) return;
 
     if (isPresenceChannel(channel)) {
       this.hub.leave(channel, this.connId);
@@ -252,15 +283,31 @@ export class SocketSession {
     this.socket.send(JSON.stringify({ kind: "unsubscribed", channel }));
   }
 
-  async teardown(): Promise<void> {
+  teardown(): Promise<void> {
+    if (this.teardownPromise !== null) return this.teardownPromise;
+    // Prevent further frames, heartbeat queries and fan-out before waiting for
+    // already-started database operations; otherwise relay/pool closure races them.
+    this.draining = true;
     this.clearAuthDeadline();
     this.clearHeartbeat();
-    for (const [channel, listener] of this.subs) {
-      await this.deps.relay.unsubscribe(channel, listener);
-    }
+    this.teardownPromise = this.finishTeardown();
+    return this.teardownPromise;
+  }
+
+  private async finishTeardown(): Promise<void> {
+    const pending = await Promise.allSettled([...this.pending]);
+    await this.sendChain;
+    const unsubscribed = await Promise.allSettled(
+      [...this.subs].map(([channel, listener]) => this.deps.relay.unsubscribe(channel, listener)),
+    );
     this.subs.clear();
     // Remove this connection from all presence channels and broadcast to survivors.
     this.hub.dropConnection(this.connId);
+    if ([...pending, ...unsubscribed].some((result) => result.status === "rejected"))
+      throw new AppError(
+        ERROR_IDS.RUNTIME_WS_SESSION_DRAIN_FAILED,
+        "WebSocket session did not finish draining",
+      );
   }
 }
 

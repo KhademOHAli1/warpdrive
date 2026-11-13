@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 import sys
 
+from component_inputs import InputError, content_hash as input_hash, load_receipt, validate_receipt, verify_current
+
 COMPONENTS = ("web", "worker", "realtime", "migrator")
 REVISION = re.compile(r"[0-9a-f]{40}")
 IMAGE_ID = re.compile(r"sha256:[0-9a-f]{64}")
@@ -57,7 +59,8 @@ def load(path: Path):
     return json.loads(path.read_text(), object_pairs_hook=unique)
 
 
-def create_candidate(revision: str, report: dict, report_digest: str, inspections: dict) -> dict:
+def create_candidate(revision: str, report: dict, report_digest: str, inspections: dict,
+                     *, input_receipt: dict | None = None) -> dict:
     require(bool(REVISION.fullmatch(revision)), "full lowercase source revision required")
     require(isinstance(report, dict) and type(report.get("schemaVersion")) is int
             and report["schemaVersion"] == 1, "invalid smoke report")
@@ -81,6 +84,11 @@ def create_candidate(revision: str, report: dict, report_digest: str, inspection
     images = report.get("images")
     require(isinstance(images, dict) and set(images) == set(COMPONENTS), "all Core images required")
     require(set(inspections) == set(COMPONENTS), "all image inspections required")
+    if input_receipt is not None:
+        try:
+            validate_receipt(input_receipt)
+        except (InputError, TypeError, KeyError) as error:
+            raise CandidateError("component input receipt is not valid") from error
     components = {}
     for name in COMPONENTS:
         image = inspections[name]
@@ -101,7 +109,11 @@ def create_candidate(revision: str, report: dict, report_digest: str, inspection
                 and observed.get("revision") == revision and observed.get("user") == config.get("User"),
                 f"{name}: inspected artifact differs from smoke artifact")
         components[name] = {"imageId": identifier, "runtimeUser": config["User"], "registryRef": None}
-    return {
+        if input_receipt is not None:
+            components[name].update({"sourceRevision": revision,
+                                     "inputSha256": input_receipt["components"][name]["componentInputSha256"],
+                                     "inputPolicySha256": input_receipt["inputPolicySha256"]})
+    result = {
         "schemaVersion": 1,
         "kind": "warpdrive-image-candidate",
         "revision": revision,
@@ -113,6 +125,15 @@ def create_candidate(revision: str, report: dict, report_digest: str, inspection
         "deploymentAuthorized": False,
         "pendingGates": list(PENDING),
     }
+    if input_receipt is not None:
+        result.update({"schemaVersion": 2, "releaseRevision": revision,
+                       "inputProvenance": {"state": "current-source-inputs-bound",
+                                           "receiptSha256": input_hash(input_receipt),
+                                           "inputPolicySha256": input_receipt["inputPolicySha256"]}})
+        # This first v2 producer binds fresh builds. Old images must not be relabeled
+        # as current: retained-component origin and mixed-assembly admission are separate.
+        result["pendingGates"].append("independently-qualified-component-reuse")
+    return result
 
 
 def admit_capacity(*, available: int, candidate: int, migration: int, temporary: int, reserve: int) -> dict:
@@ -135,6 +156,7 @@ def main(argv=None) -> int:
     candidate.add_argument("--report", required=True, type=Path)
     candidate.add_argument("--inspections", required=True, type=Path)
     candidate.add_argument("--output", required=True, type=Path)
+    candidate.add_argument("--inputs", type=Path)
     capacity = commands.add_parser("capacity")
     for key in ("available", "candidate", "migration", "temporary", "reserve"):
         capacity.add_argument(f"--{key}-bytes", type=int, required=True)
@@ -146,7 +168,14 @@ def main(argv=None) -> int:
                 rows = load(args.inspections / f"{name}.json")
                 require(isinstance(rows, list) and len(rows) == 1, f"{name}: expected exactly one inspected image")
                 inspections[name] = rows[0]
-            result = create_candidate(args.revision, load(args.report), sha256(args.report), inspections)
+            receipt = load_receipt(args.inputs) if args.inputs else None
+            if receipt is not None:
+                verify_current(Path(__file__).resolve().parents[2], receipt, expected_revision=args.revision)
+            result = create_candidate(args.revision, load(args.report), sha256(args.report), inspections,
+                                      input_receipt=receipt)
+            if receipt is not None:
+                inputs_path = args.output.parent / "component-inputs.json"
+                require(inputs_path.resolve() == args.inputs.resolve(), "input receipt must be retained beside candidate")
             args.output.parent.mkdir(parents=True, exist_ok=True)
             with args.output.open("x") as output:
                 output.write(json.dumps(result, indent=2) + "\n")

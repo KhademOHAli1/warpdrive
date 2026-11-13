@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 1,
+  "kind": "hosted-final-image-qualification-summary",
+  "workflowRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43098779655",
+  "headRevision": "814e97bc2e61adaf47033bf69c89487715d69ff4",
+  "testedMergeRevision": "dd2e246ca5cddb45ca99127a242f183928ab5ad7",
+  "artifact": {
+    "id": 13891487080,
+    "bytes": 189310,
+    "sha256": "f0328a15bf312b9340141daf445a91df995f3c901c5fdb33ff62e2505f5b1603"
+  },
+  "reports": {
+    "smoke/report.json": {
+      "sha256": "116a93b295ccd67e63deac0e7071d06c4a6da8cf2350f00ac5ffd3e89ab55ac0",
+      "success": true,
+      "checks": [
+        {
+          "name": "final-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "runtime-packaging-and-nonroot",
+          "status": "passed"
+        },
+        {
+          "name": "disposable-isolation",
+          "status": "passed"
+        },
+        {
+          "name": "canonical-fresh-and-repeat-migration",
+          "status": "passed"
+        },
+        {
+          "name": "web-startup-http-assets-and-stability",
+          "status": "passed"
+        },
+        {
+          "name": "realtime-unauthenticated-rejection",
+          "status": "passed"
+        },
+        {
+          "name": "worker-durable-job-across-restart",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "registry-smoke/report.json": {
+      "sha256": "1ee6dfe391eeb88523563ad34b4b667cd486fd94c02538367f8e663ce4433a6f",
+      "success": true,
+      "checks": [
+        {
+          "name": "tested-bundle-load-and-source-identities",
+          "status": "passed"
+        },
+        {
+          "name": "owned-loopback-registry-and-capacity",
+          "status": "passed"
+        },
+        {
+          "name": "production-buildx-adapter-definite-tag-absence",
+          "status": "passed"
+        },
+        {
+          "name": "exact-tested-image-publication",
+          "status": "passed"
+        },
+        {
+          "name": "independent-immutable-manifest-and-config-readback",
+          "status": "passed"
+        },
+        {
+          "name": "production-buildx-adapter-readback",
+          "status": "passed"
+        },
+        {
+          "name": "mutable-source-tag-cannot-change-tested-publication",
+          "status": "passed"
+        },
+        {
+          "name": "registry-conflict-preserves-accepted-candidate",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "worker-drain/report.json": {
+      "sha256": "8697dd203bf75d1e2d85ea4ad4609197e26740c2920947f5b847b813ee920835",
+      "success": true,
+      "checks": [
+        {
+          "name": "verified-bundle-and-exact-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-fresh-database-and-real-worker",
+          "status": "passed"
+        },
+        {
+          "name": "real-active-handler-held-by-bounded-lock",
+          "status": "passed"
+        },
+        {
+          "name": "sigterm-drains-inflight-and-stops-consuming",
+          "status": "passed"
+        },
+        {
+          "name": "replacement-worker-completes-retained-job",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "worker-overrun/report.json": {
+      "sha256": "e2744e8ca2bd4dcd050e21a72b31c6bf9c0528e81011abdb0ca69cd7607787d3",
+      "success": true,
+      "checks": [
+        {
+          "name": "verified-bundle-and-exact-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-fresh-database-and-real-worker",
+          "status": "passed"
+        },
+        {
+          "name": "real-expired-job-and-still-blocked-callback",
+          "status": "passed"
+        },
+        {
+          "name": "sigterm-waits-for-expired-callback-without-completing-or-replaying-job",
+          "status": "passed"
+        },
+        {
+          "name": "replacement-worker-completes-retained-job",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "realtime-drain/report.json": {
+      "sha256": "104f15694a1a8a76efcd2d0f7c685691b4fffd22f3511c822f4679473c66402a",
+      "success": true,
+      "checks": [
+        {
+          "name": "verified-bundle-and-exact-image-identities",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-database-and-native-realtime-listener",
+          "status": "passed"
+        },
+        {
+          "name": "synthetic-live-native-session-and-ticket-fixture",
+          "status": "passed"
+        },
+        {
+          "name": "authenticated-subscription-relay-and-single-use-ticket",
+          "status": "passed"
+        },
+        {
+          "name": "sigterm-cooperative-authenticated-peer-close",
+          "status": "passed"
+        },
+        {
+          "name": "same-image-restart-fresh-authenticated-relay",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "web-switch/report.json": {
+      "sha256": "13c5562035f83efcc369d67925c7ece164f4b72e50923421f2b442944537e94d",
+      "success": true,
+      "checks": [
+        {
+          "name": "verified-native-tested-bundle",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-services-and-generated-caddy",
+          "status": "passed"
+        },
+        {
+          "name": "actual-caddy-cas-rejection-preserves-traffic",
+          "status": "passed"
+        },
+        {
+          "name": "real-candidate-readiness-rejection",
+          "status": "passed"
+        },
+        {
+          "name": "actual-web-switch-and-idempotent-readback",
+          "status": "passed"
+        },
+        {
+          "name": "actual-apply-lost-ack-readback-without-replay",
+          "status": "passed"
+        },
+        {
+          "name": "bounded-native-container-memory-observations",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    },
+    "browser-realtime/report.json": {
+      "sha256": "bd658ba55b462b0c229b7f118387671e35e0dbd1dc8a121d3f03cf86b9578903",
+      "success": true,
+      "checks": [
+        {
+          "name": "exact-final-images-and-source-producer-binding",
+          "status": "passed"
+        },
+        {
+          "name": "isolated-tls-browser-and-database-profile",
+          "status": "passed"
+        },
+        {
+          "name": "native-password-identity-no-forged-session",
+          "status": "passed"
+        },
+        {
+          "name": "persistent-tab-reconnect-resync-and-live-notification",
+          "status": "passed"
+        }
+      ],
+      "cleanupSuccess": true
+    }
+  },
+  "passedChecks": 42,
+  "deploymentAuthorized": false,
+  "notQualified": [
+    "Current uncommitted component-input, provenance v2, engine-migration, operations database/UI and mail-catalog changes.",
+    "Different-version application rollback or API/WS/job/asset compatibility.",
+    "Production registry authentication/publication, staging, installed deployment or recovery.",
+    "Engine Linux final image or installed old packed-binary upgrade."
+  ],
+  "ordinaryCi": {
+    "workflowRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43098779705",
+    "conclusion": "failure",
+    "cause": "One formatting error in docs/deployment-runtime-rehearsals.md; exact local correction made after this run and not yet CI qualified."
+  }
+}

@@ -1,12 +1,17 @@
 import type { PgBoss } from "pg-boss";
 
-type BossProcess = "worker" | "app";
+export type BossProcess = "worker" | "app" | "core-api";
 const observed = new WeakSet<PgBoss>();
 
 /** Observe background failures; pg-boss retains its own polling and job retry semantics. */
-export function observeBossErrors(boss: PgBoss, source: BossProcess): void {
+export function observeBossErrors(boss: PgBoss, source: BossProcess, onFailure?: () => void): void {
   if (observed.has(boss)) return;
   boss.on("error", () => {
+    try {
+      onFailure?.();
+    } catch {
+      // Preserve the error observer even when an owner's failure notification throws.
+    }
     // Error messages, stacks, queue names and payloads can contain credentials
     // or customer data. Do not inspect/serialize the emitted object at all.
     try {

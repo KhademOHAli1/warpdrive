@@ -137,6 +137,8 @@ export default createNextIntlPlugin({
       "./src/components/filters/messages/filters.en.json",
       "./src/components/data-table/messages/tableControls.en.json",
       "./src/features/notifications/messages/notifications.en.json",
+      "./src/features/notifications/messages/notificationEmail.en.json",
+      "./src/features/operations/messages/operations.en.json",
     ],
   },
 })(nextConfig);

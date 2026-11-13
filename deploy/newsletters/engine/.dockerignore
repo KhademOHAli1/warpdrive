@@ -5,6 +5,7 @@
 !README.md
 !build.sh
 !build-assets.go
+!nonroot-entrypoint.sh
 !patches/
 !patches/*.patch
 !tests/
@@ -31,3 +32,6 @@
 !operational-tests/**/*.py
 !operational-tests/**/*.go
 !operational-tests/**/*.md
+!migration-tests/
+!migration-tests/**/*.py
+!migration-tests/**/*.md

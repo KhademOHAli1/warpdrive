@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-linux-core-final-image-qualification",
+  "verifiedAt": "2026-11-12T03:57:55.538850+00:00",
+  "sourceHead": "f8248dbb58370b09cbedf8803c67342160cb166c",
+  "testedMerge": "0142144b21971d6a87a98fefd76fc793e0075959",
+  "sourceTree": "320f1c35a7466566314cfa6400b987f55080a809",
+  "testedMergeTree": "320f1c35a7466566314cfa6400b987f55080a809",
+  "testedMergeParents": [
+    "35c40339b8068a489247080e61430d17bfbfdb26",
+    "f8248dbb58370b09cbedf8803c67342160cb166c"
+  ],
+  "sourceTreeEqualsTestedMergeTree": true,
+  "run": {
+    "id": 43148013204,
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43148013204",
+    "status": "completed",
+    "conclusion": "success",
+    "event": "pull_request",
+    "attempt": 1,
+    "jobs": [
+      {
+        "id": 130950309793,
+        "name": "Deployment tooling checks",
+        "conclusion": "success"
+      },
+      {
+        "id": 130950504931,
+        "name": "Final production image smoke",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13913915350,
+    "name": "production-images-0142144b21971d6a87a98fefd76fc793e0075959-43148013204-1",
+    "bytes": 2077504,
+    "sha256": "9a0f485bdbef3837e971e6a6badbe1ef2b8c588258565ccc9a87515fecd33a2c",
+    "apiDigestMatched": true,
+    "apiSizeMatched": true,
+    "apiRunAndSourceMatched": true,
+    "apiMetadataSha256": "f719c9473ff3c9813130f8a4e4c1cb2a290e29de3daa820962b10308dd776a39",
+    "testedMergeMetadataSha256": "cf93f525f695b0bb2c03ec6c5abd744c295fb8f7152720bb48fb0d0a16a7f89c",
+    "members": 45,
+    "expandedBytes": 2069394,
+    "extractedJsonBytes": 1991179,
+    "onlyJsonExtracted": true,
+    "zipVerificationSha256": "58f468c17c64df80fad7015ccfd3bbbd770f42ab8f4a32d60b758661bd62c659"
+  },
+  "suites": {
+    "browser-realtime": {
+      "passed": 5,
+      "cleanup": true,
+      "reportSha256": "ed577d59c870b96be79ca6cc25ebedfb27a1a3938b471dd6db54fddfb5c3d81c",
+      "checks": [
+        "exact-final-images-and-source-producer-binding",
+        "isolated-tls-browser-and-database-profile",
+        "native-password-identity-no-forged-session",
+        "persistent-tab-reconnect-resync-and-live-notification",
+        "source-inputs-unchanged-after-browser"
+      ]
+    },
+    "realtime-drain": {
+      "passed": 6,
+      "cleanup": true,
+      "reportSha256": "9a4f262efd93fe3c191dd76f905ce6b0424684838679c25bce84e2c17ea51864",
+      "checks": [
+        "verified-bundle-and-exact-image-identities",
+        "isolated-database-and-native-realtime-listener",
+        "synthetic-live-native-session-and-ticket-fixture",
+        "authenticated-subscription-relay-and-single-use-ticket",
+        "sigterm-cooperative-authenticated-peer-close",
+        "same-image-restart-fresh-authenticated-relay"
+      ]
+    },
+    "registry-smoke": {
+      "passed": 8,
+      "cleanup": true,
+      "reportSha256": "e2e9bea4f3581567e6d13c54388e80cc4b1ba94ed5a84097fd6872c936753ff6",
+      "checks": [
+        "tested-bundle-load-and-source-identities",
+        "owned-loopback-registry-and-capacity",
+        "production-buildx-adapter-definite-tag-absence",
+        "exact-tested-image-publication",
+        "independent-immutable-manifest-and-config-readback",
+        "production-buildx-adapter-readback",
+        "mutable-source-tag-cannot-change-tested-publication",
+        "registry-conflict-preserves-accepted-candidate"
+      ]
+    },
+    "smoke": {
+      "passed": 7,
+      "cleanup": true,
+      "reportSha256": "b1548fcf12ecd9d5789db3d02691410788bbd3c74716c5346eedb870497fc955",
+      "checks": [
+        "final-image-identities",
+        "runtime-packaging-and-nonroot",
+        "disposable-isolation",
+        "canonical-fresh-and-repeat-migration",
+        "web-startup-http-assets-and-stability",
+        "realtime-unauthenticated-rejection",
+        "worker-durable-job-across-restart"
+      ]
+    },
+    "web-switch": {
+      "passed": 7,
+      "cleanup": true,
+      "reportSha256": "fcf91ce5f698834528bbf0edae738fb6c483aea818a597ebdd26bd8d1b02b77c",
+      "checks": [
+        "verified-native-tested-bundle",
+        "isolated-services-and-generated-caddy",
+        "actual-caddy-cas-rejection-preserves-traffic",
+        "real-candidate-readiness-rejection",
+        "actual-web-switch-and-idempotent-readback",
+        "actual-apply-lost-ack-readback-without-replay",
+        "bounded-native-container-memory-observations"
+      ]
+    },
+    "worker-drain": {
+      "passed": 5,
+      "cleanup": true,
+      "reportSha256": "3ae1b31acdd9cb9a3085d87d5ee580faec4beb85ddec5656fdc56b660626aa36",
+      "checks": [
+        "verified-bundle-and-exact-image-identities",
+        "isolated-fresh-database-and-real-worker",
+        "real-active-handler-held-by-bounded-lock",
+        "sigterm-drains-inflight-and-stops-consuming",
+        "replacement-worker-completes-retained-job"
+      ]
+    },
+    "worker-overrun": {
+      "passed": 5,
+      "cleanup": true,
+      "reportSha256": "b1194ea4ef52d568ecf20d75e7fdb28c441b72b8256ab2ad95b02b29aab1dd30",
+      "checks": [
+        "verified-bundle-and-exact-image-identities",
+        "isolated-fresh-database-and-real-worker",
+        "real-expired-job-and-still-blocked-callback",
+        "sigterm-waits-for-expired-callback-without-completing-or-replaying-job",
+        "replacement-worker-completes-retained-job"
+      ]
+    }
+  },
+  "totalPassedChecks": 43,
+  "inputProvenance": {
+    "candidateSchemaVersion": 2,
+    "candidateFileSha256": "aac8ae8a979617eea98941e20141466625ccb5c5a45692662365c098f19e2531",
+    "state": "current-source-inputs-bound",
+    "receiptFileSha256": "3c996e89065b1e620f76bda613fcbe4ff0b6f277a6ac81833c8877541a60f412",
+    "canonicalReceiptSha256": "3b8bc016327df307c579b561d1305581a1c65db38cdd890b895c6ab49f5a2e30",
+    "inputPolicySha256": "94e5f85bc628695c74bc16152d7e48f81bee2b22931376914e4eada0653d1b99",
+    "components": {
+      "web": {
+        "inputSha256": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
+        "inputCount": 9713,
+        "graphInputCount": 202,
+        "graphKind": "esbuild-helpers-plus-conservative-repository-sources"
+      },
+      "worker": {
+        "inputSha256": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+        "inputCount": 709,
+        "graphInputCount": 685,
+        "graphKind": "fresh-esbuild-transitive-application-inputs"
+      },
+      "realtime": {
+        "inputSha256": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+        "inputCount": 165,
+        "graphInputCount": 141,
+        "graphKind": "fresh-esbuild-transitive-application-inputs"
+      },
+      "migrator": {
+        "inputSha256": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938",
+        "inputCount": 460,
+        "graphInputCount": 201,
+        "graphKind": "fresh-esbuild-transitive-application-inputs"
+      }
+    },
+    "allOriginalImageSourceRevisions": "0142144b21971d6a87a98fefd76fc793e0075959",
+    "freshWholeInputAndRawHeadBindingReported": true,
+    "buildContext": {
+      "baseImage": "oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478",
+      "platform": "linux/amd64",
+      "buildArgs": {
+        "APP_VERSION": "",
+        "NEXT_PUBLIC_WS_URL": "same-origin"
+      }
+    },
+    "mixedSourceReuseQualified": false
+  },
+  "inputBoundaryProof": {
+    "success": true,
+    "cleanup": true,
+    "reportSha256": "93104b3996f8a756899a234428a0a4336b1c18c4ec9c2ece747f87ee3c34e1ce",
+    "checks": [
+      {
+        "name": "actual-operations-ui-namespace-registration",
+        "passed": true,
+        "changedComponents": ["web"],
+        "before": {
+          "web": "82536856a02583ccb858b6a790125ffadac78c1b8c3157e134a602a2c536e359",
+          "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        },
+        "after": {
+          "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
+          "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        }
+      },
+      {
+        "name": "existing-table-controls-ui-copy",
+        "passed": true,
+        "changedComponents": ["web"],
+        "before": {
+          "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
+          "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        },
+        "after": {
+          "web": "d7aab94e1b2e6613a91d00872804ae48a87f3cc6f5d962914c9e2644d29523a2",
+          "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        }
+      },
+      {
+        "name": "actual-worker-registration-and-release-job-with-required-review-hashes",
+        "passed": true,
+        "changedComponents": ["worker"],
+        "before": {
+          "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
+          "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        },
+        "after": {
+          "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
+          "worker": "81a8e14655776fa4fe6279bf6ff48649ddbd71ba989d833693cc94654d3d5a8f",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        }
+      },
+      {
+        "name": "notification-mail-copy-positive-control",
+        "passed": true,
+        "changedComponents": ["web", "worker"],
+        "before": {
+          "web": "9ca71befe8b2071b7dfd7aa877d19a7d1a52b7a596aa84adf139af75bd34751d",
+          "worker": "0005339c8328f735bb0e761552f3ca8b0b1a4d156adefe7119301307771c81ea",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        },
+        "after": {
+          "web": "a8f09e9d5c9ddf29d96f5b77886e5f3c7dc307c5dcdde0cd8a7abb2c64bf84b2",
+          "worker": "29dfce1a8d0c35c258218e5532b30c2c7e4272eafe12c441b46471b9a6af30be",
+          "realtime": "ce472c8cb1e9c693e9d1171ce77b264945348cc7f2e026f3b2abf7c0b8ac2f8e",
+          "migrator": "6c989f85c427ac687ee7e8b65dae05837ea4a247be41a3c923d0c1e5511d0938"
+        }
+      }
+    ],
+    "seconds": 154.27,
+    "runtimeOrReuseQualification": false
+  },
+  "nativeBrowser": {
+    "reportSha256": "fca1b604658c31bb484f8de2c6200eb3046dceb72bd9a52345cfc026de983785",
+    "persistentNativeUiTab": true,
+    "nativePasswordLogin": true,
+    "freshRealTicketAndAuth": true,
+    "missedNoticeResynced": true,
+    "liveStreamResumed": true,
+    "unread": 2,
+    "maxActiveSockets": 1,
+    "metrics": {
+      "pageErrors": 0,
+      "blockedRequests": 0,
+      "blockedWebSockets": 0,
+      "loginResponses": 1,
+      "ticketRequests": 6,
+      "ticketResponses": 6,
+      "mainNavigations": 7,
+      "notificationRequests": 10
+    },
+    "notificationFrameCount": 1,
+    "operations": {
+      "nativeAdminPasswordLogin": true,
+      "nativeAdminMfa": true,
+      "realRepositoryFacts": true,
+      "maintenanceFields": true,
+      "staleAndUnknown": true,
+      "sourceEnrollmentDistinction": true,
+      "nullAgeNotZero": true,
+      "recoveredIncident": true,
+      "metadataOnlyReceipts": true,
+      "mounted403HiddenBoth": true,
+      "explicitRefreshRestoredBoth": true,
+      "noAutomaticRestoration": true,
+      "boardRetained": true,
+      "regrantIdleWindowMs": 65042,
+      "forbiddenResponses": 4,
+      "readResponses": 10
+    }
+  },
+  "freshMigrationAndRuntimeRole": {
+    "successfulRuns": 2,
+    "canonicalMigrationCount": 119,
+    "emptyFiles": true,
+    "runtimeRole": "smoke_runtime",
+    "ownerCredentialsRuntime": false,
+    "deniedDdl": 5
+  },
+  "workerDrain": {
+    "normal": {
+      "signal": "SIGTERM",
+      "aliveWhileInflightBlocked": true,
+      "inflightCompleted": true,
+      "firstDurableState": "completed",
+      "expiredRecordPreserved": false,
+      "workerExitCode": 0,
+      "oomKilled": false,
+      "newWorkUnclaimedAfterExit": true
+    },
+    "expiredCallback": {
+      "signal": "SIGTERM",
+      "aliveWhileInflightBlocked": true,
+      "inflightCompleted": false,
+      "firstDurableState": "failed",
+      "expiredRecordPreserved": true,
+      "workerExitCode": 0,
+      "oomKilled": false,
+      "newWorkUnclaimedAfterExit": true
+    },
+    "sameImageReplacementJobCompleted": true,
+    "externalSideEffects": 0
+  },
+  "realtimeDrain": {
+    "signal": "SIGTERM",
+    "authenticatedPeerCloseCode": 1012,
+    "serverExitCode": 0,
+    "oomKilled": false
+  },
+  "sameVersionWebSwitch": {
+    "casRejectedStatus": 412,
+    "readinessRejectionRoutePatches": 0,
+    "successfulApplyRoutePatches": 1,
+    "lostAcknowledgementActualApplyRoutePatches": 1,
+    "lostAcknowledgementIndependentlyReconciled": true,
+    "oldNewCompatibilityQualified": false,
+    "deploymentAuthorized": false
+  },
+  "images": {
+    "web": {
+      "id": "sha256:b1daf130591813f7fd10deed1697b670aaf83aa704219a587ab7e9fc3139022e",
+      "revision": "0142144b21971d6a87a98fefd76fc793e0075959",
+      "user": "bun",
+      "platform": "linux/amd64",
+      "repoDigests": [],
+      "inspectionSha256": "0522704dd25243db4fa037c7e166ad545580c9142c573dd8484c15deae758191"
+    },
+    "worker": {
+      "id": "sha256:8bb84c3ac8878543361c05bc0c06c20a7941ded7d98466460ffdba0632722209",
+      "revision": "0142144b21971d6a87a98fefd76fc793e0075959",
+      "user": "bun",
+      "platform": "linux/amd64",
+      "repoDigests": [],
+      "inspectionSha256": "d872a42cbbd6e5ff75822f8066a7c67e30972a00eef9124ef2568d5ae4f308cd"
+    },
+    "realtime": {
+      "id": "sha256:97ec6e3d50c67e068a7087c65ac454cfd0aa196c13a0a60f1198b9a1785f1012",
+      "revision": "0142144b21971d6a87a98fefd76fc793e0075959",
+      "user": "bun",
+      "platform": "linux/amd64",
+      "repoDigests": [],
+      "inspectionSha256": "c17314dd1675d85769305de0d4555efd480096a78b3677f95c7bcea0f31996c4"
+    },
+    "migrator": {
+      "id": "sha256:d5e1e9b2cd0dac6bec166c97aaad94a493e58ca1a90bef2e6d4b11e76ae43ae7",
+      "revision": "0142144b21971d6a87a98fefd76fc793e0075959",
+      "user": "bun",
+      "platform": "linux/amd64",
+      "repoDigests": [],
+      "inspectionSha256": "0d9229eff4f35b37c24880c3c3088f063bf80b3e5344a2203c675cf555c595e7"
+    }
+  },
+  "fixtureRegistryManifestDigests": {
+    "web": "sha256:fdfeedb5a644f798bb9581aa9aec2869572781faa06a17c4425275a648b02343",
+    "worker": "sha256:38d864bef91261dcb41812db761ed15b06fa0671de9a5a017fcb6b3988bf1b02",
+    "realtime": "sha256:d259e146f2faef0239de3badcbf7b725a4baac9290a81c0bce900fa17d9757e1",
+    "migrator": "sha256:a3a9e339c53d47d95fa5bebe31c044827586c604dc2a79523ff76e72128b3d0f"
+  },
+  "imageArchive": {
+    "reportedSha256": "83808cce7a452ac76dfd11af8a189b49d51686fa6e9ffc92751e64a4c4b12a21",
+    "reportedConsistentlyAcrossSuites": true,
+    "reportedRebuilds": 0,
+    "archiveBytesIndependentlyDownloaded": false,
+    "mainCandidateBundleRetentionStep": "skipped-on-pull-request"
+  },
+  "acceptance": {
+    "exactMainSourceAccepted": false,
+    "securityGateAccepted": false,
+    "productionDeploymentAuthorized": false,
+    "liveRegistryPublicationAccepted": false,
+    "installedAcceptance": false,
+    "providerAcceptance": false,
+    "recoveryAcceptance": false,
+    "independentlyQualifiedComponentReuse": false
+  },
+  "limitations": [
+    "Owned synthetic native Linux fixtures at the tested pull-request merge only; source head and tested merge remain distinct identities.",
+    "Input dependency boundary controls are not Next image equivalence, independently qualified reuse, compatibility or deployment authorization.",
+    "Same-version Web switching does not establish old/new rollback or schema compatibility.",
+    "Local loopback registry digests do not establish remote registry TLS/authentication/durability or publication permission.",
+    "This PR evidence artifact retains JSON and diagnostics, not a downloadable tested image archive; image archive SHA is reported by the suites.",
+    "Main/source/security, Engine, recovery, installed/provider and production acceptance remain separate gates."
+  ]
+}

@@ -46,7 +46,7 @@ export const operationalClassifications = {
     retention:
       "No universal notification retention mandate; metadata, queued payloads and sent copies require reviewed policy.",
     externalEffects:
-      "Other notification kinds can use pg-boss and the configured delivery boundary; external delivery requires installation proof. The newsletter_operational kind calls only the direct transactional in-app producer and ID-only realtime event. Its default, saved and resolved email preferences are forced false, including stale stored values; email admission therefore rejects it. Generic email rendering is a fallback, not permission to enqueue or submit it.",
+      "The standalone EN/DE/FA mail catalog preserves existing template text, English/blank-translation fallback, recipient/activity-subject/link interpolation, HTML escaping and Persian bidi isolation. The UI catalog re-exports the same notifications.email namespace, while worker rendering no longer imports unrelated UI messages. This source-dependency extraction adds no notification type, recipient selection, queued delivery, provider operation or privacy capability. Other notification kinds can use pg-boss and the configured delivery boundary; external delivery requires installation proof. The newsletter_operational kind calls only the direct transactional in-app producer and ID-only realtime event. Its default, saved and resolved email preferences are forced false, including stale stored values; email admission therefore rejects it. Generic email rendering is a fallback, not permission to enqueue or submit it.",
     erasureTask: "DPL-16",
   },
   privacy: {
@@ -79,17 +79,19 @@ export const operationalClassifications = {
       "rate-limit state",
       "settings and preferences",
       "presentation-only module availability and action metadata",
+      "ephemeral runtime callback, connection and teardown handles",
+      "ephemeral realtime channel handlers, ACK/retirement state, abort controllers and retry deadlines",
     ],
     subjectRelation:
       "Actor/owner/session keys identify processors or recipients and are not automatically the subject of cached records. Review required.",
     purpose:
-      "Realtime delivery, derived views, preferences, authorization caches and service operations.",
+      "Realtime delivery, derived views, preferences, authorization caches and service operations, including bounded worker/socket shutdown.",
     disclosure:
-      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions. Navigation booleans expose module availability only. Project navigation and the high-risk project.create action metadata do not bypass current native session, module, membership or linked CRM checks.",
+      "No independent disclosure authority; cache/realtime content inherits reviewed source and current access restrictions. Navigation booleans expose module availability only. Project navigation and the high-risk project.create action metadata do not bypass current native session, module, membership or linked CRM checks. Current runtime.shutdown production callers log only fixed event/source/status/step labels and an exit code, never callback results, job payloads, session/recipient identifiers, exception objects or credentials. New WebSocket dispatch/teardown/heartbeat diagnostics are fixed messages.",
     retention:
-      "Transient state ends with process/browser lifecycle unless explicitly persisted; invalidation after commit and restore admission require qualification.",
+      "Transient state ends with process/browser lifecycle unless explicitly persisted; invalidation after commit and restore admission require qualification. Shutdown Promise markers and pending-operation/teardown Sets are removed on settlement; the socket-to-session Map removes entries after teardown success/failure, while its deduplication WeakMap does not retain keys. Active callbacks/session operations can retain existing payload or authority references until settling or process termination. Realtime Maps/Sets contain channel keys, handlers, acknowledgement/retirement labels and deadlines; removing members is in-memory bookkeeping. Last unsubscribe cancels owned retry/stage/ACK timers and aborts the current ticket request. An abort-ignoring request or closing browser socket retains its sole slot until actual settlement/close or tab termination to avoid accumulating resources. Releasing these handles is not database, object or provider erasure.",
     externalEffects:
-      "Browser caches, PostgreSQL LISTEN/NOTIFY, WebSocket clients and configured service dependencies.",
+      "Browser caches, PostgreSQL LISTEN/NOTIFY, WebSocket clients and configured service dependencies. Realtime recovery calls the existing protected single-use ticket mutation through an abortable raw tRPC client, then sends authentication/channel controls on the owned socket with bounded backoff and attempt deadlines. Current server session and channel authorization remain authoritative. The discovered multiplexer send:ws helper forwards to WebSocket.send; its delete:channel/delete:handler calls only remove transient Map/Set members, not SQL records or subject data. Disconnect resets sequence/presence consumers; actual subscription ACKs trigger existing authorized cache refetches, including the open Inbox thread, without granting disclosure authority. The discovered shutdown delete:marker, server delete:cleanup/delete:socket and socketSession delete:operation calls remove only in-memory Set/Map members; they are not database writes or subject deletion. Callback tracking forwards existing handlers, options, arguments and results; it creates no new queue destination, provider permission or durable personal-data store. Shutdown stops consumers/new connections, waits tracked work, closes sockets/relay/pools and reports incomplete/nonzero outcomes on timeout or failure. Existing handlers may perform their already-classified effects while draining; no exactly-once, installation recovery or privacy lifecycle capability is established.",
     erasureTask: "DPL-18",
   },
   observability: {

@@ -1,6 +1,7 @@
 import { LogsClient } from "@/features/newsletter/admin/LogsClient";
 import { ReceiptReview } from "@/features/newsletter/admin/ReceiptReview";
 import { requireNewsletterAdmin } from "@/features/newsletter/admin/server";
+import { OperationsLogs } from "@/features/operations/ui/OperationsLogs";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 
@@ -11,6 +12,7 @@ export default async function LogsPage() {
       <SettingsHeading title={L.logs} description={L.logsInfo} scope="workspace" />
       <ReceiptReview />
       <LogsClient />
+      <OperationsLogs />
     </SettingsPage>
   );
 }

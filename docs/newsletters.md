@@ -18,11 +18,14 @@ The [installation evidence worksheet and operator runbook](newsletters-operation
    ```
 
 2. Put `NEWSLETTER_POSTGRES_PASSWORD` in a private, Git-ignored `.env.newsletters` file for Compose interpolation. Set `NEWSLETTER_PUBLIC_DOMAIN` there to a dedicated subscriber-facing host and add its DNS record. Keep engine credentials in this separate file so only the intended Compose service receives each value. Use a separate hostname from the CRM and its S3 service.
-3. Start the internal engine with the optional overlay. The engine installs and upgrades its own schema. Back up the newsletter database and media volume before upgrades.
+3. Back up the database, media and installation configuration before an upgrade. Stop every engine runtime and independently verify it is absent. Run the explicit migration service with the optional overlay; ordinary engine startup only checks the schema and never installs or upgrades it. Start the runtime only after the migration exits successfully with a verified receipt. Keep it stopped if the outcome is unknown. Review existing uploads ownership before using the new unprivileged runtime; startup does not change mounted ownership.
 
    ```sh
    docker compose --env-file .env --env-file .env.newsletters \
-     -f docker-compose.yml -f docker-compose.newsletters.yml up -d --build newsletter-engine
+     -f docker-compose.yml -f docker-compose.newsletters.yml \
+     --profile newsletter-migrations run --rm newsletter-engine-migrate
+   docker compose --env-file .env --env-file .env.newsletters \
+     -f docker-compose.yml -f docker-compose.newsletters.yml up -d --no-build newsletter-engine
    ```
 
 4. Bootstrap the engine admin with `NEWSLETTER_BOOTSTRAP_USER` and `NEWSLETTER_BOOTSTRAP_PASSWORD` during initial installation, or use the upstream setup screen on a private operator tunnel. Use a temporary loopback-only mapping to reach the upstream UI during setup. Then remove the mapping and bootstrap variables.
@@ -123,11 +126,13 @@ The operational GET/ACK endpoints require the private backend's existing `settin
 
 ## Backup, upgrade and restore
 
-Capture the CRM PostgreSQL database, the separate newsletter PostgreSQL database and the newsletter media volume or S3 object versions. Pause campaigns and stop signup for a coordinated snapshot. Save a checksum manifest beside the dumps and media backup, and record the installed app and engine revisions. Include CRM operational state/receipts, audit and in-app notices/preferences, and the engine operational outbox with its acknowledgement/source-dedupe metadata. Retain the original provider delivery receipts for reconciliation. Backups include sensitive state and belong in the installation’s protected backup destination.
+Capture the complete CRM PostgreSQL database (including migration and pg-boss schemas), the separate newsletter database, CRM object storage and newsletter media. Include the exact runtime configuration, resolved secret-file contents, encryption/signing keys, accepted image identities and deployment journals in the protected recovery set. Keep backup decryption keys in separate custody, and require encrypted off-host storage with independent readback.
 
-Restore into isolated database targets and a separate media volume. Start the derived engine in passive mode and keep the public form closed. Compare the restored consent, global suppression and delivery receipts with activity after the backup before enabling delivery. Check real media bytes, pending schedules and the engine and application migration versions. Reconcile engine operational acknowledgement/source identities and native receipts as one set before starting the restored worker. Passive outbox catch-up must preserve delivery/campaign receipt fields. Preserve unresolved submissions during rollback. A restored earlier engine can run passive for inspection while current delivery state is reconciled.
+Pausing campaigns and disabling signup do not establish a consistent snapshot. Tracking/subscription requests, Web jobs, operational outbox sweeps and already issued storage upload URLs can still write. A coordinated offline capture must stop and independently verify all ingress, Web, Worker, Realtime, engine, migrator and one-off writers, and fence direct object-storage access before capturing databases and media. Existing advisory locks do not fence all these writers. Retain checksums, exact installed image/configuration identities, CRM operational receipts, audit/notices/preferences, engine outbox acknowledgement/source-dedupe state and original provider delivery receipts for reconciliation. The encrypted off-host workflow and installed restore remain separate qualification gates.
 
-Run the synthetic restore against a built engine and the repository’s installed Bun dependencies.
+Restore into isolated database targets and separate media storage with external effects blocked. Use an engine whose schema admission accepts that recovery set, in passive mode, and keep public ingress closed. Compare restored consent, suppression and delivery receipts with activity after the backup before enabling delivery. Check media bytes, schedules, migration versions and operational acknowledgement/source identities as one set before starting the restored worker. Passive mode can still perform operational writes; preserve original receipts and unresolved submissions. An earlier engine requires explicit compatibility evidence before it can inspect or mutate a restored database.
+
+The existing synthetic restore covers two databases, media bytes and selected consent/receipt state. It does not encrypt or transfer backups off-host, recover key custody or establish an installation recovery result. Run it against a built engine and the repository’s installed Bun dependencies.
 
 ```sh
 python3 -B scripts/newsletters/restore-smoke.py \

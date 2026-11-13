@@ -3,7 +3,9 @@
 # Build from the repository root with --file deploy/images/Dockerfile --target COMPONENT.
 # Non-web targets have no dependency on web-build, next build or .next. They share the
 # locked production dependency layer because packages read runtime data from node_modules.
-FROM oven/bun:1.4.4 AS base
+# Bun 1.4.4, resolved from the registry's linux/amd64 manifest. The immutable
+# base is a component input; tag movement cannot silently change a reused build.
+FROM oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 AS base
 WORKDIR /app
 
 FROM base AS deps
@@ -29,6 +31,7 @@ RUN printf '%s\n' "$APP_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
 # origin; an explicit URL is still inlined, and an explicit empty arg disables realtime.
 RUN NODE_ENV=production \
     APP_COMMIT=${APP_COMMIT} \
+    NEXT_DEPLOYMENT_ID=wd-${APP_COMMIT} \
     DATABASE_URL=postgres://build:build@localhost:5432/build \
     GOOGLE_OAUTH_CLIENT_ID=build \
     GOOGLE_OAUTH_CLIENT_SECRET=build \
@@ -81,6 +84,7 @@ ARG APP_COMMIT
 ARG APP_VERSION=
 RUN printf '%s\n' "$APP_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
 ENV APP_COMMIT=${APP_COMMIT} APP_VERSION=${APP_VERSION}
+ENV NEXT_DEPLOYMENT_ID=wd-${APP_COMMIT}
 LABEL org.opencontainers.image.revision=${APP_COMMIT} \
       org.opencontainers.image.title="Warpdrive Web"
 EXPOSE 3000

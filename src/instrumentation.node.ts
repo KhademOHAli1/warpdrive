@@ -1,6 +1,7 @@
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { startAppBoss } from "@/jobs/appInstrumentation";
 import { setBoss } from "@/jobs/boss";
+import { assertRuntimeQueueSchema, runtimeQueueOptions } from "@/jobs/schemaContract";
 
 // Next runs this once per server process at startup. Boot pg-boss for the app so producers
 // (email send, activity reminders, import enqueues) see a live boss instead of the null singleton
@@ -15,7 +16,9 @@ export async function registerNode(): Promise<void> {
     const { PgBoss } = await import("pg-boss");
     const { env } = await import("@/config/env");
     const boss = await startAppBoss({
-      createBoss: () => new PgBoss(env.DATABASE_URL),
+      createBoss: () =>
+        new PgBoss({ connectionString: env.DATABASE_URL, ...runtimeQueueOptions("app") }),
+      admit: () => assertRuntimeQueueSchema(env.DATABASE_URL),
       setBoss,
     });
     // In development there is no separate `worker` service running (`next dev` is the whole stack),

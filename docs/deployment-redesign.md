@@ -119,8 +119,10 @@ An unavailable command response leaves an unknown phase; it does not justify bli
 
 ## Remaining rollout boundaries
 
-These image and candidate-publication increments do not implement the production deployment
-controller, staging promotion, populated-version upgrade coverage, complete authenticated final-image browser
+The [runtime rehearsals](deployment-runtime-rehearsals.md) add bounded shutdown and a controller
+engine limited to isolated same-version Web switching. Actual native reports qualify only their
+stated cases. They do not implement a general production deployment controller, staging
+promotion, populated-version upgrade coverage, complete authenticated final-image browser
 journeys, shutdown qualification, feature health UI, API extraction or installed off-host
 recovery. Those requirements remain part of phases 1–5 above. Existing full source CI, browser
 qualification, managed security findings, review and exact-main evidence remain required.

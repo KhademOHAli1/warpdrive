@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { afterEach, expect, test, vi } from "vitest";
-import type { env as runtimeEnv } from "@/config/env";
+import { env as runtimeEnv } from "@/config/env";
 import type { Db } from "@/db/client";
 import { auditEvents, sessions, users } from "@/db/schema";
 import { hydrateActor } from "@/server/hydrateActor";
+import { readRequestCsrf } from "@/server/trpc/request-csrf";
 import { makeTestDb } from "@/test/db";
 import { newsletterRouter } from "./router";
 import { newsletterOperationReceipts } from "./schema/operationReceipts";
@@ -22,10 +23,6 @@ vi.mock("@/config/env", async (original) => {
     },
   };
 });
-
-vi.mock("@/features/identity/actions/shared", () => ({
-  guardCsrf: (token: string | null) => Promise.resolve({ ok: token === "verified-fixture" }),
-}));
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -96,7 +93,16 @@ async function callerFor(db: Db) {
   });
   const actor = await hydrateActor(db, userId, AbortSignal.timeout(5_000));
   if (actor === null) throw new Error("Synthetic administrator fixture missing");
-  const ctx = { db, actor, session: { userId, sessionId } };
+  const origin = new URL(runtimeEnv.BASE_URL);
+  const csrf = readRequestCsrf(
+    new Headers({
+      cookie: "wd_csrf=verified-fixture",
+      origin: origin.origin,
+      host: origin.host,
+      "sec-fetch-site": "same-origin",
+    }),
+  );
+  const ctx = { db, actor, session: { userId, sessionId }, csrf };
   return { userId, ctx, caller: newsletterRouter.createCaller(ctx) };
 }
 

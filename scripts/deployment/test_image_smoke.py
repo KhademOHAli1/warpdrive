@@ -10,11 +10,14 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import Mock
 
 try:
     from . import image_smoke as smoke
+    from .registry_smoke import IsolatedDocker
 except ImportError:
     import image_smoke as smoke
+    from registry_smoke import IsolatedDocker
 
 
 SHA = "a" * 40
@@ -123,6 +126,54 @@ class AdmissionTests(unittest.TestCase):
             docker.run(["run", "--env", "SECRET=hidden"])
         self.assertNotIn("hidden", str(raised.exception))
 
+    def test_finite_binary_stdin_uses_existing_pinned_context_without_text_conversion(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment = "admitted-local", {"DOCKER_CONFIG": "/owned/empty-auth"}
+        docker.runner = Mock(return_value=subprocess.CompletedProcess([], 0, b"", b""))
+        body = b"\x00\xff$(not-shell-code)\r\n"
+        result = docker.run(["exec", "--interactive", "owned", "cat"], input_bytes=body, timeout=7)
+        docker.runner.assert_called_once_with(["docker", "--context", "admitted-local", "exec", "--interactive", "owned", "cat"],
+            capture_output=True, text=False, timeout=7, env=docker.environment, check=False, input=body)
+        self.assertEqual(result.stdout, b"")
+
+    def test_binary_stdin_preserves_isolated_endpoint_and_empty_auth_configuration(self):
+        docker = object.__new__(IsolatedDocker)
+        docker.context, docker.endpoint = None, "unix:///owned/docker.sock"
+        docker.environment = {"DOCKER_CONFIG": "/owned/empty-auth"}
+        docker.runner = Mock(return_value=subprocess.CompletedProcess([], 0, b"", b""))
+        docker.run(["exec", "--interactive", "owned", "cat"], input_bytes=b"fixture")
+        self.assertEqual(docker.runner.call_args.args[0], ["docker", "--host", "unix:///owned/docker.sock",
+            "exec", "--interactive", "owned", "cat"])
+        self.assertEqual(docker.runner.call_args.kwargs["env"], {"DOCKER_CONFIG": "/owned/empty-auth"})
+        self.assertEqual(docker.runner.call_args.kwargs["input"], b"fixture")
+
+    def test_oversized_or_nonbinary_stdin_rejects_before_spawn(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment, docker.runner = "local", {}, Mock()
+        for body in (b"x" * 8193, "sensitive-nonbinary-input", bytearray(b"content")):
+            with self.subTest(kind=type(body).__name__), self.assertRaises(smoke.SmokeError) as raised:
+                docker.run(["exec", "owned", "cat"], input_bytes=body)
+            self.assertEqual(str(raised.exception), "Docker stdin must be bounded binary data")
+        docker.runner.assert_not_called()
+
+    def test_binary_stdin_failure_or_timeout_never_exposes_payload_or_process_output(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment = "local", {}
+        body = b"synthetic-sensitive-body"
+        for error in (None, subprocess.TimeoutExpired(["docker", "exec"], 1, output=body), OSError("synthetic-sensitive-body")):
+            docker.runner = Mock(return_value=subprocess.CompletedProcess([], 1, body, body), side_effect=error)
+            with self.subTest(error=type(error).__name__), self.assertRaises(smoke.SmokeError) as raised:
+                docker.run(["exec", "owned", "cat"], input_bytes=body, timeout=1)
+            self.assertNotIn(body.decode(), str(raised.exception))
+
+    def test_normal_text_calls_keep_the_existing_runner_and_return_contract(self):
+        docker = object.__new__(smoke.Docker)
+        docker.context, docker.environment = "local", {}
+        docker.runner = Mock(return_value=subprocess.CompletedProcess([], 0, "ordinary text", ""))
+        self.assertEqual(docker.run(["version"]).stdout, "ordinary text")
+        self.assertNotIn("input", docker.runner.call_args.kwargs)
+        self.assertIs(docker.runner.call_args.kwargs["text"], True)
+
     def test_rejects_flags_shell_fragments_and_abbreviated_revision(self):
         for value in ("--privileged", "image;echo", "image\n--network=host", "$(command)"):
             with self.subTest(value=value), self.assertRaises(ValueError):
@@ -167,6 +218,86 @@ class ImageIdentityTests(unittest.TestCase):
 
 
 class ProcessAndCleanupTests(unittest.TestCase):
+    def test_only_migration_containers_receive_the_separate_owner_connection(self):
+        docker = FakeDocker()
+        value = harness(docker)
+        value.report["images"]["migrator"] = {"id": IMAGE_ID}
+        value.containers["postgres"] = "owned-postgres"
+        value.finished = lambda *_: None
+        original_run = docker.run
+
+        def run(args, **kwargs):
+            result = original_run(args, **kwargs)
+            if "-Atc" in args:
+                result.stdout = "119\n0\n"
+            elif args[0] == "logs":
+                result.stdout = json.dumps({"runtimeRole": "smoke_runtime",
+                                            "ownerCredentialsRuntime": False, "deniedDdl": 5})
+            return result
+
+        docker.run = run
+        detail = value.migrations()
+        self.assertEqual(detail["deniedDdl"], 5)
+        self.assertNotEqual(value.migration_url, value.env["DATABASE_URL"])
+        self.assertEqual(value.env["MIGRATION_DATABASE_URL"], "")
+        self.assertEqual(value.env["MIGRATION_DATABASE_URL_FILE"], "")
+        launches = [args for args in docker.calls if args[0] == "run"]
+        self.assertEqual(len(launches), 3)
+        for index, args in enumerate(launches):
+            environment = dict(args[offset + 1].split("=", 1)
+                               for offset, argument in enumerate(args) if argument == "--env")
+            self.assertIn("postgres://smoke_runtime:", environment["DATABASE_URL"])
+            self.assertEqual(environment["MIGRATION_DATABASE_URL"],
+                             value.migration_url if index < 2 else "")
+            self.assertEqual(environment["MIGRATION_DATABASE_URL_FILE"], "")
+        serialized = json.dumps(detail)
+        self.assertNotIn(value.runtime_password, serialized)
+        self.assertNotIn(value.migration_url, serialized)
+
+    def test_runtime_privilege_proof_is_required_after_owner_migration(self):
+        docker = FakeDocker()
+        value = harness(docker)
+        value.report["images"]["migrator"] = {"id": IMAGE_ID}
+        value.containers["postgres"] = "owned-postgres"
+        value.finished = lambda *_: None
+        original_run = docker.run
+
+        def run(args, **kwargs):
+            result = original_run(args, **kwargs)
+            if "-Atc" in args:
+                result.stdout = "119\n0\n"
+            elif args[0] == "logs":
+                result.stdout = json.dumps({"runtimeRole": "smoke_runtime",
+                                            "ownerCredentialsRuntime": False, "deniedDdl": 4})
+            return result
+
+        docker.run = run
+        with self.assertRaisesRegex(smoke.SmokeError, "privilege proof"):
+            value.migrations()
+
+        def malformed(args, **kwargs):
+            result = run(args, **kwargs)
+            if args[0] == "logs":
+                result.stdout = json.dumps({"runtimeRole": "smoke_runtime",
+                                            "ownerCredentialsRuntime": 0, "deniedDdl": 5.0})
+            return result
+
+        docker.run = malformed
+        with self.assertRaisesRegex(smoke.SmokeError, "privilege proof"):
+            value.migrations()
+
+    def test_explicit_bounded_tmpfs_does_not_change_default_container_mounts(self):
+        docker = FakeDocker()
+        value = harness(docker)
+        specifications = ("/data:rw,noexec,nosuid,nodev,size=16m", "/config:rw,noexec,nosuid,nodev,size=16m")
+        value.start_container("caddy", "caddy:test", ["caddy", "adapt"], environment={}, readonly=True, tmpfs=specifications)
+        created = docker.calls[-1]
+        self.assertEqual([created[index + 1] for index, argument in enumerate(created) if argument == "--tmpfs"], list(specifications))
+        self.assertIn("--read-only", created)
+        self.assertFalse(any(argument in {"--volume", "-v"} for argument in created))
+        value.start_container("web", "web:test", ["bun", "next", "start"])
+        self.assertNotIn("--tmpfs", docker.calls[-1])
+
     def test_ready_log_cannot_override_a_failed_process_or_oom(self):
         for running, code, oom in ((False, 1, False), (False, 0, False), (True, 0, True)):
             docker = FakeDocker()

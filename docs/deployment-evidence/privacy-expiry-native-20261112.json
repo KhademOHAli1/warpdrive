@@ -1,0 +1,51 @@
+{
+  "kind": "owned-native-privacy-completion-expiry-qualification",
+  "success": true,
+  "scope": "actual-migrations-and-makeTestDb-cloned-database-four-expiry-cases",
+  "installedAcceptance": false,
+  "finalImageQualification": false,
+  "resources": {
+    "inclusiveDeadlineSeconds": 180,
+    "workDeadlineSeconds": 150,
+    "combinedRssLimitBytes": 1073741824,
+    "bunRssLimitBytes": 536870912,
+    "commandLogLimitBytes": 2097152,
+    "maxTestWorkers": 2,
+    "limitation": "Sampled owned RSS/log watchdog, not an OS reservation or network sandbox",
+    "sampledPeakCombinedRssBytes": 451461120,
+    "sampledPeakBunRssBytes": 169984000,
+    "sampledPeakCommandLogBytes": 733,
+    "limitExceeded": false
+  },
+  "cleanup": {
+    "clientSessionsGoneAfterWorkerExit": true,
+    "stopSucceeded": true,
+    "postgresProcessGone": true,
+    "postgresSocketClosed": true,
+    "fixtureDirectoryGone": true
+  },
+  "admission": {
+    "freeMemoryPercent": 58,
+    "availableDiskBytes": 36384706560
+  },
+  "sourceSha256": {
+    "src/features/privacy/authorityCompletionExpiry.test-helpers.ts": "ac9936a7de00fe26fbefd2a7c97cd12eabbe0f8020b3223703233b25e368d409",
+    "src/features/privacy/authorityCompletionExpiry.integration.test.ts": "48602ecb6ae29ff8f8fb7714f33b12aa366ef73a6a986100cc83ee95eeaf1781",
+    "src/features/privacy/identityTransaction.ts": "18416599c4f783a9e0864bca7955ad48f97ccfa77a8f633461bae21e6d5a1639",
+    "src/features/privacy/authoritySession.ts": "a1bf7d774d48ac263b7c39459312c2f729dd4ee2cd0e3549ba20f5f5a53d0db7",
+    "src/features/privacy/selfService.ts": "2cfa96c971211fa36f8ab6581487538d74540901388749f25ea06854cff80b9e",
+    "src/features/privacy/permissions.ts": "f7e598e66aab81c398b7862cb0802af32fe5954e5193deafbe2a6f920a44ecec",
+    "src/test/db.ts": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+    "drizzle/meta/_journal.json": "0e5663c1933c8ac291ac8cb059c01a3097562a43023043f466b0276df88e0b47"
+  },
+  "postgresVersion": "postgres (PostgreSQL) 16.10 (Homebrew)",
+  "actualMigrations": 119,
+  "tests": {
+    "success": true,
+    "numTotalTests": 4,
+    "numPassedTests": 4,
+    "numFailedTests": 0
+  },
+  "sourceUnchangedDuringProof": true,
+  "durationSeconds": 12.283
+}

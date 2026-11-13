@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-linux-engine-supported-old-upgrade-qualification",
+  "sourceHead": "f8248dbb58370b09cbedf8803c67342160cb166c",
+  "testedMerge": "0142144b21971d6a87a98fefd76fc793e0075959",
+  "run": {
+    "id": 43148013207,
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43148013207",
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 13912468389,
+    "bytes": 53453675,
+    "sha256": "738729e6ed795675fa21e65baaff3ae1df482c526832e0310b4e22ec859039bb",
+    "apiDigestMatched": true,
+    "reportSha256": "4989ccdad628f9d5aa9f28d8e12a5ed7b7fbe61b2f5dfab3411de1c8f6eb7e54"
+  },
+  "checks": [
+    {
+      "name": "immutable-final-engine-image",
+      "status": "passed"
+    },
+    {
+      "name": "owned-internal-fixture",
+      "status": "passed"
+    },
+    {
+      "name": "actual-final-image-packaging",
+      "status": "passed"
+    },
+    {
+      "name": "empty-runtime-refuses-schema-writes",
+      "status": "passed"
+    },
+    {
+      "name": "file-secret-loader-and-fresh-install",
+      "status": "passed"
+    },
+    {
+      "name": "fresh-repeat-no-write-migration",
+      "status": "passed"
+    },
+    {
+      "name": "pinned-schema-legacy-holds",
+      "status": "passed"
+    },
+    {
+      "name": "explicit-upgrade-and-no-write",
+      "status": "passed"
+    },
+    {
+      "name": "receipt-and-index-drift-rejection",
+      "status": "passed"
+    },
+    {
+      "name": "restricted-role-no-ddl-startup",
+      "status": "passed"
+    },
+    {
+      "name": "rls-policy-sequence-drift-rejection",
+      "status": "passed"
+    },
+    {
+      "name": "runtime-excludes-migration",
+      "status": "passed"
+    },
+    {
+      "name": "migration-excludes-actual-runtime",
+      "status": "passed"
+    },
+    {
+      "name": "fence-loss-exits-and-restarts",
+      "status": "passed"
+    },
+    {
+      "name": "final-image-health-and-readiness",
+      "status": "passed"
+    },
+    {
+      "name": "supported-old-packed-binary-upgrade",
+      "status": "passed"
+    }
+  ],
+  "images": {
+    "candidate": {
+      "id": "sha256:3d0197d7cc54d8bc2320a955fbf0848bee3f6eb57697c27c737006a7e57cffc1",
+      "revision": "0142144b21971d6a87a98fefd76fc793e0075959",
+      "contextSha256": "46cfa51efdb7265b23ccc8cdb56e2829b2f9b61687b3be0382b1ecde623d1275",
+      "user": "65532:65532",
+      "legacyRootFixture": false,
+      "platform": "linux/amd64",
+      "upstreamSource": "https://github.com/knadh/listmonk/tree/ef0a75872463f10a4848af6c547d1c057405453a"
+    },
+    "historical": {
+      "id": "sha256:641e2d24ca84d99496c8f06d0e3465a1ac2391edbe61c198500cef53f011464a",
+      "revision": "35c40339b8068a489247080e61430d17bfbfdb26",
+      "contextSha256": "1e935b4f2ad94158db9cb3482f2fa874d90e80a289bb65099991a79769b92626",
+      "user": "root-default",
+      "legacyRootFixture": true,
+      "platform": "linux/amd64",
+      "upstreamSource": "https://github.com/knadh/listmonk/tree/ef0a75872463f10a4848af6c547d1c057405453a"
+    }
+  },
+  "supportedOld": {
+    "oldRevision": "35c40339b8068a489247080e61430d17bfbfdb26",
+    "oldImageId": "sha256:641e2d24ca84d99496c8f06d0e3465a1ac2391edbe61c198500cef53f011464a",
+    "newImageId": "sha256:3d0197d7cc54d8bc2320a955fbf0848bee3f6eb57697c27c737006a7e57cffc1",
+    "oldPackaging": {
+      "observedUid": 0,
+      "rootAllowedOnlyForOwnedHistoricalFixture": true,
+      "sourceArchiveMatchesOriginalContext": true
+    },
+    "separatePostgresCluster": true,
+    "postgresFixtureImageId": "sha256:4278d7b1e3deb3193ddc803158f6532963f059fc25a2eefaee4b5a9e71741873",
+    "oldStoppedBeforeMigration": {
+      "containerStopped": true,
+      "pid": 0,
+      "oldDatabaseSessions": 0,
+      "runningHistoricalFixtureContainers": 0
+    },
+    "oldLegacyHoldEstablishedAndPreserved": true,
+    "pendingUnknownAndAcknowledgedReceiptsPreserved": true,
+    "consentRevocationAndKeyedSuppressionPreserved": true,
+    "media": {
+      "filename": "fixture.png",
+      "bytes": 69,
+      "sha256": "28684e5c10d8dd58b176e73683a8ae870356fc66515d0a74211d6862bda532e0"
+    },
+    "fixtureOnlyOfflineMediaOwnershipHandoff": true,
+    "repeatMigrationNoWrites": true,
+    "newRestrictedRoleAdmission": true,
+    "passiveWitnessWindowSeconds": 6,
+    "installedVpsUpgradeQualified": false
+  },
+  "mediaHttpStatus": 200,
+  "syntheticSecretStorage": {
+    "filesystem": "tmpfs",
+    "privateParentMode": "0700",
+    "mountedFileMode": "0444",
+    "diskFallback": false,
+    "swapPolicyAttested": false
+  },
+  "capacity": {
+    "availableBytes": 88991805440,
+    "maxObservedGrowthBytes": 495226880,
+    "growthLimitBytes": 3221225472,
+    "reserveBytes": 8589934592,
+    "deadlineSeconds": 900
+  },
+  "cleanup": {
+    "success": true,
+    "errors": []
+  },
+  "limitations": [
+    "Disposable Linux/amd64 final-image fixture only; no production deployment or existing-volume ownership transition.",
+    "Historical packed upgrade is synthetic baseline35c40339 only; it does not qualify an actual installed VPS or arbitrary older versions.",
+    "No external SMTP/provider delivery, public ingress, backup restore or installed monitoring qualification.",
+    "Advisory lifecycle locks are cooperative; supported DDL still requires independently verified offline maintenance."
+  ],
+  "productionDeployment": false,
+  "publicImagePublication": false,
+  "securityGateAcceptance": false
+}

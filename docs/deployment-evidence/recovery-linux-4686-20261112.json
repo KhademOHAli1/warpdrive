@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-linux-recovery-hybrid-source-qualification",
+  "verifiedAt": "2026-11-12T04:12:47.903033+00:00",
+  "sourceHead": "4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+  "testedMerge": "b98a12d57030c849afc021f21e5cf1a2c36d9ce0",
+  "sourceTree": "6a3ec43640df501eb9e1ca502f0664275f01a392",
+  "testedMergeTree": "6a3ec43640df501eb9e1ca502f0664275f01a392",
+  "testedMergeParents": [
+    "35c40339b8068a489247080e61430d17bfbfdb26",
+    "4686be5e5957c4e5a3580c2935fd7a11807eeb2a"
+  ],
+  "sourceTreeEqualsTestedMergeTree": true,
+  "run": {
+    "id": 43152511497,
+    "jobId": 130964792488,
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43152511497",
+    "event": "pull_request",
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "jobConclusion": "success"
+  },
+  "artifact": {
+    "id": 13913754330,
+    "name": "recovery-qualification-b98a12d57030c849afc021f21e5cf1a2c36d9ce0-43152511497-1",
+    "bytes": 8915,
+    "sha256": "5b16d8cd414410ee2d79cebaf056e95b32078bd21a78c693e5e6be3c8f4085ba",
+    "apiDigestMatched": true,
+    "apiSizeMatched": true,
+    "apiHeadAndRunMatched": true,
+    "members": 5,
+    "expandedBytes": 8217,
+    "onlyJsonExtracted": true,
+    "apiMetadataSha256": "ec0c9ab70ee4ffe5a2d8ff34412a8b147d12e3c3cde6a35a007dc5bf7da9f561",
+    "zipVerificationSha256": "873fa901b337cb264c31d4e2808a7c342d68d43c212be69835c9fff3b765cd50"
+  },
+  "sourceSha256": {
+    "scripts/deployment/recovery.py": "23d2570ef83c6e8d94fba06f84ef2deca41962c1f4c156eac14c93ff1ad49152",
+    "scripts/deployment/test_recovery.py": "2ee69d0993f4194226058859e48d97fad9e8140b28a67ad5604efd2960ada74d",
+    ".github/workflows/recovery-qualification.yml": "ee9a9b053fd275c8b28c6b51dba234ee91f1a255e3168c89fdb75ed21a7cdd2a",
+    "docs/deployment-recovery.md": "a0e50c89db1692dba12cefc56a77f7604430bb06ac06c736d6c07469531994fd"
+  },
+  "sourcePinsVerifiedAgainstExactGitHubSourceRef": true,
+  "sourcePinMetadata": [
+    {
+      "path": "scripts/deployment/recovery.py",
+      "sha256": "23d2570ef83c6e8d94fba06f84ef2deca41962c1f4c156eac14c93ff1ad49152",
+      "bytes": 69009,
+      "apiSourceRef": "4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "apiUrl": "https://api.github.com/repos/KhademOHAli1/warpdrive/contents/scripts/deployment/recovery.py?ref=4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "matchesReviewedSource": true,
+      "derivedGitBlobSha1": "9d8fb168dd0c408f2d153b144c639bf97fd56c38"
+    },
+    {
+      "path": "scripts/deployment/test_recovery.py",
+      "sha256": "2ee69d0993f4194226058859e48d97fad9e8140b28a67ad5604efd2960ada74d",
+      "bytes": 91353,
+      "apiSourceRef": "4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "apiUrl": "https://api.github.com/repos/KhademOHAli1/warpdrive/contents/scripts/deployment/test_recovery.py?ref=4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "matchesReviewedSource": true,
+      "derivedGitBlobSha1": "6a4f13de549b1b2632fe09cb8fe2ee4b5429b926"
+    },
+    {
+      "path": ".github/workflows/recovery-qualification.yml",
+      "sha256": "ee9a9b053fd275c8b28c6b51dba234ee91f1a255e3168c89fdb75ed21a7cdd2a",
+      "bytes": 18646,
+      "apiSourceRef": "4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "apiUrl": "https://api.github.com/repos/KhademOHAli1/warpdrive/contents/.github/workflows/recovery-qualification.yml?ref=4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "matchesReviewedSource": true,
+      "derivedGitBlobSha1": "63a5b759241bb3e6d1b2914d7b10e849667c894a"
+    },
+    {
+      "path": "docs/deployment-recovery.md",
+      "sha256": "a0e50c89db1692dba12cefc56a77f7604430bb06ac06c736d6c07469531994fd",
+      "bytes": 15085,
+      "apiSourceRef": "4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "apiUrl": "https://api.github.com/repos/KhademOHAli1/warpdrive/contents/docs/deployment-recovery.md?ref=4686be5e5957c4e5a3580c2935fd7a11807eeb2a",
+      "matchesReviewedSource": true,
+      "derivedGitBlobSha1": "0ebf58fccda182405643959d369f9c45743b089d"
+    }
+  ],
+  "sourceUnchangedBeforeAndAfterReported": true,
+  "reports": {
+    "qualification.json": {
+      "bytes": 2929,
+      "sha256": "ce01d9332306d0214a55b562b1e44f41e9653637aa8d5bcef3f4017069562d9d"
+    },
+    "download.json": {
+      "bytes": 465,
+      "sha256": "1cf0c1d825ca8bc6796d5a99df204a73476cf09a771c01f37571051d3d1eccd9"
+    }
+  },
+  "stages": [
+    {
+      "name": "guards",
+      "selected": 59,
+      "skipped": 2,
+      "passedTests": 57,
+      "passed": true,
+      "seconds": 2.582,
+      "failureFacts": []
+    },
+    {
+      "name": "descriptor-preflight",
+      "selected": 1,
+      "skipped": 0,
+      "passedTests": 1,
+      "passed": true,
+      "seconds": 35.203,
+      "failureFacts": []
+    },
+    {
+      "name": "crypto",
+      "selected": 1,
+      "skipped": 0,
+      "passedTests": 1,
+      "passed": true,
+      "seconds": 15.224,
+      "failureFacts": []
+    }
+  ],
+  "selectedTests": 61,
+  "passedTests": 59,
+  "skippedTests": 2,
+  "skipEvidence": {
+    "observedGuardSkipCount": 2,
+    "nativePreflightSkipped": 0,
+    "cryptoSkipped": 0,
+    "exactSkippedIdentitiesRetainedByReport": false,
+    "expectedGuardSkipsFromPinnedSource": ["RealResticDescriptorTests", "RealResticTests"],
+    "basis": "Pinned source opt-in decorators and source-bound workflow environment; both opt-in stages executed separately without skips."
+  },
+  "nativeDescriptorAndHybridFacts": {
+    "terminalDescriptorIsSymlinkToPinnedDirectory": true,
+    "actualResticRootRemovalRejected": true,
+    "restoreTargetContainsEntries": true,
+    "sourceAndSnapshotUnchanged": true,
+    "rawDotRestoredBytesModesOwnershipAtPinnedInode": true,
+    "actualResticKeptPinnedInodeAcrossLeafAndParentReplacement": true,
+    "postCommandPathSubstitutionRejected": true,
+    "directRootFilePassingCompatibilityRequired": true,
+    "directRootFileRestoredBytesModesOwnershipAtPinnedInode": true,
+    "mixedProducerStage": "mixed-stream-substitution",
+    "identityProbeSourceSha256": "e58daefeab432a4501a31c7c4b0e045d18514182c7e5605a2ab2abe4c8e58fc1",
+    "identityProbeSha256": "ec01f5fd329bcf8b6c873a57fe29c1e79fe188cb958178f8a3332e94904b7eca",
+    "pinnedResticStaticHashVerified": true,
+    "exactPrivilegeDropProvedBeforeBackup": true,
+    "privilegedLauncherTimeoutProvedBeforeBackup": true,
+    "boundedPrivilegedLaunchHandlesTerminal": true,
+    "mixedSnapshotExactMemberMetadataVerified": true,
+    "mixedMetacharacterRootAndNestedFilesRestored": true,
+    "mixedStreamKeptHeldInodeUnderLeafAndParentSubstitution": true,
+    "fixtureCleanupSuccess": true
+  },
+  "cryptoAndUnknownEvidence": {
+    "basis": "Successful source-bound unittest stages; individual assertion receipts are not separately emitted.",
+    "fullAuthenticatedEncryptedRoundtripPassed": true,
+    "wrongKeyRejected": true,
+    "tamperedRepositoryConfigRejected": true,
+    "tamperedEncryptedPackDataRejected": true,
+    "partialStreamFailureRemainedUnknown": true,
+    "normalCaptureReplayRefused": true,
+    "samePartialTargetReconciliationRefused": true,
+    "freshTargetReconciliationWithoutBackupReplayPassed": true,
+    "requiredTestMethods": [
+      "test_actual_partial_stream_failure_is_unknown_and_reconciles_without_backup_replay",
+      "test_terminal_descriptor_rejection_and_dot_restore_keep_held_inode_authority",
+      "test_authenticated_encrypted_roundtrip_wrong_key_and_tamper",
+      "test_inherited_repository_and_target_descriptors_do_not_follow_substituted_paths"
+    ]
+  },
+  "resources": {
+    "seconds": 53.596,
+    "limitSeconds": 90,
+    "preflightSeconds": 35.203,
+    "preflightLimitSeconds": 45,
+    "peakOwnedRssBytes": 130449408,
+    "rssWatchdogBytes": 1073741824,
+    "syntheticSourceLimitBytes": 2097152,
+    "scratchLimitBytes": 67108864,
+    "scratchBoundBasis": "Pinned executed source assertions; observed scratch peak is not separately reported."
+  },
+  "cleanup": {
+    "success": true,
+    "ownedProcessesRemaining": 0,
+    "globalFixtureCleanupSuccess": true,
+    "nativePreflightFixtureCleanupSuccess": true,
+    "unsampledNewSessionCleanupProbePassed": true,
+    "privilegedLauncherTimeoutProvedBeforeBackup": true,
+    "boundedPrivilegedLaunchHandlesTerminal": true,
+    "socketInventorySeparatelyReported": false,
+    "fixtureNetworkServicesStarted": false,
+    "socketEvidenceBasis": "Reviewed local-file fixture starts no listener/network services; artifact contains no separate OS socket inventory.",
+    "keysOrRepositoryUploaded": false
+  },
+  "tool": {
+    "success": true,
+    "version": "0.18.0",
+    "assetSha256": "98f6dd8bf5b59058d04bfd8dab58e196cc2a680666ccee90275a3b722374438e",
+    "assetBytes": 9806593,
+    "source": "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_amd64.bz2",
+    "checksumSource": "https://github.com/restic/restic/releases/download/v0.18.0/SHA256SUMS",
+    "binarySha256": "a77b8f59af4da23256edf1f768bc363c224b259082da8f6cc7fc7913535626d3",
+    "binaryBytes": 29765816,
+    "binaryDownloadedByAuditor": false,
+    "binaryExecutedByAuditor": false
+  },
+  "diagnosticLogMetadata": [
+    {
+      "path": "crypto-diagnostic.log",
+      "bytes": 120,
+      "sha256": "5a7b71f2ec780497ca697a7d41cadb547b87eb8e254a3bfe0aef5d7f9b4a186f",
+      "tests": 1,
+      "seconds": 15.224,
+      "status": "OK",
+      "rawLogExtracted": false
+    },
+    {
+      "path": "descriptor-preflight-diagnostic.log",
+      "bytes": 122,
+      "sha256": "7be1ad7e469d13946a726380f07c0950df519047e9349d0d34517327a30c8605",
+      "tests": 1,
+      "seconds": 35.203,
+      "status": "OK",
+      "rawLogExtracted": false
+    },
+    {
+      "path": "guards-diagnostic.log",
+      "bytes": 4581,
+      "sha256": "e5bf2efcbc4e0e0e956c2cbd7b133f8bb0ce0d40ae3fcbba4af0853865bff9ea",
+      "tests": 59,
+      "seconds": 2.582,
+      "status": "OK",
+      "rawLogExtracted": false
+    }
+  ],
+  "qualification": {
+    "scope": "owned-synthetic-files-on-native-linux",
+    "correctedHybridSourceGatePassed": true,
+    "linuxDescriptorPathQualified": true,
+    "encryptedLocalRestoreQualified": true
+  },
+  "acceptance": {
+    "offHostAccepted": false,
+    "keyCustodyAccepted": false,
+    "applicationRecoveryAccepted": false,
+    "linuxDockerObservationQualified": false,
+    "installedRecoveryAccepted": false,
+    "restoredApplicationAccepted": false,
+    "writerResumptionAuthorized": false,
+    "exactMainAccepted": false,
+    "securityGateAccepted": false,
+    "productionDeploymentAuthorized": false
+  },
+  "limitations": [
+    "This proves the corrected four-file source gate on synthetic local Linux files at the tested PR merge, not main or an installed deployment.",
+    "No cold Docker-volume capture/observation, off-host storage, key custody, restored application boot/reconciliation or writer resumption is accepted.",
+    "Mixed static binary and privileged launcher proof facts are from source-bound hosted execution; this audit downloaded no executable and ran no fixture or compiler.",
+    "Guard skipped identities are inferred from exact source decorators/environment; retained report exposes counts only, while both opt-in stages separately passed with zero skips.",
+    "No separate OS socket inventory or observed scratch peak is retained; no fixture network services are started and source-bound scratch assertions passed."
+  ]
+}

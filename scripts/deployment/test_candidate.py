@@ -1,7 +1,10 @@
 import copy
 import unittest
+from pathlib import Path
+import tempfile
 
 from candidate import CandidateError, COMPONENTS, SMOKE_CHECKS, admit_capacity, create_candidate
+from test_component_inputs import fixture as input_fixture
 
 SHA = "1" * 40
 
@@ -20,6 +23,26 @@ def fixture():
 
 
 class CandidateTests(unittest.TestCase):
+    def test_v2_binds_release_and_original_fresh_build_inputs_without_qualifying_reuse(self):
+        report, images = fixture()
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = input_fixture(Path(directory))
+            result = create_candidate(SHA, report, "a" * 64, images, input_receipt=receipt)
+        self.assertEqual(result["schemaVersion"], 2)
+        self.assertEqual(result["releaseRevision"], SHA)
+        for name in COMPONENTS:
+            self.assertEqual(result["components"][name]["sourceRevision"], SHA)
+            self.assertEqual(result["components"][name]["inputSha256"], receipt["components"][name]["componentInputSha256"])
+        self.assertIn("independently-qualified-component-reuse", result["pendingGates"])
+        self.assertFalse(result["deploymentAuthorized"])
+
+    def test_v2_does_not_allow_relabeling_an_old_image_as_the_current_release(self):
+        report, images = fixture()
+        images["worker"]["Config"]["Labels"]["org.opencontainers.image.revision"] = "f" * 40
+        report["images"]["worker"]["revision"] = "f" * 40
+        with tempfile.TemporaryDirectory() as directory, self.assertRaises(CandidateError):
+            create_candidate(SHA, report, "a" * 64, images, input_receipt=input_fixture(Path(directory)))
+
     def test_passed_smoke_binds_artifact_without_authorizing_deployment(self):
         report, images = fixture()
         result = create_candidate(SHA, report, "a" * 64, images)

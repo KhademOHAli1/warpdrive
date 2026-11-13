@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "kind": "committed-source-ci-audit",
+  "verifiedAt": "2026-11-12T05:44:08.051Z",
+  "repository": "KhademOHAli1/warpdrive",
+  "sourceHead": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+  "prHeadStable": true,
+  "sourceTreeEqualsTestedMergeTree": true,
+  "commits": [
+    {
+      "sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+      "tree_sha": "a4da520393bb5f3458a1a1b5dbcf39a63e815332",
+      "parents": ["4686be5e5957c4e5a3580c2935fd7a11807eeb2a"],
+      "verification": {
+        "verified": false,
+        "reason": "unsigned"
+      }
+    },
+    {
+      "sha": "c7d70dcf355cbc868dc83da5c60c5f032ed85035",
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/c7d70dcf355cbc868dc83da5c60c5f032ed85035",
+      "tree_sha": "a4da520393bb5f3458a1a1b5dbcf39a63e815332",
+      "parents": [
+        "35c40339b8068a489247080e61430d17bfbfdb26",
+        "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+      ],
+      "verification": {
+        "verified": true,
+        "reason": "valid"
+      }
+    }
+  ],
+  "runs": [
+    {
+      "id": 43154524107,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154524107",
+      "name": "Full Public Bun CI",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    },
+    {
+      "id": 43154399330,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154399330",
+      "name": "Production image qualification",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    },
+    {
+      "id": 43154399288,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154399288",
+      "name": "Production newsletter engine qualification",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    },
+    {
+      "id": 43154399309,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154399309",
+      "name": "Full browser qualification",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    },
+    {
+      "id": 43154399346,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154399346",
+      "name": "Public Bun CI",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    },
+    {
+      "id": 43154399272,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154399272",
+      "name": "Cold recovery tooling qualification",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    },
+    {
+      "id": 43154394373,
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43154394373",
+      "name": "PR #1024",
+      "event": "dynamic",
+      "status": "completed",
+      "conclusion": "success",
+      "source_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a"
+    }
+  ],
+  "allNamedRunsSuccess": true,
+  "allFourExactSourceAnalysesClean": true,
+  "allNamedRefAlertPagesEmpty": true,
+  "codeScanningAnalyses": [
+    {
+      "endpoint": "repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149245238",
+      "response": {
+        "ref": "refs/pull/1024/head",
+        "commit_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+        "analysis_key": "dynamic/github-code-scanning/codeql:analyze",
+        "environment": "{\"build-mode\":\"none\",\"category\":\"/language:javascript-typescript\",\"language\":\"javascript-typescript\",\"runner\":\"[\\\"ubuntu-latest\\\"]\"}",
+        "category": "/language:javascript-typescript",
+        "error": "",
+        "created_at": "2026-11-12T04:28:40Z",
+        "results_count": 0,
+        "rules_count": 103,
+        "id": 2149245238,
+        "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149245238",
+        "sarif_id": "888eb678-de51-11f1-901c-62c9f3f5ee71",
+        "tool": {
+          "name": "CodeQL",
+          "guid": null,
+          "version": "2.27.4"
+        },
+        "deletable": true,
+        "warning": ""
+      }
+    },
+    {
+      "endpoint": "repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149226132",
+      "response": {
+        "ref": "refs/pull/1024/head",
+        "commit_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+        "analysis_key": "dynamic/github-code-scanning/codeql:analyze",
+        "environment": "{\"build-mode\":\"none\",\"category\":\"/language:python\",\"language\":\"python\",\"runner\":\"[\\\"ubuntu-latest\\\"]\"}",
+        "category": "/language:python",
+        "error": "",
+        "created_at": "2026-11-12T04:23:46Z",
+        "results_count": 0,
+        "rules_count": 50,
+        "id": 2149226132,
+        "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149226132",
+        "sarif_id": "d9a41342-de50-11f1-8b1a-5b48669f6bb1",
+        "tool": {
+          "name": "CodeQL",
+          "guid": null,
+          "version": "2.27.4"
+        },
+        "deletable": true,
+        "warning": ""
+      }
+    },
+    {
+      "endpoint": "repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149225759",
+      "response": {
+        "ref": "refs/pull/1024/head",
+        "commit_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+        "analysis_key": "dynamic/github-code-scanning/codeql:analyze",
+        "environment": "{\"build-mode\":\"autobuild\",\"category\":\"/language:go\",\"language\":\"go\",\"runner\":\"[\\\"ubuntu-latest\\\"]\"}",
+        "category": "/language:go",
+        "error": "",
+        "created_at": "2026-11-12T04:23:40Z",
+        "results_count": 0,
+        "rules_count": 35,
+        "id": 2149225759,
+        "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149225759",
+        "sarif_id": "d677b660-de50-11f1-8020-38bef634e5a7",
+        "tool": {
+          "name": "CodeQL",
+          "guid": null,
+          "version": "2.27.4"
+        },
+        "deletable": true,
+        "warning": ""
+      }
+    },
+    {
+      "endpoint": "repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149224730",
+      "response": {
+        "ref": "refs/pull/1024/head",
+        "commit_sha": "e9275e69710ec61a8fcdb6c3f6586b1461feb39a",
+        "analysis_key": "dynamic/github-code-scanning/codeql:analyze",
+        "environment": "{\"build-mode\":\"none\",\"category\":\"/language:actions\",\"language\":\"actions\",\"runner\":\"[\\\"ubuntu-latest\\\"]\"}",
+        "category": "/language:actions",
+        "error": "",
+        "created_at": "2026-11-12T04:23:26Z",
+        "results_count": 0,
+        "rules_count": 23,
+        "id": 2149224730,
+        "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/code-scanning/analyses/2149224730",
+        "sarif_id": "cd613f6a-de50-11f1-8c39-fd906deb5159",
+        "tool": {
+          "name": "CodeQL",
+          "guid": null,
+          "version": "2.27.4"
+        },
+        "deletable": true,
+        "warning": ""
+      }
+    }
+  ],
+  "coreArtifactSummary": {
+    "tested_merge_sha": "c7d70dcf355cbc868dc83da5c60c5f032ed85035",
+    "seven_suite_checks": 43,
+    "seven_suites_success": true,
+    "component_boundary_checks": 4,
+    "candidate_deployment_authorized": false
+  },
+  "recoveryArtifactSummary": {
+    "success": true,
+    "revision": "c7d70dcf355cbc868dc83da5c60c5f032ed85035"
+  },
+  "auditReceiptSha256": "ca3679fcc501a716d13a444da92bbf6e6345733076748386868ce2c6a7d4d173",
+  "limitations": [
+    "Run source_sha is the PR head; PR-triggered qualification artifacts may test the synthetic merge commit.",
+    "Synthetic merge c7d has source e927 and main35c parents and exactly the same Git tree as e927.",
+    "This snapshot is not evidence for newer uncommitted optional-Core/profile/Web-identity changes.",
+    "No merge, publication, workflow dispatch, alert dismissal, or deployment was performed.",
+    "Current optional-Core source changes are qualified separately. No exact-main, new Core image or installed acceptance follows."
+  ]
+}

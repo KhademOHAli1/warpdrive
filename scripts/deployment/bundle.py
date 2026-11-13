@@ -15,10 +15,16 @@ from image_smoke import Docker, SmokeError
 METADATA_FILES = ("candidate.json", "smoke/report.json", *(
     f"inspections/{name}.json" for name in COMPONENTS
 ))
+INPUT_RECEIPT = "component-inputs.json"
 ARCHIVE = "core-images.tar"
 MANIFEST = "bundle.json"
 MAX_METADATA_BYTES = 4 * 1024 ** 2
 MAX_ARCHIVE_BYTES = 8 * 1024 ** 3
+
+
+def metadata_files(version):
+    require(type(version) is int and version in {1, 2}, "unsupported bundle/candidate version")
+    return METADATA_FILES if version == 1 else (*METADATA_FILES, INPUT_RECEIPT)
 
 
 def regular_file(root: Path, name: str, maximum: int) -> Path:
@@ -38,7 +44,11 @@ def reconstruct_candidate(directory: Path, expected_revision: str) -> dict:
     require(isinstance(expected_revision, str) and bool(REVISION.fullmatch(expected_revision)),
             "full expected source revision required")
     directory = directory.resolve()
-    for name in METADATA_FILES:
+    regular_file(directory, "candidate.json", MAX_METADATA_BYTES)
+    stored = load(directory / "candidate.json")
+    require(isinstance(stored, dict), "candidate metadata required")
+    inventory = metadata_files(stored.get("schemaVersion"))
+    for name in inventory:
         regular_file(directory, name, MAX_METADATA_BYTES)
     report_path = directory / "smoke/report.json"
     inspections = {}
@@ -46,8 +56,10 @@ def reconstruct_candidate(directory: Path, expected_revision: str) -> dict:
         rows = load(directory / f"inspections/{name}.json")
         require(isinstance(rows, list) and len(rows) == 1, "one image inspection per component required")
         inspections[name] = rows[0]
-    candidate = create_candidate(expected_revision, load(report_path), sha256(report_path), inspections)
-    require(json.dumps(load(directory / "candidate.json"), sort_keys=True, allow_nan=False)
+    receipt = load(directory / INPUT_RECEIPT) if stored["schemaVersion"] == 2 else None
+    candidate = create_candidate(expected_revision, load(report_path), sha256(report_path), inspections,
+                                 input_receipt=receipt)
+    require(json.dumps(stored, sort_keys=True, allow_nan=False)
             == json.dumps(candidate, sort_keys=True, allow_nan=False),
             "candidate differs from reconstructed final-image evidence")
     return candidate
@@ -77,7 +89,8 @@ def create_bundle(candidate_dir: Path, output_dir: Path, *, expected_revision: s
     validate_origin(origin)
     # Refuse to replace any previous accepted or partially-written bundle.
     output_dir.mkdir(parents=True, exist_ok=False, mode=0o700)
-    for name in METADATA_FILES:
+    inventory = metadata_files(candidate["schemaVersion"])
+    for name in inventory:
         destination = output_dir / name
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(candidate_dir / name, destination)
@@ -86,13 +99,15 @@ def create_bundle(candidate_dir: Path, output_dir: Path, *, expected_revision: s
     archive = regular_file(output_dir, ARCHIVE, MAX_ARCHIVE_BYTES)
     archive.chmod(0o600)
     files = {}
-    for name in (*METADATA_FILES, ARCHIVE):
+    for name in (*inventory, ARCHIVE):
         path = regular_file(output_dir, name,
                             MAX_ARCHIVE_BYTES if name == ARCHIVE else MAX_METADATA_BYTES)
         files[name] = {"sha256": sha256(path), "sizeBytes": path.stat().st_size}
-    manifest = {"schemaVersion": 1, "kind": "warpdrive-tested-image-bundle",
+    manifest = {"schemaVersion": candidate["schemaVersion"], "kind": "warpdrive-tested-image-bundle",
                 "revision": expected_revision, "platform": "linux/amd64",
                 "origin": origin, "files": files}
+    if candidate["schemaVersion"] == 2:
+        manifest["releaseRevision"] = expected_revision
     with (output_dir / MANIFEST).open("x") as output:
         output.write(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
     return load_bundle(output_dir, expected_revision=expected_revision)
@@ -102,15 +117,19 @@ def load_bundle(directory: Path, *, expected_revision: str) -> dict:
     directory = directory.resolve()
     manifest_path = regular_file(directory, MANIFEST, MAX_METADATA_BYTES)
     manifest = load(manifest_path)
-    require(isinstance(manifest, dict) and set(manifest) == {
-        "schemaVersion", "kind", "revision", "platform", "origin", "files"}, "invalid bundle manifest")
-    require(type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] == 1
+    require(isinstance(manifest, dict), "invalid bundle manifest")
+    version = manifest.get("schemaVersion")
+    inventory = metadata_files(version)
+    require(set(manifest) == {"schemaVersion", "kind", "revision", "platform", "origin", "files"}
+            | ({"releaseRevision"} if version == 2 else set()), "invalid bundle manifest")
+    require(type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] in {1, 2}
             and manifest["kind"] == "warpdrive-tested-image-bundle", "unsupported bundle schema")
     require(manifest["revision"] == expected_revision and manifest["platform"] == "linux/amd64",
             "bundle source or platform mismatch")
+    require(version != 2 or manifest["releaseRevision"] == expected_revision, "bundle release revision differs")
     validate_origin(manifest["origin"])
     files = manifest["files"]
-    require(isinstance(files, dict) and set(files) == set((*METADATA_FILES, ARCHIVE)),
+    require(isinstance(files, dict) and set(files) == set((*inventory, ARCHIVE)),
             "complete exact bundle file inventory required")
     for name, record in files.items():
         require(isinstance(record, dict) and set(record) == {"sha256", "sizeBytes"}, "invalid bundle file record")
@@ -121,6 +140,7 @@ def load_bundle(directory: Path, *, expected_revision: str) -> dict:
         require(path.stat().st_size == record["sizeBytes"] and sha256(path) == record["sha256"],
                 f"bundle content changed: {name}")
     candidate = reconstruct_candidate(directory, expected_revision)
+    require(candidate["schemaVersion"] == version, "candidate and bundle versions differ")
     return {"candidate": candidate, "archivePath": directory / ARCHIVE, "origin": manifest["origin"],
             "provenance": {"archiveSha256": files[ARCHIVE]["sha256"],
                            "bundleManifestSha256": sha256(manifest_path)}}

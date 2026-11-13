@@ -12,8 +12,9 @@ import subprocess
 import sys
 import zipfile
 
-from bundle import ARCHIVE, MANIFEST, MAX_ARCHIVE_BYTES, MAX_METADATA_BYTES, METADATA_FILES, load_bundle, regular_file
+from bundle import ARCHIVE, MANIFEST, MAX_ARCHIVE_BYTES, MAX_METADATA_BYTES, METADATA_FILES, load_bundle, metadata_files, regular_file
 from candidate import CandidateError, REVISION, require
+from component_inputs import InputError, decode as decode_inputs
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "delivery"))
 from release_gates import verify_ci
@@ -97,13 +98,26 @@ def admit(api, run_id: int, expected_main: str, *, policy: dict | None = None) -
             "ci": ci, "security": security, "deploymentAuthorized": False}
 
 
-def validate_zip_inventory(source) -> None:
-    allowed = set((*METADATA_FILES, ARCHIVE, MANIFEST))
+def validate_zip_inventory(source):
     allowed_dirs = {"smoke/", "inspections/"}
     items = source.infolist()
-    require(len(items) <= len(allowed) + len(allowed_dirs), "artifact has unexpected entries")
+    require(len(items) <= len(metadata_files(2)) + 2 + len(allowed_dirs), "artifact has unexpected entries")
     names = [item.filename for item in items]
     require(len(set(names)) == len(names), "duplicate artifact members are not admitted")
+    require(MANIFEST in names, "artifact manifest is missing")
+    header = source.getinfo(MANIFEST)
+    require(not header.is_dir() and 0 < header.file_size <= MAX_METADATA_BYTES
+            and not stat.S_ISLNK(header.external_attr >> 16) and not (header.flag_bits & 1), "unsafe artifact manifest")
+    with source.open(header) as stream:
+        raw_manifest = stream.read(MAX_METADATA_BYTES + 1)
+    require(len(raw_manifest) <= MAX_METADATA_BYTES, "artifact manifest exceeds byte budget")
+    try:
+        manifest = decode_inputs(raw_manifest)
+    except InputError as error:
+        raise CandidateError("invalid artifact manifest JSON") from error
+    require(isinstance(manifest, dict), "artifact manifest object required")
+    inventory = (*metadata_files(manifest.get("schemaVersion")), ARCHIVE, MANIFEST)
+    allowed = set(inventory)
     require(set(names) - allowed_dirs == allowed, "artifact file inventory differs from tested bundle")
     for item in items:
         require(item.filename in allowed or (item.is_dir() and item.filename in allowed_dirs), "unsafe artifact path")
@@ -111,14 +125,15 @@ def validate_zip_inventory(source) -> None:
         require(not stat.S_ISLNK(mode) and not (item.flag_bits & 1), "artifact symlinks/encryption are not admitted")
         limit = MAX_ARCHIVE_BYTES if item.filename == ARCHIVE else MAX_METADATA_BYTES
         require(0 <= item.file_size <= limit, "artifact member exceeds its byte budget")
+    return inventory
 
 
 def extract_bundle_zip(archive: Path, destination: Path) -> None:
     with zipfile.ZipFile(archive) as source:
-        validate_zip_inventory(source)
+        inventory = validate_zip_inventory(source)
         destination.mkdir(parents=True, exist_ok=False, mode=0o700)
         # Only source-controlled names reach the filesystem, never an archive-provided path.
-        for name in sorted((*METADATA_FILES, ARCHIVE, MANIFEST)):
+        for name in sorted(inventory):
             item = source.getinfo(name)
             target = destination / name
             target.parent.mkdir(parents=True, exist_ok=True)

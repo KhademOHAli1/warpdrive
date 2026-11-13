@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { renderHook } from "@testing-library/react";
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import type { WsFrame } from "@/features/realtime/wsMultiplexer";
 import { useInboxRealtime } from "./useInboxRealtime";
 
@@ -26,6 +26,10 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 it("refreshes folder and open-thread state for remote flag/deletion changes", () => {
   renderHook(() =>
     useInboxRealtime({
@@ -46,3 +50,19 @@ it("refreshes folder and open-thread state for remote flag/deletion changes", ()
   expect(state.inbox).toHaveBeenCalledOnce();
   expect(state.thread).toHaveBeenCalledWith({ threadId: "open-thread" });
 });
+
+for (const kind of ["reconnect", "resync"]) {
+  it(`refreshes inbox and the open thread on ${kind}`, () => {
+    renderHook(() =>
+      useInboxRealtime({
+        selfActorId: "owner",
+        openThreadId: "open-thread",
+        onMailboxChanged: state.changed,
+      }),
+    );
+    state.frame?.({ kind });
+    expect(state.changed).toHaveBeenCalledOnce();
+    expect(state.inbox).toHaveBeenCalledOnce();
+    expect(state.thread).toHaveBeenCalledExactlyOnceWith({ threadId: "open-thread" });
+  });
+}

@@ -18,3 +18,12 @@ LABEL org.opencontainers.image.title="Warpdrive newsletter engine" \
 COPY --from=build /out/listmonk /listmonk/listmonk
 COPY --from=build /out/LICENSE /listmonk/LICENSE
 COPY --from=build /out/warpdrive-engine-source.tar.gz /listmonk/warpdrive-engine-source.tar.gz
+COPY --chmod=0555 nonroot-entrypoint.sh /usr/local/bin/warpdrive-engine-entrypoint.sh
+# Image-owned directory only. Existing mounted uploads require a separately
+# reviewed ownership transition; startup never recursively chowns a volume.
+RUN mkdir -p /listmonk/uploads \
+    && chown 65532:65532 /listmonk/uploads \
+    && chmod 0700 /listmonk/uploads
+USER 65532:65532
+ENTRYPOINT ["/usr/local/bin/warpdrive-engine-entrypoint.sh"]
+CMD ["./listmonk"]

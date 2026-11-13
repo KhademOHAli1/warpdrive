@@ -1,6 +1,12 @@
 import { fileURLToPath } from "node:url";
 import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import {
+  closeMigrationPool,
+  inspectQueueMigrationSource,
+  migrateQueueSchema,
+  withCoreMigrationLock,
+} from "@/jobs/schemaContract";
 import { err, ok, type Result } from "@/types/result";
 import { inspectMigrationAdmission } from "./migrationAdmissionDatabase";
 import { verifyMigrationIntegrity } from "./migrationAdmissionIntegrity";
@@ -76,14 +82,32 @@ export async function applyMigrations(
   }
 }
 
-// Public interface (E4 Compose entrypoint / first-run bootstrap import this): apply against
-// the app db. Lazy import keeps tests from constructing the app pool just by importing here.
-async function runMigrations(
+// Production orchestration includes both schemas. applyMigrations stays the canonical-only
+// primitive used by feature migration tests; its success alone does not admit a release.
+export async function applyCoreMigrations(
+  db: NodePgDatabase<Record<string, unknown>>,
+  connectionString: string,
   signal?: AbortSignal,
   migrationsFolder?: string,
 ): Promise<Result<{ applied: true }, string>> {
-  const { db } = await import("./client");
-  return applyMigrations(db, signal, migrationsFolder);
+  try {
+    return await withCoreMigrationLock(
+      connectionString,
+      async (bounded) => {
+        // Reject unsupported queue state before changing application schema.
+        await inspectQueueMigrationSource(connectionString, bounded);
+        const result = await applyMigrations(db, bounded, migrationsFolder);
+        if (!result.ok) return result;
+        // Separate self-transactional DDL phase. App receipts alone do not admit release.
+        await migrateQueueSchema(connectionString, bounded);
+        return ok({ applied: true as const });
+      },
+      signal,
+    );
+  } catch {
+    // UNKNOWN/partial state requires inspection or an explicit rerun; no runtime resume.
+    return err("Core migration did not complete; release remains unadmitted");
+  }
 }
 
 // Entrypoint for the one-shot Compose `migrate` service (E4): apply, then exit 0/1.
@@ -91,9 +115,31 @@ async function runMigrations(
 // esbuild strips the argv-based self-start guard's filename match. The bundled entrypoint
 // passes an explicit migrations folder (import.meta.url is unreliable post-bundle).
 export async function runMigrationsCli(migrationsFolder?: string): Promise<void> {
-  const { pool } = await import("./client");
-  const result = await runMigrations(undefined, migrationsFolder);
-  await pool.end();
+  // Runtime credentials never need ownership/DDL. The one-shot service alone gets this DSN.
+  const { env } = await import("@/config/env");
+  if (env.MIGRATION_DATABASE_URL.trim() === "") {
+    console.error("migration failed: explicit migration database URL required");
+    process.exit(1);
+  }
+  const { Pool } = await import("pg");
+  const { drizzle } = await import("drizzle-orm/node-postgres");
+  const pool = new Pool({
+    connectionString: env.MIGRATION_DATABASE_URL,
+    max: 2,
+    connectionTimeoutMillis: 5_000,
+    query_timeout: 30_000,
+  });
+  let result = await applyCoreMigrations(
+    drizzle(pool),
+    env.MIGRATION_DATABASE_URL,
+    undefined,
+    migrationsFolder,
+  );
+  try {
+    await closeMigrationPool(pool);
+  } catch {
+    result = err("Core migration pool did not close; release remains unadmitted");
+  }
   if (!result.ok) {
     console.error(`migration failed: ${result.error}`);
     process.exit(1);

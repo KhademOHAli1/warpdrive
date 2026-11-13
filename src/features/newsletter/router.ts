@@ -4,9 +4,9 @@ import { z } from "zod";
 import { env } from "@/config/env";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
-import { guardCsrf } from "@/features/identity/actions/shared";
 import { recordAudit } from "@/features/identity/audit";
 import type { AppContext } from "@/server/trpc/context";
+import { validateRequestCsrf } from "@/server/trpc/request-csrf";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { settingsReads, settingsWrites } from "./admin/operations";
 import { newsletterAttributionRouter } from "./attribution/router";
@@ -195,7 +195,8 @@ export const newsletterRouter = router({
     )
     .mutation(async ({ ctx, input, signal }) => {
       const context = execution(ctx, signal, "view");
-      if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!validateRequestCsrf(ctx.csrf, input.csrfToken).ok)
+        throw new TRPCError({ code: "FORBIDDEN" });
       return withNewsletterActor(context, ctx.session, "view", async (current) => {
         const key = { actorId: current.actor.id, operationId: input.operationId };
         const { receipt, recorded } = await resolveNewsletterReceipt(current.db, key, input);
@@ -213,7 +214,8 @@ export const newsletterRouter = router({
     .mutation(async ({ ctx, input, signal }) => {
       const access = newsletterOperationAccess(input.operation, "write");
       const context = execution(ctx, signal, access);
-      if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!validateRequestCsrf(ctx.csrf, input.csrfToken).ok)
+        throw new TRPCError({ code: "FORBIDDEN" });
       const operation = writes.get(input.operation);
       if (!operation) throw new TRPCError({ code: "NOT_FOUND" });
       const durable = needsNewsletterReceipt(input.operation);

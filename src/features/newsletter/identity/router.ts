@@ -3,9 +3,9 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
-import { guardCsrf } from "@/features/identity/actions/shared";
 import { recordAudit } from "@/features/identity/audit";
-import type { AppContext } from "@/server/trpc/context";
+import type { AppContext } from "@/server/trpc/context-core";
+import { validateRequestCsrf } from "@/server/trpc/request-csrf";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { newsletterPersonAddresses } from "../schema/personAddresses";
 import { canonicalNewsletterAddress, requireNewsletterPerson } from "./authority";
@@ -39,7 +39,7 @@ async function nativeContext(
   signal?: AbortSignal,
   csrfToken?: string | null,
 ) {
-  if (csrfToken !== undefined && !(await guardCsrf(csrfToken)).ok)
+  if (csrfToken !== undefined && !validateRequestCsrf(ctx.csrf, csrfToken).ok)
     throw new TRPCError({ code: "FORBIDDEN" });
   const timeout = AbortSignal.timeout(15_000);
   const bounded = signal === undefined ? timeout : AbortSignal.any([signal, timeout]);

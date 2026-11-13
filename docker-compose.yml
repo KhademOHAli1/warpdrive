@@ -73,9 +73,12 @@ services:
     depends_on:
       minio:
         condition: service_started
-    env_file: .env
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET:-warpdrive}
     # $$VAR (not $VAR) so Compose passes the literal to the shell, which expands it from the
-    # container env (env_file), not from the host at parse time.
+    # explicitly scoped container environment, not from the host at parse time.
     entrypoint: >
       /bin/sh -c "
       until mc alias set local http://minio:9000 $$MINIO_ACCESS_KEY $$MINIO_SECRET_KEY; do
@@ -85,7 +88,8 @@ services:
       mc anonymous set none local/$$MINIO_BUCKET;
       "
 
-  # One-shot: apply forward-only Drizzle migrations, then exit. Gates the long-running tier.
+  # One-shot: apply forward-only app/queue migrations, then exit. This is the only
+  # application service admitted to receive MIGRATION_DATABASE_URL owner credentials.
   migrate:
     build: *app-build
     command: ["bun", "dist/migrate.mjs"]
@@ -100,6 +104,10 @@ services:
     command: ["bun", "--bun", "next", "start"]
     env_file: .env
     environment:
+      MIGRATION_DATABASE_URL: ""
+      MIGRATION_DATABASE_URL_FILE: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD_FILE: ""
       # Caddy overwrites X-Real-IP with the actual peer. Never trust this header when
       # exposing the app port directly; the dev override resets the setting to none.
       AUTH_TRUSTED_PROXY_HEADER: x-real-ip
@@ -124,8 +132,15 @@ services:
   ws:
     build: *app-build
     restart: unless-stopped
+    # Runtime reports a bounded drain outcome before its own 15-second deadline.
+    stop_grace_period: 30s
     command: ["bun", "dist/ws.mjs"]
     env_file: .env
+    environment:
+      MIGRATION_DATABASE_URL: ""
+      MIGRATION_DATABASE_URL_FILE: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD_FILE: ""
     healthcheck:
       test:
         - "CMD"
@@ -143,8 +158,15 @@ services:
   worker:
     build: *app-build
     restart: unless-stopped
+    # Leave room for the runtime's 60-second active-job drain and nonzero timeout exit.
+    stop_grace_period: 75s
     command: ["bun", "dist/worker.mjs"]
     env_file: .env
+    environment:
+      MIGRATION_DATABASE_URL: ""
+      MIGRATION_DATABASE_URL_FILE: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD_FILE: ""
     depends_on:
       migrate:
         condition: service_completed_successfully

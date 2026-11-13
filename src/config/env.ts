@@ -4,6 +4,7 @@ import { billingEnvShape, parseBillingConfig } from "@/features/billing/config";
 import { StripeGateway } from "@/features/billing/stripe/gateway";
 import { err, ok, type Result } from "@/types/result";
 import { authEnvShape } from "./authEnv";
+import { coreEnvShape, prepareCoreEnvironment, validateCoreEnvironment } from "./coreEnv";
 import { mailEnvShape } from "./mailEnv";
 
 // Secret vars may be supplied as <VAR>_FILE pointing at a Docker secret file.
@@ -15,6 +16,7 @@ const SECRET_FILE_VARS = [
   "TOKEN_ENCRYPTION_KEY",
   "MINIO_SECRET_KEY",
   "DATABASE_URL",
+  "MIGRATION_DATABASE_URL",
   "OAUTH_SIGNING_KEY",
   "AUTH_SECRET",
   "AUTH_SMTP_PASSWORD",
@@ -47,6 +49,7 @@ const base = z.object({
   ...authEnvShape,
   ...mailEnvShape,
   ...billingEnvShape,
+  ...coreEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   WORKFLOW_HTTP_GRANTS: z.string().default(""),
   WORKFLOW_WEBHOOK_KEYS: z.string().default(""),
@@ -60,6 +63,9 @@ const base = z.object({
   GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
   BASE_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
+  // Only the explicit one-shot migrator receives owner credentials. Runtime services
+  // parse the same shape without receiving or needing this secret.
+  MIGRATION_DATABASE_URL: z.string().trim().default(""),
   WS_TICKET_SECRET: z.string().min(32),
   WS_PUBLIC_URL: z.string().min(1),
   // Leave unset for the existing all-interface container listener; set explicitly for local use.
@@ -201,61 +207,65 @@ function validateNewsletterEnvironment(
 }
 
 // Production guardrails for the first-run bootstrap (ops spec E6).
-const schema = base.superRefine((v, ctx) => {
-  if (!calendarOAuthCredentialsPaired(v)) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["GOOGLE_CALENDAR_OAUTH_CLIENT_ID"],
-      message: "Calendar OAuth client ID and secret must both be configured or both unset",
-    });
-  }
-  validateBillingEnvironment(v, ctx);
-  validateNewsletterEnvironment(v, ctx);
-  if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["OAUTH_SIGNING_KEY"],
-      message: "OAUTH_SIGNING_KEY (base64 32 bytes) is required when MCP_ENABLED",
-    });
-  }
-  if (v.NODE_ENV === "production") {
-    if (!URL.canParse(v.BASE_URL) || new URL(v.BASE_URL).protocol !== "https:") {
+const schema = z.preprocess(
+  prepareCoreEnvironment,
+  base.superRefine((v, ctx) => {
+    validateCoreEnvironment(v, ctx);
+    if (!calendarOAuthCredentialsPaired(v)) {
       ctx.addIssue({
         code: "custom",
-        path: ["BASE_URL"],
-        message: "production authentication requires an HTTPS BASE_URL",
+        path: ["GOOGLE_CALENDAR_OAUTH_CLIENT_ID"],
+        message: "Calendar OAuth client ID and secret must both be configured or both unset",
       });
     }
-    if (v.AUTH_SECRET.length < 32) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["AUTH_SECRET"],
-        message: "AUTH_SECRET of at least 32 high-entropy characters is required in production",
-      });
-    }
-    if (v.AUTH_MAIL_TRANSPORT !== "smtp" || v.AUTH_SMTP_HOST === "") {
-      ctx.addIssue({
-        code: "custom",
-        path: ["AUTH_MAIL_TRANSPORT"],
-        message: "production authentication requires configured SMTP delivery",
-      });
-    }
-    if (v.ALLOW_FIRST_LOGIN_ADMIN) {
+    validateBillingEnvironment(v, ctx);
+    validateNewsletterEnvironment(v, ctx);
+    if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["ALLOW_FIRST_LOGIN_ADMIN"],
-        message: "ALLOW_FIRST_LOGIN_ADMIN must be false in production",
+        path: ["OAUTH_SIGNING_KEY"],
+        message: "OAUTH_SIGNING_KEY (base64 32 bytes) is required when MCP_ENABLED",
       });
     }
-    if (v.SEED_ADMIN_EMAIL === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["SEED_ADMIN_EMAIL"],
-        message: "SEED_ADMIN_EMAIL is required in production",
-      });
+    if (v.NODE_ENV === "production") {
+      if (!URL.canParse(v.BASE_URL) || new URL(v.BASE_URL).protocol !== "https:") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["BASE_URL"],
+          message: "production authentication requires an HTTPS BASE_URL",
+        });
+      }
+      if (v.AUTH_SECRET.length < 32) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["AUTH_SECRET"],
+          message: "AUTH_SECRET of at least 32 high-entropy characters is required in production",
+        });
+      }
+      if (v.AUTH_MAIL_TRANSPORT !== "smtp" || v.AUTH_SMTP_HOST === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["AUTH_MAIL_TRANSPORT"],
+          message: "production authentication requires configured SMTP delivery",
+        });
+      }
+      if (v.ALLOW_FIRST_LOGIN_ADMIN) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["ALLOW_FIRST_LOGIN_ADMIN"],
+          message: "ALLOW_FIRST_LOGIN_ADMIN must be false in production",
+        });
+      }
+      if (v.SEED_ADMIN_EMAIL === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["SEED_ADMIN_EMAIL"],
+          message: "SEED_ADMIN_EMAIL is required in production",
+        });
+      }
     }
-  }
-});
+  }),
+);
 
 // Named export of the full validated schema (with production guardrails) so
 // boundary tests can parse a candidate env map directly.

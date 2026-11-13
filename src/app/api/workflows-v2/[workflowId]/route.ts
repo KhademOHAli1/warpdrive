@@ -2,9 +2,9 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { blockOutputSchema } from "@/features/blocks/schemas";
 import { createWorkflowV2Adapters } from "@/features/workflows/v2/adapters";
+import { nudgeWorkflowV2Run } from "@/features/workflows/v2/queue";
 import { isBlockJson } from "@/features/workflows/v2/responseSchema";
 import { admitWorkflowV2Webhook } from "@/features/workflows/v2/webhook";
-import { nudgeWorkflowV2Run } from "@/features/workflows/v2/worker";
 
 export async function POST(
   request: Request,

@@ -9,7 +9,7 @@ const deps = vi.hoisted(() => ({
 vi.mock("@/features/identity/actions/shared", () => ({ guardCsrf: deps.csrf }));
 vi.mock("@/server/trpc/context", () => ({ createContext: deps.context }));
 vi.mock("./runRetry", () => ({ retryWorkflowRun: deps.retry }));
-vi.mock("./worker", () => ({ nudgeWorkflowRun: deps.nudge }));
+vi.mock("./queue", () => ({ nudgeWorkflowRun: deps.nudge }));
 
 import { retryWorkflowAction } from "./actions";
 

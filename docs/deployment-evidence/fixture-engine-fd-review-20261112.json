@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-source-bound-generated-fixture-fd-hardening-review",
+  "reviewer": "/root/planner_review",
+  "reviewedAtUtc": "2026-11-12T03:47:11Z",
+  "checkout": "/Users/ali/Developer/warpdrive-deployment-safe-20261111",
+  "checkoutHeadAtReview": "8c289b5e16a5b22ee6c32c4040400d9fe5f0b209",
+  "verdict": "scoped-source-approval-with-explicit-residuals-and-open-qualification-gates",
+  "blockingFindings": [],
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "7de91a5d98b353be0224697c23ad4dd276c815543f72baf5d3f0824d82a1f676",
+    "scripts/deployment/test_engine_image_smoke.py": "8bc8dbe8f3a066fb20a80daa8ac2fac23dccf8e374a5db0077ff6f04254c8e3b",
+    "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "method": {
+    "sourceReadOnly": true,
+    "productOrTestEditsByReviewer": false,
+    "nativeOrHeavyTestsRunByReviewer": false,
+    "focusedTestsRunByReviewer": false,
+    "boundedAstCallerScanPerformed": true,
+    "pythonBytecodeDisabled": true,
+    "mechanismReviewed": "All-ancestor nofollow directory-FD traversal, descriptor-relative exclusive file creation, private inode and name checks, literal plaintext write, post-wrapper-close validation and conditional failure cleanup.",
+    "securityPurpose": "Close the directory lstat to named-path open authority race and improve descriptor ownership and failure cleanup; this is substantive security hardening independent of scanner result.",
+    "scannerEvasionClaim": false,
+    "plaintextSinkRemainsDirectAndVisible": true
+  },
+  "currentAnnotations": {
+    "engineQueryAnnotationCount": 0,
+    "annotationAppliedByThisReviewer": false,
+    "ineffectivePriorEngineAnnotationRemoved": true,
+    "sinkStatement": "payload.write(password)",
+    "textWrapper": "os.fdopen(descriptor, w, encoding=utf-8, closefd=False)"
+  },
+  "callerTrace": {
+    "generatedOnlyActualRuntimePath": true,
+    "runtimeSource": "EngineImageSmoke.__init__ creates secrets.token_urlsafe(32) and stores it as its owned synthetic POSTGRES_PASSWORD.",
+    "runtimeAdmission": "EngineImageSmoke.qualify admits native Linux/amd64 host and daemon, disk headroom and actual writable /dev/shm tmpfs before creating its private TemporaryDirectory and calling write_synthetic_secret.",
+    "runtimeCall": "EngineImageSmoke.qualify passes that generated value to write_synthetic_secret; no user/deployment credential argument was added.",
+    "loaderUse": "EngineImageSmoke.engine binds the resulting inode readonly at /run/engine-db-password and supplies LISTMONK_db__password_FILE while deliberately setting the direct password to an incorrect synthetic value.",
+    "negativeLoaderUse": "EngineImageSmoke.initialize still checks actual missing-file and unreadable-file refusal and restores mode0444 after the unreadable-file control.",
+    "scannedExecutableRoots": ["root Python files", "src", "scripts", "deploy", "tools"],
+    "pythonFilesScanned": 105,
+    "sourceBytesScanned": 1526119,
+    "currentCallerFiles": [
+      "scripts/deployment/engine_image_smoke.py",
+      "scripts/deployment/test_engine_image_smoke.py"
+    ],
+    "currentCallerFilesMatchHistoricalPolicy": true,
+    "scanLimitation": "Direct calls, attribute calls named write_synthetic_secret and imported-name aliases are inspected. This is a bounded process guard, not a Python sandbox or proof against arbitrary dynamic dispatch."
+  },
+  "reviewedMechanismChecks": [
+    "Only absolute directory paths with at most128 components and no parent traversal are admitted.",
+    "The initial directory witness requires a real owner-controlled mode0700 directory.",
+    "Every ancestor is opened relative to a held parent FD with O_DIRECTORY, O_NOFOLLOW and O_CLOEXEC; named/opened device and inode identities must agree.",
+    "Held lineage and final private-directory identities and owner/mode are rechecked before payload, after chmod and after text-wrapper close.",
+    "Only literal basename db-password is created relative to the held final directory, using O_WRONLY, O_CREAT, O_EXCL, O_NOFOLLOW and O_CLOEXEC with mode0600.",
+    "Opened and nofollow named leaf must be the created regular owner-controlled single-link mode0600 inode before the visible plaintext write.",
+    "The wrapper keeps closefd=False while explicit raw-FD ownership is retained; payload is flushed before descriptor fchmod0444.",
+    "Leaf owner, regular type, single link, mode0444 and created inode identity are checked after flush/chmod and again after wrapper close.",
+    "Failure cleanup retains both original directory and created file descriptors while checking the current basename against the created inode before unlinking; replacements are not intentionally followed or selected for deletion.",
+    "Nested finally blocks close the explicit file descriptor and ExitStack-held ancestor descriptors on ordinary errors and BaseException propagation, including KeyboardInterrupt.",
+    "The helper returns the original visible path and preserves actual plaintext _FILE semantics, readonly container bind and deliberately wrong direct-password control.",
+    "The owned fixture is still removed after container cleanup, and cleanup failures prevent qualification success."
+  ],
+  "reviewedTests": {
+    "executionAttribution": "Implementation worker reported119 scoped pure tests passing. This reviewer inspected the frozen tests but did not execute them.",
+    "controlsInspected": [
+      "Exact plaintext bytes, mode0600 at descriptor creation, final mode0444, O_EXCL/O_NOFOLLOW flags, dir_fd use and closed descriptors.",
+      "Actual shell _FILE loader precedence over an incorrect direct value and unchanged readonly bind arguments.",
+      "Pre-existing regular or symbolic leaf refusal without overwrite.",
+      "Nonprivate, symbolic, relative and parent-traversal directory refusal.",
+      "Symbolic ancestor refusal before any payload leaf creation.",
+      "Real and symbolic private-parent replacement after initial witness.",
+      "Real and symbolic ancestor replacement between named stat and descriptor open.",
+      "Late real or symbolic parent replacement before descriptor-relative leaf creation, with outside sentinels unchanged.",
+      "Regular, symbolic and hardlink leaf replacement before payload, preserving sentinels and closing descriptors.",
+      "Extra hardlink to created inode refused before plaintext; only the owned basename is removed.",
+      "Post-write parent or leaf substitution is refused without following the replacement sentinel.",
+      "fdopen, partial write, wrapper-close, chmod and KeyboardInterrupt failure paths close descriptors and remove the still-owned basename.",
+      "Failure unlink occurs while original file and directory descriptors remain open.",
+      "Native and tmpfs admission precede storage; no disk fallback; qualifier provisioning interruption cleans private storage without retaining generated payload."
+    ],
+    "coverageRefinement": "The multi-stage interruption test patches fchmod to raise for every stage. The close subcase still raises its wrapper-close fault, but an earlier chmod exception is already active; this does not independently isolate an otherwise-normal close failure. This is a test refinement, not a source approval blocker."
+  },
+  "engineRecipe": {
+    "fileCount": 44,
+    "sha256": "46cfa51efdb7265b23ccc8cdb56e2829b2f9b61687b3be0382b1ecde623d1275",
+    "unchanged": true,
+    "verification": "Independently recomputed the existing compact sorted path-to-SHA256 context-map digest; git diff for deploy/newsletters/engine was empty."
+  },
+  "managedScannerStatus": {
+    "queryId": "py/clear-text-storage-sensitive-data",
+    "findingNumber": 23,
+    "findingUrl": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/23",
+    "sourceHeadPrefix": "f824",
+    "pythonAnalysisId": 2148992115,
+    "findingState": "open",
+    "attribution": "Root's exact analysis/finding readback supplied in this review task; this reviewer did not re-query the managed service.",
+    "priorAnnotationProvedEffective": false,
+    "findingDismissed": false,
+    "scannerConfigurationChangedByReviewer": false,
+    "currentHardenedSourceManagedAnalysisRequired": true
+  },
+  "historicalReviewAndGuard": {
+    "historicalReviewRetainedAsHistoryOnly": true,
+    "oldEngineSourceSha256": "8fd841e75db709596fa24fa6f7e7adcc88429c92969974a3d23567c37191e1c3",
+    "oldTestSourceSha256": "8649e49f9481afb8fa24aa066848f5b85a297d21fa2023a270cbeb62118e95a8",
+    "oldSharedAuthorityPinsMatchCurrent": true,
+    "existingCallerSetMatchesCurrent": true,
+    "rootMustRefreshSourceBoundGuardAndRecord": true,
+    "refreshReason": "The current guard/record still expects the old source pins and one annotation. It must bind this new independently reviewed source and zero annotations as test-only triage, without asserting suppression or a clean finding gate.",
+    "reviewExpiresOnAnyPinnedSourceOrCallerScopeChange": true,
+    "newReviewRecordAuthority": "Auditable process evidence only; no cryptographic approval or human/canonical security acceptance."
+  },
+  "residuals": [
+    "Plaintext remains required and visible for the actual generated-only _FILE fixture. This review does not assert that storing or exposing a real production credential this way is acceptable.",
+    "A process with the same UID or root can inspect or interfere with the fixture. Name and inode checks are witnesses at boundaries, not atomic exclusion of such actors.",
+    "Failure cleanup checks identity and then unlinks by basename. That stat-to-unlink interval is not atomic against a same-UID/root replacement; unconditional exact-inode deletion is not claimed.",
+    "Docker later resolves the returned pathname for its bind mount after helper-held descriptors close. This hardening does not remove later pathname substitution by same-UID/root actors.",
+    "If a same-UID/root actor moves the created inode or makes another link after plaintext write, the helper may detect substitution without being able to remove an unknown alias; secure erasure is not claimed.",
+    "tmpfs swap policy is not attested; swap, process/host crash and SIGKILL can outlive normal cleanup and are retained lifecycle limits.",
+    "The synthetic PostgreSQL fixture still passes its generated password through Docker command environment arguments/configuration; generated admin/API material also exists in process/container memory or environment. Privileged CLI/process/container inspection is not prevented by file hardening.",
+    "Diagnostic redaction and absence from retained artifact roots do not establish a general secret-handling policy for providers or production installations.",
+    "Descriptor/path authority review does not itself provide native final-image, installed deployment, off-host recovery or canonical release acceptance."
+  ],
+  "pendingGates": [
+    "Root refresh of source-bound test-only triage record and drift/caller guard with zero annotations.",
+    "Exact hardened-source native Engine qualification; the reported f824 sixteen-check success is historical for different tooling source.",
+    "Exact hardened-source managed CodeQL analysis and current named-ref blocking-finding readback.",
+    "Current full CI, main integration, required review and all broader deployment programme acceptance gates."
+  ],
+  "securityGateCleanClaim": false,
+  "findingClosedClaim": false,
+  "canonicalAcceptanceClaim": false,
+  "deploymentAuthorized": false
+}

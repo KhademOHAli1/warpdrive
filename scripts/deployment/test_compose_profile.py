@@ -37,6 +37,7 @@ SYNTHETIC_ENV = {
     "POSTGRES_DB": "image_profile_fixture",
     "MINIO_ACCESS_KEY": "synthetic_image_profile_access",
     "MINIO_SECRET_KEY": "synthetic_image_profile_secret",
+    "MINIO_BUCKET": "synthetic_image_profile_bucket",
     "BASE_URL": "https://image-profile.example.invalid",
     "NEXT_PUBLIC_WS_URL": "same-origin",
     "APP_VERSION": "fixture",
@@ -86,6 +87,7 @@ class ImageComposeProfileTest(unittest.TestCase):
         *,
         overlay: bool = True,
         replacements: dict[str, str | None] | None = None,
+        resolve_service_env: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         values = dict(SYNTHETIC_ENV)
         for name, value in (replacements or {}).items():
@@ -112,7 +114,10 @@ class ImageComposeProfileTest(unittest.TestCase):
         ]
         if overlay:
             command.extend(["--file", str(ROOT / "deploy/images/compose.yml")])
-        command.extend(["config", "--no-env-resolution", "--format", "json"])
+        command.append("config")
+        if not resolve_service_env:
+            command.append("--no-env-resolution")
+        command.extend(["--format", "json"])
         return subprocess.run(
             command,
             cwd=self.directory,
@@ -165,18 +170,54 @@ class ImageComposeProfileTest(unittest.TestCase):
                         [self.service_env.resolve()],
                     )
                 else:
-                    # The only configured app environment entry comes from the base
-                    # Compose file; an empty fixture must introduce no other values.
-                    expected_environment = (
-                        {"AUTH_TRUSTED_PROXY_HEADER": "x-real-ip"}
-                        if service == "app"
-                        else {}
-                    )
+                    expected_environment = {}
+                    if service in ("app", "ws", "worker"):
+                        expected_environment = {
+                            "MIGRATION_DATABASE_URL": "",
+                            "MIGRATION_DATABASE_URL_FILE": "",
+                            "POSTGRES_PASSWORD": "",
+                            "POSTGRES_PASSWORD_FILE": "",
+                        }
+                    if service == "app":
+                        expected_environment["AUTH_TRUSTED_PROXY_HEADER"] = "x-real-ip"
+                    if service == "createbuckets":
+                        expected_environment = {
+                            name: SYNTHETIC_ENV[name]
+                            for name in ("MINIO_ACCESS_KEY", "MINIO_SECRET_KEY", "MINIO_BUCKET")
+                        }
                     self.assertEqual(
                         rendered_service.get("environment", {}),
                         expected_environment,
                     )
         self.assertEqual(self.service_env.read_text(encoding="utf-8"), "")
+
+    def test_owner_credentials_are_only_resolved_into_the_one_shot_migrator(self) -> None:
+        owner = "postgres://fixture_owner:synthetic_secret@postgres/fixture"
+        owner_file = "/run/secrets/fixture_migration_owner"
+        self.service_env.write_text(
+            f"MIGRATION_DATABASE_URL={owner}\nMIGRATION_DATABASE_URL_FILE={owner_file}\n"
+            "POSTGRES_PASSWORD=synthetic_owner_password\nPOSTGRES_PASSWORD_FILE=/run/secrets/fixture_pg_owner\n",
+            encoding="utf-8",
+        )
+        try:
+            model = self.model(resolve_service_env=True)
+            migrator = model["services"]["migrate"]["environment"]
+            self.assertEqual(migrator["MIGRATION_DATABASE_URL"], owner)
+            self.assertEqual(migrator["MIGRATION_DATABASE_URL_FILE"], owner_file)
+            for service in ("app", "ws", "worker"):
+                with self.subTest(service=service):
+                    environment = model["services"][service]["environment"]
+                    self.assertEqual(environment["MIGRATION_DATABASE_URL"], "")
+                    self.assertEqual(environment["MIGRATION_DATABASE_URL_FILE"], "")
+                    self.assertEqual(environment["POSTGRES_PASSWORD"], "")
+                    self.assertEqual(environment["POSTGRES_PASSWORD_FILE"], "")
+            for service in ("createbuckets", "caddy", "minio", "postgres"):
+                with self.subTest(service=service):
+                    serialized = json.dumps(model["services"][service])
+                    self.assertNotIn(owner, serialized)
+                    self.assertNotIn(owner_file, serialized)
+        finally:
+            self.service_env.write_text("", encoding="utf-8")
 
     def test_merge_preserves_ingress_stateful_services_auth_and_cold_start_gates(self) -> None:
         base = self.model(overlay=False)

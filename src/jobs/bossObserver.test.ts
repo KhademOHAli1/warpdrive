@@ -75,4 +75,15 @@ describe("PgBoss background error observer", () => {
     observeBossErrors(boss, "worker");
     expect(() => boss.emit("error", new Error("synthetic queue failure"))).not.toThrow();
   });
+
+  it("notifies the Core owner even if logging fails without passing sensitive error data", () => {
+    const boss = fixtureBoss();
+    const fail = vi.fn();
+    vi.spyOn(console, "error").mockImplementation(() => {
+      throw new Error("sink");
+    });
+    observeBossErrors(boss, "core-api", fail);
+    boss.emit("error", new Error("synthetic credential-bearing vendor error"));
+    expect(fail).toHaveBeenCalledExactlyOnceWith();
+  });
 });

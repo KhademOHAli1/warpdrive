@@ -140,14 +140,21 @@ class Docker:
         self.context = context
 
     def run(self, arguments: list[str], *, timeout: int = 30,
-            check: bool = True) -> Any:
+            check: bool = True, input_bytes: bytes | None = None) -> Any:
+        # Optional finite binary stdin preserves bytes without putting them in argv.
+        # Ordinary calls retain their existing text output and runner arguments.
+        if input_bytes is not None and (not isinstance(input_bytes, bytes) or len(input_bytes) > 8192):
+            raise SmokeError("Docker stdin must be bounded binary data")
         command = ["docker"]
         if self.context is not None:
             command += ["--context", self.context]
         command += arguments
         try:
-            result = self.runner(command, capture_output=True, text=True, timeout=timeout,
-                                 env=self.environment, check=False)
+            options = {"capture_output": True, "text": input_bytes is None, "timeout": timeout,
+                       "env": self.environment, "check": False}
+            if input_bytes is not None:
+                options["input"] = input_bytes
+            result = self.runner(command, **options)
         except (OSError, subprocess.TimeoutExpired) as error:
             raise SmokeError(f"Docker {arguments[0]} did not complete") from error
         if check and result.returncode != 0:
@@ -227,10 +234,36 @@ await new Promise((resolve,reject)=> {
 console.log(JSON.stringify({unauthenticatedCloseCode:4401}));
 """
 
+RUNTIME_ROLE_PROBE = r"""
+import { Client } from 'pg';
+if (process.env.MIGRATION_DATABASE_URL || process.env.MIGRATION_DATABASE_URL_FILE) throw Error('Owner credential in runtime fixture');
+const client=new Client({connectionString:process.env.DATABASE_URL,connectionTimeoutMillis:3000,query_timeout:5000});
+await client.connect();
+try {
+  const {rows:[role]}=await client.query("SELECT current_user AS name,rolsuper,rolcreatedb,rolcreaterole,rolinherit FROM pg_roles WHERE rolname=current_user");
+  if (role?.name!=='smoke_runtime'||role.rolsuper||role.rolcreatedb||role.rolcreaterole||role.rolinherit) throw Error('Runtime role is privileged');
+  const statements=[
+    'CREATE SCHEMA image_smoke_forbidden',
+    'CREATE TABLE public.image_smoke_forbidden(id integer)',
+    'ALTER TABLE pgboss.version ADD COLUMN image_smoke_forbidden integer',
+    'DROP TABLE pgboss.version',
+    'REINDEX TABLE pgboss.version',
+  ];
+  for (const statement of statements) {
+    await client.query('BEGIN');
+    let code;
+    try {await client.query(statement);} catch(error) {code=error.code;}
+    finally {await client.query('ROLLBACK');}
+    if(code!=='42501') throw Error('Runtime DDL did not fail with insufficient privilege');
+  }
+  console.log(JSON.stringify({runtimeRole:'smoke_runtime',ownerCredentialsRuntime:false,deniedDdl:statements.length}));
+} finally {await client.end();}
+"""
+
 QUEUE_PROBE = r"""
 import { PgBoss } from 'pg-boss';
 const mode = process.env.IMAGE_SMOKE_QUEUE_MODE, id = process.env.IMAGE_SMOKE_JOB_ID;
-const boss = new PgBoss({connectionString:process.env.DATABASE_URL,max:1,schedule:false,supervise:false,application_name:'image-smoke-producer'});
+const boss = new PgBoss({connectionString:process.env.DATABASE_URL,max:1,migrate:false,createSchema:false,schedule:false,supervise:false,reindex:false,registerInstance:false,application_name:'image-smoke-producer'});
 let backgroundError = false;
 boss.on('error',()=> {backgroundError=true;});
 try {
@@ -278,10 +311,14 @@ class ImageSmoke:
         self.resources: list[tuple[str, str]] = []
         self.containers: dict[str, str] = {}
         password = secrets.token_hex(24)
+        runtime_password = secrets.token_hex(24)
+        self.migration_url = f"postgres://smoke:{password}@postgres:5432/warpdrive_image_smoke"
+        self.runtime_password = runtime_password
         self.env = {
             "NODE_ENV": "production", "BUN_OPTIONS": "--no-env-file",
             "BASE_URL": "https://image-smoke.example.invalid",
-            "DATABASE_URL": f"postgres://smoke:{password}@postgres:5432/warpdrive_image_smoke",
+            "DATABASE_URL": f"postgres://smoke_runtime:{runtime_password}@postgres:5432/warpdrive_image_smoke",
+            "MIGRATION_DATABASE_URL": "",
             "WS_TICKET_SECRET": secrets.token_hex(32), "WS_PUBLIC_URL": "ws://realtime:8080",
             "MINIO_ENDPOINT": "http://127.0.0.1:9", "MINIO_ACCESS_KEY": "image-smoke-only",
             "MINIO_SECRET_KEY": secrets.token_hex(24), "MINIO_BUCKET": "image-smoke-only",
@@ -306,7 +343,7 @@ class ImageSmoke:
         # An accidentally baked *_FILE value must never override the generated target.
         for key in (
             "GOOGLE_OAUTH_CLIENT_SECRET", "SLACK_CLIENT_SECRET", "GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET",
-            "WS_TICKET_SECRET", "TOKEN_ENCRYPTION_KEY", "MINIO_SECRET_KEY", "DATABASE_URL",
+            "WS_TICKET_SECRET", "TOKEN_ENCRYPTION_KEY", "MINIO_SECRET_KEY", "DATABASE_URL", "MIGRATION_DATABASE_URL",
             "OAUTH_SIGNING_KEY", "AUTH_SECRET", "AUTH_SMTP_PASSWORD", "NEWSLETTER_API_TOKEN",
             "AUTH_MICROSOFT_CLIENT_SECRET", "AUTH_OIDC_PROVIDERS", "MAIL_INTERNAL_ENDPOINTS",
             "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "WORKFLOW_HTTP_GRANTS", "WORKFLOW_WEBHOOK_KEYS",
@@ -364,7 +401,7 @@ class ImageSmoke:
     def start_container(self, component: str, image: str, command: list[str], *,
                         environment: dict[str, str] | None = None, mount: str | None = None,
                         pull: str = "never", memory: str = "768m", network: str | None = None,
-                        readonly: bool = False) -> str:
+                        readonly: bool = False, tmpfs: tuple[str, ...] = ()) -> str:
         name = f"{self.prefix}-{component}"
         self.resources.append(("container", name))
         self.containers[component] = name
@@ -384,6 +421,8 @@ class ImageSmoke:
             args.append("--read-only")
         if mount:
             args += ["--mount", mount]
+        for specification in tmpfs:
+            args += ["--tmpfs", specification]
         for key, value in sorted((self.env if environment is None else environment).items()):
             args += ["--env", f"{key}={value}"]
         args += [image, *command]
@@ -445,7 +484,8 @@ class ImageSmoke:
     def migrations(self) -> dict[str, Any]:
         image = self.report["images"]["migrator"]["id"]
         for attempt in (1, 2):
-            name = self.start_container(f"migrate-{attempt}", image, ["bun", "dist/migrate.mjs"])
+            name = self.start_container(f"migrate-{attempt}", image, ["bun", "dist/migrate.mjs"],
+                                        environment={**self.env, "MIGRATION_DATABASE_URL": self.migration_url})
             self.finished(name, 180)
         result = self.docker.run([
             "exec", self.containers["postgres"], "psql", "-U", "smoke", "-d",
@@ -454,7 +494,34 @@ class ImageSmoke:
         ]).stdout.strip().splitlines()
         if len(result) != 2 or not result[0].isdigit() or int(result[0]) < 1 or result[1] != "0":
             raise SmokeError("Fresh canonical migration ledger or empty files fixture not established")
-        return {"successfulRuns": 2, "canonicalMigrationCount": int(result[0]), "emptyFiles": True}
+        # The generated runtime role owns no application/queue object. Grants are a
+        # fixture setup action after the owner-only one-shot completed, never a runtime
+        # bootstrap fallback. Only synthetic, independently generated credentials occur.
+        self.docker.run([
+            "exec", self.containers["postgres"], "psql", "-U", "smoke", "-d",
+            "warpdrive_image_smoke", "-v", "ON_ERROR_STOP=1", "-c",
+            "CREATE ROLE smoke_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT PASSWORD '"
+            + self.runtime_password + "'; "
+            "REVOKE CREATE ON SCHEMA public FROM PUBLIC; "
+            "GRANT USAGE ON SCHEMA public,pgboss TO smoke_runtime; "
+            "GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO smoke_runtime; "
+            "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO smoke_runtime; "
+            "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO smoke_runtime;",
+        ])
+        probe = self.start_container("runtime-privilege-probe", image,
+                                     ["bun", "--no-env-file", "-e", RUNTIME_ROLE_PROBE], memory="256m")
+        self.finished(probe, 30)
+        try:
+            privilege = json.loads(self.docker.run(["logs", "--tail", "5", probe], timeout=5).stdout.strip())
+        except (ValueError, TypeError) as error:
+            raise SmokeError("Runtime database privilege proof was not returned") from error
+        expected = {"runtimeRole": "smoke_runtime", "ownerCredentialsRuntime": False, "deniedDdl": 5}
+        if (not isinstance(privilege, dict) or set(privilege) != set(expected)
+                or any(type(privilege[key]) is not type(value) or privilege[key] != value
+                       for key, value in expected.items())):
+            raise SmokeError("Runtime database privilege proof did not match the owned fixture")
+        return {"successfulRuns": 2, "canonicalMigrationCount": int(result[0]), "emptyFiles": True,
+                **privilege}
 
     def web(self) -> dict[str, Any]:
         name = self.start_container("web", self.report["images"]["web"]["id"],

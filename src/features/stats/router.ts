@@ -7,10 +7,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { guardCsrf } from "@/features/identity/actions/shared";
 import { listTeams } from "@/features/identity/teams.service";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
+import { validateRequestCsrf } from "@/server/trpc/request-csrf";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { analyticsAttentionInput, readAnalyticsAttention } from "./analyticsAttention";
 import {
@@ -162,7 +162,8 @@ export const statsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!(await guardCsrf(input.csrfToken)).ok) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!validateRequestCsrf(ctx.csrf, input.csrfToken).ok)
+        throw new TRPCError({ code: "FORBIDDEN" });
       return readNativePeriodForecast(
         ctx.db,
         { actor: ctx.actor, session: ctx.session },

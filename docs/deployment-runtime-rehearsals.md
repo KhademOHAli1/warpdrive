@@ -1,0 +1,203 @@
+# Runtime shutdown and Web switching rehearsals
+
+These checks extend the [deployment programme](deployment-redesign.md) with actual final-image
+shutdown and isolated ingress-switch evidence. They contribute to
+[OPS-002](https://github.com/KhademOHAli1/warpdrive/issues/483) and
+[OPS-011](https://github.com/KhademOHAli1/warpdrive/issues/492). Source tests, native fixture
+qualification, exact-main release gates and installed acceptance remain separate.
+
+## Bounded shutdown
+
+Worker and realtime entrypoints retain their runtime handles and share one shutdown operation
+across SIGTERM/SIGINT. The worker stops claims on every registered application consumer before
+waiting for active callbacks, then closes queue and application database resources. Callback
+settlement needs independent tracking: the installed queue library can finish its own stop wait
+while a callback still runs. A library stop response alone cannot establish a clean drain.
+
+Realtime stops accepting connections, prevents new session work, waits for tracked session
+operations and subscription teardown, closes peers cooperatively with code `1012`, and closes
+relay/database resources afterward. An unresponsive peer or unfinished operation can exhaust
+the deadline; it must not produce a clean-drain result.
+
+The process reports a fixed `runtime.shutdown` record with component, status, current step and
+exit code. It omits exception contents, SQL, credentials and job payloads. A failed or timed-out
+shutdown exits nonzero. The worker has a 60-second overall deadline and realtime 15 seconds;
+Compose gives them 75 and 30 seconds respectively. These deadlines bound waiting, not business
+effect certainty or job execution time. A drained callback does not prove exactly-once provider
+effects, completed delivery, lease recovery or safe replay of an uncertain operation.
+
+## Native evidence
+
+The checks load the checksum-verified tested bundle without rebuilding. They create only owned
+disposable resources with generated credentials, internal networking and bounded CPU/memory.
+No production target, provider credentials, delivery or checkout-source mounts are accepted.
+Each check writes its own report and retains failed-first diagnostics. Cleanup failure prevents
+success.
+
+| Check                               | Actual proof                                                                                                                                                                                                                                              | Limits                                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `drain_smoke.py`                    | Hold a bounded lock on the empty fixture files table, observe a real active `file.reaper` query waiting, signal the worker, release it, require durable completion and exit zero; require post-signal work to remain queued until the same image restarts | One safe empty-database handler; no forced kill, overrun recovery, external submission or large import proof                     |
+| `ws_drain_smoke.py`                 | Authenticate a synthetic live session, subscribe and deliver a real relay event, require cooperative shutdown and exit zero, then authenticate and subscribe again after restarting the same image                                                        | Directly signed fixture tickets do not prove HTTP ticket issuance, login/MFA journeys, browser reconnection or offline replay    |
+| `web_switch_smoke.py`               | Real Caddy compare-and-swap rejection, rejected candidate preserving accepted traffic, same-version Web switching, idempotent readback and recovery after injected acknowledgement loss                                                                   | Same image/configuration/schema only; no old/new compatibility, automatic rollback, populated upgrade or production switch proof |
+| `drain_smoke.py --scenario overrun` | Expire a real blocked handler, retain its exact failed job/query identity through SIGTERM, release the query and restart to complete only the subsequently queued job                                                                                     | Expiry precedes shutdown; pool closure can itself hold the query, so this does not isolate callback-tracker causality            |
+| `browser_realtime_smoke.py`         | Native password login in a persistent Board/Bell tab, realtime-only restart, missed-notice recovery after fresh ticket/auth/subscription ACKs, then an actual live notification event                                                                     | Synthetic same-image journey; no installed SSO/MFA, cross-version compatibility or public ingress qualification                  |
+
+The Web switch fixture retains the accepted Web instance and pins worker, realtime, PostgreSQL
+and Caddy container identities/restart counts. A background observer checks proxied traffic.
+The Caddy image is resolved once, inspected and recorded. Generated configuration uses bounded
+temporary storage; no anonymous volume is admitted. Owned host loopback relays reach fixed
+internal fixture ports without adding an external network. Admin requests use fixed paths,
+origin, body limits and timeouts. The rehearsal does not alter the production Caddyfile or
+newsletter ingress allowlist.
+
+The current browser qualifier also uses a separate synthetic administrator's actual password
+and TOTP enrollment/verification UI. Its mounted Maintenance and Logs tabs read real bounded
+Operations fixtures, observe API403 after a fenced role revocation, retain denial for a real
+65-second polling interval after regrant, and recover only after explicit Refresh. MFA keys,
+codes, cookies, raw API payloads and Playwright exception details are excluded from artifacts.
+Version2 input receipts are freshly resolved and checked against raw HEAD blobs before and
+after the journey. This additional journey requires its own hosted result; installed SSO/MFA,
+administrator management, provider delivery and installation monitoring remain separate gates.
+
+Runtime identity compares every executable, configuration, resource and mount field except
+the explicit slot hostname and operation label. Environment bindings compare independently
+of their inspect-list order, with exact case-sensitive names and values; malformed bindings
+or duplicate names reject the runtime. Reports retain only aggregate entry counts and whether
+the exact bindings, their order and the complete remaining configuration match the initial
+runtime. They never retain environment values. A changed value still rejects the candidate.
+
+Run a check on an admitted disposable native AMD64 runner using an already verified bundle:
+
+```sh
+python3 scripts/deployment/drain_smoke.py \
+  --bundle-dir BUNDLE --expected-revision FULL_REVISION --output-dir NEW_OUTPUT
+```
+
+The other checks use the same three flags. These are fixture commands, not installation
+deployment commands. The native image workflow executes them after the original image smoke.
+Only actual reports establish passing cases; the presence of a harness or passing unit tests
+does not establish native qualification.
+
+The browser rehearsal additionally requires the exact committed application source and frozen
+application/browser tooling on the disposable runner. It verifies the source revision and
+tracked harness files, rejects modified or unknown source files, and uses the ordinary
+notification producer through an owned database relay. Runtime containers receive no source
+mount. The actor uses native password storage and login; no session is forged. Both old
+notification queries must settle before producing the missed notice, and the mounted Board,
+bell and document must survive recovery. Reports omit tickets, cookies, raw frames and traces.
+
+Client reconnects retain one ticket-request slot and one closing-socket slot. Backoff, jitter
+and per-attempt deadlines bound retry overhead; retries can continue while subscribers remain.
+A request that ignores abort or a socket that never closes retains its slot rather than
+accumulating replacements. Genuine HTTP authorization refusal stops retries until all
+subscribers unmount; subscription ACKs, rather than socket creation, trigger resynchronization.
+
+Workflow enqueue producers now have separate queue modules so Web admission need not import
+consumer registration. The message and queue options remain unchanged. Fresh producer bundle
+graphs test this boundary. This extraction does not yet establish general worker-only Web
+reuse: Next helpers, development instrumentation, source/type checks and Tailwind discovery
+still need explicit component-input policies.
+
+## Controller boundaries
+
+The independent Web rehearsal adds a separate two-generation controller and source gate.
+It preserves the original same-image rehearsal and four-image bundle format. A same-repository
+pull request can opt in with the `web-release-rehearsal` label. After the workflow reaches the
+default branch, the manual input can also run the rehearsal on a reviewed branch.
+
+```sh
+gh workflow run production-images.yml --ref REVIEWED_BRANCH -f web_release_rehearsal=true
+```
+
+The run first qualifies the baseline images. It then creates an owned Git worktree with one
+reviewed presentation change, verifies the exact source delta and retained component inputs,
+and builds one additional `web` target. The extra Web build uses the same recipe and receives
+a distinct source-derived `NEXT_DEPLOYMENT_ID`. The run independently verifies the inputs
+again and binds the resulting immutable image ID to the source and baseline bundle records.
+The four-image archive remains the original baseline. The additional Web image is exercised
+on the disposable runner and is neither published nor promoted to an installed environment.
+
+The controller requires a separate trusted adapter to authenticate the first accepted baseline
+and the exact two-image qualification. It serializes a target's route changes, persists the
+switch and rollback intents before issuing them, and accepts only independently observed
+generation-bound health. A lost acknowledgement holds further changes until the matching
+healthy generation is read back. A confirmed switch with a definite candidate failure can
+restore the retained healthy route. The adapter must use a single mutation authority and a
+compare-and-swap operation with one effect. Both Web generations must carry the same schema
+and be qualified to run concurrently during the transition.
+
+The fixture also stops its owned candidate immediately after an acknowledged route switch.
+It requires automatic restoration of the prior Web generation, two route writes in total,
+and read-only repetition of the completed operation. The restored Web and retained backend
+identities are independently checked after the failure.
+
+The Caddy subroute uses generation-marked static assets and hydrated Server Actions to keep
+their originating artifacts available. It rejects unknown or conflicting mutation selectors
+before forwarding. The two current URL form targets and existing API handlers remain ordinary
+routes. Keep the outer ingress policies and WebSocket route ahead of the Web subroute.
+
+This first source profile covers the reviewed layout and copy changes. Changes to the shared
+dependency lock, executable UI, backend contracts, or ingress policy require separate input
+and compatibility qualification. The installed baseline resolver, durable artifact custody,
+Web-only promotion and installed acceptance remain separate work.
+
+The legacy transition has a separate PostgreSQL integration test. It checks the installed
+1.5.1 ledger prefix through `0109` against its ordered SQL hashes, seeds synthetic CRM and
+workflow rows plus a pending job in the incumbent queue inventory on schema 46, and runs the
+current application and queue migrator twice. The test verifies preservation of the prior ledger and seeded rows,
+admission of the current queue catalog, and an unchanged second application. The live
+database is used only to identify the prefix. A populated restore with installed runtime
+and ingress qualification is a separate acceptance step.
+
+`traefik_web_relay.py` compiles a private Web relay for installations that terminate TLS at
+Traefik. The Docker-provider profile overlays two Web routers through the file provider and
+keeps the incumbent TLS, middleware, HTTP redirect and higher-priority Realtime route. The
+unsafe route disables connection reuse on both hops. A single stamped generation can fence
+unstamped page actions during the first platform transition. Installing the relay with the
+legacy Web still serving and moving the application to a migrated database are distinct
+operations. The installed adapter must verify and fence the incumbent write path before the
+first incompatible transition.
+
+`web_candidate.py` can retain one tested Web image with a source-bound build receipt, the
+original four-image baseline pin, and the native mixed-image qualification. The modern Docker
+archive reader verifies that the Docker and OCI records agree on one image and that its bytes
+match the recorded config and layer digests. The disposable workflow tests the archive reader
+with a real saved image. Trusted release production and registry publication remain separate.
+
+`web_switch.py` exposes a controller engine without a deployment CLI. It admits only a fixed
+isolated rehearsal using the same image, source, configuration and schema in separate slots.
+It keeps a target-wide lock, immutable operation binding, checksummed phase records and a
+separate accepted pointer on trusted storage. Intent is persisted before mutation. Acceptance
+requires independently inspected runtime/route identities plus sustained proxied health.
+
+A conflicting plan, changed accepted runtime, unrelated-service drift or unresolved transaction
+holds the target. An unknown route response cannot trigger another switch or rollback merely
+because the old route is still visible: a delayed operation could apply later. Recovery can
+complete only after independently observing the pinned desired route and health. Candidate
+creation with an unknown outcome requires separate reconciliation; the engine does not replay
+it. The previous accepted record/runtime remains retained. The receipt always states
+`deploymentAuthorized: false`.
+
+Automatic rollback after a switched candidate fails remains unimplemented. A verification hold
+is not a claim that accepted traffic was restored. Populated upgrades, migration fencing,
+newsletter cutovers, open-browser assets/Server Actions, cross-version contracts, encrypted
+off-host recovery and installation monitoring remain programme requirements. Thousands of
+workspaces remains optional future headroom, not a capacity acceptance gate.
+
+## Native completion-expiry test cleanup
+
+The completion-expiry integration helper must cancel its owned operation before releasing a
+native table barrier when observation fails. Releasing the barrier while the session remains
+valid can otherwise let a synthetic intake commit during failed-test cleanup. The helper
+retains the original observation error, waits for the operation to drain and requires the
+complete cases/proofs/events/jobs snapshot to remain unchanged. PID, backend start and exact
+transaction start bind the held transaction; failure diagnostics contain finite categories
+and lock/expiry booleans, never credentials, session IDs or query payloads.
+
+`docs/deployment-evidence/privacy-expiry-native-20261112.json` binds four passing actual
+PostgreSQL 16/Bun tests: three strict expiry/forbidden/rollback cases and an injected failure
+after the real intake barrier, proving cancellation-before-unlock and unchanged state. The
+run applied all 119 migrations, cloned the real test template, took 12.283 seconds and peaked
+at 451,461,120 bytes of sampled combined RSS. Client sessions, server process, socket and
+temporary cluster cleanup passed. The original source706 transient witness loss remains
+unclassified; this evidence does not waive a future observation failure or replace full CI.

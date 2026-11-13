@@ -44,57 +44,6 @@
       "newsletter_operational": "Newsletter operations"
     }
   },
-  "email": {
-    "open": "Open: {link}",
-    "openAction": "Open in Warpdrive",
-    "recipientFallback": "there",
-    "activityFallback": "activity",
-    "mention": {
-      "subject": "Somebody mentioned you in Warpdrive",
-      "line": "{recipient}, somebody mentioned you."
-    },
-    "activity_assigned": {
-      "subject": "An activity was assigned to you in Warpdrive",
-      "line": "{recipient}, an activity was assigned to you."
-    },
-    "activity_reminder": {
-      "subject": "Reminder: {activitySubject} is due soon",
-      "line": "{recipient}, your activity \"{activitySubject}\" is due soon."
-    },
-    "deal_followed_update": {
-      "subject": "A deal you follow has an update",
-      "line": "{recipient}, a deal you are following has been updated."
-    },
-    "email_open": {
-      "subject": "Your email was opened",
-      "line": "{recipient}, someone opened your email."
-    },
-    "email_click": {
-      "subject": "A link in your email was clicked",
-      "line": "{recipient}, someone clicked a link in your email."
-    },
-    "deal_won": {
-      "subject": "Deal won!",
-      "line": "{recipient}, a deal was marked as won."
-    },
-    "deal_lost": {
-      "subject": "Deal lost",
-      "line": "{recipient}, a deal was marked as lost."
-    },
-    "comment_reply": {
-      "subject": "Someone replied to your comment in Warpdrive",
-      "line": "{recipient}, somebody replied to your comment."
-    },
-    "deal_email_received": {
-      "subject": "New email on a deal",
-      "subjectWithTitle": "New email on a deal: {subject}",
-      "line": "{recipient}, a new email arrived on a deal you follow."
-    },
-    "generic": {
-      "subject": "Warpdrive notification",
-      "line": "{recipient}, you have a new notification."
-    }
-  },
   "operations": {
     "unavailable": "Newsletter operation needs attention",
     "eventCount": "{count, plural, one {# event} other {# events}}",
