@@ -148,11 +148,15 @@ describe("EnrichmentClient cooldown clock", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("leaves no timer running after unmount", () => {
+  it("leaves no timer running after unmount", async () => {
     const { unmount } = renderCooldown([
       throttled("apollo", "Apollo", new Date("2026-08-24T09:01:00Z")),
     ]);
     unmount();
+    // Flush the SDK's unmount microtask without advancing the cooldown deadline.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
     expect(vi.getTimerCount()).toBe(0);
   });
 });

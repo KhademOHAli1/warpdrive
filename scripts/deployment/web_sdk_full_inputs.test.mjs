@@ -27,6 +27,9 @@ const CONTEXT = {
 const BACKEND = ["worker", "realtime", "migrator"];
 const PAGE = "src/app/page.tsx";
 const CARD = "src/components/Card.tsx";
+const SWITCH = "src/components/ui/Switch.tsx";
+const SWITCH_IMPORT = "@ui-sdk/react/switch";
+const SWITCH_CLIENT = `"use client"; import { Switch as SdkSwitch, SwitchThumb } from "${SWITCH_IMPORT}"; export function Card() { return <SdkSwitch><SwitchThumb /></SdkSwitch>; }`;
 const CLIENT = '"use client"; import { Menu } from "@ui-sdk/react/menu"; export const Card = Menu;';
 
 function fixture(t) {
@@ -79,6 +82,7 @@ function fixture(t) {
     "deploy/images/Web.Dockerfile",
     "tools/web-ui/package.json",
     "tools/web-ui/bun.lock",
+    "scripts/deployment/web-sdk-import-policy.json",
     "scripts/build-workers.mjs",
     "scripts/deployment/component_inputs.mjs",
     "scripts/deployment/web_inputs.mjs",
@@ -211,4 +215,58 @@ void test("untracked helper resolution and modified backend bytes hidden from Gi
   hidden.git("update-index", "--assume-unchanged", path);
   hidden.put(path, "export const backend = 2;");
   await assert.rejects(hidden.sdk(revision), /differs from the selected Git blob/u);
+});
+
+void test("canonical Switch produces versioned named binding evidence alongside the historical pilot", async (t) => {
+  const f = fixture(t);
+  f.put(
+    CARD,
+    CLIENT.replace("export const Card = Menu;", "export function Card() { return <Menu />; }"),
+  );
+  f.put(SWITCH, "export const Card = () => null;");
+  f.put(
+    PAGE,
+    'import {Card} from "@/components/Card"; import {Card as SwitchCard} from "@/components/ui/Switch"; export default [Card, SwitchCard];',
+  );
+  const baseline = await f.sdk(f.commit());
+  assert.equal(baseline.schemaVersion, 1);
+  assert.equal(Object.hasOwn(baseline.web, "sdkBindings"), false);
+  f.put(SWITCH, SWITCH_CLIENT);
+  const successor = await f.sdk(f.commit());
+  assert.equal(successor.schemaVersion, 2);
+  assert.deepEqual(successor.backendInputs, baseline.backendInputs);
+  assert.deepEqual(successor.web.sdkImports, {
+    [CARD]: ["@ui-sdk/react/menu"],
+    [SWITCH]: [SWITCH_IMPORT],
+  });
+  assert.deepEqual(successor.web.sdkBindings[SWITCH], [
+    { specifier: SWITCH_IMPORT, exported: "Switch", local: "SdkSwitch" },
+    { specifier: SWITCH_IMPORT, exported: "SwitchThumb", local: "SwitchThumb" },
+  ]);
+  assert.equal(
+    successor.web.importPolicySha256,
+    createHash("sha256")
+      .update(readFileSync(join(REPOSITORY, "scripts/deployment/web-sdk-import-policy.json")))
+      .digest("hex"),
+  );
+  assert.equal(successor.deploymentAuthorized, false);
+  f.put(CARD, CLIENT.replace("{ Menu }", "{ Undocumented as Menu }"));
+  await assert.rejects(f.sdk(f.commit()), /Unreviewed Web SDK import/u);
+});
+
+void test("the Switch SDK cannot enter other UI files or a helper/backend closure", async (t) => {
+  const f = fixture(t);
+  f.put(CARD, SWITCH_CLIENT);
+  await assert.rejects(f.sdk(f.commit()), /Unreviewed Web SDK import/u);
+  f.put(CARD, 'export {Card} from "@/components/ui/Switch";');
+  f.put(SWITCH, SWITCH_CLIENT);
+  const baseline = f.commit();
+  for (const entry of ["src/entrypoints/worker.ts", "scripts/auth-operator.ts"]) {
+    f.put(entry, 'export {Card} from "@/components/ui/Switch";');
+    await assert.rejects(
+      f.sdk(f.commit()),
+      /not a declared production dependency: @ui-sdk\/react/u,
+    );
+    f.git("reset", "--hard", baseline);
+  }
 });
