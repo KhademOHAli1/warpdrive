@@ -6,7 +6,7 @@
 // rendering, ActivitiesTable.filters.test.tsx owns the filter toolbar, and
 // ActivitiesTable.selection.test.tsx owns selection and bulk actions.
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -118,22 +118,32 @@ describe("ActivitiesTable sort headers", () => {
   it("cycles the Duration header asc to desc to the default sort on repeated clicks", () => {
     useQuery.mockReturnValue({ data: [row({})], refetch });
     render(<ActivitiesTable currentUserId="me" />);
-    const header = screen.getByRole("button", { name: "Duration" });
-    fireEvent.click(header);
+    const duration = screen.getByRole("columnheader", { name: "Duration" });
+    const due = screen.getByRole("columnheader", { name: "Due" });
+    const button = within(duration).getByRole("button", { name: "Duration" });
+    expect(due).toHaveAttribute("aria-sort", "ascending");
+    expect(duration).not.toHaveAttribute("aria-sort");
+    fireEvent.click(button);
     expect(useQuery).toHaveBeenLastCalledWith(
       { ...DEFAULT_FILTER, sort: { field: "duration", dir: "asc" } },
       { enabled: true },
     );
-    fireEvent.click(header);
+    expect(due).not.toHaveAttribute("aria-sort");
+    expect(duration).toHaveAttribute("aria-sort", "ascending");
+    fireEvent.click(button);
     expect(useQuery).toHaveBeenLastCalledWith(
       { ...DEFAULT_FILTER, sort: { field: "duration", dir: "desc" } },
       { enabled: true },
     );
-    fireEvent.click(header);
+    expect(duration).toHaveAttribute("aria-sort", "descending");
+    expect(within(button).getByText("▼")).toHaveAttribute("aria-hidden", "true");
+    fireEvent.click(button);
     expect(useQuery).toHaveBeenLastCalledWith(
       { ...DEFAULT_FILTER, sort: { field: "dueAtIso", dir: "asc" } },
       { enabled: true },
     );
+    expect(due).toHaveAttribute("aria-sort", "ascending");
+    expect(duration).not.toHaveAttribute("aria-sort");
   });
 });
 
