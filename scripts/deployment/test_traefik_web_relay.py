@@ -362,6 +362,7 @@ class ExactTwoHopTests(LoopbackFixture):
                         "-addext", "subjectAltName=IP:127.0.0.1", "-keyout", str(key), "-out", str(certificate)],
                        capture_output=True, check=True, timeout=5)
         self.tls = ssl.create_default_context(cafile=certificate)
+        self.tls.minimum_version = ssl.TLSVersion.TLSv1_2
         services = config["http"]["services"]
         for name, port in (("incumbent", self.old.server_port), ("ws", self.realtime.server_port),
                            ("warpdrive-web-relay-safe", self.relay_port), ("warpdrive-web-relay-unsafe", self.relay_port)):
