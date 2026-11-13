@@ -402,15 +402,23 @@ function isSdkSpecifier(value) {
   }
 }
 
+function captureReference(graph, from, node, specifier, targets) {
+  if (!graph.references) return;
+  if (graph.references.length >= 100_000) reject("Web projection reference budget exceeded");
+  const retained = graph.projectionTrees.has(from) ? node : undefined;
+  graph.references.push({ from, specifier, targets, node: retained });
+}
+
 function addReference(context, node, specifier) {
   const { graph, path, files, modules, adapters } = context;
   if (isSdkSpecifier(specifier)) {
-    if (!modules.has(path))
+    if (!modules.has(path) && !graph.references)
       reject(`Web SDK import outside the reviewed presentation island: ${path}`);
     graph.usesSdk = true;
   }
   const paths = directReference(specifier, path, files);
   context.edges.push(...paths);
+  captureReference(graph, path, node, specifier, paths);
   if (
     modules.has(path) &&
     paths.some((target) => context.capabilities.has(target)) &&
@@ -456,6 +464,7 @@ function scanScript(tree, graph, path, files, reviewed) {
     addReference(context, undefined, path);
   }
   graph.edges.set(path, [...new Set(context.edges)].sort());
+  if (graph.projectionTrees?.has(path)) graph.projectionTrees.set(path, tree);
   if (context.adapters.has(path)) verifyAdapter(context);
 }
 
@@ -475,7 +484,9 @@ function scanStyle(tree, graph, path, files) {
       const target = match[1] ?? match[2] ?? match[3];
       if (isSdkSpecifier(target))
         reject(`Web SDK stylesheet import is outside the reviewed API: ${path}`);
-      edges.push(...directReference(target, path, files));
+      const paths = directReference(target, path, files);
+      edges.push(...paths);
+      captureReference(graph, path, undefined, target, paths);
     }
   });
   graph.edges.set(path, [...new Set(edges)].sort());
@@ -655,13 +666,16 @@ function renderTag(node) {
   );
 }
 
-function verifyAdapter(context) {
+function verifyAdapter(context, { strict = false } = {}) {
   const checker = checkerFor(context.tree);
   const bindings = adapterBindings(context, checker);
   const used = new Set();
   function visit(node) {
     if (ts.isIdentifier(node)) {
-      const symbol = checker.getSymbolAtLocation(node);
+      const symbol =
+        strict && ts.isShorthandPropertyAssignment(node.parent)
+          ? checker.getShorthandAssignmentValueSymbol(node.parent)
+          : checker.getSymbolAtLocation(node);
       const declaration = bindings.get(symbol);
       if (declaration && node !== declaration) {
         if (!renderTag(node))
@@ -1037,12 +1051,16 @@ function scanFile(path, source, graph, files, reviewed) {
   }
 }
 
-function scanFirstParty(files, read, reviewed) {
+function scanFirstParty(files, read, reviewed, projectionPaths) {
   const graph = {
     edges: new Map(),
     protectedRoots: new Set(selectBuildEntries("all").map((entry) => entry.in)),
     usesSdk: false,
     capabilityBindings: [],
+    ...(projectionPaths && {
+      references: [],
+      projectionTrees: new Map([...projectionPaths].map((path) => [path, undefined])),
+    }),
   };
   let bytes = 0;
   for (const [path, entry] of files) {
@@ -1055,27 +1073,59 @@ function scanFirstParty(files, read, reviewed) {
   return graph;
 }
 
+/**
+ * Reuse the functional AST scanner and locked Web guard for source-only projection.
+ * AST nodes are retained only for the caller's bounded exact cut endpoints.
+ */
+export async function inspectWebProjectionSnapshot(root, files, projectionPaths) {
+  const read = createWebGitSourceReader(root, files);
+  const graph = scanFirstParty(
+    files,
+    read,
+    { modules: new Set(), styles: new Set(), adapters: new Set(), capabilities: new Map() },
+    projectionPaths,
+  );
+  const guarded = await guardProjectionInputs(root, files, read, graph.usesSdk);
+  return { ...graph, guarded };
+}
+
+/** Verify the existing server-side binding using the same JSX-only admission. */
+export function verifyProjectionRendererBindings(tree, from, references) {
+  const modules = new Set(references.flatMap(({ targets }) => targets));
+  verifyAdapter(
+    {
+      tree,
+      path: from,
+      modules,
+      adapterImports: references.map(({ node, targets }) => ({ node, paths: targets })),
+    },
+    { strict: true },
+  );
+}
+
+async function guardProjectionInputs(root, files, read, usesSdk) {
+  const { manifest, lock, packages } = exactDependencies(read);
+  if (usesSdk) {
+    verifySdkSource(root, files, read);
+    packages["@ui-sdk/react"] = true;
+  }
+  return guardWebInputs({
+    root,
+    files: [...files.keys()],
+    read,
+    helperEntries: selectBuildEntries("web"),
+    manifest,
+    lock,
+    production: packages,
+    fail: reject,
+  });
+}
+
 async function inspectSnapshot(root, files, { modules, styles, island, adapters, capabilities }) {
   const read = createWebGitSourceReader(root, files);
   const graph = scanFirstParty(files, read, { modules, styles, adapters, capabilities });
   verifyBoundary(graph, island, modules, adapters, capabilities);
-  const { manifest, lock, packages } = exactDependencies(read);
-  if (graph.usesSdk) {
-    verifySdkSource(root, files, read);
-    packages["@ui-sdk/react"] = true;
-  }
-  const reachable = new Set(
-    await guardWebInputs({
-      root,
-      files: [...files.keys()],
-      read,
-      helperEntries: selectBuildEntries("web"),
-      manifest,
-      lock,
-      production: packages,
-      fail: reject,
-    }),
-  );
+  const reachable = new Set(await guardProjectionInputs(root, files, read, graph.usesSdk));
   if ([...adapters, ...island].some((path) => !reachable.has(path)))
     reject("Functional Web island and adapters must be reachable from reviewed Web roots");
   const protectedEdges = [...graph.edges].filter(([path]) => !island.has(path));

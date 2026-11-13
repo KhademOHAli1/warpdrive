@@ -9,6 +9,8 @@
     "web_functional_source.test.mjs",
     "web_presentation_policy.mjs",
     "web_presentation_policy.test.mjs",
+    "web_protected_projection.mjs",
+    "web_protected_projection.test.mjs",
     "web_repeat_presentation.mjs",
     "web_sdk_full_inputs.mjs",
     "web_sdk_full_inputs.test.mjs",
