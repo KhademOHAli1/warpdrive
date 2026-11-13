@@ -2,7 +2,6 @@
 
 import {
   DialogBackdrop,
-  type DialogOpenChangeReason,
   DialogTrigger,
   DialogClose as SdkClose,
   DialogContent as SdkContent,
@@ -18,6 +17,9 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { capture, currentRoute } from "@/features/observability/capture";
 import { EVENTS } from "@/features/observability/events";
 import { cn } from "@/lib/utils";
+
+type DialogOpenChange = NonNullable<ComponentProps<typeof SdkRoot>["onOpenChange"]>;
+type DialogOpenChangeReason = Parameters<DialogOpenChange>[1]["reason"];
 
 function closeReason(
   reason: DialogOpenChangeReason,
@@ -70,7 +72,10 @@ export function DialogContent({
   className,
   children,
   ...props
-}: Omit<ComponentProps<typeof SdkContent>, "className"> & { className?: string }): ReactNode {
+}: Omit<ComponentProps<typeof SdkContent>, "children" | "className"> & {
+  children: ReactNode;
+  className?: string;
+}): ReactNode {
   const t = useAppTranslations("sharedUi");
   return (
     <>
