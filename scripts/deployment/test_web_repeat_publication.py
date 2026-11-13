@@ -134,6 +134,26 @@ class RepeatWebPublicationTests(unittest.TestCase):
         with self.assertRaises(CandidateError):
             self.retain()
 
+    def test_repeat_artifact_can_supply_the_next_active_web_with_original_backend(self):
+        from hashlib import sha256
+
+        from web_repeat_successor import verify_repeat_successor
+
+        receipt = self.retain()
+        raw = (self.destination / gate.RECEIPT_NAME).read_bytes()
+        options = {"predecessor": self.composite, "repeat_bundle_dir": self.destination / "bundle",
+                   "publication_bytes": raw, "expected_publication_sha256": sha256(raw).hexdigest(),
+                   "expected_revision": REVISION, "predecessor_lineage_sha256": self.lineage_sha}
+        composite = verify_repeat_successor(**options)
+        self.assertEqual(composite["web"]["image"], receipt["image"])
+        self.assertEqual(composite["web"]["publicationReceiptSha256"], options["expected_publication_sha256"])
+        self.assertEqual(composite["backend"], self.composite["backend"])
+        self.assertEqual(composite["qualification"]["fixtureSchemaSha256"], receipt["qualification"]["fixtureSchemaSha256"])
+        self.assertNotEqual(composite["web"]["sourceRevision"], self.composite["web"]["sourceRevision"])
+        for changed in ({"expected_publication_sha256": "0" * 64}, {"predecessor_lineage_sha256": "0" * 64}):
+            with self.subTest(changed=changed), self.assertRaises(CandidateError):
+                verify_repeat_successor(**(options | changed))
+
     def test_refuses_bad_attempt_or_any_required_step_skip(self):
         updates = [(self.api.run, "event", "pull_request"),
                    (self.api.job, "run_attempt", ATTEMPT + 1),
