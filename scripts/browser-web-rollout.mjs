@@ -10,6 +10,7 @@ const REVISION = /^[a-f0-9]{40}$/u;
 const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/u;
 const LABEL = /^[a-zA-Z0-9 _-]{1,100}$/u;
 const REPEAT_SCENARIO = "warpdrive-web-continuity-v2";
+const CRM_SWITCH = "crm-switch";
 
 function requireProof(condition) {
   if (!condition) throw Error("Required browser rollout evidence is unavailable");
@@ -25,6 +26,12 @@ function readProfile() {
   requireProof(
     profile.sdkKeyboardHelp === undefined ||
       (profile.sdkKeyboardHelp === true && profile.scenario === REPEAT_SCENARIO),
+  );
+  requireProof(
+    profile.sdkScenario === undefined ||
+      (profile.sdkScenario === CRM_SWITCH &&
+        profile.scenario === REPEAT_SCENARIO &&
+        profile.sdkKeyboardHelp === true),
   );
   const gaps = profile.topBarGaps ?? [24, 22];
   requireProof(
@@ -465,6 +472,13 @@ try {
     sdkKeyboardHelp = await verifySdkKeyboardHelp(fresh);
   }
 
+  let sdkSwitch;
+  if (profile.sdkScenario === CRM_SWITCH) {
+    stage = "current-crm-switch";
+    const { verifySdkSwitch } = await import("./deployment/web_sdk_switch_fixture.mjs");
+    sdkSwitch = await verifySdkSwitch(fresh, { sourceRevision: profile.currentRevision });
+  }
+
   stage = "browser-close";
   await browser.close();
   browser = undefined;
@@ -477,6 +491,7 @@ try {
     actionPosts: 1,
     ...(profile.scenario === REPEAT_SCENARIO ? { freshStampedPage: true } : {}),
     ...(sdkKeyboardHelp === undefined ? {} : { sdkKeyboardHelp }),
+    ...(sdkSwitch === undefined ? {} : { sdkSwitch }),
   });
 } catch {
   console.error(JSON.stringify({ event: "browser.web-rollout.failed", stage }));

@@ -13,6 +13,8 @@
     "web_sdk_imports.mjs",
     "web_sdk_imports.test.mjs",
     "web_sdk_keyboard_fixture.mjs",
-    "web_sdk_keyboard_fixture.test.mjs"
+    "web_sdk_keyboard_fixture.test.mjs",
+    "web_sdk_switch_fixture.mjs",
+    "web_sdk_switch_fixture.test.mjs"
   ]
 }

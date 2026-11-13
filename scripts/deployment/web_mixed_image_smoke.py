@@ -45,6 +45,8 @@ ROOT = Path(__file__).resolve().parents[2]
 BROWSER_SCRIPT = "scripts/browser-web-rollout.mjs"
 SEED_SCRIPT = "scripts/browser-realtime-fixture.mjs"
 REPEAT_BROWSER_PROFILE = "warpdrive-web-continuity-v2"
+CRM_SWITCH = "crm-switch"
+SWITCH_TOOLING = {"scripts/deployment/web_sdk_switch_fixture.mjs", "scripts/browser-workflow-preference-actions.mjs"}
 REPEAT_OPTIONS = ("active_web_bundle", "active_web_publication_receipt",
                   "active_web_publication_receipt_sha256", "seed_root", "harness_revision")
 SUCCESSOR_OPTIONS = ("successor_web_bundle", "successor_web_publication_receipt",
@@ -58,9 +60,11 @@ BROWSER_PHASES = {
 }
 SDK_KEYBOARD_HELP = dict.fromkeys(
     ("openedByKeyboard", "escapeClosed", "focusRestored", "closeButtonWorked", "sameDocument"), True)
+SDK_SWITCH = {"schemaVersion": 1, "activatedByKeyboard": True, "savedByCandidate": True,
+              "persistedAfterReload": True, "actionPosts": 1}
 BROWSER_FAILURES = {"profile", "browser-start", "native-login-and-draft", "pre-switch-socket",
                     "waiting-for-switch", "persistent-reconnect", "old-tab-server-action",
-                    "current-rendered-presentation", "current-keyboard-help", "browser-close"}
+                    "current-rendered-presentation", "current-keyboard-help", "current-crm-switch", "browser-close"}
 HEALTH = "/api/health"
 IDENTITY = "/api/runtime/web-identity"
 LOGIN = "/login"
@@ -196,10 +200,11 @@ def repeat_assembly(composite, new):
     }
 
 
-def verify_repeat_harness(root, host, revision):
+def verify_repeat_harness(root, host, revision, *, sdk_scenario=None):
     """Verify executing toolkit bytes even when Git index flags hide worktree edits."""
     from web_release_inputs import _git, _tree
 
+    require(sdk_scenario is None or sdk_scenario == CRM_SWITCH, "Unreviewed SDK browser scenario")
     admit_source(host, revision)
     tree = _tree(root, revision)
     tooling = ("scripts/deployment", "scripts/delivery", "tools/browser-smoke")
@@ -212,6 +217,9 @@ def verify_repeat_harness(root, host, revision):
     paths.update((BROWSER_SCRIPT, "package.json"))
     required = {"scripts/deployment/web_mixed_image_smoke.py", "tools/browser-smoke/package.json",
                 "tools/browser-smoke/bun.lock", BROWSER_SCRIPT, "package.json"}
+    if sdk_scenario == CRM_SWITCH:
+        required.update(SWITCH_TOOLING)
+        paths.update(SWITCH_TOOLING)
     require(required <= tree.keys(), "Repeat browser toolkit source is incomplete")
     for name in sorted(paths):
         mode, kind, identifier = tree[name]
@@ -388,7 +396,13 @@ def generation_configs(adapted, before, after):
     return {before.deployment_id: compile_config(before, after), after.deployment_id: compile_config(after, before)}
 
 
-def browser_message(value, *, repeat=False, sdk_keyboard_help=False):
+def _validate_sdk_scenario(sdk_scenario, *, repeat, sdk_keyboard_help):
+    require(sdk_scenario is None or (sdk_scenario == CRM_SWITCH and repeat is True and sdk_keyboard_help is True),
+            "CRM Switch browser evidence requires the reviewed repeat and keyboard pilot profile")
+
+
+def browser_message(value, *, repeat=False, sdk_keyboard_help=False, sdk_scenario=None):
+    _validate_sdk_scenario(sdk_scenario, repeat=repeat, sdk_keyboard_help=sdk_keyboard_help)
     require(isinstance(value, dict) and isinstance(value.get("phase"), str) and value["phase"] in BROWSER_PHASES,
             "unexpected browser control phase")
     expected = BROWSER_PHASES[value["phase"]]
@@ -400,15 +414,23 @@ def browser_message(value, *, repeat=False, sdk_keyboard_help=False):
                     and all(result is True for result in facts.values()),
                     "incomplete SDK keyboard-help browser proof")
             expected["sdkKeyboardHelp"] = SDK_KEYBOARD_HELP
+        if sdk_scenario == CRM_SWITCH:
+            facts = value.get("sdkSwitch")
+            require(type(facts) is dict and set(facts) == set(SDK_SWITCH)
+                    and all(type(facts[key]) is type(wanted) and facts[key] == wanted for key, wanted in SDK_SWITCH.items()),
+                    "Incomplete CRM Switch browser proof")
+            expected["sdkSwitch"] = SDK_SWITCH
     require(set(value) == {"phase", *expected} and all(type(value[key]) is type(wanted) and value[key] == wanted
                                                      for key, wanted in expected.items()), "incomplete browser control proof")
     return value
 
 
 class RolloutBrowser(BrowserProcess):
-    def __init__(self, environment, *, repeat=False, sdk_keyboard_help=False):
+    def __init__(self, environment, *, repeat=False, sdk_keyboard_help=False, sdk_scenario=None):
+        _validate_sdk_scenario(sdk_scenario, repeat=repeat, sdk_keyboard_help=sdk_keyboard_help)
         self.repeat = repeat
         self.sdk_keyboard_help = sdk_keyboard_help
+        self.sdk_scenario = sdk_scenario
         def run(_command, **options):
             return subprocess.Popen(["bun", "--no-env-file", str(ROOT / BROWSER_SCRIPT)], **options)
 
@@ -422,7 +444,7 @@ class RolloutBrowser(BrowserProcess):
             while line := stream.readline(4097):
                 require(len(line) <= 4096 and line.endswith("\n"), "oversized or incomplete browser control record")
                 self.messages.put_nowait(browser_message(json.loads(line), repeat=self.repeat,
-                    sdk_keyboard_help=self.sdk_keyboard_help))
+                    sdk_keyboard_help=self.sdk_keyboard_help, sdk_scenario=self.sdk_scenario))
         except (ValueError, RuntimeError, queue.Full):
             self.invalid = True
 
@@ -512,13 +534,18 @@ class MixedCaddyTarget:
 
 
 class MixedWebSmoke(WebSwitchSmoke):
-    def __init__(self, docker, args, private):
+    def __init__(self, docker, args, private, *, sdk_scenario=None):
+        # A caller that authenticated the successor profile may select an extra witness.
+        # Standalone CLI arguments, browser profiles and reports do not select it here.
         super().__init__(docker, args.bundle_dir, args.baseline_revision, args.output_dir)
         self.args, self.private = args, private
         self.repeat = repeat_mode(args)
         self.successor = successor_mode(args)
         self.sdk_keyboard_help = getattr(args, "sdk_keyboard_help", False)
         require(not self.sdk_keyboard_help or self.successor, "SDK keyboard help requires a successor Web fixture")
+        require(getattr(args, "sdk_scenario", None) is None, "CRM Switch scenario requires trusted caller admission")
+        _validate_sdk_scenario(sdk_scenario, repeat=self.successor, sdk_keyboard_help=self.sdk_keyboard_help)
+        self.sdk_scenario = sdk_scenario
         self.seed_root = args.seed_root if self.repeat else ROOT
         self.browser = None
         self.host_environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR", "PLAYWRIGHT_BROWSERS_PATH") if key in os.environ}
@@ -530,7 +557,8 @@ class MixedWebSmoke(WebSwitchSmoke):
             self.report.update({"schemaVersion": 2, "kind": "warpdrive-native-repeat-web-smoke",
                                 "limitations": REPEAT_LIMITATIONS, "browserProfile": {
                                     "kind": REPEAT_BROWSER_PROFILE, "harnessRevision": args.harness_revision,
-                                    "seedRevision": self.revision}})
+                                    "seedRevision": self.revision,
+                                    **({"sdkScenario": sdk_scenario} if sdk_scenario else {})}})
 
     def load(self):
         require(platform.system() == "Linux" and platform.machine() in {"x86_64", "amd64"},
@@ -866,7 +894,7 @@ class MixedWebSmoke(WebSwitchSmoke):
             require((self.seed_root / "node_modules/better-auth/package.json").is_file()
                     and (ROOT / "tools/browser-smoke/node_modules/playwright/index.mjs").is_file(),
                     "Locked repeat seed and browser dependencies required")
-            verify_repeat_harness(ROOT, self.host, self.args.harness_revision)
+            verify_repeat_harness(ROOT, self.host, self.args.harness_revision, sdk_scenario=self.sdk_scenario)
         admit_source(seed_host, self.revision)
         admit_bundle_source(self.seed_root, self.bundle_dir, candidate or self.baseline_candidate, self.revision)
         for relative in ((SEED_SCRIPT,) if self.repeat else (BROWSER_SCRIPT, SEED_SCRIPT)):
@@ -906,13 +934,16 @@ class MixedWebSmoke(WebSwitchSmoke):
             self.browser_profile["scenario"] = REPEAT_BROWSER_PROFILE
         if self.sdk_keyboard_help:
             self.browser_profile["sdkKeyboardHelp"] = True
+        if self.sdk_scenario:
+            self.browser_profile["sdkScenario"] = self.sdk_scenario
         if getattr(self.args, "topbar_gaps", None) is not None:
             self.browser_profile["topBarGaps"] = self.args.topbar_gaps
         self.browser_profile_path = self.private / "browser.json"
         self.browser_profile_path.write_text(json.dumps(self.browser_profile), encoding="utf-8")
         self.browser_profile_path.chmod(0o600)
         self.browser = RolloutBrowser({**self.host_environment, "BROWSER_WEB_ROLLOUT_PROFILE": str(self.browser_profile_path)},
-                                      repeat=self.repeat, sdk_keyboard_help=self.sdk_keyboard_help)
+                                      repeat=self.repeat, sdk_keyboard_help=self.sdk_keyboard_help,
+                                      sdk_scenario=self.sdk_scenario)
         self.browser_initial = self.browser.wait("initial-ready", timeout=90)
         require(self.activity_count() == 0, "synthetic browser Activity already exists before rollout")
         return {"freshBoundBaselineSeed": True, "forgedSession": False, "initial": self.browser_initial,

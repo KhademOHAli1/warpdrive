@@ -299,6 +299,8 @@ export default tseslint.config(
       "scripts/deployment/web_sdk_imports.test.mjs",
       "scripts/deployment/web_sdk_keyboard_fixture.mjs",
       "scripts/deployment/web_sdk_keyboard_fixture.test.mjs",
+      "scripts/deployment/web_sdk_switch_fixture.mjs",
+      "scripts/deployment/web_sdk_switch_fixture.test.mjs",
     ],
     languageOptions: {
       parserOptions: {
