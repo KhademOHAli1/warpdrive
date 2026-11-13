@@ -1,72 +1,68 @@
 ---
-sidebar_position: 6
 title: Email sync
-description: "Connect a Gmail mailbox to Warpdrive over OAuth, understand what the first sync does, and troubleshoot a disconnected mailbox."
+description: "Connect Gmail or an IMAP and SMTP mailbox, manage synchronization, and troubleshoot connection problems."
 ---
 
 # Email sync
 
-Each user connects their own Gmail mailbox. There is no shared or company-wide
-mailbox connection.
+Open **Settings > Email sync** (`/settings/email-sync`) to manage the mailboxes
+you use in Warpdrive. Each mailbox belongs to the account that connected it.
+Use **Email content** (`/settings/email`) to manage signatures and templates.
 
-`/settings/email-sync` manages the connection; `/settings/email` holds the
-message-level preferences such as your signature.
+![Earlier Gmail-only Email sync screen](/img/screenshots/email-sync/settings.png)
 
-![Email sync settings](/img/screenshots/email-sync/settings.png)
+The screenshot shows an earlier Gmail-only screen. If your installation offers
+**Add mailbox**, use it to choose Gmail or **Work or personal email**. Earlier
+installations can offer **Connect Gmail** directly.
 
 ## Connecting a mailbox
 
-Start the connection from `/settings/email-sync` and complete Google's consent screen.
+- For Gmail, choose **Connect a Gmail account**, select your mailbox in Google,
+  and review the permissions on the consent screen. Ask your operator to check
+  the Google OAuth client if Gmail is unavailable.
+- For an IMAP and SMTP mailbox, choose **Work or personal email**. Enter the
+  incoming and outgoing server details and the credentials your mail provider
+  supplied. Choose **Check connection**, then select the folders and how many
+  days of history to sync. Choose **Connect mailbox** to start synchronization.
+  The connection check itself sends no message.
 
 ### Required scopes
 
-The OAuth client needs the **`openid` and `email` scopes in addition to the Gmail
-scopes**. The callback binds the returned mailbox to a Warpdrive user through Google's
-userinfo endpoint, so without them the connection fails after consent. The symptom
-looks like a Gmail permission problem but is an OAuth client configuration problem.
-
-See [Installation](../setup.md) for creating the client.
+For Gmail, Warpdrive requests `openid`, `email`, `gmail.modify`, and
+`gmail.send`. Google uses the identity scopes to identify the mailbox selected
+during consent. See [Installation](/setup/) for setting up the OAuth client.
 
 ### Offline access
 
-Warpdrive requests offline access with forced consent on every connection, because it
-needs a refresh token to sync in the background. A connection that returns no refresh
-token is rejected rather than silently accepted.
-
-The OAuth exchange is protected by a state cookie that expires after 10 minutes and is
-deleted as soon as the callback reads it. Leaving the consent screen open longer than
-that requires restarting the connection.
+Gmail authorization must provide a refresh token so sync can continue in the
+background. If the consent screen has been open for more than ten minutes,
+start the connection again.
 
 ## What the first sync does
 
-The first sync records Gmail's current history cursor and starts from there.
-
-:::caution
-**Existing mail is not imported.** Sync is go-forward only. A freshly connected
-mailbox shows nothing until new mail arrives, which is expected rather than a fault.
-:::
+The first Gmail sync records the current Gmail history position and syncs changes
+from that point forward. For an IMAP mailbox, the first sync imports from the
+folders and history window you selected. It can take time for messages to appear.
 
 ## Disconnecting
 
-Disconnecting sets the account to disconnected and removes the stored refresh token,
-but keeps the account row and everything already synced. Reconnecting resumes rather
-than starting over.
+Choose **Manage mailbox**, then **Disconnect**. The CRM stops future sync and
+sending from that mailbox and keeps conversations already imported. Reconnect
+the same address to resume its existing connection. Cancel any queued messages
+you no longer want to send from **Outbox** before disconnecting.
 
 ## Troubleshooting
 
-**Mail arrives in Gmail but not in Warpdrive.** Sync runs in the background worker
-process. Confirm the worker is running: `docker compose ps`, then
-`docker compose logs -f worker`.
-
-**The mailbox disconnected itself.** Google rejected the stored grant outright, which
-happens when access is revoked or the password changes. Reconnect from
-`/settings/email-sync`. Transient failures do not cause this, so a mailbox that
-disconnects repeatedly points at revoked access rather than a flaky network.
-
-**Nothing appears after connecting.** Expected if no new mail has arrived. Sync does
-not backfill.
+- If Gmail asks you to reconnect, use **Update connection** and complete the
+  Google consent screen again. This is commonly needed after Google revokes
+  the previous grant.
+- If an IMAP connection fails, verify the server addresses, ports, TLS options,
+  and credentials against your provider's settings. Use an app password if your
+  provider requires one.
+- If mail stops syncing while the mailbox is connected, check the mailbox status.
+  Ask the deployment operator to check the worker if the problem persists.
 
 ## Related
 
-- [Email](../features/email.md), for using the mailbox once connected.
-- [Installation](../setup.md), for OAuth client setup.
+- [Email](/features/email/)
+- [Installation](/setup/)

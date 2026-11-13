@@ -1,5 +1,4 @@
 ---
-sidebar_position: 4
 title: Contacts
 description: "People and organizations in Warpdrive: browsing, detail pages, linking people to organizations and deals, the contact timeline, and inline editing."
 ---
@@ -37,8 +36,9 @@ A person can belong to one organization. When setting it, existing organizations
 suggested so that people attach to a single record rather than creating near-duplicate
 companies.
 
-Deals link to both a person and an organization, which is what makes a company's page
-able to show every deal across all of its contacts.
+A deal can link to a primary person and an organization. It can also have
+additional people as [participants](/features/deal-workspace/#participants). Contact
+pages show the related deals you have permission to see.
 
 ## Timeline
 
@@ -49,28 +49,28 @@ able to show every deal across all of its contacts.
 
 Contact fields are edited in place: click a value, change it, and it saves. Escape
 cancels. Custom fields appear alongside built-in ones. See
-[Data fields](../administration/data-fields.md).
+[Data fields](/administration/data-fields/).
 
 ## Enrichment
 
-Both detail pages carry a **Fill the gaps** button that fills empty fields from
-connected data providers (Apollo, RocketReach, GetProspect), behind a review dialog.
-See [Enrichment](./enrichment.md).
+On a person or organization page, use **Fill the gaps** to review suggestions from
+the configured providers. Choose which values to apply. See
+[Enrichment](/features/enrichment/).
 
 ## Email
 
-Threads linked to a person appear on their detail page. Linking is recorded on the
-thread, matching inbound mail on the sender and outbound mail on the recipient. See
-[Email](./email.md).
+Threads linked to a person appear on their detail page. Automatic linking uses the
+sender address for inbound mail and the external recipient address for eligible
+outbound mail. See [Email](/features/email/).
 
 ## Visibility
 
 People and organizations follow the same visibility model as deals, so two colleagues
 can legitimately see different contact lists. See
-[Visibility groups](../administration/visibility-groups.md).
+[Visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Leads](./leads.md), for prospects not yet qualified into deals.
-- [Import](./import.md), for bringing contacts in from CSV.
-- [Deal workspace](./deal-workspace.md)
+- [Leads](/features/leads/), for prospects not yet qualified into deals.
+- [Import](/features/import/), for bringing contacts in from CSV.
+- [Deal workspace](/features/deal-workspace/)

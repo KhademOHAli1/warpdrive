@@ -1,0 +1,323 @@
+{
+  "routes": {
+    "/administration/company-settings/": [
+      "labels",
+      "lost-reasons",
+      "activity-types",
+      "pipelines",
+      "who-can-change-these",
+      "related"
+    ],
+    "/administration/data-fields/": [
+      "custom-fields",
+      "hiding-built-in-fields",
+      "related"
+    ],
+    "/administration/email-sync/": [
+      "connecting-a-mailbox",
+      "required-scopes",
+      "offline-access",
+      "what-the-first-sync-does",
+      "disconnecting",
+      "troubleshooting",
+      "related"
+    ],
+    "/administration/permission-sets/": [
+      "visibility-first-then-permission",
+      "scopes",
+      "administrators",
+      "high-risk-permissions",
+      "entities-and-activities-are-scoped-differently",
+      "related"
+    ],
+    "/administration/users-and-teams/": [
+      "the-first-administrator",
+      "users",
+      "inviting",
+      "accounts-are-bound-to-google-identity-not-email",
+      "account-identity-and-sign-in-methods",
+      "authentication-policy",
+      "deactivating",
+      "lost-passwords-lost-factors-and-account-closure",
+      "teams",
+      "who-can-administer-users",
+      "related"
+    ],
+    "/administration/visibility-groups/": [
+      "how-visibility-is-decided",
+      "restricted-pipelines-come-first",
+      "visibility-and-aggregates",
+      "entities-and-activities",
+      "related"
+    ],
+    "/architecture/": [
+      "stack",
+      "runtime-services",
+      "realtime",
+      "code-layout",
+      "conventions",
+      "testing",
+      "contributing",
+      "workflow-automation",
+      "locale-and-time-boundaries"
+    ],
+    "/contributing/": [
+      "running-locally",
+      "tests",
+      "conventions",
+      "pull-requests",
+      "documentation",
+      "interface-and-documentation-changes"
+    ],
+    "/features/activities/": [
+      "regional-calendar-behavior",
+      "views",
+      "scheduling",
+      "completion-and-overdue",
+      "visibility",
+      "related"
+    ],
+    "/features/automations/": [
+      "start-a-workflow",
+      "connect-the-process",
+      "configure-nodes",
+      "save-publish-and-simulate",
+      "run-and-inspect",
+      "permissions-and-languages",
+      "remaining-delivery-stages",
+      "step-numbers-after-inserting-a-step"
+    ],
+    "/features/collaboration/": [
+      "notes-and-comments",
+      "mentions",
+      "followers",
+      "presence",
+      "related"
+    ],
+    "/features/contacts/": [
+      "people",
+      "organizations",
+      "linking",
+      "timeline",
+      "inline-editing",
+      "enrichment",
+      "email",
+      "visibility",
+      "related"
+    ],
+    "/features/dashboard/": [
+      "metrics",
+      "the-funnel",
+      "quota-goals",
+      "numbers-are-visibility-scoped",
+      "scope",
+      "related"
+    ],
+    "/features/deal-workspace/": [
+      "stage-progression",
+      "summary-and-inline-editing",
+      "activities",
+      "notes",
+      "files",
+      "email",
+      "participants",
+      "followers",
+      "permissions",
+      "related"
+    ],
+    "/features/email/": [
+      "the-inbox",
+      "how-sync-works",
+      "when-a-mailbox-disconnects-itself",
+      "how-threads-link-to-records",
+      "composing",
+      "merge-fields",
+      "drafts",
+      "logging-as-an-activity",
+      "scheduled-send",
+      "open-tracking",
+      "signatures",
+      "permissions-and-visibility",
+      "related"
+    ],
+    "/features/enrichment/": [
+      "the-review-dialog",
+      "connecting-providers",
+      "field-mapping",
+      "caching",
+      "when-a-provider-fails",
+      "visibility",
+      "related"
+    ],
+    "/features/files/": [
+      "how-uploads-work",
+      "size-limit",
+      "storage-and-backups",
+      "visibility",
+      "related"
+    ],
+    "/features/import/": [
+      "the-wizard",
+      "how-uploads-and-processing-work",
+      "deduplication-and-linking",
+      "errors",
+      "undo",
+      "hidden-fields",
+      "related"
+    ],
+    "/features/keyboard-shortcuts/": [
+      "navigation",
+      "quick-add",
+      "activities-list",
+      "related"
+    ],
+    "/features/leads/": [
+      "what-a-lead-holds",
+      "linking-to-contacts",
+      "converting",
+      "archiving",
+      "visibility",
+      "related"
+    ],
+    "/features/mcp/": [
+      "enabling-the-server",
+      "connecting-a-client",
+      "tools",
+      "permissions-and-safety",
+      "revoking-a-connection"
+    ],
+    "/features/notifications/": [
+      "what-generates-one",
+      "following",
+      "reading",
+      "preferences",
+      "visibility",
+      "related"
+    ],
+    "/features/pipeline/": [
+      "board",
+      "moving-deals",
+      "filtering-and-sorting",
+      "collapsing-stages",
+      "list",
+      "bulk-actions",
+      "archive",
+      "creating-deals",
+      "configuring-stages",
+      "preferences",
+      "realtime",
+      "related"
+    ],
+    "/features/regional-settings/": [
+      "calendar-and-timezone",
+      "digits-numbers-and-currencies",
+      "appearance-and-navigation",
+      "reporting-a-language-or-layout-issue"
+    ],
+    "/features/saved-filters/": [
+      "building-a-filter",
+      "saving-a-filter",
+      "sharing",
+      "filters-and-totals",
+      "related"
+    ],
+    "/features/search/": [
+      "visibility",
+      "filters-versus-search",
+      "related"
+    ],
+    "/guides/migrating-from-pipedrive/": [
+      "before-you-start",
+      "export-from-pipedrive",
+      "import-order",
+      "how-records-are-linked",
+      "what-is-kept",
+      "create-missing-pipelines-and-stages",
+      "re-running-a-file",
+      "what-does-not-come-across",
+      "related"
+    ],
+    "/": [
+      "what-it-does",
+      "what-it-is-not",
+      "implementation-scope",
+      "single-tenant-by-design",
+      "where-to-go-next",
+      "license"
+    ],
+    "/operations/updating/": [
+      "upgrading",
+      "upgrading-from-minio",
+      "storage-upgrades",
+      "the-update-banner",
+      "backups",
+      "logs",
+      "reaching-postgres",
+      "health",
+      "related"
+    ],
+    "/setup/": [
+      "prerequisites",
+      "1-configure-the-environment",
+      "deployment-values",
+      "business-values",
+      "generate-the-secrets",
+      "2-set-up-google-oauth",
+      "2-configure-authentication-and-email",
+      "authentication-and-smtp-values",
+      "optional-identity-providers",
+      "gmail-connection-is-separate-from-sign-in",
+      "3-bring-it-up",
+      "4-first-admin-login",
+      "4-bootstrap-the-first-administrator",
+      "local-development",
+      "operating-the-deployment"
+    ]
+  },
+  "navigation": {
+    "": [
+      "intro",
+      "setup",
+      "architecture",
+      "features",
+      "administration",
+      "guides",
+      "operations",
+      "contributing"
+    ],
+    "features": [
+      "pipeline",
+      "deal-workspace",
+      "leads",
+      "contacts",
+      "activities",
+      "regional-settings",
+      "automations",
+      "email",
+      "enrichment",
+      "import",
+      "dashboard",
+      "notifications",
+      "search",
+      "saved-filters",
+      "collaboration",
+      "files",
+      "keyboard-shortcuts",
+      "mcp"
+    ],
+    "administration": [
+      "users-and-teams",
+      "permission-sets",
+      "visibility-groups",
+      "company-settings",
+      "data-fields",
+      "email-sync"
+    ],
+    "guides": [
+      "migrating-from-pipedrive"
+    ],
+    "operations": [
+      "updating"
+    ]
+  }
+}

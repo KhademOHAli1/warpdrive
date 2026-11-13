@@ -1,20 +1,19 @@
 ---
-sidebar_position: 3
 title: Architecture
 description: "How Warpdrive is built: the stack, the runtime services, the feature-based code layout, and the conventions that hold the codebase together."
 ---
 
 # Architecture
 
-This page is for people deploying, operating, or contributing to Warpdrive. If you
-just want to use it, start with the feature pages instead.
+This page describes the application and the fork's source Compose configuration.
+See [Installation](/setup/) for requirements and setup.
 
 ## Stack
 
 | Layer | Choice |
 | --- | --- |
 | Framework | Next.js (App Router) with React and TypeScript |
-| Database | Postgres, accessed through Drizzle ORM |
+| Database | PostgreSQL, accessed through Drizzle ORM |
 | Reads | tRPC with TanStack Query |
 | Writes | Next server actions |
 | UI | shadcn/ui over Radix primitives, with Tailwind |
@@ -22,32 +21,34 @@ just want to use it, start with the feature pages instead.
 | Board state | Zustand, scoped to the board |
 | Realtime | Self-hosted WebSocket server plus Postgres `LISTEN`/`NOTIFY` |
 | Background jobs | pg-boss |
-| Object storage | MinIO, S3-compatible |
-| Email | Gmail API over OAuth |
+| Object storage | S3-compatible storage, with MinIO in the source Compose file |
+| Email | Gmail API over OAuth, IMAP/SMTP mailbox connectors, and separate SMTP for authentication messages |
 | Auth | Better Auth, invitation-only with configured email/password, passkeys or Google/Microsoft/OIDC sign-in; mandatory administrator MFA |
 | Runtime and package manager | Bun, version declared in each package |
-| Localization | next-intl/use-intl, English/Farsi/German, locale-aware shared controls |
+| Localization | next-intl/use-intl, English/Persian/German, locale-aware shared controls |
 
 Custom fields are stored as JSONB rather than as migrated columns, which is what lets
 administrators add fields without a schema change.
 
 ## Runtime services
 
-A deployment runs five long-lived processes plus two one-shot ones:
+The source Compose file defines these services:
 
 - **`app`** serves the Next.js application.
 - **`ws`** is the WebSocket server for realtime updates.
 - **`worker`** runs background jobs: mailbox sync, CSV imports, scheduled sends.
 - **`postgres`** holds all relational data.
 - **`minio`** holds uploaded files.
-- **`migrate`** applies schema migrations once, before the app starts.
+- **`migrate`** applies application and queue schema migrations with the owner
+  connection before dependent services start.
 - **`createbuckets`** provisions the MinIO bucket once.
 
-In production a **Caddy** reverse proxy fronts all of it and terminates TLS.
+A **Caddy** reverse proxy handles HTTPS for the app, WebSocket service, and
+object storage API. Runtime processes use a separate database login without
+schema ownership.
 
-The split matters operationally: **background job handlers run only in the `worker`
-process.** Enqueueing a job from the app does nothing visible until a worker picks it
-up, so an import that appears stuck is usually a worker that is not running.
+The `worker` process handles queued imports, mailbox synchronization, and
+scheduled sends. Check its status and logs when these operations stall.
 
 ## Realtime
 
@@ -55,12 +56,11 @@ Database changes emit Postgres `NOTIFY` events. The WebSocket server relays them
 connected browsers, which update the board, inbox, notification bell, and presence
 indicators in place.
 
-Each browser tab opens **one multiplexed WebSocket connection** shared across every
-subscribing component, rather than one socket per hook. The server stamps a sequence
-number per channel and tags each frame with its channel.
+Each browser tab shares a WebSocket connection across subscribed components.
+The server tags frames with the channel and a per-channel sequence number.
 
-Realtime depends on `NEXT_PUBLIC_WS_URL` being correct at build time. See
-[Installation](./setup.md) for why a wrong value fails silently.
+The source build embeds `NEXT_PUBLIC_WS_URL` in the browser bundle. See
+[Installation](/setup/) for the Compose settings.
 
 ## Code layout
 
@@ -72,7 +72,8 @@ src/
   components/ui/          shadcn design-system wrappers
   constants/              named constants, including the error ID registry
   types/                  shared types, to break import cycles
-  config/env.ts           the single place process.env is read
+  config/env.ts           validated server configuration
+  config/clientEnv.ts     build-time browser configuration
   app/                    Next.js routes
 ```
 
@@ -82,66 +83,44 @@ across five directories.
 
 ## Conventions
 
-These are enforced by lint rules and hooks, not just by convention:
+Use these conventions when changing application code:
 
-- **Validate at the boundary.** External data passes through a schema exactly once,
-  where it enters the type system: procedure inputs, server-action arguments, Gmail
-  responses, OAuth callbacks, CSV rows, environment variables. Inside the program the
-  inferred type is trusted.
-- **One environment boundary.** `src/config/env.ts` is the only module that reads
-  `process.env`. It validates at import time and throws on misconfiguration. A lint
-  rule bans raw access elsewhere.
-- **Results over throws.** Operations that can fail return a discriminated union
-  rather than throwing. Throwing is reserved for programmer errors. This matters most
-  in batch work such as syncing many mailboxes, where one failure must not abandon
-  the rest.
-- **Stable error IDs.** Every application error carries an identifier of the form
-  `E_<DOMAIN>_<NNN>`, declared once in a central registry, so a support report can be
-  traced to one cause.
+- **Validate at the boundary.** Parse external data as it enters the application.
+  Use schemas for procedure inputs, server-action arguments, provider responses,
+  CSV rows, and configuration.
+- **Use the configuration modules.** Use `src/config/env.ts` for server configuration
+  and `src/config/clientEnv.ts` for browser-safe variables embedded at build time.
+- **Handle expected failures explicitly.** Use the shared result type where callers
+  need to handle an expected failure, such as a failed mailbox sync in a batch.
+- **Stable error IDs.** Use the central registry for application errors that need
+  a stable support identifier.
 - **Cancellation is threaded through.** Long-running operations take an
   `AbortSignal` and pass it to everything they call, so obsoleted requests and sync
   jobs actually stop instead of piling up.
-- **Use the design system.** Interactive controls use the shadcn and Radix
-  primitives rather than hand-rolled menus, dialogs, or native form controls, which
-  otherwise silently lose focus trapping, keyboard navigation, and scroll locking.
+- **Use the design system.** Start with shared components and preserve keyboard
+  navigation, focus handling, and scroll locking.
 
 ## Testing
 
-Tests run on Vitest and live inside the feature directory they cover.
+Vitest runs unit and integration tests. Tests usually live alongside the feature.
 
-Integration tests **run against a real Postgres database**, never a mocked one. The
-reasoning is specific: mocked database tests pass while a migration is broken, and
-that is exactly the failure a CRM cannot afford.
+Database integration tests run migrations against real PostgreSQL and exercise the
+resulting schema.
 
 ## Contributing
 
-See [Contributing](./contributing.md).
+See [Contributing](/contributing/).
 
 ## Workflow automation
 
-The in-progress workflow subsystem lives in `src/features/workflows/`. It includes
-a bounded versioned graph, typed references, owner/capability checks, revision-checked
-drafts, immutable publication, and a localized visual editor. The initial executable
-path starts manually, reads a visible deal, follows exclusive text/boolean conditions,
-and creates follow-up tasks. Nodes have explicit editable connections and saved positions;
-per-node connection controls complement the draggable canvas.
-
-Run admission pins a published version. CRM database effects and step progress share
-a transaction, and pg-boss startup/minutely reconciliation recovers persisted cursors.
-Simulation invokes the same CRM validation in a rolled-back savepoint. Publication
-requires the existing fresh-authentication check. Historical payloads are excluded
-from UI responses because record visibility can change.
-
-The planned engine will persist events, runs, steps, effects, and waits and use the
-existing pg-boss worker. PostgreSQL NOTIFY is the real-time notification layer;
-a durable workflow trigger must be saved transactionally with its CRM mutation.
-See [Visual workflows](./features/automations.md) for availability and the repository's
-`docs/workflows/architecture.md` for current contracts and qualification boundaries.
+Workflow editors and runtime code live under `src/features/workflows/`, with
+the newer studio and its runtime in `src/features/workflows/v2/`. Live runs use a published workflow version and the
+background worker. See [Visual workflows](/features/automations/) for editor
+paths and configuration.
 
 ## Locale and time boundaries
 
-The root document and locale provider coordinate language and direction, including
-Radix portals. Farsi uses local Vazirmatn; Latin UI uses local Inter. Language,
-calendar, numbering system, and account timezone are independent preferences.
-Preserve canonical API/CSV values and distinguish timed instants from all-day dates.
-Calendar-aware recurring automation remains separate from calendar display/input.
+The app coordinates language and text direction, including dialogs and menus.
+Language, calendar, digits, and time zone are independent account preferences.
+Preserve canonical API and CSV values and distinguish timed instants from all-day
+dates when changing these controls.

@@ -1,6 +1,6 @@
 # Updating shadcn/ui
 
-The CRM uses the current Radix Nova registry with RTL enabled. `components.json` points the
+Warpdrive manages a reviewed snapshot of the Radix Nova registry with RTL enabled. `components.json` points the
 shadcn CLI at `src/components/ui/primitives/`. These files are generated from the official
 registry and should stay unmodified. Their MIT notice is in `third-party/shadcn-LICENSE.md`.
 
@@ -30,10 +30,9 @@ network access. The registry is published separately from the CLI; the lock reco
 generated files because a CLI version alone does not pin registry contents.
 
 Review the diff in `package.json`, `bun.lock`, `components.json` and the primitive files. The
-registry can change dependency requirements, so check those changes against the other consumers
-of those packages. For example, the current chart registry requests Recharts 3.8.0, while the CRM
-is verified with the newer compatible 3.10.1. Keep a compatible dependency set and rerun
-`bun run ui:verify` after changing it. An update that fails verification leaves its source changes
+registry can change dependency requirements, so compare the generated dependencies with the
+resolved versions in `bun.lock` and check their other consumers. Rerun `bun run ui:verify`
+after changing shared dependencies such as Recharts. An update that fails verification leaves its source changes
 available for repair and does not advance the reviewed snapshot. After repairing it, run
 `bun run ui:record`, which verifies again before recording the snapshot.
 
@@ -70,8 +69,9 @@ mandatory arrow for compact hints. All three use the current unified
 The direction adapter also normalizes the upstream provider's required `dir` prop.
 
 Before accepting an update, run `bun run ui:verify` and the affected feature tests. In the browser,
-check both languages: opening/closing overlays, focus restoration, tab/radio arrow navigation,
-selecting an empty option, mixed checkboxes, the Iranian calendar and sheets. Review light and
+check English, German and Iranian Persian. Exercise opening and closing overlays, focus
+restoration, tab and radio arrow navigation, empty selections, mixed checkboxes, sheets and
+the Iranian calendar. Review light and
 dark appearance, narrow screens and reduced-motion behavior. The application-specific pipeline
 board and other feature layouts still need their own RTL review; updating primitives does not
 translate those screens or redesign their layouts.

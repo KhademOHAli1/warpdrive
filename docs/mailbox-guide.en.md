@@ -44,7 +44,11 @@ Status checks do not resend email. Partial and unknown submissions are held for 
 
 ## Pause, update or disconnect
 
-**Pause synchronization** temporarily prevents new synchronization and sending through that connection; **Resume synchronization** restores its use. Review scheduled requests separately. **Retry synchronization** concerns receiving mail, not resending outgoing messages. **Update connection** checks fresh credentials for the same mailbox and retains its existing conversations and saved scope; passwords are blank. **Disconnect** requires confirmation, stops future access and preserves CRM conversations under their existing permissions. It cannot recall an accepted message. Removing an IMAP/SMTP password here does not revoke that password or app password at the provider; revoke it there when needed. If provider access removal is shown as pending, local access is already stopped while remote revocation remains incomplete.
+**Pause receiving and sending** temporarily prevents new synchronization and sending through that connection; **Resume receiving and sending** restores its use. Review scheduled requests separately. **Retry synchronization** concerns receiving mail, not resending outgoing messages. **Update connection** checks fresh credentials for the same mailbox and retains its existing conversations and saved scope; passwords are blank.
+
+Before disconnecting, open **Outbox** and cancel queued messages you no longer want sent if **Cancel** is available. Review messages that are sending or have an uncertain or partial outcome separately. Disconnecting preserves queued send attempts and their status.
+
+Choose **Disconnect** and confirm to stop future synchronization and sending. Existing CRM conversations stay under their current permissions. It cannot recall an accepted message. Removing an IMAP/SMTP password here does not revoke that password or app password at the provider; revoke it there when needed. If provider access removal is shown as pending, local access is already stopped while remote revocation remains incomplete.
 
 ## Operator setup and recovery
 

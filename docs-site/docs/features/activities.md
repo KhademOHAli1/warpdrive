@@ -1,24 +1,23 @@
 ---
-sidebar_position: 5
 title: Activities
 description: "Calls, meetings, and tasks in Warpdrive: scheduling against deals and contacts, the list and calendar views, completion, and overdue handling."
 ---
 
 # Activities
 
-Activities are the scheduled work attached to records: calls, meetings, and tasks.
+Use activities to track calls, meetings, and tasks. You can attach them to CRM
+records or leave them unlinked.
 
 ## Regional calendar behavior
 
 The calendar and shared date pickers support Gregorian and Iranian Solar Hijri
 calendars. Select the display calendar and account timezone in
-[Regional settings](./regional-settings.md). Farsi has RTL layout and a digit choice;
+[Regional settings](/features/regional-settings/). Farsi has RTL layout and a digit choice;
 German has localized date and numeric input. Changing display preferences does not
 reschedule stored activities.
 
-The full Google Calendar event workflow, external synchronization, and Meet/Zoom/
-Teams provisioning are specified future work. A stored video-call URL is not proof
-that a conferencing provider created a meeting.
+For a meeting with a video call, use the link saved on the activity. Check the
+meeting in the conferencing provider to confirm its status.
 
 ## Views
 
@@ -26,15 +25,15 @@ that a conferencing provider created a meeting.
 
 ![The activities list](/img/screenshots/activities/list.png)
 
-The list is the better view for triage, since it sorts and filters. The calendar is
-the better view for scheduling, since it shows conflicts.
+Use the list to sort and filter your work. Use the calendar to check for conflicts
+before scheduling.
 
-Clicking a row, or a chip on the calendar, opens the record the activity belongs to
-as a slide-over drawer: the deal if it has one, otherwise the person, then the
-organization. Only an activity linked to nothing opens its own editor. Each row
-carries two distinct controls: a round toggle marks the activity done, and the plain
-checkbox selects the row. The list can also be walked with `j`/`k` and opened with
-Enter, see [Keyboard shortcuts](./keyboard-shortcuts.md).
+Opening a list row or a chip in the week grid opens the linked deal, lead, person,
+or organization, in that order when more than one link is present. A list row
+without a linked record opens the activity editor. In the list, use the round
+toggle to mark an activity done or the square checkbox to select the row. Press
+`j` or `k` to move through the rows and Enter to open the selected row. See
+[Keyboard shortcuts](/features/keyboard-shortcuts/).
 
 ![The activities calendar](/img/screenshots/activities/calendar.png)
 
@@ -55,7 +54,7 @@ or organization, which links it to that record.
 
 An activity has a type, a subject, an optional due date and time, a duration, a
 priority, and an assignee. Activity types are configurable, see
-[Company settings](../administration/company-settings.md).
+[Company settings](/administration/company-settings/).
 
 Activities without a due date are valid. They appear as undated rather than being
 treated as overdue.
@@ -76,19 +75,16 @@ usable as a work queue rather than only a status display.
 
 ## Visibility
 
-:::caution
-Activity visibility is evaluated by **different rules** than the records they are
-attached to. Restricting a deal does not automatically restrict activities that
-reference it.
+For an activity linked to a deal, access follows the deal and its pipeline. For
+other linked activities, a linked person takes precedence over an organization.
+An activity linked only to a lead uses assignee and participant access rules. To
+check what a colleague can see, review the activity from their role in the list
+and calendar.
 
-If you rely on restricted access, verify it by signing in as a restricted account and
-checking the activities views directly.
-:::
-
-See [Visibility groups](../administration/visibility-groups.md).
+See [Visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Deal workspace](./deal-workspace.md)
-- [Performance](./dashboard.md)
-- [Keyboard shortcuts](./keyboard-shortcuts.md)
+- [Deal workspace](/features/deal-workspace/)
+- [Performance](/features/dashboard/)
+- [Keyboard shortcuts](/features/keyboard-shortcuts/)

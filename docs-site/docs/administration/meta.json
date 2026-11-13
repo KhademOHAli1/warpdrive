@@ -1,0 +1,12 @@
+{
+  "title": "Administration",
+  "defaultOpen": true,
+  "pages": [
+    "users-and-teams",
+    "permission-sets",
+    "visibility-groups",
+    "company-settings",
+    "data-fields",
+    "email-sync"
+  ]
+}

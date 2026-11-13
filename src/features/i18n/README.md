@@ -24,14 +24,17 @@ coverage and ICU parity. Generated `.d.json.ts` files are ignored by Git.
 
 ## Language and regional preferences
 
-`useLocalePreferences()` returns `{ locale, calendar, timeZone, numberingSystem }`; `useCalendarSystem()` returns
-the selected calendar. Change preferences with `useSetLocalePreferences()`, which accepts a
+`useLocalePreferences()` returns the resolved regional preferences, including
+language, calendar, time zone, digits and any saved time zone mode.
+`useCalendarSystem()` returns the selected calendar. Change preferences with `useSetLocalePreferences()`, which accepts a
 partial preference object and returns a promise indicating whether persistence succeeded.
 
 The shared action validates all input. Authenticated writes require a valid CSRF token and save
 to the account; signed-out choices are cookie-only. Account settings win on the next request.
-The existing profile time zone remains authoritative for an authenticated account. The fallback
-is UTC, and no browser time zone is inferred during server rendering.
+In browser mode, requests can use the time zone from the device cookie; background
+work uses the saved account zone. Without browser mode, a valid profile zone takes
+precedence. UTC is the final fallback. Server rendering does not detect the
+device's zone itself.
 
 The provider applies direction immediately and saves preferences without a page reload. Cookie
 writes trigger a server render that preserves mounted client form state. Failed saves visibly
