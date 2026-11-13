@@ -25,7 +25,7 @@ COMBOBOX = "src/components/ui/SdkCombobox.tsx"
 CONTROL_BINDINGS = {
     CHECKBOX: ("@ui-sdk/react/checkbox", ("Checkbox",)),
     COMBOBOX: ("@ui-sdk/react/combobox", ("Combobox", "ComboboxContent", "ComboboxEmpty", "ComboboxInput",
-                                         "ComboboxItem", "ComboboxList", "ComboboxTrigger")),
+                                         "ComboboxItem", "ComboboxList", "ComboboxTrigger", "createComboboxController")),
 }
 
 

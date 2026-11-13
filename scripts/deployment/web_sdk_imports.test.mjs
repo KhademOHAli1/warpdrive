@@ -30,16 +30,17 @@ void test("the controls policy allows only the full named bindings at the two re
   const combobox = "src/components/ui/SdkCombobox.tsx";
   const checked = `${client} import { Checkbox as SdkCheckbox } from "@ui-sdk/react/checkbox";`;
   const combo = `${client} import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput,
-    ComboboxItem, ComboboxList, ComboboxTrigger } from "@ui-sdk/react/combobox";`;
+    ComboboxItem, ComboboxList, ComboboxTrigger, createComboboxController } from "@ui-sdk/react/combobox";`;
   assert.deepEqual(inspect(checked, { path: checkbox, version: 3 }), [
     { specifier: "@ui-sdk/react/checkbox", exported: "Checkbox", local: "SdkCheckbox" },
   ]);
-  assert.equal(inspect(combo, { path: combobox, version: 3 }).length, 7);
+  assert.equal(inspect(combo, { path: combobox, version: 3 }).length, 8);
   for (const [source, path] of [
     [checked, combobox],
     [combo, checkbox],
     [combo, "src/features/quick-add/GlobalNoteModal.tsx"],
     [combo.replace("ComboboxContent, ", ""), combobox],
+    [combo.replace(", createComboboxController", ""), combobox],
     [combo.replace("ComboboxContent", "ComboboxGroup"), combobox],
     [checked.replace("Checkbox as", "CheckboxIndicator as"), checkbox],
     [`${checked} export { SdkCheckbox };`, checkbox],

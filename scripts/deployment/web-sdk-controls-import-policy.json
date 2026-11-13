@@ -21,7 +21,8 @@
         "ComboboxInput",
         "ComboboxItem",
         "ComboboxList",
-        "ComboboxTrigger"
+        "ComboboxTrigger",
+        "createComboboxController"
       ]
     }
   }
