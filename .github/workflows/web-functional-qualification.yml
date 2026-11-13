@@ -11,6 +11,18 @@ on:
         description: Canonical SHA-256 of the reviewed functional Web profile
         required: true
         type: string
+      structural_profile_base64:
+        description: Reviewed client effect profile encoded as base64
+        type: string
+      structural_delta_base64:
+        description: Exact reviewed Git delta encoded as base64
+        type: string
+      structural_delta_sha256:
+        description: Canonical SHA-256 of the structural Git delta
+        type: string
+      structural_registry_sha256:
+        description: Optional independent review digest for privacy registry changes
+        type: string
       installed_lineage_sha256:
         description: Digest of the current installed Web pair
         required: true
@@ -63,6 +75,8 @@ jobs:
       CANDIDATE_REVISION: ${{ github.sha }}
       TOOLING_REVISION: ${{ inputs.tooling_revision }}
       PROFILE_SHA: ${{ inputs.profile_sha256 }}
+      STRUCTURAL_DELTA_SHA: ${{ inputs.structural_delta_sha256 }}
+      STRUCTURAL_REGISTRY_SHA: ${{ inputs.structural_registry_sha256 }}
       LINEAGE_SHA: ${{ inputs.installed_lineage_sha256 }}
       ACTIVE_PUBLICATION_SHA: ${{ inputs.active_publication_sha256 }}
       ACTIVE_PUBLICATION_BYTES: ${{ inputs.active_publication_bytes }}
@@ -83,6 +97,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Verify the selected functional release inputs
+        env:
+          STRUCTURAL_PROFILE: ${{ inputs.structural_profile_base64 }}
+          STRUCTURAL_DELTA: ${{ inputs.structural_delta_base64 }}
         run: |
           [[ "$TOOLING_REVISION" =~ ^[0-9a-f]{40}$ ]]
           for pin in "$PROFILE_SHA" "$LINEAGE_SHA" "$ACTIVE_PUBLICATION_SHA"; do
@@ -100,8 +117,18 @@ jobs:
           git -c core.hooksPath=/dev/null worktree add --detach "$RUNNER_TEMP/functional-seed" "$CORE_REVISION"
           umask 077
           mkdir "$RUNNER_TEMP/functional-proof" "$RUNNER_TEMP/functional-projection"
-          git --no-replace-objects show "$TOOLING_REVISION:scripts/deployment/web-functional-profile.json" \
-            > "$RUNNER_TEMP/functional-proof/profile.json"
+          proof="$RUNNER_TEMP/functional-proof"
+          if [[ -n "$STRUCTURAL_DELTA" ]]; then
+            test -n "$STRUCTURAL_PROFILE"
+            [[ "$STRUCTURAL_DELTA_SHA" =~ ^[0-9a-f]{64}$ ]]
+            [[ -z "$STRUCTURAL_REGISTRY_SHA" || "$STRUCTURAL_REGISTRY_SHA" =~ ^[0-9a-f]{64}$ ]]
+            printf '%s' "$STRUCTURAL_PROFILE" | base64 --decode > "$proof/profile.json"
+            printf '%s' "$STRUCTURAL_DELTA" | base64 --decode > "$proof/structural-delta.json"
+          else
+            test -z "$STRUCTURAL_PROFILE$STRUCTURAL_DELTA_SHA$STRUCTURAL_REGISTRY_SHA"
+            git --no-replace-objects show "$TOOLING_REVISION:scripts/deployment/web-functional-profile.json" \
+              > "$proof/profile.json"
+          fi
       - name: Install attested ORAS
         if: inputs.custody == 'registry'
         id: oras
@@ -172,7 +199,15 @@ jobs:
         run: |
           test "$(uname -m)" = x86_64
           proof="$RUNNER_TEMP/functional-proof"
+          structural=()
+          if [[ -n "$STRUCTURAL_DELTA_SHA" ]]; then
+            structural=(--structural-delta "$proof/structural-delta.json" --structural-delta-sha256 "$STRUCTURAL_DELTA_SHA")
+            if [[ -n "$STRUCTURAL_REGISTRY_SHA" ]]; then
+              structural+=(--structural-registry-sha256 "$STRUCTURAL_REGISTRY_SHA")
+            fi
+          fi
           python3 -B scripts/deployment/web_functional_build.py \
+            "${structural[@]}" \
             --root "$GITHUB_WORKSPACE" --revision "$CANDIDATE_REVISION" --active-web-revision "$ACTIVE_REVISION" \
             --tooling-revision "$TOOLING_REVISION" --core-revision "$CORE_REVISION" \
             --profile "$proof/profile.json" --profile-sha256 "$PROFILE_SHA" \
@@ -201,7 +236,15 @@ jobs:
         run: |
           proof="$RUNNER_TEMP/functional-proof"
           retained="$RUNNER_TEMP/functional-retained"
+          structural=()
+          if [[ -n "$STRUCTURAL_DELTA_SHA" ]]; then
+            structural=(--structural-delta "$proof/structural-delta.json" --structural-delta-sha256 "$STRUCTURAL_DELTA_SHA")
+            if [[ -n "$STRUCTURAL_REGISTRY_SHA" ]]; then
+              structural+=(--structural-registry-sha256 "$STRUCTURAL_REGISTRY_SHA")
+            fi
+          fi
           python3 -B scripts/deployment/web_functional_build.py --verify \
+            "${structural[@]}" \
             --root "$GITHUB_WORKSPACE" --revision "$CANDIDATE_REVISION" --active-web-revision "$ACTIVE_REVISION" \
             --tooling-revision "$TOOLING_REVISION" --core-revision "$CORE_REVISION" \
             --profile "$proof/profile.json" --profile-sha256 "$PROFILE_SHA" \

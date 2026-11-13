@@ -25,8 +25,9 @@ class FunctionalWebBuildTests(unittest.TestCase):
         self.context = {"gitInventorySha256": "3" * 64, "fileCount": 34}
         self.source = self.enterContext(patch("web_functional_build._source", return_value={"proof": "source"}))
         self.enterContext(patch("web_functional_build._backend", return_value=({"proof": "backend"}, "5" * 64)))
-        self.enterContext(patch("web_functional_build.verify_web_extension_candidate", return_value={"proof": "extension"}))
-        self.enterContext(patch("web_functional_build.prepare_context", return_value=self.context))
+        self.dependencies = self.enterContext(patch("web_functional_build.verify_web_extension_candidate",
+                                                   return_value={"proof": "extension"}))
+        self.prepare_context = self.enterContext(patch("web_functional_build.prepare_context", return_value=self.context))
         self.verify_context = self.enterContext(patch("web_functional_build.verify_context", return_value=self.context))
 
     def test_preparation_and_postbuild_require_the_same_combined_evidence(self):
@@ -46,4 +47,36 @@ class FunctionalWebBuildTests(unittest.TestCase):
         with self.assertRaisesRegex(CandidateError, "reviewed checksum"):
             prepare(self.args)
         self.source.assert_not_called()
+        self.assertFalse(self.args.output.exists())
+
+    def test_structural_context_is_checked_before_and_after_build(self):
+        self.args.structural_delta = self.args.profile.with_name("delta.json")
+        self.args.structural_delta_sha256 = "4" * 64
+        self.args.structural_registry_sha256 = None
+        excluded = ["src/components/shell/FeatureView.test.tsx"]
+        proof = {"excludedBuildTests": excluded, "retainedBackendInputsSha256": "5" * 64}
+        self.dependencies.return_value = {"retainedBackendInputsSha256": "5" * 64}
+        context = {**self.context, "schemaVersion": 2, "excludedTests": excluded, "excludedTestCount": 1,
+                   "excludedTestPathsSha256": content_hash(excluded), "excludedTestsSha256": "6" * 64,
+                   "contextInventorySha256": "7" * 64}
+        self.prepare_context.return_value = self.verify_context.return_value = context
+        with patch("web_functional_build._structural_source", return_value=proof):
+            initial = prepare(self.args)
+            self.assertEqual(self.prepare_context.call_args.kwargs, {"exclude_tests": excluded})
+            stored = decode(self.args.output.read_bytes())
+            self.assertEqual(stored["schemaVersion"], 2)
+            self.assertEqual(stored["reviewedDeltaSha256"], self.args.structural_delta_sha256)
+            self.assertEqual(stored["context"]["excludedPathsSha256"], content_hash(excluded))
+            self.args.verify = True
+            self.assertEqual(prepare(self.args), initial)
+            self.assertEqual(self.verify_context.call_args.kwargs, {"exclude_tests": excluded})
+            self.verify_context.return_value = {**context, "excludedTests": []}
+            with self.assertRaisesRegex(CandidateError, "required structural test exclusions"):
+                prepare(self.args)
+
+    def test_structural_authority_inputs_must_be_supplied_together(self):
+        self.args.structural_delta_sha256 = "4" * 64
+        with self.assertRaisesRegex(CandidateError, "review inputs required together"):
+            prepare(self.args)
+        self.prepare_context.assert_not_called()
         self.assertFalse(self.args.output.exists())

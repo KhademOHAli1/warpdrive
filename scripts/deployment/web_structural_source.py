@@ -17,7 +17,11 @@ from web_structural_delta import parse_web_structural_delta, verify_web_structur
 
 VERIFIERS = (
     "scripts/build-workers.mjs",
+    "scripts/deployment/candidate.py",
     "scripts/deployment/component_inputs.mjs",
+    "scripts/deployment/component_inputs.py",
+    "scripts/deployment/web_release_build.py",
+    "scripts/deployment/web_release_inputs.py",
     "scripts/deployment/web_inputs.mjs",
     "scripts/deployment/web_presentation_policy.mjs",
     "scripts/deployment/web_functional_source.mjs",
@@ -57,6 +61,7 @@ def _profile_coverage(envelope, profile):
     require(type(profile) is dict and all(type(profile.get(key)) is list for key in (
         "beforeModules", "afterModules", "beforeStyles", "afterStyles")), "Exact reviewed client effect profile required")
     pairs = {"client": ("beforeModules", "afterModules"), "style": ("beforeStyles", "afterStyles")}
+    excluded_tests = []
     for row in envelope["operations"]:
         role, path = row["role"], row["path"]
         if role in pairs:
@@ -65,8 +70,9 @@ def _profile_coverage(envelope, profile):
                         "A structural client or stylesheet operation is outside the reviewed client subtree")
         elif role == "asset":
             require(False, "Asset content and URL admission are required before structural asset changes")
-        elif role == "test":
-            require(False, "Effective Web build context exclusion is required before structural test changes")
+        elif role == "test" and row["after"] is not None:
+            excluded_tests.append(path)
+    return excluded_tests
 
 
 def _pin_verifiers(root, before, after):
@@ -110,7 +116,7 @@ def verify(args, *, original):
     operations = verify_web_structural_delta(baseline, candidate, envelope, baseline_revision=before,
         candidate_revision=current, expected_sha256=args.delta_sha256, protected_paths=retained_paths,
         expected_registry_review_sha256=args.registry_review_sha256)
-    _profile_coverage(envelope, profile)
+    excluded_tests = _profile_coverage(envelope, profile)
     _pin_verifiers(root, baseline, candidate)
     retained = verify_retained_backend_inputs(root, expected_revision=current, retained_receipt=original,
                                               expected_retained_sha256=args.retained_receipt_sha256)
@@ -122,6 +128,7 @@ def verify(args, *, original):
     return {"schemaVersion": 1, "kind": "warpdrive-web-structural-source", "baselineRevision": before,
             "currentRevision": current, "deltaSha256": args.delta_sha256, "effectsSha256": args.effects_sha256,
             "registryReviewSha256": args.registry_review_sha256, "changed": list(operations),
+            "excludedBuildTests": excluded_tests,
             "originalBackendReceiptSha256": args.retained_receipt_sha256,
             "retainedBackendInputsSha256": inputs.content_hash(retained), **joined,
             "deploymentAuthorized": False}

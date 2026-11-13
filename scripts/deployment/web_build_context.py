@@ -11,7 +11,7 @@ import sys
 import tarfile
 
 from candidate import require
-from component_inputs import MAX_FILE_BYTES, MAX_TOTAL_BYTES, content_hash
+from component_inputs import MAX_FILE_BYTES, MAX_TOTAL_BYTES, content_hash, safe_path
 from web_release_build import checkout, private_destination
 from web_release_inputs import GIT, _tree
 
@@ -34,9 +34,34 @@ def _context_tree(root, revision):
     return tree
 
 
-def prepare_context(root, revision, destination):
+def _selected_tests(tree, paths):
+    require(type(paths) in (list, tuple) and len(paths) <= 256, "Bounded Web context test exclusions required")
+    excluded = {}
+    for path in paths:
+        safe_path(path)
+        record = tree.get(path)
+        require(path.startswith("src/") and path.endswith((".test.ts", ".test.tsx"))
+                and record is not None and record[:2] == ("100644", "blob") and path not in excluded,
+                "Web context exclusions require unique regular tracked src test files")
+        excluded[path] = record
+    return excluded
+
+
+def _directories(tree):
+    return {parent.as_posix() for path in tree for parent in Path(path).parents if parent != Path(".")}
+
+
+def _inventory_hash(tree):
+    return content_hash({path: list(record) for path, record in tree.items()})
+
+
+def prepare_context(root, revision, destination, *, exclude_tests=()):
+    """Validate the full archive, omitting only the caller's admitted test paths."""
     private_destination(destination, root)
     tree = _context_tree(root, revision)
+    excluded = _selected_tests(tree, exclude_tests)
+    archive_directories = _directories(tree)
+    retained_directories = _directories(tree.keys() - excluded.keys()) if excluded else archive_directories
     destination.mkdir(mode=0o700)
     environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR") if key in os.environ}
     with subprocess.Popen([*GIT, "archive", "--format=tar", revision], cwd=root, env=environment,
@@ -44,21 +69,17 @@ def prepare_context(root, revision, destination):
         try:
             with tarfile.open(fileobj=process.stdout, mode="r|") as archive:
                 files = set()
-                directory_paths = set()
-                for path in tree:
-                    directory_paths.update(parent.as_posix() for parent in Path(path).parents if parent != Path("."))
                 directories = set()
                 total = 0
                 for member in archive:
                     path = member.name
                     if member.isdir():
-                        require(path in directory_paths and path not in directories, "Unexpected Git archive directory")
-                        directory = destination / path
-                        directory.mkdir(mode=0o700)
-                        # BuildKit preserves copied directory modes. The context
-                        # root is private, while runtime files must be readable
-                        # and traversable by the image's non-root user.
-                        directory.chmod(0o755)
+                        require(path in archive_directories and path not in directories, "Unexpected Git archive directory")
+                        if path in retained_directories:
+                            directory = destination / path
+                            directory.mkdir(mode=0o700)
+                            # BuildKit preserves modes copied into the non-root image.
+                            directory.chmod(0o755)
                         directories.add(path)
                         continue
                     require(member.isfile() and path in tree and path not in files and 0 <= member.size <= MAX_FILE_BYTES,
@@ -72,25 +93,29 @@ def prepare_context(root, revision, destination):
                     target = destination / path
                     require(target.parent == destination or target.parent.relative_to(destination).as_posix() in directories,
                             "Git archive file appeared before its directory")
-                    with target.open("xb") as output:
-                        output.write(data)
-                    target.chmod(0o755 if mode == "100755" else 0o644)
+                    if path not in excluded:
+                        with target.open("xb") as output:
+                            output.write(data)
+                        target.chmod(0o755 if mode == "100755" else 0o644)
                     files.add(path)
-                require(files == tree.keys() and directories == directory_paths, "Git archive omitted tracked Web build inputs")
+                require(files == tree.keys() and directories == archive_directories, "Git archive omitted tracked Web build inputs")
             require(process.wait(timeout=5) == 0, "Git archive did not complete")
         finally:
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=5)
-    return verify_context(root, revision, destination)
+    return verify_context(root, revision, destination, exclude_tests=exclude_tests)
 
 
-def verify_context(root, revision, destination):
+def verify_context(root, revision, destination, *, exclude_tests=()):
+    """Recheck the exact projected directory and bind omissions to Git records."""
     require(destination.is_absolute() and destination == destination.resolve(strict=True) and destination.is_dir()
             and destination.stat().st_uid == os.geteuid() and stat.S_IMODE(destination.stat().st_mode) == 0o700
             and not destination.is_relative_to(root), "Separate owned build context required")
     tree = _context_tree(root, revision)
-    expected_directories = {parent.as_posix() for path in tree for parent in Path(path).parents if parent != Path(".")}
+    excluded = _selected_tests(tree, exclude_tests)
+    retained = {path: record for path, record in tree.items() if path not in excluded}
+    expected_directories = _directories(retained)
     directories = set()
     files = set()
     total = 0
@@ -106,8 +131,9 @@ def verify_context(root, revision, destination):
         for name in members:
             path = Path(base, name)
             key = path.relative_to(destination).as_posix()
-            require(key in tree, "Untracked file entered the isolated Web build context")
-            mode, _, oid = tree[key]
+            require(key not in excluded, "Excluded test entered the isolated Web build context")
+            require(key in retained, "Untracked file entered the isolated Web build context")
+            mode, _, oid = retained[key]
             descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
             with os.fdopen(descriptor, "rb") as source:
                 info = os.fstat(descriptor)
@@ -122,12 +148,18 @@ def verify_context(root, revision, destination):
                         and os.path.samestat(info, path.lstat()) and len(data) == info.st_size and _blob_id(data) == oid,
                         "Web context bytes differ from exact source")
             files.add(key)
-    require(files == tree.keys() and directories == expected_directories and _context_tree(root, revision) == tree,
+    require(files == retained.keys() and directories == expected_directories and _context_tree(root, revision) == tree,
             "Web build context inventory changed")
-    return {"schemaVersion": 1, "kind": "warpdrive-web-build-context", "sourceRevision": revision,
-            "gitInventorySha256": content_hash({path: list(record) for path, record in tree.items()}),
-            "fileCount": len(tree), "contextDirectory": str(destination),
-            "dockerfile": str(destination / "deploy/images/Web.Dockerfile"), "deploymentAuthorized": False}
+    result = {"schemaVersion": 2 if excluded else 1, "kind": "warpdrive-web-build-context", "sourceRevision": revision,
+              "gitInventorySha256": _inventory_hash(tree), "fileCount": len(retained),
+              "contextDirectory": str(destination), "dockerfile": str(destination / "deploy/images/Web.Dockerfile"),
+              "deploymentAuthorized": False}
+    if excluded:
+        paths = sorted(excluded)
+        result.update(contextInventorySha256=_inventory_hash(retained), excludedTests=paths,
+                      excludedTestCount=len(paths), excludedTestPathsSha256=content_hash(paths),
+                      excludedTestsSha256=_inventory_hash(excluded))
+    return result
 
 
 def main(argv=None):
@@ -136,10 +168,11 @@ def main(argv=None):
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--revision", required=True)
     parser.add_argument("--destination", type=Path, required=True)
+    parser.add_argument("--exclude-test", action="append", default=[], help="exact structurally changed candidate test path")
     args = parser.parse_args(argv)
     try:
         handler = prepare_context if args.action == "prepare" else verify_context
-        result = handler(args.root, args.revision, args.destination)
+        result = handler(args.root, args.revision, args.destination, exclude_tests=args.exclude_test)
     except (OSError, ValueError, RuntimeError, tarfile.TarError, subprocess.SubprocessError) as error:
         print(f"Web build context held ({type(error).__name__}): {error}", file=sys.stderr)
         return 1

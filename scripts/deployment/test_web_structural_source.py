@@ -31,13 +31,16 @@ class StructuralSourceTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaisesRegex(CandidateError, "reviewed client subtree"):
                 _profile_coverage(delta, profile | changes)
 
-    def test_holds_files_without_effective_context_or_content_admission(self):
+    def test_requires_exclusion_of_candidate_test_blobs_and_holds_assets(self):
         profile = {"beforeModules": [], "afterModules": [], "beforeStyles": [], "afterStyles": []}
-        for role, path, reason in (
-                ("test", "src/components/KeyboardHelp.test.tsx", "build context exclusion"),
-                ("asset", "public/images/preview.webp", "Asset content and URL")):
-            with self.subTest(role=role), self.assertRaisesRegex(CandidateError, reason):
-                _profile_coverage({"operations": [{"role": role, "path": path}]}, profile)
+        selected = "src/components/KeyboardHelp.test.tsx"
+        delta = {"operations": [
+            {"role": "test", "path": selected, "before": {}, "after": {}},
+            {"role": "test", "path": "src/components/Removed.test.tsx", "before": {}, "after": None},
+        ]}
+        self.assertEqual(_profile_coverage(delta, profile), [selected])
+        with self.assertRaisesRegex(CandidateError, "Asset content and URL"):
+            _profile_coverage({"operations": [{"role": "asset", "path": "public/images/preview.webp"}]}, profile)
 
     def test_graph_proofs_must_agree_on_revisions_cut_and_effect_profile(self):
         evidence = {

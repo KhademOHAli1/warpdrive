@@ -7,17 +7,20 @@ from pathlib import Path
 import sys
 
 from bundle import load_bundle
-from candidate import IMAGE_ID, REVISION, require
-from component_inputs import HASH, canonical, content_hash, decode
+from candidate import CandidateError, IMAGE_ID, REVISION, require
+from component_inputs import HASH, MAX_FILES, InputError, canonical, content_hash, decode, safe_path
 from image_smoke import Docker, SmokeError
 from web_candidate import ARCHIVE, MAX_METADATA_BYTES, PLATFORM, _archive, _directory, _input_file, _main_origin, _metadata, _record, _sha, _write
 from web_composite_baseline import REPO, RETAINED
+from web_functional_profile import MAX_PATH_CHARS
 from web_mixed_image_smoke import (
     add_functional_predecessor_options, functional_successor_baseline, functional_successor_mode, read_web_image,
     repeat_assembly, successor_baseline, successor_mode,
 )
 from web_release_build import origin_for, private_destination
 from web_repeat_candidate import validate_repeat_mixed_report
+from web_structural_delta import MAX_OPERATIONS, REGISTRY, _admit_path
+from web_structural_source import _join as verify_structural_projections
 
 
 MANIFEST = "web-functional-bundle.json"
@@ -25,10 +28,20 @@ INPUTS = "web-functional-inputs.json"
 MIXED = "web-functional-mixed-report.json"
 FILES = {INPUTS, MIXED, ARCHIVE}
 KIND = "warpdrive-tested-functional-web-bundle"
+BUILD_FIELDS = {"schemaVersion", "kind", "revision", "activeWebRevision", "toolingRevision", "originalBackendRevision",
+                "originalBackendManifestSha256", "reviewedProfileSha256", "source", "dependencies", "context",
+                "buildComponents", "deploymentAuthorized"}
+STRUCTURAL_BUILD_FIELDS = BUILD_FIELDS | {"reviewedDeltaSha256", "reviewedRegistrySha256"}
 SOURCE_FIELDS = {"schemaVersion", "kind", "baselineRevision", "currentRevision", "profileSha256",
                  "protectedSourceSha256", "protectedGraphSha256", "guardedWebPathCount", "changed",
                  "deploymentAuthorized"}
 SOURCE_HASH_FIELDS = {"profileSha256", "protectedSourceSha256", "protectedGraphSha256", "capabilityBindingsSha256"}
+STRUCTURAL_SOURCE_FIELDS = {"schemaVersion", "kind", "baselineRevision", "currentRevision", "deltaSha256", "effectsSha256",
+                            "registryReviewSha256", "changed", "excludedBuildTests", "originalBackendReceiptSha256",
+                            "retainedBackendInputsSha256", "protectedSource", "clientEffects", "deploymentAuthorized"}
+CONTEXT_FIELDS = {"gitInventorySha256", "fileCount"}
+STRUCTURAL_CONTEXT_FIELDS = CONTEXT_FIELDS | {"contextInventorySha256", "excludedPathsSha256", "excludedTestsSha256",
+                                              "excludedFileCount"}
 
 
 def _pins(composite, revision, origin, expected_input_sha256, installed_lineage_sha256):
@@ -45,23 +58,12 @@ def _pins(composite, revision, origin, expected_input_sha256, installed_lineage_
             "originalBackendRevision": backend["sourceRevision"]}
 
 
-def _evidence(raw, *, composite, revision, image_id, pins):
-    facts, mixed = (decode(raw[name]) for name in (INPUTS, MIXED))
-    backend, web = composite["backend"], composite["web"]
-    require(IMAGE_ID.fullmatch(image_id) and image_id not in {web["image"]["imageId"],
-            *(component["imageId"] for component in backend["components"].values())}, "Distinct tested Web image required")
-    require(type(facts) is dict and set(facts) == {"schemaVersion", "kind", "revision", "activeWebRevision",
-                "toolingRevision", "originalBackendRevision", "originalBackendManifestSha256", "reviewedProfileSha256",
-                "source", "dependencies", "context", "buildComponents", "deploymentAuthorized"}
-            and facts.get("kind") == "warpdrive-functional-web-build-inputs"
-            and type(facts.get("schemaVersion")) is int and facts["schemaVersion"] == 1
-            and facts.get("revision") == revision and content_hash(facts) == pins["inputSha256"]
-            and facts["activeWebRevision"] == web["sourceRevision"]
-            and facts["originalBackendRevision"] == backend["sourceRevision"]
-            and facts["originalBackendManifestSha256"] == backend["provenance"]["bundleManifestSha256"]
-            and facts["buildComponents"] == ["web"] and facts["deploymentAuthorized"] is False,
-            "Functional source, dependency or build context receipt differs")
-    dependencies, source, context = (facts[key] for key in ("dependencies", "source", "context"))
+def _matches(pattern, value):
+    return isinstance(value, str) and pattern.fullmatch(value) is not None
+
+
+def _functional_source(facts):
+    source, context = (facts[key] for key in ("source", "context"))
     version = source.get("schemaVersion") if type(source) is dict else None
     require(type(version) is int and version in {1, 2}
             and set(source) == (SOURCE_FIELDS | {"capabilityBindingsSha256"} if version == 2 else SOURCE_FIELDS)
@@ -71,16 +73,101 @@ def _evidence(raw, *, composite, revision, image_id, pins):
             and type(source["changed"]) is list and bool(source["changed"])
             and source["deploymentAuthorized"] is False,
             "Exact functional source proof version and protected hashes required")
-    require(type(context) is dict and set(context) == {"gitInventorySha256", "fileCount"}
+    require(type(context) is dict and set(context) == CONTEXT_FIELDS
             and HASH.fullmatch(context["gitInventorySha256"]) and type(context["fileCount"]) is int
-            and 0 < context["fileCount"] <= 20_000, "Exact Web Docker context evidence required")
-    require(dependencies["kind"] == "warpdrive-web-extension-candidate-inputs" and dependencies["sourceRevision"] == revision
-            and dependencies["baselineRevision"] == web["sourceRevision"]
-            and dependencies["originalBackendReceiptSha256"] == backend["inputReceiptSha256"]
-            and dependencies["retainedComponentInputSha256"] == {name: backend["components"][name]["inputSha256"] for name in RETAINED}
-            and source["kind"] == "warpdrive-web-functional-source" and source["currentRevision"] == revision
+            and 0 < context["fileCount"] <= MAX_FILES, "Exact Web Docker context evidence required")
+    require(source["kind"] == "warpdrive-web-functional-source" and source["currentRevision"] == facts["revision"]
             and source["baselineRevision"] == facts["toolingRevision"] and source["profileSha256"] == facts["reviewedProfileSha256"],
             "Native functional release source or retained backend inputs differ")
+
+
+def _structural_paths(value, *, nonempty):
+    require(type(value) is list and int(nonempty) <= len(value) <= MAX_OPERATIONS
+            and all(isinstance(path, str) and len(path) <= MAX_PATH_CHARS for path in value)
+            and value == sorted(set(value)) and len({path.lower() for path in value}) == len(value),
+            "Exact sorted structural Web path evidence required")
+    try:
+        for path in value:
+            safe_path(path)
+    except InputError as error:
+        raise CandidateError("Unsafe structural Web path evidence") from error
+    return value
+
+
+def _structural_context(context, excluded):
+    require(type(context) is dict and set(context) == STRUCTURAL_CONTEXT_FIELDS
+            and all(_matches(HASH, context[key]) for key in STRUCTURAL_CONTEXT_FIELDS
+                    if key.endswith("Sha256"))
+            and type(context["fileCount"]) is int and 0 < context["fileCount"] <= MAX_FILES - len(excluded)
+            and type(context["excludedFileCount"]) is int and context["excludedFileCount"] == len(excluded)
+            and context["excludedPathsSha256"] == content_hash(excluded),
+            "Structural Web Docker context differs from the reviewed excluded tests")
+    require((context["gitInventorySha256"] != context["contextInventorySha256"]) == bool(excluded)
+            and (context["excludedTestsSha256"] != content_hash({})) == bool(excluded),
+            "Structural Web Docker context exclusion inventory is inconsistent")
+
+
+def _structural_source(facts):
+    source, dependencies, context = (facts[key] for key in ("source", "dependencies", "context"))
+    before, current = (facts[key] for key in ("toolingRevision", "revision"))
+    effect, delta, registry = (facts[key] for key in ("reviewedProfileSha256", "reviewedDeltaSha256",
+                                                      "reviewedRegistrySha256"))
+    require(_matches(REVISION, before) and before not in {current, facts["activeWebRevision"]}
+            and _matches(HASH, effect) and _matches(HASH, delta) and (registry is None or _matches(HASH, registry)),
+            "Exact reviewed structural Web revision and profile pins required")
+    require(type(source) is dict and set(source) == STRUCTURAL_SOURCE_FIELDS
+            and type(source["schemaVersion"]) is int and source["schemaVersion"] == 1
+            and source["kind"] == "warpdrive-web-structural-source" and source["deploymentAuthorized"] is False
+            and source["baselineRevision"] == before and source["currentRevision"] == current
+            and source["deltaSha256"] == delta and source["effectsSha256"] == effect
+            and source["registryReviewSha256"] == registry,
+            "Structural source differs from the reviewed revision or profile pins")
+    require(_matches(HASH, source["originalBackendReceiptSha256"])
+            and source["originalBackendReceiptSha256"] == dependencies["originalBackendReceiptSha256"]
+            and _matches(HASH, source["retainedBackendInputsSha256"])
+            and source["retainedBackendInputsSha256"] == dependencies.get("retainedBackendInputsSha256")
+            and type(dependencies.get("schemaVersion")) is int and dependencies["schemaVersion"] == 1
+            and dependencies.get("deploymentAuthorized") is False
+            and dependencies.get("buildIntegrationQualified") is False,
+            "Structural source and dependency evidence disagree on retained backend inputs or authority")
+    verify_structural_projections({key: source[key] for key in ("protectedSource", "clientEffects")},
+                                  before, current, effect)
+    changed = _structural_paths(source["changed"], nonempty=True)
+    excluded = _structural_paths(source["excludedBuildTests"], nonempty=False)
+    require(all(any(_admit_path(path, role, "replace") for role in ("client", "style", "test", "registry-review"))
+                for path in changed)
+            and (registry is not None) == any(REGISTRY.fullmatch(path) for path in changed)
+            and set(excluded) <= set(changed)
+            and all(_admit_path(path, "test", "replace") for path in excluded),
+            "Structural Web paths disagree with the reviewed registry or excluded test evidence")
+    _structural_context(context, excluded)
+
+
+def _evidence(raw, *, composite, revision, image_id, pins):
+    facts, mixed = (decode(raw[name]) for name in (INPUTS, MIXED))
+    backend, web = composite["backend"], composite["web"]
+    require(IMAGE_ID.fullmatch(image_id) and image_id not in {web["image"]["imageId"],
+            *(component["imageId"] for component in backend["components"].values())}, "Distinct tested Web image required")
+    version = facts.get("schemaVersion") if type(facts) is dict else None
+    require(type(version) is int and version in {1, 2}
+            and set(facts) == (BUILD_FIELDS if version == 1 else STRUCTURAL_BUILD_FIELDS)
+            and facts["kind"] == "warpdrive-functional-web-build-inputs"
+            and facts["revision"] == revision and content_hash(facts) == pins["inputSha256"]
+            and facts["activeWebRevision"] == web["sourceRevision"]
+            and facts["originalBackendRevision"] == backend["sourceRevision"]
+            and facts["originalBackendManifestSha256"] == backend["provenance"]["bundleManifestSha256"]
+            and facts["buildComponents"] == ["web"] and facts["deploymentAuthorized"] is False,
+            "Functional source, dependency or build context receipt differs")
+    dependencies = facts["dependencies"]
+    require(type(dependencies) is dict and dependencies.get("kind") == "warpdrive-web-extension-candidate-inputs"
+            and dependencies.get("sourceRevision") == revision and dependencies.get("baselineRevision") == web["sourceRevision"]
+            and dependencies.get("originalBackendReceiptSha256") == backend["inputReceiptSha256"]
+            and dependencies.get("retainedComponentInputSha256") == {name: backend["components"][name]["inputSha256"] for name in RETAINED},
+            "Native functional release source or retained backend inputs differ")
+    if version == 1:
+        _functional_source(facts)
+    else:
+        _structural_source(facts)
     image = {"imageId": image_id, "sourceRevision": revision, "generation": "wd-" + revision}
     qualification = validate_repeat_mixed_report(mixed, assembly=repeat_assembly(composite, image),
                                                  expected_harness_revision=revision, sdk_keyboard_help=True)
