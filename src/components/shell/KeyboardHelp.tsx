@@ -30,22 +30,19 @@ export function KeyboardHelp({
         <span aria-hidden="true">?</span>
       </DialogTrigger>
       <DialogContent
-        className="fixed inset-0 z-50 grid place-items-center overflow-auto p-4"
+        className="fixed top-0 right-0 bottom-0 left-0 z-50 m-auto h-fit max-h-screen w-full max-w-72 overflow-auto rounded-xl bg-popover text-popover-foreground shadow-lg ring-1 ring-border"
         data-web-sdk-keyboard-help-dialog="true"
       >
-        <div aria-hidden="true" className="absolute inset-0 bg-black opacity-40" />
-        <div className="relative w-full max-w-xs rounded-xl bg-popover text-popover-foreground shadow-lg ring-1 ring-border">
-          <div className={styles.panel}>
-            <DialogTitle className={styles.heading}>{title}</DialogTitle>
-            <DialogDescription className={styles.description}>{description}</DialogDescription>
-            <DialogClose
-              type="button"
-              className={styles.close}
-              data-web-sdk-keyboard-help-close="true"
-            >
-              {closeLabel}
-            </DialogClose>
-          </div>
+        <div className={styles.panel}>
+          <DialogTitle className={styles.heading}>{title}</DialogTitle>
+          <DialogDescription className={styles.description}>{description}</DialogDescription>
+          <DialogClose
+            type="button"
+            className={styles.close}
+            data-web-sdk-keyboard-help-close="true"
+          >
+            {closeLabel}
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
