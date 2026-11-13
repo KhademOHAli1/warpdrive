@@ -46,6 +46,14 @@ SYNTHETIC_ENV = {
         for index, (variable, service) in enumerate(IMAGE_VARIABLES.items(), 1)
     },
 }
+FRESH_IMAGES = {
+    "WARPDRIVE_CADDY_IMAGE": ("caddy",), "WARPDRIVE_POSTGRES_IMAGE": ("postgres",),
+    "WARPDRIVE_STORAGE_IMAGE": ("minio",), "WARPDRIVE_STORAGE_INIT_IMAGE": ("createbuckets",),
+    "WARPDRIVE_NEWSLETTER_IMAGE": ("newsletter-engine", "newsletter-engine-migrate"),
+}
+FRESH_ENV = {"NEWSLETTER_POSTGRES_PASSWORD": "owned-newsletter-fixture", "NEWSLETTER_PUBLIC_DOMAIN": "news.example.invalid",
+             **{name: f"ghcr.io/example/fixture-{index}@sha256:" + f"{index:x}" * 64
+                for index, name in enumerate(FRESH_IMAGES, 5)}}
 
 
 class ImageComposeProfileTest(unittest.TestCase):
@@ -86,10 +94,12 @@ class ImageComposeProfileTest(unittest.TestCase):
         self,
         *,
         overlay: bool = True,
+        core: bool = False,
+        fresh: bool = False,
         replacements: dict[str, str | None] | None = None,
         resolve_service_env: bool = False,
     ) -> subprocess.CompletedProcess[str]:
-        values = dict(SYNTHETIC_ENV)
+        values = SYNTHETIC_ENV | (FRESH_ENV if fresh else {})
         for name, value in (replacements or {}).items():
             if value is None:
                 values.pop(name, None)
@@ -112,8 +122,14 @@ class ImageComposeProfileTest(unittest.TestCase):
             "--file",
             str(ROOT / "docker-compose.yml"),
         ]
+        if fresh:
+            command.extend(["--file", str(ROOT / "docker-compose.newsletters.yml")])
         if overlay:
             command.extend(["--file", str(ROOT / "deploy/images/compose.yml")])
+        if core:
+            command.extend(["--file", str(ROOT / "deploy/images/compose.core.yml")])
+        if fresh:
+            command.extend(["--file", str(ROOT / "deploy/images/compose.fresh.yml"), "--profile", "*"])
         command.append("config")
         if not resolve_service_env:
             command.append("--no-env-resolution")
@@ -139,6 +155,68 @@ class ImageComposeProfileTest(unittest.TestCase):
             with self.subTest(service=service):
                 self.assertNotIn("build", model["services"][service])
                 self.assertEqual(model["services"][service]["image"], SYNTHETIC_ENV[variable])
+
+    def test_fresh_model_has_only_admitted_images_and_keeps_storage_roles(self) -> None:
+        model = self.model(fresh=True)
+        services = model["services"]
+        expected = {service: SYNTHETIC_ENV[name] for name, service in IMAGE_VARIABLES.items()}
+        expected.update({service: FRESH_ENV[name] for name, names in FRESH_IMAGES.items() for service in names})
+        self.assertEqual(set(services), set(expected))
+        for name, service in services.items():
+            with self.subTest(name=name):
+                self.assertNotIn("build", service)
+                self.assertEqual(service["pull_policy"], "never")
+                self.assertEqual(service["image"], expected[name])
+                if name != "caddy":
+                    self.assertNotIn("ports", service)
+        self.assertEqual(set(model["volumes"]), {"pgdata", "miniodata", "newsletter_uploads", "caddydata", "caddyconfig"})
+        self.assertEqual(services["newsletter-engine-migrate"]["profiles"], ["newsletter-migrations"])
+        self.assertEqual(services["newsletter-engine"]["environment"]["NEWSLETTER_DELIVERY_ENABLED"], "false")
+
+    def test_fresh_selection_changes_only_web_image_and_missing_foundation_pin_holds(self) -> None:
+        before = self.model(fresh=True)
+        selected = "ghcr.io/example/candidate-web@sha256:" + "e" * 64
+        after = self.model(fresh=True, replacements={"WARPDRIVE_WEB_IMAGE": selected})
+        self.assertEqual(after["services"]["app"]["image"], selected)
+        before["services"]["app"]["image"] = selected
+        self.assertEqual(before, after)
+        for name in FRESH_IMAGES:
+            with self.subTest(name=name):
+                refused = self.render(fresh=True, replacements={name: None})
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn(name, refused.stderr)
+
+    def test_optional_core_adds_only_one_private_pinned_service(self) -> None:
+        environment = {
+            "WARPDRIVE_CORE_IMAGE_REPOSITORY": "ghcr.io/example/warpdrive-core",
+            "WARPDRIVE_CORE_IMAGE_SHA256": "b" * 64,
+            "WARPDRIVE_CORE_ENV_FILE": str(self.service_env),
+            "WARPDRIVE_CORE_INGRESS_ALIAS": "warpdrive-core-fixture",
+            "WARPDRIVE_CORE_INGRESS_NETWORK": "pitant-warpdrive-ingress",
+            "WARPDRIVE_CORE_DB_NETWORK": "pitant-warpdrive_backend",
+        }
+        with_core = self.model(core=True, replacements=environment, resolve_service_env=True)
+        service = with_core["services"].pop("core-api")
+        for name, variable in (("core-ingress", "WARPDRIVE_CORE_INGRESS_NETWORK"), ("core-db", "WARPDRIVE_CORE_DB_NETWORK")):
+            network = with_core["networks"].pop(name)
+            self.assertEqual(network.pop("ipam", {}), {})
+            self.assertEqual(network, {"name": environment[variable], "external": True})
+        self.assertEqual(with_core, self.model(resolve_service_env=True))
+        self.assertEqual(service["image"], "ghcr.io/example/warpdrive-core@sha256:" + "b" * 64)
+        self.assertTrue({"build", "ports", "depends_on"}.isdisjoint(service))
+        self.assertEqual(set(service["networks"]), {"core-ingress", "core-db"})
+        self.assertEqual(service["networks"]["core-ingress"]["aliases"], [environment["WARPDRIVE_CORE_INGRESS_ALIAS"]])
+        self.assertEqual(service["labels"]["traefik.enable"], "false")
+        self.assertTrue(service["read_only"])
+        self.assertEqual(service["cap_drop"], ["ALL"])
+        self.assertIn(service["stop_grace_period"], {"75s", "1m15s"})
+        self.assertEqual(service["environment"]["MIGRATION_DATABASE_URL"], "")
+        self.assertEqual(service["environment"]["MIGRATION_DATABASE_URL_FILE"], "")
+        for name in environment:
+            with self.subTest(missing=name):
+                result = self.render(core=True, replacements={**environment, name: None})
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(name, result.stderr)
 
     def test_service_env_paths_are_confined_to_the_empty_scratch_fixture(self) -> None:
         result = self.render()

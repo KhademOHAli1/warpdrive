@@ -3,18 +3,27 @@ name: Cold recovery tooling qualification
 on:
   push:
     branches: [main]
-    paths:
+    paths: &recovery-inputs
       - "scripts/deployment/recovery.py"
       - "scripts/deployment/test_recovery.py"
+      - "scripts/deployment/restore_recovery_set.py"
+      - "scripts/deployment/test_restore_recovery_set.py"
+      - "scripts/deployment/test_installed_recovery_set.py"
+      - "scripts/deployment/recovery_restore_monitor.py"
+      - "scripts/deployment/test_recovery_restore_monitor.py"
+      - "scripts/deployment/web_rollout_monitor.py"
+      - "scripts/deployment/web_rollout.py"
+      - "scripts/deployment/web_rollout_observation.py"
+      - "scripts/deployment/web_switch.py"
+      - "scripts/deployment/web_generation_routes.py"
+      - "scripts/deployment/installed_web_chain.py"
+      - "scripts/deployment/installed_web_readback_lock.py"
+      - "scripts/deployment/component_inputs.py"
       - "docs/deployment-recovery.md"
       - ".github/workflows/recovery-qualification.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "scripts/deployment/recovery.py"
-      - "scripts/deployment/test_recovery.py"
-      - "docs/deployment-recovery.md"
-      - ".github/workflows/recovery-qualification.yml"
+    paths: *recovery-inputs
   workflow_dispatch:
 
 # Synthetic local files only: no Docker, production/provider credentials or publication.
@@ -29,13 +38,15 @@ jobs:
   recovery:
     name: Linux recovery descriptors and encrypted restore
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    # Bound checkout, both timed steps and the failure evidence upload independently.
+    timeout-minutes: 9
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       GOMAXPROCS: "2"
       GOMEMLIMIT: 256MiB
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 1
         with:
           persist-credentials: false
       - name: Download and verify official restic 0.18.0 into task storage
@@ -93,9 +104,10 @@ jobs:
               (reports / "download.json").write_text(json.dumps(report, indent=2) + "\n")
           PY
       - name: Run bounded native Linux guards and actual encrypted recovery fixture
-        timeout-minutes: 2
+        timeout-minutes: 4
         run: |
           python3 -B - <<'PY'
+          import ast
           import ctypes
           import hashlib
           import json
@@ -107,6 +119,7 @@ jobs:
           import signal
           import subprocess
           import sys
+          import tempfile
           import time
 
           repo = Path.cwd()
@@ -115,22 +128,57 @@ jobs:
           private.mkdir(mode=0o700)
           fixtures = private / "fixtures"
           fixtures.mkdir(mode=0o700)
-          paths = ["scripts/deployment/recovery.py", "scripts/deployment/test_recovery.py",
-                   "docs/deployment-recovery.md", ".github/workflows/recovery-qualification.yml"]
+          workflow = ".github/workflows/recovery-qualification.yml"
+          header = (repo / workflow).read_text().partition("    paths: &recovery-inputs\n")[2]
+          paths = []
+          for line in header.splitlines():
+              match = re.fullmatch(r'      - "([a-zA-Z0-9_./-]+)"', line)
+              if not match:
+                  break
+              paths.append(match.group(1))
+          assert 1 <= len(paths) <= 64 and len(set(paths)) == len(paths) and workflow in paths
+          stages = (
+              ("guards", "test_recovery", None),
+              ("descriptor-preflight", "test_recovery.RealResticDescriptorTests", 1),
+              ("crypto", "test_recovery.RealResticTests", 1),
+              ("independent-readback", "test_restore_recovery_set", 6),
+              ("typed-recovery-guards", "test_installed_recovery_set.InstalledRecoveryTests", 5),
+              ("restore-monitor", "test_recovery_restore_monitor", 6),
+          )
           revision = os.environ["GITHUB_SHA"]
-          def pins():
+          def pins(until):
+              def git(arguments):
+                  remaining = until - time.monotonic()
+                  assert remaining > 0
+                  return subprocess.run(["git", "--no-replace-objects", *arguments], check=True,
+                                        capture_output=True, timeout=min(5, remaining)).stdout
+
               result = {}
               for name in paths:
                   path = repo / name
-                  assert path.is_file() and not path.is_symlink() and path.stat().st_size <= 512 * 1024
+                  assert path.is_file() and path.resolve(strict=True) == path and path.stat().st_size <= 512 * 1024
                   raw = path.read_bytes()
-                  blob = subprocess.run(["git", "--no-replace-objects", "cat-file", "blob", f"{revision}:{name}"],
-                                        check=True, capture_output=True, timeout=5).stdout
+                  blob = git(["cat-file", "blob", f"{revision}:{name}"])
                   assert raw == blob
                   result[name] = hashlib.sha256(raw).hexdigest()
-              assert subprocess.run(["git", "rev-parse", "HEAD"], check=True, capture_output=True,
-                                    text=True, timeout=5).stdout.strip() == revision
+                  if name.endswith(".py"):
+                      assert all(module in paths for module in local_imports(path, raw))
+              for _, selection, _ in stages:
+                  assert f"scripts/deployment/{selection.split('.')[0]}.py" in paths
+              assert git(["rev-parse", "HEAD"]).decode("ascii").strip() == revision
               return result
+          def local_imports(path, raw):
+              # Static imports inside functions count as part of the tested closure.
+              for node in ast.walk(ast.parse(raw, filename=str(path))):
+                  modules = ()
+                  if isinstance(node, ast.Import):
+                      modules = (entry.name.split(".")[0] for entry in node.names)
+                  elif isinstance(node, ast.ImportFrom) and not node.level and node.module is not None:
+                      modules = (node.module.split(".")[0],)
+                  for module in modules:
+                      candidate = path.parent / (module + ".py")
+                      if candidate.exists() or candidate.is_symlink():
+                          yield str(candidate.relative_to(repo))
           def processes():
               result = {}
               for path in Path("/proc").iterdir():
@@ -144,8 +192,10 @@ jobs:
                   except (FileNotFoundError, ProcessLookupError, PermissionError):
                       pass
               return result
-          def sanitized(raw):
+          def sanitized(raw, socket_fixtures):
               value = raw.decode("utf8", errors="replace").replace(str(private), "[owned-private-root]")
+              if socket_fixtures is not None:
+                  value = value.replace(str(socket_fixtures), "[owned-socket-root]")
               value = re.sub(r"(?im)^.*(?:password|secret|authorization|token|private.key).*$", "[redacted-sensitive-diagnostic]", value)
               value = re.sub(r"[A-Za-z0-9_+/=-]{24,}", "[redacted-opaque]", value)
               return "".join(c for c in value if c in "\n\t" or ord(c) >= 32)[-32768:]
@@ -155,9 +205,10 @@ jobs:
           libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
           libc.prctl.restype = ctypes.c_int
           assert libc.prctl(36, 1, 0, 0, 0) == 0
-          before = pins()
           started = time.monotonic()
-          deadline = started + 90
+          # The independent stage opens and revokes two separate encrypted key slots.
+          qualification_seconds = 210
+          deadline = started + qualification_seconds
           known = {}
           def owned(snapshot):
               active = {pid for pid, row in snapshot.items()
@@ -208,8 +259,8 @@ jobs:
           report = {"success": False, "revision": revision, "scope": "owned-synthetic-files-on-native-linux",
                     "offHostAccepted": False, "keyCustodyAccepted": False, "applicationRecoveryAccepted": False,
                     "linuxDockerObservationQualified": False, "linuxDescriptorPathQualified": False,
-                    "sourceSha256": before, "sourceUnchanged": False, "outcomes": outcomes,
-                    "limits": {"seconds": 90, "cleanupSeconds": 6, "syntheticSourceBytes": 2 * 1024**2,
+                    "sourceSha256": {}, "sourceUnchanged": False, "outcomes": outcomes,
+                    "limits": {"seconds": qualification_seconds, "cleanupSeconds": 6, "syntheticSourceBytes": 2 * 1024**2,
                                "rssWatchdogBytes": 1024**3}}
           runner = """import json,os,sys,unittest
           import recovery
@@ -243,7 +294,16 @@ jobs:
           Path(os.environ['RECOVERY_RESULT']).write_text(json.dumps(value))
           raise SystemExit(0 if result.wasSuccessful() else 1)
           """
+          before = None
+          socket_fixtures = None
           try:
+              before = pins(deadline)
+              report["sourceSha256"] = before
+              socket_base = private
+              if len(os.fsencode(socket_base / "sockets-12345678/wd-recmon-12345678/collector.sock")) >= 108:
+                  socket_base = Path("/tmp").resolve(strict=True)
+              socket_fixtures = Path(tempfile.mkdtemp(prefix="sockets-", dir=socket_base))
+              assert len(os.fsencode(socket_fixtures / "wd-recmon-12345678/collector.sock")) < 108
               # Deliberately do not sample this grandchild before killing its
               # parent. This reproduces the new-session cleanup race directly.
               probe_code = ("import subprocess,sys,time; "
@@ -267,18 +327,18 @@ jobs:
               assert adopted is not None and adopted["parent"] == os.getpid()
               assert not cleanup_owned() and grandchild not in processes()
               report["unsampledNewSessionCleanupProbePassed"] = True
-              for name, selection in [("guards", "test_recovery"),
-                                      ("descriptor-preflight", "test_recovery.RealResticDescriptorTests"),
-                                      ("crypto", "test_recovery.RealResticTests")]:
+              for name, selection, expected_count in stages:
                   result_path = private / f"{name}-result.json"
                   environment = {"PATH": "/usr/bin:/bin", "LC_ALL": "C", "TZ": "UTC", "GOMAXPROCS": "2",
                                  "GOMEMLIMIT": "256MiB", "PYTHONDONTWRITEBYTECODE": "1", "TMPDIR": str(fixtures),
                                  "RECOVERY_RESULT": str(result_path), "WARPDRIVE_RECOVERY_RESTIC": str(root / "tools/restic")}
-                  if name in {"descriptor-preflight", "crypto"}:
+                  if name in {"descriptor-preflight", "crypto", "independent-readback"}:
                       environment["WARPDRIVE_RECOVERY_CRYPTO_FIXTURE"] = "1"
                   if name == "descriptor-preflight":
                       environment["WARPDRIVE_RECOVERY_CHROOT_FIXTURE"] = "1"
                       environment["WARPDRIVE_RECOVERY_RESTIC_SHA256"] = json.loads((reports / "download.json").read_bytes())["binarySha256"]
+                  if name == "restore-monitor":
+                      environment["WARPDRIVE_RECOVERY_SOCKET_TMPDIR"] = str(socket_fixtures)
                   child = subprocess.Popen([sys.executable, "-B", "-c", runner, selection],
                                            cwd=repo / "scripts/deployment", env=environment,
                                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
@@ -306,9 +366,9 @@ jobs:
                           expected = "test_recovery.LinuxDescriptorTests.test_inherited_repository_and_target_descriptors_do_not_follow_substituted_paths"
                           assert expected in result["selected"] and expected not in result["skipped"]
                       else:
-                          assert result["tests"] == 1 and not result["skipped"]
+                          assert result["tests"] == expected_count and not result["skipped"]
                   finally:
-                      (reports / f"{name}-diagnostic.log").write_text(sanitized(captured))
+                      (reports / f"{name}-diagnostic.log").write_text(sanitized(captured, socket_fixtures))
                       if child.poll() is None:
                           child.terminate()
                           try:
@@ -317,30 +377,38 @@ jobs:
                               child.kill()
                               child.wait(timeout=2)
                       child.stdout.close()
-              after = pins()
-              assert before == after
-              assert not list(fixtures.iterdir())
-              report.update(success=True, sourceSha256=after, sourceUnchanged=True, outcomes=outcomes,
-                            linuxDescriptorPathQualified=True, encryptedLocalRestoreQualified=True)
+              assert not list(fixtures.iterdir()) and not list(socket_fixtures.iterdir())
+              report.update(success=True, outcomes=outcomes,
+                            linuxDescriptorPathQualified=True, encryptedLocalRestoreQualified=True,
+                            independentReadbackQualified=True, typedRecoveryGuardsPassed=True,
+                            restoreMonitorQualified=True)
           finally:
               try:
-                  report["sourceUnchanged"] = before == pins()
-              except BaseException:
+                  report["sourceUnchanged"] = before is not None and before == pins(min(deadline, time.monotonic() + 5))
+              except Exception:
                   report["sourceUnchanged"] = False
               # The subreaper also discovers children born between sample and
               # runner termination. Birth checks precede every signal.
               remaining = cleanup_owned()
               report["ownedProcessesRemaining"] = len(remaining)
               if not remaining:
-                  shutil.rmtree(fixtures)
-              report["fixtureCleanupSuccess"] = not fixtures.exists()
-              report["success"] = report["success"] and not remaining and report["fixtureCleanupSuccess"]
+                  try:
+                      shutil.rmtree(fixtures)
+                      if socket_fixtures is not None:
+                          shutil.rmtree(socket_fixtures)
+                  except OSError:
+                      report["cleanupError"] = "owned-fixture-removal-failed"
+              report["fixtureCleanupSuccess"] = (not fixtures.exists()
+                                                  and (socket_fixtures is None or not socket_fixtures.exists()))
+              report["success"] = (report["success"] and report["sourceUnchanged"] and not remaining
+                                   and report["fixtureCleanupSuccess"] and "cleanupError" not in report)
               report.update(seconds=round(time.monotonic() - started, 3), peakOwnedRssBytes=peak_rss)
               (reports / "qualification.json").write_text(json.dumps(report, indent=2) + "\n")
           assert report["success"]
           PY
       - name: Retain sanitized recovery evidence including failures
         if: always()
+        timeout-minutes: 1
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: recovery-qualification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

@@ -51,6 +51,27 @@ def response(path, headers, *, marked=True):
 
 
 class PublicProbeTests(unittest.TestCase):
+    def test_public_core_probe_requires_protected_denial_and_exact_marker(self):
+        marker = (probe.CORE_RESPONSE_HEADER, probe.CORE_RESPONSE_MARKER)
+        common = (("Content-Type", "application/json"), ("Cache-Control", "no-store"))
+        body = b'{"error":{"json":{"data":{"code":"UNAUTHORIZED"}}}}'
+        response = probe.Response(401, (*common, marker), body)
+
+        def request(method, path, headers, *, read_body):
+            self.assertEqual((method, path, read_body), ("GET", probe.CORE_READ_PATH, True))
+            self.assertEqual(headers[probe.CORE_PROBE_HEADER], probe.CORE_RESPONSE_MARKER)
+            return response
+
+        self.assertTrue(probe.read_public_core_route(request))
+        self.assertFalse(probe.read_public_core_route(request, active=False))
+        response = probe.Response(401, common, body)
+        self.assertTrue(probe.read_public_core_route(request, active=False))
+        self.assertFalse(probe.read_public_core_route(request))
+        for invalid in (probe.Response(502, (*common, marker), body), probe.Response(401, (*common, marker, marker), body),
+                        probe.Response(401, (*common, marker), b'{"error":{"data":{"code":"UNAUTHORIZED"}}}')):
+            response = invalid
+            self.assertFalse(probe.read_public_core_route(request))
+
     def exercise(self, *, marked=True, hints=None, replace=None):
         requests = []
 

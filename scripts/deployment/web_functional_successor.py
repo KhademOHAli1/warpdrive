@@ -235,7 +235,7 @@ def verify_functional_successor(
         "web": {"sourceRevision": expected_revision, "origin": receipt["origin"], "image": loaded["image"],
                 "publicationReceiptSha256": expected_publication_sha256, "artifact": receipt["artifact"],
                 "provenance": provenance,
-                "inputProvenance": {"kind": "warpdrive-web-functional-build-inputs", "schemaVersion": 1,
+                "inputProvenance": {"kind": "warpdrive-web-functional-build-inputs", "schemaVersion": loaded["inputSchemaVersion"],
                                     "inputSha256": baseline["inputSha256"],
                                     "originalBackendReceiptSha256": backend["inputReceiptSha256"],
                                     "retainedComponentInputSha256": {name: backend["components"][name]["inputSha256"] for name in RETAINED}}},

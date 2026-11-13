@@ -14,6 +14,7 @@ import ssl
 import threading
 from typing import Callable
 
+from caddy_core_config import CORE_PROBE_HEADER, CORE_READ_PATH, CORE_RESPONSE_HEADER, CORE_RESPONSE_MARKER
 from caddy_web_config import PROBE_REQUEST_HEADER, PROBE_RESPONSE_HEADER
 from traefik_web_handoff_state import HandoffObservation
 
@@ -91,10 +92,11 @@ class TlsProbe:
         self.timeout = timeout
 
     def __call__(self, method, path, headers, *, read_body):
-        _require((method, path) in {("GET", IDENTITY_PATH), ("GET", HEALTH_PATH), ("POST", POST_PATH), ("GET", WS_PATH), ("GET", STORAGE_PATH)},
+        _require((method, path) in {("GET", IDENTITY_PATH), ("GET", HEALTH_PATH), ("GET", CORE_READ_PATH),
+                                   ("POST", POST_PATH), ("GET", WS_PATH), ("GET", STORAGE_PATH)},
                  "Public probe request is outside its fixed scope")
         allowed = {"accept", "cache-control", "content-length", "connection", "next-action", "origin",
-                   "sec-websocket-key", "sec-websocket-version", "upgrade", PROBE_REQUEST_HEADER.lower()}
+                   "sec-websocket-key", "sec-websocket-version", "upgrade", PROBE_REQUEST_HEADER.lower(), CORE_PROBE_HEADER.lower()}
         _require(all(isinstance(name, str) and name.lower() in allowed and isinstance(value, str)
                      and 0 < len(value) <= 256 and all(32 <= ord(ch) < 127 for ch in value)
                      for name, value in headers.items())
@@ -250,6 +252,25 @@ def _request(request, method, path, headers, *, read_body):
     except (OSError, HTTPException, ProbeError):
         pass
     return None
+
+
+def read_public_core_route(request, *, active=True):
+    """Observe one anonymous protected read through the exact Core proxy route."""
+    response = _request(request, "GET", CORE_READ_PATH,
+        {"Accept": "application/json", "Cache-Control": "no-cache", CORE_PROBE_HEADER: CORE_RESPONSE_MARKER}, read_body=True)
+    marker = (CORE_RESPONSE_MARKER,) if active else ()
+    if response is None or response.status != 401 or response.values(CORE_RESPONSE_HEADER) != marker:
+        return False
+    media = response.values("Content-Type")
+    if (len(media) != 1 or media[0].split(";", 1)[0].strip().lower() != "application/json"
+            or response.values("Content-Encoding") not in ((), ("identity",))
+            or (active and response.values("Cache-Control") != ("no-store",))):
+        return False
+    try:
+        value = json.loads(response.body.decode("utf-8"), object_pairs_hook=_unique)
+        return value["error"]["json"]["data"]["code"] == "UNAUTHORIZED"
+    except (ValueError, TypeError, KeyError, RecursionError):
+        return False
 
 
 def _hints(read, runtime):

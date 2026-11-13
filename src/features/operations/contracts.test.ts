@@ -44,6 +44,38 @@ const batch = (observations: unknown[] = [component]) => ({
 const admit = (value: unknown) => admitOperationsBatch(JSON.stringify(value), binding, now);
 
 describe("operations batch admission", () => {
+  it("only accepts deployment outcomes with matching evidence and health", () => {
+    const accepted = {
+      kind: "deployment",
+      component: "core_api",
+      outcome: "accepted",
+      state: "healthy",
+      reason: "ok",
+      sourceRevision: "a".repeat(40),
+      proofSha256: "b".repeat(64),
+    };
+    const unknown = {
+      ...accepted,
+      outcome: "unknown",
+      state: "unknown",
+      reason: "submission_unknown",
+      sourceRevision: null,
+      proofSha256: null,
+    };
+    expect(admit(batch([accepted, { ...component, component: "core_api" }])).ok).toBe(true);
+    expect(admit(batch([unknown])).ok).toBe(true);
+    expect(admit(batch([{ ...accepted, proofSha256: null }])).ok).toBe(false);
+    expect(admit(batch([{ ...unknown, sourceRevision: accepted.sourceRevision }])).ok).toBe(false);
+    expect(admit(batch([{ ...accepted, outcome: "rolled_back" }])).ok).toBe(false);
+    expect(
+      admit(
+        batch([
+          { ...accepted, outcome: "rolled_back", state: "failed", reason: "operation_failed" },
+        ]),
+      ).ok,
+    ).toBe(true);
+  });
+
   it("binds only authenticated server identity and gives replay namespaces without trusting body scope", () => {
     const admitted = admit(batch());
     expect(admitted.ok).toBe(true);
@@ -167,6 +199,32 @@ describe("operations batch admission", () => {
 });
 
 describe("finite operations observations", () => {
+  it("holds missing worker identity and rejects future heartbeat samples", () => {
+    const heartbeat = {
+      kind: "heartbeat",
+      component: "worker",
+      processGeneration: null,
+      state: "unknown",
+      reason: "not_reported",
+      uptimeMs: null,
+      activeCallbacks: null,
+    };
+    expect(admit(batch([heartbeat])).ok).toBe(true);
+    expect(admit(batch([{ ...heartbeat, state: "healthy", reason: "ok" }])).ok).toBe(false);
+    expect(admit(batch([{ ...heartbeat, sampledAtMs: now }])).ok).toBe(false);
+    expect(
+      admit(
+        batch([
+          {
+            ...heartbeat,
+            processGeneration: eventId,
+            sampledAtMs: now + OPERATIONS_MAX_CLOCK_SKEW_MS + 1,
+          },
+        ]),
+      ).ok,
+    ).toBe(false);
+  });
+
   it("retains unsampled queue metrics as null, separately from actual zero", () => {
     expect(operationsObservationSchema.parse(queue)).toEqual(queue);
     expect(operationsObservationSchema.parse({ ...queue, pendingCount: 0 }).kind).toBe("queue");
@@ -224,6 +282,7 @@ describe("finite operations observations", () => {
           recovery,
           { ...recovery, stage: "offhost_received" },
           { ...recovery, stage: "restore_tested" },
+          { ...recovery, stage: "restore_bytes_verified" },
         ]),
       ).ok,
     ).toBe(true);
@@ -235,6 +294,13 @@ describe("finite operations observations", () => {
     ]) {
       expect(admit(batch([{ ...recovery, ...missing }])).ok).toBe(false);
     }
+    const byteReadback = { ...recovery, stage: "restore_bytes_verified" };
+    expect(admit(batch([byteReadback])).ok).toBe(true);
+    expect(admit(batch([{ ...byteReadback, state: "unknown", reason: "not_observed" }])).ok).toBe(
+      false,
+    );
+    expect(admit(batch([{ ...byteReadback, bytes: null }])).ok).toBe(false);
+    expect(admit(batch([{ ...byteReadback, durationMs: null }])).ok).toBe(false);
   });
 
   it("accepts inspected installed identity but rejects substituting latest release information", () => {

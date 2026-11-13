@@ -7,6 +7,7 @@
   "logsTitle": "سابقهٔ عملیات",
   "logsInfo": "فرادادهٔ رخدادها و رسیدها برای صفحه‌های قابل مشاهده. محتوای رسیدها نمایش داده نمی‌شود.",
   "incidentsTitle": "رخدادها",
+  "bellOpenIncidents": "مشاهده رخدادهای باز عملیاتی",
   "eventsTitle": "رسیدهای گزارش وضعیت",
   "refresh": "تازه‌سازی",
   "previous": "صفحهٔ قبل",
@@ -46,6 +47,8 @@
   "reportedIdentity": "هویت گزارش‌شدهٔ مؤلفهٔ نصب‌شده",
   "identityUnchecked": "هویت مؤلفهٔ نصب‌شده گزارش نشده است.",
   "imageDigest": "چکیدهٔ ایمیج",
+  "deploymentOutcome": "نتیجهٔ استقرار",
+  "proofHash": "چکیدهٔ مدرک",
   "sourceRevision": "نسخهٔ کد منبع ایمیج",
   "configurationHash": "اثر انگشت پیکربندی",
   "schemaHash": "اثر انگشت طرح‌واره",
@@ -97,12 +100,14 @@
     "feature": "قابلیت",
     "provider": "ارائه‌دهنده",
     "heartbeat": "نشانهٔ فعالیت",
+    "deployment": "استقرار",
     "queue": "صف",
     "observer": "ناظر",
     "recovery": "بازیابی"
   },
   "components": {
     "web": "برنامهٔ وب",
+    "core_api": "رابط برنامه‌نویسی هسته",
     "worker": "پردازشگر پس‌زمینه",
     "realtime": "سرویس بلادرنگ",
     "migrator": "مهاجرت‌های داده",
@@ -115,8 +120,15 @@
     "mailbox": "صندوق پستی",
     "workflows": "گردش‌کارها",
     "newsletters": "خبرنامه‌ها",
+    "newsletter_event_sync": "همگام‌سازی رخدادهای خبرنامه",
     "files": "فایل‌ها",
     "realtime": "بلادرنگ"
+  },
+  "deploymentOutcomes": {
+    "accepted": "تأیید شد",
+    "rolled_back": "بازگردانده شد",
+    "rejected": "رد شد",
+    "unknown": "نامشخص"
   },
   "providers": {
     "smtp": "ارسال ایمیل (SMTP)",
@@ -134,7 +146,8 @@
   "recoveryStages": {
     "backup_created": "ایجاد نسخهٔ پشتیبان",
     "offhost_received": "دریافت خارج از میزبان",
-    "restore_tested": "آزمون بازیابی"
+    "restore_tested": "آزمون بازیابی",
+    "restore_bytes_verified": "بایت‌های بازیابی‌شده راستی‌آزمایی شدند"
   },
   "reasons": {
     "ok": "بررسی موفق بود",

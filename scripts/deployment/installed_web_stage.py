@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import ctypes
+import errno
 import fcntl
 import json
 import os
 from pathlib import Path
+import secrets
 import stat
+import sys
 import time
 
 from component_inputs import decode
@@ -15,34 +19,85 @@ from installed_web_runtime import require
 from web_switch import content_hash
 
 
+MAX_RECORD_BYTES = 256 * 1024
+OWNER_UID = 0
+
+
+def _publish_record(directory, temporary, name):
+    # A no-replace rename publishes one durable inode. A link/unlink pair
+    # could leave the final receipt with two links if the writer stops.
+    library = ctypes.CDLL(None, use_errno=True)
+    try:
+        if sys.platform == "linux":
+            rename = library.renameat2
+            flags = 1  # RENAME_NOREPLACE
+        elif sys.platform == "darwin":
+            rename = library.renameatx_np
+            flags = 0x4  # RENAME_EXCL
+        else:
+            raise AttributeError
+    except AttributeError:
+        raise OSError(errno.ENOTSUP, "Atomic no-replace stage receipt publication is unavailable") from None
+    rename.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint)
+    rename.restype = ctypes.c_int
+    if rename(directory, os.fsencode(temporary), directory, os.fsencode(name), flags) != 0:
+        code = ctypes.get_errno()
+        raise OSError(code, os.strerror(code), name)
+
+
 def write_record(path, value):
     raw = (json.dumps(value, sort_keys=True, indent=2, allow_nan=False) + "\n").encode()
-    with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600), "wb") as stream:
-        stream.write(raw)
-        stream.flush()
-        os.fsync(stream.fileno())
-    fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    require(len(raw) <= MAX_RECORD_BYTES, "Stage receipt exceeds its byte bound")
+    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    temporary = ".web-stage-" + secrets.token_hex(12)
     try:
-        os.fsync(fd)
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+        descriptor = os.open(temporary, flags, 0o600, dir_fd=directory)
+        try:
+            with os.fdopen(descriptor, "wb") as stream:
+                if stream.write(raw) != len(raw):
+                    raise OSError(errno.EIO, "Incomplete stage receipt write")
+                stream.flush()
+                os.fsync(stream.fileno())
+                require(os.fstat(stream.fileno()).st_nlink == 1, "Stage receipt acquired another link")
+            _publish_record(directory, temporary, path.name)
+            os.fsync(directory)
+        finally:
+            try:
+                os.unlink(temporary, dir_fd=directory)
+            except FileNotFoundError:
+                pass
     finally:
-        os.close(fd)
+        os.close(directory)
 
 
 def read_record(path):
-    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as stream:
-        info = os.fstat(stream.fileno())
-        require(stat.S_ISREG(info.st_mode) and (info.st_uid, stat.S_IMODE(info.st_mode), info.st_nlink) == (0, 0o600, 1)
-                and 0 < info.st_size <= 256 * 1024, "Private bounded stage receipt required")
-        raw = stream.read(info.st_size + 1)
-        require(len(raw) == info.st_size and os.path.samestat(info, path.lstat()), "Stage receipt changed during read")
-    return decode(raw)
+    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+        with os.fdopen(os.open(path.name, flags, dir_fd=directory), "rb") as stream:
+            info = os.fstat(stream.fileno())
+            require(stat.S_ISREG(info.st_mode) and (info.st_uid, stat.S_IMODE(info.st_mode), info.st_nlink) == (OWNER_UID, 0o600, 1)
+                    and 0 < info.st_size <= MAX_RECORD_BYTES, "Private bounded stage receipt required")
+            raw = stream.read(info.st_size + 1)
+            after = os.fstat(stream.fileno())
+            require(len(raw) == info.st_size and os.path.samestat(info, path.lstat())
+                    and (info.st_mtime_ns, info.st_ctime_ns) == (after.st_mtime_ns, after.st_ctime_ns),
+                    "Stage receipt changed during read")
+        result = decode(raw)
+        # A prior writer may have stopped after rename and before the directory
+        # sync. Establish durability before acknowledging observed evidence.
+        os.fsync(directory)
+        return result
+    finally:
+        os.close(directory)
 
 
 @contextmanager
 def exclusive(directory):
     info = directory.lstat()
     require(directory.is_absolute() and directory == directory.resolve(strict=True)
-            and stat.S_ISDIR(info.st_mode) and info.st_uid == 0 and stat.S_IMODE(info.st_mode) == 0o700,
+            and stat.S_ISDIR(info.st_mode) and info.st_uid == OWNER_UID and stat.S_IMODE(info.st_mode) == 0o700,
             "Exact root-owned stage directory required")
     fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:

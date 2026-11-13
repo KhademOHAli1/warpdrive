@@ -11,6 +11,7 @@ import {
   useLocalePreferences,
 } from "@/features/i18n/LocaleProvider";
 import { markAllReadAction, markReadAction } from "@/features/notifications/actions";
+import { OperationsBellLink } from "@/features/operations/ui/OperationsBellLink";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import type { NotificationFeedItem } from "@/types/notification";
@@ -19,7 +20,13 @@ import { notificationHref } from "./deepLink";
 import { NotificationItem } from "./NotificationItem";
 import { useNotificationStream } from "./useNotificationStream";
 
-export function NotificationsBell({ userId }: { userId: string }): React.ReactNode {
+export function NotificationsBell({
+  userId,
+  showOperations = false,
+}: {
+  userId: string;
+  showOperations?: boolean;
+}): React.ReactNode {
   const t = useAppTranslations("notifications");
   const format = useFormatters();
   const { timeZone } = useLocalePreferences();
@@ -121,6 +128,14 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
           ) : null}
         </div>
 
+        {open && showOperations && (
+          <OperationsBellLink
+            onOpen={() => {
+              setOpen(false);
+              router.push("/settings/logs");
+            }}
+          />
+        )}
         <div className="border-t">
           <button
             type="button"

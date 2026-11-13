@@ -7,6 +7,7 @@
   "logsTitle": "Operations history",
   "logsInfo": "Incident and receipt metadata for the visible pages. Receipt payloads are not shown.",
   "incidentsTitle": "Incidents",
+  "bellOpenIncidents": "View open operations incidents",
   "eventsTitle": "Observation receipts",
   "refresh": "Refresh",
   "previous": "Previous page",
@@ -46,6 +47,8 @@
   "reportedIdentity": "Reported installed identity",
   "identityUnchecked": "Installed identity has not been reported.",
   "imageDigest": "Image digest",
+  "deploymentOutcome": "Deployment outcome",
+  "proofHash": "Evidence fingerprint",
   "sourceRevision": "Image source revision",
   "configurationHash": "Configuration fingerprint",
   "schemaHash": "Schema fingerprint",
@@ -97,12 +100,14 @@
     "feature": "Feature",
     "provider": "Provider",
     "heartbeat": "Heartbeat",
+    "deployment": "Deployment",
     "queue": "Queue",
     "observer": "Observer",
     "recovery": "Recovery"
   },
   "components": {
     "web": "Web application",
+    "core_api": "Core API",
     "worker": "Background worker",
     "realtime": "Realtime service",
     "migrator": "Migrations",
@@ -115,8 +120,15 @@
     "mailbox": "Mailbox",
     "workflows": "Workflows",
     "newsletters": "Newsletters",
+    "newsletter_event_sync": "Newsletter event sync",
     "files": "Files",
     "realtime": "Realtime"
+  },
+  "deploymentOutcomes": {
+    "accepted": "Accepted",
+    "rolled_back": "Rolled back",
+    "rejected": "Rejected",
+    "unknown": "Unknown"
   },
   "providers": {
     "smtp": "SMTP",
@@ -134,7 +146,8 @@
   "recoveryStages": {
     "backup_created": "Backup creation",
     "offhost_received": "Off-host receipt",
-    "restore_tested": "Restore test"
+    "restore_tested": "Restore test",
+    "restore_bytes_verified": "Restore bytes verified"
   },
   "reasons": {
     "ok": "Check passed",

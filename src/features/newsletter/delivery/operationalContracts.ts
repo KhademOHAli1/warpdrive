@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+// Route and credential rotation keep the primary engine's receipt namespace stable.
+export const OPERATIONAL_ENGINE_KEY =
+  "e13d92fa371d3e1499b6a3394be32075d8b565b80b75437c46b50297572df833";
+
 export const operationalKinds = [
   "delivery.failed",
   "delivery.uncertain",

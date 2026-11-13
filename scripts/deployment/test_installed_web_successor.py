@@ -9,6 +9,8 @@ import unittest
 from unittest.mock import patch
 
 import installed_web_successor as successor
+from caddy_core_config import core_api_routes
+from caddy_web_config import _generation_handler
 from caddy_web_repeat import compile_repeat_web_configs
 from installed_web_probe import PublicProbe
 from installed_web_runtime import OWNER_LABEL, WebRuntimeError, verify_candidate
@@ -38,6 +40,8 @@ def generation_row(generation, identifier, image_letter):
 
 
 class InstalledWebSuccessorTests(unittest.TestCase):
+    core_alias = None
+
     def setUp(self):
         tmp = Path(self.enterContext(TemporaryDirectory())).resolve()
         self.first, self.operation, self.watched = (tmp / name for name in ("first", "next", "watched"))
@@ -46,6 +50,9 @@ class InstalledWebSuccessorTests(unittest.TestCase):
         self.state = self.first / "rollout"
         self.clock = FakeClock()
         configs = compile_next(installed_after_first_switch())
+        if self.core_alias is not None:
+            for name, active, retained in (("after", C, B), ("manualRollback", B, C)):
+                _generation_handler(configs[name])["routes"][1:1] = core_api_routes(self.core_alias, active, retained)
         self.current = configs["after"]
         self.preimage = canonical(self.current)
         self.admin = Admin(self.current)
@@ -83,6 +90,15 @@ class InstalledWebSuccessorTests(unittest.TestCase):
         old, active = make_slot(runtime_b, B, configs["manualRollback"]), make_slot(runtime_c, C, self.current)
         self.backend = {"backendFingerprint": "e" * 64, "schemaSha256": "d" * 64,
                         "processes": {"edge": {"id": "5" * 64, "pid": 23}, "realtime": {"id": "6" * 64}}}
+        self.original_backend = deepcopy(self.backend)
+        if self.core_alias is not None:
+            self.core_witness = {"id": "8" * 64}
+            self.core_pin = {"id": "8" * 64,
+                "ingress": {"networkId": NETWORK_IDS[successor.INGRESS], "alias": self.core_alias},
+                "database": {"networkId": NETWORK_IDS[successor.NETWORKS[1]]}}
+            facts = {"schemaSha256": self.backend["schemaSha256"],
+                     "processes": {**self.backend["processes"], "core": self.core_witness}}
+            self.backend = {**facts, "backendFingerprint": content_hash(facts)}
         self.plan = {"schemaVersion": 1, "kind": "warpdrive-web-rollout", "operationId": "web-cccccccccccc-reapply",
                      "targetKey": "pitant-warpdrive", "backendFingerprint": self.backend["backendFingerprint"],
                      "qualificationSha256": "f" * 64, "before": old, "after": active}
@@ -92,11 +108,16 @@ class InstalledWebSuccessorTests(unittest.TestCase):
                       "acceptedOperationId": self.plan["operationId"], "acceptedPlanSha256": content_hash(self.plan),
                       "active": {"slot": active, "alias": C.target, "provenance": {}, "receiptSha256": "1" * 64},
                       "previous": {"slot": old, "alias": B.target, "provenance": {}, "receiptSha256": "2" * 64}}
-        self.binding = {"backend": self.backend, "backendPins": {}, "daemon": {"serverId": "owned-fixture"},
+        self.binding = {"backend": self.original_backend, "backendPins": {}, "daemon": {"serverId": "owned-fixture"},
                         "inputs": {"networkIds": NETWORK_IDS, "runtimeSecret": RUNTIME_SECRET, "successorRelayAlias": RELAY,
                                    "edgeIP": PEER, "publicIP": "127.0.0.1", "publicStorageIP": "127.0.0.2", "version": "1.6.1",
                                    "installedRouteBytes": "{}", "installedRouteSha256": "9" * 64},
                         "incumbent": {"relay": {"id": "7" * 64, "imageId": self.relay["imageId"], "alias": "old-unavailable-relay"}}}
+        self.core_profile = None if self.core_alias is None else {
+            "schemaVersion": 1, "kind": "warpdrive-installed-retained-core",
+            "originalBindingSha256": content_hash(self.binding), "acceptedChainSha256": content_hash(self.chain),
+            "corePin": self.core_pin, "coreWitness": self.core_witness,
+        }
         self.release = {"fixtureRelease": True}
         self.loaded = {"kind": "warpdrive-installed-web-image-load", "state": "verified",
                        "sourceRevision": self.runtime_d["sourceRevision"], "imageId": self.runtime_d["imageId"],
@@ -112,13 +133,21 @@ class InstalledWebSuccessorTests(unittest.TestCase):
                             ("compile_traefik_web_handoff", {}), ("verify_accepted_traefik_web_handoff", None),
                             ("network_peer", "10.0.8.8"), ("read_direct_web", True), ("observe_direct_failure", None)):
             self.enterContext(patch.object(successor, name, return_value=value))
-        self.enterContext(patch.object(successor, "observe_backend", side_effect=lambda *_: self.backend))
+        self.backend_observer = self.enterContext(patch.object(successor, "observe_backend", side_effect=self.observe_backend))
         self.enterContext(patch.object(successor, "read_autosave", side_effect=lambda _: deepcopy(self.admin.persisted)))
         self.web = self.enterContext(patch.object(successor, "TlsProbe", return_value=lambda *_a, **_k: SimpleNamespace(status=200, body=b'{"ok":true}')))
         self.public = self.enterContext(patch.object(successor, "probe_public", return_value=PublicProbe("after", "after", True, True, True, True, True)))
-        self.install = successor.InstalledWebSuccessor(self.docker, first=self.first, operation=self.operation,
+        self.install = self.build(self.core_profile)
+
+    def observe_backend(self, _docker, _pins, **options):
+        self.assertEqual(options, {} if self.core_alias is None else {"core_pin": self.core_pin})
+        return self.backend
+
+    def build(self, profile, pin=None):
+        return successor.InstalledWebSuccessor(self.docker, first=self.first, operation=self.operation,
             binding=self.binding, expected_binding_sha256=content_hash(self.binding), chain=self.chain,
-            chain_sha256=content_hash(self.chain), watched=self.watched, preimage=self.preimage)
+            chain_sha256=content_hash(self.chain), watched=self.watched, preimage=self.preimage, retained_core=profile,
+            expected_retained_core_sha256=(pin or content_hash(profile)) if profile is not None else pin)
 
     def options(self):
         return {"loaded": self.loaded, "alias": D.target, "revision": self.runtime_d["sourceRevision"], "release": self.release}
@@ -155,7 +184,7 @@ class InstalledWebSuccessorTests(unittest.TestCase):
         self.assertEqual(stage.call_args.kwargs["document"], self.doc_d)
         controller = self.install.controller(**self.options(), verify_release=lambda _plan, *, initialize: not initialize)
         expected = compile_repeat_web_configs(self.preimage, expected_sha256=sha256(self.preimage).hexdigest(), host=HOST,
-            traefik_ip=PEER, relay_alias=RELAY, current=C, previous=B, candidate=D)
+            traefik_ip=PEER, relay_alias=RELAY, current=C, previous=B, candidate=D, core_alias=self.core_alias)
         for action, config in (("promote", "after"), ("rollback", "manualRollback"), ("reapply", "after")):
             result = controller.run(action, clock=self.clock.monotonic, sleep=self.clock.sleep)
             self.assertEqual(result["state"], "accepted")
@@ -201,3 +230,21 @@ class InstalledWebSuccessorTests(unittest.TestCase):
         self.backend = {**self.backend, "schemaSha256": "0" * 64}
         with self.assertRaisesRegex(WebRuntimeError, "Protected original backend"):
             self.install.stage(**self.options())
+
+
+class InstalledCoreWebSuccessorTests(InstalledWebSuccessorTests):
+    core_alias = "warpdrive-core-fixture"
+
+    def test_unmatched_core_authority_and_network_hold_before_staging(self):
+        with self.assertRaisesRegex(WebRuntimeError, "protected backend.*current Web chain"):
+            self.build(None)
+        with self.assertRaisesRegex(WebRuntimeError, "independently admitted"):
+            self.build(self.core_profile, "0" * 64)
+        wrong_chain = {**self.core_profile, "acceptedChainSha256": "0" * 64}
+        with self.assertRaisesRegex(WebRuntimeError, "independently admitted"):
+            self.build(wrong_chain)
+        changed = deepcopy(self.core_profile)
+        changed["corePin"]["database"]["networkId"] = "0" * 64
+        with self.assertRaisesRegex(WebRuntimeError, "admitted installation networks"):
+            self.build(changed)
+        self.backend_observer.assert_not_called()

@@ -27,8 +27,19 @@ function currentReason(
 // UI callers cannot supply or extend these freshness windows.
 export function operationsStaleAfter(observation: OperationsObservation): number {
   if (observation.kind === "queue") return 5 * 60_000;
-  if (observation.kind === "recovery")
-    return observation.stage === "restore_tested" ? 30 * 24 * 60 * 60_000 : 24 * 60 * 60_000;
+  // Worker registry evidence is current for three configured 30-second beats.
+  if (
+    observation.kind === "heartbeat" &&
+    observation.component === "worker" &&
+    observation.sampledAtMs !== undefined
+  )
+    return 90_000;
+  if (observation.kind === "deployment") return 30 * 24 * 60 * 60_000;
+  if (observation.kind === "recovery") {
+    const restoreCheck =
+      observation.stage === "restore_tested" || observation.stage === "restore_bytes_verified";
+    return (restoreCheck ? 30 : 1) * 24 * 60 * 60_000;
+  }
   return 3 * 60_000;
 }
 
@@ -37,6 +48,13 @@ export function operationsOrderingAt(
   batchObservedAt: Date,
 ): Date {
   if (observation.kind === "queue" && observation.sampledAtMs !== null)
+    return new Date(observation.sampledAtMs);
+  if (
+    (observation.kind === "feature" ||
+      observation.kind === "provider" ||
+      observation.kind === "heartbeat") &&
+    observation.sampledAtMs !== undefined
+  )
     return new Date(observation.sampledAtMs);
   if (
     observation.kind === "recovery" &&

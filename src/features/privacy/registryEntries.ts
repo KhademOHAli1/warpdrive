@@ -243,22 +243,24 @@ export const registryEntries: RegistryEntry[] = [
   }),
   classifyInventory(coreHttpServiceQualificationIds2, {
     ...classifications.tooling,
-    owner: "real Core entrypoint qualification fixture",
+    owner: "isolated Core and recovery qualification fixtures",
     categories: [
       "synthetic native users, contacts, sessions and saved reports",
       "generated fixture environment and native credentials",
       "owned child handles, private diagnostics and finite check facts",
+      "synthetic encrypted credential, pending queue job and unknown newsletter operation",
+      "synthetic mailbox attachment bytes, object metadata and transient signed fixture URL",
     ],
     subjectRelation:
-      "The supplied configuration names one isolated loopback core_service_fixture database and synthetic owner/runtime roles. Canonical private scratch/configuration checks follow parsing; a random marker read from the actual cluster must match before owner migrations. The external supervisor retains cluster, directory and process custody evidence.",
+      "The supplied configuration names an isolated loopback fixture database and synthetic owner/runtime roles. A random marker read from the actual cluster must match before owner migrations. The supervisor retains cluster, directory and process custody evidence. The recovery harness accepts generated fixture expectations from its private supervisor.",
     purpose:
-      "Run the actual Core entrypoint against canonical/queue migrations in the disposable owner fixture, restricted runtime admission, native password-issued cookies and a synthetic public Web metadata server. Observe owner isolation, saved-report CSRF/create/remove, independent metadata refresh, producer-only registry state, native signals and failed startup. Source classification does not assert those checks passed.",
+      "Run the actual Core entrypoint against canonical/queue migrations in the disposable owner fixture, restricted runtime admission, native password-issued cookies and a synthetic public Web metadata server. Observe owner isolation, saved-report CSRF/create/remove, independent metadata refresh, producer-only registry state, native signals and failed startup. Reopen the independently restored test database to observe pending queue work, decryption, role restrictions and an unknown operation. In the optional loopback Silo fixture, exercise the mailbox attachment upload and restored download path with exact bytes and metadata, and verify anonymous and cross-actor denial.",
     disclosure:
-      "HTTP fetch targets are derived only from captured owned loopback child and metadata listeners. Public proof logs retain finite stages, outcomes, counts and child handles. The supplied configuration contains generated environment/connection material; bounded raw child stdout/stderr are private scratch diagnostics, not automatically credential-free public evidence. No customer/provider destination or user credential forwarding to metadata is authorized.",
+      "HTTP fetch targets are derived only from owned loopback child, metadata and Silo listeners. Attachment fetches verify the fixture origin and object path, disable redirects, and retain attachment verification facts without the URL or bytes. Public proof logs retain finite stages, outcomes, counts and child handles. The supplied configuration contains generated environment/connection material; bounded raw child stdout/stderr are private scratch diagnostics, not automatically credential-free public evidence. No customer/provider destination or user credential forwarding to metadata is authorized.",
     retention:
       "Filesystem reads load the supplied fixture configuration before its post-parse path guard. Writes/atomic rename create private 0600 child/metadata manifests and bounded child logs under checked scratch; file/libpq environment overrides are not forwarded. All-settled cleanup attempts each child and resource; independent supervisor descendant verification and cluster/directory teardown remain required. All synthetic rows and runtime role grants require disposable database teardown, not installed acceptance.",
     externalEffects:
-      "insert:dynamic is actual synthetic fixture seeding. The CREATE ROLE/REVOKE/GRANT statement and explicit owner migrator perform real fixture DDL; query:none/dynamic also cover owner setup and reads. The nonce current_setting SELECT only attests fixture context; the three listed pg_stat_activity/pgboss.instance SELECTs only observe backend and producer facts. delete:response is in-memory ServerResponse Set bookkeeping. Child startup, signals and metadata sockets are local qualification resources, not publication, accepted ingress cutover or a production deployment.",
+      "insert:dynamic is actual synthetic fixture seeding. The CREATE ROLE/REVOKE/GRANT statements and explicit owner migrator perform real fixture DDL. The recovery fixture also enqueues one synthetic job without a consumer and verifies DDL denial in a rolled-back transaction. The nonce SELECT attests fixture context. The pg_stat_activity/pgboss.instance SELECTs observe backend and producer facts. delete:response removes an in-memory Set member. Optional Silo qualification creates a fixture bucket, writes and reads a synthetic mailbox attachment, and uses an in-memory SHA-256 comparison; update:bytes and update:downloaded do not mutate a store. The synthetic objects and credentials require independent fixture teardown. Child startup, signals and metadata sockets are local qualification resources.",
   }),
   classifyInventory([...notificationsIds1], classifications.notifications),
   classifyInventory([...observabilityIds1], classifications.observability),

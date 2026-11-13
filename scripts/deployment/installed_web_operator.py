@@ -10,6 +10,7 @@ import time
 
 from caddy_admin import CaddyAdmin
 from caddy_web_config import _generation_handler, compile_successor_web_configs
+from caddy_core_config import core_api_routes
 from component_inputs import decode
 from installed_web_backend import observe_backend, process_witness
 from installed_web_emergency import restore_failed_installed_web
@@ -215,7 +216,7 @@ def operation_plan(inputs, evidence, old_runtime, staged, backend):
             "qualificationSha256": content_hash(evidence)}
 
 
-def healthy_rollback(plan, documents, *, current, candidate):
+def healthy_rollback(plan, documents, *, current, candidate, core_alias=None):
     """Return a qualified A-active route that continues to serve healthy B tabs."""
     restored = deepcopy(documents["successorA"])
     gate = restored["apps"]["http"]["servers"]["web-relay"]["routes"][0]["match"][0]
@@ -223,7 +224,8 @@ def healthy_rollback(plan, documents, *, current, candidate):
     peer, = gate["remote_ip"]["ranges"]
     reversed_web = _caddy_config(host, peer, compile_web_generation_routes(current=current, previous=candidate))
     routes = _generation_handler(restored)["routes"]
-    routes[1:] = _generation_handler(reversed_web)["routes"]
+    prefix = [] if core_alias is None else core_api_routes(core_alias, current, candidate)
+    routes[1:] = [*prefix, *_generation_handler(reversed_web)["routes"]]
     old = {**plan["before"], "route": {**plan["before"]["route"], "fingerprint": content_hash(restored)}}
     reverse = {**plan, "operationId": plan["operationId"] + "-rollback", "before": plan["after"], "after": old}
     reapplied = {**plan, "operationId": plan["operationId"] + "-reapply", "before": old}

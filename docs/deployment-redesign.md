@@ -28,6 +28,119 @@ deduplication and bounded monitoring overhead are part of acceptance. CPU, memor
 disk, queues and retention need measured budgets. Source and local fixture evidence cannot
 substitute for authorized target installation and recovery acceptance.
 
+## Operations collector
+
+Build the standalone entrypoint with `bun --no-env-file scripts/build-operations-collector.mjs`.
+Run `bun --no-env-file dist/operations-collector.mjs /private/operations/config.json` under a
+dedicated local account in a managed process. The private configuration is an owned single-link
+0600 or 0400 JSON file. It contains `databaseUrl`, `socketPath` and a `sources` array of entries
+containing `binding` and `signingKey`. Each binding holds the installation, source and current
+generation UUIDs from an enrolled source. Generate a separate 32-byte base64url key for each
+source. The socket filename is `collector.sock` in an owned 0700 directory. If the path is
+already occupied, startup holds and the operator verifies the incumbent before clearing it.
+
+Enroll one explicit binding with
+`bun --no-env-file scripts/operations-source.ts enroll /private/operations/source.json`.
+Use an owned 0400 or 0600 file in an owned 0700 directory. Its fields are `databaseUrl`,
+`role` and `binding`, with `installationId`, `sourceId` and `generationId` inside `binding`.
+Use the existing installation ID if one is recorded. Assign a unique source and generation
+UUID to each host collector and each enabled sampler. Retain the exact binding so an
+interrupted or unacknowledged command can be repeated. Use an existing operator loopback
+PostgreSQL connection with an explicit port and a restricted provisioning login separate
+from the runtime login. It needs `SELECT` and `INSERT` on `operations_installation` and
+`operations_sources`, plus `UPDATE` on `operations_installation.singleton` and
+`operations_sources.id` for row locks. Source keys stay in the collector and reporter files.
+
+The optional [collector overlay](../deploy/images/compose.operations.yml) adds a separate
+digest-pinned image from `deploy/images/OperationsCollector.Dockerfile`. Supply the image
+repository and SHA-256, the existing private database network, the private config file and
+the private socket directory using the overlay's five required variables. The config declares
+`/run/warpdrive-operations/collector.sock` for the container. The host reporter uses the
+corresponding host socket path. Both run with the mapped socket owner UID. The overlay binds
+only the collector config and socket directory and publishes no ports.
+
+The optional `operations_collector_rehearsal` workflow input qualifies the final image on a
+native Linux AMD64 runner. The fixture uses a private PostgreSQL network and config/socket
+volumes to verify restricted startup, signed delivery, deduplication and graceful restart.
+
+Use a restricted login role with no inherited roles, DDL or owner credentials. It needs
+`SELECT` on `operations_installation` and `SELECT`, `INSERT`, `UPDATE` and `DELETE` on
+`operations_sources`, `operations_receipts`, `operations_current`, `operations_incidents`
+and `operations_transitions`. The optional
+`queueSamplerSourceId` designates an application-sampler enrollment and requires
+`USAGE` on schema `pgboss` and `SELECT` on `pgboss.queue`. Sampling preserves the cache's observation
+timestamp. Reads do not refresh the cache or query job contents.
+Set `workerHeartbeat` to `true` to include the tagged Worker's existing pg-boss registry
+beat in the queue sampler's batch. Grant `SELECT` on `pgboss.instance` columns `id`,
+`name`, `version`, `supervise`, `schedule`, `migrate`, `started_on`, `heartbeat_on`,
+`heartbeat_seconds` and `stopped_on`. The current single-Worker profile accepts one fresh
+tagged instance and preserves its original timestamp. Stopped, stale, absent and ambiguous
+instances are unknown. The beat reports pg-boss process liveness. Queue and handler readiness
+use their own evidence.
+
+The optional `newsletterSamplerSourceId` uses its own application-sampler enrollment and
+`SELECT` on `newsletter_operational_state`. It reads one existing engine row and preserves
+the event-consumption and sender-readiness timestamps. Missing or stale observations stay
+unknown. Paused sending is unchecked. Sender readiness is scoped to the newsletter relay.
+
+Host reporters submit one retained batch identity through the local socket. An exact replay
+can recover an acknowledgement within the retained receipt window. Conflicting payloads,
+retired generations and expired receipts hold. Deployment observations use the authenticated
+native result and its fingerprint. A lost response leaves the deployment outcome unknown
+until the installed readback resolves it. Monitoring failures must not repeat deployment
+actions. Current administrators can open the notification bell to reach open operations
+incidents in Logs.
+
+After a native Web action exits, the release owner reads the exact journal and accepted
+pointer under the release locks. Pass its bounded stdout directly to the reporter running
+as the collector account. This keeps the release directories with their current owner.
+The reporter uses one dedicated host collector enrollment and one owned 0700 outbox.
+Its 0600 configuration contains `socketPath`, `binding` and `signingKey`.
+
+```sh
+# Release owner
+python3 -B scripts/deployment/web_rollout_monitor.py extract \
+  --original /private/releases/original \
+  --state /private/releases/current \
+  --operation-id "$WARPDRIVE_OPERATION_ID" \
+  --plan-sha256 "$WARPDRIVE_PLAN_SHA256"
+
+# Collector account, with the release owner's stdout on stdin
+python3 -B scripts/deployment/web_rollout_monitor.py submit \
+  --outbox /private/operations/web-outbox \
+  --reporter-config /private/operations/web-reporter.json \
+  --operation-id "$WARPDRIVE_OPERATION_ID" \
+  --plan-sha256 "$WARPDRIVE_PLAN_SHA256"
+```
+
+Use an existing local supervisor or account boundary to pass this pipe. The collector
+trusts its operator-provided input, so keep intermediate files and shared directories out
+of the transfer. The result describes the recorded rollout. Live health is sampled
+separately. If the collector reply is lost, run `submit` with `--retry-pending` for the
+same plan before reporting a later rollout. Keep the outbox with the source generation
+across restarts.
+
+For scheduled reporting, run `installed_web_monitor_schedule.py tick` once a minute
+as root on the installation host. Use an existing supervisor with a
+bounded execution deadline and one task per installation.
+
+```sh
+python3 -B scripts/deployment/installed_web_monitor_schedule.py tick \
+  --original /private/releases/original --state /private/releases/current \
+  --target-key warpdrive --reporter-user warpdrive-operations \
+  --outbox /private/operations/web-outbox \
+  --reporter-config /private/operations/web-reporter.json
+```
+
+Use the exact target key in the accepted pointer. Install the reviewed command and
+imports in a root-owned directory readable by the reporter account. The command
+reads the current Web journal under the release locks and starts the same fixed
+program under the reporter UID and GID, with supplemental groups removed. The
+reporter sees only the bounded observation on stdin and its own signing config and
+outbox. Pending delivery is reconciled before a newer observation. Unknown and
+unrelated journal states hold reporting and never invoke deployment. The Core-only
+activation and route-only reconciliation journals retain their own authority.
+
 ## First increment: native final-image gate
 
 `deploy/images/Dockerfile` supplies four targets:
@@ -52,6 +165,70 @@ individual image change leaves other service settings unchanged. Existing cold-s
 and bucket gates remain intact. This model check does not prove a running selective deployment
 or validate registry provenance; the release controller must enforce verified immutable digests
 and explicit migration sequencing before the overlay is used on an installation.
+
+## Fresh installation qualification
+
+Use a dedicated project and empty volumes on an isolated Linux Docker host.
+The fresh profile merges `docker-compose.yml`, `docker-compose.newsletters.yml`,
+`deploy/images/compose.yml` and `deploy/images/compose.fresh.yml` in that order.
+The last overlay requires separately qualified Caddy, PostgreSQL, object storage,
+bucket initializer and newsletter engine image references. It disables Compose
+pulls and builds for all services. Both newsletter commands use the same image,
+and the newsletter migration stays in its explicit profile.
+
+Use an owned project directory containing the private synthetic `.env` and the
+reviewed Caddy configuration files. Supply the separately pinned interpolation
+files for the accepted and candidate image sets. `--env-file` selects Compose
+interpolation while service `env_file: .env` still resolves in the project
+directory. For local runtime tests, supply fixture-specific Caddy configuration
+with a trusted local TLS issuer and use loopback-only published ports. The fresh
+overlay inherits the stock deployment's port bindings.
+
+```sh
+python3 -B scripts/deployment/fresh_compose_admission.py \
+  --project warpdrive-qualification --project-directory "$FIXTURE_DIR" \
+  --baseline-env "$BASELINE_ENV" --baseline-env-sha256 "$BASELINE_SHA256" \
+  --candidate-env "$CANDIDATE_ENV" --candidate-env-sha256 "$CANDIDATE_SHA256"
+```
+
+The admission command verifies the rendered image references and proves that the
+candidate changes only the Web image. Preload those exact images before running
+Compose. Start PostgreSQL and object storage, apply the canonical migrations,
+provision the restricted application and newsletter roles, then run the explicit
+newsletter migration and bucket initialization. Verify their completion and bucket
+privacy before starting the application. The passive fresh overlay disables the
+application's newsletter API connection, newsletter delivery, public signup and
+external provider calls.
+
+Use representative users, workspace records, stored objects and pending jobs on
+the isolated stack. Record the accepted images, process identities and migration
+ledger. Select the candidate environment and update only `app` with
+`up -d --no-deps --no-build --pull never app`. Verify the candidate, then select
+the accepted environment again and verify the restored Web and retained services.
+The single-slot Compose procedure recreates Web. The two-slot release rehearsal
+qualifies old browser tabs, stamped assets and Server Actions during the switch
+and rollback. Run both before claiming the complete independent release path.
+
+The native single-slot fixture uses preloaded image digests on a Linux AMD64
+host. It creates a dedicated project with an internal bridge and serves test
+HTTPS through a loopback forwarder. It checks the CRM migration ledger, passive
+newsletter startup, restricted database access and a private stored object
+across selection and rollback. A persisted job proves Worker execution and an
+unauthenticated WebSocket verifies Realtime's rejection behavior. After verifying
+the candidate, the fixture stops that exact Web container, confirms failure at
+the retained ingress, and restores the baseline Web. It compares the other
+services' identities throughout the operation. The command uses private copies
+of its Compose files and verifies the prepared configuration before use.
+
+```sh
+python3 -B scripts/deployment/fresh_compose_smoke.py --run-native \
+  --baseline-env "$BASELINE_ENV" --baseline-env-sha256 "$BASELINE_SHA256" \
+  --candidate-env "$CANDIDATE_ENV" --candidate-env-sha256 "$CANDIDATE_SHA256"
+```
+
+Retain the receipt from a successful run with confirmed cleanup. The fixture
+uses generated records, credentials and TLS. Test cold recovery separately with
+the actual Linux volume inventory and a quarantined restore.
 
 Each target uses the locked production dependency tree. Npm packages remain external because
 some load runtime data files. Smaller per-component dependency sets and standalone Next output
@@ -119,10 +296,15 @@ An unavailable command response leaves an unknown phase; it does not justify bli
 
 ## Remaining rollout boundaries
 
-The [runtime rehearsals](deployment-runtime-rehearsals.md) add bounded shutdown and a controller
-engine limited to isolated same-version Web switching. Actual native reports qualify only their
-stated cases. They do not implement a general production deployment controller, staging
-promotion, populated-version upgrade coverage, complete authenticated final-image browser
-journeys, shutdown qualification, feature health UI, API extraction or installed off-host
-recovery. Those requirements remain part of phases 1–5 above. Existing full source CI, browser
-qualification, managed security findings, review and exact-main evidence remain required.
+The [runtime rehearsals](deployment-runtime-rehearsals.md) cover shutdown, generation-aware Web
+routing and rollback. The [artifact promotion runbook](deployment-artifact-promotion.md) covers
+exact release admission and independent Web promotion. [Core API](deployment-core-api.md) has
+its own optional runtime and qualification path. Each release must qualify the exact artifacts,
+supported deployment combinations and affected authenticated journeys.
+
+[Cold recovery](deployment-recovery.md) covers encrypted capture, independent byte verification,
+the recovery observation in Maintenance and public availability probes. Installed acceptance
+requires the chosen off-host repository, separately held credentials, alert delivery, and a
+coordinated application restore with writer and provider reconciliation. Existing full source
+CI, browser qualification, managed security findings, review and exact-main evidence remain
+required.

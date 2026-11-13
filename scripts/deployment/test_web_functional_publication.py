@@ -10,6 +10,7 @@ import warnings
 
 from candidate import CandidateError
 from component_inputs import content_hash
+from installed_core_lineage_seal import initial_core_lineage_acceptance
 from publication_gate import GateError
 from test_web_baseline import API as BaselineAPI
 from test_web_functional_candidate import FunctionalCandidateTests as BundleFixture, CURRENT, ORIGIN
@@ -83,6 +84,7 @@ class API(BaselineAPI):
 class FunctionalWebPublicationTests(unittest.TestCase):
     def setUp(self):
         bundle = BundleFixture()
+        self.bundle_fixture = bundle
         self.addCleanup(bundle.doCleanups)
         bundle.setUp()
         self.bundle = bundle
@@ -185,6 +187,48 @@ class FunctionalWebPublicationTests(unittest.TestCase):
         self.assertFalse(result["deploymentAuthorized"])
         self.assertEqual(result["qualification"], expected["qualification"])
         self.assertEqual(result["provenance"]["bundleManifestSha256"], expected["bundleManifestSha256"])
+
+    def test_projected_core_requires_exact_independent_acceptance_before_publication(self):
+        from installed_core_lineage import project_initial_core_lineage
+
+        original = deepcopy(self.lineage)
+        binding = {"schemaVersion": 1, "kind": "warpdrive-installed-core-activation", "targetKey": original["targetKey"],
+                   "acceptedChainSha256": self.lineage_sha, "coreAuthoritySha256": "7" * 64,
+                   "oldBackendFingerprint": original["backendFingerprint"], "newBackendFingerprint": "8" * 64,
+                   "oldRouteSha256": original["active"]["slot"]["route"]["fingerprint"], "newRouteSha256": "9" * 64}
+        activation_sha = content_hash(binding)
+        identifier = "core-activation-" + activation_sha[:40]
+        projected = project_initial_core_lineage(accepted_plan=self.plan, expected_plan_sha256=original["acceptedPlanSha256"],
+            accepted_chain=original, expected_chain_sha256=self.lineage_sha, activation_binding=binding,
+            activation_record={**binding, "state": "route-verified-lineage-pending"}, expected_activation_operation_id=identifier,
+            expected_activation_plan_sha256=activation_sha, expected_core_authority_sha256=binding["coreAuthoritySha256"],
+            expected_core_backend_fingerprint=binding["newBackendFingerprint"])
+        projected_sha = content_hash(projected.chain)
+        seal = {"schemaVersion": 1, "kind": "warpdrive-installed-core-lineage-projection", "activationOperationId": identifier,
+                "activationPlanSha256": activation_sha, "coreAuthoritySha256": binding["coreAuthoritySha256"],
+                "originalChainSha256": self.lineage_sha, "projectedChainSha256": projected_sha,
+                "projectedChain": projected.chain, "projectedPointer": projected.accepted_pointer}
+        accepted = initial_core_lineage_acceptance(seal, binding)
+        args = {"installed_lineage": projected.chain, "expected_installed_lineage_sha256": projected_sha,
+                "core_acceptance": accepted, "core_projection": seal, "expected_core_acceptance_sha256": content_hash(accepted)}
+        with patch.object(self.api, "request", side_effect=AssertionError("hosted API reached")):
+            for changes in ({"core_acceptance": None}, {"expected_core_acceptance_sha256": "0" * 64},
+                            {"core_projection": {**seal, "originalChainSha256": "0" * 64}}):
+                with self.subTest(changes=changes.keys()), self.assertRaises(CandidateError):
+                    self.retain(**(args | changes))
+        self.assertFalse(self.output.exists())
+
+        bundle = self.bundle_fixture
+        # Preserve the exact tested ZIP contract, including its current-lineage pin.
+        bundle.options["installed_lineage_sha256"] = projected_sha
+        bundle.directory = bundle.root / "projected-bundle"
+        expected = bundle.create()
+        self.payload = zip_bytes({path.name: path.read_bytes() for path in bundle.directory.iterdir()})
+        self.api.payload(self.payload)
+        result = self.retain(**args)
+        self.assertEqual(result["baseline"]["installedLineageSha256"], projected_sha)
+        self.assertEqual(result["image"], expected["image"])
+        self.assertFalse(result["deploymentAuthorized"])
 
     def test_main_attempt_steps_codeql_and_artifact_origin_all_fail_closed(self):
         mutations = (("main", "f" * 40), ("latest", {**self.api.run, "run_attempt": ATTEMPT + 1}),

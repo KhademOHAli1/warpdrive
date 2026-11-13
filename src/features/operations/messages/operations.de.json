@@ -7,6 +7,7 @@
   "logsTitle": "Betriebsverlauf",
   "logsInfo": "Metadaten zu Vorfällen und Erfassungsbelegen auf den sichtbaren Seiten. Die Inhalte der Erfassungsbelege werden nicht angezeigt.",
   "incidentsTitle": "Vorfälle",
+  "bellOpenIncidents": "Offene Betriebsvorfälle ansehen",
   "eventsTitle": "Belege zu Statusmeldungen",
   "refresh": "Aktualisieren",
   "previous": "Vorherige Seite",
@@ -46,6 +47,8 @@
   "reportedIdentity": "Gemeldete Identität der installierten Komponente",
   "identityUnchecked": "Die Identität der installierten Komponente wurde nicht gemeldet.",
   "imageDigest": "Image-Digest",
+  "deploymentOutcome": "Ergebnis der Bereitstellung",
+  "proofHash": "Prüfsumme des Nachweises",
   "sourceRevision": "Quellrevision des Images",
   "configurationHash": "Konfigurationsfingerabdruck",
   "schemaHash": "Schema-Fingerabdruck",
@@ -97,12 +100,14 @@
     "feature": "Funktion",
     "provider": "Anbieter",
     "heartbeat": "Lebenszeichen",
+    "deployment": "Bereitstellung",
     "queue": "Warteschlange",
     "observer": "Beobachter",
     "recovery": "Wiederherstellung"
   },
   "components": {
     "web": "Webanwendung",
+    "core_api": "Core-API",
     "worker": "Hintergrundverarbeitung",
     "realtime": "Echtzeitdienst",
     "migrator": "Migrationen",
@@ -115,8 +120,15 @@
     "mailbox": "Postfach",
     "workflows": "Arbeitsabläufe",
     "newsletters": "Newsletter",
+    "newsletter_event_sync": "Synchronisierung der Newsletter-Ereignisse",
     "files": "Dateien",
     "realtime": "Echtzeit"
+  },
+  "deploymentOutcomes": {
+    "accepted": "Freigegeben",
+    "rolled_back": "Zurückgesetzt",
+    "rejected": "Abgelehnt",
+    "unknown": "Unbekannt"
   },
   "providers": {
     "smtp": "E-Mail-Versand (SMTP)",
@@ -134,7 +146,8 @@
   "recoveryStages": {
     "backup_created": "Backup-Erstellung",
     "offhost_received": "Empfang außerhalb des Hosts",
-    "restore_tested": "Wiederherstellungstest"
+    "restore_tested": "Wiederherstellungstest",
+    "restore_bytes_verified": "Wiederhergestellte Daten auf Byteebene geprüft"
   },
   "reasons": {
     "ok": "Prüfung bestanden",

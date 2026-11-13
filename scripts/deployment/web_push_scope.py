@@ -4,7 +4,8 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
-from component_inputs import InputError, decode
+from component_inputs import InputError
+from web_functional_profile import parse_web_functional_profile, verify_web_functional_delta
 from web_release_inputs import (
     MAX_PRESENTATION_BYTES, STYLE_FILE, _blob, _git, _presentation_delta, _tree, qualifies_topbar_browser_pair,
 )
@@ -18,20 +19,12 @@ def functional_web_push(root, old, new):
     if any(old.get(path) is None or old[path] != new.get(path) for path in (FUNCTIONAL_WORKFLOW, FUNCTIONAL_PROFILE)):
         return False
     _, raw = _blob(root, old, FUNCTIONAL_PROFILE, MAX_PRESENTATION_BYTES)
-    profile = decode(raw)
-    if (type(profile) is not dict or set(profile) != {"version", "modules", "styles", "adapters"}
-            or type(profile["version"]) is not int or profile["version"] != 1
-            or any(type(profile[key]) is not list or len(profile[key]) > 64
-                   or not all(isinstance(path, str) for path in profile[key]) for key in ("modules", "styles", "adapters"))):
+    try:
+        profile = parse_web_functional_profile(raw)
+        verify_web_functional_delta(old, new, profile)
+    except ValueError:
         return False
-    allowed = profile["modules"] + profile["styles"]
-    adapters = profile["adapters"]
-    if (not profile["modules"] or not adapters or len(set(allowed + adapters)) != len(allowed + adapters)
-            or any(path not in old or old[path][:2] != ("100644", "blob") for path in allowed + adapters)
-            or any(not path.startswith(("src/components/", "src/features/")) for path in allowed)):
-        return False
-    changes = {path for path in old.keys() | new.keys() if old.get(path) != new.get(path)}
-    return bool(changes) and changes <= set(allowed) and all(new.get(path, ())[:2] == ("100644", "blob") for path in changes)
+    return True
 
 
 def independent_web_push(root: Path, before: str, after: str) -> bool:
