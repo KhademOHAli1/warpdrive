@@ -152,7 +152,8 @@ class SwitchSuccessorSourceTests(unittest.TestCase):
             self.verify()
 
     def test_backend_blob_changes_fail_before_any_fresh_code_runs(self):
-        path = next(iter(inputs.POLICY_SOURCES))
+        path = "scripts/deployment/component_inputs.mjs"
+        self.assertIn(path, inputs.POLICY_SOURCES)
         self.stage(extra_tooling=lambda: self.put(path, "mutated backend scanner"))
         with patch.object(source, "discover_web_sdk_full_receipt") as scan:
             with self.assertRaisesRegex(inputs.InputError, "input file"):
