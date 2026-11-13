@@ -87,11 +87,19 @@ function renderCampaign(status: Campaign["status"] = "draft", locale: "en" | "de
   return userEvent.setup();
 }
 
+function deferredWrite() {
+  let resolve: () => void = () => undefined;
+  const promise = new Promise<void>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
+}
+
 it("dismisses delete without a write, restores focus, and confirms delete once", async () => {
   const user = renderCampaign();
-  const pending = Promise.withResolvers<void>();
+  const pending = deferredWrite();
   write.mockReturnValue(pending.promise);
-  const trigger = screen.getByRole("button", { name: "Delete", exact: true });
+  const trigger = screen.getByRole("button", { name: "Delete" });
   await user.click(trigger);
   let dialog = screen.getByRole("alertdialog", { name: "Delete this item?" });
   expect(screen.getAllByRole("alertdialog")).toHaveLength(1);
@@ -117,9 +125,9 @@ it("dismisses delete without a write, restores focus, and confirms delete once",
 
 it("switches from dismissed delete to test delivery and sends the selected recipients once", async () => {
   const user = renderCampaign();
-  const pending = Promise.withResolvers<void>();
+  const pending = deferredWrite();
   write.mockReturnValue(pending.promise);
-  const remove = screen.getByRole("button", { name: "Delete", exact: true });
+  const remove = screen.getByRole("button", { name: "Delete" });
   await user.click(remove);
   await user.keyboard("{Escape}");
   await waitFor(() => expect(remove).toHaveFocus());
@@ -169,7 +177,7 @@ it("retains localized destructive campaign cancellation with a single status wri
   expect(dialog).toHaveAccessibleDescription(
     "Listmonk wendet diese Aktion auf die gespeicherte Kampagne und ihre ausgewählten Listen an.",
   );
-  expect(within(dialog).getByRole("button", { name: "Abbrechen", exact: true })).toHaveFocus();
+  expect(within(dialog).getByRole("button", { name: "Abbrechen" })).toHaveFocus();
   const confirm = within(dialog).getByRole("button", { name: "Kampagne abbrechen" });
   expect(confirm).toHaveClass("bg-destructive");
   await user.click(confirm);

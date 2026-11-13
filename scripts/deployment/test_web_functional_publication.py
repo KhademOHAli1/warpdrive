@@ -85,6 +85,7 @@ class FunctionalWebPublicationTests(unittest.TestCase):
         bundle = BundleFixture()
         self.addCleanup(bundle.doCleanups)
         bundle.setUp()
+        self.bundle = bundle
         admitted = lineage_fixture.WebSuccessorLineageTests()
         admitted.setUp()
         self.addCleanup(admitted.doCleanups)
@@ -166,6 +167,24 @@ class FunctionalWebPublicationTests(unittest.TestCase):
             with self.assertRaises(CandidateError):
                 self.retain(previous_web=self.composite["web"])
         self.assertFalse(self.output.exists())
+
+    def test_switch_publication_requires_the_independently_selected_mode_and_profile(self):
+        self.bundle.directory = self.bundle.directory.with_name("switch-functional-bundle")
+        self.bundle.enable_switch()
+        expected = self.bundle.create()
+        self.input_sha = self.bundle.options["expected_input_sha256"]
+        self.payload = zip_bytes({path.name: path.read_bytes() for path in self.bundle.directory.iterdir()})
+        self.api.payload(self.payload)
+        with self.assertRaisesRegex(CandidateError, "build context receipt"):
+            self.retain()
+        self.assertFalse((self.output / gate.RECEIPT_NAME).exists())
+        self.output = self.output.with_name("switch-admitted")
+        options = {key: self.bundle.options[key] for key in (
+            "sdk_scenario", "expected_tooling_revision", "expected_profile_sha256")}
+        result = self.retain(**options)
+        self.assertFalse(result["deploymentAuthorized"])
+        self.assertEqual(result["qualification"], expected["qualification"])
+        self.assertEqual(result["provenance"]["bundleManifestSha256"], expected["bundleManifestSha256"])
 
     def test_main_attempt_steps_codeql_and_artifact_origin_all_fail_closed(self):
         mutations = (("main", "f" * 40), ("latest", {**self.api.run, "run_attempt": ATTEMPT + 1}),
