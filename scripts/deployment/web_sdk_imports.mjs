@@ -1,5 +1,6 @@
 /** Inspect exact first-party Web SDK import bindings under a reviewed profile. */
 import ts from "typescript";
+import controlsPolicy from "./web-sdk-controls-import-policy.json" with { type: "json" };
 import policy from "./web-sdk-import-policy.json" with { type: "json" };
 
 function referencesSdk(value) {
@@ -14,11 +15,30 @@ function referencesSdk(value) {
 
 function admittedExports(specifier, path, version) {
   const { pilot, successor } = policy;
-  if (Object.hasOwn(pilot, specifier)) return pilot[specifier];
-  if (version === 2 && path === successor.path && specifier === successor.specifier) {
+  if (Object.hasOwn(pilot, specifier)) {
+    const additional = reviewedEntry(controlsPolicy.additionalBindings, path, version);
+    return additional?.specifier === specifier
+      ? [...pilot[specifier], ...additional.exports]
+      : pilot[specifier];
+  }
+  if (version >= 2 && path === successor.path && specifier === successor.specifier) {
     return successor.exports;
   }
+  const control = reviewedEntry(controlsPolicy.controls, path, version);
+  if (control?.specifier === specifier) return control.exports;
   return [];
+}
+
+function reviewedEntry(entries, path, version) {
+  return version === 3 && Object.hasOwn(entries, path) ? entries[path] : undefined;
+}
+
+export function hasReviewedSdkControl(reachable, read) {
+  return Object.entries(controlsPolicy.controls).some(([path, { specifier }]) => {
+    if (!reachable.includes(path)) return false;
+    const tree = ts.createSourceFile(path, read(path), ts.ScriptTarget.Latest, true);
+    return inspectWebSdkImports(tree, path, 3).some((binding) => binding.specifier === specifier);
+  });
 }
 
 function trackValueExport(node, valueExports) {
@@ -32,7 +52,7 @@ function trackValueExport(node, valueExports) {
 
 /** The caller must independently verify reachability, exact source bytes and package custody. */
 export function inspectWebSdkImports(tree, path, version) {
-  if (version !== 1 && version !== 2) throw new Error("Unknown Web SDK import policy version");
+  if (![1, 2, 3].includes(version)) throw new Error("Unknown Web SDK import policy version");
   const reject = () => {
     throw new Error(`Unreviewed Web SDK import in ${path}`);
   };
@@ -105,5 +125,10 @@ export function inspectWebSdkImports(tree, path, version) {
 
   visit(tree);
   if (imports.some(({ local }) => valueExports.has(local))) reject();
+  const control = reviewedEntry(controlsPolicy.controls, path, version);
+  if (control) {
+    const selected = imports.filter(({ specifier }) => specifier === control.specifier);
+    if (selected.length > 0 && selected.length !== control.exports.length) reject();
+  }
   return imports;
 }

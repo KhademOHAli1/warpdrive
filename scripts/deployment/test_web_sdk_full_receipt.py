@@ -20,6 +20,13 @@ import web_sdk_full_receipt as receipt
 REPOSITORY = Path(__file__).resolve().parents[2]
 SWITCH = "src/components/ui/Switch.tsx"
 SWITCH_IMPORT = "@ui-sdk/react/switch"
+CHECKBOX = "src/components/ui/Checkbox.tsx"
+COMBOBOX = "src/components/ui/SdkCombobox.tsx"
+CONTROL_BINDINGS = {
+    CHECKBOX: ("@ui-sdk/react/checkbox", ("Checkbox",)),
+    COMBOBOX: ("@ui-sdk/react/combobox", ("Combobox", "ComboboxContent", "ComboboxEmpty", "ComboboxInput",
+                                         "ComboboxItem", "ComboboxList", "ComboboxTrigger")),
+}
 
 
 def rehash(value):
@@ -139,12 +146,81 @@ class ReceiptTests(unittest.TestCase):
             with self.subTest(mutation=bad["web"]["inputSha256"]), self.assertRaises(inputs.InputError):
                 receipt.validate_web_sdk_full_receipt(rehash(bad), expected_revision=SHA)
 
+    def _controls(self, *paths, with_switch=False):
+        value = self._successor()
+        value["schemaVersion"] = 3
+        web = value["web"]
+        web["importPolicySha256"] = receipt.CONTROLS_IMPORT_POLICY_SHA
+        if not with_switch:
+            web["sdkImports"].pop(SWITCH)
+            web["sdkBindings"].pop(SWITCH)
+        for path in paths:
+            specifier, names = CONTROL_BINDINGS[path]
+            web["sdkImports"][path] = [specifier]
+            web["sdkBindings"][path] = [{"specifier": specifier, "exported": name, "local": name} for name in names]
+        web["staticWebInputCount"] = len(web["sdkImports"]) + 1
+        return rehash(value)
+
+    def test_controls_proof_admits_either_or_both_without_changing_legacy_policy(self):
+        old = self._successor()
+        self.assertEqual(old["web"]["importPolicySha256"], receipt.IMPORT_POLICY_SHA)
+        for controls in ((CHECKBOX,), (COMBOBOX,), (CHECKBOX, COMBOBOX)):
+            for with_switch in (False, True):
+                with self.subTest(controls=controls, with_switch=with_switch):
+                    value = self._controls(*controls, with_switch=with_switch)
+                    self.assertIs(receipt.validate_web_sdk_full_receipt(value, expected_revision=SHA), value)
+                    current = receipt.candidate_input_facts(value, expected_revision=SHA)
+                    previous = receipt.candidate_input_facts(old, expected_revision=SHA)
+                    self.assertNotEqual(current["components"]["web"], previous["components"]["web"])
+                    for name in receipt.BACKEND:
+                        self.assertEqual(current["components"][name], previous["components"][name])
+
+    def test_controls_proof_rejects_other_paths_partial_symbols_and_backend_inputs(self):
+        for mutate in (
+            lambda value: value.update(schemaVersion=2),
+            lambda value: value["web"].update(importPolicySha256=receipt.IMPORT_POLICY_SHA),
+            lambda value: value["web"]["sdkBindings"][COMBOBOX].pop(),
+            lambda value: value["web"]["sdkBindings"][COMBOBOX][0].update(exported="ComboboxGroup"),
+            lambda value: value["web"]["sdkBindings"][CHECKBOX][0].update(exported="CheckboxIndicator"),
+            lambda value: value["web"]["helperGraphInputs"].append(CHECKBOX),
+            lambda value: value["web"]["sdkBindings"].update({"src/features/quick-add/GlobalNoteModal.tsx":
+                                                               value["web"]["sdkBindings"].pop(COMBOBOX)}),
+        ):
+            bad = self._controls(CHECKBOX, COMBOBOX)
+            mutate(bad)
+            with self.subTest(mutation=mutate), self.assertRaises(inputs.InputError):
+                receipt.validate_web_sdk_full_receipt(rehash(bad), expected_revision=SHA)
+        with self.assertRaisesRegex(inputs.InputError, "canonical SDK control proof"):
+            receipt.validate_web_sdk_full_receipt(self._controls(with_switch=True), expected_revision=SHA)
+        bad = self._controls(CHECKBOX)
+        backend = bad["backendInputs"]
+        worker = backend["components"]["worker"]
+        worker["inputs"].append({"path": CHECKBOX, "bytes": 1, "sha256": "0" * 64})
+        worker["inputs"].sort(key=lambda row: row["path"])
+        rehash_legacy(backend)
+        with self.assertRaisesRegex(inputs.InputError, "isolated Web profile"):
+            receipt.validate_web_sdk_full_receipt(rehash(bad), expected_revision=SHA)
+
+    def test_controls_dialog_backdrop_requires_v3_and_the_reviewed_wrapper(self):
+        for version, path in ((2, "src/components/ui/SdkDialog.tsx"), (3, "src/components/ui/SdkDialog.tsx"),
+                              (3, "src/components/ui/OtherDialog.tsx")):
+            value = self._successor() if version == 2 else self._controls(COMBOBOX)
+            value["web"]["sdkImports"][path] = ["@ui-sdk/react/dialog"]
+            value["web"]["sdkBindings"][path] = [{"specifier": "@ui-sdk/react/dialog", "exported": "DialogBackdrop",
+                                                 "local": "DialogBackdrop"}]
+            value["web"]["staticWebInputCount"] += 1
+            if version == 3 and path == "src/components/ui/SdkDialog.tsx":
+                self.assertIs(receipt.validate_web_sdk_full_receipt(rehash(value), expected_revision=SHA), value)
+            else:
+                with self.assertRaisesRegex(inputs.InputError, "exceeds the reviewed public import policy"):
+                    receipt.validate_web_sdk_full_receipt(rehash(value), expected_revision=SHA)
+
     def _git(self, *args):
         return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=self.root,
                                        env={"PATH": os.environ["PATH"], "GIT_CONFIG_NOSYSTEM": "1",
                                             "GIT_CONFIG_GLOBAL": "/dev/null"}, timeout=10).strip()
 
-    def _build_context(self, *, historical=False):
+    def _build_context(self, *, historical=False, controls=False):
         for path in REVIEWED_WEB_INPUTS:
             target = self.root / path
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -156,6 +232,9 @@ class ReceiptTests(unittest.TestCase):
                 shutil.copyfile(REPOSITORY / path, self.root / path)
             else:
                 (self.root / path).write_text("// fixture scanner path\n")
+        if controls:
+            path = receipt.CONTROLS_IMPORT_POLICY
+            shutil.copyfile(REPOSITORY / path, self.root / path)
         (self.root / "src/ui.tsx").write_text("export const fixture = true;\n")
         (self.root / ".dockerignore").write_text("node_modules\n")
         self._git("init", "--quiet")
@@ -255,6 +334,17 @@ class ReceiptTests(unittest.TestCase):
         revision, _ = self._build_context()
         self._git("update-index", "--assume-unchanged", receipt.IMPORT_POLICY)
         (self.root / receipt.IMPORT_POLICY).write_text("{}\n")
+        with self.assertRaisesRegex(inputs.InputError, "Reviewed Web SDK import policy differs"):
+            receipt.discover_web_sdk_full_receipt(
+                self.root, expected_revision=revision, base_image=receipt.BASE_IMAGE,
+                platform="linux/amd64", build_args={"APP_VERSION": "", "NEXT_PUBLIC_WS_URL": "same-origin"},
+            )
+
+    def test_controls_policy_must_be_exact_before_current_discovery(self):
+        revision, _ = self._build_context(controls=True)
+        path = receipt.CONTROLS_IMPORT_POLICY
+        self._git("update-index", "--assume-unchanged", path)
+        (self.root / path).write_text("{}\n")
         with self.assertRaisesRegex(inputs.InputError, "Reviewed Web SDK import policy differs"):
             receipt.discover_web_sdk_full_receipt(
                 self.root, expected_revision=revision, base_image=receipt.BASE_IMAGE,
