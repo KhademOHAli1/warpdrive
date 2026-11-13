@@ -64,7 +64,7 @@ class FunctionalWebBuildTests(unittest.TestCase):
             initial = prepare(self.args)
             self.assertEqual(self.prepare_context.call_args.kwargs, {"exclude_tests": excluded})
             stored = decode(self.args.output.read_bytes())
-            self.assertEqual(stored["schemaVersion"], 2)
+            self.assertEqual(stored["schemaVersion"], 3)
             self.assertEqual(stored["reviewedDeltaSha256"], self.args.structural_delta_sha256)
             self.assertEqual(stored["context"]["excludedPathsSha256"], content_hash(excluded))
             self.args.verify = True

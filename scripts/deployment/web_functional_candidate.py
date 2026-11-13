@@ -149,7 +149,7 @@ def _evidence(raw, *, composite, revision, image_id, pins):
     require(IMAGE_ID.fullmatch(image_id) and image_id not in {web["image"]["imageId"],
             *(component["imageId"] for component in backend["components"].values())}, "Distinct tested Web image required")
     version = facts.get("schemaVersion") if type(facts) is dict else None
-    require(type(version) is int and version in {1, 2}
+    require(type(version) is int and version in {1, 3}
             and set(facts) == (BUILD_FIELDS if version == 1 else STRUCTURAL_BUILD_FIELDS)
             and facts["kind"] == "warpdrive-functional-web-build-inputs"
             and facts["revision"] == revision and content_hash(facts) == pins["inputSha256"]

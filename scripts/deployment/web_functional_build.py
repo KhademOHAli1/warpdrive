@@ -145,7 +145,7 @@ def prepare(args):
     excluded_tests = source["excludedBuildTests"] if structural else ()
     context_options = {"exclude_tests": excluded_tests} if structural else {}
     context = context_builder(args.root, args.revision, args.context, **context_options)
-    facts = {"schemaVersion": 2 if structural else 1, "kind": "warpdrive-functional-web-build-inputs",
+    facts = {"schemaVersion": 3 if structural else 1, "kind": "warpdrive-functional-web-build-inputs",
              "revision": args.revision, "activeWebRevision": args.active_web_revision, "toolingRevision": args.tooling_revision,
              "originalBackendRevision": args.core_revision, "originalBackendManifestSha256": args.core_manifest_sha256,
              "reviewedProfileSha256": args.profile_sha256, "source": source, "dependencies": dependencies,

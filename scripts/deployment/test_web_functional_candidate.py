@@ -61,7 +61,7 @@ class FunctionalCandidateTests(unittest.TestCase):
 
     def structural_facts(self, *, excluded=(), registry=None):
         facts = deepcopy(self.facts)
-        facts.update(schemaVersion=2, reviewedDeltaSha256="d" * 64, reviewedRegistrySha256=registry)
+        facts.update(schemaVersion=3, reviewedDeltaSha256="d" * 64, reviewedRegistrySha256=registry)
         facts["dependencies"].update(schemaVersion=1, retainedBackendInputsSha256="5" * 64,
                                      buildIntegrationQualified=False, deploymentAuthorized=False)
         before, effect = (facts[key] for key in ("toolingRevision", "reviewedProfileSha256"))
