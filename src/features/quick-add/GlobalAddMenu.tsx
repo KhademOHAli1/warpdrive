@@ -1,5 +1,4 @@
 "use client";
-import { createDialogController } from "@ui-sdk/react/dialog";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -10,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { createDialogController } from "@/components/ui/SdkDialog";
 import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import { AddDealModal } from "@/features/deals/AddDealModal";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";

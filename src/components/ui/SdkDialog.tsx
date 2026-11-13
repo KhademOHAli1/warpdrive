@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  createDialogController as createSdkDialogController,
   DialogBackdrop,
   DialogClose as SdkClose,
   DialogContent as SdkContent,
@@ -20,6 +21,10 @@ import { cn } from "@/lib/utils";
 
 type DialogOpenChange = NonNullable<ComponentProps<typeof SdkRoot>["onOpenChange"]>;
 type DialogOpenChangeReason = Parameters<DialogOpenChange>[1]["reason"];
+
+export function createDialogController(): ReturnType<typeof createSdkDialogController> {
+  return createSdkDialogController();
+}
 
 function closeReason(
   reason: DialogOpenChangeReason,
