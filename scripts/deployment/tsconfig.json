@@ -10,6 +10,8 @@
     "web_repeat_presentation.mjs",
     "web_sdk_full_inputs.mjs",
     "web_sdk_full_inputs.test.mjs",
+    "web_sdk_imports.mjs",
+    "web_sdk_imports.test.mjs",
     "web_sdk_keyboard_fixture.mjs",
     "web_sdk_keyboard_fixture.test.mjs"
   ]
