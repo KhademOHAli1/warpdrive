@@ -19,7 +19,10 @@ def read_functional_acknowledgement(install, *, original, action, loaded, releas
             "Exact unresolved functional Web phase required")
     with installed_web_readback_locks(original, install.state):
         if action == "stage":
-            return read_stage_acknowledgement(install, loaded=loaded, alias=alias, revision=revision, release=release)
+            require(verify_release(None, initialize=False) is True, "Readback functional Web release authority differs")
+            result = read_stage_acknowledgement(install, loaded=loaded, alias=alias, revision=revision, release=release)
+            require(verify_release(None, initialize=False) is True, "Readback functional Web release authority changed")
+            return result
         controller = install.controller(loaded=loaded, alias=alias, revision=revision, release=release,
                                         verify_release=verify_release)
         if action in PHASES:

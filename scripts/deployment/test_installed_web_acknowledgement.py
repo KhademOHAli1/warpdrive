@@ -42,6 +42,7 @@ class InstalledWebAcknowledgementTests(unittest.TestCase):
             self.assertEqual(read_functional_acknowledgement(self.install, action="stage", **self.options),
                              {"state": "private-ready"})
         self.install.controller.assert_not_called()
+        self.assertEqual([item.args for item in self.authority.call_args_list], [(None,), (None,)])
         self.assertFalse(self.locked)
 
     def test_route_readback_never_uses_the_mutation_entrypoint(self):
