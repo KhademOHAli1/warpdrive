@@ -11,7 +11,7 @@ from unittest.mock import patch
 from test_traefik_web_handoff import OLD, handoff, installed_overlay
 from traefik_web_handoff_state import (
     HandoffConflict, HandoffHeld, HandoffObservation, JOURNAL_FILE, ROUTE_FILE,
-    apply_traefik_web_handoff,
+    apply_traefik_web_handoff, verify_accepted_traefik_web_handoff,
 )
 
 
@@ -80,6 +80,23 @@ class TraefikWebHandoffStateTests(unittest.TestCase):
             self.assertEqual(self.journal_state(), "switch-acknowledged")
             self.assertEqual(self.route.read_bytes(), self.plan.after_document)
         self.assertEqual(self.apply(lambda: AFTER)["state"], "accepted")
+
+    def test_readback_requires_both_accepted_journal_and_exact_route(self):
+        def readback():
+            verify_accepted_traefik_web_handoff(self.plan, watched_dir=self.watched, state_dir=self.state)
+
+        with self.assertRaises(HandoffConflict):
+            readback()
+        with self.assertRaises(HandoffHeld):
+            self.apply(lambda: BEFORE)
+        with self.assertRaises(HandoffConflict):
+            readback()
+        self.apply(lambda: AFTER)
+        with patch("traefik_web_handoff_state.os.replace", side_effect=AssertionError("unexpected write")):
+            readback()
+        self.route.write_bytes(self.plan.before_document)
+        with self.assertRaises(HandoffConflict):
+            readback()
 
     def test_lost_ack_reconciles_exact_desired_state_without_replacing(self):
         replace_file = os.replace

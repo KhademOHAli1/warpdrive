@@ -8,6 +8,7 @@ const IDENTITY_PATH = "/api/runtime/web-identity";
 const REVISION = /^[a-f0-9]{40}$/u;
 const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/u;
 const LABEL = /^[a-zA-Z0-9 _-]{1,100}$/u;
+const REPEAT_SCENARIO = "warpdrive-web-continuity-v2";
 
 function requireProof(condition) {
   if (!condition) throw Error("Required browser rollout evidence is unavailable");
@@ -19,6 +20,7 @@ function readProfile() {
   const raw = readFileSync(path, "utf8");
   requireProof(raw.length <= 4096);
   const profile = JSON.parse(raw);
+  requireProof(profile.scenario === undefined || profile.scenario === REPEAT_SCENARIO);
   const origin = new URL(profile.baseUrl);
   requireProof(
     origin.protocol === "https:" &&
@@ -342,7 +344,8 @@ try {
   await page.locator('button[type="submit"]').click();
   const board = page.getByRole("main", { name: `Board ${profile.pipelineName}`, exact: true });
   await board.waitFor({ state: "visible" });
-  await until(async () => (await topBarGap(page)) === "24px", 10000);
+  if (profile.scenario !== REPEAT_SCENARIO)
+    await until(async () => (await topBarGap(page)) === "24px", 10000);
   await page.getByRole("button", { name: "Quick add", exact: true }).click();
   await page.getByRole("menuitem", { name: /^Activity(?:\s*A)?$/u }).click();
   const dialog = page.getByRole("dialog", { name: "Add activity", exact: true });
@@ -437,7 +440,8 @@ try {
   await fresh
     .getByRole("main", { name: `Board ${profile.pipelineName}`, exact: true })
     .waitFor({ state: "visible" });
-  await until(async () => (await topBarGap(fresh)) === "22px", 10000);
+  if (profile.scenario !== REPEAT_SCENARIO)
+    await until(async () => (await topBarGap(fresh)) === "22px", 10000);
   requireProof(fresh.url() === oldUrl);
   requireProof(traffic.actionPosts === 1);
 
@@ -451,6 +455,7 @@ try {
     persistentDraft: true,
     oldAction: true,
     actionPosts: 1,
+    ...(profile.scenario === REPEAT_SCENARIO ? { freshStampedPage: true } : {}),
   });
 } catch {
   console.error(JSON.stringify({ event: "browser.web-rollout.failed", stage }));

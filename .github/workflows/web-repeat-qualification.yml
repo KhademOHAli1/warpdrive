@@ -1,0 +1,129 @@
+name: Repeat independent Web qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      tooling_revision:
+        description: Protected tooling revision immediately preceding the reviewed presentation change
+        required: true
+        type: string
+      installed_lineage_sha256:
+        description: Digest of the independently sealed installed Web lineage
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: warpdrive-independent-web-qualification
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Qualify repeat Web image with the retained Core bundle
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      BUN_OPTIONS: --no-env-file
+      TOOLING_REVISION: ${{ inputs.tooling_revision }}
+      LINEAGE_SHA: ${{ inputs.installed_lineage_sha256 }}
+      CANDIDATE_REVISION: ${{ github.sha }}
+      CORE_REVISION: 6b24e23cffb32c09089d7020252cc787e3b5bf51
+      CORE_MANIFEST_SHA: 28ad2697428b302cbd69af23390214453e86e040df958380deef9a3f608d2b55
+      CORE_ADMISSION_SHA: baecbd9e5ac8a27a9948c43fc5bd16fef4b3e268c55b92ff6061f88f7664e3d8
+      WEB_RECEIPT_SHA: d66b71fa2c22384ec4dc5eb300e2ed72cd1aa71e0f58b2c23e7f2eb1938dd439
+      WEB_RECEIPT_PATH: scripts/deployment/first-web-publication.receipt
+      WEB_IMAGE: warpdrive-ci/web-repeat:${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate the independent Web and Core baseline artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          umask 077
+          [[ "$TOOLING_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$LINEAGE_SHA" =~ ^[0-9a-f]{64}$ ]]
+          test "$TOOLING_REVISION" != "$CANDIDATE_REVISION"
+          git --no-replace-objects merge-base --is-ancestor "$TOOLING_REVISION" "$CANDIDATE_REVISION"
+          git -c core.hooksPath=/dev/null worktree add --detach "$RUNNER_TEMP/repeat-seed" "$CORE_REVISION"
+          python3 -B scripts/deployment/web_repeat_historical.py \
+            --revision "$CANDIDATE_REVISION" --web-receipt "$GITHUB_WORKSPACE/$WEB_RECEIPT_PATH" \
+            --web-receipt-sha256 "$WEB_RECEIPT_SHA" --backend-admission-run 43350260944 \
+            --backend-admission-sha256 "$CORE_ADMISSION_SHA" --output-dir "$RUNNER_TEMP/repeat-retained"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Install frozen candidate, seed and browser dependencies
+        env:
+          NODE_ENV: development
+        run: |
+          bun --no-env-file install --frozen-lockfile
+          bun --no-env-file install --cwd "$RUNNER_TEMP/repeat-seed" --frozen-lockfile
+          bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
+          bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify exact source and unchanged retained component inputs
+        run: |
+          test "$(uname -m)" = x86_64
+          node scripts/deployment/component_inputs.mjs \
+            --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
+            --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin > "$RUNNER_TEMP/repeat-inputs.json"
+          python3 -B scripts/deployment/web_repeat_build.py prepare \
+            --root "$GITHUB_WORKSPACE" --revision "$CANDIDATE_REVISION" --tooling-revision "$TOOLING_REVISION" \
+            --retained "$RUNNER_TEMP/repeat-retained" --core-manifest-sha256 "$CORE_MANIFEST_SHA" \
+            --web-receipt "$GITHUB_WORKSPACE/$WEB_RECEIPT_PATH" --web-receipt-sha256 "$WEB_RECEIPT_SHA" \
+            --lineage-sha256 "$LINEAGE_SHA" --input-receipt "$RUNNER_TEMP/repeat-inputs.json" \
+            --state-dir "$RUNNER_TEMP/repeat-qualification"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Build exactly one repeat Web image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Dockerfile
+          target: web
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.WEB_IMAGE }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            NEXT_PUBLIC_WS_URL=same-origin
+          cache-from: type=gha,scope=warpdrive-production-web
+      - name: Qualify native browser continuity and retain the tested repeat image
+        run: |
+          image_id=$(docker image inspect --format '{{.Id}}' "$WEB_IMAGE")
+          python3 -B scripts/deployment/web_repeat_build.py qualify \
+            --root "$GITHUB_WORKSPACE" --revision "$CANDIDATE_REVISION" --tooling-revision "$TOOLING_REVISION" \
+            --retained "$RUNNER_TEMP/repeat-retained" --core-manifest-sha256 "$CORE_MANIFEST_SHA" \
+            --web-receipt "$GITHUB_WORKSPACE/$WEB_RECEIPT_PATH" --web-receipt-sha256 "$WEB_RECEIPT_SHA" \
+            --lineage-sha256 "$LINEAGE_SHA" --input-receipt "$RUNNER_TEMP/repeat-inputs.json" \
+            --state-dir "$RUNNER_TEMP/repeat-qualification" --seed-root "$RUNNER_TEMP/repeat-seed" \
+            --new-web-image-id "$image_id" --bundle-output "$RUNNER_TEMP/repeat-bundle"
+      - name: Recheck selected main before retaining the repeat artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$CANDIDATE_REVISION"
+      - name: Retain exact tested repeat Web artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-repeat-image-bundle-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/repeat-bundle/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Retain sanitized repeat qualification diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-repeat-qualification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/repeat-qualification/
+          if-no-files-found: ignore
+          retention-days: 14
