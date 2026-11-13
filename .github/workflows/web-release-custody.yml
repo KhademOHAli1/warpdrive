@@ -81,6 +81,12 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+      - name: Diagnose the exact registry references without writing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          umask 077
+          python3 -B scripts/deployment/web_custody_diagnostic.py > "$RUNNER_TEMP/web-custody-diagnostic.json"
       - name: Install attested ORAS
         id: oras
         uses: ./.github/actions/install-custody-oras
@@ -95,5 +101,13 @@ jobs:
         with:
           name: web-release-custody-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/web-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Retain sanitized registry diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-release-custody-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-custody-diagnostic.json
           if-no-files-found: ignore
           retention-days: 30
