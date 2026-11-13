@@ -43,6 +43,31 @@ const PROTECTED_LEAVES = new Set([
 ]);
 const HOOK = /^use[A-Z][A-Za-z0-9]{0,60}$/u;
 const COMPONENT = /^[A-Z][A-Za-z0-9]{0,63}$/u;
+const SCRIPT_LEAF = /^([A-Za-z0-9_-]+)\.tsx?$/u;
+const STYLE_LEAF = /^([A-Za-z0-9_-]+)\.module\.css$/u;
+const NEXT_METADATA = /^(?:icon|apple-icon|opengraph-image|twitter-image)\d*$/u;
+const APP_MARKERS = /[()@[\].]+/gu;
+const WORD_BREAK = /(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|[-_]/u;
+// Match the mutable client and style roles in web_structural_delta.py.
+const SECURITY_WORDS = new Set([
+  "auth",
+  "authentication",
+  "authorization",
+  "config",
+  "credential",
+  "credentials",
+  "csrf",
+  "db",
+  "env",
+  "middleware",
+  "mfa",
+  "oauth",
+  "privacy",
+  "proxy",
+  "security",
+  "server",
+  "session",
+]);
 
 function exact(value, names) {
   return (
@@ -67,19 +92,52 @@ function reviewedPath(path, role) {
   if (
     dirs.some(
       (part) =>
-        !pattern.test(part) ||
-        PROTECTED_SEGMENTS.has(part.toLowerCase().replace(/[()@[\].]+/gu, "")),
+        !pattern.test(part) || PROTECTED_SEGMENTS.has(part.toLowerCase().replace(APP_MARKERS, "")),
     )
   )
     return false;
-  const suffix =
-    role === "styles" ? /^([A-Za-z0-9_-]+)\.module\.css$/u : /^([A-Za-z0-9_-]+)\.tsx?$/u;
+  const suffix = role === "styles" ? STYLE_LEAF : SCRIPT_LEAF;
   const leaf = suffix.exec(parts[parts.length - 1])?.[1]?.toLowerCase();
   if (!leaf) return false;
   if (leaf === "page" || leaf === "layout") return app && role === "adapters";
+  return !PROTECTED_LEAVES.has(leaf) && !NEXT_METADATA.test(leaf);
+}
+
+function reservedStructuralName(name, protectedNames) {
   return (
-    !PROTECTED_LEAVES.has(leaf) &&
-    !/^(?:icon|apple-icon|opengraph-image|twitter-image)\d*$/u.test(leaf)
+    protectedNames.has(name.toLowerCase()) ||
+    name.split(WORD_BREAK).some((word) => SECURITY_WORDS.has(word.toLowerCase()))
+  );
+}
+
+/** Validate a mutable module or stylesheet path in the structural Git policy. */
+export function isStructuralWebPath(path, role) {
+  if (typeof path !== "string" || path.length > 240 || /[^A-Za-z0-9_./()@[\]-]/u.test(path))
+    return false;
+  if (role !== "modules" && role !== "styles") return false;
+  const parts = path.split("/");
+  if (parts[0] !== "src" || parts.length > 64) return false;
+  const app = parts[1] === "app" && parts[2] === "(app)" && parts.length >= 4;
+  const components = parts[1] === "components" && parts.length >= 3;
+  const feature = parts[1] === "features" && parts.length >= 4;
+  if (!app && !components && !feature) return false;
+  const pattern = app ? APP_SEGMENT : UI_SEGMENT;
+  const directories = parts.slice(app ? 3 : 2, -1);
+  if (
+    directories.some(
+      (part) =>
+        !pattern.test(part) ||
+        reservedStructuralName(part.replace(APP_MARKERS, ""), PROTECTED_SEGMENTS),
+    )
+  )
+    return false;
+  const suffix = role === "styles" ? STYLE_LEAF : SCRIPT_LEAF;
+  const leaf = suffix.exec(parts[parts.length - 1])?.[1];
+  return Boolean(
+    leaf &&
+      !reservedStructuralName(leaf, PROTECTED_LEAVES) &&
+      !["page", "layout"].includes(leaf.toLowerCase()) &&
+      !NEXT_METADATA.test(leaf.toLowerCase()),
   );
 }
 
@@ -89,11 +147,11 @@ function sortedUnique(list) {
   );
 }
 
-function checkedPaths(value, role, reject) {
+function checkedPaths(value, role, reject, checkPath) {
   if (
     !Array.isArray(value) ||
     value.length > 64 ||
-    ![...value].every((path) => reviewedPath(path, role)) ||
+    ![...value].every((path) => checkPath(path, role)) ||
     !sortedUnique(value)
   )
     reject(`Invalid exact functional Web v2 ${role} paths`);
@@ -109,12 +167,12 @@ function validExport(item) {
   );
 }
 
-export function readCapabilityProfile(profile, reject) {
+function readProfile(profile, reject, checkMutablePath) {
   if (!exact(profile, "adapters,capabilities,modules,styles,version") || profile.version !== 2)
     reject("Unsupported functional Web v2 profile");
-  const modules = checkedPaths(profile.modules, "modules", reject);
-  const styles = checkedPaths(profile.styles, "styles", reject);
-  const adapters = checkedPaths(profile.adapters, "adapters", reject);
+  const modules = checkedPaths(profile.modules, "modules", reject, checkMutablePath);
+  const styles = checkedPaths(profile.styles, "styles", reject, checkMutablePath);
+  const adapters = checkedPaths(profile.adapters, "adapters", reject, reviewedPath);
   const allowed = new Set(modules);
   const capabilities = profile.capabilities;
   if (
@@ -136,7 +194,7 @@ export function readCapabilityProfile(profile, reject) {
       !sortedUnique(item.exports.map(({ name }) => name))
     )
       reject("Exact functional Web capability path and named exports required");
-    const consumers = checkedPaths(item.consumers, "modules", reject);
+    const consumers = checkedPaths(item.consumers, "modules", reject, checkMutablePath);
     if (!consumers.length || !consumers.every((path) => allowed.has(path)))
       reject("Exact declared functional Web capability consumers required");
     grants += consumers.length * item.exports.length;
@@ -153,6 +211,15 @@ export function readCapabilityProfile(profile, reject) {
   )
     reject("Functional Web v2 capability profile overlaps or exceeds its bounds");
   return { version: 2, modules, styles, adapters, capabilities };
+}
+
+export function readCapabilityProfile(profile, reject) {
+  return readProfile(profile, reject, reviewedPath);
+}
+
+/** Keep frozen mounts and capability providers on the v2 grammar. */
+export function readStructuralCapabilityProfile(profile, reject) {
+  return readProfile(profile, reject, isStructuralWebPath);
 }
 
 function explicitlyClient(tree) {

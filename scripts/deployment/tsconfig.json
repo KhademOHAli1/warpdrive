@@ -11,6 +11,8 @@
     "web_presentation_policy.test.mjs",
     "web_protected_projection.mjs",
     "web_protected_projection.test.mjs",
+    "web_client_effect_projection.mjs",
+    "web_client_effect_projection.test.mjs",
     "web_repeat_presentation.mjs",
     "web_sdk_full_inputs.mjs",
     "web_sdk_full_inputs.test.mjs",

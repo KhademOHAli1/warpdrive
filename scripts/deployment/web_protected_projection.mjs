@@ -4,6 +4,7 @@ import { realpathSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import ts from "typescript";
 import { canonical } from "./component_inputs.mjs";
+import { isStructuralWebPath } from "./web_functional_capabilities.mjs";
 import {
   inspectWebProjectionSnapshot,
   verifyProjectionRendererBindings,
@@ -20,8 +21,6 @@ const HARD_ROOT =
 const CONFIG_ROOT =
   /^(?:\.dockerignore$|\.env(?:\.|$)|next\.config\.|(?:postcss|tailwind)\.config\.|tsconfig(?:\.|$)|package\.json$|bun\.lock$|bunfig\.toml$|tools\/web-ui\/|patches\/|deploy\/images\/)/u;
 const NONRUNTIME = /\.(?:test|spec|stories|d)\.[cm]?[jt]sx?$/u;
-const CLIENT_RENDERER =
-  /^src\/(?:components\/|features\/[A-Za-z0-9_-]+\/ui\/|app\/\(app\)\/)[A-Za-z0-9_./()@[\]-]+\.tsx$/u;
 const SERVER_IMPORTS = new Set(["server-only", "next/headers", "next/server"]);
 const SDK = /^@ui-sdk\//u;
 const hash = (value) => createHash("sha256").update(canonical(value)).digest("hex");
@@ -65,7 +64,8 @@ function checkedCuts(cuts) {
     if (
       !exact(cut, "bindings,from,to") ||
       !safePath(cut.from, TSX) ||
-      !safePath(cut.to, CLIENT_RENDERER) ||
+      !isStructuralWebPath(cut.to, "modules") ||
+      !cut.to.endsWith(".tsx") ||
       cut.from === cut.to ||
       !Array.isArray(cut.bindings) ||
       cut.bindings.length < 1 ||

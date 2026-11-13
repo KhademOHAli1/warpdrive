@@ -104,7 +104,7 @@ jobs:
           RUN_IMAGE_CONTEXT_IMPORT_CHECK=1 node --test --test-name-pattern 'Docker context keeps local TypeScript imports' scripts/deployment/image-build.test.mjs
           node --test scripts/deployment/component_inputs.test.mjs scripts/deployment/web_inputs.test.mjs scripts/deployment/web_sdk_full_inputs.test.mjs
           node --test scripts/deployment/web_functional_source.test.mjs scripts/deployment/web_functional_capabilities.test.mjs
-          node --test scripts/deployment/web_protected_projection.test.mjs
+          node --test scripts/deployment/web_protected_projection.test.mjs scripts/deployment/web_client_effect_projection.test.mjs
           proof="$RUNNER_TEMP/production-images"
           mkdir -p "$proof"
           sdk_inputs=$(git --no-replace-objects ls-tree -r --name-only "$REVISION" -- \

@@ -5,7 +5,11 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { selectBuildEntries } from "../build-workers.mjs";
-import { readCapabilityProfile } from "./web_functional_capabilities.mjs";
+import {
+  isStructuralWebPath,
+  readCapabilityProfile,
+  readStructuralCapabilityProfile,
+} from "./web_functional_capabilities.mjs";
 import { verifyWebFunctionalSource } from "./web_functional_source.mjs";
 import { WEB_SOURCE_RULES } from "./web_inputs.mjs";
 
@@ -289,5 +293,96 @@ void test("v2 path roles and grant budgets reject metadata, server, overlapping 
       () => readCapabilityProfile(profile, reject),
       /functional Web|Capability consumers/u,
     );
+  }
+});
+
+void test("structural profiles admit reviewed feature leaves outside ui while v2 keeps its scope", () => {
+  function reject(message) {
+    throw new Error(message);
+  }
+  const renderer = "src/features/deals/DealBadge.tsx";
+  const hook = "src/features/deals/useBoardCurrency.ts";
+  const stylesheet = "src/features/deals/columns/DealBadge.module.css";
+  const structural = {
+    ...PROFILE,
+    modules: [renderer, hook],
+    styles: [stylesheet],
+    capabilities: [{ ...PROFILE.capabilities[0], consumers: [renderer] }],
+  };
+  assert.deepEqual(readStructuralCapabilityProfile(structural, reject), structural);
+  assert.throws(() => readCapabilityProfile(structural, reject), /v2 modules paths/u);
+  assert.throws(
+    () => readCapabilityProfile({ ...PROFILE, styles: [stylesheet] }, reject),
+    /v2 styles paths/u,
+  );
+  assert.deepEqual(readCapabilityProfile(PROFILE, reject), PROFILE);
+  assert.ok(
+    isStructuralWebPath("src/app/(app)/deals/@modal/(..)list/[id]/DealView.tsx", "modules"),
+  );
+  assert.ok(isStructuralWebPath(renderer, "modules"));
+  assert.ok(isStructuralWebPath(stylesheet, "styles"));
+  assert.ok(!isStructuralWebPath(renderer, "styles"));
+  assert.ok(!isStructuralWebPath(stylesheet, "modules"));
+});
+
+void test("structural paths reject reserved source roles, security words, and aliases", () => {
+  for (const path of [
+    "src/features/privacy/DealView.tsx",
+    "src/features/deals/auth-controls/DealView.tsx",
+    "src/features/deals/SessionUI/DealView.tsx",
+    "src/features/deals/useOAuthButton.ts",
+    "src/features/deals/ServerView.tsx",
+    "src/features/deals/ServerView.module.css",
+    "src/features/deals/DealView.server.tsx",
+    "src/features/deals/DealView.test.tsx",
+    "src/features/deals/actions/DealView.tsx",
+    "src/features/deals/routers/DealView.tsx",
+    "src/features/deals/icon2.tsx",
+    "src/features/deals/route.ts",
+    "src/app/(app)/layout.tsx",
+    "src/app/(app)/page.tsx",
+    "src/app/(app)/@panel/(.)auth/DealView.tsx",
+    "src/app/(app)/[api]/DealView.tsx",
+    "src/app/api/DealView.tsx",
+    "src/components//DealView.tsx",
+    "src/features/deals/../DealView.tsx",
+    "src/features/deals/%2e/DealView.tsx",
+    "src/features/deals/DealView.tsx\n",
+    "src/features/deals/DeälView.tsx",
+    "src/features/deals/DealView.tsx/",
+    "src/features/deals.tsx",
+    "src/Features/deals/DealView.tsx",
+    `src/features/deals/${"a/".repeat(62)}DealView.tsx`,
+    `src/features/deals/${"A".repeat(240)}.tsx`,
+  ]) {
+    assert.ok(!isStructuralWebPath(path, "modules"), path);
+    assert.ok(!isStructuralWebPath(path, "styles"), path);
+  }
+  assert.ok(!isStructuralWebPath(LEAF, "adapters"));
+  assert.ok(!isStructuralWebPath(LEAF, "capability"));
+});
+
+void test("structural profiles preserve frozen mount, provider, and grant rules", () => {
+  function reject(message) {
+    throw new Error(message);
+  }
+  for (const profile of [
+    { ...PROFILE, adapters: ["src/features/deals/DealMount.tsx"] },
+    {
+      ...PROFILE,
+      capabilities: [{ ...PROFILE.capabilities[0], path: "src/features/deals/DealProvider.tsx" }],
+    },
+    {
+      ...PROFILE,
+      capabilities: [{ ...PROFILE.capabilities[0], consumers: ["src/features/deals/Other.tsx"] }],
+    },
+    {
+      ...PROFILE,
+      modules: [LEAF, "src/features/deals/DealView.tsx", "src/features/deals/dealview.tsx"],
+    },
+    { ...PROFILE, modules: ["src/features/deals/DealView.tsx", LEAF] },
+    { ...PROFILE, modules: ["src/features/deals/AuthView.tsx"] },
+  ]) {
+    assert.throws(() => readStructuralCapabilityProfile(profile, reject), /functional Web/iu);
   }
 });

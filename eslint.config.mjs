@@ -296,6 +296,8 @@ export default tseslint.config(
       "scripts/deployment/web_presentation_policy.test.mjs",
       "scripts/deployment/web_protected_projection.mjs",
       "scripts/deployment/web_protected_projection.test.mjs",
+      "scripts/deployment/web_client_effect_projection.mjs",
+      "scripts/deployment/web_client_effect_projection.test.mjs",
       "scripts/deployment/web_repeat_presentation.mjs",
       "scripts/deployment/web_sdk_full_inputs.mjs",
       "scripts/deployment/web_sdk_full_inputs.test.mjs",
