@@ -4,9 +4,9 @@ The [central GitHub Project](https://github.com/users/KhademOHAli1/projects/3) a
 
 ## Ownership and scope
 
-@KhademOHAli1 is the accountable GitHub owner. Each canonical issue records its responsible module, original task IDs, specification links, full acceptance scope, observed historical status and dependencies. The established integration coordinator remains the sole canonical-main writer and heavy-job scheduler. Module implementation continues in existing workspaces, with canonical issue traceability for every included commit.
+@KhademOHAli1 is the accountable GitHub owner. Each canonical issue records its responsible module, original task IDs, specification links, full acceptance scope, observed historical status and dependencies. Module owners work in their scoped branches and use reviewed pull requests, with canonical issue traceability for every included commit. Validate the exact increment with task-owned resources. Integrate only when authorized and verify the resulting exact-main CI and CodeQL separately. Follow [CI release controls](ci-release-controls.md) and [AGENTS.md](../../AGENTS.md) for current rules.
 
-The current user instruction freezes main at `68e9e55890dd1ceedfbfe0853019673bf79105e4` and combines all remaining branch work covered by that instruction into the existing `codex/ci-release-controls-20261103` branch and PR952. Create no new branches and make no more individual feature merges to main. Qualify the complete aggregate at an exact revision before one final reviewed main merge; then verify the actual resulting main CI and CodeQL evidence. This bounded consolidation does not establish a permanent integration branch or permit direct-main pushes. Follow [CI release controls](ci-release-controls.md).
+The one-time consolidation from `68e9e55890dd1ceedfbfe0853019673bf79105e4` completed in [PR #952](https://github.com/KhademOHAli1/warpdrive/pull/952) at `86201a96522f22607df3710d809a1391f562b940`. The frozen base and integration branch are historical.
 
 Source snapshots are historical observations, not certification. Imported work starts open unless current GitHub acceptance proves its full scope. Passing a subset, synthetic provider protocol checks, generated packets and failed-first diagnostics do not close a broad item. Overlapping plans have different denominators; do not publish a combined completion percentage.
 
@@ -31,7 +31,7 @@ The existing MAIL policy assigns the next unreserved `1.5.x` patch in completion
 1. Search the Project and source-to-issue mapping before creating work. Use the bug, feature or maintenance intake forms; report security vulnerabilities privately.
 2. Keep one canonical issue per bounded implementation, linking every applicable source ID. Preserve source acceptance, dependencies and evidence when splitting scope.
 3. Set the actual assignee, module label, priority and release milestone. Add native blocking relationships for genuine dependencies. Use a comment for current progress and link precise checks.
-4. Include the canonical issue in every delivery commit or delivery manifest. Follow the current single-consolidation instruction and single heavy-job queue. Record aggregate branch qualification separately from exact-main integration evidence.
+4. Include the canonical issue in every delivery commit or delivery manifest. Use isolated resources under the repository rules. Record branch qualification separately from exact-main integration evidence.
 5. Record whole-scope acceptance with the documented release tooling format. Select a usable journey milestone and a full revision for the next release only when its actual scope and gates are ready.
 
 The importer preserves live state, operator notes and existing labels. Its mapping and exports are generated snapshots. Reconcile and rerun the importer for specification changes; do not manually edit generated mapping files or reset issues from old ledgers. See the release operator guide in this directory for exact commands after tooling integration.

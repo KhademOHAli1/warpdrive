@@ -69,7 +69,7 @@ connected mail, identity and other providers process the data used by their inte
 
 - People and organizations with custom fields
 - Organization firmographics and organization-to-organization relationships
-- Leads inbox and CSV import with an undo step
+- Leads inbox and CSV import with limited undo
 
 **Email**
 
@@ -84,8 +84,8 @@ and [capability matrix](docs/email-provider-capabilities.md) record the current 
 
 - CRM-linked activities and a localized calendar event editor
 - Iranian date input and time-zone-aware editing
-- An early-access visual workflow builder with manual start, deal reads, conditions,
-  follow-up tasks, simulation, publication, run history and cancellation
+- Visual workflows with draft testing, publication and run history. Available editors
+  and blocks depend on the installed version and permissions
 
 **Team and platform**
 
@@ -113,43 +113,12 @@ _English interface captured on 1 November 2026 using synthetic demo data._
 
 ## warpdrive vs Pipedrive
 
-warpdrive offers a self-hosted foundation for the core sales workflow. This fork also has
-seven active implementation roadmaps. The comparison distinguishes current features,
-early-access capabilities and planned work.
-
-| Feature                                        |                   warpdrive                   |                 Pipedrive                  |
-| ---------------------------------------------- | :-------------------------------------------: | :----------------------------------------: |
-| Software                                       |               MIT, open source                |              Commercial SaaS               |
-| Hosting                                        |          Self-hosted, single-tenant           |                Vendor cloud                |
-| Application pricing                            |            No per-seat license fee            |           Paid per seat, by plan           |
-| Core data storage                              |        Your database and object store         |               Vendor-hosted                |
-| Kanban pipelines and custom stages             |                      ✅                       |                     ✅                     |
-| Multiple pipelines                             |                      ✅                       |                     ✅                     |
-| Deals, activities, notes and files             |                      ✅                       |                     ✅                     |
-| People, organizations and custom fields        |                      ✅                       |                     ✅                     |
-| Leads inbox and CSV import                     |                      ✅                       |                     ✅                     |
-| Gmail send/receive and tracking                |              ✅ Configured OAuth              |            ✅ Growth and above             |
-| Generic IMAP/SMTP mailboxes                    | ◐ Implemented, provider qualification ongoing |  ✅ Supported providers, Growth and above  |
-| Email templates, signatures and scheduled send |                      ✅                       |            ✅ Growth and above             |
-| Permissions and user management                |                      ✅                       |         ✅ Plan-dependent controls         |
-| Notifications                                  |                      ✅                       |                     ✅                     |
-| Native currency values                         |          ✅ Separate currency totals          |           ✅ Multiple currencies           |
-| Pipeline reports                               |     ✅ Basic; advanced analytics planned      | ✅ Insights; forecasts on Growth and above |
-| Visual workflow automation                     |       ◐ Manual workflows, early access        |     ✅ Automations on Growth and above     |
-| Calendar event editing                         |                      ✅                       |                     ✅                     |
-| External calendar synchronization              |                    Planned                    |          ✅ Google and Microsoft           |
-| Project coordination                           |             Planned Agency module             |             ✅ Plan or add-on              |
-| Product catalog                                |              ➖ Not implemented               |                     ✅                     |
-| Marketplace and web forms                      |              ➖ Not implemented               | ✅ Marketplace; LeadBooster plan or add-on |
-| Native mobile apps                             |              Responsive web app               |             ✅ iOS and Android             |
-
-✅ implemented · ◐ limited or early access · Planned = roadmap work · ➖ unavailable
-
-Pipedrive availability varies by plan and add-on. Comparison checked **1 November 2026**
-against its [feature matrix](https://support.pipedrive.com/en/article/what-features-do-the-pipedrive-plans-have),
-[pricing](https://www.pipedrive.com/en/pricing), [hosting information](https://support.pipedrive.com/en/article/how-secure-is-my-data-in-pipedrive)
-and [currency support](https://www.pipedrive.com/en/features/multilingual-multi-currency).
-Feature depth and provider behavior differ; use the linked guides for the exact scope.
+Warpdrive is an MIT-licensed, self-hosted CRM for teams that want to run their own
+application, database and object storage. You operate the installation and configure
+the providers you use. For a move from Pipedrive, review the
+[CSV migration guide](docs-site/docs/guides/migrating-from-pipedrive.md) and test a small
+export first. Use [Pipedrive's feature matrix](https://support.pipedrive.com/en/article/what-features-do-the-pipedrive-plans-have)
+for its current plan and add-on details.
 
 ## Tech stack
 
@@ -171,7 +140,8 @@ cp .env.example .env
 ```
 
 Configure [.env](.env.example) using the [deployment guide](docs/deploy.md): database, storage,
-public URLs, authentication and secrets. For local development use
+public URLs, authentication and secrets. Set `MIGRATION_DATABASE_URL` for the database owner
+and `DATABASE_URL` for the separate runtime role. For local development use
 `BASE_URL=http://localhost:3000`. Storage must be browser-reachable and the private bucket
 must exist before testing uploads.
 
@@ -180,10 +150,17 @@ and pin suitable images, or provide another S3-compatible service, before a fres
 The [development override](docker-compose.dev.yml) exposes PostgreSQL on host port **5433**;
 match that port in your local `DATABASE_URL`.
 
-With a fresh, dedicated development database and configured environment:
+Apply the app and queue migrations to the fresh, dedicated development database:
 
 ```sh
 bun run db:migrate
+```
+
+Create or verify the runtime role and its grants on the app and queue schemas as described in
+[Bring it up](docs/deploy.md#2-bring-it-up), adjusting the host and database names for your
+environment. Keep the owner credentials out of the app and worker environments.
+
+```sh
 bun run dev
 ```
 
@@ -228,7 +205,7 @@ See [regional settings](docs-site/docs/features/regional-settings.md),
 
 ## Self-hosting and upgrades
 
-The [single-box Compose topology](docker-compose.yml) includes the app, WebSocket service,
+The [source-based single-host Compose example](docker-compose.yml) includes the app, WebSocket service,
 worker, migration runner, PostgreSQL, MinIO and Caddy. After configuring the domain, SMTP,
 storage images and secrets, follow the [deployment guide](docs/deploy.md) for HTTPS startup
 and the packaged administrator bootstrap command.
@@ -237,7 +214,8 @@ Production requires HTTPS, working authentication mail and installation-specific
 Back up the database, private objects and encryption/signing keys together, then verify
 recovery. A database dump alone does not preserve every attachment or credential.
 
-Before updating, read the [upgrade guide](docs-site/docs/operations/updating.md),
+Select and record the intended revision and verify the upgrade on a restored copy before
+changing the installation. Before updating, read the [upgrade guide](docs-site/docs/operations/updating.md),
 [authentication migration report](docs/auth-implementation-report.md) and
 [consolidated migration map](docs/mail-integrated-migration-map.md). Historical branch
 databases can have incompatible migration histories requiring explicit upgrade/restore
@@ -262,12 +240,18 @@ version pins, lockfiles and checks.
 ## Project status
 
 This fork is actively developed. Core CRM functionality and initial extension slices are
-integrated, with English, Persian and German workflows. The manual workflow builder is early
-access. Advanced automation, calendar synchronization/conferencing, Microsoft Graph mail,
-Agency Projects and broader data-lifecycle operations remain in progress.
+integrated, with English, Persian and German workflows. The repository includes an
+initial [Agency Projects source increment](docs/agency-projects/current-native-scope.md)
+with the module off by default. Check the
+[public workflow guide](docs-site/docs/features/automations.md) for the available editor
+paths and the [roadmap](ROADMAP.md) for work on automation, external calendar providers,
+Microsoft Graph mail and broader data lifecycle operations.
 
-Source implementation, automated checks, browser acceptance, external-provider qualification
-and deployment are tracked separately. The [documentation index](docs/README.md) and each
+[Version 1.6.1](https://github.com/KhademOHAli1/warpdrive/releases/tag/v1.6.1) publishes
+the qualified newsletter source scope. The release archive also contains other source history.
+Check the release notes for included scope, and the operator record for what an installation
+actually runs. Source implementation, automated checks, browser acceptance, external-provider
+qualification and deployment are tracked separately. The [documentation index](docs/README.md) and each
 roadmap's evidence record describe the current scope; plans and previews are not release claims.
 
 ## Roadmaps
@@ -287,13 +271,13 @@ Seven implementation roadmaps extend the CRM:
 6. **Agency projects:** internal client projects, templates, assignments, approvals and project margin.
    Planned module; [CRM interface review](docs/sales-platform/agency-interface-review.md).
 7. **Integrations, MCP and app platform:** connections, capabilities, consent, events and platform foundations.
-   [Programme](docs/integration-execution/README.md) · [Live register](docs/integration-execution/tasks.csv)
+   [Programme](docs/integration-execution/README.md) · [Historical task register](docs/integration-execution/tasks.csv)
 
 Settings, shared UX and main integration are the supporting cross-cutting workstream.
 
 ## Documentation
 
-- [Documentation index](docs/README.md) and [user guide](docs-site/docs/intro.md)
+- [Repository documentation index](docs/README.md), [guide source](docs-site/docs/intro.md), and [public documentation site](https://docs.warpdrivecrm.com/)
 - [Architecture](docs-site/docs/architecture.md) and [deployment](docs/deploy.md)
 - [Mailbox guide: English](docs/mailbox-guide.en.md), [فارسی](docs/mailbox-guide.fa.md), [Deutsch](docs/mailbox-guide.de.md)
 - [Authentication operations: English](docs/auth-operations.md), [فارسی](docs/auth-operations.fa.md), [Deutsch](docs/auth-operations.de.md)
@@ -306,8 +290,9 @@ Read the [contribution guide](docs-site/docs/contributing.md), [AGENTS.md](AGENT
 meaningful failing tests before new behavior or a bugfix. Use the declared Bun version and
 lockfile, retain permission boundaries and update documentation with behavior changes.
 
-Changes reach `main` through sequential integration. Preserve unfinished work, close completed
-branches after verifying containment, and report the checks actually run and remaining limits.
+Work on a branch and submit a reviewed pull request with a canonical issue reference.
+Follow the [CI and release controls](docs/delivery/ci-release-controls.md) for exact revision
+checks. Preserve unfinished work and report the checks actually run and remaining limits.
 
 ## License
 

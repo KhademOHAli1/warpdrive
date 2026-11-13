@@ -1,6 +1,7 @@
 # Warpdrive documentation
 
-This fork is maintained at [KhademOHAli1/warpdrive](https://github.com/KhademOHAli1/warpdrive), with history and attribution retained from [sneg55/warpdrive](https://github.com/sneg55/warpdrive). Documentation changes ship with the implementation they describe.
+This fork is maintained at [KhademOHAli1/warpdrive](https://github.com/KhademOHAli1/warpdrive), with history and attribution retained from [sneg55/warpdrive](https://github.com/sneg55/warpdrive). Use the guide from the source or release that matches the installation. The public
+[docs site](https://docs.warpdrivecrm.com/) is published separately from this repository.
 
 ## Start here
 
@@ -10,6 +11,22 @@ This fork is maintained at [KhademOHAli1/warpdrive](https://github.com/KhademOHA
 - [Architecture](../docs-site/docs/architecture.md), application, workers, storage, permissions, and conventions.
 - [Contributing](../docs-site/docs/contributing.md), Bun, test lanes, review, and documentation maintenance.
 - [Updating](../docs-site/docs/operations/updating.md), migration and backup procedure.
+
+## Operators and contributors
+
+- [Deployment and recovery](deployment-redesign.md), with separate evidence for source,
+  image qualification, installation and recovery.
+- [Release and review controls](delivery/ci-release-controls.md) and the
+  [release operator guide](delivery/release-operations.md).
+- [Mailbox guide](mailbox-guide.en.md) ([Deutsch](mailbox-guide.de.md) ·
+  [فارسی](mailbox-guide.fa.md)) and [provider capability boundaries](email-provider-capabilities.md).
+- [Newsletter source and installation guide](newsletters.md) and
+  [operator qualification worksheet](newsletters-operations.md). The worksheet's
+  checksum and archive commands are for filesystem media. For S3, qualify the
+  versioned export, manifest verification and restore procedure for your backend
+  before treating the recovery set as complete.
+- [MCP security operations](mcp-security-operations.md) ([Deutsch](mcp-security-operations.de.md) ·
+  [فارسی](mcp-security-operations.fa.md)).
 
 ## Interface and internationalization
 
@@ -27,13 +44,13 @@ for onboarding, MFA, sessions, recovery, and security policy.
 
 ## Visual workflows
 
-- [Implementation status](workflows/status.md), what is implemented and which milestone comes next.
+- [Workflow issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aworkflow) for current execution and the [preserved implementation status](workflows/status.md) for dated checkpoints.
 - [Approved task plan](workflows/implementation-plan.md), dependencies and acceptance criteria.
 - [UX specification and Mobbin references](workflows/ux-design-reference.md), user journeys and reference-to-task mapping.
 - [Architecture decisions](workflows/architecture.md), definitions, publication, persistence, and authority.
 - [Visual UI review](workflows/ui-review.md), observed journeys, screenshots, and outstanding visual acceptance.
 - [Builder interaction review](workflows/builder-interaction-review.md), connection gestures, undo, mobile editing, and actual execution paths.
-- [Autonomous continuation handoff](workflows/CONTINUATION.md), the remaining approved backlog, evidence, ownership and restart instructions.
+- [Historical continuation handoff](workflows/CONTINUATION.md), scope, evidence and ownership at the recorded revisions.
 - [Workflow operations](workflows/operations.md), migrations, worker recovery, and current limits.
 - [Public workflow feature guide](../docs-site/docs/features/automations.md), current availability and release boundaries.
 
@@ -44,8 +61,23 @@ for onboarding, MFA, sessions, recovery, and security policy.
 
 Specifications describe intended behavior. A planned integration is not an available connection. A passing unit test, local browser check, provider test, and deployed acceptance are different kinds of evidence; record them separately.
 
+## Historical records
+
+Use the [roadmap](../ROADMAP.md) and canonical issues for live scope and status.
+Dated admission, qualification, handoff and design records retain the results at their
+stated revisions. In particular, the old integration restart instructions and
+[English](integration-execution/local-runtime.md),
+[German](integration-execution/local-runtime.de.md) and
+[Persian](integration-execution/local-runtime.fa.md) local runtime profiles describe
+an isolated 31 October 2026 environment. For a new checkout, use the current
+[setup instructions](../README.md#quickstart-local-development) and
+[branch rules](../AGENTS.md).
+
 ## Documentation policy
 
 For a feature or UI change, update its user-facing guide, implementation/operations notes, and task status in the same change. Update the root README when availability or setup changes. Add new published pages to `docs-site/sidebars.ts`. Keep screenshot captions clear about date, locale, and whether a capture is current or historical. Never publish account data, credentials, or private test fixtures.
 
 The documentation site is a separate Bun package. Use its declared package manager and lockfile, then run its production build to check links. Root tests and site builds each need their own recorded result. Check that Markdown links work both in the repository and in Docusaurus.
+
+Use portable Markdown for new content. The separate [Fumadocs migration handoff](development/public-docs-migration.md)
+records the public routes, content boundary and existing syntax the renderer migration needs to preserve.
