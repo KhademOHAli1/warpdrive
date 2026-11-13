@@ -2,12 +2,12 @@
 
 import {
   DialogBackdrop,
-  DialogTrigger,
   DialogClose as SdkClose,
   DialogContent as SdkContent,
   DialogDescription as SdkDescription,
   Dialog as SdkRoot,
   DialogTitle as SdkTitle,
+  DialogTrigger as SdkTrigger,
 } from "@ui-sdk/react/dialog";
 import { X } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
@@ -125,4 +125,6 @@ export function DialogClose(props: ComponentProps<typeof SdkClose>): ReactNode {
   return <SdkClose tabIndex={0} {...props} />;
 }
 
-export { DialogTrigger };
+export function DialogTrigger(props: ComponentProps<typeof SdkTrigger>): ReactNode {
+  return <SdkTrigger {...props} />;
+}
