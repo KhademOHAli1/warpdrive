@@ -18,6 +18,8 @@ import web_sdk_full_receipt as receipt
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]
+SWITCH = "src/components/ui/Switch.tsx"
+SWITCH_IMPORT = "@ui-sdk/react/switch"
 
 
 def rehash(value):
@@ -96,18 +98,64 @@ class ReceiptTests(unittest.TestCase):
             with self.subTest(mutation=bad["web"]["inputSha256"]), self.assertRaises(inputs.InputError):
                 receipt.validate_web_sdk_full_receipt(rehash(bad), expected_revision=SHA)
 
+    def _successor(self):
+        value = copy.deepcopy(self.value)
+        value["schemaVersion"] = 2
+        value["web"].update(
+            staticWebInputCount=3, importPolicySha256=receipt.IMPORT_POLICY_SHA,
+            sdkBindings={
+                "src/ui.tsx": [{"specifier": "@ui-sdk/react/menu", "exported": "Menu", "local": "Menu"}],
+                SWITCH: [{"specifier": SWITCH_IMPORT, "exported": "Switch", "local": "SdkSwitch"},
+                         {"specifier": SWITCH_IMPORT, "exported": "SwitchThumb", "local": "SwitchThumb"}],
+            },
+        )
+        value["web"]["sdkImports"][SWITCH] = [SWITCH_IMPORT]
+        return rehash(value)
+
+    def test_versioned_binding_proof_preserves_legacy_receipts_and_backend_provenance(self):
+        successor = self._successor()
+        self.assertIs(receipt.validate_web_sdk_full_receipt(self.value, expected_revision=SHA), self.value)
+        self.assertIs(receipt.validate_web_sdk_full_receipt(successor, expected_revision=SHA), successor)
+        legacy = receipt.candidate_input_facts(self.value, expected_revision=SHA)
+        current = receipt.candidate_input_facts(successor, expected_revision=SHA)
+        for name in receipt.BACKEND:
+            self.assertEqual(legacy["components"][name], current["components"][name])
+        self.assertNotEqual(legacy["components"]["web"], current["components"]["web"])
+
+    def test_versioned_proof_rejects_rehashed_receipt_tampering(self):
+        for mutate in (
+            lambda value: value.update(schemaVersion=1),
+            lambda value: value["web"].update(importPolicySha256="a" * 64),
+            lambda value: value["web"]["sdkBindings"].pop(SWITCH),
+            lambda value: value["web"]["sdkImports"][SWITCH].append("@ui-sdk/react/menu"),
+            lambda value: value["web"]["sdkBindings"][SWITCH][0].update(exported="createSwitchController"),
+            lambda value: value["web"]["sdkBindings"][SWITCH][0].update(local="SwitchThumb"),
+            lambda value: value["web"]["sdkBindings"][SWITCH][0].update(exported="SwitchThumb"),
+            lambda value: value["web"]["sdkBindings"]["src/ui.tsx"].append(value["web"]["sdkBindings"][SWITCH][0]),
+            lambda value: value["web"]["helperGraphInputs"].append(SWITCH),
+        ):
+            bad = self._successor()
+            mutate(bad)
+            with self.subTest(mutation=bad["web"]["inputSha256"]), self.assertRaises(inputs.InputError):
+                receipt.validate_web_sdk_full_receipt(rehash(bad), expected_revision=SHA)
+
     def _git(self, *args):
         return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=self.root,
                                        env={"PATH": os.environ["PATH"], "GIT_CONFIG_NOSYSTEM": "1",
                                             "GIT_CONFIG_GLOBAL": "/dev/null"}, timeout=10).strip()
 
-    def _build_context(self):
+    def _build_context(self, *, historical=False):
         for path in REVIEWED_WEB_INPUTS:
             target = self.root / path
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPOSITORY / path, target)
         for path in set(receipt.SCANNER_FILES) - inputs.POLICY_SOURCES:
-            (self.root / path).write_text("// fixture scanner path\n")
+            if historical and path in {receipt.IMPORT_POLICY, receipt.IMPORT_SCANNER}:
+                continue
+            if path == receipt.IMPORT_POLICY:
+                shutil.copyfile(REPOSITORY / path, self.root / path)
+            else:
+                (self.root / path).write_text("// fixture scanner path\n")
         (self.root / "src/ui.tsx").write_text("export const fixture = true;\n")
         (self.root / ".dockerignore").write_text("node_modules\n")
         self._git("init", "--quiet")
@@ -189,6 +237,29 @@ class ReceiptTests(unittest.TestCase):
             with self.assertRaisesRegex(inputs.InputError, "scanner differs from selected Git bytes"):
                 discover(build_args)
             self.assertFalse(any(call.args[0][0] == "node" for call in command.call_args_list))
+
+    def test_original_v1_source_does_not_require_successor_scanner_files(self):
+        revision, context = self._build_context(historical=True)
+        original = inputs._discover
+
+        def controlled_discovery(arguments, *args, **kwargs):
+            if arguments[:1] == ["node"]:
+                return inputs.canonical(self.value)
+            return original(arguments, *args, **kwargs)
+
+        with patch.object(inputs, "_discover", side_effect=controlled_discovery):
+            self.assertIs(receipt.verify_current_web_sdk_full_receipt(
+                self.root, self.value, expected_revision=revision, web_context=context), self.value)
+
+    def test_edited_import_policy_is_refused_before_discovery(self):
+        revision, _ = self._build_context()
+        self._git("update-index", "--assume-unchanged", receipt.IMPORT_POLICY)
+        (self.root / receipt.IMPORT_POLICY).write_text("{}\n")
+        with self.assertRaisesRegex(inputs.InputError, "Reviewed Web SDK import policy differs"):
+            receipt.discover_web_sdk_full_receipt(
+                self.root, expected_revision=revision, base_image=receipt.BASE_IMAGE,
+                platform="linux/amd64", build_args={"APP_VERSION": "", "NEXT_PUBLIC_WS_URL": "same-origin"},
+            )
 
     def test_prepare_writes_the_exact_context_receipt_and_never_overwrites(self):
         revision, _ = self._build_context()
