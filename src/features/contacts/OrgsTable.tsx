@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { CustomFieldCell, customFieldCellClass } from "@/components/data-table/CustomFieldCell";
+import { SortableHeader } from "@/components/data-table/SortableHeader";
 import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -41,43 +42,6 @@ export interface OrgsTableProps {
   visibleColumns: readonly OrgColumn[];
   columnsMenu?: React.ReactNode;
   currency: string;
-}
-
-function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
-  if (dir === null) return null;
-  return (
-    <span aria-hidden="true" className="ms-1 inline-block text-[10px]">
-      {dir === "asc" ? "▲" : "▼"}
-    </span>
-  );
-}
-
-function SortableHeader({
-  field,
-  label,
-  sort,
-  onSort,
-}: {
-  field: OrgSortField;
-  label: string;
-  sort: ColumnSort<OrgSortField>;
-  onSort: (field: OrgSortField) => void;
-}): React.ReactNode {
-  return (
-    <th
-      aria-sort={sort.field === field ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
-      className="px-4 py-3 text-start font-medium"
-    >
-      <button
-        type="button"
-        onClick={() => onSort(field)}
-        className="inline-flex items-center font-semibold hover:text-foreground"
-      >
-        {label}
-        <SortGlyph dir={sort.field === field ? sort.dir : null} />
-      </button>
-    </th>
-  );
 }
 
 // Presentational organizations table: header select-all + a sortable Name header, and a

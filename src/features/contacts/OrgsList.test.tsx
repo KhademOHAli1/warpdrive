@@ -204,6 +204,11 @@ describe("OrgsList", () => {
     listOrgsQuery.mockResolvedValue({ total: 1, rows: [], refLabels: EMPTY_REF_LABELS });
     render(<OrgsList rows={[orgRow("o1", "Acme Inc")]} total={1} />);
 
+    expect(screen.getByRole("columnheader", { name: "Name" })).toHaveAttribute(
+      "aria-sort",
+      "ascending",
+    );
+    expect(screen.getByRole("columnheader", { name: "Address" })).not.toHaveAttribute("aria-sort");
     fireEvent.click(screen.getByRole("button", { name: "Name" }));
 
     await vi.waitFor(() =>
