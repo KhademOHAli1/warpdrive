@@ -12,18 +12,19 @@ from unittest.mock import patch
 
 from web_mixed_image_smoke import (
     BROWSER_PHASES, BROWSER_SCRIPT, REPEAT_BROWSER_PROFILE, REPEAT_LIMITATIONS, MixedWebSmoke,
-    browser_message, repeat_baseline, repeat_mode, verify_repeat_harness,
+    browser_message, repeat_assembly, repeat_baseline, repeat_mode, successor_baseline, successor_mode, verify_repeat_harness,
 )
 from web_switch_smoke import WebSwitchSmokeError
 
 
-A, B, C, TOOLKIT = (letter * 40 for letter in "abcd")
+A, B, C, D, TOOLKIT = (letter * 40 for letter in "abcde")
 MANIFEST = "1" * 64
 B_MANIFEST = "2" * 64
 B_ARCHIVE = b"synthetic archived active Web"
 A_IMAGES = {name: f"sha256:{digit * 64}" for digit, name in zip("1234", ("web", "worker", "realtime", "migrator"))}
 B_IMAGE = "sha256:" + "5" * 64
 C_IMAGE = "sha256:" + "6" * 64
+D_IMAGE = "sha256:" + "7" * 64
 
 
 class RepeatMixedTests(unittest.TestCase):
@@ -50,7 +51,7 @@ class RepeatMixedTests(unittest.TestCase):
             "origin": {"kind": "github-actions"},
             "provenance": {"bundleManifestSha256": MANIFEST, "archiveSha256": "3" * 64},
             "candidate": {"schemaVersion": 2, "components": {
-                name: {"imageId": value} for name, value in A_IMAGES.items()
+                name: {"imageId": value, "runtimeUser": "bun"} for name, value in A_IMAGES.items()
             }},
             "archivePath": self.core / "core-images.tar",
         }
@@ -136,6 +137,130 @@ class RepeatMixedTests(unittest.TestCase):
             self.assertEqual(fixture.report["browserProfile"], {
                 "kind": REPEAT_BROWSER_PROFILE, "seedRevision": A, "harnessRevision": TOOLKIT,
             })
+
+    def successor(self):
+        successor = self.root / "successor"
+        successor.mkdir()
+        data = b"synthetic archive for successor C"
+        (successor / "web-image.tar").write_bytes(data)
+        self.backend["archivePath"].write_bytes(b"original full Core bytes")
+        self.backend["provenance"]["archiveSha256"] = hashlib.sha256(self.backend["archivePath"].read_bytes()).hexdigest()
+        publication = self.root / "successor-publication.json"
+        publication.write_bytes(b'{"fixture":"C"}')
+        digest = hashlib.sha256(publication.read_bytes()).hexdigest()
+        args = SimpleNamespace(**(vars(self.args) | {
+            "new_web_revision": D, "new_web_image_id": D_IMAGE,
+            "successor_web_bundle": successor, "successor_web_publication_receipt": publication,
+            "successor_web_publication_receipt_sha256": digest, "successor_web_revision": C,
+            "predecessor_lineage_sha256": "4" * 64,
+        }))
+        composite = {**self.composite, "web": {
+            "sourceRevision": C, "image": {**self.image(C_IMAGE, C), "runtimeUser": "bun"},
+            "provenance": {"bundleManifestSha256": "5" * 64, "archiveSha256": hashlib.sha256(data).hexdigest()},
+            "publicationReceiptSha256": digest, "inputReceipt": {"fixture": "C"},
+        }}
+        return args, composite
+
+    def test_successor_requires_all_inputs_browser_and_separate_bundle_authorities(self):
+        args, _ = self.successor()
+        self.assertFalse(successor_mode(self.args))
+        self.assertTrue(successor_mode(args))
+        for override in (
+            {"browser": False}, {"successor_web_revision": None}, {"predecessor_lineage_sha256": "bad"},
+            {"successor_web_bundle": self.active}, {"successor_web_bundle": Path(".")},
+            {"successor_web_publication_receipt_sha256": "bad"},
+        ):
+            with self.subTest(override=override), self.assertRaises(WebSwitchSmokeError):
+                successor_mode(SimpleNamespace(**(vars(args) | override)))
+
+    def test_successor_reconstructs_c_using_exact_b_predecessor_and_binds_c_sources(self):
+        args, composite = self.successor()
+        with (
+            patch("web_mixed_image_smoke.repeat_baseline", return_value=self.composite) as predecessor,
+            patch("web_repeat_successor.verify_repeat_successor", return_value=composite) as verify,
+            patch("web_release_inputs._git") as git,
+            patch("web_release_inputs._tree", return_value={}) as tree,
+            patch("web_release_inputs._verify_baseline_blobs") as blobs,
+        ):
+            self.assertEqual(successor_baseline(args, self.backend), composite)
+            predecessor.assert_called_once_with(args, self.backend, candidate_revision=C)
+            verify.assert_called_once_with(
+                predecessor=self.composite, repeat_bundle_dir=args.successor_web_bundle,
+                publication_bytes=args.successor_web_publication_receipt.read_bytes(),
+                expected_publication_sha256=args.successor_web_publication_receipt_sha256,
+                expected_revision=C, predecessor_lineage_sha256=args.predecessor_lineage_sha256,
+            )
+            self.assertEqual(git.call_args.args, (self.seed, "merge-base", "--is-ancestor", C, D))
+            tree.assert_called_once_with(self.seed, C)
+            blobs.assert_called_once_with(self.seed, {}, composite["web"]["inputReceipt"])
+            for overrides in ({"new_web_revision": B}, {"new_web_image_id": B_IMAGE},
+                              {"new_web_image_id": A_IMAGES["worker"]}):
+                with self.subTest(overrides=overrides), self.assertRaisesRegex(WebSwitchSmokeError, "distinct"):
+                    successor_baseline(SimpleNamespace(**(vars(args) | overrides)), self.backend)
+            verify.return_value = {**composite, "backend": {**composite["backend"], "sourceRevision": B}}
+            with self.assertRaisesRegex(WebSwitchSmokeError, "predecessor and Core"):
+                successor_baseline(args, self.backend)
+
+    def successor_fixture(self, args, composite, stack):
+        docker_calls, inspected, web_inspected = [], [], []
+
+        def run(command, **_):
+            docker_calls.append(command)
+            return SimpleNamespace(stdout="linux amd64")
+
+        def inspect(command, **_):
+            self.assertEqual(command[:2], ["image", "inspect"])
+            identifier = command[-1]
+            inspected.append(identifier)
+            self.assertIn(identifier, [A_IMAGES[name] for name in ("worker", "realtime", "migrator")])
+            return [{"Id": identifier, "Os": "linux", "Architecture": "amd64",
+                     "Config": {"User": "bun", "Labels": {"org.opencontainers.image.revision": A}}}]
+
+        def web(_, identifier, revision):
+            web_inspected.append((identifier, revision))
+            self.assertIn((identifier, revision), ((C_IMAGE, C), (D_IMAGE, D)))
+            return self.image(identifier, revision)
+
+        stack.enter_context(patch("web_mixed_image_smoke.platform.system", return_value="Linux"))
+        stack.enter_context(patch("web_mixed_image_smoke.platform.machine", return_value="x86_64"))
+        stack.enter_context(patch("web_mixed_image_smoke.sha256", side_effect=lambda path:
+            MANIFEST if path.name == "bundle.json" else hashlib.sha256(path.read_bytes()).hexdigest()))
+        stack.enter_context(patch("web_mixed_image_smoke.load_bundle", return_value=self.backend))
+        stack.enter_context(patch("web_mixed_image_smoke.successor_baseline", return_value=composite))
+        stack.enter_context(patch("web_mixed_image_smoke.read_web_image", side_effect=web))
+        source = stack.enter_context(patch.object(MixedWebSmoke, "verify_browser_source"))
+        fixture = MixedWebSmoke(SimpleNamespace(run=run, json=inspect), args, self.root / "private")
+        return fixture, docker_calls, inspected, web_inspected, source
+
+    def test_successor_runtime_uses_c_d_and_retained_backend_without_old_web_dependencies(self):
+        args, composite = self.successor()
+        with ExitStack() as stack:
+            fixture, docker_calls, inspected, web_inspected, source = self.successor_fixture(args, composite, stack)
+            report = fixture.load()
+        self.assertEqual(report, repeat_assembly(composite, self.image(D_IMAGE, D)))
+        self.assertEqual(docker_calls[1:], [
+            ["image", "load", "--input", str(self.backend["archivePath"])],
+            ["image", "load", "--input", str(args.successor_web_bundle / "web-image.tar")],
+        ])
+        self.assertEqual(inspected, [A_IMAGES[name] for name in ("worker", "realtime", "migrator")])
+        self.assertEqual(web_inspected, [(D_IMAGE, D), (C_IMAGE, C), (D_IMAGE, D)])
+        self.assertEqual(fixture.old_image, self.image(C_IMAGE, C))
+        self.assertEqual(fixture.new_image, self.image(D_IMAGE, D))
+        self.assertEqual(fixture.report["revision"], C)
+        self.assertEqual(fixture.report["schemaVersion"], 2)
+        self.assertEqual(fixture.report["browserProfile"]["seedRevision"], A)
+        self.assertEqual(fixture.report["browserProfile"]["harnessRevision"], TOOLKIT)
+        source.assert_called_once_with(self.backend["candidate"])
+
+    def test_successor_archive_replacement_fails_before_any_load(self):
+        args, composite = self.successor()
+        (args.successor_web_bundle / "web-image.tar").write_bytes(b"replaced")
+        with ExitStack() as stack:
+            fixture, docker_calls, inspected, _, _ = self.successor_fixture(args, composite, stack)
+            with self.assertRaisesRegex(WebSwitchSmokeError, "Successor Web archive differs"):
+                fixture.load()
+        self.assertEqual(len(docker_calls), 1)
+        self.assertEqual(inspected, [])
 
     def test_repeat_completion_requires_distinct_protocol_proof(self):
         original = {"phase": "complete", **BROWSER_PHASES["complete"]}

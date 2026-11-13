@@ -61,6 +61,10 @@ def load(path: Path):
 
 def create_candidate(revision: str, report: dict, report_digest: str, inspections: dict,
                      *, input_receipt: dict | None = None) -> dict:
+    if isinstance(input_receipt, dict) and input_receipt.get("kind") == "warpdrive-web-sdk-full-inputs":
+        from web_sdk_full_receipt import create_web_sdk_full_candidate
+
+        return create_web_sdk_full_candidate(revision, report, report_digest, inspections, input_receipt=input_receipt)
     require(bool(REVISION.fullmatch(revision)), "full lowercase source revision required")
     require(isinstance(report, dict) and type(report.get("schemaVersion")) is int
             and report["schemaVersion"] == 1, "invalid smoke report")
@@ -157,6 +161,7 @@ def main(argv=None) -> int:
     candidate.add_argument("--inspections", required=True, type=Path)
     candidate.add_argument("--output", required=True, type=Path)
     candidate.add_argument("--inputs", type=Path)
+    candidate.add_argument("--web-context", type=Path)
     capacity = commands.add_parser("capacity")
     for key in ("available", "candidate", "migration", "temporary", "reserve"):
         capacity.add_argument(f"--{key}-bytes", type=int, required=True)
@@ -168,9 +173,17 @@ def main(argv=None) -> int:
                 rows = load(args.inspections / f"{name}.json")
                 require(isinstance(rows, list) and len(rows) == 1, f"{name}: expected exactly one inspected image")
                 inspections[name] = rows[0]
-            receipt = load_receipt(args.inputs) if args.inputs else None
-            if receipt is not None:
-                verify_current(Path(__file__).resolve().parents[2], receipt, expected_revision=args.revision)
+            receipt = load(args.inputs) if args.inputs else None
+            root = Path(__file__).resolve().parents[2]
+            sdk = isinstance(receipt, dict) and receipt.get("kind") == "warpdrive-web-sdk-full-inputs"
+            require(sdk == (args.web_context is not None), "SDK receipt and exact staged Web context must be supplied together")
+            if sdk:
+                from web_sdk_full_receipt import verify_current_web_sdk_full_receipt
+
+                verify_current_web_sdk_full_receipt(root, receipt, expected_revision=args.revision, web_context=args.web_context)
+            elif args.inputs:
+                receipt = load_receipt(args.inputs)
+                verify_current(root, receipt, expected_revision=args.revision)
             result = create_candidate(args.revision, load(args.report), sha256(args.report), inspections,
                                       input_receipt=receipt)
             if receipt is not None:

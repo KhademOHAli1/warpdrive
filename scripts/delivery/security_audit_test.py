@@ -17,19 +17,20 @@ class AuditTests(unittest.TestCase):
             (directory / "package.json").write_text('{"packageManager":"bun@1.4.4"}\n')
             (directory / "bun.lock").write_text('{}\n')
 
-    def test_four_locks_use_native_all_severity_exit_and_retain_exact_raw_bytes(self):
+    def test_all_locks_use_native_all_severity_exit_and_retain_exact_raw_bytes(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "checkout"
             self.fixture(root)
             output = Path(temp) / "output"
             results = [subprocess.CompletedProcess(audit.COMMAND, code, raw, b"diagnostic\x00\n")
                        for code, raw in ((0, b""), (1, b'{"pkg":[{"severity":"low"}]}'),
-                                         (1, b'{"pkg":[{"severity":"moderate"}]}'), (0, b"{}"))]
+                                         (1, b'{"pkg":[{"severity":"moderate"}]}'), (0, b"{}"), (1, b""))]
             with patch.object(audit.subprocess, "run", side_effect=results) as run:
                 report = audit.audit_all(root, output)
             self.assertFalse(report["passed"])
-            self.assertEqual([r["result"] for r in report["projects"]], ["passed", "failed", "failed", "passed"])
-            self.assertEqual(run.call_count, 4)
+            self.assertEqual([r["result"] for r in report["projects"]], ["passed", "failed", "failed", "passed", "failed"])
+            self.assertEqual(report["projects"][-1]["project"], "tools/web-ui")
+            self.assertEqual(run.call_count, 5)
             self.assertTrue(all(call.args == (audit.COMMAND,) and call.kwargs["timeout"] == 60
                                 for call in run.call_args_list))
             for row, result in zip(report["projects"], results):
@@ -46,13 +47,14 @@ class AuditTests(unittest.TestCase):
             responses = [subprocess.TimeoutExpired(audit.COMMAND, 60, output=b"partial\x00", stderr=b"timeout"),
                          subprocess.CompletedProcess(audit.COMMAND, 2, b"bad response", b"network"),
                          subprocess.CompletedProcess(audit.COMMAND, 1, b"", b""),
+                         subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"checked"),
                          subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"checked")]
             with patch.object(audit.subprocess, "run", side_effect=responses) as run:
                 report = audit.audit_all(root, Path(temp) / "output")
             self.assertFalse(report["passed"])
-            self.assertEqual(run.call_count, 4)
+            self.assertEqual(run.call_count, 5)
             self.assertEqual(report["projects"][0]["error"], "timeout")
-            self.assertEqual([r["result"] for r in report["projects"]], ["failed", "failed", "failed", "passed"])
+            self.assertEqual([r["result"] for r in report["projects"]], ["failed", "failed", "failed", "passed", "passed"])
 
     def test_input_mutation_is_failure_even_when_native_audit_exits_zero(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -75,7 +77,7 @@ class AuditTests(unittest.TestCase):
             with patch.object(audit.subprocess, "run", return_value=subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"")) as run:
                 report = audit.audit_all(root, output)
             self.assertFalse(report["passed"])
-            self.assertEqual(run.call_count, 3)
+            self.assertEqual(run.call_count, 4)
             self.assertEqual(report["projects"][1]["result"], "failed")
             with self.assertRaises(FileExistsError):
                 audit.audit_all(root, output)

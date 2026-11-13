@@ -20,6 +20,11 @@
     "searching": "Suche läuft",
     "engagement": "Interaktionsverlauf wird geladen"
   },
+  "keyboardHelp": {
+    "title": "Tastenkürzel",
+    "description": "Drücken Sie Strg oder Befehlstaste zusammen mit K, um die Suche im Arbeitsbereich zu öffnen. Außerhalb von Eingabefeldern können Sie auch die Schrägstrichtaste verwenden.",
+    "close": "Tastenkürzel schließen"
+  },
   "searchOpen": "Suche öffnen",
   "searchPlaceholder": "Verkaufschancen, Personen, Organisationen und Leads suchen...",
   "reconnecting": "Verbindung wird wiederhergestellt...",

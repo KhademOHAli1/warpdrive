@@ -314,12 +314,23 @@ def load_installed_web_image(directory, *, state_dir, docker, expected_revision,
     for this archive and daemon. The daemon is only written by image load.
     """
     _daemon_pin(expected_daemon)
-    require(type(reconcile) is bool and not state_dir.is_relative_to(directory) and not directory.is_relative_to(state_dir),
-            "Distinct protected bundle and state directories required")
     admitted = candidate.load_web_bundle(directory, expected_revision=expected_revision,
                                          expected_manifest_sha256=expected_manifest_sha256, baseline_revision=baseline_revision,
                                          baseline_manifest_sha256=baseline_manifest_sha256, expected_origin=expected_origin)
-    image, provenance = admitted["candidate"]["image"], admitted["provenance"]
+    return load_verified_web_archive(directory, state_dir=state_dir, docker=docker, image=admitted["candidate"]["image"],
+        provenance=admitted["provenance"], baseline_revision=baseline_revision, baseline_manifest_sha256=baseline_manifest_sha256,
+        origin=expected_origin, expected_daemon=expected_daemon, reconcile=reconcile)
+
+
+def load_verified_web_archive(directory, *, state_dir, docker, image, provenance, baseline_revision,
+                              baseline_manifest_sha256, origin, expected_daemon, reconcile=False):
+    """Load a private archive after its versioned artifact verifier has admitted it."""
+    _daemon_pin(expected_daemon)
+    require(type(reconcile) is bool and not state_dir.is_relative_to(directory) and not directory.is_relative_to(state_dir),
+            "Distinct protected bundle and state directories required")
+    require(candidate.REVISION.fullmatch(image["sourceRevision"]) and candidate.REVISION.fullmatch(baseline_revision)
+            and image["sourceRevision"] != baseline_revision and inputs.HASH.fullmatch(baseline_manifest_sha256)
+            and inputs.HASH.fullmatch(provenance["bundleManifestSha256"]), "Exact admitted Web and baseline provenance required")
     with candidate._directory(directory) as parent, _state_directory(state_dir) as fd:
         root = os.fstat(parent)
         require(root.st_uid == os.geteuid() and stat.S_IMODE(root.st_mode) == 0o700, "Owned mode0700 Web bundle required")
@@ -327,9 +338,9 @@ def load_installed_web_image(directory, *, state_dir, docker, expected_revision,
             info = os.fstat(source.fileno())
             require(info.st_uid == os.geteuid() and stat.S_IMODE(info.st_mode) in {0o400, 0o600}, "Private Web archive required")
             facts = _archive_facts(source, size, provenance, image)
-            binding = {"sourceRevision": expected_revision, "bundleManifestSha256": expected_manifest_sha256,
+            binding = {"sourceRevision": image["sourceRevision"], "bundleManifestSha256": provenance["bundleManifestSha256"],
                        "baselineRevision": baseline_revision, "baselineManifestSha256": baseline_manifest_sha256,
-                       "origin": expected_origin, "archiveSha256": provenance["archiveSha256"], "archiveSizeBytes": size,
+                       "origin": origin, "archiveSha256": provenance["archiveSha256"], "archiveSizeBytes": size,
                        "testedConfigDigest": image["imageId"], "manifestDigest": facts["descriptor"]["digest"],
                        "daemon": expected_daemon}
             return _install(docker, fd, source, size, facts, binding, reconcile)

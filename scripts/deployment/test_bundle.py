@@ -7,7 +7,10 @@ import unittest
 from bundle import ARCHIVE, INPUT_RECEIPT, CandidateError, create_bundle, load_bundle
 from candidate import create_candidate, sha256
 from test_candidate import SHA, fixture
-from test_component_inputs import fixture as input_fixture
+from test_component_inputs import fixture as input_fixture, rehash as rehash_inputs
+from web_extension_inputs import REVIEWED_WEB_INPUTS
+from web_sdk_full_receipt import BACKEND, BASE_IMAGE, KIND, PROFILE
+from component_inputs import content_hash
 
 
 def write_candidate(root, *, version=1):
@@ -47,6 +50,44 @@ class BundleTests(unittest.TestCase):
         path.write_bytes(path.read_bytes() + b"tampered")
         with self.assertRaises(CandidateError):
             load_bundle(path.parent, expected_revision=SHA)
+
+    def test_v3_reconstructs_distinct_web_policy_and_unchanged_backend(self):
+        source = self.root / "sdk-source"
+        legacy = write_candidate(source, version=2)
+        inputs_path = source / INPUT_RECEIPT
+        backend = input_fixture(source)
+        backend["context"]["baseImage"] = BASE_IMAGE
+        rehash_inputs(backend)
+        backend["components"] = {name: backend["components"][name] for name in BACKEND}
+        web = {"profile": PROFILE, "context": backend["context"], "gitInventorySha256": "1" * 64,
+               "pinnedInputs": {path: {"gitBlob": blob, "sha256": digest, "bytes": 8}
+                                for path, (blob, digest) in REVIEWED_WEB_INPUTS.items()},
+               "helperEntries": backend["policy"]["entries"]["web"], "helperGraphInputs": ["src/web.ts"],
+               "sdkImports": {"src/ui.tsx": ["@ui-sdk/react/dialog"]}, "staticWebInputCount": 2}
+        web["inputSha256"] = content_hash(web)
+        inputs = {"schemaVersion": 1, "kind": KIND, "sourceRevision": SHA, "backendInputs": backend,
+                  "web": web, "deploymentAuthorized": False}
+        report, inspections = fixture()
+        config = inspections["web"]["Config"]
+        config.update(Env=[f"APP_COMMIT={SHA}", f"NEXT_DEPLOYMENT_ID=wd-{SHA}", "APP_VERSION="],
+                      Cmd=["bun", "--bun", "next", "start"], WorkingDir="/app")
+        config["Labels"]["org.opencontainers.image.title"] = "Warpdrive Web"
+        (source / "inspections/web.json").write_text(json.dumps([inspections["web"]]))
+        inputs_path.write_text(json.dumps(inputs))
+        candidate = create_candidate(SHA, report, sha256(source / "smoke/report.json"), inspections, input_receipt=inputs)
+        (source / "candidate.json").write_text(json.dumps(candidate))
+        bundle = self.root / "sdk-bundle"
+        loaded = create_bundle(source, bundle, expected_revision=SHA, docker=self.docker)
+        self.assertEqual(loaded["candidate"], candidate)
+        self.assertEqual(candidate["schemaVersion"], 3)
+        self.assertEqual(candidate["components"]["web"]["inputSha256"], web["inputSha256"])
+        self.assertNotEqual(candidate["components"]["web"]["inputPolicySha256"], backend["inputPolicySha256"])
+        for name in BACKEND:
+            self.assertEqual(candidate["components"][name]["imageId"], legacy["components"][name]["imageId"])
+            self.assertEqual(candidate["components"][name]["inputSha256"], backend["components"][name]["componentInputSha256"])
+        inputs_path.write_text(json.dumps(backend))
+        with self.assertRaises(CandidateError):
+            create_bundle(source, self.root / "invalid-sdk-bundle", expected_revision=SHA, docker=self.docker)
 
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()

@@ -10,7 +10,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECTS = (".", "site", "docs-site", "tools/browser-smoke")
+PROJECTS = (".", "site", "docs-site", "tools/browser-smoke", "tools/web-ui")
 COMMAND = ("bun", "--no-env-file", "audit", "--json")
 SEVERITIES = {"low", "moderate", "high", "critical"}
 

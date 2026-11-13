@@ -142,9 +142,9 @@ def _assembly(composite, baseline, image):
             "newWeb": image, "fixtureBuilds": 0, "compositeSha256": baseline["compositeSha256"]}
 
 
-def _phase(value, expected):
+def _phase(value, expected, *, sdk_keyboard_help=False):
     try:
-        return browser_message(value, repeat=True)["phase"] == expected
+        return browser_message(value, repeat=True, sdk_keyboard_help=sdk_keyboard_help)["phase"] == expected
     except (KeyError, TypeError, ValueError, RuntimeError):
         return False
 
@@ -245,7 +245,7 @@ def _transition(detail, *, state, operation, generation, assets, writes, schema,
             "Repeat forward, reversal or automatic rollback proof differs")
 
 
-def validate_repeat_mixed_report(report, *, assembly, expected_harness_revision):
+def validate_repeat_mixed_report(report, *, assembly, expected_harness_revision, sdk_keyboard_help=False):
     """Validate exact B/C continuity, protected A runtimes and rollback in owned staging."""
     profile = {"kind": REPEAT_BROWSER_PROFILE, "harnessRevision": expected_harness_revision,
                "seedRevision": assembly["originalBackendRevision"]}
@@ -274,7 +274,8 @@ def validate_repeat_mixed_report(report, *, assembly, expected_harness_revision)
             and new_name == old_name.removesuffix("-a") + "-b", "Repeat fixture Web slot ownership differs")
     require(_phase(initial.get("initial"), "initial-ready") and initial.get("freshBoundBaselineSeed") is True
             and initial.get("forgedSession") is False and _exact_number(initial.get("matchingActivityRows"), 0)
-            and _phase(browser.get("preSwitch"), "pre-switch-ready") and _phase(browser.get("complete"), "complete")
+            and _phase(browser.get("preSwitch"), "pre-switch-ready")
+            and _phase(browser.get("complete"), "complete", sdk_keyboard_help=sdk_keyboard_help)
             and _exact_number(browser.get("matchingActivityRows"), 1) and browser.get("generatedLoopbackTls") is True,
             "Repeat browser continuity and exactly-one durable Activity write required")
     for detail, operation, state, generation, assets, writes in (

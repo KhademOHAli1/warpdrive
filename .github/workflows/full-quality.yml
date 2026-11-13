@@ -80,6 +80,7 @@ jobs:
           NODE_ENV: development
         run: |
           bun --no-env-file install --frozen-lockfile
+          bun --no-env-file scripts/deployment/install-web-ui.mjs
           bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
           bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
       - name: Apply canonical migrations to disposable database
