@@ -1,0 +1,95 @@
+name: Web release artifact custody
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Observe existing immutable objects, or bootstrap once from verified historical Actions artifacts
+        type: choice
+        required: true
+        default: observe
+        options: [observe, bootstrap]
+
+permissions: {}
+
+concurrency:
+  group: warpdrive-web-release-custody
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    name: Bootstrap verified Web artifact custody
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'bootstrap'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check bootstrap authority and prior write opportunities
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B scripts/deployment/web_custody_workflow.py preflight
+      - name: Download and verify the exact historical Core and Web evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          umask 077
+          python3 -B scripts/deployment/web_repeat_historical.py \
+            --revision "$GITHUB_SHA" \
+            --web-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt" \
+            --web-receipt-sha256 d66b71fa2c22384ec4dc5eb300e2ed72cd1aa71e0f58b2c23e7f2eb1938dd439 \
+            --backend-admission-run 43350260944 \
+            --backend-admission-sha256 baecbd9e5ac8a27a9948c43fc5bd16fef4b3e268c55b92ff6061f88f7664e3d8 \
+            --retain-backend-admission --output-dir "$RUNNER_TEMP/web-custody-source"
+      - name: Install attested ORAS
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Publish the three pinned custody objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: python3 -B scripts/deployment/web_custody_workflow.py bootstrap --oras "$CUSTODY_ORAS"
+      - name: Retain sanitized custody outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-release-custody-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  observe:
+    name: Observe immutable Web artifact custody
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'observe'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Install attested ORAS
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Observe exact immutable manifests and payloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: python3 -B scripts/deployment/web_custody_workflow.py observe --oras "$CUSTODY_ORAS"
+      - name: Retain sanitized custody outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-release-custody-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30

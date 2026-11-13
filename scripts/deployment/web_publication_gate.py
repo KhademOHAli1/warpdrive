@@ -99,22 +99,26 @@ def copy_bytes(read, target, size):
     return digest.hexdigest()
 
 
+def bounded_read(source, *, timeout_seconds):
+    deadline = time.monotonic() + timeout_seconds
+
+    def read(limit):
+        remaining = deadline - time.monotonic()
+        require(remaining > 0 and select.select([source], [], [], remaining)[0], "artifact download timed out")
+        return os.read(source.fileno(), limit)
+
+    return read
+
+
 def download(artifact, archive):
     """Read bounded stdout once. Never retain gh diagnostics or use an archive URL supplied by the caller."""
     command = ["gh", "api", "--hostname", "github.com", "--method", "GET",
                f"repos/{REPO}/actions/artifacts/{artifact['id']}/zip"]
-    deadline = time.monotonic() + 600
     with private_file(archive) as output, subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                                            stderr=subprocess.DEVNULL) as process:
-        def read(limit):
-            remaining = deadline - time.monotonic()
-            require(remaining > 0 and select.select([process.stdout], [], [], remaining)[0],
-                    "artifact download timed out")
-            return os.read(process.stdout.fileno(), limit)
-
         try:
-            digest = copy_bytes(read, output, artifact["sizeBytes"])
-            require(process.wait(timeout=max(0, deadline - time.monotonic())) == 0, "artifact download failed")
+            digest = copy_bytes(bounded_read(process.stdout, timeout_seconds=600), output, artifact["sizeBytes"])
+            require(process.wait(timeout=5) == 0, "artifact download failed")
             require("sha256:" + digest == artifact["digest"], "downloaded artifact digest differs")
             output.flush()
             os.fsync(output.fileno())
