@@ -1,0 +1,129 @@
+name: Independent Web image qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_revision:
+        description: Exact source revision of the accepted full-image baseline
+        required: true
+        type: string
+      baseline_admission_run_id:
+        description: Successful historical Image candidate publication inspect run
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  security-events: read
+
+concurrency:
+  group: warpdrive-independent-web-qualification
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Qualify exact Web-only image and retain its bytes
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      BUN_OPTIONS: --no-env-file
+      BASELINE_REVISION: ${{ inputs.baseline_revision }}
+      BASELINE_ADMISSION_RUN: ${{ inputs.baseline_admission_run_id }}
+      WEB_REVISION: ${{ github.sha }}
+      WEB_IMAGE: warpdrive-ci/web-only:${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate retained historical baseline before installing dependencies
+        id: baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$BASELINE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BASELINE_ADMISSION_RUN" =~ ^[1-9][0-9]{0,19}$ ]]
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$WEB_REVISION"
+          git --no-replace-objects merge-base --is-ancestor "$BASELINE_REVISION" "$WEB_REVISION"
+          git -c core.hooksPath=/dev/null worktree add --detach "$RUNNER_TEMP/web-baseline-source" "$BASELINE_REVISION"
+          python3 -B scripts/deployment/web_baseline.py \
+            --baseline-revision "$BASELINE_REVISION" --admission-run-id "$BASELINE_ADMISSION_RUN" \
+            --bundle-dir "$RUNNER_TEMP/web-baseline" --admission-output "$RUNNER_TEMP/web-baseline-admission.json"
+          digest=$(sha256sum "$RUNNER_TEMP/web-baseline-admission.json" | cut -d ' ' -f 1)
+          printf 'admission-sha=%s\n' "$digest" >> "$GITHUB_OUTPUT"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Install locked tooling for exact candidate and historical browser
+        env:
+          NODE_ENV: development
+        run: |
+          bun --no-env-file install --frozen-lockfile
+          cd "$RUNNER_TEMP/web-baseline-source"
+          bun --no-env-file install --frozen-lockfile
+          bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
+          bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Check source and retained component inputs before any build
+        env:
+          ADMISSION_SHA: ${{ steps.baseline.outputs.admission-sha }}
+        run: |
+          test "$(uname -m)" = x86_64
+          node scripts/deployment/component_inputs.mjs \
+            --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
+            --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin > "$RUNNER_TEMP/web-inputs.json"
+          python3 -B scripts/deployment/web_release_build.py prepare \
+            --root "$GITHUB_WORKSPACE" --expected-revision "$WEB_REVISION" \
+            --baseline-dir "$RUNNER_TEMP/web-baseline" --baseline-admission "$RUNNER_TEMP/web-baseline-admission.json" \
+            --baseline-admission-sha256 "$ADMISSION_SHA" --input-receipt "$RUNNER_TEMP/web-inputs.json" \
+            --state-dir "$RUNNER_TEMP/web-qualification-state"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Build exactly one Web image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: deploy/images/Dockerfile
+          target: web
+          platforms: linux/amd64
+          load: true
+          push: false
+          provenance: false
+          tags: ${{ env.WEB_IMAGE }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            NEXT_PUBLIC_WS_URL=same-origin
+          cache-from: type=gha,scope=warpdrive-production-web
+      - name: Run native browser continuity and rollback against retained backend images
+        env:
+          ADMISSION_SHA: ${{ steps.baseline.outputs.admission-sha }}
+        run: |
+          image_id=$(docker image inspect --format '{{.Id}}' "$WEB_IMAGE")
+          python3 -B scripts/deployment/web_release_build.py qualify \
+            --root "$GITHUB_WORKSPACE" --expected-revision "$WEB_REVISION" \
+            --baseline-dir "$RUNNER_TEMP/web-baseline" --baseline-admission "$RUNNER_TEMP/web-baseline-admission.json" \
+            --baseline-admission-sha256 "$ADMISSION_SHA" --input-receipt "$RUNNER_TEMP/web-inputs.json" \
+            --state-dir "$RUNNER_TEMP/web-qualification-state" --baseline-root "$RUNNER_TEMP/web-baseline-source" \
+            --new-web-image-id "$image_id" --bundle-output "$RUNNER_TEMP/web-qualified-bundle"
+      - name: Recheck selected main before retaining the tested artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$WEB_REVISION"
+      - name: Retain exact tested Web image and qualification
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-image-bundle-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-qualified-bundle/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Retain qualification diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-image-qualification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-qualification-state/
+          if-no-files-found: ignore
+          retention-days: 14

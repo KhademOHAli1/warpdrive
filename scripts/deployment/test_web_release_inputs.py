@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from dataclasses import replace
 import hashlib
 import json
-import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -177,6 +176,7 @@ class WebReleaseInputsTests(unittest.TestCase):
         cases = (
             "src/web.ts", "src/worker.ts", "src/new-ui.tsx", "bun.lock",
             "package.json", "Caddyfile", "docker-compose.yml", f"{release.ENGINE_ROOT}/build.sh",
+            "scripts/deployment/component_inputs.mjs", ".github/workflows/unreviewed.yml",
         )
         for relative in cases:
             with self.subTest(relative=relative):
@@ -186,6 +186,35 @@ class WebReleaseInputsTests(unittest.TestCase):
                 revision = self.presentation_commit(copy_label="Clear selected rows")
                 with self.assertRaisesRegex(release.WebReleaseInputError, "presentation-only profile"):
                     self.admit(revision)
+
+    def test_presentation_and_new_release_tool_preserve_all_backend_inputs(self):
+        path = ".github/workflows/web-image-qualification.yml"
+        self.write(path, b"name: Web-only qualification\n")
+        self.set_record(self.current["components"]["web"], path)
+        revision = self.presentation_commit(copy_label="Clear selected rows")
+        result = self.admit(revision)
+        self.assertEqual(result["changedReleaseToolingPaths"], [path])
+        self.assertEqual(result["changedPresentationPaths"], [release.COPY_FILES[1]])
+        self.assertEqual(result["buildComponents"], ["web"])
+        for name in ("worker", "realtime", "migrator"):
+            self.assertEqual(self.current["components"][name], self.historical["components"][name])
+
+    def test_release_tool_alone_does_not_admit_web(self):
+        path = ".github/workflows/web-image-qualification.yml"
+        self.write(path, b"name: Web-only qualification\n")
+        self.set_record(self.current["components"]["web"], path)
+        revision = self.presentation_commit()
+        with self.assertRaisesRegex(release.WebReleaseInputError, "presentation-only profile"):
+            self.admit(revision)
+
+    def test_executable_release_tool_does_not_admit_web(self):
+        path = "scripts/deployment/web_release_build.py"
+        self.write(path, b"pass\n")
+        (self.root / path).chmod(0o755)
+        self.set_record(self.current["components"]["web"], path)
+        revision = self.presentation_commit(copy_label="Clear selected rows")
+        with self.assertRaisesRegex(release.WebReleaseInputError, "regular non-executable"):
+            self.admit(revision)
 
     def test_rejects_css_import_new_declaration_mode_and_copy_contract_drift(self):
         css_cases = (

@@ -19,7 +19,10 @@ from candidate import COMPONENTS, REVISION, CandidateError, require
 import component_inputs as inputs
 from image_smoke import image_metadata
 from web_mixed_image_smoke import LIMITATIONS, REVISION_LABEL, browser_message, build_environment, read_web_image
-from web_release_inputs import COPY_FILES, ENGINE_CONTEXT_VERSION, RUNTIME_PROFILE, STYLE_FILE, verify_web_source_delta
+from web_release_inputs import (
+    ENGINE_CONTEXT_VERSION, RUNTIME_PROFILE, WebReleaseInputError,
+    verify_web_source_delta, web_input_delta,
+)
 from web_switch import content_hash as runtime_hash
 
 
@@ -163,11 +166,10 @@ def _source_delta(delta, before, after, old_revision, revision):
     old, new = old_components["web"], new_components["web"]
     graph = {key for key in old if key not in {"inputs", "componentInputSha256"}}
     require(all(old[key] == new[key] for key in graph), "Web helper graph differs")
-    old_files = {row["path"]: row for row in old["inputs"]}
-    new_files = {row["path"]: row for row in new["inputs"]}
-    require(old_files.keys() == new_files.keys(), "Web input membership changed")
-    changed = sorted(path for path in old_files if old_files[path] != new_files[path])
-    require(changed and set(changed) <= {STYLE_FILE, *COPY_FILES}, "Reviewed presentation paths required")
+    try:
+        changed, tooling = web_input_delta(old, new)
+    except WebReleaseInputError as error:
+        raise CandidateError(str(error)) from error
     require(isinstance(delta, dict) and all(_matches(inputs.HASH, delta.get(key)) for key in SOURCE_HASH_FIELDS),
             "Engine and runtime policy evidence is required")
     expected = {
@@ -177,7 +179,9 @@ def _source_delta(delta, before, after, old_revision, revision):
         "baselineCoreInputReceiptSha256": inputs.content_hash(before),
         "currentCoreInputReceiptSha256": inputs.content_hash(after),
         "currentWebInputSha256": new["componentInputSha256"], "inputPolicySha256": after["inputPolicySha256"],
-        "changedPresentationPaths": changed, "buildComponents": ["web"], "deploymentAuthorized": False,
+        "changedPresentationPaths": changed,
+        **({"changedReleaseToolingPaths": tooling} if tooling else {}),
+        "buildComponents": ["web"], "deploymentAuthorized": False,
         **{key: delta[key] for key in SOURCE_HASH_FIELDS},
     }
     require(inputs.canonical(delta) == inputs.canonical(expected), "Exact Web source evidence differs")

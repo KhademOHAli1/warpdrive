@@ -18,6 +18,7 @@ from test_candidate import SHA as BASELINE_REVISION, fixture as image_fixture
 from test_component_inputs import fixture as input_fixture, rehash
 import web_candidate as web
 from web_mixed_image_smoke import BROWSER_PHASES
+from web_release_inputs import STYLE_FILE
 
 
 REVISION = "f" * 40
@@ -137,9 +138,9 @@ class WebCandidateTests(unittest.TestCase):
 
     def set_style(self, receipt, value):
         rows = receipt["components"]["web"]["inputs"]
-        rows = [row for row in rows if row["path"] != web.STYLE_FILE]
+        rows = [row for row in rows if row["path"] != STYLE_FILE]
         receipt["components"]["web"]["inputs"] = sorted(
-            [*rows, record(web.STYLE_FILE, value)], key=lambda row: row["path"])
+            [*rows, record(STYLE_FILE, value)], key=lambda row: row["path"])
         rehash(receipt)
 
     def make_baseline(self):
@@ -165,7 +166,7 @@ class WebCandidateTests(unittest.TestCase):
             "baselineCoreInputReceiptSha256": inputs.content_hash(self.before),
             "currentCoreInputReceiptSha256": inputs.content_hash(self.after),
             "currentWebInputSha256": self.after["components"]["web"]["componentInputSha256"],
-            "inputPolicySha256": self.after["inputPolicySha256"], "changedPresentationPaths": [web.STYLE_FILE],
+            "inputPolicySha256": self.after["inputPolicySha256"], "changedPresentationPaths": [STYLE_FILE],
             "buildComponents": ["web"], "deploymentAuthorized": False,
             **{key: "a" * 64 for key in web.SOURCE_HASH_FIELDS},
         }
