@@ -6,6 +6,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { COMPONENTS, generateComponentInputs, parseInputArguments } from "./component_inputs.mjs";
+import { runWebGit } from "./web_presentation_policy.mjs";
+import { generateWebSdkFullInputs } from "./web_sdk_full_inputs.mjs";
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const NAMESPACE = "src/features/operations/messages/operations";
@@ -24,6 +26,54 @@ const hashes = (receipt) =>
 function changed(before, after) {
   assert.equal(before.inputPolicySha256, after.inputPolicySha256, "Policy must stay identical");
   return COMPONENTS.filter((component) => hashes(before)[component] !== hashes(after)[component]);
+}
+
+function sdkReceipt(receipt) {
+  return {
+    inputPolicySha256: receipt.backendInputs.inputPolicySha256,
+    components: {
+      ...receipt.backendInputs.components,
+      web: { componentInputSha256: receipt.web.inputSha256 },
+    },
+  };
+}
+
+async function sdkSnapshot(root, snapshot, revision, options) {
+  // This private repository owns every mutation and ref. The source object
+  // store supplies the exact base without creating worktrees or refs there.
+  runWebGit(root, [
+    "-c",
+    "core.hooksPath=/dev/null",
+    "clone",
+    "--quiet",
+    "--shared",
+    "--no-checkout",
+    "--",
+    root,
+    snapshot,
+  ]);
+  const git = (...args) =>
+    runWebGit(snapshot, [
+      "-c",
+      "core.hooksPath=/dev/null",
+      "-c",
+      "commit.gpgsign=false",
+      "-c",
+      "user.name=Warpdrive fixture",
+      "-c",
+      "user.email=warpdrive-fixture@example.invalid",
+      ...args,
+    ]);
+  git("checkout", "--quiet", "--detach", revision);
+  await symlink(await realpath(join(root, "node_modules")), join(snapshot, "node_modules"), "dir");
+  return async () => {
+    git("add", "-A", "--", "src", NEXT);
+    git("commit", "--quiet", "--allow-empty", "-m", "Exercise component input boundary");
+    const selected = git("rev-parse", "HEAD").toString("ascii").trim();
+    return sdkReceipt(
+      await generateWebSdkFullInputs({ ...options, root: snapshot, revision: selected }),
+    );
+  };
 }
 
 async function copySnapshot(root, destination, receipt) {
@@ -104,16 +154,23 @@ function removeExactlyOnce(text, line) {
   return text.replace(line, "");
 }
 
-export async function qualifyComponentBoundaries(options) {
+export async function qualifyComponentBoundaries({ sdkRevision, ...options }) {
   const root = await realpath(
     resolve(options.root ?? resolve(dirname(fileURLToPath(import.meta.url)), "../..")),
   );
-  const current = await generateComponentInputs({ ...options, root });
-  assert.deepEqual(Object.keys(current.components), COMPONENTS, "All four components required");
-  const snapshot = await mkdtemp(join(tmpdir(), "warpdrive-component-boundaries-"));
+  const current =
+    sdkRevision === undefined
+      ? await generateComponentInputs({ ...options, root })
+      : sdkReceipt(await generateWebSdkFullInputs({ ...options, root, revision: sdkRevision }));
+  assert.deepEqual(
+    Object.keys(current.components).sort(),
+    [...COMPONENTS].sort(),
+    "All four components required",
+  );
+  const snapshot = await mkdtemp(join(await realpath(tmpdir()), "warpdrive-component-boundaries-"));
   const started = performance.now();
   const report = {
-    schemaVersion: 1,
+    schemaVersion: sdkRevision === undefined ? 1 : 2,
     kind: "warpdrive-real-source-component-boundaries",
     success: false,
     inputPolicySha256: current.inputPolicySha256,
@@ -121,13 +178,21 @@ export async function qualifyComponentBoundaries(options) {
     checks: [],
     limitations: [
       "Input dependency boundaries in an owned real-source snapshot, not runtime or image qualification.",
-      "Web uses a conservative inventory with three guarded omissions; actual image equivalence and reuse remain separate gates.",
+      sdkRevision === undefined
+        ? "Web uses a conservative inventory with three guarded omissions; actual image equivalence and reuse remain separate gates."
+        : "SDK Web inventories the complete tracked context and rechecks guarded reachability; any tracked source mutation can change its receipt.",
       "No component reuse, deployment, API/WS/job compatibility or installed acceptance is authorized.",
     ],
   };
   try {
-    report.supplementalSources = await copySnapshot(root, snapshot, current);
-    const discover = () => generateComponentInputs({ ...options, root: snapshot });
+    let discover;
+    if (sdkRevision === undefined) {
+      report.supplementalSources = await copySnapshot(root, snapshot, current);
+      discover = () => generateComponentInputs({ ...options, root: snapshot });
+    } else {
+      report.supplementalSources = [];
+      discover = await sdkSnapshot(root, snapshot, sdkRevision, options);
+    }
     const saved = new Map();
     for (const path of [
       CATALOG,
@@ -225,7 +290,10 @@ export async function qualifyComponentBoundaries(options) {
     assert.notEqual(ledger, ledgerOriginal, "Both actual source-review hashes must change");
     await writeFile(join(snapshot, REVIEW_LEDGER), ledger);
     const afterWorker = await discover();
-    assert.deepEqual(changed(afterRegistration, afterWorker), ["worker"]);
+    assert.deepEqual(
+      changed(afterRegistration, afterWorker),
+      sdkRevision === undefined ? ["worker"] : ["web", "worker"],
+    );
     report.checks.push({
       name: "actual-worker-registration-and-release-job-with-required-review-hashes",
       passed: true,
@@ -272,7 +340,17 @@ if (
   try {
     // Like the input producer, publication is stdout-only. The CI caller retains
     // this report under its own RUNNER_TEMP; no caller-chosen path is opened here.
-    const report = await qualifyComponentBoundaries(parseInputArguments(process.argv.slice(2)));
+    const args = process.argv.slice(2);
+    let sdkRevision;
+    if (args[0] === "--sdk-revision") {
+      sdkRevision = args[1];
+      assert(
+        typeof sdkRevision === "string" && /^[a-f0-9]{40}$/u.test(sdkRevision),
+        "Exact SDK source revision required",
+      );
+      args.splice(0, 2);
+    }
+    const report = await qualifyComponentBoundaries({ ...parseInputArguments(args), sdkRevision });
     console.log(JSON.stringify(report, null, 2));
   } catch (error) {
     console.error(

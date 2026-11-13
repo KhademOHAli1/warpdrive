@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import { createInterface } from "node:readline";
+import { verifySdkKeyboardHelp } from "./deployment/web_sdk_keyboard_fixture.mjs";
 
 const GENERATION = "x-warpdrive-fixture-web-generation";
 const IDENTITY_PATH = "/api/runtime/web-identity";
@@ -21,6 +22,19 @@ function readProfile() {
   requireProof(raw.length <= 4096);
   const profile = JSON.parse(raw);
   requireProof(profile.scenario === undefined || profile.scenario === REPEAT_SCENARIO);
+  requireProof(
+    profile.sdkKeyboardHelp === undefined ||
+      (profile.sdkKeyboardHelp === true && profile.scenario === REPEAT_SCENARIO),
+  );
+  const gaps = profile.topBarGaps ?? [24, 22];
+  requireProof(
+    profile.topBarGaps === undefined ||
+      (profile.scenario === undefined &&
+        Array.isArray(gaps) &&
+        gaps.length === 2 &&
+        gaps.every((gap) => Number.isSafeInteger(gap) && gap >= 0 && gap <= 64) &&
+        gaps[0] - gaps[1] === 2),
+  );
   const origin = new URL(profile.baseUrl);
   requireProof(
     origin.protocol === "https:" &&
@@ -48,7 +62,7 @@ function readProfile() {
       profile.password.length >= 20 &&
       profile.password.length <= 128,
   );
-  return { ...profile, base: origin.origin, wsUrl: `wss://${origin.host}/_ws` };
+  return { ...profile, topBarGaps: gaps, base: origin.origin, wsUrl: `wss://${origin.host}/_ws` };
 }
 
 function switchControl() {
@@ -345,7 +359,7 @@ try {
   const board = page.getByRole("main", { name: `Board ${profile.pipelineName}`, exact: true });
   await board.waitFor({ state: "visible" });
   if (profile.scenario !== REPEAT_SCENARIO)
-    await until(async () => (await topBarGap(page)) === "24px", 10000);
+    await until(async () => (await topBarGap(page)) === `${profile.topBarGaps[0]}px`, 10000);
   await page.getByRole("button", { name: "Quick add", exact: true }).click();
   await page.getByRole("menuitem", { name: /^Activity(?:\s*A)?$/u }).click();
   const dialog = page.getByRole("dialog", { name: "Add activity", exact: true });
@@ -441,9 +455,15 @@ try {
     .getByRole("main", { name: `Board ${profile.pipelineName}`, exact: true })
     .waitFor({ state: "visible" });
   if (profile.scenario !== REPEAT_SCENARIO)
-    await until(async () => (await topBarGap(fresh)) === "22px", 10000);
+    await until(async () => (await topBarGap(fresh)) === `${profile.topBarGaps[1]}px`, 10000);
   requireProof(fresh.url() === oldUrl);
   requireProof(traffic.actionPosts === 1);
+
+  let sdkKeyboardHelp;
+  if (profile.sdkKeyboardHelp === true) {
+    stage = "current-keyboard-help";
+    sdkKeyboardHelp = await verifySdkKeyboardHelp(fresh);
+  }
 
   stage = "browser-close";
   await browser.close();
@@ -456,6 +476,7 @@ try {
     oldAction: true,
     actionPosts: 1,
     ...(profile.scenario === REPEAT_SCENARIO ? { freshStampedPage: true } : {}),
+    ...(sdkKeyboardHelp === undefined ? {} : { sdkKeyboardHelp }),
   });
 } catch {
   console.error(JSON.stringify({ event: "browser.web-rollout.failed", stage }));

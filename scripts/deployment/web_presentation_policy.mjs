@@ -402,6 +402,14 @@ function graphPackages(manifest, lock) {
   return Object.fromEntries(names);
 }
 
+// Shared read-only Git authority and lock bounds for versioned Web source policies.
+export {
+  git as runWebGit,
+  graphPackages as lockedWebPackages,
+  readTree as readWebGitTree,
+  sourceReader as createWebGitSourceReader,
+};
+
 async function inspectSnapshot(root, entries, rules) {
   const read = sourceReader(root, entries);
   let manifest;

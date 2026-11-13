@@ -286,9 +286,17 @@ export default tseslint.config(
 
   {
     files: [
+      "scripts/deployment/install-web-ui.mjs",
+      "scripts/deployment/install-web-ui.test.mjs",
+      "scripts/deployment/web_functional_source.mjs",
+      "scripts/deployment/web_functional_source.test.mjs",
       "scripts/deployment/web_presentation_policy.mjs",
       "scripts/deployment/web_presentation_policy.test.mjs",
       "scripts/deployment/web_repeat_presentation.mjs",
+      "scripts/deployment/web_sdk_full_inputs.mjs",
+      "scripts/deployment/web_sdk_full_inputs.test.mjs",
+      "scripts/deployment/web_sdk_keyboard_fixture.mjs",
+      "scripts/deployment/web_sdk_keyboard_fixture.test.mjs",
     ],
     languageOptions: {
       parserOptions: {

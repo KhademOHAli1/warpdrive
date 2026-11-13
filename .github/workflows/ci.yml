@@ -30,6 +30,8 @@ jobs:
           bun-version-file: package.json
       - name: Install locked app dependencies
         run: bun install --frozen-lockfile
+      - name: Project the locked Web UI dependencies
+        run: bun --no-env-file scripts/deployment/install-web-ui.mjs
       - name: Generate and check app types
         run: bun run typecheck
       - name: Check translations and lint

@@ -23,7 +23,7 @@ MAX_ARCHIVE_BYTES = 8 * 1024 ** 3
 
 
 def metadata_files(version):
-    require(type(version) is int and version in {1, 2}, "unsupported bundle/candidate version")
+    require(type(version) is int and version in {1, 2, 3}, "unsupported bundle/candidate version")
     return METADATA_FILES if version == 1 else (*METADATA_FILES, INPUT_RECEIPT)
 
 
@@ -56,7 +56,7 @@ def reconstruct_candidate(directory: Path, expected_revision: str) -> dict:
         rows = load(directory / f"inspections/{name}.json")
         require(isinstance(rows, list) and len(rows) == 1, "one image inspection per component required")
         inspections[name] = rows[0]
-    receipt = load(directory / INPUT_RECEIPT) if stored["schemaVersion"] == 2 else None
+    receipt = load(directory / INPUT_RECEIPT) if stored["schemaVersion"] in {2, 3} else None
     candidate = create_candidate(expected_revision, load(report_path), sha256(report_path), inspections,
                                  input_receipt=receipt)
     require(json.dumps(stored, sort_keys=True, allow_nan=False)
@@ -106,7 +106,7 @@ def create_bundle(candidate_dir: Path, output_dir: Path, *, expected_revision: s
     manifest = {"schemaVersion": candidate["schemaVersion"], "kind": "warpdrive-tested-image-bundle",
                 "revision": expected_revision, "platform": "linux/amd64",
                 "origin": origin, "files": files}
-    if candidate["schemaVersion"] == 2:
+    if candidate["schemaVersion"] in {2, 3}:
         manifest["releaseRevision"] = expected_revision
     with (output_dir / MANIFEST).open("x") as output:
         output.write(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
@@ -121,12 +121,12 @@ def load_bundle(directory: Path, *, expected_revision: str) -> dict:
     version = manifest.get("schemaVersion")
     inventory = metadata_files(version)
     require(set(manifest) == {"schemaVersion", "kind", "revision", "platform", "origin", "files"}
-            | ({"releaseRevision"} if version == 2 else set()), "invalid bundle manifest")
-    require(type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] in {1, 2}
+            | ({"releaseRevision"} if version in {2, 3} else set()), "invalid bundle manifest")
+    require(type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] in {1, 2, 3}
             and manifest["kind"] == "warpdrive-tested-image-bundle", "unsupported bundle schema")
     require(manifest["revision"] == expected_revision and manifest["platform"] == "linux/amd64",
             "bundle source or platform mismatch")
-    require(version != 2 or manifest["releaseRevision"] == expected_revision, "bundle release revision differs")
+    require(version == 1 or manifest["releaseRevision"] == expected_revision, "bundle release revision differs")
     validate_origin(manifest["origin"])
     files = manifest["files"]
     require(isinstance(files, dict) and set(files) == set((*inventory, ARCHIVE)),

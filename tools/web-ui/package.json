@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@ui-sdk/core": "0.1.0-beta.1",
+    "@ui-sdk/react": "0.1.0-beta.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "name": "warpdrive-web-ui",
+  "packageManager": "bun@1.4.4",
+  "private": true,
+  "type": "module"
+}

@@ -132,17 +132,32 @@ def _nonroot(value: Any) -> bool:
 def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> None:
     require(isinstance(revision, str) and bool(REVISION.fullmatch(revision)), "invalid expected revision")
     require(isinstance(candidate, dict) and type(candidate.get("schemaVersion")) is int
-            and candidate["schemaVersion"] in {1, 2} and candidate.get("kind") == "warpdrive-image-candidate",
+            and candidate["schemaVersion"] in {1, 2, 3} and candidate.get("kind") == "warpdrive-image-candidate",
             "reconstructed image candidate required")
     require(candidate.get("revision") == revision and candidate.get("platform") == "linux/amd64",
             "candidate source/platform mismatch")
-    if candidate["schemaVersion"] == 2:
+    version = candidate["schemaVersion"]
+    policies = {}
+    if version in {2, 3}:
         require(candidate.get("releaseRevision") == revision, "candidate release revision mismatch")
         inputs = candidate.get("inputProvenance")
+    if version == 2:
         require(isinstance(inputs, dict) and set(inputs) == {"state", "receiptSha256", "inputPolicySha256"}
                 and inputs["state"] == "current-source-inputs-bound"
                 and all(isinstance(inputs[key], str) and HASH.fullmatch(inputs[key])
                         for key in ("receiptSha256", "inputPolicySha256")), "bound component input provenance required")
+        policies = dict.fromkeys(COMPONENTS, inputs["inputPolicySha256"])
+    if version == 3:
+        from web_sdk_full_receipt import PROFILE
+
+        hashes = ("receiptSha256", "backendInputPolicySha256", "webInputPolicySha256")
+        require(isinstance(inputs, dict) and set(inputs) == {"state", "webProfile", *hashes}
+                and inputs["state"] == "current-source-sdk-web-inputs-bound" and inputs["webProfile"] == PROFILE
+                and all(isinstance(inputs[key], str) and HASH.fullmatch(inputs[key]) for key in hashes)
+                and inputs["webInputPolicySha256"] != inputs["backendInputPolicySha256"],
+                "Bound isolated SDK Web and backend input provenance required")
+        policies = dict.fromkeys(COMPONENTS, inputs["backendInputPolicySha256"])
+        policies["web"] = inputs["webInputPolicySha256"]
     require(candidate.get("deploymentAuthorized") is False and candidate.get("compatibility") == "unassessed",
             "candidate must retain deployment and compatibility boundaries")
     qualification = candidate.get("qualification")
@@ -156,8 +171,8 @@ def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> Non
     require(isinstance(gates, list) and all(isinstance(item, str) and item for item in gates)
             and len(gates) == len(set(gates)) and set(PENDING).issubset(gates),
             "candidate pending gates must remain explicit")
-    require(candidate["schemaVersion"] != 2 or "independently-qualified-component-reuse" in gates,
-            "fresh-build v2 does not qualify retained component reuse")
+    require(version == 1 or "independently-qualified-component-reuse" in gates,
+            "fresh-build candidate does not qualify retained component reuse")
     components = candidate.get("components")
     require(isinstance(components, dict) and set(components) == set(COMPONENTS), "all tested Core images required")
     for name in COMPONENTS:
@@ -165,10 +180,10 @@ def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> Non
         require(isinstance(component, dict) and isinstance(component.get("imageId"), str)
                 and bool(DIGEST.fullmatch(component["imageId"])) and _nonroot(component.get("runtimeUser"))
                 and component.get("registryRef") is None, f"{name}: invalid tested image identity")
-        if candidate["schemaVersion"] == 2:
+        if version in {2, 3}:
             require(component.get("sourceRevision") == revision
                     and isinstance(component.get("inputSha256"), str) and HASH.fullmatch(component["inputSha256"])
-                    and component.get("inputPolicySha256") == candidate["inputProvenance"]["inputPolicySha256"],
+                    and component.get("inputPolicySha256") == policies[name],
                     f"{name}: fresh-build source/input identity differs")
     require(isinstance(provenance, dict) and set(provenance) == {"archiveSha256", "bundleManifestSha256"}
             and all(isinstance(value, str) and HASH.fullmatch(value) for value in provenance.values()),

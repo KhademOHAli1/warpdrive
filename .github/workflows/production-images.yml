@@ -99,26 +99,40 @@ jobs:
           BUN_OPTIONS: --no-env-file
         run: bun --no-env-file install --frozen-lockfile
       - name: Verify fresh component inputs before image compilation
+        id: image-inputs
         run: |
           RUN_IMAGE_CONTEXT_IMPORT_CHECK=1 node --test --test-name-pattern 'Docker context keeps local TypeScript imports' scripts/deployment/image-build.test.mjs
-          node --test scripts/deployment/component_inputs.test.mjs scripts/deployment/web_inputs.test.mjs
-          mkdir -p "$RUNNER_TEMP/production-images"
+          node --test scripts/deployment/component_inputs.test.mjs scripts/deployment/web_inputs.test.mjs scripts/deployment/web_sdk_full_inputs.test.mjs
+          proof="$RUNNER_TEMP/production-images"
+          mkdir -p "$proof"
+          sdk_inputs=$(git --no-replace-objects ls-tree -r --name-only "$REVISION" -- \
+            deploy/images/Web.Dockerfile tools/web-ui/package.json tools/web-ui/bun.lock)
+          boundary_args=()
+          if [[ -n "$sdk_inputs" ]]; then
+            context="$RUNNER_TEMP/production-sdk-web-context"
+            python3 -B scripts/deployment/web_sdk_full_receipt.py prepare \
+              --root "$GITHUB_WORKSPACE" --revision "$REVISION" --context "$context" \
+              --output "$proof/component-inputs.json"
+            boundary_args=(--sdk-revision "$REVISION")
+            printf 'profile=sdk\ncontext=%s\nrecipe=%s\n' "$context" "$context/deploy/images/Web.Dockerfile" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/deployment/component_inputs.mjs \
+              --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
+              --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin > "$proof/component-inputs.json"
+            python3 scripts/deployment/component_inputs.py --receipt "$proof/component-inputs.json" --root "$GITHUB_WORKSPACE"
+            printf 'profile=legacy\ncontext=.\nrecipe=deploy/images/Dockerfile\n' >> "$GITHUB_OUTPUT"
+          fi
           node scripts/deployment/component_boundaries.mjs \
+            "${boundary_args[@]}" \
             --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
             --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin \
-            > "$RUNNER_TEMP/production-images/component-boundaries.json"
-          node scripts/deployment/component_inputs.mjs \
-            --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
-            --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin \
-            > "$RUNNER_TEMP/production-images/component-inputs.json"
-          python3 scripts/deployment/component_inputs.py \
-            --receipt "$RUNNER_TEMP/production-images/component-inputs.json" --root "$GITHUB_WORKSPACE"
+            > "$proof/component-boundaries.json"
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
       - name: Build final Web image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
-          context: .
-          file: deploy/images/Dockerfile
+          context: ${{ steps.image-inputs.outputs.context }}
+          file: ${{ steps.image-inputs.outputs.recipe }}
           target: web
           platforms: linux/amd64
           load: true
@@ -181,18 +195,59 @@ jobs:
             --migrator-image "$IMAGE_PREFIX/migrator:$IMAGE_TAG" \
             --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/smoke"
+      - name: Verify SDK packaging in exact final image IDs
+        if: steps.image-inputs.outputs.profile == 'sdk'
+        run: |
+          proof="$RUNNER_TEMP/production-images"
+          for component in web worker realtime migrator; do
+            image=$(jq -er --arg component "$component" '.images[$component].id | select(test("^sha256:[a-f0-9]{64}$"))' "$proof/smoke/report.json")
+            docker run --rm --pull never --network none --read-only --entrypoint bun "$image" --no-env-file -e '
+              import { readFileSync, existsSync } from "node:fs";
+              import { createRequire } from "node:module";
+              const component = process.argv.at(-1);
+              const sdk = ["core", "react"];
+              if (typeof process.getuid !== "function" || process.getuid() === 0) throw Error("SDK probe ran as root");
+              for (const packageName of sdk) {
+                const name = "@ui-sdk/" + packageName;
+                const dir = "/app/node_modules/" + name;
+                if (component !== "web") {
+                  if (existsSync(dir)) throw Error("Web SDK entered a backend image");
+                  continue;
+                }
+                const metadata = JSON.parse(readFileSync(dir + "/package.json", "utf8"));
+                if (metadata.name !== name || metadata.version !== "0.1.0-beta.1" || existsSync(dir + "/node_modules")) throw Error("Unexpected Web SDK package");
+                const fromSdk = createRequire(dir + "/package.json");
+                const fromApp = createRequire("/app/package.json");
+                for (const singleton of ["react", "react-dom"])
+                  if (fromSdk.resolve(singleton) !== fromApp.resolve(singleton)) throw Error("SDK uses a separate React runtime");
+              }
+              if (component === "web") {
+                for (const path of ["menu", "dialog", "drawer"])
+                  if (!import.meta.resolve("@ui-sdk/react/" + path).startsWith("file:///app/node_modules/@ui-sdk/react/")) throw Error("Unexpected SDK module path");
+              }
+              console.log(JSON.stringify({component, sdkPresent: component === "web"}));
+            ' "$component" > "$proof/sdk-packaging-$component.json"
+          done
       - name: Bind smoke evidence to exact inspected image IDs
+        env:
+          SDK_WEB_PROFILE: ${{ steps.image-inputs.outputs.profile }}
+          SDK_WEB_CONTEXT: ${{ steps.image-inputs.outputs.context }}
         run: |
           mkdir -p "$RUNNER_TEMP/production-images/inspections"
           for component in web worker realtime migrator; do
             docker image inspect "$IMAGE_PREFIX/$component:$IMAGE_TAG" \
               > "$RUNNER_TEMP/production-images/inspections/$component.json"
           done
+          context_args=()
+          if [[ "$SDK_WEB_PROFILE" == sdk ]]; then
+            context_args=(--web-context "$SDK_WEB_CONTEXT")
+          fi
           python3 scripts/deployment/candidate.py record \
             --revision "$REVISION" \
             --report "$RUNNER_TEMP/production-images/smoke/report.json" \
             --inspections "$RUNNER_TEMP/production-images/inspections" \
             --inputs "$RUNNER_TEMP/production-images/component-inputs.json" \
+            "${context_args[@]}" \
             --output "$RUNNER_TEMP/production-images/candidate.json"
       - name: Bundle the exact tested image IDs without rebuilding
         run: |
@@ -252,14 +307,16 @@ jobs:
             --baseline-manifest-sha256 "$manifest_sha")
           test "${#changed}" -eq 40
           cp "$scratch/source-delta.json" "$RUNNER_TEMP/production-images/web-release-source.json"
-          printf 'revision=%s\nbaseline-manifest-sha=%s\ncontext=%s\n' \
-            "$changed" "$manifest_sha" "$scratch/source" >> "$GITHUB_OUTPUT"
+          context=$(jq -er '.webBuildContext | select(. == "source" or . == "context")' "$scratch/source-delta.json")
+          recipe=$(jq -er '.webRecipe | select(. == "deploy/images/Dockerfile" or . == "deploy/images/Web.Dockerfile")' "$scratch/source-delta.json")
+          printf 'revision=%s\nbaseline-manifest-sha=%s\ncontext=%s\nrecipe=%s\n' \
+            "$changed" "$manifest_sha" "$scratch/$context" "$scratch/$context/$recipe" >> "$GITHUB_OUTPUT"
       - name: Build only the presentation candidate Web image
         if: env.WEB_RELEASE_REHEARSAL == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: ${{ steps.web-release-source.outputs.context }}
-          file: ${{ steps.web-release-source.outputs.context }}/deploy/images/Dockerfile
+          file: ${{ steps.web-release-source.outputs.recipe }}
           target: web
           platforms: linux/amd64
           load: true
@@ -282,10 +339,14 @@ jobs:
             --bundle-dir "$RUNNER_TEMP/image-bundle" --expected-revision "$REVISION" \
             --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" --verify-built-image "$web_image" \
             > "$RUNNER_TEMP/production-images/web-release-build.json"
+          topbar_gaps=$(jq -er '.topBarGaps | if . == [24,22] or . == [20,18] then join(" ") else error("unreviewed gap pair") end' \
+            "$RUNNER_TEMP/production-images/web-release-build.json")
+          read -r old_gap new_gap <<< "$topbar_gaps"
           python3 scripts/deployment/web_mixed_image_smoke.py \
             --bundle-dir "$RUNNER_TEMP/image-bundle" --baseline-revision "$REVISION" \
             --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" \
             --new-web-image-id "$web_image" --new-web-revision "$WEB_REVISION" \
+            --topbar-gaps "$old_gap" "$new_gap" \
             --output-dir "$RUNNER_TEMP/production-images/web-release" --browser
       - name: Verify the tested Web image can be archived independently
         if: env.WEB_RELEASE_REHEARSAL == 'true'

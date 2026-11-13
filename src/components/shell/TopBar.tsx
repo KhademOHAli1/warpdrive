@@ -6,6 +6,7 @@ import { getAppTranslations } from "@/features/i18n/server";
 import { NotificationsBell } from "@/features/notifications/ui/NotificationsBell";
 import { GlobalAddMenu } from "@/features/quick-add/GlobalAddMenu";
 import type { Appearance } from "@/features/theme/appearance";
+import { KeyboardHelp } from "./KeyboardHelp";
 import { MobileNavTrigger } from "./MobileNavTrigger";
 import { SearchTrigger } from "./SearchTrigger";
 import styles from "./TopBar.module.css";
@@ -62,6 +63,11 @@ export async function TopBar({
       <div className={styles.personal}>
         <NotificationsBell userId={userId} />
         <span aria-hidden="true" className={styles.divider} />
+        <KeyboardHelp
+          title={t("keyboardHelp.title")}
+          description={t("keyboardHelp.description")}
+          closeLabel={t("keyboardHelp.close")}
+        />
         <UserMenu
           userId={userId}
           userName={userName}

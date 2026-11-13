@@ -15,9 +15,13 @@ from bundle import INPUT_RECEIPT, MAX_METADATA_BYTES, load_bundle, regular_file
 from candidate import CandidateError, admit_capacity
 import component_inputs as inputs
 from image_smoke import Docker, SmokeError, image_metadata
-from web_release_inputs import STYLE_FILE, WebReleaseInputError, verify_web_source_delta
+from web_release_inputs import (MAX_PRESENTATION_BYTES, STYLE_FILE, WebReleaseInputError, _blob, _tree,
+                                verify_web_source_delta)
+from web_sdk_full_receipt import (RECIPE as SDK_RECIPE, prepare_web_sdk_full_release,
+                                  validate_web_sdk_full_receipt, verify_current_web_sdk_full_receipt)
 
 OWNED_MARKER = b"warpdrive-web-release-rehearsal-v1\n"
+TOPBAR_GAPS = {24: 22, 20: 18}
 
 
 class RehearsalError(ValueError):
@@ -52,12 +56,57 @@ def _hosted_baseline(bundle_dir, revision, manifest_sha):
                  or (event == "pull_request" and re.fullmatch(r"refs/pull/[1-9][0-9]*/merge", ref)))
             and re.fullmatch(r"[a-f0-9]{64}", manifest_sha), "same-run hosted staging baseline required")
     bundle = load_bundle(bundle_dir, expected_revision=revision)
+    version = bundle["candidate"]["schemaVersion"]
     require(bundle["origin"] == origin and bundle["provenance"]["bundleManifestSha256"] == manifest_sha
-            and bundle["candidate"]["schemaVersion"] == 2, "same-run source-bound v2 baseline bundle required")
-    baseline = inputs.validate_receipt(inputs.decode(regular_file(bundle_dir, INPUT_RECEIPT, MAX_METADATA_BYTES).read_bytes()))
+            and version in {2, 3}, "same-run source-bound baseline bundle required")
+    baseline = inputs.load_receipt(regular_file(bundle_dir, INPUT_RECEIPT, MAX_METADATA_BYTES))
+    if version == 3:
+        validate_web_sdk_full_receipt(baseline, expected_revision=revision)
+    else:
+        inputs.validate_receipt(baseline)
     require(inputs.content_hash(baseline) == bundle["candidate"]["inputProvenance"]["receiptSha256"],
             "baseline receipt differs from the retained qualification")
     return bundle, baseline
+
+
+def _fixture_css(original):
+    require(len(original) <= MAX_PRESENTATION_BYTES, "TopBar fixture CSS exceeds the source budget")
+    matches = list(re.finditer(rb"(?m)^\.header \{\n[^}]*?^  gap: ([0-9]{1,3})px;\n", original))
+    require(len(matches) == 1, "Exactly one reviewed TopBar gap declaration is required")
+    gap = matches[0]
+    previous = int(gap[1])
+    require(previous in TOPBAR_GAPS and gap[1] == str(previous).encode(), "Unreviewed TopBar fixture gap")
+    current = TOPBAR_GAPS[previous]
+    return original[:gap.start(1)] + str(current).encode() + original[gap.end(1):], [previous, current]
+
+
+def _fixture_delta(root, baseline_revision, candidate_revision):
+    before, after = (_tree(root, revision) for revision in (baseline_revision, candidate_revision))
+    require({path for path in before.keys() | after.keys() if before.get(path) != after.get(path)} == {STYLE_FILE},
+            "The presentation fixture must change exactly its reviewed CSS file")
+    old_mode, original = _blob(root, before, STYLE_FILE, MAX_PRESENTATION_BYTES)
+    new_mode, changed = _blob(root, after, STYLE_FILE, MAX_PRESENTATION_BYTES)
+    expected, gaps = _fixture_css(original)
+    require(old_mode == new_mode == "100644" and changed == expected,
+            "The presentation fixture must change exactly its reviewed TopBar declaration")
+    require(git(root, "rev-parse", f"{candidate_revision}^@") == baseline_revision,
+            "The presentation fixture must directly descend from the exact baseline")
+    return gaps
+
+
+def _sdk_delta(baseline, current, changed):
+    validate_web_sdk_full_receipt(current, expected_revision=changed)
+    require(inputs.canonical(current["backendInputs"]) == inputs.canonical(baseline["backendInputs"]),
+            "SDK presentation fixture changed retained backend inputs")
+    old_web, new_web = baseline["web"], current["web"]
+    require(all(old_web[key] == new_web[key] for key in ("profile", "context", "pinnedInputs", "helperEntries",
+                                                       "helperGraphInputs", "sdkImports", "staticWebInputCount"))
+            and old_web["inputSha256"] != new_web["inputSha256"],
+            "SDK presentation fixture changed other Web inputs or failed to change Web identity")
+    return {"releaseRevision": changed, "buildComponents": ["web"], "changedPresentationPaths": [STYLE_FILE],
+            "baselineWebInputSha256": old_web["inputSha256"], "candidateWebInputSha256": new_web["inputSha256"],
+            "backendInputReceiptSha256": inputs.content_hash(current["backendInputs"]),
+            "webProfile": new_web["profile"], "deploymentAuthorized": False}
 
 
 def prepare(root: Path, scratch: Path, bundle_dir: Path, revision: str, manifest_sha: str) -> dict:
@@ -67,7 +116,8 @@ def prepare(root: Path, scratch: Path, bundle_dir: Path, revision: str, manifest
             "the baseline bundle must match the checked out revision")
     require(not scratch.exists() and not scratch.is_symlink(), "scratch directory already exists")
     bundle, baseline = _hosted_baseline(bundle_dir, revision, manifest_sha)
-    context = baseline["context"]
+    sdk = bundle["candidate"]["schemaVersion"] == 3
+    context = baseline["web"]["context"] if sdk else baseline["context"]
     require(context["buildArgs"] == {"APP_VERSION": "", "NEXT_PUBLIC_WS_URL": "same-origin"},
             "this native rehearsal uses the ordinary production-image build arguments")
     capacity = admit_capacity(available=shutil.disk_usage(scratch.parent).free, candidate=3 * 1024**3,
@@ -80,27 +130,34 @@ def prepare(root: Path, scratch: Path, bundle_dir: Path, revision: str, manifest
         git(root, "worktree", "add", "--detach", str(source), revision)
         (source / "node_modules").symlink_to((root / "node_modules").resolve(strict=True), target_is_directory=True)
         style = source / STYLE_FILE
-        old = style.read_bytes()
-        require(old.count(b"  gap: 24px;\n") == 1, "reviewed UI delta requires its original CSS declaration")
-        style.write_bytes(old.replace(b"  gap: 24px;\n", b"  gap: 22px;\n", 1))
+        next_css, _ = _fixture_css(style.read_bytes())
+        style.write_bytes(next_css)
         git(source, "add", "--", STYLE_FILE)
         git(source, "commit", "--quiet", "-m", "Exercise independent Web release in native staging")
         changed = git(source, "rev-parse", "HEAD")
-        command = ["node", "scripts/deployment/component_inputs.mjs", "--base-image", context["baseImage"],
-                   "--platform", context["platform"], "--build-arg", "NEXT_PUBLIC_WS_URL=same-origin"]
-        environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR") if key in os.environ}
-        current = inputs.validate_receipt(inputs.decode(inputs._discover(command, source, environment,
-                                                                           deadline_seconds=90)))
-        proof = verify_web_source_delta(source, current, expected_revision=changed,
-                                        baseline_revision=revision, baseline_receipt=baseline)
+        topbar_gaps = _fixture_delta(source, revision, changed)
+        input_path = scratch / "candidate-inputs.json"
+        if sdk:
+            current = prepare_web_sdk_full_release(source, changed, scratch / "context", input_path)
+            proof = _sdk_delta(baseline, current, changed)
+        else:
+            command = ["node", "scripts/deployment/component_inputs.mjs", "--base-image", context["baseImage"],
+                       "--platform", context["platform"], "--build-arg", "NEXT_PUBLIC_WS_URL=same-origin"]
+            environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR") if key in os.environ}
+            current = inputs.validate_receipt(inputs.decode(inputs._discover(command, source, environment,
+                                                                               deadline_seconds=90)))
+            proof = verify_web_source_delta(source, current, expected_revision=changed,
+                                            baseline_revision=revision, baseline_receipt=baseline)
+            with input_path.open("xb") as receipt:
+                receipt.write(inputs.canonical(current))
         require(proof["buildComponents"] == ["web"] and proof["changedPresentationPaths"] == [STYLE_FILE],
                 "native staging proof must select exactly Web")
-        result = {"sourceDelta": proof, "baselineManifestSha256": manifest_sha,
+        result = {"sourceDelta": proof, "baselineManifestSha256": manifest_sha, "topBarGaps": topbar_gaps,
+                  "webBuildContext": "context" if sdk else "source",
+                  "webRecipe": SDK_RECIPE if sdk else "deploy/images/Dockerfile",
                   "baselineArchiveSha256": bundle["provenance"]["archiveSha256"],
                   "baselineImages": {name: row["imageId"] for name, row in bundle["candidate"]["components"].items()},
                   "capacity": capacity}
-        with (scratch / "candidate-inputs.json").open("xb") as receipt:
-            receipt.write(inputs.canonical(current))
         with (scratch / "source-delta.json").open("x", encoding="utf-8") as report:
             json.dump(result, report, indent=2, sort_keys=True, allow_nan=False)
             report.write("\n")
@@ -129,6 +186,12 @@ def cleanup(root: Path, scratch: Path):
     if not scratch.exists() and not scratch.is_symlink():
         return
     _owned(root, scratch)
+    context = scratch / "context"
+    if os.path.lexists(context):
+        info = context.lstat()
+        require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.geteuid()
+                and stat.S_IMODE(info.st_mode) == 0o700, "owned staged Web build context required")
+        shutil.rmtree(context)
     source = scratch / "source"
     registered = _registered(root, source)
     if not source.exists() and not source.is_symlink() and not registered:
@@ -147,8 +210,18 @@ def verify_built(root, scratch, bundle_dir, revision, manifest_sha, image_id):
     before = inputs.decode(regular_file(scratch, "source-delta.json", MAX_METADATA_BYTES).read_bytes())
     retained_inputs = inputs.decode(regular_file(scratch, "candidate-inputs.json", MAX_METADATA_BYTES).read_bytes())
     candidate_revision = before["sourceDelta"]["releaseRevision"]
-    after = verify_web_source_delta(source, retained_inputs, expected_revision=candidate_revision,
-                                    baseline_revision=revision, baseline_receipt=baseline)
+    sdk = bundle["candidate"]["schemaVersion"] == 3
+    topbar_gaps = _fixture_delta(source, revision, candidate_revision)
+    require(before["topBarGaps"] == topbar_gaps and before["webBuildContext"] == ("context" if sdk else "source")
+            and before["webRecipe"] == (SDK_RECIPE if sdk else "deploy/images/Dockerfile"),
+            "Presentation values, context or recipe changed during compilation")
+    if sdk:
+        verify_current_web_sdk_full_receipt(source, retained_inputs, expected_revision=candidate_revision,
+                                            web_context=scratch / "context")
+        after = _sdk_delta(baseline, retained_inputs, candidate_revision)
+    else:
+        after = verify_web_source_delta(source, retained_inputs, expected_revision=candidate_revision,
+                                        baseline_revision=revision, baseline_receipt=baseline)
     baseline_ids = {name: row["imageId"] for name, row in bundle["candidate"]["components"].items()}
     require(after == before["sourceDelta"] and manifest_sha == before["baselineManifestSha256"]
             and bundle["provenance"]["archiveSha256"] == before["baselineArchiveSha256"]
@@ -156,7 +229,11 @@ def verify_built(root, scratch, bundle_dir, revision, manifest_sha, image_id):
             "build context or baseline changed during compilation")
     require(re.fullmatch(r"sha256:[a-f0-9]{64}", image_id), "immutable candidate image ID required")
     docker = Docker()
-    candidate = image_metadata(docker.json(["image", "inspect", image_id]), candidate_revision)
+    if sdk:
+        from web_mixed_image_smoke import read_web_image
+        candidate = {"id": read_web_image(docker, image_id, candidate_revision)["imageId"]}
+    else:
+        candidate = image_metadata(docker.json(["image", "inspect", image_id]), candidate_revision)
     require(candidate["id"] == image_id and image_id not in before["baselineImages"].values(),
             "new Web image does not have a distinct immutable identity")
     for baseline_id in baseline_ids.values():

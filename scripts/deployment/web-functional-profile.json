@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "modules": ["src/components/shell/KeyboardHelp.tsx"],
+  "styles": ["src/components/shell/KeyboardHelp.module.css"],
+  "adapters": ["src/components/shell/TopBar.tsx"]
+}
