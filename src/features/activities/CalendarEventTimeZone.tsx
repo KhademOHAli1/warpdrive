@@ -2,12 +2,8 @@
 import { ChevronDown, Globe2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { Combobox } from "@/components/ui/Combobox";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/primitives/collapsible";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export function CalendarEventTimeZone({

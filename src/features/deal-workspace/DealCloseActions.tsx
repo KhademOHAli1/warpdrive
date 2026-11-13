@@ -6,8 +6,8 @@ import { Tip } from "@/components/ui/tooltip";
 import type { DealStatus } from "@/constants/dealStatus";
 import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
-import { DealStatusBadge } from "@/features/deal-workspace/DealStatusBadge";
 import { MarkLostDialog } from "@/features/deal-workspace/MarkLostDialog";
+import { DealStatusBadge } from "@/features/deals/DealStatusBadge";
 import { playWinChime } from "@/features/deals/winChime";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
@@ -73,7 +73,7 @@ export function DealCloseActions({
         : "";
     return (
       <div className="flex items-center gap-2">
-        <DealStatusBadge status={status} />
+        <DealStatusBadge status={status} presentation="detail" />
         {reasonLabel !== "" && (
           <Tip label={reasonLabel}>
             <span className="max-w-48 truncate text-xs text-muted-foreground">{reasonLabel}</span>
@@ -117,7 +117,7 @@ export function DealCloseActions({
 
   return (
     <div className="flex items-center gap-2">
-      <DealStatusBadge status="open" />
+      <DealStatusBadge status="open" presentation="detail" />
       {/* Won marks the deal won on a single click (Pipedrive parity). No options dropdown: there was
           only a redundant "Mark as won" item, so the plain button is the whole control. */}
       <button

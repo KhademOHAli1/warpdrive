@@ -62,6 +62,21 @@ describe("RecipientField", () => {
     expect(onChange).toHaveBeenCalledWith(["custom@x.com"]);
   });
 
+  it("keeps a recipient draft while an IME handles Enter and separators", () => {
+    const onChange = vi.fn();
+    render(<RecipientField label="To" values={[]} onChange={onChange} />);
+    const input = screen.getByRole("combobox");
+    fireEvent.change(input, { target: { value: "پشتیبانی@مثال.ایران" } });
+    expect(fireEvent.keyDown(input, { key: "Enter", isComposing: true })).toBe(true);
+    expect(fireEvent.keyDown(input, { key: "،", keyCode: 229 })).toBe(true);
+    expect(input).toHaveValue("پشتیبانی@مثال.ایران");
+    expect(onChange).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(["پشتیبانی@مثال.ایران"]);
+  });
+
   it("rejects a malformed address on Enter and shows an inline error", () => {
     const onChange = vi.fn();
     render(<RecipientField label="To" values={[]} onChange={onChange} />);

@@ -138,7 +138,9 @@ export function DealSummaryActionList({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") commitValue();
+                if (e.key !== "Enter" || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)
+                  return;
+                commitValue();
               }}
               className="h-8 w-full rounded border border-field-border bg-card px-2 text-start text-sm"
             />

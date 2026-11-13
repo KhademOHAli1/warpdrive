@@ -502,7 +502,8 @@
   --subnav-row-step: 30px;
   position: relative;
   display: flex;
-  max-height: 0;
+  block-size: 0;
+  flex-shrink: 0;
   flex-direction: column;
   gap: 2px;
   overflow: hidden;
@@ -513,15 +514,20 @@
   pointer-events: none;
   transform: translateY(-5px);
   transition:
-    max-height 620ms var(--subnav-ease),
-    margin 620ms var(--subnav-ease),
+    block-size 620ms var(--subnav-ease),
+    margin-block 620ms var(--subnav-ease),
     opacity 260ms ease,
     transform 540ms var(--subnav-ease);
-  will-change: max-height, opacity, transform;
+}
+
+@supports (interpolate-size: allow-keywords) {
+  .subnav {
+    interpolate-size: allow-keywords;
+  }
 }
 
 .subnav[data-expanded="true"] {
-  max-height: 240px;
+  block-size: auto;
   margin-block: 2px;
   margin-inline: 18px 0;
   opacity: 1;
@@ -554,13 +560,16 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  height: 28px;
+  min-block-size: 28px;
+  flex: 0 0 auto;
   align-items: center;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   line-height: 20px;
-  padding: 0 8px;
+  overflow-wrap: anywhere;
+  padding-block: 3px;
+  padding-inline: 8px;
   filter: blur(3px);
   opacity: 0;
   transform: translateY(calc(-1 * var(--subnav-row-step)));
@@ -600,6 +609,12 @@
 
 .subnav[data-expanded="true"] .subnavLink:nth-child(n + 6) {
   --subnav-stagger: 530ms;
+}
+
+/* Tab can reach a child immediately after opening its disclosure. */
+.subnav[data-expanded="true"]:focus-within,
+.subnav[data-expanded="true"]:focus-within .subnavLink {
+  transition: none;
 }
 
 .subnavLink::before {
@@ -774,6 +789,9 @@
 .mobileTrigger:focus-visible {
   outline: 2px solid var(--action);
   outline-offset: 2px;
+}
+.subnavLink:focus-visible {
+  outline-offset: -2px;
 }
 .disclosureButton:active,
 .navItem:active {

@@ -51,9 +51,17 @@ export function InlineTextField({
         autoFocus
         value={f.draft}
         disabled={f.pending}
-        onChange={(e) => f.setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && dirty) f.commit(save);
+        onChange={(event) => f.setDraft(event.target.value)}
+        onKeyDown={(event) => {
+          if (
+            event.key !== "Enter" ||
+            event.nativeEvent.isComposing ||
+            event.nativeEvent.keyCode === 229
+          )
+            return;
+          if (!dirty) return;
+          event.preventDefault();
+          f.commit(save);
         }}
         className="h-8 w-full rounded border border-field-border bg-card px-2 text-sm"
       />

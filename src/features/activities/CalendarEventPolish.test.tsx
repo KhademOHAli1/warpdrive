@@ -134,10 +134,15 @@ it("shows a meeting summary, and applying a link never submits the event", () =>
   );
   expect(screen.queryByLabelText("Meeting link")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Edit meeting link" }));
-  fireEvent.change(screen.getByRole("textbox", { name: "Meeting link" }), {
+  const input = screen.getByRole("textbox", { name: "Meeting link" });
+  fireEvent.change(input, {
     target: { value: "https://zoom.us/j/123456789" },
   });
-  fireEvent.keyDown(screen.getByRole("textbox", { name: "Meeting link" }), { key: "Enter" });
+  expect(fireEvent.keyDown(input, { key: "Enter", isComposing: true })).toBe(true);
+  expect(fireEvent.keyDown(input, { key: "Enter", keyCode: 229 })).toBe(true);
+  expect(input).toHaveValue("https://zoom.us/j/123456789");
+  expect(screen.getByRole("dialog", { name: "Meeting link" })).toBeInTheDocument();
+  fireEvent.keyDown(input, { key: "Enter" });
   expect(screen.getByRole("link", { name: "Join meeting" })).toHaveAttribute(
     "href",
     "https://zoom.us/j/123456789",

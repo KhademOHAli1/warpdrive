@@ -186,6 +186,24 @@ describe("GlobalContactModal person (rich create, M1)", () => {
     expect(createPersonAction).toHaveBeenCalledTimes(1);
   });
 
+  it("leaves Enter available to an IME and creates one contact after composition", async () => {
+    const onCreated = vi.fn();
+    render(<GlobalContactModal kind="person" onClose={noop} onCreated={onCreated} />);
+    const name = screen.getByLabelText("Name");
+    fireEvent.change(name, { target: { value: "山田太郎" } });
+    expect(fireEvent.keyDown(name, { key: "Enter", isComposing: true })).toBe(true);
+    expect(fireEvent.keyDown(name, { key: "Enter", keyCode: 229 })).toBe(true);
+    expect(name).toHaveValue("山田太郎");
+    expect(createPersonAction).not.toHaveBeenCalled();
+    expect(fireEvent.keyDown(name, { key: "Enter" })).toBe(false);
+    await waitFor(() => expect(onCreated).toHaveBeenCalledWith("p1"));
+    expect(createPersonAction).toHaveBeenCalledTimes(1);
+    expect(createPersonAction).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "山田太郎" }),
+      "tok",
+    );
+  });
+
   it("uses the same full-width entity-create shell as Add lead", () => {
     render(<GlobalContactModal kind="person" onClose={noop} onCreated={noop} />);
     expect(screen.getByRole("heading", { name: "Add person" })).toBeInTheDocument();
