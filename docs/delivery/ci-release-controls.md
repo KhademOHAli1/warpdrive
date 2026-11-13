@@ -57,6 +57,14 @@ Retain the managed CodeQL workflow `403980173`. The historical technical-accepta
 
 Retain raw stdout and stderr, exit results, and package and lockfile hashes for the application, marketing site, documentation site, browser tooling, and isolated Web UI audits, including failures. Keep the single required dependency audit check. Full CI and browser qualification use dedicated workflows.
 
+For the documentation audit, the shared preparation action fetches the external
+[warpdrive-docs renderer](https://github.com/KhademOHAli1/warpdrive-docs) at the revision in
+the selected Warpdrive checkout's `docs-site/renderer.lock`. The audit checks the renderer
+revision and verifies the package and lockfile against the pinned Git blobs. Its report
+retains the renderer SHA and the SHA-256 hashes of the actual `package.json` and `bun.lock`
+that it audited. The public guides and images remain in Warpdrive and are unnecessary for
+the dependency audit.
+
 ## Browser and acceptance boundaries
 
 Keep `required-quality.yml`'s browser guard as a small static admission check. The full browser job in `full-quality.yml` retains ordinary production build/start, canonical migrations, disposable loopback PostgreSQL/HTTPS, the existing pinned `tools/browser-smoke` dependency and lockfile, external HTTP/WebSocket blocking, service-worker blocking and browser-error checks. Fixture admission must validate the connection actually used before database imports; a `DATABASE_URL_FILE` override must not redirect a seeded known-password actor beyond the admitted disposable database. Native password login must remain real; add no production authentication bypass or application test route.

@@ -63,8 +63,9 @@ saved account details.
 | Device pixel ratio | 2 |
 | Browser chrome | Excluded, capture the page only |
 
-Save each shot to `docs-site/public/img/screenshots/<feature>/<filename>` exactly as
-named in the table below. After building the docs, run `bun run check:export` from `docs-site/` to verify image paths.
+Save each shot to `docs-site/public/img/screenshots/<feature>/<filename>` in Warpdrive
+exactly as named in the table below. The standalone renderer stages those public images
+from the content commit and preserves their `/img/screenshots/` URLs.
 
 ### Two things that silently ruin shots
 
@@ -201,4 +202,6 @@ Each row is `page -> route -> setup -> filename`.
 1. Add a row to the table above.
 2. Capture it with the parameters above.
 3. Reference it from the page as `/img/screenshots/<feature>/<filename>`.
-4. Run `bun --cwd docs-site run build` to confirm it resolves.
+4. Commit the image and guide on the same work branch. Follow the
+   [standalone build instructions](../../docs/development/public-docs-migration.md#build-and-verify)
+   to preview the candidate and verify the image path with `bun run check:export`.

@@ -31,3 +31,6 @@ docs/parity-captures/
 /test-results/browser-smoke/
 /test-results/image-smoke/
 **/__pycache__/
+
+# Standalone documentation renderer checkout for local validation and CI.
+/.docs-renderer/

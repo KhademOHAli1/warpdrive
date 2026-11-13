@@ -12,10 +12,24 @@ import security_audit as audit
 class AuditTests(unittest.TestCase):
     def fixture(self, root):
         for project in audit.PROJECTS:
-            directory = root / project
+            directory = root / (audit.RENDERER_PATH if project == audit.DOCS_PROJECT else project)
             directory.mkdir(parents=True, exist_ok=True)
             (directory / "package.json").write_text('{"packageManager":"bun@1.4.4"}\n')
             (directory / "bun.lock").write_text('{}\n')
+        renderer = root / audit.RENDERER_PATH
+        self.git(renderer, "init", "--quiet", "--template=")
+        self.git(renderer, "add", "package.json", "bun.lock")
+        self.git(renderer, "commit", "--quiet", "--no-gpg-sign", "-m", "Test fixture")
+        pin = root / audit.RENDERER_PIN
+        pin.parent.mkdir()
+        self.renderer_revision = self.git(renderer, "rev-parse", "HEAD").strip()
+        pin.write_text(self.renderer_revision + "\n")
+
+    def git(self, directory, *args):
+        return subprocess.check_output(
+            ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", *args],
+            cwd=directory, stderr=subprocess.PIPE, text=True,
+        )
 
     def test_all_locks_use_native_all_severity_exit_and_retain_exact_raw_bytes(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -25,14 +39,18 @@ class AuditTests(unittest.TestCase):
             results = [subprocess.CompletedProcess(audit.COMMAND, code, raw, b"diagnostic\x00\n")
                        for code, raw in ((0, b""), (1, b'{"pkg":[{"severity":"low"}]}'),
                                          (1, b'{"pkg":[{"severity":"moderate"}]}'), (0, b"{}"), (1, b""))]
-            with patch.object(audit.subprocess, "run", side_effect=results) as run:
+            with patch.object(audit, "run_bun_audit", side_effect=results) as run:
                 report = audit.audit_all(root, output)
             self.assertFalse(report["passed"])
             self.assertEqual([r["result"] for r in report["projects"]], ["passed", "failed", "failed", "passed", "failed"])
             self.assertEqual(report["projects"][-1]["project"], "tools/web-ui")
             self.assertEqual(run.call_count, 5)
-            self.assertTrue(all(call.args == (audit.COMMAND,) and call.kwargs["timeout"] == 60
-                                for call in run.call_args_list))
+            self.assertEqual(
+                [call.args[0].relative_to(root.resolve()).as_posix() for call in run.call_args_list],
+                [".", "site", audit.RENDERER_PATH, "tools/browser-smoke", "tools/web-ui"],
+            )
+            self.assertEqual(report["projects"][2]["project"], audit.DOCS_PROJECT)
+            self.assertEqual(report["projects"][2]["renderer_revision"], self.renderer_revision)
             for row, result in zip(report["projects"], results):
                 self.assertEqual((output / row["stdout"]["path"]).read_bytes(), result.stdout)
                 self.assertEqual(row["stdout"]["sha256"], hashlib.sha256(result.stdout).hexdigest())
@@ -49,7 +67,7 @@ class AuditTests(unittest.TestCase):
                          subprocess.CompletedProcess(audit.COMMAND, 1, b"", b""),
                          subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"checked"),
                          subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"checked")]
-            with patch.object(audit.subprocess, "run", side_effect=responses) as run:
+            with patch.object(audit, "run_bun_audit", side_effect=responses) as run:
                 report = audit.audit_all(root, Path(temp) / "output")
             self.assertFalse(report["passed"])
             self.assertEqual(run.call_count, 5)
@@ -60,10 +78,10 @@ class AuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "checkout"
             self.fixture(root)
-            def mutate(*args, **kwargs):
-                (kwargs["cwd"] / "bun.lock").write_text('{"changed":true}\n')
-                return subprocess.CompletedProcess(args[0], 0, b"", b"")
-            with patch.object(audit.subprocess, "run", side_effect=mutate):
+            def mutate(directory):
+                (directory / "bun.lock").write_text('{"changed":true}\n')
+                return subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"")
+            with patch.object(audit, "run_bun_audit", side_effect=mutate):
                 report = audit.audit_all(root, Path(temp) / "output")
             self.assertFalse(report["passed"])
             self.assertTrue(all(not row["inputs_unchanged"] for row in report["projects"]))
@@ -74,13 +92,36 @@ class AuditTests(unittest.TestCase):
             self.fixture(root)
             (root / "site/bun.lock").unlink()
             output = Path(temp) / "output"
-            with patch.object(audit.subprocess, "run", return_value=subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"")) as run:
+            with patch.object(audit, "run_bun_audit", return_value=subprocess.CompletedProcess(audit.COMMAND, 0, b"", b"")) as run:
                 report = audit.audit_all(root, output)
             self.assertFalse(report["passed"])
             self.assertEqual(run.call_count, 4)
             self.assertEqual(report["projects"][1]["result"], "failed")
             with self.assertRaises(FileExistsError):
                 audit.audit_all(root, output)
+
+    def test_unverified_renderer_fails_without_masking_the_four_local_audits(self):
+        for problem in ("missing checkout", "wrong pin", "modified lock"):
+            with self.subTest(problem=problem), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp) / "checkout"
+                self.fixture(root)
+                renderer = root / audit.RENDERER_PATH
+                if problem == "missing checkout":
+                    (renderer / ".git").rename(root / "unused-git")
+                elif problem == "wrong pin":
+                    (root / audit.RENDERER_PIN).write_text("a" * 40 + "\n")
+                else:
+                    (renderer / "bun.lock").write_text('{"unexpected":true}\n')
+                with patch.object(audit, "run_bun_audit", return_value=subprocess.CompletedProcess(
+                    audit.COMMAND, 0, b"{}", b"",
+                )) as run:
+                    report = audit.audit_all(root, Path(temp) / "output")
+                self.assertFalse(report["passed"])
+                self.assertEqual(run.call_count, 4)
+                self.assertEqual(
+                    [row["result"] for row in report["projects"]],
+                    ["passed", "passed", "failed", "passed", "passed"],
+                )
 
     def test_zero_exit_malformed_json_or_advisory_envelope_fails_with_raw_evidence(self):
         for raw in (b"[]", b'{"error":"unavailable"}', b"not JSON", b"null",
@@ -91,7 +132,7 @@ class AuditTests(unittest.TestCase):
                 root = Path(temp) / "checkout"
                 self.fixture(root)
                 output = Path(temp) / "output"
-                with patch.object(audit.subprocess, "run", return_value=subprocess.CompletedProcess(
+                with patch.object(audit, "run_bun_audit", return_value=subprocess.CompletedProcess(
                     audit.COMMAND, 0, raw, b"diagnostic\x00"
                 )):
                     report = audit.audit_all(root, output)
@@ -107,7 +148,7 @@ class AuditTests(unittest.TestCase):
             with self.subTest(raw=raw), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp) / "checkout"
                 self.fixture(root)
-                with patch.object(audit.subprocess, "run", return_value=subprocess.CompletedProcess(
+                with patch.object(audit, "run_bun_audit", return_value=subprocess.CompletedProcess(
                     audit.COMMAND, 0, raw, b""
                 )):
                     report = audit.audit_all(root, Path(temp) / "output")
@@ -120,7 +161,7 @@ class AuditTests(unittest.TestCase):
             with self.subTest(severity=severity), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp) / "checkout"
                 self.fixture(root)
-                with patch.object(audit.subprocess, "run", return_value=subprocess.CompletedProcess(
+                with patch.object(audit, "run_bun_audit", return_value=subprocess.CompletedProcess(
                     audit.COMMAND, 0, raw, b""
                 )):
                     report = audit.audit_all(root, Path(temp) / "output")
