@@ -1,0 +1,115 @@
+name: Accepted successor Web artifact custody
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Publish the accepted Web artifact once or verify existing custody
+        required: true
+        default: observe
+        type: choice
+        options: [observe, publish]
+      original_custody_run_id:
+        description: Successful original custody bootstrap or observation run, required for publish
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: warpdrive-web-release-custody
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish verified successor Web custody
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'publish'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    env:
+      SOURCE_REVISION: 5c505b5cc4dfa5cbddb6d581b4034f90b48c4f0f
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check exact hosted custody authority and prior write opportunities
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -B scripts/deployment/web_successor_custody.py preflight --source-revision "$SOURCE_REVISION" \
+            --publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt"
+      - name: Verify original custody and download the exact accepted Web artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ORIGINAL_CUSTODY_RUN: ${{ inputs.original_custody_run_id }}
+        run: |
+          python3 -B scripts/deployment/web_successor_custody.py prepare --source-revision "$SOURCE_REVISION" \
+            --publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt" \
+            --original-custody-run-id "$ORIGINAL_CUSTODY_RUN"
+      - name: Install attested ORAS
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Verify authenticated provider state without writing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -B scripts/deployment/web_successor_custody.py provider-check --source-revision "$SOURCE_REVISION" \
+            --publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt"
+      - name: Publish the two pinned successor objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ORIGINAL_CUSTODY_RUN: ${{ inputs.original_custody_run_id }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: |
+          python3 -B scripts/deployment/web_successor_custody.py publish --source-revision "$SOURCE_REVISION" \
+            --publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt" \
+            --original-custody-run-id "$ORIGINAL_CUSTODY_RUN" --oras "$CUSTODY_ORAS"
+      - name: Retain sanitized custody outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-successor-custody-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-successor-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  observe:
+    name: Observe immutable successor Web custody
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'observe'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SOURCE_REVISION: 5c505b5cc4dfa5cbddb6d581b4034f90b48c4f0f
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install attested ORAS
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Observe both immutable successor objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: |
+          python3 -B scripts/deployment/web_successor_custody.py observe --source-revision "$SOURCE_REVISION" \
+            --publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt" --oras "$CUSTODY_ORAS"
+      - name: Retain sanitized custody outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-successor-custody-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-successor-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30

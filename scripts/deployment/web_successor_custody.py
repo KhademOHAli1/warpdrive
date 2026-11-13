@@ -15,6 +15,7 @@ import zipfile
 from candidate import REVISION, require
 from component_inputs import canonical, decode
 from publication_gate import REPO, require_selected_main
+from registry_absence import precheck_custody_manifest
 from web_baseline import artifact_for_run, successful_main_run
 from web_candidate import _input_file
 from web_custody_workflow import (
@@ -23,7 +24,7 @@ from web_custody_workflow import (
 )
 from web_publication_gate import PublicGitHub, download, private_file
 from web_release_build import checkout, git, private_destination, write_metadata
-from web_release_custody import REPOSITORY, custody_manifest, manifest_digest, publish, verified_bytes
+from web_release_custody import REPOSITORY, _verify_anonymous_denied, custody_manifest, manifest_digest, publish, verified_bytes
 from web_repeat_publication import JOB, MAX_ZIP_BYTES, STEPS, WORKFLOW as REPEAT_WORKFLOW, repeat_policy
 from web_repeat_successor import _publication
 
@@ -304,7 +305,7 @@ def execute(api, identity, mode, oras, runner_temp, evidence, *, original_run_id
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("preflight", "prepare", "publish", "observe"))
+    parser.add_argument("mode", choices=("preflight", "prepare", "provider-check", "publish", "observe"))
     parser.add_argument("--source-revision", required=True)
     parser.add_argument("--publication-receipt", type=Path, required=True)
     parser.add_argument("--original-custody-run-id", type=int)
@@ -323,6 +324,15 @@ def main(argv=None):
             no_prior_write(api, repository_id(api), identity)
         elif args.mode == "prepare":
             prepare(api, identity, root, runner_temp, args.original_custody_run_id, raw)
+        elif args.mode == "provider-check":
+            no_prior_write(api, repository_id(api), identity)
+            with registry_auth(runner_temp):
+                for _, kind, digest, size in OBJECTS:
+                    manifest = custody_manifest(kind, digest, size)
+                    _verify_anonymous_denied(manifest_digest(manifest))
+                    state = precheck_custody_manifest(manifest, environment=dict(os.environ), use_write_scope=True)
+                    print(f"Verified successor custody provider status: {state}", flush=True)
+            require_selected_main(api, REPO, identity[0])
         else:
             require_oras(args.oras, runner_temp)
             path = runner_temp / "web-successor-custody-evidence"
