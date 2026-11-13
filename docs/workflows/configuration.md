@@ -1,21 +1,24 @@
 # Workflow step configuration
 
-WF-019 / issue #676 extends the existing manual/deal/task/condition/wait profiles. It
-uses the same versioned configuration descriptors and canonical CRM value rules in
-the inspector, publication, new-run admission and the task effect boundary. Record
-triggers, notifications, mapped waits and registry-only assignee/due/type settings
-remain unavailable for execution. This change adds no handler, provider, permission,
-dependency, schema migration or task-type creation.
+This guide covers the version 1 configuration profiles extended by WF-019
+(issue #676). The inspector, publication, run admission, and task effect share
+versioned descriptors and canonical CRM value rules. For the current version 2
+block catalog, see [Workflow blocks](../workflow-blocks.md).
 
 ## Supported settings
 
 | Profile      | Settings and behavior                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Manual start | Automatic or custom name, 1–120 trimmed characters; config remains empty.                                                                                                                                                                                                                                                                                                                                                                               |
+| Manual start | Automatic or custom name, 1–120 trimmed characters. The default launch requires a deal. A global launch uses `scope: "global"` and takes no deal.                                                                                                                                                                                                                                                                                                                                                                               |
 | Read deal    | Required, nonnullable deal identity, selected from a scoped lookup or an actual compatible ancestor output. Other entities remain unready.                                                                                                                                                                                                                                                                                                              |
 | Create task  | Required nonblank title through 255 characters. Linked deal may be omitted, explicitly null, a visible deal or a compatible ancestor identity. Task type and initiating actor remain server defaults. Activity custom fields use the rules below.                                                                                                                                                                                                       |
-| Condition    | Existing equals/not-equals/contains/exists. Right is required except for exists; missing differs from explicit null. Equality is strict, contains requires runtime strings, and existing exact decimal-string outputs stay strings. Dormant right bindings are retained and inspected. No numeric operator is enabled.                                                                                                                                  |
-| Wait         | Exactly one mode: whole literal minutes from 1 through 525600 (new duration default 1), or an explicitly tagged fixed instant with ISO date/time, Z/UTC offset and exact whole-millisecond precision. Localized minute digits, raw instant text and incomplete drafts are retained; mappings remain unready. The future bound is checked at first step reach. See the [bounded fixed-instant contract](../development/workflow-fixed-instant-delay.md). |
+| Condition    | Flat comparisons support equals, does not equal, contains, and exists. See [Condition groups](conditions.md) for grouped comparisons and default paths.                                                                                                                                  |
+| Wait         | Choose a duration or scheduled date. Configured durations accept days, hours, minutes, and seconds from literals or compatible outputs. A scheduled date accepts a compatible earlier output or a fixed instant. A mapped civil date resolves to midnight UTC. Existing literal minutes and fixed-instant definitions retain their original rules. See the [legacy fixed-instant contract](../development/workflow-fixed-instant-delay.md). |
+
+A newly reached configured wait resolves its inputs against the run's current outputs.
+The maximum delay is 365 days. A configured scheduled date must be at or after the
+first time the step is reached. Once the wait is armed, the run keeps its stored
+deadline across worker wakes.
 
 The renderer uses descriptors for names, required/nullable fields, mode choices,
 limits, labels and supported settings. Specialized controls implement interaction;
@@ -83,7 +86,7 @@ bounded-path guards; the global scalar binding schema is unchanged.
 
 ## Current metadata, choices and authority
 
-The new readonly procedures are `workflows.configuration`, `configurationOptions`
+The version 1 read procedures are `workflows.configuration`, `configurationOptions`
 and `configurationReferences`. Each call rehydrates the actor and checks current
 workflow view plus owner/admin scope. Edit and archive state control authoring;
 activity-create/task-type prerequisites warn about execution rather than denying an

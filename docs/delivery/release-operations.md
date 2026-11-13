@@ -28,16 +28,18 @@ definition-change runs; a light result is not a replacement for exact-revision f
 approval.
 
 Fresh `draft` and `publish` actions additionally bind the named `refs/heads/main` ref to the selected
-SHA before and after reading CodeQL results. They require successful metadata for all three exact
-selected-commit language categories and examine every page of open alerts on that named ref.
+SHA before and after reading CodeQL results. They require successful metadata for
+the selected track's language categories on that exact commit and examine every
+page of open alerts on that named ref.
 High/critical security findings and error-level results block; missing coverage, malformed data,
 moved main and API/permission failures fail closed. Raw-SHA queries are not used: the retained
 readback returned HTTP 200 and empty results for them. The live result snapshot is printed in the
 release run log, and `publish` repeats the guard immediately before its publication write. Existing
 artifact schemas/checksums stay unchanged. `security-events: read` permits the read; no alert dismissal
 is added. The generic exact-revision CI gate, historical technical acceptance audits and repair of
-already-published immutable receipts do not acquire a current-main requirement. Existing managed
-CodeQL workflow and all three Analyze jobs remain independently required by MAIL and technical policy.
+already-published immutable receipts do not acquire a current-main requirement. The managed
+workflow's JavaScript/TypeScript, Actions and Python analyses remain required by MAIL
+and the technical policy. The newsletter track also requires Go.
 
 The release job names `release-preparation` for prepare/draft and `release-approval` for publish.
 These are proposed GitHub environment references, not proof that reviewers, branch restrictions or

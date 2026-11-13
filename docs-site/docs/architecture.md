@@ -114,8 +114,8 @@ See [Contributing](./contributing.md).
 
 ## Workflow automation
 
-Workflow editors and runtime code live under `src/features/workflows/` and
-`src/features/workflows-v2/`. Live runs use a published workflow version and the
+Workflow editors and runtime code live under `src/features/workflows/`, with
+the newer studio and its runtime in `src/features/workflows/v2/`. Live runs use a published workflow version and the
 background worker. See [Visual workflows](./features/automations.md) for editor
 paths and configuration.
 

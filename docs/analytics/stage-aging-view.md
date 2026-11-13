@@ -4,4 +4,13 @@ The stage-aging adapter describes the captured stays of currently live, authoriz
 
 The bounded collector validates active capture, live tips, every raw stage/pipeline reference and both captured deal sides against the request actor’s current grants. A currently visible deal does not confer access to its previously private states. A single denied side or incomplete source withholds the full report. On the viewer boundary, report-dependent failures collapse to a generic unavailable state with no counts. The projection returns only authorized labels, aggregate measures, selected currency and coverage times. It supplies no record or linked-contact IDs, contributors, native snapshots, internal errors or historical owner labels. Exact aggregates are about the authorized cohort, and a small sample is not anonymous.
 
-Focused stage statistics and projection checks passed 54 cases. The prepared native tests verify current labels after rename, a restricted prior pipeline, and a same-pipeline private owner transfer. The latter cases require hosted execution against disposable native PostgreSQL. The Pipeline tab now queries the protected viewer route. Its filters use the selected pipeline, owner and currency and report the current observation time. Browser and native qualification of this candidate are pending.
+In Performance → **Pipeline**, the stage-aging panel uses the current pipeline,
+owner, and currency filters and displays the observation time. It requires
+active capture. The report is bounded to 1,000 deals and 5,000 captured events
+with additional size limits. Narrow the scope if it exceeds those bounds.
+
+The original focused stage statistics and projection checks passed 54 cases.
+Prepared native tests cover renamed stages, a restricted prior pipeline, and a
+private owner transfer within a pipeline. See the
+[programme status](programme.md#status-pointers-13-november-2026) for the
+evidence boundary.

@@ -2,6 +2,24 @@
 
 Implement the complete requested programme as usable production code and reviewable increments, including advanced methods. This matrix preserves the full scope; the delivery sequence establishes dependencies and does not remove later work. A plan, prototype, declared input contract or one completed slice does not complete the programme.
 
+## Status pointers, 13 November 2026
+
+- [PR #983](https://github.com/KhademOHAli1/warpdrive/pull/983) merged analytics
+  drill-down and observed-history foundations on 9 November 2026. Use the
+  canonical issues in the matrix and the central Project for current delivery
+  and acceptance status. The baselines, issue observations, and qualification
+  results below are dated evidence.
+- Main includes [contributing deals and report definitions](definitions-and-records.md),
+  [CSV downloads](deal-report-exports.md), [private saved reports](saved-performance-reports.md),
+  and the current [acquisition](recorded-deal-source-report.md) and
+  [account](current-account-concentration.md) views. The Pipeline tab includes
+  [next-action counts](analytics-attention.md) and [stage aging](stage-aging-view.md).
+- [Stage aging](stage-aging-view.md) and [Forecast](native-period-forecast.md)
+  require active history capture. [Activation gates](activation-gates.md) records
+  the proposal and the installation evidence needed for capture.
+  [Release operations](../delivery/release-operations.md) governs release and
+  installed qualification separately from source integration.
+
 ## Authority and baseline
 
 - Settings → Goals, KPI definition and KPI scheme authoring remain owned by the other chat. Analytics consumes agreed outputs through an adapter and keeps report calculations separate.
@@ -9,7 +27,8 @@ Implement the complete requested programme as usable production code and reviewa
 - Remote main was observed at `3d50ce207c66db1e5414d4128f55aa110fea809e` on 5 November 2026. The UI checkpoint `b516c61223d4b9098eb2a437d23ec520c3315437` is preserved locally by cherry-pick `aa7695b0`.
 - The checkpoint's 86 focused tests and synthetic visual review are historical evidence for that source only. They do not qualify new backend behavior, hosted CI, installed acceptance or release.
 - Current issue reads of #595, #596, #598, #599, #600, #601, #609, #635, #638 and #641 found open issues, assignee `KhademOHAli1`, and zero comments. No competing live analytics claim was observed. Recheck ownership before shared-contract changes.
-- No current heavy-job allocation exists. Old dashboard validation exceptions do not transfer. Follow `AGENTS.md` and the live queue; do not contact existing chats.
+- Follow the current isolated-validation rules in [AGENTS.md](../../AGENTS.md).
+  The original heavy-job queue restrictions described the November checkpoint.
 - The user now explicitly authorizes this chat to merge the completed programme and publish a compatible three-part release after required qualification. Source implementation, exact integrated CI, human journey acceptance, release, deployment and real-source qualification are separate gates.
 
 The [machine-readable matrix](programme-matrix.json) is the authoritative scope/acceptance companion for this document. GitHub issues and the central Project retain live execution authority; this file is not a replacement task ledger. Status `remaining` retains included work; `in-progress` describes source implementation; `preserved-local` describes the historical checkpoint. No completion percentage is calculated.
@@ -119,7 +138,7 @@ Each row below names its delivery increment, current capability status and exist
 
 ## Qualification contract
 
-Listed checks are acceptance intentions, not executed results. Use focused calculation tests for denominators, reconciliation, stage/reopen/censoring behavior, exact money, calendars, model evaluation and visibility. Real database/backend tests must exercise actual read/write paths under the allocated queue. Actual component rendering and visual review must cover desktop/mobile, light/dark, English/German/Farsi RTL, keyboard, accessible chart tables and loading/empty/unavailable/partial/stale/error states. Synthetic UI fixtures do not establish backend acceptance.
+Listed checks describe the acceptance plan. Use focused calculation tests for denominators, reconciliation, stage/reopen/censoring behavior, exact money, calendars, model evaluation and visibility. Exercise the actual read/write paths against an isolated database under the current repository validation rules. Actual component rendering and visual review must cover desktop/mobile, light/dark, English/German/Farsi RTL, keyboard, accessible chart tables and loading/empty/unavailable/partial/stale/error states. Synthetic UI fixtures do not establish backend acceptance.
 
 Keep exact source/model/report definitions, original events, corrections, test outputs and source limitations with each increment. Benchmark representative workloads with dataset size, scope, runtime/hardware and cache state. No mathematical output, fake dataset, draft source contract or local test result can qualify itself as a production feature or causal effect.
 
@@ -133,7 +152,13 @@ Experiments and budget scenarios do not authorize launching real ads, changing c
 
 ## Current source increment
 
-The I1 source adds versioned definitions, shared server scope/populations, current-outcome contributing deals, explicit viewer-zone boundaries, canonical all-day activity dates, a read-only Goals output adapter and pending-preference/cache guards. See [definitions and records](definitions-and-records.md) and [independent source review](source-review.json). Local heavy validation remains queued at the user's request. This is not programme completion or integrated/accepted/released evidence.
+The I1 source checkpoint adds versioned definitions, shared server scope and
+populations, current-outcome contributing deals, viewer-zone boundaries,
+canonical all-day activity dates, a read-only Goals output adapter, and
+preference and cache guards. See [definitions and records](definitions-and-records.md)
+and the [independent source review](source-review.json). At that checkpoint,
+local heavy validation was queued. Use the dated status pointers above for
+later integration and release evidence.
 
 I2 now includes a private database capture proposal, typed history contracts/folding/coverage, an internal current-incarnation reader and stage-episode source. Regional presets use actual Gregorian/Persian calendar boundaries. These are implementation increments; native qualification, migration admission and usable history reports remain open. See [active execution](execution.md) and [capture design](history-capture-design.md).
 

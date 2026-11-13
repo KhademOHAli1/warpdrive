@@ -3,7 +3,9 @@
 The [Fumadocs](https://github.com/fuma-nama/fumadocs) migration is separate from
 documentation content maintenance. Use [Fumadocs MDX](https://www.fumadocs.dev/docs/mdx)
 for content and consult the [static export guide](https://www.fumadocs.dev/docs/next/deploying/static)
-for routing and search when choosing the deployment model.
+for routing and search when choosing the deployment model. Fumadocs provides the
+site framework and Markdown rendering. Warpdrive still owns the content, publishing,
+dependency updates and route compatibility.
 
 - Publish the 30 guides in `docs-site/docs/`. Keep repository references, operator
   runbooks, archived evidence, localization sets and screenshot capture instructions
@@ -11,10 +13,12 @@ for routing and search when choosing the deployment model.
   The workflow guide has three image references into `docs/images/workflows/` that need
   an explicit asset mapping.
 - Preserve root routes such as `/`, `/setup/` and `/features/pipeline/`. Retain
-  `intro.md`'s `slug: /` and all titles and descriptions. Recreate the order and
-  categories from `docs-site/sidebars.ts`; file order and `sidebar_position` alone
-  do not reproduce that navigation. The docs site is English; German and Persian
-  runbooks stay in the repository.
+  the introduction at `/` by mapping Docusaurus's `intro.md` and `slug: /`
+  to a root index. Keep the titles and descriptions. Recreate the order and
+  categories from `docs-site/sidebars.ts` with
+  [Fumadocs page metadata](https://www.fumadocs.dev/docs/next/page-conventions).
+  File order and `sidebar_position` alone do not reproduce that navigation. The
+  docs site is English; German and Persian runbooks stay in the repository.
 - Preserve existing heading IDs and fragment aliases. Verify relative `.md` links,
   root-relative `/img/` assets, tables, language-tagged fences and Docusaurus
   `:::` admonitions after conversion. Translate renderer-specific syntax during

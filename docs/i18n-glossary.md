@@ -16,6 +16,7 @@ stored enum values, brands and user-entered records.
 | contact / contacts       | مخاطب / مخاطبان          |
 | organization             | سازمان                   |
 | activity                 | فعالیت                   |
+| inbox / drafts / outbox  | صندوق ورودی / پیش‌نویس‌ها / صف ارسال |
 | owner (assigned user)    | مسئول                    |
 | archive / archived       | بایگانی / بایگانی‌شده     |
 | save                     | ذخیره                    |
