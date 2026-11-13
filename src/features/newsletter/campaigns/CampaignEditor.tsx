@@ -48,7 +48,6 @@ import {
 } from "./model";
 import {
   CampaignHeading,
-  DeleteConfirmation,
   Field,
   NewsletterPreview,
   panelClass,
@@ -408,6 +407,16 @@ function DeliveryControls({
     cancelled: m.cancelCampaign,
     draft: m.returnToDraft,
   };
+  const confirmation =
+    action === "delete"
+      ? { title: m.deleteConfirm, description: m.deleteBody, confirmLabel: m.delete }
+      : action === "test"
+        ? { title: m.testConfirm, description: m.testConfirmBody, confirmLabel: m.test }
+        : {
+            title: m.confirmDelivery,
+            description: m.confirmDeliveryBody,
+            confirmLabel: action === null ? m.save : labels[action],
+          };
 
   function execute() {
     if (!action || write.isPending) return;
@@ -533,25 +542,15 @@ function DeliveryControls({
         </form>
       )}
       <WriteMessage error={write.error} success={notice} />
-      <DeleteConfirmation
-        open={action === "delete"}
-        onClose={() => setAction(null)}
-        onConfirm={execute}
-        pending={write.isPending}
-      />
       <ConfirmDialog
-        open={action !== null && action !== "delete"}
+        {...confirmation}
+        open={action !== null}
         onOpenChange={(open) => {
           if (!open) setAction(null);
         }}
-        title={action === "test" ? m.testConfirm : m.confirmDelivery}
-        description={action === "test" ? m.testConfirmBody : m.confirmDeliveryBody}
-        confirmLabel={
-          action === "test" ? m.test : action && action !== "delete" ? labels[action] : m.save
-        }
         onConfirm={execute}
         pending={write.isPending}
-        destructive={action === "cancelled"}
+        destructive={action === "delete" || action === "cancelled"}
       />
     </section>
   );
