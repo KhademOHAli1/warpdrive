@@ -119,7 +119,10 @@ it("dismisses delete without a write, restores focus, and confirms delete once",
   expect(screen.queryByRole("alertdialog")).toBeNull();
   expect(trigger).toBeDisabled();
   expect(push).toHaveBeenCalledTimes(0);
-  await act(() => pending.resolve());
+  await act(async () => {
+    pending.resolve();
+    await pending.promise;
+  });
   expect(push.mock.calls).toEqual([["/campaigns"]]);
 });
 
@@ -164,7 +167,10 @@ it("switches from dismissed delete to test delivery and sends the selected recip
   ]);
   expect(screen.queryByRole("alertdialog")).toBeNull();
   expect(trigger).toBeDisabled();
-  await act(() => pending.resolve());
+  await act(async () => {
+    pending.resolve();
+    await pending.promise;
+  });
   expect(screen.getByText("Test message queued.")).toBeVisible();
 });
 
