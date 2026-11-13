@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { customFieldCellClass } from "@/components/data-table/CustomFieldCell";
+import { SortableHeader } from "@/components/data-table/SortableHeader";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { type RecordPreview, useRecordPreview } from "@/features/navigation/recordPreviewStore";
@@ -40,15 +41,6 @@ export interface LeadsTableProps {
   renderRowActions: (row: LeadRow) => React.ReactNode;
 }
 
-function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
-  if (dir === null) return null;
-  return (
-    <span aria-hidden="true" className="ms-1 inline-block text-[10px]">
-      {dir === "asc" ? "▲" : "▼"}
-    </span>
-  );
-}
-
 export function LeadsTable({
   rows,
   columns,
@@ -68,6 +60,7 @@ export function LeadsTable({
 
   const setPreview = useRecordPreview((s) => s.setPreview);
   const colSpan = columns.length + 2;
+  const headerClassName = "px-3 py-2 font-semibold";
   return (
     <table className="w-full text-sm">
       <thead className="sticky top-0 bg-muted/60 text-start text-xs uppercase text-muted-foreground">
@@ -79,23 +72,28 @@ export function LeadsTable({
               onCheckedChange={onToggleAll}
             />
           </th>
-          {columns.map((col) => (
-            <th key={col.key} className="px-3 py-2 font-semibold">
-              {col.sortField !== undefined ? (
-                <button
-                  type="button"
-                  onClick={() => onSort(col.sortField as LeadSortField)}
-                  className="inline-flex items-center uppercase hover:text-foreground"
-                >
-                  {col.header}
-                  <SortGlyph dir={sort.field === col.sortField ? sort.dir : null} />
-                </button>
-              ) : (
-                col.header
-              )}
-              {col.key === "sourceOrigin" && <SourceOriginInfo />}
-            </th>
-          ))}
+          {columns.map((col) => {
+            const sourceInfo =
+              col.key === "sourceOrigin" ? <SourceOriginInfo key={col.key} /> : null;
+            return col.sortField !== undefined ? (
+              <SortableHeader
+                key={col.key}
+                field={col.sortField}
+                label={col.header}
+                sort={sort}
+                onSort={onSort}
+                className={headerClassName}
+                buttonClassName="inline-flex items-center uppercase hover:text-foreground"
+                inactiveAriaSort={null}
+                afterButton={sourceInfo}
+              />
+            ) : (
+              <th key={col.key} className={headerClassName}>
+                {col.header}
+                {sourceInfo}
+              </th>
+            );
+          })}
           <th className="px-3 py-2 font-semibold sr-only">{tLeads("actions")}</th>
         </tr>
       </thead>

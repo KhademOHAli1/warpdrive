@@ -114,6 +114,38 @@ describe("LeadsInbox", () => {
     expect(screen.getByText(/No leads yet/i)).toBeInTheDocument();
   });
 
+  it("keeps source help separate from the source sort and exposes the active direction", async () => {
+    const user = userEvent.setup();
+    listQuery.mockReturnValue({ data: { rows: [LEAD], total: 1, refLabels: REF_LABELS }, refetch });
+    render(<LeadsInbox />);
+    const table = within(screen.getByRole("table"));
+    const sortButton = table.getByRole("button", { name: "Source origin" });
+    const helpButton = table.getByRole("button", { name: "About source origin" });
+    const header = sortButton.closest("th");
+    const created = table.getByRole("columnheader", { name: "Lead created" });
+    expect(header).toHaveAttribute("scope", "col");
+    expect(helpButton.parentElement).toBe(header);
+    expect(sortButton.nextElementSibling).toBe(helpButton);
+    expect(header).not.toHaveAttribute("aria-sort");
+    expect(created).toHaveAttribute("aria-sort", "descending");
+
+    listQuery.mockClear();
+    await user.click(helpButton);
+    expect(screen.getByText(/Source origin records how a lead entered/i)).toBeVisible();
+    expect(listQuery).not.toHaveBeenCalled();
+    await user.keyboard("{Escape}");
+    expect(helpButton).toHaveFocus();
+
+    await user.click(sortButton);
+    expect(listQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sort: { field: "sourceOrigin", dir: "asc" } }),
+      expect.anything(),
+    );
+    expect(created).not.toHaveAttribute("aria-sort");
+    expect(header).toHaveAttribute("aria-sort", "ascending");
+    expect(within(sortButton).getByText("▲")).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("opens the Add lead modal from the + Lead button", () => {
     listQuery.mockReturnValue({ data: { rows: [], total: 0, refLabels: REF_LABELS }, refetch });
     render(<LeadsInbox />);
