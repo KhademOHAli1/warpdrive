@@ -129,15 +129,16 @@ it.each([
   },
 );
 
-it("keeps explicit no-reminder overrides when defaults are enabled then disabled", () => {
+it("keeps explicit no-reminder overrides when defaults are enabled then disabled", async () => {
+  const user = userEvent.setup();
   const changed = vi.fn();
   render(<EventDraft initial={{ useDefault: false, timed: [], allDay: [] }} changed={changed} />);
   expect(screen.getByText("No reminders")).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
+  await user.click(screen.getByRole("button", { name: "Reminders" }));
   const toggle = screen.getByRole("checkbox", { name: "Use my calendar defaults" });
-  fireEvent.click(toggle);
+  await user.click(toggle);
   expect(changed).toHaveBeenLastCalledWith({ useDefault: true });
-  fireEvent.click(toggle);
+  await user.click(toggle);
   expect(changed).toHaveBeenLastCalledWith({ useDefault: false, timed: [], allDay: [] });
   expect(
     screen.queryByLabelText("Minutes before the event for reminder 1"),
