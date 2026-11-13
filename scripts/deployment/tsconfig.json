@@ -1,8 +1,16 @@
 {
   "extends": "../../tsconfig.tooling.json",
   "include": [
+    "install-web-ui.mjs",
+    "install-web-ui.test.mjs",
+    "web_functional_source.mjs",
+    "web_functional_source.test.mjs",
     "web_presentation_policy.mjs",
     "web_presentation_policy.test.mjs",
-    "web_repeat_presentation.mjs"
+    "web_repeat_presentation.mjs",
+    "web_sdk_full_inputs.mjs",
+    "web_sdk_full_inputs.test.mjs",
+    "web_sdk_keyboard_fixture.mjs",
+    "web_sdk_keyboard_fixture.test.mjs"
   ]
 }

@@ -20,6 +20,11 @@
     "searching": "Searching",
     "engagement": "Loading engagement timeline"
   },
+  "keyboardHelp": {
+    "title": "Keyboard shortcuts",
+    "description": "Press Control or Command with K to open workspace search. You can also press slash when you aren’t typing.",
+    "close": "Close keyboard shortcuts"
+  },
   "searchOpen": "Open search",
   "searchHeaderPlaceholder": "Search your workspace…",
   "searchPlaceholder": "Search deals, people, organizations, leads...",

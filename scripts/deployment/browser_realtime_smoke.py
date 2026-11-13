@@ -86,8 +86,21 @@ def admit_source(host, revision):
 def admit_bundle_source(root, directory, candidate, revision):
     # The producer imports application code too. A quiet Git diff or harness-only
     # check cannot prove those bytes when index optimization flags hide changes.
-    if candidate.get("schemaVersion") != 2:
-        raise BrowserRealtimeError("Current browser journeys require a Version2 source-input bundle")
+    version = candidate.get("schemaVersion")
+    if version == 3:
+        from candidate import load
+        from web_sdk_full_receipt import candidate_input_facts, verify_current_web_sdk_full_receipt
+
+        receipt = load(Path(directory) / "component-inputs.json")
+        facts = candidate_input_facts(receipt, expected_revision=revision)
+        if (candidate.get("inputProvenance") != facts["inputProvenance"] or
+                any(any(candidate["components"][name].get(key) != value for key, value in component.items())
+                    for name, component in facts["components"].items())):
+            raise BrowserRealtimeError("Browser SDK Web or backend input receipt differs from the retained candidate")
+        verify_current_web_sdk_full_receipt(root, receipt, expected_revision=revision)
+        return {"freshInputReceipt": True, "rawHeadBlobBinding": True}
+    if version != 2:
+        raise BrowserRealtimeError("Current browser journeys require a Version2 or Version3 source-input bundle")
     receipt = load_input_receipt(Path(directory) / "component-inputs.json")
     provenance = candidate.get("inputProvenance")
     if (not isinstance(provenance, dict) or provenance.get("state") != "current-source-inputs-bound"

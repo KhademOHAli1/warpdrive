@@ -47,14 +47,20 @@ SEED_SCRIPT = "scripts/browser-realtime-fixture.mjs"
 REPEAT_BROWSER_PROFILE = "warpdrive-web-continuity-v2"
 REPEAT_OPTIONS = ("active_web_bundle", "active_web_publication_receipt",
                   "active_web_publication_receipt_sha256", "seed_root", "harness_revision")
+SUCCESSOR_OPTIONS = ("successor_web_bundle", "successor_web_publication_receipt",
+                     "successor_web_publication_receipt_sha256", "successor_web_revision",
+                     "predecessor_lineage_sha256")
+RETAINED_COMPONENTS = ("worker", "realtime", "migrator")
 BROWSER_PHASES = {
     "initial-ready": {"oldStatic": True, "nativeLogin": True, "draftReady": True, "subscribed": True},
     "pre-switch-ready": {"oldSocketActive": True},
     "complete": {"freshTicket": True, "resubscribed": True, "persistentDraft": True, "oldAction": True, "actionPosts": 1},
 }
+SDK_KEYBOARD_HELP = dict.fromkeys(
+    ("openedByKeyboard", "escapeClosed", "focusRestored", "closeButtonWorked", "sameDocument"), True)
 BROWSER_FAILURES = {"profile", "browser-start", "native-login-and-draft", "pre-switch-socket",
                     "waiting-for-switch", "persistent-reconnect", "old-tab-server-action",
-                    "current-rendered-presentation", "browser-close"}
+                    "current-rendered-presentation", "current-keyboard-help", "browser-close"}
 HEALTH = "/api/health"
 IDENTITY = "/api/runtime/web-identity"
 LOGIN = "/login"
@@ -89,7 +95,27 @@ def repeat_mode(args):
     return True
 
 
-def repeat_baseline(args, backend):
+def successor_mode(args):
+    selected = [getattr(args, name, None) is not None for name in SUCCESSOR_OPTIONS]
+    if not any(selected):
+        return False
+    require(all(selected) and repeat_mode(args),
+            "Successor Web qualification requires complete repeat and successor inputs")
+    require(HASH.fullmatch(args.successor_web_publication_receipt_sha256)
+            and HASH.fullmatch(args.predecessor_lineage_sha256)
+            and validate_revision(args.successor_web_revision) == args.successor_web_revision
+            and all(path.is_absolute() and path == path.resolve(strict=True)
+                    for path in (args.successor_web_bundle, args.successor_web_publication_receipt)),
+            "Exact canonical successor Web custody and predecessor lineage pins required")
+    core, previous, active = (args.bundle_dir.resolve(), args.active_web_bundle, args.successor_web_bundle)
+    require(len({core, previous, active}) == 3 and all(
+                not left.is_relative_to(right) for left in (core, previous, active)
+                for right in (core, previous, active) if left != right),
+            "Original Core, previous Web and active Web bundles must be separate")
+    return True
+
+
+def repeat_baseline(args, backend, *, candidate_revision=None):
     # Avoid a module cycle: composite custody validates the earlier Web bundle
     # using the V1 mixed report reader.
     from web_composite_baseline import verify_web_composite_baseline
@@ -112,7 +138,7 @@ def repeat_baseline(args, backend):
             and retained["origin"] == backend["origin"] and retained["provenance"] == backend["provenance"]
             and all(value == backend["candidate"]["components"][name] for name, value in retained["components"].items()),
             "Composite Web baseline differs from the retained Core bundle")
-    before, after = active["sourceRevision"], args.new_web_revision
+    before, after = active["sourceRevision"], candidate_revision or args.new_web_revision
     require(len({args.baseline_revision, before, after}) == 3
             and active["image"]["imageId"] != args.new_web_image_id,
             "Repeat qualification needs distinct Core, active Web and candidate sources")
@@ -120,6 +146,54 @@ def repeat_baseline(args, backend):
     _git(args.seed_root, "merge-base", "--is-ancestor", before, after, allow_empty=True)
     _verify_baseline_blobs(args.seed_root, _tree(args.seed_root, before), active["inputReceipt"])
     return composite
+
+
+def successor_baseline(args, backend):
+    """Reconstruct active C from its tested bundle and separately sealed A/B pin."""
+    # Successor validation reads the v2 mixed report defined by this module.
+    from web_candidate import _input_file
+    from web_release_inputs import _git, _tree, _verify_baseline_blobs
+    from web_repeat_successor import verify_repeat_successor
+
+    predecessor = repeat_baseline(args, backend, candidate_revision=args.successor_web_revision)
+    original, previous, active, candidate = (args.baseline_revision, predecessor["web"]["sourceRevision"],
+                                             args.successor_web_revision, args.new_web_revision)
+    require(len({original, previous, active, candidate}) == 4,
+            "Successor qualification requires four distinct source revisions")
+    composite = verify_repeat_successor(
+        predecessor=predecessor, repeat_bundle_dir=args.successor_web_bundle,
+        publication_bytes=_input_file(args.successor_web_publication_receipt),
+        expected_publication_sha256=args.successor_web_publication_receipt_sha256,
+        expected_revision=active, predecessor_lineage_sha256=args.predecessor_lineage_sha256,
+    )
+    old_image, new_image = composite["web"]["image"]["imageId"], args.new_web_image_id
+    retained = {row["imageId"] for row in backend["candidate"]["components"].values()}
+    require(composite["backend"] == predecessor["backend"] and composite["web"]["sourceRevision"] == active
+            and composite["web"]["publicationReceiptSha256"] == args.successor_web_publication_receipt_sha256
+            and len({old_image, new_image, predecessor["web"]["image"]["imageId"], *retained})
+            == 3 + len(COMPONENTS),
+            "Successor Web images must be distinct from the admitted predecessor and Core images")
+    _git(args.seed_root, "merge-base", "--is-ancestor", active, candidate, allow_empty=True)
+    _verify_baseline_blobs(args.seed_root, _tree(args.seed_root, active), composite["web"]["inputReceipt"])
+    return composite
+
+
+def repeat_assembly(composite, new):
+    from component_inputs import content_hash as input_hash
+
+    active, retained = composite["web"], composite["backend"]
+    return {
+        "activeWebRevision": active["sourceRevision"],
+        "activeWebImage": {key: active["image"][key] for key in ("imageId", "sourceRevision", "generation")},
+        "activeWebManifestSha256": active["provenance"]["bundleManifestSha256"],
+        "activeWebArchiveSha256": active["provenance"]["archiveSha256"],
+        "activeWebPublicationReceiptSha256": active["publicationReceiptSha256"],
+        "originalBackendRevision": retained["sourceRevision"],
+        "originalBackendManifestSha256": retained["provenance"]["bundleManifestSha256"],
+        "originalBackendArchiveSha256": retained["provenance"]["archiveSha256"],
+        "retainedBackendImages": {name: retained["components"][name]["imageId"] for name in RETAINED_COMPONENTS},
+        "newWeb": new, "fixtureBuilds": 0, "compositeSha256": input_hash(composite),
+    }
 
 
 def verify_repeat_harness(root, host, revision):
@@ -314,20 +388,27 @@ def generation_configs(adapted, before, after):
     return {before.deployment_id: compile_config(before, after), after.deployment_id: compile_config(after, before)}
 
 
-def browser_message(value, *, repeat=False):
+def browser_message(value, *, repeat=False, sdk_keyboard_help=False):
     require(isinstance(value, dict) and isinstance(value.get("phase"), str) and value["phase"] in BROWSER_PHASES,
             "unexpected browser control phase")
     expected = BROWSER_PHASES[value["phase"]]
     if repeat and value["phase"] == "complete":
         expected = {**expected, "freshStampedPage": True}
+        if sdk_keyboard_help:
+            facts = value.get("sdkKeyboardHelp")
+            require(type(facts) is dict and set(facts) == set(SDK_KEYBOARD_HELP)
+                    and all(result is True for result in facts.values()),
+                    "incomplete SDK keyboard-help browser proof")
+            expected["sdkKeyboardHelp"] = SDK_KEYBOARD_HELP
     require(set(value) == {"phase", *expected} and all(type(value[key]) is type(wanted) and value[key] == wanted
                                                      for key, wanted in expected.items()), "incomplete browser control proof")
     return value
 
 
 class RolloutBrowser(BrowserProcess):
-    def __init__(self, environment, *, repeat=False):
+    def __init__(self, environment, *, repeat=False, sdk_keyboard_help=False):
         self.repeat = repeat
+        self.sdk_keyboard_help = sdk_keyboard_help
         def run(_command, **options):
             return subprocess.Popen(["bun", "--no-env-file", str(ROOT / BROWSER_SCRIPT)], **options)
 
@@ -340,7 +421,8 @@ class RolloutBrowser(BrowserProcess):
         try:
             while line := stream.readline(4097):
                 require(len(line) <= 4096 and line.endswith("\n"), "oversized or incomplete browser control record")
-                self.messages.put_nowait(browser_message(json.loads(line), repeat=self.repeat))
+                self.messages.put_nowait(browser_message(json.loads(line), repeat=self.repeat,
+                    sdk_keyboard_help=self.sdk_keyboard_help))
         except (ValueError, RuntimeError, queue.Full):
             self.invalid = True
 
@@ -434,6 +516,9 @@ class MixedWebSmoke(WebSwitchSmoke):
         super().__init__(docker, args.bundle_dir, args.baseline_revision, args.output_dir)
         self.args, self.private = args, private
         self.repeat = repeat_mode(args)
+        self.successor = successor_mode(args)
+        self.sdk_keyboard_help = getattr(args, "sdk_keyboard_help", False)
+        require(not self.sdk_keyboard_help or self.successor, "SDK keyboard help requires a successor Web fixture")
         self.seed_root = args.seed_root if self.repeat else ROOT
         self.browser = None
         self.host_environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR", "PLAYWRIGHT_BROWSERS_PATH") if key in os.environ}
@@ -457,12 +542,15 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(sha256(manifest) == self.args.baseline_manifest_sha256, "baseline differs from the pinned manifest")
         loaded = load_bundle(self.bundle_dir, expected_revision=self.revision)
         candidate = loaded["candidate"]
-        require(loaded["origin"]["kind"] == "github-actions" and candidate["schemaVersion"] == 2
+        require(loaded["origin"]["kind"] == "github-actions"
+                and (candidate["schemaVersion"] == 2 or not self.repeat and candidate["schemaVersion"] == 3)
                 and loaded["provenance"]["bundleManifestSha256"] == self.args.baseline_manifest_sha256,
-                "authenticated hosted v2 baseline manifest required")
+                "authenticated hosted baseline manifest with exact source inputs required")
         images = {key: candidate["components"][key]["imageId"] for key in COMPONENTS}
         require(self.args.new_web_revision != self.revision and self.args.new_web_image_id not in images.values(),
                 "distinct newly built Web source and image required")
+        if self.successor:
+            return self.load_successor(loaded, images)
         composite = repeat_baseline(self.args, loaded) if self.repeat else None
         if composite is not None:
             self.verify_browser_source(candidate)
@@ -482,16 +570,15 @@ class MixedWebSmoke(WebSwitchSmoke):
                          "baselineImages": images, **loaded["provenance"], "newWeb": new, "fixtureBuilds": 0}
         self.retained_images = images
         if composite is not None:
-            from component_inputs import content_hash as input_hash
             from web_candidate import ARCHIVE, MAX_ARCHIVE_BYTES
 
-            active, retained = composite["web"], composite["backend"]
-            active_image = {key: active["image"][key] for key in ("imageId", "sourceRevision", "generation")}
+            assembly = repeat_assembly(composite, new)
+            active_image = assembly["activeWebImage"]
             archive = regular_file(self.args.active_web_bundle, ARCHIVE, MAX_ARCHIVE_BYTES)
-            require(sha256(archive) == active["provenance"]["archiveSha256"],
+            require(sha256(archive) == assembly["activeWebArchiveSha256"],
                     "Active Web archive differs from the authenticated bytes")
             self.docker.run(["image", "load", "--input", str(archive)], timeout=300)
-            require(sha256(archive) == active["provenance"]["archiveSha256"],
+            require(sha256(archive) == assembly["activeWebArchiveSha256"],
                     "Active Web archive changed during fixture load")
             self.fixture.inspect_images()
             require(all(self.fixture.report["images"][key]["id"] == value for key, value in images.items()),
@@ -500,21 +587,53 @@ class MixedWebSmoke(WebSwitchSmoke):
                     and read_web_image(self.docker, new["imageId"], new["sourceRevision"]) == new,
                     "Active Web or candidate image differs after loading both archives")
             self.old_image = active_image
-            self.report["revision"] = active["sourceRevision"]
-            self.assembly = {
-                "activeWebRevision": active["sourceRevision"], "activeWebImage": active_image,
-                "activeWebManifestSha256": active["provenance"]["bundleManifestSha256"],
-                "activeWebArchiveSha256": active["provenance"]["archiveSha256"],
-                "activeWebPublicationReceiptSha256": active["publicationReceiptSha256"],
-                "originalBackendRevision": retained["sourceRevision"],
-                "originalBackendManifestSha256": retained["provenance"]["bundleManifestSha256"],
-                "originalBackendArchiveSha256": retained["provenance"]["archiveSha256"],
-                "retainedBackendImages": {name: images[name] for name in ("worker", "realtime", "migrator")},
-                "newWeb": new, "fixtureBuilds": 0, "compositeSha256": input_hash(composite),
-            }
+            self.report["revision"] = assembly["activeWebRevision"]
+            self.assembly = assembly
         self.report["images"] = self.assembly
         self.baseline_candidate = candidate
         return self.assembly
+
+    def load_successor(self, loaded, images):
+        """Only active C, candidate D and the original backend can enter runtime checks."""
+        from web_candidate import ARCHIVE, MAX_ARCHIVE_BYTES
+
+        candidate = loaded["candidate"]
+        composite = successor_baseline(self.args, loaded)
+        self.verify_browser_source(candidate)
+        new = read_web_image(self.docker, self.args.new_web_image_id, self.args.new_web_revision)
+        assembly = repeat_assembly(composite, new)
+        active = assembly["activeWebImage"]
+        archive = regular_file(self.args.successor_web_bundle, ARCHIVE, MAX_ARCHIVE_BYTES)
+        require(sha256(archive) == assembly["activeWebArchiveSha256"],
+                "Successor Web archive differs from the authenticated bytes")
+        # The exact original Core archive also contains the unused A Web image.
+        # No A or B Web image is selected for inspection, startup or routing.
+        require(sha256(loaded["archivePath"]) == assembly["originalBackendArchiveSha256"],
+                "Original Core archive differs from the authenticated bytes")
+        self.docker.run(["image", "load", "--input", str(loaded["archivePath"])], timeout=300)
+        self.docker.run(["image", "load", "--input", str(archive)], timeout=300)
+        require(sha256(archive) == assembly["activeWebArchiveSha256"],
+                "Successor Web archive changed during fixture load")
+        require(sha256(loaded["archivePath"]) == assembly["originalBackendArchiveSha256"],
+                "Original Core archive changed during fixture load")
+        self.fixture = ImageSmoke(self.docker, images, self.private / "fixture", expected_revision=self.revision)
+        for name, identifier in assembly["retainedBackendImages"].items():
+            rows = self.docker.json(["image", "inspect", identifier], timeout=10)
+            metadata = image_metadata(rows, self.revision)
+            require(metadata["id"] == identifier and rows[0].get("Os") == "linux"
+                    and rows[0].get("Architecture") == "amd64"
+                    and metadata["user"] == candidate["components"][name]["runtimeUser"],
+                    "Loaded retained backend image differs from the tested candidate")
+            self.fixture.report["images"][name] = metadata
+        require(read_web_image(self.docker, active["imageId"], active["sourceRevision"]) == active
+                and read_web_image(self.docker, new["imageId"], new["sourceRevision"]) == new,
+                "Successor active or candidate image differs after loading retained archives")
+        self.old_image, self.new_image = active, new
+        self.retained_images = assembly["retainedBackendImages"]
+        self.report["revision"] = assembly["activeWebRevision"]
+        self.report["images"] = self.assembly = assembly
+        self.baseline_candidate = candidate
+        return assembly
 
     def host(self, arguments, *, environment=None, timeout=30, binary=False, root=ROOT):
         result = subprocess.run(arguments, cwd=root, env=environment or self.host_environment, capture_output=True,
@@ -785,11 +904,15 @@ class MixedWebSmoke(WebSwitchSmoke):
                                     activitySubject="Web rollout " + secrets.token_hex(12))
         if self.repeat:
             self.browser_profile["scenario"] = REPEAT_BROWSER_PROFILE
+        if self.sdk_keyboard_help:
+            self.browser_profile["sdkKeyboardHelp"] = True
+        if getattr(self.args, "topbar_gaps", None) is not None:
+            self.browser_profile["topBarGaps"] = self.args.topbar_gaps
         self.browser_profile_path = self.private / "browser.json"
         self.browser_profile_path.write_text(json.dumps(self.browser_profile), encoding="utf-8")
         self.browser_profile_path.chmod(0o600)
         self.browser = RolloutBrowser({**self.host_environment, "BROWSER_WEB_ROLLOUT_PROFILE": str(self.browser_profile_path)},
-                                      repeat=self.repeat)
+                                      repeat=self.repeat, sdk_keyboard_help=self.sdk_keyboard_help)
         self.browser_initial = self.browser.wait("initial-ready", timeout=90)
         require(self.activity_count() == 0, "synthetic browser Activity already exists before rollout")
         return {"freshBoundBaselineSeed": True, "forgedSession": False, "initial": self.browser_initial,
@@ -895,16 +1018,31 @@ def main(arguments=None):
     parser.add_argument("--new-web-revision", type=validate_revision, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--browser", action="store_true", help="require the native persistent browser and durable Activity proof")
+    parser.add_argument("--sdk-keyboard-help", action="store_true",
+                        help="exercise the authenticated candidate's SDK keyboard-help dialog")
+    parser.add_argument("--topbar-gaps", nargs=2, type=int, metavar=("OLD", "NEW"),
+                        help="assert the admitted old and new TopBar gaps in the presentation rehearsal")
     parser.add_argument("--active-web-bundle", type=Path)
     parser.add_argument("--active-web-publication-receipt", type=Path)
     parser.add_argument("--active-web-publication-receipt-sha256")
     parser.add_argument("--seed-root", type=Path)
     parser.add_argument("--harness-revision", type=validate_revision)
+    parser.add_argument("--successor-web-bundle", type=Path)
+    parser.add_argument("--successor-web-publication-receipt", type=Path)
+    parser.add_argument("--successor-web-publication-receipt-sha256")
+    parser.add_argument("--successor-web-revision", type=validate_revision)
+    parser.add_argument("--predecessor-lineage-sha256")
     args = parser.parse_args(arguments)
     if not HASH.fullmatch(args.baseline_manifest_sha256) or not IMAGE.fullmatch(args.new_web_image_id):
         parser.error("a full baseline manifest SHA-256 and immutable new Web image ID are required")
     try:
-        repeat_mode(args)
+        repeat = repeat_mode(args)
+        require(successor_mode(args) or not args.sdk_keyboard_help,
+                "SDK keyboard help requires a successor Web fixture")
+        if args.topbar_gaps is not None:
+            old, new = args.topbar_gaps
+            require(args.browser and not repeat and 0 <= new < old <= 64 and old - new == 2,
+                    "TopBar gap assertions require a bounded presentation browser fixture")
     except (OSError, ValueError, WebSwitchSmokeError) as error:
         parser.error(str(error))
     try:

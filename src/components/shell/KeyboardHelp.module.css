@@ -1,0 +1,54 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.trigger:hover {
+  background-color: rgba(127, 127, 127, 0.12);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.panel {
+  padding: 16px;
+  text-align: start;
+}
+
+.heading {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.description {
+  margin-block: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.close {
+  min-height: 36px;
+  padding-inline: 8px;
+  border: 1px solid;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 13px;
+}
+
+.close:hover {
+  background-color: rgba(127, 127, 127, 0.12);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}

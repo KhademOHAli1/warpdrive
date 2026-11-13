@@ -277,8 +277,12 @@ void test("the full committed Web application admits reviewed CSS, copy and stat
   privateGit("read-tree", baselineRevision);
   const copy = "src/components/data-table/messages/tableControls.en.json";
   const view = "src/components/ui/EmptyState.tsx";
+  const cssSource = run(source, ["show", `${baselineRevision}:${CSS}`]);
+  const currentTopBarGap = /^\.header\s*\{[^}]*?^ {2}gap: (\d{1,3})px;/mu.exec(cssSource)?.[1];
+  assert.notEqual(currentTopBarGap, undefined, CSS);
+  const candidateTopBarGap = currentTopBarGap === "22" ? "20" : "22";
   for (const [path, before, after] of [
-    [CSS, "  gap: 24px;", "  gap: 22px;"],
+    [CSS, `  gap: ${currentTopBarGap}px;`, `  gap: ${candidateTopBarGap}px;`],
     [copy, '"clearSelection": "Clear selection"', '"clearSelection": "Reset selection"'],
     [
       view,
