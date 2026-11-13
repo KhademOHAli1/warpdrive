@@ -99,8 +99,10 @@ def _sdk_delta(baseline, current, changed):
     require(inputs.canonical(current["backendInputs"]) == inputs.canonical(baseline["backendInputs"]),
             "SDK presentation fixture changed retained backend inputs")
     old_web, new_web = baseline["web"], current["web"]
-    require(all(old_web[key] == new_web[key] for key in ("profile", "context", "pinnedInputs", "helperEntries",
-                                                       "helperGraphInputs", "sdkImports", "staticWebInputCount"))
+    identity_fields = {"gitInventorySha256", "inputSha256"}
+    require(baseline["schemaVersion"] == current["schemaVersion"]
+            and {key: value for key, value in old_web.items() if key not in identity_fields}
+            == {key: value for key, value in new_web.items() if key not in identity_fields}
             and old_web["inputSha256"] != new_web["inputSha256"],
             "SDK presentation fixture changed other Web inputs or failed to change Web identity")
     return {"releaseRevision": changed, "buildComponents": ["web"], "changedPresentationPaths": [STYLE_FILE],

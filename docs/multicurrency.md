@@ -1,17 +1,18 @@
 # Multiple currencies
 
-Amounts on leads and deals belong to the record's currency. Interface language never changes
-that unit. Totals stay separate by currency; this implementation performs no exchange-rate
-conversion. Existing amounts must be backfilled using the company base currency at migration
-time, including archived, deleted, and converted records. Changing a currency is an explicit
-amount edit, not a conversion of the old number.
+Each lead or deal stores its currency with its amount. Changing the display
+language preserves that currency. Totals are grouped by currency and changing a
+record's currency leaves conversion to the user. Migration
+`0075_multicurrency.sql` assigns the company base currency to existing records,
+including archived, deleted, and converted records.
 
 ## Impact assessment
 
 - Storage previously held a bare numeric(14,2). Add a currency to leads, deals and goals, and
   widen native monetary values to four decimal places so three-place currencies are preserved.
-- Pipeline sums previously added JavaScript numbers across every card. Group by currency and
-  use decimal arithmetic. Paginated list totals must cover the full filtered set, not one page.
+- Pipeline and server-side list aggregates use decimal arithmetic and group totals
+  by currency. The deal list footer uses the loaded matching rows when the
+  client-side owner filter is active.
 - Cards, lists, detail editors and linked contact deals must display the record's own unit.
 - Conversion in either direction and duplication must preserve currency alongside value.
 - Dashboard sums, averages, medians, trends, stage values and lost reasons must all be scoped
@@ -50,9 +51,9 @@ Lead CSV exports that include Value now include a separate Currency column. Valu
 canonical decimal rather than a localized amount with a symbol, so exported values can be
 mapped back to Value and Currency on import. Exports without Value keep their existing columns.
 
-The migration was checked against a disposable real PostgreSQL database before applying it
-locally. A private pre-migration database backup is kept in the task's `work` directory. The
-local migration preserved every existing amount and record count.
+The original qualification checked the migration against a disposable PostgreSQL
+database before local application. The local migration preserved the existing
+amounts and record counts.
 
 ## Verification scope
 

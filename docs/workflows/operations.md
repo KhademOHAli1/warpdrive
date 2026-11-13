@@ -6,15 +6,17 @@ See [architecture](architecture.md), [status](status.md), and the
 
 ## Install and run
 
-Use the Bun version declared in the root package. Back up PostgreSQL and review pending
-migrations before upgrading an existing installation. Migration `0083_visual_workflows.sql`
-follows the merged Better Auth migrations. It creates definitions, immutable versions,
-runs, and completed steps without converting existing CRM records into runs.
+Use the Bun version declared in the root package. For an existing installation, follow the
+[upgrade guide](../../docs-site/docs/operations/updating.mdx) and inspect the canonical
+migration journal for the selected revision. The foundation migration is
+`0086_visual_workflows.sql` in the current journal. It creates definitions, immutable
+versions, runs and completed steps without converting CRM records into runs. Apply the
+whole required migration chain with the dedicated migration role; do not run the
+foundation SQL by itself.
 
 ```sh
 bun install --frozen-lockfile
 bun run db:migrate
-bun run build:docker
 ```
 
 The application produces jobs; the separate worker registers workflow handlers. Use the

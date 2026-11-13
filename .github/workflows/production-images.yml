@@ -102,7 +102,7 @@ jobs:
         id: image-inputs
         run: |
           RUN_IMAGE_CONTEXT_IMPORT_CHECK=1 node --test --test-name-pattern 'Docker context keeps local TypeScript imports' scripts/deployment/image-build.test.mjs
-          node --test scripts/deployment/component_inputs.test.mjs scripts/deployment/web_inputs.test.mjs scripts/deployment/web_sdk_full_inputs.test.mjs
+          node --test scripts/deployment/component_inputs.test.mjs scripts/deployment/web_inputs.test.mjs scripts/deployment/web_sdk_full_inputs.test.mjs scripts/deployment/web_sdk_imports.test.mjs
           proof="$RUNNER_TEMP/production-images"
           mkdir -p "$proof"
           sdk_inputs=$(git --no-replace-objects ls-tree -r --name-only "$REVISION" -- \
@@ -222,8 +222,14 @@ jobs:
                   if (fromSdk.resolve(singleton) !== fromApp.resolve(singleton)) throw Error("SDK uses a separate React runtime");
               }
               if (component === "web") {
-                for (const path of ["menu", "dialog", "drawer"])
+                for (const path of ["menu", "dialog", "drawer", "switch", "checkbox", "combobox"])
                   if (!import.meta.resolve("@ui-sdk/react/" + path).startsWith("file:///app/node_modules/@ui-sdk/react/")) throw Error("Unexpected SDK module path");
+                const { Switch, SwitchThumb } = await import("@ui-sdk/react/switch");
+                if (typeof Switch !== "function" || typeof SwitchThumb !== "function") throw Error("Unexpected SDK Switch exports");
+                const { Checkbox } = await import("@ui-sdk/react/checkbox");
+                const { DialogBackdrop, createDialogController } = await import("@ui-sdk/react/dialog");
+                const combobox = await import("@ui-sdk/react/combobox");
+                if (typeof Checkbox !== "function" || typeof DialogBackdrop !== "function" || typeof createDialogController !== "function" || ["Combobox", "ComboboxContent", "ComboboxEmpty", "ComboboxInput", "ComboboxItem", "ComboboxList", "ComboboxTrigger"].some((name) => typeof combobox[name] !== "function")) throw Error("Unexpected SDK checkbox, dialog or combobox exports");
               }
               console.log(JSON.stringify({component, sdkPresent: component === "web"}));
             ' "$component" > "$proof/sdk-packaging-$component.json"

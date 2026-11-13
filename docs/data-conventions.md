@@ -4,7 +4,7 @@
 
 Ali approved the following examples on 31 October 2026: canonical currency remains **IRR**; 1,234,560 rials displays as 123,456 toman; 1 rial displays as 0.1 toman. There is no rounding and no foreign-exchange conversion. Changing the interface to German preserves the selected currency and display unit.
 
-The profile's regional settings now offer an independent rial/toman display choice. The default remains rial. Canonical amounts and currency codes are untouched. Canonical amounts have four fractional decimal places; dividing their decimal strings by ten preserves up to five fractional toman places, including 0.0001 IRR → 0.00001 toman. UI digits and separators follow the user's existing language/number preferences. Native deal/lead amount entry continues to use the record's currency and canonical value.
+With Iran selected as the country, open **Settings → Language & region → Customize formats** to choose rial or toman display. Rial is the default. Canonical amounts and currency codes are untouched. Canonical amounts have four fractional decimal places; dividing their decimal strings by ten preserves up to five fractional toman places, including 0.0001 IRR → 0.00001 toman. UI digits and separators follow the user's existing language/number preferences. Native deal/lead amount entry continues to use the record's currency and canonical value.
 
 Existing custom monetary fields remain in company base currency, as documented in `multicurrency.md`; they have no per-field currency metadata. Their inline, bulk and create controls now show the actual canonical entry unit with its currency code and localized name, including an accessible description. For example, a stored 1 IRR can read as 0.1 toman, while its editor remains 1 and explicitly says IRR/rial. A toman display preference never converts editor input, changes another currency or changes the submitted amount. FA/DE regression fixtures exercise that read-to-edit transition and preserve canonical saves.
 
@@ -40,7 +40,7 @@ Examples: Persian `۱۴۰۵/۰۱/۰۱ ۰۹:۳۰` in Tehran → `2026-03-21T06:00
 
 ## Dependency and qualification boundary
 
-The package manager remains Bun 1.4.4. Phone normalization uses pinned **libphonenumber-js 1.13.15**, MIT, with `/max` metadata and strict whole-input parsing. Metadata updates must rerun Iranian mobile/landline, German geographic/mobile, localized-digit, explicit-foreign-prefix, short-code/extension, client-forgery, import persistence, match visibility and FA/DE screen tests. New allocations can require metadata updates; original input must survive an unsupported range.
+The repository pins Bun and the MIT-licensed `libphonenumber-js` package in [package.json](../package.json). Phone normalization uses the library's `/max` metadata and strict whole-input parsing. Metadata updates must rerun Iranian mobile/landline, German geographic/mobile, localized-digit, explicit-foreign-prefix, short-code/extension, client-forgery, import persistence, match visibility and FA/DE screen tests. New allocations can require metadata updates; original input must survive an unsupported range.
 
 Automated tests use synthetic contact details, real isolated PostgreSQL, deterministic provider doubles and local UI fixtures. They establish parsing, persistence and authority behavior; they do not establish real-number ownership or live SMS/voice delivery.
 

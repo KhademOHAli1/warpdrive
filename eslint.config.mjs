@@ -295,6 +295,8 @@ export default tseslint.config(
       "scripts/deployment/web_repeat_presentation.mjs",
       "scripts/deployment/web_sdk_full_inputs.mjs",
       "scripts/deployment/web_sdk_full_inputs.test.mjs",
+      "scripts/deployment/web_sdk_imports.mjs",
+      "scripts/deployment/web_sdk_imports.test.mjs",
       "scripts/deployment/web_sdk_keyboard_fixture.mjs",
       "scripts/deployment/web_sdk_keyboard_fixture.test.mjs",
     ],
