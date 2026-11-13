@@ -55,7 +55,7 @@ Retain the managed CodeQL workflow `403980173` and all three required analyses: 
 
 `Dependency audit` audits the actual Bun lockfiles for the root application, marketing site, documentation site and `tools/browser-smoke`, including production and development dependencies. It performs no install, exclusion, advisory ignore or automatic fix, and every reported severity fails. Keep this all-severity gate; do not restore PR952's high/critical-only or base-difference maintenance mode. An audit failure remains visible until actually resolved and rechecked; workflow changes and release-plan versions do not convert it into success.
 
-Retain each of the four audits' raw stdout and stderr, exit result, and a summary of the audited package/lockfile hashes even when an audit fails. Keep the same single check contexts and dependency roots. Full CI and browser qualification are explicit workflows and are not inferred from this audit or from a light result.
+Retain raw stdout and stderr, exit results, and package and lockfile hashes for the application, marketing site, documentation site, browser tooling, and isolated Web UI audits, including failures. Keep the single required dependency audit check. Full CI and browser qualification use dedicated workflows.
 
 ## Browser and acceptance boundaries
 
