@@ -114,14 +114,15 @@ jobs:
         env:
           NODE_ENV: development
         run: |
-          bun --no-env-file install --frozen-lockfile
+          # Admission requires independently stored regular files in both checked roots.
+          bun --no-env-file install --frozen-lockfile --backend=copyfile
           bun --no-env-file install --cwd "$RUNNER_TEMP/functional-seed" --frozen-lockfile
           bun --no-env-file install --cwd tools/browser-smoke --frozen-lockfile --ignore-scripts
           bun --no-env-file tools/browser-smoke/node_modules/playwright/cli.js install --with-deps chromium
           projection="$RUNNER_TEMP/functional-projection"
           cp package.json bun.lock bunfig.toml "$projection/"
           cp -R patches "$projection/patches"
-          bun --no-env-file install --cwd "$projection" --frozen-lockfile
+          bun --no-env-file install --cwd "$projection" --frozen-lockfile --backend=copyfile
           bun --no-env-file scripts/deployment/install-web-ui.mjs --target "$projection"
           proof="$RUNNER_TEMP/functional-proof"
           curl --fail --silent --show-error --proto '=https' --connect-timeout 15 --max-time 45 --max-filesize 8388608 \

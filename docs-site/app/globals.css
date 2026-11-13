@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+:root {
+  --color-fd-primary: #257148;
+}
+
+.dark {
+  --color-fd-primary: #32d8b4;
+}
+
+.warpdrive-docs img {
+  height: auto;
+}
+
+.warpdrive-docs [id] {
+  scroll-margin-top: 5rem;
+}
+
+.warpdrive-docs a:focus-visible {
+  outline: 2px solid var(--color-fd-primary);
+  outline-offset: 3px;
+}

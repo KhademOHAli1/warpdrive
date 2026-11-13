@@ -40,7 +40,7 @@ installation alone does not verify the test environment.
 
 ### TypeScript 6.0.3 in the CRM
 
-The latest stable compiler is 7.0.2, but typescript-eslint 8.72.2 supports
+In the 10 November 2026 compatibility check, TypeScript 7.0.2 was the latest stable compiler. The pinned typescript-eslint 8.72.2 supports
 `>=4.8.4 <6.1.0`, as declared by its installed and registry peer dependencies and its
 [supported-version documentation](https://typescript-eslint.io/users/dependency-versions/).
 The typed lint parser uses the TypeScript compiler API.

@@ -1,13 +1,12 @@
 ---
-sidebar_position: 3
 title: Leads
 description: "The Warpdrive leads inbox: capturing unqualified prospects, linking them to people and organizations, converting them into deals, and archiving."
 ---
 
 # Leads
 
-Leads are prospects that are not yet real deals. They live in their own inbox so that
-unqualified interest does not clutter the [pipeline](./pipeline.md).
+Use the leads inbox to track prospects before they enter the
+[pipeline](/features/pipeline/) as deals.
 
 `/leads` is the list; `/leads/[leadId]` is one lead.
 
@@ -23,19 +22,19 @@ organization. Labels and owners work as they do on deals.
 
 ## Linking to contacts
 
-A lead links to a person and an organization. On import, those links are resolved
-find-or-create, so a lead for an existing company attaches to that company rather than
-creating a duplicate.
+A lead can link to a person, an organization, or both. Select an existing contact
+when it is already in Warpdrive. For bulk entry, see
+[Deduplication and linking](/features/import/#deduplication-and-linking).
 
 ## Converting
 
 Converting a lead creates a deal from it, carrying across its value, contacts, and
 labels, and takes the lead out of the active list.
 
-The lead's history comes along too: its notes are copied onto the deal with their
-authors and original dates, its open activities are recreated on the deal, and its
-email threads show on both records. The archived lead keeps its own copy, so the
-trail survives on both sides.
+The deal receives copies of the lead's notes and activities, including completed
+activities. Notes retain their authors and original dates. Email threads that
+have no deal link gain a link to the new deal and remain linked to the lead.
+The lead retains its original history.
 
 Conversion is the point at which something enters the pipeline, which is what keeps
 pipeline totals meaningful.
@@ -48,10 +47,10 @@ survives. Archived leads are excluded from the active list.
 ## Visibility
 
 Leads follow the same visibility model as other records. See
-[Visibility groups](../administration/visibility-groups.md).
+[Visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Import](./import.md), for bulk lead import.
-- [Contacts](./contacts.md)
-- [Pipeline](./pipeline.md)
+- [Import](/features/import/), for bulk lead import.
+- [Contacts](/features/contacts/)
+- [Pipeline](/features/pipeline/)

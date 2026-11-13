@@ -83,7 +83,7 @@ Type-aware rules on include: `no-floating-promises`, `no-misused-promises`, `no-
 
 ## Git Safety
 
-- Make commits and pushes on work branches, then integrate completed increments into `main` through reviewed pull requests. The integration coordinator serializes main publication and verifies the resulting main checks before claiming integration. Close completed branches after confirming containment; do not accumulate them.
+- Make commits and pushes on work branches, then integrate completed increments into `main` through reviewed pull requests. Follow AGENTS.md for module ownership and integration authorization. Verify the resulting exact-main checks before claiming integration. Close completed branches after confirming containment; do not accumulate them.
 - Keep work bounded with explicit file ownership and an integration plan that avoids conflicting parallel edits. Do not commit or push directly to `main`.
 - Before integrating, inspect current remote heads, worktrees, dirty files and migration lineage. Preserve unfinished work. Never resolve competing installed migration histories by choosing one journal or renumbering applied SQL.
 - Delete a branch only after its exact committed work is preserved in `main`; retain unfinished changes and active worktree/runtime data.

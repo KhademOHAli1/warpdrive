@@ -61,6 +61,33 @@ bun dist/auth-operator.mjs recover --request-id PENDING_SOLE_ADMIN_CASE_UUID --c
 
 Alle drei Optionen sind erforderlich. Der Hostdienst nimmt zuerst die gemeinsame Kontosperre und danach die Zeilensperren für Administration, Identität und Fall. Er prüft die Voraussetzungen erneut, protokolliert `recovery.emergency_review` mit der Methode für die vom Hostbetrieb bestätigte Prüfung der Kontoinhaberschaft und ruft anschließend den bestehenden Wiederherstellungs- und Rücksetzlinkablauf auf. Prüfung, Abschluss, Widerrufe, Auditereignisse und die verschlüsselte Ausgangsnachricht werden atomar bestätigt. Bei gleichzeitiger Ausführung kann nur eine Operation erfolgreich sein. Es gibt keinen öffentlichen Endpunkt, keine Selbstgenehmigung im Browser, keine frei wählbare Zieladresse und kein vom Hostbetrieb festgelegtes Passwort.
 
+## Anmeldung mit Google Workspace
+
+Legen Sie für die Installation einen OAuth-Webclient in Google Cloud an. Für ein internes CRM
+wählen Sie im Projekt Ihrer Organisation die Zielgruppe **Intern**. Registrieren Sie den
+Anwendungsursprung und die genaue HTTPS-Weiterleitungs-URI
+`<BASE_URL>/api/auth/callback/google`, zum Beispiel
+`https://crm.example.com/api/auth/callback/google`.
+
+Aktivieren Sie `AUTH_GOOGLE_ENABLED`, setzen Sie `GOOGLE_OAUTH_CLIENT_ID` und hinterlegen Sie das
+Client-Geheimnis über `GOOGLE_OAUTH_CLIENT_SECRET` oder `GOOGLE_OAUTH_CLIENT_SECRET_FILE`.
+Mit `GOOGLE_WORKSPACE_DOMAIN` beschränken Sie die Anmeldung auf die gewünschte Workspace-Domain.
+Warpdrive vergleicht die normalisierte Einstellung mit der von Google bestätigten Domain
+(`hd`). Eine passende E-Mail-Endung genügt nicht. Lassen Sie die Einstellung leer, wenn sich
+auch Nutzer außerhalb einer Workspace-Domain über Google anmelden sollen.
+
+Die Anmeldung fordert nur `openid`, `email` und `profile` an. Neue Konten benötigen weiterhin
+eine Einladung für die verifizierte Adresse. Bestehende Konten müssen aktiv sein. Die
+Workspace-Mitgliedschaft vergibt keine CRM-Berechtigungen. Administratoren müssen zusätzlich
+die Vorgaben für starke Authentifizierung in Warpdrive erfüllen.
+
+Testen Sie Anmeldung, Administratorzugriff und Wiederherstellung auf der installierten Version,
+bevor Sie alternative Anmeldemethoden abschalten. `AUTH_ALLOW_PASSWORD` und
+`AUTH_ALLOW_PASSKEY` sind getrennte Einstellungen. Für die Anmeldung ist keine domainweite
+Delegierung erforderlich. Gmail und Google Kalender werden separat verbunden; der Gmail-Callback
+lautet `/api/gmail/oauth/callback`. Bewahren Sie Zugangsdaten außerhalb des Repositorys und der
+Build-Artefakte auf. Quellcode-Tests belegen keine erfolgreiche Anmeldung bei Ihrer Organisation.
+
 ## Zustellung, Umstellung und Prüfung
 
 Der reguläre Hintergrunddienst plant `auth-maintenance` minütlich ein. Der Auftrag stellt ausstehende Nachrichten zu, wiederholt Integrationswiderrufe und verarbeitet abgelaufene Authentifizierungsdatensätze. Prüfen Sie Versandstatus und Versuche über die vorhandene Verwaltungsoberfläche. Auf dem Host lässt sich der Gesamtstatus ohne Offenlegung verschlüsselter Nutzdaten abfragen:
