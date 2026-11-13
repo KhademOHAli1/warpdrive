@@ -13,7 +13,8 @@ from unittest.mock import patch
 from web_mixed_image_smoke import (
     BROWSER_PHASES, BROWSER_SCRIPT, CRM_SWITCH, REPEAT_BROWSER_PROFILE, REPEAT_LIMITATIONS, SDK_KEYBOARD_HELP,
     SDK_SWITCH, SWITCH_TOOLING, MixedWebSmoke,
-    browser_message, repeat_assembly, repeat_baseline, repeat_mode, successor_baseline, successor_mode, verify_repeat_harness,
+    browser_message, functional_successor_mode, repeat_assembly, repeat_baseline, repeat_mode, successor_baseline,
+    successor_mode, verify_repeat_harness,
 )
 from web_switch_smoke import WebSwitchSmokeError
 
@@ -295,12 +296,23 @@ class RepeatMixedTests(unittest.TestCase):
         docker = SimpleNamespace()
         pilot = MixedWebSmoke(docker, args, self.root / "private")
         self.assertNotIn("sdkScenario", pilot.report["browserProfile"])
-        switch = MixedWebSmoke(docker, args, self.root / "private", sdk_scenario=CRM_SWITCH)
+        with self.assertRaisesRegex(WebSwitchSmokeError, "accepted functional predecessor"):
+            MixedWebSmoke(docker, args, self.root / "private", sdk_scenario=CRM_SWITCH)
+        history = self.root / "predecessor-composite.json"
+        history.write_text("{}")
+        new_args = SimpleNamespace(**(vars(args) | {
+            "active_web_bundle": None, "active_web_publication_receipt": None,
+            "active_web_publication_receipt_sha256": None,
+            "functional_predecessor_composite": history,
+            "functional_predecessor_composite_sha256": "a" * 64,
+        }))
+        self.assertTrue(functional_successor_mode(new_args))
+        switch = MixedWebSmoke(docker, new_args, self.root / "private", sdk_scenario=CRM_SWITCH)
         self.assertEqual(switch.report["browserProfile"]["sdkScenario"], CRM_SWITCH)
-        args.sdk_scenario = CRM_SWITCH
+        new_args.sdk_scenario = CRM_SWITCH
         with self.assertRaisesRegex(WebSwitchSmokeError, "trusted caller admission"):
-            MixedWebSmoke(docker, args, self.root / "private")
-        with self.assertRaisesRegex(WebSwitchSmokeError, "requires the reviewed"):
+            MixedWebSmoke(docker, new_args, self.root / "private")
+        with self.assertRaisesRegex(WebSwitchSmokeError, "accepted functional predecessor"):
             MixedWebSmoke(docker, self.args, self.root / "private", sdk_scenario=CRM_SWITCH)
 
     def test_harness_source_rejects_a_hidden_tracked_edit_and_ignored_tooling(self):
