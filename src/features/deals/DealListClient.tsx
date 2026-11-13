@@ -17,8 +17,7 @@ import {
   useLocalePreferencePending,
   useLocalePreferences,
 } from "@/features/i18n/LocaleProvider";
-import { SavedViewPending } from "@/features/saved-filters/SavedViewPending";
-import { SavedViewUnavailable } from "@/features/saved-filters/SavedViewUnavailable";
+import { SavedViewNotice } from "@/features/saved-filters/SavedViewNotice";
 import type { CustomFieldDef } from "@/types/customFields";
 import { BoardFilterControl } from "./BoardFilterControl";
 import { BoardSortControl } from "./BoardSortControl";
@@ -229,7 +228,8 @@ export function DealListClient({
     return (
       <>
         {toolbar}
-        <SavedViewUnavailable
+        <SavedViewNotice
+          state="unavailable"
           missing={
             savedFilter?.availability === "unavailable" && savedFilter.problem.kind === "missing"
           }
@@ -242,7 +242,7 @@ export function DealListClient({
     return (
       <>
         {toolbar}
-        <SavedViewPending error={isError} onRetry={retry} />
+        <SavedViewNotice state={isError ? "query-error" : "checking"} onRetry={retry} />
       </>
     );
   return (

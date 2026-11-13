@@ -24,7 +24,7 @@ export const crmIds2: string[] = [
   "sourceReview:src/features/deal-workspace/wonLost.ts#bf8093bd887fbb81e87a32531f2a9d5767e515776c587a92eb9d2dbfc4b4d0e4",
   "sourceReview:src/features/deals/AddDealPersonColumn.tsx#469ff583dabe2b3f039405538b7916f387a0d77843966d0e6a91f75003ba190a",
   "sourceReview:src/features/deals/archiveDeal.ts#825977151c84753fd93ad654e10ecaaf0e8ce5d4177026ab8e318d55c6c97e43",
-  "sourceReview:src/features/deals/Board.tsx#c818fc46bb033ef7e5113d39a7dfab3139c371cc817bcf22aa5472cdfaeb12bd",
+  "sourceReview:src/features/deals/Board.tsx#ee3140fa655c2848969a06dee6bdefd8d88087202b12788992d08ea8a4418f95",
   "sourceReview:src/features/deals/boardFilter.ts#87fe2433e68c565dd995030880a6b99fd954c36bef48da832021caa44de4611d",
   "sourceReview:src/features/deals/BoardSummary.tsx#a8af4d79e66ec7e0d04fb58f61efec4721272f533b819bfef24bcf3117d196fa",
   "sourceReview:src/features/deals/bulkActions.ts#cbe0296d22528d4c98b61f05a099e7a18f5fbdda724f8b7e513672bd04a341c5",
