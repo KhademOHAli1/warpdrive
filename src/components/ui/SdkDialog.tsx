@@ -1,13 +1,14 @@
 "use client";
 
 import {
+  createDialogController as createSdkDialogController,
   DialogBackdrop,
-  DialogTrigger,
   DialogClose as SdkClose,
   DialogContent as SdkContent,
   DialogDescription as SdkDescription,
   Dialog as SdkRoot,
   DialogTitle as SdkTitle,
+  DialogTrigger as SdkTrigger,
 } from "@ui-sdk/react/dialog";
 import { X } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
@@ -20,6 +21,10 @@ import { cn } from "@/lib/utils";
 
 type DialogOpenChange = NonNullable<ComponentProps<typeof SdkRoot>["onOpenChange"]>;
 type DialogOpenChangeReason = Parameters<DialogOpenChange>[1]["reason"];
+
+export function createDialogController(): ReturnType<typeof createSdkDialogController> {
+  return createSdkDialogController();
+}
 
 function closeReason(
   reason: DialogOpenChangeReason,
@@ -44,13 +49,16 @@ function closeReason(
 
 export function Dialog({
   children,
+  controller,
   onClose,
 }: {
   children: ReactNode;
+  controller?: ComponentProps<typeof SdkRoot>["controller"];
   onClose?: (value: string | undefined) => void;
 }): ReactNode {
   return (
     <SdkRoot
+      controller={controller}
       onOpenChange={(open, details) => {
         if (open) {
           capture(EVENTS.modalOpened, { route: currentRoute() });
@@ -122,4 +130,6 @@ export function DialogClose(props: ComponentProps<typeof SdkClose>): ReactNode {
   return <SdkClose tabIndex={0} {...props} />;
 }
 
-export { DialogTrigger };
+export function DialogTrigger(props: ComponentProps<typeof SdkTrigger>): ReactNode {
+  return <SdkTrigger {...props} />;
+}

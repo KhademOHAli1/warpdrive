@@ -1,11 +1,10 @@
 "use client";
-import { Check, ChevronsUpDown } from "lucide-react";
 import type React from "react";
 import { forwardRef, useState } from "react";
-import { Avatar } from "@/components/ui/Avatar";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./Button";
+import { ComboboxOptionLabel, ComboboxTriggerLabel } from "./comboboxPresentation";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import {
   Command,
@@ -96,19 +95,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
           triggerClassName,
         )}
       >
-        <span className="flex items-center gap-1.5 truncate">
-          {selected?.avatarName !== undefined && (
-            <Avatar
-              name={selected.avatarName}
-              src={selected.avatarUrl}
-              className="h-5 w-5 text-[10px]"
-            />
-          )}
-          {selected?.label ?? (
-            <span className="text-muted-foreground">{placeholder ?? t("select")}</span>
-          )}
-        </span>
-        <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <ComboboxTriggerLabel option={selected} placeholder={placeholder ?? t("select")} />
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Command label={t("search")} filter={matchLabel} shouldFilter={search === undefined}>
@@ -140,15 +127,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
                     }}
                     className="flex cursor-pointer items-center gap-1.5 rounded px-2 py-1.5 text-sm data-[selected=true]:bg-accent"
                   >
-                    {o.avatarName !== undefined && (
-                      <Avatar
-                        name={o.avatarName}
-                        src={o.avatarUrl}
-                        className="h-5 w-5 text-[10px]"
-                      />
-                    )}
-                    {o.label}
-                    {o.value === value && <Check className="ms-auto h-4 w-4" />}
+                    <ComboboxOptionLabel option={o} selected={o.value === value} />
                   </CommandItem>
                 ))}
               </CommandGroup>

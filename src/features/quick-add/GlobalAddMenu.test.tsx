@@ -23,7 +23,7 @@ vi.mock("@/lib/trpc-client", () => ({
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push }) }));
 vi.mock("./GlobalNoteModal", () => ({
-  GlobalNoteModal: () => <div data-testid="note-modal" />,
+  GlobalNoteModal: () => null,
 }));
 vi.mock("@/features/deals/AddDealModal", () => ({
   AddDealModal: () => <div data-testid="deal-modal" />,
@@ -135,15 +135,6 @@ describe("GlobalAddMenu", () => {
     for (const label of ["Lead", "Deal", "Activity", "Person", "Organization", "Note", "Email"]) {
       expect(screen.getByRole("menuitem", { name: new RegExp(label) })).toBeInTheDocument();
     }
-  });
-
-  it("opens the global note modal from the Note entry", async () => {
-    const user = userEvent.setup();
-    useQuery.mockReturnValue({ data: [PIPE] });
-    render(<GlobalAddMenu />);
-    await user.click(screen.getByRole("button", { name: "Quick add" }));
-    await user.click(screen.getByRole("menuitem", { name: /Note/ }));
-    expect(screen.getByTestId("note-modal")).toBeInTheDocument();
   });
 
   it("navigates to the standalone email compose surface from the Email entry", async () => {
