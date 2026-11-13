@@ -188,6 +188,15 @@ class RepeatWebCandidateTests(unittest.TestCase):
                             baseline_manifest_sha256=self.baseline["activeWeb"]["bundleManifestSha256"],
                             expected_origin=ORIGIN)
 
+    def test_original_compose_alias_can_differ_from_its_container_name(self):
+        retained = self.lineage["previous"]
+        retained["alias"] = "app"
+        retained["slot"]["runtime"]["name"] = "warpdrive-fixture-app-1"
+        repeat._authority(self.composite, inputs.content_hash(self.lineage), self.lineage, CURRENT, TOOLS, ORIGIN)
+        retained["alias"] = "other"
+        with self.assertRaisesRegex(CandidateError, "generation differs"):
+            repeat._authority(self.composite, inputs.content_hash(self.lineage), self.lineage, CURRENT, TOOLS, ORIGIN)
+
     def test_wrong_c_image_fails_before_docker_or_output(self):
         with self.assertRaisesRegex(CandidateError, "Distinct immutable C"):
             self.create(candidate_web_image_id=self.assembly["activeWebImage"]["imageId"])

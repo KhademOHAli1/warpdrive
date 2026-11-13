@@ -110,11 +110,14 @@ def _verify_lineage(lineage, lineage_sha256, web, backend):
                                                 "testedConfigDigest", "authoritySha256"}),
                 "Installed generation custody is incomplete")
         installed, runtime = item["provenance"], item["slot"]["runtime"]
+        name, alias = runtime.get("name"), item["alias"]
+        compose_app = (key == "previous" and alias == "app" and _matches(NAME, name)
+                       and name.endswith("-app-1"))
         require(installed["repository"] == REPO and installed["revision"] == revision
                 and installed["manifestSha256"] == bundle["provenance"]["bundleManifestSha256"]
                 and installed["archiveSha256"] == bundle["provenance"]["archiveSha256"]
                 and _matches(inputs.HASH, installed["authoritySha256"]) and _matches(IMAGE_ID, installed["testedConfigDigest"])
-                and runtime.get("sourceRevision") == revision and runtime.get("name") == item["alias"],
+                and runtime.get("sourceRevision") == revision and (name == alias or compose_app),
                 "Installed generation differs from independently reconstructed artifact custody")
         if key == "active":
             require(installed["authoritySha256"] == web["publicationReceiptSha256"]
