@@ -22,5 +22,5 @@ export const CLAIM_LEASE_SECONDS = 120;
 export const RECONCILE_WINDOW_MS = 600_000;
 // Quota backoff (ops spec B3): 2s start.
 export const BACKOFF_START_MS = 2_000;
-// In-mail search input debounce (InboxSearchBar): batches keystrokes into one query.
+// Inbox workspace search debounce. Batches keystrokes into one query.
 export const INBOX_SEARCH_DEBOUNCE_MS = 250;
