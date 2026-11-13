@@ -167,7 +167,7 @@ def retrieve(oras, destination, *, kind, digest, size, layout=None):
 
 def publish(oras, path, source_path, *, kind, digest, size, observe_only=False):
     """Copy a verified layout once, then verify the tag, manifest and full remote payload."""
-    from registry_absence import confirm_absent
+    from registry_absence import precheck_custody_manifest
 
     raw = custody_manifest(kind, digest, size)
     immutable = manifest_digest(raw)
@@ -177,7 +177,8 @@ def publish(oras, path, source_path, *, kind, digest, size, observe_only=False):
         require(not observe_only and not os.path.lexists(path),
                 "Publication is unresolved; immutable tag was not observed")
         _verify_anonymous_denied(immutable)
-        confirm_absent(tagged, environment=dict(os.environ))
+        require(precheck_custody_manifest(raw, environment=dict(os.environ), use_write_scope=True) == "absent",
+                "Custody tag changed during authenticated precheck")
         require(prepare_layout(path, source_path, kind=kind, digest=digest, size=size) == immutable,
                 "Prepared custody manifest differs")
         write_metadata(path / "publication-intent.json", {"tag": tagged, "manifestDigest": immutable})

@@ -50,6 +50,10 @@ jobs:
       - name: Install attested ORAS
         id: oras
         uses: ./.github/actions/install-custody-oras
+      - name: Verify authenticated provider state without writing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B scripts/deployment/web_custody_workflow.py provider-check
       - name: Publish the three pinned custody objects
         env:
           GH_TOKEN: ${{ github.token }}

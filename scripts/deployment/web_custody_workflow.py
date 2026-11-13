@@ -15,9 +15,10 @@ import tempfile
 
 from candidate import REVISION, require
 from publication_gate import REPO, require_selected_main
+from registry_absence import precheck_custody_manifest
 from web_publication_gate import PublicGitHub
 from web_release_build import checkout, write_metadata
-from web_release_custody import REPOSITORY, custody_manifest, manifest_digest, publish, verified_bytes
+from web_release_custody import REPOSITORY, _verify_anonymous_denied, custody_manifest, manifest_digest, publish, verified_bytes
 
 WORKFLOW = "web-release-custody.yml"
 WORKFLOW_PATH = f".github/workflows/{WORKFLOW}"
@@ -208,7 +209,7 @@ def execute(api, identity, mode, oras, runner_temp, evidence):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("preflight", "bootstrap", "observe"))
+    parser.add_argument("mode", choices=("preflight", "provider-check", "bootstrap", "observe"))
     parser.add_argument("--oras", type=Path)
     args = parser.parse_args(argv)
     evidence = None
@@ -220,6 +221,16 @@ def main(argv=None):
         require_selected_main(api, REPO, identity[0])
         if args.mode == "preflight":
             preflight(api, identity, runner_temp)
+            return 0
+        if args.mode == "provider-check":
+            preflight(api, identity, runner_temp, staged=True)
+            with registry_auth(runner_temp):
+                for _, kind, digest, size, manifest in selected_objects():
+                    _verify_anonymous_denied(manifest)
+                    state = precheck_custody_manifest(custody_manifest(kind, digest, size),
+                                                      environment=dict(os.environ), use_write_scope=True)
+                    print(f"Verified custody provider status: {state}", flush=True)
+            require_selected_main(api, REPO, identity[0])
             return 0
         require(args.oras is not None and args.oras.is_absolute() and not args.oras.is_symlink()
                 and args.oras.parent.parent == runner_temp and args.oras.name == "oras"
