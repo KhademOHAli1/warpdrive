@@ -74,11 +74,23 @@ class RehearsalOwnershipTests(unittest.TestCase):
     def test_sdk_css_proof_rejects_a_changed_backend_or_other_web_inputs(self):
         web = {"profile": "fixture", "context": {}, "pinnedInputs": {}, "helperEntries": [], "helperGraphInputs": [],
                "sdkImports": {}, "staticWebInputCount": 4, "inputSha256": "old"}
-        baseline = {"web": web, "backendInputs": {"worker": "unchanged"}}
-        current = {"web": {**web, "inputSha256": "new"}, "backendInputs": baseline["backendInputs"]}
+        baseline = {"schemaVersion": 1, "web": web, "backendInputs": {"worker": "unchanged"}}
+        current = {**baseline, "web": {**web, "inputSha256": "new"}}
         with patch("web_release_rehearsal.validate_web_sdk_full_receipt"):
             self.assertEqual(_sdk_delta(baseline, current, self.revision)["buildComponents"], ["web"])
             with self.assertRaisesRegex(RehearsalError, "changed retained backend inputs"):
                 _sdk_delta(baseline, {**current, "backendInputs": {"worker": "changed"}}, self.revision)
             with self.assertRaisesRegex(RehearsalError, "changed other Web inputs"):
                 _sdk_delta(baseline, {**current, "web": {**current["web"], "sdkImports": {"changed": []}}}, self.revision)
+
+    def test_sdk_css_proof_retains_versioned_bindings(self):
+        web = {"profile": "fixture", "sdkBindings": {"src/components/ui/Switch.tsx": []},
+               "importPolicySha256": "policy", "inputSha256": "old", "gitInventorySha256": "old"}
+        baseline = {"schemaVersion": 2, "web": web, "backendInputs": {"worker": "unchanged"}}
+        current = {**baseline, "web": {**web, "inputSha256": "new", "gitInventorySha256": "new"}}
+        with patch("web_release_rehearsal.validate_web_sdk_full_receipt"):
+            self.assertEqual(_sdk_delta(baseline, current, self.revision)["buildComponents"], ["web"])
+            with self.assertRaisesRegex(RehearsalError, "changed other Web inputs"):
+                _sdk_delta(baseline, {**current, "schemaVersion": 1}, self.revision)
+            with self.assertRaisesRegex(RehearsalError, "changed other Web inputs"):
+                _sdk_delta(baseline, {**current, "web": {**current["web"], "sdkBindings": {}}}, self.revision)

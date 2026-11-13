@@ -1,10 +1,9 @@
 # Import mapping review
 
-The preview offers a read-only review of the mapping that produced its validation counts.
-Changing the mapping requires starting a new import. This resets the local wizard only;
-the original uploaded batch, validated mapping, and counts remain in import history.
-Leaving the wizard also leaves the batch intact. Preparation or validation already queued
-may finish. Neither control cancels a background job, and neither starts a commit.
+Use **Review mapping** in **Preview** to inspect the mapping behind the validation
+counts. To change it, start a new import. The original batch and its validated
+mapping stay in import history. A queued preparation or validation can finish
+after you leave the wizard. Select **Import** to submit the validated rows.
 
 The client prevents mapping edits while a mapping request is pending and prevents duplicate
 commit requests or restarting the wizard while a commit request is pending. Query failures
@@ -18,12 +17,11 @@ from the result endpoint rather than inferred from the commit enqueue response.
 would retain values derived from the old mapping. Its mapping is also loaded before the
 transaction that claims validation.
 
-Commit authorization currently checks `ready` before enqueueing. The worker claims the
-batch later in `src/features/import/batch.ts`. Jobs in
-`src/features/import/jobRunner.ts` carry a batch ID and use that ID as their singleton key.
-Resetting an existing batch to accept a mapping would allow an old queued commit to claim a
-later `ready` state, or an old validation attempt to use an earlier mapping. A client Back
-button cannot resolve those races.
+Commit authorization checks `ready` before enqueueing. The worker claims the batch
+in `src/features/import/batch.ts`. Jobs in `src/features/import/jobRunner.ts` carry
+the batch ID and use it as the singleton key. Reopening a validated batch for
+mapping could let a queued commit claim a later `ready` state or a queued
+validation use an older mapping.
 
 ## Separate lifecycle extension
 

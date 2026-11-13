@@ -1,7 +1,10 @@
 # Saved-view definition compatibility
 
-SP-03.1 candidate implementation: compatible decoding and stored-view read/recovery gating.
-The current application-source checkpoint is `c655b8e3aa0d9aada5ac3c533bef13688b8ec700`.
+On protected main as reviewed on 13 November 2026, People, Organizations, and
+Leads can save supported built-in columns and sorting in a versioned view.
+The [presentation contract](saved-view-presentation-contract.md) covers that
+increment. For SP-03.1, the original decoder and read/recovery evidence below
+is tied to checkpoint `c655b8e3aa0d9aada5ac3c533bef13688b8ec700`.
 Source, unit/component/cache checks, isolated PostgreSQL routes and the declared synthetic native
 journey establish the evidence below. Retained-installation migration, full revocation/export
 coverage, human native-language review, pilot acceptance and production operation remain separate
@@ -24,8 +27,9 @@ gates. [Checkpoint verification](verification.md) records the full run and earli
   stored-read routes now use `listCompatibleSavedFilterViews` and `storedViewDefinition` instead.
 - `savedFilterActions.ts` validates new and updated bare definitions against the row's target
   entity. Board, deal-list and other entity-list clients consume the parsed definition. No automatic
-  persistence rewrite is performed by compatibility reads. Existing create/update services still
-  author bare definitions; V1 encoding is available but is not silently enabled for writes.
+  persistence rewrite is performed by compatibility reads. Callers can save
+  bare definitions. The shared save-view dialog writes a V1 envelope when it
+  captures a supported presentation.
 
 This is a source inventory, not an assertion that all installed definitions match these examples.
 An authorized, bounded inventory of retained rows is still needed before enabling compatibility
@@ -71,12 +75,13 @@ It does not mutate caller data or translate stored values.
 
 ## Presentation version boundary
 
-An optional, separately versioned `presentation: { "version": 1 }` reserves presentation evolution.
-Nonempty columns/sort data and other presentation versions currently return
-`unsupported-presentation`. No arbitrary column support is implied. Future columns and presentation
-sort need actual entity column registries, per-viewer field visibility, stable keys, persistence and
-conflict handling. Existing deal `definition.sort` continues through its established validator;
-there is no parallel active sort interpretation in this increment.
+The optional `presentation: { "version": 1 }` remains readable. People,
+Organizations, and Leads also accept a version 1 presentation with a
+`columns` list and `sort` object. The list must start with the entity's pinned
+column and contain unique keys from its built-in catalog. Sort fields are checked
+against the same entity's supported fields. Other presentation versions or
+unsupported columns and sort fields return `unsupported-presentation`. Deal
+views still use the established `definition.sort` validator.
 
 Sharing, membership and interface locale are intentionally outside the envelope. Decoding a shared
 view never executes it with its author's authority. A successful decode does not establish access
@@ -153,8 +158,8 @@ see [verification history](verification.md#earlier-unsuccessful-slice-wide-attem
 ## Remaining gates
 
 1. Inventory real retained definitions, unknown keys and entities without destructive rewrites.
-2. Qualify versioned writes and old-client compatibility explicitly. This increment reads V1 but
-   does not change existing write format or silently reinterpret presentation columns/sort.
+2. Verify versioned writes and old-client compatibility against retained
+   installations, including cases with unsupported or removed presentation fields.
 3. Exercise permission changes, field loss, server-side export/search/cache/realtime surfaces and
    shared-view contributing records under each executing viewer's current authority. Decoding
    and sharing definitions never grant record access.

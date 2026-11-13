@@ -1,0 +1,24 @@
+{
+  "title": "Features",
+  "defaultOpen": true,
+  "pages": [
+    "pipeline",
+    "deal-workspace",
+    "leads",
+    "contacts",
+    "activities",
+    "regional-settings",
+    "automations",
+    "email",
+    "enrichment",
+    "import",
+    "dashboard",
+    "notifications",
+    "search",
+    "saved-filters",
+    "collaboration",
+    "files",
+    "keyboard-shortcuts",
+    "mcp"
+  ]
+}

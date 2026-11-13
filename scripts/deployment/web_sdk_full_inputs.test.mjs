@@ -27,6 +27,9 @@ const CONTEXT = {
 const BACKEND = ["worker", "realtime", "migrator"];
 const PAGE = "src/app/page.tsx";
 const CARD = "src/components/Card.tsx";
+const SWITCH = "src/components/ui/Switch.tsx";
+const SWITCH_IMPORT = "@ui-sdk/react/switch";
+const SWITCH_CLIENT = `"use client"; import { Switch as SdkSwitch, SwitchThumb } from "${SWITCH_IMPORT}"; export function Card() { return <SdkSwitch><SwitchThumb /></SdkSwitch>; }`;
 const CLIENT = '"use client"; import { Menu } from "@ui-sdk/react/menu"; export const Card = Menu;';
 
 function fixture(t) {
@@ -79,6 +82,8 @@ function fixture(t) {
     "deploy/images/Web.Dockerfile",
     "tools/web-ui/package.json",
     "tools/web-ui/bun.lock",
+    "scripts/deployment/web-sdk-import-policy.json",
+    "scripts/deployment/web-sdk-controls-import-policy.json",
     "scripts/build-workers.mjs",
     "scripts/deployment/component_inputs.mjs",
     "scripts/deployment/web_inputs.mjs",
@@ -211,4 +216,169 @@ void test("untracked helper resolution and modified backend bytes hidden from Gi
   hidden.git("update-index", "--assume-unchanged", path);
   hidden.put(path, "export const backend = 2;");
   await assert.rejects(hidden.sdk(revision), /differs from the selected Git blob/u);
+});
+
+void test("canonical Switch produces versioned named binding evidence alongside the historical pilot", async (t) => {
+  const f = fixture(t);
+  f.put(
+    CARD,
+    CLIENT.replace("export const Card = Menu;", "export function Card() { return <Menu />; }"),
+  );
+  f.put(SWITCH, "export const Card = () => null;");
+  f.put(
+    PAGE,
+    'import {Card} from "@/components/Card"; import {Card as SwitchCard} from "@/components/ui/Switch"; export default [Card, SwitchCard];',
+  );
+  const baseline = await f.sdk(f.commit());
+  assert.equal(baseline.schemaVersion, 1);
+  assert.equal(Object.hasOwn(baseline.web, "sdkBindings"), false);
+  f.put(SWITCH, SWITCH_CLIENT);
+  const successor = await f.sdk(f.commit());
+  assert.equal(successor.schemaVersion, 2);
+  assert.deepEqual(successor.backendInputs, baseline.backendInputs);
+  assert.deepEqual(successor.web.sdkImports, {
+    [CARD]: ["@ui-sdk/react/menu"],
+    [SWITCH]: [SWITCH_IMPORT],
+  });
+  assert.deepEqual(successor.web.sdkBindings[SWITCH], [
+    { specifier: SWITCH_IMPORT, exported: "Switch", local: "SdkSwitch" },
+    { specifier: SWITCH_IMPORT, exported: "SwitchThumb", local: "SwitchThumb" },
+  ]);
+  assert.equal(
+    successor.web.importPolicySha256,
+    createHash("sha256")
+      .update(readFileSync(join(REPOSITORY, "scripts/deployment/web-sdk-import-policy.json")))
+      .digest("hex"),
+  );
+  assert.equal(successor.deploymentAuthorized, false);
+  f.put(CARD, CLIENT.replace("{ Menu }", "{ Undocumented as Menu }"));
+  await assert.rejects(f.sdk(f.commit()), /Unreviewed Web SDK import/u);
+});
+
+void test("the Switch SDK cannot enter other UI files or a helper/backend closure", async (t) => {
+  const f = fixture(t);
+  f.put(CARD, SWITCH_CLIENT);
+  await assert.rejects(f.sdk(f.commit()), /Unreviewed Web SDK import/u);
+  f.put(CARD, 'export {Card} from "@/components/ui/Switch";');
+  f.put(SWITCH, SWITCH_CLIENT);
+  const baseline = f.commit();
+  for (const entry of ["src/entrypoints/worker.ts", "scripts/auth-operator.ts"]) {
+    f.put(entry, 'export {Card} from "@/components/ui/Switch";');
+    await assert.rejects(
+      f.sdk(f.commit()),
+      /not a declared production dependency: @ui-sdk\/react/u,
+    );
+    f.git("reset", "--hard", baseline);
+  }
+});
+
+void test("Checkbox and Quick Add Combobox independently select v3 without requiring Switch", async (t) => {
+  const f = fixture(t);
+  const checkbox = "src/components/ui/Checkbox.tsx";
+  const combobox = "src/components/ui/SdkCombobox.tsx";
+  const checkboxImport = "@ui-sdk/react/checkbox";
+  const comboImport = "@ui-sdk/react/combobox";
+  f.put(
+    checkbox,
+    `"use client"; import { Checkbox } from "${checkboxImport}"; export function Card() { return <Checkbox />; }`,
+  );
+  f.put(
+    combobox,
+    `"use client"; import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput,
+    ComboboxItem, ComboboxList, ComboboxTrigger } from "${comboImport}";
+    export function Card() { return <Combobox><ComboboxTrigger/><ComboboxContent><ComboboxInput/><ComboboxList><ComboboxItem/><ComboboxEmpty/></ComboboxList></ComboboxContent></Combobox>; }`,
+  );
+  const unused = await f.sdk(f.commit());
+  assert.equal(unused.schemaVersion, 1);
+  for (const [name, path, specifier] of [
+    ["Checkbox", checkbox, checkboxImport],
+    ["SdkCombobox", combobox, comboImport],
+  ]) {
+    f.put(CARD, `export { Card } from "@/components/ui/${name}";`);
+    const selected = await f.sdk(f.commit());
+    assert.equal(selected.schemaVersion, 3);
+    assert.deepEqual(selected.web.sdkImports, { [path]: [specifier] });
+    assert.deepEqual(selected.backendInputs, unused.backendInputs);
+    assert.equal(
+      selected.web.importPolicySha256,
+      createHash("sha256")
+        .update(
+          readFileSync(join(REPOSITORY, "scripts/deployment/web-sdk-controls-import-policy.json")),
+        )
+        .digest("hex"),
+    );
+  }
+  f.put(SWITCH, SWITCH_CLIENT);
+  f.put(
+    CARD,
+    `import { Card as A } from "@/components/ui/Checkbox"; import { Card as B } from "@/components/ui/SdkCombobox";
+    import { Card as C } from "@/components/ui/Switch"; export function Card() { return <><A/><B/><C/></>; }`,
+  );
+  const all = await f.sdk(f.commit());
+  assert.equal(all.schemaVersion, 3);
+  assert.deepEqual(all.web.sdkImports, {
+    [checkbox]: [checkboxImport],
+    [combobox]: [comboImport],
+    [SWITCH]: [SWITCH_IMPORT],
+  });
+  const baseline = f.git("rev-parse", "HEAD");
+  for (const [entry, leaf] of [
+    ["src/entrypoints/worker.ts", "Checkbox"],
+    ["scripts/auth-operator.ts", "SdkCombobox"],
+  ]) {
+    f.put(entry, `export { Card } from "@/components/ui/${leaf}";`);
+    await assert.rejects(
+      f.sdk(f.commit()),
+      /not a declared production dependency: @ui-sdk\/react/u,
+    );
+    f.git("reset", "--hard", baseline);
+  }
+});
+
+void test("the reviewed dialog remains a v1 import until a registered control selects v3", async (t) => {
+  const f = fixture(t);
+  const dialog = "src/components/ui/SdkDialog.tsx";
+  const source =
+    '"use client"; import { DialogBackdrop } from "@ui-sdk/react/dialog"; export function Card() { return <DialogBackdrop />; }';
+  f.put(dialog, source);
+  f.put(CARD, 'export { Card } from "@/components/ui/SdkDialog";');
+  assert.equal((await f.sdk(f.commit())).schemaVersion, 1);
+
+  f.put(SWITCH, SWITCH_CLIENT);
+  f.put(
+    CARD,
+    'import { Card as A } from "@/components/ui/SdkDialog"; import { Card as B } from "@/components/ui/Switch"; export function Card() { return <><A/><B/></>; }',
+  );
+  await assert.rejects(
+    f.sdk(f.commit()),
+    /Unreviewed Web SDK import in src\/components\/ui\/SdkDialog\.tsx/u,
+  );
+
+  const checkbox = "src/components/ui/Checkbox.tsx";
+  f.put(
+    checkbox,
+    '"use client"; import { Checkbox } from "@ui-sdk/react/checkbox"; export function Card() { return <Checkbox />; }',
+  );
+  f.put(
+    CARD,
+    'import { Card as A } from "@/components/ui/SdkDialog"; import { Card as B } from "@/components/ui/Checkbox"; export function Card() { return <><A/><B/></>; }',
+  );
+  const v3 = await f.sdk(f.commit());
+  assert.equal(v3.schemaVersion, 3);
+  assert.deepEqual(v3.web.sdkBindings[dialog], [
+    { specifier: "@ui-sdk/react/dialog", exported: "DialogBackdrop", local: "DialogBackdrop" },
+  ]);
+  f.put(
+    CARD,
+    source
+      .replace("return <DialogBackdrop />", "return <><DialogBackdrop/><B/></>")
+      .replace(
+        "export function",
+        'import {Card as B} from "@/components/ui/Checkbox"; export function',
+      ),
+  );
+  await assert.rejects(
+    f.sdk(f.commit()),
+    /Unreviewed Web SDK import in src\/components\/Card\.tsx/u,
+  );
 });
