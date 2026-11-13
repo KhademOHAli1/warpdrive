@@ -83,3 +83,34 @@ association and verified rollback procedure without changing the upstream projec
 Cloudflare provides [production rollback](https://developers.cloudflare.com/pages/configuration/rollbacks/)
 within a project. A move between projects requires a separate rollback of the hostname
 association and its DNS record.
+
+## Retire the old docs after cutover
+
+Once the live checks pass and the operator no longer needs the old deployment for
+rollback, disable automatic builds and deployment hooks on a legacy docs project
+controlled by the current maintainers. If that project serves only the legacy docs,
+retire its public preview and `pages.dev` URLs as well. Cloudflare provides
+[branch deployment controls](https://developers.cloudflare.com/pages/configuration/branch-build-controls/)
+for managing automatic deployments.
+
+For a shared or upstream project, retire the Warpdrive docs association and ask its
+owner to handle the remaining endpoints. Keep the marketing and CRM hostname
+associations outside this change. Record the endpoints retired and verify that they
+no longer serve the old docs.
+
+## Repository ownership
+
+| Repository     | Owns                                                                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Warpdrive      | CRM, public guides under `docs-site/docs/`, and their images under `docs-site/public/img/`. Operator guides and evidence stay in the repository documentation. |
+| Docs renderer  | Fumadocs, its dependency lock, theme, search, export checks, and the static artifact for `docs.warpdrivecrm.com`. Hosting cutover remains pending.             |
+| Marketing site | The current `site/` package and its dependency lock remain in Warpdrive. A separate repository and hosting migration will be considered independently.         |
+
+The renderer stages a reviewed Warpdrive commit and records the content commit,
+renderer commit and export digest together. Keep edit links pointing to the source
+guides in Warpdrive. Qualify each hosting preview before moving its hostname.
+
+Warpdrive retains the marketing and docs CI contexts on `main`. Preserve equivalent
+checks while changing CI or repository rules. Coordinate removal of website folders
+from the CRM Docker inputs or Tailwind scanning with the Web release owner, including
+the input policy and retained-image checks.

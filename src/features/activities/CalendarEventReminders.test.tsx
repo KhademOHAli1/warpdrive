@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
@@ -143,10 +144,11 @@ function open(editing?: EditableActivity) {
   );
   return close;
 }
-function customize() {
-  fireEvent.click(screen.getByRole("button", { name: "Event calendar" }));
-  fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
-  fireEvent.click(screen.getByRole("checkbox", { name: "Use my calendar defaults" }));
+async function customize() {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Event calendar" }));
+  await user.click(screen.getByRole("button", { name: "Reminders" }));
+  await user.click(screen.getByRole("checkbox", { name: "Use my calendar defaults" }));
 }
 function changeMinutes(value: string) {
   const minutes = screen.getByLabelText("Minutes before the event for reminder 1");
@@ -160,7 +162,7 @@ it("saves a collapsed explicit no-reminder override with a new event", async () 
     target: { value: "New" },
   });
   expect(screen.queryByRole("button", { name: "Reminders" })).not.toBeInTheDocument();
-  customize();
+  await customize();
   fireEvent.click(screen.getByRole("button", { name: "Remove reminder 1" }));
   fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -180,7 +182,7 @@ it("saves a collapsed explicit no-reminder override with a new event", async () 
 });
 it("writes only the current user's preference when shared event fields are unchanged", async () => {
   const close = open(stored);
-  customize();
+  await customize();
   changeMinutes("30");
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() =>
@@ -209,7 +211,7 @@ it("writes only the current user's preference when shared event fields are uncha
 });
 it("sends event and own reminder edits together for one transactional save", async () => {
   open(stored);
-  customize();
+  await customize();
   changeMinutes("45");
   fireEvent.change(screen.getByRole("textbox", { name: "Event title" }), {
     target: { value: "Updated" },
@@ -238,7 +240,7 @@ it("sends event and own reminder edits together for one transactional save", asy
 });
 it("keeps an invalid reminder draft through collapse and prevents accidental event save", async () => {
   open(stored);
-  customize();
+  await customize();
   changeMinutes("40321");
   fireEvent.click(screen.getByRole("button", { name: "Reminders" }));
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -258,7 +260,7 @@ it.each([false, true])(
   async (existing) => {
     const close = open(existing ? stored : undefined);
     if (existing) {
-      customize();
+      await customize();
       changeMinutes("30");
     } else
       fireEvent.change(screen.getByRole("textbox", { name: "Event title" }), {

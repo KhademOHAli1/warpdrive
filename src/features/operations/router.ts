@@ -45,6 +45,19 @@ export const operationsRouter = router({
         readOperationsIncidents(tx, installationId, bounded, input.openOnly, input.cursor),
       ),
     ),
+  bell: protectedProcedure.query(({ ctx, signal }) =>
+    withOperationsAdminRead(ctx, signal, async (tx, installationId, bounded) => {
+      const { items } = await readOperationsIncidents(
+        tx,
+        installationId,
+        bounded,
+        true,
+        undefined,
+        1,
+      );
+      return { hasOpenIncidents: items.length > 0 };
+    }),
+  ),
   events: protectedProcedure
     .input(z.strictObject({ cursor: historyCursor.optional() }))
     .query(({ ctx, input, signal }) =>

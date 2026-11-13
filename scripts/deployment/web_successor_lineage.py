@@ -4,6 +4,7 @@ from copy import deepcopy
 
 from candidate import CandidateError, IMAGE_ID, REVISION, require
 from component_inputs import HASH, canonical, content_hash
+from installed_core_lineage import verify_core_acceptance_records
 from installed_web_chain import REPOSITORY, _PROVENANCE_KEYS
 from installed_web_runtime import ALIAS
 from web_composite_baseline import RETAINED
@@ -65,7 +66,8 @@ def _original_backend(backend, web_artifacts):
             "Both Web artifact configs and retained backend configs must be distinct")
 
 
-def verify_web_successor_lineage(lineage, *, expected_lineage_sha256, accepted_plan, active_web, previous_web, original_backend):
+def verify_web_successor_lineage(lineage, *, expected_lineage_sha256, accepted_plan, active_web, previous_web, original_backend,
+                                 core_acceptance=None, core_projection=None, expected_core_acceptance_sha256=None):
     """Verify the next installed chain from independently authenticated inputs.
 
     `accepted_plan` is the exact already accepted controller journal plan. The
@@ -81,9 +83,22 @@ def verify_web_successor_lineage(lineage, *, expected_lineage_sha256, accepted_p
     except (SwitchConflict, KeyError, TypeError) as error:
         raise CandidateError("Exact accepted installed Web plan required") from error
     require(chain["acceptedPlanSha256"] == content_hash(plan) and chain["acceptedOperationId"] == plan["operationId"]
-            and chain["targetKey"] == plan["targetKey"] and chain["backendFingerprint"] == plan["backendFingerprint"],
+            and chain["targetKey"] == plan["targetKey"],
             "Installed Web chain does not identify the exact accepted plan")
-    active = _artifact(active_web, chain["active"], plan["after"])
+    if core_acceptance is None and core_projection is None and expected_core_acceptance_sha256 is None:
+        require(chain["backendFingerprint"] == plan["backendFingerprint"], "Installed Web chain does not identify the exact accepted plan")
+        active_slot = plan["after"]
+    else:
+        require(type(core_acceptance) is dict and type(core_projection) is dict
+                and _matches(HASH, expected_core_acceptance_sha256), "Independently pinned Core acceptance and projection required")
+        try:
+            projected = verify_core_acceptance_records(chain=chain, accepted_plan=plan, accepted=core_acceptance, seal=core_projection,
+                activation_operation_id=core_acceptance.get("activationOperationId"),
+                expected_activation_lineage_sha256=expected_core_acceptance_sha256)
+        except (SwitchConflict, KeyError, TypeError) as error:
+            raise CandidateError("Exact accepted Core projection required") from error
+        active_slot = projected.accepted_pointer["slot"]
+    active = _artifact(active_web, chain["active"], active_slot)
     previous = _artifact(previous_web, chain["previous"], plan["before"])
     require(chain["active"]["receiptSha256"] != chain["previous"]["receiptSha256"]
             and all(active[key] != previous[key] for key in ("manifestSha256", "archiveSha256", "testedConfigDigest", "authoritySha256")),

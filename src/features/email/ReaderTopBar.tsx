@@ -3,19 +3,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -68,6 +58,8 @@ export function ReaderTopBar({
     { enabled: !embedded },
   );
   const [busy, setBusy] = useState(false);
+  const trashInFlight = useRef(false);
+  const canTrash = mailCapabilities?.trash !== false;
 
   // Archive/Delete both remove the thread from its list, then navigate to /inbox. The list feeds and
   // counts are cached (30s staleTime), so invalidate them or the just-removed row remounts stale.
@@ -94,27 +86,42 @@ export function ReaderTopBar({
     } else reportError(res.error.id);
   }
 
-  async function del(): Promise<void> {
+  async function moveToTrash(): Promise<void> {
+    if (!canManage || !canTrash || busy || trashInFlight.current) return;
+    trashInFlight.current = true;
     setBusy(true);
-    const res = await trashThreadAction(readCsrfToken(), { threadId });
-    setBusy(false);
-    // A trashed thread leaves every folder, so return to the inbox on success; a denied/failed
-    // trash surfaces the error id instead of silently no-opping (feedback-surface-mutation-failures).
-    if (res.ok) {
+    try {
+      const res = await trashThreadAction(readCsrfToken(), { threadId });
+      // A trashed thread leaves every folder. Surface an error if trash was denied or failed.
+      if (!res.ok) {
+        reportError(res.error.id);
+        return;
+      }
       invalidateFeeds();
-      // Drop the reader's cached thread so a Back navigation re-fetches (getThread now 404s on a
-      // trashed thread) instead of re-rendering the deleted conversation from a 30s-stale cache; and
-      // REPLACE rather than push so the deleted reader route is not left in history at all.
+      // Clear the cached thread and replace its URL so Back cannot reopen the trashed thread.
       void utils.email.thread.get.invalidate();
       if (embedded) onBack?.();
       else router.replace("/inbox");
-    } else reportError(res.error.id);
+    } finally {
+      trashInFlight.current = false;
+      setBusy(false);
+    }
   }
 
   function goTo(id: string | null): void {
     if (id === null) return;
     router.push(`/inbox/${id}?folder=${folder}`);
   }
+
+  const deleteButton = (
+    <button
+      type="button"
+      disabled={busy || !canTrash}
+      className="rounded-md border border-border px-3 py-1 text-sm text-destructive transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
+    >
+      {E.delete}
+    </button>
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
@@ -198,33 +205,21 @@ export function ReaderTopBar({
             />
           )}
 
-          <AlertDialog>
-            <MailOperationHint enabled={mailCapabilities?.trash !== false}>
-              <AlertDialogTrigger
-                disabled={busy || mailCapabilities?.trash === false}
-                className="rounded-md border border-border px-3 py-1 text-sm text-destructive transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
-              >
-                {E.delete}
-              </AlertDialogTrigger>
-            </MailOperationHint>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{E.deleteConfirmTitle}</AlertDialogTitle>
-                <AlertDialogDescription>{E.deleteConfirmBody}</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-md border border-border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]">
-                  {E.deleteCancel}
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => void del()}
-                  className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-transform hover:bg-destructive/90 active:scale-[0.96]"
-                >
-                  {E.deleteConfirmAction}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {canTrash ? (
+            <ConfirmDialog
+              key={threadId}
+              trigger={deleteButton}
+              title={E.deleteConfirmTitle}
+              description={E.deleteConfirmBody}
+              cancelLabel={E.deleteCancel}
+              confirmLabel={E.deleteConfirmAction}
+              destructive
+              pending={busy}
+              onConfirm={() => void moveToTrash()}
+            />
+          ) : (
+            <MailOperationHint enabled={false}>{deleteButton}</MailOperationHint>
+          )}
         </div>
       )}
     </div>

@@ -481,22 +481,30 @@ describe("sidebar submenu behavior", () => {
     },
   );
 
-  test("the Contacts arrow separately reveals and hides children", () => {
+  test("the Contacts arrow reveals and hides children in keyboard order", async () => {
+    const user = userEvent.setup();
     setViewport(true);
     render(<LeftNav />);
-    fireEvent.click(screen.getByRole("button", { name: "Expand Contacts navigation" }));
-    expect(
-      screen
-        .getByRole("button", { name: "Collapse Contacts navigation" })
-        .getAttribute("aria-expanded"),
-    ).toBe("true");
-    expect(screen.getByRole("link", { name: "People" }).getAttribute("href")).toBe(
-      "/contacts/people",
-    );
+    const disclosure = screen.getByRole("button", { name: "Expand Contacts navigation" });
+    disclosure.focus();
+    await user.keyboard("{Enter}");
+    expect(disclosure.getAttribute("aria-expanded")).toBe("true");
+    const people = screen.getByRole("link", { name: "People" });
+    expect(people.getAttribute("href")).toBe("/contacts/people");
     expect(screen.getByRole("link", { name: "Organizations" }).getAttribute("href")).toBe(
       "/contacts/orgs",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Collapse Contacts navigation" }));
+    await user.tab();
+    expect(document.activeElement).toBe(people);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(disclosure);
+    await user.keyboard("{Enter}");
+    expect(disclosure.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(disclosure);
+    expect(people.closest("[inert]")).not.toBeNull();
+    expect(people.tabIndex).toBe(-1);
     expect(screen.queryByRole("link", { name: "People" })).toBeNull();
+    await user.tab();
+    expect(document.activeElement).not.toBe(people);
   });
 });

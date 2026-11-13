@@ -51,10 +51,14 @@ export function ListField({
           maxLength={2048}
           onChange={(event) => setEntry(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              add();
-            }
+            if (
+              event.key !== "Enter" ||
+              event.nativeEvent.isComposing ||
+              event.nativeEvent.keyCode === 229
+            )
+              return;
+            event.preventDefault();
+            add();
           }}
         />
         <Button

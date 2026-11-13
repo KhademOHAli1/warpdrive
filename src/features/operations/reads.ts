@@ -136,6 +136,7 @@ export async function readOperationsIncidents(
   signal: AbortSignal,
   openOnly: boolean,
   cursor?: OperationsHistoryCursor,
+  limit = OPERATIONS_PAGE_SIZE,
 ) {
   if (installationId === null) return { items: [], nextCursor: null };
   const after = cursor
@@ -159,7 +160,7 @@ export async function readOperationsIncidents(
       ),
     )
     .orderBy(desc(operationsIncidents.updatedAt), desc(operationsIncidents.id))
-    .limit(OPERATIONS_PAGE_SIZE);
+    .limit(limit);
   signal.throwIfAborted();
   const last = rows.at(-1)?.incident;
   return {
@@ -175,9 +176,7 @@ export async function readOperationsIncidents(
       recoveredAt: incident.recoveredAt?.toISOString() ?? null,
     })),
     nextCursor:
-      rows.length === OPERATIONS_PAGE_SIZE && last
-        ? { at: last.updatedAt.toISOString(), id: last.id }
-        : null,
+      rows.length === limit && last ? { at: last.updatedAt.toISOString(), id: last.id } : null,
   };
 }
 

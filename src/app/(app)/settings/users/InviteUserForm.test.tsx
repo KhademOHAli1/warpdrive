@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 
@@ -29,6 +30,28 @@ describe("InviteUserForm inline validation", () => {
   it("opts out of native browser validation", () => {
     const { container } = render(<InviteUserForm onInvited={() => {}} />);
     expect(container.querySelector("form")).toHaveAttribute("novalidate");
+  });
+
+  it("toggles administrator on Enter without sending an invitation", async () => {
+    const user = userEvent.setup();
+    inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-1" });
+    render(<InviteUserForm viewerIsAdmin onInvited={() => {}} />);
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "New Person" } });
+    const administrator = screen.getByRole("switch", { name: /admin/i });
+    administrator.focus();
+    await user.keyboard("{Enter}");
+    expect(administrator).toBeChecked();
+    expect(inviteUserAction).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /invite/i }));
+    await vi.waitFor(() =>
+      expect(inviteUserAction).toHaveBeenCalledExactlyOnceWith("tok", {
+        email: "new@example.com",
+        name: "New Person",
+        isAdmin: true,
+      }),
+    );
   });
 
   it("shows an inline error for a malformed email and does not call the action", async () => {

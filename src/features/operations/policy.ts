@@ -88,6 +88,13 @@ export function operationsObservationFreshness(
 ): OperationsFreshness {
   let observedAtMs: number | null = batch.batch.observedAtMs;
   if (observation.kind === "queue") observedAtMs = observation.sampledAtMs;
+  if (
+    (observation.kind === "feature" ||
+      observation.kind === "provider" ||
+      observation.kind === "heartbeat") &&
+    observation.sampledAtMs !== undefined
+  )
+    observedAtMs = observation.sampledAtMs;
   if (observation.kind === "recovery" && observation.state === "healthy")
     observedAtMs = observation.completedAtMs;
   return operationsFreshness(

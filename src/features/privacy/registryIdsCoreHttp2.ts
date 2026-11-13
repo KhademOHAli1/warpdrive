@@ -62,15 +62,30 @@ export const coreRoleQualificationIds2: string[] = [
 ];
 
 // Full entrypoint qualification is confined to the supplied owned scratch/loopback fixture.
-// delete:response removes a ServerResponse from a transient Set; listed SELECTs do not mutate.
+// delete:response removes a transient Set member; update:bytes/downloaded are in-memory SHA-256.
 export const coreHttpServiceQualificationIds2: string[] = [
+  "derived:scripts/deployment/recovery-postgres.harness.ts",
+  "external:scripts/deployment/recovery-postgres.harness.ts#fetch",
+  "objectNamespace:filesystem:scripts/deployment/recovery-postgres.harness.ts#readFileSync:markerPath",
+  "queue:recovery.fixture",
+  "sourceReview:scripts/deployment/recovery-postgres.harness.ts#1f2c80a4da2540e55c499b285a9dae756ceaf756253a173c226ff293b869dc18",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#insert:dynamic",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#query:BEGIN",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#query:CREATE TABLE public.recovery_forbidden(id integer)",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#query:ROLLBACK",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#query:SELECT current_setting('warpdrive.recovery_fixture', true) AS nonce",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#query:dynamic",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#send:queueName",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#update:bytes",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#update:downloaded",
+  "writer:scripts/deployment/recovery-postgres.harness.ts#write:dynamic",
   "derived:src/server/trpc/core-service.harness.ts",
   "external:src/server/trpc/core-service.harness.ts#fetch",
   "log:src/server/trpc/core-service.harness.ts#error",
   "log:src/server/trpc/core-service.harness.ts#warn",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#readFileSync:path",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#writeFileSync:dynamic",
-  "sourceReview:src/server/trpc/core-service.harness.ts#f7e3ad041e517349e87cb670de2548818c0150bc46a1b5c123025326d6929418",
+  "sourceReview:src/server/trpc/core-service.harness.ts#7c918265f88eb3209f18ed285cfb5df7121dedc01679fd34d3431853b5487d6e",
   "writer:src/server/trpc/core-service.harness.ts#delete:response",
   "writer:src/server/trpc/core-service.harness.ts#insert:dynamic",
   "writer:src/server/trpc/core-service.harness.ts#query:CREATE ROLE smoke_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public,pgboss TO smoke_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO smoke_runtime; GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO smoke_runtime; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO smoke_runtime;",

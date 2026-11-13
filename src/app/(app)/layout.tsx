@@ -107,6 +107,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                         userName={ctx.actor.name}
                         avatarUrl={ctx.actor.avatarUrl}
                         appearance={parseAppearance(prefs.ui.appearance)}
+                        showOperations={ctx.actor.type === "admin"}
                       />
                       <main
                         data-app-content

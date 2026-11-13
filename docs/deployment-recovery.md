@@ -10,7 +10,16 @@ repository's five local named volumes: `pgdata`, `miniodata`, `newsletter_upload
 `caddydata` and `caddyconfig`. PostgreSQL must use the ordinary data directory and have no
 external tablespaces. Bind-mounted configuration must be read-only and explicitly included
 in the approved configuration set. Shared PostgreSQL, remote Docker daemons, volume plugins,
-writable binds, symlinks and special source files are refused.
+writable data binds, symlinks and special source files are refused. The optional
+Operations Collector can bind an empty socket directory for its local transport.
+
+The fresh Compose qualification uses this five-volume profile. The Python recovery
+API also supports a separate typed installed profile. It inventories native
+PostgreSQL and object storage roots, the relay autosave, the watched ingress,
+named private credentials and protected state. Its observer must hold an exact
+stop witness and the restore must receive the independently admitted profile.
+The stock CLI uses the Compose observer. The typed profile has fixture coverage
+and still requires an installed topology observer for operational use.
 
 ## Operator sequence
 
@@ -20,8 +29,9 @@ writable binds, symlinks and special source files are refused.
    required. Two local copies do not prove independent custody. Preserve an externally held
    recovery credential and qualify its retrieval separately.
 2. Enter maintenance, drain and stop all writers and ingress using the reviewed installation
-   procedure. This includes Web, Worker, Realtime, engine, migrators and one-off jobs. Stop
-   PostgreSQL and MinIO cleanly. Feature switches and advisory locks do not provide this
+   procedure. This includes Web, Worker, Realtime, engine, migrators and one-off jobs,
+   plus standalone Core and host monitoring writers when present. Stop PostgreSQL and
+   MinIO cleanly. Feature switches and advisory locks do not provide this
    fence: tracking requests, passive outbox maintenance and existing upload URLs can write.
 3. Run `capture` using the actual inventory and a new private state directory and restore
    target. The tool independently inspects Docker and `pg_controldata`; a plan's claim that
@@ -61,6 +71,160 @@ raw environment or command stderr enter stdout or the public receipt. The privat
 directory contains sensitive effective configuration and recovery metadata and must remain
 protected.
 
+## Restore when the source host is unavailable
+
+Retain the private verified receipt and canonical `recovery-manifest.json`, the independently
+recorded SHA256 of the receipt, the exact original absolute snapshot member name for the
+manifest and a separate readback credential. The original member name is a label in the
+encrypted snapshot. Its original host path can be absent during restore.
+
+```sh
+python3 -B scripts/deployment/restore_recovery_set.py \
+  --receipt /private/readback/verified-receipt.json \
+  --receipt-sha256 "$WARPDRIVE_RECOVERY_RECEIPT_SHA256" \
+  --manifest /private/readback/recovery-manifest.json \
+  --original-manifest-member /var/lib/warpdrive/recovery/operation-a/recovery-manifest.json \
+  --restic /usr/local/bin/restic \
+  --repository sftp:backup@backup.example:/warpdrive \
+  --readback-password-file /private/readback/backup-password \
+  --restore-target /private/restore/operation-a \
+  --limits /private/readback/limits.json
+```
+
+The limits document uses the same complete object as the capture plan. The reader checks
+the exact repository, snapshot, embedded manifest and captured file inventory, then
+verifies bytes, mode and ownership in a new quarantine. Keep that quarantine private.
+Application startup and writer resumption require their own acceptance.
+
+For Operations monitoring, add `--monitor-handoff /private/readback/restore-handoff.json`
+and `--operations-installation-id "$WARPDRIVE_OPERATIONS_INSTALLATION_ID"` to the
+restore command. The verifier writes the handoff to a new private file only after
+verification succeeds. Record its SHA-256 on the verifier host and carry that pin
+through the trusted handoff with the independently recorded cold receipt pin.
+The handoff contains opaque identifiers, completion time, byte counts and digests.
+The verifier needs neither the collector socket nor the reporter signing key.
+
+An enrolled `recovery_verifier` source submits the handoff from the collector host.
+Use a private reporter configuration and an owned 0700 outbox dedicated to its
+source generation. Transfer the handoff as an owned 0400 or 0600 file.
+
+```sh
+python3 -B scripts/deployment/recovery_restore_monitor.py report \
+  --handoff /private/recovery-reporter/restore-handoff.json \
+  --handoff-sha256 "$WARPDRIVE_RESTORE_HANDOFF_SHA256" \
+  --receipt-sha256 "$WARPDRIVE_RECOVERY_RECEIPT_SHA256" \
+  --config /private/recovery-reporter/config.json \
+  --outbox /private/recovery-reporter/outbox
+```
+
+If acknowledgement is uncertain, use `--retry-pending` in place of `--handoff`
+with the same SHA-256 pins. The outbox keeps the exact pending sequence until the
+collector accepts it. Maintenance displays this result as **Restore bytes verified**.
+Application restore acceptance, off-host delivery, key custody and permission to
+resume writers each require their own evidence.
+
+The opt-in PostgreSQL fixture starts the restored cluster on a different local
+listener with the source paths unavailable. It exercises Warpdrive's credential
+decryption, pg-boss job readback and newsletter receipt admission against that
+cluster. The pending job stays unclaimed, an unknown newsletter operation stays
+unresolved, and the restored runtime role is denied DDL. The fixture also verifies
+the restored newsletter media bytes and rejects an incorrect encryption key.
+
+On Darwin arm64, the same fixture can include a checksum-pinned Silo executable from
+`RELEASE.2026-10-26T00-00-00Z`. Set `WARPDRIVE_RECOVERY_POSTGRES_FIXTURE=1`,
+`WARPDRIVE_RECOVERY_SILO_BIN` to the absolute executable path and
+`WARPDRIVE_RECOVERY_SILO_SHA256` to its verified digest. Run the
+`test_recovery_postgres.py` suite from `scripts/deployment`. Both Silo processes bind
+only to loopback. The test captures the stopped object store in the same encrypted
+snapshot, then proves restored attachment bytes and metadata through the application's
+download path, including anonymous and cross-actor denial. The fixture uses synthetic
+Silo root credentials. Installed credentials, Linux runtime and SSE/KMS remain separate
+qualification gates.
+
+Add `WARPDRIVE_RECOVERY_ENGINE_BIN` and `WARPDRIVE_RECOVERY_ENGINE_SHA256` for
+the checksum-pinned, patched Darwin arm64 Listmonk build to include the newsletter
+Engine. The same source cluster then contains the CRM and Engine databases, and
+the Engine uploads real media to the captured newsletter volume. Stop the source
+Engine, Silo and PostgreSQL before taking the single encrypted snapshot. From the
+independently restored data, boot the Engine in passive mode on its own loopback
+listener, using the restored restricted database role and API credential. The
+fixture rebinds only its local endpoints and media path, and makes a scheduled
+fixture campaign overdue. It verifies the restored media and suppression, the
+unchanged unknown Engine delivery receipt, and that a confirmed recipient's
+campaign stays scheduled beyond a full scan interval. The real Engine negotiates
+with the local SMTP sink, which records no message transaction. The fixture does
+not contact a provider or resume campaign delivery.
+
+The local readback fixtures use different Restic passwords and verify distinct key
+slots. They revoke the writer slot before independent restore. A separate fixture
+copy also verifies that revoking the reader slot leaves the writer usable. These
+fixtures use one local host and filesystem. Installed off-host storage and
+independent key custody have their own acceptance checks.
+
+The [newsletter restore smoke](../scripts/newsletters/restore-smoke.py) uses the
+patched Engine, loopback PostgreSQL and Mailpit. It stops the source Engine before
+dumping the databases and archiving media. The restored passive Engine serves the
+original media and retains suppression. An overdue campaign with a confirmed
+recipient remains scheduled across a full campaign scan interval, the CRM's
+unknown operation stays unresolved, and Mailpit remains empty.
+
+## Public availability observation
+
+Run `python3 -B scripts/deployment/check_public_availability.py app.example.com`
+from an independently operated host. Each invocation makes one bounded,
+certificate-validated HTTPS health request and emits one timestamped JSON
+observation. The exit status is 0 for healthy, 1 for observed failure and 2 for
+unknown. Throttling and local probe failure are unknown. Keep the observation
+and alerts on the observer host so an installation outage cannot suppress them.
+For a periodic check, add `--state-dir /private/availability` using an existing
+owned 0700 directory on that host. Two consecutive failures open one incident
+by default, and two consecutive healthy observations close it. A gap over three
+minutes resets the streak and expires the prior status. Uncertain observations
+keep an open incident unresolved. The output includes the latest
+transition and its timestamp so an independent alert runner can deduplicate it.
+The exit status describes the latest raw observation. The observer account can
+run the combined command once a minute to sample and attempt one delivery.
+Use a private 0600 or 0400 JSON destination configuration with `url` and `token`.
+Use `null` if the destination needs no bearer token.
+
+```sh
+python3 -B scripts/deployment/public_availability_tick.py app.example.com \
+  --state-dir /private/availability --config /private/availability/alerts.json
+```
+
+The combined command attempts one delivery even if recording the observation
+fails. It emits the sample, recording, delivery and staleness statuses. Exit 1
+indicates observed failure or held delivery. Exit 2 indicates an unknown or
+stale observation or a recording failure when delivery was successful or idle.
+Run a separate consumer on the observer host to drain events if the probe stops.
+
+```sh
+python3 -B scripts/deployment/check_public_availability.py read app.example.com \
+  --state-dir /private/availability
+python3 -B scripts/deployment/check_public_availability.py ack app.example.com \
+  --state-dir /private/availability --event-id "$ACCEPTED_EVENT_ID"
+```
+
+Run the delivery command on the observer host after configuring the separate
+HTTPS alert destination.
+
+```sh
+python3 -B scripts/deployment/deliver_public_availability.py app.example.com \
+  --state-dir /private/availability --config /private/availability/alerts.json
+```
+
+The command sends the oldest pending event with its stable `Idempotency-Key`.
+The endpoint must deduplicate that key and return HTTP 200 or 202 with
+`{"accepted":true,"eventId":"<same key>"}` after accepting the event durably.
+A timeout or mismatched reply keeps the event queued for the same ID on the next
+run. The queue holds 64 transitions and preserves them if another would overflow
+it. Schedule the probe and delivery independently so delivery can drain pending
+events during a target or probe outage. Delivery exits 1 when held and 2 when
+the observer is stale after delivery or an empty read. Configure the scheduler
+to surface those failures on the observer host. The local TLS fixture verifies
+the protocol with an isolated receiver. Independent host and destination setup
+are required for installed acceptance.
+
 ## Inventory and retained identity
 
 The plan has exactly these fields:
@@ -79,10 +243,17 @@ The source inventory includes whole cold PostgreSQL storage, including all datab
 roles/grants, pg-boss and migration/engine receipts; MinIO state; newsletter media; ingress
 state; approved configuration and accepted artifacts/journals. It also captures actual Docker
 runtime configuration and resolves mounted `_FILE` inputs, including database credentials,
-`TOKEN_ENCRYPTION_KEY`, `AUTH_SECRET`, OAuth/WS/webhook keys and provider configuration. The
-Core database DSN must resolve to the observed PostgreSQL service; an unrelated local volume
+`TOKEN_ENCRYPTION_KEY`, `AUTH_SECRET`, OAuth/WS/webhook keys and provider configuration.
+The observer refuses overlapping bind and volume sources on containers outside the installation.
+The Core database DSN must resolve to the observed PostgreSQL service; an unrelated local volume
 cannot stand in for an external database. Authority-affecting Core URI query options are
-refused. Listmonk key normalization and aliases are checked, and its effective
+refused. If a standalone Core container exists, include its exact stopped identity and
+runtime database configuration in the plan. Host-based writers require a separate stop
+witness. For the optional Compose Operations Collector, include its exact stopped
+identity and approved private read-only configuration bind. Its database must use the
+same observed bridge. Leave its dedicated socket directory empty and outside the
+captured roots. Keep the reporter outbox with its generation in the protected recovery
+inputs if a reporter is installed. Listmonk key normalization and aliases are checked, and its effective
 `LISTMONK_db__params` must be explicitly empty so a configuration-file fallback cannot change
 the database authority. Unknown legacy configuration holds the operation before capture.
 
@@ -92,6 +263,21 @@ PostgreSQL/MinIO/engine/application images in isolated restored volumes, decrypt
 credentials, or reconcile object references and provider receipts. Therefore
 `applicationRecoveryAccepted` remains false. Only reviewed installations whose external
 dependencies are independently inventoried can qualify a complete recovery set.
+
+The current plan schema covers the five named Compose volumes. The private installed
+Web slots and relay require a separate inventory profile. That profile needs exact
+slot and relay identities, both bridge memberships, stopped writer evidence under
+the release locks, and the accepted Caddy autosave and application-specific ingress
+route. Keep the empty relay socket directory outside the captured roots. Verify
+installed object storage and newsletter media from their actual mount inventories.
+`installed_cold_web_recovery.py` combines the exact stopped Web slots, relay and
+scoped Traefik route into one read-only witness under the existing release locks.
+It checks both Docker bridges and rejects duplicate aliases or external writable
+mounts. It returns the autosave and six named secret-file paths plus the pinned
+ingress route bytes for a separate protected copy. It needs a complete native
+inventory and an enclosing hold on host writers. The typed capture API requires
+that witness alongside the complete storage, writer and ingress inventory. An
+operational observer for that complete installed topology remains to be qualified.
 
 Local filesystem repositories are admitted for rehearsal only. Even for an SFTP destination,
 readback from the same machine cannot establish an independently observed off-host result.

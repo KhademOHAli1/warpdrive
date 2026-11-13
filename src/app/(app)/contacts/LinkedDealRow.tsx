@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type React from "react";
 import type { DealStatus } from "@/constants/dealStatus";
-import { DealStatusBadge } from "@/features/deal-workspace/DealStatusBadge";
+import { DealStatusBadge } from "@/features/deals/DealStatusBadge";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 
 export interface LinkedDealRowProps {
@@ -27,7 +27,7 @@ export function LinkedDealRow({ deal }: LinkedDealRowProps): React.ReactNode {
         <span className="min-w-0 truncate text-primary group-hover:underline">
           <bdi dir="auto">{deal.title}</bdi>
         </span>
-        <DealStatusBadge status={deal.status} />
+        <DealStatusBadge status={deal.status} presentation="detail" />
       </Link>
     </li>
   );

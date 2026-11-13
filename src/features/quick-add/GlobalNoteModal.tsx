@@ -1,8 +1,8 @@
 "use client";
-import type React from "react";
+import type { ComponentProps, ReactNode, RefObject } from "react";
 import { useMemo, useState } from "react";
-import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SdkCombobox } from "@/components/ui/SdkCombobox";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/SdkDialog";
 import { ComposeNoteTab } from "@/features/compose/ComposeNoteTab";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
@@ -12,46 +12,55 @@ import { trpc } from "@/lib/trpc-client";
 // Person, then the existing ComposeNoteTab writes the note through createNoteAction (no new
 // backend). Person is the most common note anchor; other anchors are a future enhancement.
 export function GlobalNoteModal({
-  onClose,
+  controller,
+  finalFocus,
   onCreated,
 }: {
-  onClose: () => void;
+  controller: NonNullable<ComponentProps<typeof Dialog>["controller"]>;
+  finalFocus: RefObject<HTMLButtonElement | null>;
   onCreated: () => void;
-}): React.ReactNode {
+}): ReactNode {
+  const t = useAppTranslations("quickAdd");
+  return (
+    <Dialog controller={controller}>
+      <DialogContent
+        className="max-w-lg"
+        initialFocus="[data-slot=combobox-trigger]"
+        finalFocus={() => finalFocus.current}
+      >
+        <DialogTitle className="pe-10">{t("newNote")}</DialogTitle>
+        <NoteBody
+          onCreated={() => {
+            controller.close();
+            onCreated();
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function NoteBody({ onCreated }: { onCreated: () => void }): ReactNode {
   const t = useAppTranslations("quickAdd");
   const [personId, setPersonId] = useState("");
   const peopleQ = trpc.contacts.personOptions.useQuery(undefined, { retry: false });
-  const options = useMemo<ComboboxOption[]>(
+  const options = useMemo(
     () => (peopleQ.data ?? []).map((p) => ({ value: p.id, label: p.name, avatarName: p.name })),
     [peopleQ.data],
   );
 
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t("newNote")}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <Combobox
-            value={personId}
-            onChange={setPersonId}
-            options={options}
-            ariaLabel={t("noteTarget")}
-            placeholder={t("selectPerson")}
-          />
-          {personId !== "" && (
-            <ComposeNoteTab
-              entityType="person"
-              entityId={personId}
-              onNoteCreated={() => {
-                onCreated();
-                onClose();
-              }}
-            />
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <div className="space-y-3">
+      <SdkCombobox
+        value={personId}
+        onChange={setPersonId}
+        options={options}
+        ariaLabel={t("noteTarget")}
+        placeholder={t("selectPerson")}
+      />
+      {personId !== "" && (
+        <ComposeNoteTab entityType="person" entityId={personId} onNoteCreated={onCreated} />
+      )}
+    </div>
   );
 }

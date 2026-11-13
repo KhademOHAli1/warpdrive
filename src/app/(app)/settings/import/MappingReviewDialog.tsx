@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/SdkDialog";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { HiddenBuiltinsMap } from "@/features/import/eligibleFields";
 import { sampleValues } from "@/features/import/sampleValues";
@@ -32,21 +31,22 @@ export function MappingReviewDialog({
 }) {
   const L = useSettingsMessages();
   const J = L._extra.importJourney;
-  const [open, setOpen] = useState(false);
   const options = buildColumnOptions(state.target, defs, hiddenBuiltins, state.source, L);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={busy}>
-          {J.reviewMapping}
-        </Button>
+    <Dialog
+      onClose={(value) => {
+        if (value === "start-over") onStartOver();
+      }}
+    >
+      <DialogTrigger render={<Button variant="outline" size="sm" />} disabled={busy}>
+        {J.reviewMapping}
       </DialogTrigger>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl" initialFocus="content">
+        <div className="flex flex-col gap-1.5 pe-10 text-start">
           <DialogTitle>{J.reviewMapping}</DialogTitle>
           <DialogDescription>{J.mappingReadOnlyHint}</DialogDescription>
-        </DialogHeader>
+        </div>
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-start text-sm">
             <thead className="border-b bg-muted/30 text-muted-foreground">
@@ -84,16 +84,9 @@ export function MappingReviewDialog({
             </tbody>
           </table>
         </div>
-        <Button
-          variant="outline"
-          disabled={busy}
-          onClick={() => {
-            setOpen(false);
-            onStartOver();
-          }}
-        >
+        <DialogClose render={<Button variant="outline" />} disabled={busy} value="start-over">
           {L.importer.startOver}
-        </Button>
+        </DialogClose>
       </DialogContent>
     </Dialog>
   );

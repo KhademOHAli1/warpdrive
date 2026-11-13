@@ -28,6 +28,7 @@ export const OPERATIONS_MAX_TIMESTAMP_MS = 8_640_000_000_000_000;
 // No hostnames, paths, user identifiers or arbitrary diagnostic JSON are accepted.
 export const operationsComponents = [
   "web",
+  "core_api",
   "worker",
   "realtime",
   "migrator",
@@ -40,6 +41,7 @@ export const operationsFeatures = [
   "mailbox",
   "workflows",
   "newsletters",
+  "newsletter_event_sync",
   "files",
   "realtime",
 ] as const;
@@ -128,19 +130,37 @@ export const operationsObservationSchema = z
       installed: installedIdentity,
       latencyMs: z.number().int().min(0).max(300_000).nullable(),
     }),
-    z.strictObject({ kind: z.literal("feature"), feature: z.enum(operationsFeatures), ...health }),
+    z.strictObject({
+      kind: z.literal("feature"),
+      feature: z.enum(operationsFeatures),
+      sampledAtMs: timestamp.optional(),
+      ...health,
+    }),
     z.strictObject({
       kind: z.literal("provider"),
       provider: z.enum(operationsProviders),
+      sampledAtMs: timestamp.optional(),
       ...health,
     }),
     z.strictObject({
       kind: z.literal("heartbeat"),
       component: z.enum(["web", "worker", "realtime", "newsletter_engine"]),
-      processGeneration: identity,
+      processGeneration: identity.nullable(),
+      sampledAtMs: timestamp.optional(),
       ...health,
       uptimeMs: duration.nullable(),
       activeCallbacks: count.nullable(),
+    }),
+    z.strictObject({
+      kind: z.literal("deployment"),
+      component: z.enum(operationsComponents),
+      ...health,
+      outcome: z.enum(["accepted", "rolled_back", "rejected", "unknown"]),
+      sourceRevision: z
+        .string()
+        .regex(/^[a-f0-9]{40}$/u)
+        .nullable(),
+      proofSha256: fingerprint.nullable(),
     }),
     z.strictObject({
       kind: z.literal("queue"),
@@ -160,7 +180,12 @@ export const operationsObservationSchema = z
     }),
     z.strictObject({
       kind: z.literal("recovery"),
-      stage: z.enum(["backup_created", "offhost_received", "restore_tested"]),
+      stage: z.enum([
+        "backup_created",
+        "offhost_received",
+        "restore_tested",
+        "restore_bytes_verified",
+      ]),
       ...health,
       recoverySetId: identity.nullable(),
       completedAtMs: timestamp.nullable(),
@@ -177,6 +202,16 @@ export const operationsObservationSchema = z
   ])
   .refine(
     (observation) =>
+      observation.kind !== "heartbeat" ||
+      observation.processGeneration !== null ||
+      (observation.state === "unknown" &&
+        observation.sampledAtMs === undefined &&
+        observation.uptimeMs === null &&
+        observation.activeCallbacks === null),
+    { message: "Unidentified heartbeat cannot declare live metrics" },
+  )
+  .refine(
+    (observation) =>
       (reasonsByState[observation.state] as readonly string[]).includes(observation.reason),
     {
       message: "Unsupported operations state/reason combination",
@@ -191,6 +226,33 @@ export const operationsObservationSchema = z
         observation.contentSha256 !== null &&
         observation.encrypted === true),
     { message: "Successful recovery-stage evidence must identify an encrypted recovery set" },
+  )
+  .refine(
+    (observation) =>
+      observation.kind !== "recovery" ||
+      observation.stage !== "restore_bytes_verified" ||
+      (observation.state === "healthy" &&
+        observation.reason === "ok" &&
+        observation.bytes !== null &&
+        observation.durationMs !== null),
+    { message: "Verified restore bytes require a successful byte count and duration" },
+  )
+  .refine(
+    (observation) => {
+      if (observation.kind !== "deployment") return true;
+      if (observation.outcome === "unknown")
+        return (
+          observation.state === "unknown" &&
+          observation.reason === "submission_unknown" &&
+          observation.sourceRevision === null &&
+          observation.proofSha256 === null
+        );
+      if (observation.sourceRevision === null || observation.proofSha256 === null) return false;
+      return observation.outcome === "accepted"
+        ? observation.state === "healthy" && observation.reason === "ok"
+        : observation.state === "failed" && observation.reason === "operation_failed";
+    },
+    { message: "Deployment outcome must match its verified evidence and state" },
   );
 export type OperationsObservation = z.infer<typeof operationsObservationSchema>;
 
@@ -204,6 +266,8 @@ export function operationsObservationKey(observation: OperationsObservation): st
       return `provider:${observation.provider}`;
     case "heartbeat":
       return `heartbeat:${observation.component}`;
+    case "deployment":
+      return `deployment:${observation.component}`;
     case "queue":
       return `queue:${observation.queue}`;
     case "observer":
@@ -235,6 +299,12 @@ export const operationsBatchSchema = z
             (observation.sampledAtMs === null || observation.sampledAtMs <= latest) &&
             (observation.lastProgressAtMs === null || observation.lastProgressAtMs <= latest)
           );
+        if (
+          observation.kind === "feature" ||
+          observation.kind === "provider" ||
+          observation.kind === "heartbeat"
+        )
+          return observation.sampledAtMs === undefined || observation.sampledAtMs <= latest;
         return (
           observation.kind !== "recovery" ||
           observation.completedAtMs === null ||

@@ -40,10 +40,15 @@ export function EditableHeading({ title, label, onCommit }: EditableHeadingProps
           disabled={f.pending}
           onChange={(event) => f.setDraft(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter" && dirty) {
-              event.preventDefault();
-              commit();
-            }
+            if (
+              event.key !== "Enter" ||
+              event.nativeEvent.isComposing ||
+              event.nativeEvent.keyCode === 229
+            )
+              return;
+            if (!dirty) return;
+            event.preventDefault();
+            commit();
           }}
           className="h-10 w-full rounded border border-field-border bg-card px-2 font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
         />

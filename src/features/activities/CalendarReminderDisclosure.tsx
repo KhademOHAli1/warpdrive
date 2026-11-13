@@ -2,11 +2,7 @@
 import { Bell, ChevronDown } from "lucide-react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/primitives/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ReminderEmailCapability } from "./CalendarReminderEditor";
 

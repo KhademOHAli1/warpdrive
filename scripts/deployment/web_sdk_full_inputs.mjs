@@ -9,6 +9,8 @@ import { discoverBuildGraphs, selectBuildEntries } from "../build-workers.mjs";
 import { canonical, generateComponentInputs } from "./component_inputs.mjs";
 import { guardWebInputs } from "./web_inputs.mjs";
 import { createWebGitSourceReader, readWebGitTree, runWebGit } from "./web_presentation_policy.mjs";
+import { hasReviewedSdkControl, inspectWebSdkImports } from "./web_sdk_imports.mjs";
+import importPolicy from "./web-sdk-import-policy.json" with { type: "json" };
 
 const BACKEND = ["worker", "realtime", "migrator"];
 const PROFILE = "warpdrive-web-ui-sdk-beta1-hoisted-v1";
@@ -31,6 +33,8 @@ const REVIEWED = {
   ],
 };
 const SDK = ["@ui-sdk/core", "@ui-sdk/react"];
+const IMPORT_POLICY = "scripts/deployment/web-sdk-import-policy.json";
+const CONTROLS_IMPORT_POLICY = "scripts/deployment/web-sdk-controls-import-policy.json";
 const SDK_IMPORTS = new Set(["@ui-sdk/react/menu", "@ui-sdk/react/dialog", "@ui-sdk/react/drawer"]);
 const BUILTINS = new Set(builtinModules.flatMap((name) => [name, `node:${name}`]));
 const SCRIPT = /\.[cm]?[jt]sx?$/u;
@@ -159,9 +163,16 @@ function webDependencies(read, sources, baseImage) {
   };
 }
 
-function checkedSdkImports(path, read) {
+function verifySdkBackendFiles(sdkImports, backendFiles) {
+  for (const path of Object.keys(sdkImports)) {
+    if (backendFiles.has(path)) fail(`Web SDK entered a retained backend input ${path}`);
+  }
+}
+
+function checkedSdkImports(path, read, version) {
   if (!SCRIPT.test(path) || path.endsWith(".d.ts")) return [];
   const tree = ts.createSourceFile(path, read(path), ts.ScriptTarget.Latest, true);
+  if (version >= 2) return inspectWebSdkImports(tree, path, version);
   const imports = new Set();
   const first = tree.statements[0];
   const client =
@@ -186,6 +197,35 @@ function checkedSdkImports(path, read) {
   }
   visit(tree);
   return [...imports].sort();
+}
+
+function sdkImportProof(reachable, read) {
+  const successor = importPolicy.successor.path;
+  const hasSwitch =
+    reachable.includes(successor) &&
+    checkedSdkImports(successor, read, 2).some(
+      ({ specifier }) => specifier === importPolicy.successor.specifier,
+    );
+  const version = hasReviewedSdkControl(reachable, read) ? 3 : hasSwitch ? 2 : 1;
+  const imports = reachable.flatMap((path) => {
+    const bindings = checkedSdkImports(path, read, version);
+    return bindings.length ? [[path, bindings]] : [];
+  });
+  if (version === 1) return { version, facts: { sdkImports: Object.fromEntries(imports) } };
+  const sdkImports = Object.fromEntries(
+    imports.map(([path, bindings]) => [
+      path,
+      [...new Set(bindings.map(({ specifier }) => specifier))].sort(),
+    ]),
+  );
+  return {
+    version,
+    facts: {
+      sdkImports,
+      sdkBindings: Object.fromEntries(imports),
+      importPolicySha256: digest(read(version === 3 ? CONTROLS_IMPORT_POLICY : IMPORT_POLICY)),
+    },
+  };
 }
 
 function checkHelperEdge(edge, graphInputs, production) {
@@ -288,12 +328,7 @@ export async function generateWebSdkFullInputs({ root, revision, baseImage, plat
     ...dependencies,
     fail,
   });
-  const sdkImports = Object.fromEntries(
-    reachable.flatMap((path) => {
-      const imports = checkedSdkImports(path, read);
-      return imports.length ? [[path, imports]] : [];
-    }),
-  );
+  const { version, facts } = sdkImportProof(reachable, read);
   const backendInputs = await generateComponentInputs({
     root,
     components: BACKEND,
@@ -310,7 +345,7 @@ export async function generateWebSdkFullInputs({ root, revision, baseImage, plat
     ...BACKEND.flatMap((name) => backendInputs.components[name].graphInputs),
   ]);
   for (const path of nonBrowserGraph) {
-    if (checkedSdkImports(path, read).length)
+    if (checkedSdkImports(path, read, version).length)
       fail(`Web SDK entered an executable non-browser graph ${path}`);
   }
   const backendFiles = new Map();
@@ -322,6 +357,7 @@ export async function generateWebSdkFullInputs({ root, revision, baseImage, plat
       backendFiles.set(record.path, record);
     }
   }
+  if (version === 3) verifySdkBackendFiles(facts.sdkImports, backendFiles);
   for (const path of new Set([...helperGraphInputs, ...backendFiles.keys()]))
     await verifyWorkingInput(root, files, path, backendFiles.get(path));
   verifyCheckout(root, revision);
@@ -335,11 +371,11 @@ export async function generateWebSdkFullInputs({ root, revision, baseImage, plat
     pinnedInputs: records,
     helperEntries,
     helperGraphInputs,
-    sdkImports,
+    ...facts,
     staticWebInputCount: reachable.length,
   };
   return {
-    schemaVersion: 1,
+    schemaVersion: version,
     kind: "warpdrive-web-sdk-full-inputs",
     sourceRevision: revision,
     backendInputs,

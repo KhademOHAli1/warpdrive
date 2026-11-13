@@ -133,6 +133,24 @@ describe("DealList", () => {
     );
   });
 
+  it("keeps the title focused during composition and saves once on the next Enter", () => {
+    render(<DealList {...props} />);
+    const titleRow = screen.getByText("Acme renewal").closest("tr") as HTMLElement;
+    fireEvent.click(within(titleRow).getByRole("button", { name: /edit title/i }));
+    const input = within(titleRow).getByRole("textbox");
+    fireEvent.change(input, { target: { value: "تمدید" } });
+    fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 229 });
+    expect(input).toHaveFocus();
+    expect(editCell).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(editCell).toHaveBeenCalledTimes(1);
+    expect(editCell).toHaveBeenCalledWith(
+      expect.objectContaining({ dealId: "d1", field: "title", value: "تمدید" }),
+    );
+  });
+
   it("does not save an empty/whitespace title", () => {
     render(<DealList {...props} />);
     const titleRow = screen.getByText("Acme renewal").closest("tr") as HTMLElement;

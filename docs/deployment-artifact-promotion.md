@@ -124,7 +124,7 @@ The historical Web qualifier can select this storage explicitly with `--custody-
 re-runs the original bundle verifiers. This applies to the first Web and original backend
 baseline. The current Web artifact and its production acceptance still need their own evidence.
 
-## Qualifying and installing a functional Web release
+## Independent functional Web releases
 
 Select the exact protected `main` revision and a reviewed tooling ancestor. The source
 comparison must cover the functional Web changes. Keep the tooling ancestor in the merged
@@ -141,8 +141,57 @@ Keep the selected revision at the tip of `main` until the release is promoted. I
 advances before admission or promotion, preserve the earlier run and its artifact as evidence.
 Review the new head and rerun the qualification and release gates for the new exact source.
 
-On the installation, stage the same tested archive privately and verify readiness against
-the incumbent route and backend. Promote the candidate, verify the public identity and retained
-assets, then check rollback and reapply. Preserve the accepted lineage and rollout receipts.
-If the operation loses an acknowledgement, inspect the same native operation and its receipts
-before continuing.
+Keep the installed Web generation and rollback generation in custody with the original
+backend bundle. The hosted `Functional independent Web qualification` job retrieves the
+admitted artifacts, builds Web alone, and rehearses a mixed-generation switch on isolated
+data. It rechecks the exact build inputs after compilation and retains the tested Web image
+with the browser and rollback evidence. The current main revision, full CI and named security
+checks must also pass before private admission.
+
+For the first functional release, use the accepted styling release and its predecessor as
+the historical Web pair. For the next functional release, retain the previous functional
+receipt and the exact composite used to qualify that release. The composite contains
+authenticated artifact facts and no runtime IDs, production configuration or credentials.
+Use `scripts/deployment/web-history/<revision>.receipt` for the raw admitted receipt and a
+reviewed `.json` file in the same directory for the composite. Pin the receipt's raw SHA-256
+and byte count, the canonical composite SHA-256, and both installed lineage digests. The older
+Web archive is unnecessary for the next hosted qualification once the active functional
+bundle and original backend can be recovered.
+
+After private admission and installed acceptance, publish the admitted Web ZIP and receipt
+with `web-functional-custody.yml` on protected main. Select `source_revision`, the tracked
+`publication_sha256`, and `mode=publish`. Use a separate `mode=observe` run to confirm both
+immutable manifests and payloads can be retrieved with private access. If a publication step
+may have written to the registry, observe the existing objects before taking further action.
+Preserve the prior operation and its evidence while reconciling any partial write.
+
+The installed release uses the same tested Web archive. Verify private readiness and the
+accepted backend fingerprint before promotion. After the switch, compare the live and
+persisted routes, the public Web identity and both generations' stamped assets. Check a
+healthy rollback and reapply before sealing the accepted pair. A lost acknowledgement holds
+the same operation for readback and reconciliation.
+
+Private staging writes an intent before creating the candidate, records the exact
+created identity before starting it, and records readiness after direct probes.
+Each record is published atomically from a synced private file. A lost create or
+start reply leaves the same operation for observation. An exact already-running
+candidate can be reconciled from direct health and retained backend evidence. An
+observed stopped candidate leaves the operation held for the operator. Keep the
+existing receipt and runtime available while resolving that outcome.
+
+The standalone `installed_web_toolkit_transport.py` sends and receives a toolkit
+over an operator-selected stdio channel. Supply the independently admitted raw
+manifest SHA-256 and exact destination name. The receiver publishes a new private
+receipt directory atomically and checks the package without executing its source.
+Use readback against the same destination after an uncertain acknowledgement.
+The separate `installed_web_stage_ack.py` command observes a completed candidate
+under the installation locks and keeps the pinned archive open through final
+readback. Native use needs trusted receiver bytes and an authenticated SSH channel.
+The current manifest names the repository-owned functional Web and Core operators.
+The transport verifies their pinned Python source closure without importing any of
+the received modules. Use `installed_web_functional_operator.py` for stage, observation,
+promotion, rollback, reapply and sealing. For the first Web release after Core
+activation, supply the exact retained Core profile and the projected and accepted Core
+lineage pins alongside the historical Web pair. The qualification ZIP must already
+name the exact projected lineage hash. The private publication verifier checks the
+projected lineage against the independently pinned acceptance before retaining that ZIP.

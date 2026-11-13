@@ -2,27 +2,35 @@
 
 from copy import deepcopy
 from hashlib import sha256
+import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
+from caddy_core_config import core_api_routes
+from caddy_web_config import _generation_handler
 from installed_web_repeat import InstalledWebRepeat
 from test_caddy_web_repeat import A, B, C, HOST, PEER, RELAY, compile_next, installed_after_first_switch
 from test_installed_web_target import Admin
 from test_web_rollout import Target, slot
 from test_web_switch import FakeClock
 from web_rollout import _record, _write_state, rollout_web
-from web_switch import SwitchConflict, SwitchHeld, SwitchUnknown, _read, canonical, content_hash
+from web_switch import SwitchConflict, SwitchHeld, SwitchUnknown, _envelope, _read, canonical, content_hash
 
 
 class InstalledWebRepeatTests(unittest.TestCase):
+    core_alias = None
+
     def setUp(self):
         scratch = tempfile.TemporaryDirectory()
         self.addCleanup(scratch.cleanup)
         self.state = Path(scratch.name).resolve() / "target"
         self.clock = FakeClock()
         self.installed = installed_after_first_switch()
-        self.documents = compile_next(self.installed)
+        if self.core_alias is not None:
+            _generation_handler(self.installed)["routes"][1:1] = core_api_routes(self.core_alias, B, A)
+        self.documents = compile_next(self.installed, core_alias=self.core_alias)
         self.admin = Admin(self.installed)
         before, after, candidate = slot("1", "a", "a"), slot("2", "b", "b"), slot("3", "c", "c")
         after["route"]["fingerprint"] = content_hash(self.installed)
@@ -54,7 +62,8 @@ class InstalledWebRepeatTests(unittest.TestCase):
                    "admin": self.admin, "verify_release": lambda _plan, *, initialize: self.authorized and not initialize,
                    "observe_installed": lambda: {"backendFingerprint": self.backend, "runtimes": deepcopy(self.runtimes)},
                    "probe_health": self.health, "read_durable_config": lambda: self.admin.persisted,
-                   "observe_candidate_failure": lambda slot: self.definite_failure if slot["route"]["generation"] == C.deployment_id else None}
+                   "observe_candidate_failure": lambda slot: self.definite_failure if slot["route"]["generation"] == C.deployment_id else None,
+                   "core_alias": self.core_alias}
         return InstalledWebRepeat(self.state, **(options | changes))
 
     def health(self, slot, *, proxied):
@@ -216,6 +225,108 @@ class InstalledWebRepeatTests(unittest.TestCase):
         self.assert_pointer("rollback")
         self.admin.mode = None
         self.assertEqual(self.act("reconcile-failed-stamps")["state"], "accepted")
+
+    def test_route_archive_lost_ack_preserves_a_single_link_and_reconciles_without_replay(self):
+        name = self.failed_reapply()
+        self.definite_failure = True
+        pending, archive = self.state / "web-rollouts" / name, self.state / name
+        real_fsync = os.fsync
+
+        def lose_archive_ack(descriptor):
+            if archive.exists() and os.path.samestat(os.fstat(descriptor), self.state.stat()):
+                self.assertEqual(archive.stat().st_nlink, 1)
+                self.assertTrue(pending.exists())
+                raise OSError("archive directory sync interrupted")
+            real_fsync(descriptor)
+
+        with patch("installed_web_repeat.os.fsync", side_effect=lose_archive_ack):
+            with self.assertRaisesRegex(OSError, "archive directory sync interrupted"):
+                self.act("reconcile-failed-stamps")
+        self.assertTrue(pending.exists())
+        self.assertEqual(archive.read_bytes(), canonical(_envelope(_read(pending))) + b"\n")
+        self.assertEqual(self.act("reconcile-failed-stamps")["state"], "accepted")
+        self.assertFalse(pending.exists())
+        self.assertEqual(len(self.admin.writes), 5)
+
+    def test_route_intent_before_publication_can_restart_with_owned_abandoned_write(self):
+        self.failed_reapply()
+        self.definite_failure = True
+        for directory in (self.state, self.state / "web-rollouts"):
+            path = directory / ".web-rollout-aaaaaaaa.tmp"
+            path.touch(mode=0o600)
+        self.assertEqual(self.act("reconcile-failed-stamps")["state"], "accepted")
+        self.assertEqual(list(self.state.rglob(".web-rollout-*.tmp")), [])
+        self.assertEqual(len(self.admin.writes), 5)
+
+    def test_route_intent_lost_publication_ack_holds_without_cas_replay(self):
+        name = self.failed_reapply()
+        self.definite_failure = True
+        pending = self.state / "web-rollouts" / name
+        real_fsync = os.fsync
+
+        def interrupt_intent_ack(descriptor):
+            if pending.exists() and os.path.samestat(os.fstat(descriptor), pending.parent.stat()):
+                self.assertEqual(pending.stat().st_nlink, 1)
+                raise OSError("intent directory sync interrupted")
+            real_fsync(descriptor)
+
+        with patch("installed_web_repeat.os.fsync", side_effect=interrupt_intent_ack):
+            with self.assertRaisesRegex(OSError, "intent directory sync interrupted"):
+                self.act("reconcile-failed-stamps")
+        self.assertEqual(len(self.admin.writes), 4)
+        with self.assertRaisesRegex(SwitchConflict, "configuration changed during health proof"):
+            self.act("reconcile-failed-stamps")
+        self.assertEqual(len(self.admin.writes), 4)
+
+    def test_route_terminal_retry_syncs_archive_and_removed_pending_before_ack(self):
+        name = self.failed_reapply()
+        self.definite_failure = True
+        pending, archive = self.state / "web-rollouts" / name, self.state / name
+        real_fsync = os.fsync
+
+        def interrupt_unlink_ack(descriptor):
+            if archive.exists() and not pending.exists() and os.path.samestat(os.fstat(descriptor), pending.parent.stat()):
+                raise OSError("pending removal sync interrupted")
+            real_fsync(descriptor)
+
+        with patch("installed_web_repeat.os.fsync", side_effect=interrupt_unlink_ack):
+            with self.assertRaisesRegex(OSError, "pending removal sync interrupted"):
+                self.act("reconcile-failed-stamps")
+        self.assertFalse(pending.exists())
+        synced = []
+
+        def observe_sync(directory):
+            synced.append(directory)
+            from web_switch import _fsync
+            _fsync(directory)
+
+        with patch("installed_web_repeat._fsync", side_effect=observe_sync):
+            self.assertEqual(self.act("reconcile-failed-stamps")["state"], "accepted")
+        self.assertEqual(synced, [self.state, pending.parent])
+        self.assertEqual(len(self.admin.writes), 5)
+
+    def test_route_staging_with_foreign_hardlink_is_preserved_and_holds(self):
+        self.failed_reapply()
+        self.definite_failure = True
+        staged = self.state / "web-rollouts/.web-rollout-aaaaaaaa.tmp"
+        staged.touch(mode=0o600)
+        os.link(staged, self.state / "preserved")
+        with self.assertRaisesRegex(SwitchConflict, "staging file has another link"):
+            self.act("reconcile-failed-stamps")
+        self.assertTrue(staged.exists())
+        self.assertEqual(staged.stat().st_nlink, 2)
+        self.assertEqual(len(self.admin.writes), 4)
+
+    def test_route_archive_refuses_an_unexpected_hardlink(self):
+        name = self.failed_reapply()
+        self.definite_failure = True
+        pending, archive = self.state / "web-rollouts" / name, self.state / name
+        self.act("reconcile-failed-stamps")
+        _write_state(pending, _read(archive))
+        os.link(archive, archive.with_suffix(".linked"))
+        with self.assertRaisesRegex(SwitchConflict, "private installed Web chain file"):
+            self.act("reconcile-failed-stamps")
+        self.assertTrue(pending.exists())
         self.assertEqual(len(self.admin.writes), 5)
 
     def test_wrong_lineage_protected_state_autosave_and_retained_a_hold_without_writes(self):
@@ -247,3 +358,22 @@ class InstalledWebRepeatTests(unittest.TestCase):
         with self.assertRaisesRegex(SwitchConflict, "another or invalid Web rollout"):
             self.act("promote")
         self.assertEqual(self.admin.writes, [])
+
+
+class InstalledCoreWebRepeatTests(InstalledWebRepeatTests):
+    core_alias = "warpdrive-core-fixture"
+
+    def test_wrong_core_alias_and_web_alias_hold(self):
+        for alias in (None, "other-core", A.target, RELAY):
+            with self.subTest(alias=alias), self.assertRaises(ValueError):
+                self.build(core_alias=alias)
+        self.assertEqual(self.admin.writes, [])
+
+    def test_core_proxy_is_unchanged_as_failed_candidate_stamps_are_removed(self):
+        self.failed_reapply()
+        self.definite_failure = True
+        self.act("reconcile-failed-stamps")
+        guard, probe, proxy = _generation_handler(self.admin.live)["routes"][1:4]
+        self.assertEqual([guard, probe, proxy], core_api_routes(self.core_alias, B, A))
+        self.assertNotIn(C.deployment_id, guard["match"][0]["expression"])
+        self.assertEqual(proxy, _generation_handler(self.documents["after"])["routes"][3])

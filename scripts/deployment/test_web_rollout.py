@@ -5,6 +5,7 @@ import unittest
 
 from test_web_switch import FakeClock, runtime
 from web_rollout import rollout_web
+from web_rollout_observation import web_rollout_observation
 from web_switch import DefiniteRejected, SwitchConflict, SwitchHeld, SwitchUnknown, _read
 
 
@@ -88,6 +89,21 @@ class WebRolloutTests(unittest.TestCase):
         self.assertEqual(self.run_rollout()["state"], "rejected")
         self.assertEqual(self.target.updates, [])
         self.assertEqual(self.accepted(), self.plan["before"])
+
+    def test_operations_projection_requires_exact_native_receipt(self):
+        unknown = web_rollout_observation(self.plan, None)
+        self.assertEqual((unknown["outcome"], unknown["state"], unknown["sourceRevision"]),
+                         ("unknown", "unknown", None))
+        receipt = self.run_rollout()
+        accepted = web_rollout_observation(self.plan, receipt)
+        self.assertEqual((accepted["outcome"], accepted["state"], accepted["sourceRevision"]),
+                         ("accepted", "healthy", "b" * 40))
+        rolled_back = web_rollout_observation(self.plan, receipt, explicit_rollback=True)
+        self.assertEqual((rolled_back["outcome"], rolled_back["state"], rolled_back["sourceRevision"]),
+                         ("rolled_back", "failed", "b" * 40))
+        with self.assertRaises(SwitchConflict):
+            web_rollout_observation(self.plan, {**receipt, "acceptedGeneration": "wd-" + "a" * 40})
+        self.assertEqual(self.target.updates, [self.plan["after"]["route"]])
 
     def test_rejects_missing_qualification_or_backend_drift_before_any_write(self):
         self.target.qualifies = False

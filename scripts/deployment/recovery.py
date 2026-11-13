@@ -9,7 +9,8 @@ operator records, not signatures or proof of independent off-host custody.
 from __future__ import annotations
 
 import argparse
-from contextlib import contextmanager, ExitStack
+from contextlib import AbstractContextManager, contextmanager, ExitStack
+from dataclasses import dataclass
 import fcntl
 import hashlib
 import json
@@ -22,14 +23,14 @@ import stat
 import subprocess
 import sys
 import time
-from typing import Protocol
+from typing import Protocol, TypedDict
 from urllib.parse import parse_qsl, urlsplit
 
 HASH = re.compile(r"[0-9a-f]{64}\Z")
 IMAGE = re.compile(r"sha256:[0-9a-f]{64}\Z")
 NAME = re.compile(r"[a-z0-9][a-z0-9_.-]{0,63}\Z")
 SERVICES = {"caddy", "postgres", "minio", "app", "worker", "ws", "migrate",
-            "createbuckets", "newsletter-engine", "newsletter-engine-migrate"}
+            "createbuckets", "newsletter-engine", "newsletter-engine-migrate", "core-api", "operations-collector"}
 REQUIRED_SERVICES = {"caddy", "postgres", "minio", "app", "worker", "ws", "newsletter-engine"}
 VOLUMES = {"postgres": "pgdata", "objects": "miniodata", "newsletterMedia": "newsletter_uploads",
            "ingressData": "caddydata", "ingressConfig": "caddyconfig"}
@@ -37,12 +38,59 @@ DEFAULT_LIMITS = {"files": 100_000, "bytes": 1024**4, "fileBytes": 64 * 1024**3,
                   "seconds": 3600, "reserveBytes": 2 * 1024**3,
                   "repositoryBytes": 4 * 1024**4}
 MAX_METADATA = 32 * 1024**2
+COLLECTOR_CONFIG = "/run/warpdrive-operations-config.json"
+COLLECTOR_SOCKET_DIR = "/run/warpdrive-operations"
+COLLECTOR_UID = 1000
 LIMITATIONS = [
     "No writer stop/start, installed restore, provider reconciliation or automatic writer resumption.",
     "Independent credentials and uncached readback on one host do not prove off-host acceptance or separate key custody.",
     "Restore verifies captured bytes and metadata in a new directory; booting the recovered services remains unqualified.",
     "External engine media, KMS dependencies and application-level object/credential reconciliation require installation-specific inspection.",
 ]
+
+
+INSTALLED_PLAN_KIND = "warpdrive-installed-cold-recovery-set"
+INSTALLED_MANIFEST_KIND = "warpdrive-installed-cold-recovery-manifest"
+INSTALLED_RECEIPT_KIND = "warpdrive-verified-installed-cold-recovery-set"
+INSTALLED_SCOPE = "installed-cold-profile-byte-verification"
+INSTALLED_INGRESS_COPY = "accepted-ingress-route.yaml"
+INSTALLED_SECRET_NAMES = frozenset({
+    "auth_secret", "database_url", "google_oauth_client_secret", "storage_app_secret",
+    "token_encryption_key", "ws_ticket_secret",
+})
+INSTALLED_MAX_ROOTS = 59
+
+
+class InstalledSourceMembers(TypedDict):
+    postgres: str
+    objects: str
+    newsletterMedia: dict[str, str]
+    relayAutosave: str
+    secrets: dict[str, str]
+    protectedState: dict[str, str]
+
+
+class InstalledMembers(InstalledSourceMembers):
+    ingressRoute: str
+
+
+@dataclass(frozen=True)
+class InstalledColdObservation:
+    """One native read from an installation-specific, externally held observer."""
+
+    source_members: InstalledSourceMembers
+    watched_ingress: str
+    ingress_bytes: bytes
+    private_configuration: dict
+    native_fingerprint: str
+
+
+class InstalledColdObserver(Protocol):
+    def hold(self, plan: dict) -> AbstractContextManager:
+        """Retain writer exclusion across every observation, backup and readback."""
+
+    def observe_installed(self, plan: dict) -> InstalledColdObservation:
+        """Read exact native identities, paths and independently accepted ingress bytes."""
 
 
 class RecoveryError(RuntimeError):
@@ -283,7 +331,106 @@ def validate_plan(plan):
     limits(plan["limits"])
 
 
-def scan(paths, budget, *, anchor=None, forbidden=()):
+def _valid_token(pattern, value):
+    return isinstance(value, str) and bool(pattern.fullmatch(value))
+
+
+def _installed_member_paths(members):
+    require(type(members) is dict and set(members) == set(InstalledMembers.__annotations__),
+            "Exact installed recovery member roles required")
+    kinds = {"postgres": "directory", "objects": "directory", "relayAutosave": "file", "ingressRoute": "file"}
+    groups = {"newsletterMedia": (0, 16, "directory"), "secrets": (6, 6, "file"), "protectedState": (1, 32, "file")}
+    paths = {role: absolute(members[role]) for role in kinds}
+    result = {path: kinds[role] for role, path in paths.items()}
+    count = len(kinds)
+    for role, (minimum, maximum, kind) in groups.items():
+        group = members[role]
+        require(type(group) is dict and minimum <= len(group) <= maximum
+                and all(_valid_token(NAME, name) for name in group), "Invalid named installed recovery member group")
+        count += len(group)
+        result.update({absolute(path): kind for path in group.values()})
+    require(set(members["secrets"]) == INSTALLED_SECRET_NAMES
+            and all(Path(path).name == ("runtime-database-url" if name == "database_url" else name)
+                    for name, path in members["secrets"].items())
+            and paths["relayAutosave"].name == "autosave.json" and paths["ingressRoute"].name == INSTALLED_INGRESS_COPY,
+            "Installed relay, ingress or named secret path differs")
+    selected = list(result)
+    require(len(result) == count and all(no_overlap(path, other)
+            for index, path in enumerate(selected) for other in selected[index + 1:]),
+            "Installed recovery member roots must be exact and disjoint")
+    return result
+
+
+def validate_installed_plan(plan):
+    """Admit only the explicit installed schema; the stock Docker CLI remains V1."""
+    keys = {"schemaVersion", "kind", "operationId", "installationId", "repositoryId", "limits",
+            "members", "watchedIngress", "ingressRouteSha256"}
+    require(type(plan) is dict and set(plan) == keys and type(plan["schemaVersion"]) is int
+            and plan["schemaVersion"] == 2 and plan["kind"] == INSTALLED_PLAN_KIND,
+            "Complete version 2 installed recovery plan required")
+    require(all(_valid_token(NAME, plan[key]) for key in ("operationId", "installationId"))
+            and all(_valid_token(HASH, plan[key]) for key in ("repositoryId", "ingressRouteSha256")),
+            "Exact installed operation, repository and ingress pins required")
+    watched = absolute(plan["watchedIngress"])
+    paths = _installed_member_paths(plan["members"])
+    require(watched.name == "warpdrive-web-relay.yaml" and all(no_overlap(watched, path) for path in paths),
+            "Watched ingress must be distinct from all installed recovery roots")
+    limits(plan["limits"])
+
+
+def _installed_tag(plan):
+    return "warpdrive-installed-recovery:" + plan["operationId"]
+
+
+def _validate_installed_manifest(manifest, plan, member, inventory):
+    require(type(manifest) is dict and set(manifest) == {"schemaVersion", "kind", "planSha256", "tag", "coldFingerprint",
+                                                         "members", "inventory", "scope"}
+            and type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] == 2
+            and manifest["kind"] == INSTALLED_MANIFEST_KIND and manifest["scope"] == INSTALLED_SCOPE
+            and manifest["planSha256"] == digest(canonical(plan)) and manifest["tag"] == _installed_tag(plan)
+            and _valid_token(HASH, manifest["coldFingerprint"]) and manifest["members"] == plan["members"],
+            "Installed recovery manifest differs from its independently admitted plan")
+    paths = _installed_member_paths(manifest["members"])
+    ingress_copy = member.with_name(INSTALLED_INGRESS_COPY)
+    private = member.with_name("private-configuration.json")
+    require(str(ingress_copy) == manifest["members"]["ingressRoute"]
+            and all(no_overlap(path, control) for path in paths for control in (member, private)),
+            "Installed ingress copy or journal member path differs")
+    paths[private] = "file"
+    entries = {absolute(entry["path"]): entry for entry in inventory["entries"]}
+    require({absolute(root) for root in inventory["roots"]} == set(paths)
+            and all(path in entries and entries[path]["kind"] == kind for path, kind in paths.items()),
+            "Installed recovery inventory must contain exactly the admitted typed roots")
+    require(entries[ingress_copy]["sha256"] == plan["ingressRouteSha256"]
+            and all(entries[path]["mode"] == 0o600 and entries[path]["bytes"] > 0 for path in (ingress_copy, private))
+            and entries[ingress_copy]["bytes"] <= 64 * 1024,
+            "Installed ingress copy or protected configuration metadata differs")
+
+
+def _observe(plan, observer, *, installed):
+    if not installed:
+        return observer.observe(plan)
+    observation = observer.observe_installed(document(canonical(plan)))
+    members = {key: value for key, value in plan["members"].items() if key != "ingressRoute"}
+    require(type(observation) is InstalledColdObservation and observation.source_members == members
+            and observation.watched_ingress == plan["watchedIngress"]
+            and type(observation.ingress_bytes) is bytes and 0 < len(observation.ingress_bytes) <= 64 * 1024
+            and digest(observation.ingress_bytes) == plan["ingressRouteSha256"]
+            and _valid_token(HASH, observation.native_fingerprint) and type(observation.private_configuration) is dict,
+            "Installed cold observation differs from the admitted role paths or ingress")
+    private_raw = canonical(observation.private_configuration)
+    require(len(private_raw) <= MAX_METADATA, "Installed private configuration exceeds its bound")
+    fingerprint = digest(canonical({"planSha256": digest(canonical(plan)),
+                                    "nativeFingerprint": observation.native_fingerprint,
+                                    "privateConfigurationSha256": digest(private_raw)}))
+    paths = _installed_member_paths(plan["members"])
+    paths.pop(absolute(plan["members"]["ingressRoute"]))
+    return {"roots": [str(path) for path in paths], "members": plan["members"], "fingerprint": fingerprint,
+            "privateConfiguration": observation.private_configuration, "privateConfigurationRaw": private_raw,
+            "ingressBytes": observation.ingress_bytes, "scope": INSTALLED_SCOPE}
+
+
+def scan(paths, budget, *, anchor=None, forbidden=(), single_link=False):
     """Hash bounded regular trees, preserving ownership/modes and refusing aliases."""
     started = time.monotonic()
     result, byte_count = [], 0
@@ -315,6 +462,7 @@ def scan(paths, budget, *, anchor=None, forbidden=()):
                     os.close(child)
         else:
             require(stat.S_ISREG(info.st_mode) and info.st_size <= budget["fileBytes"], "Unsafe or oversized source member")
+            require(not single_link or info.st_nlink == 1, "Installed recovery member has another hardlink")
             byte_count += info.st_size
             require(byte_count <= budget["bytes"], "Source byte budget exceeded")
             hasher = hashlib.sha256()
@@ -466,6 +614,52 @@ class DockerColdObserver:
     def _json(self, *arguments):
         return document(self.command.run([self.docker, *arguments]))
 
+    @staticmethod
+    def _collector_mounts(row, info):
+        config, host, mounts = row["Config"], row["HostConfig"], row["Mounts"]
+        security_options = info.get("SecurityOptions") or []
+        require(config.get("User") == "1000:1000"
+                and config.get("Cmd") == ["bun", "--no-env-file", "dist/operations-collector.mjs", COLLECTOR_CONFIG]
+                and host.get("ReadonlyRootfs") is True and host.get("Privileged") is False
+                and not host.get("UsernsMode") and not host.get("PortBindings")
+                and isinstance(security_options, list)
+                and all(isinstance(option, str) and "userns" not in option and "rootless" not in option
+                        for option in security_options),
+                "Unsupported cold collector process or UID mapping")
+        targets = {mount.get("Destination"): mount for mount in mounts}
+        require(len(mounts) == 2 and set(targets) == {COLLECTOR_CONFIG, COLLECTOR_SOCKET_DIR}
+                and all(mount.get("Type") == "bind" for mount in mounts)
+                and targets[COLLECTOR_CONFIG].get("RW") is False
+                and targets[COLLECTOR_SOCKET_DIR].get("RW") is True, "Exact collector configuration and socket binds required")
+        config_path = absolute(targets[COLLECTOR_CONFIG].get("Source"))
+        socket_path = absolute(targets[COLLECTOR_SOCKET_DIR].get("Source"))
+        with os.fdopen(open_path(config_path), "rb") as stream:
+            before = os.fstat(stream.fileno())
+            require(stat.S_ISREG(before.st_mode) and before.st_uid == COLLECTOR_UID and before.st_nlink == 1
+                    and stat.S_IMODE(before.st_mode) in (0o400, 0o600) and 0 < before.st_size <= 8192,
+                    "Collector configuration is not private and bounded")
+            raw = stream.read(8193)
+            after = os.fstat(stream.fileno())
+            require(len(raw) == before.st_size and os.path.samestat(after, config_path.lstat())
+                    and (before.st_mtime_ns, before.st_ctime_ns) == (after.st_mtime_ns, after.st_ctime_ns),
+                    "Collector configuration changed during inspection")
+        value = document(raw)
+        require(type(value) is dict and value.get("socketPath") == COLLECTOR_SOCKET_DIR + "/collector.sock"
+                and isinstance(value.get("databaseUrl"), str) and 0 < len(value["databaseUrl"]) <= 2048,
+                "Collector configuration authority is incomplete")
+        directory = DirectoryHandle(socket_path)
+        try:
+            metadata = os.fstat(directory.fd)
+            with os.scandir(directory.fd) as entries:
+                require(metadata.st_uid == COLLECTOR_UID and stat.S_IMODE(metadata.st_mode) == 0o700
+                        and next(entries, None) is None, "Cold collector socket directory must be private and empty")
+            directory.check()
+            socket_witness = [metadata.st_dev, metadata.st_ino, metadata.st_uid, metadata.st_gid,
+                              metadata.st_mode, metadata.st_mtime_ns, metadata.st_ctime_ns]
+        finally:
+            directory.close()
+        return value["databaseUrl"], digest(raw), socket_path, socket_witness
+
     def observe(self, plan):
         validate_plan(plan)
         require(sys.platform.startswith("linux"), "Cold Docker capture requires the local Linux host")
@@ -505,7 +699,8 @@ class DockerColdObserver:
         pg_endpoint = postgres["NetworkSettings"]["Networks"][network_name]
         require(pg_endpoint.get("NetworkID") == network["Id"] and "postgres" in aliases(pg_endpoint),
                 "The observed PostgreSQL bridge does not own the postgres alias")
-        database_users = {"app", "worker", "ws", "migrate", "newsletter-engine", "newsletter-engine-migrate"}
+        database_users = {"app", "worker", "ws", "migrate", "newsletter-engine", "newsletter-engine-migrate",
+                          "core-api", "operations-collector"}
         network_file_hashes = {}
         for row in owned:
             service = row.get("Config", {}).get("Labels", {}).get("com.docker.compose.service")
@@ -534,6 +729,8 @@ class DockerColdObserver:
             require(resolvers and set(resolvers) == {"127.0.0.11"}, "Database clients must use the observed Docker resolver")
             network_file_hashes[row["Id"]] = {"hostsSha256": digest(hosts), "resolvSha256": digest(resolv)}
         roots, private, identities = [], [], []
+        collector_socket = None
+        collector_dsn = None
         wanted_volumes = set(plan["volumes"].values())
         for row in rows:
             labels = row.get("Config", {}).get("Labels", {}) or {}
@@ -553,10 +750,16 @@ class DockerColdObserver:
                     and state.get("Dead") is False and state.get("OOMKilled") is False
                     and state.get("ExitCode") == 0 and state.get("FinishedAt", "").startswith("20"),
                     "Every writer and storage process must be cleanly stopped")
+            collector_facts = {}
+            if service == "operations-collector":
+                collector_dsn, config_digest, collector_socket, socket_identity = self._collector_mounts(row, info)
+                collector_facts = {"collectorConfigSha256": config_digest, "emptySocketDirectory": socket_identity}
             for mount in mounts:
                 if mount.get("Type") == "volume":
                     require(mount.get("Name") in wanted_volumes, "Uninventoried persistent volume")
                 elif mount.get("Type") == "bind":
+                    if service == "operations-collector" and mount.get("Destination") == COLLECTOR_SOCKET_DIR:
+                        continue
                     require(mount.get("RW") is False, "Writable bind source is unsupported")
                     source = absolute(mount.get("Source"))
                     require(any(source.is_relative_to(absolute(p)) for p in plan["configurationFiles"]),
@@ -566,6 +769,7 @@ class DockerColdObserver:
                     require(mount.get("Type") == "tmpfs", "Unknown persistent mount type")
             private.append({"service": service, "id": row["Id"], "imageId": row["Image"],
                             "config": row["Config"], "hostConfig": row.get("HostConfig", {}), "mounts": mounts,
+                            **collector_facts,
                             "networkFileHashes": network_file_hashes.get(row["Id"]),
                             "networks": row.get("NetworkSettings", {}).get("Networks", {})})
             identities.append({"id": row["Id"], "imageId": row["Image"], "service": service,
@@ -597,6 +801,14 @@ class DockerColdObserver:
                     "Volume does not belong to this local Docker data root")
             members[role] = str(path)
             roots.append(str(path))
+        if collector_socket is not None:
+            other_mounts = [absolute(mount.get("Source")) for row in rows for mount in row.get("Mounts", [])
+                            if mount.get("Type") in {"bind", "volume"}
+                            and not (row.get("Id") == plan["containers"]["operations-collector"]["id"]
+                                     and mount.get("Destination") == COLLECTOR_SOCKET_DIR)]
+            require(all(no_overlap(collector_socket, path) for path in other_mounts +
+                        [absolute(path) for path in roots + plan["configurationFiles"]]),
+                    "Collector socket directory overlaps captured or shared storage")
         # Every configured file secret must resolve through an observed read-only bind
         # or an already included named volume. Environment literals are in private config.
         for item in private:
@@ -605,6 +817,19 @@ class DockerColdObserver:
                 key, separator, target = value.partition("=")
                 require(separator and key not in resolved, "Malformed or duplicate runtime environment binding")
                 resolved[key] = target
+            if item["service"] == "operations-collector":
+                require(not any(key.startswith(("PG", "DATABASE_", "MIGRATION_", "POSTGRES_")) for key in resolved),
+                        "Collector database authority must come from its private configuration")
+                try:
+                    dsn = urlsplit(collector_dsn)
+                    options = parse_qsl(dsn.query, keep_blank_values=True, strict_parsing=True)
+                    allowed = (dsn.scheme in {"postgres", "postgresql"} and dsn.hostname == "postgres"
+                               and dsn.port in {None, 5432} and dsn.username and len(dsn.path) > 1
+                               and not dsn.fragment and all(key in {"sslmode", "sslnegotiation"} for key, _ in options)
+                               and not any(ord(char) < 32 or ord(char) == 127 for char in collector_dsn))
+                except ValueError:
+                    allowed = False
+                require(allowed, "Collector database must resolve to the observed PostgreSQL bridge")
             # Parse first, then apply file overrides independently of Env order.
             for key, target in list(resolved.items()):
                 if key.endswith("_FILE") and target:
@@ -617,20 +842,33 @@ class DockerColdObserver:
                     source = absolute(mount["Source"]) / target_path.relative_to(mount["Destination"])
                     raw = read_regular(source, 1024**2).decode("utf8")
                     resolved[key.removesuffix("_FILE")] = raw.strip() if item["service"] != "newsletter-engine" else raw.rstrip("\n")
-            if item["service"] in {"app", "worker", "ws", "migrate"}:
+            if item["service"] in {"app", "worker", "ws", "migrate", "core-api"}:
                 # New one-shot migrators have a separate owner DSN. Historical cold
                 # captures may predate it, but any configured owner target must belong
                 # to the same observed cluster, including file-secret overrides.
                 dsn_keys = ["DATABASE_URL"]
+                allowed_options = {"application_name", "connect_timeout", "sslmode"}
+                if item["service"] == "core-api":
+                    require(resolved.get("RUNTIME_COMPONENT") == "core-api"
+                            and not resolved.get("MIGRATION_DATABASE_URL")
+                            and not resolved.get("MIGRATION_DATABASE_URL_FILE")
+                            and not resolved.get("POSTGRES_PASSWORD")
+                            and not resolved.get("POSTGRES_PASSWORD_FILE"),
+                            "Standalone Core recovery requires a restricted runtime profile")
+                    # TLS file options need separate mount/custody admission.
+                    allowed_options = {"sslmode", "sslnegotiation"}
                 if resolved.get("MIGRATION_DATABASE_URL"):
                     dsn_keys.append("MIGRATION_DATABASE_URL")
                 for dsn_key in dsn_keys:
                     dsn = urlsplit(resolved.get(dsn_key, ""))
                     require(dsn.scheme in {"postgres", "postgresql"} and dsn.hostname == "postgres"
                             and dsn.port in {None, 5432} and not dsn.fragment
-                            and all(key in {"application_name", "connect_timeout", "sslmode"}
+                            and all(key in allowed_options
                                     for key, _ in parse_qsl(dsn.query, keep_blank_values=True, strict_parsing=True)),
                             "External, ambiguous or unobserved Core database authority")
+                    if item["service"] == "core-api":
+                        require(bool(dsn.username) and len(dsn.path) > 1,
+                                "Standalone Core recovery requires explicit runtime database and role")
             if item["service"] == "newsletter-engine":
                 normalized = {}
                 for key, value in resolved.items():
@@ -654,6 +892,16 @@ class DockerColdObserver:
                 and "WARNING" not in control, "PostgreSQL is not cleanly shut down")
         require(not (pg / "postmaster.pid").exists(), "PostgreSQL process marker remains")
         roots.extend(plan["configurationFiles"])
+        captured_paths = [absolute(path) for path in roots]
+        for row in rows:
+            if row.get("Config", {}).get("Labels", {}).get("com.docker.compose.project") == plan["project"]:
+                continue
+            for mount in row.get("Mounts", []):
+                if mount.get("Type") in {"bind", "volume"}:
+                    source = absolute(mount.get("Source"))
+                    resolved = source.resolve()
+                    require(all(no_overlap(source, path) and no_overlap(resolved, path) for path in captured_paths),
+                            "An outside container shares captured storage")
         # Bind the actual cold observations. Raw secrets stay in one private member.
         witness = {"containers": sorted(identities, key=lambda r: r["id"]), "volumes": volume_rows, "network": network,
                    "postgresControlSha256": digest(control.encode()), "dockerEndpoint": endpoint}
@@ -1017,26 +1265,31 @@ def _forbidden_sources(primary, reader):
     return identities
 
 
-def _verify_restore(target, manifest_path, manifest, inventory, budget):
-    restored = scan(inventory["roots"], budget, anchor=target.fd)
+def _verify_restore(target, manifest_path, manifest, inventory, budget, *, installed=False):
+    restored = scan(inventory["roots"], budget, anchor=target.fd, single_link=installed)
     require(restored == inventory, "Restored member bytes, modes or ownership differ")
     with os.fdopen(relative_open(target.fd, manifest_path), "rb") as source:
         require(source.read(MAX_METADATA + 1) == manifest, "Restored recovery manifest differs")
 
 
-def _finish(plan, journal, observer, primary, reader, target, prepared, snapshot, deadline):
+def _finish(plan, journal, observer, primary, reader, target, prepared, snapshot, deadline, *, installed):
     manifest_path = journal.path / "recovery-manifest.json"
     manifest = read_regular(manifest_path)
     require(digest(manifest) == prepared["manifestSha256"], "Prepared manifest changed")
     value = document(manifest)
-    observation = observer.observe(plan)
+    observation = _observe(plan, observer, installed=installed)
     require(observation["fingerprint"] == value["coldFingerprint"], "Installation changed after backup intent")
     inventory = value["inventory"]
+    if installed:
+        _validate_installed_manifest(value, plan, manifest_path, inventory)
     budget = {**plan["limits"], "deadline": deadline}
-    require(scan(inventory["roots"], budget, forbidden=_forbidden_sources(primary, reader)) == inventory,
+    require(scan(inventory["roots"], budget, forbidden=_forbidden_sources(primary, reader), single_link=installed) == inventory,
             "Captured source changed after backup intent")
     require(primary.repository_id() == reader.repository_id() == plan["repositoryId"], "Readback repository identity differs")
     reader.validate_snapshot(snapshot, value["tag"], manifest_path, manifest, inventory)
+    if installed:
+        require(_observe(plan, observer, installed=True)["fingerprint"] == value["coldFingerprint"],
+                "Installed recovery observation changed before isolated restore")
     require(os.fstatvfs(target.parent.fd).f_bavail * os.fstatvfs(target.parent.fd).f_frsize
             >= inventory["bytes"] + plan["limits"]["reserveBytes"],
             "Insufficient isolated restore disk reserve")
@@ -1047,11 +1300,12 @@ def _finish(plan, journal, observer, primary, reader, target, prepared, snapshot
                                       "restoreTargetDevice": os.fstat(target.fd).st_dev,
                                       "restoreTargetInode": os.fstat(target.fd).st_ino})
     reader.restore(snapshot, target, plan["limits"], inventory=inventory)
-    _verify_restore(target, manifest_path, manifest, inventory, budget)
-    require(observer.observe(plan)["fingerprint"] == value["coldFingerprint"]
-            and scan(inventory["roots"], budget, forbidden=_forbidden_sources(primary, reader)) == inventory,
+    _verify_restore(target, manifest_path, manifest, inventory, budget, installed=installed)
+    require(_observe(plan, observer, installed=installed)["fingerprint"] == value["coldFingerprint"]
+            and scan(inventory["roots"], budget, forbidden=_forbidden_sources(primary, reader), single_link=installed) == inventory,
             "Installation changed during verification")
-    receipt = {"schemaVersion": 1, "kind": "warpdrive-verified-cold-recovery-set", "operationId": plan["operationId"],
+    receipt = {"schemaVersion": 2 if installed else 1,
+               "kind": INSTALLED_RECEIPT_KIND if installed else "warpdrive-verified-cold-recovery-set", "operationId": plan["operationId"],
                "installationId": plan["installationId"], "repositoryId": plan["repositoryId"], "snapshotId": snapshot,
                "manifestSha256": prepared["manifestSha256"], "coldFingerprint": value["coldFingerprint"],
                "sourceBytes": inventory["bytes"], "sourceEntries": len(inventory["entries"]),
@@ -1060,15 +1314,45 @@ def _finish(plan, journal, observer, primary, reader, target, prepared, snapshot
                "isolatedRestoreBytesVerified": True, "offHostAccepted": False, "keyCustodyAccepted": False,
                "applicationRecoveryAccepted": False,
                "writerResumptionAuthorized": False, "limitations": LIMITATIONS}
+    if installed:
+        receipt["planSha256"] = value["planSha256"]
     journal.append("VERIFIED", {"planSha256": digest(canonical(plan)), "receipt": receipt})
     return receipt
 
 
 def capture(plan, journal, observer, primary, reader, target, *, reconcile=False):
     validate_plan(plan)
+    return _capture(plan, journal, observer, primary, reader, target, reconcile=reconcile, installed=False)
+
+
+def capture_installed(plan, journal, observer: InstalledColdObserver, primary, reader, target, *, reconcile=False):
+    """Capture typed sources through an installed adapter that keeps writers held.
+
+    The adapter admits the complete cold installed layout and native authority.
+    This function writes only the private journal, repository and new quarantine.
+    A digest pins the accepted scoped ingress bytes, which are copied to a
+    disjoint journal file and compared again at each subsequent observation.
+    """
+    validate_installed_plan(plan)
+    plan = document(canonical(plan))
+    member = absolute(plan["members"]["ingressRoute"])
+    watched = absolute(plan["watchedIngress"])
+    require(member == journal.path / INSTALLED_INGRESS_COPY and no_overlap(watched, journal.path),
+            "Installed ingress needs a disjoint exact journal copy path")
+    controls = [journal.path, absolute(str(target)), primary.key, reader.key]
+    controls.extend(absolute(adapter.repository) for adapter in (primary, reader) if adapter.repository.startswith("/"))
+    require(all(no_overlap(watched, control) for control in controls), "Installed watched ingress overlaps recovery controls")
+    require(all(no_overlap(path, journal.path) for path in _installed_member_paths(plan["members"]) if path != member),
+            "Installed recovery journal overlaps source members")
+    with observer.hold(document(canonical(plan))):
+        return _capture(plan, journal, observer, primary, reader, target, reconcile=reconcile, installed=True)
+
+
+def _capture(plan, journal, observer, primary, reader, target, *, reconcile, installed):
     plan_hash = digest(canonical(plan))
     started = time.monotonic()
     deadline = started + plan["limits"]["seconds"]
+    tag = _installed_tag(plan) if installed else "warpdrive-recovery:" + plan["operationId"]
     for adapter in (observer, primary, reader):
         if isinstance(getattr(adapter, "command", None), Command):
             adapter.command.deadline = deadline
@@ -1080,38 +1364,54 @@ def capture(plan, journal, observer, primary, reader, target, *, reconcile=False
                 return events[-1]["receipt"]
             require(reconcile, "A retained intent exists; use independent reconciliation, never repeat capture")
             prepared = events[0]
-            require(prepared["state"] == "PREPARED", "Incomplete prepared recovery record")
-            observation = observer.observe(plan)
+            require(prepared["state"] == "PREPARED" and (not installed or len(events) > 1),
+                    "Incomplete prepared recovery record")
+            observation = _observe(plan, observer, installed=installed)
             target = _preflight_paths(observation, journal, primary, reader, target, stack)
-            ids = reader.find("warpdrive-recovery:" + plan["operationId"])
+            ids = reader.find(tag)
             if len(ids) != 1:
                 raise RecoveryUnknown("No unique manifest-bound snapshot can be reconciled; no write was replayed")
             try:
-                return _finish(plan, journal, observer, primary, reader, target, prepared, ids[0], deadline)
+                return _finish(plan, journal, observer, primary, reader, target, prepared, ids[0], deadline, installed=installed)
             except RecoveryError as error:
                 raise RecoveryUnknown("Retained backup remains unverified; keep all writers stopped",
                                       failure=failure_fact(error)) from None
         require(not reconcile, "There is no retained backup intent to reconcile")
-        observation = observer.observe(plan)
+        observation = _observe(plan, observer, installed=installed)
         target = _preflight_paths(observation, journal, primary, reader, target, stack)
         require(primary.repository_id() == reader.repository_id() == plan["repositoryId"], "Approved repository identity differs")
-        journal.new("private-configuration.json", canonical(observation["privateConfiguration"]))
-        inventory = scan([*observation["roots"], journal.path / "private-configuration.json"],
-                         {**plan["limits"], "deadline": deadline}, forbidden=_forbidden_sources(primary, reader))
-        manifest = canonical({"schemaVersion": 1, "kind": "warpdrive-cold-recovery-manifest", "planSha256": plan_hash,
-                              "tag": "warpdrive-recovery:" + plan["operationId"], "coldFingerprint": observation["fingerprint"],
-                              "members": observation["members"], "inventory": inventory})
+        sources = [*observation["roots"], journal.path / "private-configuration.json"]
+        if installed:
+            journal.new(INSTALLED_INGRESS_COPY, observation["ingressBytes"])
+            sources.append(journal.path / INSTALLED_INGRESS_COPY)
+        private_raw = observation["privateConfigurationRaw"] if installed else canonical(observation["privateConfiguration"])
+        journal.new("private-configuration.json", private_raw)
+        inventory = scan(sources, {**plan["limits"], "deadline": deadline},
+                         forbidden=_forbidden_sources(primary, reader), single_link=installed)
+        value = {"schemaVersion": 2 if installed else 1,
+                 "kind": INSTALLED_MANIFEST_KIND if installed else "warpdrive-cold-recovery-manifest",
+                 "planSha256": plan_hash, "tag": tag, "coldFingerprint": observation["fingerprint"],
+                 "members": observation["members"], "inventory": inventory}
+        if installed:
+            value["scope"] = INSTALLED_SCOPE
+            _validate_installed_manifest(value, plan, journal.path / "recovery-manifest.json", inventory)
+        manifest = canonical(value)
         require(len(manifest) <= MAX_METADATA, "Recovery manifest exceeds its bound")
         journal.new("recovery-manifest.json", manifest)
         prepared = journal.append("PREPARED", {"planSha256": plan_hash, "manifestSha256": digest(manifest)})
-        require(observer.observe(plan)["fingerprint"] == observation["fingerprint"], "Cold installation changed during preparation")
+        require(_observe(plan, observer, installed=installed)["fingerprint"] == observation["fingerprint"],
+                "Cold installation changed during preparation")
+        if installed:
+            require(scan(inventory["roots"], {**plan["limits"], "deadline": deadline},
+                         forbidden=_forbidden_sources(primary, reader), single_link=True) == inventory,
+                    "Installed recovery sources changed during preparation")
         journal.append("BACKUP_INTENT", {"planSha256": plan_hash, "manifestSha256": digest(manifest)})
         try:
             snapshot = primary.backup([*inventory["roots"], journal.path / "recovery-manifest.json"],
-                                      "warpdrive-recovery:" + plan["operationId"])
+                                      tag)
             journal.append("SNAPSHOT_REPORTED", {"planSha256": plan_hash, "snapshotId": snapshot})
             require(time.monotonic() - started <= plan["limits"]["seconds"], "Recovery operation deadline exceeded")
-            return _finish(plan, journal, observer, primary, reader, target, prepared, snapshot, deadline)
+            return _finish(plan, journal, observer, primary, reader, target, prepared, snapshot, deadline, installed=installed)
         except BaseException as error:
             failure = failure_fact(error)
             try:

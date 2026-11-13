@@ -11,6 +11,18 @@ on:
         description: Canonical SHA-256 of the reviewed functional Web profile
         required: true
         type: string
+      structural_profile_base64:
+        description: Reviewed client effect profile encoded as base64
+        type: string
+      structural_delta_base64:
+        description: Exact reviewed Git delta encoded as base64
+        type: string
+      structural_delta_sha256:
+        description: Canonical SHA-256 of the structural Git delta
+        type: string
+      structural_registry_sha256:
+        description: Optional independent review digest for privacy registry changes
+        type: string
       installed_lineage_sha256:
         description: Digest of the current installed Web pair
         required: true
@@ -29,6 +41,18 @@ on:
         type: choice
         default: registry
         options: [registry, original-actions]
+      predecessor_composite_file:
+        description: Reviewed Web history file for an already accepted functional release
+        type: string
+      predecessor_composite_sha256:
+        description: Canonical SHA-256 of the reviewed predecessor composite
+        type: string
+      active_publication_file:
+        description: Reviewed functional receipt file for original Actions retrieval
+        type: string
+      predecessor_lineage_sha256:
+        description: Installed lineage used to qualify the active functional release
+        type: string
 
 permissions:
   contents: read
@@ -51,9 +75,15 @@ jobs:
       CANDIDATE_REVISION: ${{ github.sha }}
       TOOLING_REVISION: ${{ inputs.tooling_revision }}
       PROFILE_SHA: ${{ inputs.profile_sha256 }}
+      STRUCTURAL_DELTA_SHA: ${{ inputs.structural_delta_sha256 }}
+      STRUCTURAL_REGISTRY_SHA: ${{ inputs.structural_registry_sha256 }}
       LINEAGE_SHA: ${{ inputs.installed_lineage_sha256 }}
       ACTIVE_PUBLICATION_SHA: ${{ inputs.active_publication_sha256 }}
       ACTIVE_PUBLICATION_BYTES: ${{ inputs.active_publication_bytes }}
+      HISTORY_FILE: ${{ inputs.predecessor_composite_file }}
+      HISTORY_SHA: ${{ inputs.predecessor_composite_sha256 }}
+      ACTIVE_PUBLICATION_FILE: ${{ inputs.active_publication_file }}
+      HISTORY_LINEAGE_SHA: ${{ inputs.predecessor_lineage_sha256 }}
       CORE_REVISION: 6b24e23cffb32c09089d7020252cc787e3b5bf51
       CORE_MANIFEST_SHA: 28ad2697428b302cbd69af23390214453e86e040df958380deef9a3f608d2b55
       CORE_ADMISSION_SHA: baecbd9e5ac8a27a9948c43fc5bd16fef4b3e268c55b92ff6061f88f7664e3d8
@@ -68,6 +98,8 @@ jobs:
           persist-credentials: false
       - name: Verify the selected functional release inputs
         env:
+          STRUCTURAL_PROFILE: ${{ inputs.structural_profile_base64 }}
+          STRUCTURAL_DELTA: ${{ inputs.structural_delta_base64 }}
           GH_TOKEN: ${{ github.token }}
         run: |
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$CANDIDATE_REVISION"
@@ -76,13 +108,40 @@ jobs:
             [[ "$pin" =~ ^[0-9a-f]{64}$ ]]
           done
           [[ "$ACTIVE_PUBLICATION_BYTES" =~ ^[1-9][0-9]{0,5}$ ]]
+          if [[ -n "$HISTORY_FILE" ]]; then
+            [[ "$HISTORY_FILE" =~ ^scripts/deployment/web-history/[a-z0-9][a-z0-9-]{0,63}[.]json$ ]]
+            [[ "$HISTORY_SHA" =~ ^[0-9a-f]{64}$ && "$HISTORY_LINEAGE_SHA" =~ ^[0-9a-f]{64}$ ]]
+          else
+            test -z "$HISTORY_SHA$HISTORY_LINEAGE_SHA$ACTIVE_PUBLICATION_FILE"
+          fi
           test "$TOOLING_REVISION" != "$CANDIDATE_REVISION"
           git --no-replace-objects merge-base --is-ancestor "$TOOLING_REVISION" "$CANDIDATE_REVISION"
           git -c core.hooksPath=/dev/null worktree add --detach "$RUNNER_TEMP/functional-seed" "$CORE_REVISION"
           umask 077
           mkdir "$RUNNER_TEMP/functional-proof" "$RUNNER_TEMP/functional-projection"
-          git --no-replace-objects show "$TOOLING_REVISION:scripts/deployment/web-functional-profile.json" \
-            > "$RUNNER_TEMP/functional-proof/profile.json"
+          proof="$RUNNER_TEMP/functional-proof"
+          if [[ -n "$STRUCTURAL_DELTA" ]]; then
+            test -n "$STRUCTURAL_PROFILE"
+            [[ "$STRUCTURAL_DELTA_SHA" =~ ^[0-9a-f]{64}$ ]]
+            [[ -z "$STRUCTURAL_REGISTRY_SHA" || "$STRUCTURAL_REGISTRY_SHA" =~ ^[0-9a-f]{64}$ ]]
+            printf '%s' "$STRUCTURAL_PROFILE" | base64 --decode > "$proof/profile.json"
+            printf '%s' "$STRUCTURAL_DELTA" | base64 --decode > "$proof/structural-delta.json"
+          else
+            test -z "$STRUCTURAL_PROFILE$STRUCTURAL_DELTA_SHA$STRUCTURAL_REGISTRY_SHA"
+            profile_path="scripts/deployment/web-functional-profile.json"
+            if [[ -n "$HISTORY_FILE" ]]; then
+              profile_path="scripts/deployment/web-functional-switch-profile.json"
+              git --no-replace-objects diff --quiet "$TOOLING_REVISION" "$CANDIDATE_REVISION" -- "$profile_path"
+            fi
+            git --no-replace-objects show "$TOOLING_REVISION:$profile_path" > "$proof/profile.json"
+          fi
+          if [[ -n "$HISTORY_FILE" ]]; then
+            git --no-replace-objects diff --quiet "$TOOLING_REVISION" "$CANDIDATE_REVISION" -- "$HISTORY_FILE"
+            if [[ -n "$ACTIVE_PUBLICATION_FILE" ]]; then
+              [[ "$ACTIVE_PUBLICATION_FILE" =~ ^scripts/deployment/web-history/[a-z0-9][a-z0-9-]{0,63}[.]receipt$ ]]
+              git --no-replace-objects diff --quiet "$TOOLING_REVISION" "$CANDIDATE_REVISION" -- "$ACTIVE_PUBLICATION_FILE"
+            fi
+          fi
       - name: Install attested ORAS
         if: inputs.custody == 'registry'
         id: oras
@@ -95,18 +154,33 @@ jobs:
           CUSTODY_SOURCE: ${{ inputs.custody }}
         run: |
           umask 077
+          previous=(--previous-web-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt"
+            --previous-web-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA")
+          history_lineage="$PREDECESSOR_LINEAGE_SHA"
+          if [[ -n "$HISTORY_FILE" ]]; then
+            previous=(--functional-predecessor-composite "$GITHUB_WORKSPACE/$HISTORY_FILE"
+              --functional-predecessor-composite-sha256 "$HISTORY_SHA")
+            history_lineage="$HISTORY_LINEAGE_SHA"
+          fi
           case "$CUSTODY_SOURCE" in
-            registry) custody=(--oras "$CUSTODY_ORAS") ;;
-            original-actions) custody=(--active-publication-file "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt") ;;
+            registry)
+              test -z "$ACTIVE_PUBLICATION_FILE"
+              custody=(--oras "$CUSTODY_ORAS") ;;
+            original-actions)
+              publication_file="scripts/deployment/repeat-web-c-publication.receipt"
+              if [[ -n "$HISTORY_FILE" ]]; then
+                [[ "$ACTIVE_PUBLICATION_FILE" =~ ^scripts/deployment/web-history/[a-z0-9][a-z0-9-]{0,63}[.]receipt$ ]]
+                publication_file="$ACTIVE_PUBLICATION_FILE"
+              fi
+              custody=(--active-publication-file "$GITHUB_WORKSPACE/$publication_file") ;;
             *) exit 1 ;;
           esac
           python3 -B scripts/deployment/web_functional_historical.py \
             "${custody[@]}" --revision "$CANDIDATE_REVISION" \
             --core-admission-sha256 "$CORE_ADMISSION_SHA" --core-manifest-sha256 "$CORE_MANIFEST_SHA" \
-            --previous-web-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt" \
-            --previous-web-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA" \
+            "${previous[@]}" \
             --active-publication-sha256 "$ACTIVE_PUBLICATION_SHA" --active-publication-bytes "$ACTIVE_PUBLICATION_BYTES" \
-            --predecessor-lineage-sha256 "$PREDECESSOR_LINEAGE_SHA" --output-dir "$RUNNER_TEMP/functional-retained"
+            --predecessor-lineage-sha256 "$history_lineage" --output-dir "$RUNNER_TEMP/functional-retained"
           revision=$(jq --exit-status --raw-output '.revision' "$RUNNER_TEMP/functional-retained/active-receipt.json")
           [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
           printf 'active_revision=%s\n' "$revision" >> "$GITHUB_OUTPUT"
@@ -133,18 +207,31 @@ jobs:
           curl --fail --silent --show-error --proto '=https' --connect-timeout 15 --max-time 45 --max-filesize 8388608 \
             https://registry.npmjs.org/@ui-sdk/react/-/react-0.1.0-beta.1.tgz --output "$proof/react.tgz"
       - name: Admit functional source, dependencies and exact Docker context
+        id: build-inputs
         env:
           ACTIVE_REVISION: ${{ steps.retained.outputs.active_revision }}
         run: |
           test "$(uname -m)" = x86_64
           proof="$RUNNER_TEMP/functional-proof"
-          python3 -B scripts/deployment/web_functional_build.py \
+          profile=(--profile "$proof/profile.json")
+          if [[ -n "$HISTORY_FILE" && -z "$STRUCTURAL_DELTA_SHA" ]]; then profile=(--switch-successor); fi
+          structural=()
+          if [[ -n "$STRUCTURAL_DELTA_SHA" ]]; then
+            structural=(--structural-delta "$proof/structural-delta.json" --structural-delta-sha256 "$STRUCTURAL_DELTA_SHA")
+            if [[ -n "$STRUCTURAL_REGISTRY_SHA" ]]; then
+              structural+=(--structural-registry-sha256 "$STRUCTURAL_REGISTRY_SHA")
+            fi
+          fi
+          admission=$(python3 -B scripts/deployment/web_functional_build.py \
+            "${structural[@]}" \
             --root "$GITHUB_WORKSPACE" --revision "$CANDIDATE_REVISION" --active-web-revision "$ACTIVE_REVISION" \
             --tooling-revision "$TOOLING_REVISION" --core-revision "$CORE_REVISION" \
-            --profile "$proof/profile.json" --profile-sha256 "$PROFILE_SHA" \
+            "${profile[@]}" --profile-sha256 "$PROFILE_SHA" \
             --core-bundle-dir "$RUNNER_TEMP/functional-retained/core" --core-manifest-sha256 "$CORE_MANIFEST_SHA" \
             --web-projection "$RUNNER_TEMP/functional-projection" --sdk-core "$proof/core.tgz" --sdk-react "$proof/react.tgz" \
-            --context "$RUNNER_TEMP/functional-context" --output "$proof/inputs.json"
+            --context "$RUNNER_TEMP/functional-context" --output "$proof/inputs.json")
+          input_sha=$(jq -er '.inputSha256 | select(test("^[a-f0-9]{64}$"))' <<< "$admission")
+          printf 'input_sha=%s\n' "$input_sha" >> "$GITHUB_OUTPUT"
       - name: Recheck selected main before building the functional image
         env:
           GH_TOKEN: ${{ github.token }}
@@ -168,28 +255,57 @@ jobs:
       - name: Qualify mixed browser continuity and retain the tested Web image
         env:
           ACTIVE_REVISION: ${{ steps.retained.outputs.active_revision }}
+          BUILD_INPUT_SHA: ${{ steps.build-inputs.outputs.input_sha }}
         run: |
           proof="$RUNNER_TEMP/functional-proof"
           retained="$RUNNER_TEMP/functional-retained"
+          profile=(--profile "$proof/profile.json")
+          if [[ -n "$HISTORY_FILE" && -z "$STRUCTURAL_DELTA_SHA" ]]; then profile=(--switch-successor); fi
+          structural=()
+          if [[ -n "$STRUCTURAL_DELTA_SHA" ]]; then
+            structural=(--structural-delta "$proof/structural-delta.json" --structural-delta-sha256 "$STRUCTURAL_DELTA_SHA")
+            if [[ -n "$STRUCTURAL_REGISTRY_SHA" ]]; then
+              structural+=(--structural-registry-sha256 "$STRUCTURAL_REGISTRY_SHA")
+            fi
+          fi
           python3 -B scripts/deployment/web_functional_build.py --verify \
+            "${structural[@]}" \
             --root "$GITHUB_WORKSPACE" --revision "$CANDIDATE_REVISION" --active-web-revision "$ACTIVE_REVISION" \
             --tooling-revision "$TOOLING_REVISION" --core-revision "$CORE_REVISION" \
-            --profile "$proof/profile.json" --profile-sha256 "$PROFILE_SHA" \
+            "${profile[@]}" --profile-sha256 "$PROFILE_SHA" \
             --core-bundle-dir "$retained/core" --core-manifest-sha256 "$CORE_MANIFEST_SHA" \
             --web-projection "$RUNNER_TEMP/functional-projection" --sdk-core "$proof/core.tgz" --sdk-react "$proof/react.tgz" \
             --context "$RUNNER_TEMP/functional-context" --output "$proof/inputs.json"
           image_id=$(docker image inspect --format '{{.Id}}' "$WEB_IMAGE")
+          previous=(--active-web-bundle "$retained/web"
+            --active-web-publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt"
+            --active-web-publication-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA")
+          history_lineage="$PREDECESSOR_LINEAGE_SHA"
+          if [[ -n "$HISTORY_FILE" ]]; then
+            previous=(--functional-predecessor-composite "$GITHUB_WORKSPACE/$HISTORY_FILE"
+              --functional-predecessor-composite-sha256 "$HISTORY_SHA")
+            history_lineage="$HISTORY_LINEAGE_SHA"
+          fi
           baseline=(--bundle-dir "$retained/core" --baseline-revision "$CORE_REVISION" --baseline-manifest-sha256 "$CORE_MANIFEST_SHA"
-            --active-web-bundle "$retained/web" --active-web-publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt"
-            --active-web-publication-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA" --seed-root "$RUNNER_TEMP/functional-seed"
+            "${previous[@]}" --seed-root "$RUNNER_TEMP/functional-seed"
             --successor-web-bundle "$retained/active" --successor-web-publication-receipt "$retained/active-receipt.json"
             --successor-web-publication-receipt-sha256 "$ACTIVE_PUBLICATION_SHA" --successor-web-revision "$ACTIVE_REVISION"
-            --predecessor-lineage-sha256 "$PREDECESSOR_LINEAGE_SHA" --new-web-image-id "$image_id" --new-web-revision "$CANDIDATE_REVISION")
-          timeout --signal=INT --kill-after=65s 15m python3 -B scripts/deployment/web_mixed_image_smoke.py \
-            "${baseline[@]}" --harness-revision "$CANDIDATE_REVISION" --output-dir "$proof/mixed" --browser --sdk-keyboard-help
-          python3 -B scripts/deployment/web_functional_candidate.py "${baseline[@]}" \
-            --input-path "$proof/inputs.json" --mixed-path "$proof/mixed/report.json" \
-            --installed-lineage-sha256 "$LINEAGE_SHA" --output-dir "$RUNNER_TEMP/functional-bundle"
+            --predecessor-lineage-sha256 "$history_lineage" --new-web-image-id "$image_id" --new-web-revision "$CANDIDATE_REVISION")
+          if [[ -n "$HISTORY_FILE" && -z "$STRUCTURAL_DELTA_SHA" ]]; then
+            timeout --signal=INT --kill-after=65s 18m python3 -B scripts/deployment/web_functional_switch.py \
+              "${baseline[@]}" --harness-revision "$CANDIDATE_REVISION" --output-dir "$proof/mixed" --browser --sdk-keyboard-help \
+              --root "$GITHUB_WORKSPACE" --tooling-revision "$TOOLING_REVISION" --profile-sha256 "$PROFILE_SHA" \
+              --web-projection "$RUNNER_TEMP/functional-projection" --sdk-core "$proof/core.tgz" --sdk-react "$proof/react.tgz" \
+              --context "$RUNNER_TEMP/functional-context" --input-path "$proof/inputs.json" \
+              --expected-input-sha256 "$BUILD_INPUT_SHA" --installed-lineage-sha256 "$LINEAGE_SHA" \
+              --bundle-output "$RUNNER_TEMP/functional-bundle"
+          else
+            timeout --signal=INT --kill-after=65s 15m python3 -B scripts/deployment/web_mixed_image_smoke.py \
+              "${baseline[@]}" --harness-revision "$CANDIDATE_REVISION" --output-dir "$proof/mixed" --browser --sdk-keyboard-help
+            python3 -B scripts/deployment/web_functional_candidate.py "${baseline[@]}" \
+              --input-path "$proof/inputs.json" --mixed-path "$proof/mixed/report.json" \
+              --installed-lineage-sha256 "$LINEAGE_SHA" --output-dir "$RUNNER_TEMP/functional-bundle"
+          fi
       - name: Recheck selected main before retaining the functional artifact
         env:
           GH_TOKEN: ${{ github.token }}

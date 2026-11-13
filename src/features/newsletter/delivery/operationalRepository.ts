@@ -11,6 +11,7 @@ import { recordAudit } from "@/features/identity/audit";
 import { createNotification } from "@/features/notifications/produce";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import {
+  OPERATIONAL_ENGINE_KEY,
   type OperationalEvent,
   type OperationalNotice,
   operationalEventSchema,
@@ -19,10 +20,7 @@ import {
   type ReadinessReason,
 } from "./operationalContracts";
 
-// One installation has one primary newsletter engine. A route/credential rotation must not
-// change the receipt namespace and duplicate an event whose ACK response was lost.
-export const OPERATIONAL_ENGINE_KEY =
-  "e13d92fa371d3e1499b6a3394be32075d8b565b80b75437c46b50297572df833";
+export { OPERATIONAL_ENGINE_KEY } from "./operationalContracts";
 export interface HealthObservation {
   fingerprint: string;
   reason: ReadinessReason | null;

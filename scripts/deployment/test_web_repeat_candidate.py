@@ -12,6 +12,7 @@ from test_web_candidate import WebDocker, encoded, digest, phase
 import test_web_repeat_inputs as repeat_fixture
 import web_repeat_candidate as repeat
 from web_candidate import REVISION_LABEL, load_web_bundle
+from web_mixed_image_smoke import CRM_SWITCH, SDK_KEYBOARD_HELP, SDK_SWITCH
 
 
 STAMP = "2026-01-01T00:00:00.000000000Z"
@@ -239,6 +240,25 @@ class RepeatWebCandidateTests(unittest.TestCase):
             mutation(report)
             with self.subTest(index=index), self.assertRaises(CandidateError):
                 repeat.validate_repeat_mixed_report(report, assembly=self.assembly, expected_harness_revision=TOOLS)
+
+    def test_report_cannot_self_select_or_omit_required_switch_evidence(self):
+        report = deepcopy(self.report)
+        completion = report["checks"][5]["detail"]["complete"]
+        completion["sdkKeyboardHelp"] = SDK_KEYBOARD_HELP
+        self.assertTrue(repeat.validate_repeat_mixed_report(
+            report, assembly=self.assembly, expected_harness_revision=TOOLS, sdk_keyboard_help=True))
+        report["browserProfile"]["sdkScenario"] = CRM_SWITCH
+        completion["sdkSwitch"] = SDK_SWITCH
+        self.assertTrue(repeat.validate_repeat_mixed_report(
+            report, assembly=self.assembly, expected_harness_revision=TOOLS,
+            sdk_keyboard_help=True, sdk_scenario=CRM_SWITCH))
+        with self.assertRaisesRegex(CandidateError, "Exact native repeat Web assembly and browser profile"):
+            repeat.validate_repeat_mixed_report(report, assembly=self.assembly, expected_harness_revision=TOOLS,
+                                                sdk_keyboard_help=True)
+        completion.pop("sdkSwitch")
+        with self.assertRaisesRegex(CandidateError, "exactly-one durable Activity write"):
+            repeat.validate_repeat_mixed_report(report, assembly=self.assembly, expected_harness_revision=TOOLS,
+                                                sdk_keyboard_help=True, sdk_scenario=CRM_SWITCH)
 
     def test_metadata_replacement_and_extra_archive_members_fail(self):
         value = self.create()

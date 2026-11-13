@@ -209,6 +209,36 @@ describe("operations UI freshness and privacy", () => {
     expect(screen.getByText(english.unknownValue)).toBeTruthy();
   });
 
+  it("labels verified restore bytes separately from application recovery", async () => {
+    const contentSha256 = "f".repeat(64);
+    api.observations.mockResolvedValueOnce({
+      ...page(),
+      items: [
+        {
+          ...row(),
+          observationKey: "recovery:restore_bytes_verified",
+          observation: {
+            kind: "recovery",
+            stage: "restore_bytes_verified",
+            state: "healthy",
+            reason: "ok",
+            recoverySetId: "af571da2-b78c-4079-9cf9-7b629416eaee",
+            completedAtMs: at,
+            durationMs: 300,
+            bytes: 42,
+            encrypted: true,
+            contentSha256,
+          },
+        },
+      ],
+    });
+    render(<OperationsMaintenance />);
+    await flush();
+    expect(screen.getByRole("heading", { name: /Restore bytes verified/u })).toBeTruthy();
+    expect(screen.getByText(contentSha256)).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: /Restore test/u })).toBeNull();
+  });
+
   it.each(["FORBIDDEN", "UNAUTHORIZED"])(
     "hides all private section data on confirmed %s and waits for explicit refresh",
     async (code) => {

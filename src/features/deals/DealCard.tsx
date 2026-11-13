@@ -3,12 +3,12 @@ import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { avatarColorClass, initials } from "@/lib/avatar";
-import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import type { ActivityState } from "./cardIndicators";
 import { activityState, activityTooltip, rottingState } from "./cardIndicators";
 import { DealStatusBadge } from "./DealStatusBadge";
 import type { BoardCard } from "./dealRepo";
+import { useBoardCurrency } from "./useBoardCurrency";
 
 // String constants: no magic strings, no em dashes.
 const STRINGS = {
@@ -80,7 +80,7 @@ export function DealCard(props: DealCardProps): React.ReactNode {
     onOpen,
   } = props;
   const { elevated, currency } = props;
-  const format = useFormatters();
+  const formatCurrency = useBoardCurrency();
   const compact = density === "compact";
   const activity = activityState(card.nextActivityAt, now);
   // Hover/aria copy for the next-action badge: names the soonest action and its timing.
@@ -134,7 +134,7 @@ export function DealCard(props: DealCardProps): React.ReactNode {
       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
         {card.value !== null && (
           <span className="font-semibold tabular-nums text-foreground">
-            {`${format.currency(card.value, card.currency ?? currency)}${card.currency !== undefined ? ` ${card.currency}` : ""}`}
+            {`${formatCurrency(card.value, card.currency ?? currency)}${card.currency !== undefined ? ` ${card.currency}` : ""}`}
           </span>
         )}
         {labels.map((label) => (

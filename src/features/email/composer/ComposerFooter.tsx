@@ -15,9 +15,9 @@ import { useState } from "react";
 import { ToggleField } from "@/components/ui/ToggleField";
 import { Tip } from "@/components/ui/tooltip";
 import type { EmailVisibility } from "../threadVisibility";
+import { VisibilityControl } from "../VisibilityControl";
 import { AddActivityToggle } from "./AddActivityToggle";
 import { ScheduleSendPicker } from "./ScheduleSendPicker";
-import { VisibilityControl } from "./VisibilityControl";
 
 interface ComposerFooterProps {
   canSend: boolean;

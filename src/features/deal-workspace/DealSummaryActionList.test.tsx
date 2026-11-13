@@ -124,6 +124,26 @@ it("keeps a stored decimal unchanged when opening and blurring its German money 
   expect(updateDealAction).not.toHaveBeenCalled();
 });
 
+it("keeps the German money draft through composition and saves once on Enter", async () => {
+  render(
+    <LocaleProvider locale="de">
+      <DealSummaryActionList deal={baseDeal} person={null} org={null} baseCurrency="USD" />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /Betrag.*bearbeiten|bearbeiten.*Betrag/ }));
+  const input = screen.getByLabelText("Betrag");
+  fireEvent.change(input, { target: { value: "1,25" } });
+  fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+  fireEvent.keyDown(input, { key: "Enter", keyCode: 229 });
+  expect(input).toHaveValue("1,25");
+  expect(updateDealAction).not.toHaveBeenCalled();
+
+  fireEvent.keyDown(input, { key: "Enter" });
+  await vi.waitFor(() => expect(updateDealAction).toHaveBeenCalledTimes(1));
+  const [payload] = updateDealAction.mock.calls[0] as unknown as [Record<string, unknown>];
+  expect(payload.value).toBe(1.25);
+});
+
 it("keeps exact money and a German draft's locale through an interface switch", async () => {
   const element = (locale: "de" | "en") => (
     <LocaleProvider locale={locale}>

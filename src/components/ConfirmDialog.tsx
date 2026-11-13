@@ -10,14 +10,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactElement;
   title: string;
   description: string;
   // Copy for the affirmative action, e.g. "Delete". Kept short: the title carries the question.
@@ -38,6 +40,7 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   open,
   onOpenChange,
+  trigger,
   title,
   description,
   confirmLabel,
@@ -51,14 +54,16 @@ export function ConfirmDialog({
   const returnFocus = useRef<HTMLElement | null>(null);
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {trigger !== undefined && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent
         className="max-w-md"
         onOpenAutoFocus={() => {
+          if (trigger !== undefined) return;
           const active = document.activeElement;
           returnFocus.current = active instanceof HTMLElement ? active : null;
         }}
         onCloseAutoFocus={(event) => {
-          if (returnFocus.current?.isConnected === true) {
+          if (trigger === undefined && returnFocus.current?.isConnected === true) {
             event.preventDefault();
             returnFocus.current.focus();
           }

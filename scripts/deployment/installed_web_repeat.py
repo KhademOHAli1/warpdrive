@@ -4,21 +4,48 @@ from copy import deepcopy
 import os
 from pathlib import Path
 import re
+import tempfile
 import time
 
 from caddy_web_repeat import compile_repeat_web_configs
+from installed_core_lineage import verify_projected_core_predecessor
 from installed_web_chain import _admit_journals, _directory, _state
 from installed_web_emergency import restore_failed_installed_web
 from installed_web_intent_recovery import recover_failed_installed_web_intent
+from installed_web_stage import _publish_record
 from installed_web_target import InstalledWebTarget, _config_bytes
 from web_generation_routes import WebGeneration
-from web_rollout import _record, _validate, _write_state, rollout_web
+from web_rollout import STAGED_FILE, _record, _remove_abandoned_write, _validate, _write_state, rollout_web
 from web_switch import (
-    HASH, NAME, DefiniteRejected, SwitchHeld, SwitchUnknown, _fsync, _lock, _matches, _sustained, content_hash, require,
+    HASH, NAME, DefiniteRejected, SwitchHeld, SwitchUnknown, _envelope, _fsync, _lock, _matches, _sustained, canonical, content_hash, require,
 )
 
 
 _ALIAS = re.compile(r"warpdrive-web-([a-f0-9]{12})\Z")
+
+
+def _publish_route_record(path, value):
+    """Publish canonical route state in one no-replace rename, with one link."""
+    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        descriptor, temporary = tempfile.mkstemp(prefix=".web-rollout-", suffix=".tmp", dir=path.parent)
+        temporary = Path(temporary).name
+        try:
+            with os.fdopen(descriptor, "wb") as output:
+                raw = canonical(_envelope(value)) + b"\n"
+                require(output.write(raw) == len(raw), "Incomplete route reconciliation receipt")
+                output.flush()
+                os.fsync(output.fileno())
+                require(os.fstat(output.fileno()).st_nlink == 1, "Route reconciliation receipt acquired another link")
+            _publish_record(directory, temporary, path.name)
+            os.fsync(directory)
+        finally:
+            try:
+                os.unlink(temporary, dir_fd=directory)
+            except FileNotFoundError:
+                pass
+    finally:
+        os.close(directory)
 
 
 class InstalledWebRepeat:
@@ -37,7 +64,9 @@ class InstalledWebRepeat:
 
     def __init__(self, state_dir, *, admitted_chain, expected_chain_sha256, installed_bytes, expected_installed_sha256,
                  host, traefik_ip, relay_alias, candidate_runtime, candidate_alias, qualification_sha256, admin,
-                 verify_release, observe_installed, probe_health, read_durable_config, observe_candidate_failure):
+                 verify_release, observe_installed, probe_health, read_durable_config, observe_candidate_failure,
+                 core_alias=None, core_activation_operation_id=None, expected_core_activation_lineage_sha256=None,
+                 expected_core_authority_sha256=None):
         state_dir = Path(state_dir)
         require(state_dir.is_absolute() and state_dir.resolve(strict=True) == state_dir,
                 "Canonical shared installed Web state required")
@@ -66,7 +95,8 @@ class InstalledWebRepeat:
                 and prior["runtime"]["schemaSha256"] == candidate_runtime.get("schemaSha256"),
                 "Candidate must differ from both retained Web runtimes on the same schema")
         documents = compile_repeat_web_configs(installed_bytes, expected_sha256=expected_installed_sha256,
-            host=host, traefik_ip=traefik_ip, relay_alias=relay_alias, current=current, previous=previous, candidate=candidate)
+            host=host, traefik_ip=traefik_ip, relay_alias=relay_alias, current=current, previous=previous,
+            candidate=candidate, core_alias=core_alias)
         operation = "web-" + alias[1]
         require(chain["acceptedOperationId"] not in {operation, operation + "-rollback", operation + "-reapply"}
                 and active["route"]["fingerprint"] == content_hash(documents["before"]),
@@ -85,7 +115,12 @@ class InstalledWebRepeat:
         for plan in self._plans.values():
             _validate(plan)
         self._state_dir, self._chain = state_dir, chain
-        self._documents = documents
+        require((core_activation_operation_id is None) == (expected_core_activation_lineage_sha256 is None) == (expected_core_authority_sha256 is None)
+                and (core_activation_operation_id is None or core_alias is not None), "Paired Core activation lineage pins required")
+        self._core_activation_operation_id = core_activation_operation_id
+        self._core_activation_lineage_sha256 = expected_core_activation_lineage_sha256
+        self._core_authority_sha256 = expected_core_authority_sha256
+        self._documents, self._core_alias = documents, core_alias
         self._generations = {"before": (current, previous), "after": (candidate, current), "manualRollback": (current, candidate)}
         self._runtime_pins = {previous.deployment_id: prior["runtime"], current.deployment_id: active["runtime"],
                               candidate.deployment_id: next_slot["runtime"]}
@@ -100,15 +135,23 @@ class InstalledWebRepeat:
     def _journal(self, operation):
         return self._state_dir / "web-rollouts" / (operation + ".json")
 
-    def _qualify(self, action, selected, initialize):
+    def verify_predecessor(self):
         chain = self._chain
         journal = _state(self._journal(chain["acceptedOperationId"]))
         predecessor = journal["plan"]
         _validate(predecessor)
-        if (initialize or journal["state"] != "accepted" or predecessor["operationId"] != chain["acceptedOperationId"]
+        if (journal["state"] != "accepted" or predecessor["operationId"] != chain["acceptedOperationId"]
                 or content_hash(predecessor) != chain["acceptedPlanSha256"] or predecessor["targetKey"] != chain["targetKey"]
-                or predecessor["backendFingerprint"] != chain["backendFingerprint"]
-                or predecessor["before"] != chain["previous"]["slot"] or predecessor["after"] != chain["active"]["slot"]):
+                or predecessor["before"] != chain["previous"]["slot"]):
+            return False
+        if self._core_activation_operation_id is not None:
+            projection = verify_projected_core_predecessor(self._state_dir, chain=chain, activation_operation_id=self._core_activation_operation_id,
+                expected_activation_lineage_sha256=self._core_activation_lineage_sha256)
+            return projection.core_authority_sha256 == self._core_authority_sha256
+        return predecessor["backendFingerprint"] == chain["backendFingerprint"] and predecessor["after"] == chain["active"]["slot"]
+
+    def _qualify(self, action, selected, initialize):
+        if initialize or not self.verify_predecessor():
             return False
         prerequisite = {"rollback": "promote", "reapply": "rollback"}.get(action)
         if prerequisite is not None:
@@ -136,7 +179,7 @@ class InstalledWebRepeat:
                          "reapply": ("manualRollback", "after")}[action]
         return InstalledWebTarget(plan, admin=self._admin,
             documents={"successorA": self._documents[before], "successorB": self._documents[after]},
-            generations=(self._generations[before], self._generations[after]),
+            generations=(self._generations[before], self._generations[after]), core_alias=self._core_alias,
             verify_release=lambda selected, *, initialize: self._qualify(action, selected, initialize),
             observe_runtimes=lambda: self._runtimes(plan), probe_health=self._probe_health,
             read_durable_config=self._read_durable_config)
@@ -195,6 +238,13 @@ class InstalledWebRepeat:
         with _lock(state):
             _directory(state)
             _directory(operations)
+            for directory in (state, operations):
+                for index, path in enumerate(directory.iterdir()):
+                    require(index < 1000, "Oversized route reconciliation state directory")
+                    if STAGED_FILE.fullmatch(path.name):
+                        require(path.lstat().st_nlink == 1, "Route staging file has another link")
+                        _remove_abandoned_write(path)
+                        _fsync(directory)
             require(self._qualify("reapply", deepcopy(plan), False)
                     and _state(self._journal(plan["operationId"])) == {"plan": plan, "state": "rolled-back"},
                     "Exact rolled-back repeat Web reapply is required")
@@ -210,7 +260,7 @@ class InstalledWebRepeat:
                 self._stamp_health(plan, side="manualRollback", prove_failure=True, clock=clock, sleep=sleep)
                 require(_state(pointer) == old, "Accepted Web changed before route-only reconciliation")
                 # Presence in web-rollouts holds all ordinary writers during an ambiguous CAS.
-                _write_state(pending, intent)
+                _publish_route_record(pending, intent)
                 saved = intent
                 try:
                     self._admin.compare_and_swap(deepcopy(self._documents["manualRollback"]), deepcopy(self._documents["before"]))
@@ -232,11 +282,13 @@ class InstalledWebRepeat:
                 _write_state(pending, accepted, previous=intent)
                 saved = accepted
             if not archived:
-                _write_state(archive, accepted)
+                _publish_route_record(archive, accepted)
+            require(_state(archive) == accepted, "Route-only reconciliation archive changed")
+            _fsync(state)
             if saved == accepted:
-                require(_state(pending) == _state(archive) == accepted, "Route-only reconciliation archive changed")
+                require(_state(pending) == accepted, "Route-only reconciliation journal changed")
                 pending.unlink()
-                _fsync(operations)
+            _fsync(operations)
         return {"state": "accepted", "operationId": operation_id, "acceptedGeneration": new["slot"]["route"]["generation"],
                 "routeFingerprint": new["slot"]["route"]["fingerprint"], "failedCandidateStampsRetained": False}
 

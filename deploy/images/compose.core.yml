@@ -1,0 +1,47 @@
+# Optional service only. Load after docker-compose.yml and compose.yml.
+# The deployment operator admits the exact image and its Core compatibility evidence.
+services:
+  core-api:
+    image: "${WARPDRIVE_CORE_IMAGE_REPOSITORY:?set WARPDRIVE_CORE_IMAGE_REPOSITORY}@sha256:${WARPDRIVE_CORE_IMAGE_SHA256:?set WARPDRIVE_CORE_IMAGE_SHA256}"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    labels:
+      traefik.enable: "false"
+    # Keep the runtime's 60-second drain deadline inside the container stop budget.
+    stop_grace_period: 75s
+    env_file:
+      - "${WARPDRIVE_CORE_ENV_FILE:?set WARPDRIVE_CORE_ENV_FILE}"
+    environment:
+      RUNTIME_COMPONENT: core-api
+      CORE_HOST: 0.0.0.0
+      CORE_PORT: "3010"
+      MIGRATION_DATABASE_URL: ""
+      MIGRATION_DATABASE_URL_FILE: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD_FILE: ""
+    networks:
+      core-ingress:
+        aliases: ["${WARPDRIVE_CORE_INGRESS_ALIAS:?set private Core ingress alias}"]
+      core-db: {}
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - --no-env-file
+        - -e
+        - "fetch('http://127.0.0.1:3010/readyz',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+
+networks:
+  core-ingress:
+    external: true
+    name: "${WARPDRIVE_CORE_INGRESS_NETWORK:?set existing private Core ingress network}"
+  core-db:
+    external: true
+    name: "${WARPDRIVE_CORE_DB_NETWORK:?set existing private Core database network}"

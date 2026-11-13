@@ -10,7 +10,7 @@ type SignalSource = {
 export type ShutdownStep = { name: string; run(): Promise<void> | void };
 export type ShutdownOutcome = {
   event: "runtime.shutdown";
-  source: "worker" | "realtime" | "core-api";
+  source: "worker" | "realtime" | "core-api" | "operations-collector";
   status: "drained" | "failed" | "timed_out";
   step: string | null;
   exitCode: 0 | 1;

@@ -129,12 +129,16 @@ def extract_verified_zip(archive, destination, artifact):
 
 
 def retain(api, run_id, revision, output_dir, *, composite, previous_web, installed_lineage, accepted_plan,
-           expected_installed_lineage_sha256, expected_input_sha256, fetch=download):
+           expected_installed_lineage_sha256, expected_input_sha256, fetch=download, sdk_scenario=None,
+           expected_tooling_revision=None, expected_profile_sha256=None,
+           core_acceptance=None, core_projection=None, expected_core_acceptance_sha256=None):
     """Retain a tested D ZIP only after exact hosted and private installed admission.
 
     The caller independently authenticates the two Web projections and the
     original backend composite. Private installed chain and accepted plan are
-    verified locally. The retained publication receipt contains no runtime IDs.
+    verified locally. The caller supplies the Switch scenario and its protected
+    source and profile pins independently of the archive. The retained
+    publication receipt contains no runtime IDs.
     """
     require(type(composite) is dict and composite.get("kind") == "warpdrive-web-composite-baseline"
             and composite.get("schemaVersion") == 1 and composite.get("repository") == REPO
@@ -142,7 +146,8 @@ def retain(api, run_id, revision, output_dir, *, composite, previous_web, instal
             and _matches(HASH, expected_input_sha256), "Exact functional Web composite and build input pin required")
     baseline, prior = deepcopy(composite), deepcopy(previous_web)
     verified = verify_web_successor_lineage(installed_lineage, expected_lineage_sha256=expected_installed_lineage_sha256,
-        accepted_plan=accepted_plan, active_web=baseline["web"], previous_web=prior, original_backend=baseline["backend"])
+        accepted_plan=accepted_plan, active_web=baseline["web"], previous_web=prior, original_backend=baseline["backend"],
+        core_acceptance=core_acceptance, core_projection=core_projection, expected_core_acceptance_sha256=expected_core_acceptance_sha256)
     require(revision not in {verified[side]["slot"]["runtime"]["sourceRevision"] for side in ("active", "previous")}
             and revision != baseline["backend"]["sourceRevision"], "Functional Web candidate must be a distinct source")
     output = Path(output_dir)
@@ -155,7 +160,8 @@ def retain(api, run_id, revision, output_dir, *, composite, previous_web, instal
     manifest_sha256 = extract_verified_zip(archive, destination, initial["artifact"])
     loaded = load_functional_bundle(destination, composite=baseline, revision=revision, origin=initial["origin"],
         expected_manifest_sha256=manifest_sha256, expected_input_sha256=expected_input_sha256,
-        installed_lineage_sha256=expected_installed_lineage_sha256)
+        installed_lineage_sha256=expected_installed_lineage_sha256, sdk_scenario=sdk_scenario,
+        expected_tooling_revision=expected_tooling_revision, expected_profile_sha256=expected_profile_sha256)
     require(loaded["image"]["imageId"] != verified["previous"]["provenance"]["testedConfigDigest"],
             "Functional candidate image must differ from the retained previous Web artifact")
     latest = admit(api, run_id, revision)

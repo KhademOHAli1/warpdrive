@@ -11,8 +11,10 @@ import unittest
 from unittest.mock import patch
 
 from web_mixed_image_smoke import (
-    BROWSER_PHASES, BROWSER_SCRIPT, REPEAT_BROWSER_PROFILE, REPEAT_LIMITATIONS, MixedWebSmoke,
-    browser_message, repeat_assembly, repeat_baseline, repeat_mode, successor_baseline, successor_mode, verify_repeat_harness,
+    BROWSER_PHASES, BROWSER_SCRIPT, CRM_SWITCH, REPEAT_BROWSER_PROFILE, REPEAT_LIMITATIONS, SDK_KEYBOARD_HELP,
+    SDK_SWITCH, SWITCH_TOOLING, MixedWebSmoke,
+    browser_message, functional_successor_mode, repeat_assembly, repeat_baseline, repeat_mode, successor_baseline,
+    successor_mode, verify_repeat_harness,
 )
 from web_switch_smoke import WebSwitchSmokeError
 
@@ -271,6 +273,48 @@ class RepeatMixedTests(unittest.TestCase):
             with self.subTest(profile=profile, message=message), self.assertRaises(WebSwitchSmokeError):
                 browser_message(message, repeat=profile)
 
+    def test_switch_proof_requires_trusted_opt_in_and_exact_typed_evidence(self):
+        pilot = {"phase": "complete", **BROWSER_PHASES["complete"], "freshStampedPage": True,
+                 "sdkKeyboardHelp": SDK_KEYBOARD_HELP}
+        switch = {**pilot, "sdkSwitch": SDK_SWITCH}
+        self.assertEqual(browser_message(pilot, repeat=True, sdk_keyboard_help=True), pilot)
+        self.assertEqual(browser_message(switch, repeat=True, sdk_keyboard_help=True, sdk_scenario=CRM_SWITCH), switch)
+        with self.assertRaisesRegex(WebSwitchSmokeError, "incomplete browser control proof"):
+            browser_message(switch, repeat=True, sdk_keyboard_help=True)
+        for facts in ({}, {**SDK_SWITCH, "actionPosts": True}, {**SDK_SWITCH, "schemaVersion": True},
+                      {**SDK_SWITCH, "savedByCandidate": 1}, {**SDK_SWITCH, "unreviewed": True}):
+            with self.subTest(facts=facts), self.assertRaisesRegex(WebSwitchSmokeError, "Incomplete CRM Switch"):
+                browser_message({**switch, "sdkSwitch": facts}, repeat=True, sdk_keyboard_help=True, sdk_scenario=CRM_SWITCH)
+        with self.assertRaisesRegex(WebSwitchSmokeError, "requires the reviewed"):
+            browser_message(switch, repeat=True, sdk_scenario=CRM_SWITCH)
+        with self.assertRaisesRegex(WebSwitchSmokeError, "requires the reviewed"):
+            browser_message(switch, repeat=True, sdk_keyboard_help=True, sdk_scenario="unreviewed")
+
+    def test_scenario_must_come_from_successor_caller_and_not_arguments(self):
+        args, _ = self.successor()
+        args.sdk_keyboard_help = True
+        docker = SimpleNamespace()
+        pilot = MixedWebSmoke(docker, args, self.root / "private")
+        self.assertNotIn("sdkScenario", pilot.report["browserProfile"])
+        with self.assertRaisesRegex(WebSwitchSmokeError, "accepted functional predecessor"):
+            MixedWebSmoke(docker, args, self.root / "private", sdk_scenario=CRM_SWITCH)
+        history = self.root / "predecessor-composite.json"
+        history.write_text("{}")
+        new_args = SimpleNamespace(**(vars(args) | {
+            "active_web_bundle": None, "active_web_publication_receipt": None,
+            "active_web_publication_receipt_sha256": None,
+            "functional_predecessor_composite": history,
+            "functional_predecessor_composite_sha256": "a" * 64,
+        }))
+        self.assertTrue(functional_successor_mode(new_args))
+        switch = MixedWebSmoke(docker, new_args, self.root / "private", sdk_scenario=CRM_SWITCH)
+        self.assertEqual(switch.report["browserProfile"]["sdkScenario"], CRM_SWITCH)
+        new_args.sdk_scenario = CRM_SWITCH
+        with self.assertRaisesRegex(WebSwitchSmokeError, "trusted caller admission"):
+            MixedWebSmoke(docker, new_args, self.root / "private")
+        with self.assertRaisesRegex(WebSwitchSmokeError, "accepted functional predecessor"):
+            MixedWebSmoke(docker, self.args, self.root / "private", sdk_scenario=CRM_SWITCH)
+
     def test_harness_source_rejects_a_hidden_tracked_edit_and_ignored_tooling(self):
         def git(args):
             return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=self.seed,
@@ -291,6 +335,8 @@ class RepeatMixedTests(unittest.TestCase):
         installed.write_text("frozen browser dependency fixture")
         with patch("web_mixed_image_smoke.admit_source"):
             verify_repeat_harness(self.seed, git, revision)
+            with self.assertRaisesRegex(WebSwitchSmokeError, "toolkit source is incomplete"):
+                verify_repeat_harness(self.seed, git, revision, sdk_scenario=CRM_SWITCH)
             git(["update-index", "--assume-unchanged", BROWSER_SCRIPT])
             (self.seed / BROWSER_SCRIPT).write_text("edited source!")
             self.assertEqual(git(["status", "--porcelain"]), "")
@@ -301,6 +347,31 @@ class RepeatMixedTests(unittest.TestCase):
             self.assertEqual(git(["status", "--porcelain"]), "")
             with self.assertRaisesRegex(WebSwitchSmokeError, "Untracked"):
                 verify_repeat_harness(self.seed, git, revision)
+
+
+    def test_switch_harness_hashes_external_decoder_bytes(self):
+        def git(args):
+            return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=self.seed,
+                                           text=True, env={"PATH": os.environ["PATH"]}, timeout=5)
+
+        git(["init", "-q"])
+        for name in {BROWSER_SCRIPT, "package.json", "tools/browser-smoke/package.json",
+                     "tools/browser-smoke/bun.lock", "scripts/deployment/web_mixed_image_smoke.py", *SWITCH_TOOLING}:
+            path = self.seed / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("trusted source")
+        git(["add", "."])
+        git(["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "Fixture"])
+        revision = git(["rev-parse", "HEAD"]).strip()
+        decoder = "scripts/browser-workflow-preference-actions.mjs"
+        with patch("web_mixed_image_smoke.admit_source"):
+            verify_repeat_harness(self.seed, git, revision, sdk_scenario=CRM_SWITCH)
+            git(["update-index", "--assume-unchanged", decoder])
+            (self.seed / decoder).write_text("hidden decoder change")
+            self.assertEqual(git(["status", "--porcelain"]), "")
+            verify_repeat_harness(self.seed, git, revision)
+            with self.assertRaisesRegex(WebSwitchSmokeError, "exact reviewed source"):
+                verify_repeat_harness(self.seed, git, revision, sdk_scenario=CRM_SWITCH)
 
 
 if __name__ == "__main__":

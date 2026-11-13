@@ -6,7 +6,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SavedViewMenu } from "./SavedViewMenu";
-import { SavedViewUnavailable } from "./SavedViewUnavailable";
+import { SavedViewNotice } from "./SavedViewNotice";
 import { SaveViewDialog } from "./SaveViewDialog";
 import type { SavedView, SavedViewDefinition } from "./savedView";
 import type { SavedFilterTargetEntity } from "./schemas";
@@ -131,7 +131,8 @@ export function SavedViewControl({
         </p>
       )}
       {(selectionBlocked || selected?.availability === "unavailable") && (
-        <SavedViewUnavailable
+        <SavedViewNotice
+          state="unavailable"
           missing={
             !selectionBlocked &&
             selected?.availability === "unavailable" &&

@@ -1,0 +1,40 @@
+# Merge after docker-compose.yml, docker-compose.newsletters.yml and compose.yml.
+# Supply qualified immutable image references. Native fixture and deployment hosts
+# use the same model. Pull and inspect the admitted images before starting services.
+services:
+  caddy:
+    image: "${WARPDRIVE_CADDY_IMAGE:?set WARPDRIVE_CADDY_IMAGE}"
+    pull_policy: never
+  postgres:
+    image: "${WARPDRIVE_POSTGRES_IMAGE:?set WARPDRIVE_POSTGRES_IMAGE}"
+    pull_policy: never
+  minio:
+    image: "${WARPDRIVE_STORAGE_IMAGE:?set WARPDRIVE_STORAGE_IMAGE}"
+    pull_policy: never
+  createbuckets:
+    image: "${WARPDRIVE_STORAGE_INIT_IMAGE:?set WARPDRIVE_STORAGE_INIT_IMAGE}"
+    pull_policy: never
+    restart: "no"
+  app:
+    pull_policy: never
+    environment:
+      # First boot keeps the application integration unconfigured while the
+      # engine remains available for separate passive qualification.
+      NEWSLETTER_BASE_URL: ""
+  worker:
+    pull_policy: never
+    environment:
+      NEWSLETTER_BASE_URL: ""
+  ws:
+    pull_policy: never
+  migrate:
+    pull_policy: never
+    restart: "no"
+  newsletter-engine:
+    build: !reset null
+    image: "${WARPDRIVE_NEWSLETTER_IMAGE:?set WARPDRIVE_NEWSLETTER_IMAGE}"
+    pull_policy: never
+  newsletter-engine-migrate:
+    build: !reset null
+    image: "${WARPDRIVE_NEWSLETTER_IMAGE:?set WARPDRIVE_NEWSLETTER_IMAGE}"
+    pull_policy: never

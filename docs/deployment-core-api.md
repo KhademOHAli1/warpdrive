@@ -112,6 +112,89 @@ The current 80 MiB body envelope preserves the existing ingress limit. Aggregate
 
 `docs/deployment-evidence/core-runtime-checkpoint-20261112.json` retains full configured typecheck and changed-source typed lint, 194 focused tests, 28 component guard tests, 45 native PostgreSQL role cases and 12 native HTTP checks. The HTTP proof includes 60 denied commands with unchanged domain state and no Engine effects, plus real authenticated mutations. The existing queue integration suite now also checks the role gate against its migrated restricted-role fixture, including an unsafe grant option and restoration; that integration test still requires the new commit's hosted CI run.
 
-The separate real Core entrypoint exercised native-cookie owner isolation, CSRF rejection and saved-report writes, Web version refresh without Core restart, a live producer without consumers, repeated-signal drain and three rejected startup configurations. Its assertions passed, but its external supervisor failed during finalization with a `PermissionError` while signaling an inferred residual process group. The exact rejected group and complete native before-hash/resource-peak receipts were not retained. Separate verification confirmed every recorded process gone, all six recorded listeners closed and the exact owned fixture/private configuration removed. **This is not a clean automated native qualification pass.** Repairing that task runner and retaining a successful rerun remains open; the runtime, image and installed acceptance gates are not closed by this checkpoint.
+The first native entrypoint run passed its application assertions. Its external supervisor
+failed during finalization with a `PermissionError` while signaling an inferred residual
+process group. The exact rejected group and complete native before-hash and resource-peak
+receipts were unavailable. Separate verification confirmed that all recorded processes,
+listeners and fixture files were gone. The standalone bundle rerun below provides the
+successful automated native evidence.
 
 Historical committed-source CI at `e9275e69` is separately retained in `docs/deployment-evidence/ci-e927-20261112.json`. It does not cover the newer optional-Core code. No production deployment, publication, merge or completion of the five-stage programme follows from this source checkpoint.
+
+### Standalone bundle and local proof
+
+`scripts/build-core.mjs` builds the Core HTTP entrypoint and workflow code worker
+using the same external-package compilation options as the other server processes.
+`deploy/images/Core.Dockerfile` packages them with the locked production dependencies
+and an exact source revision. Its build needs neither a Next compilation nor the
+Web, Worker, Realtime or Migrator artifact.
+
+The standalone Core bundle passed the native Bun 1.4.4 and PostgreSQL 16.10 fixture
+in 52.24 seconds, with a 594,214,912-byte sampled combined RSS peak. Core ran with
+production configuration in an isolated working directory without checkout source
+or Next output. The native fixture used installed host dependencies and a synthetic
+Web metadata listener. It verified authenticated ownership and writes, CSRF denial,
+Web version refresh without Core restart, producer-only queue operation, repeated
+signal drain, and rejection of owner credentials and two incompatible metadata
+responses. The supervisor confirmed unchanged inputs and clean process, socket and
+fixture teardown. Native Linux image qualification and admission to ingress remain
+open.
+
+The optional `deploy/images/compose.core.yml` overlay adds one service with no
+published ports and a private runtime configuration. Load it after the existing
+image overlay. Set `WARPDRIVE_CORE_IMAGE_REPOSITORY`, the admitted 64-character
+`WARPDRIVE_CORE_IMAGE_SHA256` and `WARPDRIVE_CORE_ENV_FILE`. Supply the restricted
+database URL and accepted Web ingress origin through that private file. Select the
+already observed bridges with `WARPDRIVE_CORE_INGRESS_NETWORK` and
+`WARPDRIVE_CORE_DB_NETWORK`, and the unique relay-side alias with
+`WARPDRIVE_CORE_INGRESS_ALIAS`. The overlay adds a read-only service with dropped
+capabilities and no public router or published ports. Existing services retain their
+configuration. The container gets 75 seconds to stop, including the runtime's
+60-second drain deadline.
+
+`scripts/deployment/caddy_core_config.py` compiles the optional route from the
+exact admitted Web relay. It sends only the tRPC path to the private Core alias,
+preserves Web version metadata and previous-generation Server Actions, and gives a
+failed Core request no second upstream. In a native macOS rehearsal, two production
+Web builds shared the same packaged Core process, producer generation, Worker,
+Realtime and PostgreSQL instance. Chromium kept the authenticated draft and used
+Core for its Realtime tickets across the switch. Both admitted Web stamps wrote
+one authorized report each. Missing CSRF and unknown or retired stamps produced
+zero writes. The Web rollback kept serving after a deliberate Core stop.
+The optional image smoke also exercises a native Web sign-in, session reuse by
+Core, a Web-version read and a CSRF-checked durable write in its fresh database.
+Select both `core_image_rehearsal` and `web_release_rehearsal` in the production
+image workflow to run the retained-Core check against the two distinct Web
+images. It reuses the same archived candidate image ID and the same qualified
+Core image ID. It verifies the baseline bundle and the exact local image metadata
+before reusing the images loaded by the browser rehearsal. The standalone browser
+and Core image checks run in that workflow as well.
+
+The successor controller can retain an independently admitted Core across forward,
+rollback, reapply and failed-candidate recovery. Its optional profile pins the original
+installation binding, the current accepted Web chain and the separately observed
+Core witness. It verifies the exact running Core image, process and network endpoints
+around a bounded direct readiness read. The same protected fingerprint and Core alias
+must hold throughout every Web route change. Use `installed_core_operator.py` for
+the initial route-only operation. It requires independent pins for the existing Web
+pair, original installation authority, exact Web-only Caddy preimage and retained Core
+profile. The profile binds the projected chain. Its hash can be computed from the
+original chain, compiled Core route and pinned backend witness before activation.
+
+`activate` persists intent before one Caddy compare-and-swap and keeps both Web
+generations. The probe makes one anonymous GET to `/api/trpc/version.get`. The exact
+Core proxy marks the response, strips the probe header before forwarding, and returns
+the expected protected tRPC denial. Direct readiness and public Web health are checked
+alongside live and persisted Caddy state. An uncertain response leaves the operation held
+for readback. `reverse` can restore the original route before lineage acceptance after
+it verifies both original Web slots, the old backend, and the exact Core postimage.
+Reverse uses its own durable intent and verifies the original public route before
+clearing the hold.
+
+`seal` records the proposed route and backend projection while retaining both original
+Web artifact receipts. `accept` requires the independently reviewed projection and
+acceptance digests. It verifies the route again, writes the accepted lineage, then
+advances the Web pointer and clears the hold. The first following Web release supplies
+the historical chain and both Core lineage pins. Its new seal records the retained
+artifact on the new backend while preserving the historical bytes in their original
+custody. Linux images and installed routing still require native qualification.

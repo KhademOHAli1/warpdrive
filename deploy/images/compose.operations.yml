@@ -1,0 +1,31 @@
+# Optional image-only overlay. The operator admits the image and selects an existing private DB network.
+# The config is owned by the runtime UID, mode 0400/0600, and names the in-container socket path below.
+# The existing socket directory is mode 0700 and owned by the same mapped host UID as the reporter.
+services:
+  operations-collector:
+    image: "${WARPDRIVE_OPERATIONS_COLLECTOR_IMAGE_REPOSITORY:?set collector image repository}@sha256:${WARPDRIVE_OPERATIONS_COLLECTOR_IMAGE_SHA256:?set collector image SHA-256}"
+    user: "1000:1000"
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - type: bind
+        source: "${WARPDRIVE_OPERATIONS_COLLECTOR_CONFIG_FILE:?set private collector config file}"
+        target: /run/warpdrive-operations-config.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${WARPDRIVE_OPERATIONS_COLLECTOR_SOCKET_DIR:?set private collector socket directory}"
+        target: /run/warpdrive-operations
+        bind:
+          create_host_path: false
+    networks: [operations-collector-db]
+
+networks:
+  operations-collector-db:
+    external: true
+    name: "${WARPDRIVE_OPERATIONS_COLLECTOR_DB_NETWORK:?set existing private collector DB network}"

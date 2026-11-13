@@ -58,8 +58,41 @@ it("leaves an unconfigured installation unchecked without creating enrollment fr
     expect((await caller.observations({})).items).toEqual([]);
     expect((await caller.sources({})).items).toEqual([]);
     expect((await caller.incidents({})).items).toEqual([]);
+    expect(await caller.bell()).toEqual({ hasOpenIncidents: false });
     expect((await caller.events({})).items).toEqual([]);
     expect(await db.select().from(operationsInstallation)).toHaveLength(0);
+  });
+});
+
+it("shows open operations in the bell only while the administrator remains authorized", async () => {
+  await withTestDb(async (db) => {
+    const ctx = await context(db);
+    const caller = operationsRouter.createCaller(ctx);
+    const binding = await enrollOperationsSource(db, "host_collector", signal());
+    const observedAtMs = Date.now() - 1000;
+    for (const [sequence, state, reason] of [
+      [1, "failed", "check_failed"],
+      [2, "healthy", "ok"],
+      [3, "failed", "check_failed"],
+    ] as const) {
+      const record = await recordOperationsBatch(
+        db,
+        binding,
+        JSON.stringify({
+          schemaVersion: 2,
+          generationId: binding.generationId,
+          sequence,
+          observedAtMs: observedAtMs + sequence,
+          observations: [{ kind: "observer", observer: "host_collector", state, reason }],
+        }),
+        signal(),
+      );
+      expect(record.ok).toBe(true);
+      expect(await caller.bell()).toEqual({ hasOpenIncidents: state === "failed" });
+    }
+    if (ctx.actor === null) throw new Error("Missing fixture actor");
+    await db.update(users).set({ isAdmin: false }).where(eq(users.id, ctx.actor.id));
+    await expect(caller.bell()).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });
 

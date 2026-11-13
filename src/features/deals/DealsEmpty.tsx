@@ -3,60 +3,66 @@ import Link from "next/link";
 import type React from "react";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { BoardEmptyKind } from "./boardEmptyKind";
 
-export interface DealsEmptyProps {
-  variant: "list" | "archived";
-  pipelineId: string;
-  filtered: boolean;
+type DealsEmptyProps = {
   onClearFilters: () => void;
-  // The list view's real add-deal control, so the empty state offers the same button the toolbar
-  // does instead of a second, different one. The archive never shows it: nothing is created there.
+  // Reuse the toolbar's add-deal control wherever creation is available.
   addSlot: React.ReactNode;
-}
+} & (
+  | { variant: "board"; kind: Exclude<BoardEmptyKind, "none"> }
+  | { variant: "list" | "archived"; pipelineId: string; filtered: boolean }
+);
 
-// The deals list or archive with no rows. Which sentence is true depends on why it is empty, so a
-// filter that excluded everything never reads as an empty pipeline.
-export function DealsEmpty({
-  variant,
-  pipelineId,
-  filtered,
-  onClearFilters,
-  addSlot,
-}: DealsEmptyProps): React.ReactNode {
-  const STRINGS = useSalesStrings();
+const boardCopy = {
+  empty: { title: "computed.boardEmptyTitle", body: "computed.boardEmptyBody" },
+  filtered: { title: "computed.boardEmptyFilteredTitle", body: "computed.boardEmptyFilteredBody" },
+  unsure: { title: "computed.boardEmptyUnsureTitle", body: "computed.boardEmptyUnsureBody" },
+} as const;
 
-  if (filtered) {
-    return (
-      <EmptyState
-        title={STRINGS.dealsList.emptyFilteredTitle}
-        body={STRINGS.dealsList.emptyFilteredBody}
-        action={
-          <Button size="sm" variant="outline" onClick={onClearFilters}>
-            {STRINGS.dealsList.emptyFilteredAction}
-          </Button>
-        }
-      />
-    );
-  }
-  if (variant === "archived") {
-    return (
-      <EmptyState
-        title={STRINGS.dealsList.emptyArchivedTitle}
-        body={STRINGS.dealsList.emptyArchivedBody}
-        action={
-          <Link href={`/pipeline/${pipelineId}`} className={buttonVariants({ size: "sm" })}>
-            {STRINGS.dealsList.emptyArchivedAction}
-          </Link>
-        }
-      />
-    );
-  }
-  return (
-    <EmptyState
-      title={STRINGS.dealsList.emptyTitle}
-      body={STRINGS.dealsList.emptyBody}
-      action={addSlot}
-    />
+const listCopy = {
+  list: { title: "legacy.dealsList.emptyTitle", body: "legacy.dealsList.emptyBody" },
+  archived: {
+    title: "legacy.dealsList.emptyArchivedTitle",
+    body: "legacy.dealsList.emptyArchivedBody",
+  },
+  filtered: {
+    title: "legacy.dealsList.emptyFilteredTitle",
+    body: "legacy.dealsList.emptyFilteredBody",
+  },
+} as const;
+
+export function DealsEmpty(props: DealsEmptyProps): React.ReactNode {
+  const t = useAppTranslations("sales");
+  const { variant, onClearFilters, addSlot } = props;
+  const copy =
+    variant === "board" ? boardCopy[props.kind] : listCopy[props.filtered ? "filtered" : variant];
+  const clearFilters = (
+    <Button size="sm" variant="outline" onClick={onClearFilters}>
+      {t(variant === "board" ? "computed.clearFilters" : "legacy.dealsList.emptyFilteredAction")}
+    </Button>
   );
+
+  let action = addSlot;
+  if (variant === "board") {
+    if (props.kind === "filtered") action = clearFilters;
+    if (props.kind === "unsure")
+      action = (
+        <div className="flex items-center gap-2">
+          {clearFilters}
+          {addSlot}
+        </div>
+      );
+  } else if (props.filtered) {
+    action = clearFilters;
+  } else if (variant === "archived") {
+    action = (
+      <Link href={`/pipeline/${props.pipelineId}`} className={buttonVariants({ size: "sm" })}>
+        {t("legacy.dealsList.emptyArchivedAction")}
+      </Link>
+    );
+  }
+
+  return <EmptyState title={t(copy.title)} body={t(copy.body)} action={action} />;
 }

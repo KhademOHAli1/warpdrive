@@ -1,0 +1,27 @@
+{
+  "packageVersion": "0.1.0-beta.1",
+  "pilot": {
+    "@ui-sdk/react/dialog": [
+      "Dialog",
+      "DialogClose",
+      "DialogContent",
+      "DialogDescription",
+      "DialogTitle",
+      "DialogTrigger"
+    ],
+    "@ui-sdk/react/drawer": [
+      "Drawer",
+      "DrawerClose",
+      "DrawerContent",
+      "DrawerDescription",
+      "DrawerTitle",
+      "DrawerTrigger"
+    ],
+    "@ui-sdk/react/menu": ["Menu", "MenuContent", "MenuItem", "MenuSeparator", "MenuTrigger"]
+  },
+  "successor": {
+    "path": "src/components/ui/Switch.tsx",
+    "specifier": "@ui-sdk/react/switch",
+    "exports": ["Switch", "SwitchThumb"]
+  }
+}

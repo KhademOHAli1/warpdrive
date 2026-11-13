@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/primitives/checkbox";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { directionForLocale } from "@/features/i18n/registry";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
@@ -66,13 +66,12 @@ export function ProjectListView(props: ProjectListViewProps) {
               <div key={state} className="flex items-center gap-2">
                 <Checkbox
                   id={`${id}-${state}`}
+                  label={t(state)}
                   checked={checked}
                   disabled={checked && props.request.filters.states.length === 1}
                   onCheckedChange={(next) => {
                     const states = PROJECT_LIST_STATE_ORDER.filter((candidate) =>
-                      candidate === state
-                        ? next === true
-                        : props.request.filters.states.includes(candidate),
+                      candidate === state ? next : props.request.filters.states.includes(candidate),
                     );
                     if (states.length === 0) return;
                     props.onRequestChange({

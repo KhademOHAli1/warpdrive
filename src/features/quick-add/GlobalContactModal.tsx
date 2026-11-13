@@ -184,11 +184,15 @@ function ContactCreateModal({
             value={name}
             onChange={(event) => setName(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                if (reportTimePickerValidity(event.currentTarget.closest('[role="dialog"]')))
-                  void submit();
-              }
+              if (
+                event.key !== "Enter" ||
+                event.nativeEvent.isComposing ||
+                event.nativeEvent.keyCode === 229
+              )
+                return;
+              event.preventDefault();
+              if (reportTimePickerValidity(event.currentTarget.closest('[role="dialog"]')))
+                void submit();
             }}
           />
         </div>

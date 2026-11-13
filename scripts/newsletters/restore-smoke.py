@@ -4,6 +4,7 @@
 import argparse
 import base64
 from contextlib import ExitStack
+from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -11,6 +12,7 @@ import runpy
 import shutil
 import struct
 import tempfile
+import time
 import tomllib
 from urllib.request import Request
 from uuid import uuid4
@@ -49,14 +51,29 @@ def upload(origin, token):
 
 def exercise(args, directory, stack):
     (directory / "uploads").mkdir()
-    sql, origin, token, pit = smoke["smtp_fixture"](
-        args.engine.resolve(), args.mailpit.resolve(), args.postgres_bin.resolve(), directory, stack
-    )
-    list_id, _ = smoke["create_list"](sql, "Restore qualification")
-    blocked, _, _ = smoke["subscriber"](sql, "restore-blocked", "blocklisted", [(list_id, "unsubscribed")])
-    media = upload(origin, token)
-    _, original_image = smoke["http"](origin, f"/uploads/{media['filename']}")
-    assert original_image == PNG
+    with ExitStack() as source:
+        sql, origin, token, pit = smoke["smtp_fixture"](
+            args.engine.resolve(), args.mailpit.resolve(), args.postgres_bin.resolve(), directory, stack,
+            engine_stack=source,
+        )
+        list_id, _ = smoke["create_list"](sql, "Restore qualification")
+        blocked, _, _ = smoke["subscriber"](sql, "restore-blocked", "blocklisted", [(list_id, "unsubscribed")])
+        smoke["subscriber"](sql, "restore-eligible", "enabled", [(list_id, "confirmed")])
+        media = upload(origin, token)
+        _, original_image = smoke["http"](origin, f"/uploads/{media['filename']}")
+        assert original_image == PNG
+        # Schedule in the future so only the restored copy could encounter an overdue campaign.
+        engine_api = smoke["engine_api"]
+        campaign = engine_api(origin, token, "/api/campaigns", "POST", {
+            "name": "Restore qualification", "subject": "Restore qualification",
+            "type": "regular", "body": "<p>Fixture</p>", "content_type": "html",
+            "lists": [list_id], "send_at": (datetime.now(UTC) + timedelta(minutes=5)).isoformat(),
+        })
+        campaign_path = f"/api/campaigns/{campaign['id']}"
+        engine_api(origin, token, campaign_path + "/status", "PUT", {
+            "status": "scheduled", "expected_updated_at": campaign["updated_at"],
+        })
+        assert engine_api(origin, token, campaign_path)["status"] == "scheduled"
 
     config = tomllib.loads((directory / "config.toml").read_text())
     port = str(config["db"]["port"])
@@ -119,6 +136,8 @@ finally { await pool.end(); }
         f'host="127.0.0.1"\nport={port}\nuser="fixture_admin"\n'
         f'database="{target_engine}"\nssl_mode="disable"\nmax_open=6\nmax_idle=3\n'
     )
+    run("psql", "-Xq", "-v", "ON_ERROR_STOP=1", "-d", target_engine, "-c",
+        f"UPDATE campaigns SET send_at = clock_timestamp() - interval '1 minute' WHERE id = {campaign['id']}")
     smoke["start"](stack, [args.engine.resolve(), "--config", restore_config, "--passive"], environment, restored, "engine")
     smoke["wait_for"]("passive restored engine", lambda: smoke["http"](restored_origin, "/health")[0] == 200)
 
@@ -130,9 +149,15 @@ finally { await pool.end(); }
     assert restored_image == PNG
     assert run("psql", "-XAtq", "-d", target_crm, "-c",
                f"SELECT state FROM newsletter_operation_receipts WHERE operation_id='{operation}'") == "unknown"
+    # Observe longer than one engine scan interval while an eligible campaign is overdue.
+    until = time.monotonic() + 6
+    while time.monotonic() < until:
+        assert engine_api(restored_origin, token, campaign_path)["status"] == "scheduled"
+        time.sleep(0.25)
+    assert engine_api(restored_origin, token, campaign_path)["status"] == "scheduled"
     _, inbox = smoke["http"](pit, "/api/v1/messages")
     assert json.loads(inbox)["messages"] == []
-    print("Restored both databases and exact media bytes. Suppression and unknown receipt survived passive startup.")
+    print("Restored both databases and exact media bytes. Passive startup preserved suppression and the unknown receipt. An overdue eligible campaign stayed scheduled and Mailpit remained empty.")
 
 
 def main():
