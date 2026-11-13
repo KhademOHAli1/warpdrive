@@ -99,3 +99,23 @@ A late main or CI change holds final acceptance while preserving actual registry
 Registry candidates still carry `deploymentAuthorized: false`, unassessed compatibility and
 outstanding release/installation gates. Accepted-runtime retention, staging, compatible rollback,
 traffic switching, newsletter migration sequencing and installed recovery remain separate work.
+
+## Retaining the initial independent Web baselines
+
+`Web release artifact custody` can copy the already admitted original backend ZIP and the first
+independent Web ZIP to a private GHCR package. It also retains the original backend admission
+receipt. The bootstrap re-authenticates the historical Actions runs, ZIP digests and bundle
+contents before granting package writes. It stores each original payload without rebuilding or
+repackaging it. The immutable OCI manifest reference is derived from the pre-existing SHA-256,
+byte count and media type. Bootstrap and observation verify the full payload by digest and require
+GHCR to deny anonymous pull authorization.
+
+Run `web-release-custody.yml` on protected `main` with `mode=bootstrap` while those original
+Actions artifacts are available. Use `mode=observe` to reconcile an interrupted publication or
+recheck the retained objects with read-only credentials. Preserve the workflow run history and
+readback receipts. A possible previous write keeps later attempts read-only until reconciled.
+
+The historical Web qualifier can select this storage explicitly with `--custody-oras` and
+`--backend-admission-bytes 3212`. It checks the exact same publication and archive digests and
+re-runs the original bundle verifiers. This applies to the first Web and original backend
+baseline. The current Web artifact and its production acceptance still need their own evidence.
