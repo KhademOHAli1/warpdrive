@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import type { CustomFieldDef } from "@/types/customFields";
+import { enableMappingReviewPopover } from "./mappingReviewTestDom";
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -10,8 +11,14 @@ beforeAll(() => {
   Element.prototype.releasePointerCapture = vi.fn();
 });
 
+let restorePopover: () => void;
+beforeEach(() => {
+  restorePopover = enableMappingReviewPopover();
+});
+
 afterEach(() => {
   cleanup();
+  restorePopover();
   vi.clearAllMocks();
   batchState.status = "mapping_ready";
 });
