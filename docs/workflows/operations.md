@@ -7,7 +7,7 @@ See [architecture](architecture.md), [status](status.md), and the
 ## Install and run
 
 Use the Bun version declared in the root package. For an existing installation, follow the
-[upgrade guide](../../docs-site/docs/operations/updating.md) and inspect the canonical
+[upgrade guide](../../docs-site/docs/operations/updating.mdx) and inspect the canonical
 migration journal for the selected revision. The foundation migration is
 `0086_visual_workflows.sql` in the current journal. It creates definitions, immutable
 versions, runs and completed steps without converting CRM records into runs. Apply the

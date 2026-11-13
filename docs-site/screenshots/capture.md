@@ -1,6 +1,6 @@
 # Capturing docs screenshots
 
-All screenshots under `docs-site/static/img/screenshots/<feature>/` are captured from a
+All screenshots under `docs-site/public/img/screenshots/<feature>/` are captured from a
 **locally seeded demo instance**, never from production.
 
 ## Why local, not production
@@ -25,7 +25,7 @@ saved account details.
    `DISABLE_TELEMETRY=true`, and `DISABLE_UPDATE_CHECK=true`.
 3. Confirm both connection strings point at the capture database. Run
    `bun run db:migrate` and apply the
-   [runtime grants](../docs/setup.md#3-bring-it-up) to the capture login.
+   [runtime grants](../docs/setup.mdx#3-bring-it-up) to the capture login.
    Then run `bun run db:seed:demo` from the repository root. The seed uses
    `DATABASE_URL` and can rewrite demo records, so verify the database before
    running it.
@@ -63,9 +63,8 @@ saved account details.
 | Device pixel ratio | 2 |
 | Browser chrome | Excluded, capture the page only |
 
-Save each shot to `docs-site/static/img/screenshots/<feature>/<filename>` exactly as
-named in the table below. The Docusaurus build **fails on a missing image**, so a
-typo in a filename is caught at build time rather than shipping as a broken image.
+Save each shot to `docs-site/public/img/screenshots/<feature>/<filename>` exactly as
+named in the table below. After building the docs, run `bun run check:export` from `docs-site/` to verify image paths.
 
 ### Two things that silently ruin shots
 

@@ -1,34 +1,46 @@
-# Public documentation migration handoff
+# Public documentation hosting
 
-The [Fumadocs](https://github.com/fuma-nama/fumadocs) migration is separate from
-documentation content maintenance. Use [Fumadocs MDX](https://www.fumadocs.dev/docs/mdx)
-for content and consult the [static export guide](https://www.fumadocs.dev/docs/next/deploying/static)
-for routing and search when choosing the deployment model. Fumadocs provides the
-site framework and Markdown rendering. Warpdrive still owns the content, publishing,
-dependency updates and route compatibility.
+Warpdrive uses [Fumadocs](https://fumadocs.dev/) and Next.js static export for its public
+documentation. The source collection is `docs-site/docs/`. Add a Markdown page there and
+order it in the relevant `meta.json`. Use MDX for components such as `Callout`. Keep operator
+runbooks, historical evidence and internal assets outside the public collection.
 
-- Publish the 30 guides in `docs-site/docs/`. Keep repository references, operator
-  runbooks, archived evidence, localization sets and screenshot capture instructions
-  outside that collection. Copy only assets the public guides intentionally render.
-  The workflow guide has three image references into `docs/images/workflows/` that need
-  an explicit asset mapping.
-- Preserve root routes such as `/`, `/setup/` and `/features/pipeline/`. Retain
-  the introduction at `/` by mapping Docusaurus's `intro.md` and `slug: /`
-  to a root index. Keep the titles and descriptions. Recreate the order and
-  categories from `docs-site/sidebars.ts` with
-  [Fumadocs page metadata](https://www.fumadocs.dev/docs/next/page-conventions).
-  File order and `sidebar_position` alone do not reproduce that navigation. The
-  docs site is English; German and Persian runbooks stay in the repository.
-- Preserve existing heading IDs and fragment aliases. Verify relative `.md` links,
-  root-relative `/img/` assets, tables, language-tagged fences and Docusaurus
-  `:::` admonitions after conversion. Translate renderer-specific syntax during
-  the migration and check the output, including search at `/search/`.
-- Compare both the fork build and the live host before cutover. On 13 November 2026,
-  `/features/automations/` and `/features/regional-settings/` existed in the fork
-  but returned 404 on the live host. The live host had older fragments for the
-  introduction, Google OAuth setup, first-admin login, Google identity binding,
-  and storage migration. Carry forward the compatibility anchors, and validate
-  their destinations instead of carrying forward the older instructions.
-- Test the resulting site from its actual hosting path. Compare every route and
-  heading fragment, follow links, load images, and exercise navigation and search.
-  Check that the output contains only the intended public material before promotion.
+## Build and verify
+
+Run from `docs-site/` with the Bun version in its `package.json`:
+
+```sh
+bun install --frozen-lockfile
+bun run typecheck
+bun run build
+bun run check:export
+```
+
+The build writes the static site to `docs-site/out/`. Serve that directory at the root
+of a preview host. The full CI workflow also uploads it as `warpdrive-docs-preview-<commit>`.
+The search page and search dialog use the generated index in the same export.
+
+Keep `/` as the introduction, preserve the existing guide URLs and heading IDs, and use
+root-relative links in public guides. The export check records the existing bookmarks
+and sidebar order. It also checks local links and assets, including screenshot paths.
+Place images intended for publication under `docs-site/public/img/`.
+
+## Promote the static export
+
+On 13 November 2026, the live site linked to the upstream Warpdrive repository. It served
+28 of the fork's 30 guides. The workflow and regional settings pages are present in the
+fork export, which also preserves five older live bookmarks. Confirm the existing hosting
+project and the authorized domain owner before changing the live association.
+
+1. Build and check the reviewed commit. Preview the same export on the target host.
+2. For a [Cloudflare Pages Git integration](https://developers.cloudflare.com/pages/configuration/git-integration/),
+   connect the fork and set the root directory to `docs-site`, the build command to
+   `bun install --frozen-lockfile && bun run build && bun run check:export`, and the
+   output directory to `out`. Use the package-pinned Bun version. An approved
+   direct-upload project can instead receive the verified `out/` directory.
+3. Check the introduction, a nested guide, screenshots, search and a legacy fragment on
+   the preview. Retain the last known good deployment and domain configuration.
+4. Use the [Pages custom-domain settings](https://developers.cloudflare.com/pages/configuration/custom-domains/)
+   to attach `docs.warpdrivecrm.com` to the verified project. Verify TLS, redirects
+   to trailing-slash routes, search, and the sitemap and discovery files on the
+   live hostname. If those checks fail, restore the previous deployment or association.

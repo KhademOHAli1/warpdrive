@@ -141,7 +141,7 @@ Before upgrading an existing installation, follow the
 ## Operating the box
 
 - **Update to a new version:** identify the installed and target revisions and follow
-  the [upgrade guide](../docs-site/docs/operations/updating.md) for the topology in use.
+  the [upgrade guide](../docs-site/docs/operations/updating.mdx) for the topology in use.
   Compose's one-shot migration dependency gates cold startup; it does not stop old
   writers. For a release that changes Calendar authorization state, follow the
   [connection-generation cutover](../src/features/activities/providers/google/authorizationREADME.md#connection-generation-migration).

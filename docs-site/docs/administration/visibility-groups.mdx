@@ -1,0 +1,64 @@
+---
+title: Visibility groups
+description: "How Warpdrive decides which records a user can see: visibility groups, ownership, explicit grants, team management, and restricted pipelines."
+---
+
+# Visibility groups
+
+Visibility decides **which records exist as far as a given user is concerned**. It is
+evaluated before any [permission](/administration/permission-sets/), and permissions never widen
+it.
+
+`/settings/visibility-groups` manages groups. An **Everyone** group is seeded on first
+run, and every new or invited user joins it as their primary group.
+
+![Visibility groups](/img/screenshots/visibility-groups/list.png)
+
+## How visibility is decided
+
+For a given record and user, visibility can come from any of:
+
+- an explicit grant to that user,
+- ownership of the record,
+- ownership by a member of a team the user manages, when the manager has `team.viewMembers`,
+- the record being marked visible to all, or
+- the record's visibility group matching one of the user's groups.
+
+Any one of these is sufficient.
+
+## Restricted pipelines come first
+
+A restricted pipeline is a **hard gate** for non-administrators, evaluated before
+everything above.
+
+Users outside the pipeline's visibility group cannot see its deals or activities
+that inherit its pipeline restriction. Ownership and explicit grants cannot override
+this gate.
+
+## Visibility and aggregates
+
+Counts and totals are computed with the same visibility rule as the rows, so invisible
+records do not contribute to stage totals, list footers, or dashboard figures.
+
+Two people can legitimately see different totals for the same pipeline. That is the
+model working, not a reporting bug.
+
+## Entities and activities
+
+An activity follows the first linked record in this order: deal, person,
+organization. A linked deal also brings its pipeline restriction. For activities
+with none of those links, including activities linked only to a lead, the
+assignee and participants can see the activity.
+
+<Callout type="warn" title="Caution">
+
+When configuring restricted access, verify the result by signing in as an account that
+holds the restricted configuration. Check the record, the Activities list and
+calendar, and the reports that use those records.
+
+</Callout>
+
+## Related
+
+- [Permission sets](/administration/permission-sets/)
+- [Users and teams](/administration/users-and-teams/)

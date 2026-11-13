@@ -1,5 +1,4 @@
 ---
-sidebar_position: 9
 title: Notifications
 description: "The Warpdrive notification panel: what generates a notification, unread counts, following records, and per-user notification preferences."
 ---
@@ -43,9 +42,9 @@ mail settings and background worker.
 
 Notifications never reveal records you cannot see. A notification for a record whose
 visibility changed does not become a way around
-[visibility groups](../administration/visibility-groups.md).
+[visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Collaboration](./collaboration.md)
-- [Activities](./activities.md)
+- [Collaboration](/features/collaboration/)
+- [Activities](/features/activities/)

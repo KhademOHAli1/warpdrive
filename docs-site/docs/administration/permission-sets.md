@@ -1,5 +1,4 @@
 ---
-sidebar_position: 2
 title: Permission sets
 description: "How Warpdrive permission sets work: capability flags, the own, team, and any scopes, administrator bypass, and how permissions combine with record visibility."
 ---
@@ -21,7 +20,7 @@ record-scoped action.
 Permissions do not widen visibility. A permission granting an action on "any" record
 means any record **you can already see**, not every record in the database. Which
 records you can see is decided separately by
-[visibility groups](./visibility-groups.md).
+[visibility groups](/administration/visibility-groups/).
 
 A record you cannot see reports not found, not permission denied, so the interface
 never reveals that a record exists.
@@ -58,7 +57,7 @@ assigned to an administrator.
 
 An activity linked to a deal follows that deal's visibility and pipeline
 restriction. Without a deal, the linked person or organization can determine
-visibility. See [Visibility groups](./visibility-groups.md#entities-and-activities).
+visibility. See [Visibility groups](/administration/visibility-groups/#entities-and-activities).
 
 Check access to both records and activities from an account that uses the restricted
 set. An assignee can edit and complete a visible activity even without the ordinary
@@ -66,6 +65,6 @@ edit and complete flags. Deletion has its own permission check.
 
 ## Related
 
-- [Visibility groups](./visibility-groups.md), which decide what is visible in the
+- [Visibility groups](/administration/visibility-groups/), which decide what is visible in the
   first place.
-- [Users and teams](./users-and-teams.md), for assigning sets.
+- [Users and teams](/administration/users-and-teams/), for assigning sets.

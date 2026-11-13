@@ -1,5 +1,4 @@
 ---
-sidebar_position: 5
 title: Activities
 description: "Calls, meetings, and tasks in Warpdrive: scheduling against deals and contacts, the list and calendar views, completion, and overdue handling."
 ---
@@ -13,7 +12,7 @@ records or leave them unlinked.
 
 The calendar and shared date pickers support Gregorian and Iranian Solar Hijri
 calendars. Select the display calendar and account timezone in
-[Regional settings](./regional-settings.md). Farsi has RTL layout and a digit choice;
+[Regional settings](/features/regional-settings/). Farsi has RTL layout and a digit choice;
 German has localized date and numeric input. Changing display preferences does not
 reschedule stored activities.
 
@@ -34,7 +33,7 @@ or organization, in that order when more than one link is present. A list row
 without a linked record opens the activity editor. In the list, use the round
 toggle to mark an activity done or the square checkbox to select the row. Press
 `j` or `k` to move through the rows and Enter to open the selected row. See
-[Keyboard shortcuts](./keyboard-shortcuts.md).
+[Keyboard shortcuts](/features/keyboard-shortcuts/).
 
 ![The activities calendar](/img/screenshots/activities/calendar.png)
 
@@ -55,7 +54,7 @@ or organization, which links it to that record.
 
 An activity has a type, a subject, an optional due date and time, a duration, a
 priority, and an assignee. Activity types are configurable, see
-[Company settings](../administration/company-settings.md).
+[Company settings](/administration/company-settings/).
 
 Activities without a due date are valid. They appear as undated rather than being
 treated as overdue.
@@ -82,10 +81,10 @@ An activity linked only to a lead uses assignee and participant access rules. To
 check what a colleague can see, review the activity from their role in the list
 and calendar.
 
-See [Visibility groups](../administration/visibility-groups.md).
+See [Visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Deal workspace](./deal-workspace.md)
-- [Performance](./dashboard.md)
-- [Keyboard shortcuts](./keyboard-shortcuts.md)
+- [Deal workspace](/features/deal-workspace/)
+- [Performance](/features/dashboard/)
+- [Keyboard shortcuts](/features/keyboard-shortcuts/)

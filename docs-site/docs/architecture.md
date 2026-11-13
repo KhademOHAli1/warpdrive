@@ -1,5 +1,4 @@
 ---
-sidebar_position: 3
 title: Architecture
 description: "How Warpdrive is built: the stack, the runtime services, the feature-based code layout, and the conventions that hold the codebase together."
 ---
@@ -7,7 +6,7 @@ description: "How Warpdrive is built: the stack, the runtime services, the featu
 # Architecture
 
 This page describes the application and the fork's source Compose configuration.
-See [Installation](./setup.md) for requirements and setup.
+See [Installation](/setup/) for requirements and setup.
 
 ## Stack
 
@@ -61,7 +60,7 @@ Each browser tab shares a WebSocket connection across subscribed components.
 The server tags frames with the channel and a per-channel sequence number.
 
 The source build embeds `NEXT_PUBLIC_WS_URL` in the browser bundle. See
-[Installation](./setup.md) for the Compose settings.
+[Installation](/setup/) for the Compose settings.
 
 ## Code layout
 
@@ -110,13 +109,13 @@ resulting schema.
 
 ## Contributing
 
-See [Contributing](./contributing.md).
+See [Contributing](/contributing/).
 
 ## Workflow automation
 
 Workflow editors and runtime code live under `src/features/workflows/`, with
 the newer studio and its runtime in `src/features/workflows/v2/`. Live runs use a published workflow version and the
-background worker. See [Visual workflows](./features/automations.md) for editor
+background worker. See [Visual workflows](/features/automations/) for editor
 paths and configuration.
 
 ## Locale and time boundaries

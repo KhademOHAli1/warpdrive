@@ -27,7 +27,7 @@ add and connect a step in one action. To insert a step on an existing path,
 open the upstream node's **Connections** panel and choose **Insert a step
 here**. You can also select source and destination ports on the canvas.
 
-![German action picker in the earlier editor](../../../docs/images/workflows/interaction-review/picker-de-mobile.jpg)
+![German action picker in the earlier editor](/img/workflow-examples/picker-de-mobile.jpg)
 
 ## Configure nodes
 
@@ -41,7 +41,7 @@ condition, wait, and create a follow-up task. Workflow studio shows the blocks
 and configuration your installation offers. If a block reports **Needs setup**
 or **Permission required**, resolve that before publishing.
 
-![Earlier Farsi mobile canvas with condition branches](../../../docs/images/workflows/interaction-review/editor-fa-mobile.jpg)
+![Earlier Farsi mobile canvas with condition branches](/img/workflow-examples/editor-fa-mobile.jpg)
 
 ## Save, publish, and simulate
 
@@ -70,7 +70,7 @@ and completed steps. A waiting run can resume after its scheduled time when
 the worker is ready. **Pause** prevents new runs from starting. Use the run
 details to see which recovery actions are available for that run.
 
-![Simulation results in the earlier Farsi editor](../../../docs/images/workflows/interaction-review/run-fa.jpg)
+![Simulation results in the earlier Farsi editor](/img/workflow-examples/run-fa.jpg)
 
 The screenshots show the earlier editor with synthetic records from October 2026.
 
@@ -79,7 +79,7 @@ The screenshots show the earlier editor with synthetic records from October 2026
 The controls available depend on your permissions and workflow ownership.
 Publishing requires recent identity confirmation. The editor follows your
 account language and display direction. Review the time zone and date shown
-in run history using your [regional settings](./regional-settings.md).
+in run history using your [regional settings](/features/regional-settings/).
 
 ## Remaining delivery stages
 

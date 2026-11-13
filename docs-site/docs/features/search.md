@@ -1,5 +1,4 @@
 ---
-sidebar_position: 10
 title: Search
 description: "Global search in Warpdrive: what is searched, how results are grouped, and how visibility affects what you find."
 ---
@@ -23,16 +22,16 @@ Selecting a result opens that record.
 
 ## Visibility
 
-Search applies your [visibility settings](../administration/visibility-groups.md).
+Search applies your [visibility settings](/administration/visibility-groups/).
 Archived leads and deals in archived pipelines are excluded. For archived leads,
 use the archived view of the leads inbox.
 
 ## Filters versus search
 
 Search is for finding one known record quickly. For repeatable questions across many
-records, build a filter and save it. See [Saved filters](./saved-filters.md).
+records, build a filter and save it. See [Saved filters](/features/saved-filters/).
 
 ## Related
 
-- [Saved filters](./saved-filters.md)
-- [Contacts](./contacts.md)
+- [Saved filters](/features/saved-filters/)
+- [Contacts](/features/contacts/)

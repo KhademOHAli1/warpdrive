@@ -1,5 +1,4 @@
 ---
-sidebar_position: 6
 title: Email sync
 description: "Connect Gmail or an IMAP and SMTP mailbox, manage synchronization, and troubleshoot connection problems."
 ---
@@ -31,7 +30,7 @@ installations can offer **Connect Gmail** directly.
 
 For Gmail, Warpdrive requests `openid`, `email`, `gmail.modify`, and
 `gmail.send`. Google uses the identity scopes to identify the mailbox selected
-during consent. See [Installation](../setup.md) for setting up the OAuth client.
+during consent. See [Installation](/setup/) for setting up the OAuth client.
 
 ### Offline access
 
@@ -65,5 +64,5 @@ you no longer want to send from **Outbox** before disconnecting.
 
 ## Related
 
-- [Email](../features/email.md)
-- [Installation](../setup.md)
+- [Email](/features/email/)
+- [Installation](/setup/)

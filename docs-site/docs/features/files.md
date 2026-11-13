@@ -1,5 +1,4 @@
 ---
-sidebar_position: 13
 title: Files
 description: "Attaching files to Warpdrive records: presigned direct uploads to object storage, size limits, and where files are stored."
 ---
@@ -17,7 +16,7 @@ file directly to object storage using a temporary upload URL.
 If uploads fail for everyone, ask your administrator to check that the object
 storage endpoint is reachable from a browser. The single-server Compose example
 uses a dedicated hostname with DNS and HTTPS configured. See
-[Installation](../setup.md).
+[Installation](/setup/).
 
 ## Size limit
 
@@ -28,7 +27,7 @@ lower server limit through `MAX_FILE_BYTES`.
 
 In the single-server Compose example, the `miniodata` volume holds attachment
 objects and the database holds their record links. Back up and restore both
-together to recover the files. See [Updating](../operations/updating.md).
+together to recover the files. See [Updating](/operations/updating/).
 
 ## Visibility
 
@@ -36,5 +35,5 @@ A file inherits the visibility of the record it is attached to.
 
 ## Related
 
-- [Deal workspace](./deal-workspace.md)
-- [Installation](../setup.md)
+- [Deal workspace](/features/deal-workspace/)
+- [Installation](/setup/)

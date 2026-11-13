@@ -7,13 +7,13 @@ description: "Move organizations, people, leads, deals, activities, and notes fr
 
 Export each record type from Pipedrive as a separate CSV file, then import
 the files in order so Warpdrive can link them. See
-[Import](../features/import.md) for the wizard steps.
+[Import](/features/import/) for the wizard steps.
 
 ## Before you start
 
 1. **Invite your team first.** The importer matches owners to active Warpdrive
    users by email, then by name. Make sure your team can sign in before the
-   import. See [Users and teams](../administration/users-and-teams.md).
+   import. See [Users and teams](/administration/users-and-teams/).
 2. **Create pipelines and stages if their order matters.** The importer can create missing pipelines and stages for you (see below), but it appends new stages in the order the file first names them. If you want a specific order, create the pipelines and stages yourself, or reorder them afterwards.
 
 ## Export from Pipedrive
@@ -87,6 +87,6 @@ appear on a row that was already imported.
 
 ## Related
 
-- [Import](../features/import.md)
-- [Users and teams](../administration/users-and-teams.md)
-- [Deal workspace](../features/deal-workspace.md)
+- [Import](/features/import/)
+- [Users and teams](/administration/users-and-teams/)
+- [Deal workspace](/features/deal-workspace/)

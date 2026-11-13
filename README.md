@@ -215,7 +215,7 @@ Back up the database, private objects and encryption/signing keys together, then
 recovery. A database dump alone does not preserve every attachment or credential.
 
 Select and record the intended revision and verify the upgrade on a restored copy before
-changing the installation. Before updating, read the [upgrade guide](docs-site/docs/operations/updating.md),
+changing the installation. Before updating, read the [upgrade guide](docs-site/docs/operations/updating.mdx),
 [authentication migration report](docs/auth-implementation-report.md) and
 [consolidated migration map](docs/mail-integrated-migration-map.md). Historical branch
 databases can have incompatible migration histories requiring explicit upgrade/restore
@@ -277,7 +277,7 @@ Settings, shared UX and main integration are the supporting cross-cutting workst
 
 ## Documentation
 
-- [Repository documentation index](docs/README.md), [guide source](docs-site/docs/intro.md), and [public documentation site](https://docs.warpdrivecrm.com/)
+- [Repository documentation index](docs/README.md), [guide source](docs-site/docs/intro.mdx), and [public documentation site](https://docs.warpdrivecrm.com/)
 - [Architecture](docs-site/docs/architecture.md) and [deployment](docs/deploy.md)
 - [Mailbox guide: English](docs/mailbox-guide.en.md), [فارسی](docs/mailbox-guide.fa.md), [Deutsch](docs/mailbox-guide.de.md)
 - [Authentication operations: English](docs/auth-operations.md), [فارسی](docs/auth-operations.fa.md), [Deutsch](docs/auth-operations.de.md)

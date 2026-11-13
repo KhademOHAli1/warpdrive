@@ -1,5 +1,4 @@
 ---
-sidebar_position: 11
 title: Filters and saved views
 description: "Multi-condition filters in Warpdrive: the condition builder, operators, match all or any, and saved views for deals, people, organizations, and leads."
 ---
@@ -52,9 +51,9 @@ returns different rows for different people.
 
 When a filter is active, stage totals describe the filtered board. The list
 footer reflects the filtered results and, with an owner filter active, counts
-only the loaded matches. See [Pipeline](./pipeline.md#list).
+only the loaded matches. See [Pipeline](/features/pipeline/#list).
 
 ## Related
 
-- [Pipeline](./pipeline.md)
-- [Visibility groups](../administration/visibility-groups.md)
+- [Pipeline](/features/pipeline/)
+- [Visibility groups](/administration/visibility-groups/)

@@ -6,11 +6,11 @@ This fork is maintained at [KhademOHAli1/warpdrive](https://github.com/KhademOHA
 ## Start here
 
 - [Installation and deployment](deploy.md), configuration and production services.
-- [User guide](../docs-site/docs/intro.md), current CRM features.
+- [User guide](../docs-site/docs/intro.mdx), current CRM features.
 - [Language and regional settings](../docs-site/docs/features/regional-settings.md), Farsi/German/English, calendars, digits, timezones, and appearance.
 - [Architecture](../docs-site/docs/architecture.md), application, workers, storage, permissions, and conventions.
 - [Contributing](../docs-site/docs/contributing.md), Bun, test lanes, review, and documentation maintenance.
-- [Updating](../docs-site/docs/operations/updating.md), migration and backup procedure.
+- [Updating](../docs-site/docs/operations/updating.mdx), migration and backup procedure.
 
 ## Operators and contributors
 
@@ -75,9 +75,9 @@ an isolated 31 October 2026 environment. For a new checkout, use the current
 
 ## Documentation policy
 
-For a feature or UI change, update its user-facing guide, implementation/operations notes, and task status in the same change. Update the root README when availability or setup changes. Add new published pages to `docs-site/sidebars.ts`. Keep screenshot captions clear about date, locale, and whether a capture is current or historical. Never publish account data, credentials, or private test fixtures.
+For a feature or UI change, update its user-facing guide, implementation/operations notes, and task status in the same change. Update the root README when availability or setup changes. Add public guides under `docs-site/docs/` and order them in the nearest `meta.json`. Keep screenshot captions clear about date, locale, and whether a capture is current or historical. Never publish account data, credentials, or private test fixtures.
 
-The documentation site is a separate Bun package. Use its declared package manager and lockfile, then run its production build to check links. Root tests and site builds each need their own recorded result. Check that Markdown links work both in the repository and in Docusaurus.
+The documentation site is a separate Bun package. Use its declared package manager and lockfile, then run its production build to check links. Root tests and site builds each need their own recorded result. Use root-relative URLs inside the public guides. Run `bun run check:export` after the build to check the generated routes, bookmarks, links and assets.
 
 Use portable Markdown for new content. The separate [Fumadocs migration handoff](development/public-docs-migration.md)
-records the public routes, content boundary and existing syntax the renderer migration needs to preserve.
+records the public routes, content boundary and hosting handoff.

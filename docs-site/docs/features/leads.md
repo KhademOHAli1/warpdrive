@@ -1,5 +1,4 @@
 ---
-sidebar_position: 3
 title: Leads
 description: "The Warpdrive leads inbox: capturing unqualified prospects, linking them to people and organizations, converting them into deals, and archiving."
 ---
@@ -7,7 +6,7 @@ description: "The Warpdrive leads inbox: capturing unqualified prospects, linkin
 # Leads
 
 Use the leads inbox to track prospects before they enter the
-[pipeline](./pipeline.md) as deals.
+[pipeline](/features/pipeline/) as deals.
 
 `/leads` is the list; `/leads/[leadId]` is one lead.
 
@@ -25,7 +24,7 @@ organization. Labels and owners work as they do on deals.
 
 A lead can link to a person, an organization, or both. Select an existing contact
 when it is already in Warpdrive. For bulk entry, see
-[Deduplication and linking](./import.md#deduplication-and-linking).
+[Deduplication and linking](/features/import/#deduplication-and-linking).
 
 ## Converting
 
@@ -48,10 +47,10 @@ survives. Archived leads are excluded from the active list.
 ## Visibility
 
 Leads follow the same visibility model as other records. See
-[Visibility groups](../administration/visibility-groups.md).
+[Visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Import](./import.md), for bulk lead import.
-- [Contacts](./contacts.md)
-- [Pipeline](./pipeline.md)
+- [Import](/features/import/), for bulk lead import.
+- [Contacts](/features/contacts/)
+- [Pipeline](/features/pipeline/)

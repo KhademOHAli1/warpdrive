@@ -1,5 +1,4 @@
 ---
-sidebar_position: 12
 title: Enrichment
 description: "Fill the gaps on people and organizations from Apollo, RocketReach, and GetProspect: connecting providers, the review dialog, field mapping, caching, and failure handling."
 ---
@@ -47,7 +46,7 @@ organization fields.
 
 Person enrichment writes emails, the first and last name, and the organization link
 by default. For anything beyond that (job title, LinkedIn profile), create a
-[custom field](../administration/data-fields.md) and map it.
+[custom field](/administration/data-fields/) and map it.
 
 ## Caching
 
@@ -81,5 +80,5 @@ still see.
 
 ## Related
 
-- [Contacts](./contacts.md)
-- [Data fields](../administration/data-fields.md), for mapping person fields.
+- [Contacts](/features/contacts/)
+- [Data fields](/administration/data-fields/), for mapping person fields.

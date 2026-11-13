@@ -1,5 +1,4 @@
 ---
-sidebar_position: 30
 title: Contributing
 description: "How to contribute to Warpdrive: running it locally, the test-driven workflow, the conventions enforced by lint, and submitting a pull request."
 ---
@@ -14,7 +13,7 @@ with upstream history retained from [sneg55/warpdrive](https://github.com/sneg55
 
 Use the Bun version declared in the root `package.json`. Start with a dedicated
 PostgreSQL database and private S3-compatible bucket. See the
-[local backing services](./setup.md#local-development) for a Compose example.
+[local backing services](/setup/#local-development) for a Compose example.
 
 ```sh
 bun install --frozen-lockfile
@@ -25,7 +24,7 @@ cp .env.example .env
 Configure `.env` for your local services, including the browser-facing app and
 WebSocket URLs. Give `MIGRATION_DATABASE_URL` the owner connection and
 `DATABASE_URL` a separate runtime login. Run the migration, then apply the
-[runtime grants](./setup.md#3-bring-it-up) as the migration owner:
+[runtime grants](/setup/#3-bring-it-up) as the migration owner:
 
 ```sh
 bun run db:migrate
@@ -46,7 +45,7 @@ bun src/entrypoints/ws.ts
 ```
 
 Use local mail capture when testing the outbox. For an invitation you can open,
-configure an SMTP test service and follow the [administrator bootstrap steps](./setup.md#4-bootstrap-the-first-administrator).
+configure an SMTP test service and follow the [administrator bootstrap steps](/setup/#4-bootstrap-the-first-administrator).
 The host-run equivalent of the packaged bootstrap command is `bun run auth:operator`.
 
 ## Tests
@@ -76,7 +75,7 @@ fastest way to learn them is to run the linter. The ones that surprise people:
 - **Code layout.** Keep feature-specific implementation and tests with the feature.
 - **Checks.** Run `bun run lint` and `bun run typecheck` for application changes.
 
-See [Architecture](./architecture.md) for the reasoning behind these.
+See [Architecture](/architecture/) for the reasoning behind these.
 
 ## Pull requests
 

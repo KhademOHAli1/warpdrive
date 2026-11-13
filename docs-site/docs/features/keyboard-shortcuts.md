@@ -1,5 +1,4 @@
 ---
-sidebar_position: 15
 title: Keyboard shortcuts
 description: "Use the keyboard to navigate Warpdrive, open search and quick add, and browse activities."
 ---
@@ -34,5 +33,5 @@ question-mark button in the top bar) to open help.
 
 ## Related
 
-- [Activities](./activities.md)
-- [Search](./search.md)
+- [Activities](/features/activities/)
+- [Search](/features/search/)

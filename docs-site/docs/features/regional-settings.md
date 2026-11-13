@@ -25,7 +25,7 @@ and time zone on a workflow or calendar event before saving it.
 Under **Customize formats**, choose Persian or Latin digits when the number
 display control is available. Numeric inputs accept supported regional digits
 and separators. For CSV files, choose the applicable import conventions in the
-[import wizard](./import.md).
+[import wizard](/features/import/).
 
 With Iran selected as your country, choose rial or toman display under
 **Customize formats**. One toman is ten rials. This preference leaves the
@@ -39,7 +39,7 @@ Use **Settings > Appearance** (`/settings/appearance`) for the available theme a
 Farsi uses right-to-left layout and the locally bundled Vazirmatn font. Latin interfaces use the locally bundled Inter font. Email addresses, URLs, and technical identifiers keep their left-to-right reading direction inside Farsi content.
 
 **Settings > Workflow preferences** (`/settings/workflow`) contains personal CRM
-preferences, including when to show follow-up prompts. Use [Visual workflows](./automations.md)
+preferences, including when to show follow-up prompts. Use [Visual workflows](/features/automations/)
 to learn about the workflow builder.
 
 ## Reporting a language or layout issue

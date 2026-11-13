@@ -59,9 +59,8 @@ const fullQualityDocument = Bun.YAML.parse(
 
 const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_BUN = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6";
+const UPLOAD_ARTIFACT = "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9";
 const PACKAGES = { crm: "package.json", site: "site/package.json", docs: "docs-site/package.json" };
-const DOCS_DEPENDENCY_CONTRACT =
-  "timeout 60s bun --no-env-file ../scripts/docs-dependency-contracts.mjs";
 
 function job(name: keyof typeof PACKAGES) {
   const found = workflow.jobs[name];
@@ -81,8 +80,8 @@ function fullCommands(name: keyof typeof PACKAGES): string[] {
 }
 
 function toolingEnvironment(name: string, command: string | undefined) {
-  if (name === "docs" && command === DOCS_DEPENDENCY_CONTRACT) {
-    return { BUN_OPTIONS: "--no-env-file" };
+  if (name === "docs" && (command === "bun run typecheck" || command === "bun run build")) {
+    return { NEXT_TELEMETRY_DISABLED: "1" };
   }
   if (name === "site" && command === "bun run build") {
     return { NEXT_TELEMETRY_DISABLED: "1" };
@@ -118,10 +117,11 @@ describe("public Bun CI", () => {
     for (const name of Object.keys(PACKAGES) as (keyof typeof PACKAGES)[]) {
       const check = fullJob(name);
       expect(check["timeout-minutes"]).toBe(name === "crm" ? 60 : 20);
-      expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual([
-        CHECKOUT,
-        SETUP_BUN,
-      ]);
+      const approvedActions =
+        name === "docs" ? [CHECKOUT, SETUP_BUN, UPLOAD_ARTIFACT] : [CHECKOUT, SETUP_BUN];
+      expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual(
+        approvedActions,
+      );
     }
   });
 
@@ -163,16 +163,13 @@ describe("public Bun CI", () => {
       "bun run typecheck",
     ]);
     expect(job("docs").defaults?.run["working-directory"]).toBe("docs-site");
-    expect(commands("docs")).toEqual([
-      "bun install --frozen-lockfile",
-      DOCS_DEPENDENCY_CONTRACT,
-      "bun run typecheck",
-    ]);
+    expect(commands("docs")).toEqual(["bun install --frozen-lockfile", "bun run typecheck"]);
     for (const [name, path] of Object.entries(PACKAGES)) {
       const metadata = JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as {
         scripts: Record<string, string>;
       };
-      for (const command of commands(name as keyof typeof PACKAGES)) {
+      const key = name as keyof typeof PACKAGES;
+      for (const command of [...commands(key), ...fullCommands(key)]) {
         if (command.startsWith("bun run "))
           expect(metadata.scripts).toHaveProperty(command.split(" ")[2] ?? "");
       }
@@ -201,7 +198,25 @@ describe("public Bun CI", () => {
     ]);
     expect(fullCommands("site")).toContain("bun run test");
     expect(fullCommands("site")).toContain("bun run build");
-    expect(fullCommands("docs")).toContain("bun run build");
+    expect(fullJob("docs").defaults?.run["working-directory"]).toBe("docs-site");
+    expect(fullCommands("docs")).toEqual([
+      "bun install --frozen-lockfile",
+      "bun run typecheck",
+      "bun run build",
+      "bun run check:export",
+    ]);
+    const docsSteps = fullJob("docs").steps;
+    expect(docsSteps.at(-2)?.run).toBe("bun run check:export");
+    expect(docsSteps.at(-1)).toEqual({
+      name: "Upload verified documentation preview",
+      uses: UPLOAD_ARTIFACT,
+      with: {
+        name: `warpdrive-docs-preview-\${{ github.sha }}`,
+        path: "docs-site/out/",
+        "if-no-files-found": "error",
+        "retention-days": 7,
+      },
+    });
   });
 
   it("keeps schema-valid, fake app configuration on the full app build step and stamps its checked commit", () => {
