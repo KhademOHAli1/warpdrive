@@ -78,10 +78,11 @@ class CustodyTests(unittest.TestCase):
         repository = custody.REPOSITORY.split("/", 1)[1]
         headers.add_header("WWW-Authenticate", f'Bearer realm="https://ghcr.io/token",service="ghcr.io",scope="repository:{repository}:pull"')
         challenge = (401, headers, b"{}")
-        denied = (403, HTTPMessage(), b'{"errors":[{"code":"DENIED"}]}')
-        with patch("registry_absence._get", side_effect=(challenge, denied)):
+        private = (401, HTTPMessage(), b'{"errors":[{"code":"UNAUTHORIZED"}]}')
+        with patch("registry_absence._get", side_effect=(challenge, private)):
             custody._verify_anonymous_denied(self.pin)
-        for response in ((200, HTTPMessage(), b'{"token":"anonymous"}'), (403, HTTPMessage(), b"{}")):
+        denied = (403, HTTPMessage(), b'{"errors":[{"code":"DENIED"}]}')
+        for response in (denied, (200, HTTPMessage(), b'{"token":"anonymous"}'), (403, HTTPMessage(), b"{}")):
             with self.subTest(response=response), patch("registry_absence._get", side_effect=(challenge, response)):
-                with self.assertRaisesRegex(CandidateError, "explicitly denied"):
+                with self.assertRaisesRegex(CandidateError, "private package state"):
                     custody._verify_anonymous_denied(self.pin)

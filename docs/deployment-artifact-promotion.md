@@ -110,10 +110,14 @@ repackaging it. The immutable OCI manifest reference is derived from the pre-exi
 byte count and media type. Bootstrap and observation verify the full payload by digest and require
 GHCR to deny anonymous pull authorization.
 
-Run `web-release-custody.yml` on protected `main` with `mode=bootstrap` while those original
-Actions artifacts are available. Use `mode=observe` to reconcile an interrupted publication or
-recheck the retained objects with read-only credentials. Preserve the workflow run history and
-readback receipts. A possible previous write keeps later attempts read-only until reconciled.
+Set the custody package to Private before any upload. The preflight checks that the existing package
+denies a fresh anonymous token request. Keep the custody package private through the readback.
+
+Run `web-release-custody.yml` on protected `main` with `mode=observe` to verify the retained
+objects with read-only credentials. The original bootstrap stopped after the Core archive reached
+the registry. The bounded `mode=resume` authenticates that exact attempt and its read-only
+diagnosis, reads back the complete Core archive, and can write only the two independently confirmed
+missing objects. Use `mode=observe` again after resume and retain the immutable readback receipts.
 
 The historical Web qualifier can select this storage explicitly with `--custody-oras` and
 `--backend-admission-bytes 3212`. It checks the exact same publication and archive digests and

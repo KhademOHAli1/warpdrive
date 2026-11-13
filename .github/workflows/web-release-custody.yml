@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Observe existing immutable objects, or bootstrap once from verified historical Actions artifacts
+        description: Observe custody or resume the two missing objects after the verified partial write
         type: choice
         required: true
         default: observe
-        options: [observe, bootstrap]
+        options: [observe, bootstrap, resume]
 
 permissions: {}
 
@@ -19,7 +19,7 @@ concurrency:
 jobs:
   bootstrap:
     name: Bootstrap verified Web artifact custody
-    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'bootstrap'
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && (inputs.mode == 'bootstrap' || inputs.mode == 'resume')
     runs-on: ubuntu-24.04
     timeout-minutes: 65
     permissions:
@@ -32,9 +32,15 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
       - name: Check bootstrap authority and prior write opportunities
+        if: inputs.mode == 'bootstrap'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -B scripts/deployment/web_custody_workflow.py preflight
+      - name: Authenticate the exact partial write and read-only diagnosis
+        if: inputs.mode == 'resume'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B scripts/deployment/web_custody_workflow.py resume-preflight
       - name: Download and verify the exact historical Core and Web evidence
         env:
           GH_TOKEN: ${{ github.token }}
@@ -51,14 +57,22 @@ jobs:
         id: oras
         uses: ./.github/actions/install-custody-oras
       - name: Verify authenticated provider state without writing
+        if: inputs.mode == 'bootstrap'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -B scripts/deployment/web_custody_workflow.py provider-check
       - name: Publish the three pinned custody objects
+        if: inputs.mode == 'bootstrap'
         env:
           GH_TOKEN: ${{ github.token }}
           CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
         run: python3 -B scripts/deployment/web_custody_workflow.py bootstrap --oras "$CUSTODY_ORAS"
+      - name: Resume only missing pinned custody objects
+        if: inputs.mode == 'resume'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: python3 -B scripts/deployment/web_custody_workflow.py resume --oras "$CUSTODY_ORAS"
       - name: Retain sanitized custody outcome
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
