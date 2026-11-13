@@ -1100,8 +1100,7 @@ class MixedWebSmoke(WebSwitchSmoke):
         return self.report["success"]
 
 
-def main(arguments=None):
-    parser = argparse.ArgumentParser(description=__doc__)
+def add_mixed_options(parser):
     parser.add_argument("--bundle-dir", type=Path, required=True)
     parser.add_argument("--baseline-revision", type=validate_revision, required=True)
     parser.add_argument("--baseline-manifest-sha256", required=True)
@@ -1124,6 +1123,19 @@ def main(arguments=None):
     parser.add_argument("--successor-web-revision", type=validate_revision)
     parser.add_argument("--predecessor-lineage-sha256")
     add_functional_predecessor_options(parser)
+
+
+def run_native_mixed(args, *, sdk_scenario=None):
+    require(platform.system() == "Linux" and platform.machine() in {"x86_64", "amd64"},
+            "native Linux AMD64 host required")
+    with tempfile.TemporaryDirectory(prefix="wd-web-mixed-") as directory:
+        private = Path(directory).resolve()
+        return MixedWebSmoke(IsolatedDocker(private / "docker"), args, private, sdk_scenario=sdk_scenario).run()
+
+
+def main(arguments=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    add_mixed_options(parser)
     args = parser.parse_args(arguments)
     if not HASH.fullmatch(args.baseline_manifest_sha256) or not IMAGE.fullmatch(args.new_web_image_id):
         parser.error("a full baseline manifest SHA-256 and immutable new Web image ID are required")
@@ -1139,11 +1151,7 @@ def main(arguments=None):
     except (OSError, ValueError, WebSwitchSmokeError) as error:
         parser.error(str(error))
     try:
-        require(platform.system() == "Linux" and platform.machine() in {"x86_64", "amd64"},
-                "native Linux AMD64 host required")
-        with tempfile.TemporaryDirectory(prefix="wd-web-mixed-") as directory:
-            private = Path(directory).resolve()
-            passed = MixedWebSmoke(IsolatedDocker(private / "docker"), args, private).run()
+        passed = run_native_mixed(args)
     except Exception as error:
         print(f"Native isolated mixed Web rehearsal could not complete ({type(error).__name__}).", file=sys.stderr)
         return 1
