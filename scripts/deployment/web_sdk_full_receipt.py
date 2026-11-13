@@ -23,7 +23,7 @@ IMPORT_SCANNER = "scripts/deployment/web_sdk_imports.mjs"
 IMPORT_POLICY = "scripts/deployment/web-sdk-import-policy.json"
 IMPORT_POLICY_SHA = "223fa46c98651e99e4423b9d37b9df9c7d4359cf346d6e6afd5476056277ec62"
 CONTROLS_IMPORT_POLICY = "scripts/deployment/web-sdk-controls-import-policy.json"
-CONTROLS_IMPORT_POLICY_SHA = "1447165fe72eb6f734ac4c984f130902eaefa043950f18f3a6043994bb1aeba4"
+CONTROLS_IMPORT_POLICY_SHA = "5548513098705a4d2d255c316faf89d2e193b5032dccc38019a648b396c3ce76"
 SCANNER_FILES = (SCAN, IMPORT_SCANNER, IMPORT_POLICY, "scripts/deployment/web_presentation_policy.mjs",
                  *sorted(inputs.POLICY_SOURCES))
 WEB_FIELDS = {"profile", "context", "gitInventorySha256", "pinnedInputs", "helperEntries", "helperGraphInputs",

@@ -50,17 +50,25 @@ void test("the controls policy allows only the full named bindings at the two re
   assert.throws(() => inspect(combo, { path: combobox, version: 1 }), admissionError);
 });
 
-void test("v3 admits the additional DialogBackdrop binding only at the reviewed wrapper", () => {
-  const source = `${client} import { Dialog, DialogBackdrop as Backdrop } from "@ui-sdk/react/dialog";`;
+void test("v3 admits additional Dialog bindings only at the reviewed wrapper", () => {
+  const source = `${client} import { Dialog, DialogBackdrop as Backdrop, createDialogController } from "@ui-sdk/react/dialog";`;
   const path = "src/components/ui/SdkDialog.tsx";
   assert.deepEqual(
     inspect(source, { path, version: 3 }).map(({ exported }) => exported),
-    ["Dialog", "DialogBackdrop"],
+    ["Dialog", "DialogBackdrop", "createDialogController"],
   );
   assert.throws(() => inspect(source, { path, version: 2 }), admissionError);
   assert.throws(() => inspect(source, { path: PILOT, version: 3 }), admissionError);
   assert.throws(
     () => inspect(source, { path: "src/components/ui/OtherDialog.tsx", version: 3 }),
+    admissionError,
+  );
+  assert.throws(
+    () => inspect(source, { path: "src/features/quick-add/GlobalAddMenu.tsx", version: 3 }),
+    admissionError,
+  );
+  assert.throws(
+    () => inspect(`${source} export { createDialogController };`, { path, version: 3 }),
     admissionError,
   );
 });
