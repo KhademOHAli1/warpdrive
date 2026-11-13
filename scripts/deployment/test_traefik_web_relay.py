@@ -302,9 +302,14 @@ class LoopbackFixture(unittest.TestCase):
             self.assertEqual(response.status, 200)
             response.read()
 
+    def public_connection(self):
+        context = ssl.create_default_context(cafile=self.directory / "edge.pem")
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        return HTTPSConnection("127.0.0.1", self.edge_port, context=context, timeout=3)
+
     def request(self, method, path, headers=None, *, body=None, public=False):
         if public:
-            connection = HTTPSConnection("127.0.0.1", self.edge_port, context=self.tls, timeout=3)
+            connection = self.public_connection()
         else:
             connection = HTTPConnection("127.0.0.1", self.relay_port, timeout=3)
         try:
@@ -361,8 +366,6 @@ class ExactTwoHopTests(LoopbackFixture):
         subprocess.run([OPENSSL, "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-subj", "/CN=127.0.0.1",
                         "-addext", "subjectAltName=IP:127.0.0.1", "-keyout", str(key), "-out", str(certificate)],
                        capture_output=True, check=True, timeout=5)
-        self.tls = ssl.create_default_context(cafile=certificate)
-        self.tls.minimum_version = ssl.TLSVersion.TLSv1_2
         services = config["http"]["services"]
         for name, port in (("incumbent", self.old.server_port), ("ws", self.realtime.server_port),
                            ("warpdrive-web-relay-safe", self.relay_port), ("warpdrive-web-relay-unsafe", self.relay_port)):
@@ -423,8 +426,11 @@ class ExactTwoHopTests(LoopbackFixture):
                   + self.edge_log.read(3000).decode(errors="replace"))
 
     def open_realtime(self):
-        raw = socket.create_connection(("127.0.0.1", self.edge_port), timeout=3)
-        tunnel = self.enterContext(self.tls.wrap_socket(raw, server_hostname="127.0.0.1"))
+        connection = self.enterContext(closing(self.public_connection()))
+        connection.connect()
+        tunnel = connection.sock
+        self.assertIsInstance(tunnel, ssl.SSLSocket)
+        self.assertIn(tunnel.version(), {"TLSv1.2", "TLSv1.3"})
         stream = self.enterContext(tunnel.makefile("rb"))
         tunnel.sendall((f"GET /_ws HTTP/1.1\r\nHost: {HOST}\r\nOrigin: https://{HOST}\r\n"
                         "Connection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\n"
