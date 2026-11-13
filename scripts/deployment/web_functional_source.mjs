@@ -11,6 +11,14 @@ import postcss from "postcss";
 import ts from "typescript";
 import { selectBuildEntries } from "../build-workers.mjs";
 import { canonical } from "./component_inputs.mjs";
+import {
+  capabilityBindingsHash,
+  capabilityImport,
+  readCapabilityProfile,
+  verifyCapabilityBoundary,
+  verifyCapabilityProvider,
+  verifyCapabilityUses,
+} from "./web_functional_capabilities.mjs";
 import { guardWebInputs, WEB_INPUT_POLICY } from "./web_inputs.mjs";
 import {
   createWebGitSourceReader,
@@ -278,6 +286,7 @@ function reviewedPathList(list, matches, kind) {
 }
 
 function readProfile(profile) {
+  if (profile?.version === 2) return readCapabilityProfile(profile, reject);
   if (
     !profile ||
     Object.getPrototypeOf(profile) !== Object.prototype ||
@@ -403,6 +412,12 @@ function addReference(context, node, specifier) {
   const paths = directReference(specifier, path, files);
   context.edges.push(...paths);
   if (
+    modules.has(path) &&
+    paths.some((target) => context.capabilities.has(target)) &&
+    (paths.length !== 1 || !node || !ts.isImportDeclaration(node))
+  )
+    reject(`Functional Web capability edge requires an exact static import: ${path}`);
+  if (
     adapters.has(path) &&
     paths.some((target) => modules.has(target) || context.styles.has(target))
   )
@@ -504,15 +519,27 @@ function descendants(edges, roots) {
   return found;
 }
 
-function verifyBoundary(graph, island, adapters) {
+function verifyBoundary(graph, island, modules, adapters, capabilities) {
   for (const [from, edges] of graph.edges) {
     if (!island.has(from) && !adapters.has(from) && edges.some((to) => island.has(to)))
       reject(`Unreviewed ingress into the functional Web island: ${from}`);
-    if (island.has(from) && edges.some((to) => !island.has(to)))
+    if (
+      island.has(from) &&
+      edges.some((to) => !island.has(to) && !(modules.has(from) && capabilities.has(to)))
+    )
       reject(`Functional Web island reaches protected application source: ${from}`);
   }
+  if (capabilities.size)
+    verifyCapabilityBoundary(
+      graph.edges,
+      capabilities,
+      modules,
+      adapters,
+      graph.capabilityBindings,
+      reject,
+    );
   for (const path of descendants(graph.edges, graph.protectedRoots)) {
-    if (island.has(path) || adapters.has(path))
+    if (island.has(path) || adapters.has(path) || capabilities.has(path))
       reject(
         `Protected server, route or runtime closure reaches the functional Web island: ${path}`,
       );
@@ -544,11 +571,14 @@ function inspectNamedImport(node, path, names, kind, allowed) {
   }
 }
 
-function inspectImport(node, path, names, files, modules, styles) {
+function inspectImport(node, path, names, files, modules, styles, capabilities) {
   const source = node.moduleSpecifier.text;
   const paths = directReference(source, path, files);
   const exact = paths.length === 1 ? paths[0] : undefined;
-  if (styles.has(exact)) {
+  const contract = capabilities.get(exact);
+  if (contract) {
+    capabilityImport({ node, path, contract, bindings: names, reject });
+  } else if (styles.has(exact)) {
     inspectStyleImport(node, path, names);
   } else if (modules.has(exact)) {
     inspectNamedImport(node, path, names, "local");
@@ -559,10 +589,11 @@ function inspectImport(node, path, names, files, modules, styles) {
   }
 }
 
-function inspectImports(tree, path, files, modules, styles) {
+function inspectImports(tree, path, files, modules, styles, capabilities) {
   const names = new Map();
   for (const node of tree.statements) {
-    if (ts.isImportDeclaration(node)) inspectImport(node, path, names, files, modules, styles);
+    if (ts.isImportDeclaration(node))
+      inspectImport(node, path, names, files, modules, styles, capabilities);
   }
   return names;
 }
@@ -856,6 +887,7 @@ function verifyProperty(context, node) {
 }
 
 function verifyNode(context, node) {
+  if (context.capabilityNodes.has(node)) return;
   if (
     ts.isImportDeclaration(node) ||
     ts.isTypeNode(node) ||
@@ -901,7 +933,7 @@ function verifyNode(context, node) {
   ts.forEachChild(node, (child) => verifyNode(context, child));
 }
 
-function inspectIslandScript(tree, path, files, modules, styles) {
+function inspectIslandScript(tree, path, files, { modules, styles, capabilities }) {
   const first = tree.statements[0];
   if (
     !first ||
@@ -917,7 +949,7 @@ function inspectIslandScript(tree, path, files, modules, styles) {
     tree.libReferenceDirectives.length
   )
     reject(`Unreviewed presentation compiler directive: ${path}`);
-  const imports = inspectImports(tree, path, files, modules, styles);
+  const imports = inspectImports(tree, path, files, modules, styles, capabilities);
   const checker = checkerFor(tree);
   const eventHandlers = new Set();
   function findHandlers(node) {
@@ -928,7 +960,15 @@ function inspectIslandScript(tree, path, files, modules, styles) {
     ts.forEachChild(node, findHandlers);
   }
   findHandlers(tree);
-  verifyNode({ path, tree, imports, checker, eventHandlers }, tree);
+  const { nodes: capabilityNodes, bindings } = verifyCapabilityUses({
+    tree,
+    path,
+    imports,
+    checker,
+    reject,
+  });
+  verifyNode({ path, tree, imports, checker, eventHandlers, capabilityNodes }, tree);
+  return bindings;
 }
 
 function exactDependencies(read) {
@@ -982,11 +1022,14 @@ function verifySdkSource(root, files, read) {
 }
 
 function scanFile(path, source, graph, files, reviewed) {
-  const { modules, styles } = reviewed;
+  const { modules, styles, capabilities } = reviewed;
   if (SCRIPT.test(path)) {
     const tree = scriptTree(path, source);
+    const contract = capabilities.get(path);
+    if (contract) verifyCapabilityProvider(tree, contract, reject);
     scanScript(tree, graph, path, files, reviewed);
-    if (modules.has(path)) inspectIslandScript(tree, path, files, modules, styles);
+    if (modules.has(path))
+      graph.capabilityBindings.push(...inspectIslandScript(tree, path, files, reviewed));
   } else {
     const tree = cssTree(path, source);
     scanStyle(tree, graph, path, files);
@@ -999,6 +1042,7 @@ function scanFirstParty(files, read, reviewed) {
     edges: new Map(),
     protectedRoots: new Set(selectBuildEntries("all").map((entry) => entry.in)),
     usesSdk: false,
+    capabilityBindings: [],
   };
   let bytes = 0;
   for (const [path, entry] of files) {
@@ -1011,10 +1055,10 @@ function scanFirstParty(files, read, reviewed) {
   return graph;
 }
 
-async function inspectSnapshot(root, files, { modules, styles, island, adapters }) {
+async function inspectSnapshot(root, files, { modules, styles, island, adapters, capabilities }) {
   const read = createWebGitSourceReader(root, files);
-  const graph = scanFirstParty(files, read, { modules, styles, adapters });
-  verifyBoundary(graph, island, adapters);
+  const graph = scanFirstParty(files, read, { modules, styles, adapters, capabilities });
+  verifyBoundary(graph, island, modules, adapters, capabilities);
   const { manifest, lock, packages } = exactDependencies(read);
   if (graph.usesSdk) {
     verifySdkSource(root, files, read);
@@ -1035,7 +1079,11 @@ async function inspectSnapshot(root, files, { modules, styles, island, adapters 
   if ([...adapters, ...island].some((path) => !reachable.has(path)))
     reject("Functional Web island and adapters must be reachable from reviewed Web roots");
   const protectedEdges = [...graph.edges].filter(([path]) => !island.has(path));
-  return { protectedEdges, webPathCount: reachable.size };
+  return {
+    protectedEdges,
+    webPathCount: reachable.size,
+    capabilityBindings: graph.capabilityBindings,
+  };
 }
 
 /** Read two exact Git trees without using working files, compiling or deploying. */
@@ -1064,16 +1112,17 @@ export async function verifyWebFunctionalSource({
   const styles = new Set(reviewed.styles);
   const island = new Set([...modules, ...styles]);
   const adapters = new Set(reviewed.adapters);
-  verifyIslandFiles(before, after, island, adapters);
+  const capabilities = new Map((reviewed.capabilities ?? []).map((item) => [item.path, item]));
+  verifyIslandFiles(before, after, island, new Set([...adapters, ...capabilities.keys()]));
   const { changed, protectedSource } = inspectDelta(before, after, island);
-  const snapshotOptions = { modules, styles, island, adapters };
+  const snapshotOptions = { modules, styles, island, adapters, capabilities };
   const baseline = await inspectSnapshot(root, before, snapshotOptions);
   const current = await inspectSnapshot(root, after, snapshotOptions);
   const protectedGraphSha256 = hash(baseline.protectedEdges);
   if (protectedGraphSha256 !== hash(current.protectedEdges))
     reject("Protected source resolution changed");
   return {
-    schemaVersion: VERSION,
+    schemaVersion: reviewed.version,
     kind: "warpdrive-web-functional-source",
     baselineRevision,
     currentRevision,
@@ -1081,6 +1130,13 @@ export async function verifyWebFunctionalSource({
     protectedSourceSha256: hash(protectedSource),
     protectedGraphSha256,
     guardedWebPathCount: current.webPathCount,
+    ...(reviewed.version === 2 && {
+      capabilityBindingsSha256: capabilityBindingsHash(
+        capabilities,
+        after,
+        current.capabilityBindings,
+      ),
+    }),
     changed,
     deploymentAuthorized: false,
   };

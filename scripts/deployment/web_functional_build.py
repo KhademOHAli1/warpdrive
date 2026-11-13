@@ -12,11 +12,13 @@ from candidate import REVISION, require
 import component_inputs as inputs
 from web_build_context import prepare_context, verify_context
 from web_extension_inputs import verify_web_extension_candidate
+from web_functional_profile import parse_web_functional_profile, verify_web_functional_delta
 from web_release_build import checkout, private_destination, read_metadata, write_metadata
 from web_release_inputs import _git, _tree, source_policy
 
 
 SOURCE = "scripts/deployment/web_functional_source.mjs"
+CAPABILITIES = "scripts/deployment/web_functional_capabilities.mjs"
 SOURCE_PROGRAM = """
 const { verifyWebFunctionalSource } = await import('./scripts/deployment/web_functional_source.mjs');
 const [root, baselineRevision, currentRevision, profile] = process.argv.slice(1);
@@ -26,16 +28,7 @@ process.stdout.write(JSON.stringify(proof));
 
 
 def _profile(path, expected_digest):
-    raw = read_metadata(path)
-    require(len(raw) <= 64 * 1024 and inputs.HASH.fullmatch(expected_digest),
-            "Bounded protected functional Web profile required")
-    profile = inputs.decode(raw)
-    require(type(profile) is dict and set(profile) == {"version", "modules", "styles", "adapters"}
-            and type(profile["version"]) is int and profile["version"] == 1
-            and all(type(profile[key]) is list and all(isinstance(path, str) for path in profile[key])
-                    and profile[key] == sorted(set(profile[key])) for key in ("modules", "styles", "adapters"))
-            and inputs.content_hash(profile) == expected_digest, "Functional Web profile differs from its reviewed checksum")
-    return profile
+    return parse_web_functional_profile(read_metadata(path), expected_sha256=expected_digest)
 
 
 def _backend(args):
@@ -60,11 +53,11 @@ def _source(args, profile):
     require(source_policy(root, args.active_web_revision) == source_policy(root, current),
             "SDK candidate changed the retained Engine or ingress source policy")
     before_tree, current_tree = (_tree(root, revision) for revision in (before, current))
-    profile_paths = set(profile["modules"] + profile["styles"])
-    changes = sorted(path for path in before_tree.keys() | current_tree.keys() if before_tree.get(path) != current_tree.get(path))
-    require(bool(changes) and set(changes) <= profile_paths, "Candidate changed a file outside the reviewed Web profile")
+    changes = verify_web_functional_delta(before_tree, current_tree, profile)
     verifier_paths = {SOURCE, "scripts/build-workers.mjs", "scripts/deployment/component_inputs.mjs",
                       "scripts/deployment/web_inputs.mjs", "scripts/deployment/web_presentation_policy.mjs"}
+    if CAPABILITIES in before_tree or profile["version"] == 2:
+        verifier_paths.add(CAPABILITIES)
     for path in verifier_paths:
         script = current_tree[path]
         raw = read_metadata(root / path)
@@ -75,10 +68,11 @@ def _source(args, profile):
     command = ["node", "--input-type=module", "-e", SOURCE_PROGRAM, str(root), before, current,
                inputs.canonical(profile).decode()]
     result = inputs.decode(inputs._discover(command, root, environment, deadline_seconds=90))
-    require(result["kind"] == "warpdrive-web-functional-source" and result["schemaVersion"] == 1
+    require(result["kind"] == "warpdrive-web-functional-source" and result["schemaVersion"] == profile["version"]
+            and (profile["version"] == 1 or inputs.HASH.fullmatch(result.get("capabilityBindingsSha256", "")))
             and result["baselineRevision"] == before and result["currentRevision"] == current
             and result["deploymentAuthorized"] is False and result["profileSha256"] == args.profile_sha256
-            and [row["path"] for row in result["changed"]] == changes
+            and tuple(row["path"] for row in result["changed"]) == changes
             and all(before_tree[row["path"]] == ("100644", "blob", row["baselineBlob"])
                     and current_tree[row["path"]] == ("100644", "blob", row["currentBlob"]) for row in result["changed"]),
             "Functional source proof differs from the selected Git objects")

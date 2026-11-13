@@ -12,7 +12,10 @@ from component_inputs import HASH, canonical, content_hash, decode
 from image_smoke import Docker, SmokeError
 from web_candidate import ARCHIVE, MAX_METADATA_BYTES, PLATFORM, _archive, _directory, _input_file, _main_origin, _metadata, _record, _sha, _write
 from web_composite_baseline import REPO, RETAINED
-from web_mixed_image_smoke import read_web_image, repeat_assembly, successor_baseline, successor_mode
+from web_mixed_image_smoke import (
+    add_functional_predecessor_options, functional_successor_baseline, functional_successor_mode, read_web_image,
+    repeat_assembly, successor_baseline, successor_mode,
+)
 from web_release_build import origin_for, private_destination
 from web_repeat_candidate import validate_repeat_mixed_report
 
@@ -22,6 +25,10 @@ INPUTS = "web-functional-inputs.json"
 MIXED = "web-functional-mixed-report.json"
 FILES = {INPUTS, MIXED, ARCHIVE}
 KIND = "warpdrive-tested-functional-web-bundle"
+SOURCE_FIELDS = {"schemaVersion", "kind", "baselineRevision", "currentRevision", "profileSha256",
+                 "protectedSourceSha256", "protectedGraphSha256", "guardedWebPathCount", "changed",
+                 "deploymentAuthorized"}
+SOURCE_HASH_FIELDS = {"profileSha256", "protectedSourceSha256", "protectedGraphSha256", "capabilityBindingsSha256"}
 
 
 def _pins(composite, revision, origin, expected_input_sha256, installed_lineage_sha256):
@@ -55,6 +62,15 @@ def _evidence(raw, *, composite, revision, image_id, pins):
             and facts["buildComponents"] == ["web"] and facts["deploymentAuthorized"] is False,
             "Functional source, dependency or build context receipt differs")
     dependencies, source, context = (facts[key] for key in ("dependencies", "source", "context"))
+    version = source.get("schemaVersion") if type(source) is dict else None
+    require(type(version) is int and version in {1, 2}
+            and set(source) == (SOURCE_FIELDS | {"capabilityBindingsSha256"} if version == 2 else SOURCE_FIELDS)
+            and all(isinstance(source[key], str) and HASH.fullmatch(source[key])
+                    for key in SOURCE_HASH_FIELDS.intersection(source))
+            and type(source["guardedWebPathCount"]) is int and source["guardedWebPathCount"] > 0
+            and type(source["changed"]) is list and bool(source["changed"])
+            and source["deploymentAuthorized"] is False,
+            "Exact functional source proof version and protected hashes required")
     require(type(context) is dict and set(context) == {"gitInventorySha256", "fileCount"}
             and HASH.fullmatch(context["gitInventorySha256"]) and type(context["fileCount"]) is int
             and 0 < context["fileCount"] <= 20_000, "Exact Web Docker context evidence required")
@@ -63,8 +79,8 @@ def _evidence(raw, *, composite, revision, image_id, pins):
             and dependencies["originalBackendReceiptSha256"] == backend["inputReceiptSha256"]
             and dependencies["retainedComponentInputSha256"] == {name: backend["components"][name]["inputSha256"] for name in RETAINED}
             and source["kind"] == "warpdrive-web-functional-source" and source["currentRevision"] == revision
-            and source["baselineRevision"] == facts["toolingRevision"] and source["profileSha256"] == facts["reviewedProfileSha256"]
-            and bool(source["changed"]), "Native functional release source or retained backend inputs differ")
+            and source["baselineRevision"] == facts["toolingRevision"] and source["profileSha256"] == facts["reviewedProfileSha256"],
+            "Native functional release source or retained backend inputs differ")
     image = {"imageId": image_id, "sourceRevision": revision, "generation": "wd-" + revision}
     qualification = validate_repeat_mixed_report(mixed, assembly=repeat_assembly(composite, image),
                                                  expected_harness_revision=revision, sdk_keyboard_help=True)
@@ -128,10 +144,14 @@ def load_functional_bundle(directory, *, composite, revision, origin, expected_m
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("bundle-dir", "active-web-bundle", "active-web-publication-receipt", "seed-root", "successor-web-bundle",
+    for name in ("bundle-dir", "seed-root", "successor-web-bundle",
                  "successor-web-publication-receipt", "input-path", "mixed-path", "output-dir"):
         parser.add_argument("--" + name, required=True, type=Path)
-    for name in ("baseline-revision", "baseline-manifest-sha256", "active-web-publication-receipt-sha256",
+    for name in ("active-web-bundle", "active-web-publication-receipt"):
+        parser.add_argument("--" + name, type=Path)
+    parser.add_argument("--active-web-publication-receipt-sha256")
+    add_functional_predecessor_options(parser)
+    for name in ("baseline-revision", "baseline-manifest-sha256",
                  "successor-web-publication-receipt-sha256", "successor-web-revision", "predecessor-lineage-sha256",
                  "installed-lineage-sha256", "new-web-image-id", "new-web-revision"):
         parser.add_argument("--" + name, required=True)
@@ -139,8 +159,10 @@ def main(argv=None):
     args.browser, args.harness_revision = True, args.new_web_revision
     try:
         origin = origin_for(args.new_web_revision, os.environ)
-        successor_mode(args)
-        composite = successor_baseline(args, load_bundle(args.bundle_dir, expected_revision=args.baseline_revision))
+        functional = functional_successor_mode(args)
+        require(functional or successor_mode(args), "Exact retained Web and Core artifacts are required")
+        reconstruct = functional_successor_baseline if functional else successor_baseline
+        composite = reconstruct(args, load_bundle(args.bundle_dir, expected_revision=args.baseline_revision))
         pin = content_hash(decode(_input_file(args.input_path)))
         result = create_functional_bundle(args.output_dir, input_path=args.input_path, mixed_path=args.mixed_path,
             composite=composite, revision=args.new_web_revision, origin=origin, image_id=args.new_web_image_id,

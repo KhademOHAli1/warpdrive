@@ -29,6 +29,18 @@ on:
         type: choice
         default: registry
         options: [registry, original-actions]
+      predecessor_composite_file:
+        description: Reviewed Web history file for an already accepted functional release
+        type: string
+      predecessor_composite_sha256:
+        description: Canonical SHA-256 of the reviewed predecessor composite
+        type: string
+      active_publication_file:
+        description: Reviewed functional receipt file for original Actions retrieval
+        type: string
+      predecessor_lineage_sha256:
+        description: Installed lineage used to qualify the active functional release
+        type: string
 
 permissions:
   contents: read
@@ -54,6 +66,10 @@ jobs:
       LINEAGE_SHA: ${{ inputs.installed_lineage_sha256 }}
       ACTIVE_PUBLICATION_SHA: ${{ inputs.active_publication_sha256 }}
       ACTIVE_PUBLICATION_BYTES: ${{ inputs.active_publication_bytes }}
+      HISTORY_FILE: ${{ inputs.predecessor_composite_file }}
+      HISTORY_SHA: ${{ inputs.predecessor_composite_sha256 }}
+      ACTIVE_PUBLICATION_FILE: ${{ inputs.active_publication_file }}
+      HISTORY_LINEAGE_SHA: ${{ inputs.predecessor_lineage_sha256 }}
       CORE_REVISION: 6b24e23cffb32c09089d7020252cc787e3b5bf51
       CORE_MANIFEST_SHA: 28ad2697428b302cbd69af23390214453e86e040df958380deef9a3f608d2b55
       CORE_ADMISSION_SHA: baecbd9e5ac8a27a9948c43fc5bd16fef4b3e268c55b92ff6061f88f7664e3d8
@@ -73,6 +89,12 @@ jobs:
             [[ "$pin" =~ ^[0-9a-f]{64}$ ]]
           done
           [[ "$ACTIVE_PUBLICATION_BYTES" =~ ^[1-9][0-9]{0,5}$ ]]
+          if [[ -n "$HISTORY_FILE" ]]; then
+            [[ "$HISTORY_FILE" =~ ^scripts/deployment/web-history/[a-z0-9][a-z0-9-]{0,63}[.]json$ ]]
+            [[ "$HISTORY_SHA" =~ ^[0-9a-f]{64}$ && "$HISTORY_LINEAGE_SHA" =~ ^[0-9a-f]{64}$ ]]
+          else
+            test -z "$HISTORY_SHA$HISTORY_LINEAGE_SHA$ACTIVE_PUBLICATION_FILE"
+          fi
           test "$TOOLING_REVISION" != "$CANDIDATE_REVISION"
           git --no-replace-objects merge-base --is-ancestor "$TOOLING_REVISION" "$CANDIDATE_REVISION"
           git -c core.hooksPath=/dev/null worktree add --detach "$RUNNER_TEMP/functional-seed" "$CORE_REVISION"
@@ -92,18 +114,33 @@ jobs:
           CUSTODY_SOURCE: ${{ inputs.custody }}
         run: |
           umask 077
+          previous=(--previous-web-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt"
+            --previous-web-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA")
+          history_lineage="$PREDECESSOR_LINEAGE_SHA"
+          if [[ -n "$HISTORY_FILE" ]]; then
+            previous=(--functional-predecessor-composite "$GITHUB_WORKSPACE/$HISTORY_FILE"
+              --functional-predecessor-composite-sha256 "$HISTORY_SHA")
+            history_lineage="$HISTORY_LINEAGE_SHA"
+          fi
           case "$CUSTODY_SOURCE" in
-            registry) custody=(--oras "$CUSTODY_ORAS") ;;
-            original-actions) custody=(--active-publication-file "$GITHUB_WORKSPACE/scripts/deployment/repeat-web-c-publication.receipt") ;;
+            registry)
+              test -z "$ACTIVE_PUBLICATION_FILE"
+              custody=(--oras "$CUSTODY_ORAS") ;;
+            original-actions)
+              publication_file="scripts/deployment/repeat-web-c-publication.receipt"
+              if [[ -n "$HISTORY_FILE" ]]; then
+                [[ "$ACTIVE_PUBLICATION_FILE" =~ ^scripts/deployment/web-history/[a-z0-9][a-z0-9-]{0,63}[.]receipt$ ]]
+                publication_file="$ACTIVE_PUBLICATION_FILE"
+              fi
+              custody=(--active-publication-file "$GITHUB_WORKSPACE/$publication_file") ;;
             *) exit 1 ;;
           esac
           python3 -B scripts/deployment/web_functional_historical.py \
             "${custody[@]}" --revision "$CANDIDATE_REVISION" \
             --core-admission-sha256 "$CORE_ADMISSION_SHA" --core-manifest-sha256 "$CORE_MANIFEST_SHA" \
-            --previous-web-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt" \
-            --previous-web-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA" \
+            "${previous[@]}" \
             --active-publication-sha256 "$ACTIVE_PUBLICATION_SHA" --active-publication-bytes "$ACTIVE_PUBLICATION_BYTES" \
-            --predecessor-lineage-sha256 "$PREDECESSOR_LINEAGE_SHA" --output-dir "$RUNNER_TEMP/functional-retained"
+            --predecessor-lineage-sha256 "$history_lineage" --output-dir "$RUNNER_TEMP/functional-retained"
           revision=$(jq --exit-status --raw-output '.revision' "$RUNNER_TEMP/functional-retained/active-receipt.json")
           [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
           printf 'active_revision=%s\n' "$revision" >> "$GITHUB_OUTPUT"
@@ -172,12 +209,20 @@ jobs:
             --web-projection "$RUNNER_TEMP/functional-projection" --sdk-core "$proof/core.tgz" --sdk-react "$proof/react.tgz" \
             --context "$RUNNER_TEMP/functional-context" --output "$proof/inputs.json"
           image_id=$(docker image inspect --format '{{.Id}}' "$WEB_IMAGE")
+          previous=(--active-web-bundle "$retained/web"
+            --active-web-publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt"
+            --active-web-publication-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA")
+          history_lineage="$PREDECESSOR_LINEAGE_SHA"
+          if [[ -n "$HISTORY_FILE" ]]; then
+            previous=(--functional-predecessor-composite "$GITHUB_WORKSPACE/$HISTORY_FILE"
+              --functional-predecessor-composite-sha256 "$HISTORY_SHA")
+            history_lineage="$HISTORY_LINEAGE_SHA"
+          fi
           baseline=(--bundle-dir "$retained/core" --baseline-revision "$CORE_REVISION" --baseline-manifest-sha256 "$CORE_MANIFEST_SHA"
-            --active-web-bundle "$retained/web" --active-web-publication-receipt "$GITHUB_WORKSPACE/scripts/deployment/first-web-publication.receipt"
-            --active-web-publication-receipt-sha256 "$PREVIOUS_PUBLICATION_SHA" --seed-root "$RUNNER_TEMP/functional-seed"
+            "${previous[@]}" --seed-root "$RUNNER_TEMP/functional-seed"
             --successor-web-bundle "$retained/active" --successor-web-publication-receipt "$retained/active-receipt.json"
             --successor-web-publication-receipt-sha256 "$ACTIVE_PUBLICATION_SHA" --successor-web-revision "$ACTIVE_REVISION"
-            --predecessor-lineage-sha256 "$PREDECESSOR_LINEAGE_SHA" --new-web-image-id "$image_id" --new-web-revision "$CANDIDATE_REVISION")
+            --predecessor-lineage-sha256 "$history_lineage" --new-web-image-id "$image_id" --new-web-revision "$CANDIDATE_REVISION")
           timeout --signal=INT --kill-after=65s 15m python3 -B scripts/deployment/web_mixed_image_smoke.py \
             "${baseline[@]}" --harness-revision "$CANDIDATE_REVISION" --output-dir "$proof/mixed" --browser --sdk-keyboard-help
           python3 -B scripts/deployment/web_functional_candidate.py "${baseline[@]}" \

@@ -50,6 +50,7 @@ REPEAT_OPTIONS = ("active_web_bundle", "active_web_publication_receipt",
 SUCCESSOR_OPTIONS = ("successor_web_bundle", "successor_web_publication_receipt",
                      "successor_web_publication_receipt_sha256", "successor_web_revision",
                      "predecessor_lineage_sha256")
+FUNCTIONAL_PREDECESSOR_OPTIONS = ("functional_predecessor_composite", "functional_predecessor_composite_sha256")
 RETAINED_COMPONENTS = ("worker", "realtime", "migrator")
 BROWSER_PHASES = {
     "initial-ready": {"oldStatic": True, "nativeLogin": True, "draftReady": True, "subscribed": True},
@@ -115,6 +116,32 @@ def successor_mode(args):
     return True
 
 
+def functional_successor_mode(args):
+    selected = [getattr(args, name, None) is not None for name in FUNCTIONAL_PREDECESSOR_OPTIONS]
+    if not any(selected):
+        return False
+    require(all(selected) and args.browser and not any(getattr(args, name, None) is not None for name in REPEAT_OPTIONS[:3])
+            and all(getattr(args, name, None) is not None for name in (*SUCCESSOR_OPTIONS, *REPEAT_OPTIONS[3:])),
+            "Functional history requires an independent predecessor composite, active archive and native browser")
+    require(all(HASH.fullmatch(getattr(args, name)) for name in (
+                "functional_predecessor_composite_sha256", "successor_web_publication_receipt_sha256", "predecessor_lineage_sha256"))
+            and all(validate_revision(getattr(args, name)) == getattr(args, name) for name in (
+                "successor_web_revision", "harness_revision")),
+            "Exact functional history digests and sources required")
+    paths = (args.bundle_dir, args.successor_web_bundle, args.successor_web_publication_receipt,
+             args.functional_predecessor_composite, args.seed_root)
+    require(all(path.is_absolute() and path == path.resolve(strict=True) for path in paths)
+            and all(not left.is_relative_to(right) and not right.is_relative_to(left)
+                    for index, left in enumerate(paths) for right in paths[index + 1:]),
+            "Independent canonical functional history paths required")
+    return True
+
+
+def add_functional_predecessor_options(parser):
+    parser.add_argument("--functional-predecessor-composite", type=Path)
+    parser.add_argument("--functional-predecessor-composite-sha256")
+
+
 def repeat_baseline(args, backend, *, candidate_revision=None):
     # Avoid a module cycle: composite custody validates the earlier Web bundle
     # using the V1 mixed report reader.
@@ -176,6 +203,36 @@ def successor_baseline(args, backend):
     _git(args.seed_root, "merge-base", "--is-ancestor", active, candidate, allow_empty=True)
     _verify_baseline_blobs(args.seed_root, _tree(args.seed_root, active), composite["web"]["inputReceipt"])
     return composite
+
+
+def functional_successor_baseline(args, backend):
+    """Admit an active functional archive using its pinned earlier public composite."""
+    from component_inputs import decode
+    from web_candidate import _input_file
+    from web_functional_successor import original_backend_projection, verify_functional_successor
+    from web_release_inputs import _git
+
+    candidate = backend["candidate"]
+    require(candidate["schemaVersion"] == 2 and candidate["revision"] == args.baseline_revision
+            and backend["provenance"]["bundleManifestSha256"] == args.baseline_manifest_sha256,
+            "Exact original retained Core bundle required")
+    original = original_backend_projection(backend)
+    predecessor = decode(_input_file(args.functional_predecessor_composite))
+    active, current = args.successor_web_revision, args.new_web_revision
+    result = verify_functional_successor(predecessor=predecessor,
+        expected_predecessor_sha256=args.functional_predecessor_composite_sha256, original_backend=original,
+        functional_bundle_dir=args.successor_web_bundle, publication_bytes=_input_file(args.successor_web_publication_receipt),
+        expected_publication_sha256=args.successor_web_publication_receipt_sha256, expected_revision=active,
+        predecessor_lineage_sha256=args.predecessor_lineage_sha256)
+    prior = predecessor["web"]
+    require(len({args.baseline_revision, prior["sourceRevision"], active, current}) == 4
+            and args.new_web_image_id not in {prior["image"]["imageId"], result["web"]["image"]["imageId"],
+                                              *(item["imageId"] for item in candidate["components"].values())},
+            "Functional successor sources and images must be distinct")
+    _git(args.seed_root, "merge-base", "--is-ancestor", args.baseline_revision, prior["sourceRevision"], allow_empty=True)
+    _git(args.seed_root, "merge-base", "--is-ancestor", prior["sourceRevision"], active, allow_empty=True)
+    _git(args.seed_root, "merge-base", "--is-ancestor", active, current, allow_empty=True)
+    return result
 
 
 def repeat_assembly(composite, new):
@@ -515,8 +572,9 @@ class MixedWebSmoke(WebSwitchSmoke):
     def __init__(self, docker, args, private):
         super().__init__(docker, args.bundle_dir, args.baseline_revision, args.output_dir)
         self.args, self.private = args, private
-        self.repeat = repeat_mode(args)
-        self.successor = successor_mode(args)
+        self.functional_successor = functional_successor_mode(args)
+        self.repeat = self.functional_successor or repeat_mode(args)
+        self.successor = self.functional_successor or successor_mode(args)
         self.sdk_keyboard_help = getattr(args, "sdk_keyboard_help", False)
         require(not self.sdk_keyboard_help or self.successor, "SDK keyboard help requires a successor Web fixture")
         self.seed_root = args.seed_root if self.repeat else ROOT
@@ -598,7 +656,8 @@ class MixedWebSmoke(WebSwitchSmoke):
         from web_candidate import ARCHIVE, MAX_ARCHIVE_BYTES
 
         candidate = loaded["candidate"]
-        composite = successor_baseline(self.args, loaded)
+        reconstruct = functional_successor_baseline if self.functional_successor else successor_baseline
+        composite = reconstruct(self.args, loaded)
         self.verify_browser_source(candidate)
         new = read_web_image(self.docker, self.args.new_web_image_id, self.args.new_web_revision)
         assembly = repeat_assembly(composite, new)
@@ -1032,12 +1091,14 @@ def main(arguments=None):
     parser.add_argument("--successor-web-publication-receipt-sha256")
     parser.add_argument("--successor-web-revision", type=validate_revision)
     parser.add_argument("--predecessor-lineage-sha256")
+    add_functional_predecessor_options(parser)
     args = parser.parse_args(arguments)
     if not HASH.fullmatch(args.baseline_manifest_sha256) or not IMAGE.fullmatch(args.new_web_image_id):
         parser.error("a full baseline manifest SHA-256 and immutable new Web image ID are required")
     try:
-        repeat = repeat_mode(args)
-        require(successor_mode(args) or not args.sdk_keyboard_help,
+        functional = functional_successor_mode(args)
+        repeat = functional or repeat_mode(args)
+        require(functional or successor_mode(args) or not args.sdk_keyboard_help,
                 "SDK keyboard help requires a successor Web fixture")
         if args.topbar_gaps is not None:
             old, new = args.topbar_gaps

@@ -3,6 +3,8 @@
   "include": [
     "install-web-ui.mjs",
     "install-web-ui.test.mjs",
+    "web_functional_capabilities.mjs",
+    "web_functional_capabilities.test.mjs",
     "web_functional_source.mjs",
     "web_functional_source.test.mjs",
     "web_presentation_policy.mjs",

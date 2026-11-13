@@ -31,8 +31,11 @@ class FunctionalCandidateTests(unittest.TestCase):
             "dependencies": {"kind": "warpdrive-web-extension-candidate-inputs", "sourceRevision": CURRENT,
                              "baselineRevision": old["sourceRevision"], "originalBackendReceiptSha256": backend["inputReceiptSha256"],
                              "retainedComponentInputSha256": {name: value["inputSha256"] for name, value in backend["components"].items()}},
-            "source": {"kind": "warpdrive-web-functional-source", "currentRevision": CURRENT, "baselineRevision": "e" * 40,
-                       "profileSha256": "d" * 64, "changed": [{"path": "src/components/FeatureView.tsx"}]},
+            "source": {"schemaVersion": 1, "kind": "warpdrive-web-functional-source", "currentRevision": CURRENT,
+                       "baselineRevision": "e" * 40, "profileSha256": "d" * 64, "guardedWebPathCount": 350,
+                       "protectedSourceSha256": "8" * 64, "protectedGraphSha256": "9" * 64,
+                       "changed": [{"path": "src/components/FeatureView.tsx", "baselineBlob": "2" * 40,
+                                    "currentBlob": "3" * 40}], "deploymentAuthorized": False},
         }
         self.fixture.report["browserProfile"]["harnessRevision"] = CURRENT
         self.fixture.report["checks"][5]["detail"]["complete"]["sdkKeyboardHelp"] = {
@@ -64,6 +67,21 @@ class FunctionalCandidateTests(unittest.TestCase):
             self.create()
         self.assertFalse(self.directory.exists())
         self.assertEqual(self.fixture.docker.calls, [])
+
+    def test_version_two_requires_its_capability_binding_digest(self):
+        source = self.facts["source"]
+        source["schemaVersion"] = 2
+        self.input_path.write_bytes(canonical(self.facts))
+        self.options["expected_input_sha256"] = content_hash(self.facts)
+        with self.assertRaisesRegex(CandidateError, "source proof version and protected hashes"):
+            self.create()
+        self.assertEqual(self.fixture.docker.calls, [])
+
+        source["capabilityBindingsSha256"] = "4" * 64
+        self.input_path.write_bytes(canonical(self.facts))
+        self.options["expected_input_sha256"] = content_hash(self.facts)
+        created = self.create()
+        self.assertEqual(created["baseline"]["inputSha256"], self.options["expected_input_sha256"])
 
     def test_browser_fixture_must_use_the_same_immutable_web_image(self):
         report = self.fixture.report

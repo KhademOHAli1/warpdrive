@@ -288,6 +288,8 @@ export default tseslint.config(
     files: [
       "scripts/deployment/install-web-ui.mjs",
       "scripts/deployment/install-web-ui.test.mjs",
+      "scripts/deployment/web_functional_capabilities.mjs",
+      "scripts/deployment/web_functional_capabilities.test.mjs",
       "scripts/deployment/web_functional_source.mjs",
       "scripts/deployment/web_functional_source.test.mjs",
       "scripts/deployment/web_presentation_policy.mjs",
