@@ -1,8 +1,9 @@
 "use client";
+import { createDialogController } from "@ui-sdk/react/dialog";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +20,10 @@ import { cn } from "@/lib/utils";
 import { GlobalContactModal } from "./GlobalContactModal";
 import { GlobalNoteModal } from "./GlobalNoteModal";
 
-type ModalKind = "deal" | "lead" | "activity" | "person" | "org" | "note" | null;
+type ModalKind = "deal" | "lead" | "activity" | "person" | "org" | null;
 
 interface Entry {
-  key: Exclude<ModalKind, null> | "email";
+  key: Exclude<ModalKind, null> | "note" | "email";
   shortcut: string;
 }
 
@@ -51,6 +52,9 @@ export function GlobalAddMenu({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
+  const [noteDialog] = useState(() => createDialogController());
+  const quickAddTrigger = useRef<HTMLButtonElement>(null);
+  const openNoteOnMenuClose = useRef(false);
 
   // No `retry: false`: a transient cold-start error must recover so the query resolves and Deal
   // becomes createable, rather than sticking on undefined data and leaving Deal permanently gated.
@@ -83,6 +87,10 @@ export function GlobalAddMenu({
       // Email has no entity-less create modal: route to the full-pane inbox compose surface.
       if (entry.key === "email") {
         router.push("/inbox/compose");
+        return;
+      }
+      if (entry.key === "note") {
+        openNoteOnMenuClose.current = true;
         return;
       }
       setModal(entry.key);
@@ -120,6 +128,7 @@ export function GlobalAddMenu({
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <button
+            ref={quickAddTrigger}
             type="button"
             aria-label={t("title")}
             className={cn(
@@ -130,7 +139,17 @@ export function GlobalAddMenu({
             <Plus aria-hidden="true" className="h-[19px] w-[19px]" strokeWidth={2} />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56" onKeyDown={onContentKeyDown}>
+        <DropdownMenuContent
+          align="end"
+          className="w-56"
+          onKeyDown={onContentKeyDown}
+          onCloseAutoFocus={(event) => {
+            if (!openNoteOnMenuClose.current) return;
+            openNoteOnMenuClose.current = false;
+            event.preventDefault();
+            noteDialog.setOpen(true);
+          }}
+        >
           {ENTRIES.map((entry) => (
             <DropdownMenuItem
               key={entry.key}
@@ -171,9 +190,11 @@ export function GlobalAddMenu({
           onCreated={() => router.refresh()}
         />
       )}
-      {modal === "note" && (
-        <GlobalNoteModal onClose={() => setModal(null)} onCreated={() => router.refresh()} />
-      )}
+      <GlobalNoteModal
+        controller={noteDialog}
+        finalFocus={quickAddTrigger}
+        onCreated={() => router.refresh()}
+      />
     </>
   );
 }

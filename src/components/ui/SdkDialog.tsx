@@ -44,13 +44,16 @@ function closeReason(
 
 export function Dialog({
   children,
+  controller,
   onClose,
 }: {
   children: ReactNode;
+  controller?: ComponentProps<typeof SdkRoot>["controller"];
   onClose?: (value: string | undefined) => void;
 }): ReactNode {
   return (
     <SdkRoot
+      controller={controller}
       onOpenChange={(open, details) => {
         if (open) {
           capture(EVENTS.modalOpened, { route: currentRoute() });
