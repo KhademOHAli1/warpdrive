@@ -87,21 +87,26 @@ for traceability requirements.
 
 ## Documentation
 
-Edit public guides in `docs-site/docs/`. Use the Bun version declared in
-`docs-site/package.json` and run these commands from the repository root:
+Edit public guides in `docs-site/docs/` in Warpdrive. To preview a content change,
+commit it on your work branch and check out the
+[standalone renderer](https://github.com/KhademOHAli1/warpdrive-docs) at the revision
+in `docs-site/renderer.lock`. Use the Bun version in the renderer's `package.json`.
+Run these commands from the renderer root:
 
 ```sh
-bun --cwd docs-site install --frozen-lockfile
-bun --cwd docs-site run start   # local preview with hot reload
-bun --cwd docs-site run build   # production build
+bun --no-env-file scripts/stage-content.mjs /absolute/path/to/warpdrive
+bun install --frozen-lockfile
+bun run build
+bun run check:export
 ```
 
-The build fails on broken page links. Preserve published routes and heading IDs,
-and check existing links and fragments in the rendered preview when editing.
+Serve the renderer's `out/` directory at the root of a local preview server.
+Preserve published routes and heading IDs. The export check verifies links,
+fragments, and images.
 
 Screenshots are captured from a locally seeded demo instance rather than from
 production, so that no real customer data can reach a public site. The procedure is
-documented in `docs-site/screenshots/capture.md`.
+documented in the [screenshot capture guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs-site/screenshots/capture.md).
 
 ## Interface and documentation changes
 

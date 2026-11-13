@@ -7,12 +7,16 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 PROJECTS = (".", "site", "docs-site", "tools/browser-smoke", "tools/web-ui")
 COMMAND = ("bun", "--no-env-file", "audit", "--json")
 SEVERITIES = {"low", "moderate", "high", "critical"}
+DOCS_PROJECT = "docs-site"
+RENDERER_PATH = ".docs-renderer"
+RENDERER_PIN = "docs-site/renderer.lock"
 
 
 def digest(path):
@@ -48,16 +52,62 @@ def reported_advisories(stdout):
     return count
 
 
-def audit_project(root, project, output):
-    directory = root / project
+def project_directory(root, project):
+    directory = root / (RENDERER_PATH if project == DOCS_PROJECT else project)
     if directory.is_symlink() or directory.resolve() != directory.absolute():
         raise ValueError(f"Audit project must stay inside the checkout: {project}")
+    return directory
+
+
+def renderer_commit(root, directory):
+    pin = root / RENDERER_PIN
+    digest(pin)  # Reject symlinks and missing files before parsing.
+    revision = pin.read_text(encoding="ascii").rstrip("\n")
+    if not re.fullmatch(r"[0-9a-f]{40}", revision) or revision == "0" * 40:
+        raise ValueError("Invalid pinned documentation renderer revision")
+    if not (directory / ".git").is_dir() or (directory / ".git").is_symlink():
+        raise ValueError("Missing prepared documentation renderer checkout")
+    try:
+        head = subprocess.check_output(
+            ["git", "--no-replace-objects", "rev-parse", "HEAD"], cwd=directory, stderr=subprocess.DEVNULL,
+            timeout=15, text=True,
+        ).strip()
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as failure:
+        raise ValueError("Cannot verify documentation renderer checkout") from failure
+    if head != revision:
+        raise ValueError("Documentation renderer checkout differs from its pinned revision")
+    return revision
+
+
+def renderer_blob_digest(directory, revision, name):
+    try:
+        blob = subprocess.check_output(
+            ["git", "--no-replace-objects", "show", f"{revision}:{name}"], cwd=directory, stderr=subprocess.DEVNULL,
+            timeout=15,
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as failure:
+        raise ValueError(f"Cannot verify committed documentation renderer {name}") from failure
+    return hashlib.sha256(blob).hexdigest()
+
+
+def run_bun_audit(directory):
+    return subprocess.run(COMMAND, cwd=directory, capture_output=True, timeout=60, check=False)
+
+
+def audit_project(root, project, output):
+    directory = project_directory(root, project)
+    revision = renderer_commit(root, directory) if project == DOCS_PROJECT else None
     paths = {name: directory / name for name in ("package.json", "bun.lock")}
     before = {name: digest(path) for name, path in paths.items()}
+    if revision and any(
+        renderer_blob_digest(directory, revision, name) != value
+        for name, value in before.items()
+    ):
+        raise ValueError("Documentation renderer dependency files differ from pinned blobs")
     label = "root" if project == "." else project.replace("/", "-")
     error = None
     try:
-        completed = subprocess.run(COMMAND, cwd=directory, capture_output=True, timeout=60, check=False)
+        completed = run_bun_audit(directory)
         code, stdout, stderr = completed.returncode, completed.stdout, completed.stderr
     except subprocess.TimeoutExpired as failure:
         code, stdout, stderr, error = None, raw_bytes(failure.stdout), raw_bytes(failure.stderr), "timeout"
@@ -83,6 +133,7 @@ def audit_project(root, project, output):
             "result": "passed" if code == 0 and unchanged and error is None else "failed", "error": error,
             "advisory_count": findings,
             "input_sha256": before, "inputs_unchanged": unchanged,
+            **({"renderer_revision": revision} if revision else {}),
             "stdout": {"path": stdout_path.name, "sha256": hashlib.sha256(stdout).hexdigest(), "bytes": len(stdout)},
             "stderr": {"path": stderr_path.name, "sha256": hashlib.sha256(stderr).hexdigest(), "bytes": len(stderr)}}
 

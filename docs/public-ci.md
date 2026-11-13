@@ -9,19 +9,20 @@ browser, build, release, deployment or customer acceptance.
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, focused workflow/preference contract tests |
 | Marketing site | Frozen install, route type generation and typecheck                                                                             |
-| Documentation  | Frozen install, Next route type generation and typecheck                                                                        |
+| Documentation  | Check out the pinned renderer, stage public content, install locked dependencies, and check types                               |
 
 The full commands remain in [`full-ci.yml`](../.github/workflows/full-ci.yml). That workflow
 has no ordinary push trigger; it runs for an explicit dispatch or when its own definition is
 changed in a pull request. Its jobs are `CRM full checks`, `Marketing site full checks` and
 `Documentation site full checks`, and retain the full unit, PostgreSQL, build and worker/site
 coverage. The documentation job also checks the static export and retains it as the
-`warpdrive-docs-preview-<commit>` artifact.
+`warpdrive-docs-preview-<commit>` artifact. The separate
+`warpdrive-docs-preview-provenance-<commit>` artifact identifies the Warpdrive
+content and renderer revisions.
 
 The CRM `typecheck` script runs Next type generation before TypeScript. It precedes lint so a
 clean checkout has the route and message declarations needed by type-aware rules. Independent
-packages use their own directories, lockfiles and actual package scripts; the documentation
-package does not currently provide a test script.
+packages use their own directories, lockfiles and actual package scripts.
 
 The full CRM integration suite starts disposable PostgreSQL through Testcontainers on the
 hosted runner's Docker daemon. The light workflow does not start PostgreSQL. Fixture databases
@@ -45,6 +46,21 @@ The official action tags and metadata were reviewed on 2026-10-29, then pinned t
 The workflow grants only `contents: read` and disables persisted checkout credentials. Its
 jobs compile and test source; they do not publish packages/images, deploy services, create
 releases or receive production credentials.
+
+## Documentation check bridge
+
+Warpdrive keeps the existing `Documentation site checks` and
+`Documentation site full checks` contexts. Both check out
+[KhademOHAli1/warpdrive-docs](https://github.com/KhademOHAli1/warpdrive-docs)
+at the commit recorded in `docs-site/renderer.lock`. The
+[shared preparation action](../.github/actions/prepare-docs-renderer/action.yml) stages
+`docs-site/docs/` and `docs-site/public/img/` from the exact Warpdrive revision being
+checked. This lets a Warpdrive content pull request test its candidate revision against
+the pinned renderer.
+
+The full workflow runs `check:export` against the generated static site. See
+[Public documentation hosting](development/public-docs-migration.md) for local preview
+and promotion.
 
 ## Build configuration and metadata
 

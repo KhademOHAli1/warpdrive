@@ -29,8 +29,13 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
+      - name: Fetch pinned documentation lockfile without installing or staging content
+        uses: ./.github/actions/prepare-docs-renderer
+        with:
+          stage-content: "false"
       - name: Audit all production and development lockfile dependencies
         # No install, exclusions, severity exceptions, advisory ignores, fixes or retries.
+        if: always()
         run: python3 scripts/delivery/security_audit.py --output "$RUNNER_TEMP/dependency-audit"
       - name: Retain raw audit evidence even when a lockfile gate fails
         if: always()

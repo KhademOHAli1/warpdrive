@@ -106,16 +106,14 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        working-directory: docs-site
+        working-directory: .docs-renderer
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Set up package-pinned Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-        with:
-          bun-version-file: docs-site/package.json
+      - name: Prepare pinned documentation renderer
+        uses: ./.github/actions/prepare-docs-renderer
       - name: Install locked documentation dependencies
         run: bun install --frozen-lockfile
       - name: Check documentation types
@@ -128,10 +126,20 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
       - name: Verify documentation export
         run: bun run check:export
+      - name: Stage verified export for upload
+        # The artifact action excludes hidden paths by default.
+        run: mv out "$RUNNER_TEMP/docs-preview"
       - name: Upload verified documentation preview
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: warpdrive-docs-preview-${{ github.sha }}
-          path: docs-site/out/
+          path: ${{ runner.temp }}/docs-preview/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload documentation preview provenance
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: warpdrive-docs-preview-provenance-${{ github.sha }}
+          path: ${{ runner.temp }}/docs-preview-provenance.json
           if-no-files-found: error
           retention-days: 7

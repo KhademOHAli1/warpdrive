@@ -60,22 +60,26 @@ const fullQualityDocument = Bun.YAML.parse(
 const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_BUN = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6";
 const UPLOAD_ARTIFACT = "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9";
-const PACKAGES = { crm: "package.json", site: "site/package.json", docs: "docs-site/package.json" };
+const PREPARE_DOCS = "./.github/actions/prepare-docs-renderer";
+const DOCS_WORKSPACE = ".docs-renderer";
+const LOCAL_PACKAGES = { crm: "package.json", site: "site/package.json" };
+const JOBS = ["crm", "docs", "site"] as const;
+type JobName = (typeof JOBS)[number];
 
-function job(name: keyof typeof PACKAGES) {
+function job(name: JobName) {
   const found = workflow.jobs[name];
   if (found === undefined) throw new Error(`missing public CI job: ${name}`);
   return found;
 }
-function commands(name: keyof typeof PACKAGES): string[] {
+function commands(name: JobName): string[] {
   return job(name).steps.flatMap((step) => (step.run === undefined ? [] : [step.run]));
 }
-function fullJob(name: keyof typeof PACKAGES) {
+function fullJob(name: JobName) {
   const found = fullWorkflow.jobs[name];
   if (found === undefined) throw new Error(`missing full CI job: ${name}`);
   return found;
 }
-function fullCommands(name: keyof typeof PACKAGES): string[] {
+function fullCommands(name: JobName): string[] {
   return fullJob(name).steps.flatMap((step) => (step.run === undefined ? [] : [step.run]));
 }
 
@@ -105,20 +109,23 @@ describe("public Bun CI", () => {
   });
 
   it("contains only the three public check jobs and no deployment/publishing job", () => {
-    expect(Object.keys(workflow.jobs).sort()).toEqual(["crm", "docs", "site"]);
-    for (const name of Object.keys(PACKAGES) as (keyof typeof PACKAGES)[]) {
+    expect(Object.keys(workflow.jobs).sort()).toEqual(JOBS);
+    expect(Object.keys(fullWorkflow.jobs).sort()).toEqual(JOBS);
+    for (const name of JOBS) {
       const check = job(name);
       expect(check["timeout-minutes"]).toBe(name === "crm" ? 20 : 15);
       expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual([
         CHECKOUT,
-        SETUP_BUN,
+        name === "docs" ? PREPARE_DOCS : SETUP_BUN,
       ]);
     }
-    for (const name of Object.keys(PACKAGES) as (keyof typeof PACKAGES)[]) {
+    for (const name of JOBS) {
       const check = fullJob(name);
       expect(check["timeout-minutes"]).toBe(name === "crm" ? 60 : 20);
       const approvedActions =
-        name === "docs" ? [CHECKOUT, SETUP_BUN, UPLOAD_ARTIFACT] : [CHECKOUT, SETUP_BUN];
+        name === "docs"
+          ? [CHECKOUT, PREPARE_DOCS, UPLOAD_ARTIFACT, UPLOAD_ARTIFACT]
+          : [CHECKOUT, SETUP_BUN];
       expect(check.steps.map((step) => step.uses).filter((uses) => uses !== undefined)).toEqual(
         approvedActions,
       );
@@ -126,11 +133,11 @@ describe("public Bun CI", () => {
   });
 
   it("pins reviewed official actions and selects Bun from each package instead of floating latest", () => {
-    for (const [name, path] of Object.entries(PACKAGES)) {
-      const steps = job(name as keyof typeof PACKAGES).steps;
+    for (const [name, path] of Object.entries(LOCAL_PACKAGES)) {
+      const steps = job(name as keyof typeof LOCAL_PACKAGES).steps;
       expect(steps[0]?.with).toEqual({ "persist-credentials": false });
       expect(steps[1]?.with).toEqual({ "bun-version-file": path });
-      const fullSteps = fullJob(name as keyof typeof PACKAGES).steps;
+      const fullSteps = fullJob(name as keyof typeof LOCAL_PACKAGES).steps;
       expect(fullSteps[0]?.with).toEqual({ "persist-credentials": false });
       expect(fullSteps[1]?.with).toEqual({ "bun-version-file": path });
       const metadata = JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as {
@@ -138,6 +145,32 @@ describe("public Bun CI", () => {
       };
       expect(metadata.packageManager).toMatch(/^bun@\d+\.\d+\.\d+$/);
     }
+    for (const check of [job("docs"), fullJob("docs")]) {
+      expect(check.steps[0]?.with).toEqual({ "persist-credentials": false });
+      expect(check.steps[1]?.uses).toBe(PREPARE_DOCS);
+      expect(check.steps[1]?.with).toBeUndefined();
+    }
+  });
+
+  it("pins the public renderer and fetches it without execution for the dependency audit", () => {
+    const rendererPin = readFileSync(new URL("./docs-site/renderer.lock", import.meta.url), "utf8");
+    expect(rendererPin).toMatch(/^[0-9a-f]{40}\n$/);
+    expect(rendererPin).not.toBe(`${"0".repeat(40)}\n`);
+    const quality = Bun.YAML.parse(
+      readFileSync(new URL("./.github/workflows/required-quality.yml", import.meta.url), "utf8"),
+    ) as { jobs?: { dependencies?: { name?: string; steps?: unknown[] } } };
+    const audit = quality.jobs?.dependencies;
+    expect(audit?.name).toBe("Dependency audit");
+    expect(audit?.steps).toContainEqual({
+      name: "Fetch pinned documentation lockfile without installing or staging content",
+      uses: PREPARE_DOCS,
+      with: { "stage-content": "false" },
+    });
+    expect(audit?.steps).toContainEqual({
+      name: "Audit all production and development lockfile dependencies",
+      if: "always()",
+      run: 'python3 scripts/delivery/security_audit.py --output "$RUNNER_TEMP/dependency-audit"',
+    });
   });
 
   it("keeps ordinary CRM checks focused and excludes PostgreSQL and build campaigns", () => {
@@ -155,20 +188,21 @@ describe("public Bun CI", () => {
     expect(metadata.scripts.typecheck).toMatch(/next typegen\s*&&.*tsc/);
   });
 
-  it("checks the independent site and docs with scripts those packages actually provide", () => {
+  it("checks the local packages and uses the prepared checkout for documentation", () => {
     expect(job("site").defaults?.run["working-directory"]).toBe("site");
     expect(commands("site")).toEqual([
       "bun install --frozen-lockfile",
       "bun --bun next typegen",
       "bun run typecheck",
     ]);
-    expect(job("docs").defaults?.run["working-directory"]).toBe("docs-site");
+    expect(job("docs").name).toBe("Documentation site checks");
+    expect(job("docs").defaults?.run["working-directory"]).toBe(DOCS_WORKSPACE);
     expect(commands("docs")).toEqual(["bun install --frozen-lockfile", "bun run typecheck"]);
-    for (const [name, path] of Object.entries(PACKAGES)) {
+    for (const [name, path] of Object.entries(LOCAL_PACKAGES)) {
       const metadata = JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as {
         scripts: Record<string, string>;
       };
-      const key = name as keyof typeof PACKAGES;
+      const key = name as keyof typeof LOCAL_PACKAGES;
       for (const command of [...commands(key), ...fullCommands(key)]) {
         if (command.startsWith("bun run "))
           expect(metadata.scripts).toHaveProperty(command.split(" ")[2] ?? "");
@@ -198,21 +232,33 @@ describe("public Bun CI", () => {
     ]);
     expect(fullCommands("site")).toContain("bun run test");
     expect(fullCommands("site")).toContain("bun run build");
-    expect(fullJob("docs").defaults?.run["working-directory"]).toBe("docs-site");
+    expect(fullJob("docs").defaults?.run["working-directory"]).toBe(DOCS_WORKSPACE);
     expect(fullCommands("docs")).toEqual([
       "bun install --frozen-lockfile",
       "bun run typecheck",
       "bun run build",
       "bun run check:export",
+      'mv out "$RUNNER_TEMP/docs-preview"',
     ]);
     const docsSteps = fullJob("docs").steps;
-    expect(docsSteps.at(-2)?.run).toBe("bun run check:export");
-    expect(docsSteps.at(-1)).toEqual({
+    expect(docsSteps.at(-4)?.run).toBe("bun run check:export");
+    expect(docsSteps.at(-3)?.run).toBe('mv out "$RUNNER_TEMP/docs-preview"');
+    expect(docsSteps.at(-2)).toEqual({
       name: "Upload verified documentation preview",
       uses: UPLOAD_ARTIFACT,
       with: {
         name: `warpdrive-docs-preview-\${{ github.sha }}`,
-        path: "docs-site/out/",
+        path: `\${{ runner.temp }}/docs-preview/`,
+        "if-no-files-found": "error",
+        "retention-days": 7,
+      },
+    });
+    expect(docsSteps.at(-1)).toEqual({
+      name: "Upload documentation preview provenance",
+      uses: UPLOAD_ARTIFACT,
+      with: {
+        name: `warpdrive-docs-preview-provenance-\${{ github.sha }}`,
+        path: `\${{ runner.temp }}/docs-preview-provenance.json`,
         "if-no-files-found": "error",
         "retention-days": 7,
       },

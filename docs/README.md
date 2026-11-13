@@ -77,7 +77,10 @@ an isolated 31 October 2026 environment. For a new checkout, use the current
 
 For a feature or UI change, update its user-facing guide, implementation/operations notes, and task status in the same change. Update the root README when availability or setup changes. Add public guides under `docs-site/docs/` and order them in the nearest `meta.json`. Keep screenshot captions clear about date, locale, and whether a capture is current or historical. Never publish account data, credentials, or private test fixtures.
 
-The documentation site is a separate Bun package. Use its declared package manager and lockfile, then run its production build to check links. Root tests and site builds each need their own recorded result. Use root-relative URLs inside the public guides. Run `bun run check:export` after the build to check the generated routes, bookmarks, links and assets.
+The public content and images stay in Warpdrive. The [standalone renderer](https://github.com/KhademOHAli1/warpdrive-docs)
+builds them with the renderer revision pinned by `docs-site/renderer.lock`.
+Use root-relative URLs inside the public guides. The renderer's export check verifies the
+generated routes, bookmarks, links and assets.
 
-Use portable Markdown for new content. The separate [Fumadocs migration handoff](development/public-docs-migration.md)
-records the public routes, content boundary and hosting handoff.
+Use portable Markdown for new content. See [Public documentation hosting](development/public-docs-migration.md)
+for local preview and the pending hosting cutover.
