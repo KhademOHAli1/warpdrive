@@ -225,6 +225,23 @@ class WebExtensionTests(unittest.TestCase):
                 finally:
                     shutil.rmtree(nested.parent)
 
+    @unittest.skipUnless(shutil.which("node"), "Native Node resolver required")
+    def test_hardlinked_shared_runtime_manifests_are_rejected_in_both_roots(self):
+        cache = self.private / "cached-react-package.json"
+        for root in (self.app, self.web):
+            with self.subTest(root=root.name):
+                manifest = root / "node_modules/react/package.json"
+                cache.write_bytes(manifest.read_bytes())
+                manifest.unlink()
+                manifest.hardlink_to(cache)
+                try:
+                    with self.assertRaisesRegex(extension.WebExtensionInputError, "Bounded unlinked regular"):
+                        self.verify()
+                finally:
+                    manifest.unlink()
+                    shutil.copyfile(cache, manifest)
+        self.assertEqual(self.verify()["observedSharedRuntimeVersions"], VERSIONS)
+
     def test_source_blob_and_backend_input_changes_are_rejected(self):
         current = deepcopy(self.receipt)
         current["components"]["worker"]["inputs"].append({"path": extension.MANIFEST, "sha256": "a" * 64, "bytes": 12})
