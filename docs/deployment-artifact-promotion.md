@@ -123,3 +123,35 @@ The historical Web qualifier can select this storage explicitly with `--custody-
 `--backend-admission-bytes 3212`. It checks the exact same publication and archive digests and
 re-runs the original bundle verifiers. This applies to the first Web and original backend
 baseline. The current Web artifact and its production acceptance still need their own evidence.
+
+## Independent functional Web releases
+
+Keep the installed Web generation and rollback generation in custody with the original
+backend bundle. The hosted `Functional independent Web qualification` job retrieves the
+admitted artifacts, builds Web alone, and rehearses a mixed-generation switch on isolated
+data. It rechecks the exact build inputs after compilation and retains the tested Web image
+with the browser and rollback evidence. The current main revision, full CI and named security
+checks must also pass before private admission.
+
+For the first functional release, use the accepted styling release and its predecessor as
+the historical Web pair. For the next functional release, retain the previous functional
+receipt and the exact composite used to qualify that release. The composite contains
+authenticated artifact facts and no runtime IDs, production configuration or credentials.
+Use `scripts/deployment/web-history/<revision>.receipt` for the raw admitted receipt and a
+reviewed `.json` file in the same directory for the composite. Pin the receipt's raw SHA-256
+and byte count, the canonical composite SHA-256, and both installed lineage digests. The older
+Web archive is unnecessary for the next hosted qualification once the active functional
+bundle and original backend can be recovered.
+
+After private admission and installed acceptance, publish the admitted Web ZIP and receipt
+with `web-functional-custody.yml` on protected main. Select `source_revision`, the tracked
+`publication_sha256`, and `mode=publish`. Use a separate `mode=observe` run to confirm both
+immutable manifests and payloads can be retrieved with private access. If a publication step
+may have written to the registry, observe the existing objects before taking further action.
+Preserve the prior operation and its evidence while reconciling any partial write.
+
+The installed release uses the same tested Web archive. Verify private readiness and the
+accepted backend fingerprint before promotion. After the switch, compare the live and
+persisted routes, the public Web identity and both generations' stamped assets. Check a
+healthy rollback and reapply before sealing the accepted pair. A lost acknowledgement holds
+the same operation for readback and reconciliation.
