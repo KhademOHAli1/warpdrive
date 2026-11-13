@@ -171,11 +171,12 @@ def _evidence(raw, *, composite, revision, image_id, pins):
     image = {"imageId": image_id, "sourceRevision": revision, "generation": "wd-" + revision}
     qualification = validate_repeat_mixed_report(mixed, assembly=repeat_assembly(composite, image),
                                                  expected_harness_revision=revision, sdk_keyboard_help=True)
-    return image, qualification
+    return image, qualification, version
 
 
-def _result(directory, manifest, manifest_sha, image, qualification):
+def _result(directory, manifest, manifest_sha, image, qualification, input_version):
     return {"revision": manifest["revision"], "origin": manifest["origin"], "baseline": manifest["baseline"],
+            "inputSchemaVersion": input_version,
             "image": image, "qualification": {**qualification, "reportSha256": manifest["files"][MIXED]["sha256"]},
             "bundleManifestSha256": manifest_sha, "archive": manifest["files"][ARCHIVE],
             "archivePath": directory / ARCHIVE, "deploymentAuthorized": False}
@@ -186,7 +187,7 @@ def create_functional_bundle(directory, *, input_path, mixed_path, composite, re
     private_destination(directory)
     pins = _pins(composite, revision, origin, expected_input_sha256, installed_lineage_sha256)
     raw = {INPUTS: _input_file(input_path), MIXED: _input_file(mixed_path)}
-    image, qualification = _evidence(raw, composite=composite, revision=revision, image_id=image_id, pins=pins)
+    image, qualification, input_version = _evidence(raw, composite=composite, revision=revision, image_id=image_id, pins=pins)
     require(read_web_image(docker, image_id, revision) == image, "Native functional Web image differs before save")
     directory.mkdir(mode=0o700)
     docker.run(["image", "save", "--platform", PLATFORM, "--output", str(directory / ARCHIVE), image_id], timeout=600)
@@ -204,7 +205,7 @@ def create_functional_bundle(directory, *, input_path, mixed_path, composite, re
     _write(directory, MANIFEST, encoded)
     with _directory(directory) as parent:
         os.fsync(parent)
-    return _result(directory, manifest, _sha(encoded), saved, qualification)
+    return _result(directory, manifest, _sha(encoded), saved, qualification, input_version)
 
 
 def load_functional_bundle(directory, *, composite, revision, origin, expected_manifest_sha256,
@@ -224,9 +225,9 @@ def load_functional_bundle(directory, *, composite, revision, origin, expected_m
         raw = {name: _metadata(parent, name) for name in (INPUTS, MIXED)}
         require(all(len(value) <= MAX_METADATA_BYTES and manifest["files"][name] == _record(value) for name, value in raw.items()),
                 "Functional Web bundle metadata differs from its manifest")
-        image, qualification = _evidence(raw, composite=composite, revision=revision, image_id=manifest["imageId"], pins=pins)
+        image, qualification, input_version = _evidence(raw, composite=composite, revision=revision, image_id=manifest["imageId"], pins=pins)
         _, saved = _archive(parent, image["imageId"], revision, expected=manifest["files"][ARCHIVE])
-    return _result(directory, manifest, expected_manifest_sha256, saved, qualification)
+    return _result(directory, manifest, expected_manifest_sha256, saved, qualification, input_version)
 
 
 def main(argv=None):

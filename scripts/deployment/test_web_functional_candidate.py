@@ -98,6 +98,7 @@ class FunctionalCandidateTests(unittest.TestCase):
         self.assertEqual(readback, created)
         self.assertEqual(readback["archivePath"], Path(self.directory) / candidate.ARCHIVE)
         self.assertEqual(readback["image"]["imageId"], self.fixture.docker.image_id)
+        self.assertEqual(readback["inputSchemaVersion"], 1)
         self.assertFalse(readback["deploymentAuthorized"])
 
     def test_source_mismatch_cannot_reach_docker_or_create_a_bundle(self):
@@ -131,6 +132,7 @@ class FunctionalCandidateTests(unittest.TestCase):
         self.assertEqual(candidate.load_functional_bundle(self.directory,
             expected_manifest_sha256=created["bundleManifestSha256"], **self.options), created)
         self.assertEqual(created["baseline"]["inputSha256"], content_hash(facts))
+        self.assertEqual(created["inputSchemaVersion"], 3)
         self.assertFalse(created["deploymentAuthorized"])
 
     def test_structural_receipt_allows_no_exclusions_and_a_deleted_test_path(self):
