@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from hashlib import sha256
 import os
 from pathlib import Path
 import re
@@ -18,7 +19,14 @@ BASE_IMAGE = "oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a55925
 SDK_IMPORTS = {"@ui-sdk/react/menu", "@ui-sdk/react/dialog", "@ui-sdk/react/drawer"}
 REVISION = re.compile(r"[a-f0-9]{40}\Z")
 SCAN = "scripts/deployment/web_sdk_full_inputs.mjs"
-SCANNER_FILES = (SCAN, "scripts/deployment/web_presentation_policy.mjs", *sorted(inputs.POLICY_SOURCES))
+IMPORT_SCANNER = "scripts/deployment/web_sdk_imports.mjs"
+IMPORT_POLICY = "scripts/deployment/web-sdk-import-policy.json"
+IMPORT_POLICY_SHA = "223fa46c98651e99e4423b9d37b9df9c7d4359cf346d6e6afd5476056277ec62"
+SCANNER_FILES = (SCAN, IMPORT_SCANNER, IMPORT_POLICY, "scripts/deployment/web_presentation_policy.mjs",
+                 *sorted(inputs.POLICY_SOURCES))
+WEB_FIELDS = {"profile", "context", "gitInventorySha256", "pinnedInputs", "helperEntries", "helperGraphInputs",
+              "sdkImports", "staticWebInputCount", "inputSha256"}
+SUCCESSOR_FIELDS = {"sdkBindings", "importPolicySha256"}
 DISCOVER = """
 const { generateWebSdkFullInputs } = await import('./scripts/deployment/web_sdk_full_inputs.mjs');
 const [, revision, baseImage, platform, APP_VERSION, NEXT_PUBLIC_WS_URL] = process.argv.slice(1);
@@ -36,7 +44,61 @@ def _hash(value):
 def _web_policy(web):
     # The Web guard inherits the reviewed backend resolver policy, but the
     # isolated recipe and two sidecar source blobs are specific to Web.
-    return {key: web[key] for key in ("profile", "pinnedInputs", "helperEntries")}
+    fields = ("profile", "pinnedInputs", "helperEntries", "importPolicySha256")
+    return {key: web[key] for key in fields if key in web}
+
+
+def _import_policy(root):
+    from web_extension_inputs import file_bytes
+
+    raw = file_bytes(root / IMPORT_POLICY, 64 * 1024)
+    inputs.require(sha256(raw).hexdigest() == IMPORT_POLICY_SHA, "Reviewed Web SDK import policy differs")
+    return inputs.decode(raw)
+
+
+def _binding_specifiers(rows, allowed):
+    inputs.require(type(rows) is list and 0 < len(rows) <= sum(map(len, allowed.values())),
+                   "Bounded named SDK bindings required")
+    names, public_names, specifiers = set(), set(), set()
+    for row in rows:
+        inputs.require(type(row) is dict and set(row) == {"specifier", "exported", "local"}
+                       and all(isinstance(name, str) and 0 < len(name) <= 256 for name in row.values()),
+                       "Exact named SDK binding required")
+        specifier, exported, local = row["specifier"], row["exported"], row["local"]
+        public_name = (specifier, exported)
+        inputs.require(exported in allowed.get(specifier, ()) and local not in names and public_name not in public_names,
+                       "SDK binding exceeds the reviewed public import policy")
+        names.add(local)
+        public_names.add(public_name)
+        specifiers.add(specifier)
+    return sorted(specifiers)
+
+
+def _validate_imports(web, non_browser_graph, *, successor):
+    imports = web["sdkImports"]
+    count = web["staticWebInputCount"]
+    inputs.require(type(count) is int and len(web["helperEntries"]) <= count <= inputs.MAX_GRAPH_INPUTS
+                   and type(imports) is dict and len(imports) <= count, "Bounded SDK Web reachability required")
+    for path in imports:
+        inputs.require(inputs.safe_path(path) not in non_browser_graph, "SDK import exceeds the isolated Web profile")
+    if not successor:
+        for specifiers in imports.values():
+            inputs.require(type(specifiers) is list and 0 < len(specifiers) <= len(SDK_IMPORTS)
+                           and all(isinstance(name, str) and name in SDK_IMPORTS for name in specifiers)
+                           and specifiers == sorted(set(specifiers)), "SDK import exceeds the isolated Web profile")
+        return
+
+    policy = _import_policy(Path(__file__).resolve().parents[2])
+    bindings, switch = web["sdkBindings"], policy["successor"]
+    inputs.require(web["importPolicySha256"] == IMPORT_POLICY_SHA and type(bindings) is dict
+                   and bindings.keys() == imports.keys(), "Exact successor SDK binding proof required")
+    for path, rows in bindings.items():
+        allowed = policy["pilot"]
+        if path == switch["path"]:
+            allowed = {**allowed, switch["specifier"]: switch["exports"]}
+        inputs.require(imports[path] == _binding_specifiers(rows, allowed),
+                       "SDK subpaths differ from the named binding proof")
+    inputs.require(switch["specifier"] in imports.get(switch["path"], ()), "Canonical Switch proof is required")
 
 
 def validate_web_sdk_full_receipt(value, *, expected_revision):
@@ -47,15 +109,15 @@ def validate_web_sdk_full_receipt(value, *, expected_revision):
                    "Exact SDK full-release source revision required")
     inputs.require(type(value) is dict and set(value) == {
         "schemaVersion", "kind", "sourceRevision", "backendInputs", "web", "deploymentAuthorized",
-    } and type(value["schemaVersion"]) is int and value["schemaVersion"] == 1 and value["kind"] == KIND
+    } and type(value["schemaVersion"]) is int and value["schemaVersion"] in {1, 2} and value["kind"] == KIND
         and value["sourceRevision"] == expected_revision and value["deploymentAuthorized"] is False,
         "Exact source-bound SDK full input receipt required")
     backend = inputs.validate_receipt(value["backendInputs"], components=BACKEND)
     web = value["web"]
-    inputs.require(type(web) is dict and set(web) == {
-        "profile", "context", "gitInventorySha256", "pinnedInputs", "helperEntries", "helperGraphInputs",
-        "sdkImports", "staticWebInputCount", "inputSha256",
-    } and web["profile"] == PROFILE and web["context"] == backend["context"]
+    successor = value["schemaVersion"] == 2
+    fields = WEB_FIELDS | SUCCESSOR_FIELDS if successor else WEB_FIELDS
+    inputs.require(type(web) is dict and set(web) == fields
+        and web["profile"] == PROFILE and web["context"] == backend["context"]
         and web["context"]["baseImage"] == BASE_IMAGE and _hash(web["gitInventorySha256"]),
         "SDK Web context, platform or isolated recipe profile differs")
 
@@ -78,15 +140,7 @@ def validate_web_sdk_full_receipt(value, *, expected_revision):
                        and inputs.safe_path(entry["in"]) in graph
                        and inputs.safe_path(entry["out"]).startswith("dist/"), "Web helper graph is incomplete")
     backend_graph = set().union(*(backend["components"][name]["graphInputs"] for name in BACKEND))
-    imports = web["sdkImports"]
-    count = web["staticWebInputCount"]
-    inputs.require(type(count) is int and len(entries) <= count <= inputs.MAX_GRAPH_INPUTS
-                   and type(imports) is dict and len(imports) <= count, "Bounded SDK Web reachability required")
-    for path, specifiers in imports.items():
-        inputs.require(inputs.safe_path(path) not in graph | backend_graph and type(specifiers) is list
-                       and 0 < len(specifiers) <= len(SDK_IMPORTS)
-                       and all(isinstance(name, str) and name in SDK_IMPORTS for name in specifiers)
-                       and specifiers == sorted(set(specifiers)), "SDK import exceeds the isolated Web profile")
+    _validate_imports(web, graph | backend_graph, successor=successor)
     inputs.require(_hash(web["inputSha256"])
                    and web["inputSha256"] == inputs.content_hash({key: child for key, child in web.items() if key != "inputSha256"}),
                    "SDK Web input digest differs")
@@ -100,7 +154,17 @@ def _check_git_inputs(root, expected_revision, *, value=None, web_context=None):
     from web_release_inputs import _git
 
     tree = _context_tree(root, expected_revision)
-    for path in SCANNER_FILES:
+    # Historical receipt checks also support the original scanner tree. Discovery
+    # always checks every executable file present in the selected source.
+    has_policy = IMPORT_POLICY in tree or IMPORT_SCANNER in tree
+    if has_policy or (value is not None and value["schemaVersion"] == 2):
+        inputs.require(all(path in tree for path in (IMPORT_POLICY, IMPORT_SCANNER)),
+                       "Incomplete Web SDK import policy scanner")
+        _import_policy(root)
+        scanner_files = SCANNER_FILES
+    else:
+        scanner_files = tuple(path for path in SCANNER_FILES if path not in {IMPORT_POLICY, IMPORT_SCANNER})
+    for path in scanner_files:
         source = file_bytes(root / path, inputs.MAX_FILE_BYTES)
         inputs.require(tree.get(path) == ("100644", "blob", _blob_id(source)),
                        "Executable SDK source scanner differs from selected Git bytes")
