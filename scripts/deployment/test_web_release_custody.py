@@ -66,7 +66,7 @@ class CustodyTests(unittest.TestCase):
         layout = self.root / "layout"
         layout.mkdir()
         with patch.object(custody, "_fetch_manifest", return_value=(1, b"")), \
-                patch("registry_absence.confirm_absent") as absence, \
+                patch("registry_absence.precheck_custody_manifest") as absence, \
                 patch.object(custody.subprocess, "run") as write:
             with self.assertRaisesRegex(CandidateError, "unresolved"):
                 custody.publish("oras", layout, self.source, **self.options)
