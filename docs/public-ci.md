@@ -9,13 +9,14 @@ browser, build, release, deployment or customer acceptance.
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, focused workflow/preference contract tests |
 | Marketing site | Frozen install, route type generation and typecheck                                                                             |
-| Documentation  | Frozen install, dependency contract check and typecheck                                                                         |
+| Documentation  | Frozen install, Next route type generation and typecheck                                                                        |
 
 The full commands remain in [`full-ci.yml`](../.github/workflows/full-ci.yml). That workflow
 has no ordinary push trigger; it runs for an explicit dispatch or when its own definition is
 changed in a pull request. Its jobs are `CRM full checks`, `Marketing site full checks` and
 `Documentation site full checks`, and retain the full unit, PostgreSQL, build and worker/site
-coverage.
+coverage. The documentation job also checks the static export and retains it as the
+`warpdrive-docs-preview-<commit>` artifact.
 
 The CRM `typecheck` script runs Next type generation before TypeScript. It precedes lint so a
 clean checkout has the route and message declarations needed by type-aware rules. Independent

@@ -10,4 +10,11 @@ The multiple-wins count shows current organizations with at least two eligible d
 
 ## Performance view
 
-The Accounts tab reads the authorized aggregate through its protected report procedure. It shows the known linked subtotal and the number of won deals with an unresolved organization or missing amount. It withholds concentration in either case. Native fixtures compare the authorized result to canonical won totals and exact fractions. The panel fixtures cover fresh, withheld and permission states in English, German and Persian. Hosted native qualification is pending.
+In Performance → **Accounts**, check the known linked subtotal and the counts
+of won deals with unresolved organizations or missing amounts. Either gap
+withholds concentration. If the scope exceeds 50,000 eligible deals, narrow
+the filters and retry. Native fixtures compare authorized results against
+canonical won totals and exact fractions. Panel fixtures cover fresh,
+withheld, and permission states in English, German, and Persian. See the
+[programme status](programme.md#status-pointers-13-november-2026) for the
+evidence boundary.

@@ -132,17 +132,33 @@ The retained fixture exercised a loopback SMTP AUTH server and engine reload. It
 
 ## Coordinated snapshot
 
-Choose a maintenance window and quiesce writes before taking the set. Pause campaign work, close signup, disable newsletter delivery and stop the app, workers and engine writers through the installation's service manager. Keep PostgreSQL running for the dumps. Include public preference/feedback availability in the maintenance plan. Record the cut and outage interval and retain external provider receipts for reconciliation after that cut.
+Choose a maintenance window and follow the [write fence in the recovery overview](newsletters.md#backup-upgrade-and-restore). Keep PostgreSQL running for the dumps. Include public preference and feedback availability in the maintenance plan. Record the cut and outage interval and retain external provider receipts for reconciliation after that cut.
+
+### S3 media hold
+
+For an S3-backed newsletter installation, keep the coordinated backup, restore and rollback gates pending until you qualify a procedure for the selected backend. It must capture exact object versions at the same cut as both database dumps, retain a verifiable version and content-checksum manifest, and verify the restored objects in a separate namespace. Reconfigure the restored engine with an explicit reader credential for that namespace and verify that it cannot use retained production credentials or a fallback workload role. Verify read access, write denial and exact sample bytes before qualifying passive restore. Use the backend's reviewed procedure for those steps.
+
+### Filesystem media snapshot
+
+The archive, checksum and restore commands below apply to installations whose newsletter engine uses the filesystem media provider. Include CRM object storage in the recovery set through its own qualified procedure, even when the newsletter engine uses a filesystem volume.
 
 Set `newsletter_pg_bin` to the absolute directory of the selected server major version's PostgreSQL client toolchain. Record the `pg_dump`, `pg_restore` and `psql` versions in the worksheet. Every database command below uses that explicit toolchain.
 
 Prepare protected libpq connection profiles named `newsletter_crm_source` and `newsletter_engine_source` for the approved source databases. Use a protected service/password file or the installation's existing credential mechanism. These commands carry profile names and file paths. Confirm the selected database identities and roles before running them.
 
-Set `newsletter_backup_dir` to a new absolute leaf directory under an existing protected parent outside the media root, and for filesystem media set `newsletter_media_root` to its quiesced upload root. The command fails if the destination already exists.
+Set `newsletter_backup_dir` to a new absolute leaf directory under an existing protected parent outside the media root. Set `newsletter_media_root` to the host path of the engine's quiesced upload directory. Resolve it from the engine's effective upload path and volume or bind mount. Confirm it points to the actual mounted storage. The command checks the engine's configured provider and refuses an existing destination.
 
 ```sh
 set -eu
 umask 077
+media_provider=$("$newsletter_pg_bin/psql" --dbname=service=newsletter_engine_source \
+  -X --set=ON_ERROR_STOP=1 -tA \
+  --command="SELECT value #>> '{}' FROM settings WHERE key='upload.provider'")
+if [ "$media_provider" != filesystem ]; then
+  printf '%s\n' 'Filesystem snapshot requires the filesystem media provider.' >&2
+  exit 1
+fi
+test -d "$newsletter_media_root"
 mkdir "$newsletter_backup_dir"
 "$newsletter_pg_bin/pg_dump" --dbname=service=newsletter_crm_source --format=custom \
   --file="$newsletter_backup_dir/crm.dump"
@@ -156,6 +172,8 @@ Write `snapshot.json` in the backup destination with the installation ID, cut UT
 The CRM dump contains operation receipts, identity commands/events, native attribution, `newsletter_operational_state`, `newsletter_operational_receipts`, audit entries, stored in-app notices and notification preferences. The engine dump contains subscribers, suppression, consent grants/events, campaign state, recipient delivery receipts, feedback and the `warpdrive_operational_events` outbox with acknowledgement/source-dedupe metadata. Preserve this matching pair so a restored ACK cannot hide a lost native projection or recreate notices already consumed. For the current app/engine schema, retain these read-only summaries with the snapshot; exact identities remain in the protected dumps.
 
 ```sh
+set -eu
+umask 077
 "$newsletter_pg_bin/psql" --dbname=service=newsletter_crm_source -X --set=ON_ERROR_STOP=1 --csv \
   --command='SELECT state,count(*) FROM newsletter_operation_receipts GROUP BY state ORDER BY state' \
   > "$newsletter_backup_dir/crm-receipts.csv"
@@ -173,11 +191,10 @@ The CRM dump contains operation receipts, identity commands/events, native attri
   > "$newsletter_backup_dir/engine-operational-outbox.csv"
 ```
 
-For S3, substitute the selected backend's versioned object export and content-checksum manifest for the filesystem tar. Record the bucket/prefix and exact object versions. Keep the snapshot and keys in their approved protected destinations.
-
-Generate a checksum file for the complete filesystem set after `snapshot.json` and the inventories are written.
+Generate the checksum file after every dump, archive and inventory command succeeds and you have written `snapshot.json`. If any step fails, treat the directory as a partial capture and use a new directory for a complete capture.
 
 ```sh
+umask 077
 python3 - "$newsletter_backup_dir" <<'PY'
 from hashlib import sha256
 from pathlib import Path
@@ -195,7 +212,8 @@ for name in names:
         for block in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(block)
     lines.append(f"{digest.hexdigest()}  {name}\n")
-(root / "SHA256SUMS").write_text("".join(lines))
+with (root / "SHA256SUMS").open("x", encoding="ascii") as manifest:
+    manifest.writelines(lines)
 PY
 ```
 
@@ -203,7 +221,9 @@ Retain the approved backup destination receipt and a separately protected copy o
 
 ## Passive restore and rollback
 
-A DBA prepares two empty, isolated restore databases and maps the protected profiles `newsletter_crm_restore` and `newsletter_engine_restore` to them. Verify both destination identities and keep them separate from active databases. Verify the retained checksums from the backup directory before restoring. On a host with `sha256sum`, use the command below. macOS supplies `shasum -a 256 -c SHA256SUMS` for the same manifest.
+Use this procedure for the filesystem snapshot above. For an S3-backed recovery set, follow the [S3 media hold](#s3-media-hold).
+
+A DBA prepares two empty, isolated restore databases and maps the protected profiles `newsletter_crm_restore` and `newsletter_engine_restore` to them. Verify both destination identities and keep them separate from active databases. Compare the manifest to the separately protected copy. On a host with `sha256sum`, use the command below. On macOS, substitute `shasum -a 256 -c SHA256SUMS`. Continue only after every listed file passes verification.
 
 ```sh
 (cd "$newsletter_backup_dir" && sha256sum -c SHA256SUMS)
@@ -221,7 +241,7 @@ mkdir "$newsletter_restore_root"
   --dbname=service=newsletter_engine_restore "$newsletter_backup_dir/newsletter.dump"
 ```
 
-For a filesystem snapshot, the tar above contains the upload root's contents. Extract them into the new `uploads/` directory. The engine loads `upload.filesystem.upload_path` from its settings table and resolves relative paths from its working directory. Update that setting in the isolated engine database, then verify the recorded absolute path before launch. This block requires a filesystem provider and one matching setting row.
+The tar contains the upload root's contents. Extract it into the new `uploads/` directory. The engine loads `upload.filesystem.upload_path` from its settings table and resolves relative paths from its working directory. Update that setting in the isolated engine database, then verify the recorded absolute path before launch. This block requires a filesystem provider and one matching setting row.
 
 ```sh
 set -eu
@@ -250,9 +270,7 @@ SELECT value FROM settings WHERE key='upload.filesystem.upload_path';
 SQL
 ```
 
-For S3, restore the selected object versions to an isolated namespace and change the restored database's `upload.s3.*` settings to that namespace and an explicit reader credential. Verify GET/HEAD access and a policy that denies writes. Replace retained production storage credentials before launch and use an isolated runtime without a production instance/workload role that could supply fallback credentials. Keep the original production media destination outside the restore engine's write authority. S3 readiness uses an authenticated HEAD against a restored sample.
-
-Launch from the new restore root with an allowlisted environment. Review `newsletter_restore_path` as the executable search path. Inherited `LISTMONK_*` settings override configuration files, so the clean environment below supplies the intended flags and locale explicitly.
+Launch from the new restore root after database restore and media relocation both succeed. Review `newsletter_restore_path` as the executable search path. Inherited `LISTMONK_*` settings override configuration files, so the clean environment below supplies the intended flags and locale explicitly.
 
 ```sh
 set -eu
@@ -260,6 +278,7 @@ set -eu
   cd "$newsletter_restore_root"
   env -i PATH="$newsletter_restore_path" TZ=UTC LC_ALL=C \
     NEWSLETTER_DELIVERY_ENABLED=false NEWSLETTER_PUBLIC_SIGNUP_ENABLED=false \
+    NEWSLETTER_SES_FEEDBACK_ENABLED=false \
     "$newsletter_restored_engine_binary" --config "$newsletter_restore_config" --passive
 )
 ```

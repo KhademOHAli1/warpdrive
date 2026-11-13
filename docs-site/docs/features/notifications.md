@@ -1,5 +1,4 @@
 ---
-sidebar_position: 9
 title: Notifications
 description: "The Warpdrive notification panel: what generates a notification, unread counts, following records, and per-user notification preferences."
 ---
@@ -13,40 +12,39 @@ indicator.
 
 ## What generates one
 
-- Being **@mentioned** in a note or comment.
-- Activity on a record you **follow**.
-- Assignment of a record or activity to you.
-- **Inbound email arriving on a deal** you own or follow. The notification points at
-  the deal's timeline, not the mailbox thread, and is suppressed for anyone who can
-  no longer see the deal.
+- Being **@mentioned** in a note or comment, or receiving a reply to a discussion.
+- Updates to a deal you **follow**, such as a stage move.
+- An activity assigned to you, or a reminder for a scheduled activity.
+- **Inbound email arriving on a deal** you own or follow. The notification opens
+  the deal if you still have access.
 
 ## Following
 
-Following a deal or contact subscribes you to its notifications without owning it,
-which is how someone stays informed about a deal they are not running.
+Follow a deal to receive its updates even if a colleague owns it. The categories
+you receive depend on your notification preferences.
 
 ## Reading
 
-Opening a notification takes you to the record it refers to and marks it read. The
-unread count updates live over the shared WebSocket connection, so a colleague's
-action updates your badge without a refresh.
+Opening a notification marks it read and takes you to the record or related
+view. Use **Mark all read** to clear the unread count. The badge updates
+automatically while the live connection is active.
 
 ## Preferences
 
-`/settings/notifications` controls which categories you receive, separately for
-in-app and email delivery. In-app is on by default for every type. Email is on by
-default only for the types worth interrupting for: mentions, comment replies,
-activity assignments and reminders, and deals won or lost. High-volume types
-(followed-deal updates, email opens and clicks, inbound deal email) default to
-in-app only. Notification emails are sent by the background worker.
+In **Settings → Notifications**, choose the categories you receive in the app
+and, where supported, by email. In-app delivery defaults to on. Email defaults
+to on for mentions, comment replies, activity assignments and reminders, and
+deals won or lost. Followed-deal updates, email opens and clicks, and inbound deal
+email default to in-app delivery. Email delivery depends on your installation's
+mail settings and background worker.
 
 ## Visibility
 
 Notifications never reveal records you cannot see. A notification for a record whose
 visibility changed does not become a way around
-[visibility groups](../administration/visibility-groups.md).
+[visibility groups](/administration/visibility-groups/).
 
 ## Related
 
-- [Collaboration](./collaboration.md)
-- [Activities](./activities.md)
+- [Collaboration](/features/collaboration/)
+- [Activities](/features/activities/)

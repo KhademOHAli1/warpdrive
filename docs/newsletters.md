@@ -8,7 +8,7 @@ The [installation evidence worksheet and operator runbook](newsletters-operation
 
 ## Installation
 
-1. On the PostgreSQL service, use a database administrator to create the dedicated role and database. Use a unique generated password. In a fresh installation, the SQL below and the interactive password prompt are sufficient. An existing installation keeps its current role, password and database until a planned rotation.
+1. On the PostgreSQL service, use a database administrator to create the dedicated role and database for the source Compose overlay. Both `newsletter-engine-migrate` and `newsletter-engine` use this newsletter database owner and the same `NEWSLETTER_POSTGRES_PASSWORD`. Use a unique generated password. An existing installation keeps its current role, password and database until a planned rotation.
 
    ```sql
    CREATE ROLE warpdrive_newsletters LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
@@ -17,15 +17,23 @@ The [installation evidence worksheet and operator runbook](newsletters-operation
    REVOKE CONNECT ON DATABASE warpdrive_newsletters FROM PUBLIC;
    ```
 
+   A separate runtime login requires a different installation configuration and grants. Qualify its migration and runtime access, startup, and recovery for the selected installation. The [restricted-role test](deployment-engine-images.md) covers a disposable fixture.
+
 2. Put `NEWSLETTER_POSTGRES_PASSWORD` in a private, Git-ignored `.env.newsletters` file for Compose interpolation. Set `NEWSLETTER_PUBLIC_DOMAIN` there to a dedicated subscriber-facing host and add its DNS record. Keep engine credentials in this separate file so only the intended Compose service receives each value. Use a separate hostname from the CRM and its S3 service.
-3. Back up the database, media and installation configuration before an upgrade. Stop every engine runtime and independently verify it is absent. Run the explicit migration service with the optional overlay; ordinary engine startup only checks the schema and never installs or upgrades it. Start the runtime only after the migration exits successfully with a verified receipt. Keep it stopped if the outcome is unknown. Review existing uploads ownership before using the new unprivileged runtime; startup does not change mounted ownership.
+3. Back up the database, media and installation configuration before an upgrade. Stop every engine runtime and independently verify it is absent. Confirm PostgreSQL is running and healthy. Verify that the local engine image referenced by the overlay was built from the selected source revision. Run the explicit migration service with the optional overlay. Start the runtime from the same verified image after the migration exits successfully and you read back its receipt. Keep it stopped if the outcome is unknown. Review existing uploads ownership before using the unprivileged runtime. Startup leaves mounted ownership as configured.
 
    ```sh
    docker compose --env-file .env --env-file .env.newsletters \
      -f docker-compose.yml -f docker-compose.newsletters.yml \
-     --profile newsletter-migrations run --rm newsletter-engine-migrate
+     --profile newsletter-migrations run --rm --no-deps --pull never newsletter-engine-migrate
+   ```
+
+   After verifying the migration receipt and selected local image, start the engine:
+
+   ```sh
    docker compose --env-file .env --env-file .env.newsletters \
-     -f docker-compose.yml -f docker-compose.newsletters.yml up -d --no-build newsletter-engine
+     -f docker-compose.yml -f docker-compose.newsletters.yml \
+     up -d --no-deps --no-build --pull never newsletter-engine
    ```
 
 4. Bootstrap the engine admin with `NEWSLETTER_BOOTSTRAP_USER` and `NEWSLETTER_BOOTSTRAP_PASSWORD` during initial installation, or use the upstream setup screen on a private operator tunnel. Use a temporary loopback-only mapping to reach the upstream UI during setup. Then remove the mapping and bootstrap variables.
@@ -127,6 +135,8 @@ The operational GET/ACK endpoints require the private backend's existing `settin
 ## Backup, upgrade and restore
 
 Capture the complete CRM PostgreSQL database (including migration and pg-boss schemas), the separate newsletter database, CRM object storage and newsletter media. Include the exact runtime configuration, resolved secret-file contents, encryption/signing keys, accepted image identities and deployment journals in the protected recovery set. Keep backup decryption keys in separate custody, and require encrypted off-host storage with independent readback.
+
+The [operator worksheet](newsletters-operations.md#coordinated-snapshot) supplies archive and restore commands for filesystem newsletter media. For S3-backed newsletter media, keep recovery qualification pending until a backend-specific versioned export, manifest verification and isolated restore pass.
 
 Pausing campaigns and disabling signup do not establish a consistent snapshot. Tracking/subscription requests, Web jobs, operational outbox sweeps and already issued storage upload URLs can still write. A coordinated offline capture must stop and independently verify all ingress, Web, Worker, Realtime, engine, migrator and one-off writers, and fence direct object-storage access before capturing databases and media. Existing advisory locks do not fence all these writers. Retain checksums, exact installed image/configuration identities, CRM operational receipts, audit/notices/preferences, engine outbox acknowledgement/source-dedupe state and original provider delivery receipts for reconciliation. The encrypted off-host workflow and installed restore remain separate qualification gates.
 

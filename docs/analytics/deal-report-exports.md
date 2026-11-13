@@ -1,6 +1,11 @@
 # Deal report CSV downloads
 
-The contributing-deals drawer offers a CSV to viewers with export permission when the complete report contains at most 100 deals. The download rechecks the live session, the export grant, and the selected metric, dates, pipeline, currency, owner scope and reporting zone. It uses the same records procedure as the drawer. A permission or zone change that would produce a different scope makes the download unavailable.
+Open **View contributing deals**, then select **Download CSV**. The export
+requires the data export permission and a complete report of at most 100 deals
+and 16 KiB. The download rechecks the session, grant, metric, dates, pipeline,
+currency, owner scope, and reporting zone through the drawer's records
+procedure. A permission or time zone change that alters the scope can make the
+download unavailable. Narrow the filters and reopen the drawer to retry.
 
 One read must account for every row, the recorded-value count and the exact monetary total. The CSV includes deal ID, current status, currency, exact signed nominal value, and UTC creation and close timestamps with microsecond precision. An empty amount represents a missing value. A recorded zero is `0.00`. Typed fields exclude free-text titles and linked identities. Spreadsheet import may apply its own number formatting to these exact CSV strings.
 
