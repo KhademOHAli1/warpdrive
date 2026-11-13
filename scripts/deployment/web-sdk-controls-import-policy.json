@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 3,
+  "extendsSha256": "223fa46c98651e99e4423b9d37b9df9c7d4359cf346d6e6afd5476056277ec62",
+  "additionalBindings": {
+    "src/components/ui/SdkDialog.tsx": {
+      "specifier": "@ui-sdk/react/dialog",
+      "exports": ["DialogBackdrop", "createDialogController"]
+    }
+  },
+  "controls": {
+    "src/components/ui/Checkbox.tsx": {
+      "specifier": "@ui-sdk/react/checkbox",
+      "exports": ["Checkbox"]
+    },
+    "src/components/ui/SdkCombobox.tsx": {
+      "specifier": "@ui-sdk/react/combobox",
+      "exports": [
+        "Combobox",
+        "ComboboxContent",
+        "ComboboxEmpty",
+        "ComboboxInput",
+        "ComboboxItem",
+        "ComboboxList",
+        "ComboboxTrigger",
+        "createComboboxController"
+      ]
+    }
+  }
+}

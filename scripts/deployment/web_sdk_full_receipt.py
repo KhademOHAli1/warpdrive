@@ -22,6 +22,8 @@ SCAN = "scripts/deployment/web_sdk_full_inputs.mjs"
 IMPORT_SCANNER = "scripts/deployment/web_sdk_imports.mjs"
 IMPORT_POLICY = "scripts/deployment/web-sdk-import-policy.json"
 IMPORT_POLICY_SHA = "223fa46c98651e99e4423b9d37b9df9c7d4359cf346d6e6afd5476056277ec62"
+CONTROLS_IMPORT_POLICY = "scripts/deployment/web-sdk-controls-import-policy.json"
+CONTROLS_IMPORT_POLICY_SHA = "049074e5d1b76fdf4514e034bebe6bcc0cc46c9b236fd0585ffdc858012644ac"
 SCANNER_FILES = (SCAN, IMPORT_SCANNER, IMPORT_POLICY, "scripts/deployment/web_presentation_policy.mjs",
                  *sorted(inputs.POLICY_SOURCES))
 WEB_FIELDS = {"profile", "context", "gitInventorySha256", "pinnedInputs", "helperEntries", "helperGraphInputs",
@@ -48,11 +50,11 @@ def _web_policy(web):
     return {key: web[key] for key in fields if key in web}
 
 
-def _import_policy(root):
+def _import_policy(root, path=IMPORT_POLICY, expected_sha=IMPORT_POLICY_SHA):
     from web_extension_inputs import file_bytes
 
-    raw = file_bytes(root / IMPORT_POLICY, 64 * 1024)
-    inputs.require(sha256(raw).hexdigest() == IMPORT_POLICY_SHA, "Reviewed Web SDK import policy differs")
+    raw = file_bytes(root / path, 64 * 1024)
+    inputs.require(sha256(raw).hexdigest() == expected_sha, "Reviewed Web SDK import policy differs")
     return inputs.decode(raw)
 
 
@@ -74,31 +76,56 @@ def _binding_specifiers(rows, allowed):
     return sorted(specifiers)
 
 
-def _validate_imports(web, non_browser_graph, *, successor):
+def _validate_imports(web, non_browser_graph, *, version):
     imports = web["sdkImports"]
     count = web["staticWebInputCount"]
     inputs.require(type(count) is int and len(web["helperEntries"]) <= count <= inputs.MAX_GRAPH_INPUTS
                    and type(imports) is dict and len(imports) <= count, "Bounded SDK Web reachability required")
     for path in imports:
         inputs.require(inputs.safe_path(path) not in non_browser_graph, "SDK import exceeds the isolated Web profile")
-    if not successor:
+    if version == 1:
         for specifiers in imports.values():
             inputs.require(type(specifiers) is list and 0 < len(specifiers) <= len(SDK_IMPORTS)
                            and all(isinstance(name, str) and name in SDK_IMPORTS for name in specifiers)
                            and specifiers == sorted(set(specifiers)), "SDK import exceeds the isolated Web profile")
         return
 
-    policy = _import_policy(Path(__file__).resolve().parents[2])
+    root = Path(__file__).resolve().parents[2]
+    policy = _import_policy(root)
+    controls = {}
+    additional_bindings = {}
+    policy_sha = IMPORT_POLICY_SHA
+    if version == 3:
+        policy_sha = CONTROLS_IMPORT_POLICY_SHA
+        extension = _import_policy(root, CONTROLS_IMPORT_POLICY, policy_sha)
+        inputs.require(extension["extendsSha256"] == IMPORT_POLICY_SHA, "Reviewed Web SDK base policy differs")
+        controls = extension["controls"]
+        additional_bindings = extension["additionalBindings"]
     bindings, switch = web["sdkBindings"], policy["successor"]
-    inputs.require(web["importPolicySha256"] == IMPORT_POLICY_SHA and type(bindings) is dict
+    inputs.require(web["importPolicySha256"] == policy_sha and type(bindings) is dict
                    and bindings.keys() == imports.keys(), "Exact successor SDK binding proof required")
+    used_controls = set()
     for path, rows in bindings.items():
         allowed = policy["pilot"]
         if path == switch["path"]:
             allowed = {**allowed, switch["specifier"]: switch["exports"]}
+        additional = additional_bindings.get(path)
+        if additional is not None:
+            specifier = additional["specifier"]
+            allowed = {**allowed, specifier: [*allowed[specifier], *additional["exports"]]}
+        control = controls.get(path)
+        if control is not None:
+            allowed = {**allowed, control["specifier"]: control["exports"]}
         inputs.require(imports[path] == _binding_specifiers(rows, allowed),
                        "SDK subpaths differ from the named binding proof")
-    inputs.require(switch["specifier"] in imports.get(switch["path"], ()), "Canonical Switch proof is required")
+        if control is not None and control["specifier"] in imports[path]:
+            exported = sorted(row["exported"] for row in rows if row["specifier"] == control["specifier"])
+            inputs.require(exported == control["exports"], "Exact reviewed SDK control exports required")
+            used_controls.add(path)
+    if version == 2:
+        inputs.require(switch["specifier"] in imports.get(switch["path"], ()), "Canonical Switch proof is required")
+    else:
+        inputs.require(bool(used_controls), "A canonical SDK control proof is required")
 
 
 def validate_web_sdk_full_receipt(value, *, expected_revision):
@@ -109,13 +136,13 @@ def validate_web_sdk_full_receipt(value, *, expected_revision):
                    "Exact SDK full-release source revision required")
     inputs.require(type(value) is dict and set(value) == {
         "schemaVersion", "kind", "sourceRevision", "backendInputs", "web", "deploymentAuthorized",
-    } and type(value["schemaVersion"]) is int and value["schemaVersion"] in {1, 2} and value["kind"] == KIND
+    } and type(value["schemaVersion"]) is int and value["schemaVersion"] in {1, 2, 3} and value["kind"] == KIND
         and value["sourceRevision"] == expected_revision and value["deploymentAuthorized"] is False,
         "Exact source-bound SDK full input receipt required")
     backend = inputs.validate_receipt(value["backendInputs"], components=BACKEND)
     web = value["web"]
-    successor = value["schemaVersion"] == 2
-    fields = WEB_FIELDS | SUCCESSOR_FIELDS if successor else WEB_FIELDS
+    version = value["schemaVersion"]
+    fields = WEB_FIELDS | SUCCESSOR_FIELDS if version >= 2 else WEB_FIELDS
     inputs.require(type(web) is dict and set(web) == fields
         and web["profile"] == PROFILE and web["context"] == backend["context"]
         and web["context"]["baseImage"] == BASE_IMAGE and _hash(web["gitInventorySha256"]),
@@ -140,7 +167,9 @@ def validate_web_sdk_full_receipt(value, *, expected_revision):
                        and inputs.safe_path(entry["in"]) in graph
                        and inputs.safe_path(entry["out"]).startswith("dist/"), "Web helper graph is incomplete")
     backend_graph = set().union(*(backend["components"][name]["graphInputs"] for name in BACKEND))
-    _validate_imports(web, graph | backend_graph, successor=successor)
+    if version == 3:
+        backend_graph.update(row["path"] for component in backend["components"].values() for row in component["inputs"])
+    _validate_imports(web, graph | backend_graph, version=version)
     inputs.require(_hash(web["inputSha256"])
                    and web["inputSha256"] == inputs.content_hash({key: child for key, child in web.items() if key != "inputSha256"}),
                    "SDK Web input digest differs")
@@ -157,13 +186,18 @@ def _check_git_inputs(root, expected_revision, *, value=None, web_context=None):
     # Historical receipt checks also support the original scanner tree. Discovery
     # always checks every executable file present in the selected source.
     has_policy = IMPORT_POLICY in tree or IMPORT_SCANNER in tree
-    if has_policy or (value is not None and value["schemaVersion"] == 2):
+    has_controls = CONTROLS_IMPORT_POLICY in tree
+    if has_policy or has_controls or (value is not None and value["schemaVersion"] >= 2):
         inputs.require(all(path in tree for path in (IMPORT_POLICY, IMPORT_SCANNER)),
                        "Incomplete Web SDK import policy scanner")
         _import_policy(root)
         scanner_files = SCANNER_FILES
     else:
         scanner_files = tuple(path for path in SCANNER_FILES if path not in {IMPORT_POLICY, IMPORT_SCANNER})
+    if has_controls or (value is not None and value["schemaVersion"] == 3):
+        inputs.require(has_controls, "Incomplete Web SDK controls import policy")
+        _import_policy(root, CONTROLS_IMPORT_POLICY, CONTROLS_IMPORT_POLICY_SHA)
+        scanner_files = (*scanner_files, CONTROLS_IMPORT_POLICY)
     for path in scanner_files:
         source = file_bytes(root / path, inputs.MAX_FILE_BYTES)
         inputs.require(tree.get(path) == ("100644", "blob", _blob_id(source)),

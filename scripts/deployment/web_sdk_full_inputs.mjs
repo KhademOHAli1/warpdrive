@@ -9,7 +9,7 @@ import { discoverBuildGraphs, selectBuildEntries } from "../build-workers.mjs";
 import { canonical, generateComponentInputs } from "./component_inputs.mjs";
 import { guardWebInputs } from "./web_inputs.mjs";
 import { createWebGitSourceReader, readWebGitTree, runWebGit } from "./web_presentation_policy.mjs";
-import { inspectWebSdkImports } from "./web_sdk_imports.mjs";
+import { hasReviewedSdkControl, inspectWebSdkImports } from "./web_sdk_imports.mjs";
 import importPolicy from "./web-sdk-import-policy.json" with { type: "json" };
 
 const BACKEND = ["worker", "realtime", "migrator"];
@@ -34,6 +34,7 @@ const REVIEWED = {
 };
 const SDK = ["@ui-sdk/core", "@ui-sdk/react"];
 const IMPORT_POLICY = "scripts/deployment/web-sdk-import-policy.json";
+const CONTROLS_IMPORT_POLICY = "scripts/deployment/web-sdk-controls-import-policy.json";
 const SDK_IMPORTS = new Set(["@ui-sdk/react/menu", "@ui-sdk/react/dialog", "@ui-sdk/react/drawer"]);
 const BUILTINS = new Set(builtinModules.flatMap((name) => [name, `node:${name}`]));
 const SCRIPT = /\.[cm]?[jt]sx?$/u;
@@ -162,10 +163,16 @@ function webDependencies(read, sources, baseImage) {
   };
 }
 
+function verifySdkBackendFiles(sdkImports, backendFiles) {
+  for (const path of Object.keys(sdkImports)) {
+    if (backendFiles.has(path)) fail(`Web SDK entered a retained backend input ${path}`);
+  }
+}
+
 function checkedSdkImports(path, read, version) {
   if (!SCRIPT.test(path) || path.endsWith(".d.ts")) return [];
   const tree = ts.createSourceFile(path, read(path), ts.ScriptTarget.Latest, true);
-  if (version === 2) return inspectWebSdkImports(tree, path, version);
+  if (version >= 2) return inspectWebSdkImports(tree, path, version);
   const imports = new Set();
   const first = tree.statements[0];
   const client =
@@ -194,13 +201,12 @@ function checkedSdkImports(path, read, version) {
 
 function sdkImportProof(reachable, read) {
   const successor = importPolicy.successor.path;
-  const version =
+  const hasSwitch =
     reachable.includes(successor) &&
     checkedSdkImports(successor, read, 2).some(
       ({ specifier }) => specifier === importPolicy.successor.specifier,
-    )
-      ? 2
-      : 1;
+    );
+  const version = hasReviewedSdkControl(reachable, read) ? 3 : hasSwitch ? 2 : 1;
   const imports = reachable.flatMap((path) => {
     const bindings = checkedSdkImports(path, read, version);
     return bindings.length ? [[path, bindings]] : [];
@@ -217,7 +223,7 @@ function sdkImportProof(reachable, read) {
     facts: {
       sdkImports,
       sdkBindings: Object.fromEntries(imports),
-      importPolicySha256: digest(read(IMPORT_POLICY)),
+      importPolicySha256: digest(read(version === 3 ? CONTROLS_IMPORT_POLICY : IMPORT_POLICY)),
     },
   };
 }
@@ -351,6 +357,7 @@ export async function generateWebSdkFullInputs({ root, revision, baseImage, plat
       backendFiles.set(record.path, record);
     }
   }
+  if (version === 3) verifySdkBackendFiles(facts.sdkImports, backendFiles);
   for (const path of new Set([...helperGraphInputs, ...backendFiles.keys()]))
     await verifyWorkingInput(root, files, path, backendFiles.get(path));
   verifyCheckout(root, revision);

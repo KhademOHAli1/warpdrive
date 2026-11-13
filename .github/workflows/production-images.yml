@@ -222,10 +222,14 @@ jobs:
                   if (fromSdk.resolve(singleton) !== fromApp.resolve(singleton)) throw Error("SDK uses a separate React runtime");
               }
               if (component === "web") {
-                for (const path of ["menu", "dialog", "drawer", "switch"])
+                for (const path of ["menu", "dialog", "drawer", "switch", "checkbox", "combobox"])
                   if (!import.meta.resolve("@ui-sdk/react/" + path).startsWith("file:///app/node_modules/@ui-sdk/react/")) throw Error("Unexpected SDK module path");
                 const { Switch, SwitchThumb } = await import("@ui-sdk/react/switch");
                 if (typeof Switch !== "function" || typeof SwitchThumb !== "function") throw Error("Unexpected SDK Switch exports");
+                const { Checkbox } = await import("@ui-sdk/react/checkbox");
+                const { DialogBackdrop, createDialogController } = await import("@ui-sdk/react/dialog");
+                const combobox = await import("@ui-sdk/react/combobox");
+                if (typeof Checkbox !== "function" || typeof DialogBackdrop !== "function" || typeof createDialogController !== "function" || ["Combobox", "ComboboxContent", "ComboboxEmpty", "ComboboxInput", "ComboboxItem", "ComboboxList", "ComboboxTrigger", "createComboboxController"].some((name) => typeof combobox[name] !== "function")) throw Error("Unexpected SDK checkbox, dialog or combobox exports");
               }
               console.log(JSON.stringify({component, sdkPresent: component === "web"}));
             ' "$component" > "$proof/sdk-packaging-$component.json"

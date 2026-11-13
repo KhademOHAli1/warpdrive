@@ -22,7 +22,56 @@ void test("the pinned Switch successor admits only the named public bindings in 
   ]);
   assert.throws(() => inspect(source, { version: 1 }), admissionError);
   assert.throws(() => inspect(source, { path: PILOT }), admissionError);
-  assert.throws(() => inspect(source, { version: 3 }), /Unknown Web SDK import policy version/u);
+  assert.throws(() => inspect(source, { version: 4 }), /Unknown Web SDK import policy version/u);
+});
+
+void test("the controls policy allows only the full named bindings at the two registered files", () => {
+  const checkbox = "src/components/ui/Checkbox.tsx";
+  const combobox = "src/components/ui/SdkCombobox.tsx";
+  const checked = `${client} import { Checkbox as SdkCheckbox } from "@ui-sdk/react/checkbox";`;
+  const combo = `${client} import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput,
+    ComboboxItem, ComboboxList, ComboboxTrigger, createComboboxController } from "@ui-sdk/react/combobox";`;
+  assert.deepEqual(inspect(checked, { path: checkbox, version: 3 }), [
+    { specifier: "@ui-sdk/react/checkbox", exported: "Checkbox", local: "SdkCheckbox" },
+  ]);
+  assert.equal(inspect(combo, { path: combobox, version: 3 }).length, 8);
+  for (const [source, path] of [
+    [checked, combobox],
+    [combo, checkbox],
+    [combo, "src/features/quick-add/GlobalNoteModal.tsx"],
+    [combo.replace("ComboboxContent, ", ""), combobox],
+    [combo.replace(", createComboboxController", ""), combobox],
+    [combo.replace("ComboboxContent", "ComboboxGroup"), combobox],
+    [checked.replace("Checkbox as", "CheckboxIndicator as"), checkbox],
+    [`${checked} export { SdkCheckbox };`, checkbox],
+    [checked.replace("@ui-sdk/react/checkbox", "@ui-sdk/core/checkbox"), checkbox],
+  ])
+    assert.throws(() => inspect(source, { path, version: 3 }), admissionError);
+  assert.throws(() => inspect(checked, { path: checkbox, version: 2 }), admissionError);
+  assert.throws(() => inspect(combo, { path: combobox, version: 1 }), admissionError);
+});
+
+void test("v3 admits additional Dialog bindings only at the reviewed wrapper", () => {
+  const source = `${client} import { Dialog, DialogBackdrop as Backdrop, createDialogController } from "@ui-sdk/react/dialog";`;
+  const path = "src/components/ui/SdkDialog.tsx";
+  assert.deepEqual(
+    inspect(source, { path, version: 3 }).map(({ exported }) => exported),
+    ["Dialog", "DialogBackdrop", "createDialogController"],
+  );
+  assert.throws(() => inspect(source, { path, version: 2 }), admissionError);
+  assert.throws(() => inspect(source, { path: PILOT, version: 3 }), admissionError);
+  assert.throws(
+    () => inspect(source, { path: "src/components/ui/OtherDialog.tsx", version: 3 }),
+    admissionError,
+  );
+  assert.throws(
+    () => inspect(source, { path: "src/features/quick-add/GlobalAddMenu.tsx", version: 3 }),
+    admissionError,
+  );
+  assert.throws(
+    () => inspect(`${source} export { createDialogController };`, { path, version: 3 }),
+    admissionError,
+  );
 });
 
 void test("the pilot named component entries retain the same allowances in both policies", () => {
