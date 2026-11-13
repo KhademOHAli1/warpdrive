@@ -5,6 +5,7 @@ from candidate import CandidateError
 from component_inputs import canonical, content_hash
 import test_web_repeat_candidate as repeat_fixture
 import web_functional_candidate as candidate
+from web_mixed_image_smoke import CRM_SWITCH, SDK_SWITCH
 from web_repeat_candidate import runtime_hash
 
 
@@ -48,6 +49,32 @@ class FunctionalCandidateTests(unittest.TestCase):
         return candidate.create_functional_bundle(self.directory, input_path=self.input_path, mixed_path=self.mixed_path,
             image_id=self.fixture.docker.image_id, docker=self.fixture.docker, **self.options)
 
+    def enable_switch(self):
+        profile, tooling = self.facts["reviewedProfileSha256"], self.facts["toolingRevision"]
+        dependencies = self.facts["dependencies"]
+        self.facts.update(schemaVersion=2, sdkScenario=CRM_SWITCH, source={
+            "schemaVersion": 2, "kind": "warpdrive-web-functional-successor-source",
+            "activeWebRevision": self.facts["activeWebRevision"], "toolingRevision": tooling,
+            "candidateRevision": CURRENT, "profileSha256": profile, "toolingChanges": [], "carriedWebChanges": [],
+            "changed": [{"path": candidate.SWITCH, "beforeBlob": "a" * 40, "afterBlob": "b" * 40}],
+            "runtimePolicySha256": "1" * 64, "engineContextTreeSha256": "2" * 64,
+            "webInputSha256": "3" * 64, "importPolicySha256": "4" * 64,
+            "originalBackendReceiptSha256": dependencies["originalBackendReceiptSha256"],
+            "retainedComponentInputSha256": dependencies["retainedComponentInputSha256"],
+            "sdkBindings": {candidate.SWITCH: [{"specifier": candidate.SWITCH_ENTRY, "exported": name, "local": name}
+                                              for name in candidate.SWITCH_EXPORTS]},
+            "deploymentAuthorized": False,
+        })
+        self.fixture.report["browserProfile"]["sdkScenario"] = CRM_SWITCH
+        self.fixture.report["checks"][5]["detail"]["complete"]["sdkSwitch"] = dict(SDK_SWITCH)
+        self.options.update(sdk_scenario=CRM_SWITCH, expected_tooling_revision=tooling, expected_profile_sha256=profile)
+        self.write_inputs()
+
+    def write_inputs(self):
+        self.input_path.write_bytes(canonical(self.facts))
+        self.mixed_path.write_bytes(canonical(self.fixture.report))
+        self.options["expected_input_sha256"] = content_hash(self.facts)
+
     def test_save_reconstructs_the_exact_tested_web_image(self):
         created = self.create()
         readback = candidate.load_functional_bundle(self.directory, expected_manifest_sha256=created["bundleManifestSha256"], **self.options)
@@ -85,3 +112,38 @@ class FunctionalCandidateTests(unittest.TestCase):
                 with self.assertRaisesRegex(CandidateError, "browser continuity"):
                     self.create()
                 self.assertFalse(self.directory.exists())
+
+    def test_switch_bundle_requires_external_authority_again_on_readback(self):
+        self.enable_switch()
+        created = self.create()
+        external = {**self.options, "expected_manifest_sha256": created["bundleManifestSha256"]}
+        self.assertEqual(candidate.load_functional_bundle(self.directory, **external), created)
+        for overrides in ({"sdk_scenario": None, "expected_tooling_revision": None, "expected_profile_sha256": None},
+                          {"expected_profile_sha256": "9" * 64}, {"expected_tooling_revision": "9" * 40}):
+            with self.subTest(overrides=overrides), self.assertRaises(CandidateError):
+                candidate.load_functional_bundle(self.directory, **(external | overrides))
+
+    def test_switch_report_cannot_substitute_for_missing_switch_build_facts(self):
+        self.enable_switch()
+        self.facts["schemaVersion"] = 1
+        self.write_inputs()
+        with self.assertRaisesRegex(CandidateError, "build context receipt"):
+            self.create()
+        self.assertFalse(self.directory.exists())
+        self.assertEqual(self.fixture.docker.calls, [])
+
+    def test_switch_build_facts_cannot_substitute_for_browser_proof(self):
+        self.enable_switch()
+        self.fixture.report["checks"][5]["detail"]["complete"]["sdkSwitch"]["actionPosts"] = True
+        self.write_inputs()
+        with self.assertRaisesRegex(CandidateError, "browser continuity"):
+            self.create()
+        self.assertFalse(self.directory.exists())
+
+    def test_switch_bundle_rejects_rehashed_source_without_the_reviewed_named_binding(self):
+        self.enable_switch()
+        self.facts["source"]["sdkBindings"][candidate.SWITCH][0]["exported"] = "Unknown"
+        self.write_inputs()
+        with self.assertRaisesRegex(CandidateError, "named Switch bindings"):
+            self.create()
+        self.assertFalse(self.directory.exists())

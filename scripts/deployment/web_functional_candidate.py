@@ -12,9 +12,10 @@ from component_inputs import HASH, canonical, content_hash, decode
 from image_smoke import Docker, SmokeError
 from web_candidate import ARCHIVE, MAX_METADATA_BYTES, PLATFORM, _archive, _directory, _input_file, _main_origin, _metadata, _record, _sha, _write
 from web_composite_baseline import REPO, RETAINED
-from web_mixed_image_smoke import read_web_image, repeat_assembly, successor_baseline, successor_mode
+from web_mixed_image_smoke import CRM_SWITCH, read_web_image, repeat_assembly, successor_baseline, successor_mode
 from web_release_build import origin_for, private_destination
 from web_repeat_candidate import validate_repeat_mixed_report
+from web_functional_successor_source import SWITCH, SWITCH_ENTRY, SWITCH_EXPORTS
 
 
 MANIFEST = "web-functional-bundle.json"
@@ -22,6 +23,13 @@ INPUTS = "web-functional-inputs.json"
 MIXED = "web-functional-mixed-report.json"
 FILES = {INPUTS, MIXED, ARCHIVE}
 KIND = "warpdrive-tested-functional-web-bundle"
+INPUT_FIELDS = {"schemaVersion", "kind", "revision", "activeWebRevision", "toolingRevision",
+                "originalBackendRevision", "originalBackendManifestSha256", "reviewedProfileSha256",
+                "source", "dependencies", "context", "buildComponents", "deploymentAuthorized"}
+SWITCH_SOURCE_FIELDS = {"schemaVersion", "kind", "activeWebRevision", "toolingRevision", "candidateRevision",
+                        "profileSha256", "toolingChanges", "carriedWebChanges", "changed", "runtimePolicySha256",
+                        "engineContextTreeSha256", "originalBackendReceiptSha256", "retainedComponentInputSha256",
+                        "webInputSha256", "importPolicySha256", "sdkBindings", "deploymentAuthorized"}
 
 
 def _pins(composite, revision, origin, expected_input_sha256, installed_lineage_sha256):
@@ -38,16 +46,50 @@ def _pins(composite, revision, origin, expected_input_sha256, installed_lineage_
             "originalBackendRevision": backend["sourceRevision"]}
 
 
-def _evidence(raw, *, composite, revision, image_id, pins):
+def _verify_switch_source(source, facts, dependencies, *, tooling_revision, profile_sha256):
+    require(type(source) is dict and set(source) == SWITCH_SOURCE_FIELDS and type(source["schemaVersion"]) is int
+            and source["schemaVersion"] == 2 and source["kind"] == "warpdrive-web-functional-successor-source"
+            and source["activeWebRevision"] == facts["activeWebRevision"]
+            and source["candidateRevision"] == facts["revision"]
+            and source["toolingRevision"] == facts["toolingRevision"] == tooling_revision
+            and source["profileSha256"] == facts["reviewedProfileSha256"] == profile_sha256
+            and source["originalBackendReceiptSha256"] == dependencies["originalBackendReceiptSha256"]
+            and source["retainedComponentInputSha256"] == dependencies["retainedComponentInputSha256"]
+            and source["deploymentAuthorized"] is False
+            and all(isinstance(source[key], str) and HASH.fullmatch(source[key]) for key in (
+                "runtimePolicySha256", "engineContextTreeSha256", "webInputSha256", "importPolicySha256")),
+            "Exact Switch source, profile and retained backend proof required")
+    rows = source["changed"]
+    require(type(rows) is list and len(rows) == 1 and type(rows[0]) is dict
+            and set(rows[0]) == {"path", "beforeBlob", "afterBlob"} and rows[0]["path"] == SWITCH
+            and rows[0]["beforeBlob"] != rows[0]["afterBlob"]
+            and all(isinstance(rows[0][key], str) and REVISION.fullmatch(rows[0][key])
+                    for key in ("beforeBlob", "afterBlob")), "Exact canonical Switch Git change required")
+    bindings = source["sdkBindings"].get(SWITCH) if type(source["sdkBindings"]) is dict else None
+    require(type(bindings) is list and len(bindings) == len(SWITCH_EXPORTS)
+            and all(type(row) is dict and set(row) == {"specifier", "exported", "local"}
+                    and row["specifier"] == SWITCH_ENTRY and row["exported"] in SWITCH_EXPORTS
+                    and isinstance(row["local"], str) and row["local"] for row in bindings)
+            and sorted(row["exported"] for row in bindings) == SWITCH_EXPORTS
+            and len({row["local"] for row in bindings}) == len(bindings), "Exact named Switch bindings required")
+
+
+def _evidence(raw, *, composite, revision, image_id, pins, sdk_scenario=None,
+              expected_tooling_revision=None, expected_profile_sha256=None):
     facts, mixed = (decode(raw[name]) for name in (INPUTS, MIXED))
     backend, web = composite["backend"], composite["web"]
+    switch = sdk_scenario == CRM_SWITCH
+    require((sdk_scenario is None and expected_tooling_revision is None and expected_profile_sha256 is None)
+            or (switch and isinstance(expected_tooling_revision, str) and REVISION.fullmatch(expected_tooling_revision)
+                and expected_tooling_revision not in {revision, web["sourceRevision"], backend["sourceRevision"]}
+                and isinstance(expected_profile_sha256, str) and HASH.fullmatch(expected_profile_sha256)),
+            "Independent Switch tooling and profile authority required")
+    fields = INPUT_FIELDS | {"sdkScenario"} if switch else INPUT_FIELDS
     require(IMAGE_ID.fullmatch(image_id) and image_id not in {web["image"]["imageId"],
             *(component["imageId"] for component in backend["components"].values())}, "Distinct tested Web image required")
-    require(type(facts) is dict and set(facts) == {"schemaVersion", "kind", "revision", "activeWebRevision",
-                "toolingRevision", "originalBackendRevision", "originalBackendManifestSha256", "reviewedProfileSha256",
-                "source", "dependencies", "context", "buildComponents", "deploymentAuthorized"}
+    require(type(facts) is dict and set(facts) == fields and facts.get("sdkScenario") == sdk_scenario
             and facts.get("kind") == "warpdrive-functional-web-build-inputs"
-            and type(facts.get("schemaVersion")) is int and facts["schemaVersion"] == 1
+            and type(facts.get("schemaVersion")) is int and facts["schemaVersion"] == (2 if switch else 1)
             and facts.get("revision") == revision and content_hash(facts) == pins["inputSha256"]
             and facts["activeWebRevision"] == web["sourceRevision"]
             and facts["originalBackendRevision"] == backend["sourceRevision"]
@@ -61,13 +103,19 @@ def _evidence(raw, *, composite, revision, image_id, pins):
     require(dependencies["kind"] == "warpdrive-web-extension-candidate-inputs" and dependencies["sourceRevision"] == revision
             and dependencies["baselineRevision"] == web["sourceRevision"]
             and dependencies["originalBackendReceiptSha256"] == backend["inputReceiptSha256"]
-            and dependencies["retainedComponentInputSha256"] == {name: backend["components"][name]["inputSha256"] for name in RETAINED}
-            and source["kind"] == "warpdrive-web-functional-source" and source["currentRevision"] == revision
-            and source["baselineRevision"] == facts["toolingRevision"] and source["profileSha256"] == facts["reviewedProfileSha256"]
-            and bool(source["changed"]), "Native functional release source or retained backend inputs differ")
+            and dependencies["retainedComponentInputSha256"] == {name: backend["components"][name]["inputSha256"] for name in RETAINED},
+            "Native functional release source or retained backend inputs differ")
+    if switch:
+        _verify_switch_source(source, facts, dependencies, tooling_revision=expected_tooling_revision,
+                              profile_sha256=expected_profile_sha256)
+    else:
+        require(source["kind"] == "warpdrive-web-functional-source" and source["currentRevision"] == revision
+                and source["baselineRevision"] == facts["toolingRevision"] and source["profileSha256"] == facts["reviewedProfileSha256"]
+                and bool(source["changed"]), "Native functional release source or retained backend inputs differ")
     image = {"imageId": image_id, "sourceRevision": revision, "generation": "wd-" + revision}
     qualification = validate_repeat_mixed_report(mixed, assembly=repeat_assembly(composite, image),
-                                                 expected_harness_revision=revision, sdk_keyboard_help=True)
+                                                 expected_harness_revision=revision, sdk_keyboard_help=True,
+                                                 sdk_scenario=sdk_scenario)
     return image, qualification
 
 
@@ -79,11 +127,14 @@ def _result(directory, manifest, manifest_sha, image, qualification):
 
 
 def create_functional_bundle(directory, *, input_path, mixed_path, composite, revision, origin, image_id,
-                             expected_input_sha256, installed_lineage_sha256, docker):
+                             expected_input_sha256, installed_lineage_sha256, docker, sdk_scenario=None,
+                             expected_tooling_revision=None, expected_profile_sha256=None):
     private_destination(directory)
     pins = _pins(composite, revision, origin, expected_input_sha256, installed_lineage_sha256)
     raw = {INPUTS: _input_file(input_path), MIXED: _input_file(mixed_path)}
-    image, qualification = _evidence(raw, composite=composite, revision=revision, image_id=image_id, pins=pins)
+    image, qualification = _evidence(raw, composite=composite, revision=revision, image_id=image_id, pins=pins,
+        sdk_scenario=sdk_scenario, expected_tooling_revision=expected_tooling_revision,
+        expected_profile_sha256=expected_profile_sha256)
     require(read_web_image(docker, image_id, revision) == image, "Native functional Web image differs before save")
     directory.mkdir(mode=0o700)
     docker.run(["image", "save", "--platform", PLATFORM, "--output", str(directory / ARCHIVE), image_id], timeout=600)
@@ -105,7 +156,8 @@ def create_functional_bundle(directory, *, input_path, mixed_path, composite, re
 
 
 def load_functional_bundle(directory, *, composite, revision, origin, expected_manifest_sha256,
-                           expected_input_sha256, installed_lineage_sha256):
+                           expected_input_sha256, installed_lineage_sha256, sdk_scenario=None,
+                           expected_tooling_revision=None, expected_profile_sha256=None):
     pins = _pins(composite, revision, origin, expected_input_sha256, installed_lineage_sha256)
     with _directory(directory) as parent:
         require(set(os.listdir(parent)) == FILES | {MANIFEST}, "Functional Web bundle inventory differs")
@@ -121,7 +173,9 @@ def load_functional_bundle(directory, *, composite, revision, origin, expected_m
         raw = {name: _metadata(parent, name) for name in (INPUTS, MIXED)}
         require(all(len(value) <= MAX_METADATA_BYTES and manifest["files"][name] == _record(value) for name, value in raw.items()),
                 "Functional Web bundle metadata differs from its manifest")
-        image, qualification = _evidence(raw, composite=composite, revision=revision, image_id=manifest["imageId"], pins=pins)
+        image, qualification = _evidence(raw, composite=composite, revision=revision, image_id=manifest["imageId"], pins=pins,
+            sdk_scenario=sdk_scenario, expected_tooling_revision=expected_tooling_revision,
+            expected_profile_sha256=expected_profile_sha256)
         _, saved = _archive(parent, image["imageId"], revision, expected=manifest["files"][ARCHIVE])
     return _result(directory, manifest, expected_manifest_sha256, saved, qualification)
 
