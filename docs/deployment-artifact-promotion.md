@@ -123,3 +123,26 @@ The historical Web qualifier can select this storage explicitly with `--custody-
 `--backend-admission-bytes 3212`. It checks the exact same publication and archive digests and
 re-runs the original bundle verifiers. This applies to the first Web and original backend
 baseline. The current Web artifact and its production acceptance still need their own evidence.
+
+## Qualifying and installing a functional Web release
+
+Select the exact protected `main` revision and a reviewed tooling ancestor. The source
+comparison must cover the functional Web changes. Keep the tooling ancestor in the merged
+history so qualification can verify the comparison using Git objects. Check that the active
+and previous Web generations are healthy and that their private installed lineage is available.
+
+Run `web-functional-qualification.yml` with the exact tooling revision, reviewed profile digest,
+installed lineage digest, and active Web receipt digest and byte count. The workflow retrieves
+the accepted artifacts, checks the original backend input graphs, builds one Web image, and
+tests both Web generations with the retained backend. Full application CI, full browser checks,
+and the named security analyses also need to pass for the exact candidate.
+
+Keep the selected revision at the tip of `main` until the release is promoted. If `main`
+advances before admission or promotion, preserve the earlier run and its artifact as evidence.
+Review the new head and rerun the qualification and release gates for the new exact source.
+
+On the installation, stage the same tested archive privately and verify readiness against
+the incumbent route and backend. Promote the candidate, verify the public identity and retained
+assets, then check rollback and reapply. Preserve the accepted lineage and rollout receipts.
+If the operation loses an acknowledgement, inspect the same native operation and its receipts
+before continuing.
