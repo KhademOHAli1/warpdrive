@@ -2,7 +2,7 @@
 
 Warpdrive exposes an OAuth-authenticated Model Context Protocol server for CRM reads and writes. It lets compatible AI clients search CRM data and create or update records without granting more access than the signed-in Warpdrive user already has.
 
-CRM records cannot be deleted through MCP. Leads can be archived and restored, and users can delete their own unsent email drafts.
+The tool set does not delete CRM records. Use `archive_lead` to archive a lead or pass `archived: false` to restore it. Users can delete their own unsent email drafts through MCP.
 
 ## Enable the server
 

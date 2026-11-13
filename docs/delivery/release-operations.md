@@ -2,7 +2,7 @@
 
 GitHub issues and the central Project own live execution. Source implementation, integration with green CI, user-journey acceptance, release publication, deployment, and real provider/installation acceptance are separate statements. A source snapshot, generated packet, diagnostic, synthetic suite, or successful subset does not complete the original acceptance scope.
 
-Prepare all implementation, policy, version and release-plan changes on branches and integrate them through reviewed pull requests. Do not commit or push directly to main. The integration coordinator serializes main publication, resolves shared conflicts and closes completed branches only after confirming their work is preserved. Qualify each complete increment before merging and verify the resulting exact-main checks afterward. Preserve unfinished work and existing module ownership. This tooling grants no deployment authorization.
+Prepare all implementation, policy, version and release-plan changes on branches and integrate them through reviewed pull requests. Do not commit or push directly to main. Feature owners may integrate their own completed increments when authorized by the user. Reconcile shared conflicts before integration and close completed branches only after confirming their work is preserved. Qualify each complete increment before merging and verify the resulting exact-main checks afterward. Preserve unfinished work and existing module ownership. This tooling grants no deployment authorization.
 
 The one-off branch consolidation from frozen base `68e9e55890dd1ceedfbfe0853019673bf79105e4` completed through PR #952 at `86201a96522f22607df3710d809a1391f562b940`, after which its integration branch was closed. That freeze and branch are historical; they do not prevent subsequent bounded work through the branch/PR process above.
 
@@ -28,16 +28,18 @@ definition-change runs; a light result is not a replacement for exact-revision f
 approval.
 
 Fresh `draft` and `publish` actions additionally bind the named `refs/heads/main` ref to the selected
-SHA before and after reading CodeQL results. They require successful metadata for all three exact
-selected-commit language categories and examine every page of open alerts on that named ref.
+SHA before and after reading CodeQL results. They require successful metadata for
+the selected track's language categories on that exact commit and examine every
+page of open alerts on that named ref.
 High/critical security findings and error-level results block; missing coverage, malformed data,
 moved main and API/permission failures fail closed. Raw-SHA queries are not used: the retained
 readback returned HTTP 200 and empty results for them. The live result snapshot is printed in the
 release run log, and `publish` repeats the guard immediately before its publication write. Existing
 artifact schemas/checksums stay unchanged. `security-events: read` permits the read; no alert dismissal
 is added. The generic exact-revision CI gate, historical technical acceptance audits and repair of
-already-published immutable receipts do not acquire a current-main requirement. Existing managed
-CodeQL workflow and all three Analyze jobs remain independently required by MAIL and technical policy.
+already-published immutable receipts do not acquire a current-main requirement. The managed
+workflow's JavaScript/TypeScript, Actions and Python analyses remain required by MAIL
+and the technical policy. The newsletter track also requires Go.
 
 The release job names `release-preparation` for prepare/draft and `release-approval` for publish.
 These are proposed GitHub environment references, not proof that reviewers, branch restrictions or

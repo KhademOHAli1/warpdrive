@@ -1,9 +1,14 @@
 # Workflow library and lifecycle review
 
-WF-016 / [issue #673](https://github.com/KhademOHAli1/warpdrive/issues/673) extends the
-qualified WF-010 lifecycle backend. Source and check results are maintained in
-[PR #959](https://github.com/KhademOHAli1/warpdrive/pull/959). This guide does not establish
-main integration, native/human journey acceptance, release, deployment or installation.
+The default **Workflows** list combines version 1 and version 2 workflows. **New
+workflow** opens the version 2 studio. Use **Existing workflow filters** to open
+the version 1 list with its additional filters. Opening an existing workflow
+uses the editor for its stored engine version. See [Workflow blocks](../workflow-blocks.md).
+
+The contract and qualification checkpoint below describe the version 1 library
+introduced by WF-016 / [issue #673](https://github.com/KhademOHAli1/warpdrive/issues/673).
+Source and check results for that increment are recorded in
+[PR #959](https://github.com/KhademOHAli1/warpdrive/pull/959).
 
 ## Server pages and metadata
 

@@ -1,5 +1,4 @@
 ---
-sidebar_position: 12
 title: Collaboration
 description: "Working together in Warpdrive: notes and comments, @mentions, followers, and live presence indicators."
 ---
@@ -22,23 +21,23 @@ notifies them and links them back to the record.
 
 A mention does not grant access. If the mentioned person cannot see the record, the
 mention does not make it visible to them, so mentioning is not a sharing mechanism.
-Use [visibility groups](../administration/visibility-groups.md) for that.
+Use [visibility groups](/administration/visibility-groups/) for that.
 
 ## Followers
 
-Following a record subscribes you to its [notifications](./notifications.md) without
-owning it or changing who can see it.
+Use **Follow** on a deal to receive its [notifications](/features/notifications/). You
+can also follow people and organizations from their contact pages. Following
+leaves ownership and access permissions as they were.
 
 ## Presence
 
-When several people have the same record open, presence indicators show who else is
-there, so two people do not unknowingly edit the same deal at once.
+When several people have the same deal open, its header shows who else is viewing
+it. Coordinate changes with colleagues if you are editing the same deal.
 
-Presence is realtime and depends on the WebSocket connection. If indicators never
-appear for anyone, check `NEXT_PUBLIC_WS_URL` as described in
-[Architecture](../architecture.md).
+Presence depends on the live connection. If indicators are missing across the
+team, ask your administrator to check the [Realtime service](/architecture/).
 
 ## Related
 
-- [Notifications](./notifications.md)
-- [Deal workspace](./deal-workspace.md)
+- [Notifications](/features/notifications/)
+- [Deal workspace](/features/deal-workspace/)

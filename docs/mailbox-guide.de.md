@@ -44,7 +44,11 @@ Eine Statusprüfung versendet keine weitere E-Mail. Teilweise angenommene und un
 
 ## Pausieren, aktualisieren und trennen
 
-**Synchronisierung pausieren** verhindert vorübergehend neue Synchronisierung und neuen Versand über diese Verbindung. **Synchronisierung fortsetzen** macht sie wieder nutzbar. Prüfen Sie geplante Aufträge gesondert. **Synchronisierung erneut versuchen** betrifft den Empfang und versendet keine ausgehende Nachricht erneut. **Zugangsdaten aktualisieren** prüft neue Zugangsdaten desselben Postfachs; Gespräche und gespeicherte Auswahl bleiben erhalten, die Passwortfelder sind leer. **Verbindung trennen** verlangt eine Bestätigung, beendet künftigen Zugriff und bewahrt CRM-Gespräche mit ihren bisherigen Berechtigungen. Angenommene Nachrichten lassen sich nicht zurückrufen. Ein hier entferntes Passwort oder App-Passwort bleibt beim Anbieter gültig, bis Sie es dort widerrufen. Wird der Widerruf beim Anbieter als ausstehend angezeigt, ist der lokale Zugriff bereits gestoppt; der entfernte Zugriff wurde jedoch noch nicht vollständig widerrufen.
+**Empfang und Versand pausieren** verhindert vorübergehend neue Synchronisierung und neuen Versand über diese Verbindung. **Empfang und Versand fortsetzen** macht sie wieder nutzbar. Prüfen Sie geplante Aufträge gesondert. **Synchronisierung erneut versuchen** betrifft den Empfang und versendet keine ausgehende Nachricht erneut. **Zugangsdaten aktualisieren** prüft neue Zugangsdaten desselben Postfachs; Gespräche und gespeicherte Auswahl bleiben erhalten, die Passwortfelder sind leer.
+
+Öffnen Sie vor dem Trennen den **Postausgang**. Brechen Sie nicht mehr gewünschte Aufträge ab, sofern **Abbrechen** verfügbar ist. Prüfen Sie laufende Aufträge und Aufträge mit unklarem oder teilweise angenommenem Versand getrennt. Beim Trennen bleiben die Versandaufträge und ihr Status erhalten.
+
+Wählen Sie **Verbindung trennen** und bestätigen Sie, um künftige Synchronisierung und Versand zu stoppen. Bestehende CRM-Gespräche behalten ihre bisherigen Berechtigungen. Angenommene Nachrichten lassen sich nicht zurückrufen. Ein hier entferntes Passwort oder App-Passwort bleibt beim Anbieter gültig, bis Sie es dort widerrufen. Wird der Widerruf beim Anbieter als ausstehend angezeigt, ist der lokale Zugriff bereits gestoppt; der entfernte Zugriff wurde jedoch noch nicht vollständig widerrufen.
 
 ## Hinweise für den Betrieb
 

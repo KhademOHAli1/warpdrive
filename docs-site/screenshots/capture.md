@@ -1,74 +1,58 @@
 # Capturing docs screenshots
 
-All screenshots under `docs-site/static/img/screenshots/<feature>/` are captured from a
+All screenshots under `docs-site/public/img/screenshots/<feature>/` are captured from a
 **locally seeded demo instance**, never from production.
 
 ## Why local, not production
 
-The production deployment holds real business-development customer data. PingCRM's
-docs solve this by capturing production and blurring PII with a CSS redaction layer,
-but blur is one missed selector away from publishing a real customer's name to a
-public site, permanently.
-
-Seeding synthetic data removes the risk class instead of mitigating it. There is no
-redaction step here because there is nothing to redact.
-
-Design: `docs/superpowers/specs/2026-07-19-docs-site-docusaurus-design.md`.
+Screenshots are public. Use a fresh local database, private storage bucket, and
+browser profile created for the capture. A shared development database may still
+contain real records after seeding, and an existing browser profile may fill in
+saved account details.
 
 ## Setup
 
-:::danger
-**Do not capture against your everyday development database.** `db:seed:demo` only
-wipes rows it owns; every other account survives. A long-lived dev database
-accumulates real data from manual testing, and the first capture pass against one put
-a real personal Gmail address into `/settings/users` twice. Those screenshots would
-have shipped to a public site.
+1. In a dedicated checkout, install the locked dependencies using the
+   [contributor setup](../docs/contributing.md#running-locally). Provision a
+   disposable local PostgreSQL database and a private test bucket for the
+   capture. Use separate credentials and free loopback ports. If using Compose,
+   use a dedicated project and check the configured ports before starting it.
+2. Create a fresh local `.env` from `.env.example` in that checkout. Set
+   `MIGRATION_DATABASE_URL` and `DATABASE_URL` to the same disposable database,
+   with the migration owner and the separate runtime login respectively. Clear
+   inherited configuration that points to other services. Leave real provider
+   integrations unconfigured and set `AUTH_MAIL_TRANSPORT=capture`,
+   `DISABLE_TELEMETRY=true`, and `DISABLE_UPDATE_CHECK=true`.
+3. Confirm both connection strings point at the capture database. Run
+   `bun run db:migrate` and apply the
+   [runtime grants](../docs/setup.mdx#3-bring-it-up) to the capture login.
+   Then run `bun run db:seed:demo` from the repository root. The seed uses
+   `DATABASE_URL` and can rewrite demo records, so verify the database before
+   running it.
+4. Before taking screenshots, inspect the users table in that database:
 
-Always capture against a database created fresh for the purpose.
-:::
-
-1. Bring up local Postgres (port 5433) and MinIO:
-
-   ```sh
-   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+   ```sql
+   SELECT email FROM users ORDER BY email;
    ```
 
-2. Create a throwaway database and point an env file at it:
+   Confirm the list contains only the synthetic accounts defined by
+   `scripts/seed-demo.ts`, `scripts/seed-demo-users.ts`, and
+   `scripts/seed-demo-graph.ts`. Check the visible records in every shot for real
+   names, addresses, account details, and browser autofill before saving it.
+5. Use a free port for the app. For example, set `BASE_URL=http://localhost:3010`
+   and run:
 
    ```sh
-   docker exec wd-smoke-pg psql -U warpdrive -d postgres \
-     -c "DROP DATABASE IF EXISTS warpdrive_docs;" -c "CREATE DATABASE warpdrive_docs;"
-   sed -E 's#^(DATABASE_URL=.*)/warpdrive$#\1/warpdrive_docs#' .env > .env.docs
+   bun run dev --hostname 127.0.0.1 --port 3010
    ```
 
-3. Migrate and seed it:
-
-   ```sh
-   export $(grep -E '^DATABASE_URL' .env.docs | xargs)
-   npx drizzle-kit migrate
-   npx tsx --env-file .env.docs scripts/seed-demo.ts
-   ```
-
-4. Verify it is clean before capturing anything:
-
-   ```sh
-   docker exec wd-smoke-pg psql -U warpdrive -d warpdrive_docs \
-     -tAc "select email from users order by email;"
-   ```
-
-   Every address must be `@example.com`. Contact records use invented company domains
-   (`ironsystems.com` and similar), which are seed-generated and fine.
-
-5. Run the app against it. Next.js refuses a second dev server from the same
-   directory, so stop any existing one first:
-
-   ```sh
-   export $(grep -E '^DATABASE_URL' .env.docs | xargs)
-   BASE_URL=http://localhost:3010 npx next dev --port 3010
-   ```
-
-6. Sign in as an administrator: `/auth/dev-login?email=demo1@example.com`. Several
-   shots need settings pages a regular account cannot open.
+   The fixture route `/auth/dev-login?email=demo1@example.com` needs
+   `ALLOW_FIRST_LOGIN_ADMIN=true` in a non-production process. Enable it only in
+   this loopback-bound capture environment. Open the route in the new browser
+   profile and verify that the synthetic administrator can open the settings
+   pages you plan to capture.
+6. After capture, close the dedicated browser profile, stop the processes you
+   started, and remove the disposable database, bucket, and capture credentials.
 
 ## Capture parameters
 
@@ -79,21 +63,13 @@ Always capture against a database created fresh for the purpose.
 | Device pixel ratio | 2 |
 | Browser chrome | Excluded, capture the page only |
 
-Save each shot to `docs-site/static/img/screenshots/<feature>/<filename>` exactly as
-named in the table below. The Docusaurus build **fails on a missing image**, so a
-typo in a filename is caught at build time rather than shipping as a broken image.
+Save each shot to `docs-site/public/img/screenshots/<feature>/<filename>` exactly as
+named in the table below. After building the docs, run `bun run check:export` from `docs-site/` to verify image paths.
 
 ### Two things that silently ruin shots
 
-**Wait for content, not for a timer.** Several pages render a "Loading activities..."
-placeholder well past `networkidle`. A fixed wait captured that placeholder, and it
-looked like a legitimately empty page rather than a mistake. Gate on the text
-disappearing instead:
-
-```sh
-agent-browser wait --load networkidle
-agent-browser wait --fn '!document.body.innerText.includes("Loading")'
-```
+**Wait for the page content.** Check that loading placeholders have disappeared
+and the expected records are visible before taking a shot.
 
 **Suppress the dev overlay and animations.** The Next.js dev indicator sits in the
 bottom-left corner of every page, and sidebar transitions get captured mid-flight.
@@ -114,13 +90,8 @@ The demo seed is **not** currently byte-reproducible. Its content PRNG is determ
 ordering vary between runs, so re-seeding produces cosmetically different data. The UI
 also renders relative dates and overdue and rotting styling against the real clock.
 
-Making it fully reproducible was scoped at roughly 190 to 260 lines across ten seed
-modules, some of which are shared with smoke-test infrastructure. That was judged not
-worth the risk for a cosmetic docs benefit.
-
-**Practical consequence:** re-capture a shot only when the UI in it actually changed,
-rather than regenerating the whole set. The screenshots are committed PNGs; they do
-not need to be reproducible from scratch.
+Replace a committed PNG when its labels, layout, or interaction no longer match
+the guide. Record the captured revision with the screenshot change.
 
 ## Capturing interaction states
 
@@ -211,7 +182,7 @@ Each row is `page -> route -> setup -> filename`.
 | Dashboard | `/dashboard` | Seeded deals across stages | `dashboard/overview.png` |
 | Notifications | any | Open the bell with unread items | `notifications/panel.png` |
 | Search | any | Type a term matching several types | `search/results.png` |
-| Saved filters | `/pipeline/[id]` | Open the saved-filter menu | `saved-filters/menu.png` |
+| Saved filters | `/pipeline/[id]` | Open the dialog for saving a filter | `saved-filters/create.png` |
 
 ### Administration
 
