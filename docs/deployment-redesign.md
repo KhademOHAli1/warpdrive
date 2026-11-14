@@ -166,6 +166,22 @@ and bucket gates remain intact. This model check does not prove a running select
 or validate registry provenance; the release controller must enforce verified immutable digests
 and explicit migration sequencing before the overlay is used on an installation.
 
+When the optional Core or Operations Collector rehearsal is selected, a successful
+run also retains `optional-image-bundle-<revision>-<run>-<attempt>` separately from
+the canonical four-image bundle. The packer saves the exact tested optional IDs
+once, verifies the archive's configurations and layers, and binds the runtime
+reports and original four image IDs to the independently pinned baseline manifest.
+It never rebuilds, loads or publishes these images. Failure to preserve those exact
+bytes fails the qualification job.
+
+`scripts/deployment/optional_image_bundle.py verify` requires the externally obtained
+optional manifest SHA-256, baseline manifest SHA-256 and producer-origin snapshot.
+The snapshot is not API authentication: a later promotion must independently admit
+the enclosing artifact and producing workflow. Branch qualification artifacts do not
+establish protected-main qualification or release acceptance. Both the manifest and
+verification result retain `deploymentAuthorized: false`; the original four-role
+bundle and its publication gates are unchanged.
+
 ## Fresh installation qualification
 
 Use a dedicated project and empty volumes on an isolated Linux Docker host.
@@ -229,6 +245,100 @@ python3 -B scripts/deployment/fresh_compose_smoke.py --run-native \
 Retain the receipt from a successful run with confirmed cleanup. The fixture
 uses generated records, credentials and TLS. Test cold recovery separately with
 the actual Linux volume inventory and a quarantined restore.
+
+The opt-in `fresh_compose_rehearsal` input on `production-images.yml` wires this
+fixture to the same run's tested four-image bundle and distinct presentation-only
+Web candidate. Select `web_release_rehearsal` as well. Supply a successful main
+`production-engine.yml` run ID and its original revision. The bootstrap authenticates
+that run and artifact through GitHub, compares the complete Engine context at both
+revisions, verifies the saved image bytes and preserves its original OCI revision.
+An expired or changed artifact holds; a receipt hash supplied by the caller is not
+artifact-origin evidence. The four baseline images are verified in place and are
+not rebuilt or reloaded for the fresh fixture.
+
+Supply `fresh_support_images` as a JSON object with exactly `caddy`, `postgres`,
+`storage`, `storage_init` and `registry`, each selecting one immutable
+`repository@sha256:...` reference. Select the supported PostgreSQL 16 profile.
+The workflow preloads these exact Linux AMD64 references before the fixture and
+the bootstrap requires their literal local `RepoDigests`. The transient registry
+also uses its preloaded digest with pulls disabled. The six application/Engine
+image IDs are independently read back through that owned loopback registry before
+the private baseline/candidate interpolation files are written.
+
+`fresh_storage_client` explicitly selects `mc` or `mcli`. The `mcli` profile can
+use the same selected Silo release image for the storage server and its bundled
+client. Only that server/initializer image alias is admitted; the other support
+roles remain distinct. The fresh overlay runs a fixed, quoted client command with
+a private temporary configuration directory. This selection changes the isolated
+fresh profile, not the running installation or the legacy production Compose file.
+Both legacy Quay server and Docker Hub client lookups returned authorization
+failures during the 14 November metadata preflight, so they are not treated as
+available native fixture inputs.
+
+`deploy/images/fresh-fixture-support.json` records the 14 November manifest
+metadata selection for the Silo/mcli fixture. Its server release is the same
+`RELEASE.2026-10-26T00-00-00Z` source already used in local recovery qualification.
+Use it only with `fresh_storage_client=mcli`. Manifest/architecture inspection is
+not a runtime pass or production upgrade approval. A successful native report
+must still bind all five role references, including the shared server/client image,
+and verify the configured caps and data continuity.
+
+The fixture has explicit CPU, memory, swap and PID limits. Admission reserves
+memory and disk for the synthetic stack before startup. These are initial fixture
+budgets, not production sizing or capacity acceptance. Cleanup drains ingress,
+then writers, then storage, preserving Worker's 75-second stop allowance. Unknown
+stop acknowledgements or cleanup failures retain the private fixture configuration
+and remaining resources for inspection. Docker/Compose subprocesses have bounded
+output, time and owned process groups. An uncertain mutating Compose result holds
+the fixture and its registry; it never starts destructive cleanup while the command
+or its outcome is unresolved. A preflight collision never arms cleanup.
+
+Select `fresh_recovery_rehearsal` only with the fresh and Web rehearsals. It uses
+pinned Restic 0.18.0 and the runner's matching PostgreSQL 16 control tool. The cold
+fixture requires root access to the actual local Docker volume paths. Source,
+SDK context, archive, API and registry verification run as the original runner.
+Only the cold-recovery callback elevates, with pinned inputs and a separate private
+root-owned output directory. GitHub credentials are excluded from that child.
+Source, dependency, context and worktree ownership stay with the runner.
+
+The recovery coordinator verifies all writers stopped cleanly, captures the actual
+five volumes and private configuration, revokes the writer key slot, removes the
+source state, and independently restores into quarantine. Only after byte and
+topology checks may the seven synthetic runtime services restart. The migrations,
+bucket initialization and seed operations are not replayed on the restored stack.
+Successful output qualifies this synthetic fixture. Production recovery, off-host
+repository/key custody, provider reconciliation and operator writer resumption
+remain separate acceptance gates.
+
+The bootstrap output directory is private custody. It can contain repository keys,
+configuration and quarantine state, including on a held outcome. The workflow
+exports only its bounded result report into diagnostics and never uploads that
+private subtree. Optional Core and Operations Collector rehearsals remain separate
+profiles; passing the stock fresh fixture does not establish their co-deployment.
+
+`local_native_fixture.py` provides a separate operator-run synthetic fixture when
+the selected host is not a GitHub runner. Authenticate and download artifacts
+off-host, then pin the closed admission document and every source, image, receipt
+and tool byte supplied to the host. This path does not impersonate Actions or
+admit a release profile, installed backend compatibility or production deployment.
+Its aggregate cgroup must already exist with the selected two-CPU and six-to-seven
+GiB limits; Docker containers inherit that parent and the coordinator uses its own
+child cgroup. Per-role caps and host operating reserves still apply.
+
+Native image IDs, config digests, platform manifests and indexes remain distinct.
+The explicit Docker-save compatibility profile verifies selected configurations,
+ordered layers, expanded RootFS digests and exporter metadata. A dual-format
+archive can contain all selected Docker entries while its OCI index lists fewer
+images. For that case, a separately pinned private transport archive may replace
+only the index with all verified platform manifests. All image blobs and Docker
+compatibility metadata must retain their exact bytes. The original API artifact
+remains unchanged; native loading must establish every selected image identity.
+Unknown load or publication outcomes retain the journal for reconciliation.
+The private registry relay keeps eight active connections and queues excess
+clients in a bounded TCP backlog. Each upstream open still performs fresh network
+and container ownership checks, with a ten-second inspection deadline for the
+selected registry profile. The operation journal records bounded step names and
+exit codes without arguments or command output.
 
 Each target uses the locked production dependency tree. Npm packages remain external because
 some load runtime data files. Smaller per-component dependency sets and standalone Next output
@@ -295,6 +405,21 @@ Keep the existing [newsletter coordinated recovery rules](newsletters-operations
 An unavailable command response leaves an unknown phase; it does not justify blind replay.
 
 ## Remaining rollout boundaries
+
+Installed operator tooling has its own activation path. Package the exact reviewed
+main revision with `installed_web_toolkit_transport.py`, receive it into a new
+private `operators` destination, and verify the transport receipt before changing
+the current toolset. `installed_toolkit_current.py activate` requires that verified
+manifest and the expected current-pointer hash (or `absent` on first activation).
+It journals the operation before atomically replacing the pointer and retains the
+previous toolset. An uncertain acknowledgement is reconciled with the same
+operation and readback; it does not authorize replaying deployment actions.
+
+The stable dispatcher exposes a read-only `run status` command for the accepted
+installed Web journal. It rechecks source custody and the current pointer around
+the command. This status is historical deployment evidence; live health and
+backend witnesses must be checked separately. Toolkit activation and rollback do
+not restart application containers or promote Web, Core, Engine or schema changes.
 
 The [runtime rehearsals](deployment-runtime-rehearsals.md) cover shutdown, generation-aware Web
 routing and rollback. The [artifact promotion runbook](deployment-artifact-promotion.md) covers

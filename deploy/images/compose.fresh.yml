@@ -15,6 +15,23 @@ services:
     image: "${WARPDRIVE_STORAGE_INIT_IMAGE:?set WARPDRIVE_STORAGE_INIT_IMAGE}"
     pull_policy: never
     restart: "no"
+    # Override storage images' declared /data volume with bounded ephemeral data.
+    tmpfs:
+      - /data:rw,noexec,nosuid,size=8m
+    environment:
+      WARPDRIVE_STORAGE_CLIENT_BIN: "${WARPDRIVE_STORAGE_CLIENT_BIN:-mc}"
+    command: []
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        umask 077
+        case "$$WARPDRIVE_STORAGE_CLIENT_BIN" in mc|mcli) ;; *) exit 64 ;; esac
+        until "$$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client alias set local http://minio:9000 "$$MINIO_ACCESS_KEY" "$$MINIO_SECRET_KEY"; do
+          echo 'waiting for minio'; sleep 2
+        done
+        "$$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client mb --ignore-existing "local/$$MINIO_BUCKET"
+        "$$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client anonymous set none "local/$$MINIO_BUCKET"
   app:
     pull_policy: never
     environment:

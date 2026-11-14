@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from types import SimpleNamespace
 from urllib.error import HTTPError
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 try:
     from . import registry_smoke as smoke
@@ -120,6 +120,157 @@ def manifest(config_id=IDS["web"]):
 
 
 class AdmissionTests(unittest.TestCase):
+    def test_registry_keeps_waiting_transport_for_cleanup_when_readiness_fails(self):
+        docker = Mock()
+        moments = iter((0, 46))
+        value = smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"), clock=lambda: next(moments))
+        value.disk_limit = 1024
+        transport = Mock(authority="127.0.0.1:49152", target_metadata={"internal": True})
+        transport.start.return_value = transport
+
+        def run(arguments, **_options):
+            if arguments[0] == "info":
+                return subprocess.CompletedProcess(arguments, 0, "/tmp", "")
+            if arguments[1:2] == ["inspect"]:
+                return subprocess.CompletedProcess(arguments, 0, json.dumps({smoke.OWNER_LABEL: value.prefix}), "")
+            return subprocess.CompletedProcess(arguments, 0, "", "")
+
+        def inspect(arguments, **_options):
+            if "--format" in arguments:
+                return ({"Running": True, "OOMKilled": False} if ".State" in arguments[-1]
+                        else {smoke.OWNER_LABEL: value.prefix})
+            return [{}]
+
+        docker.run.side_effect = run
+        docker.json.side_effect = inspect
+        with patch.object(smoke.shutil, "disk_usage", return_value=SimpleNamespace(free=2 * 1024**3)), \
+                patch.object(smoke, "owned_bridge_forwarder", return_value=transport) as factory, \
+                patch.object(smoke, "RegistryClient") as client:
+            client.return_value.get.side_effect = smoke.RegistrySmokeError("readiness is unavailable")
+            with self.assertRaisesRegex(smoke.RegistrySmokeError, "readiness is unavailable"):
+                value.setup_registry()
+        factory.assert_called_once_with(docker, owner_label=smoke.OWNER_LABEL, owner=value.prefix,
+            network_name=value.prefix + "-network", container_name=value.registry_name, port=5000,
+            max_connections=8, backpressure=True, inspection_timeout=10)
+        self.assertIs(value.forwarder, transport)
+        transport.close.assert_not_called()
+        self.assertEqual(value.cleanup(), [])
+        transport.close.assert_called_once_with()
+        run_container = next(call.args[0] for call in docker.run.call_args_list if call.args[0][0] == "run")
+        self.assertNotIn("--publish", run_container)
+        self.assertNotIn("-p", run_container)
+
+    def test_registry_only_accepts_explicit_flat_qualification_parent_before_docker(self):
+        docker = Mock()
+        for parent in ("system.slice", "/sys/fs/cgroup/owned", "warpdrive-qualification-abcdef012345.slice",
+                       "warpdrivequalificationABCDEF012345.slice", "warpdrivequalificationabc.slice", ""):
+            with self.subTest(parent=parent), self.assertRaisesRegex(smoke.RegistrySmokeError, "flat unique"):
+                smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"), cgroup_parent=parent)
+        docker.run.assert_not_called()
+        docker.json.assert_not_called()
+
+    def test_selected_registry_parent_preserves_caps_and_requires_actual_readback(self):
+        parent = "warpdrivequalificationabcdef012345.slice"
+        docker = Mock()
+        value = smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"), cgroup_parent=parent)
+        value.disk_limit = 1024
+
+        def run(arguments, **_options):
+            if arguments[0] == "info":
+                output = "systemd" if "CgroupDriver" in arguments[-1] else "/tmp"
+                return subprocess.CompletedProcess(arguments, 0, output, "")
+            if arguments[0] == "run":
+                for option, expected in (("--cgroup-parent", parent), ("--memory", "384m"),
+                                         ("--memory-swap", "384m"), ("--cpus", "1"), ("--pids-limit", "128")):
+                    self.assertEqual(arguments[arguments.index(option) + 1], expected)
+                raise smoke.RegistrySmokeError("stop before creating a real fixture")
+            return subprocess.CompletedProcess(arguments, 0, "", "")
+
+        docker.run.side_effect = run
+        with patch.object(smoke.shutil, "disk_usage", return_value=SimpleNamespace(free=2 * 1024**3)), \
+                self.assertRaisesRegex(smoke.RegistrySmokeError, "stop before"):
+            value.setup_registry()
+        docker.json.side_effect = [{smoke.OWNER_LABEL: value.prefix}, parent]
+        value.owned_registry()
+        docker.json.side_effect = [{smoke.OWNER_LABEL: value.prefix}, "system.slice"]
+        with self.assertRaisesRegex(smoke.RegistrySmokeError, "cgroup parent differs"):
+            value.owned_registry()
+
+        # A changed parent is a hold during cleanup too, including a registry
+        # without the separately admitted preloaded-image profile.
+        docker.run.reset_mock()
+        docker.run.side_effect = None
+        docker.run.return_value = subprocess.CompletedProcess([], 0, json.dumps({smoke.OWNER_LABEL: value.prefix}), "")
+        docker.json.side_effect = [{smoke.OWNER_LABEL: value.prefix}, "system.slice"]
+        value.resources = [("container", value.registry_name)]
+        self.assertEqual(value.cleanup(), ["owned container cleanup failed"])
+        self.assertFalse(any(call.args[0][1] == "rm" for call in docker.run.call_args_list))
+
+    def test_selected_registry_parent_rejects_other_cgroup_drivers_before_resources(self):
+        docker = Mock()
+        docker.run.return_value.stdout = "cgroupfs"
+        value = smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"),
+                                    cgroup_parent="warpdrivequalificationabcdef012345.slice")
+        with self.assertRaisesRegex(smoke.RegistrySmokeError, "systemd Docker driver"):
+            value.setup_registry()
+        self.assertEqual(value.resources, [])
+        docker.json.assert_not_called()
+
+    def test_preloaded_registry_refuses_mutable_or_wrong_platform_before_resources(self):
+        docker = Mock()
+        for reference in ("registry:2", "registry@sha256:invalid"):
+            with self.subTest(reference=reference), self.assertRaises(smoke.SmokeError):
+                smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"),
+                                    registry_image=reference, registry_preloaded=True)
+        reference = "registry@sha256:" + "e" * 64
+        for change in ({"Architecture": "arm64"}, {"RepoDigests": []}, {"Id": "not-an-image-id"}):
+            row = {"Os": "linux", "Architecture": "amd64", "Id": IDS["web"], "RepoDigests": [reference], **change}
+            docker.json.return_value = [row]
+            value = smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"),
+                                        registry_image=reference, registry_preloaded=True)
+            with self.subTest(change=change), self.assertRaisesRegex(smoke.RegistrySmokeError, "preloaded AMD64"):
+                value.setup_registry()
+            docker.run.assert_not_called()
+            self.assertEqual(value.resources, [])
+
+    def test_preloaded_registry_never_pulls_or_substitutes_its_image(self):
+        reference = "registry@sha256:" + "e" * 64
+        docker = Mock()
+        docker.json.return_value = [{"Os": "linux", "Architecture": "amd64", "Id": IDS["web"], "RepoDigests": [reference]}]
+        value = smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"),
+                                    registry_image=reference, registry_preloaded=True)
+        value.disk_limit = 1024
+
+        def run(arguments, **_options):
+            if arguments[0] == "info":
+                return subprocess.CompletedProcess(arguments, 0, "/tmp\n", "")
+            if arguments[0] == "run":
+                self.assertEqual(arguments[arguments.index("--pull") + 1], "never")
+                self.assertEqual(arguments[-1], reference)
+                self.assertEqual(value.registry_image_id, IDS["web"])
+                raise smoke.RegistrySmokeError("stop before creating a real fixture")
+            return subprocess.CompletedProcess(arguments, 0, "", "")
+
+        docker.run.side_effect = run
+        with patch.object(smoke.shutil, "disk_usage", return_value=SimpleNamespace(free=2 * 1024**3)), \
+                self.assertRaisesRegex(smoke.RegistrySmokeError, "stop before"):
+            value.setup_registry()
+        docker.json.side_effect = [{smoke.OWNER_LABEL: value.prefix}, IDS["worker"]]
+        with self.assertRaisesRegex(smoke.RegistrySmokeError, "admitted image"):
+            value.owned_registry()
+
+    def test_pinned_registry_cleanup_retains_an_image_identity_replacement(self):
+        docker = Mock()
+        reference = "registry@sha256:" + "e" * 64
+        value = smoke.RegistrySmoke(docker, Path("bundle"), SHA, Path("out"),
+                                    registry_image=reference, registry_preloaded=True)
+        value.registry_image_id = IDS["web"]
+        value.resources = [("container", value.registry_name)]
+        docker.run.return_value = subprocess.CompletedProcess([], 0, json.dumps({smoke.OWNER_LABEL: value.prefix}), "")
+        docker.json.side_effect = [{smoke.OWNER_LABEL: value.prefix}, IDS["worker"]]
+        self.assertEqual(value.cleanup(), ["owned container cleanup failed"])
+        self.assertTrue(all(call.args[0][1] != "rm" for call in docker.run.call_args_list))
+
     def test_only_exact_owned_loopback_authority_is_admitted(self):
         self.assertEqual(smoke.loopback_authority("127.0.0.1:49152"), "127.0.0.1:49152")
         for value in ("localhost:5000", "0.0.0.0:5000", "127.0.0.1:5000/path",

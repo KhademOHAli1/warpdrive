@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from math import inf, nan
 import socket
 import socketserver
 import threading
@@ -141,7 +142,7 @@ class BridgeAdmissionTests(unittest.TestCase):
                 self.calls = []
 
             def json(self, arguments, **options):
-                self.calls.append(arguments)
+                self.calls.append((arguments, options))
                 return network if arguments[0] == "network" else container
 
         docker = Docker()
@@ -149,9 +150,45 @@ class BridgeAdmissionTests(unittest.TestCase):
                                             network_name="owned-network", container_name="owned-registry", port=5000)
         forwarder.before_connect()
         self.assertEqual(len(docker.calls), 4)
+        self.assertTrue(all(options == {"timeout": 2} for _, options in docker.calls))
         container[0]["Config"]["Labels"][LABEL] = "foreign"
         with self.assertRaises(ForwarderError):
             forwarder.before_connect()
+
+    def test_selected_inspection_timeout_applies_to_both_fresh_reads_before_every_open(self):
+        network, container = inspections()
+
+        class Docker:
+            def __init__(self):
+                self.calls = []
+
+            def json(self, arguments, **options):
+                self.calls.append((arguments, options))
+                return network if arguments[0] == "network" else container
+
+        docker = Docker()
+        forwarder = owned_bridge_forwarder(docker, owner_label=LABEL, owner=OWNER,
+            network_name="owned-network", container_name="owned-registry", port=5000,
+            max_connections=8, backpressure=True, inspection_timeout=10)
+        forwarder.before_connect()
+        forwarder.before_connect()
+        self.assertEqual([arguments[0] for arguments, _ in docker.calls], ["network", "container"] * 3)
+        self.assertTrue(all(options == {"timeout": 10} for _, options in docker.calls))
+        self.assertEqual(forwarder.snapshot()["listenBacklog"], 32)
+        self.assertEqual(forwarder.snapshot()["maxConnections"], 8)
+        container[0]["Config"]["Labels"][LABEL] = "foreign"
+        with self.assertRaises(ForwarderError):
+            forwarder.before_connect()
+
+    def test_invalid_inspection_timeouts_fail_before_any_observation(self):
+        class Docker:
+            def json(self, *args, **kwargs):
+                raise AssertionError("Invalid timeout must not reach Docker")
+
+        for timeout in (0, -1, 10.01, 10**1000, inf, nan, True, "10", None):
+            with self.subTest(timeout=timeout), self.assertRaises(ForwarderError):
+                owned_bridge_forwarder(Docker(), owner_label=LABEL, owner=OWNER,
+                    network_name="owned-network", container_name="owned-registry", port=5000, inspection_timeout=timeout)
 
 
 class RealLoopbackTests(unittest.TestCase):
@@ -236,6 +273,87 @@ class RealLoopbackTests(unittest.TestCase):
                     self.assertEqual(forwarder.snapshot()["rejected"], 1)
                     self.assertEqual(forwarder.snapshot()["activeConnections"], 1)
 
+    def test_backpressure_completes_more_concurrent_clients_than_active_cap_without_rejection(self):
+        release = threading.Event()
+
+        def handler(stream):
+            if not release.wait(3):
+                raise AssertionError("Owned test release did not arrive")
+            echo(stream)
+
+        ready, results, errors, checks = [], [], [], []
+        lock = threading.Lock()
+        with fixture_server(handler) as upstream:
+            with LoopbackForwarder(*upstream, max_connections=2, buffer_bytes=1024,
+                    before_connect=lambda: checks.append(True), backpressure=True) as forwarder:
+                address = ("127.0.0.1", int(forwarder.authority.split(":")[1]))
+
+                def request(index):
+                    try:
+                        with socket.create_connection(address, timeout=5) as client:
+                            with lock:
+                                ready.append(index)
+                            payload = ("request:" + str(index)).encode() * 1024
+                            client.sendall(payload)
+                            client.shutdown(socket.SHUT_WR)
+                            result = receive_all(client)
+                            with lock:
+                                results.append((result, payload))
+                    except Exception as error:
+                        with lock:
+                            errors.append(type(error).__name__)
+
+                workers = [threading.Thread(target=request, args=(index,)) for index in range(10)]
+                for worker in workers:
+                    worker.start()
+                try:
+                    wait_until(lambda: len(ready) == 10 and forwarder.snapshot()["activeConnections"] == 2)
+                    self.assertEqual(forwarder.snapshot()["accepted"], 2)
+                    self.assertEqual(forwarder.snapshot()["rejected"], 0)
+                finally:
+                    release.set()
+                    for worker in workers:
+                        worker.join(5)
+                self.assertFalse(any(worker.is_alive() for worker in workers))
+                self.assertEqual(errors, [])
+                self.assertEqual(len(results), 10)
+                self.assertTrue(all(result == expected for result, expected in results))
+                wait_until(lambda: forwarder.snapshot()["activeConnections"] == 0)
+                stats = forwarder.snapshot()
+                self.assertEqual(stats["accepted"], 10)
+                self.assertEqual(stats["rejected"], 0)
+                self.assertEqual(stats["peakActiveConnections"], 2)
+                self.assertLessEqual(stats["peakBufferedBytesPerConnection"], 2048)
+                self.assertEqual(len(checks), 10)
+                self.assertEqual(stats["openSockets"], 0)
+                self.assertEqual(stats["listenBacklog"], 32)
+
+    def test_backpressure_close_ends_active_and_kernel_waiting_connections(self):
+        with fixture_server(echo) as upstream:
+            forwarder = LoopbackForwarder(*upstream, max_connections=1, backpressure=True).start()
+            address = ("127.0.0.1", int(forwarder.authority.split(":")[1]))
+            clients = []
+            try:
+                first = socket.create_connection(address, timeout=3)
+                clients.append(first)
+                first.sendall(b"ready")
+                self.assertEqual(receive_exact(first, 5), b"ready")
+                clients.extend(socket.create_connection(address, timeout=3) for _ in range(4))
+                self.assertEqual(forwarder.snapshot()["accepted"], 1)
+                forwarder.close(timeout=1)
+                stats = forwarder.snapshot()
+                self.assertTrue(stats["closed"])
+                self.assertEqual(stats["activeConnections"], 0)
+                self.assertEqual(stats["openSockets"], 0)
+                self.assertEqual(stats["rejected"], 0)
+                self.assertFalse(forwarder._accept_thread.is_alive())
+                with self.assertRaises(OSError):
+                    socket.create_connection(address, timeout=0.2)
+            finally:
+                for client in clients:
+                    client.close()
+                forwarder.close()
+
     def test_total_stream_budget_closes_excess_transfer(self):
         with fixture_server(echo) as upstream:
             with LoopbackForwarder(*upstream, buffer_bytes=1024, total_bytes=4096) as forwarder:
@@ -285,6 +403,9 @@ class RealLoopbackTests(unittest.TestCase):
                 LoopbackForwarder(address, 5000)
         with self.assertRaises(ForwarderError):
             LoopbackForwarder("127.0.0.1", 5000, max_connections=10000)
+        for value in (1, "yes", None):
+            with self.subTest(backpressure=value), self.assertRaises(ForwarderError):
+                LoopbackForwarder("127.0.0.1", 5000, backpressure=value)
 
 
 if __name__ == "__main__":

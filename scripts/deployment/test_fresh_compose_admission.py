@@ -6,6 +6,8 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -61,6 +63,100 @@ class FreshComposeAdmissionTests(unittest.TestCase):
             with self.assertRaisesRegex(SwitchConflict, "only the Web image"):
                 admission.admit(**self.settings(WARPDRIVE_WEB_IMAGE="ghcr.io/example/renamed-web@sha256:" + "1" * 64))
             compose.assert_not_called()
+
+    def test_both_storage_client_profiles_have_pinned_selection_and_fixed_initialization(self):
+        for client in ("mc", "mcli"):
+            with self.subTest(client=client):
+                self.environment[admission.STORAGE_CLIENT_ENV] = client
+                options = self.settings()
+                receipt = admission.admit(**options, storage_client_bin=client)
+                self.assertEqual(receipt["storageClientBin"], client)
+                model = admission._config(self.docker, self.project, self.directory, self.baseline)
+                service = model["services"]["createbuckets"]
+                self.assertEqual(service["environment"][admission.STORAGE_CLIENT_ENV], client)
+                self.assertEqual(service["entrypoint"], admission.STORAGE_INIT_ENTRYPOINT)
+                self.assertEqual(service["command"], [])
+                self.assertEqual(service["tmpfs"], [admission.STORAGE_CLIENT_DATA_TMPFS])
+                images = admission._pinned_images(self.baseline, options["baseline_pin"], storage_client_bin=client)
+                for change in (lambda row: row["environment"].update({admission.STORAGE_CLIENT_ENV: "other"}),
+                               lambda row: row.update(entrypoint=["/bin/sh", "-ec", "exec mcli other-command"]),
+                               lambda row: row.update(command=["unreviewed"])):
+                    altered = deepcopy(model)
+                    change(altered["services"]["createbuckets"])
+                    with self.assertRaisesRegex(SwitchConflict, "fixed initialization entrypoint"):
+                        admission._validate(altered, self.project, self.directory, images, storage_client_bin=client)
+
+    def test_storage_client_data_is_ephemeral_bounded_and_not_an_extra_authoritative_volume(self):
+        options = self.settings()
+        model = admission._config(self.docker, self.project, self.directory, self.baseline)
+        images = admission._pinned_images(self.baseline, options["baseline_pin"])
+        self.assertEqual(model["services"]["createbuckets"]["tmpfs"], ["/data:rw,noexec,nosuid,size=8m"])
+        self.assertEqual(model["services"]["createbuckets"].get("volumes", []), [])
+        self.assertEqual(set(model["volumes"]), {"caddydata", "caddyconfig", "pgdata", "miniodata", "newsletter_uploads"})
+        self.assertEqual([(row["type"], row["source"], row["target"]) for row in model["services"]["minio"]["volumes"]],
+                         [("volume", "miniodata", "/data")])
+        for changed in ([], ["/data:rw,noexec,nosuid,size=16m"], ["/data:ro,noexec,nosuid,size=8m"],
+                        ["/data:rw,nosuid,size=8m"], ["/data:rw,noexec,size=8m"],
+                        [admission.STORAGE_CLIENT_DATA_TMPFS, "/cache:rw,size=1m"]):
+            altered = deepcopy(model)
+            altered["services"]["createbuckets"]["tmpfs"] = changed
+            with self.subTest(changed=changed), self.assertRaisesRegex(SwitchConflict, "exact eight-MiB"):
+                admission._validate(altered, self.project, self.directory, images)
+        altered = deepcopy(model)
+        altered["services"]["createbuckets"]["volumes"] = [{"type": "volume", "target": "/data"}]
+        with self.assertRaisesRegex(SwitchConflict, "mount scope"):
+            admission._validate(altered, self.project, self.directory, images)
+        altered = deepcopy(model)
+        altered["services"]["minio"]["tmpfs"] = [admission.STORAGE_CLIENT_DATA_TMPFS]
+        with self.assertRaisesRegex(SwitchConflict, "exact eight-MiB"):
+            admission._validate(altered, self.project, self.directory, images)
+
+    def test_invalid_or_changed_storage_selection_holds_before_compose(self):
+        with patch.object(admission, "_config") as compose:
+            for client in ("sh", "/usr/bin/mc", "mc --other", "$(echo unreviewed)", None):
+                with self.subTest(client=client), self.assertRaisesRegex(SwitchConflict, "must be mc or mcli"):
+                    admission.admit(**self.settings(), storage_client_bin=client)
+            self.environment[admission.STORAGE_CLIENT_ENV] = "mcli"
+            with self.assertRaisesRegex(SwitchConflict, "Pinned storage client differs"):
+                admission.admit(**self.settings())
+            with self.assertRaisesRegex(SwitchConflict, "Pinned storage client differs"):
+                admission.admit(**self.settings(WARPDRIVE_STORAGE_CLIENT_BIN="mc"), storage_client_bin="mcli")
+            self.environment[admission.STORAGE_CLIENT_ENV] = "mc;echo-unreviewed"
+            with self.assertRaisesRegex(SwitchConflict, "must be mc or mcli"):
+                admission.admit(**self.settings())
+            compose.assert_not_called()
+
+    def test_fixed_script_uses_quoted_explicit_client_and_private_config_for_each_operation(self):
+        # These executable shims check shell argument boundaries, not native S3 interoperability.
+        binaries = self.directory / "client-bin"
+        binaries.mkdir(mode=0o700)
+        record = self.directory / "client-arguments.jsonl"
+        shim = ("#!" + sys.executable + "\nimport json,os,sys\n"
+                "with open(os.environ['FIXTURE_RECORD'], 'a') as output:\n"
+                " output.write(json.dumps(sys.argv[1:])+'\\n')\n")
+        for client in ("mc", "mcli"):
+            binary = binaries / client
+            binary.write_text(shim)
+            binary.chmod(0o700)
+        access, secret = "fixture access with spaces", "literal $(untrusted) fixture secret"
+        environment = {"PATH": str(binaries), "FIXTURE_RECORD": str(record), "MINIO_ACCESS_KEY": access,
+                       "MINIO_SECRET_KEY": secret, "MINIO_BUCKET": "owned-bucket"}
+        prefix = ["--config-dir", admission.STORAGE_CLIENT_CONFIG]
+        for client in ("mc", "mcli"):
+            if record.exists():
+                record.unlink()
+            result = subprocess.run(["/bin/sh", "-ec", admission.STORAGE_INIT_SCRIPT],
+                env={**environment, admission.STORAGE_CLIENT_ENV: client}, capture_output=True, timeout=5, check=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual([json.loads(line) for line in record.read_text().splitlines()], [
+                prefix + ["alias", "set", "local", "http://minio:9000", access, secret],
+                prefix + ["mb", "--ignore-existing", "local/owned-bucket"],
+                prefix + ["anonymous", "set", "none", "local/owned-bucket"]])
+        record.unlink()
+        result = subprocess.run(["/bin/sh", "-ec", admission.STORAGE_INIT_SCRIPT],
+            env={**environment, admission.STORAGE_CLIENT_ENV: "mc;unreviewed"}, capture_output=True, timeout=5, check=False)
+        self.assertEqual(result.returncode, 64)
+        self.assertFalse(record.exists())
 
     def test_candidate_effective_runtime_changes_and_unsafe_passive_settings_hold(self):
         with self.assertRaisesRegex(SwitchConflict, "another rendered Compose setting"):

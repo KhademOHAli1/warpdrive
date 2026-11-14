@@ -1,0 +1,475 @@
+"""Daemon-free failure regressions; these do not qualify native Docker recovery."""
+
+from copy import deepcopy
+from hashlib import sha256
+import json
+from pathlib import Path
+import shutil
+import stat
+import sys
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
+import unittest
+from unittest.mock import Mock, patch
+
+import fresh_compose_recovery_smoke as smoke
+from fresh_compose_admission import IMAGES
+from fresh_compose_smoke import FreshSmoke, LONG_RUNNING
+from image_smoke import SmokeError
+import recovery as r
+from test_recovery import FakeRestic, Fixture, put
+from web_switch import SwitchConflict
+
+
+def references():
+    baseline = {service: "example.invalid/" + service + "@sha256:" + f"{index:064x}"
+                for index, names in enumerate(IMAGES.values(), 1) for service in names}
+    return baseline, {**baseline, "app": "example.invalid/new-web@sha256:" + "a" * 64}
+
+
+def runtime_rows(services, *, running=True):
+    return {name: {"Id": f"{index:064x}", "Image": "sha256:" + f"{index + 30:064x}", "RestartCount": 0,
+                   "Name": "/fixture-" + name, "State": {"Running": running and name in LONG_RUNNING,
+                   "Status": "running" if running and name in LONG_RUNNING else "exited", "ExitCode": 0,
+                   "StartedAt": "2026-11-14T00:00:00Z", "Health": {"Status": "healthy"}},
+                   "Config": {"Hostname": name, "Env": ["FIXTURE_ONLY=true"]},
+                   "HostConfig": {"PortBindings": {}}, "Mounts": []}
+            for index, name in enumerate(sorted(services), 1)}
+
+
+class RecoveryCoordinatorTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = Path(self.enterContext(TemporaryDirectory(prefix="wd-cold-unit-"))).resolve()
+        self.baseline, self.candidate = references()
+
+    def test_non_native_host_is_refused_before_files_or_docker(self):
+        with patch("fresh_compose_smoke.platform.system", return_value="Darwin"), patch.object(smoke, "FixtureDocker") as docker:
+            with self.assertRaisesRegex(SwitchConflict, "Linux AMD64 host"):
+                smoke.run(self.baseline, self.candidate, restic=Path("/missing"), restic_pin="a" * 64,
+                          pg_control=Path("/missing-pg"), pg_control_pin="b" * 64, output_parent=self.directory)
+        docker.assert_not_called()
+        self.assertEqual(list(self.directory.iterdir()), [])
+
+    def test_invalid_recovery_storage_client_is_refused_before_native_admission(self):
+        with patch.object(smoke, "_native_root_host") as host, patch.object(smoke, "FixtureDocker") as docker:
+            with self.assertRaisesRegex(SwitchConflict, "must be mc or mcli"):
+                smoke.run(self.baseline, self.candidate, restic=Path("/missing"), restic_pin="a" * 64,
+                          pg_control=Path("/missing-pg"), pg_control_pin="b" * 64, output_parent=self.directory,
+                          storage_client_bin="sh --unreviewed")
+        host.assert_not_called()
+        docker.assert_not_called()
+        self.assertEqual(list(self.directory.iterdir()), [])
+
+    def test_invalid_recovery_parent_is_refused_before_native_admission(self):
+        with patch.object(smoke, "_native_root_host") as host, patch.object(smoke, "FixtureDocker") as docker:
+            with self.assertRaisesRegex(SwitchConflict, "flat unique"):
+                smoke.run(self.baseline, self.candidate, restic=Path("/missing"), restic_pin="a" * 64,
+                          pg_control=Path("/missing-pg"), pg_control_pin="b" * 64, output_parent=self.directory,
+                          cgroup_parent="system.slice")
+        host.assert_not_called()
+        docker.assert_not_called()
+        self.assertEqual(list(self.directory.iterdir()), [])
+
+    def test_pin_changes_are_detected_before_and_after_a_command(self):
+        executable = self.directory / "tool"
+        put(executable, b"fixture-executable", 0o700)
+        pin = sha256(executable.read_bytes()).hexdigest()
+        command = smoke.PinnedCommand({executable: pin})
+        with patch.object(r.Command, "_run", return_value=b"ok") as run:
+            self.assertEqual(command.run([str(executable), "version"]), b"ok")
+            put(executable, b"changed-executable", 0o700)
+            with self.assertRaisesRegex(r.RecoveryError, "differs"):
+                command.run([str(executable), "version"])
+        run.assert_called_once()
+        put(executable, b"fixture-executable", 0o700)
+        with patch.object(r.Command, "_run", side_effect=lambda *_args, **_kwargs: put(executable, b"changed", 0o700)):
+            with self.assertRaisesRegex(r.RecoveryError, "differs"):
+                command.run([str(executable), "version"])
+
+    def test_cold_docker_keeps_binary_pins_around_owned_process_execution(self):
+        executable = self.directory / "docker-fixture"
+        put(executable, b"fixture-docker", 0o700)
+        pin = sha256(executable.read_bytes()).hexdigest()
+        result = SimpleNamespace(returncode=0, stdout="fixture")
+        options = {"timeout": 2, "capture_output": True, "text": True, "check": False, "env": {}}
+        with patch.object(smoke.IsolatedDocker, "__init__", return_value=None) as initialize, \
+                patch.object(smoke, "run_owned_fixture_command", return_value=result) as owned:
+            smoke.FixtureDocker(self.directory / "docker", executable, pin)
+            runner = initialize.call_args.kwargs["runner"]
+            self.assertIs(runner(["docker", "version"], **options), result)
+            owned.assert_called_once_with([str(executable), "version"], **options)
+            put(executable, b"changed-docker", 0o700)
+            with self.assertRaisesRegex(r.RecoveryError, "differs"):
+                runner(["docker", "version"], **options)
+            self.assertEqual(owned.call_count, 1)
+            put(executable, b"fixture-docker", 0o700)
+            owned.side_effect = lambda *_args, **_kwargs: put(executable, b"changed-after-launch", 0o700)
+            with self.assertRaisesRegex(r.RecoveryError, "differs"):
+                runner(["docker", "version"], **options)
+
+    def test_observer_uses_actual_explicit_context_and_same_local_endpoint(self):
+        binary, pg = Path("/fixture/docker"), Path("/fixture/pg_controldata")
+        pins = {binary: "a" * 64, pg: "b" * 64}
+        with patch.object(smoke.PinnedCommand, "_run", return_value=b"[]") as command:
+            observer = smoke.ObserverCommand(SimpleNamespace(endpoint="unix:///fixture/docker.sock"), binary, pg, pins,
+                                             self.directory / "observer-config")
+            observer.run([str(binary), "context", "inspect"])
+            observer.run([str(binary), "ps", "-aq"])
+            observer.run([str(pg), "--version"])
+        calls = [item.args[0] for item in command.call_args_list]
+        self.assertEqual(calls[0], [str(binary), "--config", str(self.directory / "observer-config"), "context", "create",
+                                    "warpdrive-recovery", "--docker", "host=unix:///fixture/docker.sock"])
+        self.assertEqual(calls[1][-3:], ["context", "inspect", "warpdrive-recovery"])
+        self.assertEqual(calls[2][-4:], ["--host", "unix:///fixture/docker.sock", "ps", "-aq"])
+        self.assertEqual(calls[3], [str(pg), "--version"])
+
+    def test_clean_stop_uses_exact_ids_in_ingress_workload_storage_order(self):
+        rows = runtime_rows(self.baseline)
+        docker = Mock()
+
+        def stop(arguments, **_options):
+            selected = next(row for row in rows.values() if row["Id"] == arguments[-1])
+            selected["State"].update(Running=False, Status="exited")
+        docker.run.side_effect = stop
+        fixture = SimpleNamespace(docker=docker, _ready_rows=Mock(return_value=deepcopy(rows)),
+                                  _rows=lambda: deepcopy(rows), _witness=FreshSmoke._witness)
+        observed = smoke._stop(fixture)
+        expected = [service for wave in smoke.STOP_WAVES for service in wave]
+        self.assertEqual([item.args[0][-1] for item in docker.run.call_args_list], [rows[name]["Id"] for name in expected])
+        worker = docker.run.call_args_list[expected.index("worker")]
+        self.assertEqual(worker.args[0][1:3], ["--time", "75"])
+        self.assertEqual(worker.kwargs["timeout"], 85)
+        self.assertTrue(all(not row["State"]["Running"] for row in observed.values()))
+
+    def test_lost_stop_acknowledgement_is_not_retried_and_storage_stays_running(self):
+        rows = runtime_rows(self.baseline)
+        fixture = SimpleNamespace(docker=Mock(), _ready_rows=Mock(return_value=deepcopy(rows)),
+                                  _rows=lambda: deepcopy(rows), _witness=FreshSmoke._witness)
+        fixture.docker.run.side_effect = SmokeError("unknown stop outcome; fixture secret must stay private")
+        with self.assertRaises(SmokeError):
+            smoke._stop(fixture)
+        fixture.docker.run.assert_called_once()
+        self.assertTrue(rows["postgres"]["State"]["Running"])
+
+    def test_frozen_plan_has_exact_five_volumes_and_configuration(self):
+        fixture = FreshSmoke(Mock(), self.directory, self.baseline, self.candidate)
+        source = self.directory / "frozen.yml"
+        put(source, b"synthetic frozen configuration")
+        fixture.configuration_pins = {source: sha256(source.read_bytes()).hexdigest()}
+        plan = smoke._plan(fixture, runtime_rows(self.baseline, running=False), "e" * 64)
+        self.assertEqual(set(plan["volumes"]), set(r.VOLUMES))
+        self.assertEqual(plan["configurationFiles"], [str(self.directory)])
+        put(source, b"changed")
+        with self.assertRaisesRegex(SwitchConflict, "configuration changed"):
+            smoke._plan(fixture, runtime_rows(self.baseline, running=False), "e" * 64)
+
+    def test_writer_key_is_removed_only_after_exact_slot_revocation_and_password_rejection(self):
+        writer, reader = self.directory / "writer", self.directory / "reader"
+        put(reader, b"synthetic-reader-password-" + b"b" * 32 + b"\n")
+        for outcome in (0, 4, 12):
+            put(writer, b"synthetic-writer-password-" + b"a" * 32 + b"\n")
+            responses = [b"", b"{}" if outcome == 0 else r.RecoveryCommandFailure(outcome)]
+            with patch.object(smoke, "_key_command", side_effect=responses), \
+                    patch.object(smoke, "_key_slots", return_value=({"b" * 64}, "b" * 64)):
+                if outcome == 12:
+                    smoke._revoke_writer(Mock(), Path("/fixture/restic"), self.directory / "repository", writer, reader, "a" * 64)
+                    self.assertFalse(writer.exists())
+                else:
+                    with self.assertRaises(r.RecoveryError):
+                        smoke._revoke_writer(Mock(), Path("/fixture/restic"), self.directory / "repository", writer, reader, "a" * 64)
+                    self.assertTrue(writer.exists())
+
+    def test_unresolved_or_foreign_volume_creation_never_advances_to_another_volume(self):
+        fixture = FreshSmoke(Mock(), self.directory, self.baseline, self.candidate)
+        fixture._require_empty = Mock()
+        fixture._verify_volume = Mock()
+        plan = {"volumes": {role: fixture.project + "_" + logical for role, logical in r.VOLUMES.items()}}
+        fixture.docker.json.return_value = {"OSType": "linux", "DockerRootDir": str(self.directory)}
+        fixture.docker.run.side_effect = SmokeError("unknown create outcome")
+        with self.assertRaises(SmokeError):
+            smoke._volume_roots(fixture, plan)
+        fixture.docker.run.assert_called_once()
+        fixture._verify_volume.assert_not_called()
+        fixture.docker.run.reset_mock(side_effect=True)
+        name = plan["volumes"]["postgres"]
+        fixture.docker.run.return_value.stdout = name
+        fixture.docker.json.side_effect = [{"OSType": "linux", "DockerRootDir": str(self.directory)},
+            [{"Name": name, "Driver": "local", "Scope": "local", "Options": {},
+              "Labels": {smoke.OWNER: "foreign-project", "com.docker.compose.volume": "pgdata"},
+              "Mountpoint": str(self.directory / "volume/_data")}]]
+        with self.assertRaisesRegex(r.RecoveryError, "authority differs"):
+            smoke._volume_roots(fixture, plan)
+        fixture.docker.run.assert_called_once()
+        fixture._verify_volume.assert_not_called()
+
+    def _restored_tree(self):
+        root = self.directory / "source" / "volume"
+        put(root / "nested" / "private.data", b"captured synthetic bytes", 0o640)
+        inventory = r.scan([root], smoke.CAPTURE_LIMITS)
+        quarantine = self.directory / "quarantine"
+        quarantine.mkdir(mode=0o700)
+        archived = quarantine / str(root).lstrip("/")
+        shutil.copytree(root, archived)
+        shutil.rmtree(root)
+        root.mkdir(mode=0o700)
+        return root, quarantine, inventory, archived
+
+    def test_materialization_preserves_verified_bytes_modes_and_ownership(self):
+        root, quarantine, inventory, _ = self._restored_tree()
+        smoke._copy_verified_root(quarantine, root, inventory)
+        self.assertEqual(r.scan([root], smoke.CAPTURE_LIMITS, single_link=True), inventory)
+        self.assertEqual(stat.S_IMODE((root / "nested/private.data").stat().st_mode), 0o640)
+
+    def test_materialization_refuses_aliases_changed_bytes_and_nonempty_destination(self):
+        root, quarantine, inventory, archived = self._restored_tree()
+        outside = self.directory / "unrelated"
+        put(outside, b"keep unrelated bytes", 0o640)
+        leaf = archived / "nested/private.data"
+        leaf.unlink()
+        leaf.symlink_to(outside)
+        with self.assertRaises(OSError):
+            smoke._copy_verified_root(quarantine, root, inventory)
+        self.assertEqual(outside.read_bytes(), b"keep unrelated bytes")
+        shutil.rmtree(root)
+        root.mkdir(mode=0o700)
+        leaf.unlink()
+        put(leaf, b"wrong synthetic content", 0o640)
+        with self.assertRaisesRegex(r.RecoveryError, "Quarantine"):
+            smoke._copy_verified_root(quarantine, root, inventory)
+        with self.assertRaisesRegex(r.RecoveryError, "must be empty"):
+            smoke._copy_verified_root(quarantine, root, inventory)
+
+    def _restart_fixture(self):
+        fixture = smoke.RecoveryFixture(Mock(), self.directory, self.baseline, self.candidate)
+        before = runtime_rows(self.baseline, running=False)
+        rows = {name: deepcopy(before[name]) for name in LONG_RUNNING}
+        for index, row in enumerate(rows.values(), 100):
+            row["Id"] = f"{index:064x}"
+            row["Config"]["Hostname"] = "new-container-identity"
+            row["State"]["Status"] = "created"
+        fixture.compose = Mock()
+        fixture._rows = lambda: deepcopy(rows)
+        fixture._verify_volume = Mock()
+        fixture._baseline_readiness = Mock(return_value={"workerFileReaperCompleted": True, "realtimeCloseCode": 4401})
+        fixture._observe = Mock(return_value=({}, {"rows": 119, "sha256": "d" * 64}))
+
+        def command(arguments, **_options):
+            if arguments[0] == "start":
+                row = next(row for row in rows.values() if row["Id"] == arguments[1])
+                row["State"].update(Running=True, Status="running")
+            return SimpleNamespace(returncode=0)
+        fixture.docker.run.side_effect = command
+        inventory = r.scan([self.directory], smoke.CAPTURE_LIMITS)
+        return fixture, before, rows, inventory
+
+    def test_restart_never_replays_initializers_and_uses_full_captured_image_topology(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        with patch.object(smoke, "owned_bridge_forwarder"), patch.object(smoke, "_media"):
+            result = smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
+        args = fixture.compose.call_args.args
+        self.assertEqual(args[:7], ("baseline", "up", "--no-start", "--no-deps", "--no-build", "--pull", "never"))
+        self.assertEqual(set(args[7:]), LONG_RUNNING)
+        starts = [item.args[0][1] for item in fixture.docker.run.call_args_list if item.args[0][0] == "start"]
+        self.assertEqual(starts, [rows[service]["Id"] for wave in smoke.START_WAVES for service in wave])
+        self.assertFalse(result["initializationServicesReplayed"])
+        self.assertTrue(result["migrationLedgerUnchanged"])
+
+    def test_recreated_baseline_replace_label_can_be_absent_from_fresh_restore(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        labels = {smoke.OWNER: fixture.project, "com.docker.compose.service": "app",
+                  "com.docker.compose.config-hash": "frozen-baseline-configuration"}
+        before["app"]["Config"]["Labels"] = {**labels, "com.docker.compose.replace": "f" * 64}
+        rows["app"]["Config"]["Labels"] = dict(labels)
+        captured = deepcopy(before["app"])
+        with patch.object(smoke, "owned_bridge_forwarder"), patch.object(smoke, "_media"):
+            result = smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
+        self.assertTrue(result["migrationLedgerUnchanged"])
+        self.assertEqual(before["app"], captured)
+
+    def test_invalid_replace_or_changed_protected_compose_label_blocks_starts(self):
+        for invalid in ("short-id", "g" * 64, "a" * 63, 123, None):
+            fixture, before, rows, inventory = self._restart_fixture()
+            before["app"]["Config"]["Labels"] = {smoke.OWNER: fixture.project,
+                "com.docker.compose.replace": invalid}
+            rows["app"]["Config"]["Labels"] = {smoke.OWNER: fixture.project}
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(r.RecoveryError, "replacement identity"):
+                smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+            fixture.docker.run.assert_not_called()
+
+        fixture, before, rows, inventory = self._restart_fixture()
+        before["app"]["Config"]["Labels"] = {smoke.OWNER: fixture.project,
+            "com.docker.compose.config-hash": "captured-hash", "com.docker.compose.replace": "a" * 64}
+        rows["app"]["Config"]["Labels"] = {smoke.OWNER: fixture.project,
+            "com.docker.compose.config-hash": "changed-hash"}
+        with self.assertRaisesRegex(r.RecoveryError, "topology differs"):
+            smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+        fixture.docker.run.assert_not_called()
+
+    def test_changed_topology_or_copyup_bytes_block_all_starts(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        rows["worker"]["Config"]["Env"].append("UNREVIEWED=true")
+        with self.assertRaisesRegex(r.RecoveryError, "topology differs"):
+            smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+        fixture.docker.run.assert_not_called()
+        rows["worker"]["Config"]["Env"].pop()
+        put(self.directory / "unexpected-copyup", b"unreviewed Docker volume copy-up")
+        with self.assertRaisesRegex(r.RecoveryError, "creation changed"):
+            smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+        fixture.docker.run.assert_not_called()
+
+    def test_restored_cgroup_parent_must_equal_the_captured_parent_before_any_start(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        parent = "warpdrivequalificationabcdef012345.slice"
+        for name in LONG_RUNNING:
+            before[name]["HostConfig"]["CgroupParent"] = parent
+            rows[name]["HostConfig"]["CgroupParent"] = parent
+        for name in LONG_RUNNING:
+            rows[name]["HostConfig"]["CgroupParent"] = "system.slice"
+            with self.subTest(service=name), self.assertRaisesRegex(r.RecoveryError, "topology differs"):
+                smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+            fixture.docker.run.assert_not_called()
+            rows[name]["HostConfig"]["CgroupParent"] = parent
+        with patch.object(smoke, "owned_bridge_forwarder"), patch.object(smoke, "_media"):
+            smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
+
+    def test_unknown_native_outcome_keeps_resources_and_a_private_redacted_receipt(self):
+        fixture = Mock()
+        fixture.project = "wd-fresh-unit-only"
+        fixture.receipt = {"checks": {}}
+        with patch.object(smoke, "_native_root_host"), \
+                patch.object(smoke, "_binary", side_effect=lambda path, _pin: path), \
+                patch.object(smoke.shutil, "which", return_value=sys.executable), \
+                patch.object(smoke, "PinnedCommand") as command, patch.object(smoke, "FixtureDocker"), \
+                patch.object(smoke, "RecoveryFixture", return_value=fixture) as factory, patch.object(smoke, "_media"), \
+                patch.object(smoke.signal, "signal"), patch.object(smoke.signal, "alarm"), \
+                patch.object(smoke.os, "statvfs", return_value=SimpleNamespace(f_bavail=10 * 1024**3, f_frsize=1)), \
+                patch.object(smoke, "_recover", side_effect=r.RecoveryUnknown("PRIVATE_DO_NOT_SERIALIZE")):
+            command.return_value.run.return_value = b"restic 0.18.0 fixture"
+            result = smoke.run(self.baseline, self.candidate, restic=Path(sys.executable), restic_pin="a" * 64,
+                               pg_control=Path(sys.executable), pg_control_pin="b" * 64, output_parent=self.directory,
+                               storage_client_bin="mcli", cgroup_parent="warpdrivequalificationabcdef012345.slice")
+        self.assertEqual(factory.call_args.kwargs["storage_client_bin"], "mcli")
+        self.assertEqual(result["storageClientBin"], "mcli")
+        self.assertEqual(factory.call_args.kwargs["cgroup_parent"], "warpdrivequalificationabcdef012345.slice")
+        self.assertEqual(result["cgroupParent"], "warpdrivequalificationabcdef012345.slice")
+        fixture.cleanup.assert_not_called()
+        self.assertFalse(result["success"])
+        self.assertTrue(result["manualReconciliationRequired"])
+        self.assertTrue(result["fixtureWritersMayBeRunning"])
+        record = Path(result["outputDirectory"]) / "result.json"
+        raw = record.read_bytes()
+        self.assertNotIn(b"PRIVATE_DO_NOT_SERIALIZE", raw)
+        self.assertEqual(stat.S_IMODE(record.stat().st_mode), 0o600)
+        self.assertEqual(json.loads(raw), result)
+
+
+class CoordinatorFileModelTests(unittest.TestCase):
+    """Execute capture/restore bookkeeping with memory storage, never native evidence."""
+
+    def setUp(self):
+        self.files = Fixture()
+        self.addCleanup(self.files.close)
+        f = self.files
+        baseline, candidate = references()
+        self.fixture = smoke.RecoveryFixture(Mock(), f.configuration.parent, baseline, candidate)
+        self.fixture.configuration_pins = {f.configuration: sha256(f.configuration.read_bytes()).hexdigest()}
+        self.fixture.receipt["checks"]["baseline"] = {"migrationLedger": {"rows": 1, "sha256": "d" * 64}}
+        self.rows = runtime_rows(baseline, running=False)
+
+        class MemoryRestic(FakeRestic, r.Restic):
+            def __init__(self, _binary, _repository, key_file, **options):
+                FakeRestic.__init__(self, f, f.keys.index(key_file))
+                self.command, self.directory = options["command"], None
+        self.restic_class = MemoryRestic
+        self.progress = smoke.Progress(f.root)
+
+        def observe(_plan):
+            return {"roots": [*f.members.values(), str(f.configuration.parent)], "members": f.members,
+                    "fingerprint": "b" * 64, "privateConfiguration": {"syntheticOnly": True},
+                    "scope": "daemon-free-memory-model-not-native"}
+        self.observer = SimpleNamespace(observe=observe)
+
+        def cleanup():
+            for path in f.members.values():
+                if Path(path).exists():
+                    shutil.rmtree(path)
+        self.fixture.cleanup = Mock(side_effect=cleanup)
+
+    def recover(self, *, lost_snapshot_ack=False, failed_independent_readback=False):
+        f = self.files
+        f.store.fail_after_write = lost_snapshot_ack
+        binary, pg, docker = Path("/fixture/restic"), Path("/fixture/pg"), Path("/fixture/docker")
+        pins = {binary: "a" * 64, pg: "b" * 64, docker: "c" * 64}
+
+        def revoke(*_args):
+            f.keys[0].unlink()
+
+        def volume_roots(*_args):
+            for path in f.members.values():
+                Path(path).mkdir(mode=0o700)
+            return {name: Path(path) for name, path in f.members.items()}
+
+        def restarted(_fixture, _before, _ledger, inventory, budget):
+            self.assertFalse(f.keys[0].exists())
+            self.assertFalse((f.root / "capture/recovery-manifest.json").exists())
+            self.assertTrue(self.progress.result["sourceAbsentAtIndependentRestore"])
+            self.assertEqual(r.scan(inventory["roots"], budget), inventory)
+            return {"modelOnly": True, "initializationServicesReplayed": False}
+
+        restore = self.restic_class.restore
+
+        def readback(adapter, *args, **kwargs):
+            if failed_independent_readback and not f.keys[0].exists():
+                raise r.RecoveryError("Synthetic independent readback failed")
+            return restore(adapter, *args, **kwargs)
+
+        with patch.object(smoke, "_stop", return_value=self.rows), \
+                patch.object(smoke, "_initialize_repository", return_value=(f.repo, *f.keys, "e" * 64)), \
+                patch.object(smoke, "_revoke_writer", side_effect=revoke), \
+                patch.object(smoke.r, "Restic", self.restic_class), \
+                patch.object(smoke.r, "DockerColdObserver", return_value=self.observer), \
+                patch.object(self.restic_class, "restore", readback), \
+                patch.object(smoke, "ObserverCommand"), patch.object(smoke, "_volume_roots", side_effect=volume_roots), \
+                patch.object(smoke, "_restart", side_effect=restarted):
+            return smoke._recover(self.fixture, f.root, binary, pg, docker, pins, self.progress)
+
+    def test_actual_coordinator_removes_sources_before_independent_readback_and_keeps_quarantine(self):
+        result = self.recover()
+        self.assertTrue(result["isolatedRestoreBytesVerified"])
+        self.assertTrue(self.progress.result["sourceAbsentAtIndependentRestore"])
+        self.assertTrue(self.progress.result["writerSlotRevoked"])
+        self.assertTrue(self.progress.result["cleanupSuccess"])
+        self.assertEqual(self.files.store.backups, 1)
+        self.assertEqual(self.fixture.cleanup.call_count, 2)
+        self.assertFalse(self.fixture.directory.exists())
+        self.assertTrue((self.files.root / "quarantine").is_dir())
+        self.assertTrue((self.files.root / "verified-receipt.json").is_file())
+        self.assertTrue((self.files.root / "verified-manifest.json").is_file())
+        self.assertTrue(self.files.keys[1].is_file())
+
+    def test_unknown_snapshot_retains_original_source_and_writer_without_replaying_backup(self):
+        with self.assertRaises(r.RecoveryUnknown):
+            self.recover(lost_snapshot_ack=True)
+        self.assertEqual(self.files.store.backups, 1)
+        self.fixture.cleanup.assert_not_called()
+        self.assertTrue(self.files.keys[0].exists())
+        self.assertTrue(Path(self.files.members["postgres"]).exists())
+        self.assertFalse((self.files.root / "quarantine").exists())
+        self.assertNotIn("writerSlotRevoked", self.progress.result)
+
+    def test_failed_independent_readback_keeps_private_evidence_and_cannot_materialize_or_start(self):
+        with self.assertRaisesRegex(r.RecoveryError, "independent readback failed"):
+            self.recover(failed_independent_readback=True)
+        self.assertEqual(self.fixture.cleanup.call_count, 1)
+        self.assertTrue(self.progress.result["sourceAbsentAtIndependentRestore"])
+        self.assertFalse(self.fixture.directory.exists())
+        self.assertFalse(any(Path(path).exists() for path in self.files.members.values()))
+        self.assertTrue((self.files.root / "verified-receipt.json").exists())
+        self.assertTrue((self.files.root / "verified-manifest.json").exists())
+        self.assertTrue(self.files.repo.is_dir())
+        self.assertTrue(self.files.keys[1].exists())
+        self.assertNotIn("restartedFixtureChecks", self.progress.result)
+
+
+if __name__ == "__main__":
+    unittest.main()
