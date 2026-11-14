@@ -556,6 +556,74 @@ class DockerObservationTests(unittest.TestCase):
         with self.assertRaises(r.RecoveryError):
             self.observe()
 
+    def next_web(self):
+        row = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "app")
+        revision = "a" * 40
+        row["Config"].update(User="bun", WorkingDir="/app", Cmd=list(r.NEXT_WEB_COMMAND),
+            Entrypoint=["/usr/local/bin/docker-entrypoint.sh"])
+        row["Config"]["Labels"]["org.opencontainers.image.revision"] = revision
+        row["Config"]["Env"] += ["APP_COMMIT=" + revision, "NEXT_DEPLOYMENT_ID=wd-" + revision]
+        row.update(RestartCount=0)
+        row["State"].update(ExitCode=143, Pid=0, Error="")
+        contract = r.next_web_stop_contract(row, project=self.fixture.plan["project"],
+            expected=self.fixture.plan["containers"]["app"], source_revision=revision)
+        return row, contract
+
+    def test_next143_is_explicit_opt_in_and_retains_raw_exit_with_exact_source_contract(self):
+        row, contract = self.next_web()
+        with self.assertRaisesRegex(r.RecoveryError, "cleanly stopped"):
+            self.observe()
+        self.observer = r.DockerColdObserver("/bin/echo", sys.executable, self.command, next_web_stop=contract)
+        result = self.observe()
+        app = next(value for value in result["privateConfiguration"] if value["service"] == "app")
+        self.assertEqual(app["stopEvidence"], {"exitCode": 143, "contract": r.NEXT_WEB_STOP_KIND})
+        self.assertEqual(row["State"]["ExitCode"], 143)
+
+    def test_opted_next_contract_never_accepts_crash_or_other_service_nonzero(self):
+        row, contract = self.next_web()
+        self.observer = r.DockerColdObserver("/bin/echo", sys.executable, self.command, next_web_stop=contract)
+        for code in (137, 2, 130, 1):
+            row["State"]["ExitCode"] = code
+            with self.subTest(code=code), self.assertRaisesRegex(r.RecoveryError, "cleanly stopped"):
+                self.observe()
+        row["State"]["ExitCode"] = 0
+        for service, code in (("worker", 143), ("newsletter-engine", 2)):
+            other = next(value for value in self.command.rows if value["Config"]["Labels"]["com.docker.compose.service"] == service)
+            other["State"]["ExitCode"] = code
+            with self.subTest(service=service), self.assertRaisesRegex(r.RecoveryError, "cleanly stopped"):
+                self.observe()
+            other["State"]["ExitCode"] = 0
+
+    def test_next_contract_rejects_wrong_command_revision_manual_handler_and_image(self):
+        row, contract = self.next_web()
+        self.observer = r.DockerColdObserver("/bin/echo", sys.executable, self.command, next_web_stop=contract)
+        original = copy.deepcopy(row)
+        changes = (lambda: row["Config"].update(Cmd=["bun", "node_modules/next/dist/bin/next", "start"]),
+                   lambda: row["Config"]["Labels"].update({"org.opencontainers.image.revision": "b" * 40}),
+                   lambda: row["Config"]["Env"].append("NEXT_MANUAL_SIG_HANDLE=1"),
+                   lambda: row.update(Image="sha256:" + "f" * 64),
+                   lambda: row["Config"].update(StopSignal="SIGKILL"))
+        for index, change in enumerate(changes):
+            change()
+            with self.subTest(change=index), self.assertRaises(r.RecoveryError):
+                self.observe()
+            row.clear()
+            row.update(copy.deepcopy(original))
+
+    def test_next143_requires_terminal_pid_flags_finish_and_same_started_process(self):
+        row, contract = self.next_web()
+        self.observer = r.DockerColdObserver("/bin/echo", sys.executable, self.command, next_web_stop=contract)
+        for key, value in (("Pid", 12), ("OOMKilled", True), ("Paused", True), ("Restarting", True),
+                           ("Dead", True), ("Running", True), ("FinishedAt", ""), ("StartedAt", "2026-02-02T00:00:00Z")):
+            previous = row["State"].get(key)
+            row["State"][key] = value
+            with self.subTest(key=key), self.assertRaises(r.RecoveryError):
+                self.observe()
+            row["State"][key] = previous
+        row["RestartCount"] = 1
+        with self.assertRaises(r.RecoveryError):
+            self.observe()
+
     def test_unknown_container_or_shared_storage_is_refused(self):
         added = copy.deepcopy(self.command.rows[0])
         added["Id"] = "f" * 64

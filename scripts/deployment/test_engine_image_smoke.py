@@ -1,7 +1,7 @@
 """Loader/qualification guards only; final Linux containers require native CI."""
 from pathlib import Path
 import base64
-import importlib.util
+from copy import deepcopy
 import gzip
 import io
 import json
@@ -305,6 +305,109 @@ class OwnershipAndCompletionTests(unittest.TestCase):
         self.assertFalse(smoke.required_checks_passed(list(reversed(checks))))
         checks[0]["status"] = "failed"
         self.assertFalse(smoke.required_checks_passed(checks))
+
+
+class GracefulLifecycleTests(unittest.TestCase):
+    def rows(self):
+        before = {"Id": "b" * 64, "Image": "sha256:" + "a" * 64,
+                  "Config": {"Labels": {smoke.OWNER_LABEL: "owned"}, "Cmd": ["./listmonk", "--passive"]},
+                  "HostConfig": {"Memory": 256 * 1024**2, "OomKillDisable": None}, "Mounts": [], "RestartCount": 0,
+                  "State": {"Running": True, "Status": "running", "OOMKilled": False, "Pid": 123}}
+        after = deepcopy(before)
+        after["State"] = {"Running": False, "Status": "exited", "OOMKilled": False, "Restarting": False,
+                          "Paused": False, "Dead": False, "Pid": 0, "ExitCode": 0}
+        return before, after
+
+    def fixture(self, before, after):
+        value = object.__new__(smoke.EngineImageSmoke)
+        value.prefix = "owned"
+        value.report = {"image": {"id": "sha256:" + "a" * 64}}
+        value.serve = SimpleNamespace(name="owned-engine")
+        value.owned = Mock()
+        value.docker = SimpleNamespace(json=Mock(side_effect=[[before], [after]]), run=Mock())
+        return value
+
+    def test_term_and_int_require_independent_zero_exit_pid_and_unchanged_container(self):
+        for selected_signal, operation in (("TERM", ["stop", "--time", "5", "b" * 64]),
+                                            ("INT", ["kill", "--signal", "INT", "b" * 64])):
+            with self.subTest(signal=selected_signal):
+                value = self.fixture(*self.rows())
+                proof = value.graceful_stop(selected_signal)
+                self.assertEqual(proof, {"signal": selected_signal, "containerId": "b" * 64,
+                                         "exitCode": 0, "oomKilled": False, "pid": 0})
+                self.assertEqual(value.docker.run.call_args_list[0].args[0], operation)
+                self.assertEqual(value.docker.run.call_args_list[1].args[0], ["wait", "b" * 64])
+                self.assertEqual(value.owned.call_count, 2)
+
+    def test_acknowledged_stop_cannot_hide_nonzero_oom_live_pid_or_config_drift(self):
+        for mutation in (lambda row: row["State"].update(ExitCode=2),
+                         lambda row: row["State"].update(ExitCode=143),
+                         lambda row: row["State"].update(OOMKilled=True),
+                         lambda row: row["State"].update(Pid=123),
+                         lambda row: row["State"].update(Running=True),
+                         lambda row: row["State"].update(ExitCode=False),
+                         lambda row: row.update(RestartCount=1),
+                         lambda row: row["Config"].update(Cmd=["foreign"]),
+                         lambda row: row["HostConfig"].update(Memory=0),
+                         lambda row: row.update(Id="c" * 64)):
+            before, after = self.rows()
+            mutation(after)
+            value = self.fixture(before, after)
+            with self.subTest(after=after), self.assertRaisesRegex(smoke.SmokeError, "did not finish cleanly"):
+                value.graceful_stop("TERM")
+
+    def test_wrong_image_owner_or_nonrunning_container_refuses_before_signal(self):
+        for mutation in (lambda row: row.update(Image="sha256:" + "c" * 64),
+                         lambda row: row["Config"]["Labels"].update({smoke.OWNER_LABEL: "foreign"}),
+                         lambda row: row["State"].update(Running=False),
+                         lambda row: row.update(Id="short")):
+            before, after = self.rows()
+            mutation(before)
+            value = self.fixture(before, after)
+            with self.assertRaisesRegex(smoke.SmokeError, "exact live owned PID1"):
+                value.graceful_stop("TERM")
+            value.docker.run.assert_not_called()
+        value = self.fixture(*self.rows())
+        with self.assertRaisesRegex(smoke.SmokeError, "admitted.*signals"):
+            value.graceful_stop("KILL")
+        value.docker.run.assert_not_called()
+
+    def test_wait_timeout_propagates_and_never_publishes_graceful_proof(self):
+        value = self.fixture(*self.rows())
+        value.docker.run.side_effect = [None, subprocess.TimeoutExpired("owned wait", 8)]
+        with self.assertRaises(subprocess.TimeoutExpired):
+            value.graceful_stop("INT")
+        self.assertEqual(value.docker.json.call_count, 1)
+
+    def test_readiness_qualifies_both_signals_and_boots_again_after_each(self):
+        value = object.__new__(smoke.EngineImageSmoke)
+        value.ready, value.stop_engine = Mock(), Mock()
+        value.auth = {"Authorization": "synthetic"}
+        ready = (200, json.dumps({"data": {"database": {"status": "ready"},
+                                         "scheduler": {"status": "passive"}, "ready": False}}).encode())
+        value.request = Mock(side_effect=[(403, b""), ready, ready, ready])
+        value.graceful_stop = Mock(side_effect=[{"signal": "TERM", "exitCode": 0}, {"signal": "INT", "exitCode": 0}])
+        proof = value.readiness()
+        self.assertEqual([call.args[0] for call in value.graceful_stop.call_args_list], ["TERM", "INT"])
+        self.assertEqual(value.ready.call_count, 3)
+        self.assertEqual(value.stop_engine.call_count, 1)
+        self.assertTrue(proof["restartReadyAfterBothSignals"])
+        self.assertEqual([item["signal"] for item in proof["gracefulShutdown"]], ["TERM", "INT"])
+
+    def test_unready_restart_prevents_lifecycle_qualification_and_still_stops_owned_runtime(self):
+        value = object.__new__(smoke.EngineImageSmoke)
+        value.ready, value.stop_engine = Mock(), Mock()
+        value.auth = {"Authorization": "synthetic"}
+        ready = {"data": {"database": {"status": "ready"}, "scheduler": {"status": "passive"}, "ready": False}}
+        unready = deepcopy(ready)
+        unready["data"]["database"]["status"] = "unavailable"
+        value.request = Mock(side_effect=[(403, b""), (200, json.dumps(ready).encode()),
+                                          (200, json.dumps(unready).encode())])
+        value.graceful_stop = Mock(return_value={"signal": "TERM", "exitCode": 0})
+        with self.assertRaisesRegex(smoke.SmokeError, "readiness did not recover"):
+            value.readiness()
+        value.graceful_stop.assert_called_once_with("TERM")
+        value.stop_engine.assert_called_once_with()
 
 
 class CleanupQualificationTests(unittest.TestCase):

@@ -484,7 +484,7 @@ def installer_fingerprint(source: Path) -> str:
              if p.is_file() and not p.name.endswith("_test.go")}
     names.update(p.relative_to(source).as_posix() for p in (source / "cmd").rglob("*.sql"))
     names.update(("schema.sql", "cmd/install.go", "cmd/upgrade.go", "cmd/main.go", "cmd/init.go",
-                  "cmd/warpdrive_migrations.go", "cmd/crm_identity.go", "cmd/warpdrive_audiences.go",
+                  "cmd/warpdrive_migrations.go", "cmd/warpdrive_lifecycle.go", "cmd/crm_identity.go", "cmd/warpdrive_audiences.go",
                   "cmd/warpdrive_delivery_store.go", "cmd/warpdrive_readiness.go", "cmd/warpdrive_operational_events.go",
                   "internal/sesfeedback/feedback.go", "internal/sesfeedback/schema.sql"))
     checksums = "".join(f"{digest((source / name).read_bytes())}  {name}\n" for name in sorted(names))
@@ -861,15 +861,55 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
 
     def readiness(self):
         self.ready()
+        stopped = []
         try:
             NATIVE.assert_equal(self.request("/api/warpdrive/readiness")[0], 403, "anonymous readiness denied")
             status, raw = self.request("/api/warpdrive/readiness", self.auth)
             value = json.loads(raw)["data"]
             if status != 200 or value["database"]["status"] != "ready" or value["scheduler"]["status"] != "passive" or value["ready"] is not False:
                 raise SmokeError("Final-image passive readiness evidence is invalid")
+            for selected_signal in ("TERM", "INT"):
+                stopped.append(self.graceful_stop(selected_signal))
+                self.ready()
+                status, raw = self.request("/api/warpdrive/readiness", self.auth)
+                value = json.loads(raw)["data"]
+                if (status != 200 or value["database"]["status"] != "ready"
+                        or value["scheduler"]["status"] != "passive" or value["ready"] is not False):
+                    raise SmokeError("Final-image readiness did not recover after graceful stop")
         finally:
             self.stop_engine()
-        return {"healthSurvived": True, "databaseReady": True, "passiveIsNotDeliveryReady": True, "anonymousDenied": True}
+        return {"healthSurvived": True, "databaseReady": True, "passiveIsNotDeliveryReady": True, "anonymousDenied": True,
+                "gracefulShutdown": stopped, "restartReadyAfterBothSignals": True}
+
+    def graceful_stop(self, selected_signal):
+        """Prove actual PID1 TERM/INT completion; logs or an acknowledgement cannot qualify it."""
+        if selected_signal not in ("TERM", "INT") or self.serve is None:
+            raise SmokeError("Only admitted final-image lifecycle signals are permitted")
+        name = self.serve.name
+        self.owned(name)
+        before, = self.docker.json(["container", "inspect", name])
+        identity = before.get("Id", "")
+        state = before.get("State", {})
+        if (re.fullmatch(r"[a-f0-9]{64}", identity) is None or before.get("Image") != self.report["image"]["id"]
+                or before.get("Config", {}).get("Labels", {}).get(OWNER_LABEL) != self.prefix
+                or state.get("Running") is not True or state.get("Status") != "running"
+                or state.get("OOMKilled") is not False or type(state.get("Pid")) is not int or state["Pid"] <= 0
+                or before.get("RestartCount") != 0):
+            raise SmokeError("Final-image graceful stop requires an exact live owned PID1")
+        operation = (["stop", "--time", "5", identity] if selected_signal == "TERM"
+                     else ["kill", "--signal", "INT", identity])
+        self.docker.run(operation, timeout=12)
+        self.docker.run(["wait", identity], timeout=8)
+        self.owned(name)
+        after, = self.docker.json(["container", "inspect", identity])
+        state = after.get("State", {})
+        if (any(after.get(key) != before.get(key) for key in ("Id", "Image", "Config", "HostConfig", "Mounts", "RestartCount"))
+                or state.get("Status") != "exited" or state.get("Running") is not False
+                or any(state.get(key) is not False for key in ("OOMKilled", "Restarting", "Paused", "Dead"))
+                or type(state.get("Pid")) is not int or state["Pid"] != 0
+                or type(state.get("ExitCode")) is not int or state["ExitCode"] != 0):
+            raise SmokeError("Final-image graceful signal did not finish cleanly")
+        return {"signal": selected_signal, "containerId": identity, "exitCode": 0, "oomKilled": False, "pid": 0}
 
     def legacy_packaging(self):
         if self.old_image is None or self.old_context is None or self.old_context_path is None:

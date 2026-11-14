@@ -12,7 +12,7 @@ for required in 010-optin-confirmation.patch 020-dispatch.patch 025-list-consent
     040-crm-identity.patch 045-sealed-crm-audiences.patch 050-durable-delivery.patch \
     055-crm-attribution.patch 057-archive-preview.patch 058-public-list-embed.patch \
     060-ses-feedback.patch 070-readiness.patch 075-atomic-bulk-delete.patch 080-consent-revocation-events.patch \
-    085-inapp-operational-events.patch 090-explicit-migrations.patch; do
+    085-inapp-operational-events.patch 090-explicit-migrations.patch 095-graceful-shutdown.patch; do
     if [ ! -s "$context/patches/$required" ]; then
         echo "Required Listmonk patch is missing: $required" >&2
         exit 2
@@ -54,7 +54,7 @@ installer_files="$work/installer-files"
 find internal/migrations -type f ! -name '*_test.go' -print > "$installer_files"
 find cmd -type f -name '*.sql' -print >> "$installer_files"
 printf '%s\n' schema.sql cmd/install.go cmd/upgrade.go cmd/main.go cmd/init.go \
-    cmd/warpdrive_migrations.go cmd/crm_identity.go cmd/warpdrive_audiences.go \
+    cmd/warpdrive_migrations.go cmd/warpdrive_lifecycle.go cmd/crm_identity.go cmd/warpdrive_audiences.go \
     cmd/warpdrive_delivery_store.go cmd/warpdrive_readiness.go cmd/warpdrive_operational_events.go \
     internal/sesfeedback/feedback.go internal/sesfeedback/schema.sql >> "$installer_files"
 sort -o "$installer_files" "$installer_files"
@@ -73,6 +73,8 @@ if ! grep -Fq 'map[string]int{"consent": 2, "dispatch": 1, "listConsentMode": 1,
 fi
 
 go_command=${GO:-go}
+CGO_ENABLED=0 GOOS='' GOARCH='' "$go_command" test -count=1 -timeout=20s \
+    cmd/warpdrive_lifecycle.go cmd/warpdrive_lifecycle_test.go
 CGO_ENABLED=0 GOOS='' GOARCH='' "$go_command" build -trimpath -mod=readonly \
     -o "$work/stuffbin" github.com/knadh/stuffbin/stuffbin
 CGO_ENABLED=0 GOOS='' GOARCH='' "$go_command" build -trimpath -mod=readonly \

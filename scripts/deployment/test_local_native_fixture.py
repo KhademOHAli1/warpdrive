@@ -75,6 +75,57 @@ class NativeFixtureTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(fixture.LocalFixtureError):
                 fixture._record(record)
 
+    def engine_origin(self, *, branch=False):
+        source = {"capsule": {"sha256": "c" * 64}}
+        producer = {"runId": 17, "runAttempt": 1, "event": "workflow_dispatch", "ref": "refs/heads/main"}
+        artifact = {"id": 19, "name": f"production-engine-{REVISION}-17-1", "digest": "sha256:" + "d" * 64, "sizeBytes": 200}
+        engine = {"revision": REVISION}
+        if branch:
+            producer["ref"] = "refs/heads/codex/deployment-qualification"
+            engine["fixtureProducer"] = {"qualificationOnly": True, "ref": producer["ref"], "revision": REVISION,
+                                         "sourceCapsuleSha256": source["capsule"]["sha256"]}
+        return engine, producer, artifact, source
+
+    def test_original_main_engine_provenance_remains_the_default(self):
+        values = self.engine_origin()
+        self.assertEqual(fixture._engine_producer(*values), "main-artifact")
+        for event in ("pull_request", "pull_request_target"):
+            values[1]["event"] = event
+            with self.subTest(event=event), self.assertRaises(fixture.LocalFixtureError):
+                fixture._engine_producer(*values)
+
+    def test_branch_engine_requires_an_explicit_capsule_bound_fixture_selection(self):
+        values = self.engine_origin(branch=True)
+        self.assertEqual(fixture._engine_producer(*values), "explicit-fixture-only-branch-artifact")
+        values[0].pop("fixtureProducer")
+        with self.assertRaises(fixture.LocalFixtureError):
+            fixture._engine_producer(*values)
+
+    def test_branch_engine_selection_cannot_borrow_another_ref_revision_or_capsule(self):
+        for change in ({"qualificationOnly": False}, {"qualificationOnly": 1}, {"ref": "refs/heads/main"},
+                       {"ref": "refs/heads/other"}, {"ref": "refs/pull/9/head"}, {"revision": "b" * 40},
+                       {"sourceCapsuleSha256": "e" * 64}, {"extra": "unassessed"}):
+            values = self.engine_origin(branch=True)
+            values[0]["fixtureProducer"].update(change)
+            with self.subTest(change=change), self.assertRaises(fixture.LocalFixtureError):
+                fixture._engine_producer(*values)
+        for change in ({"event": "push"}, {"event": "pull_request"}, {"runId": True}, {"runAttempt": 0}):
+            values = self.engine_origin(branch=True)
+            values[1].update(change)
+            with self.subTest(change=change), self.assertRaises(fixture.LocalFixtureError):
+                fixture._engine_producer(*values)
+
+    def test_engine_artifact_pin_and_closed_fixture_profile_are_not_optional(self):
+        for change in ({"id": True}, {"digest": "sha256:" + "X" * 64}, {"sizeBytes": 0}, {"name": "different"}):
+            values = self.engine_origin(branch=True)
+            values[2].update(change)
+            with self.subTest(change=change), self.assertRaises(fixture.LocalFixtureError):
+                fixture._engine_producer(*values)
+        values = self.engine_origin()
+        values[0]["fixtureProducer"] = None
+        with self.assertRaises(fixture.LocalFixtureError):
+            fixture._engine_producer(*values)
+
     def test_docker_journal_persists_safe_intent_before_action_and_returns_same_result(self):
         receipt, snapshots = {}, []
 

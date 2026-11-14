@@ -41,6 +41,8 @@ MAX_METADATA = 32 * 1024**2
 COLLECTOR_CONFIG = "/run/warpdrive-operations-config.json"
 COLLECTOR_SOCKET_DIR = "/run/warpdrive-operations"
 COLLECTOR_UID = 1000
+NEXT_WEB_STOP_KIND = "pinned-next-start-sigterm-cleanup-v1"
+NEXT_WEB_COMMAND = ["bun", "--bun", "next", "start"]
 LIMITATIONS = [
     "No writer stop/start, installed restore, provider reconciliation or automatic writer resumption.",
     "Independent credentials and uncached readback on one host do not prove off-host acceptance or separate key custody.",
@@ -604,12 +606,74 @@ class ColdObserver(Protocol):
     def observe(self, plan: dict) -> dict: ...
 
 
+def _next_web_contract(value):
+    require(type(value) is dict and set(value) == {"kind", "project", "id", "imageId", "sourceRevision", "configSha256", "startedAt"}
+            and value["kind"] == NEXT_WEB_STOP_KIND and isinstance(value["project"], str) and NAME.fullmatch(value["project"])
+            and isinstance(value["id"], str) and HASH.fullmatch(value["id"])
+            and isinstance(value["imageId"], str) and IMAGE.fullmatch(value["imageId"])
+            and isinstance(value["sourceRevision"], str) and re.fullmatch(r"[a-f0-9]{40}", value["sourceRevision"])
+            and isinstance(value["configSha256"], str) and HASH.fullmatch(value["configSha256"])
+            and isinstance(value["startedAt"], str) and value["startedAt"].startswith("20"),
+            "Exact independently admitted Next Web shutdown contract required")
+    return value
+
+
+def next_web_stop_contract(row, *, project, expected, source_revision):
+    """Opt in only the pinned main84 Next start profile; other observers stay zero-only.
+
+    Its qualified Next start-server cleanup awaits server/request/listener close,
+    then explicitly exits143 for SIGTERM. That status is retained, never rewritten.
+    """
+    config, state = row.get("Config", {}), row.get("State", {})
+    labels, values = config.get("Labels") or {}, config.get("Env")
+    require(type(values) is list and all(type(value) is str and "=" in value for value in values),
+            "Next Web image environment required")
+    environment = {}
+    for value in values:
+        key, content = value.split("=", 1)
+        require(key and key not in environment, "Ambiguous Next Web environment refused")
+        environment[key] = content
+    require(type(expected) is dict and set(expected) == {"id", "imageId"}
+            and row.get("Id") == expected["id"] and row.get("Image") == expected["imageId"]
+            and labels.get("com.docker.compose.project") == project and labels.get("com.docker.compose.service") == "app"
+            and labels.get("org.opencontainers.image.revision") == source_revision
+            and config.get("Cmd") == NEXT_WEB_COMMAND and config.get("Entrypoint") == ["/usr/local/bin/docker-entrypoint.sh"]
+            and config.get("User") == "bun" and config.get("WorkingDir") == "/app"
+            and config.get("StopSignal") in (None, "", "SIGTERM", "15")
+            and environment.get("APP_COMMIT") == source_revision and environment.get("NEXT_DEPLOYMENT_ID") == "wd-" + source_revision
+            and not environment.get("NEXT_MANUAL_SIG_HANDLE"), "Pinned Next Web role, source or graceful signal profile differs")
+    return dict(_next_web_contract({"kind": NEXT_WEB_STOP_KIND, "project": project, **expected,
+        "sourceRevision": source_revision, "configSha256": digest(canonical(config)), "startedAt": state.get("StartedAt")}))
+
+
+def clean_stop_evidence(row, *, service, expected, project, next_web_stop=None):
+    """Keep the ordinary zero-only cold guard; opt-in143 is one exact Web process."""
+    state = row.get("State", {})
+    require(state.get("Status") == "exited" and state.get("Running") is False
+            and state.get("Paused") is False and state.get("Restarting") is False
+            and state.get("Dead") is False and state.get("OOMKilled") is False
+            and isinstance(state.get("FinishedAt"), str) and state["FinishedAt"].startswith("20")
+            and type(state.get("ExitCode")) is int, "Every writer and storage process must be cleanly stopped")
+    code = state["ExitCode"]
+    if code == 0:
+        return {"exitCode": code, "contract": "zero-exit"}
+    require(code == 143 and service == "app" and next_web_stop is not None,
+            "Every writer and storage process must be cleanly stopped")
+    contract = _next_web_contract(next_web_stop)
+    observed = next_web_stop_contract(row, project=project, expected=expected, source_revision=contract["sourceRevision"])
+    require(observed == contract and type(state.get("Pid")) is int and state["Pid"] == 0
+            and row.get("RestartCount") == 0 and state.get("Error", "") == "",
+            "Pinned Next Web graceful shutdown identity or terminal state differs")
+    return {"exitCode": code, "contract": NEXT_WEB_STOP_KIND}
+
+
 class DockerColdObserver:
     """Inspect only. No stop/start/exec, host socket mount or container creation."""
-    def __init__(self, docker, pg_controldata, command=None):
+    def __init__(self, docker, pg_controldata, command=None, *, next_web_stop=None):
         self.docker = str(Path(docker).resolve(strict=True))
         self.pg_control = str(Path(pg_controldata).resolve(strict=True))
         self.command = command or Command()
+        self.next_web_stop = dict(_next_web_contract(next_web_stop)) if next_web_stop is not None else None
 
     def _json(self, *arguments):
         return document(self.command.run([self.docker, *arguments]))
@@ -745,11 +809,7 @@ class DockerColdObserver:
             require(expected is not None and row.get("Id") == expected["id"] and row.get("Image") == expected["imageId"],
                     "Container service or immutable image changed")
             state = row.get("State", {})
-            require(state.get("Status") == "exited" and state.get("Running") is False
-                    and state.get("Paused") is False and state.get("Restarting") is False
-                    and state.get("Dead") is False and state.get("OOMKilled") is False
-                    and state.get("ExitCode") == 0 and state.get("FinishedAt", "").startswith("20"),
-                    "Every writer and storage process must be cleanly stopped")
+            stop = clean_stop_evidence(row, service=service, expected=expected, project=plan["project"], next_web_stop=self.next_web_stop)
             collector_facts = {}
             if service == "operations-collector":
                 collector_dsn, config_digest, collector_socket, socket_identity = self._collector_mounts(row, info)
@@ -775,6 +835,10 @@ class DockerColdObserver:
             identities.append({"id": row["Id"], "imageId": row["Image"], "service": service,
                                "startedAt": state.get("StartedAt"), "finishedAt": state["FinishedAt"],
                                "configurationSha256": digest(canonical(private[-1]))})
+            if stop["exitCode"] != 0:
+                private[-1]["stopEvidence"] = stop
+                identities[-1]["stopEvidence"] = stop
+                identities[-1]["configurationSha256"] = digest(canonical(private[-1]))
         for service, role, destination in (("postgres", "postgres", "/var/lib/postgresql/data"),
                                             ("minio", "objects", "/data"),
                                             ("newsletter-engine", "newsletterMedia", "/listmonk/uploads"),

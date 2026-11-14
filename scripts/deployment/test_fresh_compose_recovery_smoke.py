@@ -31,6 +31,9 @@ def runtime_rows(services, *, running=True):
     return {name: {"Id": f"{index:064x}", "Image": "sha256:" + f"{index + 30:064x}", "RestartCount": 0,
                    "Name": "/fixture-" + name, "State": {"Running": running and name in LONG_RUNNING,
                    "Status": "running" if running and name in LONG_RUNNING else "exited", "ExitCode": 0,
+                   "Paused": False, "Restarting": False, "Dead": False, "OOMKilled": False,
+                   "Pid": index if running and name in LONG_RUNNING else 0, "Error": "",
+                   "FinishedAt": "" if running and name in LONG_RUNNING else "2026-11-14T00:01:00Z",
                    "StartedAt": "2026-11-14T00:00:00Z", "Health": {"Status": "healthy"}},
                    "Config": {"Hostname": name, "Env": ["FIXTURE_ONLY=true"]},
                    "HostConfig": {"PortBindings": {}}, "Mounts": []}
@@ -129,10 +132,11 @@ class RecoveryCoordinatorTests(unittest.TestCase):
 
         def stop(arguments, **_options):
             selected = next(row for row in rows.values() if row["Id"] == arguments[-1])
-            selected["State"].update(Running=False, Status="exited")
+            selected["State"].update(Running=False, Status="exited", Pid=0, FinishedAt="2026-11-14T00:01:00Z")
         docker.run.side_effect = stop
         fixture = SimpleNamespace(docker=docker, _ready_rows=Mock(return_value=deepcopy(rows)),
-                                  _rows=lambda: deepcopy(rows), _witness=FreshSmoke._witness)
+                                  _rows=lambda: deepcopy(rows), _witness=FreshSmoke._witness,
+                                  project="fresh-unit", receipt={"checks": {}})
         observed = smoke._stop(fixture)
         expected = [service for wave in smoke.STOP_WAVES for service in wave]
         self.assertEqual([item.args[0][-1] for item in docker.run.call_args_list], [rows[name]["Id"] for name in expected])
@@ -140,6 +144,56 @@ class RecoveryCoordinatorTests(unittest.TestCase):
         self.assertEqual(worker.args[0][1:3], ["--time", "75"])
         self.assertEqual(worker.kwargs["timeout"], 85)
         self.assertTrue(all(not row["State"]["Running"] for row in observed.values()))
+
+    def test_cold_stop_accepts_only_pinned_next143_and_reports_actual_status(self):
+        rows = runtime_rows(self.baseline)
+        app = rows["app"]
+        revision, project = "a" * 40, "fresh-unit"
+        app["Config"].update(User="bun", WorkingDir="/app", Cmd=list(r.NEXT_WEB_COMMAND),
+            Entrypoint=["/usr/local/bin/docker-entrypoint.sh"],
+            Labels={"com.docker.compose.project": project, "com.docker.compose.service": "app",
+                    "org.opencontainers.image.revision": revision},
+            Env=["APP_COMMIT=" + revision, "NEXT_DEPLOYMENT_ID=wd-" + revision])
+        fixture = SimpleNamespace(docker=Mock(), _ready_rows=Mock(return_value=deepcopy(rows)),
+            _rows=lambda: deepcopy(rows), _witness=FreshSmoke._witness, project=project, receipt={"checks": {}},
+            images={"baseline": {"app": app["Image"]}}, revisions={"baseline": revision})
+
+        def stop(arguments, **_options):
+            row = next(row for row in rows.values() if row["Id"] == arguments[-1])
+            row["State"].update(Running=False, Status="exited", Pid=0, FinishedAt="2026-11-14T00:01:00Z",
+                                ExitCode=143 if row is app else 0)
+
+        fixture.docker.run.side_effect = stop
+        observed = smoke._stop(fixture)
+        self.assertEqual(observed["app"]["State"]["ExitCode"], 143)
+        self.assertEqual(fixture.receipt["checks"]["coldStop"]["app"], {"exitCode": 143, "contract": r.NEXT_WEB_STOP_KIND})
+
+    def test_cold_stop_rejects_wrong143_command_service_revision_and_other_nonzero(self):
+        for change, code, service in (("command", 143, "app"), ("revision", 143, "app"),
+                                      ("service", 143, "worker"), ("crash", 137, "app"), ("error", 2, "app")):
+            rows = runtime_rows(self.baseline)
+            app = rows["app"]
+            revision, project = "a" * 40, "fresh-unit"
+            app["Config"].update(User="bun", WorkingDir="/app", Cmd=list(r.NEXT_WEB_COMMAND),
+                Entrypoint=["/usr/local/bin/docker-entrypoint.sh"],
+                Labels={"com.docker.compose.project": project, "com.docker.compose.service": "app",
+                        "org.opencontainers.image.revision": "b" * 40 if change == "revision" else revision},
+                Env=["APP_COMMIT=" + revision, "NEXT_DEPLOYMENT_ID=wd-" + revision])
+            if change == "command":
+                app["Config"]["Cmd"] = ["bun", "unreviewed.mjs"]
+            fixture = SimpleNamespace(docker=Mock(), _ready_rows=Mock(return_value=deepcopy(rows)),
+                _rows=lambda: deepcopy(rows), _witness=FreshSmoke._witness, project=project, receipt={"checks": {}},
+                images={"baseline": {"app": app["Image"]}}, revisions={"baseline": revision})
+
+            def stop(arguments, **_options):
+                row = next(row for row in rows.values() if row["Id"] == arguments[-1])
+                row["State"].update(Running=False, Status="exited", Pid=0, FinishedAt="2026-11-14T00:01:00Z",
+                                    ExitCode=code if row is rows[service] else 0)
+
+            fixture.docker.run.side_effect = stop
+            with self.subTest(change=change), self.assertRaises(r.RecoveryError):
+                smoke._stop(fixture)
+            self.assertTrue(rows["postgres"]["State"]["Running"])
 
     def test_lost_stop_acknowledgement_is_not_retried_and_storage_stays_running(self):
         rows = runtime_rows(self.baseline)

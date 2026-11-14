@@ -33,6 +33,7 @@ from web_sdk_full_receipt import candidate_input_facts, validate_web_sdk_full_re
 HASH = re.compile(r"[a-f0-9]{64}\Z")
 IMAGE_ID = re.compile(r"sha256:[a-f0-9]{64}\Z")
 REVISION = re.compile(r"[a-f0-9]{40}\Z")
+FIXTURE_REF = re.compile(r"refs/heads/[A-Za-z0-9][A-Za-z0-9_-]{0,63}(?:/[A-Za-z0-9][A-Za-z0-9_-]{0,63}){0,3}\Z")
 SUPPORT = {"caddy": "caddy", "postgres": "postgres", "storage": "minio", "storage_init": "createbuckets", "registry": None}
 CGROUP_ROOT = Path("/sys/fs/cgroup")
 GIB = 1024**3
@@ -257,6 +258,31 @@ def verify_load_archive(original, transport, expected):
     return graph
 
 
+def _engine_producer(engine, producer, artifact, source):
+    """Keep main custody by default; explicitly bind branch tests to this capsule."""
+    _keys(producer, ("runId", "runAttempt", "event", "ref"), "Exact engine producer required")
+    _keys(artifact, ("id", "name", "digest", "sizeBytes"), "Exact engine API artifact required")
+    require(type(producer["runId"]) is int and producer["runId"] > 0
+            and type(producer["runAttempt"]) is int and producer["runAttempt"] > 0
+            and type(artifact["id"]) is int and artifact["id"] > 0 and _match(IMAGE_ID, artifact["digest"])
+            and type(artifact["sizeBytes"]) is int and 0 < artifact["sizeBytes"] <= 512 * 1024**2
+            and artifact["name"] == f"production-engine-{engine['revision']}-{producer['runId']}-{producer['runAttempt']}",
+            "Engine snapshot has no exact artifact provenance")
+    selected = engine.get("fixtureProducer")
+    if selected is None:
+        require("fixtureProducer" not in engine and producer["event"] in {"push", "workflow_dispatch"}
+                and producer["ref"] == "refs/heads/main", "Engine snapshot requires original main provenance")
+        return "main-artifact"
+    _keys(selected, ("qualificationOnly", "ref", "revision", "sourceCapsuleSha256"), "Closed fixture-only producer selection required")
+    require(selected["qualificationOnly"] is True and _match(FIXTURE_REF, selected["ref"])
+            and selected["ref"] != "refs/heads/main" and producer["event"] == "workflow_dispatch"
+            and producer["ref"] == selected["ref"] and selected["revision"] == engine["revision"]
+            and _match(REVISION, selected["revision"]) and _match(HASH, selected["sourceCapsuleSha256"])
+            and selected["sourceCapsuleSha256"] == source["capsule"]["sha256"],
+            "Fixture-only engine producer differs from the explicit source capsule")
+    return "explicit-fixture-only-branch-artifact"
+
+
 def admit(handoff):
     _keys(handoff, TOP, "Exact closed local fixture admission required")
     require(type(handoff["schemaVersion"]) is int and handoff["schemaVersion"] == 1
@@ -326,19 +352,13 @@ def admit(handoff):
             "Peer Web byte custody differs from independently selected archive")
     graphs["web"] = _graph(web["archive"], {"candidate_web": {"configDigest": web["configDigest"], "sourceRevision": web["revision"], "metadata": web["metadata"]}})
     engine = handoff["engine"]
-    _keys(engine, ("revision", "archive", "configDigest", "metadata", "apiAdmission", "report", "contextSha256", "loadAllowed"), "Exact original engine custody handoff required")
+    engine_keys = {"revision", "archive", "configDigest", "metadata", "apiAdmission", "report", "contextSha256", "loadAllowed"}
+    _keys(engine, engine_keys | ({"fixtureProducer"} if "fixtureProducer" in engine else set()), "Exact original engine custody handoff required")
     engine_api, report = _record(engine["apiAdmission"], contents=True), _record(engine["report"], contents=True)
     _keys(engine_api, ("kind", "repository", "workflow", "revision", "contextSha256", "archiveSha256", "reportSha256", "producer", "artifact"),
           "Exact pinned engine operator API snapshot required")
     producer, artifact = engine_api["producer"], engine_api["artifact"]
-    _keys(producer, ("runId", "runAttempt", "event", "ref"), "Exact original main engine producer required")
-    _keys(artifact, ("id", "name", "digest", "sizeBytes"), "Exact engine API artifact required")
-    require(type(producer["runId"]) is int and producer["runId"] > 0 and type(producer["runAttempt"]) is int and producer["runAttempt"] > 0
-            and producer["event"] in {"push", "workflow_dispatch"} and producer["ref"] == "refs/heads/main"
-            and type(artifact["id"]) is int and artifact["id"] > 0 and _match(IMAGE_ID, artifact["digest"])
-            and type(artifact["sizeBytes"]) is int and 0 < artifact["sizeBytes"] <= 512 * 1024**2
-            and artifact["name"] == f"production-engine-{engine['revision']}-{producer['runId']}-{producer['runAttempt']}",
-            "Engine snapshot has no exact original main artifact provenance")
+    producer_scope = _engine_producer(engine, producer, artifact, handoff["source"])
     require(engine_api.get("kind") == "warpdrive-engine-api-handoff" and engine_api.get("repository") == REPO
             and engine_api.get("workflow") == "production-engine.yml" and engine_api.get("revision") == engine["revision"]
             and engine_api.get("contextSha256") == engine["contextSha256"] and engine_api.get("archiveSha256") == engine["archive"]["sha256"]
@@ -363,6 +383,7 @@ def admit(handoff):
         for record in recovery.values():
             _record(record, maximum=128 * 1024**2)
     return {"sourcePin": source_pin, "baseline": loaded, "graphs": graphs, "baselineLoadArchive": load_archive,
+            "engineProducerScope": producer_scope,
             "baselineTransport": {"originalArchiveSha256": original_graph["archiveSha256"], "loadArchiveSha256": graph["archiveSha256"],
                 "payloadBytesUnchanged": True, "originalIndexDigest": original_graph["archiveIndexDigest"],
                 "loadIndexDigest": graph["archiveIndexDigest"], "allSelectedConfigsIndexed": True}}
@@ -484,6 +505,7 @@ def execute(handoff, output, *, move=False, docker_factory=IsolatedDocker, regis
     registry, fixtures_clean, unknown, mutation_pending = None, True, False, False
     try:
         admitted = admit(handoff)
+        receipt["engineProducerScope"] = admitted.get("engineProducerScope", "main-artifact")
         docker = JournalDocker(docker_factory(output / "docker", runner=run_owned_fixture_command), receipt,
                                lambda: _save(output, receipt))
         require(docker.endpoint == handoff["dockerEndpoint"], "Native Docker endpoint differs from selection")

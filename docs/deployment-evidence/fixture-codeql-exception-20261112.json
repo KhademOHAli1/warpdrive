@@ -3,8 +3,8 @@
   "kind": "source-bound-intentional-fixture-plaintext-review",
   "queryId": "py/clear-text-storage-sensitive-data",
   "sourceSha256": {
-    "scripts/deployment/engine_image_smoke.py": "7de91a5d98b353be0224697c23ad4dd276c815543f72baf5d3f0824d82a1f676",
-    "scripts/deployment/test_engine_image_smoke.py": "ebb01c3644d18957948e8c4e83b81f00bed288440e1631f5d8390f9dd21c7887",
+    "scripts/deployment/engine_image_smoke.py": "d838e4261365184ed03de3f2d435b52e0d7f6f36567db22fd01db30278ddc81e",
+    "scripts/deployment/test_engine_image_smoke.py": "07bd35b79f09199ad9a4ecb5f1196e1f2d4a553e2f3b71adaa9c16b3d7d052a1",
     "scripts/deployment/image_smoke.py": "5946899228cfa6beeac88fd2747ab26cc1a25c360e6ef3bb7d521858daeea711",
     ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
   },
@@ -17,10 +17,10 @@
     "state": "open"
   },
   "independentReview": {
-    "path": "docs/deployment-evidence/fixture-engine-file-mode-review-20261113.json",
-    "sha256": "884be9cbe5b0282b85bc5abcbe0281893b8e6d980ed42519e693a30c77454f3c",
-    "reviewer": "/root/modular_images",
-    "scope": "Private default permissions in the three fixture wrappers, exact source and caller continuity with the original descriptor-hardening review."
+    "path": "docs/deployment-evidence/fixture-engine-lifecycle-review-20261114.json",
+    "sha256": "a7efa2321aac7e2bb3431d77da6221eabd6fa6e1862ef6448a808d639841277a",
+    "reviewer": "/root/rollback_review",
+    "scope": "Independent exact-source lifecycle refresh: generated-only plaintext writer and caller continuity, unchanged authority/workflow boundary, and preserved historical review/residuals."
   },
   "rationale": [
     "The actual _FILE probe requires generated plaintext bytes. Runtime callers accept no deployment/user credential input; all current callers were independently reviewed.",

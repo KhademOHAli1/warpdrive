@@ -201,6 +201,8 @@ class RecoveryFixture(FreshSmoke):
 def _stop(fixture):
     admitted = fixture._ready_rows("baseline")
     witness = fixture._witness(admitted)
+    web_stop = None
+    evidence = {}
     for wave in STOP_WAVES:
         for service in wave:
             rows = fixture._rows()
@@ -211,12 +213,21 @@ def _stop(fixture):
             fixture.docker.run(["stop", "--time", str(grace), row["Id"]], timeout=grace + 10)
             stopped = fixture._rows()
             r.require(fixture._witness(stopped) == witness and stopped[service]["State"]["Running"] is False
-                      and stopped[service]["State"]["Status"] == "exited" and stopped[service]["State"]["ExitCode"] == 0,
+                      and stopped[service]["State"]["Status"] == "exited",
                       "Fresh recovery writer did not stop cleanly")
+            if stopped[service]["State"]["ExitCode"] == 143 and service == "app":
+                web_stop = r.next_web_stop_contract(admitted["app"], project=fixture.project,
+                    expected={"id": admitted["app"]["Id"], "imageId": fixture.images["baseline"]["app"]},
+                    source_revision=fixture.revisions["baseline"])
+            evidence[service] = r.clean_stop_evidence(stopped[service], service=service,
+                expected={"id": admitted[service]["Id"], "imageId": admitted[service]["Image"]}, project=fixture.project,
+                next_web_stop=web_stop)
     rows = fixture._rows()
     r.require(set(rows) == set(admitted) and fixture._witness(rows) == witness
-              and all(row["State"]["Running"] is False and row["State"]["Status"] == "exited"
-                      and row["State"]["ExitCode"] == 0 for row in rows.values()), "Fresh recovery cold inventory differs")
+              and all(r.clean_stop_evidence(row, service=service,
+                  expected={"id": admitted[service]["Id"], "imageId": admitted[service]["Image"]}, project=fixture.project,
+                  next_web_stop=web_stop) for service, row in rows.items()), "Fresh recovery cold inventory differs")
+    fixture.receipt["checks"]["coldStop"] = evidence
     return rows
 
 
@@ -484,7 +495,9 @@ def _recover(fixture, directory, restic, pg_control, docker_binary, pins, progre
     journal = r.Journal(directory / "capture")
     _private(directory / "plan.json", r.canonical(plan))
     observer = r.DockerColdObserver(docker_binary, pg_control,
-        ObserverCommand(fixture.docker, docker_binary, pg_control, pins, directory / "observer-docker"))
+        ObserverCommand(fixture.docker, docker_binary, pg_control, pins, directory / "observer-docker"),
+        next_web_stop=(r.next_web_stop_contract(rows["app"], project=fixture.project, expected=plan["containers"]["app"],
+            source_revision=fixture.revisions["baseline"]) if rows["app"]["State"]["ExitCode"] == 143 else None))
     progress.write("cold-capture-intent")
     receipt = r.capture(plan, journal, observer, primary, reader, directory / "capture-restore")
     member = journal.path / "recovery-manifest.json"

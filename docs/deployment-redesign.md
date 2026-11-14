@@ -256,6 +256,14 @@ An expired or changed artifact holds; a receipt hash supplied by the caller is n
 artifact-origin evidence. The four baseline images are verified in place and are
 not rebuilt or reloaded for the fresh fixture.
 
+The separate operator-handoff fixture can test a new Engine before merging it.
+Its default still requires original main provenance. A branch artifact needs an
+explicit `fixtureProducer` selection: qualification-only, exact dispatched branch
+ref and revision, and the independently verified source-capsule hash. The API
+artifact, report, image graph and complete Engine context remain pinned. This
+option grants synthetic fixture evidence; hosted release admission still requires
+main provenance and retains its existing checks.
+
 Supply `fresh_support_images` as a JSON object with exactly `caddy`, `postgres`,
 `storage`, `storage_init` and `registry`, each selecting one immutable
 `repository@sha256:...` reference. Select the supported PostgreSQL 16 profile.
@@ -292,6 +300,13 @@ and remaining resources for inspection. Docker/Compose subprocesses have bounded
 output, time and owned process groups. An uncertain mutating Compose result holds
 the fixture and its registry; it never starts destructive cleanup while the command
 or its outcome is unresolved. A preflight collision never arms cleanup.
+
+The Engine handles TERM/INT through its bounded resource closer and reports a
+nonzero outcome if shutdown cannot finish. Cold recovery retains its zero-exit
+default. The fresh fixture explicitly binds the supported Next Web command,
+configuration, source and immutable image identity when accepting Next's normal
+graceful TERM status 143; the raw exit status remains evidence. Other nonzero
+statuses, unknown commands, identity changes and forced or OOM stops remain held.
 
 Select `fresh_recovery_rehearsal` only with the fresh and Web rehearsals. It uses
 pinned Restic 0.18.0 and the runner's matching PostgreSQL 16 control tool. The cold
