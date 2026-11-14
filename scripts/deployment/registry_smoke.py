@@ -51,6 +51,14 @@ class RegistrySmokeError(SmokeError):
     pass
 
 
+def validate_cgroup_parent(value):
+    # Keep the standalone registry fixture independent of Compose admission.
+    if value is not None and (not isinstance(value, str)
+            or re.fullmatch(r"warpdrivequalification[a-f0-9]{12}\.slice", value) is None):
+        raise RegistrySmokeError("Only an explicit flat unique qualification cgroup parent is supported")
+    return value
+
+
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, request, fp, code, message, headers, new_url):
         raise RegistrySmokeError("Local registry redirect refused")
@@ -261,13 +269,19 @@ class RegistrySmoke:
     def __init__(self, docker: Docker, bundle_dir: Path, expected_revision: str, output_dir: Path,
                  image_refs: dict[str, str] | None = None,
                  clock: Callable[[], float] = time.monotonic,
-                 sleep: Callable[[float], None] = time.sleep):
+                 sleep: Callable[[float], None] = time.sleep, *,
+                 registry_image: str = "registry:2", registry_preloaded: bool = False, cgroup_parent: str | None = None):
+        self.cgroup_parent = validate_cgroup_parent(cgroup_parent)
         if image_refs is not None and set(image_refs) != set(COMPONENTS):
             raise ValueError("All four source image references are required")
         self.docker, self.bundle_dir, self.output_dir = docker, bundle_dir, output_dir
         self.image_refs = ({name: validate_reference(value) for name, value in image_refs.items()}
                            if image_refs is not None else None)
         self.revision = validate_revision(expected_revision)
+        self.registry_image = validate_reference(registry_image)
+        if type(registry_preloaded) is not bool or (registry_preloaded and not re.fullmatch(r"[^@]+@sha256:[a-f0-9]{64}", registry_image)):
+            raise RegistrySmokeError("Preloaded registry requires one immutable content reference")
+        self.registry_preloaded, self.registry_image_id = registry_preloaded, None
         self.clock, self.sleep = clock, sleep
         self.prefix = "wd-registry-smoke-" + uuid.uuid4().hex[:12]
         self.resources: list[tuple[str, str]] = []
@@ -331,8 +345,29 @@ class RegistrySmoke:
                                    "--format", "{{json .Config.Labels}}"], timeout=5)
         if not isinstance(labels, dict) or labels.get(OWNER_LABEL) != self.prefix:
             raise RegistrySmokeError("Registry fixture ownership is not established")
+        if self.cgroup_parent is not None:
+            actual_parent = self.docker.json(["container", "inspect", self.registry_name,
+                                             "--format", "{{json .HostConfig.CgroupParent}}"], timeout=5)
+            if actual_parent != self.cgroup_parent:
+                raise RegistrySmokeError("Registry fixture cgroup parent differs from its selection")
+        if self.registry_preloaded:
+            actual = self.docker.json(["container", "inspect", self.registry_name,
+                                       "--format", "{{json .Image}}"], timeout=5)
+            if not self.registry_image_id or actual != self.registry_image_id:
+                raise RegistrySmokeError("Registry fixture differs from its admitted image")
 
     def setup_registry(self):
+        if self.cgroup_parent is not None and self.docker.run(
+                ["info", "--format", "{{.CgroupDriver}}"], timeout=10).stdout.strip() != "systemd":
+            raise RegistrySmokeError("Selected registry cgroup requires the systemd Docker driver")
+        if self.registry_preloaded:
+            rows = self.docker.json(["image", "inspect", self.registry_image], timeout=10)
+            if (not isinstance(rows, list) or len(rows) != 1 or rows[0].get("Os") != "linux"
+                    or rows[0].get("Architecture") != "amd64"
+                    or self.registry_image not in (rows[0].get("RepoDigests") or [])
+                    or not DIGEST.fullmatch(rows[0].get("Id", ""))):
+                raise RegistrySmokeError("Exact preloaded AMD64 registry image required")
+            self.registry_image_id = rows[0]["Id"]
         root = self.docker.run(["info", "--format", "{{.DockerRootDir}}"], timeout=10).stdout.strip()
         self.root_dir = Path(root)
         if not root.startswith("/") or not self.root_dir.is_dir():
@@ -346,14 +381,15 @@ class RegistrySmoke:
         self.docker.run(["network", "create", "--internal", "--label", f"{OWNER_LABEL}={self.prefix}", network])
         self.resources.append(("container", self.registry_name))
         self.docker.run([
-            "run", "--detach", "--pull", "missing", "--name", self.registry_name,
+            "run", "--detach", "--pull", "never" if self.registry_preloaded else "missing", "--name", self.registry_name,
             "--label", f"{OWNER_LABEL}={self.prefix}", "--network", network,
             "--memory", "384m", "--memory-swap", "384m",
             "--cpus", "1", "--pids-limit", "128", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
             "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=16m",
+            *(["--cgroup-parent", self.cgroup_parent] if self.cgroup_parent is not None else []),
             "--mount", f"type=volume,source={volume},target=/var/lib/registry",
             "--env", "REGISTRY_LOG_LEVEL=error", "--env", "REGISTRY_HTTP_ADDR=0.0.0.0:5000",
-            "--env", f"REGISTRY_HTTP_SECRET={self.registry_secret}", "registry:2",
+            "--env", f"REGISTRY_HTTP_SECRET={self.registry_secret}", self.registry_image,
         ], timeout=120)
         self.owned_registry()
         network_rows = self.docker.json(["network", "inspect", network])
@@ -362,6 +398,7 @@ class RegistrySmoke:
         self.forwarder = owned_bridge_forwarder(
             self.docker, owner_label=OWNER_LABEL, owner=self.prefix, network_name=network,
             container_name=self.registry_name, port=5000, max_connections=8,
+            backpressure=True, inspection_timeout=10,
         ).start()
         authority = loopback_authority(self.forwarder.authority)
         self.report["endpointMetadata"] = {**self.forwarder.target_metadata, "access": "owned-host-loopback-forwarder",
@@ -597,6 +634,8 @@ class RegistrySmoke:
                 labels = json.loads(result.stdout)
                 if not isinstance(labels, dict) or labels.get(OWNER_LABEL) != self.prefix:
                     raise RegistrySmokeError("Owned resource label mismatch")
+                if kind == "container" and (self.registry_preloaded or self.cgroup_parent is not None):
+                    self.owned_registry()
                 self.docker.run([kind, "rm", *(["--force"] if kind == "container" else []), name])
             except Exception:
                 errors.append(f"owned {kind} cleanup failed")

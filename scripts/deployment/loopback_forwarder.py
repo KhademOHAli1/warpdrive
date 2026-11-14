@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import ipaddress
+import math
 import re
 import selectors
 import socket
@@ -125,7 +126,7 @@ class LoopbackForwarder:
                  buffer_bytes: int = 65536, idle_seconds: float = 30,
                  lifetime_seconds: float = 300, connect_seconds: float = 3,
                  total_bytes: int = 32 * 1024 ** 3, connection_bytes: int = 8 * 1024 ** 3,
-                 before_connect: Callable[[], None] | None = None):
+                 before_connect: Callable[[], None] | None = None, backpressure: bool = False):
         try:
             target = ipaddress.IPv4Address(address)
         except ipaddress.AddressValueError as error:
@@ -140,11 +141,14 @@ class LoopbackForwarder:
                 or type(buffer_bytes) is not int or not 1024 <= buffer_bytes <= 262144
                 or type(total_bytes) is not int or not 1 <= total_bytes <= 64 * 1024 ** 3
                 or type(connection_bytes) is not int or not 1 <= connection_bytes <= 16 * 1024 ** 3
+                or type(backpressure) is not bool
                 or not 0.05 <= idle_seconds <= 60 or not 0.1 <= lifetime_seconds <= 600
                 or not 0.05 <= connect_seconds <= 5):
             raise ForwarderError("Forwarder resource limits are invalid")
         self.target = (str(target), port)
         self.max_connections, self.buffer_bytes = max_connections, buffer_bytes
+        self.backpressure = backpressure
+        self.listen_backlog = 32 if backpressure else max_connections
         self.idle_seconds, self.lifetime_seconds, self.connect_seconds = idle_seconds, lifetime_seconds, connect_seconds
         self.byte_limit = total_bytes
         self.connection_byte_limit = connection_bytes
@@ -159,7 +163,7 @@ class LoopbackForwarder:
         self._port = None
         self._counters = {"accepted": 0, "rejected": 0, "connectFailures": 0, "timeouts": 0,
                           "ownershipFailures": 0, "streamLimitReached": 0, "bytesRelayed": 0,
-                          "peakBufferedBytesPerConnection": 0}
+                          "peakBufferedBytesPerConnection": 0, "peakActiveConnections": 0}
 
     @property
     def authority(self):
@@ -178,7 +182,7 @@ class LoopbackForwarder:
         try:
             listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             listener.bind(("127.0.0.1", 0))
-            listener.listen(self.max_connections)
+            listener.listen(self.listen_backlog)
             listener.settimeout(0.2)
             self._listener = listener
             self._port = listener.getsockname()[1]
@@ -191,16 +195,35 @@ class LoopbackForwarder:
 
     def _accept(self):
         while not self._stop.is_set():
+            reserved = False
+            if self.backpressure:
+                # Leave excess connections in the bounded kernel backlog rather
+                # than accepting them into Python and resetting them at the cap.
+                if not self._slots.acquire(timeout=0.1):
+                    continue
+                reserved = True
             try:
                 client, peer = self._listener.accept()
             except socket.timeout:
+                if reserved:
+                    self._slots.release()
                 continue
             except OSError:
+                if reserved:
+                    self._slots.release()
                 break
             if self._stop.is_set():
                 client.close()
+                if reserved:
+                    self._slots.release()
                 break
-            if not ipaddress.IPv4Address(peer[0]).is_loopback or not self._slots.acquire(blocking=False):
+            if not ipaddress.IPv4Address(peer[0]).is_loopback:
+                client.close()
+                if reserved:
+                    self._slots.release()
+                self._count("rejected")
+                continue
+            if not reserved and not self._slots.acquire(blocking=False):
                 client.close()
                 self._count("rejected")
                 continue
@@ -213,6 +236,7 @@ class LoopbackForwarder:
                 worker = threading.Thread(target=self._connection, args=(client,), name="fixture-loopback-stream", daemon=True)
                 self._workers.add(worker)
                 self._counters["accepted"] += 1
+                self._counters["peakActiveConnections"] = max(self._counters["peakActiveConnections"], len(self._workers))
                 worker.start()
 
     def _connection(self, client):
@@ -330,6 +354,7 @@ class LoopbackForwarder:
             return {**self._counters, "activeConnections": len(self._workers),
                     "openSockets": len(self._sockets), "closed": self._stop.is_set(),
                     "maxConnections": self.max_connections, "bufferBytesPerDirection": self.buffer_bytes,
+                    "backpressure": self.backpressure, "listenBacklog": self.listen_backlog,
                     "idleSeconds": self.idle_seconds, "lifetimeSeconds": self.lifetime_seconds,
                     "totalByteLimit": self.byte_limit, "connectionByteLimit": self.connection_byte_limit}
 
@@ -368,12 +393,15 @@ class LoopbackForwarder:
 
 
 def owned_bridge_forwarder(docker, *, owner_label: str, owner: str, network_name: str,
-                           container_name: str, port: int, **limits) -> LoopbackForwarder:
+                           container_name: str, port: int, inspection_timeout: float = 2, **limits) -> LoopbackForwarder:
     """Create a relay whose fixed private destination is reverified before every open."""
+    if type(inspection_timeout) not in (int, float) or not 0 < inspection_timeout <= 10 or not math.isfinite(inspection_timeout):
+        raise ForwarderError("Fresh ownership inspection timeout must be finite and at most ten seconds")
+
     def inspect():
         return bridge_target(
-            docker.json(["network", "inspect", network_name], timeout=2),
-            docker.json(["container", "inspect", container_name], timeout=2),
+            docker.json(["network", "inspect", network_name], timeout=inspection_timeout),
+            docker.json(["container", "inspect", container_name], timeout=inspection_timeout),
             owner_label=owner_label, owner=owner, network_name=network_name,
             container_name=container_name, port=port,
         )

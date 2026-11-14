@@ -45,19 +45,62 @@ EMPTY = {"NEWSLETTER_TEST_RECIPIENTS", "NEWSLETTER_SES_TOPIC_ARN", "NEWSLETTER_S
 OWNER_FIELDS = {"MIGRATION_DATABASE_URL", "MIGRATION_DATABASE_URL_FILE", "POSTGRES_PASSWORD", "POSTGRES_PASSWORD_FILE"}
 MAX_OUTPUT = 512 * 1024
 TIMEOUT = 20
+STORAGE_CLIENT_ENV = "WARPDRIVE_STORAGE_CLIENT_BIN"
+STORAGE_CLIENT_CONFIG = "/tmp/warpdrive-fixture-client"
+STORAGE_CLIENT_DATA_TMPFS = "/data:rw,noexec,nosuid,size=8m"
+STORAGE_FILE_DEFAULTS = frozenset({"MINIO_ACCESS_KEY_FILE", "MINIO_SECRET_KEY_FILE", "MINIO_ROOT_USER_FILE",
+                                   "MINIO_ROOT_PASSWORD_FILE", "MINIO_KMS_SECRET_KEY_FILE", "MINIO_CONFIG_ENV_FILE"})
+STORAGE_CLIENT_GUARD = 'case "$WARPDRIVE_STORAGE_CLIENT_BIN" in mc|mcli) ;; *) exit 64 ;; esac'
+STORAGE_INIT_SCRIPT = """umask 077
+case "$WARPDRIVE_STORAGE_CLIENT_BIN" in mc|mcli) ;; *) exit 64 ;; esac
+until "$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client alias set local http://minio:9000 "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY"; do
+  echo 'waiting for minio'; sleep 2
+done
+"$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client mb --ignore-existing "local/$MINIO_BUCKET"
+"$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client anonymous set none "local/$MINIO_BUCKET"
+"""
+STORAGE_INIT_ENTRYPOINT = ["/bin/sh", "-ec", STORAGE_INIT_SCRIPT.replace("$", "$$")]
 
 
-def _pinned_images(path, expected):
+def validate_storage_client_bin(value):
+    require(isinstance(value, str) and value in {"mc", "mcli"}, "Fresh storage client must be mc or mcli")
+    return value
+
+
+def validate_storage_file_environment(environment):
+    require(type(environment) is dict and all(type(key) is str for key in environment)
+            and {key for key in environment if key.startswith("MINIO_") and key.endswith("_FILE")} == STORAGE_FILE_DEFAULTS
+            and all(environment[key] == "" for key in STORAGE_FILE_DEFAULTS)
+            and all(value == "" for key, value in environment.items() if key.endswith("_FILE")),
+            "Fresh storage file defaults must be explicitly disabled without new file authority")
+    return environment
+
+
+def validate_cgroup_parent(value):
+    require(value is None or (isinstance(value, str)
+            and re.fullmatch(r"warpdrivequalification[a-f0-9]{12}\.slice", value)),
+            "Only an explicit flat unique qualification cgroup parent is supported")
+    return value
+
+
+def _pinned_images(path, expected, *, storage_client_bin="mc"):
+    validate_storage_client_bin(storage_client_bin)
     raw = _private_bytes(path, modes=(0o400, 0o600))
     require(HASH.fullmatch(expected) and sha256(raw).hexdigest() == expected, "Fresh Compose interpolation file differs from its SHA-256 pin")
-    values = {}
+    values, clients = {}, []
     for line in raw.decode("utf-8", "strict").splitlines():
+        if re.match(r"\s*(?:export\s+)?WARPDRIVE_STORAGE_CLIENT_BIN\s*=", line):
+            client = re.fullmatch(r"\s*(?:export\s+)?WARPDRIVE_STORAGE_CLIENT_BIN\s*=\s*(\S+)\s*", line)
+            require(client is not None, "One literal fresh storage client is required")
+            clients.append(validate_storage_client_bin(client[1]))
         match = IMAGE_ASSIGNMENT.fullmatch(line)
         if match and match[1] in IMAGES:
             variable, ref = match.groups()
             require(variable not in values and len(ref) <= 255 and IMAGE.fullmatch(ref), "Each fresh image requires one literal immutable reference")
             values[variable] = ref
     require(set(values) == set(IMAGES), "Exact independent fresh image references required")
+    require(len(clients) <= 1 and (clients[0] if clients else "mc") == storage_client_bin,
+            "Pinned storage client differs from the selected fresh profile")
     return {service: values[variable] for variable, names in IMAGES.items() for service in names}
 
 
@@ -105,7 +148,9 @@ def _mounts(name, service, directory):
     } == named, "Fresh Compose service mount scope differs")
 
 
-def _service(name, service, directory, expected):
+def _service(name, service, directory, expected, *, storage_client_bin="mc", cgroup_parent=None):
+    require(service.get("cgroup_parent") == validate_cgroup_parent(cgroup_parent),
+            "Fresh Compose cgroup parent differs from the explicit fixture selection")
     require(service.get("image") == expected and service.get("pull_policy") == "never"
             and not {"build", "network_mode", "privileged", "volumes_from", "devices", "provider", "configs", "secrets"} & service.keys(),
             "Fresh Compose service image or isolation differs")
@@ -124,10 +169,18 @@ def _service(name, service, directory, expected):
                 "Fresh Compose Caddy ports differ")
     else:
         require(not ports, "Only Caddy may publish ports in the fresh Compose model")
+    require(service.get("tmpfs", []) == ([STORAGE_CLIENT_DATA_TMPFS] if name == "createbuckets" else []),
+            "Fresh storage client requires only its exact eight-MiB writable noexec/nosuid data tmpfs")
     _mounts(name, service, directory)
     environment = service.get("environment", {})
     require(type(environment) is dict and all(environment.get(key, "false") == "false" for key in DISABLED)
             and all(environment.get(key, "") == "" for key in EMPTY), "Fresh Compose newsletter delivery, provider and signup must stay disabled")
+    if name in {"minio", "createbuckets"}:
+        validate_storage_file_environment(environment)
+    if name == "createbuckets":
+        require(environment.get(STORAGE_CLIENT_ENV) == validate_storage_client_bin(storage_client_bin)
+                and service.get("entrypoint") == STORAGE_INIT_ENTRYPOINT and service.get("command") == [],
+                "Fresh storage client or fixed initialization entrypoint differs")
     if name in {"app", "worker", "ws"}:
         require(all(environment.get(key) == "" for key in OWNER_FIELDS), "Fresh Compose runtime inherits a database owner binding")
     if name == "newsletter-engine":
@@ -137,7 +190,9 @@ def _service(name, service, directory, expected):
         require(service.get("command") == ["./listmonk", "--migrate", "--yes", "--config", ""], "Fresh Compose newsletter migration command differs")
 
 
-def _validate(model, project, directory, images):
+def _validate(model, project, directory, images, *, storage_client_bin="mc", cgroup_parent=None):
+    validate_storage_client_bin(storage_client_bin)
+    validate_cgroup_parent(cgroup_parent)
     require(type(model) is dict and model.get("name") == project and set(model["services"]) == SERVICES,
             "Fresh Compose project or service inventory differs")
     networks = model["networks"]
@@ -150,31 +205,34 @@ def _validate(model, project, directory, images):
             and set(value) <= {"name", "driver"} and value.get("driver", "local") == "local" for name, value in volumes.items()),
             "Five project-scoped local storage volumes are required")
     for name, service in model["services"].items():
-        _service(name, service, directory, images[name])
+        _service(name, service, directory, images[name], storage_client_bin=storage_client_bin, cgroup_parent=cgroup_parent)
 
 
-def admit(*, docker, project, directory, baseline_env, baseline_pin, candidate_env, candidate_pin):
+def admit(*, docker, project, directory, baseline_env, baseline_pin, candidate_env, candidate_pin, storage_client_bin="mc"):
+    validate_storage_client_bin(storage_client_bin)
     require(PROJECT.fullmatch(project) and directory != ROOT and not ROOT.is_relative_to(directory),
             "A dedicated fresh Compose project directory is required")
     _directory(directory)
     service_env = directory / ".env"
     service_bytes = _private_bytes(service_env, modes=(0o400, 0o600))
-    images = _pinned_images(baseline_env, baseline_pin)
-    candidate_images = _pinned_images(candidate_env, candidate_pin)
+    images = _pinned_images(baseline_env, baseline_pin, storage_client_bin=storage_client_bin)
+    candidate_images = _pinned_images(candidate_env, candidate_pin, storage_client_bin=storage_client_bin)
     require(candidate_images["app"].rsplit("@", 1)[1] != images["app"].rsplit("@", 1)[1]
             and {**candidate_images, "app": images["app"]} == images, "Fresh candidate must change only the Web image")
     baseline, candidate = (_config(docker, project, directory, path) for path in (baseline_env, candidate_env))
     require(_private_bytes(service_env, modes=(0o400, 0o600)) == service_bytes
-            and _pinned_images(baseline_env, baseline_pin) == images
-            and _pinned_images(candidate_env, candidate_pin) == candidate_images, "Fresh Compose configuration changed during admission")
-    _validate(baseline, project, directory, images)
-    _validate(candidate, project, directory, candidate_images)
+            and _pinned_images(baseline_env, baseline_pin, storage_client_bin=storage_client_bin) == images
+            and _pinned_images(candidate_env, candidate_pin, storage_client_bin=storage_client_bin) == candidate_images,
+            "Fresh Compose configuration changed during admission")
+    _validate(baseline, project, directory, images, storage_client_bin=storage_client_bin)
+    _validate(candidate, project, directory, candidate_images, storage_client_bin=storage_client_bin)
     normalized = deepcopy(candidate)
     normalized["services"]["app"]["image"] = images["app"]
     require(canonical(normalized) == canonical(baseline), "Fresh candidate changes another rendered Compose setting")
     return {"schemaVersion": 1, "kind": "warpdrive-fresh-compose-admission", "project": project, "state": "admitted",
             "baselineModelSha256": content_hash(baseline), "candidateModelSha256": content_hash(candidate),
-            "baselineImages": images, "candidateWebImage": candidate_images["app"], "deploymentAuthorized": False}
+            "baselineImages": images, "candidateWebImage": candidate_images["app"], "storageClientBin": storage_client_bin,
+            "deploymentAuthorized": False}
 
 
 def main(argv=None):
@@ -185,6 +243,7 @@ def main(argv=None):
     for name in ("baseline-env-sha256", "candidate-env-sha256"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--docker", type=Path)
+    parser.add_argument("--storage-client-bin", choices=("mc", "mcli"), default="mc")
     args = parser.parse_args(argv)
     try:
         docker = args.docker if args.docker is not None else shutil.which("docker")
@@ -192,7 +251,8 @@ def main(argv=None):
         docker = Path(docker).resolve(strict=True)
         require(stat.S_ISREG(docker.stat().st_mode) and os.access(docker, os.X_OK), "An executable Docker CLI is required")
         result = admit(docker=docker, project=args.project, directory=args.project_directory, baseline_env=args.baseline_env,
-                       baseline_pin=args.baseline_env_sha256, candidate_env=args.candidate_env, candidate_pin=args.candidate_env_sha256)
+                       baseline_pin=args.baseline_env_sha256, candidate_env=args.candidate_env, candidate_pin=args.candidate_env_sha256,
+                       storage_client_bin=args.storage_client_bin)
         print(json.dumps(result, sort_keys=True))
     except (OSError, ValueError, TypeError, AttributeError, KeyError, SwitchConflict, subprocess.SubprocessError) as error:
         print(json.dumps({"state": "held", "errorType": type(error).__name__}), file=sys.stderr)

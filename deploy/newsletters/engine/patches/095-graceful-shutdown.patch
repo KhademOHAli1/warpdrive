@@ -1,0 +1,382 @@
+diff --git a/cmd/main.go b/cmd/main.go
+--- a/cmd/main.go
++++ b/cmd/main.go
+@@ -313,13 +313,12 @@
+ 	srv := initHTTPServer(cfg, urlCfg, i18n, fs, app)
+ 
+ 	// =========================================================================
+-	// Wait for the reload signal with a callback to gracefully shut down resources.
+-	// The `wait` channel is passed to awaitReload to wait for the callback to finish
+-	// within N seconds, or do a force reload.
+-	signal.Notify(chReload, syscall.SIGHUP)
+-
+-	closerWait := make(chan bool)
+-	<-awaitReload(chReload, closerWait, func() {
++	// TERM/INT must finish the bounded closer before main returns successfully.
++	// HUP retains the existing exec-based reload, including its timeout fallback.
++	signal.Notify(chReload, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT)
++	defer signal.Stop(chReload)
++
++	if err := awaitEngineLifecycle(chReload, func() error {
+ 		stopOperational()
+ 		<-operationalDone
+ 
+@@ -327,7 +326,7 @@
+ 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+ 		defer cancel()
+ 		if err := srv.Shutdown(ctx); err != nil {
+-			lo.Fatal("could not stop newsletter HTTP server; stopping process with schema fence held")
++			return fmt.Errorf("could not stop newsletter HTTP server; schema fence held: %w", err)
+ 		}
+ 
+ 		// Close the campaign manager.
+@@ -340,13 +339,16 @@
+ 		}
+ 
+ 		// Retain the DB pool, its reserved shared fence session, and heartbeat
+-		// throughout reload. Releasing the fence here could admit migration while
+-		// old pipes, cron, bounce or importer callbacks still execute. Successful
++		// until process exit or reload. Releasing the fence here could admit migration
++		// while old pipes, cron, bounce or importer callbacks still execute. Successful
+ 		// syscall.Exec atomically replaces all old Go code and closes its database
+ 		// sockets (Go network sockets are close-on-exec). Exec failure is fatal,
+ 		// with the fence still held; never resume the old runtime unfenced.
+ 
+-		// Signal the close.
+-		closerWait <- true
+-	})
++		return nil
++	}, func() error {
++		return syscall.Exec(os.Args[0], os.Args, os.Environ())
++	}, 3*time.Second); err != nil {
++		lo.Fatal(err)
++	}
+ }
+diff --git a/cmd/init.go b/cmd/init.go
+--- a/cmd/init.go
++++ b/cmd/init.go
+@@ -19,7 +19,6 @@
+ 	"runtime"
+ 	"strconv"
+ 	"strings"
+-	"syscall"
+ 	"time"
+ 
+ 	"github.com/Masterminds/sprig/v3"
+@@ -1043,39 +1042,6 @@
+ 	}
+ }
+ 
+-// awaitReload waits for a SIGHUP signal to reload the app. Every setting change on the UI causes a reload.
+-func awaitReload(sigChan chan os.Signal, closerWait chan bool, closer func()) chan bool {
+-	// The blocking signal handler that main() waits on.
+-	out := make(chan bool)
+-
+-	// Respawn a new process and exit the running one.
+-	respawn := func() {
+-		if err := syscall.Exec(os.Args[0], os.Args, os.Environ()); err != nil {
+-			lo.Fatalf("error spawning process: %v", err)
+-		}
+-		os.Exit(0)
+-	}
+-
+-	// Listen for reload signal.
+-	go func() {
+-		for range sigChan {
+-			lo.Println("reloading on signal ...")
+-
+-			go closer()
+-			select {
+-			case <-closerWait:
+-				// Wait for the closer to finish.
+-				respawn()
+-			case <-time.After(time.Second * 3):
+-				// Or timeout and force close.
+-				respawn()
+-			}
+-		}
+-	}()
+-
+-	return out
+-}
+-
+ // initTplFuncs returns a generic template func map with custom template
+ // functions and sprig template functions.
+ func initTplFuncs(i *i18n.I18n, u *UrlConfig) template.FuncMap {
+diff --git a/cmd/warpdrive_lifecycle.go b/cmd/warpdrive_lifecycle.go
+new file mode 100644
+--- /dev/null
++++ b/cmd/warpdrive_lifecycle.go
+@@ -0,0 +1,69 @@
++package main
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"syscall"
++	"time"
++)
++
++// awaitEngineLifecycle retains the schema fence until process exit or exec.
++// A completed closer is a bounded application-stop contract, not a claim that
++// the legacy manager joins every provider callback before the process exits.
++func awaitEngineLifecycle(signals <-chan os.Signal, closer func() error, reload func() error, timeout time.Duration) error {
++	for received := range signals {
++		stopping := received == syscall.SIGTERM || received == syscall.SIGINT
++		if !stopping && received != syscall.SIGHUP {
++			continue
++		}
++		closed := make(chan error, 1)
++		go func() { closed <- closer() }()
++		timer := time.NewTimer(timeout)
++		var closeErr error
++		completed := false
++		waiting := true
++		for waiting {
++			select {
++			case closeErr = <-closed:
++				timer.Stop()
++				completed, waiting = true, false
++			case pending, ok := <-signals:
++				if !ok {
++					timer.Stop()
++					return errors.New("newsletter lifecycle signal channel closed")
++				}
++				stopping = stopping || pending == syscall.SIGTERM || pending == syscall.SIGINT
++			case <-timer.C:
++				waiting = false
++			}
++		}
++		// The closer and a queued stop signal can become ready together. The
++		// application channel has one slot; consume that pending intent before
++		// deciding to exec a reload.
++		select {
++		case pending, ok := <-signals:
++			if !ok {
++				return errors.New("newsletter lifecycle signal channel closed")
++			}
++			stopping = stopping || pending == syscall.SIGTERM || pending == syscall.SIGINT
++		default:
++		}
++		if completed && closeErr != nil {
++			return fmt.Errorf("newsletter closer failed; schema fence held: %w", closeErr)
++		}
++		if stopping {
++			if !completed {
++				return errors.New("newsletter shutdown deadline exceeded; schema fence held")
++			}
++			return nil
++		}
++		// Preserve the existing bounded HUP force-reload behavior. Exec
++		// replaces all old Go code and closes its database sockets at once.
++		if err := reload(); err != nil {
++			return fmt.Errorf("error spawning newsletter process; schema fence held: %w", err)
++		}
++		return errors.New("newsletter reload returned without replacing the process")
++	}
++	return errors.New("newsletter lifecycle signal channel closed")
++}
+diff --git a/cmd/warpdrive_lifecycle_test.go b/cmd/warpdrive_lifecycle_test.go
+new file mode 100644
+--- /dev/null
++++ b/cmd/warpdrive_lifecycle_test.go
+@@ -0,0 +1,198 @@
++package main
++
++import (
++	"bufio"
++	"bytes"
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"os/exec"
++	"os/signal"
++	"syscall"
++	"testing"
++	"time"
++)
++
++func TestLifecycleChildProcess(t *testing.T) {
++	mode := os.Getenv("WARPDRIVE_LIFECYCLE_CHILD")
++	if mode == "" {
++		return
++	}
++	signals := make(chan os.Signal, 1)
++	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
++	fmt.Println("ready")
++	err := awaitEngineLifecycle(signals, func() error {
++		if mode == "timeout" {
++			select {}
++		}
++		if mode == "error" {
++			return errors.New("synthetic closer error")
++		}
++		return nil
++	}, func() error { return errors.New("stop must not reload") }, 20*time.Millisecond)
++	if err != nil {
++		os.Exit(1)
++	}
++	os.Exit(0)
++}
++
++func TestActualSignalsReturnZeroOnlyForCompletedCloser(t *testing.T) {
++	for _, probe := range []struct {
++		mode   string
++		signal os.Signal
++		exit   int
++	}{{"clean", syscall.SIGTERM, 0}, {"clean", syscall.SIGINT, 0},
++		{"timeout", syscall.SIGTERM, 1}, {"error", syscall.SIGINT, 1}} {
++		t.Run(probe.mode+probe.signal.String(), func(t *testing.T) {
++			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
++			defer cancel()
++			command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestLifecycleChildProcess$")
++			command.Env = append(os.Environ(), "WARPDRIVE_LIFECYCLE_CHILD="+probe.mode)
++			var diagnostic bytes.Buffer
++			command.Stderr = &diagnostic
++			output, err := command.StdoutPipe()
++			if err != nil {
++				t.Fatal(err)
++			}
++			if err := command.Start(); err != nil {
++				t.Fatal(err)
++			}
++			waited := false
++			defer func() {
++				if !waited {
++					command.Process.Kill()
++					command.Wait()
++				}
++			}()
++			ready, err := bufio.NewReader(output).ReadString('\n')
++			if err != nil || ready != "ready\n" {
++				t.Fatalf("signal readiness failed: %q %v", ready, err)
++			}
++			if err := command.Process.Signal(probe.signal); err != nil {
++				t.Fatal(err)
++			}
++			err = command.Wait()
++			waited = true
++			if ctx.Err() != nil || command.ProcessState.ExitCode() != probe.exit {
++				t.Fatalf("signal/closer outcome: exit=%d err=%v context=%v", command.ProcessState.ExitCode(), err, ctx.Err())
++			}
++		})
++	}
++}
++
++func TestStopSignalsWaitForCloserWithoutReload(t *testing.T) {
++	for _, signal := range []os.Signal{syscall.SIGTERM, syscall.SIGINT} {
++		t.Run(signal.String(), func(t *testing.T) {
++			signals := make(chan os.Signal, 1)
++			signals <- signal
++			entered, release, returned := make(chan struct{}), make(chan struct{}), make(chan error, 1)
++			go func() {
++				returned <- awaitEngineLifecycle(signals, func() error {
++					close(entered)
++					<-release
++					return nil
++				}, func() error { t.Error("stop tried to reload"); return nil }, time.Second)
++			}()
++			<-entered
++			select {
++			case err := <-returned:
++				t.Fatalf("returned before closer: %v", err)
++			default:
++			}
++			close(release)
++			if err := <-returned; err != nil {
++				t.Fatalf("clean stop failed: %v", err)
++			}
++		})
++	}
++}
++
++func TestStopDuringReloadWaitsForSameCloserAndPreventsExec(t *testing.T) {
++	for _, stop := range []os.Signal{syscall.SIGTERM, syscall.SIGINT} {
++		signals := make(chan os.Signal, 1)
++		signals <- syscall.SIGHUP
++		entered, release, returned := make(chan struct{}), make(chan struct{}), make(chan error, 1)
++		go func() {
++			returned <- awaitEngineLifecycle(signals, func() error {
++				close(entered)
++				<-release
++				return nil
++			}, func() error { t.Error("reload ignored stop intent"); return nil }, time.Second)
++		}()
++		<-entered
++		signals <- stop
++		close(release)
++		if err := <-returned; err != nil {
++			t.Fatalf("stop during reload failed: %v", err)
++		}
++	}
++}
++
++func TestStopTimeoutAndCloserErrorNeverReturnClean(t *testing.T) {
++	for _, signal := range []os.Signal{syscall.SIGTERM, syscall.SIGINT} {
++		signals := make(chan os.Signal, 1)
++		signals <- signal
++		release, finished := make(chan struct{}), make(chan struct{})
++		err := awaitEngineLifecycle(signals, func() error {
++			defer close(finished)
++			<-release
++			return nil
++		}, func() error { t.Error("timed-out stop tried to reload"); return nil }, time.Millisecond)
++		close(release)
++		<-finished
++		if err == nil {
++			t.Fatal("timed-out stop returned clean")
++		}
++	}
++	failure := errors.New("synthetic closer failure")
++	signals := make(chan os.Signal, 1)
++	signals <- syscall.SIGTERM
++	err := awaitEngineLifecycle(signals, func() error { return failure }, func() error {
++		t.Error("failed closer tried to reload")
++		return nil
++	}, time.Second)
++	if !errors.Is(err, failure) {
++		t.Fatalf("closer failure not retained: %v", err)
++	}
++}
++
++func TestReloadAfterCloserOrTimeoutRetainsExecAndErrors(t *testing.T) {
++	for _, timeout := range []bool{false, true} {
++		signals := make(chan os.Signal, 1)
++		signals <- syscall.SIGHUP
++		release, finished := make(chan struct{}), make(chan struct{})
++		failure := errors.New("synthetic exec failure")
++		reloads := 0
++		err := awaitEngineLifecycle(signals, func() error {
++			defer close(finished)
++			if timeout {
++				<-release
++			}
++			return nil
++		}, func() error { reloads++; return failure }, time.Millisecond)
++		if timeout {
++			close(release)
++		}
++		<-finished
++		if reloads != 1 || !errors.Is(err, failure) {
++			t.Fatalf("reload/exec failure contract differs: calls=%d err=%v", reloads, err)
++		}
++	}
++}
++
++func TestClosedSignalChannelAndReturnedExecCannotClaimCleanStop(t *testing.T) {
++	signals := make(chan os.Signal, 1)
++	close(signals)
++	if err := awaitEngineLifecycle(signals, func() error { return nil }, func() error { return nil }, time.Second); err == nil {
++		t.Fatal("closed signal channel returned clean")
++	}
++	signals = make(chan os.Signal, 2)
++	signals <- syscall.SIGUSR1 // Unrelated signals do not start the closer.
++	signals <- syscall.SIGHUP
++	closes := 0
++	err := awaitEngineLifecycle(signals, func() error { closes++; return nil }, func() error { return nil }, time.Second)
++	if closes != 1 || err == nil {
++		t.Fatalf("returned exec or unrelated signal accepted: closes=%d err=%v", closes, err)
++	}
++}

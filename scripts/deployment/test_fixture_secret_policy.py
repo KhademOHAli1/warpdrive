@@ -44,9 +44,10 @@ class FixtureSecretReviewTests(unittest.TestCase):
         self.assertIs(review["securityGateCleanClaim"], False)
         self.assertIs(review["canonicalAcceptanceClaim"], False)
         witness = review["independentReview"]
-        self.assertEqual(witness["path"], "docs/deployment-evidence/fixture-engine-file-mode-review-20261113.json")
+        self.assertEqual(witness["path"], "docs/deployment-evidence/fixture-engine-lifecycle-review-20261114.json")
+        self.assertEqual(witness["reviewer"], "/root/rollback_review")
         prior = json.loads(pinned_source(ROOT / witness["path"], witness["sha256"]))
-        self.assertEqual(prior["reviewer"], "/root/modular_images")
+        self.assertEqual(prior["reviewer"], "/root/rollback_review")
         self.assertEqual(review["sourceSha256"], prior["sourceSha256"])
         self.assertEqual(prior["currentAnnotations"]["engineQueryAnnotationCount"], 0)
         self.assertIs(prior["method"]["plaintextSinkRemainsDirectAndVisible"], True)
