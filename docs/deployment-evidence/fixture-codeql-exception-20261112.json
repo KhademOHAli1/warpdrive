@@ -18,7 +18,7 @@
   },
   "independentReview": {
     "path": "docs/deployment-evidence/fixture-engine-lifecycle-review-20261114.json",
-    "sha256": "a7efa2321aac7e2bb3431d77da6221eabd6fa6e1862ef6448a808d639841277a",
+    "sha256": "2732480f7b33abd046e89a1ee1177ff8fcfecb6a9a6a141369b9b68ff886490b",
     "reviewer": "/root/rollback_review",
     "scope": "Independent exact-source lifecycle refresh: generated-only plaintext writer and caller continuity, unchanged authority/workflow boundary, and preserved historical review/residuals."
   },

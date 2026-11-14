@@ -31,13 +31,7 @@
     },
     "exactByteComparison": "All four comparison-revision files match the historical review pins. The current image_smoke.py and production-engine.yml remain byte-identical. Both tmpfs/secret helper functions, EngineImageSmoke.__init__, qualify and engine, and the entire SyntheticSecretStorageTests class remain byte-identical to that revision. The reviewed Engine delta adds lifecycle/fingerprint checks and their tests; it does not change the secret source, writer, current callers, environment filtering or workflow credential boundary.",
     "boundedAstCallerScan": {
-      "roots": [
-        "root Python files",
-        "src",
-        "scripts",
-        "deploy",
-        "tools"
-      ],
+      "roots": ["root Python files", "src", "scripts", "deploy", "tools"],
       "files": 311,
       "bytes": 4439845,
       "directAndImportAliasedCallerFiles": [
@@ -61,12 +55,7 @@
     "The new TERM/INT readiness restart checks and installer fingerprint do not modify secret provenance or storage. They do not turn this source review into native Linux, managed scanner, installed-custody or release acceptance."
   ],
   "managedScannerStatus": {
-    "historicalFindingNumbers": [
-      23,
-      24,
-      25,
-      26
-    ],
+    "historicalFindingNumbers": [23, 24, 25, 26],
     "findingAttribution": "Historical finding references are retained through the unchanged prior review and exception record. This refresh observes exact source bytes and caller continuity; it makes no current managed-alert disposition claim.",
     "exactChangedSourceManagedAnalysisRequired": true,
     "findingDismissedByReviewer": false
