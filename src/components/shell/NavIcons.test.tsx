@@ -7,26 +7,20 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   ActivitiesIcon,
   ContactsIcon,
-  DashboardIcon,
-  DealsIcon,
   DocsIcon,
   FinanceNavGlyph,
   InboxIcon,
   LeadsIcon,
-  PipelineIcon,
   SettingsIcon,
 } from "./NavIcons";
 
 afterEach(cleanup);
 
 const ICONS = [
-  ["PipelineIcon", PipelineIcon],
-  ["DealsIcon", DealsIcon],
   ["LeadsIcon", LeadsIcon],
   ["ContactsIcon", ContactsIcon],
   ["ActivitiesIcon", ActivitiesIcon],
   ["InboxIcon", InboxIcon],
-  ["DashboardIcon", DashboardIcon],
   ["SettingsIcon", SettingsIcon],
   ["DocsIcon", DocsIcon],
 ] as const;

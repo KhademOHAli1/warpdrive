@@ -242,6 +242,56 @@ describe("GroupMembersClient", () => {
     expect(screen.getByRole("button", { name: "Remove Ann" })).toBeEnabled();
   });
 
+  it("parks focus during a write and restores a failed Remove to its retry button", async () => {
+    const pending = deferred();
+    removeGroupMemberAction.mockReturnValueOnce(pending.promise);
+    render(<GroupMembersClient groupId="g1" members={[ANN]} allUsers={[BOB]} />);
+    const picker = screen.getByRole("button", { name: "Add member" });
+    const remove = screen.getByRole("button", { name: "Remove Ann" });
+    fireEvent.click(picker);
+    expect(screen.getByRole("combobox", { name: "Search..." })).toBeInTheDocument();
+    fireEvent.click(remove);
+
+    expect(screen.getByRole("list", { name: "Members" })).toHaveFocus();
+    expect(picker).toBeDisabled();
+    expect(screen.queryByRole("combobox", { name: "Search..." })).not.toBeInTheDocument();
+    await act(async () => {
+      pending.settle({ ok: false, error: "unauthorized" });
+      await pending.promise;
+    });
+
+    expect(remove).toHaveFocus();
+    expect(screen.getByRole("alert")).toHaveTextContent(IDENTITY_ERROR_MESSAGES.permission);
+  });
+
+  it.each(["stayed", "moved"])(
+    "recovers successful Remove when focus %s during the write",
+    async (focus) => {
+      const pending = deferred();
+      removeGroupMemberAction.mockReturnValueOnce(pending.promise);
+      const renderRoster = (members: (typeof ANN)[]) => (
+        <>
+          <GroupMembersClient groupId="g1" members={members} allUsers={[BOB]} />
+          <button type="button">Next control</button>
+        </>
+      );
+      const { rerender } = render(renderRoster([ANN]));
+      fireEvent.click(screen.getByRole("button", { name: "Remove Ann" }));
+      const next = screen.getByRole("button", { name: "Next control" });
+      if (focus === "moved") next.focus();
+
+      await act(async () => {
+        pending.settle({ ok: true, value: true });
+        await pending.promise;
+      });
+      rerender(renderRoster([]));
+
+      expect(screen.queryByRole("button", { name: "Remove Ann" })).not.toBeInTheDocument();
+      const picker = screen.getByRole("button", { name: "Add member" });
+      expect(focus === "moved" ? next : picker).toHaveFocus();
+    },
+  );
+
   it("does not report an acknowledged Add as a failed mutation when refresh throws", async () => {
     refresh.mockImplementationOnce(() => {
       throw new Error("navigation interrupted");

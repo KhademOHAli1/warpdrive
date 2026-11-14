@@ -249,6 +249,11 @@ describe("PersonDetailClient", () => {
     expect(screen.getByText("+14155550100")).toBeInTheDocument();
     const header = screen.getByRole("banner");
     expect(header.parentElement?.firstElementChild).toBe(header);
+    expect(within(header).getByRole("link", { name: "Back to people" })).toHaveAttribute(
+      "href",
+      "/contacts/people",
+    );
+    expect(within(header).getByRole("img", { name: person.name })).toHaveClass("rounded-full");
     const dealsSection = within(screen.getByRole("region", { name: "Deals" }));
     expect(dealsSection.getByRole("link", { name: "Acme renewal, status won" })).toHaveAttribute(
       "href",
@@ -262,6 +267,28 @@ describe("PersonDetailClient", () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /contact actions/i }));
     expect(screen.getByRole("menuitem", { name: /merge duplicates/i })).toBeInTheDocument();
+  });
+
+  it("mounts writable person attachments only when the detail Files tab opens", async () => {
+    render(
+      <PersonDetailClient
+        person={person as never}
+        orgName="Acme Inc"
+        defs={[]}
+        canMerge
+        baseCurrency="USD"
+      />,
+    );
+    const panel = within(screen.getByRole("tabpanel"));
+    expect(panel.queryByRole("button", { name: "Upload file" })).not.toBeInTheDocument();
+    const filesTab = screen
+      .getAllByRole("tab", { name: "Files" })
+      .find((tab) => tab.closest("section") === null);
+    if (filesTab === undefined) throw new Error("person detail Files tab not found");
+
+    await userEvent.setup().click(filesTab);
+
+    expect(panel.getByRole("button", { name: "Upload file" })).toBeInTheDocument();
   });
 
   // Wave 4, Task 5: the header shows who owns the person via the shared OwnerBadge.

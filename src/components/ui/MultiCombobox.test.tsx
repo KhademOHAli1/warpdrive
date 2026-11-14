@@ -1,9 +1,29 @@
 // @vitest-environment jsdom
 // src/components/ui/MultiCombobox.test.tsx
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MultiCombobox } from "./MultiCombobox";
+
+function DuplicateGuestPicker({ onChange }: { onChange: (values: string[]) => void }) {
+  const [values, setValues] = useState<string[]>([]);
+  return (
+    <MultiCombobox
+      values={values}
+      onChange={(next) => {
+        onChange(next);
+        setValues(next);
+      }}
+      options={[
+        { value: " guest-1", label: "Mia Silva" },
+        { value: "guest-1 ", label: "Mia Silva" },
+      ]}
+      ariaLabel="Participants"
+    />
+  );
+}
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -112,5 +132,24 @@ describe("MultiCombobox", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Remove Mia Silva" }));
     expect(onChange).toHaveBeenCalledWith(["kai"]);
+  });
+
+  it("chooses both identically labeled guests by keyboard without changing their IDs", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<DuplicateGuestPicker onChange={onChange} />);
+    await user.click(screen.getByRole("button", { name: "Participants" }));
+    const search = screen.getByPlaceholderText("Search...");
+    await user.type(search, "mi si");
+    const [first, second] = screen.getAllByRole("option", { name: "Mia Silva" });
+    if (!first || !second) throw new Error("Expected two separately selectable guests");
+
+    await user.keyboard("{ArrowDown}");
+    await waitFor(() => expect(search).toHaveAttribute("aria-activedescendant", second.id));
+    await user.keyboard("{Enter}{ArrowUp}");
+    await waitFor(() => expect(search).toHaveAttribute("aria-activedescendant", first.id));
+    await user.keyboard("{Enter}");
+
+    expect(onChange.mock.calls).toEqual([[["guest-1 "]], [["guest-1 ", " guest-1"]]]);
   });
 });

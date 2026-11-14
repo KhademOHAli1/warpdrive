@@ -18,7 +18,6 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
-import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import { SavedViewSelectionStatus } from "@/features/saved-filters/SavedViewSelectionStatus";
 import type { SavedView } from "@/features/saved-filters/savedView";
 import { useSavedViewSelection } from "@/features/saved-filters/useSavedViewSelection";
@@ -31,14 +30,13 @@ import { err } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deletePersonAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
+import { ContactDirectoryFilters } from "./ContactDirectoryFilters";
 import {
   ContactDirectoryCriteria,
   ContactDirectoryEmptyState,
   ContactDirectoryToolbar,
 } from "./ContactDirectorySurface";
-import { ContactFilterBuilder } from "./ContactFilterBuilder";
-import { type ContactFilterDefinition, PERSON_FILTER_CONFIG } from "./contactFilterConfig";
-import { personFilterLabels } from "./contactFilterRows";
+import type { ContactFilterDefinition } from "./contactFilterConfig";
 import type { PeopleListRow } from "./PeopleTable";
 import { PeopleTable } from "./PeopleTable";
 import { peopleColumns } from "./peopleColumns";
@@ -229,22 +227,15 @@ export function PeopleList({
               : tContacts("countLabel", { shown: rows.length, total })
         }
       >
-        <SavedViewControl
-          targetEntity="person"
-          allLabel={tContacts("allPeople")}
-          currentDefinition={filter}
-          selectedViewId={savedViewId}
+        <ContactDirectoryFilters
+          entity="person"
+          filter={filter}
+          savedViewId={savedViewId}
           selectedView={savedView}
           selectionBlocked={nativeView.selectionBlocked}
           presentationCapture={presentationCapture}
           onSelectView={selectView}
-        />
-        <ContactFilterBuilder
-          config={PERSON_FILTER_CONFIG}
-          fieldLabels={personFilterLabels(locale)}
-          activeCount={filter?.conditions.length ?? 0}
-          appliedDefinition={filter}
-          onApply={(def) => {
+          onApplyFilter={(def) => {
             // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
             if (blocked) return;
             nativeView.editDefinition(def);

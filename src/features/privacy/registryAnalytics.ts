@@ -358,7 +358,7 @@ export const analyticsInventoryEntry = classifyInventory(
     "derived:src/features/stats/history/inventoryMovementRepository.ts",
     "derived:src/features/stats/history/stageAgingView.ts",
     "derived:src/features/stats/ui/StageAgingPanel.tsx",
-    "sourceReview:src/features/stats/ui/StageAgingPanel.tsx#47394710d463d54d78e8dd7e30e80234e6f05fae3de842408950097cd682037f",
+    "sourceReview:src/features/stats/ui/StageAgingPanel.tsx#56bbfa3659efda95596a7fe8bd265d486017526132b7e0d0c38f6e64e07037ec",
     "sourceReview:docs/analytics/history-capture-proposal.sql#83b04546ed45ed1d2b27497cdb0f087afd623ee7343b1ceb477c428654fbe3f6",
     "sourceReview:docs/analytics/history-activate-locked.sql#139459667dd68f52ed8001ae321774f0d599fb45174334a98f8ca03fc1a2ffa4",
     "sourceReview:docs/analytics/history-storage-dormant.sql#cc7d6a1044943e0a7bbdc3a270d9fb8560fd2a0999eb90e773eb2ff4d0295195",

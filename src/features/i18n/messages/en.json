@@ -32,7 +32,9 @@
     "primary": "Primary",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
-    "collapseShort": "Collapse"
+    "collapseShort": "Collapse",
+    "pinSidebar": "Pin sidebar",
+    "unpinSidebar": "Unpin sidebar"
   },
   "language": {
     "switchTo": "فارسی",

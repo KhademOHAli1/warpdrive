@@ -48,7 +48,6 @@ vi.mock("./threadAttributesActions", () => ({
 // these tests load. Toggle show/hide + failure surfacing live in ThreadPane.privacy.test.tsx.
 vi.mock("./threadVisibilityActions", () => ({ setThreadVisibilityAction: vi.fn() }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-// The reader now renders ReaderTopBar (Back + Archive), which uses the Next router.
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("./ReaderTopBar", () => ({ ReaderTopBar: () => null }));
 
@@ -122,6 +121,21 @@ afterEach(() => {
 });
 
 describe("ThreadPane", () => {
+  it("moves focus to the reader title when a retained conversation becomes active", () => {
+    threadData.mailCapabilities = {
+      read: true,
+      send: false,
+      markRead: false,
+      move: false,
+      trash: false,
+    };
+    const { rerender } = render(<ThreadPane threadId="t1" active={false} />);
+    const title = screen.getByRole("heading", { name: "Renewal" });
+    expect(title).not.toHaveFocus();
+    rerender(<ThreadPane threadId="t1" active />);
+    expect(title).toHaveFocus();
+  });
+
   it("does not auto-mark a readonly mailbox and disables its manual unread action", () => {
     threadData.mailCapabilities = {
       read: true,
@@ -130,13 +144,13 @@ describe("ThreadPane", () => {
       move: false,
       trash: false,
     };
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     expect(prepareReadMock).not.toHaveBeenCalled();
     expect(markReadMock).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Mark as unread" })).toBeDisabled();
   });
   it("marks the thread read exactly once on render, even across a rerender", async () => {
-    const { rerender } = render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    const { rerender } = render(<ThreadPane threadId="t1" />);
     await waitFor(() => expect(markReadMock).toHaveBeenCalledTimes(1));
     expect(prepareReadMock).toHaveBeenCalledExactlyOnceWith("csrf", { threadId: "t1", read: true });
     expect(markReadMock).toHaveBeenCalledWith("csrf", {
@@ -146,7 +160,7 @@ describe("ThreadPane", () => {
 
     // Force a second effect pass with the SAME threadId (e.g. a Composer send triggering
     // refetch()). The once-guard must still hold: no second call.
-    rerender(<ThreadPane threadId="t1" trackingBadge={null} />);
+    rerender(<ThreadPane threadId="t1" />);
     expect(prepareReadMock).toHaveBeenCalledTimes(1);
     expect(markReadMock).toHaveBeenCalledTimes(1);
   });
@@ -156,7 +170,7 @@ describe("ThreadPane", () => {
       ok: false,
       error: { id: ERROR_IDS.MAIL_CAPABILITY_DENIED },
     });
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     await waitFor(() => expect(markReadMock).toHaveBeenCalledTimes(1));
     expect(invalidateUnreadCount).not.toHaveBeenCalled();
   });
@@ -164,13 +178,13 @@ describe("ThreadPane", () => {
   it("invalidates the inbox list (not just the unread count) after marking read on open", async () => {
     // Regression: the opened row's unread dot/bold is read from the cached inbox.list query, so
     // invalidating only unreadCount leaves it looking unread. Mirror mark-unread: invalidate both.
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     await waitFor(() => expect(invalidateUnreadCount).toHaveBeenCalledTimes(1));
     expect(invalidateInboxList).toHaveBeenCalledTimes(1);
   });
 
   it("clicking Mark as unread calls markThreadUnreadAction and invalidates list + count", async () => {
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     // Let the mark-read-on-open effect settle so its invalidation isn't counted as the click's.
     await waitFor(() => expect(invalidateUnreadCount).toHaveBeenCalledTimes(1));
     invalidateUnreadCount.mockClear();
@@ -192,7 +206,7 @@ describe("ThreadPane", () => {
       ok: false,
       error: { id: ERROR_IDS.MAIL_CAPABILITY_DENIED },
     });
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     // Let the mark-read-on-open effect settle so its invalidations aren't mistaken for the click.
     await waitFor(() => expect(invalidateUnreadCount).toHaveBeenCalledTimes(1));
     invalidateUnreadCount.mockClear();
@@ -223,7 +237,7 @@ describe("ThreadPane", () => {
         tracking: [],
       },
     ] as never;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     const link = screen.getByRole("link", { name: /invoice\.pdf/ });
     expect(link).toHaveAttribute("href", "/api/email/attachments/at1");
     threadData.messages = [];
@@ -258,7 +272,7 @@ describe("ThreadPane", () => {
         tracking: [],
       },
     ] as never;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     // "Scrape.do Team" also appears in the sidebar primary-contact card (it is the first sender),
     // so scope the message-header assertion to the presence of at least one occurrence.
     expect(screen.getAllByText("Scrape.do Team").length).toBeGreaterThan(0);
@@ -285,7 +299,7 @@ describe("ThreadPane", () => {
         ],
       },
     ] as never;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     expect(screen.getByText("Opened 2 times")).toBeInTheDocument();
     threadData.messages = [];
   });
@@ -307,7 +321,7 @@ describe("ThreadPane", () => {
         tracking: [],
       },
     ] as never;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     // Scope to the header row: the counterparty also renders in the sidebar card (else matches twice).
     const recipientsRow = screen.getByText("To:").closest("div") as HTMLElement;
     expect(within(recipientsRow).getByText("client@acme.com")).toBeInTheDocument();
@@ -319,13 +333,15 @@ describe("ThreadPane", () => {
     // A non-owned but viewable thread rejects attribute mutations server-side (F5-7): gate the
     // controls behind canCompose so we never offer a clickable control the backend will reject.
     threadData.canCompose = false;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
     expect(screen.queryByLabelText(STRINGS.inbox.followUpStatusLabel)).not.toBeInTheDocument();
   });
 
   it("shows the label / follow-up controls on a thread the user owns", () => {
     threadData.canCompose = true;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
     expect(screen.getByLabelText(STRINGS.inbox.followUpStatusLabel)).toBeInTheDocument();
     threadData.canCompose = false;
   });
@@ -345,7 +361,7 @@ describe("ThreadPane", () => {
         tracking: [{ type: "open", at: "2026-07-04T10:00:00.000Z" }],
       },
     ] as never;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     expect(screen.queryByText(/Opened/)).not.toBeInTheDocument();
     threadData.messages = [];
   });

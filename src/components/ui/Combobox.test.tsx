@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // src/components/ui/Combobox.test.tsx
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { Combobox } from "./Combobox";
@@ -99,6 +99,42 @@ describe("Combobox", () => {
     expect(screen.getByText("Teams")).toBeInTheDocument();
     fireEvent.click(screen.getByText("West Coast"));
     expect(onChange).toHaveBeenCalledWith("t1");
+  });
+
+  it("keeps repeated headings and unlabelled runs in caller order", () => {
+    const onChange = vi.fn();
+    render(
+      <Combobox
+        value=""
+        onChange={onChange}
+        ariaLabel="Owner"
+        options={[
+          { value: "me", label: "Me" },
+          { value: "u1", label: "Ann Owner", group: "People" },
+          { value: "u2", label: "Bob Rep", group: "People" },
+          { value: "t1", label: "West Coast", group: "Teams" },
+          { value: "u3", label: "Charlie Rep", group: "People" },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText("Owner"));
+    const list = screen.getByRole("listbox");
+    const groups = within(list).getAllByRole("group");
+    expect(groups.map((group) => group.getAttribute("aria-labelledby") !== null)).toEqual([
+      false,
+      true,
+      true,
+      true,
+    ]);
+    expect(
+      within(list)
+        .getAllByRole("option")
+        .map((option) => option.textContent),
+    ).toEqual(["Me", "Ann Owner", "Bob Rep", "West Coast", "Charlie Rep"]);
+    const people = within(list).getAllByRole("group", { name: "People" });
+    expect(people.map((group) => within(group).getAllByRole("option").length)).toEqual([2, 1]);
+    fireEvent.click(screen.getByRole("option", { name: "Charlie Rep" }));
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("u3");
   });
 
   it("keeps two options with the same label distinguishable", () => {

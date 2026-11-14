@@ -4,6 +4,7 @@ import type React from "react";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { useDirection } from "./direction";
+import { groupConsecutiveOptions } from "./optionGroups";
 import * as RadixSelect from "./primitives/select";
 
 export interface SelectOption {
@@ -54,31 +55,6 @@ function toInternal(value: string): string {
 
 function fromInternal(value: string): string {
   return value === EMPTY_SENTINEL ? "" : value;
-}
-
-interface OptionSection {
-  key: string;
-  heading: string | undefined;
-  options: SelectOption[];
-}
-
-// Collapse the flat option list into consecutive runs sharing a `group`. Ungrouped options render
-// without a heading, so a caller that never sets `group` gets exactly the previous markup.
-function groupOptions(options: SelectOption[]): OptionSection[] {
-  const sections: OptionSection[] = [];
-  for (const option of options) {
-    const last = sections[sections.length - 1];
-    if (last !== undefined && last.heading === option.group) {
-      last.options.push(option);
-      continue;
-    }
-    sections.push({
-      key: option.group ?? `_${option.value}`,
-      heading: option.group,
-      options: [option],
-    });
-  }
-  return sections;
 }
 
 function SelectItem({ option }: { option: SelectOption }): React.ReactNode {
@@ -182,7 +158,7 @@ export function Select({
         )}
       >
         <div className="p-1">
-          {groupOptions(options).map((section) => (
+          {groupConsecutiveOptions(options).map((section) => (
             <SelectSection key={section.key} heading={section.heading} options={section.options} />
           ))}
         </div>

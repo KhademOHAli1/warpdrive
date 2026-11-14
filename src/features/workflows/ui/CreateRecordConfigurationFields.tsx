@@ -1,8 +1,6 @@
 "use client";
 
-import { useId } from "react";
 import { Button } from "@/components/ui/Button";
-import { Select, type SelectOption } from "@/components/ui/Select";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { useActivitiesMessages } from "@/features/activities/useActivitiesMessages";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -25,7 +23,7 @@ import {
 } from "../workflowRecordCreateContract";
 import { BindingField } from "./BindingField";
 import { configurationIssueKeys } from "./configurationIssueMessage";
-import styles from "./workflowInspector.module.css";
+import { RecordQuerySelect } from "./RecordQuerySelect";
 
 interface Props {
   definition: WorkflowDefinition;
@@ -46,48 +44,6 @@ function literalText(value: unknown): string {
   const parsed = draftBindingSchema.safeParse(value);
   if (!parsed.success || parsed.data.kind !== "value") return "";
   return typeof parsed.data.value === "string" ? parsed.data.value : "";
-}
-
-function LiteralSelect({
-  label,
-  value,
-  options,
-  disabled,
-  error,
-  unavailable,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: SelectOption[];
-  disabled: boolean;
-  error?: string;
-  unavailable?: boolean;
-  onChange: (value: string) => void;
-}) {
-  const t = useAppTranslations("workflows");
-  const errorId = useId();
-  return (
-    <fieldset
-      className="min-w-0 space-y-1"
-      aria-describedby={error === undefined ? undefined : errorId}
-    >
-      <legend className={styles.label}>{label}</legend>
-      <Select
-        ariaLabel={label}
-        value={value}
-        options={options}
-        disabled={disabled}
-        placeholder={t(unavailable === true ? "unavailableValue" : "chooseValue")}
-        onChange={onChange}
-      />
-      {error !== undefined && (
-        <p className="text-xs text-destructive" id={errorId}>
-          {error}
-        </p>
-      )}
-    </fieldset>
-  );
 }
 
 function DealDestination({
@@ -115,11 +71,11 @@ function DealDestination({
     read.isSuccess && stageId !== "" && !stages.some((stage) => stage.id === stageId);
   return (
     <>
-      <LiteralSelect
+      <RecordQuerySelect
         label={t("recordCreateFields.pipelineId")}
         value={pipelineId}
         options={pipelines.map((pipeline) => ({ value: pipeline.id, label: pipeline.name }))}
-        disabled={!editable || pipelines.length === 0}
+        editable={editable && pipelines.length > 0}
         error={unavailablePipeline ? t("configurationOptionUnavailable") : errorFor("pipelineId")}
         unavailable={unavailablePipeline}
         onChange={(value) => {
@@ -128,11 +84,11 @@ function DealDestination({
           }
         }}
       />
-      <LiteralSelect
+      <RecordQuerySelect
         label={t("recordCreateFields.stageId")}
         value={stageId}
         options={stages.map((stage) => ({ value: stage.id, label: stage.name }))}
-        disabled={!editable || stages.length === 0}
+        editable={editable && stages.length > 0}
         error={unavailableStage ? t("configurationOptionUnavailable") : errorFor("stageId")}
         unavailable={unavailableStage}
         onChange={(value) => {
@@ -169,10 +125,10 @@ function PriorityField({
   const t = useAppTranslations("workflows");
   const activity = useActivitiesMessages();
   return (
-    <LiteralSelect
+    <RecordQuerySelect
       label={t("recordCreateFields.priority")}
       value={literalText(value)}
-      disabled={!editable}
+      editable={editable}
       options={[
         { value: "", label: activity.noPriority },
         ...ACTIVITY_PRIORITY_KEYS.map((key) => ({ value: key, label: activity.priorities[key] })),
@@ -263,10 +219,10 @@ export function CreateRecordConfigurationFields({
 
   return (
     <>
-      <LiteralSelect
+      <RecordQuerySelect
         label={t("recordCreateObject")}
         value={entity ?? ""}
-        disabled={!editable}
+        editable={editable}
         options={recordCreateEntities.map((value) => ({
           value,
           label: t(`recordCreateObjects.${value}`),

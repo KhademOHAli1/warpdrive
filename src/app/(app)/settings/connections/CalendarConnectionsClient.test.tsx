@@ -151,9 +151,11 @@ it("keeps authoritative account status and never claims synchronization from a c
   fixture.search = "googleConnect=connected";
   show();
   expect(screen.getByText("No Google Calendar account is connected.")).toBeInTheDocument();
-  expect(
-    screen.getByText("Google authorization finished. Check the account status below."),
-  ).toBeInTheDocument();
+  const callback = screen.getByRole("status");
+  expect(callback).toHaveTextContent(
+    "Google authorization finished. Check the account status below.",
+  );
+  expect(callback).toHaveClass("text-sm", "text-muted-foreground");
   expect(screen.queryByText("Account connected")).not.toBeInTheDocument();
 });
 it("renders account connection separately from calendar synchronization", () => {

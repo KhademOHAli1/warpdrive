@@ -5,10 +5,15 @@ import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import type { SavedView } from "@/features/saved-filters/savedView";
 import type { SavedViewPresentationCapture } from "@/features/saved-filters/viewPresentation";
 import { ContactFilterBuilder } from "./ContactFilterBuilder";
-import { type ContactFilterDefinition, ORG_FILTER_CONFIG } from "./contactFilterConfig";
-import { orgFilterLabels } from "./contactFilterRows";
+import {
+  type ContactFilterDefinition,
+  ORG_FILTER_CONFIG,
+  PERSON_FILTER_CONFIG,
+} from "./contactFilterConfig";
+import { orgFilterLabels, personFilterLabels } from "./contactFilterRows";
 
-export interface OrgsListToolbarProps {
+interface ContactDirectoryFiltersProps {
+  entity: "person" | "organization";
   filter: ContactFilterDefinition | null;
   savedViewId: string | null;
   selectedView?: SavedView | null;
@@ -18,7 +23,8 @@ export interface OrgsListToolbarProps {
   onApplyFilter: (def: ContactFilterDefinition | null) => void;
 }
 
-export function OrgsListToolbar({
+export function ContactDirectoryFilters({
+  entity,
   filter,
   savedViewId,
   selectedView,
@@ -26,15 +32,16 @@ export function OrgsListToolbar({
   presentationCapture,
   onSelectView,
   onApplyFilter,
-}: OrgsListToolbarProps): React.ReactNode {
+}: ContactDirectoryFiltersProps): React.ReactNode {
   const tContacts = useAppTranslations("contacts");
   const locale = useLocale();
+  const isPerson = entity === "person";
 
   return (
-    <div className="flex items-center gap-2">
+    <>
       <SavedViewControl
-        targetEntity="organization"
-        allLabel={tContacts("allOrganizations")}
+        targetEntity={entity}
+        allLabel={tContacts(isPerson ? "allPeople" : "allOrganizations")}
         currentDefinition={filter}
         selectedViewId={savedViewId}
         selectedView={selectedView}
@@ -43,12 +50,12 @@ export function OrgsListToolbar({
         onSelectView={onSelectView}
       />
       <ContactFilterBuilder
-        config={ORG_FILTER_CONFIG}
-        fieldLabels={orgFilterLabels(locale)}
+        config={isPerson ? PERSON_FILTER_CONFIG : ORG_FILTER_CONFIG}
+        fieldLabels={isPerson ? personFilterLabels(locale) : orgFilterLabels(locale)}
         activeCount={filter?.conditions.length ?? 0}
         appliedDefinition={filter}
         onApply={onApplyFilter}
       />
-    </div>
+    </>
   );
 }

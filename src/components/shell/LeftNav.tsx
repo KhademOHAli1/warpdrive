@@ -14,14 +14,46 @@ export function LeftNav({ initialExpanded = false }: { initialExpanded?: boolean
   const messages = useMessages();
   const rtl = useLocale() === "fa";
   const closeMobile = (): void => sidebar.setMobileOpen(false);
+  const closePeek = (): void => sidebar.setPeeking(false);
+  const expanded = sidebar.expanded || sidebar.peeking;
   return (
     <>
       <aside
         className={styles.sidebar}
-        data-sidebar-state={sidebar.expanded ? "expanded" : "collapsed"}
+        data-sidebar-state={
+          sidebar.expanded ? "expanded" : sidebar.peeking ? "peeking" : "collapsed"
+        }
+        onPointerLeave={(event) => {
+          if (!event.currentTarget.querySelector(":focus-visible")) closePeek();
+        }}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) closePeek();
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "Escape" || sidebar.expanded || !sidebar.peeking) return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (event.target instanceof Element) {
+            event.target
+              .closest("[data-sidebar-branch]")
+              ?.querySelector<HTMLButtonElement>("button")
+              ?.focus();
+          }
+          closePeek();
+        }}
       >
-        <SidebarChrome expanded={sidebar.expanded} />
-        <SidebarMenu expanded={sidebar.expanded} onToggle={sidebar.toggle} />
+        <div className={styles.sidebarPanel}>
+          <SidebarChrome expanded={expanded} onNavigate={closePeek} />
+          <SidebarMenu
+            expanded={expanded}
+            pinnedExpanded={sidebar.expanded}
+            onToggle={sidebar.toggle}
+            onNavigate={closePeek}
+            onRequestExpand={() => {
+              if (!sidebar.expanded) sidebar.setPeeking(true);
+            }}
+          />
+        </div>
       </aside>
       <Sheet open={sidebar.mobileOpen} onOpenChange={sidebar.setMobileOpen}>
         <SheetContent

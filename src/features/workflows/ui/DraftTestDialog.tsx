@@ -10,11 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
-import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { simulateWorkflowDraftAction } from "../actions";
@@ -35,6 +32,7 @@ import {
 import { compileWorkflowIteratorGraph } from "../workflowIteratorGraph";
 import { workflowManualLaunchScope } from "../workflowManualLaunchContract";
 import { useConditionPortLabel } from "./conditionPortLabel";
+import { type WorkflowDealOption, WorkflowDealPicker } from "./WorkflowDealPicker";
 
 export interface DraftTestSnapshot {
   readonly cutKey: string;
@@ -42,7 +40,6 @@ export interface DraftTestSnapshot {
   readonly name: string;
   readonly definition: WorkflowDefinition;
 }
-type DealOption = { value: string; label: string };
 interface DraftTestResult {
   readonly receipt: DraftSimulationReceipt;
   readonly recordLabel?: string;
@@ -390,7 +387,7 @@ export function DraftTestDialog({
   const t = useAppTranslations("workflows");
   const trigger = snapshot.definition.nodes.find((node) => node.type === "trigger.manual");
   const scope = workflowManualLaunchScope(trigger?.config);
-  const [chosen, setChosen] = useState<DealOption | null>(null);
+  const [chosen, setChosen] = useState<WorkflowDealOption | null>(null);
   const canSimulate = scope === "global" || (scope === "deal" && chosen !== null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
@@ -465,7 +462,7 @@ export function DraftTestDialog({
           {scope === "deal" && (
             <>
               <p>{t("draftSimulationRecordInput")}</p>
-              <DraftDealPicker chosen={chosen} onChoose={setChosen} pending={pending} />
+              <WorkflowDealPicker chosen={chosen} onChoose={setChosen} disabled={pending} />
             </>
           )}
           {scope === "global" && <p>{t("manualGlobalRunHint")}</p>}
@@ -490,59 +487,5 @@ export function DraftTestDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function DraftDealPicker({
-  chosen,
-  onChoose,
-  pending,
-}: {
-  chosen: DealOption | null;
-  onChoose: (option: DealOption | null) => void;
-  pending: boolean;
-}) {
-  const t = useAppTranslations("workflows");
-  const [query, setQuery] = useState("");
-  const search = trpc.search.query.useQuery(
-    { q: query.trim().slice(0, 200) },
-    { enabled: !pending && query.trim().length > 1 },
-  );
-  const options = (search.data?.deals ?? []).map((deal) => ({
-    value: deal.id,
-    label: deal.primary,
-  }));
-  if (chosen !== null && !options.some((option) => option.value === chosen.value))
-    options.unshift(chosen);
-  return (
-    <>
-      <Input
-        dir="auto"
-        aria-label={t("search")}
-        placeholder={t("search")}
-        maxLength={200}
-        value={query}
-        disabled={pending}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      <Select
-        value={chosen?.value ?? ""}
-        ariaLabel={t("deal")}
-        placeholder={t("deal")}
-        options={options}
-        disabled={pending || options.length === 0}
-        onChange={(value) => onChoose(options.find((option) => option.value === value) ?? null)}
-      />
-      {query.trim().length < 2 && <p className="text-muted-foreground">{t("searchHint")}</p>}
-      {search.isFetching && <p role="status">{t("searchLoading")}</p>}
-      {query.trim().length > 1 && options.length === 0 && !search.isFetching && !search.isError && (
-        <p role="status">{t("noResults")}</p>
-      )}
-      {search.isError && (
-        <p role="alert" className="text-destructive">
-          {t("loadError")}
-        </p>
-      )}
-    </>
   );
 }

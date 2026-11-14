@@ -30,7 +30,12 @@ it("preserves a Persian OTP's leading zero when completing the challenge", async
       <MfaPanel mode="challenge" onComplete={done} />
     </LocaleProvider>,
   );
-  fireEvent.change(screen.getByLabelText("کد برنامه رمزساز"), { target: { value: "۰۱۲۳۴۵" } });
+  const input = screen.getByLabelText("کد برنامه رمزساز");
+  expect(input).toHaveAttribute("type", "text");
+  expect(input).toHaveAttribute("name", "authenticatorCode");
+  expect(input).toHaveAttribute("autocomplete", "one-time-code");
+  expect(input).toHaveAttribute("inputmode", "numeric");
+  fireEvent.change(input, { target: { value: "۰۱۲۳۴۵" } });
   fireEvent.click(screen.getByRole("button", { name: "تأیید کد" }));
   await waitFor(() =>
     expect(verifyTotp).toHaveBeenCalledWith(expect.objectContaining({ code: "012345" })),
@@ -45,7 +50,12 @@ it("switches German recovery mode and sends the exact authored recovery secret",
     </LocaleProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Wiederherstellungscode verwenden" }));
-  fireEvent.change(screen.getByLabelText("Wiederherstellungscode"), {
+  const input = screen.getByLabelText("Wiederherstellungscode");
+  expect(input).toHaveAttribute("type", "text");
+  expect(input).toHaveAttribute("name", "recoveryCode");
+  expect(input).toHaveAttribute("autocomplete", "off");
+  expect(input).toHaveAttribute("inputmode", "text");
+  fireEvent.change(input, {
     target: { value: "AbCD-0001" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Code bestätigen" }));

@@ -296,7 +296,13 @@ class ImageSmoke:
     def __init__(self, docker: Docker, images: dict[str, str], output_dir: Path,
                  expected_revision: str | None = None, stability_seconds: int = 15,
                  clock: Callable[[], float] = time.monotonic,
-                 sleep: Callable[[float], None] = time.sleep):
+                 sleep: Callable[[float], None] = time.sleep, *,
+                 postgres_image: str | None = None, cgroup_parent: str | None = None):
+        if postgres_image is not None and not re.fullmatch(r"sha256:[a-f0-9]{64}", postgres_image):
+            raise ValueError("Pinned PostgreSQL native image ID required")
+        if cgroup_parent is not None and not re.fullmatch(r"warpdrivequalification[a-f0-9]{12}\.slice", cgroup_parent):
+            raise ValueError("Explicit flat qualification cgroup required")
+        self.postgres_image, self.cgroup_parent = postgres_image, cgroup_parent
         if set(images) != set(COMPONENTS):
             raise ValueError("All four component images are required")
         self.images = {name: validate_reference(value) for name, value in images.items()}
@@ -387,9 +393,10 @@ class ImageSmoke:
         volume = f"{self.prefix}-pgdata"
         self.resources.append(("volume", volume))
         self.docker.run(["volume", "create", "--label", f"{OWNER_LABEL}={self.prefix}", volume])
-        self.start_container("postgres", "postgres:16-alpine", [], environment=self.pg_env,
+        postgres_image = getattr(self, "postgres_image", None)
+        self.start_container("postgres", postgres_image or "postgres:16-alpine", [], environment=self.pg_env,
                              mount=f"type=volume,source={volume},target=/var/lib/postgresql/data",
-                             pull="missing", memory="512m")
+                             pull="never" if postgres_image is not None else "missing", memory="512m")
         self.wait_for(lambda: self.docker.run([
             "exec", self.containers["postgres"], "pg_isready", "-U", "smoke", "-d",
             "warpdrive_image_smoke",
@@ -409,6 +416,9 @@ class ImageSmoke:
                 f"{OWNER_LABEL}={self.prefix}", "--network", network or self.report["resources"]["network"],
                 "--memory", memory, "--memory-swap", memory, "--cpus", "1", "--pids-limit", "192",
                 "--cap-drop", "ALL", "--security-opt", "no-new-privileges"]
+        cgroup_parent = getattr(self, "cgroup_parent", None)
+        if cgroup_parent is not None:
+            args += ["--cgroup-parent", cgroup_parent]
         if component == "postgres":
             # postgres:alpine starts as root to set ownership, then drops to postgres.
             # A pre-owned volume would need extra bootstrap machinery; retain only

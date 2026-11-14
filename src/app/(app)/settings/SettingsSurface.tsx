@@ -87,6 +87,59 @@ export function SettingsCardFooter({
   );
 }
 
+export type SettingsTaskState = "idle" | "saving" | "saved" | "error";
+
+export function SettingsFeedback({
+  children,
+  tone = "muted",
+  compact = false,
+  className,
+}: {
+  children: React.ReactNode;
+  tone?: "muted" | "success" | "error";
+  compact?: boolean;
+  className?: string;
+}): React.ReactNode {
+  return (
+    <p
+      role={tone === "error" ? "alert" : "status"}
+      className={cn(
+        compact ? "basis-full text-xs" : "text-sm",
+        tone === "error"
+          ? "text-destructive"
+          : tone === "success"
+            ? "text-success"
+            : "text-muted-foreground",
+        className,
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function SettingsTaskStatus({
+  state,
+  messages,
+  compact = false,
+}: {
+  state: SettingsTaskState;
+  messages: { _errors: { generic: string }; _extra: { saving: string }; saved: string };
+  compact?: boolean;
+}): React.ReactNode {
+  if (state === "idle") return null;
+  const failed = state === "error";
+  return (
+    <SettingsFeedback tone={failed ? "error" : "muted"} compact={compact}>
+      {failed
+        ? messages._errors.generic
+        : state === "saved"
+          ? messages.saved
+          : messages._extra.saving}
+    </SettingsFeedback>
+  );
+}
+
 export const SETTINGS_TABLE_HEAD =
   "bg-muted/30 text-start text-sm font-medium text-muted-foreground";
 // Browsers may center th independently of the alignment inherited from thead.

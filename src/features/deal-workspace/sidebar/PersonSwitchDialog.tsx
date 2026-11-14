@@ -1,90 +1,43 @@
 "use client";
-import { useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/Input";
+import type { RefObject } from "react";
 import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { trpc } from "@/lib/trpc-client";
+import { LinkSwitchDialog } from "./LinkSwitchDialog";
 
 export function PersonSwitchDialog({
   open,
   currentPersonId,
   onOpenChange,
+  menuTrigger,
   onSave,
 }: {
   open: boolean;
   currentPersonId: string | null;
+  menuTrigger: RefObject<HTMLButtonElement | null>;
   onOpenChange: (open: boolean) => void;
-  onSave: (personId: string) => Promise<void>;
+  onSave: (personId: string, saveButton: HTMLButtonElement) => Promise<void>;
 }) {
-  const STRINGS = useSalesStrings();
-
-  const [personId, setPersonId] = useState(currentPersonId ?? "");
-  const [pending, setPending] = useState(false);
-  const peopleQ = trpc.contacts.personOptions.useQuery(undefined, { enabled: open });
-  const people = peopleQ.data;
-  const options: ComboboxOption[] = (people ?? []).map((person) => ({
-    value: person.id,
-    label: person.name,
-    avatarName: person.name,
-  }));
-  const strings = STRINGS.dealSidebar.personDialog;
-
-  const dirty = personId !== "" && personId !== currentPersonId;
-
-  async function save(): Promise<void> {
-    if (!dirty) return;
-    setPending(true);
-    await onSave(personId);
-    setPending(false);
-  }
+  const strings = useSalesStrings().dealSidebar.personDialog;
+  const people = trpc.contacts.personOptions.useQuery(undefined, { enabled: open });
 
   return (
-    <Dialog
+    <LinkSwitchDialog
       open={open}
-      onOpenChange={(next) => {
-        if (next) setPersonId(currentPersonId ?? "");
-        onOpenChange(next);
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            <bdi dir="auto">{strings.title}</bdi>
-          </DialogTitle>
-        </DialogHeader>
-        {people === undefined ? (
-          <Input aria-label={strings.person} placeholder={strings.person} disabled readOnly />
-        ) : (
-          <Combobox
-            ariaLabel={strings.person}
-            value={personId}
-            options={options}
-            onChange={setPersonId}
-            placeholder={strings.person}
-          />
-        )}
-        {peopleQ.isError === true && (
-          <p role="alert" className="text-xs text-destructive">
-            {strings.loadFailed}
-          </p>
-        )}
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            {strings.cancel}
-          </Button>
-          <Button onClick={() => void save()} disabled={pending || !dirty}>
-            {strings.save}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      menuTrigger={menuTrigger}
+      currentId={currentPersonId}
+      title={strings.title}
+      label={strings.person}
+      cancelLabel={strings.cancel}
+      saveLabel={strings.save}
+      options={people.data?.map((person) => ({
+        value: person.id,
+        label: person.name,
+        avatarName: person.name,
+      }))}
+      loadError={people.isError ? strings.loadFailed : undefined}
+      canSave={(id) => id !== "" && id !== currentPersonId}
+      onOpenChange={onOpenChange}
+      onSave={onSave}
+    />
   );
 }

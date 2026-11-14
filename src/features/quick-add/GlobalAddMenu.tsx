@@ -185,7 +185,8 @@ export function GlobalAddMenu({
       )}
       {(modal === "person" || modal === "org") && (
         <GlobalContactModal
-          kind={modal === "person" ? "person" : "org"}
+          key={modal}
+          kind={modal}
           onClose={() => setModal(null)}
           onCreated={() => router.refresh()}
         />

@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
-import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import type { ComboboxOption } from "@/components/ui/Combobox";
+import { SdkCombobox } from "@/components/ui/SdkCombobox";
 import { Select } from "@/components/ui/Select";
 import { ActivityTypeTab } from "@/features/activities/ActivityTypeTab";
 import { ALL_OWNERS_OPTION } from "@/features/activities/activityFilterOptions";
@@ -80,8 +81,9 @@ export function EngagementFilters({
           onChange={(v) => patch({ monthsBack: Number(v) })}
           options={PERIOD_OPTIONS}
         />
-        <Combobox
+        <SdkCombobox
           ariaLabel={tContacts("owner")}
+          tabFromTrigger
           value={filter.ownerId ?? ""}
           onChange={(v) => patch({ ownerId: v === "" ? null : v })}
           options={[{ ...ALL_OWNERS_OPTION, label: tContacts("everyone") }, ...owners]}

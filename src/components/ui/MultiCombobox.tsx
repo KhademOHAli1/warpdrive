@@ -1,5 +1,6 @@
 "use client";
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { defaultFilter } from "cmdk";
+import { ChevronsUpDown, X } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
@@ -7,6 +8,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./Button";
 import type { ComboboxOption } from "./Combobox";
+import { ComboboxOptionLabel } from "./comboboxPresentation";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import {
   Command,
@@ -84,7 +86,8 @@ export function MultiCombobox({
         </PopoverTrigger>
       </div>
       <PopoverContent className="p-0">
-        <Command>
+        {/* Keep search label-based. cmdk normalizes item values, so encode IDs separately. */}
+        <Command filter={(_value, search, keywords) => defaultFilter(keywords?.[0] ?? "", search)}>
           <CommandInput
             placeholder={t("search")}
             aria-label={t("search")}
@@ -95,18 +98,16 @@ export function MultiCombobox({
               {t("noMatch")}
             </CommandEmpty>
             <CommandGroup>
+              {/* Remount a renamed item so cmdk re-registers its search keyword. */}
               {options.map((o) => (
                 <CommandItem
-                  key={o.value}
-                  value={o.label}
+                  key={JSON.stringify([o.value, o.label])}
+                  value={JSON.stringify(o.value)}
+                  keywords={[o.label]}
                   onSelect={() => toggle(o.value)}
                   className="flex cursor-pointer items-center gap-1.5 rounded px-2 py-1.5 text-sm data-[selected=true]:bg-accent"
                 >
-                  {o.avatarName !== undefined && (
-                    <Avatar name={o.avatarName} src={o.avatarUrl} className="h-5 w-5 text-[10px]" />
-                  )}
-                  {o.label}
-                  {values.includes(o.value) && <Check className="ms-auto h-4 w-4" />}
+                  <ComboboxOptionLabel option={o} selected={values.includes(o.value)} />
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -218,6 +218,10 @@ class InstalledWebSuccessor:
         return verify_candidate(row, document, alias=alias, network_ids=self.inputs["networkIds"],
                                 runtime_secret=self.inputs["runtimeSecret"], created=created)
 
+    def _candidate_ready(self, row, document, alias, revision):
+        return candidate_ready(self.docker, self.network, alias, document, self.inputs["networkIds"],
+                               self.inputs["runtimeSecret"], revision, self.inputs["version"], row)
+
     def _stage_preimage(self, *, check_journals=False):
         operation = self.chain["acceptedOperationId"]
         require(isinstance(operation, str) and NAME.fullmatch(operation), "Exact accepted Web predecessor required")
@@ -260,8 +264,7 @@ class InstalledWebSuccessor:
         private.mkdir(mode=0o700, exist_ok=True)
         slot = start_private(self.docker, operation=private, alias=alias, document=doc, qualification=release,
             verify_created=lambda row: self._candidate(row, doc, alias, created=True)["running"] is False,
-            ready=lambda row: candidate_ready(self.docker, self.network, alias, doc, self.inputs["networkIds"],
-                                              self.inputs["runtimeSecret"], revision, self.inputs["version"], row), timeout=60)
+            ready=lambda row: self._candidate_ready(row, doc, alias, revision), timeout=60)
         self._retained()
         self._stage_preimage()
         return slot

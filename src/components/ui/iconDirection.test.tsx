@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
-import { ContactsIcon, DashboardIcon, FinanceNavGlyph, PipelineIcon } from "../shell/NavIcons";
+import { ContactsIcon, FinanceNavGlyph } from "../shell/NavIcons";
 import navIconStyles from "../shell/NavIcons.module.css";
 import { Checkbox } from "./Checkbox";
 
@@ -64,9 +64,9 @@ describe("semantic icon direction", () => {
   it("preserves the shape of ordinary sidebar pictograms", () => {
     const { container } = render(
       <nav dir="rtl">
-        <PipelineIcon />
+        <FinanceNavGlyph name="pipeline-board" />
         <ContactsIcon />
-        <DashboardIcon />
+        <FinanceNavGlyph name="performance-bars" />
       </nav>,
     );
     const icons = container.querySelectorAll("[data-finance-icon]");
@@ -89,7 +89,7 @@ describe("semantic icon direction", () => {
       <div dir="rtl">
         <div dir="ltr">
           <ArrowRight data-testid="ltr" />
-          <PipelineIcon />
+          <FinanceNavGlyph name="pipeline-board" />
         </div>
         <ChevronLeft data-testid="shadcn" className="rtl:rotate-180" />
         <ChevronLeft data-testid="physical" data-rtl-mirror="false" />

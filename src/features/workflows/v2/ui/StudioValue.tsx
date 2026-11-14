@@ -16,8 +16,8 @@ import { BlockBindingField } from "@/features/blocks/ui/BlockField";
 import { BlockVariablePicker } from "@/features/blocks/ui/BlockVariablePicker";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
+import { instantParts, wallTimeToInstant } from "@/lib/zonedDateTime";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
-import { StudioTemporalValue } from "./StudioTemporalValue";
 import {
   asArray,
   asObject,
@@ -64,6 +64,26 @@ function literalKind(value: BlockJson | undefined) {
   if (Array.isArray(raw)) return "array";
   if (typeof raw === "number" || typeof raw === "boolean") return typeof raw;
   return "string";
+}
+function serializeLocalTime(raw: string, timeZone: string): string {
+  const [date = "", time = ""] = raw.split("T");
+  try {
+    return wallTimeToInstant(date, time, timeZone).iso;
+  } catch {
+    return raw;
+  }
+}
+function formatLocalTime(raw: string, timeZone: string): string {
+  try {
+    const { date, time } = instantParts(raw, timeZone);
+    return `${date}T${time}`;
+  } catch {
+    return raw;
+  }
+}
+function studioInputType(type: string, temporal: boolean): string {
+  if (temporal) return "datetime-local";
+  return type === "date" ? "date" : "text";
 }
 function MultiChoice({
   options,
@@ -113,7 +133,7 @@ function StudioLiteral({
   type: string;
 }) {
   const L = useSharedBlocksMessages();
-  const { locale } = useLocalePreferences();
+  const { locale, timeZone } = useLocalePreferences();
   const [authored, setAuthored] = useState<{ stamp: string; raw: string; locale: Locale } | null>(
     null,
   );
@@ -155,16 +175,8 @@ function StudioLiteral({
         onChange={(raw) => onChange({ kind: "literal", value: raw === "true" })}
       />
     );
-  if (type === "instant" || type === "datetime")
-    return (
-      <StudioTemporalValue
-        label={label}
-        value={textValue(value)}
-        disabled={disabled}
-        onChange={update}
-      />
-    );
-  if (multiline === true)
+  const temporal = type === "instant" || type === "datetime";
+  if (!temporal && multiline === true)
     return (
       <Textarea
         aria-label={label}
@@ -175,16 +187,26 @@ function StudioLiteral({
         className="min-h-24 text-xs"
       />
     );
-  return (
+  const input = (
     <Input
       aria-label={label}
       disabled={disabled}
-      type={type === "date" ? "date" : "text"}
-      value={display}
+      type={studioInputType(type, temporal)}
+      value={temporal ? formatLocalTime(textValue(value), timeZone) : display}
       inputMode={type === "number" || type === "decimal" ? "decimal" : undefined}
-      onChange={(event) => update(event.target.value)}
+      onChange={(event) =>
+        update(temporal ? serializeLocalTime(event.target.value, timeZone) : event.target.value)
+      }
       className="h-9 text-xs"
     />
+  );
+  return temporal ? (
+    <div className="space-y-1">
+      {input}
+      <p className="text-[10px] text-muted-foreground">{timeZone}</p>
+    </div>
+  ) : (
+    input
   );
 }
 function bindingFor(

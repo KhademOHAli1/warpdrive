@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import { dealActionErrorContent } from "./dealActionError";
 // Report a failed deal action so the shared modal can explain it. errorId is the AppError id from
 // the action's Result (undefined for a rejected promise with no id). Both the header stage
 // selector and the sidebar field/label editors call this instead of swallowing the failure.
-export type ReportDealActionError = (errorId?: string) => void;
+export type ReportDealActionError = (errorId?: string, returnFocus?: HTMLElement) => void;
 
 // Default no-op (matches sectionFilter's context pattern): a component rendered outside the
 // provider degrades to "no modal" rather than crashing. In-app the provider always wraps the deal
@@ -39,13 +39,18 @@ export function DealActionErrorProvider({
   const router = useRouter();
   // null = no error showing. A reported error stores its id (or "" when the action gave none).
   const [errorId, setErrorId] = useState<string | null>(null);
-  const report: ReportDealActionError = withActionTelemetry((id) => {
+  const returnFocus = useRef<HTMLElement | undefined>(undefined);
+  const reportError = withActionTelemetry((id) => {
     setErrorId(id ?? "");
     // A stale compare-and-swap is the one failure a reload fixes, and the dialog tells the user we
     // already reloaded. Without this the header keeps the same expectedUpdatedAt and every retry
     // fails identically until the page is reloaded by hand.
     if (id === ERROR_IDS.DEAL_PRECONDITION) router.refresh();
   }, "deal");
+  const report: ReportDealActionError = (id, target) => {
+    returnFocus.current = target;
+    reportError(id);
+  };
   const content = dealActionErrorContent(errorId ?? undefined, locale);
 
   return (
@@ -57,7 +62,16 @@ export function DealActionErrorProvider({
           if (!open) setErrorId(null);
         }}
       >
-        <DialogContent>
+        <DialogContent
+          onCloseAutoFocus={(event) => {
+            const target = returnFocus.current;
+            returnFocus.current = undefined;
+            if (target?.isConnected === true && !target.matches(":disabled")) {
+              event.preventDefault();
+              target.focus({ preventScroll: true });
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               <bdi dir="auto">{content.title}</bdi>

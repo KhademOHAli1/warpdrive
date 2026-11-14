@@ -26,7 +26,15 @@ vi.mock("@/features/identity/preferencesActions", () => ({
   setColumnViewAction: vi.fn(),
   setBoardViewAction: () => Promise.resolve({ ok: true }),
 }));
-vi.mock("./DealList", () => ({ DealList: () => <div data-testid="deal-list" /> }));
+vi.mock("./DealList", () => ({
+  DealList: ({ rows }: { rows: DealListRow[] }) => (
+    <div data-testid="deal-list">
+      {rows.map(({ id, title }) => (
+        <span key={id}>{title}</span>
+      ))}
+    </div>
+  ),
+}));
 vi.mock("./BoardToolbar", () => ({
   BoardToolbar: (p: { filterSlot: React.ReactNode }) => <div>{p.filterSlot}</div>,
 }));
@@ -81,9 +89,12 @@ vi.mock("./BoardFilterControl", () => ({
 vi.mock("./BoardSortControl", () => ({ BoardSortControl: () => null }));
 vi.mock("./NewDealButton", () => ({ NewDealButton: () => null }));
 
-import type { BoardViewState } from "./boardView";
+import { missingSavedView } from "@/features/saved-filters/viewAvailability";
+import { type BoardViewState, DEFAULT_BOARD_VIEW } from "./boardView";
 import { forgetBoardView } from "./boardViewMemory";
 import { DealListClient } from "./DealListClient";
+import type { DealListRow } from "./dealListTypes";
+import type { DealListCard } from "./dealRepo";
 import type { SavedFilterView } from "./savedFilterView";
 
 afterEach(() => {
@@ -101,7 +112,7 @@ const initial = {
   totalValue: "1000000.00",
 };
 
-function renderClient(over: Partial<typeof initial> & { initialView?: BoardViewState } = {}) {
+function renderClient(over: Partial<React.ComponentProps<typeof DealListClient>["initial"]> = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
@@ -283,6 +294,43 @@ it("blocks restored unavailable views without showing cached records or issuing 
   expect(screen.queryByTestId("deal-list")).not.toBeInTheDocument();
   await new Promise((resolve) => setTimeout(resolve, 30));
   expect(listQueryMock).not.toHaveBeenCalled();
+});
+
+it("fetches permitted deals after explicitly clearing a restored unavailable view", async () => {
+  const date = new Date("2026-06-24T00:00:00Z");
+  const permitted: DealListCard = {
+    id: "d1",
+    title: "Permitted deal",
+    value: null,
+    stageId: "s1",
+    boardPosition: "1",
+    ownerId: "u1",
+    personId: null,
+    orgId: null,
+    nextActivityAt: null,
+    lastActivityAt: null,
+    stageEnteredAt: date,
+    updatedAt: date,
+    customFields: {},
+  };
+  listQueryMock.mockResolvedValue({ rows: [permitted], total: 1, totalValue: null });
+  renderClient({
+    initialView: { ...DEFAULT_BOARD_VIEW, savedFilter: missingSavedView("missing") },
+    total: 0,
+    totalValue: null,
+  });
+
+  expect(screen.getByRole("alert")).toHaveTextContent("This saved view is unavailable");
+  expect(screen.queryByTestId("deal-list")).not.toBeInTheDocument();
+  expect(listQueryMock).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "Show all permitted records" }));
+
+  expect(await screen.findByText(permitted.title)).toBeInTheDocument();
+  expect(listQueryMock).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({ pipelineId: "p1", definition: undefined }),
+    expect.objectContaining({ signal: expect.any(AbortSignal) }),
+  );
 });
 
 it("does not show the previous broad cache while recovering into a narrower valid view", () => {

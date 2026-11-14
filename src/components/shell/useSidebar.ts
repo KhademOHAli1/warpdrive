@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { OPEN_SIDEBAR_EVENT } from "@/constants/nav";
-import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
+import {
+  isOverlayOpen,
+  isShortcutSuppressed,
+  isTypingTarget,
+} from "@/features/shortcuts/shortcutTarget";
 import { readSidebarPreference, writeSidebarPreference } from "./sidebarPreference";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export function useSidebar(initialExpanded: boolean) {
   const [expanded, setExpanded] = useState(initialExpanded);
+  const [peeking, setPeeking] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -23,6 +28,7 @@ export function useSidebar(initialExpanded: boolean) {
     }
     const media = window.matchMedia(DESKTOP_QUERY);
     const apply = (): void => {
+      setPeeking(false);
       if (readSidebarPreference() === null) setExpanded(media.matches);
       if (media.matches) setMobileOpen(false);
     };
@@ -36,9 +42,11 @@ export function useSidebar(initialExpanded: boolean) {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key !== "[" && event.key !== "]") return;
+      if (isShortcutSuppressed(event)) return;
       if (isTypingTarget(event.target) || isOverlayOpen(document)) return;
       event.preventDefault();
       const next = event.key === "[";
+      setPeeking(false);
       writeSidebarPreference(next);
       setExpanded(next);
     };
@@ -51,10 +59,11 @@ export function useSidebar(initialExpanded: boolean) {
   }, []);
 
   function toggle(): void {
+    setPeeking(false);
     const next = !expanded;
     writeSidebarPreference(next);
     setExpanded(next);
   }
 
-  return { expanded, toggle, mobileOpen, setMobileOpen };
+  return { expanded, peeking, setPeeking, toggle, mobileOpen, setMobileOpen };
 }

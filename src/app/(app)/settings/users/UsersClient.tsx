@@ -1,5 +1,6 @@
 "use client";
 
+import { UserPlus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -7,7 +8,8 @@ import { Input } from "@/components/ui/Input";
 import { managementMessagesForLocale } from "@/features/auth/management/messages";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { InviteUserDialog } from "./InviteUserDialog";
+import { SettingsFormDialog } from "../SettingsFormDialog";
+import { InviteUserForm } from "./InviteUserForm";
 import type { PermissionSetOption, UserRow } from "./types";
 import { UserStatusTabs } from "./UserStatusTabs";
 import { UsersDirectory } from "./UsersDirectory";
@@ -47,7 +49,21 @@ export function UsersClient({ rows, permissionSets, viewerIsAdmin }: Props): Rea
         <p className="max-w-lg text-sm text-muted-foreground">
           {L._hierarchy.peopleScopeDescription}
         </p>
-        <InviteUserDialog viewerIsAdmin={viewerIsAdmin} onInvited={() => router.refresh()} />
+        <SettingsFormDialog
+          title={L._extra.invite_a_user}
+          description={L._extra.add_a_teammate_and_choose_whether_they_can_manage_company_}
+          icon={UserPlus}
+        >
+          {({ close, onPendingChange }) => (
+            <InviteUserForm
+              embedded
+              viewerIsAdmin={viewerIsAdmin}
+              onInvited={() => router.refresh()}
+              onPendingChange={onPendingChange}
+              onCancel={close}
+            />
+          )}
+        </SettingsFormDialog>
       </div>
       <div className="space-y-3">
         <Input

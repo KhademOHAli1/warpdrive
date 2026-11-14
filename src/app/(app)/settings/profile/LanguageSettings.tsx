@@ -1,29 +1,28 @@
 "use client";
 
+import { useMemo } from "react";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { useFormatters } from "@/lib/useFormatters";
+import { useHydrated } from "@/lib/useHydrated";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 import { BrowserTimeZoneSetting } from "./BrowserTimeZoneSetting";
 import { CountryLanguageSettings } from "./CountryLanguageSettings";
 import { RegionalFormatsSettings } from "./RegionalFormatsSettings";
+import { formatRegionalPreview, type RegionalPreview } from "./regionalPreview";
 
-export function LanguageSettings() {
+export function LanguageSettings({ initialPreview }: { initialPreview?: RegionalPreview } = {}) {
   const L = useSettingsMessages();
   const H = L._hierarchy;
-  const format = useFormatters();
-  // Bun and browser ICU versions use different connectors for a combined date/time.
-  // Format the two fields independently so the server and client render the same text.
-  const exampleInstant = "2026-03-21T09:30:00Z";
-  const exampleDate = format.dateTime(exampleInstant, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-  const exampleTime = format.dateTime(exampleInstant, {
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  });
+  const preferences = useLocalePreferences();
+  // ICU can differ between server and browser. Keep the server's exact text through hydration.
+  const hydrated = useHydrated();
+  const preview = useMemo(
+    () =>
+      !hydrated && initialPreview !== undefined
+        ? initialPreview
+        : formatRegionalPreview(preferences),
+    [hydrated, initialPreview, preferences],
+  );
   return (
     <>
       <SettingsCard>
@@ -41,21 +40,21 @@ export function LanguageSettings() {
             <div>
               <dt className="text-xs text-muted-foreground">{H.previewDate}</dt>
               <dd className="mt-1 text-sm">
-                <bdi dir="auto">{format.dateOnly("2026-03-21")}</bdi>
+                <bdi dir="auto">{preview.date}</bdi>
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">{H.previewTime}</dt>
               <dd className="mt-1 text-sm">
-                <bdi dir="auto">{exampleDate}</bdi>
+                <bdi dir="auto">{preview.localDate}</bdi>
                 <span aria-hidden="true"> · </span>
-                <bdi dir="auto">{exampleTime}</bdi>
+                <bdi dir="auto">{preview.time}</bdi>
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">{H.previewNumber}</dt>
               <dd className="mt-1 text-sm tabular-nums">
-                <bdi dir="auto">{format.number(12345.67)}</bdi>
+                <bdi dir="auto">{preview.number}</bdi>
               </dd>
             </div>
           </dl>

@@ -83,6 +83,16 @@ describe("isOverlayOpen", () => {
     expect(isOverlayOpen(document)).toBe(true);
   });
 
+  test("tracks the shared SDK picker only while its trigger is expanded", () => {
+    const trigger = document.createElement("button");
+    trigger.dataset.crmPickerTrigger = "";
+    trigger.setAttribute("aria-expanded", "false");
+    document.body.append(trigger);
+    expect(isOverlayOpen(document)).toBe(false);
+    trigger.setAttribute("aria-expanded", "true");
+    expect(isOverlayOpen(document)).toBe(true);
+  });
+
   test("is false for an always-mounted inline listbox (the deal stage selector)", () => {
     // StageSelector renders role="listbox" inline on every deal workspace. Treating that as an
     // open overlay silently killed every shortcut on those pages.

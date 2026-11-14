@@ -46,11 +46,33 @@ function formatDuration(nanoseconds: string, format: Formatters): string {
     .join(" ");
 }
 
-function StatLine({ label, value }: { label: string; value: ReactNode }) {
+function StatLine({
+  label,
+  value,
+  layout = "row",
+}: {
+  label: string;
+  value: ReactNode;
+  layout?: "row" | "tile";
+}) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] items-baseline gap-2 py-1.5">
+    <div
+      className={
+        layout === "tile"
+          ? "min-w-0"
+          : "grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] items-baseline gap-2 py-1.5"
+      }
+    >
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="break-words text-end font-medium tabular-nums">{value}</dd>
+      <dd
+        className={
+          layout === "tile"
+            ? "mt-1 break-words font-medium tabular-nums"
+            : "break-words text-end font-medium tabular-nums"
+        }
+      >
+        {value}
+      </dd>
     </div>
   );
 }
@@ -190,15 +212,6 @@ function StageAgingSection({ row, copy, format }: Presentation & { row: StageAgi
   );
 }
 
-function CoverageItem({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="mt-1 break-words font-medium tabular-nums">{value}</dd>
-    </div>
-  );
-}
-
 function ObservedTime({ value, format }: { value: string; format: Formatters }) {
   return (
     <time dateTime={value}>
@@ -222,20 +235,27 @@ function AgingCoverage({ view, copy, format }: Presentation & { view: AvailableV
     <div className="space-y-3 text-sm">
       <p className="text-pretty text-muted-foreground">{copy.coverage}</p>
       <dl className="grid grid-cols-2 gap-4 rounded-lg bg-muted/30 p-3 sm:grid-cols-3 sm:p-4 xl:grid-cols-5">
-        <CoverageItem label={copy.cohortDeals} value={<bdi>{format.number(view.dealCount)}</bdi>} />
-        <CoverageItem
+        <StatLine
+          layout="tile"
+          label={copy.cohortDeals}
+          value={<bdi>{format.number(view.dealCount)}</bdi>}
+        />
+        <StatLine
+          layout="tile"
           label={copy.openDeals}
           value={<bdi>{format.number(view.currentOpenDealCount)}</bdi>}
         />
-        <CoverageItem
+        <StatLine
+          layout="tile"
           label={copy.captureStart}
           value={<ObservedTime value={view.activatedAt} format={format} />}
         />
-        <CoverageItem
+        <StatLine
+          layout="tile"
           label={copy.observationTime}
           value={<ObservedTime value={view.observedAt} format={format} />}
         />
-        <CoverageItem label={copy.currency} value={<bdi>{view.currency}</bdi>} />
+        <StatLine layout="tile" label={copy.currency} value={<bdi>{view.currency}</bdi>} />
       </dl>
       <p className="text-pretty text-muted-foreground">
         {copy.currentLabels} {copy.censoring}

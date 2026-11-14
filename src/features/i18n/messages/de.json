@@ -32,7 +32,9 @@
     "primary": "Hauptnavigation",
     "collapse": "Seitenleiste einklappen",
     "expand": "Seitenleiste ausklappen",
-    "collapseShort": "Einklappen"
+    "collapseShort": "Einklappen",
+    "pinSidebar": "Seitenleiste anheften",
+    "unpinSidebar": "Seitenleiste lösen"
   },
   "language": {
     "switchTo": "English",

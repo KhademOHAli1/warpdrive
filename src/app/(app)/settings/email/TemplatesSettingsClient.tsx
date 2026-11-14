@@ -30,7 +30,8 @@ import {
 import type { SettingsTemplate } from "@/features/email/emailAuthoringReads";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { EmailSettingsTaskFeedback, useEmailSettingsTask } from "./EmailSettingsTask";
+import { SettingsTaskStatus } from "../SettingsSurface";
+import { useEmailSettingsTask } from "./EmailSettingsTask";
 import { SharedTemplateRow } from "./SharedTemplateRow";
 import { type TemplateDraft, TemplateDraftEditor } from "./TemplateDraftEditor";
 import { TemplateRow } from "./TemplateRow";
@@ -192,7 +193,7 @@ export function TemplatesSettingsClient({
       </div>
 
       <div className="space-y-3 p-5">
-        <EmailSettingsTaskFeedback pending={task.pending} failed={task.failed} />
+        <SettingsTaskStatus state={task.state} messages={L} />
         <div className="flex items-center gap-2">
           <Input
             type="search"

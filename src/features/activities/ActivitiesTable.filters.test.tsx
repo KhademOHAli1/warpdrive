@@ -13,7 +13,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 beforeAll(() => {
-  // Radix Select + the Combobox/DatePicker popovers (ActivitiesFilters) need these in jsdom.
+  // The picker animation and Radix controls need these browser APIs in jsdom.
+  Element.prototype.getAnimations = vi.fn(() => []);
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.hasPointerCapture = vi.fn(() => false);
   Element.prototype.releasePointerCapture = vi.fn();

@@ -55,6 +55,7 @@ import { cn } from "@/lib/utils";
 import { instantCivilDate } from "@/lib/zonedDateTime";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
+import { GoalFormField } from "./GoalFormField";
 import { KpiPreview } from "./KpiPreview";
 import type { Option } from "./types";
 
@@ -101,26 +102,6 @@ const SOURCE_DATE_FIELDS: Record<KpiSource, KpiDefinitionInput["dateField"][]> =
   activities: ["created", "completed", "due"],
   manual: ["measured"],
 };
-
-function Field({
-  label,
-  help,
-  children,
-}: {
-  label: string;
-  help?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-w-0 space-y-2">
-      <span className="block text-sm font-medium">{label}</span>
-      {children}
-      {help !== undefined && help !== "" && (
-        <p className="text-xs leading-relaxed text-muted-foreground">{help}</p>
-      )}
-    </div>
-  );
-}
 
 function canonicalNumber(draft: NumericDraft): string {
   if (!draft.authored && draft.canonical !== undefined) return draft.canonical;
@@ -953,7 +934,7 @@ function KpiDefineStep({ model }: { model: BuilderModel }): React.ReactElement {
   const { L, draft, definition, sourceRequirement, patchDefinition } = model;
   return (
     <>
-      <Field label={L.name}>
+      <GoalFormField variant="builder" label={L.name}>
         <Input
           autoFocus
           aria-label={L.name}
@@ -963,8 +944,8 @@ function KpiDefineStep({ model }: { model: BuilderModel }): React.ReactElement {
           disabled={!!definition}
           onChange={(event) => patchDefinition({ name: event.target.value })}
         />
-      </Field>
-      <Field label={L.description}>
+      </GoalFormField>
+      <GoalFormField variant="builder" label={L.description}>
         <Textarea
           aria-label={L.description}
           placeholder={L.descriptionPlaceholder}
@@ -974,7 +955,7 @@ function KpiDefineStep({ model }: { model: BuilderModel }): React.ReactElement {
           onChange={(event) => patchDefinition({ description: event.target.value })}
           className="min-h-28 resize-y"
         />
-      </Field>
+      </GoalFormField>
       {sourceRequirement !== undefined && sourceRequirement !== "" && (
         <SourceRequirement label={L.sourceRequirement} value={sourceRequirement} />
       )}
@@ -1005,7 +986,7 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
   return (
     <>
       {definition && <Notice>{L.pinnedDefinition}</Notice>}
-      <Field label={L.source} help={L.sourceHelp}>
+      <GoalFormField variant="builder" label={L.source} help={L.sourceHelp}>
         <Select
           ariaLabel={L.source}
           value={draft.source}
@@ -1013,13 +994,13 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
           disabled={!!definition}
           options={KPI_SOURCES.map((value) => ({ value, label: L.sources[value] }))}
         />
-      </Field>
+      </GoalFormField>
       {draft.source === "manual" && <Notice>{L.manualNotice}</Notice>}
       {sourceRequirement !== undefined && sourceRequirement !== "" && (
         <SourceRequirement label={L.sourceRequirement} value={sourceRequirement} />
       )}
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label={L.calculation}>
+        <GoalFormField variant="builder" label={L.calculation}>
           <Select
             ariaLabel={L.calculation}
             value={draft.calculation}
@@ -1027,8 +1008,8 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
             disabled={!!definition}
             options={calculationOptions}
           />
-        </Field>
-        <Field label={L.unit}>
+        </GoalFormField>
+        <GoalFormField variant="builder" label={L.unit}>
           <Select
             ariaLabel={L.unit}
             value={draft.unit}
@@ -1036,19 +1017,19 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
             disabled={!!definition}
             options={unitOptions}
           />
-        </Field>
+        </GoalFormField>
         {draft.unit === "money" && (
-          <Field label={L.currency}>
+          <GoalFormField variant="builder" label={L.currency}>
             <div inert={!!definition}>
               <CurrencySelect
                 value={draft.currency ?? baseCurrency}
                 onChange={(currency) => patchDefinition({ currency })}
               />
             </div>
-          </Field>
+          </GoalFormField>
         )}
         {draft.unit === "custom" && (
-          <Field label={L.customUnit}>
+          <GoalFormField variant="builder" label={L.customUnit}>
             <Input
               aria-label={L.customUnit}
               value={draft.customUnit ?? ""}
@@ -1056,12 +1037,12 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
               disabled={!!definition}
               onChange={(event) => patchDefinition({ customUnit: event.target.value })}
             />
-          </Field>
+          </GoalFormField>
         )}
         {!ratio &&
           !["count", "distinct_count"].includes(draft.calculation) &&
           draft.source !== "manual" && (
-            <Field label={L.valueField}>
+            <GoalFormField variant="builder" label={L.valueField}>
               <Select
                 ariaLabel={L.valueField}
                 value={draft.valueField ?? (draft.source === "deals" ? "value" : "duration")}
@@ -1074,9 +1055,9 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
                   })
                 }
               />
-            </Field>
+            </GoalFormField>
           )}
-        <Field label={L.dateField}>
+        <GoalFormField variant="builder" label={L.dateField}>
           <Select
             ariaLabel={L.dateField}
             value={draft.dateField}
@@ -1088,13 +1069,13 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
               patchDefinition({ dateField: dateField as KpiDefinitionInput["dateField"] })
             }
           />
-        </Field>
+        </GoalFormField>
       </div>
       {draft.source !== "manual" && (
         <div className="space-y-5 rounded-lg border bg-muted/15 p-4">
           {ratio ? (
             <>
-              <Field label={L.numerator}>
+              <GoalFormField variant="builder" label={L.numerator}>
                 <Select
                   ariaLabel={L.numerator}
                   value={draft.numeratorStatus ?? "all"}
@@ -1102,9 +1083,9 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
                   options={statusOptions}
                   onChange={(value) => patchDefinition({ numeratorStatus: value as KpiStatus })}
                 />
-              </Field>
+              </GoalFormField>
               <div className="border-t" />
-              <Field label={L.denominator} help={L.calculationHelp}>
+              <GoalFormField variant="builder" label={L.denominator} help={L.calculationHelp}>
                 <Select
                   ariaLabel={L.denominator}
                   value={draft.denominatorStatus ?? "all"}
@@ -1112,10 +1093,10 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
                   options={statusOptions}
                   onChange={(value) => patchDefinition({ denominatorStatus: value as KpiStatus })}
                 />
-              </Field>
+              </GoalFormField>
             </>
           ) : (
-            <Field label={L.numerator}>
+            <GoalFormField variant="builder" label={L.numerator}>
               <Select
                 ariaLabel={L.numerator}
                 value={draft.filters.status ?? "all"}
@@ -1127,9 +1108,9 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
                   })
                 }
               />
-            </Field>
+            </GoalFormField>
           )}
-          <Field label={L.pipeline}>
+          <GoalFormField variant="builder" label={L.pipeline}>
             <Select
               ariaLabel={L.pipeline}
               value={draft.filters.pipelineId ?? ""}
@@ -1144,9 +1125,9 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
                 })
               }
             />
-          </Field>
+          </GoalFormField>
           {draft.source === "activities" && (
-            <Field label={L.activityType}>
+            <GoalFormField variant="builder" label={L.activityType}>
               <Select
                 ariaLabel={L.activityType}
                 value={draft.filters.activityTypeId ?? ""}
@@ -1164,7 +1145,7 @@ function KpiMeasureStep({ model }: { model: BuilderModel }): React.ReactElement 
                   })
                 }
               />
-            </Field>
+            </GoalFormField>
           )}
         </div>
       )}
@@ -1230,7 +1211,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
         </label>
       )}
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label={L.scope}>
+        <GoalFormField variant="builder" label={L.scope}>
           <Select
             ariaLabel={L.scope}
             value={scope.scope}
@@ -1243,9 +1224,9 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
               setScope({ scope: value as KpiScope["scope"], scopeId: null });
             }}
           />
-        </Field>
+        </GoalFormField>
         {scope.scope !== "company" && (
-          <Field label={L.assignee}>
+          <GoalFormField variant="builder" label={L.assignee}>
             <Select
               ariaLabel={L.assignee}
               value={scope.scopeId ?? ""}
@@ -1256,9 +1237,9 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
                 setScope((current) => ({ ...current, scopeId: scopeId || null }));
               }}
             />
-          </Field>
+          </GoalFormField>
         )}
-        <Field label={L.period}>
+        <GoalFormField variant="builder" label={L.period}>
           <Select
             ariaLabel={L.period}
             value={periodChoice}
@@ -1274,9 +1255,9 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
               if (value === "custom") setEndsOn(endsOn ?? startsOn);
             }}
           />
-        </Field>
+        </GoalFormField>
         {["quarterly", "yearly"].includes(periodChoice) && (
-          <Field label={L.fiscalMonth} help={L.fiscalMonthHelp}>
+          <GoalFormField variant="builder" label={L.fiscalMonth} help={L.fiscalMonthHelp}>
             <Select
               ariaLabel={L.fiscalMonth}
               value={String(fiscalStartMonth)}
@@ -1293,9 +1274,9 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
                 setFiscalStartMonth(Number(value));
               }}
             />
-          </Field>
+          </GoalFormField>
         )}
-        <Field label={L.startsOn}>
+        <GoalFormField variant="builder" label={L.startsOn}>
           <DatePicker
             ariaLabel={L.startsOn}
             value={startsOn}
@@ -1306,8 +1287,8 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
               }
             }}
           />
-        </Field>
-        <Field label={L.endsOn}>
+        </GoalFormField>
+        <GoalFormField variant="builder" label={L.endsOn}>
           <DatePicker
             ariaLabel={L.endsOn}
             value={endsOn}
@@ -1317,12 +1298,12 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
               setEndsOn(value);
             }}
           />
-        </Field>
+        </GoalFormField>
       </div>
       {!definitionOnly && (
         <>
           <div className="border-t pt-5">
-            <Field label={L.success}>
+            <GoalFormField variant="builder" label={L.success}>
               <Select
                 ariaLabel={L.success}
                 value={conditionKind}
@@ -1332,38 +1313,38 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
                 }))}
                 onChange={chooseCondition}
               />
-            </Field>
+            </GoalFormField>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label={L.target} help={L.zeroHelp}>
+            <GoalFormField variant="builder" label={L.target} help={L.zeroHelp}>
               <Input
                 aria-label={L.target}
                 inputMode="decimal"
                 value={numericRaw("target")}
                 onChange={(event) => changeNumber("target", event.target.value)}
               />
-            </Field>
+            </GoalFormField>
             {conditionKind === "range" && (
-              <Field label={L.upperTarget}>
+              <GoalFormField variant="builder" label={L.upperTarget}>
                 <Input
                   aria-label={L.upperTarget}
                   inputMode="decimal"
                   value={numericRaw("upperTarget")}
                   onChange={(event) => changeNumber("upperTarget", event.target.value)}
                 />
-              </Field>
+              </GoalFormField>
             )}
             {conditionKind === "improve" && (
               <>
-                <Field label={L.baseline}>
+                <GoalFormField variant="builder" label={L.baseline}>
                   <Input
                     aria-label={L.baseline}
                     inputMode="decimal"
                     value={numericRaw("baseline")}
                     onChange={(event) => changeNumber("baseline", event.target.value)}
                   />
-                </Field>
-                <Field label={L.improvementDirection}>
+                </GoalFormField>
+                <GoalFormField variant="builder" label={L.improvementDirection}>
                   <Select
                     ariaLabel={L.improvementDirection}
                     value={direction}
@@ -1376,11 +1357,11 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
                       setDirection(value as "increase" | "decrease");
                     }}
                   />
-                </Field>
+                </GoalFormField>
               </>
             )}
           </div>
-          <Field label={L.pacing} help={L.pacingHelp}>
+          <GoalFormField variant="builder" label={L.pacing} help={L.pacingHelp}>
             <Select
               ariaLabel={L.pacing}
               value={canPace ? pacing : "none"}
@@ -1393,7 +1374,7 @@ function KpiTargetStep({ model }: { model: BuilderModel }): React.ReactElement {
                 setPacing(value as "linear" | "none");
               }}
             />
-          </Field>
+          </GoalFormField>
         </>
       )}
     </>

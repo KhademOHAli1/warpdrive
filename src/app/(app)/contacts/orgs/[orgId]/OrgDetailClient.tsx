@@ -4,12 +4,13 @@ import { useState } from "react";
 import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import { MergeDialog } from "@/features/contacts/MergeDialog";
 import type { OrgDetail } from "@/features/contacts/orgsRepo";
+import { FileAttachments } from "@/features/files/FileAttachments";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
-import { OrganizationDetailHeader } from "../../ContactDetailHeader";
+import { ContactDetailHeader } from "../../ContactDetailHeader";
 import styles from "../../ContactDetailLayout.module.css";
-import { ContactTimelinePanel, FilesPanel, TabStrip } from "../../contactDetail.shared";
+import { ContactTimelinePanel, TabStrip } from "../../contactDetail.shared";
 import { OrgEmailPanel } from "../../OrgEmailPanel";
 import { OrgSidebar } from "./OrgSidebar";
 
@@ -69,7 +70,8 @@ export function OrgDetailClient({
 
   return (
     <div className={`${styles.root} flex h-full min-w-0 flex-col`}>
-      <OrganizationDetailHeader
+      <ContactDetailHeader
+        entityType="organization"
         entityId={org.id}
         name={org.name}
         labels={org.labels}
@@ -136,7 +138,7 @@ export function OrgDetailClient({
               <ContactTimelinePanel entityType="organization" entityId={org.id} />
             )}
             {tab === "email" && <OrgEmailPanel />}
-            {tab === "files" && <FilesPanel entityType="organization" entityId={org.id} />}
+            {tab === "files" && <FileAttachments entityType="organization" entityId={org.id} />}
           </div>
         </div>
       </div>

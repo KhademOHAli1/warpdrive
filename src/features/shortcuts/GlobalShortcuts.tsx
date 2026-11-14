@@ -3,7 +3,7 @@ import type React from "react";
 import { useEffect } from "react";
 import { useWorkspaceNavigation } from "@/components/shell/WorkspaceShellProvider";
 import { navHrefForKey } from "./navShortcut";
-import { isOverlayOpen, isTypingTarget } from "./shortcutTarget";
+import { isOverlayOpen, isShortcutSuppressed, isTypingTarget } from "./shortcutTarget";
 
 // App-wide keyboard shortcuts that belong to no single component (Pipedrive parity): the number row
 // jumps to a primary nav item. Mounted once in the app layout; renders nothing.
@@ -12,7 +12,7 @@ export function GlobalShortcuts(): React.ReactNode {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent): void => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
-      if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+      if (isShortcutSuppressed(e)) return;
       if (isTypingTarget(e.target) || isOverlayOpen(document)) return;
       const href = navHrefForKey(e.key, navItems);
       if (href === null) return;

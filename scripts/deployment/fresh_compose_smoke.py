@@ -996,7 +996,7 @@ class FreshSmoke:
         require(set(holders) <= allowed, "Fresh smoke volume has foreign references")
 
 
-def run(baseline, candidate, *, storage_client_bin="mc", cgroup_parent=None):
+def run(baseline, candidate, *, storage_client_bin="mc", cgroup_parent=None, fixture_factory=None):
     validate_storage_client_bin(storage_client_bin)
     validate_cgroup_parent(cgroup_parent)
     _native_host()
@@ -1009,7 +1009,7 @@ def run(baseline, candidate, *, storage_client_bin="mc", cgroup_parent=None):
     signal.alarm(TOTAL_SECONDS)
     fixture, armed, removed, held = None, False, False, False
     try:
-        fixture = FreshSmoke(docker, directory, baseline, candidate, storage_client_bin=storage_client_bin, cgroup_parent=cgroup_parent)
+        fixture = (fixture_factory or FreshSmoke)(docker, directory, baseline, candidate, storage_client_bin=storage_client_bin, cgroup_parent=cgroup_parent)
         try:
             fixture._preloaded()
             fixture.prepare()

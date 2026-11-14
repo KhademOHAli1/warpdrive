@@ -13,6 +13,7 @@ import { ContactActionsMenu } from "./ContactActionsMenu";
 type FollowerRef = { id: string; name: string; avatarUrl: string | null };
 
 interface ContactDetailHeaderProps {
+  entityType: "person" | "organization";
   entityId: string;
   name: string;
   labels: string[];
@@ -24,9 +25,8 @@ interface ContactDetailHeaderProps {
   subtitle?: React.ReactNode;
 }
 
-function ContactDetailHeaderFrame({
+export function ContactDetailHeader({
   entityType,
-  avatarClassName,
   entityId,
   name,
   labels,
@@ -36,12 +36,11 @@ function ContactDetailHeaderFrame({
   canDelete,
   onMerge,
   subtitle,
-}: ContactDetailHeaderProps & {
-  entityType: "person" | "organization";
-  avatarClassName: string;
-}): React.ReactNode {
+}: ContactDetailHeaderProps): React.ReactNode {
   const t = useAppTranslations("contacts");
   const closeDrawer = useDetailDrawerClose();
+  const avatarClassName =
+    entityType === "person" ? "size-11 shrink-0 text-sm" : "size-11 shrink-0 rounded-lg text-sm";
   return (
     <header className="mb-5 border-b pb-5">
       {closeDrawer === null && (
@@ -88,25 +87,5 @@ function ContactDetailHeaderFrame({
         </div>
       </div>
     </header>
-  );
-}
-
-export function PersonDetailHeader(props: ContactDetailHeaderProps): React.ReactNode {
-  return (
-    <ContactDetailHeaderFrame
-      {...props}
-      entityType="person"
-      avatarClassName="size-11 shrink-0 text-sm"
-    />
-  );
-}
-
-export function OrganizationDetailHeader(props: ContactDetailHeaderProps): React.ReactNode {
-  return (
-    <ContactDetailHeaderFrame
-      {...props}
-      entityType="organization"
-      avatarClassName="size-11 shrink-0 rounded-lg text-sm"
-    />
   );
 }

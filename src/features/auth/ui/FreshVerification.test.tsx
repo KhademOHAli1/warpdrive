@@ -56,7 +56,12 @@ it("requires a fresh factor for administrators instead of offering password-only
     </LocaleProvider>,
   );
   expect(screen.queryByLabelText("Aktuelles Passwort")).toBeNull();
-  fireEvent.change(screen.getByLabelText("Authenticator-Code"), { target: { value: "۰۰۱۲۳۴" } });
+  const input = screen.getByLabelText("Authenticator-Code");
+  expect(input).toHaveAttribute("type", "text");
+  expect(input).toHaveAttribute("name", "authenticatorCode");
+  expect(input).toHaveAttribute("autocomplete", "one-time-code");
+  expect(input).toHaveAttribute("inputmode", "numeric");
+  fireEvent.change(input, { target: { value: "۰۰۱۲۳۴" } });
   fireEvent.click(screen.getByRole("button", { name: "Code bestätigen" }));
   await waitFor(() => expect(verifyTotp).toHaveBeenCalledWith({ code: "001234" }));
   expect(refresh).toHaveBeenCalledOnce();

@@ -5,13 +5,14 @@ import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import { MergeDialog } from "@/features/contacts/MergeDialog";
 import { personNewsletterMessages } from "@/features/contacts/personNewsletterMessages";
 import type { PersonDetail } from "@/features/contacts/personsRepo";
+import { FileAttachments } from "@/features/files/FileAttachments";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { RecordLink } from "@/features/navigation/RecordLink";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
-import { PersonDetailHeader } from "../../ContactDetailHeader";
+import { ContactDetailHeader } from "../../ContactDetailHeader";
 import styles from "../../ContactDetailLayout.module.css";
-import { ContactTimelinePanel, FilesPanel, TabStrip } from "../../contactDetail.shared";
+import { ContactTimelinePanel, TabStrip } from "../../contactDetail.shared";
 import { PersonNewsletterPanel } from "./PersonNewsletterPanel";
 import { PersonSidebar } from "./PersonSidebar";
 
@@ -78,7 +79,8 @@ export function PersonDetailClient({
 
   return (
     <div className={`${styles.root} flex h-full min-w-0 flex-col`}>
-      <PersonDetailHeader
+      <ContactDetailHeader
+        entityType="person"
         entityId={person.id}
         name={person.name}
         subtitle={
@@ -160,7 +162,7 @@ export function PersonDetailClient({
             {tab === "activity" && (
               <ContactTimelinePanel entityType="person" entityId={person.id} />
             )}
-            {tab === "files" && <FilesPanel entityType="person" entityId={person.id} />}
+            {tab === "files" && <FileAttachments entityType="person" entityId={person.id} />}
             {tab === "newsletter" && (
               <PersonNewsletterPanel
                 key={person.id}

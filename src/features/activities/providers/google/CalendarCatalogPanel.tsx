@@ -1,4 +1,5 @@
 "use client";
+import { SettingsFeedback } from "@/app/(app)/settings/SettingsSurface";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
@@ -6,41 +7,6 @@ import { CalendarCatalogEntry } from "./CalendarCatalogEntry";
 import { useCalendarCatalog } from "./useCalendarCatalog";
 import type { useCalendarConnection } from "./useCalendarConnection";
 
-function CatalogFeedback({
-  catalog,
-  pending,
-}: {
-  catalog: ReturnType<typeof useCalendarCatalog>;
-  pending: boolean;
-}): React.ReactNode {
-  const t = useAppTranslations("calendar");
-  const error = catalog.error ?? (catalog.data?.status === "error" ? "refreshFailed" : null);
-  const review = error !== null && error !== "loadFailed" && catalog.blocked;
-  return (
-    <>
-      {error !== null && (
-        <p role="alert" className="text-sm text-destructive">
-          {t(`googleConnection.catalog.${error}`)}
-        </p>
-      )}
-      {error === "loadFailed" && (
-        <Button variant="outline" size="sm" disabled={pending} onClick={catalog.retry}>
-          {t("editor.retry")}
-        </Button>
-      )}
-      {review && (
-        <Button variant="outline" size="sm" disabled={pending} onClick={catalog.review}>
-          {t("googleConnection.catalog.review")}
-        </Button>
-      )}
-      {catalog.saved && (
-        <p role="status" className="text-sm text-success">
-          {t("googleConnection.catalog.saved")}
-        </p>
-      )}
-    </>
-  );
-}
 export function CalendarCatalogPanel({
   accountId,
   configured,
@@ -55,6 +21,8 @@ export function CalendarCatalogPanel({
   const catalog = useCalendarCatalog(accountId, connection);
   const pending = connection.pending !== null;
   const canAdd = configured && !catalog.blocked && catalog.data?.status === "ready";
+  const error = catalog.error ?? (catalog.data?.status === "error" ? "refreshFailed" : null);
+  const review = error !== null && error !== "loadFailed" && catalog.blocked;
   return (
     <div className="space-y-3 border-t pt-3">
       <Button
@@ -66,9 +34,7 @@ export function CalendarCatalogPanel({
         {t("googleConnection.catalog.discover")}
       </Button>
       {catalog.data === undefined ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          {t("googleConnection.catalog.loading")}
-        </p>
+        <SettingsFeedback>{t("googleConnection.catalog.loading")}</SettingsFeedback>
       ) : (
         <>
           {catalog.data.discoveredAt !== null && (
@@ -78,9 +44,7 @@ export function CalendarCatalogPanel({
             </p>
           )}
           {catalog.data.status === "refreshing" && (
-            <p role="status" className="text-sm text-muted-foreground">
-              {t("googleConnection.catalog.refreshing")}
-            </p>
+            <SettingsFeedback>{t("googleConnection.catalog.refreshing")}</SettingsFeedback>
           )}
           {catalog.rows.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("googleConnection.catalog.empty")}</p>
@@ -99,7 +63,22 @@ export function CalendarCatalogPanel({
           )}
         </>
       )}
-      <CatalogFeedback catalog={catalog} pending={pending} />
+      {error !== null && (
+        <SettingsFeedback tone="error">{t(`googleConnection.catalog.${error}`)}</SettingsFeedback>
+      )}
+      {error === "loadFailed" && (
+        <Button variant="outline" size="sm" disabled={pending} onClick={catalog.retry}>
+          {t("editor.retry")}
+        </Button>
+      )}
+      {review && (
+        <Button variant="outline" size="sm" disabled={pending} onClick={catalog.review}>
+          {t("googleConnection.catalog.review")}
+        </Button>
+      )}
+      {catalog.saved && (
+        <SettingsFeedback tone="success">{t("googleConnection.catalog.saved")}</SettingsFeedback>
+      )}
     </div>
   );
 }

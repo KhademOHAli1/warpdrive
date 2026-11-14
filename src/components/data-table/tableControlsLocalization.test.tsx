@@ -108,7 +108,7 @@ it("preserves an unrecognized caller-supplied noun pair", () => {
   expect(screen.getByRole("alertdialog")).toHaveTextContent("۲ invoice rows حذف شود؟");
   expect(screen.getByRole("button", { name: "حذف invoice rows" })).toBeInTheDocument();
 });
-it("announces keyboard column moves using localized copy and caller display names", async () => {
+it("announces keyboard pickup and cancellation using localized caller display names", async () => {
   const reorder = vi.fn();
   const user = userEvent.setup();
   render(
@@ -135,4 +135,38 @@ it("announces keyboard column moves using localized copy and caller display name
   await user.keyboard("[Escape]");
   expect(await screen.findByText("جابه‌جایی ستون «Email / ایمیل» لغو شد.")).toBeInTheDocument();
   expect(reorder).not.toHaveBeenCalled();
+});
+
+it("skips the pinned row when moving a column by keyboard", async () => {
+  const reorder = vi.fn();
+  const user = userEvent.setup();
+  const { container } = render(
+    <ColumnsMenuSortableList
+      catalog={[
+        { key: "name", header: "Name", pinned: true, defaultVisible: true },
+        { key: "org", header: "Organization", defaultVisible: true },
+        { key: "phone", header: "Phone", defaultVisible: true },
+      ]}
+      order={["name", "org", "phone"]}
+      pinned="name"
+      onToggle={vi.fn()}
+      onReorder={reorder}
+    />,
+  );
+  for (const [index, row] of Array.from(container.children).slice(0, 3).entries()) {
+    vi.spyOn(row, "getBoundingClientRect").mockReturnValue(
+      new DOMRect(20, 20 + index * 30, 200, 30),
+    );
+  }
+  const handle = screen.getByRole("button", { name: "Reorder Phone" });
+  handle.focus();
+  await user.keyboard("[Space]");
+  await screen.findByText("Column Phone is at position 3 of 3.");
+  await user.keyboard("[ArrowUp]");
+  await screen.findByText("Column Phone is at position 2 of 3.");
+  await user.keyboard("[ArrowUp]");
+  expect(screen.getByRole("status")).toHaveTextContent("Column Phone is at position 2 of 3.");
+  await user.keyboard("[Space]");
+  expect(reorder).toHaveBeenCalledExactlyOnceWith("phone", "org");
+  expect(handle).toHaveFocus();
 });

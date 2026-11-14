@@ -32,7 +32,9 @@
     "primary": "ناوبری اصلی",
     "collapse": "جمع کردن نوار کناری",
     "expand": "باز کردن نوار کناری",
-    "collapseShort": "جمع کردن"
+    "collapseShort": "جمع کردن",
+    "pinSidebar": "سنجاق کردن نوار کناری",
+    "unpinSidebar": "برداشتن سنجاق نوار کناری"
   },
   "language": {
     "switchTo": "English",

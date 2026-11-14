@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
-import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import type { SettingsTaskState } from "../SettingsSurface";
 
 type ActionResult = { ok: true } | { ok: false; error: { id: string } };
 
@@ -41,28 +41,6 @@ export function useEmailSettingsTask() {
     if (!locked.current) setFailed(false);
   }
 
-  return { pending, failed, run, reset, isPending: () => locked.current };
-}
-
-export function EmailSettingsTaskFeedback({
-  pending,
-  failed,
-}: {
-  pending: boolean;
-  failed: boolean;
-}) {
-  const L = useSettingsMessages();
-  if (pending)
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        {L._extra.saving}
-      </p>
-    );
-  if (failed)
-    return (
-      <p role="alert" className="text-sm text-destructive">
-        {L._errors.generic}
-      </p>
-    );
-  return null;
+  const state: SettingsTaskState = pending ? "saving" : failed ? "error" : "idle";
+  return { pending, state, run, reset, isPending: () => locked.current };
 }

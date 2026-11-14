@@ -11,6 +11,7 @@ export function RecordQuerySelect({
   editable,
   options,
   error,
+  unavailable = false,
   onChange,
 }: {
   label: string;
@@ -18,6 +19,7 @@ export function RecordQuerySelect({
   editable: boolean;
   options: SelectOption[];
   error?: string;
+  unavailable?: boolean;
   onChange: (value: string) => void;
 }) {
   const t = useAppTranslations("workflows");
@@ -33,7 +35,7 @@ export function RecordQuerySelect({
         value={value}
         options={options}
         disabled={!editable}
-        placeholder={t("chooseValue")}
+        placeholder={t(unavailable ? "unavailableValue" : "chooseValue")}
         onChange={onChange}
       />
       {error !== undefined && (

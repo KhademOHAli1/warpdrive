@@ -2,7 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { STRINGS } from "@/constants/strings";
+import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
 import type { CustomFieldOption } from "@/types/customFields";
 
 afterEach(() => {
@@ -29,7 +29,7 @@ vi.mock("@/features/custom-fields/actions", () => actions);
 import type { MockVoidActionResult } from "@/test/actionResult";
 import { OptionEditor } from "./OptionEditor";
 
-const S = STRINGS.settings;
+const S = settingsMessagesForLocale("en");
 const OPTIONS: CustomFieldOption[] = [{ id: "o1", label: "Red", archived: false }];
 
 describe("OptionEditor surfaces failed mutations", () => {
@@ -49,7 +49,9 @@ describe("OptionEditor surfaces failed mutations", () => {
         "csrf",
       ),
     );
-    expect(await screen.findByRole("status")).toHaveTextContent(S.saved);
+    const saved = await screen.findByRole("status");
+    expect(saved).toHaveTextContent(S.saved);
+    expect(saved).toHaveClass("basis-full", "text-xs", "text-muted-foreground");
     fireEvent.change(label, { target: { value: "Ruby" } });
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
@@ -69,8 +71,11 @@ describe("OptionEditor surfaces failed mutations", () => {
     fireEvent.click(add);
     expect(actions.addOptionAction).toHaveBeenCalledTimes(1);
     expect(add).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent(S._extra.saving);
     rejectAdd(new Error("offline"));
-    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    const error = await screen.findByRole("alert");
+    expect(error).toHaveTextContent(S._errors.generic);
+    expect(error).toHaveClass("basis-full", "text-xs", "text-destructive");
     expect(screen.getByLabelText(S.newOption)).toHaveValue("Blue");
     expect(add).toBeEnabled();
   });

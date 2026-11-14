@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/Button";
 import { useLocalePreferencePending } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import type { OwnerScope } from "@/types/stats";
 import type { CurrentAccountConcentrationReport } from "../currentAccountConcentrationReport";
 import { useStatsMessages } from "../useStatsMessages";
-import { Panel } from "./Panel";
+import { ReportPanel } from "./Panel";
 
 type AvailableReport = Extract<CurrentAccountConcentrationReport, { state: "available" }>;
 type AvailableConcentration = Extract<AvailableReport["concentration"], { state: "available" }>;
@@ -169,37 +168,13 @@ function AvailableAccountReport({ report, scope }: { report: AvailableReport; sc
   );
 }
 
-function ReportBody({
-  report,
-  scope,
-  onRetry,
-}: {
-  report: CurrentAccountConcentrationReport | undefined;
-  scope: Scope;
-  onRetry: () => void;
-}) {
-  const S = useStatsMessages();
-  const { currentAccount: copy } = S;
-  if (report === undefined) return <p role="status">{S.loading}</p>;
-  if (report.state === "available") return <AvailableAccountReport report={report} scope={scope} />;
-  if (report.state === "permission") return <p role="status">{copy.permission}</p>;
-  if (report.state === "scope-unavailable") return <p role="status">{copy.scopeUnavailable}</p>;
-  return (
-    <div className="space-y-3">
-      <p role="alert">{copy.unavailable}</p>
-      <Button type="button" variant="outline" onClick={onRetry}>
-        {S.retry}
-      </Button>
-    </div>
-  );
-}
-
 function matchesReportScope(report: AvailableReport, scope: Scope): boolean {
   return report.from === scope.from && report.to === scope.to && report.currency === scope.currency;
 }
 
 export function CurrentAccountConcentrationPanel({ scope }: { scope: Scope }) {
-  const { currentAccount: copy } = useStatsMessages();
+  const S = useStatsMessages();
+  const copy = S.currentAccount;
   const pending = useLocalePreferencePending();
   const query = trpc.stats.currentAccountConcentration.useQuery(scope, {
     enabled: !pending,
@@ -230,17 +205,18 @@ export function CurrentAccountConcentrationPanel({ scope }: { scope: Scope }) {
   }
   const empty = report?.state === "available" && report.coverage.eligibleWonDeals === 0;
   return (
-    <Panel title={copy.title} isEmpty={empty} emptyText={copy.empty}>
-      <div className="space-y-4">
-        <p className="max-w-prose text-pretty text-sm text-muted-foreground">{copy.definition}</p>
-        <ReportBody
-          report={report}
-          scope={scope}
-          onRetry={() => {
-            void query.refetch();
-          }}
-        />
-      </div>
-    </Panel>
+    <ReportPanel
+      state={report?.state ?? "loading"}
+      copy={copy}
+      loading={S.loading}
+      scopeUnavailable={copy.scopeUnavailable}
+      retry={S.retry}
+      onRetry={() => {
+        void query.refetch();
+      }}
+      isEmpty={empty}
+    >
+      {report?.state === "available" && <AvailableAccountReport report={report} scope={scope} />}
+    </ReportPanel>
   );
 }

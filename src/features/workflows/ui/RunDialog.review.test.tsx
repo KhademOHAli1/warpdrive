@@ -49,17 +49,18 @@ vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     search: {
       query: {
-        useQuery: (_input: { q: string }, options: { enabled: boolean }) => ({
+        useQuery: ({ q }: { q: string }, options: { enabled: boolean }) => ({
           data: {
-            deals: options.enabled
-              ? [
-                  { id: recordId, primary: recordName },
-                  { id: otherRecordId, primary: otherRecordName },
-                ]
-              : [],
+            deals:
+              options.enabled && q === "Acme"
+                ? [
+                    { id: recordId, primary: recordName },
+                    { id: otherRecordId, primary: otherRecordName },
+                  ]
+                : [],
           },
-          isFetching: false,
-          isError: false,
+          isFetching: options.enabled && q === "Loading",
+          isError: options.enabled && q === "Offline",
         }),
       },
     },
@@ -444,6 +445,30 @@ describe("published live-test review", () => {
       otherRecordName,
     );
     expect(io.run).not.toHaveBeenCalled();
+  });
+
+  it("announces search states and retains the chosen deal across other searches", async () => {
+    const user = userEvent.setup();
+    render(view());
+    const search = screen.getByRole("textbox", { name: english.search });
+    const deal = screen.getByRole("combobox", { name: english.deal });
+    expect(search).toHaveAttribute("dir", "auto");
+    expect(search).toHaveAttribute("maxlength", "200");
+    await user.type(search, "A");
+    expect(screen.getByText(english.searchHint)).toBeInTheDocument();
+    expect(deal).toBeDisabled();
+    await user.type(search, "cme");
+    await user.click(deal);
+    await user.click(screen.getByRole("option", { name: recordName }));
+
+    await user.clear(search);
+    await user.type(search, "Loading");
+    expect(screen.getByText(english.searchLoading)).toHaveAttribute("role", "status");
+    expect(deal).toHaveTextContent(recordName);
+    await user.clear(search);
+    await user.type(search, "Offline");
+    expect(screen.getByText(english.loadError)).toHaveAttribute("role", "alert");
+    expect(deal).toHaveTextContent(recordName);
   });
 
   it("invalidates the acknowledgement when the workflow identity is retargeted", async () => {

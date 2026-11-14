@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -26,28 +26,10 @@ import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { type FormattingLocaleTag, localeTagForFormatting } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
+import { GoalFormField } from "./GoalFormField";
 import { connectGraphInput } from "./KpiGraphModel";
 import type { Option } from "./types";
 
-export function KpiGraphField({
-  label,
-  children,
-  help,
-}: {
-  label: string;
-  children: ReactNode;
-  help?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <span className="block text-xs font-medium text-muted-foreground">{label}</span>
-      {children}
-      {help !== undefined && (
-        <p className="text-[11px] leading-relaxed text-muted-foreground">{help}</p>
-      )}
-    </div>
-  );
-}
 function DecimalField({
   value,
   onChange,
@@ -136,16 +118,16 @@ function MetricAggregateFields({
   const duration = metric.valueField === "sales_cycle" || metric.valueField === "duration";
   return (
     <>
-      <KpiGraphField label={B.calculation}>
+      <GoalFormField variant="graph" label={B.calculation}>
         <Select
           ariaLabel={B.calculation}
           value={metric.calculation}
           options={KPI_CALCULATIONS.map((value) => ({ value, label: B.calculations[value] }))}
           onChange={(value) => onChange(chooseCalculation(metric, value as Metric["calculation"]))}
         />
-      </KpiGraphField>
+      </GoalFormField>
       {numeric && metric.source === "deals" && metric.calculation !== "duration" && (
-        <KpiGraphField label={B.valueField}>
+        <GoalFormField variant="graph" label={B.valueField}>
           <Select
             ariaLabel={B.valueField}
             value={metric.valueField ?? "value"}
@@ -161,10 +143,10 @@ function MetricAggregateFields({
               })
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
       )}
       {duration && (
-        <KpiGraphField label={B.unit}>
+        <GoalFormField variant="graph" label={B.unit}>
           <Select
             ariaLabel={B.unit}
             value={metric.unit}
@@ -174,25 +156,25 @@ function MetricAggregateFields({
             ]}
             onChange={(value) => onChange({ ...metric, unit: value as "hours" | "days" })}
           />
-        </KpiGraphField>
+        </GoalFormField>
       )}
       {metric.unit === "money" && (
-        <KpiGraphField label={B.currency}>
+        <GoalFormField variant="graph" label={B.currency}>
           <CurrencySelect
             value={metric.currency ?? baseCurrency}
             onChange={(currency) => onChange({ ...metric, currency })}
           />
-        </KpiGraphField>
+        </GoalFormField>
       )}
       {metric.unit === "custom" && (
-        <KpiGraphField label={B.customUnit}>
+        <GoalFormField variant="graph" label={B.customUnit}>
           <Input
             aria-label={B.customUnit}
             value={metric.customUnit ?? ""}
             maxLength={32}
             onChange={(event) => onChange({ ...metric, customUnit: event.target.value })}
           />
-        </KpiGraphField>
+        </GoalFormField>
       )}
     </>
   );
@@ -216,7 +198,7 @@ function MetricFilterFields({
   const statusOptions = statuses.map((value) => ({ value, label: B.statuses[value] }));
   return (
     <>
-      <KpiGraphField label={B.dateField}>
+      <GoalFormField variant="graph" label={B.dateField}>
         <Select
           ariaLabel={B.dateField}
           value={metric.dateField}
@@ -224,28 +206,28 @@ function MetricFilterFields({
           disabled={metric.calculation === "duration" && metric.source === "deals"}
           onChange={(value) => onChange({ ...metric, dateField: value as Metric["dateField"] })}
         />
-      </KpiGraphField>
+      </GoalFormField>
       {ratio ? (
         <>
-          <KpiGraphField label={B.numerator}>
+          <GoalFormField variant="graph" label={B.numerator}>
             <Select
               ariaLabel={B.numerator}
               value={metric.numeratorStatus ?? "all"}
               options={statusOptions}
               onChange={(value) => onChange({ ...metric, numeratorStatus: value as KpiStatus })}
             />
-          </KpiGraphField>
-          <KpiGraphField label={B.denominator}>
+          </GoalFormField>
+          <GoalFormField variant="graph" label={B.denominator}>
             <Select
               ariaLabel={B.denominator}
               value={metric.denominatorStatus ?? "all"}
               options={statusOptions}
               onChange={(value) => onChange({ ...metric, denominatorStatus: value as KpiStatus })}
             />
-          </KpiGraphField>
+          </GoalFormField>
         </>
       ) : (
-        <KpiGraphField label={B.numerator}>
+        <GoalFormField variant="graph" label={B.numerator}>
           <Select
             ariaLabel={B.numerator}
             value={metric.filters.status ?? "all"}
@@ -254,9 +236,9 @@ function MetricFilterFields({
               onChange({ ...metric, filters: { ...metric.filters, status: value as KpiStatus } })
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
       )}
-      <KpiGraphField label={B.pipeline}>
+      <GoalFormField variant="graph" label={B.pipeline}>
         <Select
           ariaLabel={B.pipeline}
           value={metric.filters.pipelineId ?? ""}
@@ -268,9 +250,9 @@ function MetricFilterFields({
             onChange({ ...metric, filters: { ...metric.filters, pipelineId: value || null } })
           }
         />
-      </KpiGraphField>
+      </GoalFormField>
       {metric.source === "activities" && (
-        <KpiGraphField label={B.activityType}>
+        <GoalFormField variant="graph" label={B.activityType}>
           <Select
             ariaLabel={B.activityType}
             value={metric.filters.activityTypeId ?? ""}
@@ -282,7 +264,7 @@ function MetricFilterFields({
               onChange({ ...metric, filters: { ...metric.filters, activityTypeId: value || null } })
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
       )}
     </>
   );
@@ -294,7 +276,7 @@ function MetricFields(props: MetricProps) {
   return (
     <>
       <p className="text-[11px] leading-relaxed text-muted-foreground">{L.dataHint}</p>
-      <KpiGraphField label={B.source}>
+      <GoalFormField variant="graph" label={B.source}>
         <Select
           ariaLabel={B.source}
           value={metric.source}
@@ -328,7 +310,7 @@ function MetricFields(props: MetricProps) {
             )
           }
         />
-      </KpiGraphField>
+      </GoalFormField>
       <MetricAggregateFields {...props} />
       <MetricFilterFields {...props} />
     </>
@@ -373,7 +355,7 @@ function InputPickers({
             : [{ value: source.id, label: `${format.number(index + 1)} · ${source.label}` }],
         );
         return (
-          <KpiGraphField key={input.handle} label={label}>
+          <GoalFormField variant="graph" key={input.handle} label={label}>
             <Select
               ariaLabel={`${L.inputs}: ${label}`}
               value={connected}
@@ -381,7 +363,7 @@ function InputPickers({
               options={[{ value: "", label: L.disconnected }, ...options]}
               onChange={(source) => onInput(input.handle, source)}
             />
-          </KpiGraphField>
+          </GoalFormField>
         );
       })}
     </div>
@@ -426,18 +408,18 @@ function NodeConfiguration({
       );
     case "constant":
       return (
-        <KpiGraphField label={L.value}>
+        <GoalFormField variant="graph" label={L.value}>
           <DecimalField
             label={L.value}
             value={node.value}
             onChange={(value) => onChange({ ...node, value })}
             disabled={disabled}
           />
-        </KpiGraphField>
+        </GoalFormField>
       );
     case "compute":
       return (
-        <KpiGraphField label={L.operation}>
+        <GoalFormField variant="graph" label={L.operation}>
           <Select
             ariaLabel={L.operation}
             value={node.operation}
@@ -446,11 +428,11 @@ function NodeConfiguration({
               onChange({ ...node, operation: operation as typeof node.operation })
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
       );
     case "compare":
       return (
-        <KpiGraphField label={L.operator}>
+        <GoalFormField variant="graph" label={L.operator}>
           <Select
             ariaLabel={L.operator}
             value={node.operator}
@@ -459,11 +441,11 @@ function NodeConfiguration({
               onChange({ ...node, operator: operator as typeof node.operator })
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
       );
     case "logic":
       return (
-        <KpiGraphField label={L.operation}>
+        <GoalFormField variant="graph" label={L.operation}>
           <Select
             ariaLabel={L.operation}
             value={node.operation}
@@ -475,7 +457,7 @@ function NodeConfiguration({
               onChange({ ...node, operation: operation as typeof node.operation })
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
       );
     case "branch":
       return <p className="text-xs leading-relaxed text-muted-foreground">{L.hint}</p>;
@@ -483,14 +465,14 @@ function NodeConfiguration({
       return (
         <>
           <p className="text-xs leading-relaxed text-muted-foreground">{L.outputHint}</p>
-          <KpiGraphField label={L.description}>
+          <GoalFormField variant="graph" label={L.description}>
             <Textarea
               aria-label={L.description}
               value={description}
               maxLength={1200}
               onChange={(event) => onDescription(event.target.value)}
             />
-          </KpiGraphField>
+          </GoalFormField>
         </>
       );
   }
@@ -512,7 +494,7 @@ export function KpiGraphInspector(props: Props) {
   return (
     <div className="flex min-h-full flex-col">
       <fieldset disabled={disabled} className="space-y-4 p-4">
-        <KpiGraphField label={L.nodeName}>
+        <GoalFormField variant="graph" label={L.nodeName}>
           <Input
             aria-label={L.nodeName}
             value={node.label}
@@ -529,7 +511,7 @@ export function KpiGraphInspector(props: Props) {
               )
             }
           />
-        </KpiGraphField>
+        </GoalFormField>
         <NodeConfiguration {...props} node={node} />
         <InputPickers node={node} graph={graph} onInput={onInput} />
         {result !== undefined && (

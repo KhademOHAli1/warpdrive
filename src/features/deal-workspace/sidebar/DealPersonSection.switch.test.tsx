@@ -207,6 +207,11 @@ it("keeps the dialog open and reports the error when the switch is rejected", as
   fireEvent.click(await screen.findByRole("option", { name: /Paul Burns/ }));
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-  await waitFor(() => expect(reportError).toHaveBeenCalledWith("E_DEAL_009"));
+  await waitFor(() =>
+    expect(reportError).toHaveBeenCalledWith(
+      "E_DEAL_009",
+      screen.getByRole("button", { name: "Save" }),
+    ),
+  );
   expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
 });

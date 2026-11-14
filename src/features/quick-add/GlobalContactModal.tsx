@@ -24,7 +24,8 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 type ContactKind = "person" | "org";
 type AfterCreateBehavior = "respect-interface-preference" | "stay";
 
-export interface ContactCreateModalProps {
+interface ContactCreateModalProps {
+  kind: ContactKind;
   onClose: () => void;
   onCreated: (id: string) => void;
   initialName?: string;
@@ -32,41 +33,18 @@ export interface ContactCreateModalProps {
   afterCreate?: AfterCreateBehavior;
 }
 
-interface GlobalContactModalProps extends ContactCreateModalProps {
-  kind: ContactKind;
-}
-
 const ADDRESS_FIELDS = ["street", "city", "region", "postal", "country"] as const;
-
-// Compatibility entry point for the global quick-add menu. List and embedded surfaces use the
-// explicit variants below so their intent is visible without branching props at the call site.
-export function GlobalContactModal(props: GlobalContactModalProps): React.ReactNode {
-  const { kind, ...modalProps } = props;
-  return kind === "person" ? (
-    <PersonCreateModal {...modalProps} />
-  ) : (
-    <OrganizationCreateModal {...modalProps} />
-  );
-}
-
-export function PersonCreateModal(props: ContactCreateModalProps): React.ReactNode {
-  return <ContactCreateModal kind="person" {...props} />;
-}
-
-export function OrganizationCreateModal(props: ContactCreateModalProps): React.ReactNode {
-  return <ContactCreateModal kind="org" {...props} />;
-}
 
 // Person and organization creation now use the same dialog frame as Add lead/Add deal. The two
 // variants share persistence and navigation behavior but compose their own field columns.
-function ContactCreateModal({
+export function GlobalContactModal({
   kind,
   onClose,
   onCreated,
   initialName = "",
   initialEmail = "",
   afterCreate = "respect-interface-preference",
-}: GlobalContactModalProps): React.ReactNode {
+}: ContactCreateModalProps): React.ReactNode {
   const t = useAppTranslations("quickAdd");
   const locale = useLocale();
   const router = useRouter();

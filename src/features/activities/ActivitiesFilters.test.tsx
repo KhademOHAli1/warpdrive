@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ActivitiesFilters } from "./ActivitiesFilters";
 import type { ActivityListFilter } from "./schemas";
@@ -9,7 +10,7 @@ beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.hasPointerCapture = vi.fn(() => false);
   Element.prototype.releasePointerCapture = vi.fn();
-  // cmdk (Combobox) observes its list's size to manage height; jsdom has no ResizeObserver.
+  // The remaining Radix controls measure their popups with ResizeObserver.
   global.ResizeObserver = class {
     observe = vi.fn();
     unobserve = vi.fn();
@@ -79,14 +80,70 @@ describe("ActivitiesFilters", () => {
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ typeKey: null }));
   });
 
-  it("picking an owner from the Combobox sets ownerId", () => {
+  it("filters by owner with the keyboard and clears the filter with All owners", async () => {
+    const user = userEvent.setup();
     const onChange = vi.fn();
-    render(
-      <ActivitiesFilters filter={baseFilter} onChange={onChange} owners={owners} types={types} />,
+    const onSubmit = vi.fn();
+    const animationDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      value: () => [],
+    });
+    const style = document.createElement("style");
+    // jsdom cannot open the native popover top layer.
+    style.textContent = "[popover][data-slot='combobox-content'] { display: block !important }";
+    document.head.append(style);
+
+    const filterForm = (filter: ActivityListFilter) => (
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit();
+        }}
+      >
+        <ActivitiesFilters filter={filter} onChange={onChange} owners={owners} types={types} />
+      </form>
     );
-    fireEvent.click(screen.getByLabelText("Owner"));
-    fireEvent.click(screen.getByText("Ann"));
-    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ ownerId: "u1" }));
+    const view = render(filterForm(baseFilter));
+    try {
+      const owner = screen.getByRole("button", { name: "Owner" });
+      expect(owner).toHaveClass("w-52");
+      expect(owner).not.toHaveClass("w-full");
+      expect(owner).toHaveTextContent("All owners");
+
+      owner.focus();
+      await user.keyboard("{Enter}");
+      let search = screen.getByRole("combobox", { name: "Search..." });
+      await waitFor(() => expect(search).toHaveFocus());
+      expect(fireEvent.keyDown(search, { key: "Tab", shiftKey: true })).toBe(true);
+      expect(owner).toHaveFocus();
+      expect(onChange).not.toHaveBeenCalled();
+
+      await user.keyboard("{Enter}");
+      search = screen.getByRole("combobox", { name: "Search..." });
+      await waitFor(() => expect(search).toHaveFocus());
+      await user.type(search, "Ann");
+      expect(onChange).not.toHaveBeenCalled();
+      await user.keyboard("{Enter}");
+      const selectedFilter = { ...baseFilter, ownerId: "u1" };
+      expect(onChange).toHaveBeenCalledExactlyOnceWith(selectedFilter);
+      await waitFor(() => expect(owner).toHaveFocus());
+
+      view.rerender(filterForm(selectedFilter));
+      expect(owner).toHaveTextContent("Ann");
+      await user.keyboard("{Enter}");
+      await user.click(screen.getByRole("option", { name: "All owners" }));
+      expect(onChange.mock.calls).toEqual([[selectedFilter], [baseFilter]]);
+      expect(onSubmit).not.toHaveBeenCalled();
+    } finally {
+      cleanup();
+      style.remove();
+      if (animationDescriptor) {
+        Object.defineProperty(Element.prototype, "getAnimations", animationDescriptor);
+      } else {
+        Reflect.deleteProperty(Element.prototype, "getAnimations");
+      }
+    }
   });
 
   it("changing the Status select sets done", () => {

@@ -1,13 +1,9 @@
 "use client";
 import type React from "react";
-import { useSyncExternalStore } from "react";
 import { formatTimelineEmailDate } from "@/features/email/inboxDate";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatUserName } from "@/features/identity/formatUserName";
-
-const subscribe = (): (() => void) => () => {};
-const clientSnapshot = (): boolean => true;
-const serverSnapshot = (): boolean => false;
+import { useHydrated } from "@/lib/useHydrated";
 
 export function AttributionLine({
   at,
@@ -20,7 +16,7 @@ export function AttributionLine({
   const preferences = useLocalePreferences();
   // A minute can tick during hydration, and server/browser Intl punctuation differs.
   // Start with the stable ISO timestamp, then localize once the browser owns the render.
-  const hydrated = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
+  const hydrated = useHydrated();
   return (
     <p className="mt-0.5 text-xs text-muted-foreground">
       <time dateTime={at.toISOString()}>

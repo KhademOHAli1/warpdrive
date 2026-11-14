@@ -30,13 +30,13 @@ import { err } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deleteOrgAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
+import { ContactDirectoryFilters } from "./ContactDirectoryFilters";
 import {
   ContactDirectoryCriteria,
   ContactDirectoryEmptyState,
   ContactDirectoryToolbar,
 } from "./ContactDirectorySurface";
 import type { ContactFilterDefinition } from "./contactFilterConfig";
-import { OrgsListToolbar } from "./OrgsListToolbar";
 import { type OrgsListRow, OrgsTable } from "./OrgsTable";
 import { orgColumns } from "./orgColumns";
 import type { OrgSortField } from "./schemas";
@@ -214,20 +214,23 @@ export function OrgsList({
               : tContacts("countLabel", { shown: rows.length, total })
         }
       >
-        <OrgsListToolbar
-          filter={filter}
-          savedViewId={savedViewId}
-          selectedView={savedView}
-          selectionBlocked={nativeView.selectionBlocked}
-          presentationCapture={presentationCapture}
-          onSelectView={selectView}
-          onApplyFilter={(def) => {
-            if (blocked) return;
-            nativeView.editDefinition(def);
-            selection.clear();
-            setMerging(false);
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <ContactDirectoryFilters
+            entity="organization"
+            filter={filter}
+            savedViewId={savedViewId}
+            selectedView={savedView}
+            selectionBlocked={nativeView.selectionBlocked}
+            presentationCapture={presentationCapture}
+            onSelectView={selectView}
+            onApplyFilter={(def) => {
+              if (blocked) return;
+              nativeView.editDefinition(def);
+              selection.clear();
+              setMerging(false);
+            }}
+          />
+        </div>
 
         <ColumnsMenu
           catalog={catalog}

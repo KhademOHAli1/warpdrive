@@ -14,7 +14,8 @@ import {
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { EmailSettingsTaskFeedback, useEmailSettingsTask } from "./EmailSettingsTask";
+import { SettingsTaskStatus } from "../SettingsSurface";
+import { useEmailSettingsTask } from "./EmailSettingsTask";
 
 type Sig = { id: string; name: string; isDefault: boolean; bodyHtml: string };
 type Draft = { id?: string; name: string; bodyHtml: string; isDefault: boolean };
@@ -87,7 +88,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
       </div>
 
       <div className="space-y-3 p-5">
-        <EmailSettingsTaskFeedback pending={task.pending} failed={task.failed} />
+        <SettingsTaskStatus state={task.state} messages={L} />
         <ul className="divide-y overflow-hidden rounded-md border">
           {signatures.map((s) => (
             <li key={s.id} className="flex items-center justify-between px-3 py-2 text-sm">

@@ -1,8 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
@@ -16,24 +14,11 @@ import { ImapThreadMoveDialog } from "./imapThreadOperationsDialog";
 import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
 import { MailOperationHint } from "./MailOperationHint";
-import type { NeighborFolder } from "./threadNeighbors";
-
-// The list appends ?folder= when opening a thread; default to inbox and ignore anything else so a
-// stray value never reaches the neighbors query (its input is the same three-value enum).
-function readFolder(raw: string | null): NeighborFolder {
-  return raw === "sent" || raw === "archive" ? raw : "inbox";
-}
-
-// Reader navigation bar (Pipedrive parity D1): a Back link, previous/next thread navigation with an
-// N / total position (P3), and an Archive action. The full-page reader otherwise stranded the user
-// on browser-back / the nav rail. Archive mirrors the list's per-row action, then returns to the
-// inbox; a denied archive surfaces the error id instead of silently no-opping (F5-7).
-// canManage: the actor owns the mailbox (canCompose). Archive and Delete are owner-only mutations,
-// so a non-owner viewing a shared thread is not offered controls the backend would reject (F5-7).
+// Archive and Delete are owner-only mutations. The workspace closes the reader and restores
+// the list context after a successful operation.
 export function ReaderTopBar({
   threadId,
   canManage,
-  embedded = false,
   onBack,
   onChanged,
   mailCapabilities,
@@ -41,7 +26,6 @@ export function ReaderTopBar({
 }: {
   threadId: string;
   canManage: boolean;
-  embedded?: boolean;
   onBack?: () => void;
   onChanged?: () => void;
   mailCapabilities?: ThreadMailCapabilities;
@@ -49,20 +33,14 @@ export function ReaderTopBar({
 }): React.ReactNode {
   const E = useEmailMessages();
 
-  const router = useRouter();
   const reportError = useActionError();
   const utils = trpc.useUtils();
-  const folder = readFolder(useSearchParams().get("folder"));
-  const { data: neighbors } = trpc.email.thread.neighbors.useQuery(
-    { threadId, folder },
-    { enabled: !embedded },
-  );
   const [busy, setBusy] = useState(false);
   const trashInFlight = useRef(false);
   const canTrash = mailCapabilities?.trash !== false;
 
-  // Archive/Delete both remove the thread from its list, then navigate to /inbox. The list feeds and
-  // counts are cached (30s staleTime), so invalidate them or the just-removed row remounts stale.
+  // Archive/Delete both remove the thread from its list. Invalidate cached feeds and counts
+  // before the workspace closes the reader.
   function invalidateFeeds(): void {
     void utils.email.inbox.list.invalidate();
     void utils.email.inbox.unreadCount.invalidate();
@@ -81,8 +59,7 @@ export function ReaderTopBar({
     setBusy(false);
     if (res.ok) {
       invalidateFeeds();
-      if (embedded) onBack?.();
-      else router.push("/inbox");
+      onBack?.();
     } else reportError(res.error.id);
   }
 
@@ -98,19 +75,13 @@ export function ReaderTopBar({
         return;
       }
       invalidateFeeds();
-      // Clear the cached thread and replace its URL so Back cannot reopen the trashed thread.
+      // Clear the cached thread before closing so Back cannot reopen stale reader data.
       void utils.email.thread.get.invalidate();
-      if (embedded) onBack?.();
-      else router.replace("/inbox");
+      onBack?.();
     } finally {
       trashInFlight.current = false;
       setBusy(false);
     }
-  }
-
-  function goTo(id: string | null): void {
-    if (id === null) return;
-    router.push(`/inbox/${id}?folder=${folder}`);
   }
 
   const deleteButton = (
@@ -125,57 +96,16 @@ export function ReaderTopBar({
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-      {embedded ? (
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label={E.backToInbox}
-          className={`${styles.back} items-center gap-1 rounded-md px-2 py-1 text-sm hover:bg-accent`}
-        >
-          <Chevron dir="left" />
-          {E.back}
-        </button>
-      ) : (
-        <Link
-          href="/inbox"
-          aria-label={E.backToInbox}
-          className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
-        >
-          <Chevron dir="left" />
-          {E.back}
-        </Link>
-      )}
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label={E.backToInbox}
+        className={`${styles.back} items-center gap-1 rounded-md px-2 py-1 text-sm hover:bg-accent`}
+      >
+        <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+        {E.back}
+      </button>
 
-      {/* Prev/next + position only for the mailbox owner: neighbors is null for a shared-thread
-          viewer (no owner-scoped folder to walk). */}
-      {!embedded && neighbors != null && (
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label={E.previousConversation}
-            disabled={neighbors.prevId === null}
-            onClick={() => goTo(neighbors.prevId)}
-            className="rounded-md p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-40"
-          >
-            <Chevron dir="left" />
-          </button>
-          <span className="tabular-nums text-xs text-muted-foreground">
-            {neighbors.index} / {neighbors.total}
-          </span>
-          <button
-            type="button"
-            aria-label={E.nextConversation}
-            disabled={neighbors.nextId === null}
-            onClick={() => goTo(neighbors.nextId)}
-            className="rounded-md p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-40"
-          >
-            <Chevron dir="right" />
-          </button>
-        </div>
-      )}
-
-      {/* B3: PD groups the reader actions top-left, adjacent to Back + pager, rather than pushing
-          Archive/Delete to the far right. Archive + Delete share one action group. */}
       {canManage && (
         <div data-reader-actions-group className="flex items-center gap-1">
           <button
@@ -199,8 +129,7 @@ export function ReaderTopBar({
               onMoved={() => {
                 invalidateFeeds();
                 void utils.email.thread.get.invalidate();
-                if (embedded) onBack?.();
-                else router.replace("/inbox");
+                onBack?.();
               }}
             />
           )}
@@ -224,9 +153,4 @@ export function ReaderTopBar({
       )}
     </div>
   );
-}
-
-function Chevron({ dir }: { dir: "left" | "right" }): React.ReactNode {
-  const Glyph = dir === "left" ? ChevronLeft : ChevronRight;
-  return <Glyph aria-hidden="true" className="h-4 w-4" />;
 }

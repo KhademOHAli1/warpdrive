@@ -93,7 +93,7 @@ afterEach(cleanup);
 
 describe("ThreadPane reader reading column (U2)", () => {
   it("wraps each reader message in a bordered card (B10)", () => {
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     const card = screen.getByTestId("reader-message-card");
     // Sender name lives inside the card; the enclosing article is a bordered, rounded card,
     // not a flat full-width article.
@@ -102,14 +102,14 @@ describe("ThreadPane reader reading column (U2)", () => {
   });
 
   it("constrains the reader content column with a max-width, not the full pane (B10)", () => {
-    const { container } = render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    const { container } = render(<ThreadPane threadId="t1" />);
     const column = container.querySelector("[data-reader-column]");
     expect(column).not.toBeNull();
     expect((column as HTMLElement).className).toMatch(/max-w-/);
   });
 
   it("renders the reply control INSIDE the message scroll region, not as a trailing sibling (B8 pin)", () => {
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     const replyBtn = screen.getByRole("button", { name: STRINGS.inbox.replyAction });
     // The reply control's ancestor chain must include the scroll container. Before U2, ReaderActions
     // was a sibling rendered AFTER the scroller, so this closest() would be null.
@@ -120,7 +120,7 @@ describe("ThreadPane reader reading column (U2)", () => {
   });
 
   it("places the reply bar in the same column as the message on a single-message thread (no footer gap)", () => {
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     const card = screen.getByTestId("reader-message-card");
     const footer = screen.getByTestId("reader-reply-footer");
     // Reply footer and message card are siblings in the constrained column (footer flows directly

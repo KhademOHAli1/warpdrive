@@ -15,7 +15,8 @@ import { settingsFieldType } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ReorderControls } from "../company/ReorderControls";
-import { FieldTaskStatus, useFieldTask } from "./FieldTask";
+import { SettingsTaskStatus } from "../SettingsSurface";
+import { useFieldTask } from "./FieldTask";
 import { OptionEditor } from "./OptionEditor";
 import type { FieldRow } from "./types";
 
@@ -215,7 +216,7 @@ export function FieldRowItem({
             <span className="text-xs text-muted-foreground">{S.showInAddForm}</span>
           </span>
         </div>
-        <FieldTaskStatus state={task.state} />
+        <SettingsTaskStatus state={task.state} messages={L} compact />
         {isOptionType ? (
           <CollapsibleContent>
             <OptionEditor defId={row.id} options={row.options} />

@@ -8,7 +8,8 @@ import { archiveOptionAction, renameOptionAction } from "@/features/custom-field
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { CustomFieldOption } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { FieldTaskStatus, useFieldTask } from "./FieldTask";
+import { SettingsTaskStatus } from "../SettingsSurface";
+import { useFieldTask } from "./FieldTask";
 
 export function FieldOptionRow({ defId, option }: { defId: string; option: CustomFieldOption }) {
   const S = useSettingsMessages();
@@ -86,7 +87,7 @@ export function FieldOptionRow({ defId, option }: { defId: string; option: Custo
           </Button>
         </div>
       )}
-      <FieldTaskStatus state={task.state} />
+      <SettingsTaskStatus state={task.state} messages={S} compact />
     </li>
   );
 }

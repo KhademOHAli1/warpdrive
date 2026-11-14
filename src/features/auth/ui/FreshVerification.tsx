@@ -127,8 +127,7 @@ export function FreshVerification({
         <form className="space-y-3" onSubmit={factorSubmit}>
           <AuthField
             label={L.authenticatorCode}
-            autoComplete="one-time-code"
-            inputMode="numeric"
+            code="authenticator"
             required
             value={code}
             onChange={(event) => setCode(event.target.value)}

@@ -137,4 +137,4 @@ export function useAppTranslations<Namespace extends AppNamespace>(namespace: Na
   );
 }
 
-export { LanguageMenuItem, LanguageSwitcher } from "./LanguageSwitcher";
+export { LanguageSwitcher } from "./LanguageSwitcher";

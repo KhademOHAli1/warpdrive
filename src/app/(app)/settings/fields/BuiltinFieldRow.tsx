@@ -7,7 +7,8 @@ import { setBuiltinFieldHiddenAction } from "@/features/custom-fields/actions";
 import { settingsBuiltinLabel } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { FieldTaskStatus, useFieldTask } from "./FieldTask";
+import { SettingsTaskStatus } from "../SettingsSurface";
+import { useFieldTask } from "./FieldTask";
 import type { BuiltinRow } from "./types";
 
 // One built-in field in the Data fields list. Locked identity fields render as a labelled,
@@ -64,7 +65,7 @@ export function BuiltinFieldRow({
           </>
         )}
       </span>
-      <FieldTaskStatus state={task.state} />
+      <SettingsTaskStatus state={task.state} messages={L} compact />
     </li>
   );
 }

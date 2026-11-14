@@ -15,6 +15,7 @@ import { canonicalMoney } from "@/lib/canonicalMoney";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { parseMoneyValue } from "@/utils/entityFormFields";
+import { useDealDetailInitialFormats } from "./DealDetailInitialFormats";
 import { LabelRow } from "./LabelRow";
 import { ParticipantsControl } from "./ParticipantsControl";
 import { InlineOrgField } from "./sidebar/InlineOrgField";
@@ -72,6 +73,7 @@ export function DealSummaryActionList({
   const router = useRouter();
   const locale = useLocale();
   const format = useFormatters();
+  const initialFormats = useDealDetailInitialFormats();
   const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
   const [editingValue, setEditingValue] = useState(false);
   const [draft, setDraft] = useState("");
@@ -127,7 +129,10 @@ export function DealSummaryActionList({
             setCurrency(deal.currency ?? baseCurrency);
             setEditingValue(true);
           }}
-          value={`${format.currency(deal.value ?? 0, deal.currency ?? baseCurrency)} ${deal.currency ?? baseCurrency}`}
+          value={
+            initialFormats?.summaryValue ??
+            `${format.currency(deal.value ?? 0, deal.currency ?? baseCurrency)} ${deal.currency ?? baseCurrency}`
+          }
         >
           <div>
             <input
@@ -199,7 +204,11 @@ export function DealSummaryActionList({
             setDateDraft(deal.expectedCloseDate);
             setEditingDate(true);
           }}
-          value={deal.expectedCloseDate !== null ? format.dateOnly(deal.expectedCloseDate) : null}
+          value={
+            deal.expectedCloseDate !== null
+              ? (initialFormats?.expectedCloseDate ?? format.dateOnly(deal.expectedCloseDate))
+              : null
+          }
           emptyPrompt={translateSales("set_expected_close_date_c5fe2")}
         >
           <div>

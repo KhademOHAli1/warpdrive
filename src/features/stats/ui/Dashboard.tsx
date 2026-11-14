@@ -9,7 +9,8 @@ import {
   UsersRound,
 } from "lucide-react";
 import type React from "react";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
+import { DashboardSkeleton } from "@/components/shell/skeletons";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +23,7 @@ import {
 } from "@/features/i18n/LocaleProvider";
 import type { DealRecordMetric } from "@/features/stats/metricDictionary";
 import { trpc } from "@/lib/trpc-client";
+import { useHydrated } from "@/lib/useHydrated";
 import { cn } from "@/lib/utils";
 import type { OwnerScope } from "@/types/stats";
 import { useStatsMessages } from "../useStatsMessages";
@@ -29,7 +31,7 @@ import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
 import { CurrentAccountConcentrationPanel } from "./CurrentAccountConcentrationPanel";
 import { CurrentAttentionPanel } from "./CurrentAttentionPanel";
 import { CurrentLeadHandoffPanel } from "./CurrentLeadHandoffPanel";
-import { DashboardError, DashboardLoading } from "./DashboardState";
+import { DashboardError } from "./DashboardState";
 import { DateRangeControl } from "./DateRangeControl";
 import {
   DealRecordsDrawer,
@@ -52,7 +54,6 @@ import { ActivitiesWidget, DealPerformanceWidget, FunnelWidget, StageSumsWidget 
 
 const ALL_PIPELINES = "all";
 const ME_SCOPE: OwnerScope = { kind: "me" };
-const subscribeHydration = (): (() => void) => () => {};
 const REPORT_TAB = cn(
   PILL_TAB,
   "min-h-10 flex-none px-4 data-[state=active]:bg-link/10 data-[state=active]:text-link",
@@ -122,11 +123,7 @@ export function Dashboard({
   const preferencePending = useLocalePreferencePending();
   // Quick add can fill the shared pipeline cache before this subtree hydrates.
   // Keep the first picker markup stable, then apply its current query state.
-  const hydrated = useSyncExternalStore(
-    subscribeHydration,
-    () => true,
-    () => false,
-  );
+  const hydrated = useHydrated();
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
   const [range, setRange] = useState(() => presetRange("year", today, calendar));
@@ -201,7 +198,7 @@ export function Dashboard({
       />
     );
   } else if (result === undefined) {
-    body = <DashboardLoading />;
+    body = <DashboardSkeleton label={S.loading} />;
   } else {
     body = (
       <div className="space-y-5">
