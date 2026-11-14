@@ -48,6 +48,8 @@ TIMEOUT = 20
 STORAGE_CLIENT_ENV = "WARPDRIVE_STORAGE_CLIENT_BIN"
 STORAGE_CLIENT_CONFIG = "/tmp/warpdrive-fixture-client"
 STORAGE_CLIENT_DATA_TMPFS = "/data:rw,noexec,nosuid,size=8m"
+STORAGE_FILE_DEFAULTS = frozenset({"MINIO_ACCESS_KEY_FILE", "MINIO_SECRET_KEY_FILE", "MINIO_ROOT_USER_FILE",
+                                   "MINIO_ROOT_PASSWORD_FILE", "MINIO_KMS_SECRET_KEY_FILE", "MINIO_CONFIG_ENV_FILE"})
 STORAGE_CLIENT_GUARD = 'case "$WARPDRIVE_STORAGE_CLIENT_BIN" in mc|mcli) ;; *) exit 64 ;; esac'
 STORAGE_INIT_SCRIPT = """umask 077
 case "$WARPDRIVE_STORAGE_CLIENT_BIN" in mc|mcli) ;; *) exit 64 ;; esac
@@ -63,6 +65,15 @@ STORAGE_INIT_ENTRYPOINT = ["/bin/sh", "-ec", STORAGE_INIT_SCRIPT.replace("$", "$
 def validate_storage_client_bin(value):
     require(isinstance(value, str) and value in {"mc", "mcli"}, "Fresh storage client must be mc or mcli")
     return value
+
+
+def validate_storage_file_environment(environment):
+    require(type(environment) is dict and all(type(key) is str for key in environment)
+            and {key for key in environment if key.startswith("MINIO_") and key.endswith("_FILE")} == STORAGE_FILE_DEFAULTS
+            and all(environment[key] == "" for key in STORAGE_FILE_DEFAULTS)
+            and all(value == "" for key, value in environment.items() if key.endswith("_FILE")),
+            "Fresh storage file defaults must be explicitly disabled without new file authority")
+    return environment
 
 
 def validate_cgroup_parent(value):
@@ -164,6 +175,8 @@ def _service(name, service, directory, expected, *, storage_client_bin="mc", cgr
     environment = service.get("environment", {})
     require(type(environment) is dict and all(environment.get(key, "false") == "false" for key in DISABLED)
             and all(environment.get(key, "") == "" for key in EMPTY), "Fresh Compose newsletter delivery, provider and signup must stay disabled")
+    if name in {"minio", "createbuckets"}:
+        validate_storage_file_environment(environment)
     if name == "createbuckets":
         require(environment.get(STORAGE_CLIENT_ENV) == validate_storage_client_bin(storage_client_bin)
                 and service.get("entrypoint") == STORAGE_INIT_ENTRYPOINT and service.get("command") == [],

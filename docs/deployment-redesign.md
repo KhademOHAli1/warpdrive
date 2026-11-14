@@ -279,6 +279,10 @@ client. Only that server/initializer image alias is admitted; the other support
 roles remain distinct. The fresh overlay runs a fixed, quoted client command with
 a private temporary configuration directory. This selection changes the isolated
 fresh profile, not the running installation or the legacy production Compose file.
+The storage server, initializer and transient clients explicitly clear the six
+baked MinIO file-default variables and use the generated direct credentials.
+Admission and runtime readback verify those empty overrides. Recovery continues
+to reject relative or unadmitted file authority.
 Both legacy Quay server and Docker Hub client lookups returned authorization
 failures during the 14 November metadata preflight, so they are not treated as
 available native fixture inputs.
@@ -300,6 +304,23 @@ and remaining resources for inspection. Docker/Compose subprocesses have bounded
 output, time and owned process groups. An uncertain mutating Compose result holds
 the fixture and its registry; it never starts destructive cleanup while the command
 or its outcome is unresolved. A preflight collision never arms cleanup.
+Cold fingerprints order Docker mount records by their unique destination while
+retaining every field. A different inspect-list order cannot change the captured
+configuration; changed mount authority or metadata still fails verification.
+Materialization preserves sticky bits on verified directories, including Caddy's
+data directories, while rejecting setuid/setgid and special bits on files.
+Topology comparison recognizes the observed Docker default `OomKillDisable`
+transition from explicit false before start to null after running. Missing,
+enabled or other changed configuration remains rejected; raw capture is retained.
+Restored containers are created without starting initialization services, using
+the original storage and workload groups. Topology comparison orders validated,
+unique environment entries and dependency tuples without changing their values;
+modern replacement markers must match the exact service and replica labels.
+Bind records are ordered by their validated destination while retaining each full
+source, target and option string. Duplicate, overlapping or ambiguous targets
+remain rejected. The create-only probe and recovery startup share the same
+container, volume-ownership and complete data-inventory checks before any writer
+may start.
 
 The Engine handles TERM/INT through its bounded resource closer and reports a
 nonzero outcome if shutdown cannot finish. Cold recovery retains its zero-exit

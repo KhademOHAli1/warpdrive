@@ -119,6 +119,16 @@ class FreshComposeSmokeTests(unittest.TestCase):
                 self.assertEqual(len(fixture.receipt["checks"]["configurationSha256"]), 64)
                 for path in (directory / "baseline.env", directory / "candidate.env", fixture.storage_env):
                     self.assertIn("WARPDRIVE_STORAGE_CLIENT_BIN=" + client + "\n", path.read_text())
+                storage_env = dict(line.split("=", 1) for line in fixture.storage_env.read_text().splitlines())
+                self.assertEqual({key: storage_env[key] for key in smoke.STORAGE_FILE_DEFAULTS},
+                                 dict.fromkeys(smoke.STORAGE_FILE_DEFAULTS, ""))
+                self.assertTrue(storage_env["MINIO_ACCESS_KEY"] and storage_env["MINIO_SECRET_KEY"])
+                for model in models:
+                    for role in ("minio", "createbuckets"):
+                        self.assertEqual({key: model["services"][role]["environment"][key] for key in smoke.STORAGE_FILE_DEFAULTS},
+                                         dict.fromkeys(smoke.STORAGE_FILE_DEFAULTS, ""))
+                    self.assertEqual(model["services"]["minio"]["environment"]["MINIO_ROOT_USER"], storage_env["MINIO_ACCESS_KEY"])
+                    self.assertEqual(model["services"]["createbuckets"]["environment"]["MINIO_SECRET_KEY"], storage_env["MINIO_SECRET_KEY"])
                 self.assertTrue(all(model["services"]["createbuckets"]["environment"][smoke.STORAGE_CLIENT_ENV] == client for model in models))
                 for name, (memory, cpus, pids) in smoke.RESOURCE_LIMITS.items():
                     self.assertEqual(models[0]["services"][name].get("cgroup_parent"), parent)
@@ -189,7 +199,8 @@ class FreshComposeSmokeTests(unittest.TestCase):
         for index, name in enumerate(sorted(self.baseline), 1):
             memory, cpus, pids = smoke.RESOURCE_LIMITS[name]
             rows.append({"Id": f"{index:064x}", "Image": "sha256:" + f"{index + 20:064x}",
-                "Config": {"Labels": {smoke.OWNER: fixture.project, smoke.SERVICE: name}},
+                "Config": {"Labels": {smoke.OWNER: fixture.project, smoke.SERVICE: name},
+                           "Env": [key + "=" for key in sorted(smoke.STORAGE_FILE_DEFAULTS)]},
                 "HostConfig": {"Memory": memory, "MemorySwap": memory, "NanoCpus": int(cpus * 10**9),
                                "PidsLimit": pids, "CgroupParent": parent}})
         fixture.images = {"baseline": {row["Config"]["Labels"][smoke.SERVICE]: row["Image"] for row in rows}}
@@ -218,6 +229,32 @@ class FreshComposeSmokeTests(unittest.TestCase):
         proc.write_text("MemTotal: 8388608 kB\n")
         with self.assertRaisesRegex(SwitchConflict, "available-memory"):
             smoke._available_memory(proc, cgroup)
+
+    def test_actual_storage_rows_refuse_missing_nonempty_or_added_file_authority(self):
+        for role in ("minio", "createbuckets"):
+            for key, value in [(key, "relative-default") for key in smoke.STORAGE_FILE_DEFAULTS] + [
+                    ("MINIO_ROOT_USER_FILE", None), ("MINIO_EXTRA_FILE", ""), ("EXTERNAL_SECRET_FILE", "/run/unreviewed")]:
+                docker = Mock()
+                fixture = smoke.FreshSmoke(docker, self.directory, self.baseline, self.candidate)
+                identifier, image = "f" * 64, "sha256:" + "a" * 64
+                environment = dict.fromkeys(smoke.STORAGE_FILE_DEFAULTS, "")
+                if value is None:
+                    environment.pop(key)
+                else:
+                    environment[key] = value
+                memory, cpus, pids = smoke.RESOURCE_LIMITS[role]
+                row = {"Id": identifier, "Image": image,
+                       "Config": {"Labels": {smoke.OWNER: fixture.project, smoke.SERVICE: role},
+                                  "Env": [key + "=" + value for key, value in environment.items()]},
+                       "HostConfig": {"Memory": memory, "MemorySwap": memory,
+                                      "NanoCpus": int(cpus * 10**9), "PidsLimit": pids}}
+                fixture.images = {"baseline": {role: image}}
+                fixture._ids = Mock(return_value=[identifier])
+                fixture._verify_configuration = Mock()
+                docker.json.return_value = [row]
+                with self.subTest(role=role, key=key, value=value), self.assertRaisesRegex(SwitchConflict, "file defaults"):
+                    fixture._rows()
+                docker.run.assert_not_called()
 
     def test_changed_prepared_configuration_holds_before_any_compose_command(self):
         docker = Mock()
@@ -359,6 +396,7 @@ class FreshComposeSmokeTests(unittest.TestCase):
                 memory, cpus, pids = smoke.RESOURCE_LIMITS["createbuckets"]
                 row.update(Id=identifier, Name="/" + arguments[arguments.index("--name") + 1], Image="owned-client",
                     Config={"Labels": {smoke.OWNER: fixture.project, smoke.SERVICE: "fixture-storage-client"},
+                            "Env": [key + "=" for key in sorted(smoke.STORAGE_FILE_DEFAULTS)] + [smoke.STORAGE_CLIENT_ENV + "=" + client],
                             "Volumes": {"/data": {}}},
                     HostConfig={"Memory": memory, "MemorySwap": memory, "NanoCpus": int(cpus * 10**9),
                                 "PidsLimit": pids, "CgroupParent": parent, "NetworkMode": fixture.network,
@@ -461,6 +499,35 @@ class FreshComposeSmokeTests(unittest.TestCase):
             with self.subTest(path=path), self.assertRaises(smoke.FreshMutationUnknown):
                 fixture._object("seed")
             self.assertEqual([call.args[0][0] for call in docker.run.call_args_list], ["create"])
+
+    def test_budgeted_client_file_and_selection_guards_hold_before_first_start(self):
+        for client in ("mc", "mcli"):
+            for change in ("missing", "relative", "absolute", "new-minio-file", "new-external-file", "duplicate", "selection"):
+                fixture, docker, row = self._budgeted_storage_fixture(client)
+
+                def inspect(_args, **_options):
+                    changed = deepcopy(row)
+                    env = changed["Config"]["Env"]
+                    if change == "missing":
+                        changed["Config"]["Env"] = [v for v in env if not v.startswith("MINIO_ACCESS_KEY_FILE=")]
+                    elif change in {"relative", "absolute"}:
+                        changed["Config"]["Env"] = [v for v in env if not v.startswith("MINIO_ACCESS_KEY_FILE=")] + [
+                            "MINIO_ACCESS_KEY_FILE=" + ("relative-default" if change == "relative" else "/run/secret")]
+                    elif change == "new-minio-file":
+                        env.append("MINIO_EXTRA_FILE=")
+                    elif change == "new-external-file":
+                        env.append("EXTERNAL_SECRET_FILE=/run/secret")
+                    elif change == "duplicate":
+                        env.append("MINIO_ACCESS_KEY_FILE=")
+                    else:
+                        changed["Config"]["Env"] = [v for v in env if not v.startswith(smoke.STORAGE_CLIENT_ENV + "=")] + [
+                            smoke.STORAGE_CLIENT_ENV + "=other"]
+                    return [changed]
+
+                docker.json.side_effect = inspect
+                with self.subTest(client=client, change=change), self.assertRaises(smoke.FreshMutationUnknown):
+                    fixture._object("seed")
+                self.assertEqual([call.args[0][0] for call in docker.run.call_args_list], ["create"])
 
     def test_budgeted_storage_client_accepts_only_the_proven_oom_default_transition(self):
         missing = object()

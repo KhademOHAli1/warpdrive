@@ -14,6 +14,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import shutil
 import signal
@@ -37,6 +38,7 @@ CAPTURE_LIMITS = {"files": 20000, "bytes": 1024**3, "fileBytes": 256 * 1024**2,
                   "seconds": 240, "reserveBytes": 2 * 1024**3, "repositoryBytes": 1024**3}
 STOP_WAVES = (("caddy",), ("app", "worker", "ws", "newsletter-engine"), ("minio", "postgres"))
 START_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine"), ("caddy",))
+CREATE_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine", "caddy"))
 LIMITATIONS = [
     "Owned synthetic Linux AMD64 fixture only; no production or customer installation was recovered.",
     "Seeded CRM rows, migration ledger, private object, engine media, health, one worker job and WebSocket rejection only.",
@@ -350,7 +352,8 @@ def _copy_verified_root(quarantine, root, inventory):
         for row in sorted(rows, key=lambda row: (len(Path(row["path"]).parts), row["path"])):
             path = Path(row["path"])
             relative = path.relative_to(root)
-            r.require(not row["mode"] & 0o7000, "Special permission bits are unsupported in this fixture")
+            r.require(not row["mode"] & 0o6000 and (row["kind"] == "directory" or not row["mode"] & 0o1000),
+                      "Only directory sticky permission bits are supported in this fixture")
             if path == root:
                 directories.append(row)
                 continue
@@ -431,22 +434,105 @@ def _volume_roots(fixture, plan):
     return result
 
 
+def _topology_environment(environment):
+    r.require(type(environment) is list and len(environment) <= 4096, "Restored fixture environment is invalid")
+    keys = set()
+    for entry in environment:
+        r.require(type(entry) is str and "\0" not in entry and "=" in entry,
+                  "Restored fixture environment record is invalid")
+        key = entry.split("=", 1)[0]
+        r.require(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key) is not None and key not in keys,
+                  "Restored fixture environment key is invalid or duplicated")
+        keys.add(key)
+    r.require(sum(len(entry) for entry in environment) <= r.MAX_METADATA, "Restored fixture environment exceeds bound")
+    return sorted(environment, key=lambda entry: entry.split("=", 1)[0])
+
+
+def _topology_dependencies(dependencies):
+    r.require(type(dependencies) is str and len(dependencies) <= 16384,
+              "Restored fixture dependency label is invalid")
+    if not dependencies:
+        return dependencies
+    records, services = dependencies.split(","), set()
+    r.require(len(records) <= 128, "Restored fixture dependency label exceeds bound")
+    for entry in records:
+        parts = entry.split(":")
+        r.require(len(parts) == 3 and r.NAME.fullmatch(parts[0]) is not None
+                  and parts[1] in {"service_started", "service_healthy", "service_completed_successfully"}
+                  and parts[2] in {"false", "true"} and parts[0] not in services,
+                  "Restored fixture dependency tuple is invalid or duplicated")
+        services.add(parts[0])
+    return ",".join(sorted(records))
+
+
+def _topology_binds(bindings):
+    if bindings is None:
+        return bindings
+    r.require(type(bindings) is list and len(bindings) <= 128, "Restored fixture binds are invalid")
+    destinations = []
+    for entry in bindings:
+        r.require(type(entry) is str and len(entry) <= 65536 and not any(ord(c) < 32 or ord(c) == 127 for c in entry),
+                  "Restored fixture bind record is invalid")
+        parts = entry.split(":")
+        r.require(len(parts) in {2, 3} and parts[0], "Restored fixture bind record is ambiguous")
+        source, destination = parts[:2]
+        r.require(not source.startswith("//") and not destination.startswith("//"),
+                  "Restored fixture bind paths have an ambiguous root")
+        if source.startswith("/"):
+            r.absolute(source)
+        else:
+            r.require(r.NAME.fullmatch(source) is not None, "Restored fixture bind source is invalid")
+        target = r.absolute(destination)
+        r.require(not any(target.is_relative_to(other) or other.is_relative_to(target) for other in destinations),
+                  "Restored fixture bind destinations overlap")
+        destinations.append(target)
+        if len(parts) == 3:
+            options = parts[2].split(",")
+            r.require(all(re.fullmatch(r"[A-Za-z0-9_-]+", option) is not None for option in options)
+                      and len(set(options)) == len(options) and not {"ro", "rw"} <= set(options),
+                      "Restored fixture bind options are invalid or ambiguous")
+    r.require(sum(len(entry) for entry in bindings) <= r.MAX_METADATA, "Restored fixture binds exceed bound")
+    return sorted(bindings, key=lambda entry: entry.split(":")[1])
+
+
 def _topology(row):
     config = deepcopy(row["Config"])
+    host_config = deepcopy(row["HostConfig"])
+    r.require(type(host_config) is dict, "Restored fixture host configuration is invalid")
+    if "Binds" in host_config:
+        host_config["Binds"] = _topology_binds(host_config["Binds"])
+    if "OomKillDisable" in host_config:
+        r.require(host_config["OomKillDisable"] is None or host_config["OomKillDisable"] is False,
+                  "Restored fixture OOM kill setting is invalid")
+        # Docker 29 reports false at create and null after start for the same
+        # enabled OOM killer. Keep every other field and key presence exact.
+        host_config["OomKillDisable"] = False
     config.pop("Hostname", None)  # Docker assigns the new full container identity.
+    if "Env" in config:
+        config["Env"] = _topology_environment(config["Env"])
     labels = config.get("Labels")
     r.require(labels is None or type(labels) is dict, "Restored fixture labels are invalid")
     if labels is not None and "com.docker.compose.replace" in labels:
         replaced = labels.pop("com.docker.compose.replace")
-        r.require(isinstance(replaced, str) and r.HASH.fullmatch(replaced), "Compose replacement identity is invalid")
-        # Compose retains this old-container marker after a Web replacement;
+        service, number = labels.get("com.docker.compose.service"), labels.get("com.docker.compose.container-number")
+        modern = (isinstance(service, str) and service in LONG_RUNNING and isinstance(number, str)
+                  and re.fullmatch(r"[1-9][0-9]{0,5}", number) is not None and replaced == service + "-" + number)
+        r.require(isinstance(replaced, str) and (r.HASH.fullmatch(replaced) or modern),
+                  "Compose replacement identity is invalid")
+        # Compose uses an old full ID or a service-replica marker by version;
         # the independently restored project creates a new container directly.
-    return {"imageId": row["Image"], "config": config, "hostConfig": row["HostConfig"],
+    if labels is not None and "com.docker.compose.depends_on" in labels:
+        labels["com.docker.compose.depends_on"] = _topology_dependencies(labels["com.docker.compose.depends_on"])
+    return {"imageId": row["Image"], "config": config, "hostConfig": host_config,
             "mounts": sorted(row["Mounts"], key=lambda mount: mount["Destination"])}
 
 
-def _restart(fixture, before, ledger, inventory, budget):
-    fixture.compose("baseline", "up", "--no-start", "--no-deps", "--no-build", "--pull", "never", *sorted(LONG_RUNNING))
+def _create_restored(fixture, before, inventory, budget):
+    """Create and verify every restored service before any writer may start."""
+    # Match the original provisioning groups so Compose retains the same
+    # selected dependency sets. No initialization service is created or run.
+    for wave in CREATE_WAVES:
+        fixture.compose("baseline", "up", "--no-start", "--no-deps", "--no-build", "--pull", "never", *wave)
     created = fixture._rows()
     r.require(set(created) == LONG_RUNNING, "Restored fixture must not recreate initialization services")
     for service, row in created.items():
@@ -457,6 +543,11 @@ def _restart(fixture, before, ledger, inventory, budget):
         fixture._verify_volume(name, allowed={row["Id"] for row in created.values()})
     r.require(r.scan(inventory["roots"], budget, single_link=True) == inventory,
               "Fixture container creation changed restored bytes or metadata")
+    return created
+
+
+def _restart(fixture, before, ledger, inventory, budget):
+    created = _create_restored(fixture, before, inventory, budget)
     fixture.restored = True
     for wave in START_WAVES:
         for service in wave:

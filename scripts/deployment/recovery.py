@@ -667,6 +667,19 @@ def clean_stop_evidence(row, *, service, expected, project, next_web_stop=None):
     return {"exitCode": code, "contract": NEXT_WEB_STOP_KIND}
 
 
+def canonical_docker_mounts(mounts):
+    """Docker inspection order is not mount authority; retain every record field."""
+    require(type(mounts) is list and len(mounts) <= 128
+            and all(type(mount) is dict and 1 <= len(mount) <= 64
+                    and all(type(key) is str for key in mount) for mount in mounts),
+            "Exact bounded Docker mount records required")
+    destinations = [absolute(mount.get("Destination")) for mount in mounts]
+    require(all(not mount["Destination"].startswith("//") for mount in mounts),
+            "Docker mount destination must use one absolute root")
+    require(len(set(destinations)) == len(destinations), "Ambiguous duplicate Docker mount destination")
+    return sorted(mounts, key=lambda mount: mount["Destination"])
+
+
 class DockerColdObserver:
     """Inspect only. No stop/start/exec, host socket mount or container creation."""
     def __init__(self, docker, pg_controldata, command=None, *, next_web_stop=None):
@@ -804,6 +817,7 @@ class DockerColdObserver:
                 require(not pg_networks.intersection(row.get("NetworkSettings", {}).get("Networks", {})),
                         "The PostgreSQL network is shared outside this installation")
                 continue
+            mounts = canonical_docker_mounts(mounts)
             service = labels.get("com.docker.compose.service")
             expected = plan["containers"].get(service)
             require(expected is not None and row.get("Id") == expected["id"] and row.get("Image") == expected["imageId"],

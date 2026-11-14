@@ -556,6 +556,64 @@ class DockerObservationTests(unittest.TestCase):
         with self.assertRaises(r.RecoveryError):
             self.observe()
 
+    def test_reordered_realistic_caddy_mounts_preserve_complete_private_config_and_fingerprint(self):
+        caddy = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "caddy")
+        config = self.fixture.configuration.parent
+        self.fixture.plan["configurationFiles"].append(str(config))
+        for name, destination in (("Caddyfile", "/etc/caddy/Caddyfile"), ("newsletters/Caddyfile", "/etc/caddy/newsletters"),
+                                  ("tls/cert.pem", "/fixture/cert.pem")):
+            source = config / name
+            put(source, b"synthetic fixture configuration")
+            caddy["Mounts"].append({"Type": "bind", "Source": str(source), "Destination": destination,
+                                    "RW": False, "Mode": "ro", "Propagation": "rprivate"})
+        caddy["Mounts"][0]["FutureMetadata"] = {"retained": [1, "all values", False]}
+        mounts = copy.deepcopy(caddy["Mounts"])
+        baseline = self.observe()
+        for ordering in ([*mounts[index:], *mounts[:index]] for index in range(len(mounts))):
+            caddy["Mounts"] = copy.deepcopy(ordering)
+            observed = self.observe()
+            self.assertEqual(observed["fingerprint"], baseline["fingerprint"])
+            self.assertEqual(observed["privateConfiguration"], baseline["privateConfiguration"])
+            self.assertEqual(caddy["Mounts"], ordering, "Observation must not rewrite its raw Docker response")
+        private = next(item for item in baseline["privateConfiguration"] if item["service"] == "caddy")
+        self.assertEqual(private["mounts"], sorted(mounts, key=lambda mount: mount["Destination"]))
+        self.assertEqual(len(private["mounts"]), len(mounts))
+
+    def test_mount_metadata_drift_is_never_discarded_by_order_canonicalization(self):
+        caddy = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "caddy")
+        original = copy.deepcopy(caddy["Mounts"])
+        baseline = self.observe()["fingerprint"]
+        for key, value in (("Name", "foreign-volume"), ("Source", str(self.fixture.root / "different-source")),
+                           ("RW", False), ("Mode", "different-mode"), ("Propagation", "different-propagation"),
+                           ("FutureMetadata", {"new": ["retained", 1]})):
+            caddy["Mounts"] = copy.deepcopy(original)
+            caddy["Mounts"][0][key] = value
+            with self.subTest(key=key):
+                try:
+                    observed = self.observe()
+                except r.RecoveryError:
+                    continue  # Existing source/volume/type authority may reject drift sooner.
+                self.assertNotEqual(observed["fingerprint"], baseline)
+                private = next(item for item in observed["privateConfiguration"] if item["service"] == "caddy")
+                selected = next(mount for mount in private["mounts"] if mount["Destination"] == original[0]["Destination"])
+                self.assertEqual(selected[key], value)
+
+    def test_duplicate_owned_mount_destinations_are_refused_before_fingerprinting(self):
+        caddy = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "caddy")
+        caddy["Mounts"].append(copy.deepcopy(caddy["Mounts"][0]))
+        with self.assertRaisesRegex(r.RecoveryError, "duplicate Docker mount destination"):
+            self.observe()
+
+    def test_mount_record_shape_count_and_absolute_destination_are_bounded(self):
+        for mounts in (None, {}, [None], [{}], [{"Destination": "relative"}], [{"Destination": "/a/../b"}],
+                       [{"Destination": "/a\nb"}], [{"Destination": "/"}], [{"Destination": "//data"}], [{"Destination": 1}],
+                       [{"Destination": "/a", 1: "nonstring key"}],
+                       [{"Destination": f"/mount-{index}"} for index in range(129)],
+                       [{"Destination": "/a", **{f"field-{index}": index for index in range(64)}}]):
+            with self.subTest(mounts=mounts), self.assertRaises(r.RecoveryError):
+                r.canonical_docker_mounts(mounts)
+        self.assertEqual(r.canonical_docker_mounts([]), [])
+
     def next_web(self):
         row = next(row for row in self.command.rows if row["Config"]["Labels"]["com.docker.compose.service"] == "app")
         revision = "a" * 40

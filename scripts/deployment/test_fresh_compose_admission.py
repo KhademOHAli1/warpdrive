@@ -111,6 +111,35 @@ class FreshComposeAdmissionTests(unittest.TestCase):
         with self.assertRaisesRegex(SwitchConflict, "exact eight-MiB"):
             admission._validate(altered, self.project, self.directory, images)
 
+    def test_both_storage_profiles_disable_exact_baked_file_defaults_and_preserve_direct_credentials(self):
+        for client in ("mc", "mcli"):
+            self.environment[admission.STORAGE_CLIENT_ENV] = client
+            options = self.settings()
+            model = admission._config(self.docker, self.project, self.directory, self.baseline)
+            images = admission._pinned_images(self.baseline, options["baseline_pin"], storage_client_bin=client)
+            for role in ("minio", "createbuckets"):
+                env = model["services"][role]["environment"]
+                self.assertEqual({key: env[key] for key in admission.STORAGE_FILE_DEFAULTS},
+                                 dict.fromkeys(admission.STORAGE_FILE_DEFAULTS, ""))
+                for key in admission.STORAGE_FILE_DEFAULTS:
+                    for missing, changed in ((False, "relative-default"), (False, "/run/secret"), (True, None)):
+                        altered = deepcopy(model)
+                        target = altered["services"][role]["environment"]
+                        if missing:
+                            target.pop(key)
+                        else:
+                            target[key] = changed
+                        with self.subTest(client=client, role=role, key=key, missing=missing), self.assertRaisesRegex(SwitchConflict, "file defaults"):
+                            admission._validate(altered, self.project, self.directory, images, storage_client_bin=client)
+                for key, value in (("MINIO_UNREVIEWED_FILE", ""), ("OTHER_CREDENTIAL_FILE", "/run/unreviewed")):
+                    altered = deepcopy(model)
+                    altered["services"][role]["environment"][key] = value
+                    with self.assertRaisesRegex(SwitchConflict, "new file authority"):
+                        admission._validate(altered, self.project, self.directory, images, storage_client_bin=client)
+            self.assertEqual(model["services"]["minio"]["environment"]["MINIO_ROOT_USER"], self.environment["MINIO_ACCESS_KEY"])
+            self.assertEqual(model["services"]["minio"]["environment"]["MINIO_ROOT_PASSWORD"], self.environment["MINIO_SECRET_KEY"])
+            self.assertEqual(model["services"]["createbuckets"]["environment"]["MINIO_ACCESS_KEY"], self.environment["MINIO_ACCESS_KEY"])
+
     def test_invalid_or_changed_storage_selection_holds_before_compose(self):
         with patch.object(admission, "_config") as compose:
             for client in ("sh", "/usr/bin/mc", "mc --other", "$(echo unreviewed)", None):

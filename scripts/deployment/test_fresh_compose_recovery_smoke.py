@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from hashlib import sha256
+from itertools import permutations
 import json
 from pathlib import Path
 import shutil
@@ -256,11 +257,13 @@ class RecoveryCoordinatorTests(unittest.TestCase):
         fixture.docker.run.assert_called_once()
         fixture._verify_volume.assert_not_called()
 
-    def _restored_tree(self):
-        root = self.directory / "source" / "volume"
-        put(root / "nested" / "private.data", b"captured synthetic bytes", 0o640)
+    def _restored_tree(self, *, name="", directory_mode=0o755, file_mode=0o640):
+        directory = self.directory / name
+        root = directory / "source" / "volume"
+        put(root / "nested" / "private.data", b"captured synthetic bytes", file_mode)
+        (root / "nested").chmod(directory_mode)
         inventory = r.scan([root], smoke.CAPTURE_LIMITS)
-        quarantine = self.directory / "quarantine"
+        quarantine = directory / "quarantine"
         quarantine.mkdir(mode=0o700)
         archived = quarantine / str(root).lstrip("/")
         shutil.copytree(root, archived)
@@ -273,6 +276,21 @@ class RecoveryCoordinatorTests(unittest.TestCase):
         smoke._copy_verified_root(quarantine, root, inventory)
         self.assertEqual(r.scan([root], smoke.CAPTURE_LIMITS, single_link=True), inventory)
         self.assertEqual(stat.S_IMODE((root / "nested/private.data").stat().st_mode), 0o640)
+
+    def test_materialization_preserves_actual_caddy_sticky_directory(self):
+        root, quarantine, inventory, _ = self._restored_tree(directory_mode=0o1777)
+        smoke._copy_verified_root(quarantine, root, inventory)
+        self.assertEqual(r.scan([root], smoke.CAPTURE_LIMITS, single_link=True), inventory)
+        self.assertEqual(stat.S_IMODE((root / "nested").stat().st_mode), 0o1777)
+
+    def test_materialization_rejects_setid_and_special_file_permissions(self):
+        for index, (directory_mode, file_mode) in enumerate(((0o755, 0o1777), (0o4755, 0o640),
+                (0o2755, 0o640), (0o755, 0o4640), (0o755, 0o2640))):
+            with self.subTest(directory_mode=oct(directory_mode), file_mode=oct(file_mode)):
+                root, quarantine, inventory, _ = self._restored_tree(name=str(index),
+                    directory_mode=directory_mode, file_mode=file_mode)
+                with self.assertRaisesRegex(r.RecoveryError, "Only directory sticky"):
+                    smoke._copy_verified_root(quarantine, root, inventory)
 
     def test_materialization_refuses_aliases_changed_bytes_and_nonempty_destination(self):
         root, quarantine, inventory, archived = self._restored_tree()
@@ -320,9 +338,13 @@ class RecoveryCoordinatorTests(unittest.TestCase):
         fixture, before, rows, inventory = self._restart_fixture()
         with patch.object(smoke, "owned_bridge_forwarder"), patch.object(smoke, "_media"):
             result = smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
-        args = fixture.compose.call_args.args
-        self.assertEqual(args[:7], ("baseline", "up", "--no-start", "--no-deps", "--no-build", "--pull", "never"))
-        self.assertEqual(set(args[7:]), LONG_RUNNING)
+        calls = [item.args for item in fixture.compose.call_args_list]
+        prefix = ("baseline", "up", "--no-start", "--no-deps", "--no-build", "--pull", "never")
+        self.assertEqual(calls, [(*prefix, "postgres", "minio"),
+            (*prefix, "app", "ws", "worker", "newsletter-engine", "caddy")])
+        self.assertEqual([service for args in calls for service in args[7:]],
+                         [service for group in smoke.CREATE_WAVES for service in group])
+        self.assertEqual({service for args in calls for service in args[7:]}, LONG_RUNNING)
         starts = [item.args[0][1] for item in fixture.docker.run.call_args_list if item.args[0][0] == "start"]
         self.assertEqual(starts, [rows[service]["Id"] for wave in smoke.START_WAVES for service in wave])
         self.assertFalse(result["initializationServicesReplayed"])
@@ -339,6 +361,182 @@ class RecoveryCoordinatorTests(unittest.TestCase):
             result = smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
         self.assertTrue(result["migrationLedgerUnchanged"])
         self.assertEqual(before["app"], captured)
+
+    def test_created_false_and_started_null_oom_setting_preserve_raw_capture(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        for service in LONG_RUNNING:
+            before[service]["HostConfig"]["OomKillDisable"] = None
+            rows[service]["HostConfig"]["OomKillDisable"] = False
+        captured = deepcopy(before)
+        with patch.object(smoke, "owned_bridge_forwarder"), patch.object(smoke, "_media"):
+            result = smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
+        self.assertTrue(result["migrationLedgerUnchanged"])
+        self.assertEqual(before, captured)
+        self.assertTrue(all(row["HostConfig"]["OomKillDisable"] is False for row in rows.values()))
+
+    def test_modern_replace_marker_is_derived_from_exact_service_and_replica(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        labels = {smoke.OWNER: fixture.project, "com.docker.compose.service": "app",
+                  "com.docker.compose.container-number": "1"}
+        before["app"]["Config"]["Labels"] = {**labels, "com.docker.compose.replace": "app-1"}
+        rows["app"]["Config"]["Labels"] = dict(labels)
+        captured = deepcopy(before)
+        with patch.object(smoke, "owned_bridge_forwarder"), patch.object(smoke, "_media"):
+            smoke._restart(fixture, before, {"rows": 119, "sha256": "d" * 64}, inventory, smoke.CAPTURE_LIMITS)
+        self.assertEqual(before, captured)
+        for marker, service, number in (("worker-1", "app", "1"), ("app-2", "app", "1"),
+                ("app-01", "app", "01"), ("app-0", "app", "0"), ("app-1", None, "1"),
+                ("app-1", "app", 1), ("arbitrary-1", "arbitrary", "1"), ("app-1", "app", None)):
+            row = deepcopy(before["app"])
+            row["Config"]["Labels"].update({"com.docker.compose.replace": marker,
+                "com.docker.compose.service": service, "com.docker.compose.container-number": number})
+            with self.subTest(marker=marker, service=service, number=number), \
+                    self.assertRaisesRegex(r.RecoveryError, "replacement identity"):
+                smoke._topology(row)
+
+    def test_environment_permutations_keep_exact_values_cardinality_and_raw_rows(self):
+        row = runtime_rows(["app"])["app"]
+        records = ["TOKEN=full=value", "EMPTY=", "UNICODE=über\nvalue"]
+        row["Config"]["Env"] = records
+        expected, captured = smoke._topology(row), deepcopy(row)
+        for entries in permutations(records):
+            candidate = deepcopy(row)
+            candidate["Config"]["Env"] = list(entries)
+            self.assertEqual(smoke._topology(candidate), expected)
+            self.assertEqual(candidate["Config"]["Env"], list(entries))
+        self.assertEqual(row, captured)
+        for entries in (["TOKEN=changed", "EMPTY=", "UNICODE=über\nvalue"], records[:-1], [*records, "NEW=value"]):
+            candidate = deepcopy(row)
+            candidate["Config"]["Env"] = entries
+            self.assertNotEqual(smoke._topology(candidate), expected)
+        absent = deepcopy(row)
+        absent["Config"].pop("Env")
+        empty = deepcopy(absent)
+        empty["Config"]["Env"] = []
+        self.assertNotEqual(smoke._topology(absent), smoke._topology(empty))
+
+    def test_environment_duplicates_and_malformed_records_are_rejected(self):
+        for environment in (None, "KEY=value", [123], ["KEY"], ["=value"], ["BAD-KEY=value"],
+                ["KEY=one", "KEY=two"], ["KEY=same", "KEY=same"], ["KEY=bad\0value"]):
+            row = runtime_rows(["app"])["app"]
+            row["Config"]["Env"] = environment
+            with self.subTest(environment=environment), self.assertRaisesRegex(r.RecoveryError, "environment"):
+                smoke._topology(row)
+
+    def test_dependency_tuple_permutations_preserve_all_fields_and_raw_labels(self):
+        row = runtime_rows(["caddy"])["caddy"]
+        records = ["app:service_healthy:false", "ws:service_started:false", "migrate:service_completed_successfully:true"]
+        row["Config"]["Labels"] = {"com.docker.compose.depends_on": ",".join(records)}
+        expected, captured = smoke._topology(row), deepcopy(row)
+        for entries in permutations(records):
+            candidate = deepcopy(row)
+            candidate["Config"]["Labels"]["com.docker.compose.depends_on"] = ",".join(entries)
+            self.assertEqual(smoke._topology(candidate), expected)
+            self.assertEqual(candidate["Config"]["Labels"]["com.docker.compose.depends_on"], ",".join(entries))
+        self.assertEqual(row, captured)
+        for changed in ("app:service_started:false", "app:service_healthy:true", "", ",".join(records[:-1])):
+            candidate = deepcopy(row)
+            candidate["Config"]["Labels"]["com.docker.compose.depends_on"] = changed
+            self.assertNotEqual(smoke._topology(candidate), expected)
+
+    def test_dependency_tuple_duplicates_and_malformed_labels_are_rejected(self):
+        for label in (None, [], "app", "app:service_healthy", "app:unknown:false", "app:service_healthy:0",
+                "App:service_healthy:false", "app:service_healthy:false,", "app:service_healthy:false,app:service_healthy:false",
+                "app:service_healthy:false,app:service_started:false"):
+            row = runtime_rows(["caddy"])["caddy"]
+            row["Config"]["Labels"] = {"com.docker.compose.depends_on": label}
+            with self.subTest(label=label), self.assertRaisesRegex(r.RecoveryError, "dependency"):
+                smoke._topology(row)
+
+    def test_selected_dependency_set_drift_still_blocks_every_start(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        before["newsletter-engine"]["Config"]["Labels"] = {"com.docker.compose.depends_on": ""}
+        rows["newsletter-engine"]["Config"]["Labels"] = {
+            "com.docker.compose.depends_on": "postgres:service_healthy:false"}
+        with self.assertRaisesRegex(r.RecoveryError, "topology differs"):
+            smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+        fixture.docker.run.assert_not_called()
+
+    def test_actual_caddy_bind_permutations_keep_full_records_and_raw_capture(self):
+        row = runtime_rows(["caddy"])["caddy"]
+        records = ["/owned/source/Caddyfile:/etc/caddy/Caddyfile:ro", "fixture_caddydata:/data:rw",
+            "fixture_caddyconfig:/config:rw", "/owned/source/newsletters/Caddyfile:/etc/caddy/newsletters:ro",
+            "/owned/source/tls:/fixture:ro"]
+        row["HostConfig"]["Binds"] = records
+        expected, captured = smoke._topology(row), deepcopy(row)
+        for entries in permutations(records):
+            candidate = deepcopy(row)
+            candidate["HostConfig"]["Binds"] = list(entries)
+            self.assertEqual(smoke._topology(candidate), expected)
+            self.assertEqual(candidate["HostConfig"]["Binds"], list(entries))
+        self.assertEqual(row, captured)
+        for changed in ("/different/source:/etc/caddy/Caddyfile:ro", "/owned/source/Caddyfile:/etc/caddy/Caddyfile:rw",
+                "/owned/source/Caddyfile:/different-target:ro", "/owned/source/Caddyfile:/etc/caddy/Caddyfile:ro,z"):
+            candidate = deepcopy(row)
+            candidate["HostConfig"]["Binds"][0] = changed
+            self.assertNotEqual(smoke._topology(candidate), expected)
+        forms = []
+        for value in ("absent", None, []):
+            candidate = deepcopy(row)
+            if value == "absent":
+                candidate["HostConfig"].pop("Binds")
+            else:
+                candidate["HostConfig"]["Binds"] = value
+            forms.append(smoke._topology(candidate))
+        self.assertTrue(all(forms[a] != forms[b] for a in range(3) for b in range(a + 1, 3)))
+
+    def test_ambiguous_duplicate_and_overlapping_binds_are_rejected(self):
+        for binds in ("volume:/data:rw", [123], [""], [":/data:rw"], ["volume:relative:rw"],
+                ["volume:/data/../data:rw"], ["volume:/data:rw:extra"], ["volume:/data:"],
+                ["volume:/data:ro,rw"], ["volume:/data:ro,ro"], ["volume:/data:rw\n"],
+                ["volume:/data:rw", "other://data:ro"], ["//owned/source:/data:ro"],
+                ["volume:/data:rw", "other:/data:ro"], ["volume:/data:rw", "other:/data/nested:ro"],
+                ["volume:/data/nested:rw", "other:/data:ro"]):
+            row = runtime_rows(["caddy"])["caddy"]
+            row["HostConfig"]["Binds"] = binds
+            with self.subTest(binds=binds), self.assertRaises(r.RecoveryError):
+                smoke._topology(row)
+
+    def test_prestart_boundary_executes_all_volume_guards_without_starting(self):
+        fixture, before, rows, inventory = self._restart_fixture()
+        created = smoke._create_restored(fixture, before, inventory, smoke.CAPTURE_LIMITS)
+        self.assertEqual(set(created), LONG_RUNNING)
+        self.assertEqual(fixture._verify_volume.call_count, 5)
+        self.assertEqual({item.args[0] for item in fixture._verify_volume.call_args_list}, fixture.volume_names)
+        allowed = {row["Id"] for row in rows.values()}
+        self.assertTrue(all(item.kwargs == {"allowed": allowed} for item in fixture._verify_volume.call_args_list))
+        fixture.docker.run.assert_not_called()
+        for selected in fixture.volume_names:
+            fixture._verify_volume.side_effect = lambda name, **_: r.require(name != selected, "Foreign volume reference")
+            with self.subTest(volume=selected), self.assertRaisesRegex(r.RecoveryError, "Foreign volume reference"):
+                smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+            fixture.docker.run.assert_not_called()
+
+    def test_topology_rejects_oom_disable_invalid_shape_and_missing_key_drift(self):
+        for invalid in (True, 0, 1, "false", [], {}):
+            fixture, before, rows, inventory = self._restart_fixture()
+            before["app"]["HostConfig"]["OomKillDisable"] = None
+            rows["app"]["HostConfig"]["OomKillDisable"] = invalid
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(r.RecoveryError, "OOM kill setting"):
+                smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+            fixture.docker.run.assert_not_called()
+        for before_has_key in (False, True):
+            fixture, before, rows, inventory = self._restart_fixture()
+            selected = before if before_has_key else rows
+            selected["app"]["HostConfig"]["OomKillDisable"] = None
+            with self.subTest(before_has_key=before_has_key), self.assertRaisesRegex(r.RecoveryError, "topology differs"):
+                smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+            fixture.docker.run.assert_not_called()
+
+    def test_oom_normalization_keeps_all_other_host_config_values_exact(self):
+        for field, value in (("Memory", 1), ("PidsLimit", 1), ("ReadonlyRootfs", True),
+                ("CapAdd", ["SYS_ADMIN"]), ("NetworkMode", "host"), ("UnknownField", {"changed": True})):
+            fixture, before, rows, inventory = self._restart_fixture()
+            before["app"]["HostConfig"]["OomKillDisable"] = None
+            rows["app"]["HostConfig"].update(OomKillDisable=False, **{field: value})
+            with self.subTest(field=field), self.assertRaisesRegex(r.RecoveryError, "topology differs"):
+                smoke._restart(fixture, before, {}, inventory, smoke.CAPTURE_LIMITS)
+            fixture.docker.run.assert_not_called()
 
     def test_invalid_replace_or_changed_protected_compose_label_blocks_starts(self):
         for invalid in ("short-id", "g" * 64, "a" * 63, 123, None):

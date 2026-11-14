@@ -25,8 +25,8 @@ import uuid
 
 from component_inputs import decode
 from fresh_compose_admission import (COMPOSE, IMAGES, ROOT, STORAGE_CLIENT_CONFIG, STORAGE_CLIENT_ENV,
-                                    STORAGE_CLIENT_DATA_TMPFS, STORAGE_CLIENT_GUARD, VOLUME_MOUNTS, _pinned_images, _validate,
-                                    validate_cgroup_parent, validate_storage_client_bin)
+                                    STORAGE_CLIENT_DATA_TMPFS, STORAGE_CLIENT_GUARD, STORAGE_FILE_DEFAULTS, VOLUME_MOUNTS, _pinned_images, _validate,
+                                    validate_cgroup_parent, validate_storage_client_bin, validate_storage_file_environment)
 from image_smoke import Docker, ImageSmoke, SmokeError, WS_PROBE, image_metadata, sanitized_log
 from installed_web_chain import _directory
 from loopback_forwarder import ForwarderError, owned_bridge_forwarder
@@ -447,6 +447,15 @@ def _write_env(path, values):
         os.close(directory)
 
 
+def _storage_runtime_environment(row):
+    values = row.get("Config", {}).get("Env")
+    require(type(values) is list and all(type(value) is str and "=" in value for value in values),
+            "Fresh storage runtime environment is unavailable")
+    environment = dict(value.split("=", 1) for value in values)
+    require(len(environment) == len(values), "Fresh storage runtime environment has duplicate bindings")
+    return validate_storage_file_environment(environment)
+
+
 class FreshSmoke:
     def __init__(self, docker, directory, baseline, candidate, *, storage_client_bin="mc", cgroup_parent=None):
         self.storage_client_bin = validate_storage_client_bin(storage_client_bin)
@@ -549,7 +558,8 @@ class FreshSmoke:
         self.bucket = "warpdrive-fresh"
         storage_credentials = {"MINIO_ACCESS_KEY": fixture.env["MINIO_ACCESS_KEY"], "MINIO_SECRET_KEY": fixture.env["MINIO_SECRET_KEY"]}
         self.storage_env = self.directory / "storage-fixture.env"
-        _write_env(self.storage_env, {**storage_credentials, "MINIO_BUCKET": self.bucket, "FIXTURE_OBJECT": self.object_bytes.decode(),
+        _write_env(self.storage_env, {**storage_credentials, **dict.fromkeys(STORAGE_FILE_DEFAULTS, ""),
+                                     "MINIO_BUCKET": self.bucket, "FIXTURE_OBJECT": self.object_bytes.decode(),
                                      STORAGE_CLIENT_ENV: self.storage_client_bin})
         _write_env(self.directory / ".env", {**fixture.env, "BASE_URL": "https://127.0.0.1", "WS_PUBLIC_URL": "ws://ws:8080",
             "MINIO_ENDPOINT": "http://minio:9000", "MINIO_BUCKET": self.bucket, "MIGRATION_DATABASE_URL": fixture.migration_url})
@@ -626,6 +636,8 @@ class FreshSmoke:
                     "Fresh smoke runtime resource limits differ")
             require(self.cgroup_parent is None or host.get("CgroupParent") == self.cgroup_parent,
                     "Fresh smoke runtime cgroup parent differs")
+            if name in {"minio", "createbuckets"}:
+                _storage_runtime_environment(row)
             result[name] = row
         return result
 
@@ -720,6 +732,8 @@ class FreshSmoke:
             identifier = created.stdout.strip()
             require(created.returncode == 0 and EXACT_ID.fullmatch(identifier), "Storage helper create acknowledgement differs")
             before, = self.docker.json(["container", "inspect", identifier], timeout=10)
+            require(_storage_runtime_environment(before).get(STORAGE_CLIENT_ENV) == self.storage_client_bin,
+                    "Storage helper runtime client selection differs")
             host, state = before["HostConfig"], before["State"]
             require(before["Id"] == identifier and before["Name"] == "/" + name and before["Image"] == image
                     and before["Config"]["Labels"].get(OWNER) == self.project

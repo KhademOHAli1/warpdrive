@@ -11,6 +11,15 @@ services:
   minio:
     image: "${WARPDRIVE_STORAGE_IMAGE:?set WARPDRIVE_STORAGE_IMAGE}"
     pull_policy: never
+    # Fresh fixtures use only their explicit synthetic credentials, never baked
+    # relative Docker-secret/config filename defaults from storage images.
+    environment:
+      MINIO_ACCESS_KEY_FILE: ""
+      MINIO_SECRET_KEY_FILE: ""
+      MINIO_ROOT_USER_FILE: ""
+      MINIO_ROOT_PASSWORD_FILE: ""
+      MINIO_KMS_SECRET_KEY_FILE: ""
+      MINIO_CONFIG_ENV_FILE: ""
   createbuckets:
     image: "${WARPDRIVE_STORAGE_INIT_IMAGE:?set WARPDRIVE_STORAGE_INIT_IMAGE}"
     pull_policy: never
@@ -20,6 +29,12 @@ services:
       - /data:rw,noexec,nosuid,size=8m
     environment:
       WARPDRIVE_STORAGE_CLIENT_BIN: "${WARPDRIVE_STORAGE_CLIENT_BIN:-mc}"
+      MINIO_ACCESS_KEY_FILE: ""
+      MINIO_SECRET_KEY_FILE: ""
+      MINIO_ROOT_USER_FILE: ""
+      MINIO_ROOT_PASSWORD_FILE: ""
+      MINIO_KMS_SECRET_KEY_FILE: ""
+      MINIO_CONFIG_ENV_FILE: ""
     command: []
     entrypoint:
       - /bin/sh
