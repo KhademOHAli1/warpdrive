@@ -96,7 +96,7 @@
     "nodemailer": "10.5.0",
     "pg": "^8.23.1",
     "pg-boss": "^12.38.2",
-    "posthog-js": "^1.447.9",
+    "posthog-js": "^1.447.10",
     "posthog-node": "^5.68.2",
     "qrcode": "1.5.4",
     "quickjs-emscripten-core": "0.32.0",
