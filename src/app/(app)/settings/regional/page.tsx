@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
+import { getLocalePreferences } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { createContext } from "@/server/trpc/context";
 import { LanguageSettings } from "../profile/LanguageSettings";
+import { formatRegionalPreview } from "../profile/regionalPreview";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 
@@ -21,7 +23,7 @@ export default async function RegionalPage(): Promise<ReactNode> {
         description={L._hierarchy.regionalDescription}
         scope="personal"
       />
-      <LanguageSettings />
+      <LanguageSettings initialPreview={formatRegionalPreview(await getLocalePreferences())} />
     </SettingsPage>
   );
 }

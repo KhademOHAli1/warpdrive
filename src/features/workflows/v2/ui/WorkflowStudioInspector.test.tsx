@@ -5,9 +5,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ACTION_BLOCK_KINDS,
   type ActionBlockKind,
+  type BlockJson,
   type WorkflowV2Definition,
   type WorkflowV2Studio,
 } from "@/features/blocks/contracts";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { initialConfig } from "./studioModel";
 import { WorkflowStudioInspector } from "./WorkflowStudioInspector";
 
@@ -117,7 +119,7 @@ const studio: WorkflowV2Studio = {
   readiness: {},
 };
 type Case = [ActionBlockKind, string, string, string, string, unknown];
-const literal = (value: unknown) => ({ kind: "literal", value });
+const literal = (value: BlockJson) => ({ kind: "literal", value });
 const cases: Case[] = [
   ["CREATE_RECORD", "combobox", "Object", "person", "objectName", "person"],
   ["UPDATE_RECORD", "textbox", "Record", recordId, "recordId", literal(recordId)],
@@ -194,6 +196,44 @@ describe("structured configuration for the shared action catalog", () => {
     fireEvent.change(field, { target: { value } });
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange.mock.calls[0]?.[0]).toHaveProperty(path, expected);
+  });
+
+  it("edits calendar event times in the workspace time zone", () => {
+    const type = "CREATE_CALENDAR_EVENT";
+    const node = {
+      id: "calendar",
+      type,
+      version: 1 as const,
+      name: "Calendar event",
+      config: { ...initialConfig(type), startsAt: literal("2026-11-13T08:00:00.000Z") },
+    } as const;
+    const onChange = vi.fn();
+    const { container } = render(
+      <LocaleProvider locale="en" timeZone="Europe/Berlin">
+        <WorkflowStudioInspector
+          node={node}
+          definition={{
+            schemaVersion: 2,
+            trigger: { type: "manual", config: {} },
+            nodes: [node],
+            edges: [],
+            entryNodeIds: [node.id],
+          }}
+          studio={studio}
+          disabled={false}
+          onChange={onChange}
+          onNodeChange={vi.fn()}
+          onRemove={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    const start = container.querySelector('input[type="datetime-local"]');
+    expect(start).toHaveValue("2026-11-13T09:00");
+    if (start === null) throw new Error("Missing calendar start time");
+    fireEvent.change(start, { target: { value: "2026-11-13T11:30" } });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ startsAt: literal("2026-11-13T10:30:00.000Z") }),
+    );
   });
 
   it("balances candidate deals by visible related activities instead of their value", () => {

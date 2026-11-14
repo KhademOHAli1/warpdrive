@@ -3,7 +3,6 @@
 export const mailReadRecoveryIds1: string[] = [
   "derived:src/features/email/useBulkThreadReadState.ts",
   "sourceReview:src/db/schema/emailReadIntents.ts#f748b42e703559de0da6ad52c8b38b8747f63bb6e1a4db8c7af35c8d4f53a274",
-  "sourceReview:src/features/email/ThreadList.tsx#da18f5046f98b5398b305a7dcf1037c566e32ea66f803dc46252c9acc2318a75",
   "sourceReview:src/features/email/privateIntakeLocalReadConnection.ts#16290a32530c31b2ec10f640f9c0a5a1371422021e587aece843126a2f029e74",
   "sourceReview:src/features/email/privateIntakeLocalReadTransaction.ts#b7966a19b5fc9be3fb5de99bba0085e0a0b0d934fb0e58374f719b08dfea3c92",
   "sourceReview:src/features/email/readIntentLocalMarker.ts#cab33d8940cb7ab4ec84816e9cde91d90ed59f004c19b6efab21557917188899",
@@ -13,7 +12,6 @@ export const mailReadRecoveryIds1: string[] = [
   "sourceReview:src/features/email/useBulkThreadReadState.ts#74b2e303867c825958c6079d3c018fb21914e4027f23db9475cd736fafd282d2",
   "table:email_read_intents",
   "writer:src/features/email/InboxWorkspace.tsx#query:dynamic",
-  "writer:src/features/email/ThreadList.tsx#query:dynamic",
   "writer:src/features/email/ThreadPane.tsx#query:dynamic",
   "writer:src/features/email/privateIntakeLocalReadConnection.ts#query:dynamic",
   "writer:src/features/email/privateIntakeLocalReadTransaction.ts#query:BEGIN ISOLATION LEVEL READ COMMITTED",

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { nextCursorIndex } from "./rowCursor";
 import { rowShortcutDirection } from "./rowShortcutKey";
-import { isOverlayOpen, isTypingTarget } from "./shortcutTarget";
+import { isOverlayOpen, isShortcutSuppressed, isTypingTarget } from "./shortcutTarget";
 
 // Enter belongs to whatever the user has focused; only a keypress with nothing interactive focused
 // should reach the row cursor.
@@ -36,7 +36,7 @@ export function useRowCursor(count: number, onActivate: (index: number) => void)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent): void => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
-      if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+      if (isShortcutSuppressed(e)) return;
       if (isTypingTarget(e.target) || isOverlayOpen(document)) return;
       const direction = rowShortcutDirection(e.key, e.code);
       if (direction !== null) {

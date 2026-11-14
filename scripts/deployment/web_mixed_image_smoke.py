@@ -732,6 +732,15 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(result.returncode == 0 and len(result.stdout) <= 65536, "bounded host fixture command failed")
         return result.stdout
 
+    def selected_caddy_image(self):
+        return caddy_image(self.docker)
+
+    def web_command(self, suffix, image):
+        return ["bun", "--bun", "next", "start"]
+
+    def common_configuration(self, row, revision):
+        return common_web_configuration(row, revision)
+
     def runtime_memory_limit(self):
         return sum(LIMITS.values()) * MIB
 
@@ -756,7 +765,7 @@ class MixedWebSmoke(WebSwitchSmoke):
         self.schema_sha = self.schema()
         for suffix, image in (("a", self.old_image), ("b", self.new_image)):
             name = self.fixture.start_container("web-" + suffix, image["imageId"],
-                                                ["bun", "--bun", "next", "start"], memory="1536m")
+                                                self.web_command(suffix, image), memory="1536m")
             self.wait_web(name)
             uid = self.docker.run(["exec", name, "id", "-u"], timeout=10).stdout.strip()
             require(re.fullmatch(r"[1-9][0-9]{0,9}", uid), "Web process runs as root or with unknown UID")
@@ -764,7 +773,7 @@ class MixedWebSmoke(WebSwitchSmoke):
                     "Web startup changed the retained database schema or runtime identities")
         rows = {name: self.owned(name) for name in (self.web_a, self.web_b)}
         self.web_start_times = {name: self.started(row) for name, row in rows.items()}
-        common = [common_web_configuration(row, self.web_images[name]["sourceRevision"]) for name, row in rows.items()]
+        common = [self.common_configuration(row, self.web_images[name]["sourceRevision"]) for name, row in rows.items()]
         if common[0] != common[1]:
             self.report["diagnostics"].append({"webConfigChangedFields": changed_fields(*common)})
             raise WebSwitchSmokeError("Web runtime configuration differs outside the reviewed image identity and build stamps")
@@ -836,7 +845,7 @@ class MixedWebSmoke(WebSwitchSmoke):
             key.chmod(0o444)
             source = source.replace("\n:8080 {\n", "\nhttps://:8443 {\n tls /fixture/cert.pem /fixture/key.pem\n")
         (config / "Caddyfile").write_text(source)
-        self.caddy_id = caddy_image(self.docker)
+        self.caddy_id = self.selected_caddy_image()
         bind = f"type=bind,source={config},target=/fixture,readonly"
         adapted = self.fixture.start_container("caddy-adapt", self.caddy_id,
             ["caddy", "adapt", "--config", "/fixture/Caddyfile", "--adapter", "caddyfile"], environment={},
@@ -1044,6 +1053,9 @@ class MixedWebSmoke(WebSwitchSmoke):
         return {"preSwitch": self.browser_pre_switch, "complete": complete, "matchingActivityRows": 1,
                 "generatedLoopbackTls": True}
 
+    def cleanup_docker_allowed(self):
+        return True
+
     def cleanup(self):
         errors, relay_results = [], []
         if self.browser:
@@ -1068,7 +1080,9 @@ class MixedWebSmoke(WebSwitchSmoke):
                 relay_results.append(value)
             except Exception:
                 errors.append("owned-loopback-relay")
-        if self.fixture:
+        if self.fixture and not self.cleanup_docker_allowed():
+            errors.append("owned-docker-unknown-native-command")
+        elif self.fixture:
             try:
                 if self.fixture.cleanup():
                     errors.append("owned-docker-cleanup")

@@ -1,22 +1,34 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-beforeAll(() => {
-  // The org Combobox uses cmdk/Radix pieces that reach for browser APIs jsdom lacks.
-  Element.prototype.scrollIntoView = vi.fn();
-  Element.prototype.hasPointerCapture = vi.fn(() => false);
-  Element.prototype.releasePointerCapture = vi.fn();
-  global.ResizeObserver = class {
-    observe = vi.fn();
-    unobserve = vi.fn();
-    disconnect = vi.fn();
+let restorePopoverDom: (() => void) | undefined;
+
+beforeEach(() => {
+  const originalGetAnimations = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    value: () => [],
+  });
+  const style = document.createElement("style");
+  // jsdom cannot open a native popover.
+  style.textContent = "[popover][data-slot='combobox-content'] { display: block !important }";
+  document.head.append(style);
+  restorePopoverDom = () => {
+    style.remove();
+    if (originalGetAnimations) {
+      Object.defineProperty(Element.prototype, "getAnimations", originalGetAnimations);
+    } else {
+      Reflect.deleteProperty(Element.prototype, "getAnimations");
+    }
   };
 });
 
 afterEach(() => {
   cleanup();
+  restorePopoverDom?.();
   vi.clearAllMocks();
 });
 
@@ -67,7 +79,8 @@ describe("RelatedOrgsPanel", () => {
     expect(screen.getByRole("option", { name: "Gamma" })).toBeInTheDocument();
   });
 
-  it("adds a related org via the combobox + relation-type input", async () => {
+  it("adds the selected organization after keyboard search and resets the relation form", async () => {
+    const user = userEvent.setup();
     const onChanged = vi.fn();
     render(
       <RelatedOrgsPanel
@@ -77,10 +90,18 @@ describe("RelatedOrgsPanel", () => {
         onChanged={onChanged}
       />,
     );
-    fireEvent.click(screen.getByLabelText("Related organization"));
-    fireEvent.click(screen.getByRole("option", { name: "Gamma" }));
-    fireEvent.change(screen.getByLabelText("Relation type"), { target: { value: "subsidiary" } });
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    const picker = screen.getByRole("button", { name: "Related organization" });
+    const type = screen.getByRole("textbox", { name: "Relation type" });
+    picker.focus();
+    await user.keyboard("{Enter}");
+    const search = screen.getByRole("combobox", { name: "Search..." });
+    await waitFor(() => expect(search).toHaveFocus());
+    await user.keyboard("Gam{Enter}");
+    await waitFor(() => expect(picker).toHaveFocus());
+    expect(picker).toHaveTextContent("Gamma");
+    expect(addOrgRelationAction).not.toHaveBeenCalled();
+    await user.type(type, "subsidiary");
+    await user.click(screen.getByRole("button", { name: "Add" }));
 
     await vi.waitFor(() => expect(addOrgRelationAction).toHaveBeenCalled());
     expect(addOrgRelationAction).toHaveBeenCalledWith(
@@ -88,6 +109,8 @@ describe("RelatedOrgsPanel", () => {
       "csrf-tok",
     );
     await vi.waitFor(() => expect(onChanged).toHaveBeenCalled());
+    expect(picker).toHaveTextContent("Choose org");
+    expect(type).toHaveValue("");
   });
 
   it("the Add button stays disabled until both an org and a relation type are set", () => {

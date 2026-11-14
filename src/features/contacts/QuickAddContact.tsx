@@ -4,10 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import {
-  OrganizationCreateModal,
-  PersonCreateModal,
-} from "@/features/quick-add/GlobalContactModal";
+import { GlobalContactModal } from "@/features/quick-add/GlobalContactModal";
 
 interface QuickAddContactProps {
   kind: "person" | "org";
@@ -33,27 +30,23 @@ export function QuickAddContact({
   const [open, setOpen] = useState(false);
   const label =
     triggerLabel ?? (kind === "person" ? tContacts("person") : tContacts("organization"));
-  const modalProps = {
-    initialName: prefillName,
-    initialEmail: prefillEmail,
-    afterCreate:
-      onCreated === undefined ? ("respect-interface-preference" as const) : ("stay" as const),
-    onClose: () => setOpen(false),
-    onCreated: (id: string) => onCreated?.(id),
-  };
-
   return (
     <>
       <Button type="button" size="sm" onClick={() => setOpen(true)}>
         {label}
       </Button>
 
-      {open &&
-        (kind === "person" ? (
-          <PersonCreateModal {...modalProps} />
-        ) : (
-          <OrganizationCreateModal {...modalProps} />
-        ))}
+      {open && (
+        <GlobalContactModal
+          key={kind}
+          kind={kind}
+          initialName={prefillName}
+          initialEmail={prefillEmail}
+          afterCreate={onCreated === undefined ? "respect-interface-preference" : "stay"}
+          onClose={() => setOpen(false)}
+          onCreated={(id) => onCreated?.(id)}
+        />
+      )}
     </>
   );
 }

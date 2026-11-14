@@ -51,6 +51,9 @@ MODERN_REQUIRED = STAGE_FILES | set(MODERN_ENTRIES.values()) | EXTRA | {
     DEPLOYMENT + name + ".py" for name in ("installed_web_functional_lineage", "installed_core_activation",
                                          "installed_core_lineage", "installed_core_lineage_seal")
 }
+SDK_OPERATOR = DEPLOYMENT + "installed_web_sdk_operator.py"
+SDK_DATA = frozenset({DEPLOYMENT + "web-sdk-import-policy.json",
+                      DEPLOYMENT + "web-sdk-controls-import-policy.json"})
 EXTERNAL_IMPORTS = {PurePosixPath(name).stem: name for name in EXTRA}
 # Earlier private fixture manifests carry their own exact independent pin.
 LEGACY_STAGE_ACK = "scripts/deployment/vps-functional-web-stage-ack.py"
@@ -104,23 +107,33 @@ def _manifest(raw, expected):
             "Exact reviewed toolkit manifest required")
     pins = document.get("pins")
     modern = any(field in document for field in MODERN_ENTRIES)
+    sdk = "sdkOperatorEntry" in document
     if modern:
         require(entry == STAGE_ACK and all(document.get(field) == path for field, path in MODERN_ENTRIES.items()),
                 "Exact paired functional Web and Core toolkit entrypoints required")
     required = MODERN_REQUIRED if modern else (REQUIRED - {STAGE_ACK}) | {entry}
+    if sdk:
+        require(modern and document["sdkOperatorEntry"] == SDK_OPERATOR,
+                "SDK toolkit requires the fixed SDK entry and existing paired modern entries")
+        required = required | {SDK_OPERATOR} | SDK_DATA
     require(type(pins) is dict and type(document.get("sourceFiles")) is int and required <= pins.keys()
             and len(pins) == document["sourceFiles"] <= MAX_FILES
-            and all((MODULE.fullmatch(name) or name in EXTRA) and isinstance(pin, str) and SHA.fullmatch(pin)
+            and all((MODULE.fullmatch(name) or name in EXTRA or sdk and name in SDK_DATA)
+                    and isinstance(pin, str) and SHA.fullmatch(pin)
                     for name, pin in pins.items()), "Exact bounded toolkit source pins required")
     if modern:
         reserved = sys.stdlib_module_names | EXTERNAL_IMPORTS.keys()
         require(all(not name.startswith(DEPLOYMENT) or PurePosixPath(name).stem not in reserved for name in pins),
                 "Modern toolkit source shadows an interpreter or explicit dependency module")
-    return pins, required if modern else ()
+    return pins, required - SDK_DATA if modern else ()
 
 
 def _validate_closure(files, roots):
     """Verify the standalone import graph from pinned bytes without importing them."""
+    if SDK_OPERATOR in roots:
+        for path in SDK_DATA:
+            require(path in files and type(_json(files[path])) is dict,
+                    "Exact SDK JSON policy data required beside its pinned executable closure")
     visited, pending = set(), set(roots)
     while pending:
         path = pending.pop()

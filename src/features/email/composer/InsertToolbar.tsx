@@ -86,13 +86,14 @@ export function InsertToolbar({
 }: InsertToolbarProps): React.ReactNode {
   const E = useEmailMessages();
 
-  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [selection, setSelection] = useState({ id: "" });
+  const selectedTemplateId = selection.id;
   // Save-as-template dialog, opened from the template dropdown footer (PD parity).
   const [saveOpen, setSaveOpen] = useState(false);
   // Track the last template id we already applied upstream so a background
   // refetch does not re-fire onSubjectChange/onBodyChange for the same id
-  // (item 3). Reset to "" whenever the user changes the selection.
-  const appliedTemplateId = useRef("");
+  // An explicit re-selection must apply again, even when its ID hasn't changed.
+  const appliedSelection = useRef<typeof selection | null>(null);
   // What the last apply pushed upstream, so a recipient change can tell an untouched template
   // from one the author has since edited.
   const lastApplied = useRef<AppliedTemplate | null>(null);
@@ -125,19 +126,20 @@ export function InsertToolbar({
       body: merged(templateDetail.bodyHtml),
     };
     const apply = shouldApplyTemplate({
-      isNewSelection: appliedTemplateId.current !== selectedTemplateId,
+      isNewSelection: appliedSelection.current !== selection,
       applied: lastApplied.current,
       next,
       currentSubject: subject,
       currentBody: bodyHtml,
     });
     if (!apply) return;
-    appliedTemplateId.current = selectedTemplateId;
+    appliedSelection.current = selection;
     lastApplied.current = next;
     if (next.subject !== null) onSubjectChange(next.subject);
     onBodyChange(next.body);
   }, [
     templateDetail,
+    selection,
     selectedTemplateId,
     mergeQuery.isPending,
     mergeCtx,
@@ -161,12 +163,7 @@ export function InsertToolbar({
         <Combobox
           ariaLabel={localizedCHOOSE_TEMPLATE_LABEL(E)}
           value={selectedTemplateId}
-          onChange={(next) => {
-            // Reset the applied-guard so the new selection triggers the effect.
-            appliedTemplateId.current = "";
-            lastApplied.current = null;
-            setSelectedTemplateId(next);
-          }}
+          onChange={(id) => setSelection({ id })}
           placeholder={localizedCHOOSE_TEMPLATE_LABEL(E)}
           options={templates.map<ComboboxOption>((t) => ({ value: t.id, label: t.name }))}
           // PD consolidates save + manage into the same dropdown as browse.

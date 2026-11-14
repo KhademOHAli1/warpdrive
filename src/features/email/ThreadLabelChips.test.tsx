@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
 
 // The chips resolve names + colors from the mail-label catalog (seeded built-ins + custom labels).
 const catalog = [
@@ -13,13 +13,7 @@ const catalog = [
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     mailLabels: { list: { useQuery: () => ({ data: catalog }) } },
-    useUtils: () => ({ mailLabels: { list: { invalidate: () => undefined } } }),
   },
-}));
-
-vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-vi.mock("./mailLabelsActions", () => ({
-  createMailLabelAction: () => Promise.resolve({ ok: true, value: { key: "new" } }),
 }));
 
 import { ThreadLabelChips } from "./ThreadLabelChips";
@@ -57,23 +51,4 @@ it("skips keys with no catalog entry", () => {
 it("renders each chip uppercase (A15)", () => {
   render(<ThreadLabelChips labels={["important"]} />);
   expect(screen.getByText("Important")).toHaveClass("uppercase");
-});
-
-// B5 (Pipedrive parity): the label editor hides behind a pencil affordance instead of being an
-// always-visible picker. Display-only usage (no onLabelsChange) shows no pencil.
-describe("ThreadLabelChips editor behind a pencil (B5)", () => {
-  it("shows no pencil affordance when read-only (no onLabelsChange)", () => {
-    render(<ThreadLabelChips labels={["important"]} />);
-    expect(screen.queryByRole("button", { name: /edit labels/i })).not.toBeInTheDocument();
-  });
-
-  it("renders a pencil trigger that reveals the editor only after activation", async () => {
-    render(<ThreadLabelChips labels={["important"]} onLabelsChange={() => {}} />);
-    // The editor (the "+ Add label" picker) is hidden until the pencil is clicked.
-    expect(screen.queryByRole("button", { name: "+ Add label" })).not.toBeInTheDocument();
-    const pencil = screen.getByRole("button", { name: /edit labels/i });
-    fireEvent.click(pencil);
-    // MailLabelPicker is code-split (next/dynamic), so it arrives a tick after the click.
-    expect(await screen.findByRole("button", { name: "+ Add label" })).toBeInTheDocument();
-  });
 });

@@ -140,7 +140,7 @@ it("retains the saved list when an explicit refresh fails", async () => {
     "The calendar list could not be refreshed. The saved list is still shown.",
   );
   expect(screen.getByText(entryName)).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: addName })).toBeDisabled();
+  await waitFor(() => expect(screen.getByRole("button", { name: addName })).toBeDisabled());
 });
 it("adds the exact catalog identity/revision only after commit and keeps sync and Meet unavailable", async () => {
   const pending = deferred<ReturnType<typeof commitSelection>>();
@@ -297,7 +297,13 @@ it("preserves a committed selection and its saved acknowledgment when the follow
     await pending.promise.catch(() => undefined);
   });
   expect(screen.getByRole("button", { name: removeName })).toBeInTheDocument();
-  expect(screen.getByText("Selection saved. Events are not displayed yet.")).toBeInTheDocument();
+  const saved = screen.getByRole("status");
+  expect(saved).toHaveTextContent("Selection saved. Events are not displayed yet.");
+  expect(saved).toHaveClass("text-sm", "text-success");
+  const error = screen.getByRole("alert");
+  expect(error).toHaveTextContent("The saved calendar list could not be loaded. Try again.");
+  expect(error).toHaveClass("text-sm", "text-destructive");
+  expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
   expect(
     screen.queryByText("The calendar selection could not be saved. Try again."),
   ).not.toBeInTheDocument();
@@ -344,9 +350,9 @@ it("hides a locally disconnected catalog after its committed acknowledgment even
     expect(screen.getByRole("button", { name: removeName })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add Second / دوم" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Disconnect owner@example.invalid" }));
-    expect(
-      await screen.findByText("The account was disconnected from this workspace."),
-    ).toBeInTheDocument();
+    const disconnected = await screen.findByRole("status");
+    expect(disconnected).toHaveTextContent("The account was disconnected from this workspace.");
+    expect(disconnected).toHaveClass("text-sm", "text-success");
     await waitFor(() => expect(api.refetchAccounts).toHaveBeenCalledTimes(1));
     await rejectAccountRead();
     expect(ui.accounts[0]?.status).toBe("connected");

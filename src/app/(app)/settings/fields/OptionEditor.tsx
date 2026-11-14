@@ -9,8 +9,9 @@ import { addOptionAction } from "@/features/custom-fields/actions";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { CustomFieldOption } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { SettingsTaskStatus } from "../SettingsSurface";
 import { FieldOptionRow } from "./FieldOptionRow";
-import { FieldTaskStatus, useFieldTask } from "./FieldTask";
+import { useFieldTask } from "./FieldTask";
 
 export function OptionEditor({
   defId,
@@ -65,7 +66,7 @@ export function OptionEditor({
           {S.addOption}
         </Button>
       </div>
-      <FieldTaskStatus state={task.state} />
+      <SettingsTaskStatus state={task.state} messages={S} compact />
     </div>
   );
 }

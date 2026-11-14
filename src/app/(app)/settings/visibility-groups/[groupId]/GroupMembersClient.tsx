@@ -9,6 +9,7 @@ import { addGroupMemberAction, removeGroupMemberAction } from "@/features/identi
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../../SettingsSurface";
 
@@ -79,6 +80,16 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false);
+  const roster = useRef<HTMLUListElement>(null);
+  const picker = useRef<HTMLButtonElement>(null);
+  const retryButton = useRef<HTMLButtonElement | null>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (isPending || document.activeElement !== roster.current) return;
+    const retry = retryButton.current;
+    const destination = retry?.isConnected === true && !retry.disabled ? retry : picker.current;
+    destination?.focus({ preventScroll: true });
+  }, [isPending]);
 
   const memberIds = new Set(members.map((m) => m.userId));
   const nonMembers = allUsers.filter((u) => !memberIds.has(u.id));
@@ -91,10 +102,17 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
     }
   }
 
-  function handleRemove(userId: string): void {
-    if (isPending || inFlight.current) return;
+  function beginWrite(button: HTMLButtonElement): void {
     inFlight.current = true;
+    retryButton.current = button;
+    // Move focus before disabling the buttons, even if pointer activation has already blurred search.
+    roster.current?.focus({ preventScroll: true });
     setError(null);
+  }
+
+  function handleRemove(userId: string, button: HTMLButtonElement): void {
+    if (isPending || inFlight.current) return;
+    beginWrite(button);
     const csrf = readCsrfToken();
     startTransition(async () => {
       try {
@@ -103,6 +121,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
           setError(identityErrorMessage(result.error));
           return;
         }
+        retryButton.current = null;
         refreshMembers();
       } catch {
         setError(L._errors.generic);
@@ -112,10 +131,9 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
     });
   }
 
-  function handleAdd(): void {
+  function handleAdd(button: HTMLButtonElement): void {
     if (selectedUserId === "" || isPending || inFlight.current) return;
-    inFlight.current = true;
-    setError(null);
+    beginWrite(button);
     const csrf = readCsrfToken();
     const userId = selectedUserId;
     startTransition(async () => {
@@ -125,6 +143,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
           setError(identityErrorMessage(result.error));
           return;
         }
+        retryButton.current = null;
         setSelectedUserId("");
         refreshMembers();
       } catch {
@@ -141,7 +160,12 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
         title={L._extra.members}
         description={L._extra.add_or_remove_users_from_this_group}
       />
-      <ul className="divide-y">
+      <ul
+        ref={roster}
+        aria-label={L._extra.members}
+        tabIndex={-1}
+        className="divide-y focus:outline-2 focus:-outline-offset-2 focus:outline-ring"
+      >
         {members.length === 0 && (
           <li className="text-sm text-muted-foreground">{L._extra.no_members_yet}</li>
         )}
@@ -154,7 +178,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
               size="sm"
               aria-label={L._extra.removeUser(m.name)}
               disabled={isPending}
-              onClick={() => handleRemove(m.userId)}
+              onClick={(event) => handleRemove(m.userId, event.currentTarget)}
               className="text-red-600"
             >
               {L._extra.remove}
@@ -168,6 +192,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
           <div className="flex-1">
             <span className="mb-1 block text-sm font-medium">{L._extra.add_member}</span>
             <Combobox
+              ref={picker}
               ariaLabel={L._extra.add_member}
               disabled={isPending}
               value={selectedUserId}
@@ -181,7 +206,11 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
               }))}
             />
           </div>
-          <Button type="button" disabled={isPending || selectedUserId === ""} onClick={handleAdd}>
+          <Button
+            type="button"
+            disabled={isPending || selectedUserId === ""}
+            onClick={(event) => handleAdd(event.currentTarget)}
+          >
             {L._extra.add}
           </Button>
         </div>

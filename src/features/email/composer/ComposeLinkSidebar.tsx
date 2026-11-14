@@ -1,23 +1,11 @@
 "use client";
 import type React from "react";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { AddDealModal } from "@/features/deals/AddDealModal";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
+import { useHydrated } from "@/lib/useHydrated";
 import { LinkExistingCombobox } from "../LinkExistingCombobox";
-
-// Hydration-safe "on the client yet" flag. getServerSnapshot returns false, so the server HTML and
-// the first client render agree; the client then swaps to true on the next render. Used to gate a
-// pipeline-query-dependent `disabled` attribute so it never differs between server and client at
-// hydration time (a setState-in-effect mount flag is banned by the react-hooks lint rule).
-const subscribeNoop = (): (() => void) => () => {};
-function useIsClient(): boolean {
-  return useSyncExternalStore(
-    subscribeNoop,
-    () => true,
-    () => false,
-  );
-}
 
 interface ComposeLinkSidebarProps {
   dealId: string | null;
@@ -40,7 +28,7 @@ export function ComposeLinkSidebar({
   const E = useEmailMessages();
 
   const [dealModalOpen, setDealModalOpen] = useState(false);
-  const isClient = useIsClient();
+  const hydrated = useHydrated();
 
   const pipelinesQ = trpc.pipeline.list.useQuery();
   const pipelines = (pipelinesQ.data ?? []).map((p) => ({
@@ -76,7 +64,7 @@ export function ComposeLinkSidebar({
           <LinkExistingCombobox kind="deal" triggerLabel={E.linkExisting} onPick={onLink} />
           <button
             type="button"
-            disabled={!isClient || firstPipelineId === null}
+            disabled={!hydrated || firstPipelineId === null}
             onClick={() => setDealModalOpen(true)}
             className="w-full rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
           >

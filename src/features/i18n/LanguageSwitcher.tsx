@@ -6,9 +6,6 @@ import {
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -58,18 +55,5 @@ export function LanguageSwitcher(): ReactNode {
         <LanguageChoices />
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-export function LanguageMenuItem(): ReactNode {
-  const { preferences } = useMessages();
-  const pending = useLocalePreferencePending();
-  return (
-    <DropdownMenuSub>
-      <DropdownMenuSubTrigger disabled={pending}>{preferences.language}</DropdownMenuSubTrigger>
-      <DropdownMenuSubContent>
-        <LanguageChoices />
-      </DropdownMenuSubContent>
-    </DropdownMenuSub>
   );
 }

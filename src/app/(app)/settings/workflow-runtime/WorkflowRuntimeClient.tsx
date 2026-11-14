@@ -21,6 +21,7 @@ import {
   SettingsCardBody,
   SettingsCardFooter,
   SettingsCardHeader,
+  SettingsFeedback,
 } from "../SettingsSurface";
 
 type Snapshot = Extract<Awaited<ReturnType<typeof readWorkflowRuntime>>, { ok: true }>["value"];
@@ -48,18 +49,6 @@ function Field({
       {children}
       {hint === undefined ? null : <span className="text-xs text-muted-foreground">{hint}</span>}
     </div>
-  );
-}
-function SaveStatus({ message, error }: { message: string | null; error: boolean }) {
-  return message === null ? null : (
-    <p
-      role={error ? "alert" : "status"}
-      className={
-        error ? "me-auto text-sm text-destructive" : "me-auto text-sm text-muted-foreground"
-      }
-    >
-      {message}
-    </p>
   );
 }
 function AiConnection({ initial, L }: { initial: Snapshot; L: Messages }) {
@@ -179,7 +168,11 @@ function AiConnection({ initial, L }: { initial: Snapshot; L: Messages }) {
           ) : null}
         </SettingsCardBody>
         <SettingsCardFooter>
-          <SaveStatus message={notice?.message ?? null} error={notice?.error ?? false} />
+          {notice !== null && (
+            <SettingsFeedback tone={notice.error ? "error" : "muted"} className="me-auto">
+              {notice.message}
+            </SettingsFeedback>
+          )}
           <Button type="submit" disabled={pending}>
             {pending ? L.pending : L.save}
           </Button>
@@ -348,7 +341,11 @@ function LogicFunctions({ initial, L }: { initial: Snapshot; L: Messages }) {
           </div>
         </SettingsCardBody>
         <SettingsCardFooter>
-          <SaveStatus message={notice?.message ?? null} error={notice?.error ?? false} />
+          {notice !== null && (
+            <SettingsFeedback tone={notice.error ? "error" : "muted"} className="me-auto">
+              {notice.message}
+            </SettingsFeedback>
+          )}
           <Button type="submit" disabled={pending}>
             {pending ? L.pending : L.publish}
           </Button>

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
-import { type RouterOutputs, trpc } from "@/lib/trpc-client";
+import { trpc } from "@/lib/trpc-client";
 import { InboxReaderSidebar } from "./InboxReaderSidebar";
 import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
@@ -21,25 +21,14 @@ import { useThreadReadState } from "./useThreadReadState";
 
 interface ThreadPaneProps {
   threadId: string;
-  embedded?: boolean;
   active?: boolean;
   onClose?: () => void;
   onChanged?: () => void;
   onComposerChange?: (threadId: string, open: boolean, subject?: string | null) => void;
-  // trackingBadge: set by the parent route wrapper when a live WS email_tracking event
-  // arrives for this thread. Transient only (current session), a real-time nudge. The
-  // persisted per-message history (source of record, survives reload) is rendered per
-  // message below via MessageTrackingHistory, fed by message.tracking.
-  trackingBadge: { kind: "open" | "click" } | null;
-  // Server-prefetched thread (allowRemote:false) so the reader paints without a client round trip.
-  initialThread?: RouterOutputs["email"]["thread"]["get"];
 }
 
 export function ThreadPane({
   threadId,
-  trackingBadge,
-  initialThread,
-  embedded = false,
   active = true,
   onClose,
   onChanged,
@@ -48,17 +37,12 @@ export function ThreadPane({
   const E = useEmailMessages();
 
   const [allowRemote, setAllowRemote] = useState(false);
-  const { data, error, refetch } = trpc.email.thread.get.useQuery(
-    { threadId, allowRemote },
-    // Seed only the initial (allowRemote:false) key with the server prefetch; toggling remote
-    // images fires a fresh fetch. useInboxRealtime still invalidates on inbound events.
-    { initialData: allowRemote === false ? initialThread : undefined },
-  );
+  const { data, error, refetch } = trpc.email.thread.get.useQuery({ threadId, allowRemote });
   const ready = data !== undefined;
   const titleRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (embedded && active && ready) titleRef.current?.focus({ preventScroll: true });
-  }, [embedded, active, ready]);
+    if (active && ready) titleRef.current?.focus({ preventScroll: true });
+  }, [active, ready]);
   const utils = trpc.useUtils();
   const canMarkRead =
     data !== undefined &&
@@ -148,7 +132,6 @@ export function ThreadPane({
         canManage={canCompose}
         mailCapabilities={data.mailCapabilities}
         mailProvider={data.mailProvider}
-        embedded={embedded}
         onBack={onClose}
         onChanged={onChanged}
       />
@@ -179,10 +162,6 @@ export function ThreadPane({
                 {E.remoteActions.refresh}
               </Button>
             )}
-            {/* Owner-only thread privacy (B2). Same canCompose gate as the follow-up controls: only
-                the mailbox owner may flip visibility, and the server re-checks ownership. Reuses the
-                shared ThreadPrivacyToggle (also used per-row in ThreadList), which surfaces a failed
-                flip through the app-wide ActionError provider. */}
             {canCompose && (
               <ThreadPrivacyToggle
                 threadId={inboxThread.id}
@@ -190,26 +169,24 @@ export function ThreadPane({
                 onChanged={handleThreadChanged}
               />
             )}
-            {embedded && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <PanelRightOpen aria-hidden="true" className="size-4" />
-                    {E.workspace.details}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  className="max-h-[min(32rem,70vh)] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto p-0"
-                >
-                  <h2 className="border-b px-4 py-3 text-sm font-semibold">
-                    {E._extra.conversation_details}
-                  </h2>
-                  {canCompose && <div className="border-b p-4">{followUpControls}</div>}
-                  {sidebar}
-                </PopoverContent>
-              </Popover>
-            )}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <PanelRightOpen aria-hidden="true" className="size-4" />
+                  {E.workspace.details}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="max-h-[min(32rem,70vh)] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto p-0"
+              >
+                <h2 className="border-b px-4 py-3 text-sm font-semibold">
+                  {E._extra.conversation_details}
+                </h2>
+                {canCompose && <div className="border-b p-4">{followUpControls}</div>}
+                {sidebar}
+              </PopoverContent>
+            </Popover>
             <MailOperationHint enabled={canMarkRead}>
               <button
                 type="button"
@@ -240,20 +217,10 @@ export function ThreadPane({
               {dealTitle ?? E.linkedDealFallback}
             </a>
           )}
-          {trackingBadge !== null && (
-            <span className="inline-block px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
-              {trackingBadge.kind === "open" ? E._extra.opened : E._extra.clicked}
-            </span>
-          )}
         </div>
-        {/* Label + follow-up mutations are gated server-side on mailbox ownership (same predicate
-            as canCompose). Only offer the controls when the user owns the mailbox, so we never
-            present a clickable control the backend will reject (F5-7). */}
-        {!embedded && <div className="mt-2">{followUpControls}</div>}
       </header>
 
       <div className={styles.readerBody}>
-        {/* Message list + composer (center); conversation context (right). */}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* B8: the reply footer lives INSIDE this scroller (as the last child of the constrained
               column), so it flows immediately under the last message instead of floating at the page
@@ -288,8 +255,6 @@ export function ThreadPane({
             )}
           </div>
         </div>
-
-        {!embedded && sidebar}
       </div>
     </div>
   );

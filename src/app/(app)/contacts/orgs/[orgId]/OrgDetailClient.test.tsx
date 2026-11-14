@@ -144,6 +144,11 @@ describe("OrgDetailClient", () => {
 
     const header = screen.getByRole("banner");
     expect(header.parentElement?.firstElementChild).toBe(header);
+    expect(within(header).getByRole("link", { name: "Back to organizations" })).toHaveAttribute(
+      "href",
+      "/contacts/orgs",
+    );
+    expect(within(header).getByRole("img", { name: org.name })).toHaveClass("rounded-lg");
     const people = within(screen.getByRole("region", { name: "People" }));
     expect(people.getByRole("link", { name: "Jane Roe" })).toHaveAttribute(
       "href",

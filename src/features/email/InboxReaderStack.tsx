@@ -114,8 +114,6 @@ export function InboxReaderStack({
         >
           <ThreadPane
             threadId={id}
-            trackingBadge={null}
-            embedded
             active={id === threadId}
             onClose={onClose}
             onChanged={onChanged}

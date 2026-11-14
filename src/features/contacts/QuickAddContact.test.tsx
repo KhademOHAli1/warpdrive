@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  INTERFACE_PREFS_DEFAULT,
+  InterfacePrefsProvider,
+} from "@/features/identity/InterfacePrefsProvider";
 
 const createPerson = vi.fn<(input: unknown) => Promise<{ ok: boolean; value: { id: string } }>>(
   () => Promise.resolve({ ok: true, value: { id: "p1" } }),
@@ -13,9 +17,8 @@ vi.mock("@/features/contacts/actions", () => ({
   createPersonAction: (input: unknown) => createPerson(input),
   createOrgAction: (input: unknown) => createOrg(input),
 }));
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: () => {}, push: () => {} }),
-}));
+const { push, refresh } = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "tok" }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
@@ -36,6 +39,8 @@ afterEach(() => {
   cleanup();
   createPerson.mockClear();
   createOrg.mockClear();
+  push.mockClear();
+  refresh.mockClear();
 });
 
 describe("QuickAddContact", () => {
@@ -63,5 +68,54 @@ describe("QuickAddContact", () => {
     fireEvent.click(screen.getByRole("button", { name: "+ Person" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(createPerson).not.toHaveBeenCalled();
+  });
+
+  it("resets the open form when the contact kind changes", () => {
+    const { rerender } = render(<QuickAddContact kind="person" />);
+    fireEvent.click(screen.getByRole("button", { name: "+ Person" }));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Unsubmitted person" } });
+
+    rerender(<QuickAddContact kind="org" />);
+
+    expect(screen.getByRole("heading", { name: "Add organization" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Name")).toHaveValue("");
+  });
+
+  it("prefills and returns the created person without leaving the embedded surface", async () => {
+    const onCreated = vi.fn();
+    render(
+      <InterfacePrefsProvider
+        value={{
+          ...INTERFACE_PREFS_DEFAULT,
+          openDetailsAfterCreate: {
+            ...INTERFACE_PREFS_DEFAULT.openDetailsAfterCreate,
+            person: true,
+          },
+        }}
+      >
+        <QuickAddContact
+          kind="person"
+          triggerLabel="Create contact"
+          prefillName="Jane Roe"
+          prefillEmail="jane@example.test"
+          onCreated={onCreated}
+        />
+      </InterfacePrefsProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Create contact" }));
+    expect(screen.getByLabelText("Name")).toHaveValue("Jane Roe");
+    expect(screen.getByPlaceholderText("name@company.com")).toHaveValue("jane@example.test");
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalledExactlyOnceWith("p1"));
+    expect(createPerson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Jane Roe",
+        emails: [expect.objectContaining({ value: "jane@example.test", primary: true })],
+      }),
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
   });
 });

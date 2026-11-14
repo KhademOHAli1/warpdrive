@@ -1,11 +1,13 @@
 "use client";
 
+import { ShieldPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useSyncedState } from "@/lib/useSyncedState";
-import { CreatePermissionSetDialog } from "./CreatePermissionSetDialog";
+import { SettingsFormDialog } from "../SettingsFormDialog";
+import { CreatePermissionSetForm } from "./CreatePermissionSetForm";
 import { FlagEditor, type FlagEditorHandle } from "./FlagEditor";
 import { PermissionSetDirectory } from "./PermissionSetDirectory";
 import type { PermissionSetRow } from "./types";
@@ -44,7 +46,24 @@ export function PermissionSetsClient({ sets }: { sets: PermissionSetRow[] }): Re
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
-        <CreatePermissionSetDialog disabled={pending} onCreated={() => router.refresh()} />
+        <SettingsFormDialog
+          title={L._extra.create_a_permission_set}
+          description={L._extra.bundle_access_rules_that_can_be_assigned_to_users}
+          icon={ShieldPlus}
+          disabled={pending}
+        >
+          {({ close, onPendingChange }) => (
+            <CreatePermissionSetForm
+              embedded
+              onPendingChange={onPendingChange}
+              onCancel={close}
+              onCreated={() => {
+                close();
+                router.refresh();
+              }}
+            />
+          )}
+        </SettingsFormDialog>
       </div>
       <PermissionSetDirectory
         sets={rows}

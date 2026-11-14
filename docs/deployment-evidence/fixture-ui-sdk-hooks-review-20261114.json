@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-source-bound-generated-fixture-hooks-review",
+  "reviewer": "/root/fixture_secret_followup",
+  "reviewedAtUtc": "2026-11-14T19:56:59.792656+00:00",
+  "checkout": "/Users/ali/Documents/Codex/2026-11-13/plan-and-complete-a-new-end/work/crm-ui-final-a99",
+  "comparisonRevision": "a99fa35c948fe80c3a8b81a8edcca0a58620728e",
+  "headDuringReview": "a1511677df5c6bf34273974b396147c0271edb8a",
+  "reviewedWorkingTree": {
+    "changedFromHead": [
+      "scripts/deployment/image_smoke.py",
+      "scripts/deployment/test_engine_image_smoke.py"
+    ],
+    "note": "Exact corrected working-tree bytes are pinned below. The two fixes are not claimed to belong to the recorded HEAD Git blobs."
+  },
+  "verdict": "scoped-source-approval-with-open-qualification-gates",
+  "blockingFindings": [],
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "d838e4261365184ed03de3f2d435b52e0d7f6f36567db22fd01db30278ddc81e",
+    "scripts/deployment/test_engine_image_smoke.py": "d909dc5c17c82b4ef068794aa1dfaa0f87d017df0042f15203c9a6725cd0cef9",
+    "scripts/deployment/image_smoke.py": "714dc212c7ed310a3e52ad4bd32996e2b346a2a612c24d9b139b855343f33070",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "historicalIndependentReview": {
+    "path": "docs/deployment-evidence/fixture-engine-lifecycle-review-20261114.json",
+    "sha256": "2732480f7b33abd046e89a1ee1177ff8fcfecb6a9a6a141369b9b68ff886490b",
+    "reviewer": "/root/rollback_review",
+    "preservedUnchanged": true
+  },
+  "method": {
+    "reviewedProductOrFixtureSourcesEditedByReviewer": false,
+    "repositoryModulesImported": false,
+    "testsOrRuntimeExecuted": false,
+    "networkOrGitMutationPerformed": false,
+    "plaintextSinkRemainsDirectAndVisible": true,
+    "sourceBytesRead": {
+      "scripts/deployment/engine_image_smoke.py": 77985,
+      "scripts/deployment/test_engine_image_smoke.py": 73124,
+      "scripts/deployment/image_smoke.py": 39648,
+      ".github/workflows/production-engine.yml": 6534
+    },
+    "exactByteComparison": "Engine writer/qualifier and production-engine workflow are byte-identical to a99. Only ImageSmoke.__init__, create_environment and start_container change in that helper: fixed optional pinned PostgreSQL and cgroup selection; getattr defaults preserve manually initialized EngineImageSmoke subclasses. All previous Engine test method ASTs remain unchanged; the added class exercises the actual inherited start path and explicit pinned options.",
+    "boundedAstCallerScan": {
+      "roots": ["root Python files", "src", "scripts", "deploy", "tools"],
+      "files": 325,
+      "bytes": 4865752,
+      "directAndImportAliasedCallerFiles": [
+        "scripts/deployment/test_engine_image_smoke.py",
+        "scripts/deployment/engine_image_smoke.py"
+      ],
+      "directCallLines": {
+        "scripts/deployment/test_engine_image_smoke.py": [
+          586, 611, 633, 643, 650, 659, 671, 693, 719, 744, 773, 791, 815, 864, 896
+        ],
+        "scripts/deployment/engine_image_smoke.py": [1145]
+      },
+      "sameFileLocalAliasCalls": [
+        {
+          "path": "scripts/deployment/test_engine_image_smoke.py",
+          "line": 935,
+          "alias": "original"
+        }
+      ],
+      "scope": "Direct, attribute, imported-name aliases and observed same-function direct assignment aliases only; not a general Python sandbox."
+    },
+    "separateCallerReview": {
+      "reviewer": "/root/fixture_secret_followup/synthetic_secret_callers",
+      "sourceHead": "a1511677df5c6bf34273974b396147c0271edb8a",
+      "result": "Same two caller files; no new SDK caller exposure. Reviewed before the two-file compatibility correction; root reviewer rescanned corrected bytes."
+    },
+    "existingPolicyGuardOrHistoricalReviewRecordsEditedByReviewer": false,
+    "newIndependentReportWrittenByReviewer": true
+  },
+  "currentAnnotations": {
+    "engineQueryAnnotationCount": 0,
+    "sinkStatement": "payload.write(password)"
+  },
+  "resolvedFinding": {
+    "id": "UI-SDK-ENGINE-OPTION-DEFAULT",
+    "initialState": "blocking",
+    "fact": "The first new cgroup hook directly read self.cgroup_parent. EngineImageSmoke manually initializes without ImageSmoke.__init__ and calls ImageSmoke.start_container from its own create_environment, so that source raised AttributeError.",
+    "correction": "Inherited hook reads use getattr(..., None); no optional pin means the original Engine command has no cgroup argument. PostgreSQL optional selection uses the same compatible default.",
+    "regressionSource": "InheritedContainerOptionsTests exercises the real Engine constructor/create_environment and explicit base-constructor PostgreSQL/cgroup options with a fake Docker transport. Reviewer did not execute these tests."
+  },
+  "reviewedSecretBehavior": [
+    "The sole runtime call receives a password generated with secrets.token_urlsafe(32) by the owned Engine fixture. CLI inputs select images/revision/context/output, not a deployment credential.",
+    "Native Linux/amd64 and an actual writable host tmpfs are admitted before the sole runtime write. Descriptor-held nofollow ancestors, private0700 owner directory, exclusive single-link0600 leaf, literal plaintext write, flush,0444 and identity rechecks remain unchanged.",
+    "Failure cleanup keeps descriptor ownership and removes only the original inode; ordinary completion removes the private temporary directory after owned fixture cleanup. Abrupt failure and trusted same-UID/root actors retain the documented residuals.",
+    "The new hook changes neither generated password sources, environment filtering, diagnostic redaction, cleanup ownership nor the visible plaintext sink/caller closure. Explicit pinned PostgreSQL switches only the selected native image and pull policy; explicit cgroup selects one constrained flat fixture slice.",
+    "The workflow still has contents:read, persist-credentials:false, no deployment environment/production credential input, no registry push, a native fixture deadline, and retained failure artifacts. No source query annotation or alert dismissal is introduced."
+  ],
+  "residuals": [
+    "Generated passwords remain plaintext during the real _FILE fixture, including existing Docker arguments/environments. Runner UID, host root and Docker daemon are trusted; tmpfs may swap and abrupt failure may bypass cleanup.",
+    "A later Docker bind resolves a pathname. Same-UID/root name substitution after verification and non-atomic cleanup against that actor are not eliminated.",
+    "This finite source review does not execute the Engine, prove native lifecycle behavior, establish current CodeQL finding disposition, qualify installed custody, or authorize deployment. Exact-source tests/native checks/managed scanner and named-ref findings remain required."
+  ],
+  "securityGateCleanClaim": false,
+  "findingClosedClaim": false,
+  "canonicalAcceptanceClaim": false,
+  "deploymentAuthorized": false
+}

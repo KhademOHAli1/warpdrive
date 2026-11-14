@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
+import { MASK_CLASS } from "@/features/observability/replayMasking";
 import type { InboxThread } from "./emailReads";
 import { InboxWorkspace } from "./InboxWorkspace";
 import type { InboxLocation } from "./inboxLocation";
@@ -23,6 +24,8 @@ type MailAction = (...args: unknown[]) => Promise<{ ok: true; value: { threadId:
 const archive = vi
   .fn<MailAction>()
   .mockResolvedValue({ ok: true, value: { threadId: "ordinary" } });
+const refreshWorkspace = vi.fn();
+const refreshArchive = vi.fn();
 const HELD_OPERATION_ID = "00000000-0000-4000-8000-000000000003";
 const markRead = vi.fn((_csrf: string, input: ReadInput) => applyReadIntent(input));
 const prepareRead = vi.fn(async (_csrf: string, input: { threadId: string; read: boolean }) => {
@@ -71,9 +74,9 @@ vi.mock("@/lib/trpc-client", () => {
       },
       useUtils: () => ({
         email: {
-          workspace: { list: endpoint },
+          workspace: { list: { invalidate: refreshWorkspace } },
           inbox: { list: endpoint, unreadCount: endpoint },
-          folders: { archive: endpoint, sent: endpoint },
+          folders: { archive: { invalidate: refreshArchive }, sent: endpoint },
         },
       }),
     },
@@ -131,6 +134,7 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
         ...ordinary,
         id: "held",
         subject: "Protected subject",
+        snippet: "Protected body preview",
         privateIntake: {
           id: "11111111-1111-4111-8111-111111111111",
           revision: 2,
@@ -142,6 +146,8 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
       },
     ];
     workspace();
+    expect(screen.getByRole("button", { name: /Protected subject/ })).toBeVisible();
+    expect(screen.getByText("Protected body preview").closest(`.${MASK_CLASS}`)).not.toBeNull();
     const bar = selectAll();
     const archiveButton = within(bar).getByRole("button", { name: copy[locale].workspace.archive });
     const readButton = within(bar).getByRole("button", { name: copy[locale].workspace.markRead });
@@ -153,7 +159,7 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
     expect(markRead).not.toHaveBeenCalled();
     expect(prepareRead).not.toHaveBeenCalled();
   });
-  it("retains ordinary local archive while remote read is unavailable", () => {
+  it("archives the exact selected local row and refreshes both feeds", async () => {
     threads = [
       {
         ...ordinary,
@@ -162,10 +168,20 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
     ];
     workspace();
     const bar = selectAll();
-    expect(within(bar).getByRole("button", { name: copy[locale].workspace.archive })).toBeEnabled();
+    const archiveButton = within(bar).getByRole("button", { name: copy[locale].workspace.archive });
+    expect(archiveButton).toBeEnabled();
     expect(
       within(bar).getByRole("button", { name: copy[locale].workspace.markRead }),
     ).toBeDisabled();
+    fireEvent.click(archiveButton);
+    expect(archive).toHaveBeenCalledExactlyOnceWith("csrf", { threadId: ordinary.id });
+    await vi.waitFor(() => expect(refreshWorkspace).toHaveBeenCalledTimes(1));
+    expect(refreshArchive).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole("checkbox", {
+        name: copy[locale]._extra.select_arg0.replace("{arg0}", ordinary.subject ?? ""),
+      }),
+    ).not.toBeChecked();
   });
   it.each(["unverified", "conflict"] as const)(
     "allows the owner's local read action for a %s protected copy",
@@ -209,6 +225,28 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
       expect(archive).not.toHaveBeenCalled();
     },
   );
+  it("keeps only the failed row selected after a partial read failure", async () => {
+    const failed = { ...ordinary, id: "failed", subject: "Failed subject" };
+    threads = [failed, ordinary];
+    markRead.mockResolvedValueOnce({ ok: false, error: { id: "E_GMAIL_019" } });
+    workspace();
+    const bar = selectAll();
+    fireEvent.click(within(bar).getByRole("button", { name: copy[locale].workspace.markRead }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      copy[locale].remoteActions.readStatusFailed,
+    );
+    expect(
+      screen.getByRole("checkbox", {
+        name: copy[locale]._extra.select_arg0.replace("{arg0}", failed.subject),
+      }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", {
+        name: copy[locale]._extra.select_arg0.replace("{arg0}", ordinary.subject ?? ""),
+      }),
+    ).not.toBeChecked();
+    expect(refreshWorkspace).toHaveBeenCalledTimes(1);
+  });
   it("preserves ordinary remote-read controls when permitted", () => {
     threads = [ordinary];
     workspace();

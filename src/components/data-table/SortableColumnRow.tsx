@@ -25,7 +25,7 @@ export function SortableColumnRow({
   const t = useAppTranslations("tableControls");
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: col.key,
-    disabled: pinned,
+    disabled: { draggable: pinned, droppable: pinned },
   });
   const style = { transform: CSS.Transform.toString(transform), transition };
 

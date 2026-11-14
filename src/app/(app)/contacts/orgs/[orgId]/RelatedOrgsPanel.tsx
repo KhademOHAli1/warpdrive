@@ -1,8 +1,9 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
-import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import type { ComboboxOption } from "@/components/ui/Combobox";
 import { Input } from "@/components/ui/Input";
+import { SdkCombobox } from "@/components/ui/SdkCombobox";
 import { ROW_ACTION_BUTTON } from "@/constants/formStyles";
 import {
   addOrgRelationAction,
@@ -112,8 +113,9 @@ export function RelatedOrgsPanel({
 
       <div className="flex items-center gap-1.5 pt-1">
         <div className="min-w-0 flex-1">
-          <Combobox
+          <SdkCombobox
             ariaLabel={tContacts("relatedOrganization")}
+            tabFromTrigger
             value={targetOrgId}
             onChange={setTargetOrgId}
             options={pickerOptions}

@@ -16,11 +16,69 @@ from unittest.mock import Mock, patch
 
 try:
     from . import engine_image_smoke as smoke
+    from .test_image_smoke import FakeDocker
 except ImportError:
     import engine_image_smoke as smoke
+    from test_image_smoke import FakeDocker
 
 
 CONTEXT = Path(__file__).resolve().parents[2] / "deploy/newsletters/engine"
+
+
+class InheritedContainerOptionsTests(unittest.TestCase):
+    def docker(self):
+        docker = FakeDocker()
+        readback = docker.json
+        def inspect(arguments, **options):
+            if arguments[:2] == ["network", "inspect"]:
+                return True
+            if arguments[:2] == ["container", "inspect"] and arguments[-1] == "{{json .NetworkSettings}}":
+                return {"Networks": {docker.network: {}}, "Ports": {}}
+            return readback(arguments, **options)
+        docker.json = inspect
+        return docker
+
+    def postgres_run(self, docker):
+        commands = [args for args in docker.calls if args[0] == "run"]
+        self.assertEqual(len(commands), 1)
+        return commands[0]
+
+    def test_real_engine_constructor_starts_default_postgres_without_base_optional_fields(self):
+        docker = self.docker()
+        value = smoke.EngineImageSmoke(docker, "synthetic:only", "a" * 40, Path("unused-evidence"))
+        docker.owner, docker.network = value.prefix, value.report["resources"]["network"]
+        self.assertFalse(hasattr(value, "cgroup_parent"))
+        self.assertFalse(hasattr(value, "postgres_image"))
+        result = value.create_environment()
+        arguments = self.postgres_run(docker)
+        self.assertEqual(arguments[-1], "postgres:16-alpine")
+        self.assertEqual(arguments[arguments.index("--pull") + 1], "missing")
+        self.assertNotIn("--cgroup-parent", arguments)
+        self.assertEqual(arguments[arguments.index("--network") + 1], value.report["resources"]["network"])
+        self.assertIn("POSTGRES_USER=consentproof", arguments)
+        self.assertIn("POSTGRES_DB=consent", arguments)
+        self.assertIn(f"type=volume,source={value.prefix}-pgdata,target=/var/lib/postgresql/data", arguments)
+        self.assertIn(("container", value.containers["postgres"]), value.resources)
+        self.assertEqual(result, {"internalNetwork": True, "publishedPorts": 0,
+                                  "sourceMounts": 0, "providers": "disabled"})
+
+    def test_real_base_constructor_keeps_explicit_postgres_and_cgroup_pins(self):
+        docker = self.docker()
+        image, cgroup = "sha256:" + "b" * 64, "warpdrivequalification" + "c" * 12 + ".slice"
+        value = smoke.ImageSmoke(docker, {name: f"synthetic/{name}:only" for name in
+            ("web", "worker", "realtime", "migrator")}, Path("unused-evidence"),
+            expected_revision="a" * 40, postgres_image=image, cgroup_parent=cgroup)
+        docker.owner, docker.network = value.prefix, value.report["resources"]["network"]
+        value.create_environment()
+        arguments = self.postgres_run(docker)
+        self.assertEqual(arguments[-1], image)
+        self.assertEqual(arguments[arguments.index("--pull") + 1], "never")
+        self.assertEqual(arguments[arguments.index("--cgroup-parent") + 1], cgroup)
+        self.assertEqual(arguments.count("--cgroup-parent"), 1)
+        self.assertIn("POSTGRES_USER=smoke", arguments)
+        self.assertIn("POSTGRES_DB=warpdrive_image_smoke", arguments)
+        self.assertEqual(value.postgres_image, image)
+        self.assertEqual(value.cgroup_parent, cgroup)
 
 
 class NonrootEntrypointTests(unittest.TestCase):

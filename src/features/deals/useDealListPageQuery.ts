@@ -13,10 +13,12 @@ type ListSeed = Pick<DealListPage, "rows" | "total" | "totalValue"> &
 
 function seedPage(initial: ListSeed, view: BoardViewState): DealListPage | undefined {
   const definition = boardViewDefinition(view);
+  const initialDefinition = boardViewDefinition(initial.initialView ?? DEFAULT_BOARD_VIEW);
+  // An unavailable view supplies a masked server page with no authoritative list data.
   if (
     definition === null ||
-    JSON.stringify(definition ?? null) !==
-      JSON.stringify(boardViewDefinition(initial.initialView ?? DEFAULT_BOARD_VIEW) ?? null)
+    initialDefinition === null ||
+    JSON.stringify(definition) !== JSON.stringify(initialDefinition)
   )
     return undefined;
   return {

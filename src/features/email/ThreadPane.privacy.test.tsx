@@ -36,6 +36,7 @@ vi.mock("./threadVisibilityActions", () => ({
   setThreadVisibilityAction: (...a: unknown[]) => setThreadVisibilityMock(...(a as [])),
 }));
 const reportErrorMock = vi.fn();
+const refetchThread = vi.fn();
 vi.mock("@/components/shell/ActionErrorProvider", () => ({
   useActionError: () => reportErrorMock,
 }));
@@ -59,6 +60,7 @@ const threadData = {
   messages: [] as never[],
   accountId: "acct1",
   canCompose: true,
+  mailCapabilities: { read: true, send: false, markRead: false, move: false, trash: false },
   ownerEmail: "me@gunsnation.com",
   personName: null as string | null,
   dealTitle: null as string | null,
@@ -66,13 +68,15 @@ const threadData = {
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     mailLabels: { list: { useQuery: () => ({ data: [] }) } },
-    email: { thread: { get: { useQuery: () => ({ data: threadData, refetch: vi.fn() }) } } },
+    email: { thread: { get: { useQuery: () => ({ data: threadData, refetch: refetchThread }) } } },
     pipeline: { list: { useQuery: () => ({ data: [] }) } },
     search: { query: { useQuery: () => ({ data: undefined }) } },
     useUtils: () => ({
       mailLabels: { list: { invalidate: vi.fn() } },
       email: {
         inbox: { list: { invalidate: vi.fn() }, unreadCount: { invalidate: vi.fn() } },
+        listMessagesForDeal: { invalidate: vi.fn() },
+        listMessagesForContact: { invalidate: vi.fn() },
       },
     }),
   },
@@ -84,6 +88,7 @@ afterEach(() => {
   cleanup();
   setThreadVisibilityMock.mockClear();
   reportErrorMock.mockClear();
+  refetchThread.mockClear();
   threadData.canCompose = true;
   threadData.thread.visibility = "private";
 });
@@ -91,21 +96,36 @@ afterEach(() => {
 describe("ThreadPane reader-header privacy", () => {
   it("shows the privacy toggle when the user owns the mailbox (canCompose)", () => {
     threadData.canCompose = true;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     expect(screen.getByRole("button", { name: /private conversation/i })).toBeInTheDocument();
   });
 
   it("hides the privacy toggle on a thread the user cannot compose to", () => {
     threadData.canCompose = false;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     expect(screen.queryByRole("button", { name: /conversation/i })).not.toBeInTheDocument();
+  });
+
+  it("refreshes the reader and requests a workspace refresh after a successful flip", async () => {
+    const onChanged = vi.fn();
+    const user = userEvent.setup();
+    render(<ThreadPane threadId="t1" onChanged={onChanged} />);
+    await user.click(screen.getByRole("button", { name: /private conversation/i }));
+    await user.click(screen.getByRole("menuitem", { name: /shared/i }));
+    expect(setThreadVisibilityMock).toHaveBeenCalledExactlyOnceWith("csrf", {
+      threadId: "t1",
+      visibility: "shared",
+    });
+    expect(refetchThread).toHaveBeenCalledTimes(1);
+    expect(onChanged).toHaveBeenCalledTimes(1);
+    expect(reportErrorMock).not.toHaveBeenCalled();
   });
 
   it("surfaces an error via the app-wide reporter when the flip fails", async () => {
     setThreadVisibilityMock.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
     const user = userEvent.setup();
     threadData.canCompose = true;
-    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    render(<ThreadPane threadId="t1" />);
     await user.click(screen.getByRole("button", { name: /private conversation/i }));
     await user.click(screen.getByRole("menuitem", { name: /shared/i }));
     expect(setThreadVisibilityMock).toHaveBeenCalledWith("csrf", {

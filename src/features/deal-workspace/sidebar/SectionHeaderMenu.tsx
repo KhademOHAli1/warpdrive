@@ -1,6 +1,7 @@
 "use client";
 import { MoreHorizontal, Pencil, Sparkles } from "lucide-react";
 import type React from "react";
+import { useRef } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,8 @@ import { useSalesStrings } from "@/features/deals/useSalesStrings";
 export interface SectionHeaderMenuItem {
   label: string;
   onSelect: () => void;
+  // A menu action that opens a dialog can restore focus to this trigger when it closes.
+  returnFocusRef?: React.RefObject<HTMLButtonElement | null>;
   destructive?: boolean;
   disabled?: boolean;
 }
@@ -75,6 +78,7 @@ export function SectionHeaderMenu({
   fillGapsDisabledReason,
 }: SectionHeaderMenuProps): React.ReactNode {
   const STRINGS = useSalesStrings();
+  const trigger = useRef<HTMLButtonElement>(null);
 
   return (
     <div className="flex items-center gap-1">
@@ -97,6 +101,7 @@ export function SectionHeaderMenu({
       )}
       <DropdownMenu>
         <DropdownMenuTrigger
+          ref={trigger}
           aria-label={STRINGS.dealSidebar.menu.sectionOptions(sectionLabel)}
           className={SMALL_ICON_BUTTON}
         >
@@ -107,7 +112,11 @@ export function SectionHeaderMenu({
             <DropdownMenuItem
               key={item.label}
               disabled={item.disabled}
-              onSelect={item.onSelect}
+              onSelect={() => {
+                if (item.returnFocusRef !== undefined)
+                  item.returnFocusRef.current = trigger.current;
+                item.onSelect();
+              }}
               className={item.destructive === true ? "text-destructive" : undefined}
             >
               {item.label}

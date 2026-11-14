@@ -1,6 +1,10 @@
 // Guards shared by every global shortcut: a bare letter or digit must never fire while the user is
 // typing, and must never fire underneath an open menu/dialog (those own their own key handling).
 
+export function isShortcutSuppressed(event: KeyboardEvent): boolean {
+  return event.defaultPrevented || event.isComposing || event.keyCode === 229;
+}
+
 // Radix drives comboboxes and spinbuttons with printable-key type-ahead, so their triggers consume
 // bare letters exactly like a text field even though they are buttons.
 const TYPE_AHEAD =
@@ -22,9 +26,10 @@ export function isTypingTarget(target: EventTarget | null): boolean {
 
 // Only genuinely floating layers count. role="listbox" is deliberately absent: StageSelector
 // renders one inline on every deal workspace, which would leave the shortcuts dead there. Radix
-// portals its own open listboxes and popovers inside a popper wrapper, so those are still caught.
+// portals its own open popovers inside a wrapper. The shared SDK picker exposes its open state
+// through the trigger's aria-expanded attribute.
 const OVERLAY_SELECTOR =
-  '[role="dialog"],[role="alertdialog"],[role="menu"],[data-radix-popper-content-wrapper]';
+  '[role="dialog"],[role="alertdialog"],[role="menu"],[data-radix-popper-content-wrapper],[data-crm-picker-trigger][aria-expanded="true"]';
 
 export function isOverlayOpen(doc: Document): boolean {
   return doc.querySelector(OVERLAY_SELECTOR) !== null;

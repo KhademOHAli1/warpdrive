@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // src/components/ui/Select.test.tsx
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Select } from "./Select";
@@ -41,6 +41,45 @@ describe("Select", () => {
     render(<Select value="a" onChange={onChange} options={iconOptions} ariaLabel="Type" />);
     fireEvent.click(screen.getByLabelText("Type"));
     expect(screen.getByTestId("call-icon")).toBeInTheDocument();
+  });
+
+  it("keeps nonconsecutive headings separate while updating options in place", () => {
+    const onChange = vi.fn();
+    const items = [
+      { value: "", label: "None" },
+      { value: "a", label: "Call", group: "Tasks" },
+      { value: "b", label: "Meeting", group: "Tasks" },
+      { value: "c", label: "Reminder" },
+      { value: "d", label: "Email", group: "Tasks" },
+    ];
+    const mounted = render(
+      <Select value="d" onChange={onChange} options={items} ariaLabel="Type" />,
+    );
+    fireEvent.click(screen.getByLabelText("Type"));
+    const list = screen.getByRole("listbox");
+    expect(
+      within(list)
+        .getAllByRole("option")
+        .map((option) => option.textContent),
+    ).toEqual(["None", "Call", "Meeting", "Reminder", "Email"]);
+    const groups = within(list).getAllByRole("group", { name: "Tasks" });
+    expect(groups.map((group) => within(group).getAllByRole("option").length)).toEqual([2, 1]);
+    expect(
+      within(list).getByRole("option", { name: "Reminder" }).closest('[role="group"]'),
+    ).toBeNull();
+
+    mounted.rerender(
+      <Select
+        value="d"
+        onChange={onChange}
+        options={items.filter((item) => item.value !== "b")}
+        ariaLabel="Type"
+      />,
+    );
+    expect(within(list).getAllByRole("group", { name: "Tasks" })).toEqual(groups);
+    expect(within(list).queryByRole("option", { name: "Meeting" })).toBeNull();
+    fireEvent.click(within(list).getByRole("option", { name: "None" }));
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("");
   });
 
   // Radix reserves value="" internally to mean "nothing selected, show the placeholder".

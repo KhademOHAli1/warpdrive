@@ -27,9 +27,6 @@ interface StageSelectorProps {
   quiet?: boolean;
 }
 
-// Chevron shape reused from StageChevrons: flat left edge, pointed right, with a matching left
-// notch on all but the first segment so neighbours interlock.
-
 // The stage bar inherits the pipeline board's per-order hue ramp (stageSegmentStyle) rather than a
 // uniform success-green / muted-gray: each segment is tinted in its own stage color, and progress
 // reads via fill intensity (passed/current deepen the hue, current bolds). See boardStageHeader.ts.

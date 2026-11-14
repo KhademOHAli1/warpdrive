@@ -154,32 +154,6 @@ export function InboxSkeleton(): React.ReactNode {
 // mounted page while a client query is still pending, so a zero-result message is never painted
 // before the query has answered.
 
-// Rows for the inbox conversation list. Rendered inside the list's <ul>.
-export function ThreadRowsSkeleton({ rows = 6 }: { rows?: number } = {}): React.ReactNode {
-  const t = useAppTranslations("shell.loading");
-  return (
-    <li>
-      <div
-        role="status"
-        aria-busy="true"
-        aria-label={t("conversations")}
-        className="flex flex-col gap-3 p-3"
-      >
-        {Array.from({ length: rows }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder rows
-          <div key={i} className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <Skeleton className="h-3.5 w-32" />
-              <Skeleton className="h-3 w-12" />
-            </div>
-            <Skeleton className="h-3.5 w-56" />
-          </div>
-        ))}
-      </div>
-    </li>
-  );
-}
-
 // The four sectioned result groups of the global search palette, at their real heights so the
 // overlay does not resize when results land.
 export function SearchResultsSkeleton(): React.ReactNode {
@@ -257,23 +231,33 @@ export function EngagementGridSkeleton({ lanes = 6 }: { lanes?: number } = {}): 
   );
 }
 
-export function DashboardSkeleton(): React.ReactNode {
+export function DashboardSkeleton({ label }: { label?: string } = {}): React.ReactNode {
   const t = useAppTranslations("shell.loading");
+  const placeholders = (
+    <div className="space-y-5" aria-hidden="true">
+      <div className="grid grid-cols-2 gap-6 rounded-xl border bg-card p-5 xl:grid-cols-5">
+        {[0, 1, 2, 3, 4].map((key) => (
+          <div key={key} className={key === 0 ? "h-28 col-span-2 xl:col-span-1" : "h-28"}>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="mt-6 h-7 w-1/2 rounded bg-muted" />
+          </div>
+        ))}
+      </div>
+      <div className="h-80 rounded-xl border bg-card" />
+    </div>
+  );
+  if (label !== undefined) {
+    return (
+      <div role="status" aria-label={label}>
+        <span className="sr-only">{label}</span>
+        {placeholders}
+      </div>
+    );
+  }
   return (
     <main className="flex flex-col gap-4" aria-busy="true" aria-label={t("generic")}>
       <HeadingSkeleton action={false} />
-      {/* Stat tiles row. */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder tiles
-          <Skeleton key={i} className="h-24 w-full" />
-        ))}
-      </div>
-      {/* Chart blocks. */}
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
+      {placeholders}
     </main>
   );
 }

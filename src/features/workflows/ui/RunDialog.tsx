@@ -10,8 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { type RouterOutputs, trpc } from "@/lib/trpc-client";
@@ -22,9 +20,9 @@ import { readWorkflowScheduleTrigger } from "../workflowScheduleContract";
 import { readWorkflowWebhookTrigger } from "../workflowWebhookContract";
 import { LiveRunReview, type LiveRunReviewContext } from "./LiveRunReview";
 import { projectLiveRunEffects } from "./liveRunEffectSummary";
+import { type WorkflowDealOption, WorkflowDealPicker } from "./WorkflowDealPicker";
 
 type Mode = "simulation" | "live";
-type DealOption = { value: string; label: string };
 type Workflow = RouterOutputs["workflows"]["get"];
 type Version = RouterOutputs["workflows"]["version"];
 type ReadFlags = { isFetching: boolean; isError: boolean; isPlaceholderData: boolean };
@@ -57,7 +55,7 @@ function automaticLaunchScope(definition: Version["definition"]): "schedule" | "
 
 function currentPublication(
   workflowId: string,
-  chosen: DealOption | null,
+  chosen: WorkflowDealOption | null,
   workflow: Workflow | undefined,
   version: Version | undefined,
   fresh: boolean,
@@ -96,7 +94,11 @@ function currentPublication(
   };
 }
 
-function useLivePublication(workflowId: string, chosen: DealOption | null, enabled: boolean) {
+function useLivePublication(
+  workflowId: string,
+  chosen: WorkflowDealOption | null,
+  enabled: boolean,
+) {
   const workflow = trpc.workflows.get.useQuery(
     { id: workflowId },
     { enabled, staleTime: 0, refetchOnMount: "always", placeholderData: undefined },
@@ -161,7 +163,7 @@ function prepareSubmission(
   workflowId: string,
   requestKey: string,
   mode: Mode,
-  chosen: DealOption | null,
+  chosen: WorkflowDealOption | null,
   publication: LivePublication | null,
   acknowledged: boolean,
 ): Submission | null {
@@ -287,7 +289,7 @@ export function RunDialog({
   onCloseAutoFocus?: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
-  const [chosen, setChosen] = useState<DealOption | null>(null);
+  const [chosen, setChosen] = useState<WorkflowDealOption | null>(null);
   const [key] = useState(() => crypto.randomUUID());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
@@ -389,10 +391,11 @@ export function RunDialog({
             {t("publishedHint")}
           </p>
           {launchScope === "deal" && !externalSimulationBlocked && (
-            <RunDealPicker
+            <WorkflowDealPicker
               chosen={chosen}
               onChoose={setChosen}
-              locked={pending || submission !== null}
+              disabled={pending || submission !== null}
+              feedback="muted"
             />
           )}
           {launchScope === "global" &&
@@ -452,67 +455,5 @@ export function RunDialog({
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function RunDealPicker({
-  chosen,
-  onChoose,
-  locked,
-}: {
-  chosen: DealOption | null;
-  onChoose: (option: DealOption | null) => void;
-  locked: boolean;
-}) {
-  const t = useAppTranslations("workflows");
-  const [query, setQuery] = useState("");
-  const search = trpc.search.query.useQuery(
-    { q: query.trim().slice(0, 200) },
-    { enabled: !locked && query.trim().length > 1 },
-  );
-  const options = (search.data?.deals ?? []).map((deal) => ({
-    value: deal.id,
-    label: deal.primary,
-  }));
-  if (chosen !== null && !options.some((option) => option.value === chosen.value))
-    options.unshift(chosen);
-  return (
-    <>
-      <Input
-        dir="auto"
-        aria-label={t("search")}
-        placeholder={t("search")}
-        value={query}
-        maxLength={200}
-        disabled={locked}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      <Select
-        value={chosen?.value ?? ""}
-        ariaLabel={t("deal")}
-        placeholder={t("deal")}
-        options={options}
-        disabled={locked || options.length === 0}
-        onChange={(value) => onChoose(options.find((option) => option.value === value) ?? null)}
-      />
-      {query.trim().length < 2 && (
-        <p className="text-sm text-muted-foreground">{t("searchHint")}</p>
-      )}
-      {search.isFetching && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {t("searchLoading")}
-        </p>
-      )}
-      {query.trim().length > 1 && options.length === 0 && !search.isFetching && !search.isError && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {t("noResults")}
-        </p>
-      )}
-      {search.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          {t("loadError")}
-        </p>
-      )}
-    </>
   );
 }

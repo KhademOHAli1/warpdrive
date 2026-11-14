@@ -10,6 +10,8 @@ import { responsiveMaxWidth } from "./adapterClasses";
 import { useDirection } from "./direction";
 import * as DialogPrimitive from "./primitives/dialog";
 
+export { DialogFooter, DialogHeader } from "./dialogLayout";
+
 // shadcn Radix Nova Dialog wrapper over @radix-ui/react-dialog. This is the SANCTIONED
 // replacement for hand-rolled `fixed inset-0` modal overlays: it brings focus trap, scroll
 // lock, Escape-to-close, and portal for free. See CLAUDE.md "Use the design system, never
@@ -113,19 +115,6 @@ export const DialogContent = forwardRef<
   );
 });
 DialogContent.displayName = "DialogContent";
-
-export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-1.5 text-start", className)} {...props} />;
-}
-
-export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
-      {...props}
-    />
-  );
-}
 
 export const DialogTitle = forwardRef<
   React.ElementRef<typeof DialogPrimitive.DialogTitle>,

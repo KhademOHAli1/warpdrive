@@ -18,6 +18,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
 // correct width, avoiding the reload flash). jsdom provides a working document.cookie; clear it
 // between tests. Reset to a clean jar by expiring the key.
 function clearNavCookie(): void {
+  // biome-ignore lint/suspicious/noDocumentCookie: Reset the server-readable fixture preference.
   document.cookie = "wd_nav_expanded=; path=/; max-age=0";
 }
 
@@ -57,14 +58,7 @@ describe("LeftNav", () => {
         within(navigation)
           .getAllByRole("link")
           .map((link) => link.getAttribute("href")),
-      ).toEqual([
-        "/pipeline",
-        "/activities",
-        "/leads",
-        "/inbox",
-        "/contacts/people",
-        ...(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []),
-      ]);
+      ).toEqual(["/pipeline", "/leads", "/inbox", "/settings", "/workflows", DOCS_SITE_URL]);
     },
   );
 
@@ -75,9 +69,7 @@ describe("LeftNav", () => {
     expect(home.getAttribute("href")).toBe("/pipeline");
     document.addEventListener("click", (event) => event.preventDefault(), { once: true });
     fireEvent.click(home);
-    expect(
-      screen.getByRole("button", { name: expanded ? "Collapse sidebar" : "Expand sidebar" }),
-    ).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: expanded })).not.toBeNull();
   });
 
   test.each([true, false])(
@@ -88,7 +80,8 @@ describe("LeftNav", () => {
       const home = screen.getByRole("link", { name: "Warpdrive home" });
       const header = home.closest(`.${styles.sidebarTopbar}`);
       const toggle = screen.getByRole("button", {
-        name: expanded ? "Collapse sidebar" : "Expand sidebar",
+        name: "Pin sidebar",
+        pressed: expanded,
       });
       const navigation = screen.getByRole("navigation", { name: "Primary" });
       expect(header).not.toBeNull();
@@ -98,10 +91,12 @@ describe("LeftNav", () => {
       expect(toggle.textContent?.trim()).toBe("");
       expect(toggle.querySelector("kbd")).toBeNull();
       expect(toggle.getAttribute("type")).toBe("button");
-      expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
+      expect(toggle.getAttribute("aria-pressed")).toBe(String(expanded));
+      expect(toggle.hasAttribute("aria-expanded")).toBe(false);
       expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
-      expect(navigation.contains(toggle)).toBe(true);
-      expect(navigation.querySelector(`.${styles.utilityNav}`)?.contains(toggle)).toBe(true);
+      expect(navigation.contains(toggle)).toBe(false);
+      expect(toggle.closest(`.${styles.sidebarToggleDock}`)).not.toBeNull();
+      expect(toggle.closest(`.${styles.utilityNav}`)).toBeNull();
       if (expanded) {
         const docs = screen.getByRole("link", { name: "Help & docs" });
         expect(
@@ -116,12 +111,12 @@ describe("LeftNav", () => {
     const user = userEvent.setup();
     setViewport(true);
     const first = render(<LeftNav />);
-    const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
+    const collapse = screen.getByRole("button", { name: "Pin sidebar", pressed: true });
     collapse.focus();
     expect(document.activeElement).toBe(collapse);
     await user.keyboard("{Enter}");
-    const expand = screen.getByRole("button", { name: "Expand sidebar" });
-    expect(expand.getAttribute("aria-expanded")).toBe("false");
+    const expand = screen.getByRole("button", { name: "Pin sidebar", pressed: false });
+    expect(expand.getAttribute("aria-pressed")).toBe("false");
     expect(document.cookie).toContain("wd_nav_expanded=0");
     expect(
       screen
@@ -132,13 +127,15 @@ describe("LeftNav", () => {
     expand.focus();
     await user.keyboard(" ");
     expect(
-      screen.getByRole("button", { name: "Collapse sidebar" }).getAttribute("aria-expanded"),
+      screen
+        .getByRole("button", { name: "Pin sidebar", pressed: true })
+        .getAttribute("aria-pressed"),
     ).toBe("true");
     expect(document.cookie).toContain("wd_nav_expanded=1");
     first.unmount();
     setViewport(false);
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
     expect(
       screen
         .getByRole("navigation", { name: "Primary" })
@@ -157,17 +154,19 @@ describe("LeftNav", () => {
         </LocaleProvider>,
       );
       const toggle = screen.getByRole("button", {
-        name: expanded ? "جمع کردن نوار کناری" : "باز کردن نوار کناری",
+        name: "سنجاق کردن نوار کناری",
+        pressed: expanded,
       });
       expect(toggle.textContent?.trim()).toBe("");
-      expect(toggle.getAttribute("aria-expanded")).toBe(String(expanded));
+      expect(toggle.getAttribute("aria-pressed")).toBe(String(expanded));
+      expect(toggle.hasAttribute("aria-expanded")).toBe(false);
       expect(toggle.getAttribute("aria-controls")).toBe("primary-navigation");
       const glyph = toggle.querySelector("svg");
       expect(glyph?.getAttribute("aria-hidden")).toBe("true");
       expect(glyph?.getAttribute("focusable")).toBe("false");
       expect(glyph?.getAttribute("data-rtl-mirror")).toBe("true");
       expect(toggle.closest(`.${styles.sidebarTopbar}`)).toBeNull();
-      expect(toggle.closest(`.${styles.utilityNav}`)).not.toBeNull();
+      expect(toggle.closest(`.${styles.sidebarToggleDock}`)).not.toBeNull();
       expect(document.documentElement.dir).toBe("rtl");
     },
   );
@@ -216,7 +215,7 @@ describe("LeftNav", () => {
     );
     expect(screen.getByRole("link", { name: "Fixture Company home" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Work" }).getAttribute("href")).toBe("/work");
-    expect(screen.getByRole("link", { name: "Contacts" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Contacts" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/dashboard");
     expect(screen.queryByRole("link", { name: "Activities" })).toBeNull();
   });
@@ -226,7 +225,9 @@ describe("LeftNav", () => {
     expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(screen.getByRole("link", { name: "Contacts" }).getAttribute("aria-current")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Contacts" }).getAttribute("aria-current"),
+    ).toBeNull();
   });
 
   test("keeps Dashboard active when viewing Performance through the dashboard selector", () => {
@@ -236,7 +237,7 @@ describe("LeftNav", () => {
     const dashboard = screen.getByRole("link", { name: "Dashboard" });
     expect(dashboard.getAttribute("aria-current")).toBe("page");
     expect(dashboard.getAttribute("href")).toBe("/pipeline");
-    expect(navigation.querySelectorAll('a[aria-current="page"]')).toHaveLength(1);
+    expect(navigation.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Performance" })).toBeNull();
   });
 
@@ -254,12 +255,12 @@ describe("LeftNav", () => {
         within(workspace as HTMLElement)
           .getAllByRole("link")
           .map((link) => link.getAttribute("href")),
-      ).toEqual(["/pipeline", "/activities", "/leads", "/inbox", "/contacts/people"]);
+      ).toEqual(["/pipeline", "/leads", "/inbox"]);
       expect(
         within(footer as HTMLElement)
           .queryAllByRole("link")
           .map((link) => link.getAttribute("href")),
-      ).toEqual(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []);
+      ).toEqual(["/settings", "/workflows", DOCS_SITE_URL]);
     },
   );
 
@@ -289,14 +290,14 @@ describe("LeftNav", () => {
   test("defaults to expanded on a wide screen (no stored preference)", () => {
     setViewport(true);
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
     expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("defaults to the collapsed rail on a small screen (no stored preference)", () => {
     setViewport(false);
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).not.toBeNull();
     expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("true");
   });
 
@@ -304,13 +305,13 @@ describe("LeftNav", () => {
     // Start collapsed (small screen), then toggle expands.
     setViewport(false);
     render(<LeftNav />);
-    const toggle = screen.getByRole("button", { name: "Expand sidebar" });
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    const toggle = screen.getByRole("button", { name: "Pin sidebar", pressed: false });
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
     expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("true");
 
     fireEvent.click(toggle);
-    const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(collapse.getAttribute("aria-expanded")).toBe("true");
+    const collapse = screen.getByRole("button", { name: "Pin sidebar", pressed: true });
+    expect(collapse.getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByText("Dashboard").getAttribute("aria-hidden")).toBe("false");
   });
 
@@ -318,11 +319,11 @@ describe("LeftNav", () => {
     // Small screen would default collapsed, but the user's stored choice wins.
     setViewport(false);
     const first = render(<LeftNav />);
-    fireEvent.click(screen.getByRole("button", { name: "Expand sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Pin sidebar", pressed: false }));
     first.unmount();
 
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
     expect(screen.getByText("Settings").getAttribute("aria-hidden")).toBe("false");
   });
 
@@ -330,12 +331,12 @@ describe("LeftNav", () => {
     // Wide screen would default expanded, but a stored collapse choice wins.
     setViewport(true);
     const first = render(<LeftNav />);
-    fireEvent.click(screen.getByRole("button", { name: "Collapse sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Pin sidebar", pressed: true }));
     first.unmount();
 
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
   });
 
   test("keeps collapsed destinations named while hiding their duplicate inline labels", () => {
@@ -357,21 +358,21 @@ describe("LeftNav bracket shortcuts", () => {
     setViewport(true);
     render(<LeftNav />);
     fireEvent.keyDown(window, { key: "]" });
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).not.toBeNull();
   });
 
   test("[ expands a collapsed rail", () => {
     setViewport(false);
     render(<LeftNav />);
     fireEvent.keyDown(window, { key: "[" });
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
   });
 
   test("[ on an already expanded rail leaves it expanded", () => {
     setViewport(true);
     render(<LeftNav />);
     fireEvent.keyDown(window, { key: "[" });
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
   });
 
   test("the bracket choice persists across mounts like the toggle button", () => {
@@ -381,7 +382,7 @@ describe("LeftNav bracket shortcuts", () => {
     first.unmount();
 
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).not.toBeNull();
   });
 
   test("does not fire while typing in a text field", () => {
@@ -391,7 +392,20 @@ describe("LeftNav bracket shortcuts", () => {
     document.body.append(input);
     fireEvent.keyDown(input, { key: "]" });
     input.remove();
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
+  });
+
+  test("leaves composing or already-handled bracket events alone", () => {
+    setViewport(true);
+    render(<LeftNav />);
+    fireEvent.keyDown(window, { key: "]", isComposing: true });
+    fireEvent.keyDown(window, { key: "]", keyCode: 229 });
+    const consumed = new KeyboardEvent("keydown", { key: "]", cancelable: true });
+    consumed.preventDefault();
+    fireEvent(window, consumed);
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
+    fireEvent.keyDown(window, { key: "]" });
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).not.toBeNull();
   });
 
   test("does not fire while a dialog is open", () => {
@@ -402,7 +416,7 @@ describe("LeftNav bracket shortcuts", () => {
     document.body.append(dialog);
     fireEvent.keyDown(window, { key: "]" });
     dialog.remove();
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).not.toBeNull();
   });
 
   test("links to the docs site in a new tab", () => {
@@ -425,67 +439,133 @@ describe("LeftNav bracket shortcuts", () => {
         .getAllByRole("link")
         .map((link) => link.textContent),
     ).toEqual(["Settings", "Workflows", "Help & docs"]);
-    const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(footer?.contains(toggle)).toBe(true);
-    expect(within(footer as HTMLElement).getAllByRole("button")).toHaveLength(1);
-    expect(navigation.contains(toggle)).toBe(true);
+    const toggle = screen.getByRole("button", { name: "Pin sidebar", pressed: true });
+    expect(footer?.contains(toggle)).toBe(false);
+    expect(within(footer as HTMLElement).queryAllByRole("button")).toHaveLength(0);
+    expect(navigation.contains(toggle)).toBe(false);
+    expect(toggle.closest(`.${styles.sidebarToggleDock}`)).not.toBeNull();
   });
 
-  test("removes utility links from the collapsed rail and restores them when opened", async () => {
+  test("keeps utilities available in the rail and the footer outside the scrolling links", async () => {
     const user = userEvent.setup();
     setViewport(false);
     render(<LeftNav />);
-    const footer = screen
-      .getByRole("navigation", { name: "Primary" })
-      .querySelector(`.${styles.utilityNav}`) as HTMLElement;
-    expect(footer.querySelectorAll("a")).toHaveLength(0);
-    const opener = within(footer).getByRole("button", { name: "Expand sidebar" });
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    const utilities = navigation.querySelector(`.${styles.utilityNav}`) as HTMLElement;
+    expect(within(utilities).getAllByRole("link")).toHaveLength(3);
+    const opener = screen.getByRole("button", { name: "Pin sidebar", pressed: false });
+    expect(navigation.contains(opener)).toBe(false);
     opener.focus();
     await user.keyboard("{Enter}");
-    expect(
-      within(footer)
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual(["Settings", "Workflows", "Help & docs"]);
-    expect(document.activeElement).toBe(
-      within(footer).getByRole("button", { name: "Collapse sidebar" }),
-    );
+    expect(within(utilities).getAllByRole("link")).toHaveLength(3);
+    expect(document.activeElement).toBe(opener);
     await user.keyboard("{Enter}");
-    expect(footer.querySelectorAll("a")).toHaveLength(0);
+    expect(within(utilities).getAllByRole("link")).toHaveLength(3);
     expect(document.activeElement).toBe(opener);
   });
 });
 
 describe("sidebar submenu behavior", () => {
-  test.each(["Contacts", "Activities"])(
-    "the first %s label click navigates without expanding",
-    (label) => {
-      setViewport(true);
+  test.each([
+    ["/contacts/people", "Contacts", "People"],
+    ["/contacts/orgs/org-1", "Contacts", "Organizations"],
+    ["/activities/calendar", "Activities", "Calendar"],
+  ])("announces only the visible current child for %s", (pathname, group, child) => {
+    route.pathname = pathname;
+    render(<LeftNav />);
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    const current = within(navigation).getByRole("link", { name: child, current: "page" });
+    const parent = within(navigation).getByRole("button", { name: group });
+    expect(navigation.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+    expect(parent.getAttribute("data-active")).toBe("true");
+    expect(current.getAttribute("data-active")).toBe("true");
+  });
+
+  test("moves the current-page marker to the section link when its children are hidden", () => {
+    route.pathname = "/contacts/orgs/org-1";
+    render(<LeftNav />);
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    const links = within(navigation);
+    const organizations = links.getByRole("link", { name: "Organizations" });
+    fireEvent.click(links.getByRole("button", { name: "Contacts" }));
+    expect(links.getByRole("button", { name: "Contacts", current: "page" })).toBeTruthy();
+    expect(organizations.getAttribute("aria-current")).toBeNull();
+    expect(organizations.closest("[inert]")).not.toBeNull();
+
+    fireEvent.click(links.getByRole("button", { name: "Contacts" }));
+    expect(links.getByRole("link", { name: "Organizations", current: "page" })).toBe(organizations);
+
+    fireEvent.click(screen.getByRole("button", { name: "Pin sidebar", pressed: true }));
+    expect(document.cookie).toContain("wd_nav_expanded=0");
+    expect(links.getByRole("button", { name: "Contacts", current: "page" })).toBeTruthy();
+    expect(navigation.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+    expect(organizations.getAttribute("aria-current")).toBeNull();
+  });
+
+  test.each(["/activities", "/activities/queue"])(
+    "keeps the section current when no child matches %s",
+    (pathname) => {
+      route.pathname = pathname;
       render(<LeftNav />);
-      let prevented = true;
-      document.addEventListener(
-        "click",
-        (event) => {
-          prevented = event.defaultPrevented;
-          event.preventDefault();
-        },
-        { once: true },
-      );
-      fireEvent.click(screen.getByRole("link", { name: label }));
-      expect(prevented).toBe(false);
+      const navigation = screen.getByRole("navigation", { name: "Primary" });
       expect(
-        screen
-          .getByRole("button", { name: `Expand ${label} navigation` })
-          .getAttribute("aria-expanded"),
-      ).toBe("false");
+        within(navigation).getByRole("button", { name: "Activities", current: "page" }),
+      ).toBeTruthy();
+      expect(navigation.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     },
   );
+
+  test.each([
+    ["/campaigns", "All campaigns"],
+    ["/campaigns/subscribers/bounces", "Subscribers"],
+    ["/campaigns/campaign-1", "Campaigns"],
+  ])("honors the exact campaign index alongside nested sections for %s", (pathname, label) => {
+    route.pathname = pathname;
+    render(
+      <WorkspaceShellProvider
+        brand={{
+          displayName: "Fixture Company",
+          iconUrl: null,
+          accentColor: null,
+          foregroundColor: "#ffffff",
+        }}
+        modules={[]}
+        canViewWork={false}
+        canViewCampaigns
+        campaignCapabilities={{ edit: false, send: false, operate: true }}
+      >
+        <LeftNav />
+      </WorkspaceShellProvider>,
+    );
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    expect(
+      within(navigation).getByRole(label === "Campaigns" ? "button" : "link", {
+        name: label,
+        current: "page",
+      }),
+    ).toBeTruthy();
+    expect(navigation.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+  });
+
+  test.each(["Contacts", "Activities"])("the %s row opens its nested destinations", (label) => {
+    setViewport(true);
+    render(<LeftNav />);
+    const trigger = screen.getByRole("button", { name: label });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      screen.getByRole("link", { name: label === "Contacts" ? "People" : "Calendar" }),
+    ).toBeTruthy();
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
 
   test("the Contacts arrow reveals and hides children in keyboard order", async () => {
     const user = userEvent.setup();
     setViewport(true);
     render(<LeftNav />);
-    const disclosure = screen.getByRole("button", { name: "Expand Contacts navigation" });
+    const disclosure = screen.getByRole("button", { name: "Contacts" });
     disclosure.focus();
     await user.keyboard("{Enter}");
     expect(disclosure.getAttribute("aria-expanded")).toBe("true");
@@ -506,5 +586,62 @@ describe("sidebar submenu behavior", () => {
     expect(screen.queryByRole("link", { name: "People" })).toBeNull();
     await user.tab();
     expect(document.activeElement).not.toBe(people);
+  });
+});
+
+describe("temporary sidebar peek", () => {
+  function rail() {
+    // biome-ignore lint/suspicious/noDocumentCookie: Seed the persisted collapsed layout.
+    document.cookie = "wd_nav_expanded=0; path=/";
+    setViewport(true);
+    const result = render(<LeftNav />);
+    const aside = result.container.querySelector("aside")!;
+    return { aside, contacts: screen.getByRole("button", { name: "Contacts" }) };
+  }
+
+  test("announces an unpinned sidebar while its branch is visibly peeking", async () => {
+    const user = userEvent.setup();
+    const { aside, contacts } = rail();
+    contacts.focus();
+    await user.keyboard("{Enter}");
+    expect(aside.getAttribute("data-sidebar-state")).toBe("peeking");
+    expect(screen.getByRole("link", { name: "People" })).toBeTruthy();
+    const pin = screen.getByRole("button", { name: "Pin sidebar", pressed: false });
+    expect(pin.hasAttribute("aria-expanded")).toBe(false);
+    expect(contacts.getAttribute("aria-expanded")).toBe("true");
+    expect(document.cookie).toContain("wd_nav_expanded=0");
+  });
+
+  test("Escape returns focus to the branch and closes the temporary panel", () => {
+    const { aside, contacts } = rail();
+    fireEvent.click(contacts);
+    const people = screen.getByRole("link", { name: "People" });
+    people.focus();
+    fireEvent.keyDown(people, { key: "Escape" });
+    expect(aside.getAttribute("data-sidebar-state")).toBe("collapsed");
+    expect(document.activeElement).toBe(contacts);
+    expect(document.cookie).toContain("wd_nav_expanded=0");
+  });
+
+  test("toggles the persistent pin without changing its accessible name or focus", async () => {
+    const user = userEvent.setup();
+    const { aside, contacts } = rail();
+    fireEvent.click(contacts);
+    const pin = screen.getByRole("button", { name: "Pin sidebar", pressed: false });
+    pin.focus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: true })).toBe(pin);
+    expect(pin.hasAttribute("aria-expanded")).toBe(false);
+    expect(document.activeElement).toBe(pin);
+    expect(aside.getAttribute("data-sidebar-state")).toBe("expanded");
+    expect(document.cookie).toContain("wd_nav_expanded=1");
+    fireEvent.pointerLeave(aside.querySelector(`.${styles.sidebarPanel}`)!);
+    expect(aside.getAttribute("data-sidebar-state")).toBe("expanded");
+    await user.keyboard(" ");
+    expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).toBe(pin);
+    expect(pin.hasAttribute("aria-expanded")).toBe(false);
+    expect(document.activeElement).toBe(pin);
+    expect(aside.getAttribute("data-sidebar-state")).toBe("collapsed");
+    expect(document.cookie).toContain("wd_nav_expanded=0");
   });
 });

@@ -4,6 +4,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // The Combobox (Popover + cmdk) needs these jsdom polyfills.
@@ -86,7 +87,51 @@ const DEAL_CONTEXT: InsertFieldContext = {
   orgName: "Acme Corp",
 };
 
+function Draft({ onBodyChange }: { onBodyChange: (value: string) => void }) {
+  const [body, setBody] = useState("");
+  return (
+    <>
+      <InsertToolbar
+        onSubjectChange={vi.fn()}
+        bodyHtml={body}
+        onBodyChange={(next) => {
+          onBodyChange(next);
+          setBody(next);
+        }}
+      />
+      <textarea
+        aria-label="Draft body"
+        value={body}
+        onChange={(event) => setBody(event.target.value)}
+      />
+    </>
+  );
+}
+
 describe("InsertToolbar - Choose template", () => {
+  it("reapplies the same explicit template to an edited draft exactly once", async () => {
+    const detail = {
+      id: "t1",
+      name: "Welcome",
+      subject: "Welcome!",
+      bodyHtml: "<p>Template body</p>",
+    };
+    getTemplateMock.mockReturnValue({ data: detail });
+    const onBodyChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(<Draft onBodyChange={onBodyChange} />);
+    pickTemplate("Welcome");
+    const body = screen.getByRole("textbox", { name: "Draft body" });
+    expect(body).toHaveValue(detail.bodyHtml);
+    await user.clear(body);
+    await user.type(body, "Edited draft");
+    expect(onBodyChange).toHaveBeenCalledTimes(1);
+    pickTemplate("Welcome");
+    expect(body).toHaveValue(detail.bodyHtml);
+    expect(onBodyChange.mock.calls).toEqual([[detail.bodyHtml], [detail.bodyHtml]]);
+  });
+
   it("renders a Choose template label with template options", () => {
     getTemplateMock.mockReturnValue({ data: undefined });
     render(<InsertToolbar onSubjectChange={vi.fn()} onBodyChange={vi.fn()} />);

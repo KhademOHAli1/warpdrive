@@ -185,13 +185,7 @@ export const close = vi.fn();
 export function readerUi(locale: "fa" | "de" | "en") {
   return (
     <LocaleProvider locale={locale}>
-      <ThreadPane
-        threadId={readerState.data.thread.id}
-        trackingBadge={null}
-        embedded
-        onChanged={changed}
-        onClose={close}
-      />
+      <ThreadPane threadId={readerState.data.thread.id} onChanged={changed} onClose={close} />
     </LocaleProvider>
   );
 }

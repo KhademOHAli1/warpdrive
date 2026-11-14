@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
-import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import type { ComboboxOption } from "@/components/ui/Combobox";
+import { SdkCombobox } from "@/components/ui/SdkCombobox";
 import { Select } from "@/components/ui/Select";
 import type { ActivityTypeOption } from "@/features/activities/ActivitiesFilters";
 import { ActivityTypeTab } from "@/features/activities/ActivityTypeTab";
@@ -33,9 +34,10 @@ export function CalendarFilterBar({
       <div className="flex flex-wrap items-center gap-2">
         {/* Both primitives default to w-full; with no width here each claims the whole flex line
             and wraps, so two one-word pickers render full-bleed and stacked. */}
-        <Combobox
+        <SdkCombobox
           ariaLabel={t("owner")}
           triggerClassName="w-52"
+          tabFromTrigger
           value={filter.ownerId ?? ""}
           onChange={(v) => patch({ ownerId: v === "" ? null : v })}
           options={[{ value: "", label: t("allOwners") }, ...owners]}

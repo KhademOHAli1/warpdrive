@@ -148,7 +148,7 @@ it.each(["fa", "de", "en"] as const)(
     });
     render(
       <LocaleProvider locale={locale}>
-        <ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />
+        <ThreadPane threadId={data.thread.id} />
       </LocaleProvider>,
     );
     const region = screen.getByRole("region", { name: text.title });
@@ -188,7 +188,7 @@ it.each(["ordinary", "foreign", "retained"] as const)(
       data.privateIntake = { ...purged, contentState: "retained" };
       data.thread.privateIntake = data.privateIntake;
     }
-    render(<ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />);
+    render(<ThreadPane threadId={data.thread.id} />);
     expect(screen.queryByRole("region", { name: "Private email review" })).toBeNull();
     expect(privateReaderReview).not.toHaveBeenCalled();
   },
@@ -198,7 +198,7 @@ it("keeps a protected purged-owner review available when composing is forbidden"
   data.privateIntake = { ...purged, state: "unverified" };
   data.thread.privateIntake = data.privateIntake;
   data.canCompose = false;
-  render(<ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />);
+  render(<ThreadPane threadId={data.thread.id} />);
   expect(screen.getByRole("region", { name: "Private email review" })).toBeVisible();
   expect(screen.getByText("Needs review")).toBeVisible();
   expect(markRead).not.toHaveBeenCalled();
@@ -225,7 +225,7 @@ it("keeps the normal message-card placement and never duplicates the private pan
       privateIntake: summary,
     },
   ];
-  render(<ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />);
+  render(<ThreadPane threadId={data.thread.id} />);
   expect(screen.getAllByRole("region", { name: "Private email review" })).toHaveLength(1);
   expect(
     screen
@@ -237,13 +237,13 @@ it("keeps the normal message-card placement and never duplicates the private pan
 it("cancels a purged thread review when its actual thread identity changes", async () => {
   const pending = deferred<PrivateIntakeReviewResult>();
   privateReaderReview.mockReturnValueOnce(pending.promise);
-  const view = render(<ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />);
+  const view = render(<ThreadPane threadId={data.thread.id} />);
   const user = userEvent.setup();
   await user.click(screen.getByRole("button", { name: "Review copy" }));
   await user.click(screen.getByRole("button", { name: "Keep private" }));
   const signal = privateReaderReview.mock.calls[0]?.[1];
   data.thread.id = privateReaderIds.otherAccount;
-  view.rerender(<ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />);
+  view.rerender(<ThreadPane threadId={data.thread.id} />);
   expect(signal?.aborted).toBe(true);
   await act(async () => {
     pending.resolve({ ok: true, value: { ...purged, revision: 5, decision: "keep_private" } });
@@ -268,7 +268,7 @@ it.each(readWorkflows)(
     const text = emailMessagesForLocale(locale);
     render(
       <LocaleProvider locale={locale}>
-        <ThreadPane threadId={data.thread.id} trackingBadge={null} embedded />
+        <ThreadPane threadId={data.thread.id} />
       </LocaleProvider>,
     );
     const unread = screen.getByRole("button", { name: text.markAsUnread });

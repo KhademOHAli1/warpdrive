@@ -5,6 +5,7 @@ import {
   SettingsCard,
   SettingsCardBody,
   SettingsCardHeader,
+  SettingsFeedback,
 } from "@/app/(app)/settings/SettingsSurface";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -16,23 +17,6 @@ const callbackStatuses = ["connected", "denied", "error", "unavailable", "signed
 function callbackMessage(status: string | null) {
   return callbackStatuses.find((allowed) => allowed === status);
 }
-function ConnectionFeedback({
-  feedback,
-}: {
-  feedback: ReturnType<typeof useCalendarConnection>["feedback"];
-}) {
-  const t = useAppTranslations("calendar");
-  if (feedback === null) return null;
-  const success = feedback === "disconnected";
-  return (
-    <p
-      role={success ? "status" : "alert"}
-      className={success ? "text-sm text-success" : "text-sm text-destructive"}
-    >
-      {t(`googleConnection.${feedback}`)}
-    </p>
-  );
-}
 export function CalendarConnectionCard(): React.ReactNode {
   const t = useAppTranslations("calendar");
   const query = trpc.calendars.googleAccounts.useQuery(undefined, { staleTime: 0 });
@@ -42,6 +26,7 @@ export function CalendarConnectionCard(): React.ReactNode {
   });
   const callback = callbackMessage(useSearchParams().get("googleConnect"));
   const disabled = connection.pending !== null;
+  const { feedback } = connection;
   return (
     <SettingsCard>
       <SettingsCardHeader
@@ -51,15 +36,11 @@ export function CalendarConnectionCard(): React.ReactNode {
       />
       <SettingsCardBody className="space-y-4">
         {callback !== undefined && (
-          <p role="status" className="text-sm text-muted-foreground">
-            {t(`googleConnection.callback.${callback}`)}
-          </p>
+          <SettingsFeedback>{t(`googleConnection.callback.${callback}`)}</SettingsFeedback>
         )}
         {query.isError ? (
           <div className="space-y-2">
-            <p role="alert" className="text-sm text-destructive">
-              {t("googleConnection.loadFailed")}
-            </p>
+            <SettingsFeedback tone="error">{t("googleConnection.loadFailed")}</SettingsFeedback>
             <Button
               variant="outline"
               disabled={disabled}
@@ -71,9 +52,7 @@ export function CalendarConnectionCard(): React.ReactNode {
             </Button>
           </div>
         ) : query.data === undefined ? (
-          <p role="status" className="text-sm text-muted-foreground">
-            {t("googleConnection.loading")}
-          </p>
+          <SettingsFeedback>{t("googleConnection.loading")}</SettingsFeedback>
         ) : (
           <>
             {!query.data.configured && (
@@ -113,7 +92,11 @@ export function CalendarConnectionCard(): React.ReactNode {
             <p className="text-xs text-muted-foreground">{t("googleConnection.syncUnavailable")}</p>
           </>
         )}
-        <ConnectionFeedback feedback={connection.feedback} />
+        {feedback !== null && (
+          <SettingsFeedback tone={feedback === "disconnected" ? "success" : "error"}>
+            {t(`googleConnection.${feedback}`)}
+          </SettingsFeedback>
+        )}
       </SettingsCardBody>
     </SettingsCard>
   );

@@ -5,6 +5,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./Button";
 import { ComboboxOptionLabel, ComboboxTriggerLabel } from "./comboboxPresentation";
+import { groupConsecutiveOptions } from "./optionGroups";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import {
   Command,
@@ -39,27 +40,9 @@ interface ComboboxProps {
   search?: { value: string; onChange: (query: string) => void };
 }
 
-interface ComboboxGroup {
-  heading: string | undefined;
-  options: ComboboxOption[];
-}
-
 function matchLabel(_value: string, search: string, keywords?: string[]): number {
   const label = keywords?.[0] ?? "";
   return label.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-}
-
-function groupOptions(options: ComboboxOption[]): ComboboxGroup[] {
-  const groups: ComboboxGroup[] = [];
-  for (const option of options) {
-    const last = groups.at(-1);
-    if (last !== undefined && last.heading === option.group) {
-      last.options.push(option);
-      continue;
-    }
-    groups.push({ heading: option.group, options: [option] });
-  }
-  return groups;
 }
 
 // Searchable single-select with avatars (owner/assignee picker). Popover + cmdk.
@@ -81,7 +64,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
   const [open, setOpen] = useState(false);
   const t = useAppTranslations("sharedUi");
   const selected = options.find((o) => o.value === value);
-  const groups = groupOptions(options);
+  const groups = groupConsecutiveOptions(options);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -112,7 +95,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
             </CommandEmpty>
             {groups.map((g) => (
               <CommandGroup
-                key={g.options[0]?.value ?? g.heading}
+                key={g.key}
                 heading={g.heading}
                 className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"
               >

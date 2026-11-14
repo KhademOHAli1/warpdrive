@@ -5,8 +5,10 @@ from contextlib import contextmanager
 import fcntl
 from hashlib import sha256
 import json
+from itertools import combinations
 import os
 from pathlib import Path
+import re
 import secrets
 import stat
 import subprocess
@@ -26,6 +28,16 @@ STATUS = "scripts/deployment/installed_web_monitor_schedule.py"
 SELF = "scripts/deployment/installed_toolkit_current.py"
 MAX_RECORD = 16 * 1024
 ABSENT = "absent"
+SDK_PRIVATE = Path("/root/warpdrive-deployment/private")
+SDK_ACTIONS = ("stage", "observe", "promote", "rollback", "reapply", "recover", "recover-reapply",
+               "reconcile-failed-stamps", "seal", "seal-readback")
+SDK_REQUIRED = ("action", "operation", "first", "original", "previous", "suffix", "revision",
+                "sdk_admission_sha256", "lineage_sha256", "lineage_index_sha256",
+                "first_accepted_operation", "first_accepted_plan_sha256")
+SDK_OPTIONAL = ("accepted_plan_sha256", "sealed_index_sha256", "retained_core", "retained_core_sha256",
+                "core_activation_operation", "core_activation_lineage_sha256", "projected_lineage_sha256")
+SDK_SECONDS = 1800
+SDK_MAX_OUTPUT = 128 * 1024
 
 
 class ToolkitHeld(ValueError):
@@ -283,6 +295,107 @@ def run_status(installation, *, expected_current_sha256, original, state, target
         return {**_receipt(pointer), "status": status, "liveHealthQualified": False}
 
 
+def _sdk_argv(installation, arguments):
+    """Validate the closed SDK operator argument contract without importing it.
+
+    Keeping the SDK import out of this module preserves the old modern toolkit
+    AST closure. Only an explicitly SDK-enabled manifest can dispatch its entry.
+    """
+    require(type(arguments) is dict and set(arguments) == set(SDK_REQUIRED) | set(SDK_OPTIONAL),
+            "Exact fixed SDK operator arguments required")
+    require(installation / "private" == SDK_PRIVATE and arguments["action"] in SDK_ACTIONS
+            and type(arguments["suffix"]) is str and re.fullmatch(r"[a-f0-9]{12}", arguments["suffix"])
+            and type(arguments["revision"]) is str and transport.REVISION.fullmatch(arguments["revision"])
+            and type(arguments["first_accepted_operation"]) is str
+            and re.fullmatch(r"web-[a-f0-9]{12}-reapply", arguments["first_accepted_operation"])
+            and all(_pin(arguments[key]) for key in ("sdk_admission_sha256", "lineage_sha256",
+                    "lineage_index_sha256", "first_accepted_plan_sha256")), "Exact SDK source, target and authority pins required")
+    paths = tuple(arguments[name] for name in ("operation", "first", "original", "previous"))
+    require(all(isinstance(path, Path) and path != SDK_PRIVATE and path.is_relative_to(SDK_PRIVATE) for path in paths)
+            and arguments["operation"] == SDK_PRIVATE / ("sdk-web-release-" + arguments["suffix"])
+            and all(not left.is_relative_to(right) and not right.is_relative_to(left)
+                    for left, right in combinations(paths, 2)), "Exact independent SDK private operation paths required")
+    for path in paths:
+        with transport._open_directory(path):
+            pass
+    core, core_pin = arguments["retained_core"], arguments["retained_core_sha256"]
+    require((core is None and core_pin is None)
+            or (core == arguments["operation"] / "retained-core.json" and _pin(core_pin)),
+            "Exact paired retained Core file and pin required")
+    activation = tuple(arguments[key] for key in ("core_activation_operation", "core_activation_lineage_sha256",
+                                                 "projected_lineage_sha256"))
+    require(activation == (None, None, None) or (core is not None and type(activation[0]) is str
+            and re.fullmatch(r"core-activation-[a-f0-9]{40}", activation[0]) and all(_pin(pin) for pin in activation[1:])),
+            "Exact already completed Core projection pins required")
+    require((_pin(arguments["accepted_plan_sha256"]) if arguments["action"] in {"seal", "seal-readback"}
+             else arguments["accepted_plan_sha256"] is None), "SDK seal actions require an independent accepted plan pin")
+    require((_pin(arguments["sealed_index_sha256"]) if arguments["action"] == "seal-readback"
+             else arguments["sealed_index_sha256"] is None), "Only SDK seal-readback accepts an independent raw index pin")
+    result = [arguments["action"]]
+    for key in (*SDK_REQUIRED[1:], *SDK_OPTIONAL):
+        value = arguments[key]
+        if value is not None:
+            result.extend(("--" + key.replace("_", "-"), str(value)))
+    return result
+
+
+def run_sdk(installation, *, expected_current_sha256, sdk_arguments, runner=subprocess.run):
+    """Dispatch one fixed SDK action through the independently selected toolkit.
+
+    This wrapper grants no artifact/backend authority. The SDK operator performs
+    those admissions under its existing production/target locks. Any execution
+    failure or lost/malformed response is unknown and must never trigger replay.
+    """
+    installation = Path(installation)
+    require(_pin(expected_current_sha256), "Independent current toolkit pin required for SDK dispatch")
+    arguments = _sdk_argv(installation, sdk_arguments)
+    launched = False
+    try:
+        with _locked(installation) as parent:
+            require(_read(parent, PENDING) is None, "Reconcile pending activation before SDK dispatch")
+            before = _read(parent, CURRENT)
+            require(before is not None and _hash(before) == expected_current_sha256, "Current toolkit changed before SDK dispatch")
+            pointer = _pointer(before)
+            archived = _read(parent, "toolkit-activation-" + pointer["operationId"] + ".json")
+            require(archived is not None and _intent(archived)["after"] == pointer, "SDK toolkit has no accepted activation journal")
+            _verify_identity(installation, pointer["current"])
+            toolkit = installation / "operators" / pointer["current"]["destination"]
+            with transport._open_directory(toolkit) as directory:
+                raw = transport._private_bytes(directory, transport.MANIFEST_NAME, transport.MAX_MANIFEST)
+            require(_hash(raw) == pointer["current"]["manifestSha256"]
+                    and transport._json(raw).get("sdkOperatorEntry") == transport.SDK_OPERATOR,
+                    "Current toolkit has no explicitly selected fixed SDK operator")
+            source = toolkit / "source" / transport.SDK_OPERATOR
+            bootstrap = "import os,runpy,sys; p=sys.argv.pop(1); sys.path.insert(0,os.path.dirname(p)); runpy.run_path(p,run_name='__main__')"
+            launched = True
+            try:
+                result = runner([sys.executable, "-I", "-B", "-c", bootstrap, str(source), *arguments],
+                    stdin=subprocess.DEVNULL, capture_output=True, cwd="/", timeout=SDK_SECONDS, check=False,
+                    env={"PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                         "LC_ALL": "C", "PYTHONDONTWRITEBYTECODE": "1"})
+                # Even a nonzero child may have loaded/created/switched something.
+                # Keep its detailed evidence private and report an uncertain result.
+                require(result.returncode == 0 and type(result.stdout) is bytes and 0 < len(result.stdout) <= SDK_MAX_OUTPUT
+                        and type(result.stderr) is bytes and result.stderr == b"", "SDK action has no exact successful response")
+                response = transport._json(result.stdout)
+                require(type(response) is dict and type(response.get("state")) is str
+                        and re.fullmatch(r"[a-z][a-z0-9-]{0,63}", response["state"]), "SDK operator response differs")
+                _verify_identity(installation, pointer["current"])
+                require(_read(parent, CURRENT) == before, "Current toolkit changed during SDK dispatch")
+            except (Exception, KeyboardInterrupt) as error:
+                raise ToolkitUnknown("SDK action outcome requires native readback; do not replay") from error
+            return {"kind": "warpdrive-installed-sdk-toolkit-dispatch", "currentSha256": _hash(before),
+                    "current": pointer["current"], "action": arguments[0], "result": response,
+                    "toolkitStateChanged": False}
+
+    except (Exception, KeyboardInterrupt) as error:
+        if launched:
+            if isinstance(error, ToolkitUnknown):
+                raise
+            raise ToolkitUnknown("SDK action acknowledgement or lock readback is unknown; do not replay") from error
+        raise
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--installation-root", required=True, type=Path)
@@ -302,6 +415,18 @@ def main(argv=None):
     for name in ("original", "state"):
         dispatch.add_argument("--" + name, required=True, type=Path)
     dispatch.add_argument("--target-key", required=True)
+    sdk = commands.add_parser("sdk-web")
+    sdk.add_argument("sdk_action", choices=SDK_ACTIONS)
+    sdk.add_argument("--expected-current-sha256", required=True)
+    for name in ("operation", "first", "original", "previous"):
+        sdk.add_argument("--" + name, required=True, type=Path)
+    for name in ("suffix", "revision", "sdk-admission-sha256", "lineage-sha256", "lineage-index-sha256",
+                 "first-accepted-operation", "first-accepted-plan-sha256"):
+        sdk.add_argument("--" + name, required=True)
+    for name in ("accepted-plan-sha256", "sealed-index-sha256", "retained-core-sha256", "core-activation-operation",
+                 "core-activation-lineage-sha256", "projected-lineage-sha256"):
+        sdk.add_argument("--" + name)
+    sdk.add_argument("--retained-core", type=Path)
     args = parser.parse_args(argv)
     os.umask(0o077)
     try:
@@ -310,8 +435,21 @@ def main(argv=None):
         installation, action = values.pop("installation_root"), values.pop("action")
         if action == "run":
             values.pop("command")
-        function = {"activate": activate, "readback": readback, "rollback": rollback, "run": run_status}[action]
-        print(json.dumps(function(installation, **values), sort_keys=True))
+        if action == "sdk-web":
+            expected = values.pop("expected_current_sha256")
+            values["action"] = values.pop("sdk_action")
+            values = {"expected_current_sha256": expected, "sdk_arguments": values}
+        function = {"activate": activate, "readback": readback, "rollback": rollback,
+                    "run": run_status, "sdk-web": run_sdk}[action]
+        result = function(installation, **values)
+        if action == "sdk-web":
+            try:
+                print(json.dumps(result, sort_keys=True))
+                sys.stdout.flush()
+            except (Exception, KeyboardInterrupt) as error:
+                raise ToolkitUnknown("SDK action response publication is unknown; use native readback") from error
+        else:
+            print(json.dumps(result, sort_keys=True))
     except (Exception, KeyboardInterrupt) as error:
         print(json.dumps({"state": "unknown" if isinstance(error, ToolkitUnknown) else "held", "errorType": type(error).__name__}), file=sys.stderr)
         return 1

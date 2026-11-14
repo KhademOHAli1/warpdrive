@@ -180,8 +180,7 @@ export function MfaPanel({
           <form className="space-y-4" onSubmit={verify}>
             <AuthField
               label={recovery ? L.recoveryCode : L.authenticatorCode}
-              autoComplete={recovery ? "off" : "one-time-code"}
-              inputMode={recovery ? "text" : "numeric"}
+              code={recovery ? "recovery" : "authenticator"}
               help={recovery ? undefined : L.codeInputHint}
               required
               value={code}

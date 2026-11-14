@@ -6,14 +6,18 @@ import { listPersonMatchCandidates } from "@/features/contacts/personOptionsRepo
 import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
 import { resolveCustomFieldRefLabelsFor } from "@/features/custom-fields/refLabels";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
+import { DealDetailInitialFormatsProvider } from "@/features/deal-workspace/DealDetailInitialFormats";
 import { getWorkspace } from "@/features/deal-workspace/summaryRepo";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { getActorMailbox } from "@/features/email/mailboxOwnership";
+import { getLocalePreferences } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
 import { can } from "@/features/permissions/can";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
+import { formatCurrency } from "@/lib/formatCurrency";
+import { formatDateOnly, formatDateTime } from "@/lib/localeFormatting";
 import { DealWorkspaceClient } from "./DealWorkspaceClient";
 
 // Shared deal-workspace loader. Exported so the full page ([dealId]/page.tsx), the intercepted
@@ -42,6 +46,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
     personOptions,
     hiddenBuiltins,
     refLabels,
+    localePreferences,
   ] = await Promise.all([
     getActorMailbox(db, loaded.actor.id, AbortSignal.timeout(10_000)),
 
@@ -101,6 +106,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
       ],
       AbortSignal.timeout(8000),
     ),
+    getLocalePreferences(),
   ]);
 
   // getWorkspace already read the pipeline row for its own visibility gate and hands back the
@@ -110,27 +116,45 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
   // Delete is gated on deal.delete (own/any), independent of edit; hide the menu item when the
   // actor lacks it. deleteDeal re-checks server-side, so this is UX only, not the security boundary.
   const canDelete = can(loaded.actor, "deal.delete", visibleDeal);
+  const { deal } = loaded.value;
+  const currency = deal.currency;
+  const initialFormats = {
+    summaryValue: `${formatCurrency(deal.value ?? 0, currency, localePreferences)} ${currency}`,
+    headerValue:
+      deal.value === null ? null : formatCurrency(deal.value, deal.currency, localePreferences),
+    expectedCloseDate:
+      deal.expectedCloseDate === null
+        ? null
+        : formatDateOnly(deal.expectedCloseDate, localePreferences),
+    createdDate: formatDateTime(deal.createdAt, localePreferences, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+  };
 
   return (
     <CustomFieldRefLabelsProvider value={refLabels}>
-      <DealWorkspaceClient
-        workspace={loaded.value}
-        selfActorId={loaded.actor.id}
-        emailAccountId={mailbox?.id ?? null}
-        emailAddress={mailbox?.emailAddress}
-        canChangeOwner={canChangeOwner}
-        canDelete={canDelete}
-        canManageFields={can(loaded.actor, "metadata.manage")}
-        assignableUsers={assignableUsers}
-        initialHiddenBlocks={prefs.ui.dealHeaderBlocks ?? []}
-        initialSidebarSections={prefs.ui.dealSidebarSections}
-        baseCurrency={baseCurrency}
-        orgOptions={orgOptions}
-        personOptions={personOptions}
-        scheduleFollowUpAfterWon={prefs.ui.scheduleFollowUpAfterWon ?? false}
-        hiddenOrgFields={hiddenBuiltins.organization}
-        hiddenPersonFields={hiddenBuiltins.person}
-      />
+      <DealDetailInitialFormatsProvider initial={initialFormats}>
+        <DealWorkspaceClient
+          workspace={loaded.value}
+          selfActorId={loaded.actor.id}
+          emailAccountId={mailbox?.id ?? null}
+          emailAddress={mailbox?.emailAddress}
+          canChangeOwner={canChangeOwner}
+          canDelete={canDelete}
+          canManageFields={can(loaded.actor, "metadata.manage")}
+          assignableUsers={assignableUsers}
+          initialHiddenBlocks={prefs.ui.dealHeaderBlocks ?? []}
+          initialSidebarSections={prefs.ui.dealSidebarSections}
+          baseCurrency={baseCurrency}
+          orgOptions={orgOptions}
+          personOptions={personOptions}
+          scheduleFollowUpAfterWon={prefs.ui.scheduleFollowUpAfterWon ?? false}
+          hiddenOrgFields={hiddenBuiltins.organization}
+          hiddenPersonFields={hiddenBuiltins.person}
+        />
+      </DealDetailInitialFormatsProvider>
     </CustomFieldRefLabelsProvider>
   );
 }

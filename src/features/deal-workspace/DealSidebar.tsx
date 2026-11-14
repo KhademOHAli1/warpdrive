@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import type { DealBlockId } from "@/constants/dealBlocks";
 import {
   type DealSidebarSectionId,
@@ -17,6 +17,7 @@ import { useFormatters } from "@/lib/useFormatters";
 import { err, ok } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CollapsibleSection } from "./CollapsibleSection";
+import { useDealDetailInitialFormats } from "./DealDetailInitialFormats";
 import { DealSummaryActionList } from "./DealSummaryActionList";
 import { dealOverview } from "./dealOverview";
 import type { CustomFieldsSave } from "./sidebar/customFieldsSave";
@@ -30,6 +31,7 @@ import { RecordOrganizationSection } from "./sidebar/RecordOrganizationSection";
 import { SectionHeaderMenu, type SectionHeaderMenuItem } from "./sidebar/SectionHeaderMenu";
 import { SidebarPresentation } from "./sidebar/SidebarPresentation";
 import { SourceBlock } from "./sidebar/SourceBlock";
+import { refreshQuietly } from "./sidebar/sidebarEditors";
 import type { DealWorkspace } from "./summaryRepo";
 
 const FIELD_SETTINGS_PATH = "/settings/fields";
@@ -75,6 +77,7 @@ export function DealSidebar({
 
   const translateSales = useAppTranslations("sales");
   const format = useFormatters();
+  const initialFormats = useDealDetailInitialFormats();
 
   const {
     deal,
@@ -87,6 +90,7 @@ export function DealSidebar({
   const router = useRouter();
   const reportError = useDealActionError();
   const [orgDialogOpen, setOrgDialogOpen] = useState(false);
+  const orgMenuTrigger = useRef<HTMLButtonElement>(null);
   const [manageSectionsOpen, setManageSectionsOpen] = useState(false);
   // Which section (if any) is in bulk-edit mode: the header pencil opens every field in that
   // section at once behind a single Save, rather than the old reveal-empties no-op.
@@ -98,7 +102,7 @@ export function DealSidebar({
   const sections = STRINGS.dealSidebar.sections;
   const menu = STRINGS.dealSidebar.menu;
 
-  async function saveOrgLink(orgId: string | null): Promise<void> {
+  async function saveOrgLink(orgId: string | null, returnFocus?: HTMLButtonElement): Promise<void> {
     const r = await updateDealAction(
       { dealId: deal.id, expectedUpdatedAt, orgId },
       readCsrfToken(),
@@ -107,9 +111,11 @@ export function DealSidebar({
     // if the link changed (a permission/CAS denial otherwise looked like a silent success).
     if (r.ok) {
       setOrgDialogOpen(false);
-      router.refresh();
-    } else {
+      refreshQuietly(router);
+    } else if (returnFocus === undefined) {
       reportError(r.error.id);
+    } else {
+      reportError(r.error.id, returnFocus);
     }
   }
 
@@ -153,6 +159,7 @@ export function DealSidebar({
   const orgMenuItems: SectionHeaderMenuItem[] = [
     {
       label: menu.switchOrganization,
+      returnFocusRef: orgMenuTrigger,
       disabled: orgOptions.length === 0,
       onSelect: () => setOrgDialogOpen(true),
     },
@@ -284,7 +291,8 @@ export function DealSidebar({
         </FieldRow>
         <FieldRow label={translateSales("created_d70b9")}>
           <span className="tabular-nums">
-            {format.dateTime(deal.createdAt, { year: "numeric", month: "short", day: "numeric" })}
+            {initialFormats?.createdDate ??
+              format.dateTime(deal.createdAt, { year: "numeric", month: "short", day: "numeric" })}
           </span>
         </FieldRow>
       </CollapsibleSection>
@@ -302,6 +310,7 @@ export function DealSidebar({
         />
         <OrgSwitchDialog
           open={orgDialogOpen}
+          menuTrigger={orgMenuTrigger}
           currentOrgId={org?.id ?? null}
           options={orgOptions}
           onOpenChange={setOrgDialogOpen}

@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/Button";
 import { useLocalePreferencePending } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import type { OwnerScope } from "@/types/stats";
 import type { CurrentLeadHandoffReport } from "../currentLeadHandoffReport";
 import { useStatsMessages } from "../useStatsMessages";
-import { Panel } from "./Panel";
+import { ReportPanel } from "./Panel";
 
 interface Scope {
   currency: string;
@@ -109,28 +108,18 @@ export function CurrentLeadHandoffPanel({ scope }: { scope: Scope }) {
   }
   const empty = report?.state === "available" && report.counts.eligibleLeads === 0;
   return (
-    <Panel title={copy.title} isEmpty={empty} emptyText={copy.empty}>
-      <div className="space-y-4">
-        <p className="max-w-prose text-pretty text-sm text-muted-foreground">{copy.definition}</p>
-        {report === undefined && <p role="status">{S.loading}</p>}
-        {report?.state === "available" && <HandoffCounts report={report} scope={scope} />}
-        {report?.state === "permission" && <p role="status">{copy.permission}</p>}
-        {report?.state === "scope-unavailable" && <p role="status">{copy.allPipelines}</p>}
-        {report?.state === "unavailable" && (
-          <div className="space-y-3">
-            <p role="alert">{copy.unavailable}</p>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                void query.refetch();
-              }}
-            >
-              {S.retry}
-            </Button>
-          </div>
-        )}
-      </div>
-    </Panel>
+    <ReportPanel
+      state={report?.state ?? "loading"}
+      copy={copy}
+      loading={S.loading}
+      scopeUnavailable={copy.allPipelines}
+      retry={S.retry}
+      onRetry={() => {
+        void query.refetch();
+      }}
+      isEmpty={empty}
+    >
+      {report?.state === "available" && <HandoffCounts report={report} scope={scope} />}
+    </ReportPanel>
   );
 }

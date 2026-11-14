@@ -895,6 +895,16 @@ describe("Performance report experience", () => {
     expect(aging).toHaveTextContent("Dashboard dates apply to the period-based reports");
     expect(aging).toHaveTextContent("As of");
     expect(aging.querySelector('time[datetime="2026-11-05T16:00:00.000000Z"]')).toBeInTheDocument();
+    const coverageTerm = within(aging).getByText("Current deals in scope");
+    expect(coverageTerm.matches("dl > div.min-w-0 > dt")).toBe(true);
+    expect(coverageTerm.nextElementSibling).toHaveClass("mt-1");
+    expect(coverageTerm.nextElementSibling?.querySelector("bdi")).toHaveTextContent("1");
+    const observations = within(aging).getAllByText("Observations");
+    expect(observations.length).toBeGreaterThan(0);
+    for (const term of observations) {
+      expect(term.matches("dl > div.grid > dt")).toBe(true);
+      expect(term.nextElementSibling).toHaveClass("text-end");
+    }
 
     fireEvent.change(screen.getByLabelText("Range start"), { target: { value: "2027-01-01" } });
     expect(screen.queryByRole("region", { name: "Deal cohorts by age" })).not.toBeInTheDocument();

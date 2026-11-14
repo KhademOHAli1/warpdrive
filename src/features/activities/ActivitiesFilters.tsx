@@ -1,7 +1,8 @@
 "use client";
 import type React from "react";
-import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import type { ComboboxOption } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { SdkCombobox } from "@/components/ui/SdkCombobox";
 import { Select } from "@/components/ui/Select";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { ActivityPresetChips } from "./ActivityPresetChips";
@@ -50,9 +51,10 @@ export function ActivitiesFilters({
       <div className="flex flex-wrap items-center gap-2">
         {/* Both primitives default to w-full; with no width here each claims the whole flex line
             and wraps, so the pickers render full-bleed and stacked. */}
-        <Combobox
+        <SdkCombobox
           ariaLabel={S.owner}
           triggerClassName="w-52"
+          tabFromTrigger
           value={filter.ownerId ?? ""}
           onChange={(v) => patch({ ownerId: v === "" ? null : v })}
           options={[{ value: "", label: S.allOwners }, ...owners]}

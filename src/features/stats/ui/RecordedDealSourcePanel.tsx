@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/Button";
 import { sourceChannelLabel } from "@/constants/sourceChannelLabels";
 import { useLocale, useLocalePreferencePending } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
@@ -7,7 +6,7 @@ import type { OwnerScope } from "@/types/stats";
 import type { RecordedDealSourceReport } from "../recordedDealSourceReport";
 import type { StatsMessages } from "../statsMessages";
 import { useStatsMessages } from "../useStatsMessages";
-import { Panel } from "./Panel";
+import { ReportPanel } from "./Panel";
 
 type AvailableReport = Extract<RecordedDealSourceReport, { state: "available" }>;
 type Row = AvailableReport["rows"][number];
@@ -177,39 +176,9 @@ function AvailableSourceReport({ report, scope }: { report: AvailableReport; sco
   );
 }
 
-function SourceReportState({
-  report,
-  scope,
-  onRetry,
-}: {
-  report: RecordedDealSourceReport | undefined;
-  scope: Scope;
-  onRetry: () => void;
-}) {
-  const S = useStatsMessages();
-  if (report === undefined) return <p role="status">{S.loading}</p>;
-  if (report.state === "available") return <AvailableSourceReport report={report} scope={scope} />;
-  if (report.state === "permission") {
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        {S.recordedSource.permission}
-      </p>
-    );
-  }
-  return (
-    <div className="space-y-3">
-      <p role="alert" className="text-sm text-muted-foreground">
-        {S.recordedSource.unavailable}
-      </p>
-      <Button type="button" variant="outline" onClick={onRetry}>
-        {S.retry}
-      </Button>
-    </div>
-  );
-}
-
 export function RecordedDealSourcePanel({ scope }: { scope: Scope }) {
-  const { recordedSource: copy } = useStatsMessages();
+  const S = useStatsMessages();
+  const copy = S.recordedSource;
   const pending = useLocalePreferencePending();
   const query = trpc.stats.recordedDealSource.useQuery(scope, {
     enabled: !pending,
@@ -241,17 +210,18 @@ export function RecordedDealSourcePanel({ scope }: { scope: Scope }) {
   }
   const empty = report?.state === "available" && report.rows.length === 0;
   return (
-    <Panel title={copy.title} isEmpty={empty} emptyText={copy.empty}>
-      <div className="space-y-4">
-        <p className="max-w-prose text-pretty text-sm text-muted-foreground">{copy.definition}</p>
-        <SourceReportState
-          report={report}
-          scope={scope}
-          onRetry={() => {
-            void query.refetch();
-          }}
-        />
-      </div>
-    </Panel>
+    <ReportPanel
+      state={report?.state ?? "loading"}
+      copy={copy}
+      loading={S.loading}
+      retry={S.retry}
+      onRetry={() => {
+        void query.refetch();
+      }}
+      isEmpty={empty}
+      mutedFeedback
+    >
+      {report?.state === "available" && <AvailableSourceReport report={report} scope={scope} />}
+    </ReportPanel>
   );
 }

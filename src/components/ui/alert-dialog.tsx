@@ -4,6 +4,11 @@ import { cn } from "@/lib/utils";
 import { useDirection } from "./direction";
 import * as AlertDialogPrimitive from "./primitives/alert-dialog";
 
+export {
+  DialogFooter as AlertDialogFooter,
+  DialogHeader as AlertDialogHeader,
+} from "./dialogLayout";
+
 // shadcn Radix Nova AlertDialog wrapper over @radix-ui/react-alert-dialog. The SANCTIONED primitive
 // for a destructive confirmation: unlike Dialog it uses role="alertdialog", does not dismiss on
 // outside-click, and focuses the Cancel action, so a stray click cannot confirm. Escape still
@@ -27,19 +32,6 @@ export const AlertDialogContent = forwardRef<
   />
 ));
 AlertDialogContent.displayName = "AlertDialogContent";
-
-export function AlertDialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-1.5 text-start", className)} {...props} />;
-}
-
-export function AlertDialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
-      {...props}
-    />
-  );
-}
 
 export const AlertDialogTitle = forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.AlertDialogTitle>,

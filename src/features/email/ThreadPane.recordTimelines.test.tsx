@@ -103,7 +103,7 @@ afterEach(() => {
 });
 
 it("refreshes the record timelines after a reply sent from the reader", () => {
-  render(<ThreadPane threadId="t1" trackingBadge={null} />);
+  render(<ThreadPane threadId="t1" />);
   fireEvent.click(screen.getByRole("button", { name: "reader-sent" }));
 
   expect(invalidateDealMessages).toHaveBeenCalledTimes(1);
@@ -111,7 +111,8 @@ it("refreshes the record timelines after a reply sent from the reader", () => {
 });
 
 it("refreshes the record timelines after the thread's linked deal or person changes", () => {
-  render(<ThreadPane threadId="t1" trackingBadge={null} />);
+  render(<ThreadPane threadId="t1" />);
+  fireEvent.click(screen.getByRole("button", { name: "Details" }));
   fireEvent.click(screen.getByRole("button", { name: "reader-linked" }));
 
   expect(invalidateDealMessages).toHaveBeenCalledTimes(1);
@@ -126,7 +127,8 @@ it("retains owner local linking when ordinary sending is paused", () => {
     move: false,
     trash: false,
   };
-  render(<ThreadPane threadId="t1" trackingBadge={null} />);
+  render(<ThreadPane threadId="t1" />);
+  fireEvent.click(screen.getByRole("button", { name: "Details" }));
   expect(screen.getByRole("button", { name: "reader-linked" })).toBeEnabled();
   expect(screen.queryByRole("button", { name: "reader-sent" })).not.toBeInTheDocument();
 });

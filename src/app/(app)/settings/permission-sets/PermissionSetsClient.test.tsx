@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
@@ -11,7 +11,8 @@ import {
 
 type SaveResult = { ok: true; value: true } | { ok: false; error: string };
 
-const { update, refresh } = vi.hoisted(() => ({
+const { create, update, refresh } = vi.hoisted(() => ({
+  create: vi.fn(),
   update:
     vi.fn<
       (
@@ -24,7 +25,7 @@ const { update, refresh } = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/identity/actions/permission-sets", () => ({
-  createPermissionSetAction: vi.fn(),
+  createPermissionSetAction: create,
   updateFlagsAction: update,
 }));
 vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: vi.fn() }));
@@ -44,6 +45,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  create.mockReset();
   update.mockReset().mockResolvedValue({ ok: true, value: true });
   refresh.mockReset();
 });
@@ -66,6 +68,39 @@ describe("focused permission-set journey", () => {
     expect(screen.getByRole("button", { name: "Sales" })).toHaveAttribute("aria-pressed", "true");
     await user.click(screen.getByRole("button", { name: "Create a permission set" }));
     expect(screen.getByRole("dialog", { name: "Create a permission set" })).toBeInTheDocument();
+  });
+
+  it("keeps permission-set creation open through a denied save and restores focus after retry", async () => {
+    const request = deferred();
+    create.mockReturnValueOnce(request.promise);
+    const user = userEvent.setup();
+    render(<PermissionSetsClient sets={sets} />);
+    const trigger = screen.getByRole("button", { name: "Create a permission set" });
+    await user.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: "Create a permission set" });
+    const form = within(dialog);
+    const name = form.getByRole("textbox", { name: "Permission set name" });
+    await user.type(name, "New role");
+    await user.click(form.getByRole("button", { name: "Create" }));
+    await user.keyboard("{Escape}");
+    expect(dialog).toBeInTheDocument();
+    expect(form.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(create).toHaveBeenCalledExactlyOnceWith("csrf", { name: "New role" });
+    await act(async () => {
+      request.resolve({ ok: false, error: "unauthorized" });
+      await request.promise;
+    });
+    expect(form.getByRole("alert")).toHaveTextContent(
+      settingsMessagesForLocale("en")._errors.permission,
+    );
+    expect(name).toHaveValue("New role");
+    expect(refresh).not.toHaveBeenCalled();
+
+    create.mockResolvedValueOnce({ ok: true, value: { id: "new-role" } });
+    fireEvent.click(form.getByRole("button", { name: "Create" }));
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(dialog).not.toBeInTheDocument();
+    expect(refresh).toHaveBeenCalledOnce();
   });
 
   it("tracks dirty flags and Cancel restores the last saved values", async () => {

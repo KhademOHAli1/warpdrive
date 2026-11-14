@@ -1,5 +1,6 @@
 import type React from "react";
 import { useId } from "react";
+import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { type FormattingPreferences, localeTagForFormatting } from "@/lib/localeFormatting";
 import { statsMessagesForLocale } from "../statsMessages";
@@ -35,6 +36,64 @@ export function Panel({
           children here made the "set up goals" link unreachable exactly when it was needed. */}
       {children}
     </section>
+  );
+}
+
+type ReportState = "loading" | "available" | "permission" | "scope-unavailable" | "unavailable";
+
+// Report readers decide whether their results are fresh and in scope before passing a view here.
+export function ReportPanel({
+  state,
+  copy,
+  loading,
+  scopeUnavailable,
+  retry,
+  onRetry,
+  isEmpty,
+  mutedFeedback = false,
+  children,
+}: {
+  state: ReportState;
+  copy: {
+    title: string;
+    empty: string;
+    definition: string;
+    permission: string;
+    unavailable: string;
+  };
+  loading: string;
+  scopeUnavailable?: string;
+  retry: string;
+  onRetry: () => void;
+  isEmpty: boolean;
+  mutedFeedback?: boolean;
+  children: React.ReactNode;
+}): React.ReactNode {
+  const feedbackClass = mutedFeedback ? "text-sm text-muted-foreground" : undefined;
+  return (
+    <Panel title={copy.title} isEmpty={isEmpty} emptyText={copy.empty}>
+      <div className="space-y-4">
+        <p className="max-w-prose text-pretty text-sm text-muted-foreground">{copy.definition}</p>
+        {state === "loading" && <p role="status">{loading}</p>}
+        {state === "available" && children}
+        {state === "permission" && (
+          <p role="status" className={feedbackClass}>
+            {copy.permission}
+          </p>
+        )}
+        {state === "scope-unavailable" && <p role="status">{scopeUnavailable}</p>}
+        {state === "unavailable" && (
+          <div className="space-y-3">
+            <p role="alert" className={feedbackClass}>
+              {copy.unavailable}
+            </p>
+            <Button type="button" variant="outline" onClick={onRetry}>
+              {retry}
+            </Button>
+          </div>
+        )}
+      </div>
+    </Panel>
   );
 }
 

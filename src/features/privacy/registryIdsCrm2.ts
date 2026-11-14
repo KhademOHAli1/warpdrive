@@ -2,7 +2,7 @@
 export const crmIds2: string[] = [
   "sourceReview:src/features/deal-workspace/composer/participantOptions.ts#b56567caaccde22906e424c1f00788aa6101fa408da394546d23b2403218d402",
   "sourceReview:src/features/deal-workspace/convertToLead.ts#6343acb30c6d9ba4f455408855e27bf20dfd4eb1623018ada2459cbeeba34d75",
-  "sourceReview:src/features/deal-workspace/DealSidebar.tsx#ed732f334629deb5db0bd88d4cad9c5e12ff48acd2dbae1af4453db6f30ddad8",
+  "sourceReview:src/features/deal-workspace/DealSidebar.tsx#75b53399e54816823256c7b1555ef63a5936e79be61989c127908fc185251938",
   "sourceReview:src/features/deal-workspace/deleteDeal.ts#0dd3188ba0849d23153c695b55fbe5ca34593e911efc455d3c440f26040cb172",
   "sourceReview:src/features/deal-workspace/duplicateDeal.ts#4588cb7b032dc47e2148640d6f22a6d9a15b03c10357c63bda61ef9edac7efc3",
   "sourceReview:src/features/deal-workspace/followers.ts#058b150877bac1ac249d4dda668805446795d2f7dbded9a1c29f1226465879ef",
@@ -13,7 +13,7 @@ export const crmIds2: string[] = [
   "sourceReview:src/features/deal-workspace/ParticipantLinkField.tsx#2d3b7bf1c4b045175e2d6e9fe8b8729c7e49fccb44248cc6d369dc183fd5304a",
   "sourceReview:src/features/deal-workspace/participants.ts#0ab28823a50388467f0cab9b74f3e14d7e5c2b55c18683ed5a20343e91f23099",
   "sourceReview:src/features/deal-workspace/participantsList.ts#40afd87af8ffd707701fce1efd1d8f3b55f939d4657091415c405a29be66f508",
-  "sourceReview:src/features/deal-workspace/sidebar/DealPersonSection.tsx#afc833c4f69555e590096a62015810af91e50c7d4f78750cb0a6595873b7f301",
+  "sourceReview:src/features/deal-workspace/sidebar/DealPersonSection.tsx#5365ae0955342eb8129ba25355dea80522b4db8b87bf05600fb43ee02cfcb23d",
   "sourceReview:src/features/deal-workspace/sidebar/OrganizationSection.tsx#8cc8fe931331b6858d3a53383eecf7e63b6837faa119529af423ff19ee3a9e49",
   "sourceReview:src/features/deal-workspace/sidebar/OrgBlock.tsx#8444fe6a9f29690358d8c583d1be89b458620bd371d42a450c2f8b33b9fa8659",
   "sourceReview:src/features/deal-workspace/sidebar/OrgBulkEditor.tsx#c68caa084912eb65cca450872b3a7777cc9f9f110cbf23e9ae9964d258bc88a0",

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Person } from "@/db/schema";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
@@ -17,6 +17,7 @@ import { PersonSection } from "./PersonSection";
 import { PersonSwitchDialog } from "./PersonSwitchDialog";
 import { SectionHeaderMenu, type SectionHeaderMenuItem } from "./SectionHeaderMenu";
 import { SidebarFieldRow } from "./SidebarFieldRow";
+import { refreshQuietly } from "./sidebarEditors";
 
 const NONE: ReadonlySet<string> = new Set();
 
@@ -70,16 +71,21 @@ export function DealPersonSection({
   const reportError = useDealActionError();
   const utils = trpc.useUtils();
   const [switchOpen, setSwitchOpen] = useState(false);
+  const personMenuTrigger = useRef<HTMLButtonElement>(null);
   const menu = STRINGS.dealSidebar.menu;
 
-  async function savePersonLink(personId: string | null): Promise<void> {
+  async function savePersonLink(
+    personId: string | null,
+    returnFocus?: HTMLButtonElement,
+  ): Promise<void> {
     const r = await updateDealAction({ dealId, expectedUpdatedAt, personId }, readCsrfToken());
     if (!r.ok) {
-      reportError(r.error.id);
+      if (returnFocus === undefined) reportError(r.error.id);
+      else reportError(r.error.id, returnFocus);
       return;
     }
     setSwitchOpen(false);
-    await refreshLinkedReads();
+    await refreshLinkedReads().catch(() => refreshQuietly(router));
   }
 
   async function refreshLinkedReads(): Promise<void> {
@@ -97,7 +103,11 @@ export function DealPersonSection({
         <PersonSection
           person={person}
           menuItems={[
-            { label: menu.switchPerson, onSelect: () => setSwitchOpen(true) },
+            {
+              label: menu.switchPerson,
+              onSelect: () => setSwitchOpen(true),
+              returnFocusRef: personMenuTrigger,
+            },
             {
               label: menu.unlinkPerson,
               onSelect: () => void savePersonLink(null),
@@ -118,6 +128,7 @@ export function DealPersonSection({
           <PersonSwitchDialog
             open
             currentPersonId={person.id}
+            menuTrigger={personMenuTrigger}
             onOpenChange={setSwitchOpen}
             onSave={savePersonLink}
           />

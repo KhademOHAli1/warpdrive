@@ -103,7 +103,11 @@ export function ConditionRowsBuilder({
           </span>
         ) : null}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[36rem] space-y-2 p-2 text-sm">
+      <PopoverContent
+        align="start"
+        collisionPadding={8}
+        className="w-[36rem] max-w-[calc(100vw-1rem)] max-h-[var(--radix-popover-content-available-height)] space-y-2 overflow-y-auto p-2 text-sm"
+      >
         <ConditionRows
           fields={fields}
           opLabels={opLabels}

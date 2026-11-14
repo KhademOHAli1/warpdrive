@@ -7,9 +7,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { setThreadVisibilityAction } from "./threadVisibilityActions";
 import { VisibilityControl } from "./VisibilityControl";
 
-// Owner-only per-row privacy switch (P5). Private = closed lock; the DropdownMenu offers
-// Private/Shared. Only the mailbox owner mounts this (ThreadRow gates on thread.isOwner), and the
-// server re-checks ownership, so this is an affordance, not the security boundary.
+// The reader exposes this menu to the mailbox owner. The action re-checks ownership.
 export function ThreadPrivacyToggle({
   threadId,
   visibility,

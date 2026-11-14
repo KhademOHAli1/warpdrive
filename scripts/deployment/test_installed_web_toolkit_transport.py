@@ -91,6 +91,14 @@ class InstalledToolkitTransportTests(unittest.TestCase):
                 transport.DEPLOYMENT + "fixture_first.py": b"from . import fixture_second\n",
                 transport.DEPLOYMENT + "fixture_second.py": b"from fixture_first import flag\n"}
 
+    def sdk_files(self):
+        data = {name: (json.dumps({"policy": name, "label": "Überprüfung", "enabled": True, "absent": None},
+                                 ensure_ascii=False) + "\n").encode("utf-8") for name in transport.SDK_DATA}
+        return {**self.modern_files(), **data,
+                transport.SDK_OPERATOR: b"from fixture_sdk_first import flag\n",
+                transport.DEPLOYMENT + "fixture_sdk_first.py": b"from . import fixture_sdk_second\n",
+                transport.DEPLOYMENT + "fixture_sdk_second.py": b"flag = True\n"}
+
     def test_exact_standalone_transfer_and_receipt_readback(self):
         sender = self.send_cli()
         self.assertEqual((sender.returncode, sender.stderr), (0, b""))
@@ -200,6 +208,141 @@ class InstalledToolkitTransportTests(unittest.TestCase):
         with self.assertRaisesRegex(transport.TransportError, "relative import escapes"):
             self.receive(self.wire_bytes())
         self.assertEqual(list(self.receiver.iterdir()), [])
+
+    def test_sdk_selection_preserves_legacy_modern_entries_and_original_bounds(self):
+        self.assertEqual(transport.SDK_OPERATOR, "scripts/deployment/installed_web_sdk_operator.py")
+        self.assertIsInstance(transport.SDK_DATA, frozenset)
+        self.assertEqual(transport.SDK_DATA, frozenset({"scripts/deployment/web-sdk-import-policy.json",
+                                                      "scripts/deployment/web-sdk-controls-import-policy.json"}))
+        self.assertEqual(transport.MODERN_ENTRIES, {
+            "functionalOperatorEntry": "scripts/deployment/installed_web_functional_operator.py",
+            "coreOperatorEntry": "scripts/deployment/installed_core_operator.py"})
+        self.assertEqual(transport.REQUIRED, {
+            "scripts/deployment/installed_web_stage_ack.py", "scripts/deployment/installed_web_stage.py",
+            "scripts/deployment/installed_web_stage_readback.py", "scripts/deployment/vps-functional-web-entry.py"})
+        self.assertNotIn(transport.SDK_OPERATOR, transport.MODERN_REQUIRED)
+        self.assertTrue(transport.SDK_DATA.isdisjoint(transport.MODERN_REQUIRED))
+        self.assertEqual((transport.MAX_FILES, transport.MAX_MANIFEST, transport.MAX_FILE, transport.MAX_TOTAL,
+                          transport.IO_SECONDS), (96, 64 * 1024, 512 * 1024, 8 * 1024 * 1024, 30))
+        pins, roots = transport._manifest(self.manifest_bytes, self.expected)
+        self.assertEqual(pins, self.document["pins"])
+        self.assertEqual(roots, ())
+        self.select_sources(self.modern_files(), **transport.MODERN_ENTRIES)
+        pins, roots = transport._manifest(self.manifest_bytes, self.expected)
+        self.assertEqual(pins, self.document["pins"])
+        self.assertEqual(set(roots), transport.MODERN_REQUIRED)
+        self.assertTrue(transport.MODULE.fullmatch(transport.SDK_OPERATOR))
+        self.assertTrue(all(transport.MODULE.fullmatch(name) is None for name in transport.SDK_DATA))
+
+    def test_sdk_operator_and_unicode_json_transfer_readback_without_json_ast_parsing(self):
+        self.select_sources(self.sdk_files(), **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        pins, roots = transport._manifest(self.manifest_bytes, self.expected)
+        self.assertEqual(pins, self.document["pins"])
+        self.assertEqual(set(roots), transport.MODERN_REQUIRED | {transport.SDK_OPERATOR})
+        self.assertTrue(transport.SDK_DATA.isdisjoint(roots))
+        sender = self.send_cli()
+        self.assertEqual((sender.returncode, sender.stderr, sender.stdout), (0, b"", self.wire_bytes()))
+        parse_python = transport.ast.parse
+        parsed_paths = []
+
+        def python_only(raw, *, filename):
+            self.assertNotIn(filename, transport.SDK_DATA)
+            parsed_paths.append(filename)
+            return parse_python(raw, filename=filename)
+
+        with patch.object(transport.ast, "parse", side_effect=python_only):
+            receipt = self.receive(sender.stdout)
+            self.assertEqual(transport.readback(self.destination, self.expected), receipt)
+        self.assertEqual(set(parsed_paths), set(self.files) - transport.SDK_DATA)
+        self.assertIn(transport.SDK_OPERATOR, parsed_paths)
+        self.assertEqual(receipt, transport._receipt(self.destination.name, self.expected, self.files))
+        for name in transport.SDK_DATA:
+            self.assertEqual((self.destination / "source" / name).read_bytes(), self.files[name])
+            self.assertIn("Überprüfung".encode("utf-8"), self.files[name])
+
+    def test_sdk_entry_requires_exact_selection_and_complete_existing_modern_manifest(self):
+        self.select_sources(self.sdk_files(), **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        documents = [{key: value for key, value in self.document.items() if key != "sdkOperatorEntry"}]
+        documents.extend({**self.document, "sdkOperatorEntry": value}
+                         for value in (None, False, "scripts/deployment/arbitrary.py", transport.FUNCTIONAL_OPERATOR))
+        documents.extend({key: value for key, value in self.document.items() if key != field}
+                         for field in transport.MODERN_ENTRIES)
+        documents.append({key: value for key, value in self.document.items() if key not in transport.MODERN_ENTRIES})
+        documents.append({**self.document, "stageAcknowledgementEntry": transport.LEGACY_STAGE_ACK})
+        for document in documents:
+            raw = json.dumps(document).encode()
+            with self.subTest(document=document), self.assertRaises(transport.TransportError):
+                transport._manifest(raw, sha256(raw).hexdigest())
+
+    def test_sdk_selection_requires_operator_both_data_files_and_every_modern_root(self):
+        self.select_sources(self.sdk_files(), **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        required = transport.MODERN_REQUIRED | {transport.SDK_OPERATOR} | transport.SDK_DATA
+        for missing in sorted(required):
+            pins = {name: pin for name, pin in self.document["pins"].items() if name != missing}
+            document = {**self.document, "sourceFiles": len(pins), "pins": pins}
+            raw = json.dumps(document).encode()
+            with self.subTest(missing=missing), self.assertRaises(transport.TransportError):
+                transport._manifest(raw, sha256(raw).hexdigest())
+
+    def test_legacy_and_modern_manifests_cannot_admit_sdk_json_without_sdk_selection(self):
+        for modern in (False, True):
+            files = self.modern_files() if modern else {
+                name: b"raise AssertionError('transport must not execute source')\n" for name in transport.REQUIRED}
+            document = {key: value for key, value in self.document.items() if key not in transport.MODERN_ENTRIES}
+            if modern:
+                document.update(transport.MODERN_ENTRIES)
+            for extra in sorted(transport.SDK_DATA):
+                pins = {name: sha256(raw).hexdigest() for name, raw in files.items()}
+                pins[extra] = sha256(b"{}\n").hexdigest()
+                raw = json.dumps({**document, "sourceFiles": len(pins), "pins": pins}).encode()
+                with self.subTest(modern=modern, extra=extra), self.assertRaises(transport.TransportError):
+                    transport._manifest(raw, sha256(raw).hexdigest())
+
+    def test_sdk_selection_does_not_admit_unknown_json_or_generic_data_paths(self):
+        self.select_sources(self.sdk_files(), **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        for extra in ("scripts/deployment/unreviewed.json", "scripts/deployment/web-sdk-import-policy.JSON",
+                      "scripts/deployment/web-sdk-import-policy.json.bak", "scripts/deployment/data/policy.json",
+                      "scripts/deployment/web-sdk-controls-import-policy.txt", "data/web-sdk-import-policy.json"):
+            pins = {**self.document["pins"], extra: sha256(b"{}\n").hexdigest()}
+            raw = json.dumps({**self.document, "sourceFiles": len(pins), "pins": pins}).encode()
+            with self.subTest(extra=extra), self.assertRaises(transport.TransportError):
+                transport._manifest(raw, sha256(raw).hexdigest())
+
+    def test_sdk_json_requires_strict_utf8_objects_and_rejects_duplicate_keys(self):
+        files = self.sdk_files()
+        self.select_sources(files, **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        _, roots = transport._manifest(self.manifest_bytes, self.expected)
+        for name in sorted(transport.SDK_DATA):
+            for invalid in (b"{", b"[]", b"null", b"true", b'"policy"', b"1", b'{"value": NaN}',
+                            b'{"value": Infinity}', b'{"value": -Infinity}', b'{"value": "\xff"}'):
+                with self.subTest(name=name, invalid=invalid), self.assertRaises(ValueError):
+                    transport._validate_closure({**files, name: invalid}, roots)
+            for duplicate in (b'{"version": 1, "version": 2}', b'{"policy": {"name": 1, "name": 2}}'):
+                with self.subTest(name=name, duplicate=duplicate), self.assertRaisesRegex(transport.TransportError, "Duplicate"):
+                    transport._validate_closure({**files, name: duplicate}, roots)
+
+    def test_sdk_missing_transitive_python_pin_holds_before_publication(self):
+        files = self.sdk_files()
+        del files[transport.DEPLOYMENT + "fixture_sdk_second.py"]
+        self.select_sources(files, **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        sender = self.send_cli()
+        self.assertEqual((sender.returncode, sender.stdout), (1, b""))
+        with self.assertRaisesRegex(transport.TransportError, "dependency is missing"):
+            self.receive(self.wire_bytes())
+        self.assertEqual(list(self.receiver.iterdir()), [])
+
+    def test_sdk_selection_obeys_unchanged_ninety_six_file_ceiling(self):
+        files = self.sdk_files()
+        self.assertEqual(transport.MAX_FILES, 96)
+        for number in range(96 - len(files)):
+            files[transport.DEPLOYMENT + f"fixture_bound_{number:02d}.py"] = b"# bounded pinned Python source\n"
+        self.select_sources(files, **transport.MODERN_ENTRIES, sdkOperatorEntry=transport.SDK_OPERATOR)
+        pins, _ = transport._manifest(self.manifest_bytes, self.expected)
+        self.assertEqual(len(pins), 96)
+        pins = {**pins, transport.DEPLOYMENT + "fixture_bound_overflow.py": sha256(b"# overflow\n").hexdigest()}
+        raw = json.dumps({**self.document, "sourceFiles": len(pins), "pins": pins}).encode()
+        with self.assertRaises(transport.TransportError):
+            transport._manifest(raw, sha256(raw).hexdigest())
 
     def test_source_and_readback_reject_unexpected_entries_links_and_changed_bytes(self):
         first = self.source / next(iter(self.files))

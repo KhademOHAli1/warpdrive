@@ -126,5 +126,11 @@ describe("people directory journey", () => {
     expect(within(dialog).getByRole("textbox", { name: "Name" })).toHaveValue("New Person");
     expect(await within(dialog).findByRole("button", { name: "Invite" })).toBeEnabled();
     expect(invite).toHaveBeenCalledTimes(1);
+
+    invite.mockResolvedValueOnce({ ok: true, userId: "new-person" });
+    await user.click(within(dialog).getByRole("button", { name: "Invite" }));
+    expect(await within(dialog).findByRole("status")).toHaveTextContent("new@example.test");
+    expect(dialog).toBeInTheDocument();
+    expect(routing.refresh).toHaveBeenCalledOnce();
   });
 });

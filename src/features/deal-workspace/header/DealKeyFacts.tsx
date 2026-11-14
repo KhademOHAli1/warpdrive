@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { useDealDetailInitialFormats } from "../DealDetailInitialFormats";
 import type { DealWorkspace } from "../summaryRepo";
 
 export function DealKeyFacts({ workspace }: { workspace: DealWorkspace }) {
   const t = useAppTranslations("dealWorkspace");
   const format = useFormatters();
+  const initialFormats = useDealDetailInitialFormats();
   const { deal, org } = workspace;
   return (
     <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -18,11 +20,15 @@ export function DealKeyFacts({ workspace }: { workspace: DealWorkspace }) {
       )}
       {deal.value != null && (
         <span className="font-medium tabular-nums text-foreground">
-          {format.currency(deal.value, deal.currency)}
+          {initialFormats?.headerValue ?? format.currency(deal.value, deal.currency)}
         </span>
       )}
       {deal.expectedCloseDate != null && (
-        <span>{t("closes", { date: format.dateOnly(deal.expectedCloseDate) })}</span>
+        <span>
+          {t("closes", {
+            date: initialFormats?.expectedCloseDate ?? format.dateOnly(deal.expectedCloseDate),
+          })}
+        </span>
       )}
     </div>
   );

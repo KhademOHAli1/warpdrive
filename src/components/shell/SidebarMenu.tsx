@@ -35,13 +35,17 @@ const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
 
 export function SidebarMenu({
   expanded,
+  pinnedExpanded = expanded,
   onNavigate,
   onToggle,
+  onRequestExpand,
   mobile = false,
 }: {
   expanded: boolean;
+  pinnedExpanded?: boolean;
   onNavigate?: () => void;
   onToggle?: () => void;
+  onRequestExpand?: () => void;
   mobile?: boolean;
 }) {
   const pathname = usePathname();
@@ -79,6 +83,7 @@ export function SidebarMenu({
         }}
         pathname={pathname}
         expanded={expanded}
+        onRequestExpand={onRequestExpand}
         onNavigate={onNavigate}
       />
     );
@@ -89,14 +94,11 @@ export function SidebarMenu({
       target="_blank"
       rel="noreferrer noopener"
       aria-label={messages.nav.docs}
-      className={cn(
-        styles.navItem,
-        styles.navItemInactive,
-        expanded ? styles.navItemOpen : styles.navItemCollapsed,
-      )}
+      className={styles.navItem}
+      data-expanded={expanded}
     >
       <span aria-hidden="true" className={styles.navIconFrame}>
-        <DocsIcon size={20} className={styles.navIcon} />
+        <DocsIcon size={16} className={styles.navIcon} />
       </span>
       <span
         className={styles.sidebarCopy}
@@ -112,12 +114,15 @@ export function SidebarMenu({
         id={mobile ? "mobile-primary-navigation" : "primary-navigation"}
         aria-label={messages.navigation.primary}
         className={styles.nav}
+        onPointerEnter={(event) => {
+          if (event.pointerType === "mouse") onRequestExpand?.();
+        }}
       >
         <div className={styles.workspaceNav}>
           <p className={styles.sidebarSectionTitle} aria-hidden={!expanded}>
             {t("section")}
           </p>
-          <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
+          <div className={styles.menuList}>
             {navItems
               .filter(
                 (item) =>
@@ -130,27 +135,21 @@ export function SidebarMenu({
               <p className={styles.sidebarSectionTitle} aria-hidden={!expanded}>
                 {campaignNav.actions}
               </p>
-              <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
-                {menuItem(campaign)}
-              </div>
+              <div className={styles.menuList}>{menuItem(campaign)}</div>
             </>
           )}
         </div>
         <div className={styles.utilityNav}>
-          {expanded && (
-            <>
-              {navItems.filter((item) => item.key === "settings").map(menuItem)}
-              {navItems.filter((item) => item.key === "workflows").map(menuItem)}
-              {docs}
-            </>
-          )}
-          {!mobile && onToggle !== undefined && (
-            <div className={styles.sidebarToggleDock}>
-              <SidebarToggle expanded={expanded} onToggle={onToggle} />
-            </div>
-          )}
+          {navItems.filter((item) => item.key === "settings").map(menuItem)}
+          {navItems.filter((item) => item.key === "workflows").map(menuItem)}
+          {docs}
         </div>
       </nav>
+      {!mobile && onToggle !== undefined && (
+        <div className={styles.sidebarToggleDock}>
+          <SidebarToggle expanded={pinnedExpanded} onToggle={onToggle} />
+        </div>
+      )}
     </div>
   );
 }

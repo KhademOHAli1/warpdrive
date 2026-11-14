@@ -2,8 +2,9 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, expect, it, vi } from "vitest";
-import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { useEffect } from "react";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { CalendarSystem } from "@/features/i18n/preferences";
 import type { Locale } from "@/features/i18n/registry";
 import { formatDateTime } from "@/lib/localeFormatting";
@@ -17,8 +18,28 @@ const { save } = vi.hoisted(() => ({
 }));
 vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: save }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "test-csrf" }));
+let restorePopoverDom: (() => void) | undefined;
+beforeEach(() => {
+  const animations = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    value: () => [],
+  });
+  const style = document.createElement("style");
+  style.textContent = "[popover][data-slot='combobox-content'] { display: block !important }";
+  document.head.append(style);
+  restorePopoverDom = () => {
+    style.remove();
+    if (animations) {
+      Object.defineProperty(Element.prototype, "getAnimations", animations);
+    } else {
+      Reflect.deleteProperty(Element.prototype, "getAnimations");
+    }
+  };
+});
 afterEach(() => {
   cleanup();
+  restorePopoverDom?.();
   vi.clearAllMocks();
   vi.restoreAllMocks();
 });
@@ -36,6 +57,18 @@ function Preview() {
       <output data-testid="date">{format.dateOnly("2026-03-21")}</output>
     </>
   );
+}
+
+function SaveFromSibling() {
+  const choose = useSetLocalePreferences();
+  useEffect(() => {
+    const start = () => {
+      void choose({ timeZone: "Europe/Paris" });
+    };
+    window.addEventListener("test:save-time-zone", start);
+    return () => window.removeEventListener("test:save-time-zone", start);
+  }, [choose]);
+  return null;
 }
 
 it("saves a new timezone with the existing language, calendar and digits, and updates the preview", async () => {
@@ -350,6 +383,43 @@ it("restores the country and formats after a failed country save without losing 
     screen.queryByRole("combobox", { name: "Display Iranian amounts in" }),
   ).not.toBeInTheDocument();
   expect(screen.getByLabelText("draft")).toHaveValue("Keep this draft");
+});
+
+it("moves focus to the country label while a sibling saves and respects a user's next focus", async () => {
+  const user = userEvent.setup();
+  let finish!: (result: { ok: boolean }) => void;
+  save.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+
+  render(
+    <LocaleProvider country="DE" locale="en">
+      <LanguageSettings />
+      <SaveFromSibling />
+      <input aria-label="Next field" />
+    </LocaleProvider>,
+  );
+  const country = screen.getByRole("button", { name: "Country" });
+  country.focus();
+  await user.keyboard("{Enter}");
+  const search = screen.getByRole("combobox", { name: "Search..." });
+  await waitFor(() => expect(search).toHaveFocus());
+  await act(async () => {
+    window.dispatchEvent(new Event("test:save-time-zone"));
+    await Promise.resolve();
+  });
+  await waitFor(() => expect(country).toBeDisabled());
+  expect(screen.getByText("Country", { selector: "p" })).toHaveFocus();
+  expect(save).toHaveBeenCalledTimes(1);
+
+  const next = screen.getByRole("textbox", { name: "Next field" });
+  next.focus();
+  await act(() => Promise.resolve(finish({ ok: false })));
+  expect(country).toBeEnabled();
+  expect(next).toHaveFocus();
 });
 
 it("lets the user turn off browser timezone and then return to the browser's current zone", async () => {

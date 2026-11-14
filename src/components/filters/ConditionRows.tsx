@@ -98,7 +98,10 @@ export function ConditionRows({
       {rows.map((row, i) => {
         const def = fields.find((f) => f.field === row.field) ?? first;
         return (
-          <div key={row.id} className="flex items-center gap-1.5">
+          <div
+            key={row.id}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 sm:flex"
+          >
             <Select
               ariaLabel={t("fieldLabel", { index: i + 1 })}
               value={row.field}
@@ -107,7 +110,7 @@ export function ConditionRows({
                 patch(i, { field: v, op: nextDef?.ops[0] ?? "", value: "" });
               }}
               options={fields.map((f) => ({ value: f.field, label: f.label }))}
-              triggerClassName="min-w-0 flex-[3]"
+              triggerClassName="col-span-2 min-w-0 flex-[3]"
             />
             <Select
               ariaLabel={t("operatorLabel", { index: i + 1 })}
@@ -120,7 +123,7 @@ export function ConditionRows({
                     ? (localizedOps[o] ?? o)
                     : (opLabels[o] ?? localizedOps[o] ?? o),
               }))}
-              triggerClassName="min-w-0 flex-[2]"
+              triggerClassName="col-span-2 min-w-0 flex-[2]"
             />
             <div data-slot="condition-value" className="min-w-0 flex-[4]">
               {VALUELESS_OPS.has(row.op) ? null : (

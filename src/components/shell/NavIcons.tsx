@@ -46,9 +46,6 @@ function NavIcon({
   return <FinanceNavGlyph name={name} size={size} className={className ?? NAV_ICON_CLASS} />;
 }
 
-export function PipelineIcon(props: IconProps): ReactNode {
-  return <NavIcon name="pipeline-board" {...props} />;
-}
 export function LeadsIcon(props: IconProps): ReactNode {
   return <NavIcon name="lead-person-plus" {...props} />;
 }
@@ -58,17 +55,11 @@ export function ContactsIcon(props: IconProps): ReactNode {
 export function ActivitiesIcon(props: IconProps): ReactNode {
   return <NavIcon name="calendar-01" {...props} />;
 }
-export function DashboardIcon(props: IconProps): ReactNode {
-  return <NavIcon name="performance-bars" {...props} />;
-}
 export function SettingsIcon(props: IconProps): ReactNode {
   return <NavIcon name="settings-cog" {...props} />;
 }
 export function DocsIcon(props: IconProps): ReactNode {
   return <NavIcon name="guide-open-book" {...props} />;
-}
-export function DealsIcon(props: IconProps): ReactNode {
-  return <NavIcon name="folder-open" {...props} />;
 }
 
 // Finance OS uses the same Lucide Mail glyph for its mail destination.

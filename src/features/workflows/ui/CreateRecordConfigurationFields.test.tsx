@@ -123,3 +123,23 @@ it("shows named pipeline and stage choices and resets the previous stage when th
     }),
   );
 });
+
+it("keeps an unavailable pipeline visible as an error without changing its stored value", () => {
+  const onChange = vi.fn();
+  render(
+    <Harness
+      initial={{
+        entity: "deal",
+        fields: { pipelineId: { kind: "value", value: "missing" } },
+      }}
+      onChange={onChange}
+    />,
+  );
+  const pipeline = screen.getByRole("combobox", { name: "Pipeline" });
+  expect(pipeline).toHaveTextContent("Unavailable mapping");
+  expect(pipeline.closest("fieldset")).toHaveAccessibleDescription(
+    "A selected choice is no longer available.",
+  );
+  expect(screen.getByRole("combobox", { name: "Stage" })).toBeDisabled();
+  expect(onChange).not.toHaveBeenCalled();
+});

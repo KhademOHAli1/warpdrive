@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { EngagementTimeline } from "@/features/contacts/engagementTimeline";
 
@@ -18,6 +19,7 @@ beforeAll(() => {
 });
 
 const engagementQuery = vi.fn();
+const OWNER_ID = "5a0450aa-6316-4732-b239-1f15f18f8069";
 const DATA: EngagementTimeline = {
   months: ["2026-05", "2026-06"],
   lanes: [
@@ -89,7 +91,7 @@ vi.mock("@/lib/trpc-client", () => ({
     },
     identity: {
       assignableUsers: {
-        useQuery: () => ({ data: [{ id: "u1", name: "Ann Owner", avatarUrl: null }] }),
+        useQuery: () => ({ data: [{ id: OWNER_ID, name: "Ann Owner", avatarUrl: null }] }),
       },
     },
   },
@@ -137,5 +139,49 @@ describe("EngagementTimelineClient", () => {
       const last = engagementQuery.mock.calls.at(-1)?.[0] as { typeKey: string | null };
       expect(last.typeKey).toBe("call");
     });
+  });
+
+  it("queries by the selected owner's opaque ID and clears it when Everyone is selected", async () => {
+    const animationDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      value: () => [],
+    });
+    const popoverStyle = document.createElement("style");
+    // jsdom lacks the native open popover state that makes this popup visible in browsers.
+    popoverStyle.textContent =
+      "[popover][data-slot='combobox-content'] { display: block !important }";
+    document.head.append(popoverStyle);
+
+    try {
+      const user = userEvent.setup();
+      render(<EngagementTimelineClient />);
+      const owner = screen.getByRole("button", { name: "Owner" });
+      expect(owner).toHaveTextContent("Everyone");
+      const initialQuery = { entity: "person", monthsBack: 3, ownerId: null, typeKey: null };
+      expect(engagementQuery).toHaveBeenLastCalledWith(initialQuery);
+
+      await user.click(owner);
+      const search = screen.getByRole("combobox", { name: "Search..." });
+      engagementQuery.mockClear();
+      await user.type(search, "Ann");
+      expect(engagementQuery).not.toHaveBeenCalled();
+      await user.click(screen.getByRole("option", { name: "Ann Owner" }));
+      expect(engagementQuery).toHaveBeenLastCalledWith({ ...initialQuery, ownerId: OWNER_ID });
+      expect(owner).toHaveTextContent("Ann Owner");
+
+      await user.click(owner);
+      await user.click(screen.getByRole("option", { name: "Everyone" }));
+      expect(engagementQuery).toHaveBeenLastCalledWith(initialQuery);
+      expect(owner).toHaveTextContent("Everyone");
+    } finally {
+      cleanup();
+      popoverStyle.remove();
+      if (animationDescriptor) {
+        Object.defineProperty(Element.prototype, "getAnimations", animationDescriptor);
+      } else {
+        Reflect.deleteProperty(Element.prototype, "getAnimations");
+      }
+    }
   });
 });
