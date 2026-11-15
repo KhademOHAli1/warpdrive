@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-source-bound-generated-fixture-public-captcha-review",
+  "reviewer": "/root/review_newsletter",
+  "reviewerIdentity": {
+    "role": "Codex independent sub-agent",
+    "canonicalAgentPath": "/root/review_newsletter",
+    "implementationOwner": "/root/crm_trace",
+    "reviewerEditedImplementationSources": false
+  },
+  "reviewedAtUtc": "2026-11-15T19:20:04.040042+00:00",
+  "checkout": "/Users/ali/Documents/Codex/2026-11-15/co/work/newsletter-service/source-fix",
+  "comparisonRevision": "37ef374ebedd62a490ce9dca0c2d2f0ecec95fa0",
+  "headDuringReview": "af150fa2ad336c3d1dac411b80925a74888bc940",
+  "verdict": "scoped-source-review-with-open-qualification-gates",
+  "blockingFindings": [],
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "3d3c32747196a1d280d04f6a58bf73241223d9659313247500bc2d741b413eda",
+    "scripts/deployment/test_engine_image_smoke.py": "b7393bb06b24f3310bedb1a2b878e83b18bfad9d12269338f92adf7317d0bfd0",
+    "scripts/deployment/image_smoke.py": "714dc212c7ed310a3e52ad4bd32996e2b346a2a612c24d9b139b855343f33070",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "historicalIndependentReview": {
+    "path": "docs/deployment-evidence/fixture-ui-sdk-hooks-review-20261114.json",
+    "sha256": "3da7b53b121cca37976aa987b1c20194cc58a69ac60131afc1817dcee47194d5",
+    "reviewer": "/root/fixture_secret_followup",
+    "preservedUnchanged": true
+  },
+  "method": {
+    "reviewedProductOrFixtureSourcesEditedByReviewer": false,
+    "repositoryModulesImported": false,
+    "testsOrRuntimeExecuted": false,
+    "managedSecurityAnalysisExecuted": false,
+    "plaintextSinkRemainsDirectAndVisible": true,
+    "gitOperationsForSourceReview": "Read-only revision, diff and source comparisons; no commit, push, branch change or historical-record edit.",
+    "implementationScopeReviewed": [
+      "Full write_synthetic_secret implementation and admission/descriptor/cleanup helpers",
+      "Sole runtime caller, constructor password generation, engine environment/mount boundary and CLI",
+      "Every direct/import-aliased caller and the observed local assignment alias in fixture tests",
+      "Inherited Docker environment filtering, redaction and owned-resource cleanup",
+      "Complete production-engine workflow and all PR1072 changed asset/build/HTTP/test code"
+    ],
+    "machineReadSourceBytes": {
+      "scripts/deployment/engine_image_smoke.py": 78594,
+      "scripts/deployment/test_engine_image_smoke.py": 74530,
+      "scripts/deployment/image_smoke.py": 39648,
+      ".github/workflows/production-engine.yml": 6534
+    },
+    "exactSourceComparison": "ImageSmoke and production-engine workflow are byte-identical to comparisonRevision and the prior witness pins. The plaintext writer AST is unchanged. Engine changes add only fixed public CAPTCHA path/digest validation, one allowed loopback GET, and readiness evidence. Existing secret-writer test methods remain unchanged; two new negative public-asset tests and two lifecycle response mocks account for the changed test source.",
+    "boundedAstCallerScan": {
+      "roots": [
+        "root Python files",
+        "src",
+        "scripts",
+        "deploy",
+        "tools"
+      ],
+      "files": 331,
+      "bytes": 4997876,
+      "directAndImportAliasedCallerFiles": [
+        "scripts/deployment/test_engine_image_smoke.py",
+        "scripts/deployment/engine_image_smoke.py"
+      ],
+      "directCallLines": {
+        "scripts/deployment/test_engine_image_smoke.py": [
+          607,
+          632,
+          654,
+          664,
+          671,
+          680,
+          692,
+          714,
+          740,
+          765,
+          794,
+          812,
+          836,
+          885,
+          917
+        ],
+        "scripts/deployment/engine_image_smoke.py": [
+          1154
+        ]
+      },
+      "sameFileLocalAliasCalls": [
+        {
+          "path": "scripts/deployment/test_engine_image_smoke.py",
+          "line": 956,
+          "alias": "original"
+        }
+      ],
+      "scope": "Direct, attribute, imported-name aliases and observed same-function direct assignment aliases only. Not a general Python sandbox."
+    },
+    "existingPolicyGuardOrHistoricalReviewRecordsEditedByReviewer": false,
+    "newIndependentReportWrittenByReviewer": true
+  },
+  "currentAnnotations": {
+    "engineQueryAnnotationCount": 0,
+    "sinkStatement": "payload.write(password)",
+    "sinkLine": 332
+  },
+  "reviewedSecretBehavior": [
+    "The only runtime writer call uses self.pg_env[POSTGRES_PASSWORD], generated inside the fixture constructor with secrets.token_urlsafe(32). Its CLI takes image/revision/context/output selection, not deployment or user credentials. Test-only callers use synthetic literals or the same generated fixture value; the local original alias is confined to an interruption/cleanup test.",
+    "Native Linux/amd64 host/daemon admission and an actual writable host tmpfs precede runtime directory creation. Descriptor-held nofollow ancestor checks, private 0700 owner directory, exclusive single-link 0600 leaf, literal plaintext write, flush, 0444 mode and post-close identity checks are unchanged.",
+    "Failure cleanup retains descriptor ownership and unlinks only the witnessed original inode; ordinary completion cleans the private temporary directory after owned fixture resource cleanup. Existing Docker environment filtering and diagnostic redaction are unchanged.",
+    "The added request is a GET to the literal /public/static/altcha.umd.js on 127.0.0.1:9000 inside the owned runtime. It has no body, method override or credential header at the new call site; request rejects all other new paths and arbitrary headers. Existing ownership checks/internal-only network and finite HTTP/container deadlines remain.",
+    "Public asset verification requires HTTP 200 plus exact SHA-256 0f557a9f535a15acbe0fc7abb4fe896502a6d4c27de1c4145cfa001d0d2be099. Missing assets, HTML fallbacks and wrong bytes fail before readiness success, with owned runtime stopping in finally. Source extraction uses the fixed upstream asset path and matching checksum; Docker retains its pinned upstream image/source and corresponding-source/license packing.",
+    "The workflow retains contents: read, persist-credentials: false, push: false, no deployment environment or production credential input, bounded native fixture execution and retained failure evidence. No query annotation, query/category/threshold exclusion, plaintext encoding or alert dismissal is added."
+  ],
+  "supplementalSourceSha256": {
+    "deploy/newsletters/engine/build-assets.go": "ad1ab11db12ec68db728869710df3232a6df8b6cd01794720647b88021df954e",
+    "deploy/newsletters/engine/build.sh": "a5b5c1c9d9687d8dc3fe67458241dae2eab94e2729ef668ebf43b421df38f271",
+    "deploy/newsletters/engine/.dockerignore": "41064eafda8837cec52608110799e43edf110bdea07b4dd734ac6db89e1aa1c0",
+    "deploy/newsletters/engine/Dockerfile": "431c349c543fb6a0e07827bb8eefdeb7d80ed1135779a545d355de58008e447f",
+    "deploy/newsletters/engine/altcha.LICENSE.txt": "74aa56cabe930086caec41910278796acea0f4b0582af3a83ff3d3271674c702"
+  },
+  "residuals": [
+    "Generated credentials remain plaintext during the real _FILE fixture, including existing Docker arguments/environments. Runner UID, host root and the local Docker daemon remain trusted; tmpfs may swap and abrupt failure may bypass cleanup.",
+    "A later Docker bind resolves a pathname. Same-UID/root substitution after verification and non-atomic cleanup against that actor are not eliminated.",
+    "This finite source review does not execute the fixture, establish native lifecycle behavior, clear any managed CodeQL alert, prove installed credential custody or authorize deployment. Exact-source tests, native qualification, managed scanner results and named-ref findings remain separate. An HTTP asset digest is not complete CAPTCHA or subscriber-journey acceptance."
+  ],
+  "expiry": "Any change to the four pinned authority/caller sources or the bounded caller closure requires a fresh independent review; this witness is process evidence, not cryptographic approval.",
+  "securityGateCleanClaim": false,
+  "findingClosedClaim": false,
+  "canonicalAcceptanceClaim": false,
+  "deploymentAuthorized": false,
+  "alertDismissalApplied": false
+}

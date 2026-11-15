@@ -3,8 +3,8 @@
   "kind": "source-bound-intentional-fixture-plaintext-review",
   "queryId": "py/clear-text-storage-sensitive-data",
   "sourceSha256": {
-    "scripts/deployment/engine_image_smoke.py": "d838e4261365184ed03de3f2d435b52e0d7f6f36567db22fd01db30278ddc81e",
-    "scripts/deployment/test_engine_image_smoke.py": "d909dc5c17c82b4ef068794aa1dfaa0f87d017df0042f15203c9a6725cd0cef9",
+    "scripts/deployment/engine_image_smoke.py": "3d3c32747196a1d280d04f6a58bf73241223d9659313247500bc2d741b413eda",
+    "scripts/deployment/test_engine_image_smoke.py": "b7393bb06b24f3310bedb1a2b878e83b18bfad9d12269338f92adf7317d0bfd0",
     "scripts/deployment/image_smoke.py": "714dc212c7ed310a3e52ad4bd32996e2b346a2a612c24d9b139b855343f33070",
     ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
   },
@@ -17,10 +17,10 @@
     "state": "open"
   },
   "independentReview": {
-    "path": "docs/deployment-evidence/fixture-ui-sdk-hooks-review-20261114.json",
-    "sha256": "3da7b53b121cca37976aa987b1c20194cc58a69ac60131afc1817dcee47194d5",
-    "reviewer": "/root/fixture_secret_followup",
-    "scope": "Independent exact-source UI SDK helper-hook refresh, inherited Engine initialization compatibility correction and regression review; intentional fixture-only plaintext sink and caller boundaries unchanged. Historical lifecycle review remains preserved."
+    "path": "docs/deployment-evidence/fixture-public-captcha-review-20261115.json",
+    "sha256": "8af4ccfe74f904584123ce1146887b2239db1b62044083787d8c947e337a1401",
+    "reviewer": "/root/review_newsletter",
+    "scope": "Independent exact-source public CAPTCHA asset/readiness refresh; full plaintext writer, runtime/test callers, fixed owned-loopback HTTP access, CLI and workflow boundaries reviewed unchanged. Earlier independent witnesses remain preserved."
   },
   "rationale": [
     "The actual _FILE probe requires generated plaintext bytes. Runtime callers accept no deployment/user credential input; all current callers were independently reviewed.",
