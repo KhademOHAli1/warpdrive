@@ -18,6 +18,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 from urllib.parse import unquote, urlsplit
 from urllib.request import HTTPError, HTTPSHandler, ProxyHandler, Request, build_opener
@@ -56,6 +57,7 @@ FUNCTIONAL_PREDECESSOR_OPTIONS = ("functional_predecessor_composite", "functiona
 RETAINED_COMPONENTS = ("worker", "realtime", "migrator")
 BROWSER_PHASES = {
     "initial-ready": {"oldStatic": True, "nativeLogin": True, "draftReady": True, "subscribed": True},
+    "pre-switch-armed": {},
     "pre-switch-ready": {"oldSocketActive": True},
     "complete": {"freshTicket": True, "resubscribed": True, "persistentDraft": True, "oldAction": True, "actionPosts": 1},
 }
@@ -63,9 +65,12 @@ SDK_KEYBOARD_HELP = dict.fromkeys(
     ("openedByKeyboard", "escapeClosed", "focusRestored", "closeButtonWorked", "sameDocument"), True)
 SDK_SWITCH = {"schemaVersion": 1, "activatedByKeyboard": True, "savedByCandidate": True,
               "persistedAfterReload": True, "actionPosts": 1}
-BROWSER_FAILURES = {"profile", "browser-start", "native-login-and-draft", "pre-switch-socket",
+BROWSER_FAILURES = {"profile", "browser-start", "native-login-and-draft", "coordinator-preflight", "pre-switch-socket",
                     "waiting-for-switch", "persistent-reconnect", "old-tab-server-action",
                     "current-rendered-presentation", "current-keyboard-help", "current-crm-switch", "browser-close"}
+BROWSER_FAILURE_REASONS = {"control-invalid", "control-eof", "command-timeout", "page-error", "external-request",
+    "external-socket", "draft-navigation-changed", "draft-node-replaced", "draft-value-changed",
+    "baseline-socket-changed", "global-deadline", "unclassified-proof-failure"}
 HEALTH = "/api/health"
 IDENTITY = "/api/runtime/web-identity"
 LOGIN = "/login"
@@ -506,22 +511,31 @@ class RolloutBrowser(BrowserProcess):
             self.invalid = True
 
     def send(self, command):
-        require(command in {"pre-switch", "switched"}, "unknown browser rollout command")
+        require(command in {"arm-pre-switch", "pre-switch", "switched"}, "unknown browser rollout command")
         self.process.stdin.write(json.dumps({"command": command}) + "\n")
         self.process.stdin.flush()
 
     def failure_stages(self):
-        stages = []
+        return [row["stage"] for row in self.failure_diagnostics()]
+
+    def failure_diagnostics(self):
+        records = []
         for line in list(self.errors):
             try:
                 value = json.loads(line)
             except (ValueError, RecursionError):
                 continue
-            if (isinstance(value, dict) and set(value) == {"event", "stage"}
-                    and value["event"] == "browser.web-rollout.failed"
-                    and isinstance(value["stage"], str) and value["stage"] in BROWSER_FAILURES):
-                stages.append(value["stage"])
-        return stages
+            if (isinstance(value, dict)
+                    and value.get("event") == "browser.web-rollout.failed"
+                    and isinstance(value.get("stage"), str) and value["stage"] in BROWSER_FAILURES):
+                if set(value) == {"event", "stage"}:
+                    records.append(value)
+                elif (set(value) == {"event", "stage", "reason", "elapsedMs", "phaseElapsedMs"}
+                      and type(value["reason"]) is str and value["reason"] in BROWSER_FAILURE_REASONS
+                      and all(type(value[key]) is int and 0 <= value[key] <= 3600000
+                              for key in ("elapsedMs", "phaseElapsedMs"))):
+                    records.append(value)
+        return records
 
 
 class MixedCaddyTarget:
@@ -531,6 +545,7 @@ class MixedCaddyTarget:
         self.smoke, self.slots, self.documents, self.qualification = smoke, slots, documents, qualification
         self.patches = []
         self.stop_after_switch = None
+        self.browser_control = []
 
     def verify_qualification(self, plan, *, initialize):
         if (plan["qualificationSha256"] != content_hash(self.qualification)
@@ -568,11 +583,29 @@ class MixedCaddyTarget:
                 "qualified Web database health is unavailable")
         return {"generation": generation, "runtimeId": self.smoke.owned(name)["Id"], "healthy": healthy}
 
-    def compare_and_swap_route(self, expected, desired):
+    def prepare_browser_switch(self):
         browser = self.smoke.browser if not self.patches else None
-        if browser:
-            browser.send("pre-switch")
-            self.smoke.browser_pre_switch = browser.wait("pre-switch-ready", timeout=8)
+        if browser is None:
+            return None
+        require(not self.browser_control, "browser switch handshake cannot be replayed")
+        for command, phase, attribute in (("arm-pre-switch", "pre-switch-armed", "browser_armed"),
+                                          ("pre-switch", "pre-switch-ready", "browser_pre_switch")):
+            observation = {"phase": command, "state": "started", "elapsedMs": 0, "patchAttempted": False}
+            self.browser_control.append(observation)
+            started = time.monotonic()
+            try:
+                browser.send(command)
+                setattr(self.smoke, attribute, browser.wait(phase, timeout=8))
+                observation["state"] = "passed"
+            except Exception:
+                observation["state"] = "failed"
+                raise
+            finally:
+                observation["elapsedMs"] = min(3600000, max(0, int((time.monotonic() - started) * 1000)))
+        return browser
+
+    def compare_and_swap_route(self, expected, desired):
+        browser = self.prepare_browser_switch()
         current, etag = self.read_route()
         if current != expected:
             raise DefiniteRejected("Caddy route changed before this operation issued its PATCH")
@@ -1115,6 +1148,11 @@ class MixedWebSmoke(WebSwitchSmoke):
             self.report["cleanup"] = self.cleanup()
             if self.report["failure"] is not None and self.browser is not None:
                 self.report["failure"]["browserStages"] = self.browser.failure_stages()
+                self.report["failure"]["browserDiagnostics"] = self.browser.failure_diagnostics()
+            target = getattr(self, "target", None)
+            if self.report["failure"] is not None and getattr(target, "browser_control", None):
+                self.report["diagnostics"].append({"browserControl": target.browser_control,
+                    "patchAttempted": bool(target.patches), "routePatchAttempts": len(target.patches)})
             self.report["finishedAt"] = utc_now()
             self.report["success"] = self.report["failure"] is None and self.report["cleanup"]["success"]
             with (self.output_dir / "report.json").open("x", encoding="utf-8") as report:

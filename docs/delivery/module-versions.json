@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "warpdrive-module-version-registry",
+  "versionMeaning": "source-module-semver",
+  "baselineSourceRevision": "50be98d8007bedde1823fa7c681d4a4c2fdbf621",
+  "modules": {
+    "web": {
+      "name": "CRM Web",
+      "kind": "application",
+      "version": "1.7.1",
+      "paths": [
+        "src/app/",
+        "src/components/",
+        "src/features/",
+        "src/server/",
+        "src/services/",
+        "src/lib/",
+        "src/utils/",
+        "src/types/",
+        "src/schemas/",
+        "public/",
+        "next.config.ts",
+        "next-intl.config.ts",
+        "postcss.config.mjs",
+        "tailwind.config.ts"
+      ],
+      "dependencies": ["core-api", "realtime"]
+    },
+    "core-api": {
+      "name": "Core API",
+      "kind": "service",
+      "version": "1.7.1",
+      "paths": [
+        "src/entrypoints/core-api.ts",
+        "src/server/trpc/",
+        "src/features/",
+        "src/services/",
+        "src/lib/",
+        "src/utils/",
+        "src/schemas/",
+        "scripts/build-core.mjs"
+      ],
+      "dependencies": []
+    },
+    "worker": {
+      "name": "Background Worker",
+      "kind": "service",
+      "version": "1.7.1",
+      "paths": [
+        "src/entrypoints/worker.ts",
+        "src/entrypoints/sweepSpam.ts",
+        "src/jobs/",
+        "src/server/worker.ts",
+        "src/features/",
+        "src/services/",
+        "src/lib/",
+        "src/utils/"
+      ],
+      "dependencies": []
+    },
+    "realtime": {
+      "name": "Realtime service",
+      "kind": "service",
+      "version": "1.7.1",
+      "paths": [
+        "src/entrypoints/ws.ts",
+        "src/server/ws/",
+        "src/features/identity/",
+        "src/features/realtime/"
+      ],
+      "dependencies": []
+    },
+    "migrator": {
+      "name": "Database migrator",
+      "kind": "migration",
+      "version": "1.7.1",
+      "paths": [
+        "src/entrypoints/migrate.ts",
+        "src/db/migrate.ts",
+        "drizzle/",
+        "scripts/auth-operator.ts"
+      ],
+      "dependencies": []
+    },
+    "newsletter-engine": {
+      "name": "Newsletter Engine integration",
+      "kind": "integration",
+      "version": "1.7.1",
+      "paths": ["deploy/newsletters/engine/"],
+      "dependencies": []
+    },
+    "operations-collector": {
+      "name": "Operations collector",
+      "kind": "service",
+      "version": "1.7.1",
+      "paths": [
+        "src/entrypoints/operations-collector.ts",
+        "src/features/operations/",
+        "src/server/operations/",
+        "scripts/build-operations-collector.mjs"
+      ],
+      "dependencies": []
+    },
+    "deployment-toolkit": {
+      "name": "Installed deployment toolkit",
+      "kind": "operator-toolkit",
+      "version": "1.7.1",
+      "paths": [
+        "scripts/deployment/",
+        "scripts/delivery/",
+        "deploy/newsletters/engine/migration-tests/verify.py",
+        "deploy/newsletters/engine/tests/consent.py"
+      ],
+      "dependencies": []
+    },
+    "marketing-site": {
+      "name": "Marketing site",
+      "kind": "static-site",
+      "version": "1.7.1",
+      "paths": ["site/"],
+      "dependencies": []
+    },
+    "docs-content": {
+      "name": "Public documentation content",
+      "kind": "public-content",
+      "version": "1.7.1",
+      "paths": ["docs-site/", ".github/actions/prepare-docs-renderer/"],
+      "dependencies": []
+    }
+  },
+  "sharedPaths": [
+    {
+      "paths": [
+        "package.json",
+        "bun.lock",
+        "bunfig.toml",
+        "tsconfig.json",
+        ".dockerignore",
+        "patches/",
+        "third-party/",
+        "deploy/images/Dockerfile",
+        "scripts/build-workers.mjs"
+      ],
+      "modules": ["web", "core-api", "worker", "realtime", "migrator", "operations-collector"]
+    },
+    {
+      "paths": [
+        "src/db/",
+        "src/config/",
+        "src/constants/",
+        "src/features/",
+        "src/jobs/",
+        "src/lib/",
+        "src/utils/",
+        "src/types/",
+        "src/schemas/",
+        "src/services/",
+        "src/server/auth/",
+        "src/server/runtime/"
+      ],
+      "modules": ["web", "core-api", "worker", "realtime", "migrator", "operations-collector"]
+    }
+  ],
+  "ignoredPaths": [
+    "docs/delivery/module-versions.json",
+    "docs/delivery/module-version-changes/",
+    "docs/delivery/releases/"
+  ],
+  "ignoreVersionOnlyChanges": ["package.json", "site/package.json"]
+}

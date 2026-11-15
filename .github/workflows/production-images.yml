@@ -132,6 +132,7 @@ jobs:
       - name: Test component selection and failure admission
         run: |
           node --test scripts/deployment/image-build.test.mjs
+          node --test scripts/browser-web-rollout.test.mjs
           python3 -m unittest discover -s scripts/deployment -p 'test_*.py' -v
 
   images:
@@ -386,6 +387,13 @@ jobs:
             --inputs "$RUNNER_TEMP/production-images/component-inputs.json" \
             "${context_args[@]}" \
             --output "$RUNNER_TEMP/production-images/candidate.json"
+      - name: Record module versions and exact tested build identities
+        run: |
+          proof="$RUNNER_TEMP/production-images"
+          python3 -B scripts/delivery/module_build_manifest.py \
+            --revision "$REVISION" --release-version "$(jq -er '.version' package.json)" \
+            --candidate "$proof/candidate.json" --smoke-report "$proof/smoke/report.json" \
+            --inspections "$proof/inspections" --output "$proof/module-release-manifest.json"
       - name: Bundle the exact tested image IDs without rebuilding
         run: |
           python3 scripts/deployment/bundle.py pack \
