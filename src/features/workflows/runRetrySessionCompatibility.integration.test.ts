@@ -71,13 +71,13 @@ async function changeProfile(h: RetryFixture, state: State) {
     case "idle":
       await h.db
         .update(sessions)
-        .set({ lastSeenAt: new Date(Date.now() - 31 * 60_000) })
+        .set({ lastSeenAt: new Date(Date.now() - 20161 * 60_000) })
         .where(eq(sessions.id, h.session.id));
       break;
     case "absolute":
       await h.db
         .update(sessions)
-        .set({ createdAt: new Date(Date.now() - 169 * 3_600_000) })
+        .set({ createdAt: new Date(Date.now() - 337 * 3_600_000) })
         .where(eq(sessions.id, h.session.id));
       break;
     case "revoked":
