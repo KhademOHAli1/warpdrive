@@ -14,7 +14,7 @@ export const coreClassifications = {
     disclosure:
       "Exclude credentials, password hashes, TOTP/recovery secrets, bearer proofs and provider tokens. Review non-secret metadata separately.",
     retention:
-      "Existing completed auth mail bodies: seven days; auth audit/outbox metadata: 180 days. Other records follow existing purpose-specific handling pending an activated policy.",
+      "New device sessions expire after fourteen days without sliding refresh, subject to shorter configured policy, revocation and account checks. The host-only last-sign-in-method preference lasts one year and contains only an available method name, without identity or authentication authority. Existing completed auth mail bodies: seven days; auth audit/outbox metadata: 180 days. Other records follow existing purpose-specific handling pending an activated policy.",
     externalEffects:
       "SMTP and Google grant revocation may occur; local disconnection and remote revocation are distinct. Native offboarding also clears local Calendar credentials and pending authorization attempts inside the current authority transaction. Local credential purge does not establish Google token revocation or remote deletion.",
     erasureTask: "DPL-15",
