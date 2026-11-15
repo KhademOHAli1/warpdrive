@@ -50,7 +50,7 @@ For an ordinary feature PR, use its exact base and head SHAs instead of the
 catalog-sweep base above. Explicit intent is a bounded JSON document:
 
 ```json
-{"schemaVersion":1,"bumps":{"web":"minor","core-api":"major"}}
+{ "schemaVersion": 1, "bumps": { "web": "minor", "core-api": "major" } }
 ```
 
 Save it outside the worktree, for example `/tmp/module-intent.json`, then add
