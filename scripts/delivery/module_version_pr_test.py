@@ -31,7 +31,8 @@ def fixture():
 
 
 class FakeGitHub:
-    def __init__(self):
+    def __init__(self, source=SOURCE):
+        self.source = source
         self.calls = []
         self.branch = None
         self.pr = None
@@ -39,7 +40,7 @@ class FakeGitHub:
         self.issue = {"number": 529, "body": "<!-- warpdrive:delivery-id:integration/OSS-011 -->"}
         self.lost_pr_ack = False
         self.diff_files = [{"filename": bot.CATALOG, "status": "modified"}]
-        self.main = SOURCE
+        self.main = source
 
     def verified(self):
         pass
@@ -56,7 +57,7 @@ class FakeGitHub:
                     raise AssertionError("Non-catalog tree write")
                 return {"sha": NEW_TREE}
             if path == "git/commits":
-                if payload["parents"] != [SOURCE] or "Refs #529" not in payload["message"]:
+                if payload["parents"] != [self.source] or "Refs #529" not in payload["message"]:
                     raise AssertionError("Missing exact parent or traceability")
                 return {"sha": COMMIT}
             if path == "git/refs":
@@ -70,7 +71,7 @@ class FakeGitHub:
                 self.pr = {"number": 12, "state": "open", "merged_at": None, "auto_merge": None,
                     "html_url": f"https://github.com/{bot.REPOSITORY}/pull/12", "body": payload["body"],
                     "head": {"ref": self.branch, "sha": COMMIT, "repo": {"full_name": bot.REPOSITORY}},
-                    "base": {"ref": "main", "sha": SOURCE, "repo": {"full_name": bot.REPOSITORY}}}
+                    "base": {"ref": "main", "sha": self.source, "repo": {"full_name": bot.REPOSITORY}}}
                 return deepcopy(self.pr)
             raise AssertionError("Unexpected mutation " + path)
         if path == "git/ref/heads/main":
@@ -81,10 +82,10 @@ class FakeGitHub:
             return self.reference(self.branch, COMMIT) if self.branch else None
         if path.startswith("pulls?"):
             return [deepcopy(self.pr)] if self.pr else []
-        if path == "git/commits/" + SOURCE:
-            return {"sha": SOURCE, "tree": {"sha": TREE}}
+        if path == "git/commits/" + self.source:
+            return {"sha": self.source, "tree": {"sha": TREE}}
         if path == "git/commits/" + COMMIT:
-            return {"sha": COMMIT, "tree": {"sha": NEW_TREE}, "parents": [{"sha": SOURCE}]}
+            return {"sha": COMMIT, "tree": {"sha": NEW_TREE}, "parents": [{"sha": self.source}]}
         if path == "git/blobs/" + BLOB or path.startswith("contents/" + bot.CATALOG):
             return {"sha": BLOB, "path": bot.CATALOG, "encoding": "base64", "content": base64.b64encode(self.raw).decode()}
         if path == "git/trees/" + NEW_TREE:
@@ -222,6 +223,23 @@ class ModuleVersionPrTests(unittest.TestCase):
         self.assertNotIn("GH_TOKEN", run.call_args.kwargs["env"])
         self.assertNotIn("GITHUB_TOKEN", run.call_args.kwargs["env"])
 
+    def test_larger_local_read_requires_explicit_bounded_allowance_and_api_stays_small(self):
+        payload = b"x" * (bot.MAX_BYTES + 1)
+        response = subprocess.CompletedProcess([], 0, payload, b"")
+        with patch.object(bot.subprocess, "run", return_value=response):
+            with self.assertRaisesRegex(bot.Held, "Bounded local"):
+                bot.local(["git", "show", "fixture"], Path("."))
+            self.assertEqual(bot.local(["git", "show", "fixture"], Path("."), maximum=bot.versions.MAX_JSON), payload)
+            for invalid in (True, 0, bot.versions.MAX_JSON + 1):
+                with self.subTest(maximum=invalid), self.assertRaisesRegex(bot.Held, "allowance"):
+                    bot.local(["git", "show", "fixture"], Path("."), maximum=invalid)
+        with tempfile.TemporaryDirectory() as directory:
+            api = bot.GitHub(Path(directory) / "state.json")
+            oversized = subprocess.CompletedProcess([], 0, b'HTTP/2.0 200 OK\r\n\r\n' + payload, b"")
+            with patch.object(bot.subprocess, "run", return_value=oversized):
+                with self.assertRaisesRegex(bot.Held, "GitHub read failed"):
+                    api.request(bot.endpoint("git/ref/heads/main"))
+
     def test_engine_cli_uses_global_repo_and_explicit_bounded_intent(self):
         with patch.object(bot, "local", return_value=json.dumps(self.plan).encode()) as local:
             result = bot.proposal(Path("/repo"), self.plan["baseRevision"], SOURCE, Path("/tmp/intent.json"))
@@ -343,6 +361,49 @@ class CumulativeProposalTests(unittest.TestCase):
         self.assertEqual(plan["baseRevision"], self.baseline)
         self.assertTrue(plan["hasChanges"])
         self.assertEqual(plan["modules"]["web"]["changedPaths"], ["package.json"])
+
+    def large_roadmap(self):
+        self.write("docs/delivery/roadmap.json", {"items": [
+            {"id": "integration/OSS-011", "description": "r" * 3800000}]})
+        size = (self.root / "docs/delivery/roadmap.json").stat().st_size
+        self.assertGreater(size, bot.MAX_BYTES)
+        self.assertLess(size, bot.versions.MAX_JSON)
+
+    def trusted_open(self, head, output):
+        environment = {"GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": bot.REPOSITORY,
+                       "GITHUB_REF": "refs/heads/main", "GITHUB_SHA": head, "GITHUB_EVENT_NAME": "push"}
+        with patch.dict(bot.os.environ, environment), patch("sys.stdout", new=io.StringIO()):
+            return bot.main(["open-pr", "--repo", str(self.root), "--head", head, "--output", str(output)])
+
+    def test_trusted_noop_with_real_large_roadmap_never_reads_it_or_constructs_github(self):
+        self.large_roadmap()
+        head = self.commit("Large committed roadmap without source impact")
+        output = Path(self.temporary.name) / "trusted-noop"
+        with patch.object(bot, "GitHub") as github, patch.object(bot, "git", wraps=bot.git) as git:
+            self.assertEqual(self.trusted_open(head, output), 0)
+        github.assert_not_called()
+        self.assertFalse(any("roadmap.json" in str(call) for call in git.call_args_list))
+        self.assertEqual(json.loads((output / "result.json").read_bytes()),
+                         {"state": "no-module-bump-required", "sourceRevision": head})
+        self.assertFalse(json.loads((output / "proposal.json").read_bytes())["hasChanges"])
+        self.assertFalse((output / "mutation-state.json").exists())
+
+    def test_trusted_affected_cli_reads_large_roadmap_and_only_uses_mock_api(self):
+        self.large_roadmap()
+        self.write("src/changed.ts", "Actual module implementation change\n")
+        head = self.commit("Module source change with large committed roadmap")
+        output = Path(self.temporary.name) / "trusted-affected"
+        api = FakeGitHub(source=head)
+        with patch.object(bot, "GitHub", return_value=api), patch.object(bot, "git", wraps=bot.git) as git:
+            self.assertEqual(self.trusted_open(head, output), 0)
+        reads = [call for call in git.call_args_list if "roadmap.json" in str(call)]
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(reads[0].args, (self.root, "show", head + ":docs/delivery/roadmap.json"))
+        self.assertEqual(reads[0].kwargs, {"maximum": bot.versions.MAX_JSON})
+        self.assertEqual(json.loads((output / "result.json").read_bytes())["state"], "pull-request-opened-and-verified")
+        self.assertTrue(json.loads((output / "proposal.json").read_bytes())["hasChanges"])
+        self.assertEqual(len([call for call in api.calls if call[1] == "POST"]), 5)
+        self.assertEqual(json.loads(api.raw)["modules"]["web"]["version"], "1.7.2")
 
     def test_bot_review_requires_current_source_parent_and_version_only_tokens(self):
         proposal_id = "f" * 64

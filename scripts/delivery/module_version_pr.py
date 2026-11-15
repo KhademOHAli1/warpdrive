@@ -56,17 +56,18 @@ def save(path, value):
     temporary.replace(path)
 
 
-def local(command, root):
+def local(command, root, *, maximum=MAX_BYTES):
     # Git/engine subprocesses receive no GitHub credential.
+    require(type(maximum) is int and 0 < maximum <= versions.MAX_JSON, "Bounded local read allowance required")
     environment = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR") if key in os.environ}
     environment.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0")
     result = subprocess.run(command, cwd=root, env=environment, capture_output=True, timeout=30, check=False)
-    require(result.returncode == 0 and len(result.stdout) <= MAX_BYTES, "Bounded local module analysis failed")
+    require(result.returncode == 0 and len(result.stdout) <= maximum, "Bounded local module analysis failed")
     return result.stdout
 
 
-def git(root, *arguments):
-    return local(["git", "--no-replace-objects", "-c", "core.fsmonitor=false", *arguments], root)
+def git(root, *arguments, maximum=MAX_BYTES):
+    return local(["git", "--no-replace-objects", "-c", "core.fsmonitor=false", *arguments], root, maximum=maximum)
 
 
 def proposal(root, base, head, changes=None):
@@ -323,9 +324,12 @@ def main(argv=None):
         save(args.output / "proposal.json", plan)
         if args.mode == "propose":
             result = {"state": "proposal-only", "hasChanges": plan["hasChanges"], "sourceRevision": args.head}
+        elif not plan["hasChanges"]:
+            result = {"state": "no-module-bump-required", "sourceRevision": args.head}
         else:
             current_raw = git(args.repo, "show", args.head + ":" + CATALOG)
-            roadmap = json.loads(git(args.repo, "show", args.head + ":docs/delivery/roadmap.json"))
+            roadmap = versions.decode(git(args.repo, "show", args.head + ":docs/delivery/roadmap.json",
+                                          maximum=versions.MAX_JSON))
             result = open_proposal(GitHub(args.output / "mutation-state.json"), plan, current_raw, args.issue,
                                    {item["id"] for item in roadmap["items"]})
         save(args.output / "result.json", result)

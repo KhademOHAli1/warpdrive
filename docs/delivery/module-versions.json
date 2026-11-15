@@ -104,7 +104,7 @@
     "deployment-toolkit": {
       "name": "Installed deployment toolkit",
       "kind": "operator-toolkit",
-      "version": "1.7.1",
+      "version": "1.7.2",
       "paths": [
         "scripts/deployment/",
         "scripts/delivery/",
