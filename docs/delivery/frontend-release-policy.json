@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "repository": "KhademOHAli1/warpdrive",
+  "release_track": "frontend",
+  "version": "1.7.1.5",
+  "mode": "source_qualified_artifact_publication",
+  "plan_directory": "docs/delivery/releases/frontend",
+  "qualification_path": "docs/delivery/frontend-qualification-1.7.1.5.json",
+  "pr_integration_baseline": "dfa3f3317e186cbb494aee012cb298363e1a89dd",
+  "unreleased_context_baseline": "386e31652da094ddcc7daec7003164b5b9c81882",
+  "contributions": {
+    "integration/UX-010": 119,
+    "integration/UX-014": 123
+  },
+  "required_source_paths": [
+    "src/app/(app)/layout.tsx",
+    "src/app/(app)/settings/SettingsNav.tsx",
+    "src/components/shell/LeftNav.module.css",
+    "src/components/shell/SidebarMenu.tsx",
+    "src/features/release/ui/VersionBanner.tsx"
+  ],
+  "required_workflows": {
+    "403980173": [
+      "Analyze (javascript-typescript)",
+      "Analyze (actions)",
+      "Analyze (python)",
+      "Analyze (go)"
+    ]
+  },
+  "limits": [
+    "Only frontend 1.7.1.5 source qualification is published by this track.",
+    "Canonical issue acceptance, whole-product readiness, deployment and provider/installation acceptance remain independent.",
+    "The three-part product and module versions are not frontend display counters."
+  ],
+  "original_integrated_revisions": [
+    "37df6d0a4e8a6bf7480316f9afd7c13ea1fe62ea",
+    "7d2f652e2323d1ddcc933b5434e0fae306303538",
+    "9d73e62785e44c9c57491246b58efad764889407",
+    "fc07b5d835518fe3569541973a509dd40d40dada"
+  ]
+}

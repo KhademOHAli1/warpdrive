@@ -43,7 +43,7 @@ export function VersionBanner() {
   };
 
   return (
-    <div className="border-b bg-accent/60 px-4 py-2 text-sm text-accent-foreground">
+    <div className="shrink-0 border-b bg-accent/60 px-4 py-2 text-sm text-accent-foreground">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
         <span className="font-semibold">
           {t.rich("available", {
@@ -84,9 +84,14 @@ export function VersionBanner() {
         </div>
       </div>
       {expanded && data.releaseNotes !== null ? (
-        <div className="mx-auto mt-2 max-w-6xl animate-in whitespace-pre-wrap border-t pt-2 text-muted-foreground fade-in slide-in-from-top-1 motion-reduce:animate-none">
+        <section
+          aria-label={t("showNotes")}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: bounded notes need an independent keyboard scroll target
+          tabIndex={0}
+          className="mx-auto mt-2 max-h-[30dvh] max-w-6xl animate-in overflow-y-auto overscroll-y-contain whitespace-pre-wrap border-t pt-2 text-muted-foreground fade-in slide-in-from-top-1 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:animate-none"
+        >
           <bdi dir="auto">{data.releaseNotes}</bdi>
-        </div>
+        </section>
       ) : null}
     </div>
   );

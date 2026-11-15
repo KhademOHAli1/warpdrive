@@ -7,6 +7,41 @@ from release_support import GateError, run
 
 PUBLICATION_BODY_MAX_BYTES = 120000
 
+def frontend_notes(evidence, *, compact=False):
+    record = evidence["qualification"]["record"]
+    base = f"https://github.com/{evidence['repository']}/releases/download/v{evidence['version']}"
+    rows = [f"# Warpdrive frontend {evidence['version']}", "", "<!-- warpdrive:release-track:frontend -->",
+            f"Source revision `{evidence['revision']}`; independent product version `{evidence['product_version']}`.",
+            "", "## Qualified frontend contribution", "", record["summary"], ""]
+    rows += [f"- [#{item['number']} {item['title']}]({item['url']}) · contribution only; canonical source state `{item['source_state']}`."
+             for item in evidence["contributions"]]
+    rows += ["", "These contributions do not accept or complete the full canonical issues.",
+             "", "## Evidence and limitations", "", record["limitations"], "",
+             "Deployment, provider/installation acceptance and whole-product readiness remain separate.",
+             "GitHub Latest uses the frontend counter. The product SemVer update banner does not advertise a four-part frontend release."]
+    if not compact:
+        rows += ["", "## Verified isolated runtime checks", ""]
+        rows += [f"- [{check['name']}]({check['url']})" for check in record["checks"]]
+        rows += ["", "## Exact-main checks", ""]
+        rows += [f"- [{check['workflow']}]({check['url']}) · {', '.join(check['jobs'])}" for check in evidence["ci"]]
+        rows += ["", "## Integrated branch revisions", ""]
+        rows += [f"- `{revision}`" for revision in evidence["required_integrated_revisions"]]
+        rows += ["", "## Unaccepted source context", "",
+                 "The complete source snapshot retains unrelated integrated work. Newly integrated context is disclosed as new; publication does not accept it."]
+        rows += [f"- [#{item['number']} {item['title']}]({item['url']}) · source state `{item['source_state']}` · origins {', '.join(item['source_context_origins'])}."
+                 for item in evidence["unreleased_context"]]
+        rows += ["", "## Complete source-history ledger", ""]
+        for commit in evidence["commits"]:
+            numbers = sorted(set(commit["issues"] + commit.get("contributes_to", [])))
+            rows.append(f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} · canonical context {', '.join('#' + str(number) for number in numbers)} · origin `{commit.get('unreleased_context_origin')}`.")
+    else:
+        rows += ["", "The source archive includes unaccepted source context; its full history and all checks remain in the attached evidence."]
+    rows += ["", "## Complete release evidence", "",
+             f"- [Full release notes]({base}/release-notes.md)",
+             f"- [Qualification and complete history]({base}/traceability.json)",
+             f"- [Artifact checksums]({base}/SHA256SUMS)", ""]
+    return "\n".join(rows)
+
 def newsletter_notes(evidence):
     record = evidence["qualification"]["record"]
     report_url = f"https://github.com/{evidence['repository']}/blob/{evidence['revision']}/{evidence['qualification']['path']}"
@@ -38,6 +73,8 @@ def newsletter_notes(evidence):
 
 
 def notes(evidence):
+    if evidence.get("release_track") == "frontend":
+        return frontend_notes(evidence)
     if evidence.get("release_track") == "newsletter":
         return newsletter_notes(evidence)
     rows = [f"# Warpdrive {evidence['version']}", "", f"Revision: `{evidence['revision']}`", f"Milestone: [{evidence['milestone']['title']}]({evidence['milestone']['url']})", "", "## Accepted deliveries", ""]
@@ -88,6 +125,11 @@ def publication_notes(evidence, full_notes=None):
     if len(full.encode("utf-8")) <= PUBLICATION_BODY_MAX_BYTES:
         return full
     base = f"https://github.com/{evidence['repository']}/releases/download/v{evidence['version']}"
+    if evidence.get("release_track") == "frontend":
+        summary = frontend_notes(evidence, compact=True)
+        if len(summary.encode("utf-8")) > PUBLICATION_BODY_MAX_BYTES:
+            raise GateError("Frontend publication summary exceeds 120000 UTF-8 bytes")
+        return summary
     if evidence.get("release_track") == "newsletter":
         rows = [f"# Warpdrive {evidence['version']}", "", "<!-- warpdrive:release-track:newsletter -->",
                 f"Source revision `{evidence['revision']}`.", "", "## Qualified newsletter scope", "",

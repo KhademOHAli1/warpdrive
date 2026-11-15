@@ -117,7 +117,7 @@ export function SettingsNav(access: SettingsNavAccess): React.ReactNode {
       />
       <div
         ref={desktopNav}
-        className="hidden w-60 shrink-0 md:sticky md:top-4 md:block md:max-h-[calc(100dvh-6rem)] md:self-start md:overflow-y-auto md:pe-2"
+        className="hidden w-60 shrink-0 md:sticky md:top-4 md:block md:max-h-[calc(100dvh-6rem)] md:self-start md:overflow-y-auto md:overscroll-y-contain md:pe-2"
       >
         <SettingsNavContent sections={sections} activeHref={active?.href} />
       </div>

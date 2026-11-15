@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "qualification_type": "frontend_source_and_isolated_runtime",
+  "result": "pending",
+  "version": "1.7.1.5",
+  "reviewed_revision": null,
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": null,
+    "task_id": null
+  },
+  "acceptance_claimed": false,
+  "user_journey_accepted": false,
+  "provider_installation_accepted": false,
+  "deployment_performed": false,
+  "summary": "Incomplete qualification template; no results are asserted.",
+  "limitations": "Replace pending fields only with actual independently reviewed source and isolated runtime evidence. This template cannot authorize publication.",
+  "checks": [
+    {
+      "name": "main-content-scroll",
+      "result": "pending",
+      "url": null
+    },
+    {
+      "name": "sidebar-scroll-containment",
+      "result": "pending",
+      "url": null
+    },
+    {
+      "name": "settings-navigation-scroll-containment",
+      "result": "pending",
+      "url": null
+    },
+    {
+      "name": "keyboard-scroll",
+      "result": "pending",
+      "url": null
+    },
+    {
+      "name": "mobile-navigation",
+      "result": "pending",
+      "url": null
+    },
+    {
+      "name": "rtl-scroll",
+      "result": "pending",
+      "url": null
+    },
+    {
+      "name": "release-notes-scroll",
+      "result": "pending",
+      "url": null
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": null
+    },
+    {
+      "path": "src/app/(app)/settings/SettingsNav.tsx",
+      "sha256": null
+    },
+    {
+      "path": "src/components/shell/LeftNav.module.css",
+      "sha256": null
+    },
+    {
+      "path": "src/components/shell/SidebarMenu.tsx",
+      "sha256": null
+    },
+    {
+      "path": "src/features/release/ui/VersionBanner.tsx",
+      "sha256": null
+    }
+  ]
+}

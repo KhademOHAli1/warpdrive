@@ -282,3 +282,48 @@ For incremental task releases, the trusted policy explicitly selects `incrementa
 For `1.6.0`, use `mail_mode: "programme"` and the canonical `programme/mail` primary. The new release milestone contains the programme and any new release-local scope. Full canonical mail coverage is independently resolved and verified across the repository, without moving previously released tasks out of historical milestones. The existing recursive parent/child and dependency gate must pass: technical leaves retain their explicit delegated acceptance, while parents and protected human/provider scopes require actual human acceptance. Completing twelve MAIL tasks or one technical recovery leaf is insufficient. The original first core-CRM journey gate remains independent of all MAIL publications.
 
 Use the existing serialized main release workflow in prepare, draft and publish modes. Publication produces a verified source archive, notes, traceability and checksums; it neither builds a container nor deploys or upgrades an installation. The user's standing authorization permits publishing once these actual gates pass; it is not an acceptance record.
+
+## Frontend source release 1.7.1.5
+
+The user authorized the frontend display version `1.7.1.5` and a GitHub release
+marked Latest. The bounded `frontend` track publishes qualified frontend source
+under `frontend-release-policy.json`. Product/package and module SemVer remain
+independent. This track does not alter core, MAIL, newsletter or human acceptance.
+
+Use the existing serialized `Warpdrive release` workflow and its actual
+`release-approval` environment. Select the committed plan
+`docs/delivery/releases/frontend/1.7.1.5.json` and the full final Main SHA.
+The same prepare, draft and publish modes, trusted dispatch code, exact commit
+tag, uploaded-asset digest verification and immutable published-artifact rules
+apply. The publisher independently verifies that GitHub Latest identifies this
+stable release; it adds no issue receipts or milestone closure for this track.
+
+The supplied plan and qualification record are incomplete templates and fail
+closed. Before qualification, finish the prior live frontend release and integrate
+all requested branch revisions. The plan retains the four original head pins; add
+any later active or generated branch heads as additional unique full SHAs.
+Independently review the final frontend source and execute the scoped scrolling,
+keyboard, mobile, RTL and expanded release-note checks. Fill the qualification
+record with the actual reviewed ancestor revision, reviewer provenance, passed
+check evidence URLs and SHA256 pins for every required source file. Preserve all
+false acceptance/deployment fields, actual limitations and the unchanged historical
+boundaries. Pin the raw completed record SHA256 in the per-version plan; integrate
+both as ordinary reviewed source. No template value establishes a passed check.
+
+Publication requires the selected current Main tip, the existing full exact-main
+CI policy and all four managed CodeQL languages. The live finding gate remains
+required immediately before draft/publication. The full canonical history retains
+unaccepted source context, including newly integrated context; the bounded visual
+contributions to UX-010 and UX-014 do not complete their broad canonical scopes.
+
+The source archive contains the exact tracked revision, including the Web SDK
+recipe, sidecar manifest/lock, root build inputs and notices. It is not a substitute
+for the schema3 image bundle, original publication receipt, projection custody,
+native qualification, installed admission or seal readback required by
+`docs/deployment-ui-sdk.md`. Preserve existing backend/Engine authority and their
+corresponding-source artifacts. Deployment and provider/installation acceptance
+retain their own actual evidence and authorization.
+
+GitHub Latest will expose the four-part frontend counter. The existing product
+SemVer update banner treats that tag as incomparable and does not advertise it as
+a product upgrade; no product-version parser is broadened for this release.
