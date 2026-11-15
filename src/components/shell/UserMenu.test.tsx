@@ -46,7 +46,7 @@ describe("UserMenu", () => {
     expect(screen.getByRole("button", { name: "Account menu" }).textContent).not.toContain("NS");
   });
 
-  it("opens a menu with Settings and Log out on click", async () => {
+  it("opens a menu with Settings, Keyboard shortcuts and Log out", async () => {
     const user = userEvent.setup();
     render(<UserMenu userId="u1" />);
     await user.click(screen.getByRole("button", { name: "Account menu" }));
@@ -59,6 +59,7 @@ describe("UserMenu", () => {
     expect(logout.closest("form")).toHaveAttribute("action", "/auth/logout");
     expect(logout).toHaveAttribute("type", "submit");
     expect(logout.closest("form")?.querySelector('input[name="csrfToken"]')).not.toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Keyboard shortcuts" })).toBeVisible();
   });
 
   it("keeps language preferences in settings rather than a separate menu toggle", async () => {
