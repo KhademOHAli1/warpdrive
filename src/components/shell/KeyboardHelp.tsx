@@ -5,7 +5,6 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  type DialogFinalFocus,
   DialogTitle,
 } from "@ui-sdk/react/dialog";
 import styles from "./KeyboardHelp.module.css";
@@ -23,7 +22,7 @@ export function KeyboardHelp({
   closeLabel: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  finalFocus: DialogFinalFocus;
+  finalFocus: () => HTMLElement | null;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
