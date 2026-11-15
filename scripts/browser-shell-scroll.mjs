@@ -402,6 +402,8 @@ export async function runShellScrollBrowserSmoke({ journey, signIn }) {
         await signIn(page);
         await prepareShellLocale(page, locale);
         await exerciseMobileSidebar(page, locale);
+        // Later smoke journeys share this account and start from English.
+        if (locale !== "en") await prepareShellLocale(page, "en");
       },
       { width: 390, height: 660 },
       true,
