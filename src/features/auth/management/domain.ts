@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { err, ok, type Result } from "@/types/result";
+import { DEVICE_SESSION_HOURS, DEVICE_SESSION_MINUTES } from "../deviceSession";
 
 export interface AuthPolicy {
   requireMfaForAll: boolean;
@@ -10,8 +11,8 @@ export interface AuthPolicy {
 
 export const DEFAULT_AUTH_POLICY: AuthPolicy = {
   requireMfaForAll: false,
-  idleMinutes: 30,
-  absoluteHours: 168,
+  idleMinutes: DEVICE_SESSION_MINUTES,
+  absoluteHours: DEVICE_SESSION_HOURS,
   freshMinutes: 5,
 };
 export const INVITATION_TTL_MS = 72 * 60 * 60 * 1000;
@@ -50,7 +51,7 @@ export function redactSecurityMetadata(
 export const authPolicyInput = z
   .strictObject({
     requireMfaForAll: z.boolean(),
-    idleMinutes: z.number().int().min(5).max(1440),
+    idleMinutes: z.number().int().min(5).max(DEVICE_SESSION_MINUTES),
     absoluteHours: z.number().int().min(1).max(720),
     freshMinutes: z.number().int().min(1).max(15),
   })

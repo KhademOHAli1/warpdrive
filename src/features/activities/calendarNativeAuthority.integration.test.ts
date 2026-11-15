@@ -211,12 +211,12 @@ it.each(["revoked", "expired", "mfa", "idle", "absolute", "policy"] as const)(
         if (kind === "idle")
           await tx
             .update(sessions)
-            .set({ lastSeenAt: sql`clock_timestamp() - interval '31 minutes'` })
+            .set({ lastSeenAt: sql`clock_timestamp() - interval '20161 minutes'` })
             .where(eq(sessions.id, f.row.id));
         if (kind === "absolute")
           await tx
             .update(sessions)
-            .set({ createdAt: sql`clock_timestamp() - interval '169 hours'` })
+            .set({ createdAt: sql`clock_timestamp() - interval '337 hours'` })
             .where(eq(sessions.id, f.row.id));
         if (kind === "policy")
           await tx

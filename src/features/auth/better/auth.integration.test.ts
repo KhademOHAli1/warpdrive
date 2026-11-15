@@ -64,6 +64,13 @@ test("native signup cannot bypass admission and a real invited account keeps its
     asResponse: true,
   });
   expect(response.status).toBe(200);
+  const persistentCookie = response.headers
+    .getSetCookie()
+    .find((value) => value.startsWith("wd_sid="));
+  expect(persistentCookie).toMatch(/Max-Age=1209600/i);
+  expect(persistentCookie).toMatch(/HttpOnly/i);
+  expect(persistentCookie).toMatch(/SameSite=Lax/i);
+  expect(persistentCookie).not.toMatch(/Domain=/i);
   const cookie = response.headers
     .getSetCookie()
     .find((value) => value.startsWith("wd_sid="))
@@ -71,10 +78,43 @@ test("native signup cannot bypass admission and a real invited account keeps its
   expect(cookie).toBeDefined();
   const stored = await h.db.select().from(sessions).where(eq(sessions.userId, invited!.id));
   expect(stored[0]?.assurance).toBe("password");
+  expect(
+    Math.abs(stored[0]!.expiresAt.getTime() - stored[0]!.createdAt.getTime() - 14 * 86400000),
+  ).toBeLessThan(2000);
   const session = await resolveWorkflowSession(
     h.db,
     new Headers({ cookie: cookie ?? "" }),
     AbortSignal.timeout(5000),
   );
   expect(session?.user.id).toBe(invited!.id);
+  expect(await resolveWorkflowSession(h.db, new Headers(), AbortSignal.timeout(5000))).toBeNull();
+  await h.db
+    .update(sessions)
+    .set({
+      createdAt: new Date(Date.now() - 13 * 86400000),
+      lastSeenAt: new Date(Date.now() - 13 * 86400000),
+      expiresAt: new Date(Date.now() + 86400000),
+    })
+    .where(eq(sessions.id, stored[0]!.id));
+  expect(
+    (
+      await resolveWorkflowSession(
+        h.db,
+        new Headers({ cookie: cookie ?? "" }),
+        AbortSignal.timeout(5000),
+      )
+    )?.user.id,
+  ).toBe(invited!.id);
+  const signedOut = await auth.api.signOut({
+    headers: new Headers({ origin: env.BASE_URL, cookie: cookie ?? "" }),
+    asResponse: true,
+  });
+  expect(signedOut.status).toBe(200);
+  expect(
+    await resolveWorkflowSession(
+      h.db,
+      new Headers({ cookie: cookie ?? "" }),
+      AbortSignal.timeout(5000),
+    ),
+  ).toBeNull();
 });

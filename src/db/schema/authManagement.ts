@@ -73,8 +73,8 @@ export const authPolicies = pgTable(
   {
     id: boolean("id").primaryKey().default(true),
     requireMfaForAll: boolean("require_mfa_for_all").notNull().default(false),
-    idleMinutes: integer("idle_minutes").notNull().default(30),
-    absoluteHours: integer("absolute_hours").notNull().default(168),
+    idleMinutes: integer("idle_minutes").notNull().default(20160),
+    absoluteHours: integer("absolute_hours").notNull().default(336),
     freshMinutes: integer("fresh_minutes").notNull().default(5),
     updatedBy: uuid("updated_by").references(() => users.id),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -83,7 +83,7 @@ export const authPolicies = pgTable(
     check("auth_policy_singleton", sql`${t.id} = true`),
     check(
       "auth_policy_limits",
-      sql`${t.idleMinutes} BETWEEN 5 AND 1440 AND ${t.absoluteHours} BETWEEN 1 AND 720 AND ${t.freshMinutes} BETWEEN 1 AND 15 AND ${t.freshMinutes} <= ${t.idleMinutes}`,
+      sql`${t.idleMinutes} BETWEEN 5 AND 20160 AND ${t.absoluteHours} BETWEEN 1 AND 720 AND ${t.freshMinutes} BETWEEN 1 AND 15 AND ${t.freshMinutes} <= ${t.idleMinutes}`,
     ),
   ],
 );

@@ -19,8 +19,8 @@ const denied: readonly [string, MailSessionFixtureOptions][] = [
     "stale MFA proof",
     { assurance: "mfa", twoFactorEnabled: true, mfaAt: new Date(Date.now() - 600_000) },
   ],
-  ["idle session", { lastSeenAt: new Date(Date.now() - 3_600_000) }],
-  ["absolute expired", { createdAt: new Date(Date.now() - 8 * 24 * 3_600_000) }],
+  ["idle session", { lastSeenAt: new Date(Date.now() - 20161 * 60_000) }],
+  ["absolute expired", { createdAt: new Date(Date.now() - 15 * 24 * 3_600_000) }],
 ];
 
 describe("mailbox grant commit requires current native authority", () => {

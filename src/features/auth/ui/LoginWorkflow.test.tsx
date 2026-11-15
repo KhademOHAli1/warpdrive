@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { LoginScreen } from "../LoginScreen";
+import { LAST_SIGN_IN_METHOD_COOKIE, rememberSignInMethod } from "./signInMethod";
 
 const { signInEmail, replace } = vi.hoisted(() => ({
   signInEmail: vi.fn(),
@@ -18,6 +19,40 @@ vi.mock("../better/client", () => ({
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  // biome-ignore lint/suspicious/noDocumentCookie: reset the actual non-secret preference between browser-unit cases.
+  document.cookie = `${LAST_SIGN_IN_METHOD_COOKIE}=; Path=/; Max-Age=0`;
+});
+
+it("prioritizes the previous available method without automatically starting authentication", () => {
+  const config = {
+    emailPassword: true,
+    passkeys: true,
+    providers: [{ id: "google", name: "Google" }],
+  };
+  rememberSignInMethod("google", config);
+  render(
+    <LocaleProvider locale="en">
+      <LoginScreen config={config} />
+    </LocaleProvider>,
+  );
+  const primary = screen.getByRole("button", { name: "Sign in with Google" });
+  const password = screen.getByRole("button", { name: "Sign in" });
+  expect(primary.compareDocumentPosition(password) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.getByText("Last used")).toBeInTheDocument();
+  expect(signInEmail).not.toHaveBeenCalled();
+  expect(screen.getByLabelText("Password")).toBeEnabled();
+});
+
+it("ignores the saved provider when it is no longer available", () => {
+  rememberSignInMethod("google");
+  render(
+    <LocaleProvider locale="en">
+      <LoginScreen config={{ emailPassword: true, passkeys: false, providers: [] }} />
+    </LocaleProvider>,
+  );
+  expect(screen.queryByText("Last used")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Sign in with Google" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
 });
 
 it("connects the Persian password form to authentication and continues into policy checks", async () => {

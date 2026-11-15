@@ -122,12 +122,12 @@ test("modern policy retains verification, pending assurance, MFA, idle and absol
     if (kind === "idle")
       await h.db
         .update(sessions)
-        .set({ lastSeenAt: new Date(Date.now() - 31 * 60_000) })
+        .set({ lastSeenAt: new Date(Date.now() - 20161 * 60_000) })
         .where(eq(sessions.id, who.sessionId));
     if (kind === "absolute")
       await h.db
         .update(sessions)
-        .set({ createdAt: new Date(Date.now() - 169 * 3_600_000) })
+        .set({ createdAt: new Date(Date.now() - 337 * 3_600_000) })
         .where(eq(sessions.id, who.sessionId));
     if (kind === "missing-profile")
       await h.db.delete(authUsers).where(eq(authUsers.id, who.userId));

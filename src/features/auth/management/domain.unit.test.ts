@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { invitationState, redactSecurityMetadata, validatePolicy } from "./domain";
+import {
+  DEFAULT_AUTH_POLICY,
+  invitationState,
+  redactSecurityMetadata,
+  validatePolicy,
+} from "./domain";
 
 describe("invitation admission state", () => {
   const future = new Date("2026-11-02T10:00:00Z");
@@ -48,6 +53,14 @@ describe("security management policy boundary", () => {
     ).toBe(false);
   });
   test("admits the approved defaults", () => {
+    expect(DEFAULT_AUTH_POLICY).toEqual({
+      requireMfaForAll: false,
+      idleMinutes: 20160,
+      absoluteHours: 336,
+      freshMinutes: 5,
+    });
+    expect(validatePolicy(DEFAULT_AUTH_POLICY)).toEqual({ ok: true, value: DEFAULT_AUTH_POLICY });
+    expect(validatePolicy({ ...DEFAULT_AUTH_POLICY, idleMinutes: 20161 }).ok).toBe(false);
     expect(
       validatePolicy({
         requireMfaForAll: false,

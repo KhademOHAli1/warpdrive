@@ -20,7 +20,7 @@ import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
 import { SidebarToggle } from "./SidebarToggle";
 import { useWorkspaceNavigation, useWorkspaceShell } from "./WorkspaceShellProvider";
 
-const FRONTEND_VERSION = "1.7.1.3";
+const FRONTEND_VERSION = "1.7.1.4";
 
 const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   dashboard: LayoutDashboard,

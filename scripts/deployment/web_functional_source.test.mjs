@@ -439,7 +439,11 @@ void test("full application tree freezes registered SDK controls and isolates sy
       currentRevision,
       profile: fixtureProfile,
     }),
-    /Web SDK import outside the reviewed presentation island/u,
+    // The current keyboard-help island is controlled by its parent. The narrow
+    // presentation validator can reject that callback before the frozen SDK
+    // controls. Neither rejection admits the full app as presentation-only;
+    // the separate renderer-effect projection below must still freeze its tree.
+    /Web SDK import outside the reviewed presentation island|Presentation event callback must be inline or a local state setter: src\/components\/shell\/KeyboardHelp\.tsx/u,
   );
   const rendererCuts = [
     { from: ADAPTER, to: MENU, bindings: [{ name: "LocalMenu", local: "LocalMenu" }] },

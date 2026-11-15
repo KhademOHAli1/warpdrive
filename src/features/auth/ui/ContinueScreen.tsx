@@ -9,6 +9,7 @@ import { AuthFrame } from "./AuthFrame";
 import { safeAuthDestination } from "./authUiModel";
 import { FreshVerification } from "./FreshVerification";
 import { MfaPanel } from "./MfaPanel";
+import { rememberSignInMethod } from "./signInMethod";
 import { useAccountStatus, useAuthProviders } from "./useAccountStatus";
 
 export function ContinueScreen({ returnTo }: { returnTo?: string }) {
@@ -17,9 +18,11 @@ export function ContinueScreen({ returnTo }: { returnTo?: string }) {
   const router = useRouter();
   const { config, error: providerError, retry: retryProviders } = useAuthProviders();
   useEffect(() => {
-    if (status?.emailVerified === true && !status.needsMfa && !status.needsEnrollment)
+    if (status?.emailVerified === true && !status.needsMfa && !status.needsEnrollment) {
+      rememberSignInMethod(status.authMethod, config ?? undefined);
       router.replace(safeAuthDestination(returnTo));
-  }, [status, returnTo, router]);
+    }
+  }, [status, config, returnTo, router]);
   const title =
     status?.needsEnrollment === true
       ? L.enrollTitle
