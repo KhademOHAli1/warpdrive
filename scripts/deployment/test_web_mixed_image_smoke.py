@@ -1,15 +1,20 @@
 import copy
 from email.message import Message
 import json
+from pathlib import Path
+import tempfile
 from types import SimpleNamespace
 import unittest
 
+from test_web_rollout import Target, slot
+from test_web_switch import FakeClock
 from web_generation_routes import WebGeneration
 from web_mixed_image_smoke import (
-    HEADER, LoginAssets, MixedCaddyTarget, RolloutBrowser, browser_message, common_web_configuration,
+    HEADER, LoginAssets, MixedCaddyTarget, MixedWebSmoke, RolloutBrowser, browser_message, common_web_configuration,
     generation_configs, observe_asset, observe_identity, owned_resources_absent, read_web_image,
 )
-from web_switch import DefiniteRejected, content_hash
+from web_rollout import rollout_web
+from web_switch import DefiniteRejected, SwitchHeld, SwitchUnknown, _read, content_hash
 from web_switch_smoke import WebSwitchSmokeError
 
 
@@ -176,6 +181,9 @@ class MixedImageTests(unittest.TestCase):
         for bad in ({**active, "oldSocketActive": 1}, {**active, "unexpected": "secret"}, {"phase": []}):
             with self.subTest(bad=bad), self.assertRaises(WebSwitchSmokeError):
                 browser_message(bad)
+        self.assertEqual(browser_message({"phase": "pre-switch-armed"}), {"phase": "pre-switch-armed"})
+        with self.assertRaises(WebSwitchSmokeError):
+            browser_message({"phase": "pre-switch-armed", "oldSocketActive": True})
 
     def test_browser_failure_reports_only_fixed_stage_names(self):
         browser = RolloutBrowser.__new__(RolloutBrowser)
@@ -183,6 +191,137 @@ class MixedImageTests(unittest.TestCase):
                           '{"event":"browser.web-rollout.failed","stage":"old-tab-server-action","details":"unsafe"}',
                           '{"event":"browser.web-rollout.failed","stage":"old-tab-server-action"}']
         self.assertEqual(browser.failure_stages(), ["old-tab-server-action"])
+
+    def test_browser_failure_decoder_ignores_arbitrary_json_and_unsafe_diagnostics(self):
+        valid = {"event": "browser.web-rollout.failed", "stage": "coordinator-preflight",
+                 "reason": "control-eof", "elapsedMs": 60001, "phaseElapsedMs": 12000}
+        browser = RolloutBrowser.__new__(RolloutBrowser)
+        unsafe = [{}, {"event": "other"}, {"stage": "profile"}, [], None,
+                  {**valid, "reason": "https://private.invalid/?ticket=hidden"},
+                  {**valid, "stage": "unknown"}, {**valid, "raw": "private"}]
+        for key in ("elapsedMs", "phaseElapsedMs"):
+            unsafe.extend({**valid, key: value} for value in (True, -1, 1.5, 3600001, None))
+        browser.errors = [json.dumps(value) for value in unsafe] + [json.dumps(valid)]
+        self.assertEqual(browser.failure_diagnostics(), [valid])
+        self.assertEqual(browser.failure_stages(), ["coordinator-preflight"])
+
+    def browser_rollout(self, *, fail_phase=None, lost_patch_ack=False, candidate_ready=True):
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        state = Path(scratch.name) / "target"
+        qualification = {"backendFingerprint": "c" * 64}
+        plan = {"schemaVersion": 1, "kind": "warpdrive-web-rollout", "operationId": "deploy-one",
+                "targetKey": "fixture", "before": slot("1", "a", "a"), "after": slot("2", "b", "b"),
+                "backendFingerprint": qualification["backendFingerprint"],
+                "qualificationSha256": content_hash(qualification)}
+        model = Target(plan)
+        model.candidate_ready = candidate_ready
+        events = []
+        docs = {item["route"]["generation"]: {"fixture": item["runtime"]["name"]}
+                for item in (plan["before"], plan["after"])}
+        slots = {item["route"]["generation"]: item for item in (plan["before"], plan["after"])}
+
+        def send(command):
+            events.append(("send", command))
+
+        def wait(phase, *, timeout):
+            events.append(("wait", phase, timeout))
+            if phase == fail_phase:
+                raise WebSwitchSmokeError("browser control proof unavailable")
+            return browser_message({"phase": phase, **({"oldSocketActive": True} if phase == "pre-switch-ready" else {})})
+
+        def patch(method, *, value, etag):
+            self.assertEqual((method, etag), ("PATCH", "original-etag"))
+            self.assertEqual(_read(state / "web-rollouts/deploy-one.json")["state"], "switch-intent")
+            events.append(("patch",))
+            model.route = next(slots[generation]["route"] for generation, doc in docs.items() if doc == value)
+            if lost_patch_ack:
+                raise TimeoutError("lost response")
+            return 200, {}, b""
+
+        browser = SimpleNamespace(send=send, wait=wait)
+        admin = SimpleNamespace(config=lambda: (docs[model.route["generation"]], "original-etag"), request=patch)
+        smoke = SimpleNamespace(admin=admin, browser=browser, fixture=SimpleNamespace(prefix="fixture"))
+        target = MixedCaddyTarget(smoke, slots, docs, qualification)
+        target.inspect = lambda value: events.append(("inspect",)) or model.inspect(value)
+        target.observe_health = lambda item, **options: events.append(("health", item["route"]["generation"],
+                                                                       options["proxied"])) or model.observe_health(item, **options)
+        clock = FakeClock()
+        run = lambda: rollout_web(plan, state_dir=state, target=target,
+                                  initialize=not (state / "accepted-web-generation.json").exists(),
+                                  clock=clock.monotonic, sleep=clock.sleep)
+        return target, events, run, state
+
+    def test_real_controller_finishes_unchanged_health_preflight_before_arming_and_single_patch(self):
+        target, events, run, _ = self.browser_rollout()
+        self.assertEqual(run()["state"], "accepted")
+        armed_at = events.index(("send", "arm-pre-switch"))
+        self.assertEqual(len([row for row in events[:armed_at] if row[0] == "health"]), 6)
+        self.assertEqual(len([row for row in events[:armed_at] if row[0] == "inspect"]), 14)
+        self.assertEqual([row for row in events if row[0] != "inspect" and row[0] != "health"], [
+            ("send", "arm-pre-switch"), ("wait", "pre-switch-armed", 8),
+            ("send", "pre-switch"), ("wait", "pre-switch-ready", 8), ("patch",), ("send", "switched")])
+        self.assertEqual([row["state"] for row in target.browser_control], ["passed", "passed"])
+        self.assertTrue(all(row["patchAttempted"] is False and type(row["elapsedMs"]) is int
+                            for row in target.browser_control))
+        self.assertEqual(run()["state"], "accepted")
+        self.assertEqual(len(target.patches), 1)
+        self.assertEqual(events.count(("send", "arm-pre-switch")), 1)
+
+    def test_health_rejection_does_not_arm_or_patch(self):
+        target, events, run, _ = self.browser_rollout(candidate_ready=False)
+        self.assertEqual(run()["state"], "rejected")
+        self.assertEqual(target.patches, [])
+        self.assertEqual(target.browser_control, [])
+        self.assertFalse(any(row[0] in {"send", "patch"} for row in events))
+
+    def test_failed_arm_or_preswitch_proof_holds_without_any_patch_or_retry(self):
+        for phase in ("pre-switch-armed", "pre-switch-ready"):
+            with self.subTest(phase=phase):
+                target, events, run, state = self.browser_rollout(fail_phase=phase)
+                with self.assertRaises(SwitchUnknown):
+                    run()
+                self.assertEqual(target.patches, [])
+                self.assertNotIn(("patch",), events)
+                self.assertEqual(target.browser_control[-1]["state"], "failed")
+                self.assertEqual(_read(state / "web-rollouts/deploy-one.json")["state"], "switch-intent")
+                with self.assertRaises(SwitchHeld):
+                    run()
+                self.assertEqual(events.count(("send", "arm-pre-switch")), 1)
+
+    def test_lost_patch_acknowledgement_stays_unknown_then_observes_without_repeating_control_or_patch(self):
+        target, events, run, state = self.browser_rollout(lost_patch_ack=True)
+        with self.assertRaises(SwitchUnknown):
+            run()
+        self.assertEqual(len(target.patches), 1)
+        self.assertEqual(_read(state / "web-rollouts/deploy-one.json")["state"], "switch-intent")
+        self.assertNotIn(("send", "switched"), events)
+        self.assertEqual(run()["state"], "accepted")
+        self.assertEqual(events.count(("patch",)), 1)
+        self.assertEqual(events.count(("send", "arm-pre-switch")), 1)
+
+    def test_success_report_schema_keeps_diagnostics_empty_and_existing_eight_checks(self):
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        smoke = MixedWebSmoke.__new__(MixedWebSmoke)
+        smoke.output_dir = Path(scratch.name) / "output"
+        smoke.args = SimpleNamespace(browser=True)
+        smoke.report = {"failure": None, "checks": [], "diagnostics": []}
+        smoke.browser = SimpleNamespace(failure_stages=lambda: [], failure_diagnostics=lambda: [])
+        smoke.target = SimpleNamespace(browser_control=[{"phase": "arm-pre-switch", "state": "passed"}], patches=[{}])
+        smoke.generations = ("before", "after")
+        for name in ("load", "setup_runtimes", "setup_caddy", "start_browser", "finish_browser"):
+            setattr(smoke, name, lambda: {})
+        smoke.transition = lambda *_, **__: {}
+        smoke.automatic_rollback = lambda *_: {}
+        smoke.cleanup = lambda: {"success": True, "errors": []}
+        self.assertTrue(smoke.run())
+        self.assertEqual(smoke.report["diagnostics"], [])
+        self.assertEqual([row["name"] for row in smoke.report["checks"]], [
+            "authenticated-baseline-and-local-web", "owned-retained-backend-and-two-web-runtimes",
+            "compiled-caddy-and-initial-web", "native-browser-draft-and-authenticated-socket-before-switch",
+            "forward-web-generation-switch", "persistent-old-tab-action-and-fresh-realtime-after-switch",
+            "rollback-to-retained-web-generation", "stopped-candidate-automatically-restores-retained-web"])
 
 
 if __name__ == "__main__":

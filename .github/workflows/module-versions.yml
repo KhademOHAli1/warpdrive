@@ -1,0 +1,97 @@
+name: Source module versions
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Read-only proposal or open a normal catalog-only bump PR
+        type: choice
+        options: [proposal, open-pr]
+        default: proposal
+        required: true
+      changes:
+        description: Optional JSON intent, e.g. {"schemaVersion":1,"bumps":{"web":"minor"}}
+        type: string
+        required: false
+      issue:
+        description: Optional registered canonical issue override (default 529)
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  proposal:
+    name: Read-only module version proposal
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Exercise the PR's own tooling with a read-only token and no extra secrets.
+      # Write credentials exist only in the separate exact-main job below.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Test module tooling without write credentials
+        run: python3 -B -m unittest discover -s scripts/delivery -p 'module_*_test.py' -v
+      - name: Validate catalog and changed paths; retain a proposal without writing source
+        env:
+          PROPOSAL_BASE: ${{ github.event.pull_request.base.sha }}
+          PROPOSAL_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          BUMP_INTENT: ${{ inputs.changes }}
+        run: |
+          args=(propose --head "$PROPOSAL_HEAD" --output "$RUNNER_TEMP/module-version-proposal")
+          if [ -n "$PROPOSAL_BASE" ]; then args+=(--base "$PROPOSAL_BASE"); fi
+          if [ -n "$BUMP_INTENT" ]; then args+=(--changes-json "$BUMP_INTENT"); fi
+          python3 -B scripts/delivery/module_version_pr.py "${args[@]}"
+      - name: Save read-only proposal evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: module-version-proposal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/module-version-proposal/
+          if-no-files-found: warn
+          retention-days: 14
+
+  bump-pr:
+    name: Trusted main module bump PR
+    needs: proposal
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'open-pr'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    concurrency:
+      group: module-version-bump-main
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Open or verify an ordinary catalog-only PR at the exact main head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_HEAD: ${{ github.sha }}
+          BUMP_INTENT: ${{ inputs.changes }}
+          CANONICAL_ISSUE: ${{ inputs.issue || vars.MODULE_VERSION_ISSUE || '529' }}
+        run: |
+          args=(open-pr --head "$SOURCE_HEAD" --issue "$CANONICAL_ISSUE" --output "$RUNNER_TEMP/module-version-bot")
+          if [ -n "$BUMP_INTENT" ]; then args+=(--changes-json "$BUMP_INTENT"); fi
+          python3 -B scripts/delivery/module_version_pr.py "${args[@]}"
+      - name: Retain proposal, result and any unresolved mutation receipt
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: module-version-bot-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/module-version-bot/
+          if-no-files-found: warn
+          retention-days: 14

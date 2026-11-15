@@ -109,6 +109,16 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Require module bot proposals to match the current PR base
+        if: github.event_name == 'pull_request'
+        env:
+          MODULE_REVIEW_BRANCH: ${{ github.event.pull_request.head.ref }}
+          MODULE_REVIEW_BASE: ${{ github.event.pull_request.base.sha }}
+          MODULE_REVIEW_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 -B scripts/delivery/module_version_pr.py review-check \
+            --branch "$MODULE_REVIEW_BRANCH" --base "$MODULE_REVIEW_BASE" --head "$MODULE_REVIEW_HEAD" \
+            --output "$RUNNER_TEMP/module-version-review"
       - name: Validate pre-merge release proposal and source review coherence
         env:
           BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before }}
