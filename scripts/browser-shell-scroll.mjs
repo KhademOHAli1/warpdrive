@@ -1,10 +1,49 @@
 // Real shell boundaries inside the existing disposable, network-fenced browser journey.
 // Inert local overflow fixtures add no grants, providers or production bypasses.
 import assert from "node:assert/strict";
+import {
+  deliverRegionalSave,
+  isRegionalSaveRequest,
+  prepareLocaleThroughUi,
+} from "./browser-locale-preferences.mjs";
 
-export async function exerciseShellScrollBoundaries(page) {
+async function prepareShellLocale(page, locale) {
+  const origin = new URL(page.url()).origin;
+  assert.equal(
+    origin,
+    "https://127.0.0.1:3443",
+    "Shell qualification stays on the disposable loopback target",
+  );
+  const pattern = "**/settings/regional";
+  const handler = async (route) => {
+    if (isRegionalSaveRequest(route.request(), origin)) await deliverRegionalSave(route);
+    else await route.fallback();
+  };
+  await page.route(pattern, handler);
+  try {
+    await prepareLocaleThroughUi(page, origin, locale);
+  } finally {
+    await page.unroute(pattern, handler);
+  }
+}
+
+async function assertShellLocale(page, locale) {
+  assert.equal(
+    await page.locator("html").getAttribute("lang"),
+    locale,
+    "Settings must reload the saved account language",
+  );
+  assert.equal(
+    await page.locator("html").getAttribute("dir"),
+    locale === "fa" ? "rtl" : "ltr",
+    "The real shell must use the requested writing direction",
+  );
+}
+
+export async function exerciseShellScrollBoundaries(page, locale) {
   const response = await page.goto("/settings/profile", { waitUntil: "networkidle" });
   assert.equal(response?.status(), 200, "Use the real authenticated settings page");
+  await assertShellLocale(page, locale);
   const main = page.locator("[data-app-content]");
   const primary = page.locator("#primary-navigation");
   const topbar = page.locator("[data-app-topbar]");
@@ -244,9 +283,10 @@ export async function exerciseCollapsedSidebar(page) {
   assert.equal(await pin.getAttribute("aria-pressed"), "true");
 }
 
-export async function exerciseMobileSidebar(page) {
+export async function exerciseMobileSidebar(page, locale) {
   const response = await page.goto("/settings/profile", { waitUntil: "networkidle" });
   assert.equal(response?.status(), 200);
+  await assertShellLocale(page, locale);
   const main = page.locator("[data-app-content]");
   await main.evaluate((element) => {
     const fixture = document.createElement("div");
@@ -286,6 +326,21 @@ export async function exerciseMobileSidebar(page) {
   await trigger.tap();
   const panel = page.locator("#mobile-navigation-panel");
   await panel.waitFor();
+  // Visibility begins while the drawer is still outside the viewport. Wait for
+  // its real entered geometry before aiming wheel input at the navigation.
+  await page.waitForFunction(() => {
+    const element = document.querySelector("#mobile-navigation-panel");
+    if (!element) return false;
+    const bounds = element.getBoundingClientRect();
+    return (
+      bounds.width > 0 &&
+      bounds.height > 0 &&
+      bounds.left >= -1 &&
+      bounds.right <= innerWidth + 1 &&
+      bounds.top >= -1 &&
+      bounds.bottom <= innerHeight + 1
+    );
+  });
   assert(
     await panel
       .locator('[data-slot="sheet-close"]')
@@ -334,7 +389,8 @@ export async function runShellScrollBrowserSmoke({ journey, signIn }) {
       locale,
       async (page) => {
         await signIn(page);
-        await exerciseShellScrollBoundaries(page);
+        await prepareShellLocale(page, locale);
+        await exerciseShellScrollBoundaries(page, locale);
         await exerciseCollapsedSidebar(page);
       },
       { width: 1280, height },
@@ -344,7 +400,8 @@ export async function runShellScrollBrowserSmoke({ journey, signIn }) {
       locale,
       async (page) => {
         await signIn(page);
-        await exerciseMobileSidebar(page);
+        await prepareShellLocale(page, locale);
+        await exerciseMobileSidebar(page, locale);
       },
       { width: 390, height: 660 },
       true,
