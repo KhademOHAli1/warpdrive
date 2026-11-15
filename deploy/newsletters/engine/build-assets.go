@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +15,28 @@ import (
 
 	"github.com/knadh/stuffbin"
 )
+
+const altchaSHA256 = "0f557a9f535a15acbe0fc7abb4fe896502a6d4c27de1c4145cfa001d0d2be099"
+
+// The source archive omits this generated public asset. Preserve the exact
+// ALTCHA 2.3.0 bundle from the same pinned upstream binary as the admin frontend.
+func extractPublic(binary, destination string) error {
+	files, err := stuffbin.UnStuff(binary)
+	if err != nil {
+		return err
+	}
+	data, err := files.Read("/public/static/altcha.umd.js")
+	if err != nil {
+		return fmt.Errorf("missing upstream ALTCHA asset: %w", err)
+	}
+	if fmt.Sprintf("%x", sha256.Sum256(data)) != altchaSHA256 {
+		return fmt.Errorf("upstream ALTCHA asset checksum mismatch")
+	}
+	if err := os.MkdirAll(destination, 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(destination, "altcha.umd.js"), data, 0644)
+}
 
 // The patched backend uses the unmodified, pinned upstream admin frontend bundle.
 func extractAdmin(binary, destination string) error {
@@ -84,12 +107,14 @@ func writeSourceArchive(source, output string) error {
 
 func main() {
 	if len(os.Args) != 4 {
-		log.Fatal("Usage: build-assets admin|source INPUT OUTPUT")
+		log.Fatal("Usage: build-assets admin|public|source INPUT OUTPUT")
 	}
 	var err error
 	switch os.Args[1] {
 	case "admin":
 		err = extractAdmin(os.Args[2], os.Args[3])
+	case "public":
+		err = extractPublic(os.Args[2], os.Args[3])
 	case "source":
 		err = writeSourceArchive(os.Args[2], os.Args[3])
 	default:

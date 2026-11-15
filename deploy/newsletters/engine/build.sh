@@ -80,11 +80,13 @@ CGO_ENABLED=0 GOOS='' GOARCH='' "$go_command" build -trimpath -mod=readonly \
 CGO_ENABLED=0 GOOS='' GOARCH='' "$go_command" build -trimpath -mod=readonly \
     -o "$work/build-assets" "$context/build-assets.go"
 "$work/build-assets" admin "$upstream" frontend/dist
+"$work/build-assets" public "$upstream" static/public/static
+cp "$context/altcha.LICENSE.txt" static/public/static/altcha.LICENSE.txt
 
 cp "$source_tar" "$work/corresponding-source/listmonk-ef0a758.tar.gz"
 cp LICENSE "$work/corresponding-source/LICENSE"
 cp "$context"/.dockerignore "$context"/.gitattributes "$context"/Dockerfile "$context"/README.md "$context"/build.sh \
-    "$context"/build-assets.go "$context"/nonroot-entrypoint.sh "$work/corresponding-source/"
+    "$context"/build-assets.go "$context"/nonroot-entrypoint.sh "$context"/altcha.LICENSE.txt "$work/corresponding-source/"
 cp -R "$context"/patches "$work/corresponding-source/"
 for directory in tests dispatch-tests durability-tests feedback-tests readiness-tests operational-tests migration-tests; do
     if [ -d "$context/$directory" ]; then
