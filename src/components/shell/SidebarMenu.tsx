@@ -20,6 +20,8 @@ import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
 import { SidebarToggle } from "./SidebarToggle";
 import { useWorkspaceNavigation, useWorkspaceShell } from "./WorkspaceShellProvider";
 
+const FRONTEND_VERSION = "1.7.1.3";
+
 const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   dashboard: LayoutDashboard,
   work: BriefcaseBusiness,
@@ -139,15 +141,22 @@ export function SidebarMenu({
             </>
           )}
         </div>
-        <div className={styles.utilityNav}>
-          {navItems.filter((item) => item.key === "settings").map(menuItem)}
-          {navItems.filter((item) => item.key === "workflows").map(menuItem)}
-          {docs}
-        </div>
+        {expanded && (
+          <div className={styles.utilityNav}>
+            {navItems.filter((item) => item.key === "settings").map(menuItem)}
+            {navItems.filter((item) => item.key === "workflows").map(menuItem)}
+            {docs}
+          </div>
+        )}
       </nav>
       {!mobile && onToggle !== undefined && (
         <div className={styles.sidebarToggleDock}>
           <SidebarToggle expanded={pinnedExpanded} onToggle={onToggle} />
+          {expanded && (
+            <bdi dir="ltr" className={styles.frontendVersion}>
+              {FRONTEND_VERSION}
+            </bdi>
+          )}
         </div>
       )}
     </div>

@@ -322,6 +322,15 @@
 .sidebarBodyCollapsed .sidebarToggleDock {
   padding-inline: 11px;
 }
+.frontendVersion {
+  color: var(--portal-muted);
+  font-size: 11px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-inline-start: auto;
+  opacity: 0.55;
+}
 .sidebarToggle {
   display: flex;
   width: 34px;

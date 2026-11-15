@@ -25,7 +25,7 @@ it("shows three icon-only appearance choices without a heading or submenu", asyn
     within(menu)
       .getAllByRole("menuitem")
       .map((item) => item.textContent),
-  ).toEqual(["Settings", "Log out"]);
+  ).toEqual(["Settings", "Keyboard shortcuts", "Log out"]);
   const modes = screen.getAllByRole("menuitemradio");
   expect(modes.map((item) => item.getAttribute("aria-label"))).toEqual(["System", "Light", "Dark"]);
   expect(modes.every((item) => item.textContent === "")).toBe(true);
