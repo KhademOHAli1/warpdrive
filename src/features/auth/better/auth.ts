@@ -18,6 +18,7 @@ import {
   sessions,
 } from "@/db/schema";
 import { enqueueAuthMail } from "@/features/auth/management/mail";
+import { DEVICE_SESSION_SECONDS } from "../deviceSession";
 import { rejectAuth, validateIncomingIdentity } from "./admission";
 import { assurancePlugin } from "./assurancePlugin";
 import { authDatabaseHooks } from "./databaseHooks";
@@ -163,7 +164,7 @@ export function createBetterAuth(db: Db, configuration: Env = env) {
     },
     session: {
       fields: { token: "tokenHash" },
-      expiresIn: 7 * 24 * 3600,
+      expiresIn: DEVICE_SESSION_SECONDS,
       freshAge: 300,
       disableSessionRefresh: true,
       cookieCache: { enabled: false },

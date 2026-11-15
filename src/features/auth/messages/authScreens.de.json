@@ -202,6 +202,8 @@
     "signOutToVerify": "Abmelden und dieses Konto bestätigen",
     "emailVerifiedSignIn": "Ihre E-Mail-Adresse wurde bestätigt. Melden Sie sich an, um fortzufahren.",
     "emailVerifiedContinue": "Ihre E-Mail-Adresse wurde geändert und bestätigt.",
-    "emailChangeCheckInbox": "Ihre bisherige Adresse wurde bestätigt. Öffnen Sie jetzt die Nachricht an Ihre neue E-Mail-Adresse, um die Änderung abzuschließen."
+    "emailChangeCheckInbox": "Ihre bisherige Adresse wurde bestätigt. Öffnen Sie jetzt die Nachricht an Ihre neue E-Mail-Adresse, um die Änderung abzuschließen.",
+    "lastUsedMethod": "Zuletzt verwendet",
+    "deviceSessionDuration": "Auf diesem Gerät 14 Tage angemeldet bleiben."
   }
 }

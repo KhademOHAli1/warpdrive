@@ -202,6 +202,8 @@
     "signOutToVerify": "Sign out and verify this account",
     "emailVerifiedSignIn": "Your email is verified. Sign in to continue.",
     "emailVerifiedContinue": "Your account email has been updated and verified.",
-    "emailChangeCheckInbox": "Your current address is confirmed. Open the message sent to your new email address to finish the change."
+    "emailChangeCheckInbox": "Your current address is confirmed. Open the message sent to your new email address to finish the change.",
+    "lastUsedMethod": "Last used",
+    "deviceSessionDuration": "Stay signed in on this device for 14 days."
   }
 }

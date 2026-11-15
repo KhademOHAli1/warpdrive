@@ -834,6 +834,13 @@
       "when": 1794434085411,
       "tag": "0118_operations_monitoring",
       "breakpoints": true
+    },
+    {
+      "idx": 119,
+      "version": "7",
+      "when": 1794774841647,
+      "tag": "0119_device_session_lifetime",
+      "breakpoints": true
     }
   ]
 }

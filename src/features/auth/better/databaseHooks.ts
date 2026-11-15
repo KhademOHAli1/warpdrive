@@ -5,6 +5,7 @@ import { authUsers, users } from "@/db/schema";
 import { claimInvitedIdentity } from "./admission";
 import { hookBody } from "./hookBody";
 import { recordNativeProviderLink } from "./securityChanges";
+import { sessionSignInMethod } from "./signInMethod";
 
 export function authDatabaseHooks(db: Db): NonNullable<BetterAuthOptions["databaseHooks"]> {
   return {
@@ -59,14 +60,13 @@ export function authDatabaseHooks(db: Db): NonNullable<BetterAuthOptions["databa
             path === "/passkey/verify-authentication";
           const previous = ctx?.context.session?.session as Record<string, unknown> | undefined;
           const body = hookBody(ctx?.body);
-          const provider =
-            typeof body.provider === "string"
-              ? body.provider
-              : (path.split("/").at(-1) ?? "password");
           return {
             data: {
               ...session,
-              authMethod: path === "/sign-in/email" ? "password" : provider,
+              authMethod:
+                !login && typeof previous?.authMethod === "string"
+                  ? previous.authMethod
+                  : sessionSignInMethod(path, body.provider, previous?.authMethod),
               assurance:
                 !login && typeof previous?.assurance === "string" ? previous.assurance : "pending",
               freshAuthenticatedAt:

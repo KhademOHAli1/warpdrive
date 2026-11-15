@@ -1,16 +1,17 @@
 "use client";
 import { Fingerprint } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/Button";
 import { PASSWORD_RESET_SUGGESTION_THRESHOLD } from "@/constants/authUi";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { authScreensMessagesForLocale } from "./authScreensMessages";
 import { authClient } from "./better/client";
-import type { AuthProviders } from "./better/contracts";
+import type { AuthProvider, AuthProviders } from "./better/contracts";
 import { AuthField } from "./ui/AuthField";
 import { AuthFrame } from "./ui/AuthFrame";
 import { safeAuthDestination } from "./ui/authUiModel";
+import { readLastSignInMethod, subscribeToSignInMethod } from "./ui/signInMethod";
 import { useAuthProviders } from "./ui/useAccountStatus";
 import { AuthFeedback, useAuthAction } from "./ui/useAuthAction";
 
@@ -30,6 +31,11 @@ export function LoginScreen({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRejections, setPasswordRejections] = useState(0);
+  const preferredMethod = useSyncExternalStore(
+    subscribeToSignInMethod,
+    () => (config === null ? null : readLastSignInMethod(config)),
+    () => null,
+  );
   const task = useAuthAction();
   const router = useRouter();
   const destination =
@@ -42,7 +48,7 @@ export function LoginScreen({
     void task.run(
       async (signal) => {
         const result = await authClient.signIn.email(
-          { email: email.trim(), password, callbackURL: continuation },
+          { email: email.trim(), password, callbackURL: continuation, rememberMe: true },
           { signal },
         );
         signal.throwIfAborted();
@@ -67,12 +73,42 @@ export function LoginScreen({
     <Button
       type="button"
       className="h-11 w-full rounded-lg"
-      variant="outline"
+      variant={preferredMethod === "passkey" ? "default" : "outline"}
       disabled={task.busy}
       onClick={() => void task.run(() => authClient.signIn.passkey(), done)}
     >
       <Fingerprint className="size-4 shrink-0" aria-hidden="true" />
       {L.signInWithPasskey}
+      {preferredMethod === "passkey" && (
+        <span aria-hidden="true" className="ml-auto text-xs opacity-70">
+          {L.lastUsedMethod}
+        </span>
+      )}
+    </Button>
+  );
+  const preferredProvider = config?.providers.find((provider) => provider.id === preferredMethod);
+  const otherProviders =
+    config?.providers.filter((provider) => provider.id !== preferredMethod) ?? [];
+  const providerAction = (provider: AuthProvider, preferred = false) => (
+    <Button
+      className="h-11 w-full"
+      variant={preferred ? "default" : "outline"}
+      key={provider.id}
+      disabled={task.busy}
+      onClick={() =>
+        void task.run(() =>
+          authClient.signIn.social({ provider: provider.id, callbackURL: continuation }),
+        )
+      }
+    >
+      {provider.id === "google"
+        ? messages.signInWithGoogle
+        : t("flow.signInWithProvider", { provider: provider.name })}
+      {preferred && (
+        <span aria-hidden="true" className="ml-auto text-xs opacity-70">
+          {L.lastUsedMethod}
+        </span>
+      )}
     </Button>
   );
   return (
@@ -92,6 +128,8 @@ export function LoginScreen({
           {L.working}
         </p>
       )}
+      {preferredMethod === "passkey" && passkeyAction}
+      {preferredProvider !== undefined && providerAction(preferredProvider, true)}
       {config?.emailPassword === true && (
         <form onSubmit={submit} className="space-y-5">
           <AuthField
@@ -126,45 +164,34 @@ export function LoginScreen({
           <fieldset
             aria-label={L.signInOptions}
             className={
-              config.passkeys
+              config.passkeys && preferredMethod !== "passkey"
                 ? "grid gap-3 min-[440px]:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]"
                 : "grid gap-3"
             }
           >
             <Button type="submit" className="w-full rounded-lg" disabled={task.busy}>
               {task.busy ? L.working : L.signIn}
+              {preferredMethod === "email" && (
+                <span aria-hidden="true" className="ml-auto text-xs opacity-70">
+                  {L.lastUsedMethod}
+                </span>
+              )}
             </Button>
-            {passkeyAction}
+            {preferredMethod !== "passkey" && passkeyAction}
           </fieldset>
         </form>
       )}
-      {config?.emailPassword !== true && passkeyAction}
-      {config && config.providers.length > 0 && (config.emailPassword || config.passkeys) && (
+      {config?.emailPassword !== true && preferredMethod !== "passkey" && passkeyAction}
+      {config && otherProviders.length > 0 && (config.emailPassword || config.passkeys) && (
         <div className="flex items-center gap-3 py-1">
           <span className="h-px flex-1 bg-border" />
           <span className="text-xs text-muted-foreground">{L.signInAlternative}</span>
           <span className="h-px flex-1 bg-border" />
         </div>
       )}
-      {config && config.providers.length > 0 && (
+      {otherProviders.length > 0 && (
         <div className="space-y-3">
-          {config.providers.map((provider) => (
-            <Button
-              className="h-11 w-full"
-              variant="outline"
-              key={provider.id}
-              disabled={task.busy}
-              onClick={() =>
-                void task.run(() =>
-                  authClient.signIn.social({ provider: provider.id, callbackURL: continuation }),
-                )
-              }
-            >
-              {provider.id === "google"
-                ? messages.signInWithGoogle
-                : t("flow.signInWithProvider", { provider: provider.name })}
-            </Button>
-          ))}
+          {otherProviders.map((provider) => providerAction(provider))}
         </div>
       )}
       <AuthFeedback error={task.error} notice={task.notice} />
@@ -186,6 +213,7 @@ export function LoginScreen({
         {L.signInHelp}
       </a>
       <p className="border-t pt-5 text-center text-xs leading-relaxed text-muted-foreground">
+        <span className="mb-2 block">{L.deviceSessionDuration}</span>
         {L.inviteOnly}
       </p>
     </AuthFrame>

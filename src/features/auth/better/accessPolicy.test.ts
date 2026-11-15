@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_AUTH_POLICY } from "../management/domain";
 import { evaluateSessionAccess } from "./accessPolicy";
 
 const now = new Date("2026-10-31T10:00:00Z");
@@ -54,5 +55,30 @@ describe("authentication assurance policy", () => {
       evaluateSessionAccess({ ...base, createdAt: new Date("2026-10-24T10:00:00Z") }).allowed,
     ).toBe(false);
     expect(evaluateSessionAccess({ ...base, expiresAt: now }).allowed).toBe(false);
+  });
+  it("keeps the same device valid across inactivity until the fixed fourteen-day boundary", () => {
+    const createdAt = new Date("2026-10-17T10:00:00Z");
+    const remembered = {
+      ...base,
+      ...DEFAULT_AUTH_POLICY,
+      createdAt,
+      lastSeenAt: createdAt,
+      expiresAt: now,
+    };
+    expect(evaluateSessionAccess({ ...remembered, now: new Date(now.getTime() - 1) })).toEqual({
+      allowed: true,
+    });
+    expect(evaluateSessionAccess(remembered)).toEqual({ allowed: false, reason: "expired" });
+    expect(evaluateSessionAccess({ ...remembered, lastSeenAt: now })).toEqual({
+      allowed: false,
+      reason: "expired",
+    });
+    expect(
+      evaluateSessionAccess({
+        ...remembered,
+        expiresAt: new Date(now.getTime() + 86400000),
+        lastSeenAt: now,
+      }),
+    ).toEqual({ allowed: false, reason: "expired" });
   });
 });
