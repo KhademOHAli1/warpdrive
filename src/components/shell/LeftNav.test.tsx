@@ -58,7 +58,12 @@ describe("LeftNav", () => {
         within(navigation)
           .getAllByRole("link")
           .map((link) => link.getAttribute("href")),
-      ).toEqual(["/pipeline", "/leads", "/inbox", "/settings", "/workflows", DOCS_SITE_URL]);
+      ).toEqual([
+        "/pipeline",
+        "/leads",
+        "/inbox",
+        ...(expanded ? ["/settings", "/workflows", DOCS_SITE_URL] : []),
+      ]);
     },
   );
 
@@ -250,17 +255,21 @@ describe("LeftNav", () => {
       const workspace = navigation.querySelector(`.${styles.workspaceNav}`);
       const footer = navigation.querySelector(`.${styles.utilityNav}`);
       expect(workspace).not.toBeNull();
-      expect(footer).not.toBeNull();
       expect(
         within(workspace as HTMLElement)
           .getAllByRole("link")
           .map((link) => link.getAttribute("href")),
       ).toEqual(["/pipeline", "/leads", "/inbox"]);
-      expect(
-        within(footer as HTMLElement)
-          .queryAllByRole("link")
-          .map((link) => link.getAttribute("href")),
-      ).toEqual(["/settings", "/workflows", DOCS_SITE_URL]);
+      if (expanded) {
+        expect(footer).not.toBeNull();
+        expect(
+          within(footer as HTMLElement)
+            .queryAllByRole("link")
+            .map((link) => link.getAttribute("href")),
+        ).toEqual(["/settings", "/workflows", DOCS_SITE_URL]);
+      } else {
+        expect(footer).toBeNull();
+      }
     },
   );
 
@@ -336,7 +345,7 @@ describe("LeftNav", () => {
 
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Pin sidebar", pressed: false })).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 
   test("keeps collapsed destinations named while hiding their duplicate inline labels", () => {
@@ -446,21 +455,24 @@ describe("LeftNav bracket shortcuts", () => {
     expect(toggle.closest(`.${styles.sidebarToggleDock}`)).not.toBeNull();
   });
 
-  test("keeps utilities available in the rail and the footer outside the scrolling links", async () => {
+  test("shows utilities and the quiet version only with the sidebar open", async () => {
     const user = userEvent.setup();
     setViewport(false);
     render(<LeftNav />);
     const navigation = screen.getByRole("navigation", { name: "Primary" });
-    const utilities = navigation.querySelector(`.${styles.utilityNav}`) as HTMLElement;
-    expect(within(utilities).getAllByRole("link")).toHaveLength(3);
+    expect(navigation.querySelector(`.${styles.utilityNav}`)).toBeNull();
+    expect(screen.queryByText("1.7.1.2")).toBeNull();
     const opener = screen.getByRole("button", { name: "Pin sidebar", pressed: false });
     expect(navigation.contains(opener)).toBe(false);
     opener.focus();
     await user.keyboard("{Enter}");
+    const utilities = navigation.querySelector(`.${styles.utilityNav}`) as HTMLElement;
     expect(within(utilities).getAllByRole("link")).toHaveLength(3);
+    expect(opener.parentElement?.contains(screen.getByText("1.7.1.2"))).toBe(true);
     expect(document.activeElement).toBe(opener);
     await user.keyboard("{Enter}");
-    expect(within(utilities).getAllByRole("link")).toHaveLength(3);
+    expect(navigation.querySelector(`.${styles.utilityNav}`)).toBeNull();
+    expect(screen.queryByText("1.7.1.2")).toBeNull();
     expect(document.activeElement).toBe(opener);
   });
 });
