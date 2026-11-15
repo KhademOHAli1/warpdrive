@@ -19,6 +19,34 @@ const operationsStages = new Set([
   "operations-logs-document",
   "operations-facts-render",
   "operations-release-banner",
+  "operations-release-banner-response",
+  "operations-release-banner-foreground",
+  "operations-release-banner-viewport",
+  "operations-release-banner-show",
+  "operations-release-banner-expand",
+  "operations-release-banner-notes",
+  "operations-release-banner-header",
+  "operations-release-banner-overflow",
+  "operations-release-banner-document",
+  "operations-release-banner-topbar",
+  "operations-release-banner-focus",
+  "operations-release-banner-end",
+  "operations-release-banner-last-line",
+  "operations-release-banner-wheel",
+  "operations-release-banner-boundary",
+  "operations-release-banner-collapse",
+  "operations-release-banner-collapsed",
+  "operations-release-banner-reopen",
+  "operations-release-banner-reopened",
+  "operations-release-banner-dismiss-focus",
+  "operations-release-banner-dismiss-tab",
+  "operations-release-banner-dismiss",
+  "operations-release-banner-dismissed-notes",
+  "operations-release-banner-dismissed-control",
+  "operations-release-banner-dismissed-document",
+  "operations-release-banner-other-tab-dismiss",
+  "operations-release-banner-restore",
+  "operations-metadata-fields",
   "operations-recovered-incident",
   "operations-initial-mounted",
   "operations-role-revoke-await",
@@ -123,7 +151,8 @@ export function operationsReleaseBannerResponse(body, names) {
   return Array.isArray(body) ? changed : changed[0];
 }
 
-async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
+async function qualifyOperationsReleaseBanner(page, maintenance, until, fail, progress) {
+  let completed = false;
   const show = page.getByRole("button", { name: "Show release notes", exact: true });
   const notes = page.getByRole("region", { name: "Show release notes", exact: true });
   const topbar = page.locator("[data-app-topbar]");
@@ -142,12 +171,18 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
       };
     });
   try {
+    progress("operations-release-banner-foreground");
     await page.bringToFront();
+    progress("operations-release-banner-viewport");
     await page.setViewportSize({ width: 900, height: 560 });
+    progress("operations-release-banner-show");
     await show.waitFor({ state: "visible" });
+    progress("operations-release-banner-expand");
     await show.click();
+    progress("operations-release-banner-notes");
     await notes.waitFor({ state: "visible" });
     const hide = page.getByRole("button", { name: "Hide release notes", exact: true });
+    progress("operations-release-banner-header");
     fail(
       await hide.locator("..").evaluate((element) => {
         const spans = element.querySelectorAll(":scope > span");
@@ -158,21 +193,25 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
       }),
       "Synthetic release header did not exercise wrapping",
     );
+    progress("operations-release-banner-overflow");
     fail(
       await notes.evaluate(
         (element) => element.scrollHeight > element.clientHeight + 1 && element.clientHeight > 0,
       ),
       "Expanded release notes must actually overflow their own region",
     );
+    progress("operations-release-banner-document");
     const frame = await geometry();
     fail(
       frame.windowY === 0 && frame.documentHeight <= frame.viewport + 1,
       "Expanded release notes overflowed the document",
     );
+    progress("operations-release-banner-topbar");
     fail(
       frame.barTop >= 0 && frame.barBottom <= frame.viewport && (await topbar.isVisible()),
       "Expanded release notes hid the topbar",
     );
+    progress("operations-release-banner-focus");
     await hide.focus();
     for (let attempt = 0; attempt < 4; attempt++) {
       if (await notes.evaluate((element) => document.activeElement === element)) break;
@@ -182,12 +221,14 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
       await notes.evaluate((element) => document.activeElement === element),
       "Release notes region was not reachable with Tab",
     );
+    progress("operations-release-banner-end");
     await page.keyboard.press("End");
     await until(() =>
       notes.evaluate(
         (element) => element.scrollTop >= element.scrollHeight - element.clientHeight - 2,
       ),
     );
+    progress("operations-release-banner-last-line");
     fail(
       await notes.evaluate((element, lastLine) => {
         const text = element.querySelector("bdi")?.firstChild;
@@ -203,6 +244,7 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
       }, releaseBannerLastLine),
       "The last release note was not reachable with the keyboard",
     );
+    progress("operations-release-banner-wheel");
     const bounds = await notes.boundingBox();
     fail(bounds && bounds.height > 0, "Release note scroll region was not visible");
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
@@ -210,6 +252,7 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
     await page.evaluate(
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     );
+    progress("operations-release-banner-boundary");
     const end = await geometry();
     fail(
       end.windowY === 0 &&
@@ -219,30 +262,44 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail) {
         Math.abs(end.navTop - frame.navTop) <= 1,
       "Release note boundary input moved the document or shell",
     );
+    progress("operations-release-banner-collapse");
     await hide.click();
+    progress("operations-release-banner-collapsed");
     await notes.waitFor({ state: "hidden" });
+    progress("operations-release-banner-reopen");
     await show.click();
+    progress("operations-release-banner-reopened");
     await notes.waitFor({ state: "visible" });
     const reopened = page.getByRole("button", { name: "Hide release notes", exact: true });
     const dismiss = reopened.locator("..").getByRole("button", { name: "Dismiss", exact: true });
+    progress("operations-release-banner-dismiss-focus");
     await reopened.focus();
+    progress("operations-release-banner-dismiss-tab");
     await page.keyboard.press("Tab");
     fail(
       await dismiss.evaluate((element) => document.activeElement === element),
       "Release dismissal was not reachable with Tab",
     );
+    progress("operations-release-banner-dismiss");
     await page.keyboard.press("Enter");
+    progress("operations-release-banner-dismissed-notes");
     await notes.waitFor({ state: "hidden" });
+    progress("operations-release-banner-dismissed-control");
     await dismiss.waitFor({ state: "hidden" });
+    progress("operations-release-banner-dismissed-document");
     fail((await geometry()).windowY === 0, "Release dismissal moved the document");
     // The other real admin tab mounted before localStorage dismissal. Close its
     // collapsed fixture too, preserving both documents for the authority checks.
+    progress("operations-release-banner-other-tab-dismiss");
     await maintenance
       .getByRole("button", { name: "Show release notes", exact: true })
       .locator("..")
       .getByRole("button", { name: "Dismiss", exact: true })
       .click();
+    completed = true;
   } finally {
+    // Preserve the original finite failure stage when cleanup follows a failure.
+    if (completed) progress("operations-release-banner-restore");
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
 }
@@ -517,8 +574,10 @@ export async function qualifyOperations({
     progress("operations-facts-render");
     await until(initialFacts);
     progress("operations-release-banner");
+    progress("operations-release-banner-response");
     fail(releaseBannerFixtureResponses > 0, "Successful native version read was not observed");
-    await qualifyOperationsReleaseBanner(logs, maintenance, until, fail);
+    await qualifyOperationsReleaseBanner(logs, maintenance, until, fail, progress);
+    progress("operations-metadata-fields");
     const age = queue
       .getByText("Oldest ready job (seconds)", { exact: true })
       .locator("..")
