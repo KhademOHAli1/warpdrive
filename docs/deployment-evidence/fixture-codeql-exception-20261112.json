@@ -18,7 +18,7 @@
   },
   "independentReview": {
     "path": "docs/deployment-evidence/fixture-public-captcha-review-20261115.json",
-    "sha256": "8af4ccfe74f904584123ce1146887b2239db1b62044083787d8c947e337a1401",
+    "sha256": "503bec226e0230a407963d017d2bb9988ad47ee866bb438a5b93d35ba8ae56d6",
     "reviewer": "/root/review_newsletter",
     "scope": "Independent exact-source public CAPTCHA asset/readiness refresh; full plaintext writer, runtime/test callers, fixed owned-loopback HTTP access, CLI and workflow boundaries reviewed unchanged. Earlier independent witnesses remain preserved."
   },

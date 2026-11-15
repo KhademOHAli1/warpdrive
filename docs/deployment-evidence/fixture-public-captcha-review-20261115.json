@@ -48,13 +48,7 @@
     },
     "exactSourceComparison": "ImageSmoke and production-engine workflow are byte-identical to comparisonRevision and the prior witness pins. The plaintext writer AST is unchanged. Engine changes add only fixed public CAPTCHA path/digest validation, one allowed loopback GET, and readiness evidence. Existing secret-writer test methods remain unchanged; two new negative public-asset tests and two lifecycle response mocks account for the changed test source.",
     "boundedAstCallerScan": {
-      "roots": [
-        "root Python files",
-        "src",
-        "scripts",
-        "deploy",
-        "tools"
-      ],
+      "roots": ["root Python files", "src", "scripts", "deploy", "tools"],
       "files": 331,
       "bytes": 4997876,
       "directAndImportAliasedCallerFiles": [
@@ -63,25 +57,9 @@
       ],
       "directCallLines": {
         "scripts/deployment/test_engine_image_smoke.py": [
-          607,
-          632,
-          654,
-          664,
-          671,
-          680,
-          692,
-          714,
-          740,
-          765,
-          794,
-          812,
-          836,
-          885,
-          917
+          607, 632, 654, 664, 671, 680, 692, 714, 740, 765, 794, 812, 836, 885, 917
         ],
-        "scripts/deployment/engine_image_smoke.py": [
-          1154
-        ]
+        "scripts/deployment/engine_image_smoke.py": [1154]
       },
       "sameFileLocalAliasCalls": [
         {
