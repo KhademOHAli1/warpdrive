@@ -9,7 +9,9 @@ continue to apply.
 
 Migration `0119_device_session_lifetime` raises the supported idle-policy limit
 and updates only the former 30-minute/seven-day policy defaults. Deliberately
-customized shorter policies remain intact. When an existing installation has
+customized shorter policies remain intact. Modern sessions already expired under
+the previous policy are revoked before widening its limits; the legacy workflow
+compatibility rule is unchanged. When an existing installation has
 no policy row, its operator must persist the new defaults before reusing older
 Worker/Core images, which otherwise retain their original fallback defaults.
 

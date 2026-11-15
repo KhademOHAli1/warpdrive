@@ -54,3 +54,28 @@ test("a deliberately shorter configured policy survives the same migration", asy
     { require_mfa_for_all: true, idle_minutes: 15, absolute_hours: 12, fresh_minutes: 3 },
   ]);
 });
+
+test("widening the default does not reactivate a modern session that already expired while idle", async () => {
+  await h.pool.query(restorePreviousPolicySchema);
+  const person = await h.pool.query(
+    "INSERT INTO users(email,name) VALUES('session-upgrade@example.test','Session upgrade') RETURNING id",
+  );
+  const userId = person.rows[0].id as string;
+  await h.pool.query(
+    `INSERT INTO sessions(user_id,token_hash,expires_at,last_seen_at,created_at,auth_method,assurance)
+    VALUES ($1,'expired-before-upgrade',now()+interval '1 day',now()-interval '31 minutes',now()-interval '1 hour','password','password'),
+           ($1,'live-before-upgrade',now()+interval '1 day',now(),now()-interval '1 hour','password','password'),
+           ($1,'legacy-compatibility',now()+interval '1 day',now()-interval '31 minutes',now()-interval '1 hour','legacy','legacy')`,
+    [userId],
+  );
+  await h.pool.query(migration);
+  const result = await h.pool.query(
+    "SELECT token_hash,revoked_at IS NOT NULL AS revoked FROM sessions WHERE user_id=$1 ORDER BY token_hash",
+    [userId],
+  );
+  expect(result.rows).toEqual([
+    { token_hash: "expired-before-upgrade", revoked: true },
+    { token_hash: "legacy-compatibility", revoked: false },
+    { token_hash: "live-before-upgrade", revoked: false },
+  ]);
+});
