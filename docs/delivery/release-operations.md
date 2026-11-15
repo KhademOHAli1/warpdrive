@@ -298,9 +298,11 @@ tag, uploaded-asset digest verification and immutable published-artifact rules
 apply. The publisher independently verifies that GitHub Latest identifies this
 stable release; it adds no issue receipts or milestone closure for this track.
 
-The supplied plan and qualification record are incomplete templates and fail
-closed. Before qualification, finish the prior live frontend release and integrate
-all requested branch revisions. The plan retains the four original head pins; add
+The plan must pin a completed qualification record and fails closed until that
+record is supplied. The user authorized starting from the merged `1.7.1.4` source
+and deploying the combined `1.7.1.5` directly from the current installation.
+Integrate all requested branch revisions first. The plan retains the four original
+head pins; add
 any later active or generated branch heads as additional unique full SHAs.
 Independently review the final frontend source and execute the scoped scrolling,
 keyboard, mobile, RTL and expanded release-note checks. Fill the qualification
