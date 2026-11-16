@@ -38,18 +38,18 @@ SERVICE = "com.docker.compose.service"
 SERVICE_PORT = 8443
 TOTAL_SECONDS = 600
 CLEANUP_SECONDS = 420
-STOP_GRACE = {"worker": 75, "ws": 30, "app": 30, "newsletter-engine": 30,
+STOP_GRACE = {"worker": 75, "core-api": 75, "ws": 30, "app": 30, "newsletter-engine": 30,
               "caddy": 30, "postgres": 30, "minio": 30, "migrate": 30,
               "newsletter-engine-migrate": 30, "createbuckets": 30}
-STOP_WAVES = (("caddy",), ("app", "ws", "worker", "newsletter-engine", "migrate",
+STOP_WAVES = (("caddy",), ("app", "ws"), ("core-api",), ("worker", "newsletter-engine", "migrate",
                          "newsletter-engine-migrate", "createbuckets"), ("postgres", "minio"))
 EXACT_ID = re.compile(r"[a-f0-9]{64}\Z")
-LONG_RUNNING = {"postgres", "minio", "app", "ws", "worker", "newsletter-engine", "caddy"}
+LONG_RUNNING = {"postgres", "minio", "app", "core-api", "ws", "worker", "newsletter-engine", "caddy"}
 MIB = 1024**2
 RESOURCE_LIMITS = {
     "caddy": (128 * MIB, 0.5, 128), "postgres": (512 * MIB, 1, 128),
     "minio": (256 * MIB, 1, 128), "createbuckets": (128 * MIB, 0.5, 64),
-    "app": (1536 * MIB, 2, 256), "ws": (256 * MIB, 1, 128), "worker": (768 * MIB, 1, 256),
+    "app": (1536 * MIB, 2, 256), "core-api": (768 * MIB, 1, 256), "ws": (256 * MIB, 1, 128), "worker": (768 * MIB, 1, 256),
     "migrate": (768 * MIB, 1, 128), "newsletter-engine": (256 * MIB, 1, 128),
     "newsletter-engine-migrate": (256 * MIB, 1, 128),
 }
@@ -554,7 +554,8 @@ class FreshSmoke:
             "realtime": self.refs["baseline"]["ws"], "migrator": self.refs["baseline"]["migrate"]}, self.directory)
         self.runtime_password = fixture.runtime_password
         self.newsletter_password = secrets.token_hex(24)
-        self.secret_values = tuple(fixture.env.values()) + tuple(fixture.pg_env.values()) + (self.newsletter_password,)
+        core_proxy_token = secrets.token_hex(32)
+        self.secret_values = tuple(fixture.env.values()) + tuple(fixture.pg_env.values()) + (self.newsletter_password, core_proxy_token)
         self.bucket = "warpdrive-fresh"
         storage_credentials = {"MINIO_ACCESS_KEY": fixture.env["MINIO_ACCESS_KEY"], "MINIO_SECRET_KEY": fixture.env["MINIO_SECRET_KEY"]}
         self.storage_env = self.directory / "storage-fixture.env"
@@ -562,12 +563,14 @@ class FreshSmoke:
                                      "MINIO_BUCKET": self.bucket, "FIXTURE_OBJECT": self.object_bytes.decode(),
                                      STORAGE_CLIENT_ENV: self.storage_client_bin})
         _write_env(self.directory / ".env", {**fixture.env, "BASE_URL": "https://127.0.0.1", "WS_PUBLIC_URL": "ws://ws:8080",
-            "MINIO_ENDPOINT": "http://minio:9000", "MINIO_BUCKET": self.bucket, "MIGRATION_DATABASE_URL": fixture.migration_url})
+            "MINIO_ENDPOINT": "http://minio:9000", "MINIO_BUCKET": self.bucket, "MIGRATION_DATABASE_URL": fixture.migration_url,
+            "CORE_PROXY_TOKEN": core_proxy_token})
         for phase, references in self.refs.items():
             _write_env(self.directory / f"{phase}.env", {**fixture.pg_env, "APP_DOMAIN": "127.0.0.1", "ACME_EMAIL": "fresh@example.invalid",
                 "BASE_URL": "https://127.0.0.1", "NEWSLETTER_PUBLIC_DOMAIN": "news.example.invalid",
                 "NEWSLETTER_POSTGRES_PASSWORD": self.newsletter_password, "MINIO_ACCESS_KEY": fixture.env["MINIO_ACCESS_KEY"],
                 "MINIO_SECRET_KEY": fixture.env["MINIO_SECRET_KEY"], "MINIO_BUCKET": self.bucket,
+                "CORE_PROXY_TOKEN": core_proxy_token,
                 STORAGE_CLIENT_ENV: self.storage_client_bin,
                 **{name: references[services[0]] for name, services in IMAGES.items()}})
         self.tls.mkdir(mode=0o755)
@@ -679,6 +682,8 @@ class FreshSmoke:
                   f"INSERT INTO stages(pipeline_id,name) VALUES('{self.seed}','Qualified');\nCOMMIT;\n", user="smoke_runtime")
         self._object("seed")
         self.compose("baseline", "up", "-d", "--no-deps", "--no-build", "--pull", "never", "app", "ws", "worker", "newsletter-engine", "caddy")
+        # Core resolves the independently served Web identity before becoming ready.
+        self.compose("baseline", "up", "-d", "--no-build", "--pull", "never", "core-api")
 
     def _completed(self, service, timeout):
         row = self._rows()[service]
@@ -804,7 +809,7 @@ class FreshSmoke:
                 require(row["Image"] == self.images[phase][name] and state["Running"] is (name in LONG_RUNNING)
                         and row["RestartCount"] == 0 and (name in LONG_RUNNING or (state["Status"], state["ExitCode"]) == ("exited", 0)),
                         "Fresh Compose service identity or state differs")
-            statuses = [rows[name]["State"].get("Health", {}).get("Status") for name in ("postgres", "app", "ws")]
+            statuses = [rows[name]["State"].get("Health", {}).get("Status") for name in ("postgres", "app", "core-api", "ws")]
             require(all(status in {"starting", "healthy"} for status in statuses), "Fresh Compose required healthcheck is absent or unhealthy")
             if all(status == "healthy" for status in statuses):
                 return rows

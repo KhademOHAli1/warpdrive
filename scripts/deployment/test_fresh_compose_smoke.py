@@ -340,7 +340,7 @@ class FreshComposeSmokeTests(unittest.TestCase):
             rows[service] = {"Id": service, "Image": phase + service, "RestartCount": 0,
                              "State": {"Running": running, "Status": "running" if running else "exited", "ExitCode": 0,
                                        "StartedAt": "fixture"}}
-        for service in ("postgres", "app", "ws"):
+        for service in ("postgres", "app", "core-api", "ws"):
             rows[service]["State"]["Health"] = {"Status": "healthy"}
         return rows
 

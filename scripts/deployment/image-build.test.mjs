@@ -37,10 +37,12 @@ test("non-web selections exclude Next configuration and retain required child wo
   ]);
   for (const component of ["worker", "realtime", "migrator"])
     assert.ok(!selectBuildEntries(component).some((entry) => entry.in === "next.config.ts"));
-  for (const component of ["worker", "web"])
-    assert.ok(
-      selectBuildEntries(component).some((entry) => entry.out === "dist/workflow-code-worker.mjs"),
-    );
+  assert.ok(
+    selectBuildEntries("worker").some((entry) => entry.out === "dist/workflow-code-worker.mjs"),
+  );
+  assert.deepEqual(selectBuildEntries("web"), [
+    { in: "next.config.ts", out: "dist/next.config.mjs" },
+  ]);
   assert.ok(selectBuildEntries("migrator").some((entry) => entry.out === "dist/auth-operator.mjs"));
 });
 

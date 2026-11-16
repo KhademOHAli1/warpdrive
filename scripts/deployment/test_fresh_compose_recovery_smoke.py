@@ -341,7 +341,7 @@ class RecoveryCoordinatorTests(unittest.TestCase):
         calls = [item.args for item in fixture.compose.call_args_list]
         prefix = ("baseline", "up", "--no-start", "--no-deps", "--no-build", "--pull", "never")
         self.assertEqual(calls, [(*prefix, "postgres", "minio"),
-            (*prefix, "app", "ws", "worker", "newsletter-engine", "caddy")])
+            (*prefix, "app", "core-api", "ws", "worker", "newsletter-engine", "caddy")])
         self.assertEqual([service for args in calls for service in args[7:]],
                          [service for group in smoke.CREATE_WAVES for service in group])
         self.assertEqual({service for args in calls for service in args[7:]}, LONG_RUNNING)

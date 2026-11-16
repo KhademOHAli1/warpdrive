@@ -198,11 +198,11 @@ class FreshComposeAdmissionTests(unittest.TestCase):
     def test_actual_fresh_application_and_job_runtimes_have_no_partial_newsletter_binding(self):
         self.settings()
         model = admission._config(self.docker, self.project, self.directory, self.baseline)
-        for name in ("app", "worker", "ws", "migrate", "createbuckets"):
+        for name in ("app", "core-api", "worker", "ws", "migrate", "createbuckets"):
             with self.subTest(name=name):
                 service = model["services"][name]
                 for key in ("NEWSLETTER_BASE_URL", "NEWSLETTER_API_USER", "NEWSLETTER_API_TOKEN", "NEWSLETTER_API_TOKEN_FILE"):
-                    self.assertEqual(service["environment"][key], "")
+                    self.assertEqual(service["environment"].get(key, ""), "")
                 altered = deepcopy(service)
                 altered["environment"]["NEWSLETTER_BASE_URL"] = "http://newsletter-engine:9000"
                 with self.assertRaisesRegex(SwitchConflict, "must stay disabled"):

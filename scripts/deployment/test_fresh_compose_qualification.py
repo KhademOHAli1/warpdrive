@@ -393,7 +393,7 @@ class RegistrySessionTests(unittest.TestCase):
     def setUp(self):
         self.directory = Path(self.enterContext(TemporaryDirectory())).resolve()
         self.args = SimpleNamespace(output_dir=self.directory, bundle_dir=self.directory / "bundle", expected_revision=REVISION)
-        self.roles = {role: "sha256:" + str(index) * 64 for index, role in enumerate(("web", "worker", "realtime", "migrator", "candidate_web", "engine"), 1)}
+        self.roles = {role: "sha256:" + str(index) * 64 for index, role in enumerate(("web", "worker", "realtime", "migrator", "candidate_web", "engine", "core-api"), 1)}
         self.revisions = {role: ENGINE_REVISION if role == "engine" else WEB_REVISION if role == "candidate_web" else REVISION for role in self.roles}
         self.supports = {role: {"reference": "support/" + role + "@sha256:" + format(index, "x") * 64} for index, role in enumerate(qualification.SUPPORT, 7)}
         self.references = {role: "127.0.0.1:43210/owned/" + role + "@sha256:" + str(index) * 64 for index, role in enumerate(self.roles, 1)}
@@ -412,7 +412,7 @@ class RegistrySessionTests(unittest.TestCase):
         def fresh(baseline, candidate, *, storage_client_bin):
             self.events.append("fresh-cleanup")
             self.assertEqual({**candidate, "app": baseline["app"]}, baseline)
-            self.assertEqual(len(baseline), 10)
+            self.assertEqual(len(baseline), 11)
             self.assertEqual(storage_client_bin, "mc")
             return {"success": True, "cleanupSuccess": True}
 
@@ -625,7 +625,7 @@ class RegistrySessionTests(unittest.TestCase):
         self.assertTrue(receipt["manualReconciliationRequired"])
         self.assertEqual(receipt["registryCleanupFailureType"], "RuntimeError")
 
-    def test_six_role_publication_is_bound_to_manifest_config_and_local_digest(self):
+    def test_admitted_role_publication_is_bound_to_manifest_config_and_local_digest(self):
         docker = Mock()
         registry = Mock(repository_prefix="127.0.0.1:43210/owned")
         current = {}
@@ -646,10 +646,10 @@ class RegistrySessionTests(unittest.TestCase):
 
         docker.json.side_effect = inspect
         refs = qualification.publish_roles(registry, docker, self.roles, self.revisions)
-        self.assertEqual(len(refs), 6)
+        self.assertEqual(len(refs), len(self.roles))
         self.assertEqual(registry.image_ids, self.roles)
-        self.assertEqual(registry.adapter.push.call_count, 6)
-        self.assertEqual(registry.client.verify_config.call_count, 6)
+        self.assertEqual(registry.adapter.push.call_count, len(self.roles))
+        self.assertEqual(registry.client.verify_config.call_count, len(self.roles))
         self.assertEqual(COMPONENTS, ("web", "worker", "realtime", "migrator"))
 
     def test_local_digest_substitution_holds_after_independent_manifest_readback(self):

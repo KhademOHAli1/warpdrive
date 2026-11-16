@@ -338,8 +338,11 @@ def admit_images(api, docker, args, environment, output):
 
 
 def publish_roles(registry, docker, roles, revisions):
-    require(set(roles) == {"web", "worker", "realtime", "migrator", "candidate_web", "engine"}
-            and len(set(roles.values())) == 6 and set(revisions) == set(roles), "Six fixed admitted local image roles required")
+    expected = {"web", "worker", "realtime", "migrator", "candidate_web", "engine"}
+    if "core-api" in roles:
+        expected.add("core-api")
+    require(set(roles) == expected and len(set(roles.values())) == len(expected) and set(revisions) == expected,
+            "Fixed admitted local image roles and the headless Core image are required")
     registry.image_ids = dict(roles)
     sizes = []
     for role, image in roles.items():
@@ -367,7 +370,9 @@ def publish_roles(registry, docker, roles, revisions):
 
 
 def fixture_references(references, supports):
+    require("core-api" in references, "Fresh headless Compose requires a separately qualified Core image")
     baseline = {"app": references["web"], "worker": references["worker"], "ws": references["realtime"],
+                "core-api": references["core-api"],
                 "migrate": references["migrator"], "newsletter-engine": references["engine"],
                 "newsletter-engine-migrate": references["engine"]}
     baseline.update({service: supports[role]["reference"] for role, service in SUPPORT.items() if service})

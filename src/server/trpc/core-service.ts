@@ -71,7 +71,9 @@ export function startCoreService(serve: CoreRuntimeDependencies["serve"]) {
       idleTimeoutSeconds: 120,
       maxRequestBodyBytes: CORE_API_EDGE_BODY_BYTES,
       maxAdmittedBodyBytes: CORE_API_EDGE_BODY_BYTES,
-      maxConcurrentRequests: 4,
+      // SSR and browser prefetch now share this listener. Keep admission finite while
+      // allowing an ordinary page's parallel reads alongside its single command.
+      maxConcurrentRequests: 32,
       bodyTimeoutMs: 30_000,
       probeTimeoutMs: 1_500,
       probeTtlMs: 1_000,
