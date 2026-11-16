@@ -1,8 +1,6 @@
-"use server";
-
-import { cookies, headers } from "next/headers";
 import { CSRF_COOKIE, validateCsrf } from "@/features/auth/csrf";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { cookies, headers } from "@/server/request";
 import { err, type Result } from "@/types/result";
 
 // Unit-testable core: enforce actor presence, then run the body.

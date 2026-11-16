@@ -40,6 +40,9 @@ jobs:
       APP_COMMIT: ${{ github.sha }}
       DATABASE_URL: postgres://smoke:smoke@127.0.0.1:5432/warpdrive_browser_smoke_ci
       BASE_URL: https://127.0.0.1:3443
+      CORE_API_ORIGIN: http://127.0.0.1:3010
+      CORE_WEB_ORIGIN: http://127.0.0.1:3000
+      CORE_PROXY_TOKEN: ci_headless_only_proxy_token_01234567890123456789
       GOOGLE_OAUTH_CLIENT_ID: ""
       GOOGLE_OAUTH_CLIENT_SECRET: ""
       AUTH_GOOGLE_ENABLED: "false"
@@ -91,28 +94,39 @@ jobs:
         run: bun --no-env-file src/entrypoints/migrate.ts
       - name: Create the scoped synthetic browser actor through native auth storage
         run: bun --no-env-file scripts/browser-smoke-seed.mjs
+      - name: Grant the disposable Core role DML access
+        run: |
+          bun --no-env-file -e 'import {Pool} from "pg"; const pool=new Pool({connectionString:process.env.DATABASE_URL}); try {await pool.query("CREATE ROLE browser_runtime LOGIN PASSWORD $$ci_browser_runtime$$ NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public,pgboss TO browser_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO browser_runtime; GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO browser_runtime; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO browser_runtime;");} finally {await pool.end();}'
       - name: Build normal production application and code worker
         run: |
           bun --no-env-file run build
           bun --no-env-file run build:workers
+          bun --no-env-file scripts/build-core.mjs
       - name: Exercise serial browser packs without external requests
         run: |
           openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
             -subj '/CN=127.0.0.1' -addext 'subjectAltName=IP:127.0.0.1' \
             -keyout "$RUNNER_TEMP/browser.key" -out "$RUNNER_TEMP/browser.crt"
-          bun --no-env-file --bun next start --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/browser-app.log" 2>&1 &
+          env -i PATH="$PATH" HOME="$HOME" NODE_ENV=production APP_COMMIT="$APP_COMMIT" \
+            CORE_API_ORIGIN="$CORE_API_ORIGIN" CORE_PROXY_TOKEN="$CORE_PROXY_TOKEN" \
+            bun --no-env-file --bun next start --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/browser-app.log" 2>&1 &
           app_pid=$!
+          RUNTIME_COMPONENT=core-api CORE_HOST=127.0.0.1 CORE_PORT=3010 \
+            DATABASE_URL=postgres://browser_runtime:ci_browser_runtime@127.0.0.1:5432/warpdrive_browser_smoke_ci \
+            bun --no-env-file dist/core-api.mjs > "$RUNNER_TEMP/browser-core.log" 2>&1 &
+          core_pid=$!
           bun --no-env-file scripts/browser-smoke-proxy.mjs "$RUNNER_TEMP/browser.key" "$RUNNER_TEMP/browser.crt" > "$RUNNER_TEMP/browser-proxy.log" 2>&1 &
           proxy_pid=$!
           cleanup() {
-            kill "$proxy_pid" "$app_pid" 2>/dev/null || true
-            wait "$proxy_pid" "$app_pid" 2>/dev/null || true
-            cat "$RUNNER_TEMP/browser-app.log" "$RUNNER_TEMP/browser-proxy.log"
+            kill "$core_pid" "$proxy_pid" "$app_pid" 2>/dev/null || true
+            wait "$core_pid" "$proxy_pid" "$app_pid" 2>/dev/null || true
+            cat "$RUNNER_TEMP/browser-app.log" "$RUNNER_TEMP/browser-core.log" "$RUNNER_TEMP/browser-proxy.log"
           }
           trap cleanup EXIT
           ready=0
           for _attempt in $(seq 1 60); do
-            if curl --fail --silent --insecure https://127.0.0.1:3443/login > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:3010/readyz > /dev/null \
+              && curl --fail --silent --insecure https://127.0.0.1:3443/login > /dev/null; then
               ready=1
               break
             fi

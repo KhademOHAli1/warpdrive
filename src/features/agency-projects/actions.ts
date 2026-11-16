@@ -1,84 +1,45 @@
 "use server";
 
-import { z } from "zod";
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { createContext } from "@/server/trpc/context";
-import { err } from "@/types/result";
-import { createNativeProjectRepository } from "./nativeProject";
-import { listNativeProjects } from "./nativeProjectList";
-import { enableNativeProjects, projectCreationOptions, projectWorkspace } from "./nativeViews";
-import { projectStartInputSchema } from "./persistence/projectStartInput";
-import { projectCreateInputSchema } from "./projectCreationInput";
-import type { ProjectCreationOutcome } from "./projectCreationUiTypes";
-import type { ProjectStartOutcome } from "./projectWorkspaceTypes";
+import { invokeAction } from "@/frontend/actions";
 
-async function actionContext(expectedActorId: string) {
-  const parsed = z.string().uuid().safeParse(expectedActorId);
-  if (!parsed.success) return null;
-  const context = await createContext();
-  return context.actor?.id === parsed.data && context.session !== null ? context.session : null;
-}
+import type * as ImplementationModule from "./actions.backend";
+
+type Implementation = typeof ImplementationModule;
+
+export type * from "./actions.backend";
+
 export async function createAgencyProjectAction(
-  expectedActorId: string,
-  raw: unknown,
-  csrfToken: string | null,
-): Promise<ProjectCreationOutcome> {
-  if (!(await guardCsrf(csrfToken)).ok) return err("unknown");
-  const who = await actionContext(expectedActorId);
-  const parsed = projectCreateInputSchema.safeParse(raw);
-  if (who === null || !parsed.success) return err("unknown");
-  const result = await createNativeProjectRepository(db, who).create(
-    parsed.data,
-    AbortSignal.timeout(10_000),
-  );
-  return result.ok ? { ok: true, value: { projectId: result.value.projectId } } : err("unknown");
+  ...args: Parameters<Implementation["createAgencyProjectAction"]>
+): ReturnType<Implementation["createAgencyProjectAction"]> {
+  return invokeAction("features/agency-projects/actions.createAgencyProjectAction", args);
 }
+
 export async function startAgencyProjectAction(
-  expectedActorId: string,
-  raw: unknown,
-  csrfToken: string | null,
-): Promise<ProjectStartOutcome> {
-  if (!(await guardCsrf(csrfToken)).ok) return err("unknown");
-  const who = await actionContext(expectedActorId);
-  const parsed = projectStartInputSchema.safeParse(raw);
-  if (who === null || !parsed.success) return err("unknown");
-  const result = await createNativeProjectRepository(db, who).start(
-    parsed.data,
-    AbortSignal.timeout(10_000),
-  );
-  if (result.ok) return result;
-  return err(result.error === "revision_conflict" ? "conflict" : "unknown");
+  ...args: Parameters<Implementation["startAgencyProjectAction"]>
+): ReturnType<Implementation["startAgencyProjectAction"]> {
+  return invokeAction("features/agency-projects/actions.startAgencyProjectAction", args);
 }
-export async function listAgencyProjectsAction(expectedActorId: string, raw: unknown) {
-  const who = await actionContext(expectedActorId);
-  return who === null
-    ? err("project_unavailable" as const)
-    : listNativeProjects(db, who, raw, AbortSignal.timeout(10_000));
+
+export async function listAgencyProjectsAction(
+  ...args: Parameters<Implementation["listAgencyProjectsAction"]>
+): ReturnType<Implementation["listAgencyProjectsAction"]> {
+  return invokeAction("features/agency-projects/actions.listAgencyProjectsAction", args);
 }
-export async function readAgencyProjectAction(expectedActorId: string, raw: unknown) {
-  const who = await actionContext(expectedActorId);
-  const parsed = z.string().uuid().safeParse(raw);
-  return who === null || !parsed.success
-    ? err("project_unavailable" as const)
-    : projectWorkspace(db, who, parsed.data, AbortSignal.timeout(10_000));
+
+export async function readAgencyProjectAction(
+  ...args: Parameters<Implementation["readAgencyProjectAction"]>
+): ReturnType<Implementation["readAgencyProjectAction"]> {
+  return invokeAction("features/agency-projects/actions.readAgencyProjectAction", args);
 }
-export async function agencyProjectOptionsAction(expectedActorId: string, raw: unknown) {
-  const who = await actionContext(expectedActorId);
-  const query = z.string().trim().max(120).safeParse(raw);
-  return who === null || !query.success
-    ? err("project_unavailable" as const)
-    : projectCreationOptions(db, who, query.data, AbortSignal.timeout(10_000));
+
+export async function agencyProjectOptionsAction(
+  ...args: Parameters<Implementation["agencyProjectOptionsAction"]>
+): ReturnType<Implementation["agencyProjectOptionsAction"]> {
+  return invokeAction("features/agency-projects/actions.agencyProjectOptionsAction", args);
 }
+
 export async function enableAgencyProjectsAction(
-  expectedActorId: string,
-  enabled: boolean,
-  csrfToken: string | null,
-) {
-  if (!(await guardCsrf(csrfToken)).ok || typeof enabled !== "boolean")
-    return err("project_unavailable" as const);
-  const who = await actionContext(expectedActorId);
-  return who === null
-    ? err("project_unavailable" as const)
-    : enableNativeProjects(db, who, enabled, AbortSignal.timeout(10_000));
+  ...args: Parameters<Implementation["enableAgencyProjectsAction"]>
+): ReturnType<Implementation["enableAgencyProjectsAction"]> {
+  return invokeAction("features/agency-projects/actions.enableAgencyProjectsAction", args);
 }

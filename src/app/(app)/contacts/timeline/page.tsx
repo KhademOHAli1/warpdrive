@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { getAppTranslations } from "@/features/i18n/server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { EngagementTimelineClient } from "./EngagementTimelineClient";
 
 export async function generateMetadata() {

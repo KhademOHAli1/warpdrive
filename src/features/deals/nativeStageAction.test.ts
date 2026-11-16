@@ -25,7 +25,7 @@ vi.mock("./nativeStage", () => ({ moveNativeDealStage: vi.fn(), readNativeDealSt
 vi.mock("./notifyHelpers", () => ({ notifyOnDealMove: vi.fn() }));
 
 import { moveNativeDealStage, readNativeDealStage } from "./nativeStage";
-import { moveNativeDealStageAction, readNativeDealStageAction } from "./nativeStageAction";
+import { moveNativeDealStageAction, readNativeDealStageAction } from "./nativeStageAction.backend";
 import { notifyOnDealMove } from "./notifyHelpers";
 
 const who = { userId: "real-server-user", sessionId: "credential-established-session" };

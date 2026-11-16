@@ -55,7 +55,7 @@ vi.mock("@/features/email/queueMailboxSync", () => ({
 import {
   listThreadMoveFoldersAction,
   moveThreadAction,
-} from "@/features/email/imapThreadOperationsActions";
+} from "@/features/email/imapThreadOperationsActions.backend";
 
 async function bindNativeOwner(
   db: Db,

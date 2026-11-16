@@ -1,4 +1,6 @@
-import { lookupPost } from "@/features/company-profile/lookup/runtime";
+import { proxyBackendRequest } from "@/frontend/proxy";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const POST = lookupPost;
+
+export const POST = proxyBackendRequest;

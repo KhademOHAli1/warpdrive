@@ -1,8 +1,9 @@
-# Optional service only. Load after docker-compose.yml and compose.yml.
+# Private-network Core profile. Load after docker-compose.yml and compose.yml.
 # The deployment operator admits the exact image and its Core compatibility evidence.
 services:
   core-api:
     image: "${WARPDRIVE_CORE_IMAGE_REPOSITORY:?set WARPDRIVE_CORE_IMAGE_REPOSITORY}@sha256:${WARPDRIVE_CORE_IMAGE_SHA256:?set WARPDRIVE_CORE_IMAGE_SHA256}"
+    depends_on: !reset {}
     init: true
     restart: unless-stopped
     read_only: true

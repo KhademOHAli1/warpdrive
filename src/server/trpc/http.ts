@@ -41,9 +41,11 @@ export function createTrpcHttpHandler<TRouter extends AnyTRPCRouter>(
     if (!EXPECTED.has(error.code))
       captureError(errorActorId(ctx), error, { path: path ?? "", route: "trpc" });
   };
-  return withServerTiming((request) =>
-    fetchRequestHandler<TRouter>(
+  return withServerTiming(async (request) => {
+    const response = await fetchRequestHandler<TRouter>(
       Object.assign({}, options, { endpoint: "/api/trpc", req: request, onError }),
-    ),
-  );
+    );
+    response.headers.set("cache-control", "private, no-store");
+    return response;
+  });
 }

@@ -4,13 +4,11 @@ import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
 import { OrgsList } from "@/features/contacts/OrgsList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
-import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { resolveSavedViewSelection } from "@/features/saved-filters/savedViewSelection";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { getPreferencesForActor, listDefs, readBaseCurrency } from "@/frontend/reads";
+import { createCaller } from "@/frontend/trpc";
 
 export async function generateMetadata() {
   const t = await getAppTranslations("contacts");
@@ -47,7 +45,7 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
   const t = await getAppTranslations("contacts");
   const ctx = await createContext();
   const caller = createCaller(ctx);
-  const prefs = await getPreferencesForActor(ctx.db, actorId);
+  const prefs = await getPreferencesForActor();
   const storedSelection = prefs.ui.orgsSavedViewSelection;
   const visibleViews =
     storedSelection !== undefined &&
@@ -72,8 +70,8 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
           filter: selected?.definition ?? undefined,
           sort,
         }),
-    listDefs(ctx.db, "organization", {}, AbortSignal.timeout(8000)),
-    readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
+    listDefs("organization"),
+    readBaseCurrency(),
   ]);
   return (
     <OrgsList

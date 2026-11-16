@@ -17,7 +17,7 @@ import { db } from "@/db/client";
 import {
   discoverGoogleCalendarsAction,
   setGoogleCalendarSelectionAction,
-} from "./calendarCatalogActions";
+} from "./calendarCatalogActions.backend";
 
 const service = vi.hoisted(() => ({
   csrf: vi.fn(),

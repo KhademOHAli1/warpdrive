@@ -21,7 +21,7 @@ vi.mock("./pipelineActions", () => ({
 }));
 vi.mock("./stageActions", () => ({ deleteStage: vi.fn(), updateStage: vi.fn() }));
 
-import { renamePipelineAction } from "./pipelineEditActions";
+import { renamePipelineAction } from "./pipelineEditActions.backend";
 
 const input = {
   pipelineId: "b016190d-f5ba-4c0f-8387-b080c705288a",

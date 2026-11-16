@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import { GET as authorizationMetadata } from "@/app/.well-known/oauth-authorization-server/route";
+import { GET as authorizationMetadata } from "@/app/.well-known/oauth-authorization-server/route.backend";
 import { env } from "@/config/env";
 import { buildAuthServerMetadata } from "./metadata";
 

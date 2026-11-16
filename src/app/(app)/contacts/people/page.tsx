@@ -4,13 +4,11 @@ import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
 import { PeopleList } from "@/features/contacts/PeopleList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
-import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { resolveSavedViewSelection } from "@/features/saved-filters/savedViewSelection";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { getPreferencesForActor, listDefs, readBaseCurrency } from "@/frontend/reads";
+import { createCaller } from "@/frontend/trpc";
 
 export async function generateMetadata() {
   const t = await getAppTranslations("contacts");
@@ -47,7 +45,7 @@ async function PeopleSection({ actorId }: { actorId: string }): Promise<React.Re
   const t = await getAppTranslations("contacts");
   const ctx = await createContext();
   const caller = createCaller(ctx);
-  const prefs = await getPreferencesForActor(ctx.db, actorId);
+  const prefs = await getPreferencesForActor();
   const storedSelection = prefs.ui.peopleSavedViewSelection;
   const visibleViews =
     storedSelection !== undefined &&
@@ -74,8 +72,8 @@ async function PeopleSection({ actorId }: { actorId: string }): Promise<React.Re
             sort,
           }),
       blocked ? [] : caller.contacts.orgOptions(),
-      listDefs(ctx.db, "person", {}, AbortSignal.timeout(8000)),
-      readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
+      listDefs("person"),
+      readBaseCurrency(),
     ],
   );
   // Resolve each person's org name from the visible org set (hidden orgs stay unnamed).

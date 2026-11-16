@@ -14,7 +14,7 @@ import {
   transitionInput,
   transitionSignal,
 } from "./__fixtures__/CaseTransitionActionsTestKit";
-import { transitionPrivacyCaseAction as action } from "./reviewerActions";
+import { transitionPrivacyCaseAction as action } from "./reviewerActions.backend";
 
 beforeEach(resetTransitionAction);
 

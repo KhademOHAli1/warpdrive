@@ -16,7 +16,7 @@ vi.mock("@/features/identity/actions/shared", () => ({ guardCsrf: h.guard }));
 vi.mock("@/server/trpc/context", () => ({ createContext: h.context }));
 vi.mock("@/features/identity/preferencesRepo", () => ({ setPreferences: h.write }));
 
-import { saveLocalePreferencesAction } from "./actions";
+import { saveLocalePreferencesAction } from "./actions.backend";
 import { COUNTRY_COOKIE, TIME_ZONE_COOKIE, TIME_ZONE_MODE_COOKIE } from "./preferences";
 
 afterEach(() => vi.clearAllMocks());

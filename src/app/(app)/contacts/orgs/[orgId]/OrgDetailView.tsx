@@ -1,24 +1,20 @@
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
-import { toContactActor } from "@/features/contacts/actorAdapters";
-import { getContactFollowers } from "@/features/contacts/followers";
-import { getOrg } from "@/features/contacts/orgsRepo";
-import { listDefs } from "@/features/custom-fields/defsRepo";
-import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
-import { resolveCustomFieldRefLabels } from "@/features/custom-fields/refLabels";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
 import { can } from "@/features/permissions/can";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
+import { getOrgDetail } from "@/frontend/reads";
+import { err, ok } from "@/types/result";
 import { OrgDetailClient } from "./OrgDetailClient";
 
 // Shared org-detail loader. Exported so both the full page ([orgId]/page.tsx) and the intercepted
 // slide-over drawer (@modal/(.)[orgId]/page.tsx) render identical content, and generateMetadata can
 // reuse the cached load. Mirrors PersonDetailView.
-export const loadOrg = cachedDetailLoad((ctx, actor, orgId) =>
-  getOrg(ctx.db, toContactActor(actor), orgId, AbortSignal.timeout(10_000)),
-);
+export const loadOrg = cachedDetailLoad(async (_ctx, _actor, id) => {
+  const detail = await getOrgDetail(id);
+  return detail === null ? err("notfound") : ok(detail.org);
+});
 
 export async function OrgDetailView({ orgId }: { orgId: string }): Promise<React.ReactNode> {
   const loaded = await loadOrg(orgId);
@@ -28,15 +24,12 @@ export async function OrgDetailView({ orgId }: { orgId: string }): Promise<React
   if (loaded.kind === "notfound") {
     notFound();
   }
-  const { ctx, actor, value: org } = loaded;
+  const { actor, value: org } = loaded;
 
-  // All three reads need only the already-loaded org, so they are issued together.
-  const [defs, baseCurrency, { followers, isFollowedBySelf }, hidden] = await Promise.all([
-    listDefs(ctx.db, "organization", {}, AbortSignal.timeout(10_000)),
-    readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
-    getContactFollowers(ctx.db, actor, "organization", org.id, AbortSignal.timeout(10_000)),
-    listHiddenBuiltins(ctx.db, AbortSignal.timeout(10_000)),
-  ]);
+  const detail = await getOrgDetail(orgId);
+  if (detail === null) notFound();
+  const { defs, baseCurrency, hidden, refLabels } = detail;
+  const { followers, isFollowedBySelf } = detail.followers;
 
   const record: VisiblePersonOrOrg = {
     kind: "organization",
@@ -47,14 +40,6 @@ export async function OrgDetailView({ orgId }: { orgId: string }): Promise<React
   };
   const canMerge = can(actor, "contact.merge", record);
   const canDelete = can(actor, "contact.delete", record);
-
-  const refLabels = await resolveCustomFieldRefLabels(
-    ctx.db,
-    actor,
-    defs,
-    [{ customFields: org.customFields as Record<string, unknown> }],
-    AbortSignal.timeout(8000),
-  );
 
   return (
     <CustomFieldRefLabelsProvider value={refLabels}>

@@ -10,15 +10,19 @@ import { startAppBoss } from "@/jobs/appInstrumentation";
 import { setBoss } from "@/jobs/boss";
 import { coreProducerOptions } from "@/jobs/coreProducer";
 import { assertRuntimeQueueSchema } from "@/jobs/schemaContract";
+import { acceptsBackendPath, handleBackendHttp } from "@/server/http/handler";
+import { admitFrontendRequest } from "@/server/http/proxyAuthority";
+import { drainRequestTasks, withBackendRequest } from "@/server/request";
 import { createQueueOperationTracker } from "@/server/runtime/queueOwnership";
 import { installSignalShutdown } from "@/server/runtime/shutdown";
-import { createContextFromRequest } from "./context-core";
+import { createContext } from "./context";
 import {
   CORE_API_EDGE_BODY_BYTES,
   type CoreRuntimeDependencies,
   createCoreHttpRuntime,
 } from "./core-runtime";
 import { createTrpcHttpHandler } from "./http";
+import { readRequestCsrf } from "./request-csrf";
 import { appRouter } from "./root";
 
 /** Full existing router; only the process owns producer, pool, listener and Web resolver. */
@@ -45,7 +49,20 @@ export function startCoreService(serve: CoreRuntimeDependencies["serve"]) {
   const ownership = createQueueOperationTracker(() => runtime.markUnavailable("producer"));
   const handler = createTrpcHttpHandler({
     router: appRouter,
-    createContext: ({ req }) => createContextFromRequest(req, db, identity.read),
+    createContext: ({ req }) => {
+      const path = new URL(req.url).pathname;
+      // Existing actions perform cheap CSRF admission before resolving their actor. Retain
+      // that ordering, and avoid a session query for public presentation configuration.
+      if (path === "/api/trpc/commands.execute" || path === "/api/trpc/frontend.configuration")
+        return Promise.resolve({
+          db,
+          actor: null,
+          session: null,
+          csrf: readRequestCsrf(req.headers),
+          readWebIdentity: identity.read,
+        });
+      return createContext();
+    },
   });
   const runtime = createCoreHttpRuntime(
     {
@@ -67,7 +84,38 @@ export function startCoreService(serve: CoreRuntimeDependencies["serve"]) {
         if (performance.now() >= startupDeadlineAt) runtime.markUnavailable("startup");
         return server;
       },
-      handler,
+      acceptsPath: acceptsBackendPath,
+      handler: (incoming) => {
+        const request = admitFrontendRequest(incoming);
+        if (request === null)
+          return Promise.resolve(
+            new Response("Unauthorized proxy", {
+              status: 401,
+              headers: { "cache-control": "no-store" },
+            }),
+          );
+        return withBackendRequest(
+          request,
+          () => {
+            let path: string;
+            try {
+              path = decodeURIComponent(new URL(request.url).pathname);
+            } catch {
+              return Promise.resolve(new Response("Malformed request path", { status: 400 }));
+            }
+            // The compatibility action transport is single-command. Existing read batching stays
+            // available; an uncertain write must never be multiplied or replayed by a batch adapter.
+            if (path.includes(",") && path.includes("commands.execute"))
+              return Promise.resolve(
+                new Response("Commands require individual requests", { status: 400 }),
+              );
+            return path === "/api/trpc" || path.startsWith("/api/trpc/")
+              ? handler(request)
+              : handleBackendHttp(request);
+          },
+          identity.read,
+        );
+      },
       async startProducer() {
         assertStartupBudget();
         const role = await admitCoreRuntimeRole((configuration) => pool.query(configuration), {
@@ -110,6 +158,7 @@ export function startCoreService(serve: CoreRuntimeDependencies["serve"]) {
       },
       detachProducer: () => setBoss(null),
       async stopProducer() {
+        await drainRequestTasks();
         // Startup may visibly time out while its underlying operations are still pending.
         await ownership.waitForSettled();
         await producer?.stop({ graceful: true, timeout: 30_000 });

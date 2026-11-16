@@ -41,6 +41,7 @@ import { emailIds2 } from "./registryIdsEmail2";
 import { enrichmentIds1 } from "./registryIdsEnrichment1";
 import { exportStorageIds1 } from "./registryIdsExportStorage1";
 import { filesIds1, mailboxFileAuthorizationIds1 } from "./registryIdsFiles1";
+import { headlessTransportIds } from "./registryIdsHeadless";
 import { importsIds1 } from "./registryIdsImports1";
 import { infrastructureIds1 } from "./registryIdsInfrastructure1";
 import { infrastructureIds2 } from "./registryIdsInfrastructure2";
@@ -71,6 +72,18 @@ import {
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
+  classifyInventory(headlessTransportIds, {
+    ...classifications.infrastructure,
+    owner: "headless presentation transport and Core request adapter",
+    purpose:
+      "Forward existing native session cookies, actual request facts and typed commands to the fixed operator-configured Core origin, and render permission-filtered read projections. Backend domain owners keep authentication, validation, current permissions, transactions and provider authority.",
+    disclosure:
+      "Forward existing request/response data only to the configured self-hosted backend. Proxy credentials remain server-only and never establish actor authority. Public configuration contains availability booleans and public telemetry settings; billing configuration requires an administrator. Cookie mutations travel in HTTP response headers, with no auth credential added to JSON action effects. Presentation receives existing permitted actor and domain projections, not database connections or provider secrets.",
+    retention:
+      "HTTP bytes, request-local context, cookies and read batches last for their request or actual stream completion. Post-commit callbacks remain tracked until settled and are drained before dependency shutdown. The scanner's delete:work removes a Promise marker and other deletes remove headers or request cookies; none erases subject records. Existing domain retention and pending installation gates remain authoritative.",
+    externalEffects:
+      "The external fetch calls target one fixed Core origin, preserve original protocol bodies and do not replay uncertain writes. Query scanner entries are typed RPC reads, not SQL mutations. Core executes only the explicit existing action/HTTP allowlists, including each handler's original effects. Request callback failure logs a fixed message without arguments, credentials or provider diagnostics. This extraction adds no provider, queue destination, durable personal-data store or lifecycle capability.",
+  }),
   agencyProjectInventoryEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,

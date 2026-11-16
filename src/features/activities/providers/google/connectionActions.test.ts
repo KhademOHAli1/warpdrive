@@ -14,7 +14,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { db } from "@/db/client";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
-import { disconnectGoogleCalendarAction } from "./connectionActions";
+import { disconnectGoogleCalendarAction } from "./connectionActions.backend";
 
 const service = vi.hoisted(() => ({ disconnect: vi.fn(), context: vi.fn() }));
 const headers = new Map<string, string>();

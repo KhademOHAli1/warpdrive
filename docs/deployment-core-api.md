@@ -74,7 +74,7 @@ The Web process continues to own authentication HTTP routes, Next rendering, ass
 
 ### Startup and routing contract
 
-`src/entrypoints/core-api.ts` requires Bun and the explicit `RUNTIME_COMPONENT=core-api` profile. It serves only `/api/trpc`, `/api/trpc/*`, `/healthz` and `/readyz`. The request context uses the actual cookie credential, database-derived actor and captured CSRF facts. Actor headers and RPC inputs cannot install a resolver or authentication authority.
+`src/entrypoints/core-api.ts` requires Bun and the explicit `RUNTIME_COMPONENT=core-api` profile. It serves `/api/trpc`, `/api/trpc/*`, the explicitly registered native protocol/binary routes, `/healthz` and `/readyz`. Core is required by the [headless frontend](deployment-headless.md). The request context uses the actual cookie credential, database-derived actor and captured CSRF facts. Actor headers and RPC inputs cannot install a resolver or authentication authority.
 
 Startup admits the actual runtime database role, reads the Web metadata contract, admits the preprovisioned queue schema, starts a producer without consumers/migrations, checks cheap database/queue health, and then binds the listener. Failure remains unavailable and invokes the same bounded shutdown controller. The startup deadline uses both a timer and monotonic checks at awaited/publication/bind boundaries.
 

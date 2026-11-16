@@ -1,82 +1,33 @@
 "use server";
 
-import { ERROR_IDS } from "@/constants/errorIds";
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { createContext } from "@/server/trpc/context";
-import {
-  removeSavedFilter,
-  saveFilter,
-  toggleFavorite,
-  updateSavedFilter,
-} from "./savedFilterActions";
-import type { SavedFilterPatch, SaveFilterArgs } from "./savedFilterInputs";
+import { invokeAction } from "@/frontend/actions";
 
-export type FilterActionResult<T = undefined> =
-  | { ok: true; value: T }
-  | { ok: false; error: { id: string } };
+import type * as ImplementationModule from "./serverActions.backend";
 
-// Resolve the actor as a FilterSession: userId + isAdmin + a boolean flag map built from the
-// actor's permission flag set. owner/flags are derived server-side, never from the client.
-async function actorSession(
-  csrfToken: string | null,
-): Promise<
-  | { ok: true; session: { userId: string; isAdmin: boolean; flags: Record<string, boolean> } }
-  | { ok: false; error: { id: string } }
-> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-  const { actor } = await createContext();
-  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
-  const flags: Record<string, boolean> = {};
-  for (const f of actor.flags) flags[f] = true;
-  return {
-    ok: true,
-    session: { userId: actor.id, isAdmin: actor.type === "admin", flags },
-  };
-}
+type Implementation = typeof ImplementationModule;
+
+export type * from "./serverActions.backend";
 
 export async function createSavedFilterAction(
-  input: SaveFilterArgs,
-  csrfToken: string | null = null,
-): Promise<FilterActionResult<{ id: string }>> {
-  const a = await actorSession(csrfToken);
-  if (!a.ok) return a;
-  const r = await saveFilter(db, a.session, input, AbortSignal.timeout(10_000));
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: { id: r.value.id } };
+  ...args: Parameters<Implementation["createSavedFilterAction"]>
+): ReturnType<Implementation["createSavedFilterAction"]> {
+  return invokeAction("features/saved-filters/serverActions.createSavedFilterAction", args);
 }
 
 export async function updateSavedFilterAction(
-  id: string,
-  input: SavedFilterPatch,
-  csrfToken: string | null = null,
-): Promise<FilterActionResult> {
-  const a = await actorSession(csrfToken);
-  if (!a.ok) return a;
-  const r = await updateSavedFilter(db, a.session, id, input, AbortSignal.timeout(10_000));
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: undefined };
+  ...args: Parameters<Implementation["updateSavedFilterAction"]>
+): ReturnType<Implementation["updateSavedFilterAction"]> {
+  return invokeAction("features/saved-filters/serverActions.updateSavedFilterAction", args);
 }
 
 export async function removeSavedFilterAction(
-  id: string,
-  csrfToken: string | null = null,
-): Promise<FilterActionResult> {
-  const a = await actorSession(csrfToken);
-  if (!a.ok) return a;
-  const r = await removeSavedFilter(db, a.session, id, AbortSignal.timeout(10_000));
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: undefined };
+  ...args: Parameters<Implementation["removeSavedFilterAction"]>
+): ReturnType<Implementation["removeSavedFilterAction"]> {
+  return invokeAction("features/saved-filters/serverActions.removeSavedFilterAction", args);
 }
 
 export async function toggleFavoriteAction(
-  id: string,
-  csrfToken: string | null = null,
-): Promise<FilterActionResult> {
-  const a = await actorSession(csrfToken);
-  if (!a.ok) return a;
-  const r = await toggleFavorite(db, a.session, id, AbortSignal.timeout(10_000));
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: undefined };
+  ...args: Parameters<Implementation["toggleFavoriteAction"]>
+): ReturnType<Implementation["toggleFavoriteAction"]> {
+  return invokeAction("features/saved-filters/serverActions.toggleFavoriteAction", args);
 }

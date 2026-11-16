@@ -8,37 +8,26 @@ import { ReconnectBanner } from "@/components/shell/ReconnectBanner";
 import { TopBar } from "@/components/shell/TopBar";
 import { WorkspaceShellProvider } from "@/components/shell/WorkspaceShellProvider";
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
-import { db } from "@/db/client";
+import { CSRF_COOKIE } from "@/contracts/auth";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
-import { projectLanding } from "@/features/agency-projects/nativeViews";
-import { resolveWorkflowSession } from "@/features/auth/better/sessionPolicy";
-import { CSRF_COOKIE } from "@/features/auth/csrf";
-import { getCompanyMemberProjection } from "@/features/company-profile/repository";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
-import { newsletterConfigured } from "@/features/newsletter/listmonkClient";
 import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/privacy/requestPath";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { GlobalShortcuts } from "@/features/shortcuts/GlobalShortcuts";
 import { appearanceSeedScript, parseAppearance } from "@/features/theme/appearance";
-import { readWorkNavigation } from "@/features/work-profile/navigation";
-import { createContext } from "@/server/trpc/context";
+import { createContext, getBootstrap } from "@/frontend/context";
 
 export default async function AppLayout({ children }: { children: ReactNode }): Promise<ReactNode> {
   const ctx = await createContext();
   if (ctx.actor === null) {
     const requestHeaders = await headers();
-    const pending = await resolveWorkflowSession(db, requestHeaders, AbortSignal.timeout(5000), {
-      allowPending: true,
-    });
-    const target = pending === null ? "/login" : "/auth/continue";
+    const target = ctx.pendingAuthentication ? "/auth/continue" : "/login";
     const returnPath = privacyCaseReturnPath(requestHeaders.get(PRIVACY_CASE_PATH_HEADER));
     redirect(returnPath === null ? target : `${target}?returnTo=${encodeURIComponent(returnPath)}`);
   }
@@ -51,15 +40,9 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   // user row), so the shell no longer re-reads that row per authenticated page. Only the per-user
   // interface preferences remain; default comfortable when no row exists (DealCard/Board read the
   // density via the data-density attribute).
-  const [prefs, baseCurrency, brand, navigation, projects] = await Promise.all([
-    getPreferencesForActor(db, ctx.actor.id),
-    readBaseCurrency(db, AbortSignal.timeout(5000)),
-    getCompanyMemberProjection(db, AbortSignal.timeout(5000)),
-    readWorkNavigation(db, ctx.actor, AbortSignal.timeout(5000)),
-    ctx.session === null
-      ? Promise.resolve(null)
-      : projectLanding(db, ctx.session, AbortSignal.timeout(5000)),
-  ]);
+  const { shell } = await getBootstrap();
+  if (shell === null) redirect("/login");
+  const { prefs, baseCurrency, brand, navigation, projects } = shell;
   return (
     <NativeActorProvider key={ctx.actor.id} actorId={ctx.actor.id}>
       <WorkspaceShellProvider
@@ -67,7 +50,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         modules={navigation.modules}
         canViewWork={navigation.canViewWork}
         canViewProjects={projects !== null && (projects.enabled || projects.canEnable)}
-        canViewCampaigns={hasNewsletterPermission(ctx.actor, "view") && newsletterConfigured()}
+        canViewCampaigns={hasNewsletterPermission(ctx.actor, "view") && shell.newsletterConfigured}
         campaignCapabilities={{
           edit: hasNewsletterPermission(ctx.actor, "edit"),
           send: hasNewsletterPermission(ctx.actor, "send"),

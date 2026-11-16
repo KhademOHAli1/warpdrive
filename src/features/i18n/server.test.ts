@@ -11,12 +11,10 @@ vi.mock("next/headers", () => ({
       get: (key: string) => (h.values[key] === undefined ? undefined : { value: h.values[key] }),
     }),
 }));
-vi.mock("@/db/client", () => ({ db: {} }));
-vi.mock("@/features/auth/session", () => ({ SESSION_COOKIE: "wd_session" }));
-vi.mock("@/server/trpc/context", () => ({
+vi.mock("@/frontend/context", () => ({
   createContext: () => Promise.resolve({ actor: { id: "user-1" } }),
 }));
-vi.mock("@/features/identity/preferencesForActor", () => ({
+vi.mock("@/frontend/reads", () => ({
   getPreferencesForActor: () => Promise.resolve(h.preferences),
 }));
 
@@ -75,7 +73,7 @@ it("reads country and automatic mode cookies for guests", async () => {
 
 it("keeps account choices and uses the current device cookie for a browser-mode zone", async () => {
   h.values = {
-    wd_session: "session",
+    wd_sid: "session",
     [LOCALE_COOKIE]: "de",
     [COUNTRY_COOKIE]: "DE",
     [TIME_ZONE_COOKIE]: "Europe/Berlin",

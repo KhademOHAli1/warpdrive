@@ -1,7 +1,7 @@
-import { after } from "next/server";
 import { db } from "@/db/client";
 import type { Activity } from "@/db/schema/activities";
 import { SIG } from "@/features/identity/actions/sig";
+import { after } from "@/server/request";
 import { notifyOnActivityCreated } from "./notifyHelpers";
 import { nudgeActivityReminder } from "./reminderScheduling";
 

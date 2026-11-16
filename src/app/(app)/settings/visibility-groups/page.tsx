@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { getLocalePreferences } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { listVisibilityGroups } from "@/features/identity/visibility-groups.service";
+import { createContext } from "@/frontend/context";
+import { listVisibilityGroups } from "@/frontend/reads";
 import { formatDateTime } from "@/lib/localeFormatting";
-import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../SettingsHeading";
 import {
   SETTINGS_TABLE_CELL,
@@ -27,11 +27,11 @@ export default async function VisibilityGroupsPage(): Promise<ReactNode> {
   const preferences = await getLocalePreferences();
   const C = L.columns;
 
-  const { actor, db } = await createContext();
+  const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
-  const rows = await listVisibilityGroups(db, AbortSignal.timeout(5000));
+  const rows = await listVisibilityGroups();
   return (
     <SettingsPage>
       <SettingsHeading

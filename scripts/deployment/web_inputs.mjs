@@ -15,11 +15,11 @@ export const WEB_SOURCE_RULES = WEB_EXCLUSIONS.map(
   (path) => `@source not "../${path.slice("src/".length)}";`,
 );
 const REVIEWED = {
-  "next.config.ts": "19734143231672763194cf18fb9f683edce125fd01fcabe506992d3af4efa10b",
+  "next.config.ts": "0c4b8e59b6e5e5c5a9fbb913ea4ff1dbac784dbb68b20be0f9d49b40b0b7f52f",
   "postcss.config.mjs": "b783348d5618047d0f37e12acd15c5a2c5f02809d8711e0764c9cea52750346c",
   "src/config/developmentCache.ts":
     "a568b3224411d19865ae771d72d13c67cf4d87509789806b46e33992f2472697",
-  "src/config/env.ts": "78874662c9127d8a2c9687d69414714f38c7d977640755f4a5e142b0b7f39560",
+  "src/config/env.ts": "6e961cdcb6891412253e2840808387701768eea6c776f52366d43e160a52018f",
   "src/features/release/currentVersion.ts":
     "98fe2b01a8ad364ca2db966af5378fd941560130dc22310f549c5705c3345ac2",
   "src/features/workflows/v2/codeSandbox.ts":
@@ -28,7 +28,7 @@ const REVIEWED = {
   "patches/shadcn@4.23.0.patch": "75bd1aa3fb9742bf1356fa05a439c893ede7bf6ecaa7fa4b5041c1c9a598f434",
 };
 const REVIEWED_NEXT_WITHOUT_MESSAGE_LIST =
-  "3fa2d62ef09954d3c7f1399ba986586eff0a561a01d90e2bd2b4c3a6fabd4609";
+  "1ec80e12a240de057fd07fe5e4ed617f5e18889be1dbda18f322833c3327ccf8";
 // Audited host-global caches and the QuickJS helper's Bun.Transpiler access. Printing without
 // comments admits source-membership positive controls, while every executable/type change
 // needs review. This is not a filename-only exception for future global/reflective loaders.

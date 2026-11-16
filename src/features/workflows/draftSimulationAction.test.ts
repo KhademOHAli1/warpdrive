@@ -27,7 +27,7 @@ vi.mock("@/server/trpc/context", () => ({ createContext: deps.context }));
 vi.mock("./draftSimulation", () => ({ simulateWorkflowDraft: deps.simulate }));
 vi.mock("./queue", () => ({ nudgeWorkflowRun: deps.nudge }));
 
-import { simulateWorkflowDraftAction } from "./actions";
+import { simulateWorkflowDraftAction } from "./actions.backend";
 
 const workflowId = "b700ce7d-403e-4589-b2cb-34fd74baae22";
 const actor = { id: "805b3653-2221-4dc9-a700-408937622d97" };

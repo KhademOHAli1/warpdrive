@@ -23,7 +23,16 @@ vi.mock("@/config/env", () => ({
   },
 }));
 vi.mock("next/navigation", () => ({ notFound: boundary.notFound, redirect: boundary.redirect }));
-vi.mock("@/server/trpc/context", () => ({ createContext: boundary.context }));
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: async () => {
+    const { env } = await import("@/config/env");
+    return {
+      ...env,
+      GMAIL_CONFIGURED: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
+    };
+  },
+  createContext: boundary.context,
+}));
 vi.mock("@/features/i18n/server", async () => {
   const { createAppTranslator } = await import("@/features/i18n/catalog");
   return {

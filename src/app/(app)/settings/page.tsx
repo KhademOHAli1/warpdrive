@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 
 // Settings home: send admins to Company settings, everyone else to their personal preferences.
 export default async function SettingsIndex(): Promise<never> {

@@ -29,7 +29,7 @@ import {
   reorderTemplatesAction,
   updateSignatureAction,
   updateTemplateAction,
-} from "./authoringActions";
+} from "./authoringActions.backend";
 
 const createTemplate = vi.mocked(authoring.createTemplate);
 const updateTemplate = vi.mocked(authoring.updateTemplate);

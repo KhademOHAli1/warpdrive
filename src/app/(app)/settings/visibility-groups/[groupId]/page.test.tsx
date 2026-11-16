@@ -47,7 +47,16 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
-vi.mock("@/server/trpc/context", () => ({ createContext: mocks.context }));
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: async () => {
+    const { env } = await import("@/config/env");
+    return {
+      ...env,
+      GMAIL_CONFIGURED: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
+    };
+  },
+  createContext: mocks.context,
+}));
 vi.mock("@/features/identity/visibility-groups.service", () => ({
   listVisibilityGroups: mocks.groups,
   listGroupMembers: mocks.members,
@@ -225,3 +234,9 @@ describe("Visibility group member reads", () => {
     expect(mocks.users).not.toHaveBeenCalled();
   });
 });
+
+vi.mock("@/frontend/reads", () => ({
+  listVisibilityGroups: mocks.groups,
+  listGroupMembers: mocks.members,
+  listAssignableUsers: mocks.users,
+}));

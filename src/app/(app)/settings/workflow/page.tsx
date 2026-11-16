@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 import { DEFAULT_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
-import { db } from "@/db/client";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { getPreferencesForActor } from "@/frontend/reads";
 import { DailyActivityTarget } from "../profile/DailyActivityTarget";
 import { InterfacePreferences } from "../profile/InterfacePreferences";
 import { SettingsHeading } from "../SettingsHeading";
@@ -19,7 +18,7 @@ export default async function WorkflowPage(): Promise<ReactNode> {
   const L = await getServerSettingsMessages();
   const { actor } = await createContext();
   if (actor === null) return <p className="text-sm text-destructive">{L.requiresAuth}</p>;
-  const prefs = await getPreferencesForActor(db, actor.id);
+  const prefs = await getPreferencesForActor();
   return (
     <SettingsPage>
       <SettingsHeading

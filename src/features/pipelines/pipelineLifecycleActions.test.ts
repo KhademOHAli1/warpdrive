@@ -7,7 +7,7 @@ vi.mock("@/config/env", async (original) => {
   return { ...value, env: { ...value.env, SALES_PIPELINE_LIFECYCLE_ENABLED: false } };
 });
 
-import { archivePipelineAction, restorePipelineAction } from "./pipelineLifecycleActions";
+import { archivePipelineAction, restorePipelineAction } from "./pipelineLifecycleActions.backend";
 
 test("disabled lifecycle rejects writes even when clients submit an enable flag", async () => {
   expect(await archivePipelineAction({ enabled: true }, "csrf")).toEqual({

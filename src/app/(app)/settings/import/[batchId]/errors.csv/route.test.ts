@@ -26,7 +26,7 @@ vi.mock("@/features/i18n/server", async (importOriginal) => {
 });
 
 import { hydrateActor } from "@/server/hydrateActor";
-import { GET } from "./route";
+import { GET } from "./route.backend";
 
 const BATCH_ID = "11111111-1111-4111-8111-111111111111";
 const MISSING_BATCH_ID = "22222222-2222-4222-8222-222222222222";

@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import { env } from "@/config/env";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { can } from "@/features/permissions/can";
-import { createContext } from "@/server/trpc/context";
+import { createContext, getFrontendConfig } from "@/frontend/context";
 import { SettingsNav } from "./SettingsNav";
 
 // Administrative links remain hidden unless the actor has their existing permission.
@@ -11,6 +10,7 @@ export default async function SettingsLayout({
 }: {
   children: ReactNode;
 }): Promise<ReactNode> {
+  const env = await getFrontendConfig();
   const { actor } = await createContext();
   const isAdmin = actor !== null && actor.type === "admin";
   const canManageCompany =

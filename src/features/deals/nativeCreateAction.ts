@@ -1,34 +1,21 @@
 "use server";
 
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import { createContext } from "@/server/trpc/context";
-import { createNativeDeal, readNativeDealCreation } from "./nativeCreate";
-import type { NativeDealCreateResult } from "./nativeCreateTypes";
+import { invokeAction } from "@/frontend/actions";
 
-// A distinct strict entry: an operation can never fall through to the legacy action.
+import type * as ImplementationModule from "./nativeCreateAction.backend";
+
+type Implementation = typeof ImplementationModule;
+
+export type * from "./nativeCreateAction.backend";
+
 export async function createNativeDealAction(
-  raw: unknown,
-  csrfToken: string | null,
-): Promise<NativeDealCreateResult> {
-  const csrf = await guardCsrf(csrfToken);
-  if (!csrf.ok) return { ok: false, error: { id: "E_AUTH_CSRF" }, outcome: "unresolved" };
-  const context = await createContext();
-  if (context.session === null || context.actor === null)
-    return { ok: false, error: { id: "E_AUTH_003" }, outcome: "unresolved" };
-  return createNativeDeal(db, context.session, raw, SIG());
+  ...args: Parameters<Implementation["createNativeDealAction"]>
+): ReturnType<Implementation["createNativeDealAction"]> {
+  return invokeAction("features/deals/nativeCreateAction.createNativeDealAction", args);
 }
 
-// Strict read-only recovery; this entry can never create on a missing receipt.
 export async function readNativeDealCreationAction(
-  raw: unknown,
-  csrfToken: string | null,
-): Promise<NativeDealCreateResult> {
-  const csrf = await guardCsrf(csrfToken);
-  if (!csrf.ok) return { ok: false, error: { id: "E_AUTH_CSRF" }, outcome: "unresolved" };
-  const context = await createContext();
-  if (context.session === null || context.actor === null)
-    return { ok: false, error: { id: "E_AUTH_003" }, outcome: "unresolved" };
-  return readNativeDealCreation(db, context.session, raw, SIG());
+  ...args: Parameters<Implementation["readNativeDealCreationAction"]>
+): ReturnType<Implementation["readNativeDealCreationAction"]> {
+  return invokeAction("features/deals/nativeCreateAction.readNativeDealCreationAction", args);
 }

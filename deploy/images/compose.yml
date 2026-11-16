@@ -20,3 +20,7 @@ services:
   migrate:
     build: !reset null
     image: "${WARPDRIVE_MIGRATOR_IMAGE:?set WARPDRIVE_MIGRATOR_IMAGE}"
+
+  core-api:
+    build: !reset null
+    image: "${WARPDRIVE_CORE_IMAGE:?set WARPDRIVE_CORE_IMAGE}"

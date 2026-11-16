@@ -23,11 +23,15 @@ import { searchRouter } from "@/features/search/router";
 import { statsRouter } from "@/features/stats/router";
 import { workflowsRouter } from "@/features/workflows/router";
 import { workflowsV2Router } from "@/features/workflows/v2/router";
+import { commandsRouter } from "@/server/actions/router";
+import { frontendRouter } from "@/server/frontend/router";
 import { identityRouter } from "./routers/identity";
 import { realtimeRouter } from "./routers/realtime";
 import { router } from "./trpc";
 
 export const appRouter = router({
+  commands: commandsRouter,
+  frontend: frontendRouter,
   identity: identityRouter,
   realtime: realtimeRouter,
   pipeline: pipelineRouter,

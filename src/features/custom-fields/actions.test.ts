@@ -37,7 +37,7 @@ const { createDef, archiveDef } = vi.hoisted(() => ({
 }));
 vi.mock("./defsRepo", () => ({ createDef, archiveDef }));
 
-import { createDefAction } from "./actions";
+import { createDefAction } from "./actions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 

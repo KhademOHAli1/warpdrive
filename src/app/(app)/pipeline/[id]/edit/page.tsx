@@ -1,8 +1,8 @@
 import { createSalesStrings } from "@/features/deals/salesStrings";
 import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server";
 import { EditPipelineClient } from "@/features/pipelines/EditPipelineClient";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { createCaller } from "@/frontend/trpc";
 
 export async function generateMetadata() {
   const STRINGS = createSalesStrings((await getLocalePreferences()).locale);

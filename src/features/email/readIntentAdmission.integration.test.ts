@@ -28,7 +28,7 @@ vi.mock("@/server/trpc/context", () => ({
   createContext: () => Promise.resolve({ actor: context.actor, session: context.session }),
 }));
 
-import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions";
+import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions.backend";
 
 afterEach(() => {
   context.db = null;

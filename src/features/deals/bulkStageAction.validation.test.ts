@@ -30,7 +30,7 @@ const { bulkUpdateStage } = vi.hoisted(() => ({
 }));
 vi.mock("./bulkActions", () => ({ bulkUpdateStage }));
 
-import { bulkStageAction } from "./bulkStageAction";
+import { bulkStageAction } from "./bulkStageAction.backend";
 import type { BulkStageInput } from "./schemas";
 
 const VALID_TOKEN = "csrf-test-token";

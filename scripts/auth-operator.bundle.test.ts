@@ -70,12 +70,12 @@ test("the shipped builder emits an operator CLI and production config runnable w
       serverActions: { bodySizeLimit: "64mb" },
       proxyClientMaxBodySize: 64 * 1024 ** 2,
       reactCompiler: true,
-      externalPackages: ["pg", "pg-boss", "isomorphic-dompurify"],
       logging: { serverFunctions: false },
       productionCache: { type: "filesystem" },
       intlAlias: join(await realpath(root), "src/features/i18n/request.ts"),
       webpackHook: "function",
     });
+    expect(loaded.externalPackages ?? []).toEqual([]);
     expect(loaded.headers).toEqual([
       expect.objectContaining({
         source: "/oauth/authorize/consent",

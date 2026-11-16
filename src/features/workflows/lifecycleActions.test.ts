@@ -22,7 +22,7 @@ import {
   duplicateWorkflowAction,
   restoreWorkflowDraftAction,
   unarchiveWorkflowAction,
-} from "./actions";
+} from "./actions.backend";
 
 beforeEach(() => vi.resetAllMocks());
 

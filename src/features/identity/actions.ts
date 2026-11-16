@@ -1,7 +1,2 @@
-"use server";
-
-// Re-export the unit-testable helper (test imports from "./actions").
-export { runWithActor } from "./actions/shared";
-
-// Team actions.
+// Compatibility export for UI callers; request/actor helpers remain backend-only.
 export { createTeamAction } from "./actions/teams";

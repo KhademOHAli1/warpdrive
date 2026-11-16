@@ -31,14 +31,14 @@ vi.mock("@/features/identity/visibility-groups.service", () => ({
   removeGroupMember: mocks.operation,
 }));
 
-import { addGroupMemberAction, createGroupAction, removeGroupMemberAction } from "./groups";
-import { createPermissionSetAction, updateFlagsAction } from "./permission-sets";
+import { addGroupMemberAction, createGroupAction, removeGroupMemberAction } from "./groups.backend";
+import { createPermissionSetAction, updateFlagsAction } from "./permission-sets.backend";
 import {
   createTeamAction,
   deleteTeamAction,
   setTeamMembersAction,
   updateTeamAction,
-} from "./teams";
+} from "./teams.backend";
 
 test("team, permission and visibility actions require fresh authentication before their services run", async () => {
   const id = "00000000-0000-4000-8000-0000000000aa";

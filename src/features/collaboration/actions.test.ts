@@ -4,7 +4,7 @@ vi.mock("@/features/identity/actions/shared", () => ({
   guardCsrf: () => Promise.resolve({ ok: false as const }),
 }));
 
-import { deleteNoteAction, updateNoteAction } from "./actions";
+import { deleteNoteAction, updateNoteAction } from "./actions.backend";
 
 it("updateNoteAction rejects a bad CSRF token", async () => {
   const r = await updateNoteAction({ noteId: "n1", body: "x" }, null);

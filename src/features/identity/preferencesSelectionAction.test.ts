@@ -24,7 +24,7 @@ vi.mock("./preferencesRepo", () => ({
 }));
 
 import { db } from "@/db/client";
-import { setSavedViewSelectionAction } from "./preferencesActions";
+import { setSavedViewSelectionAction } from "./preferencesActions.backend";
 
 const actorId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const oldActorId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";

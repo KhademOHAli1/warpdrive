@@ -23,7 +23,7 @@ import {
   createOwnPrivacyRequestAction,
   readOwnPrivacyRequestAction,
   verifyOwnPrivacyRequestAction,
-} from "./requestActions";
+} from "./requestActions.backend";
 
 // Transport-boundary tests only. Domain services and session resolution are isolated;
 // no database is mocked, queried or qualified by this file.

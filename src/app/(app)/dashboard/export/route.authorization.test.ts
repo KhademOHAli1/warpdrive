@@ -19,7 +19,7 @@ const boundary = vi.hoisted(() => ({
 vi.mock("@/server/trpc/context", () => ({ createContext: boundary.context }));
 vi.mock("@/server/trpc/root", () => ({ createCaller: boundary.caller }));
 
-import { GET } from "./route";
+import { GET } from "./route.backend";
 
 const userId = "a7111111-1111-4111-8111-111111111111";
 const dealId = "d7111111-1111-4111-8111-111111111111";

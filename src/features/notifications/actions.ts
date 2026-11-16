@@ -1,67 +1,27 @@
 "use server";
 
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import { createContext } from "@/server/trpc/context";
-import { markAllRead, markRead } from "./feed";
-import { setPreference } from "./preferences";
-import { markReadInput, setPreferenceInput } from "./schemas";
+import { invokeAction } from "@/frontend/actions";
 
-type ActionResult<T = Record<string, never>> =
-  | { ok: true; value: T }
-  | { ok: false; error: { id: string } };
+import type * as ImplementationModule from "./actions.backend";
+
+type Implementation = typeof ImplementationModule;
+
+export type * from "./actions.backend";
 
 export async function markReadAction(
-  input: { id: string },
-  csrfToken: string | null = null,
-): Promise<ActionResult> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-
-  const { actor, db } = await createContext();
-  if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
-
-  const parsed = markReadInput.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: { id: "E_NOTIF_001" } };
-  }
-
-  await markRead(db, actor, parsed.data.id, SIG());
-  return { ok: true, value: {} };
+  ...args: Parameters<Implementation["markReadAction"]>
+): ReturnType<Implementation["markReadAction"]> {
+  return invokeAction("features/notifications/actions.markReadAction", args);
 }
 
-export async function markAllReadAction(csrfToken: string | null = null): Promise<ActionResult> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-
-  const { actor, db } = await createContext();
-  if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
-
-  await markAllRead(db, actor, SIG());
-  return { ok: true, value: {} };
+export async function markAllReadAction(
+  ...args: Parameters<Implementation["markAllReadAction"]>
+): ReturnType<Implementation["markAllReadAction"]> {
+  return invokeAction("features/notifications/actions.markAllReadAction", args);
 }
 
 export async function setPreferenceAction(
-  input: { type: string; inApp: boolean; email: boolean },
-  csrfToken: string | null = null,
-): Promise<ActionResult> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-
-  const { actor, db } = await createContext();
-  if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
-
-  const parsed = setPreferenceInput.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: { id: "E_NOTIF_001" } };
-  }
-
-  await setPreference(
-    db,
-    actor.id,
-    parsed.data.type,
-    { inApp: parsed.data.inApp, email: parsed.data.email },
-    SIG(),
-  );
-  return { ok: true, value: {} };
+  ...args: Parameters<Implementation["setPreferenceAction"]>
+): ReturnType<Implementation["setPreferenceAction"]> {
+  return invokeAction("features/notifications/actions.setPreferenceAction", args);
 }

@@ -15,12 +15,12 @@ export const coreHttpRuntimeIds2: string[] = [
   "sourceReview:src/jobs/appInstrumentation.ts#c852970df879c3a5d0cfa382191063a45449651443fac49b2c3d657ed32018b2",
   "sourceReview:src/features/release/webIdentity.ts#b0ebdbe96ada99be4209571d736d8f9b201787de8128d78d9f3ff32ae6640a7a",
   "sourceReview:src/features/release/webVersion.ts#78f1c8610d2ee6a92225f0007868b532ec95e662c7f01241787f004356fea414",
-  "sourceReview:src/app/api/runtime/web-identity/route.ts#76be9a424c01d701cb2eb7ffa50ace8fe4b88ae4945b94c1b3f611bd0477f789",
+  "sourceReview:src/app/api/runtime/web-identity/route.ts#29e43bee60de4fbd6ea8efacaffb66ea3a1eccd119f668274614d8586754188f",
   "sourceReview:src/db/coreRoleAdmission.ts#f0a4441b9297bbafefd082d1ba6fe9a9bf7ba6d6069339e6ba11a262c35f63e2",
   "sourceReview:src/entrypoints/core-api.ts#6f156057442ec0e20bd5a0095f9f6f53df4a766f11f042414a495cb4abfd129f",
   "sourceReview:src/server/runtime/queueOwnership.ts#02400e4371fe1cb1d3f1c324a9f2198dfbaca48cb0a53cd6f086d23ff2148c9b",
-  "sourceReview:src/server/trpc/core-runtime.ts#0110bcc936408f047fc852efe65ab4f6787c6870b4191f5247425f5717b202db",
-  "sourceReview:src/server/trpc/core-service.ts#c3e05a3e76a83e84eb2cc93e70068e6f3097ae35cb7c7c52f9b5b1e080b5336c",
+  "sourceReview:src/server/trpc/core-runtime.ts#8a3e35d3126ede2756258606b7e5700e17ab8f6f5db5bd86cd9b95ce58881602",
+  "sourceReview:src/server/trpc/core-service.ts#ae69d57beb814b136a3077353ef7f3d2827aae0944302405fe0a27886f48f18c",
 ];
 
 // Synthetic domain writes and cleanup are restricted to the supervisor-owned loopback fixture.
@@ -64,6 +64,7 @@ export const coreRoleQualificationIds2: string[] = [
 // Full entrypoint qualification is confined to the supplied owned scratch/loopback fixture.
 // delete:response removes a transient Set member; update:bytes/downloaded are in-memory SHA-256.
 export const coreHttpServiceQualificationIds2: string[] = [
+  "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#readFileSync:.next/server/server-reference-manifest.json",
   "derived:scripts/deployment/recovery-postgres.harness.ts",
   "external:scripts/deployment/recovery-postgres.harness.ts#fetch",
   "objectNamespace:filesystem:scripts/deployment/recovery-postgres.harness.ts#readFileSync:markerPath",
@@ -85,7 +86,7 @@ export const coreHttpServiceQualificationIds2: string[] = [
   "log:src/server/trpc/core-service.harness.ts#warn",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#readFileSync:path",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#writeFileSync:dynamic",
-  "sourceReview:src/server/trpc/core-service.harness.ts#7c918265f88eb3209f18ed285cfb5df7121dedc01679fd34d3431853b5487d6e",
+  "sourceReview:src/server/trpc/core-service.harness.ts#6476ea8c9048cdfcd186ed59a7dab3d674cd217675a85d20107d7e56c5bf37b9",
   "writer:src/server/trpc/core-service.harness.ts#delete:response",
   "writer:src/server/trpc/core-service.harness.ts#insert:dynamic",
   "writer:src/server/trpc/core-service.harness.ts#query:CREATE ROLE smoke_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public,pgboss TO smoke_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO smoke_runtime; GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO smoke_runtime; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO smoke_runtime;",

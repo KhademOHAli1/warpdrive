@@ -15,7 +15,7 @@ vi.mock("./preferencesRepo", () => ({
   setSidebarSectionsPreference: vi.fn(),
 }));
 
-import { setDensityAction } from "./preferencesActions";
+import { setDensityAction } from "./preferencesActions.backend";
 
 afterEach(() => {
   vi.clearAllMocks();

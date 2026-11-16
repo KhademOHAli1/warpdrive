@@ -36,7 +36,7 @@ const { setBuiltinFieldHidden } = vi.hoisted(() => ({
 }));
 vi.mock("./hiddenBuiltinsRepo", () => ({ setBuiltinFieldHidden }));
 
-import { setBuiltinFieldHiddenAction } from "./actions";
+import { setBuiltinFieldHiddenAction } from "./actions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 

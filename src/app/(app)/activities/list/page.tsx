@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { env } from "@/config/env";
 import { ActivitiesTable } from "@/features/activities/ActivitiesTable";
 import { activitiesMessagesForLocale } from "@/features/activities/activitiesMessages";
 import { getLocalePreferences } from "@/features/i18n/server";
-import { createContext } from "@/server/trpc/context";
+import { createContext, getFrontendConfig } from "@/frontend/context";
 
 export async function generateMetadata() {
   return { title: activitiesMessagesForLocale((await getLocalePreferences()).locale).activities };
@@ -14,6 +13,7 @@ export async function generateMetadata() {
 // ActivitiesTable fetches its own data via tRPC (activities.listRows), so this page only guards
 // auth and renders it.
 export default async function ActivityListPage(): Promise<React.ReactNode> {
+  const env = await getFrontendConfig();
   const S = activitiesMessagesForLocale((await getLocalePreferences()).locale);
   const ctx = await createContext();
   if (ctx.actor === null) {

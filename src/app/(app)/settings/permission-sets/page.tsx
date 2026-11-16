@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { listPermissionSets } from "@/features/identity/permission-sets.service";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listPermissionSets } from "@/frontend/reads";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { PermissionSetsClient } from "./PermissionSetsClient";
@@ -15,11 +15,11 @@ export async function generateMetadata() {
 export default async function PermissionSetsPage(): Promise<ReactNode> {
   const L = await getServerSettingsMessages();
 
-  const { actor, db } = await createContext();
+  const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
-  const rows = await listPermissionSets(db, AbortSignal.timeout(5000));
+  const rows = await listPermissionSets();
   // Serializable projection for the client editor (flags is a plain JSONB object).
   const sets = rows.map((ps) => ({
     id: ps.id,

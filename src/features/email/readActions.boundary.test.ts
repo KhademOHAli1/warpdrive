@@ -26,7 +26,7 @@ vi.mock("@/server/trpc/context", () => ({
   createContext: () => Promise.resolve({ db, actor, session }),
 }));
 
-import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions";
+import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions.backend";
 
 const threadId = "2ef5bcf1-7b4f-409c-9db0-5d19b88dac48";
 const operationId = "9b5f0fc2-79c0-46ca-9bea-b62c80b60657";

@@ -1,149 +1,39 @@
 "use server";
 
-import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import type { AuthUser } from "@/features/permissions/types";
-import { createContext } from "@/server/trpc/context";
-import { type ActionResult, clientErr, toClientResult } from "@/types/actionResult";
-import { err, type Result } from "@/types/result";
-import { deleteDraft, saveDraft } from "./draftRepo";
-import {
-  archiveInput,
-  cancelOutboxInput,
-  deleteDraftInput,
-  saveDraftInput,
-} from "./folderActions.schemas";
-import { assertMailboxOwner } from "./mailboxOwnership";
-import { cancelOutbox } from "./outboxCancel";
-import { archiveThread, unarchiveThread } from "./threadArchive";
+import { invokeAction } from "@/frontend/actions";
 
-const CSRF_FAIL = () => err(new AppError(ERROR_IDS.PERM_DENIED, "csrf check failed", {}));
-const UNAUTH = () => err(new AppError(ERROR_IDS.AUTH_LOGIN_REJECTED, "unauthenticated", {}));
+import type * as ImplementationModule from "./folderActions.backend";
 
-// The folder domain functions scope every query by actor.id alone; the rest of the AuthUser
-// shape is not consulted, so a minimal regular-actor projection is sufficient here.
-async function actor(csrfToken: string | null): Promise<Result<AuthUser, AppError>> {
-  const csrf = await guardCsrf(csrfToken);
-  if (!csrf.ok) return CSRF_FAIL();
-  const ctx = await createContext();
-  if (ctx.actor === null) return UNAUTH();
-  return { ok: true, value: ctx.actor };
-}
+type Implementation = typeof ImplementationModule;
 
-async function archiveOrUnarchive(
-  csrfToken: string | null,
-  rawInput: unknown,
-  op: typeof archiveThread,
-): Promise<Result<{ threadId: string }, AppError>> {
-  const who = await actor(csrfToken);
-  if (!who.ok) return who;
-  const parsed = archiveInput.safeParse(rawInput);
-  if (!parsed.success)
-    return err(
-      new AppError(ERROR_IDS.GMAIL_FOLDER_INPUT_INVALID, "invalid archive input", {
-        issues: parsed.error.issues,
-      }),
-    );
-  return op(
-    db,
-    {
-      actor: who.value,
-      threadId: parsed.data.threadId,
-    },
-    SIG(),
-  );
-}
+export type * from "./folderActions.backend";
 
 export async function archiveThreadAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ threadId: string }>> {
-  return toClientResult(await archiveOrUnarchive(csrfToken, rawInput, archiveThread));
+  ...args: Parameters<Implementation["archiveThreadAction"]>
+): ReturnType<Implementation["archiveThreadAction"]> {
+  return invokeAction("features/email/folderActions.archiveThreadAction", args);
 }
 
 export async function unarchiveThreadAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ threadId: string }>> {
-  return toClientResult(await archiveOrUnarchive(csrfToken, rawInput, unarchiveThread));
+  ...args: Parameters<Implementation["unarchiveThreadAction"]>
+): ReturnType<Implementation["unarchiveThreadAction"]> {
+  return invokeAction("features/email/folderActions.unarchiveThreadAction", args);
 }
 
 export async function saveDraftAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ id: string }>> {
-  const who = await actor(csrfToken);
-  if (!who.ok) return clientErr(who.error);
-  const parsed = saveDraftInput.safeParse(rawInput);
-  if (!parsed.success)
-    return clientErr(
-      new AppError(ERROR_IDS.GMAIL_DRAFT_INPUT_INVALID, "invalid draft input", {
-        issues: parsed.error.issues,
-      }),
-    );
-  const signal = SIG();
-  const owner = await assertMailboxOwner(db, parsed.data.accountId, who.value.id, signal);
-  if (!owner.ok) return clientErr(owner.error);
-  return toClientResult(
-    await saveDraft(
-      db,
-      {
-        actor: who.value,
-        draft: parsed.data,
-      },
-      signal,
-    ),
-  );
+  ...args: Parameters<Implementation["saveDraftAction"]>
+): ReturnType<Implementation["saveDraftAction"]> {
+  return invokeAction("features/email/folderActions.saveDraftAction", args);
 }
 
 export async function deleteDraftAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ id: string }>> {
-  const who = await actor(csrfToken);
-  if (!who.ok) return clientErr(who.error);
-  const parsed = deleteDraftInput.safeParse(rawInput);
-  if (!parsed.success)
-    return clientErr(
-      new AppError(ERROR_IDS.GMAIL_DRAFT_INPUT_INVALID, "invalid draft id", {
-        issues: parsed.error.issues,
-      }),
-    );
-  return toClientResult(
-    await deleteDraft(
-      db,
-      {
-        actor: who.value,
-        draftId: parsed.data.draftId,
-      },
-      SIG(),
-    ),
-  );
+  ...args: Parameters<Implementation["deleteDraftAction"]>
+): ReturnType<Implementation["deleteDraftAction"]> {
+  return invokeAction("features/email/folderActions.deleteDraftAction", args);
 }
 
 export async function cancelOutboxAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ id: string }>> {
-  const who = await actor(csrfToken);
-  if (!who.ok) return clientErr(who.error);
-  const parsed = cancelOutboxInput.safeParse(rawInput);
-  if (!parsed.success)
-    return clientErr(
-      new AppError(ERROR_IDS.GMAIL_FOLDER_INPUT_INVALID, "invalid attempt id", {
-        issues: parsed.error.issues,
-      }),
-    );
-  return toClientResult(
-    await cancelOutbox(
-      db,
-      {
-        actor: who.value,
-        attemptId: parsed.data.attemptId,
-      },
-      SIG(),
-    ),
-  );
+  ...args: Parameters<Implementation["cancelOutboxAction"]>
+): ReturnType<Implementation["cancelOutboxAction"]> {
+  return invokeAction("features/email/folderActions.cancelOutboxAction", args);
 }

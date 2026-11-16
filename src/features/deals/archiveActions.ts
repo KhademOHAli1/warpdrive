@@ -1,47 +1,21 @@
 "use server";
 
-import { ERROR_IDS } from "@/constants/errorIds";
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import { createContext } from "@/server/trpc/context";
-import { archiveDeal } from "./archiveDeal";
-import { archiveDeals } from "./bulkArchive";
+import { invokeAction } from "@/frontend/actions";
 
-export type ArchiveResult = { ok: true } | { ok: false; error: { id: string } };
+import type * as ImplementationModule from "./archiveActions.backend";
 
-export type BulkArchiveResult = { ok: true; count: number } | { ok: false; error: { id: string } };
+type Implementation = typeof ImplementationModule;
+
+export type * from "./archiveActions.backend";
 
 export async function archiveDealAction(
-  input: { dealId: string; archived?: boolean },
-  csrfToken: string | null = null,
-): Promise<ArchiveResult> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-  const { actor } = await createContext();
-  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
-
-  const r = await archiveDeal(
-    db,
-    actor,
-    { dealId: input.dealId, archived: input.archived ?? true },
-    SIG(),
-  );
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true };
+  ...args: Parameters<Implementation["archiveDealAction"]>
+): ReturnType<Implementation["archiveDealAction"]> {
+  return invokeAction("features/deals/archiveActions.archiveDealAction", args);
 }
 
 export async function archiveDealsAction(
-  ids: string[],
-  archived: boolean,
-  csrfToken: string | null = null,
-): Promise<BulkArchiveResult> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-  const { actor } = await createContext();
-  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
-
-  const r = await archiveDeals(db, actor, ids, archived, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, count: r.value };
+  ...args: Parameters<Implementation["archiveDealsAction"]>
+): ReturnType<Implementation["archiveDealsAction"]> {
+  return invokeAction("features/deals/archiveActions.archiveDealsAction", args);
 }

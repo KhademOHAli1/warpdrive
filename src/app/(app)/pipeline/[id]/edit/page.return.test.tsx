@@ -12,10 +12,18 @@ vi.mock("@/features/i18n/server", () => ({
   getAppTranslations: () => Promise.resolve((key: string) => key),
   getLocalePreferences: () => Promise.resolve({ locale: "en" }),
 }));
-vi.mock("@/server/trpc/context", () => ({
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: async () => {
+    const { env } = await import("@/config/env");
+    return {
+      ...env,
+      GMAIL_CONFIGURED: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
+    };
+  },
+
   createContext: () => Promise.resolve({ actor: { id: "viewer" } }),
 }));
-vi.mock("@/server/trpc/root", () => ({
+vi.mock("@/frontend/trpc", () => ({
   createCaller: () => ({ pipeline: { byId, stageDealCounts } }),
 }));
 vi.mock("@/features/pipelines/EditPipelineClient", () => ({

@@ -1,0 +1,1 @@
+export { frontendIdentity } from "./config";

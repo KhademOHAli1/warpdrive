@@ -15,7 +15,7 @@ vi.mock("@/features/contacts/actions", () => ({
   createPersonAction: person,
 }));
 
-import { createDealOrgAction, createDealPersonAction } from "./nativeContactActions";
+import { createDealOrgAction, createDealPersonAction } from "./nativeContactActions.backend";
 
 afterEach(() => vi.clearAllMocks());
 test("A-owned inline requests under B context are rejected before either contact delegate", async () => {

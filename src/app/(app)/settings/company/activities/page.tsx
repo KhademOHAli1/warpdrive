@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { db } from "@/db/client";
-import { listTypes } from "@/features/activities/typesRepo";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listTypes } from "@/frontend/reads";
 import { ActivityTypesClient } from "./ActivityTypesClient";
 
 export async function generateMetadata() {
@@ -20,7 +19,7 @@ export default async function ActivitiesPage(): Promise<ReactNode> {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
-  const rows = await listTypes(db, { activeOnly: false }, AbortSignal.timeout(5000));
+  const rows = await listTypes();
   const serializable = rows.map((t) => ({
     id: t.id,
     key: t.key,

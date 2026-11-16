@@ -39,7 +39,7 @@ const { updatePerson, updateOrg } = vi.hoisted(() => ({
 vi.mock("./personsRepo", () => ({ updatePerson, createPerson: vi.fn() }));
 vi.mock("./orgsRepo", () => ({ updateOrg, createOrg: vi.fn() }));
 
-import { updateOrgAction, updatePersonAction } from "./actions";
+import { updateOrgAction, updatePersonAction } from "./actions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 

@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
-import { env } from "@/config/env";
-import { calendarRange } from "@/features/activities/calendar";
 import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
 import { parseCalendarParams, selectWindow } from "@/features/activities/calendarView";
 import { getLocalePreferences } from "@/features/i18n/server";
+import { createContext, getFrontendConfig } from "@/frontend/context";
+import { calendarRange } from "@/frontend/reads";
 import { instantCivilDate } from "@/lib/zonedDateTime";
-import { createContext } from "@/server/trpc/context";
 import { ActivitiesToggle } from "../ActivitiesToggle";
 import { FilterableCalendar } from "./FilterableCalendar";
 
@@ -19,6 +18,7 @@ export default async function CalendarPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<React.ReactNode> {
+  const env = await getFrontendConfig();
   const ctx = await createContext();
   if (ctx.actor === null) {
     redirect("/login");
@@ -35,13 +35,7 @@ export default async function CalendarPage({
     preferences.timeZone,
   );
   const { days, range } = selectWindow(view, anchorIso, preferences);
-  const activities = await calendarRange(
-    ctx.db,
-    ctx.actor,
-    range,
-    AbortSignal.timeout(10_000),
-    preferences.timeZone,
-  );
+  const activities = await calendarRange(range, preferences.timeZone);
 
   return (
     <div className="p-4">

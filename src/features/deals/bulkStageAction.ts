@@ -1,36 +1,15 @@
 "use server";
 
-import { ERROR_IDS } from "@/constants/errorIds";
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import { createContext } from "@/server/trpc/context";
-import type { BulkRowResult } from "./bulkActions";
-import { bulkUpdateStage } from "./bulkActions";
-import { type BulkStageInput, bulkStageInput } from "./schemas";
+import { invokeAction } from "@/frontend/actions";
 
-export type BulkStageResult =
-  | { ok: true; rows: BulkRowResult[] }
-  | { ok: false; error: { id: string } };
+import type * as ImplementationModule from "./bulkStageAction.backend";
 
-// CSRF-guarded bulk stage action.
-// guardCsrf is called FIRST: no DB work happens before CSRF is verified.
-// Per-row authorization is enforced inside bulkUpdateStage (two-stage visibility + can check).
+type Implementation = typeof ImplementationModule;
+
+export type * from "./bulkStageAction.backend";
+
 export async function bulkStageAction(
-  input: BulkStageInput,
-  csrfToken: string | null = null,
-): Promise<BulkStageResult> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-
-  const { actor } = await createContext();
-  if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
-
-  const parsed = bulkStageInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.DEAL_BULK_INPUT_INVALID } };
-
-  const result = await bulkUpdateStage(db, actor, parsed.data, SIG());
-  if (!result.ok) return { ok: false, error: { id: result.error.id } };
-
-  return { ok: true, rows: result.value };
+  ...args: Parameters<Implementation["bulkStageAction"]>
+): ReturnType<Implementation["bulkStageAction"]> {
+  return invokeAction("features/deals/bulkStageAction.bulkStageAction", args);
 }

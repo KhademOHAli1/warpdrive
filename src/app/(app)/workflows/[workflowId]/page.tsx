@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
-import { getWorkflow } from "@/features/workflows/queries";
 import { sanitizeLibraryReturnTo } from "@/features/workflows/ui/libraryLocation";
 import { WorkflowEditor } from "@/features/workflows/ui/WorkflowEditor";
-import { readWorkflowV2 } from "@/features/workflows/v2/persistence";
-import { resolveWorkflowEngine } from "@/features/workflows/v2/queries";
 import { WorkflowStudio } from "@/features/workflows/v2/ui/WorkflowStudio";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { coreClient } from "@/frontend/trpc";
 
 export default async function WorkflowPage({
   params,
@@ -17,12 +15,10 @@ export default async function WorkflowPage({
   const ctx = await createContext();
   if (ctx.actor === null) notFound();
   const id = (await params).workflowId;
-  const engine = await resolveWorkflowEngine(ctx.db, ctx.actor, id, AbortSignal.timeout(10_000));
-  if (!engine.ok) notFound();
+  const workflow = await coreClient().frontend.workflowPage.query({ id });
+  if (workflow === null) notFound();
   const search = await searchParams;
-  if (engine.value === 2) {
-    const workflow = await readWorkflowV2(ctx.db, ctx.actor, id, AbortSignal.timeout(10_000));
-    if (!workflow.ok) notFound();
+  if (workflow.engine === 2) {
     return (
       <WorkflowStudio
         key={workflow.value.id}
@@ -32,8 +28,6 @@ export default async function WorkflowPage({
       />
     );
   }
-  const workflow = await getWorkflow(ctx.db, ctx.actor, id, AbortSignal.timeout(10_000));
-  if (!workflow.ok) notFound();
   return (
     <WorkflowEditor
       key={workflow.value.id}

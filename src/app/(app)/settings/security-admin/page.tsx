@@ -1,6 +1,6 @@
 import { managementMessagesForLocale } from "@/features/auth/management/messages";
 import { getLocalePreferences } from "@/features/i18n/server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { SecurityAdminClient } from "./SecurityAdminClient";

@@ -5,7 +5,7 @@ vi.mock("@/features/identity/actions/shared", () => ({ guardCsrf: deps.csrf }));
 vi.mock("@/features/identity/actions/fresh", () => ({ requireFreshIdentityAction: deps.fresh }));
 vi.mock("@/server/trpc/context", () => ({ createContext: deps.context }));
 
-import { publishWorkflowAction } from "./actions";
+import { publishWorkflowAction } from "./actions.backend";
 
 it("requires fresh authentication before publishing an automation", async () => {
   deps.csrf.mockResolvedValue({ ok: true, value: true });

@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { rescheduleCalendarEventAction } from "./calendarRescheduleAction";
+import { rescheduleCalendarEventAction } from "./calendarRescheduleAction.backend";
 import type { CalendarRescheduleActionResult } from "./calendarRescheduleSchemas";
 import { verifyCalendarUndo } from "./calendarRescheduleUndo";
 

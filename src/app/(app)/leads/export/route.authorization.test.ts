@@ -19,7 +19,7 @@ vi.mock("@/server/trpc/context", () => ({ createContext: boundary.context }));
 vi.mock("@/features/settings/readBaseCurrency", () => ({ readBaseCurrency: boundary.currency }));
 vi.mock("@/features/leads/leadRepo", () => ({ listLeadsForExport: boundary.export }));
 
-import { GET } from "./route";
+import { GET } from "./route.backend";
 
 const USER_ID = "f7b11111-1111-4111-8111-111111111111";
 const permittedActor: HydratedActor = {

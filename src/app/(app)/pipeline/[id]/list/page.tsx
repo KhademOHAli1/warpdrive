@@ -7,8 +7,8 @@ import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { resolveVisiblePipeline } from "@/features/navigation/resolvePipeline";
 import { canManagePipelines } from "@/features/pipelines/canManagePipelines";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { createCaller } from "@/frontend/trpc";
 
 // Shared per-request loader: generateMetadata (for the tab title) and the page body both call
 // this; React.cache dedupes so createContext + the visible-pipelines read run once per request.

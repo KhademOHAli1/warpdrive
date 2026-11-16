@@ -57,6 +57,8 @@ services:
     pull_policy: never
     environment:
       NEWSLETTER_BASE_URL: ""
+  core-api:
+    pull_policy: never
   ws:
     pull_policy: never
   migrate:

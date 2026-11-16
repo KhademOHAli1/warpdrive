@@ -17,23 +17,20 @@ vi.mock("@/db/client", async () => {
   };
 });
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
-vi.mock("@/server/trpc/context", () => ({ createContext: h.context }));
-vi.mock("@/server/trpc/root", () => ({
+vi.mock("@/frontend/context", () => ({ createContext: h.context }));
+vi.mock("@/frontend/trpc", () => ({
   createCaller: () => ({
     contacts: { listPeople: h.people, listOrgs: h.orgs, orgOptions: h.orgOptions },
     savedFilters: { listByTarget: h.views },
   }),
 }));
-vi.mock("@/features/saved-filters/savedFilterList", () => ({
-  listCompatibleSavedFilterViews: h.views,
+vi.mock("@/frontend/reads", () => ({
+  getPreferencesForActor: h.prefs,
+  listDefs: () => Promise.resolve([]),
+  readBaseCurrency: () => Promise.resolve("EUR"),
 }));
-vi.mock("@/features/identity/preferencesForActor", () => ({ getPreferencesForActor: h.prefs }));
 vi.mock("@/features/i18n/server", () => ({
   getAppTranslations: () => Promise.resolve((key: string) => key),
-}));
-vi.mock("@/features/custom-fields/defsRepo", () => ({ listDefs: () => Promise.resolve([]) }));
-vi.mock("@/features/settings/readBaseCurrency", () => ({
-  readBaseCurrency: () => Promise.resolve("EUR"),
 }));
 vi.mock("@/features/permissions/can", () => ({ can: () => false }));
 vi.mock("@/features/contacts/PeopleList", () => ({ PeopleList: () => null }));

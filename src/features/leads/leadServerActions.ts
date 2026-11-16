@@ -1,127 +1,45 @@
 "use server";
 
-import { eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { users } from "@/db/schema";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import { createContext } from "@/server/trpc/context";
-import { isLeadVisibleToSession } from "./createdVisibility";
-import { archiveLead, createLead, type LeadSession } from "./leadActions";
-import { bulkUpdateLeads } from "./leadBulk";
-import { bulkConvertLeads } from "./leadBulkConvert";
-import { convertLead } from "./leadConvert";
-import { updateLead } from "./leadUpdate";
-import type {
-  BulkConvertLeadsInput,
-  BulkUpdateLeadsInput,
-  ConvertLeadInput,
-  LeadArchiveInput,
-  LeadCreateInput,
-  LeadUpdateInput,
-} from "./schemas";
+import { invokeAction } from "@/frontend/actions";
 
-export type LeadActionResult<T = undefined> =
-  | { ok: true; value: T }
-  | { ok: false; error: { id: string } };
+import type * as ImplementationModule from "./leadServerActions.backend";
 
-// Resolve the current actor into a LeadSession, or an auth/csrf failure result. Trust-boundary
-// fields (owner, visibility) are derived server-side inside the pure actions from this session.
-async function authorize(
-  csrfToken: string | null,
-): Promise<{ ok: true; session: LeadSession } | { ok: false; error: { id: string } }> {
-  const csrfOk = await guardCsrf(csrfToken);
-  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
-  const { actor } = await createContext();
-  if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
+type Implementation = typeof ImplementationModule;
 
-  const flags: Record<string, boolean> = {};
-  for (const f of actor.flags) flags[f] = true;
-  const [urow] = await db
-    .select({ primaryGroup: users.primaryVisibilityGroupId })
-    .from(users)
-    .where(eq(users.id, actor.id));
-
-  return {
-    ok: true,
-    session: {
-      userId: actor.id,
-      isAdmin: actor.type === "admin",
-      isActive: actor.isActive,
-      sessionLive: true,
-      visibilityGroupIds: Array.from(actor.groupIds),
-      managedUserIds: Array.from(actor.managedUserIds ?? []),
-      primaryVisibilityGroupId: urow?.primaryGroup ?? null,
-      flags,
-    },
-  };
-}
+export type * from "./leadServerActions.backend";
 
 export async function createLeadAction(
-  input: LeadCreateInput,
-  csrfToken: string | null = null,
-): Promise<LeadActionResult<{ id: string } | null>> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await createLead(db, auth.session, input, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  if (!(await isLeadVisibleToSession(db, auth.session, r.value.id, SIG()))) {
-    return { ok: true, value: null };
-  }
-  return { ok: true, value: { id: r.value.id } };
+  ...args: Parameters<Implementation["createLeadAction"]>
+): ReturnType<Implementation["createLeadAction"]> {
+  return invokeAction("features/leads/leadServerActions.createLeadAction", args);
 }
 
 export async function archiveLeadAction(
-  input: LeadArchiveInput,
-  csrfToken: string | null = null,
-): Promise<LeadActionResult> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await archiveLead(db, auth.session, input, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: undefined };
+  ...args: Parameters<Implementation["archiveLeadAction"]>
+): ReturnType<Implementation["archiveLeadAction"]> {
+  return invokeAction("features/leads/leadServerActions.archiveLeadAction", args);
 }
 
 export async function convertLeadAction(
-  input: ConvertLeadInput,
-  csrfToken: string | null = null,
-): Promise<LeadActionResult<{ dealId: string }>> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await convertLead(db, auth.session, input, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: r.value };
+  ...args: Parameters<Implementation["convertLeadAction"]>
+): ReturnType<Implementation["convertLeadAction"]> {
+  return invokeAction("features/leads/leadServerActions.convertLeadAction", args);
 }
 
 export async function bulkUpdateLeadsAction(
-  input: BulkUpdateLeadsInput,
-  csrfToken: string | null = null,
-): Promise<LeadActionResult<{ updated: number; skipped: number }>> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await bulkUpdateLeads(db, auth.session, input, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: r.value };
+  ...args: Parameters<Implementation["bulkUpdateLeadsAction"]>
+): ReturnType<Implementation["bulkUpdateLeadsAction"]> {
+  return invokeAction("features/leads/leadServerActions.bulkUpdateLeadsAction", args);
 }
 
 export async function updateLeadAction(
-  input: LeadUpdateInput,
-  csrfToken: string | null = null,
-): Promise<LeadActionResult<{ id: string; updatedAt: string }>> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await updateLead(db, auth.session, input, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: r.value };
+  ...args: Parameters<Implementation["updateLeadAction"]>
+): ReturnType<Implementation["updateLeadAction"]> {
+  return invokeAction("features/leads/leadServerActions.updateLeadAction", args);
 }
 
 export async function bulkConvertLeadsAction(
-  input: BulkConvertLeadsInput,
-  csrfToken: string | null = null,
-): Promise<LeadActionResult<{ converted: number; skipped: number }>> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await bulkConvertLeads(db, auth.session, input, SIG());
-  if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: r.value };
+  ...args: Parameters<Implementation["bulkConvertLeadsAction"]>
+): ReturnType<Implementation["bulkConvertLeadsAction"]> {
+  return invokeAction("features/leads/leadServerActions.bulkConvertLeadsAction", args);
 }

@@ -1,9 +1,7 @@
-import { db } from "@/db/client";
-import { createPrivateIntakeHttp } from "@/features/email/privateIntakeHttp";
+import { proxyBackendRequest } from "@/frontend/proxy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const handle = createPrivateIntakeHttp(db);
-export const GET = handle;
-export const POST = handle;
+export const GET = proxyBackendRequest;
+export const POST = proxyBackendRequest;

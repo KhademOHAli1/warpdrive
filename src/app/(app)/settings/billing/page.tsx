@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { env } from "@/config/env";
-import { parseBillingConfig } from "@/features/billing/config";
 import { billingMessagesForLocale } from "@/features/billing/messages";
 import { BillingSettingsClient } from "@/features/billing/ui/BillingSettingsClient";
 import { getLocalePreferences } from "@/features/i18n/server";
-import { createContext } from "@/server/trpc/context";
+import { createContext, getFrontendConfig } from "@/frontend/context";
+import { coreClient } from "@/frontend/trpc";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 
@@ -14,6 +13,7 @@ export async function generateMetadata() {
 }
 
 export default async function BillingSettingsPage(): Promise<ReactNode> {
+  const env = await getFrontendConfig();
   const preferences = await getLocalePreferences();
   const messages = billingMessagesForLocale(preferences.locale);
   const { actor } = await createContext();
@@ -26,7 +26,7 @@ export default async function BillingSettingsPage(): Promise<ReactNode> {
     );
   }
 
-  const config = parseBillingConfig(env, env.BASE_URL);
+  const config = await coreClient().frontend.billingConfiguration.query();
   const enabled = env.BILLING_ENABLED === "true" && config !== null;
   return (
     <SettingsPage className="max-w-5xl">

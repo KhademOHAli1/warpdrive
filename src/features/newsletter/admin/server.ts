@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLocalePreferences } from "@/features/i18n/server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { adminMessages } from "./messages";
 
 export async function requireNewsletterAdmin() {

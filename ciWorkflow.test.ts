@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { envSchema } from "@/config/env";
 
 // The test scripts run under Bun. Use its YAML 1.2 parser without adding another dependency.
 declare const Bun: { YAML: { parse(source: string): unknown } };
@@ -205,7 +204,7 @@ describe("public Bun CI", () => {
       const key = name as keyof typeof LOCAL_PACKAGES;
       for (const command of [...commands(key), ...fullCommands(key)]) {
         if (command.startsWith("bun run "))
-          expect(metadata.scripts).toHaveProperty(command.split(" ")[2] ?? "");
+          expect(metadata.scripts).toHaveProperty(command.split(/\s/u)[2] ?? "");
       }
     }
   });
@@ -228,7 +227,7 @@ describe("public Bun CI", () => {
       "bun run test:unit --maxWorkers=2",
       "bun run test:integration --maxWorkers=2",
       "bun run build",
-      "bun run build:workers",
+      "bun run build:workers\nbun --no-env-file scripts/build-core.mjs\n",
     ]);
     expect(fullCommands("site")).toContain("bun run test");
     expect(fullCommands("site")).toContain("bun run build");
@@ -265,27 +264,16 @@ describe("public Bun CI", () => {
     });
   });
 
-  it("keeps schema-valid, fake app configuration on the full app build step and stamps its checked commit", () => {
+  it("builds headless Web without backend configuration and stamps its checked commit", () => {
     const build = fullJob("crm").steps.find((step) => step.run === "bun run build");
     expect(build?.env).toBeDefined();
     const env = build?.env ?? {};
-    expect(envSchema.safeParse(env).success).toBe(true);
-    expect(env.NODE_ENV).toBe("production");
-    expect(env.APP_COMMIT).toMatch(/^\$\{\{\s*github\.sha\s*\}\}$/);
-    expect(env.DATABASE_URL).toBe("postgres://build:build@127.0.0.1:5432/build");
-    expect(env.BASE_URL).toBe("https://build.example.invalid");
-    expect(env.MINIO_ENDPOINT).toBe("http://127.0.0.1:9000");
-    expect(env.NEXT_PUBLIC_WS_URL).toBe("ws://127.0.0.1:8080");
-    expect(env.GOOGLE_WORKSPACE_DOMAIN).toBe("build.example.invalid");
-    expect(env.GOOGLE_OAUTH_CLIENT_ID).toBe("ci-build-client");
-    expect(env.GOOGLE_OAUTH_CLIENT_SECRET).toBe("ci-build-secret");
-    expect(env.MINIO_ACCESS_KEY).toBe("ci-build-access");
-    expect(env.MINIO_SECRET_KEY).toBe("ci-build-secret");
-    expect(env.TOKEN_ENCRYPTION_KEY).toBe(Buffer.alloc(32).toString("base64"));
-    expect(env.OAUTH_SIGNING_KEY).toBe(Buffer.alloc(32).toString("base64"));
-    expect(env.WS_TICKET_SECRET).toMatch(/^ci_build_placeholder_/);
-    expect(env.SEED_ADMIN_EMAIL).toBe("build@example.invalid");
-    expect(env.ALLOW_FIRST_LOGIN_ADMIN).toBe("false");
+    expect(env).toEqual({
+      NODE_ENV: "production",
+      APP_COMMIT: "${{ github.sha }}",
+      NEXT_PUBLIC_WS_URL: "same-origin",
+      NEXT_TELEMETRY_DISABLED: "1",
+    });
     for (const [key, value] of Object.entries(env)) {
       if (key !== "APP_COMMIT") expect(value).not.toContain("${{");
     }
