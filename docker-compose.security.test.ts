@@ -14,11 +14,12 @@ describe("single-box security settings", () => {
     expect(deploymentGuide).not.toContain("postgres://warpdrive:warpdrive@");
   });
 
-  test("only Caddy-fronted production app trusts X-Real-IP", () => {
-    const productionApp = production.split("\n  app:\n")[1]?.split("\n  ws:\n")[0];
-    const developmentApp = development.split("\n  app:\n")[1]?.split("\n  ws:\n")[0];
-    expect(productionApp).toMatch(/^\s+AUTH_TRUSTED_PROXY_HEADER: x-real-ip$/m);
-    expect(developmentApp).toMatch(/^\s+AUTH_TRUSTED_PROXY_HEADER: none$/m);
+  test("Web forwards the socket peer only behind the trusted production ingress", () => {
+    const service = (source: string, name: string) =>
+      source.split(`\n  ${name}:\n`)[1]?.split(/\n {2}[a-z0-9-]+:\n/)[0];
+    expect(service(production, "app")).toMatch(/^\s+FRONTEND_TRUSTED_PROXY_HEADER: x-real-ip$/m);
+    expect(service(development, "app")).toMatch(/^\s+FRONTEND_TRUSTED_PROXY_HEADER: none$/m);
+    expect(service(production, "core-api")).toMatch(/^\s+AUTH_TRUSTED_PROXY_HEADER: x-real-ip$/m);
     expect(exampleEnv).toMatch(/^AUTH_TRUSTED_PROXY_HEADER=none$/m);
   });
 });
