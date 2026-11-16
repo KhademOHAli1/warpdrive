@@ -94,13 +94,16 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
             />
             <InterfacePrefsProvider value={interfacePrefsFromUi(prefs.ui)}>
               <FollowUpPromptProvider>
-                <div data-density={prefs.density} className="flex h-screen flex-col">
+                <div
+                  data-density={prefs.density}
+                  className="flex h-dvh min-h-0 flex-col overflow-hidden"
+                >
                   <CsrfRefresher hasCsrf={hasCsrf} />
                   {ctx.actor.type === "admin" && <VersionBanner />}
                   <ReconnectBanner />
                   <div className="flex min-h-0 flex-1">
                     <LeftNav initialExpanded={navExpanded} />
-                    <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                       <TopBar
                         workspaceBrand={brand}
                         userId={ctx.actor.id}
@@ -111,7 +114,9 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                       />
                       <main
                         data-app-content
-                        className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6"
+                        // biome-ignore lint/a11y/noNoninteractiveTabindex: the content scroll owner needs keyboard scrolling
+                        tabIndex={0}
+                        className="relative min-h-0 min-w-0 flex-1 overflow-auto overscroll-y-contain bg-muted/70 p-6 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                       >
                         {children}
                       </main>

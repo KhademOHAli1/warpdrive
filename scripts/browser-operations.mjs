@@ -1,6 +1,8 @@
 // Real settings UI and native administrator reads. Retain only finite proof facts.
 // No screenshots, traces, cookies, request bodies or response payload artifacts.
 import { createHmac } from "node:crypto";
+import { closeSync, openSync, writeFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 
 const operationsStages = new Set([
   "operations-browser-context",
@@ -18,6 +20,35 @@ const operationsStages = new Set([
   "operations-maintenance-read",
   "operations-logs-document",
   "operations-facts-render",
+  "operations-release-banner",
+  "operations-release-banner-response",
+  "operations-release-banner-foreground",
+  "operations-release-banner-viewport",
+  "operations-release-banner-show",
+  "operations-release-banner-expand",
+  "operations-release-banner-notes",
+  "operations-release-banner-header",
+  "operations-release-banner-overflow",
+  "operations-release-banner-document",
+  "operations-release-banner-topbar",
+  "operations-release-banner-focus",
+  "operations-release-banner-end",
+  "operations-release-banner-last-line",
+  "operations-release-banner-wheel",
+  "operations-release-banner-boundary",
+  "operations-release-banner-collapse",
+  "operations-release-banner-collapsed",
+  "operations-release-banner-reopen",
+  "operations-release-banner-reopened",
+  "operations-release-banner-dismiss-focus",
+  "operations-release-banner-dismiss-tab",
+  "operations-release-banner-dismiss",
+  "operations-release-banner-dismissed-notes",
+  "operations-release-banner-dismissed-control",
+  "operations-release-banner-dismissed-document",
+  "operations-release-banner-other-tab-dismiss",
+  "operations-release-banner-restore",
+  "operations-metadata-fields",
   "operations-recovered-incident",
   "operations-initial-mounted",
   "operations-role-revoke-await",
@@ -67,6 +98,459 @@ export function operationsTotp(secret, milliseconds = Date.now()) {
   return ((digest.readUInt32BE(offset) & 0x7fffffff) % 1000000).toString().padStart(6, "0");
 }
 
+const releaseBannerLastLine = "Synthetic release note line 300: end of the local fixture.";
+
+const layoutNumbers = [
+  "windowY",
+  "windowX",
+  "viewport",
+  "viewportWidth",
+  "documentHeight",
+  "visualViewportHeight",
+  "visualViewportOffsetTop",
+  "visualViewportScale",
+  "htmlZoom",
+  "bodyZoom",
+  "rootZoom",
+  "cssRulesVisited",
+  "documentScrollHeight",
+  "documentClientHeight",
+  "bodyScrollHeight",
+  "bodyClientHeight",
+  "bodyTop",
+  "bodyBottom",
+  "bodyHeight",
+  "rootTop",
+  "rootBottom",
+  "rootHeight",
+  "rootClientHeight",
+  "rootScrollHeight",
+  "rootComputedHeight",
+  "rootMinHeight",
+  "rootParentHeight",
+  "rootParentClientHeight",
+  "rootParentScrollHeight",
+  "columnTop",
+  "columnBottom",
+  "columnHeight",
+  "columnClientHeight",
+  "columnScrollHeight",
+  "mainTop",
+  "mainRectTop",
+  "mainRectBottom",
+  "mainRectHeight",
+  "mainClientHeight",
+  "mainScrollHeight",
+  "notesTop",
+  "notesBottom",
+  "notesHeight",
+  "notesClientHeight",
+  "notesScrollHeight",
+  "notesScrollTop",
+  "barTop",
+  "barBottom",
+  "barHeight",
+  "navTop",
+  "navBottom",
+  "navHeight",
+  "bodyChildrenCount",
+  "bodyDirectChildMaxBottom",
+  "bodyChildrenPastViewportCount",
+];
+const layoutBooleans = [
+  "rootPresent",
+  "rootHasHDvh",
+  "rootHasHScreen",
+  "rootHasOverflowHidden",
+  "rootOverflowYHidden",
+  "rootOverflowXHidden",
+  "columnOverflowYHidden",
+  "mainOverflowYAuto",
+  "notesPresent",
+  "notesOverflowYAuto",
+  "hDvhRuleFound",
+  "hDvhRuleHas100Dvh",
+  "hDvhRuleScanComplete",
+];
+
+// Closed diagnostic data: numeric geometry and fixed booleans only. No DOM text,
+// HTML, actor, headers, URLs, operations responses or arbitrary error fields.
+export function operationsLayoutRecord(frames) {
+  const names = ["afterViewport", "beforeExpand", "afterExpand"];
+  const keys = [...layoutNumbers, ...layoutBooleans];
+  if (
+    !frames ||
+    Object.keys(frames).length !== names.length ||
+    Object.keys(frames).some((name) => !names.includes(name))
+  )
+    throw Error("Unexpected operations layout frames");
+  const record = { schemaVersion: 1 };
+  for (const name of names) {
+    const frame = frames[name];
+    if (
+      !frame ||
+      Object.keys(frame).length !== keys.length ||
+      Object.keys(frame).some((key) => !keys.includes(key)) ||
+      layoutNumbers.some(
+        (key) =>
+          typeof frame[key] !== "number" ||
+          !Number.isFinite(frame[key]) ||
+          Math.abs(frame[key]) > 1_000_000_000,
+      ) ||
+      layoutBooleans.some((key) => typeof frame[key] !== "boolean")
+    )
+      throw Error("Unexpected operations layout facts");
+    record[name] = Object.fromEntries(keys.map((key) => [key, frame[key]]));
+  }
+  return record;
+}
+
+function writeOperationsLayout(outputDir, frames) {
+  if (!isAbsolute(outputDir)) throw Error("Unexpected operations output directory");
+  const record = operationsLayoutRecord(frames);
+  const encoded = `${JSON.stringify(record)}\n`;
+  if (Buffer.byteLength(encoded) > 16384) throw Error("Operations layout record exceeds its bound");
+  const descriptor = openSync(join(outputDir, "operations-layout.json"), "wx", 0o600);
+  try {
+    writeFileSync(descriptor, encoded);
+  } finally {
+    closeSync(descriptor);
+  }
+}
+
+// Replace only successful native version reads. Authentication errors and every
+// other batched result retain their original objects; no real response is logged.
+export function operationsReleaseBannerResponse(body, names) {
+  const index = names.indexOf("version.get");
+  if (index < 0) return body;
+  const entries = Array.isArray(body) ? body : [body];
+  if (
+    entries.length !== names.length ||
+    names.filter((name) => name === "version.get").length !== 1
+  )
+    throw Error("Release banner response shape changed");
+  const entry = entries[index];
+  if (entry?.error) return body;
+  const data = entry?.result?.data;
+  if (data === null || typeof data !== "object" || Array.isArray(data))
+    throw Error("Native release version result was not observed");
+  const native = Object.hasOwn(data, "json") ? data.json : data;
+  if (
+    !native ||
+    typeof native.current !== "string" ||
+    typeof native.disabled !== "boolean" ||
+    !["latest", "releaseUrl", "releaseNotes", "checkedAt"].every(
+      (key) => native[key] === null || typeof native[key] === "string",
+    ) ||
+    !(native.updateAvailable === null || typeof native.updateAvailable === "boolean")
+  )
+    throw Error("Native release version contract changed");
+  const fixture = {
+    current: [
+      "1.7.1 synthetic frontend qualification build with a deliberately descriptive source identity",
+      "for the local wrapped header and bounded release note regression on the real administrator page",
+    ].join(" "),
+    latest: "v999.0.0",
+    releaseUrl: null,
+    releaseNotes: [
+      ...Array.from({ length: 299 }, (_, line) => `Synthetic release note line ${line + 1}.`),
+      releaseBannerLastLine,
+    ].join("\n"),
+    updateAvailable: true,
+    checkedAt: null,
+    disabled: false,
+  };
+  const changed = [...entries];
+  changed[index] = {
+    ...entry,
+    result: {
+      ...entry.result,
+      data: Object.hasOwn(data, "json") ? { ...data, json: fixture } : fixture,
+    },
+  };
+  return Array.isArray(body) ? changed : changed[0];
+}
+
+async function qualifyOperationsReleaseBanner(
+  page,
+  maintenance,
+  until,
+  fail,
+  progress,
+  recordLayout,
+) {
+  let completed = false;
+  const frames = {};
+  const show = page.getByRole("button", { name: "Show release notes", exact: true });
+  const notes = page.getByRole("region", { name: "Show release notes", exact: true });
+  const topbar = page.locator("[data-app-topbar]");
+  const geometry = () =>
+    page.evaluate(() => {
+      const main = document.querySelector("[data-app-content]");
+      const root = main?.closest("[data-density]");
+      const column = main?.parentElement;
+      const notes = document.querySelector('section[aria-label="Show release notes"]');
+      const rect = (element) =>
+        element?.getBoundingClientRect() ?? { top: -1, bottom: -1, height: -1 };
+      const style = (element) => (element ? getComputedStyle(element) : {});
+      const number = (value) => (Number.isFinite(value) ? value : -1);
+      // Do not introduce a missing utility as a new Tailwind scan candidate.
+      const viewportUtility = ["h", "dvh"].join("-");
+      const clippedUtility = ["overflow", "hidden"].join("-");
+      const utilityScan = { visited: 0, found: false, hasViewportHeight: false, complete: true };
+      const visit = (rules, depth = 0) => {
+        if (depth > 10) {
+          utilityScan.complete = false;
+          return;
+        }
+        for (const rule of rules) {
+          if (++utilityScan.visited > 50_000) {
+            utilityScan.complete = false;
+            return;
+          }
+          if (
+            rule.selectorText
+              ?.split(",")
+              .some((selector) => selector.trim() === `.${viewportUtility}`)
+          ) {
+            utilityScan.found = true;
+            utilityScan.hasViewportHeight =
+              rule.style?.getPropertyValue("height").trim() === "100dvh";
+          }
+          if (rule.cssRules) visit(rule.cssRules, depth + 1);
+          if (utilityScan.hasViewportHeight || utilityScan.visited > 50_000) return;
+        }
+      };
+      for (const sheet of [...document.styleSheets, ...(document.adoptedStyleSheets ?? [])]) {
+        try {
+          visit(sheet.cssRules);
+        } catch {
+          utilityScan.complete = false;
+        }
+        if (utilityScan.hasViewportHeight || utilityScan.visited > 50_000) break;
+      }
+      const body = rect(document.body);
+      const box = rect(root);
+      const rootParent = root?.parentElement;
+      const parent = rect(column);
+      const content = rect(main);
+      const note = rect(notes);
+      const bar = rect(document.querySelector("[data-app-topbar]"));
+      const nav = rect(document.querySelector("#primary-navigation"));
+      return {
+        windowY: scrollY,
+        windowX: scrollX,
+        viewport: innerHeight,
+        viewportWidth: innerWidth,
+        visualViewportHeight: number(window.visualViewport?.height),
+        visualViewportOffsetTop: number(window.visualViewport?.offsetTop),
+        visualViewportScale: number(window.visualViewport?.scale),
+        htmlZoom: number(Number.parseFloat(style(document.documentElement).zoom)),
+        bodyZoom: number(Number.parseFloat(style(document.body).zoom)),
+        rootZoom: number(Number.parseFloat(style(root).zoom)),
+        cssRulesVisited: utilityScan.visited,
+        documentHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
+        documentScrollHeight: document.documentElement.scrollHeight,
+        documentClientHeight: document.documentElement.clientHeight,
+        bodyScrollHeight: document.body.scrollHeight,
+        bodyClientHeight: document.body.clientHeight,
+        bodyTop: body.top,
+        bodyBottom: body.bottom,
+        bodyHeight: body.height,
+        rootTop: box.top,
+        rootBottom: box.bottom,
+        rootHeight: box.height,
+        rootClientHeight: number(root?.clientHeight),
+        rootScrollHeight: number(root?.scrollHeight),
+        rootComputedHeight: number(Number.parseFloat(style(root).height)),
+        rootMinHeight: number(Number.parseFloat(style(root).minHeight)),
+        rootParentHeight: rect(rootParent).height,
+        rootParentClientHeight: number(rootParent?.clientHeight),
+        rootParentScrollHeight: number(rootParent?.scrollHeight),
+        columnTop: parent.top,
+        columnBottom: parent.bottom,
+        columnHeight: parent.height,
+        columnClientHeight: number(column?.clientHeight),
+        columnScrollHeight: number(column?.scrollHeight),
+        mainTop: number(main?.scrollTop),
+        mainRectTop: content.top,
+        mainRectBottom: content.bottom,
+        mainRectHeight: content.height,
+        mainClientHeight: number(main?.clientHeight),
+        mainScrollHeight: number(main?.scrollHeight),
+        notesTop: note.top,
+        notesBottom: note.bottom,
+        notesHeight: note.height,
+        notesClientHeight: number(notes?.clientHeight),
+        notesScrollHeight: number(notes?.scrollHeight),
+        notesScrollTop: number(notes?.scrollTop),
+        barTop: bar.top,
+        barBottom: bar.bottom,
+        barHeight: bar.height,
+        navTop: nav.top,
+        navBottom: nav.bottom,
+        navHeight: nav.height,
+        bodyChildrenCount: document.body.children.length,
+        bodyDirectChildMaxBottom: Math.max(
+          0,
+          ...Array.from(document.body.children, (element) => rect(element).bottom),
+        ),
+        bodyChildrenPastViewportCount: Array.from(document.body.children).filter(
+          (element) => rect(element).bottom > innerHeight + 1,
+        ).length,
+        rootPresent: root !== null && root !== undefined,
+        rootHasHDvh: root?.classList.contains(viewportUtility) === true,
+        rootHasHScreen: root?.classList.contains(["h", "screen"].join("-")) === true,
+        rootHasOverflowHidden: root?.classList.contains(clippedUtility) === true,
+        rootOverflowYHidden: style(root).overflowY === "hidden",
+        rootOverflowXHidden: style(root).overflowX === "hidden",
+        columnOverflowYHidden: style(column).overflowY === "hidden",
+        mainOverflowYAuto: style(main).overflowY === "auto",
+        notesPresent: notes !== null,
+        notesOverflowYAuto: style(notes).overflowY === "auto",
+        hDvhRuleFound: utilityScan.found,
+        hDvhRuleHas100Dvh: utilityScan.hasViewportHeight,
+        hDvhRuleScanComplete: utilityScan.complete,
+      };
+    });
+  try {
+    progress("operations-release-banner-foreground");
+    await page.bringToFront();
+    progress("operations-release-banner-viewport");
+    await page.setViewportSize({ width: 900, height: 560 });
+    frames.afterViewport = await geometry();
+    progress("operations-release-banner-show");
+    await show.waitFor({ state: "visible" });
+    frames.beforeExpand = await geometry();
+    progress("operations-release-banner-expand");
+    await show.click();
+    progress("operations-release-banner-notes");
+    await notes.waitFor({ state: "visible" });
+    const hide = page.getByRole("button", { name: "Hide release notes", exact: true });
+    progress("operations-release-banner-header");
+    fail(
+      await hide.locator("..").evaluate((element) => {
+        const spans = element.querySelectorAll(":scope > span");
+        return (
+          spans.length === 2 &&
+          spans[1].getBoundingClientRect().top > spans[0].getBoundingClientRect().top + 1
+        );
+      }),
+      "Synthetic release header did not exercise wrapping",
+    );
+    progress("operations-release-banner-overflow");
+    fail(
+      await notes.evaluate(
+        (element) => element.scrollHeight > element.clientHeight + 1 && element.clientHeight > 0,
+      ),
+      "Expanded release notes must actually overflow their own region",
+    );
+    progress("operations-release-banner-document");
+    const frame = await geometry();
+    frames.afterExpand = frame;
+    if (!(frame.windowY === 0 && frame.documentHeight <= frame.viewport + 1)) recordLayout(frames);
+    fail(
+      frame.windowY === 0 && frame.documentHeight <= frame.viewport + 1,
+      "Expanded release notes overflowed the document",
+    );
+    progress("operations-release-banner-topbar");
+    fail(
+      frame.barTop >= 0 && frame.barBottom <= frame.viewport && (await topbar.isVisible()),
+      "Expanded release notes hid the topbar",
+    );
+    progress("operations-release-banner-focus");
+    await hide.focus();
+    for (let attempt = 0; attempt < 4; attempt++) {
+      if (await notes.evaluate((element) => document.activeElement === element)) break;
+      await page.keyboard.press("Tab");
+    }
+    fail(
+      await notes.evaluate((element) => document.activeElement === element),
+      "Release notes region was not reachable with Tab",
+    );
+    progress("operations-release-banner-end");
+    await page.keyboard.press("End");
+    await until(() =>
+      notes.evaluate(
+        (element) => element.scrollTop >= element.scrollHeight - element.clientHeight - 2,
+      ),
+    );
+    progress("operations-release-banner-last-line");
+    fail(
+      await notes.evaluate((element, lastLine) => {
+        const text = element.querySelector("bdi")?.firstChild;
+        if (!text || text.nodeType !== Node.TEXT_NODE) return false;
+        const start = text.textContent.lastIndexOf(lastLine);
+        if (start < 0) return false;
+        const range = document.createRange();
+        range.setStart(text, start);
+        range.setEnd(text, start + lastLine.length);
+        const line = range.getBoundingClientRect();
+        const region = element.getBoundingClientRect();
+        return line.height > 0 && line.top >= region.top - 1 && line.bottom <= region.bottom + 1;
+      }, releaseBannerLastLine),
+      "The last release note was not reachable with the keyboard",
+    );
+    progress("operations-release-banner-wheel");
+    const bounds = await notes.boundingBox();
+    fail(bounds && bounds.height > 0, "Release note scroll region was not visible");
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    for (let attempt = 0; attempt < 3; attempt++) await page.mouse.wheel(0, 1200);
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    progress("operations-release-banner-boundary");
+    const end = await geometry();
+    fail(
+      end.windowY === 0 &&
+        end.documentHeight <= end.viewport + 1 &&
+        end.mainTop === frame.mainTop &&
+        Math.abs(end.barTop - frame.barTop) <= 1 &&
+        Math.abs(end.navTop - frame.navTop) <= 1,
+      "Release note boundary input moved the document or shell",
+    );
+    progress("operations-release-banner-collapse");
+    await hide.click();
+    progress("operations-release-banner-collapsed");
+    await notes.waitFor({ state: "hidden" });
+    progress("operations-release-banner-reopen");
+    await show.click();
+    progress("operations-release-banner-reopened");
+    await notes.waitFor({ state: "visible" });
+    const reopened = page.getByRole("button", { name: "Hide release notes", exact: true });
+    const dismiss = reopened.locator("..").getByRole("button", { name: "Dismiss", exact: true });
+    progress("operations-release-banner-dismiss-focus");
+    await reopened.focus();
+    progress("operations-release-banner-dismiss-tab");
+    await page.keyboard.press("Tab");
+    fail(
+      await dismiss.evaluate((element) => document.activeElement === element),
+      "Release dismissal was not reachable with Tab",
+    );
+    progress("operations-release-banner-dismiss");
+    await page.keyboard.press("Enter");
+    progress("operations-release-banner-dismissed-notes");
+    await notes.waitFor({ state: "hidden" });
+    progress("operations-release-banner-dismissed-control");
+    await dismiss.waitFor({ state: "hidden" });
+    progress("operations-release-banner-dismissed-document");
+    fail((await geometry()).windowY === 0, "Release dismissal moved the document");
+    // The other real admin tab mounted before localStorage dismissal. Close its
+    // collapsed fixture too, preserving both documents for the authority checks.
+    progress("operations-release-banner-other-tab-dismiss");
+    await maintenance
+      .getByRole("button", { name: "Show release notes", exact: true })
+      .locator("..")
+      .getByRole("button", { name: "Dismiss", exact: true })
+      .click();
+    completed = true;
+  } finally {
+    // Preserve the original finite failure stage when cleanup follows a failure.
+    if (completed) progress("operations-release-banner-restore");
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+}
+
 export async function qualifyOperations({
   browser,
   profile,
@@ -101,7 +585,8 @@ export async function qualifyOperations({
     nativeMfaVerified = false,
     operationRequests = 0,
     metadataOnly = false,
-    invalid = false;
+    invalid = false,
+    releaseBannerFixtureResponses = 0;
   const observing = new Set();
   const pages = [];
   function mfaWasVerified() {
@@ -109,9 +594,38 @@ export async function qualifyOperations({
   }
   try {
     await context.route("**/*", async (route) => {
-      if (new URL(route.request().url()).origin !== base) {
+      const request = route.request();
+      const url = new URL(request.url());
+      if (url.origin !== base) {
         metrics.blockedRequests++;
         await route.abort();
+      } else if (
+        request.method() === "GET" &&
+        url.pathname.startsWith("/api/trpc/") &&
+        url.pathname.slice("/api/trpc/".length).split(",").includes("version.get")
+      ) {
+        fail(
+          url.protocol === "https:" && url.hostname === "127.0.0.1" && Boolean(url.port),
+          "Release banner fixture requires loopback HTTPS",
+        );
+        try {
+          const response = await route.fetch({ maxRedirects: 0, timeout: 15000 });
+          if (!response.ok()) return await route.fulfill({ response });
+          const body = await response.json();
+          const changed = operationsReleaseBannerResponse(
+            body,
+            url.pathname.slice("/api/trpc/".length).split(","),
+          );
+          if (changed === body) return await route.fulfill({ response });
+          releaseBannerFixtureResponses++;
+          const headers = { ...response.headers(), "content-type": "application/json" };
+          delete headers["content-length"];
+          delete headers["content-encoding"];
+          await route.fulfill({ response, headers, body: JSON.stringify(changed) });
+        } catch {
+          invalid = true;
+          await route.abort().catch(() => {});
+        }
       } else await route.continue();
     });
     await context.routeWebSocket("**/*", (route) => {
@@ -306,6 +820,13 @@ export async function qualifyOperations({
     }
     progress("operations-facts-render");
     await until(initialFacts);
+    progress("operations-release-banner");
+    progress("operations-release-banner-response");
+    fail(releaseBannerFixtureResponses > 0, "Successful native version read was not observed");
+    await qualifyOperationsReleaseBanner(logs, maintenance, until, fail, progress, (frames) =>
+      writeOperationsLayout(profile.outputDir, frames),
+    );
+    progress("operations-metadata-fields");
     const age = queue
       .getByText("Oldest ready job (seconds)", { exact: true })
       .locator("..")

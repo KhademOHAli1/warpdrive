@@ -5,6 +5,7 @@
 !README.md
 !build.sh
 !build-assets.go
+!altcha.LICENSE.txt
 !nonroot-entrypoint.sh
 !patches/
 !patches/*.patch

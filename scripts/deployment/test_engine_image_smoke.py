@@ -365,6 +365,25 @@ class OwnershipAndCompletionTests(unittest.TestCase):
         self.assertFalse(smoke.required_checks_passed(checks))
 
 
+class PublicCaptchaAssetTests(unittest.TestCase):
+    def test_missing_asset_or_successful_html_fallback_rejects_public_form_qualification(self):
+        for status, body in ((404, b"404 page not found"), (403, b"Forbidden"),
+                             (200, b"<!doctype html><title>fallback</title>"), (200, b"")):
+            with self.subTest(status=status, body=body):
+                with self.assertRaisesRegex(smoke.SmokeError, "public ALTCHA asset"):
+                    smoke.verify_public_captcha_asset(status, body)
+
+    def test_missing_actual_http_asset_prevents_readiness_success_and_still_stops_runtime(self):
+        value = object.__new__(smoke.EngineImageSmoke)
+        value.ready, value.stop_engine, value.graceful_stop = Mock(), Mock(), Mock()
+        value.request = Mock(return_value=(404, b"404 page not found"))
+        with self.assertRaisesRegex(smoke.SmokeError, "public ALTCHA asset"):
+            value.readiness()
+        value.request.assert_called_once_with(smoke.ALTCHA_ASSET_PATH)
+        value.stop_engine.assert_called_once_with()
+        value.graceful_stop.assert_not_called()
+
+
 class GracefulLifecycleTests(unittest.TestCase):
     def rows(self):
         before = {"Id": "b" * 64, "Image": "sha256:" + "a" * 64,
@@ -443,9 +462,10 @@ class GracefulLifecycleTests(unittest.TestCase):
         value.auth = {"Authorization": "synthetic"}
         ready = (200, json.dumps({"data": {"database": {"status": "ready"},
                                          "scheduler": {"status": "passive"}, "ready": False}}).encode())
-        value.request = Mock(side_effect=[(403, b""), ready, ready, ready])
+        value.request = Mock(side_effect=[(200, b"synthetic public asset"), (403, b""), ready, ready, ready])
         value.graceful_stop = Mock(side_effect=[{"signal": "TERM", "exitCode": 0}, {"signal": "INT", "exitCode": 0}])
-        proof = value.readiness()
+        with patch.object(smoke, "verify_public_captcha_asset", return_value={"sha256": "synthetic"}):
+            proof = value.readiness()
         self.assertEqual([call.args[0] for call in value.graceful_stop.call_args_list], ["TERM", "INT"])
         self.assertEqual(value.ready.call_count, 3)
         self.assertEqual(value.stop_engine.call_count, 1)
@@ -459,11 +479,12 @@ class GracefulLifecycleTests(unittest.TestCase):
         ready = {"data": {"database": {"status": "ready"}, "scheduler": {"status": "passive"}, "ready": False}}
         unready = deepcopy(ready)
         unready["data"]["database"]["status"] = "unavailable"
-        value.request = Mock(side_effect=[(403, b""), (200, json.dumps(ready).encode()),
+        value.request = Mock(side_effect=[(200, b"synthetic public asset"), (403, b""), (200, json.dumps(ready).encode()),
                                           (200, json.dumps(unready).encode())])
         value.graceful_stop = Mock(return_value={"signal": "TERM", "exitCode": 0})
-        with self.assertRaisesRegex(smoke.SmokeError, "readiness did not recover"):
-            value.readiness()
+        with patch.object(smoke, "verify_public_captcha_asset", return_value={"sha256": "synthetic"}):
+            with self.assertRaisesRegex(smoke.SmokeError, "readiness did not recover"):
+                value.readiness()
         value.graceful_stop.assert_called_once_with("TERM")
         value.stop_engine.assert_called_once_with()
 

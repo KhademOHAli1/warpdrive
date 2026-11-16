@@ -22,7 +22,7 @@ export const infrastructureIds2: string[] = [
   "sourceReview:src/features/release/job.ts#0ce9f31f7806ae647e1363f1b1a16f428ebb49b993f6ab402abd501c18a1e6e3",
   "sourceReview:src/features/release/releaseStatus.ts#3b5260337aed90f80d7217542cb1020793335a3cfae055d1aa4fb7e7562bb3fb",
   "sourceReview:src/features/release/router.ts#7e35d9e8c093a07ca5a3e1c93f9a87838de6bb512254126919c5f255c477d72f",
-  "sourceReview:src/features/release/ui/VersionBanner.tsx#d8431515419292c801737142708098da41e977a366687a44324f212e5b29c9d5",
+  "sourceReview:src/features/release/ui/VersionBanner.tsx#340bfdb0e49bfd514641a16215156713c3217a1a5711b91a35bafef1d437916b",
   "sourceReview:src/features/saved-filters/filterAst.ts#3140f347ad5357bd9955a2f0dbd140c70ca5bde5851fedb8bd93d49c6ca099b0",
   "sourceReview:src/features/saved-filters/router.ts#6f60dd12cba5ef401498350a67fdd638e65d36788bfe128aa574fd66bcafb7d2",
   "sourceReview:src/features/saved-filters/savedFilterActions.ts#efda8e5d582870d9196820a4ae06728b2a2608763626774e44204c125f9fa448",

@@ -59,6 +59,39 @@ void test("bounded policy keeps app roots, helper edges and CSS while omitting o
   assert.deepEqual(WEB_INPUT_POLICY.sourceRules, WEB_SOURCE_RULES);
 });
 
+void test("reviewed next-intl 4.15.0 admission remains exact and retains every other toolchain gate", async () => {
+  const versions = WEB_INPUT_POLICY.reviewedLockedVersions;
+  assert.equal(versions["next-intl"], "4.15.0");
+  const packages = Object.fromEntries(
+    Object.entries(versions).map(([name, version]) => [name, [`${name}@${version}`]]),
+  );
+  const f = fixture();
+  const manifest = { dependencies: { next: versions.next } };
+  await f.run({ manifest, lock: { packages } });
+  for (const version of ["4.14.10", "4.15.1", "4.16.0", "^4.15.0"]) {
+    await assert.rejects(
+      f.run({
+        manifest,
+        lock: { packages: { ...packages, "next-intl": [`next-intl@${version}`] } },
+      }),
+      /unreviewed locked next-intl version/u,
+    );
+  }
+  const missing = { ...packages };
+  delete missing["next-intl"];
+  await assert.rejects(
+    f.run({ manifest, lock: { packages: missing } }),
+    /unreviewed locked next-intl version/u,
+  );
+  for (const name of Object.keys(versions).filter((name) => name !== "next-intl")) {
+    await assert.rejects(
+      f.run({ manifest, lock: { packages: { ...packages, [name]: [`${name}@0.0.0`] } } }),
+      /unreviewed locked/u,
+      name,
+    );
+  }
+});
+
 void test("fresh traversal rejects static, transitive, reexport, type-only and literal dynamic edges to omissions", async () => {
   for (const source of [
     'import "@/server/worker";',

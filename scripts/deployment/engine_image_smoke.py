@@ -43,6 +43,8 @@ CONTEXT = REPO / "deploy/newsletters/engine"
 UPSTREAM_SHA = "52119464c87ed71a60d46f7097ddb304967d344fc1954769388a1e2d764b659b"
 UPSTREAM_SOURCE = "https://github.com/knadh/listmonk/tree/ef0a75872463f10a4848af6c547d1c057405453a"
 CONTEXT_LABEL = "io.warpdrive.engine.context.sha256"
+ALTCHA_ASSET_PATH = "/public/static/altcha.umd.js"
+ALTCHA_ASSET_SHA256 = "0f557a9f535a15acbe0fc7abb4fe896502a6d4c27de1c4145cfa001d0d2be099"
 OLD_REVISION = "35c40339b8068a489247080e61430d17bfbfdb26"
 OLD_TREE = "72c4eb357e6981315909fb134c021f1c5eaa2025"
 OLD_CONTEXT_SHA = "1e935b4f2ad94158db9cb3482f2fa874d90e80a289bb65099991a79769b92626"
@@ -64,6 +66,12 @@ REQUIRED_CHECKS = (
 
 def digest(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
+
+
+def verify_public_captcha_asset(status: int, raw: bytes) -> dict:
+    if status != 200 or digest(raw) != ALTCHA_ASSET_SHA256:
+        raise SmokeError("Final-image public ALTCHA asset is missing or differs from pinned upstream")
+    return {"path": ALTCHA_ASSET_PATH, "bytes": len(raw), "sha256": ALTCHA_ASSET_SHA256}
 
 
 def valid_media_path(path: str) -> bool:
@@ -718,8 +726,8 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
                 raise SmokeError("Owned engine runtime did not stop")
 
     def request(self, path, headers=None, body=None, method=None):
-        if path not in {"/health", "/api/warpdrive/readiness"} or body is not None or method is not None:
-            raise SmokeError("Only bounded fixture health/readiness GETs are allowed")
+        if path not in {"/health", "/api/warpdrive/readiness", ALTCHA_ASSET_PATH} or body is not None or method is not None:
+            raise SmokeError("Only bounded fixture health/readiness/public CAPTCHA GETs are allowed")
         self.owned(self.serve.name)
         args = ["exec", self.serve.name, "wget", "-q", "-S", "-T", "4", "-O", "-"]
         for key, value in (headers or {}).items():
@@ -863,6 +871,7 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
         self.ready()
         stopped = []
         try:
+            captcha = verify_public_captcha_asset(*self.request(ALTCHA_ASSET_PATH))
             NATIVE.assert_equal(self.request("/api/warpdrive/readiness")[0], 403, "anonymous readiness denied")
             status, raw = self.request("/api/warpdrive/readiness", self.auth)
             value = json.loads(raw)["data"]
@@ -879,7 +888,7 @@ class EngineImageSmoke(ImageSmoke, NATIVE.MigrationFixture):
         finally:
             self.stop_engine()
         return {"healthSurvived": True, "databaseReady": True, "passiveIsNotDeliveryReady": True, "anonymousDenied": True,
-                "gracefulShutdown": stopped, "restartReadyAfterBothSignals": True}
+                "gracefulShutdown": stopped, "restartReadyAfterBothSignals": True, "publicCaptchaAsset": captcha}
 
     def graceful_stop(self, selected_signal):
         """Prove actual PID1 TERM/INT completion; logs or an acknowledgement cannot qualify it."""

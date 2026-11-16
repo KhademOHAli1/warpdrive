@@ -18,6 +18,7 @@ from release_security import verify_release_code_scanning
 from release_publication import record_publication
 from release_mail import is_mail_version, mail_release_gate, next_mail_patch
 from release_newsletter import CODEQL_CATEGORIES, newsletter_release_gate
+from release_frontend import frontend_release_gate
 
 def require_revision(revision):
     if not SHA.fullmatch(revision):
@@ -58,6 +59,9 @@ def commit_references(api, repo, revision, base, overrides=None):
     return rows
 
 def release_gate(api, plan, policy, allow_published=False):
+    if plan.get("release_track") == "frontend":
+        return frontend_release_gate(api, plan, policy, require_revision, commit_references,
+                                     allow_published=allow_published)
     if plan.get("release_track") == "newsletter":
         return newsletter_release_gate(api, plan, policy, require_revision, commit_references,
                                        allow_published=allow_published)
@@ -124,7 +128,8 @@ def trusted_release_policy(revision):
 
 def publish(api, plan, evidence, directory, mode):
     repo, revision, tag = evidence["repository"], evidence["revision"], "v" + evidence["version"]
-    security_options = {"categories": CODEQL_CATEGORIES} if evidence.get("release_track") == "newsletter" else {}
+    security_options = {"categories": CODEQL_CATEGORIES} if evidence.get("release_track") in ("newsletter", "frontend") else {}
+    release_name = f"Warpdrive frontend {evidence['version']}" if evidence.get("release_track") == "frontend" else f"Warpdrive {evidence['version']}"
     releases = api.pages(f"repos/{repo}/releases")
     current = next((r for r in releases if r["tag_name"] == tag), None)
     if current and current.get("prerelease") is not False:
@@ -148,9 +153,9 @@ def publish(api, plan, evidence, directory, mode):
         verify_uploaded_assets(directory, current["assets"])
         return record_publication(api, evidence, current["id"])
     if not current:
-        current = api.request(f"repos/{repo}/releases", "POST", {"tag_name": tag, "target_commitish": revision, "name": f"Warpdrive {evidence['version']}", "body": body, "draft": True, "prerelease": False})
+        current = api.request(f"repos/{repo}/releases", "POST", {"tag_name": tag, "target_commitish": revision, "name": release_name, "body": body, "draft": True, "prerelease": False})
     else:
-        api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"name": f"Warpdrive {evidence['version']}", "body": body})
+        api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"name": release_name, "body": body})
     run("gh", "release", "upload", tag, *[str(p) for p in sorted(Path(directory).iterdir()) if p.is_file()], "--repo", repo, "--clobber")
     reread = api.request(f"repos/{repo}/releases/{current['id']}")
     if reread.get("prerelease") is not False:

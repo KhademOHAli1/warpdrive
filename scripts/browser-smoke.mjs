@@ -192,6 +192,9 @@ try {
     );
   }
 
+  const { runShellScrollBrowserSmoke } = await import("./browser-shell-scroll.mjs");
+  await runShellScrollBrowserSmoke({ journey, signIn });
+
   const { runAgencyProjectsBrowserSmoke } = await import("./agency-projects-browser.mjs");
   await runAgencyProjectsBrowserSmoke({ journey, signIn, catalog });
 

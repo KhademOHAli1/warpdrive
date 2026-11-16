@@ -44,7 +44,7 @@ const REVIEWED_HOST_GLOBAL_SYNTAX = {
 };
 const TOOLCHAIN = {
   next: "16.4.6",
-  "next-intl": "4.14.10",
+  "next-intl": "4.15.0",
   tailwindcss: "4.3.5",
   "@tailwindcss/postcss": "4.3.5",
   typescript: "6.0.3",

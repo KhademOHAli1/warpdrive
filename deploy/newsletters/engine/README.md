@@ -12,6 +12,8 @@ docker build -t warpdrive-newsletter-engine:6.2.0-crm.1 ./deploy/newsletters/eng
 
 The final image defaults to numeric user/group `65532:65532`. Only its image-owned `/listmonk/uploads` directory receives that ownership during the image build. The entrypoint preserves `LISTMONK_*_FILE` loading and executes the supplied command, including the Compose command; missing, unreadable or invalid file paths fail without logging secret values. Startup does not create users/groups or change directory/volume ownership. Existing upload volumes require a separately reviewed ownership transition before this image is installed. Read-only-root operation additionally requires bounded writable uploads and temporary storage; image source checks do not qualify existing-volume ownership or an installed migration.
 
+The protected public form requires `/public/static/altcha.umd.js`. Upstream generates this file during frontend dependency installation, so it is absent from the source archive. The build extracts the exact ALTCHA 2.3.0 bundle from the pinned upstream binary and verifies SHA-256 `0f557a9f535a15acbe0fc7abb4fe896502a6d4c27de1c4145cfa001d0d2be099` before packing it. Its MIT license is included at `/public/static/altcha.LICENSE.txt` and in the corresponding-source archive. Final-image qualification requests the asset over the actual engine HTTP route and checks its digest; passive health alone cannot qualify the public form.
+
 To build a native development binary, supply the verified source tarball and the same platform's verified Listmonk v6.2.0 release binary. Use Go 1.26.1 and a fresh output directory. The script reads the upstream binary's embedded admin assets.
 
 ```sh

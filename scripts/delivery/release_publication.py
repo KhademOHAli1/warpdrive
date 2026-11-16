@@ -8,6 +8,12 @@ def record_publication(api, evidence, release_id):
     ref = api.request(f"repos/{repo}/git/ref/tags/{tag}")
     if published.get("draft") is not False or published.get("prerelease") is not False or published.get("tag_name") != tag or ref["object"].get("type") != "commit" or ref["object"].get("sha") != revision:
         raise GateError("Publication receipts require an independently verified stable published release and exact commit tag")
+    if evidence.get("release_track") == "frontend":
+        latest = api.request(f"repos/{repo}/releases/latest")
+        if (latest.get("id") != published.get("id") or latest.get("tag_name") != tag
+                or latest.get("draft") is not False or latest.get("prerelease") is not False):
+            raise GateError("Frontend publication is not the independently verified latest stable release")
+        return published["html_url"]
     if evidence.get("release_track") == "newsletter":
         return published["html_url"]
     milestone = evidence["milestone"]["number"]
