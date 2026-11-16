@@ -3,7 +3,7 @@
   "qualification_type": "frontend_source_and_isolated_runtime",
   "result": "qualified",
   "version": "1.8.1",
-  "reviewed_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+  "reviewed_revision": "c952aba4849d2a574a3801c8a53e27777fb9f295",
   "reviewer_agent": {
     "runtime": "codex",
     "session_id": "01a1dd01-e6b2-7522-99dc-0436bd038b30",
@@ -14,7 +14,7 @@
   "provider_installation_accepted": false,
   "deployment_performed": false,
   "summary": "Web rendering is detached from database, native-auth, provider and job authority through fixed Core HTTP reads, an explicit command registry and preserved native protocol routes. A credential-free conventional Next production build and source/output graphs verify frontend import separation. An isolated production Next/Core/native PostgreSQL proof exercised authenticated SSR, a real thin Server Action cookie roundtrip, native auth relay, persisted commands, CSRF and cross-owner denials, metadata refresh and clean producer shutdown. Independent exact-diff source review covered the extraction and all final follow-ons without actionable findings.",
-  "limitations": "Source and isolated local runtime qualification only. The original native proof at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45/package 1.7.2 is preserved. The follow-on native proof at ad41fbc4cba15ac35e178fb3facd8ea63100ea76/package 1.8.1 passed after Core admission and deployment-tooling corrections. It reused the production Web build from d1ecfa99e1dd93d35643fcffb312c9ce3e94590e, whose frontend runtime sources remain unchanged; that build used the preceding checkout as APP_COMMIT. The independent reviewer inspected source and evidence declarations without rerunning the application. The first hosted browser run passed public, mobile, shell and agency-project checks, then failed on deal-page reload; final-candidate hosted qualification remains required. An earlier bounded full-unit campaign did not finish. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. The historical four-component custody path fails closed without separately qualified Core. Newsletter activation, subscriber intake and sending remain deferred.",
+  "limitations": "Source and isolated local runtime qualification only. The original native proof at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45/package 1.7.2 is preserved. The follow-on native proof at ad41fbc4cba15ac35e178fb3facd8ea63100ea76/package 1.8.1 passed after Core admission and deployment-tooling corrections. It reused the production Web build from d1ecfa99e1dd93d35643fcffb312c9ce3e94590e, whose frontend runtime sources remain unchanged; that build used the preceding checkout as APP_COMMIT. The independent reviewer inspected source and evidence declarations without rerunning the application. The first hosted browser run passed public, mobile, shell and agency-project checks, then failed on deal-page reload; final-candidate hosted qualification remains required. An earlier bounded full-unit campaign did not finish. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. The historical four-component custody path fails closed without separately qualified Core. Newsletter activation, subscriber intake and sending remain deferred. The second hosted browser run passed deal/calendar persistence, workflows, appearance recovery, regional preferences and the earlier analytics checks, then failed after its late proposal installation omitted the restricted Core reader grants. Those four SELECT grants and the five stale unit expectations/mocks are corrected in the final source. Source-only guard preparation passed at cc63ce5a; this does not establish image runtime qualification. Fresh final-candidate and exact-main hosted results remain publication gates.",
   "checks": [
     {
       "name": "authenticated-ssr",
@@ -39,7 +39,7 @@
     {
       "name": "independent-source-review",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/commit/ad41fbc4cba15ac35e178fb3facd8ea63100ea76"
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/c952aba4849d2a574a3801c8a53e27777fb9f295"
     },
     {
       "name": "native-auth-relay",
@@ -71,6 +71,14 @@
       "sha256": "efc905766821b034c354900a267dc1c69f7b5c7597c63233be68156eff2a1c14"
     },
     {
+      "path": "Caddyfile.test.ts",
+      "sha256": "99ea9298327e11d36feedacef5268c7dc2e3d514d8de79006f1f8402475213c1"
+    },
+    {
+      "path": "Dockerfile.test.ts",
+      "sha256": "a0b27ab807cbffea0cac057f6f8e807378ba059d58576e4a168f320ebf1480b9"
+    },
+    {
       "path": "deploy/images/Dockerfile",
       "sha256": "bda0b84eb1a4fb732ddd3df97c571aeda264cb8250b142b6c7e921bc6d9e125d"
     },
@@ -85,6 +93,10 @@
     {
       "path": "docker-compose.newsletters.yml",
       "sha256": "d2fff00e369218b972ef62336cca4eda5fee5b04ef253942d77e2539d27b5a56"
+    },
+    {
+      "path": "docker-compose.security.test.ts",
+      "sha256": "16861d03be1fd9442218887bb8f5ff0b5d0c2f4dc74621f719e1980543884188"
     },
     {
       "path": "docker-compose.yml",
@@ -115,6 +127,10 @@
       "sha256": "4b85e2a924076a5ad7fc4e30de5897dfc16b89c469fa21d5be33bc7918e647c0"
     },
     {
+      "path": "scripts/browser-analytics.mjs",
+      "sha256": "db9636913198c90fba5756f17f259b90a705fb24f94613f33d4f6202c357abde"
+    },
+    {
       "path": "scripts/build-core.mjs",
       "sha256": "1f4035813dfc64fef3fb7bfdddc45cea2310669cc43c3a6767a6c2f9680df40d"
     },
@@ -129,6 +145,10 @@
     {
       "path": "scripts/delivery/release_frontend_test.py",
       "sha256": "2c96ebdd4e219416a877009e00e89c83a7c258fcb9ea130655c08135de4eafe7"
+    },
+    {
+      "path": "scripts/deployment/component_inputs.test.mjs",
+      "sha256": "4dbc44a3beb0a3e7c4890fba33cee2314134b1598688fce3e1618e4aa0288c35"
     },
     {
       "path": "scripts/deployment/fresh_compose_admission.py",
@@ -175,12 +195,24 @@
       "sha256": "9f25e51396763c126e62a24b3c5f844d9d58941e4866dc07ad5d3758e6894f3e"
     },
     {
+      "path": "scripts/deployment/web_sdk_full_inputs.mjs",
+      "sha256": "8ef2d223d29d6c943fefe6f37acb798547e968cf2a75003612c09c5310e384a9"
+    },
+    {
+      "path": "scripts/deployment/web_sdk_full_inputs.test.mjs",
+      "sha256": "9308c316f9e316cd27d0f17433fac101f4664596e8678acaf20daa078d268681"
+    },
+    {
       "path": "src/app/(app)/layout.tsx",
       "sha256": "0d4778e98368ba5739e8b29633b3eb675eed7c0eddb8006da3bc76bf193c8c71"
     },
     {
       "path": "src/app/layout.tsx",
       "sha256": "c6d460b08385f5ab17969ef6646be0e4c61aafb2315c2903ef4b7b944c644be7"
+    },
+    {
+      "path": "src/components/shell/LeftNav.test.tsx",
+      "sha256": "408c7374ffbcc8f4d8df8f1c0ae630775f67a74ae2ab87d90230fe6c7303a5db"
     },
     {
       "path": "src/components/shell/SidebarMenu.tsx",
@@ -205,6 +237,10 @@
     {
       "path": "src/features/auth/session.ts",
       "sha256": "19bb35a6cf6b62e00c103c3a3fe676378aaab0010ab0210172b0ba7a58b96b52"
+    },
+    {
+      "path": "src/features/deals/nativeContactActions.test.ts",
+      "sha256": "3a50a2e73b5aa7339a49d7a767d9cd377416893eee34e9f92880a7252af396ec"
     },
     {
       "path": "src/features/i18n/server.ts",
@@ -344,6 +380,15 @@
       "head_tree": "a18afd2fc1732822cfd4d31c3ed9faa953c0f860",
       "diff_sha256": "1a1be1fe0147fdee196a2cc1aa0f47b81d28480a6eea9bbf253b2175bf302d22",
       "actionable_defects": 0
+    },
+    "final_ci_follow_on": {
+      "base_revision": "6a5fca0e3a4ad0c85b3a5f3b7c1ebb8a3221719d",
+      "head_revision": "c952aba4849d2a574a3801c8a53e27777fb9f295",
+      "reviewed_paths": 9,
+      "head_tree": "af943dd82c8b67879c528bbbe6eec64daddda7f3",
+      "diff_sha256": "40f20f51f7b4f688f6e7bde4f26d3d138fa509af90c980a8b188b4e6192a0a0f",
+      "actionable_defects": 0,
+      "scope": "Synchronize the second exact Web recipe pin; correct existing helper/version/Compose/contact mock expectations; grant the restricted synthetic Core reader SELECT on four capture tables installed late by the admitted browser fixture. Application runtime sources remain unchanged from ad41fbc4."
     }
   },
   "local_runtime": {
@@ -362,7 +407,7 @@
     "native_seconds": 40.449,
     "owned_native_resources_cleaned": true,
     "frontend_build_source_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
-    "final_source_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "final_source_revision": "c952aba4849d2a574a3801c8a53e27777fb9f295",
     "follow_on_native_source_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
     "follow_on_native_seconds": 38.364,
     "follow_on_owned_native_resources_cleaned": true,
@@ -391,6 +436,33 @@
       "last_passed": "agency-projects-fa",
       "failed_step": "deal-persistence reload",
       "rerun_required": true
+    },
+    "application_runtime_unchanged_since_native_proof": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "second_hosted_browser": {
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43804779190",
+      "head_revision": "6a5fca0e3a4ad0c85b3a5f3b7c1ebb8a3221719d",
+      "executed_merge_revision": "0787838faef586ae8bbc872732e30291255de22e",
+      "result": "failed",
+      "deal_reload_passed": true,
+      "failure": "Late private analytics capture tables lacked SELECT grants for the restricted Core fixture role",
+      "rerun_required": true
+    },
+    "full_hosted_unit_prior_candidate": {
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43804779180",
+      "passed": 14543,
+      "failed": 5,
+      "skipped": 3,
+      "seconds": 622.99,
+      "resolved_existing_suites_rechecked": 5,
+      "resolved_existing_tests_passed": 68,
+      "rerun_required": true
+    },
+    "source_only_image_guard": {
+      "source_revision": "cc63ce5a602ce0fe6be5e41c3aa60c6d78f9ce63",
+      "prepared": true,
+      "seconds": 7.87,
+      "existing_node_guard_tests_passed": 77,
+      "scope": "Exact Git source, build-input discovery and projected Web context only; no image compilation or runtime acceptance"
     }
   }
 }
