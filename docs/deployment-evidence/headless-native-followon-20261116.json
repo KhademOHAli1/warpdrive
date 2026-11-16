@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "kind": "headless-local-follow-on-qualification",
+  "sourceRevision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+  "packageVersionDuringBehaviorProof": "1.8.1",
+  "frontendArtifactSourceRevision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+  "frontendRuntimeSourcesUnchangedSinceBuild": true,
+  "observedAt": "2026-11-16T04:30:52.016238+00:00",
+  "native": {
+    "success": true,
+    "seconds": 38.364,
+    "cleanupSeconds": 0.349,
+    "peakOwnedRssBytes": 946077696,
+    "peakCombinedBunRssBytes": 534446080,
+    "ownedProcessGroupsClean": true,
+    "listenersClosed": true,
+    "fixtureRemoved": true,
+    "sourceFileCount": 1728,
+    "sourceUnchanged": true,
+    "postgresVersion": "postgres (PostgreSQL) 16.10 (Homebrew)",
+    "bunVersion": "1.4.4",
+    "scope": "production-profile standalone Core and separately started credential-free production Next Web on owned migrated native PG16; authenticated SSR, thin action cookies and HTTP relay; no cloud or deployment qualification"
+  },
+  "behavior": {
+    "event": "core.service.proof",
+    "status": "pass",
+    "authenticatedOwners": 2,
+    "headlessTransport": true,
+    "headlessFrontend": true,
+    "crossOwnerDenials": 2,
+    "positiveMutations": 2,
+    "mutationCsrfDenials": 1,
+    "versionRefreshWithoutRestart": true,
+    "liveRegistryConsumers": 0,
+    "repeatedSignalDrain": true,
+    "negativeStartupCases": 3,
+    "timingResponses": 17,
+    "postRequests": 5,
+    "childFacts": {
+      "children": 4,
+      "logBytes": 389,
+      "allExited": true
+    }
+  },
+  "sourceInputsSha256": "4b053bc462dd1d5a40d34f346c01f18586a3203c78314e585f6ebca66a1a2243",
+  "coreAdmission": {
+    "maximumConcurrentRequests": 32,
+    "aggregateBodyBytes": 83886080
+  },
+  "claims": {
+    "productionDeployment": false,
+    "cloudflareQualified": false,
+    "providerInstallationAccepted": false,
+    "tenantIsolationQualified": false,
+    "containerImageQualification": false
+  },
+  "limits": "Fresh isolated native PG16 and separately started production Core/Next processes, with the previously built unchanged Web runtime. This repeats the existing native harness after Core admission and deployment-tooling follow-ons. The preceding hosted browser run passed public, mobile, shell and agency-project checks but failed on deal-page reload; its final-candidate rerun remains required. No provider traffic, production deployment or image qualification is claimed."
+}
