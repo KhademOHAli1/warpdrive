@@ -213,7 +213,7 @@ it("queues verification after an ambiguous owner read without blindly issuing an
       if (!prepared.ok || prepared.value.kind !== "created")
         throw new AppError(ERROR_IDS.DB_INVARIANT, "Native IMAP read was not prepared");
       f.server.state.dropMutationResponse = "STORE";
-      const { markThreadReadAction } = await import("@/features/email/readActions");
+      const { markThreadReadAction } = await import("@/features/email/readActions.backend");
       expect(
         await markThreadReadAction("csrf", {
           threadId: f.threadId,
