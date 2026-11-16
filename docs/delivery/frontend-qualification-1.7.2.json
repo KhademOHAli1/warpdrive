@@ -3,7 +3,7 @@
   "qualification_type": "frontend_source_and_isolated_runtime",
   "result": "qualified",
   "version": "1.7.2",
-  "reviewed_revision": "f34116499dddbc5871b2e7c1a9951c284435cb77",
+  "reviewed_revision": "289f10816aab79110c90ba9b737725412d4eca2b",
   "reviewer_agent": {
     "runtime": "codex",
     "session_id": "01a1e10d-a8f4-7933-8b49-5107b3cbce59",
@@ -13,43 +13,43 @@
   "user_journey_accepted": false,
   "provider_installation_accepted": false,
   "deployment_performed": false,
-  "summary": "Independent source review and isolated runtime checks verified viewport-bound main content, primary and settings navigation, keyboard scrolling, collapsed-sidebar peeking, mobile drawer focus and scrolling, and actual saved Persian RTL layout. The native administrator Operations page also passed the wrapped long-release-header and 300-line release-notes checks, including Tab/End access to the last line, wheel containment, collapse, reopen and keyboard dismissal. Both the full browser job and the entire final production-image qualification succeeded for the reviewed 1.7.2 source tree.",
-  "limitations": "This qualifies frontend source and isolated synthetic runtime only. Ordinary browser checks used native authentication, inert local overflow content, saved language preferences and a network-fenced loopback target; the administrator image checks used native password/TOTP and a test-only successful version-response fixture. The image producer revision 415ff46972d8dc469b2e30af863b2c68eb13120b is the PR synthetic merge of reviewed revision f34116499dddbc5871b2e7c1a9951c284435cb77 and Main 3ea66712c2d3fcf73999ffa523c94b98229ad353; their Git trees were independently verified equal (1ef37b55a1dded9de0a19b04c0c5706d9b3a960c). This is not final-Main CI or installed acceptance. At qualification time final-Main integration and its fresh full CI/security/image gates, production deployment, installed retained-service compatibility, provider delivery, inbox receipt and human/customer acceptance remain separate and unclaimed. The source review did not author the implementation; its inherited parent session is recorded separately in private review evidence.",
+  "summary": "Independent source review and fresh isolated runtime checks verified viewport-bound main content, primary and settings navigation, keyboard scrolling, collapsed-sidebar peeking, mobile drawer focus and scrolling, and actual saved Persian RTL layout. Real sidebar transition geometry is settled before the strict content-position and outside-rail hit-test comparisons. The native administrator Operations page also passed wrapped-header and 300-line release-notes checks, including keyboard access to the last line, wheel containment, collapse, reopen and dismissal. Both the full browser job and the entire production-image qualification succeeded for this reviewed 1.7.2 source tree, including the integrated module-version metadata.",
+  "limitations": "This qualifies frontend source and isolated synthetic runtime only. Ordinary browser checks used native authentication, inert local overflow fixtures, real saved locale preferences and a network-fenced loopback target; administrator image checks used native password/TOTP and a test-only successful version-response fixture. The image producer 4556ac937ed5688e054246d411562c82ceee8d8a is the PR synthetic merge of reviewed 289f10816aab79110c90ba9b737725412d4eca2b and preceding Main 8ddc4576c5072c6b857e158a941631821b7bf3f2; their Git trees were independently verified equal (eaf5219d31bba1c435e2d5e6281d9cac1903acb5). The failed-first preceding-Main Persian peek assertion is retained in history and resolved by the reviewed geometry-settling precondition with unchanged strict assertions. These branch checks do not replace fresh final-Main full CI/security/images, actual deployment, installed retained-service compatibility, provider delivery, inbox receipt or human/customer acceptance. No such acceptance is claimed. The reviewer authored only qualification metadata, not the implementation; inherited parent session identity is retained separately in private review evidence.",
   "checks": [
     {
       "name": "main-content-scroll",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
     },
     {
       "name": "sidebar-scroll-containment",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
     },
     {
       "name": "settings-navigation-scroll-containment",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
     },
     {
       "name": "keyboard-scroll",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
     },
     {
       "name": "mobile-navigation",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
     },
     {
       "name": "rtl-scroll",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
     },
     {
       "name": "release-notes-scroll",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782753527/job/133023833493#step:27:1"
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788285451/job/133041111410#step:27:1"
     }
   ],
   "source_pins": [
@@ -79,7 +79,7 @@
     },
     {
       "path": "scripts/browser-shell-scroll.mjs",
-      "sha256": "9e8a5846038cb4b48e2c1b42fcff48bd581aa37cf9a0055c06430c27e1ee4bac"
+      "sha256": "3e4168732e20aa5c1ab548a708b825f77a1adc34f541c70aed028af01f16da25"
     },
     {
       "path": "scripts/browser-operations.mjs",
@@ -104,36 +104,53 @@
     {
       "path": "src/features/privacy/registryIdsPersonalRequests1.ts",
       "sha256": "05bfd45192aa331a87c2c99c0c9c987342f96602c225536f25136080aba217b1"
+    },
+    {
+      "path": "docs/delivery/module-versions.json",
+      "sha256": "4ba6a012f103b1770904b77e624a6f08551f9de793f71efa67eedf8943bde996"
     }
   ],
+  "historical_qualification": {
+    "reviewed_revision": "f34116499dddbc5871b2e7c1a9951c284435cb77",
+    "record_commit": "8ddc4576c5072c6b857e158a941631821b7bf3f2",
+    "record_path": "docs/delivery/frontend-qualification-1.7.2.json",
+    "record_sha256": "e6bb18604e921e80e349944df3bb754ebb353da84d045dc4e6ed201e07d31a5e",
+    "prior_result": "qualified",
+    "scope": "Actual prior-source independent review and isolated synthetic runtime evidence only; no new-cut or installed acceptance is claimed.",
+    "failed_first_main_browser_run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43786307350",
+    "failed_first_main_browser_journey": "shell-scroll-fa-560",
+    "failed_first_main_browser_assertion": "Peeking must not move content",
+    "resolved_by_source_revision": "289f10816aab79110c90ba9b737725412d4eca2b",
+    "resolution_check_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1"
+  },
   "runtime_evidence": {
     "full_browser": {
-      "revision": "f34116499dddbc5871b2e7c1a9951c284435cb77",
-      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767",
-      "job_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782771767/job/133023506893#step:11:1",
+      "revision": "289f10816aab79110c90ba9b737725412d4eca2b",
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155",
+      "job_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788314155/job/133040826616#step:11:1",
       "result": "passed",
       "actual_journey_log_lines": [
-        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T00:56:25.2770199Z shell-scroll-en-827: passed",
-        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T00:56:29.7843444Z shell-mobile-en: passed",
-        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T00:56:35.7267069Z shell-scroll-fa-560: passed",
-        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T00:56:41.1967010Z shell-mobile-fa: passed"
+        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T01:51:56.4068913Z shell-scroll-en-827: passed",
+        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T01:52:00.0381516Z shell-mobile-en: passed",
+        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T01:52:04.9398978Z shell-scroll-fa-560: passed",
+        "Full browser smoke checks\tExercise serial browser packs without external requests\t2026-11-16T01:52:09.7558305Z shell-mobile-fa: passed"
       ]
     },
     "production_image": {
-      "producer_revision": "415ff46972d8dc469b2e30af863b2c68eb13120b",
-      "reviewed_revision": "f34116499dddbc5871b2e7c1a9951c284435cb77",
-      "tree": "1ef37b55a1dded9de0a19b04c0c5706d9b3a960c",
+      "producer_revision": "4556ac937ed5688e054246d411562c82ceee8d8a",
+      "reviewed_revision": "289f10816aab79110c90ba9b737725412d4eca2b",
+      "tree": "eaf5219d31bba1c435e2d5e6281d9cac1903acb5",
       "producer_tree_equals_reviewed_tree": true,
-      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782753527",
-      "job_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782753527/job/133023833493#step:27:1",
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788285451",
+      "job_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788285451/job/133041111410#step:27:1",
       "result": "passed",
       "whole_job_passed": true,
-      "artifact_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43782753527/artifacts/14189193783",
-      "artifact_sha256": "84fc335ee34d17e391a4638d8bafc6d8c1e4200deb7aa928cf2dc2dcb85d7d51",
+      "artifact_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43788285451/artifacts/14191832566",
+      "artifact_sha256": "a963304fb59df16a98107c5590fbabda6173b9c4c247c62296b44a8708b169c0",
       "browser_report_path": "browser-realtime/report.json",
-      "browser_report_sha256": "c89833c106e18d937f18298acc94bbf3af0900ba68fc280d205ba1a598268432",
+      "browser_report_sha256": "c06db2b737863bc7ba7db77105cf3f762ff67b89e0a2e576240d72a8fe3065e3",
       "browser_proof_path": "browser-realtime/browser/browser.json",
-      "browser_proof_sha256": "50b8493ad2481b4912bf87f6410e5e9323cd56e078668bc93c773b923181c9a6",
+      "browser_proof_sha256": "6716f990a1cc6bfd52b206a4449f4df7ed95afcdbbface3fe241ceaab97e6194",
       "page_errors": 0,
       "blocked_requests": 0,
       "blocked_websockets": 0

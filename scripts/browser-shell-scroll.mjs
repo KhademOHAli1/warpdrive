@@ -242,6 +242,34 @@ export async function exerciseShellScrollBoundaries(page, locale) {
   });
 }
 
+async function waitForSidebarWidths(page, state) {
+  await page.waitForFunction(
+    (expectedState) => {
+      const rail = document.querySelector("aside[data-sidebar-state]");
+      const panel = rail?.firstElementChild;
+      if (!rail || !panel || rail.getAttribute("data-sidebar-state") !== expectedState)
+        return false;
+      const style = getComputedStyle(rail);
+      const icon = Number.parseFloat(style.getPropertyValue("--sidebar-width-icon"));
+      const full = Number.parseFloat(style.getPropertyValue("--sidebar-width"));
+      const outerTarget = expectedState === "expanded" ? full : icon;
+      const panelTarget = expectedState === "collapsed" ? icon : full;
+      const outerWidth = rail.getBoundingClientRect().width;
+      const panelWidth = panel.getBoundingClientRect().width;
+      return (
+        outerTarget > 0 &&
+        panelTarget > 0 &&
+        outerWidth > 0 &&
+        panelWidth > 0 &&
+        Math.abs(outerWidth - outerTarget) <= 1 &&
+        Math.abs(panelWidth - panelTarget) <= 1
+      );
+    },
+    state,
+    { timeout: 5000 },
+  );
+}
+
 export async function exerciseCollapsedSidebar(page) {
   const sidebar = page.locator("aside[data-sidebar-state]");
   const pin = sidebar.locator('button[aria-controls="primary-navigation"]');
@@ -249,17 +277,11 @@ export async function exerciseCollapsedSidebar(page) {
   if ((await pin.getAttribute("aria-pressed")) === "true") await pin.click();
   await page.locator("[data-app-topbar]").hover();
   await sidebar.locator(':scope[data-sidebar-state="collapsed"]').waitFor();
+  await waitForSidebarWidths(page, "collapsed");
   const before = await page.locator("[data-app-content]").boundingBox();
   await page.locator("#primary-navigation").hover();
   await sidebar.locator(':scope[data-sidebar-state="peeking"]').waitFor();
-  await page.waitForFunction(() => {
-    const rail = document.querySelector('aside[data-sidebar-state="peeking"]');
-    return (
-      rail &&
-      rail.firstElementChild.getBoundingClientRect().width >
-        rail.getBoundingClientRect().width + 100
-    );
-  });
+  await waitForSidebarWidths(page, "peeking");
   assert(
     await page.locator("#primary-navigation").evaluate((nav) => {
       const rect = nav.getBoundingClientRect();
@@ -279,8 +301,10 @@ export async function exerciseCollapsedSidebar(page) {
   await page.locator("#primary-navigation a[href]").first().focus();
   await page.keyboard.press("Escape");
   await sidebar.locator(':scope[data-sidebar-state="collapsed"]').waitFor();
+  await waitForSidebarWidths(page, "collapsed");
   await pin.click();
   assert.equal(await pin.getAttribute("aria-pressed"), "true");
+  await waitForSidebarWidths(page, "expanded");
 }
 
 export async function exerciseMobileSidebar(page, locale) {
