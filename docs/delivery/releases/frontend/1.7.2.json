@@ -4,7 +4,7 @@
   "version": "1.7.2",
   "qualification": {
     "path": "docs/delivery/frontend-qualification-1.7.2.json",
-    "sha256": null
+    "sha256": "e6bb18604e921e80e349944df3bb754ebb353da84d045dc4e6ed201e07d31a5e"
   },
   "required_integrated_revisions": [
     "37df6d0a4e8a6bf7480316f9afd7c13ea1fe62ea",
