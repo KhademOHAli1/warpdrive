@@ -167,7 +167,7 @@ it("dispatches the existing Delete server action to native IMAP without a Gmail 
       state.actor = f.actor;
       state.runtime = f.runtime;
       state.csrf = true;
-      const { trashThreadAction } = await import("@/features/email/actions");
+      const { trashThreadAction } = await import("@/features/email/actions.backend");
       expect(await trashThreadAction("csrf", { threadId: f.threadId })).toMatchObject({
         ok: true,
         value: { threadId: f.threadId },
@@ -192,7 +192,9 @@ it("queues verification after an ambiguous owner read without blindly issuing an
       state.runtime = f.runtime;
       state.csrf = true;
       queued.mockClear();
-      const { prepareThreadReadIntentAction } = await import("@/features/email/readIntentActions");
+      const { prepareThreadReadIntentAction } = await import(
+        "@/features/email/readIntentActions.backend"
+      );
       const prepared = await prepareThreadReadIntentAction("csrf", {
         threadId: f.threadId,
         read: true,

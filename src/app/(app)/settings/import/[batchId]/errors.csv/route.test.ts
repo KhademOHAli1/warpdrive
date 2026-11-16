@@ -5,7 +5,7 @@ import { customFieldDefs, importBatches, importRows } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
 import { LOCALE_COOKIE, type LocalePreferences } from "@/features/i18n/preferences";
-import type * as I18nServer from "@/features/i18n/server";
+import type * as I18nServer from "@/server/locale";
 import type { AppContext } from "@/server/trpc/context";
 
 // Only request identity and the viewer preference boundary are substituted. Every query below,
@@ -17,7 +17,7 @@ const requestState = vi.hoisted(() => ({
 }));
 vi.mock("@/server/trpc/context", () => ({ createContext: () => requestState.context }));
 vi.mock("next/headers", () => ({ cookies: () => Promise.resolve(requestState.cookies) }));
-vi.mock("@/features/i18n/server", async (importOriginal) => {
+vi.mock("@/server/locale", async (importOriginal) => {
   const actual = await importOriginal<typeof I18nServer>();
   return {
     ...actual,
