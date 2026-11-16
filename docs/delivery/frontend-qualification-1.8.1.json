@@ -3,7 +3,7 @@
   "qualification_type": "frontend_source_and_isolated_runtime",
   "result": "qualified",
   "version": "1.8.1",
-  "reviewed_revision": "c952aba4849d2a574a3801c8a53e27777fb9f295",
+  "reviewed_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
   "reviewer_agent": {
     "runtime": "codex",
     "session_id": "01a1dd01-e6b2-7522-99dc-0436bd038b30",
@@ -14,7 +14,7 @@
   "provider_installation_accepted": false,
   "deployment_performed": false,
   "summary": "Web rendering is detached from database, native-auth, provider and job authority through fixed Core HTTP reads, an explicit command registry and preserved native protocol routes. A credential-free conventional Next production build and source/output graphs verify frontend import separation. An isolated production Next/Core/native PostgreSQL proof exercised authenticated SSR, a real thin Server Action cookie roundtrip, native auth relay, persisted commands, CSRF and cross-owner denials, metadata refresh and clean producer shutdown. Independent exact-diff source review covered the extraction and all final follow-ons without actionable findings.",
-  "limitations": "Source and isolated local runtime qualification only. The original native proof at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45/package 1.7.2 is preserved. The follow-on native proof at ad41fbc4cba15ac35e178fb3facd8ea63100ea76/package 1.8.1 passed after Core admission and deployment-tooling corrections. It reused the production Web build from d1ecfa99e1dd93d35643fcffb312c9ce3e94590e, whose frontend runtime sources remain unchanged; that build used the preceding checkout as APP_COMMIT. The independent reviewer inspected source and evidence declarations without rerunning the application. The first hosted browser run passed public, mobile, shell and agency-project checks, then failed on deal-page reload; final-candidate hosted qualification remains required. An earlier bounded full-unit campaign did not finish. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. The historical four-component custody path fails closed without separately qualified Core. Newsletter activation, subscriber intake and sending remain deferred. The second hosted browser run passed deal/calendar persistence, workflows, appearance recovery, regional preferences and the earlier analytics checks, then failed after its late proposal installation omitted the restricted Core reader grants. Those four SELECT grants and the five stale unit expectations/mocks are corrected in the final source. Source-only guard preparation passed at cc63ce5a; this does not establish image runtime qualification. Fresh final-candidate and exact-main hosted results remain publication gates.",
+  "limitations": "Source and isolated local runtime qualification only. The original native proof at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45/package 1.7.2 is preserved. The follow-on native proof at ad41fbc4cba15ac35e178fb3facd8ea63100ea76/package 1.8.1 passed after Core admission and deployment-tooling corrections. It reused the production Web build from d1ecfa99e1dd93d35643fcffb312c9ce3e94590e, whose frontend runtime sources remain unchanged; that build used the preceding checkout as APP_COMMIT. The independent reviewer inspected source and evidence declarations without rerunning the application. Earlier bounded/full hosted failures remain recorded below. At candidate 11d4b93c the entire browser pack, all four PR CodeQL analyses and 14,548 unit tests passed; PostgreSQL integration passed 4,727 tests and failed 11 in three existing fixtures. Those fixtures now target the moved backend action and locale boundaries, preserving their assertions; a fresh full hosted rerun remains required. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. Source-only image guard preparation passed at cc63ce5a. The candidate 11d4b93c image smoke passed identity, packaging, isolation and migration checks, then failed because the historical four-component fixture starts no Core and supplies no CORE_API_ORIGIN. That custody path fails closed without separately qualified Core and does not establish image runtime qualification. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. Newsletter activation, subscriber intake and sending remain deferred.",
   "checks": [
     {
       "name": "authenticated-ssr",
@@ -39,7 +39,7 @@
     {
       "name": "independent-source-review",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/commit/c952aba4849d2a574a3801c8a53e27777fb9f295"
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/ddbf7f318c2a9499188cdf86ce2695e6623f2f87"
     },
     {
       "name": "native-auth-relay",
@@ -207,6 +207,10 @@
       "sha256": "0d4778e98368ba5739e8b29633b3eb675eed7c0eddb8006da3bc76bf193c8c71"
     },
     {
+      "path": "src/app/(app)/settings/import/[batchId]/errors.csv/route.test.ts",
+      "sha256": "50d8474bd72744113e419149a74c4322d8d983343328500ba88c892b1669974e"
+    },
+    {
       "path": "src/app/layout.tsx",
       "sha256": "c6d460b08385f5ab17969ef6646be0e4c61aafb2315c2903ef4b7b944c644be7"
     },
@@ -243,8 +247,16 @@
       "sha256": "3a50a2e73b5aa7339a49d7a767d9cd377416893eee34e9f92880a7252af396ec"
     },
     {
+      "path": "src/features/email/imapThreadOperations.actions.integration.test.ts",
+      "sha256": "b443a80261f2b6273f383f7451fa23863d21abce2979ce2f155daf80756fd97c"
+    },
+    {
       "path": "src/features/i18n/server.ts",
       "sha256": "6114ea9cb4ce3418a2d64ba06ea37b8aa011f984cc8817b10c54222d493cad5e"
+    },
+    {
+      "path": "src/features/notifications/router.test.ts",
+      "sha256": "79fbe9d4f7ad0acc2a49687c81febc50944d48f387bf0ac9c220afcf2e646fb6"
     },
     {
       "path": "src/features/privacy/registryIdsCoreHttp2.ts",
@@ -389,6 +401,16 @@
       "diff_sha256": "40f20f51f7b4f688f6e7bde4f26d3d138fa509af90c980a8b188b4e6192a0a0f",
       "actionable_defects": 0,
       "scope": "Synchronize the second exact Web recipe pin; correct existing helper/version/Compose/contact mock expectations; grant the restricted synthetic Core reader SELECT on four capture tables installed late by the admitted browser fixture. Application runtime sources remain unchanged from ad41fbc4."
+    },
+    "integration_fixture_follow_on": {
+      "base_revision": "11d4b93c80e3d1e783342f931c4cb8cbfa4461fe",
+      "head_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
+      "reviewed_paths": 3,
+      "head_tree": "1f9d05bf68bde9b956d40e9ea210b3a3233efef0",
+      "diff_sha256": "3bc974b4e8360d1058978642fa43314b5a57cae60c09fc2e9a2ac5978b9f4355",
+      "actionable_defects": 0,
+      "resolved_fixture_defects": 1,
+      "scope": "Retarget existing notification/IMAP action imports and CSV locale mock to Core implementations; also correct the downstream IMAP read action identified during independent source review. Assertions and application runtime sources are unchanged. No local integration rerun is claimed; the existing suite uses Docker global setup."
     }
   },
   "local_runtime": {
@@ -407,7 +429,7 @@
     "native_seconds": 40.449,
     "owned_native_resources_cleaned": true,
     "frontend_build_source_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
-    "final_source_revision": "c952aba4849d2a574a3801c8a53e27777fb9f295",
+    "final_source_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
     "follow_on_native_source_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
     "follow_on_native_seconds": 38.364,
     "follow_on_owned_native_resources_cleaned": true,
@@ -463,6 +485,39 @@
       "seconds": 7.87,
       "existing_node_guard_tests_passed": 77,
       "scope": "Exact Git source, build-input discovery and projected Web context only; no image compilation or runtime acceptance"
+    },
+    "third_hosted_candidate": {
+      "head_revision": "11d4b93c80e3d1e783342f931c4cb8cbfa4461fe",
+      "full_ci_run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783450",
+      "unit": {
+        "passed": 14548,
+        "skipped": 3,
+        "seconds": 572.92
+      },
+      "integration": {
+        "passed": 4727,
+        "failed": 11,
+        "files_failed": 3,
+        "seconds": 562.99,
+        "result": "failed",
+        "rerun_required": true
+      },
+      "browser": {
+        "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783425",
+        "result": "passed"
+      },
+      "pr_codeql_languages_passed": [
+        "javascript-typescript",
+        "actions",
+        "python",
+        "go"
+      ],
+      "image_smoke": {
+        "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783411",
+        "result": "failed",
+        "failure": "Historical four-component fixture omits Core startup and CORE_API_ORIGIN",
+        "installation_accepted": false
+      }
     }
   }
 }

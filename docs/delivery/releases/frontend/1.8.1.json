@@ -4,12 +4,13 @@
   "version": "1.8.1",
   "qualification": {
     "path": "docs/delivery/frontend-qualification-1.8.1.json",
-    "sha256": "1fd4dbf8662f636af363b77011e918810b53e9d2a96fdec38504da8fc024de29"
+    "sha256": "e05fe135213dad8c5d62d2b0270b19997f32ca9cc1f179a9a920cedcd419ea95"
   },
   "required_integrated_revisions": [
     "22fbef5623cf8a13472b124e13c019632ff2c02e",
     "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
     "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
-    "c952aba4849d2a574a3801c8a53e27777fb9f295"
+    "c952aba4849d2a574a3801c8a53e27777fb9f295",
+    "ddbf7f318c2a9499188cdf86ce2695e6623f2f87"
   ]
 }
