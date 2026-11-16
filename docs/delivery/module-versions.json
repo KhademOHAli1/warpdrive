@@ -7,7 +7,7 @@
     "web": {
       "name": "CRM Web",
       "kind": "application",
-      "version": "1.7.4",
+      "version": "1.7.5",
       "paths": [
         "src/app/",
         "src/components/",
@@ -29,7 +29,7 @@
     "core-api": {
       "name": "Core API",
       "kind": "service",
-      "version": "1.7.3",
+      "version": "1.7.4",
       "paths": [
         "src/entrypoints/core-api.ts",
         "src/server/trpc/",
@@ -45,7 +45,7 @@
     "worker": {
       "name": "Background Worker",
       "kind": "service",
-      "version": "1.7.3",
+      "version": "1.7.4",
       "paths": [
         "src/entrypoints/worker.ts",
         "src/entrypoints/sweepSpam.ts",
@@ -61,7 +61,7 @@
     "realtime": {
       "name": "Realtime service",
       "kind": "service",
-      "version": "1.7.3",
+      "version": "1.7.4",
       "paths": [
         "src/entrypoints/ws.ts",
         "src/server/ws/",
@@ -73,7 +73,7 @@
     "migrator": {
       "name": "Database migrator",
       "kind": "migration",
-      "version": "1.7.3",
+      "version": "1.7.4",
       "paths": [
         "src/entrypoints/migrate.ts",
         "src/db/migrate.ts",
@@ -92,7 +92,7 @@
     "operations-collector": {
       "name": "Operations collector",
       "kind": "service",
-      "version": "1.7.3",
+      "version": "1.7.4",
       "paths": [
         "src/entrypoints/operations-collector.ts",
         "src/features/operations/",
@@ -104,7 +104,7 @@
     "deployment-toolkit": {
       "name": "Installed deployment toolkit",
       "kind": "operator-toolkit",
-      "version": "1.7.4",
+      "version": "1.7.5",
       "paths": [
         "scripts/deployment/",
         "scripts/delivery/",
