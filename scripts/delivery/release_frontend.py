@@ -1,4 +1,4 @@
-"""Bounded frontend 1.7.1.5 source publication; product acceptance stays independent."""
+"""Bounded frontend 1.7.2 source publication; product acceptance stays independent."""
 from __future__ import annotations
 
 import hashlib
@@ -12,17 +12,19 @@ from release_gates import (
 from release_mail import classify_history
 from release_security import require_selected_main
 from release_support import (
-    GateError, SHA, canonical_json, load_candidate_json, release_baseline, run, version_tuple,
+    GateError, SHA, canonical_json, load_candidate_json, release_baseline, run,
+    validate_release_version,
 )
 
-VERSION = "1.7.1.5"
+VERSION = "1.7.2"
 POLICY_PATH = "docs/delivery/frontend-release-policy.json"
 PLAN_DIRECTORY = "docs/delivery/releases/frontend"
-QUALIFICATION_PATH = "docs/delivery/frontend-qualification-1.7.1.5.json"
+QUALIFICATION_PATH = "docs/delivery/frontend-qualification-1.7.2.json"
 FOOTER_PATH = "src/components/shell/SidebarMenu.tsx"
+PACKAGE_PATH = "package.json"
 SOURCE_PATHS = frozenset({
     "src/app/(app)/layout.tsx", "src/app/(app)/settings/SettingsNav.tsx",
-    "src/components/shell/LeftNav.module.css", FOOTER_PATH,
+    "src/components/shell/LeftNav.module.css", FOOTER_PATH, PACKAGE_PATH,
     "src/features/release/ui/VersionBanner.tsx",
 })
 CONTRIBUTIONS = {"integration/UX-010": 119, "integration/UX-014": 123}
@@ -48,7 +50,6 @@ FALSE_CLAIMS = (
     "deployment_performed",
 )
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
-FRONTEND_VERSION = re.compile(r"^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 FOOTER = re.compile(rb'^const FRONTEND_VERSION = "([^"\r\n]+)";$', re.M)
 
 
@@ -92,7 +93,7 @@ def validate_proposal(plan, archive, policy):
     require(isinstance(plan, dict) and type(plan.get("schema_version")) is int
             and plan["schema_version"] == 1 and plan.get("release_track") == "frontend"
             and plan.get("version") == VERSION,
-            "Frontend plan must select the authorized frontend version 1.7.1.5")
+            "Frontend plan must select the authorized frontend version 1.7.2")
     allowed = {"schema_version", "release_track", "version", "qualification",
                "required_integrated_revisions", "revision", "commit_issues", "delivery_scope"}
     require(set(plan).issubset(allowed), "Frontend plan cannot declare issue acceptance or milestone scope")
@@ -196,12 +197,12 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
                    dynamic_codeql_workflow=CODEQL_WORKFLOW)
     tags, releases = api.pages(f"repos/{repository}/tags"), api.pages(f"repos/{repository}/releases")
     tag_name = "v" + VERSION
-    selected = tuple(map(int, VERSION.split(".")))
     names = [row["name"] for row in tags if row["name"] != tag_name]
     names += [row["tag_name"] for row in releases if row["tag_name"] != tag_name]
-    require(all(selected > tuple(map(int, match.groups())) for name in names
-                if (match := FRONTEND_VERSION.fullmatch(name))),
-            "Frontend version must exceed every other reserved four-part version")
+    product_version = load_candidate_json(revision, PACKAGE_PATH)["version"]
+    # Stable publication uses the same canonical SemVer contract as the package.
+    # Historical four-part display counters remain outside that version grammar.
+    validate_release_version(product_version, VERSION, names)
     existing_tag = next((row for row in tags if row["name"] == tag_name), None)
     require(existing_tag is None or existing_tag["commit"]["sha"] == revision,
             "Existing frontend tag points to another revision")
@@ -218,8 +219,6 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
     recent = set(run("git", "rev-list", f"{PR_BASELINE}..{revision}").splitlines())
     require(all(row.get("pull_requests") for row in ledger if row["sha"] in recent),
             "Frontend source publication requires merged PR evidence for new commits")
-    product_version = load_candidate_json(revision, "package.json")["version"]
-    version_tuple(product_version)  # Frontend counters cannot replace product SemVer.
     require_selected_main(api, repository, revision)
     return {
         "schema_version": 1, "snapshot_stage": "pre-publication", "release_track": "frontend",

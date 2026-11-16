@@ -2,7 +2,7 @@
   "schema_version": 1,
   "qualification_type": "frontend_source_and_isolated_runtime",
   "result": "pending",
-  "version": "1.7.1.5",
+  "version": "1.7.2",
   "reviewed_revision": null,
   "reviewer_agent": {
     "runtime": "codex",
@@ -53,6 +53,10 @@
     }
   ],
   "source_pins": [
+    {
+      "path": "package.json",
+      "sha256": null
+    },
     {
       "path": "src/app/(app)/layout.tsx",
       "sha256": null

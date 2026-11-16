@@ -21,7 +21,8 @@ REPO = "KhademOHAli1/warpdrive"
 def fixtures():
     policy = json.loads((Path(__file__).resolve().parents[2] / frontend.POLICY_PATH).read_text())
     blobs = {path: b"offline source fixture\n" for path in frontend.SOURCE_PATHS}
-    blobs[frontend.FOOTER_PATH] = b'const FRONTEND_VERSION = "1.7.1.5";\n'
+    blobs[frontend.FOOTER_PATH] = b'const FRONTEND_VERSION = "1.7.2";\n'
+    blobs[frontend.PACKAGE_PATH] = b'{"version": "1.7.2"}\n'
     record = {
         "schema_version": 1, "qualification_type": "frontend_source_and_isolated_runtime",
         "result": "qualified", "version": frontend.VERSION, "reviewed_revision": REVIEWED,
@@ -52,11 +53,12 @@ class QualificationTests(unittest.TestCase):
             read or (lambda revision, path: self.blobs[path]), lambda old, new: ancestor,
         )
 
-    def test_completed_fixture_uses_frontend_counter_without_changing_product_semver(self):
+    def test_completed_fixture_uses_canonical_stable_version(self):
         frontend.validate_proposal(self.plan, self.plan, self.policy)
         self.qualify()
+        self.assertEqual(version_tuple(frontend.VERSION), (1, 7, 2))
         with self.assertRaises(GateError):
-            version_tuple(frontend.VERSION)
+            version_tuple("1.7.1.5")
         self.assertEqual(version_tuple("1.7.1"), (1, 7, 1))
 
     def test_incomplete_templates_fail_closed(self):
@@ -190,7 +192,7 @@ class FrontendGateTests(unittest.TestCase):
 
     def candidate(self, revision, path):
         if path == "package.json":
-            return {"version": "1.7.1"}
+            return json.loads(self.blobs[frontend.PACKAGE_PATH])
         if path == "docs/delivery/issue-map.json":
             return {"issues": {key: {"number": number} for key, number in frontend.CONTRIBUTIONS.items()}}
         return {key: value for key, value in self.plan.items() if key != "revision"}
@@ -220,21 +222,24 @@ class FrontendGateTests(unittest.TestCase):
         self.assertEqual(self.ci.call_args.kwargs["dynamic_codeql_workflow"], frontend.CODEQL_WORKFLOW)
         for head in self.plan["required_integrated_revisions"]:
             self.assertIn(("git", "merge-base", "--is-ancestor", head, REVISION), self.git_calls)
-        self.assertEqual(evidence["product_version"], "1.7.1")
-        self.assertEqual(evidence["version"], "1.7.1.5")
+        self.assertEqual(evidence["product_version"], "1.7.2")
+        self.assertEqual(evidence["version"], "1.7.2")
         self.assertEqual(evidence["issues"], [])
         self.assertFalse(evidence["close_milestone"])
         self.assertTrue(all(row["source_state"] == "open" and row["acceptance_claimed"] is False
                             for row in evidence["contributions"]))
         self.assertTrue(all(method == "GET" for _, method, _ in self.api.calls))
 
-    def test_product_package_must_keep_its_independent_three_part_version(self):
+    def test_product_package_must_match_the_selected_stable_release(self):
         original = self.candidate
-        def candidate(revision, path):
-            return {"version": "1.7.1.5"} if path == "package.json" else original(revision, path)
-        with patch.object(frontend, "load_candidate_json", side_effect=candidate), \
-                self.assertRaisesRegex(GateError, "MAJOR.MINOR.PATCH"):
-            self.gate()
+        for version, reason in (("1.7.1", "committed package version"),
+                                ("1.7.1.5", "MAJOR.MINOR.PATCH")):
+            def candidate(revision, path):
+                return {"version": version} if path == "package.json" else original(revision, path)
+            with self.subTest(version=version), \
+                    patch.object(frontend, "load_candidate_json", side_effect=candidate), \
+                    self.assertRaisesRegex(GateError, reason):
+                self.gate()
 
     def test_stale_main_missing_ci_missing_branch_and_changed_report_hold(self):
         self.api.main = REVIEWED
@@ -254,17 +259,29 @@ class FrontendGateTests(unittest.TestCase):
             self.gate()
 
     def test_reserved_versions_wrong_tags_and_existing_publications_hold(self):
-        self.api.tags = [{"name": "v1.7.1.6", "commit": {"sha": REVIEWED}}]
-        with self.assertRaisesRegex(GateError, "reserved"):
+        self.api.tags = [{"name": "v1.7.3", "commit": {"sha": REVIEWED}}]
+        with self.assertRaisesRegex(GateError, "stable tag/release"):
             self.gate()
-        self.api.tags = [{"name": "v1.7.1.5", "commit": {"sha": REVIEWED}}]
+        self.api.tags = [{"name": "v1.7.2", "commit": {"sha": REVIEWED}}]
         with self.assertRaisesRegex(GateError, "another revision"):
             self.gate()
         self.api.tags = []
-        self.api.releases = [{"tag_name": "v1.7.1.5", "draft": False, "prerelease": False}]
+        self.api.releases = [{"tag_name": "v1.7.2", "draft": False, "prerelease": False}]
         with self.assertRaisesRegex(GateError, "already published"):
             self.gate()
         self.gate(allow=True)
+
+    def test_stable_release_reservations_are_not_confused_with_display_counters(self):
+        self.api.tags = [{"name": "v1.7.1", "commit": {"sha": REVIEWED}},
+                         {"name": "v1.7.1.5", "commit": {"sha": REVIEWED}}]
+        self.gate()
+        self.api.tags.append({"name": "1.7.2", "commit": {"sha": REVIEWED}})
+        with self.assertRaisesRegex(GateError, "stable tag/release"):
+            self.gate()
+        self.api.tags.pop()
+        self.api.releases = [{"tag_name": "v1.7.3", "draft": True, "prerelease": False}]
+        with self.assertRaisesRegex(GateError, "stable tag/release"):
+            self.gate()
 
     def test_drafts_do_not_truncate_ledger_and_new_commits_need_merged_prs(self):
         self.api.tags = [{"name": "v1.7.0", "commit": {"sha": REVIEWED}},
@@ -288,9 +305,9 @@ class FrontendGateTests(unittest.TestCase):
 class PublicationAPI(GateAPI):
     def __init__(self):
         super().__init__()
-        self.release = {"id": 9, "draft": True, "prerelease": False, "tag_name": "v1.7.1.5", "assets": [],
-                        "html_url": f"https://github.com/{REPO}/releases/tag/v1.7.1.5"}
-        self.tags = [{"name": "v1.7.1.5", "commit": {"sha": REVISION}}]
+        self.release = {"id": 9, "draft": True, "prerelease": False, "tag_name": "v1.7.2", "assets": [],
+                        "html_url": f"https://github.com/{REPO}/releases/tag/v1.7.2"}
+        self.tags = [{"name": "v1.7.2", "commit": {"sha": REVISION}}]
         self.releases = [self.release]
         self.languages = ["javascript-typescript", "actions", "python", "go"]
         self.alerts, self.writes, self.latest_id = [], [], 9
@@ -302,7 +319,7 @@ class PublicationAPI(GateAPI):
                      "tool": {"name": "CodeQL"}, "error": ""} for i, language in enumerate(self.languages, 1)]
         if "/code-scanning/alerts?" in path:
             return self.alerts
-        if path.endswith("/git/ref/tags/v1.7.1.5"):
+        if path.endswith("/git/ref/tags/v1.7.2"):
             return {"object": {"type": "commit", "sha": REVISION}}
         if path.endswith("/releases/latest"):
             return dict(self.release, id=self.latest_id)
@@ -315,8 +332,8 @@ class PublicationAPI(GateAPI):
 
 def publication_evidence():
     _, _, record, _, plan = fixtures()
-    return {"repository": REPO, "release_track": "frontend", "version": "1.7.1.5",
-            "product_version": "1.7.1", "revision": REVISION, "qualification": {"record": record},
+    return {"repository": REPO, "release_track": "frontend", "version": "1.7.2",
+            "product_version": "1.7.2", "revision": REVISION, "qualification": {"record": record},
             "contributions": [], "issues": [], "commits": [], "ci": [], "unreleased_context": [],
             "required_integrated_revisions": plan["required_integrated_revisions"]}
 
@@ -352,7 +369,7 @@ class PublicationTests(unittest.TestCase):
         api = PublicationAPI()
         self.assertEqual(self.publish(api), api.release["html_url"])
         self.assertTrue(any(payload.get("make_latest") == "true" for _, _, payload in api.writes))
-        self.assertEqual(api.release["name"], "Warpdrive frontend 1.7.1.5")
+        self.assertEqual(api.release["name"], "Warpdrive frontend 1.7.2")
         self.assertFalse(any("/issues" in path or "/milestones" in path for path, _, _ in api.writes))
         previous = len(api.writes)
         self.publish(api)
@@ -364,8 +381,9 @@ class PublicationTests(unittest.TestCase):
     def test_notes_and_checksum_assets_preserve_source_only_boundaries(self):
         evidence = publication_evidence()
         text = release_artifacts.notes(evidence)
-        self.assertIn("frontend 1.7.1.5", text)
-        self.assertIn("independent product version `1.7.1`", text)
+        self.assertIn("frontend 1.7.2", text)
+        self.assertIn("package version `1.7.2`", text)
+        self.assertNotIn("four-part frontend release", text)
         self.assertNotIn("Accepted deliveries", text)
         summary = release_artifacts.publication_notes(evidence, "x" * 120001)
         self.assertLessEqual(len(summary.encode()), release_artifacts.PUBLICATION_BODY_MAX_BYTES)

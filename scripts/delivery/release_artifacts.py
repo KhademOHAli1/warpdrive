@@ -11,14 +11,14 @@ def frontend_notes(evidence, *, compact=False):
     record = evidence["qualification"]["record"]
     base = f"https://github.com/{evidence['repository']}/releases/download/v{evidence['version']}"
     rows = [f"# Warpdrive frontend {evidence['version']}", "", "<!-- warpdrive:release-track:frontend -->",
-            f"Source revision `{evidence['revision']}`; independent product version `{evidence['product_version']}`.",
+            f"Source revision `{evidence['revision']}`; package version `{evidence['product_version']}`.",
             "", "## Qualified frontend contribution", "", record["summary"], ""]
     rows += [f"- [#{item['number']} {item['title']}]({item['url']}) · contribution only; canonical source state `{item['source_state']}`."
              for item in evidence["contributions"]]
     rows += ["", "These contributions do not accept or complete the full canonical issues.",
              "", "## Evidence and limitations", "", record["limitations"], "",
              "Deployment, provider/installation acceptance and whole-product readiness remain separate.",
-             "GitHub Latest uses the frontend counter. The product SemVer update banner does not advertise a four-part frontend release."]
+             "The frontend display, package and GitHub Latest share the stable release version; the existing product SemVer update check remains unchanged."]
     if not compact:
         rows += ["", "## Verified isolated runtime checks", ""]
         rows += [f"- [{check['name']}]({check['url']})" for check in record["checks"]]

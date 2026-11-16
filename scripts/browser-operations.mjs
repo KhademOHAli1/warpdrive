@@ -297,18 +297,15 @@ async function qualifyOperationsReleaseBanner(
       // Do not introduce a missing utility as a new Tailwind scan candidate.
       const viewportUtility = ["h", "dvh"].join("-");
       const clippedUtility = ["overflow", "hidden"].join("-");
-      let cssRulesVisited = 0;
-      let hDvhRuleFound = false;
-      let hDvhRuleHas100Dvh = false;
-      let hDvhRuleScanComplete = true;
+      const utilityScan = { visited: 0, found: false, hasViewportHeight: false, complete: true };
       const visit = (rules, depth = 0) => {
         if (depth > 10) {
-          hDvhRuleScanComplete = false;
+          utilityScan.complete = false;
           return;
         }
         for (const rule of rules) {
-          if (++cssRulesVisited > 50_000) {
-            hDvhRuleScanComplete = false;
+          if (++utilityScan.visited > 50_000) {
+            utilityScan.complete = false;
             return;
           }
           if (
@@ -316,20 +313,21 @@ async function qualifyOperationsReleaseBanner(
               ?.split(",")
               .some((selector) => selector.trim() === `.${viewportUtility}`)
           ) {
-            hDvhRuleFound = true;
-            hDvhRuleHas100Dvh = rule.style?.getPropertyValue("height").trim() === "100dvh";
+            utilityScan.found = true;
+            utilityScan.hasViewportHeight =
+              rule.style?.getPropertyValue("height").trim() === "100dvh";
           }
           if (rule.cssRules) visit(rule.cssRules, depth + 1);
-          if (hDvhRuleHas100Dvh || cssRulesVisited > 50_000) return;
+          if (utilityScan.hasViewportHeight || utilityScan.visited > 50_000) return;
         }
       };
       for (const sheet of [...document.styleSheets, ...(document.adoptedStyleSheets ?? [])]) {
         try {
           visit(sheet.cssRules);
         } catch {
-          hDvhRuleScanComplete = false;
+          utilityScan.complete = false;
         }
-        if (hDvhRuleHas100Dvh || cssRulesVisited > 50_000) break;
+        if (utilityScan.hasViewportHeight || utilityScan.visited > 50_000) break;
       }
       const body = rect(document.body);
       const box = rect(root);
@@ -350,7 +348,7 @@ async function qualifyOperationsReleaseBanner(
         htmlZoom: number(Number.parseFloat(style(document.documentElement).zoom)),
         bodyZoom: number(Number.parseFloat(style(document.body).zoom)),
         rootZoom: number(Number.parseFloat(style(root).zoom)),
-        cssRulesVisited,
+        cssRulesVisited: utilityScan.visited,
         documentHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
         documentScrollHeight: document.documentElement.scrollHeight,
         documentClientHeight: document.documentElement.clientHeight,
@@ -410,9 +408,9 @@ async function qualifyOperationsReleaseBanner(
         mainOverflowYAuto: style(main).overflowY === "auto",
         notesPresent: notes !== null,
         notesOverflowYAuto: style(notes).overflowY === "auto",
-        hDvhRuleFound,
-        hDvhRuleHas100Dvh,
-        hDvhRuleScanComplete,
+        hDvhRuleFound: utilityScan.found,
+        hDvhRuleHas100Dvh: utilityScan.hasViewportHeight,
+        hDvhRuleScanComplete: utilityScan.complete,
       };
     });
   try {

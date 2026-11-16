@@ -283,16 +283,19 @@ For `1.6.0`, use `mail_mode: "programme"` and the canonical `programme/mail` pri
 
 Use the existing serialized main release workflow in prepare, draft and publish modes. Publication produces a verified source archive, notes, traceability and checksums; it neither builds a container nor deploys or upgrades an installation. The user's standing authorization permits publishing once these actual gates pass; it is not an acceptance record.
 
-## Frontend source release 1.7.1.5
+## Frontend source release 1.7.2
 
-The user authorized the frontend display version `1.7.1.5` and a GitHub release
-marked Latest. The bounded `frontend` track publishes qualified frontend source
-under `frontend-release-policy.json`. Product/package and module SemVer remain
-independent. This track does not alter core, MAIL, newsletter or human acceptance.
+The user selected stable version `1.7.2` for the frontend, package and GitHub
+release marked Latest, superseding the earlier `1.7.1.5` display-version target.
+The bounded `frontend` track publishes qualified frontend source under
+`frontend-release-policy.json`. Module versions remain independent. This track
+does not alter core, MAIL, newsletter or human acceptance. The core `next.json`
+proposal shares the package version but retains its original unaccepted scope;
+publication selects the explicit frontend plan below.
 
 Use the existing serialized `Warpdrive release` workflow and its actual
 `release-approval` environment. Select the committed plan
-`docs/delivery/releases/frontend/1.7.1.5.json` and the full final Main SHA.
+`docs/delivery/releases/frontend/1.7.2.json` and the full final Main SHA.
 The same prepare, draft and publish modes, trusted dispatch code, exact commit
 tag, uploaded-asset digest verification and immutable published-artifact rules
 apply. The publisher independently verifies that GitHub Latest identifies this
@@ -300,7 +303,7 @@ stable release; it adds no issue receipts or milestone closure for this track.
 
 The plan must pin a completed qualification record and fails closed until that
 record is supplied. The user authorized starting from the merged `1.7.1.4` source
-and deploying the combined `1.7.1.5` directly from the current installation.
+and deploying the combined `1.7.2` directly from the current installation.
 Integrate all requested branch revisions first. The plan retains the four original
 head pins; add
 any later active or generated branch heads as additional unique full SHAs.
@@ -326,6 +329,8 @@ native qualification, installed admission or seal readback required by
 corresponding-source artifacts. Deployment and provider/installation acceptance
 retain their own actual evidence and authorization.
 
-GitHub Latest will expose the four-part frontend counter. The existing product
-SemVer update banner treats that tag as incomparable and does not advertise it as
-a product upgrade; no product-version parser is broadened for this release.
+GitHub Latest exposes the stable `v1.7.2` tag. The frontend publisher uses the
+existing three-part SemVer contract and requires the committed package and
+frontend display to match. Existing stable tags and releases reserve versions;
+historical four-part display counters are not parsed as stable SemVer. The
+product update check and the independent core acceptance gates are unchanged.

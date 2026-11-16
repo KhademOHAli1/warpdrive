@@ -2,10 +2,10 @@
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
   "release_track": "frontend",
-  "version": "1.7.1.5",
+  "version": "1.7.2",
   "mode": "source_qualified_artifact_publication",
   "plan_directory": "docs/delivery/releases/frontend",
-  "qualification_path": "docs/delivery/frontend-qualification-1.7.1.5.json",
+  "qualification_path": "docs/delivery/frontend-qualification-1.7.2.json",
   "pr_integration_baseline": "dfa3f3317e186cbb494aee012cb298363e1a89dd",
   "unreleased_context_baseline": "386e31652da094ddcc7daec7003164b5b9c81882",
   "contributions": {
@@ -13,6 +13,7 @@
     "integration/UX-014": 123
   },
   "required_source_paths": [
+    "package.json",
     "src/app/(app)/layout.tsx",
     "src/app/(app)/settings/SettingsNav.tsx",
     "src/components/shell/LeftNav.module.css",
@@ -28,9 +29,9 @@
     ]
   },
   "limits": [
-    "Only frontend 1.7.1.5 source qualification is published by this track.",
+    "Only frontend 1.7.2 source qualification is published by this track.",
     "Canonical issue acceptance, whole-product readiness, deployment and provider/installation acceptance remain independent.",
-    "The three-part product and module versions are not frontend display counters."
+    "The frontend display, package and GitHub tag use stable version 1.7.2; independently versioned modules retain their own versions."
   ],
   "original_integrated_revisions": [
     "37df6d0a4e8a6bf7480316f9afd7c13ea1fe62ea",
