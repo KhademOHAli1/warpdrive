@@ -1,6 +1,8 @@
 // Real settings UI and native administrator reads. Retain only finite proof facts.
 // No screenshots, traces, cookies, request bodies or response payload artifacts.
 import { createHmac } from "node:crypto";
+import { closeSync, openSync, writeFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 
 const operationsStages = new Set([
   "operations-browser-context",
@@ -98,6 +100,124 @@ export function operationsTotp(secret, milliseconds = Date.now()) {
 
 const releaseBannerLastLine = "Synthetic release note line 300: end of the local fixture.";
 
+const layoutNumbers = [
+  "windowY",
+  "windowX",
+  "viewport",
+  "viewportWidth",
+  "documentHeight",
+  "visualViewportHeight",
+  "visualViewportOffsetTop",
+  "visualViewportScale",
+  "htmlZoom",
+  "bodyZoom",
+  "rootZoom",
+  "cssRulesVisited",
+  "documentScrollHeight",
+  "documentClientHeight",
+  "bodyScrollHeight",
+  "bodyClientHeight",
+  "bodyTop",
+  "bodyBottom",
+  "bodyHeight",
+  "rootTop",
+  "rootBottom",
+  "rootHeight",
+  "rootClientHeight",
+  "rootScrollHeight",
+  "rootComputedHeight",
+  "rootMinHeight",
+  "rootParentHeight",
+  "rootParentClientHeight",
+  "rootParentScrollHeight",
+  "columnTop",
+  "columnBottom",
+  "columnHeight",
+  "columnClientHeight",
+  "columnScrollHeight",
+  "mainTop",
+  "mainRectTop",
+  "mainRectBottom",
+  "mainRectHeight",
+  "mainClientHeight",
+  "mainScrollHeight",
+  "notesTop",
+  "notesBottom",
+  "notesHeight",
+  "notesClientHeight",
+  "notesScrollHeight",
+  "notesScrollTop",
+  "barTop",
+  "barBottom",
+  "barHeight",
+  "navTop",
+  "navBottom",
+  "navHeight",
+  "bodyChildrenCount",
+  "bodyDirectChildMaxBottom",
+  "bodyChildrenPastViewportCount",
+];
+const layoutBooleans = [
+  "rootPresent",
+  "rootHasHDvh",
+  "rootHasHScreen",
+  "rootHasOverflowHidden",
+  "rootOverflowYHidden",
+  "rootOverflowXHidden",
+  "columnOverflowYHidden",
+  "mainOverflowYAuto",
+  "notesPresent",
+  "notesOverflowYAuto",
+  "hDvhRuleFound",
+  "hDvhRuleHas100Dvh",
+  "hDvhRuleScanComplete",
+];
+
+// Closed diagnostic data: numeric geometry and fixed booleans only. No DOM text,
+// HTML, actor, headers, URLs, operations responses or arbitrary error fields.
+export function operationsLayoutRecord(frames) {
+  const names = ["afterViewport", "beforeExpand", "afterExpand"];
+  const keys = [...layoutNumbers, ...layoutBooleans];
+  if (
+    !frames ||
+    Object.keys(frames).length !== names.length ||
+    Object.keys(frames).some((name) => !names.includes(name))
+  )
+    throw Error("Unexpected operations layout frames");
+  const record = { schemaVersion: 1 };
+  for (const name of names) {
+    const frame = frames[name];
+    if (
+      !frame ||
+      Object.keys(frame).length !== keys.length ||
+      Object.keys(frame).some((key) => !keys.includes(key)) ||
+      layoutNumbers.some(
+        (key) =>
+          typeof frame[key] !== "number" ||
+          !Number.isFinite(frame[key]) ||
+          Math.abs(frame[key]) > 1_000_000_000,
+      ) ||
+      layoutBooleans.some((key) => typeof frame[key] !== "boolean")
+    )
+      throw Error("Unexpected operations layout facts");
+    record[name] = Object.fromEntries(keys.map((key) => [key, frame[key]]));
+  }
+  return record;
+}
+
+function writeOperationsLayout(outputDir, frames) {
+  if (!isAbsolute(outputDir)) throw Error("Unexpected operations output directory");
+  const record = operationsLayoutRecord(frames);
+  const encoded = `${JSON.stringify(record)}\n`;
+  if (Buffer.byteLength(encoded) > 16384) throw Error("Operations layout record exceeds its bound");
+  const descriptor = openSync(join(outputDir, "operations-layout.json"), "wx", 0o600);
+  try {
+    writeFileSync(descriptor, encoded);
+  } finally {
+    closeSync(descriptor);
+  }
+}
+
 // Replace only successful native version reads. Authentication errors and every
 // other batched result retain their original objects; no real response is logged.
 export function operationsReleaseBannerResponse(body, names) {
@@ -151,23 +271,148 @@ export function operationsReleaseBannerResponse(body, names) {
   return Array.isArray(body) ? changed : changed[0];
 }
 
-async function qualifyOperationsReleaseBanner(page, maintenance, until, fail, progress) {
+async function qualifyOperationsReleaseBanner(
+  page,
+  maintenance,
+  until,
+  fail,
+  progress,
+  recordLayout,
+) {
   let completed = false;
+  const frames = {};
   const show = page.getByRole("button", { name: "Show release notes", exact: true });
   const notes = page.getByRole("region", { name: "Show release notes", exact: true });
   const topbar = page.locator("[data-app-topbar]");
   const geometry = () =>
     page.evaluate(() => {
-      const bar = document.querySelector("[data-app-topbar]").getBoundingClientRect();
-      const nav = document.querySelector("#primary-navigation").getBoundingClientRect();
+      const main = document.querySelector("[data-app-content]");
+      const root = main?.closest("[data-density]");
+      const column = main?.parentElement;
+      const notes = document.querySelector('section[aria-label="Show release notes"]');
+      const rect = (element) =>
+        element?.getBoundingClientRect() ?? { top: -1, bottom: -1, height: -1 };
+      const style = (element) => (element ? getComputedStyle(element) : {});
+      const number = (value) => (Number.isFinite(value) ? value : -1);
+      // Do not introduce a missing utility as a new Tailwind scan candidate.
+      const viewportUtility = ["h", "dvh"].join("-");
+      const clippedUtility = ["overflow", "hidden"].join("-");
+      let cssRulesVisited = 0;
+      let hDvhRuleFound = false;
+      let hDvhRuleHas100Dvh = false;
+      let hDvhRuleScanComplete = true;
+      const visit = (rules, depth = 0) => {
+        if (depth > 10) {
+          hDvhRuleScanComplete = false;
+          return;
+        }
+        for (const rule of rules) {
+          if (++cssRulesVisited > 50_000) {
+            hDvhRuleScanComplete = false;
+            return;
+          }
+          if (
+            rule.selectorText
+              ?.split(",")
+              .some((selector) => selector.trim() === `.${viewportUtility}`)
+          ) {
+            hDvhRuleFound = true;
+            hDvhRuleHas100Dvh = rule.style?.getPropertyValue("height").trim() === "100dvh";
+          }
+          if (rule.cssRules) visit(rule.cssRules, depth + 1);
+          if (hDvhRuleHas100Dvh || cssRulesVisited > 50_000) return;
+        }
+      };
+      for (const sheet of [...document.styleSheets, ...(document.adoptedStyleSheets ?? [])]) {
+        try {
+          visit(sheet.cssRules);
+        } catch {
+          hDvhRuleScanComplete = false;
+        }
+        if (hDvhRuleHas100Dvh || cssRulesVisited > 50_000) break;
+      }
+      const body = rect(document.body);
+      const box = rect(root);
+      const rootParent = root?.parentElement;
+      const parent = rect(column);
+      const content = rect(main);
+      const note = rect(notes);
+      const bar = rect(document.querySelector("[data-app-topbar]"));
+      const nav = rect(document.querySelector("#primary-navigation"));
       return {
         windowY: scrollY,
+        windowX: scrollX,
         viewport: innerHeight,
+        viewportWidth: innerWidth,
+        visualViewportHeight: number(window.visualViewport?.height),
+        visualViewportOffsetTop: number(window.visualViewport?.offsetTop),
+        visualViewportScale: number(window.visualViewport?.scale),
+        htmlZoom: number(Number.parseFloat(style(document.documentElement).zoom)),
+        bodyZoom: number(Number.parseFloat(style(document.body).zoom)),
+        rootZoom: number(Number.parseFloat(style(root).zoom)),
+        cssRulesVisited,
         documentHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
-        mainTop: document.querySelector("[data-app-content]").scrollTop,
+        documentScrollHeight: document.documentElement.scrollHeight,
+        documentClientHeight: document.documentElement.clientHeight,
+        bodyScrollHeight: document.body.scrollHeight,
+        bodyClientHeight: document.body.clientHeight,
+        bodyTop: body.top,
+        bodyBottom: body.bottom,
+        bodyHeight: body.height,
+        rootTop: box.top,
+        rootBottom: box.bottom,
+        rootHeight: box.height,
+        rootClientHeight: number(root?.clientHeight),
+        rootScrollHeight: number(root?.scrollHeight),
+        rootComputedHeight: number(Number.parseFloat(style(root).height)),
+        rootMinHeight: number(Number.parseFloat(style(root).minHeight)),
+        rootParentHeight: rect(rootParent).height,
+        rootParentClientHeight: number(rootParent?.clientHeight),
+        rootParentScrollHeight: number(rootParent?.scrollHeight),
+        columnTop: parent.top,
+        columnBottom: parent.bottom,
+        columnHeight: parent.height,
+        columnClientHeight: number(column?.clientHeight),
+        columnScrollHeight: number(column?.scrollHeight),
+        mainTop: number(main?.scrollTop),
+        mainRectTop: content.top,
+        mainRectBottom: content.bottom,
+        mainRectHeight: content.height,
+        mainClientHeight: number(main?.clientHeight),
+        mainScrollHeight: number(main?.scrollHeight),
+        notesTop: note.top,
+        notesBottom: note.bottom,
+        notesHeight: note.height,
+        notesClientHeight: number(notes?.clientHeight),
+        notesScrollHeight: number(notes?.scrollHeight),
+        notesScrollTop: number(notes?.scrollTop),
         barTop: bar.top,
         barBottom: bar.bottom,
+        barHeight: bar.height,
         navTop: nav.top,
+        navBottom: nav.bottom,
+        navHeight: nav.height,
+        bodyChildrenCount: document.body.children.length,
+        bodyDirectChildMaxBottom: Math.max(
+          0,
+          ...Array.from(document.body.children, (element) => rect(element).bottom),
+        ),
+        bodyChildrenPastViewportCount: Array.from(document.body.children).filter(
+          (element) => rect(element).bottom > innerHeight + 1,
+        ).length,
+        rootPresent: root !== null && root !== undefined,
+        rootHasHDvh: root?.classList.contains(viewportUtility) === true,
+        rootHasHScreen: root?.classList.contains(["h", "screen"].join("-")) === true,
+        rootHasOverflowHidden: root?.classList.contains(clippedUtility) === true,
+        rootOverflowYHidden: style(root).overflowY === "hidden",
+        rootOverflowXHidden: style(root).overflowX === "hidden",
+        columnOverflowYHidden: style(column).overflowY === "hidden",
+        mainOverflowYAuto: style(main).overflowY === "auto",
+        notesPresent: notes !== null,
+        notesOverflowYAuto: style(notes).overflowY === "auto",
+        hDvhRuleFound,
+        hDvhRuleHas100Dvh,
+        hDvhRuleScanComplete,
       };
     });
   try {
@@ -175,8 +420,10 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail, pr
     await page.bringToFront();
     progress("operations-release-banner-viewport");
     await page.setViewportSize({ width: 900, height: 560 });
+    frames.afterViewport = await geometry();
     progress("operations-release-banner-show");
     await show.waitFor({ state: "visible" });
+    frames.beforeExpand = await geometry();
     progress("operations-release-banner-expand");
     await show.click();
     progress("operations-release-banner-notes");
@@ -202,6 +449,8 @@ async function qualifyOperationsReleaseBanner(page, maintenance, until, fail, pr
     );
     progress("operations-release-banner-document");
     const frame = await geometry();
+    frames.afterExpand = frame;
+    if (!(frame.windowY === 0 && frame.documentHeight <= frame.viewport + 1)) recordLayout(frames);
     fail(
       frame.windowY === 0 && frame.documentHeight <= frame.viewport + 1,
       "Expanded release notes overflowed the document",
@@ -576,7 +825,9 @@ export async function qualifyOperations({
     progress("operations-release-banner");
     progress("operations-release-banner-response");
     fail(releaseBannerFixtureResponses > 0, "Successful native version read was not observed");
-    await qualifyOperationsReleaseBanner(logs, maintenance, until, fail, progress);
+    await qualifyOperationsReleaseBanner(logs, maintenance, until, fail, progress, (frames) =>
+      writeOperationsLayout(profile.outputDir, frames),
+    );
     progress("operations-metadata-fields");
     const age = queue
       .getByText("Oldest ready job (seconds)", { exact: true })
