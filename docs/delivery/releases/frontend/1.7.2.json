@@ -4,7 +4,7 @@
   "version": "1.7.2",
   "qualification": {
     "path": "docs/delivery/frontend-qualification-1.7.2.json",
-    "sha256": "e6bb18604e921e80e349944df3bb754ebb353da84d045dc4e6ed201e07d31a5e"
+    "sha256": null
   },
   "required_integrated_revisions": [
     "37df6d0a4e8a6bf7480316f9afd7c13ea1fe62ea",
@@ -12,6 +12,7 @@
     "9d73e62785e44c9c57491246b58efad764889407",
     "fc07b5d835518fe3569541973a509dd40d40dada",
     "04f31f9cfed5867a84bb7540f52d04547ff5f7a8",
-    "bcecedad0910474455296d5638fe31dca2074990"
+    "bcecedad0910474455296d5638fe31dca2074990",
+    "31efb6318a3909b244726063666913a60ed46b59"
   ]
 }
