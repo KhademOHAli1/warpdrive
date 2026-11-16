@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
-import { db } from "@/db/client";
-import { listDefs } from "@/features/custom-fields/defsRepo";
-import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { can } from "@/features/permissions/can";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listDefs, listHiddenBuiltins } from "@/frontend/reads";
 import { ImportWizard } from "../ImportWizard";
 
 export async function generateMetadata() {
@@ -23,13 +21,12 @@ export default async function NewImportPage(): Promise<ReactNode> {
     return <p className="text-sm text-red-600">{L.importer.requiresImport}</p>;
   }
 
-  const signal = AbortSignal.timeout(5000);
-  const personDefs = await listDefs(db, "person", {}, signal);
-  const orgDefs = await listDefs(db, "organization", {}, signal);
-  const dealDefs = await listDefs(db, "deal", {}, signal);
-  const activityDefs = await listDefs(db, "activity", {}, signal);
-  const leadDefs = await listDefs(db, "lead", {}, signal);
-  const hidden = await listHiddenBuiltins(db, signal);
+  const personDefs = await listDefs("person");
+  const orgDefs = await listDefs("organization");
+  const dealDefs = await listDefs("deal");
+  const activityDefs = await listDefs("activity");
+  const leadDefs = await listDefs("lead");
+  const hidden = await listHiddenBuiltins();
   const hiddenBuiltins = {
     person: [...hidden.person],
     organization: [...hidden.organization],

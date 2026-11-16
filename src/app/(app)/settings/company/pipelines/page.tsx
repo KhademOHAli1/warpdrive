@@ -1,14 +1,13 @@
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { env } from "@/config/env";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { CreatePipelineButton } from "@/features/pipelines/CreatePipelineButton";
 import { PipelineDirectoryClient } from "@/features/pipelines/PipelineDirectoryClient";
-import { listLifecyclePipelines } from "@/features/pipelines/pipelineLifecycle";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext, getFrontendConfig } from "@/frontend/context";
+import { listLifecyclePipelines } from "@/frontend/reads";
+import { createCaller } from "@/frontend/trpc";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../../SettingsSurface";
 
 export async function generateMetadata() {
@@ -19,6 +18,7 @@ export async function generateMetadata() {
 // Company settings > Pipelines tab: list pipelines, create new ones, link to the stage editor.
 // Gated on admin or the pipeline.manage flag (same capability createPipeline enforces server-side).
 export default async function PipelinesSettingsPage(): Promise<ReactNode> {
+  const env = await getFrontendConfig();
   const L = await getServerSettingsMessages();
 
   const ctx = await createContext();
@@ -31,7 +31,7 @@ export default async function PipelinesSettingsPage(): Promise<ReactNode> {
   }
 
   if (env.SALES_PIPELINE_LIFECYCLE_ENABLED) {
-    const result = await listLifecyclePipelines(ctx.db, actor.id, AbortSignal.timeout(8000));
+    const result = await listLifecyclePipelines();
     if (!result.ok)
       return (
         <p role="alert" className="text-sm text-destructive">

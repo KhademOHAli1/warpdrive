@@ -72,6 +72,7 @@ export const infrastructureIds2: string[] = [
   "writer:src/components/data-table/useRowSelection.ts#delete:id",
   "writer:src/features/health/healthCheck.ts#execute:sql",
   "writer:src/features/i18n/actions.ts#delete:NUMBERING_SYSTEM_COOKIE",
+  "writer:src/features/i18n/actions.backend.ts#delete:NUMBERING_SYSTEM_COOKIE",
   "writer:src/features/mcp/tools/reads.ts#query:input",
   "writer:src/features/realtime/wsMultiplexer.ts#delete:channel",
   "writer:src/features/realtime/wsMultiplexer.ts#delete:handler",

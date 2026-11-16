@@ -30,8 +30,8 @@ const SHARED_TREES = ["patches", "third-party"];
 const RUNTIME_ASSETS = {
   web: {
     trees: ["public"],
-    bundledChildren: ["dist/workflow-code-worker.mjs"],
-    helpers: ["dist/next.config.mjs", "dist/sweep-spam.mjs", "dist/auth-operator.mjs"],
+    bundledChildren: [],
+    helpers: ["dist/next.config.mjs"],
   },
   worker: {
     trees: [],

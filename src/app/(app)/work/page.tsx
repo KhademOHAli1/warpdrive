@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { WorkClient } from "./WorkClient";
 export default async function WorkPage() {
   const { actor } = await createContext();

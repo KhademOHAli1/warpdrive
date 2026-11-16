@@ -6,7 +6,7 @@ import {
   editCalendarEventAction,
   readCalendarEventAction,
   retryCalendarReminderAction,
-} from "./calendarNativeActions";
+} from "./calendarNativeActions.backend";
 
 const deps = vi.hoisted(() => ({
   csrf: vi.fn(),

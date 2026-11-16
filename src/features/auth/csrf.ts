@@ -1,8 +1,9 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { env } from "@/config/env";
+import { CSRF_COOKIE } from "@/contracts/auth";
 import { err, ok, type Result } from "@/types/result";
 
-export const CSRF_COOKIE = "wd_csrf";
+export { CSRF_COOKIE };
 
 export function mintCsrfToken(): string {
   return randomBytes(32).toString("base64url");
@@ -41,11 +42,20 @@ function isAllowedDevOrigin(origin: string, host: string | null): boolean {
 
 // Double-submit token AND strict Origin/Sec-Fetch-Site validation vs. BASE_URL (ops spec A0).
 export function validateCsrf(input: CsrfInput): Result<true, string> {
-  const { cookieToken, headerToken, origin, host, secFetchSite } = input;
+  const { cookieToken, headerToken } = input;
   if (cookieToken === null || headerToken === null) return err("missing csrf token");
   const a = Buffer.from(cookieToken);
   const b = Buffer.from(headerToken);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return err("csrf token mismatch");
+
+  return validateRequestOrigin(input);
+}
+
+/** The former Next action-origin boundary also applies to direct Core command calls. */
+export function validateRequestOrigin(
+  input: Pick<CsrfInput, "origin" | "host" | "secFetchSite">,
+): Result<true, string> {
+  const { origin, host, secFetchSite } = input;
 
   // A null origin (header absent) falls through to the double-submit + Sec-Fetch-Site
   // checks by design; we only reject when an origin is present and does not match.

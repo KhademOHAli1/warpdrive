@@ -17,7 +17,7 @@ vi.mock("./selfService", () => ({
 }));
 vi.mock("./identitySelf", () => ({ verifyOwnPrivacyIdentity: vi.fn() }));
 
-import { createOwnPrivacyRequestAction } from "./requestActions";
+import { createOwnPrivacyRequestAction } from "./requestActions.backend";
 
 // Transport isolation only. The expected requester may deny submission but never supplies authority.
 const USER_ID = "00000000-0000-4000-8000-000000000001";

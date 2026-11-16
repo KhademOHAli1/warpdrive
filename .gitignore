@@ -4,6 +4,7 @@ dist
 .env
 .env.*
 !.env.example
+!.env.web.example
 !.env.example.test.ts
 *.tsbuildinfo
 src/**/messages/*.d.json.ts

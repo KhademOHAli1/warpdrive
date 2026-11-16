@@ -1,9 +1,6 @@
-import { eq } from "drizzle-orm";
 import type { ReactNode } from "react";
-import { db } from "@/db/client";
-import { users } from "@/db/schema/identity";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { ProfileClient } from "./ProfileClient";
@@ -20,10 +17,7 @@ export default async function ProfilePage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null) return <p className="text-sm text-red-600">{L.requiresAuth}</p>;
 
-  const [me] = await db
-    .select({ name: users.name, email: users.email, avatarUrl: users.avatarUrl })
-    .from(users)
-    .where(eq(users.id, actor.id));
+  const me = actor;
 
   return (
     <SettingsPage>
@@ -32,11 +26,7 @@ export default async function ProfilePage(): Promise<ReactNode> {
         description={L._hierarchy.profileDescription}
         scope="personal"
       />
-      <ProfileClient
-        name={me?.name ?? ""}
-        email={me?.email ?? ""}
-        avatarUrl={me?.avatarUrl ?? null}
-      />
+      <ProfileClient name={me.name} email={me.email} avatarUrl={me.avatarUrl ?? null} />
     </SettingsPage>
   );
 }

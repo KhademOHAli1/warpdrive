@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { getLocalePreferences } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { LanguageSettings } from "../profile/LanguageSettings";
 import { formatRegionalPreview } from "../profile/regionalPreview";
 import { SettingsHeading } from "../SettingsHeading";

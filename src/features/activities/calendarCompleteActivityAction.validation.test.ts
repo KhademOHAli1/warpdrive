@@ -21,7 +21,7 @@ vi.mock("./activityDelete", () => ({ deleteActivity: vi.fn() }));
 vi.mock("./activityUpdate", () => ({ updateActivity: vi.fn() }));
 vi.mock("./notifyHelpers", () => ({ notifyOnActivityCreated: vi.fn() }));
 
-import { completeActivityAction } from "./actions";
+import { completeActivityAction } from "./actions.backend";
 
 const ACTIVITY_ID = "11111111-1111-4111-8111-111111111111";
 const USER_ID = "22222222-2222-4222-8222-222222222222";

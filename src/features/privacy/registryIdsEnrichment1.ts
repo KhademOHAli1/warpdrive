@@ -1,5 +1,7 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const enrichmentIds1: string[] = [
+  "sourceReview:src/features/enrichment/mappingTargets.ts#625b618428074f81379650e0b88cc8f495b67fed0b8c51641a2f5d499cb276ed",
+  "derived:src/features/enrichment/mappingTargets.ts",
   "derived:src/app/(app)/settings/enrichment/EnrichmentClient.tsx",
   "derived:src/app/(app)/settings/enrichment/page.tsx",
   "derived:src/app/(app)/settings/enrichment/targetOptions.ts",
@@ -36,7 +38,7 @@ export const enrichmentIds1: string[] = [
   "external:src/features/enrichment/providers/rocketreach.ts#fetch",
   "external:src/features/enrichment/providers/rocketreachSearch.ts#fetch",
   "sourceReview:src/app/(app)/settings/enrichment/EnrichmentClient.tsx#6c6367da64bf2390320ff07db19cd0ad54dae97f2af4ded9047338c154b522cc",
-  "sourceReview:src/app/(app)/settings/enrichment/page.tsx#62730feaa4ae4e1817945ca7e2c59d1ec329b33ad875352002399638db78a3da",
+  "sourceReview:src/app/(app)/settings/enrichment/page.tsx#50c210792dc4b494d4215c160208ff6845a0496c0004b0d8b7ca2706a58d2940",
   "sourceReview:src/app/(app)/settings/enrichment/targetOptions.ts#0e1221fde0d89f9607ebd104add0cca84c24bca2d4adbdf705a71aacaff534ea",
   "sourceReview:src/features/enrichment/applyGuards.ts#5edfa2400fd8e72c4f0fa0fd3a60764f7cb619558d2f92942050461671ca93d6",
   "sourceReview:src/features/enrichment/applyService.ts#404da79ad051c2cd254b81b93df0dad86d89ededae86742fa2241fa34913213b",
@@ -44,7 +46,7 @@ export const enrichmentIds1: string[] = [
   "sourceReview:src/features/enrichment/canonical.ts#2c9d972738659a270fe2dd1476dcfd2bdece7507f82899ff736dbd3f358343cc",
   "sourceReview:src/features/enrichment/current.ts#74a91e256270d9056f8a129e7f0520e50a65323171015a039327c05b0d4a011e",
   "sourceReview:src/features/enrichment/EnrichButton.tsx#f0f04eee0f3caafe91b225bce11914672032a9008a362815fdddafe42c8cbdef",
-  "sourceReview:src/features/enrichment/mappingsRepo.ts#c6bf6d2c8bcb5251dc52edb98c15292a48f59550bb1f7c9b3655b5508d5318ee",
+  "sourceReview:src/features/enrichment/mappingsRepo.ts#ac4b968ca44ad0d54e6ab5ef384c1b0dad61c28fc5da71461123a08c53fe9f5a",
   "sourceReview:src/features/enrichment/merge.ts#48ada61f5966afd8dac3f48c560b89fee5badaf5e4c6d9d2992fe57215cdae8e",
   "sourceReview:src/features/enrichment/outcomeClassification.ts#1e85f5ec3c59d5583a2240bec63eb176a6c8ca48db3a1d9e6819949fb0ac0500",
   "sourceReview:src/features/enrichment/personPatchGuard.ts#dfe03e377d48f74a0473fdf16cec9b89595784b17ee9a7b50bf5921abb60dfdc",

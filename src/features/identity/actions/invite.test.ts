@@ -25,7 +25,7 @@ vi.mock("@/features/auth/management/mail", () => ({
 }));
 vi.mock("next/headers", () => ({ headers: () => Promise.resolve(new Headers()) }));
 
-import { inviteUserAction } from "./invite";
+import { inviteUserAction } from "./invite.backend";
 
 const VALID_INPUT = { email: "new@example.com", name: "New Person", isAdmin: false };
 

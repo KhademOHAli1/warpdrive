@@ -68,7 +68,7 @@ def _proxy(generation: WebGeneration, *, safe: bool) -> dict[str, Any]:
         "handler": "reverse_proxy",
         "upstreams": [{"dial": f"{generation.target}:3000"}],
         "load_balancing": {"retries": 0, "try_duration": 0},
-        "headers": {"request": {"set": {"X-Real-Ip": ["{http.request.remote.host}"]}}},
+        "headers": {"request": {"delete": ["CF-Connecting-IP"], "set": {"X-Real-Ip": ["{http.request.remote.host}"]}}},
     }
     if not safe:
         # A stale reused Go transport connection can be retried with Idempotency-Key

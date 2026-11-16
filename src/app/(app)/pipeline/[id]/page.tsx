@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { db } from "@/db/client";
 import { Board } from "@/features/deals/Board";
 import { boardViewDefinition } from "@/features/deals/boardView";
 import { resolveInitialBoardView } from "@/features/deals/initialBoardView";
 import { createSalesStrings } from "@/features/deals/salesStrings";
 import { rowToView } from "@/features/deals/savedFilterView";
 import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { resolveVisiblePipeline } from "@/features/navigation/resolvePipeline";
 import { canManagePipelines } from "@/features/pipelines/canManagePipelines";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { getPreferencesForActor, readBaseCurrency } from "@/frontend/reads";
+import { createCaller } from "@/frontend/trpc";
 
 // Shared per-request loader: generateMetadata (for the tab title) and the page body both call
 // this, but React.cache dedupes so createContext + the visible-pipelines read run once per
@@ -64,7 +62,7 @@ export default async function PipelineBoardPage({
   // filter as active over unfiltered seeded cards, so the board waits on the (indexed, layout-
   // deduped) preference read.
   const datePreferences = await getLocalePreferences();
-  const prefsPromise = getPreferencesForActor(db, actor.id);
+  const prefsPromise = getPreferencesForActor();
   const viewPromise = prefsPromise.then((p) =>
     resolveInitialBoardView(p.ui, async () =>
       (await createCaller(ctx).deal.savedFilters()).map(rowToView),
@@ -93,7 +91,7 @@ export default async function PipelineBoardPage({
 
   const [board, baseCurrency, prefs, initialView] = await Promise.all([
     boardPromise,
-    readBaseCurrency(db, AbortSignal.timeout(8000)),
+    readBaseCurrency(),
     prefsPromise,
     viewPromise,
   ]);

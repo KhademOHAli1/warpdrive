@@ -1,11 +1,6 @@
-import { db } from "@/db/client";
-import { createGmailOAuthCallback } from "@/features/email/oauthCallback";
-import { gmailOAuthProvider } from "@/features/email/oauthProvider";
-import { enqueueInitialSync } from "@/features/email/syncScheduling";
+import { proxyBackendRequest } from "@/frontend/proxy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const GET = createGmailOAuthCallback(db, {
-  ...gmailOAuthProvider,
-  enqueue: enqueueInitialSync,
-});
+
+export const GET = proxyBackendRequest;

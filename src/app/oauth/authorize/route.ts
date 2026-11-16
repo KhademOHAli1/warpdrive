@@ -1,7 +1,7 @@
-import { db } from "@/db/client";
-import { createAuthorizationHandlers } from "@/features/oauth/authorizationHttp";
+import { proxyBackendRequest } from "@/frontend/proxy";
 
-const handlers = createAuthorizationHandlers(db);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export const GET = handlers.GET;
-export const POST = handlers.POST;
+export const GET = proxyBackendRequest;
+export const POST = proxyBackendRequest;

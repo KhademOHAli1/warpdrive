@@ -1,76 +1,33 @@
 "use server";
 
-import { db } from "@/db/client";
-import {
-  createTeamInput,
-  deleteTeamInput,
-  setTeamMembersInput,
-  updateTeamInput,
-} from "@/features/identity/schemas";
-import {
-  createTeam,
-  deleteTeam,
-  setTeamMembers,
-  updateTeam,
-} from "@/features/identity/teams.service";
-import { createContext } from "@/server/trpc/context";
-import { err, type Result } from "@/types/result";
-import { requireFreshIdentityAction } from "./fresh";
-import { guardCsrf, runWithActor } from "./shared";
-import { SIG } from "./sig";
+import { invokeAction } from "@/frontend/actions";
+
+import type * as ImplementationModule from "./teams.backend";
+
+type Implementation = typeof ImplementationModule;
+
+export type * from "./teams.backend";
 
 export async function createTeamAction(
-  csrf: string | null,
-  raw: unknown,
-): Promise<Result<{ id: string }, string>> {
-  const csrfOk = await guardCsrf(csrf);
-  if (!csrfOk.ok) return csrfOk;
-  const parsed = createTeamInput.safeParse(raw);
-  if (!parsed.success) return err("invalid input");
-  const fresh = await requireFreshIdentityAction();
-  if (!fresh.ok) return fresh;
-  const { actor } = await createContext();
-  return runWithActor(actor, (a) => createTeam(db, a, parsed.data, SIG()));
+  ...args: Parameters<Implementation["createTeamAction"]>
+): ReturnType<Implementation["createTeamAction"]> {
+  return invokeAction("features/identity/actions/teams.createTeamAction", args);
 }
 
 export async function setTeamMembersAction(
-  csrf: string | null,
-  raw: unknown,
-): Promise<Result<true, string>> {
-  const csrfOk = await guardCsrf(csrf);
-  if (!csrfOk.ok) return csrfOk;
-  const parsed = setTeamMembersInput.safeParse(raw);
-  if (!parsed.success) return err("invalid input");
-  const fresh = await requireFreshIdentityAction();
-  if (!fresh.ok) return fresh;
-  const { actor } = await createContext();
-  return runWithActor(actor, (a) => setTeamMembers(db, a, parsed.data, SIG()));
+  ...args: Parameters<Implementation["setTeamMembersAction"]>
+): ReturnType<Implementation["setTeamMembersAction"]> {
+  return invokeAction("features/identity/actions/teams.setTeamMembersAction", args);
 }
 
 export async function updateTeamAction(
-  csrf: string | null,
-  raw: unknown,
-): Promise<Result<true, string>> {
-  const csrfOk = await guardCsrf(csrf);
-  if (!csrfOk.ok) return csrfOk;
-  const parsed = updateTeamInput.safeParse(raw);
-  if (!parsed.success) return err("invalid input");
-  const fresh = await requireFreshIdentityAction();
-  if (!fresh.ok) return fresh;
-  const { actor } = await createContext();
-  return runWithActor(actor, (a) => updateTeam(db, a, parsed.data, SIG()));
+  ...args: Parameters<Implementation["updateTeamAction"]>
+): ReturnType<Implementation["updateTeamAction"]> {
+  return invokeAction("features/identity/actions/teams.updateTeamAction", args);
 }
 
 export async function deleteTeamAction(
-  csrf: string | null,
-  raw: unknown,
-): Promise<Result<true, string>> {
-  const csrfOk = await guardCsrf(csrf);
-  if (!csrfOk.ok) return csrfOk;
-  const parsed = deleteTeamInput.safeParse(raw);
-  if (!parsed.success) return err("invalid input");
-  const fresh = await requireFreshIdentityAction();
-  if (!fresh.ok) return fresh;
-  const { actor } = await createContext();
-  return runWithActor(actor, (a) => deleteTeam(db, a, parsed.data.teamId, SIG()));
+  ...args: Parameters<Implementation["deleteTeamAction"]>
+): ReturnType<Implementation["deleteTeamAction"]> {
+  return invokeAction("features/identity/actions/teams.deleteTeamAction", args);
 }

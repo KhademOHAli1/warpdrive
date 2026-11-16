@@ -18,7 +18,7 @@ import {
   reviewerCaseSuccess,
   SESSION,
 } from "./__fixtures__/reviewerCaseActionsTestKit";
-import { readPrivacyReviewerCaseAction as action } from "./reviewerActions";
+import { readPrivacyReviewerCaseAction as action } from "./reviewerActions.backend";
 
 beforeEach(resetReviewerCaseAction);
 

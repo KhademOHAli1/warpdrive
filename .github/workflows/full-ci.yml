@@ -45,31 +45,12 @@ jobs:
         env:
           NODE_ENV: production
           APP_COMMIT: ${{ github.sha }}
-          DATABASE_URL: postgres://build:build@127.0.0.1:5432/build
-          GOOGLE_OAUTH_CLIENT_ID: ci-build-client
-          GOOGLE_OAUTH_CLIENT_SECRET: ci-build-secret
-          GOOGLE_WORKSPACE_DOMAIN: build.example.invalid
-          BASE_URL: https://build.example.invalid
-          WS_TICKET_SECRET: ci_build_placeholder_ws_ticket_secret_0123456789
-          WS_PUBLIC_URL: ws://127.0.0.1:8080
-          NEXT_PUBLIC_WS_URL: ws://127.0.0.1:8080
-          MINIO_ENDPOINT: http://127.0.0.1:9000
-          MINIO_ACCESS_KEY: ci-build-access
-          MINIO_SECRET_KEY: ci-build-secret
-          TOKEN_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-          OAUTH_SIGNING_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-          MCP_ENABLED: "true"
-          SEED_ADMIN_EMAIL: build@example.invalid
-          ALLOW_FIRST_LOGIN_ADMIN: "false"
-          AUTH_SECRET: ci_build_only_auth_secret_not_for_deployment_0123456789
-          AUTH_MAIL_TRANSPORT: smtp
-          AUTH_SMTP_HOST: smtp.example.invalid
-          AUTH_MAIL_FROM: build@example.invalid
-          DISABLE_TELEMETRY: "true"
-          DISABLE_UPDATE_CHECK: "true"
+          NEXT_PUBLIC_WS_URL: same-origin
           NEXT_TELEMETRY_DISABLED: "1"
       - name: Build server entrypoints
-        run: bun run build:workers
+        run: |
+          bun run build:workers
+          bun --no-env-file scripts/build-core.mjs
 
   site:
     name: Marketing site full checks

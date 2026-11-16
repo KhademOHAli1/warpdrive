@@ -1,30 +1,23 @@
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
-import { db } from "@/db/client";
-import { listOrgOptions } from "@/features/contacts/orgOptionsRepo";
-import { listPersonMatchCandidates } from "@/features/contacts/personOptionsRepo";
-import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
-import { resolveCustomFieldRefLabelsFor } from "@/features/custom-fields/refLabels";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
 import { DealDetailInitialFormatsProvider } from "@/features/deal-workspace/DealDetailInitialFormats";
-import { getWorkspace } from "@/features/deal-workspace/summaryRepo";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
-import { getActorMailbox } from "@/features/email/mailboxOwnership";
 import { getLocalePreferences } from "@/features/i18n/server";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
-import { listAssignableUsers } from "@/features/identity/users.service";
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
 import { can } from "@/features/permissions/can";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
+import { getDealDetail } from "@/frontend/reads";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { formatDateOnly, formatDateTime } from "@/lib/localeFormatting";
+import { err, ok } from "@/types/result";
 import { DealWorkspaceClient } from "./DealWorkspaceClient";
 
 // Shared deal-workspace loader. Exported so the full page ([dealId]/page.tsx), the intercepted
 // slide-over drawer, and generateMetadata all share one cached read. Mirrors OrgDetailView.
-export const loadDeal = cachedDetailLoad((ctx, actor, dealId) =>
-  getWorkspace(ctx.db, actor, dealId, AbortSignal.timeout(10_000)),
-);
+export const loadDeal = cachedDetailLoad(async (_ctx, _actor, id) => {
+  const detail = await getDealDetail(id);
+  return detail === null ? err("notfound") : ok(detail.workspace);
+});
 
 export async function DealDetailView({ dealId }: { dealId: string }): Promise<React.ReactNode> {
   const loaded = await loadDeal(dealId);
@@ -35,9 +28,9 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
     notFound();
   }
 
-  // None of these reads depend on each other, only on the already-loaded deal and actor, so they
-  // are issued together rather than one round trip at a time.
-  const [
+  const detail = await getDealDetail(dealId);
+  if (detail === null) notFound();
+  const {
     mailbox,
     prefs,
     baseCurrency,
@@ -46,68 +39,8 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
     personOptions,
     hiddenBuiltins,
     refLabels,
-    localePreferences,
-  ] = await Promise.all([
-    getActorMailbox(db, loaded.actor.id, AbortSignal.timeout(10_000)),
-
-    // Hidden deal-block ids persist per user in user_preferences.ui.dealHeaderBlocks (spec 0).
-    getPreferencesForActor(db, loaded.actor.id),
-
-    readBaseCurrency(db, AbortSignal.timeout(8000)),
-
-    // Owner-reassignment options come from Unit 0's non-privileged listAssignableUsers
-    // (active users projected to { id, name }); unlike listUsers it is not MANAGE-gated, so any
-    // actor holding deal.changeOwner can populate the picker. Called directly on the loaded db
-    // to avoid rebuilding the request context (the tRPC caller would re-hydrate the session).
-    listAssignableUsers(db, AbortSignal.timeout(5000)),
-
-    listOrgOptions(
-      db,
-      { ...loaded.actor, primaryVisibilityGroupId: null },
-      AbortSignal.timeout(5000),
-    ),
-
-    // Feeds the sidebar Person panel's suggestions, so a deal with no contact person can link an
-    // existing one (matched on name, email, or phone) instead of duplicating them. Skipped
-    // entirely when the deal already has a person: that panel renders the linked contact and
-    // never opens the editor, so scanning every visible person would be pure cost.
-    loaded.value.person === null
-      ? listPersonMatchCandidates(
-          db,
-          { ...loaded.actor, primaryVisibilityGroupId: null },
-          AbortSignal.timeout(5000),
-        )
-      : Promise.resolve([]),
-
-    // Built-in fields hidden in Settings > Data fields, so the sidebar Organization/Person
-    // sections drop the same rows the standalone detail pages do (bucketed per entity).
-    listHiddenBuiltins(db, AbortSignal.timeout(10_000)),
-
-    resolveCustomFieldRefLabelsFor(
-      db,
-      loaded.actor,
-      [
-        {
-          defs: loaded.value.customFieldDefs,
-          rows: [{ customFields: loaded.value.deal.customFields as Record<string, unknown> }],
-        },
-        {
-          defs: loaded.value.personCustomFieldDefs,
-          rows: [
-            { customFields: (loaded.value.person?.customFields ?? {}) as Record<string, unknown> },
-          ],
-        },
-        {
-          defs: loaded.value.organizationCustomFieldDefs,
-          rows: [
-            { customFields: (loaded.value.org?.customFields ?? {}) as Record<string, unknown> },
-          ],
-        },
-      ],
-      AbortSignal.timeout(8000),
-    ),
-    getLocalePreferences(),
-  ]);
+  } = detail;
+  const localePreferences = await getLocalePreferences();
 
   // getWorkspace already read the pipeline row for its own visibility gate and hands back the
   // group, so this builds the same VisibleDeal without a second query for that row.

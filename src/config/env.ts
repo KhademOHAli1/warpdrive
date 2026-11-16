@@ -9,6 +9,7 @@ import { mailEnvShape } from "./mailEnv";
 
 // Secret vars may be supplied as <VAR>_FILE pointing at a Docker secret file.
 const SECRET_FILE_VARS = [
+  "CORE_PROXY_TOKEN",
   "GOOGLE_OAUTH_CLIENT_SECRET",
   "SLACK_CLIENT_SECRET",
   "GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET",
@@ -51,6 +52,10 @@ const base = z.object({
   ...billingEnvShape,
   ...coreEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  CORE_PROXY_TOKEN: z
+    .string()
+    .refine((value) => value === "" || /^[A-Za-z0-9_-]{32,256}$/u.test(value))
+    .default(""),
   WORKFLOW_HTTP_GRANTS: z.string().default(""),
   WORKFLOW_WEBHOOK_KEYS: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),

@@ -2,11 +2,9 @@ import type { ReactNode } from "react";
 import { BUILTIN_FIELDS } from "@/constants/builtinFields";
 import { CUSTOM_FIELD_TARGETS, type CustomFieldTarget } from "@/constants/customFieldTypes";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { db } from "@/db/client";
-import { listDefs } from "@/features/custom-fields/defsRepo";
-import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listDefs, listHiddenBuiltins } from "@/frontend/reads";
 import { DataFieldsClient } from "./DataFieldsClient";
 import type { BuiltinRow, FieldRow } from "./types";
 
@@ -38,15 +36,14 @@ export default async function DataFieldsPage({
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
-  const signal = AbortSignal.timeout(5000);
   // The hidden-builtins read and the four per-target def reads are all independent; run them
   // concurrently instead of five serial round trips (one listHiddenBuiltins + a listDefs loop).
   const [hidden, defsPerTarget] = await Promise.all([
-    listHiddenBuiltins(db, signal),
+    listHiddenBuiltins(),
     Promise.all(
       CUSTOM_FIELD_TARGETS.map(async (target) => ({
         target,
-        defs: await listDefs(db, target, {}, signal),
+        defs: await listDefs(target),
       })),
     ),
   ]);

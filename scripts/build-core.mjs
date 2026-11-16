@@ -1,7 +1,7 @@
 import { build } from "esbuild";
 import { buildOptionsForEntry, selectBuildEntries } from "./build-workers.mjs";
 
-const workflowCodeWorker = selectBuildEntries("web").find(
+const workflowCodeWorker = selectBuildEntries("worker").find(
   (entry) => entry.out === "dist/workflow-code-worker.mjs",
 );
 if (!workflowCodeWorker) throw new Error("Core workflow code worker entry is missing");

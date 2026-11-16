@@ -1,14 +1,11 @@
-import { db } from "@/db/client";
-import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { toLeadSort } from "@/features/leads/inbox/seedSort";
 import { LeadsInbox } from "@/features/leads/LeadsInbox";
 import { can } from "@/features/permissions/can";
 import { resolveSavedViewSelection } from "@/features/saved-filters/savedViewSelection";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { getPreferencesForActor, listDefs, readBaseCurrency } from "@/frontend/reads";
+import { createCaller } from "@/frontend/trpc";
 
 export async function generateMetadata() {
   const t = await getAppTranslations("leads");
@@ -22,9 +19,9 @@ export default async function LeadsPage(): Promise<React.ReactNode> {
     return <main>{t("unauthorized")}</main>;
   }
   const [baseCurrency, prefs, customFieldDefs] = await Promise.all([
-    readBaseCurrency(db, AbortSignal.timeout(8000)),
-    getPreferencesForActor(db, ctx.actor.id),
-    listDefs(db, "lead", {}, AbortSignal.timeout(8000)),
+    readBaseCurrency(),
+    getPreferencesForActor(),
+    listDefs("lead"),
   ]);
   const stored = prefs.ui.leadsView;
   const storedSelection = prefs.ui.leadsSavedViewSelection;

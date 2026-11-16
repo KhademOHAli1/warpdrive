@@ -18,28 +18,32 @@ REVISION, REVIEWED = "a" * 40, "b" * 40
 REPO = "KhademOHAli1/warpdrive"
 
 
-def fixtures():
+def fixtures(version=frontend.VERSION):
+    scope = frontend.frontend_scope(version)
     policy = json.loads((Path(__file__).resolve().parents[2] / frontend.POLICY_PATH).read_text())
-    blobs = {path: b"offline source fixture\n" for path in frontend.SOURCE_PATHS}
-    blobs[frontend.FOOTER_PATH] = b'const FRONTEND_VERSION = "1.7.2";\n'
-    blobs[frontend.PACKAGE_PATH] = b'{"version": "1.7.2"}\n'
+    policy.update(version=version, qualification_path=scope["qualification_path"],
+                  required_source_paths=sorted(scope["source_paths"]),
+                  contributions=scope["contributions"], original_integrated_revisions=sorted(scope["heads"]))
+    blobs = {path: b"offline source fixture\n" for path in scope["source_paths"]}
+    blobs[frontend.FOOTER_PATH] = f'const FRONTEND_VERSION = "{version}";\n'.encode()
+    blobs[frontend.PACKAGE_PATH] = json.dumps({"version": version}).encode()
     record = {
         "schema_version": 1, "qualification_type": "frontend_source_and_isolated_runtime",
-        "result": "qualified", "version": frontend.VERSION, "reviewed_revision": REVIEWED,
+        "result": "qualified", "version": version, "reviewed_revision": REVIEWED,
         "reviewer_agent": {"runtime": "codex", "session_id": "10000000-0000-4000-8000-000000000001",
                            "task_id": "/root/offline_fixture"},
         **{field: False for field in frontend.FALSE_CLAIMS},
         "summary": "Offline unit fixture, not an actual frontend qualification.",
         "limitations": "Fixtures exercise release gates only; no runtime or publication evidence.",
         "checks": [{"name": name, "result": "passed", "url": "https://example.invalid/offline-fixture"}
-                   for name in sorted(frontend.CHECKS)],
+                   for name in sorted(scope["checks"])],
         "source_pins": [{"path": path, "sha256": hashlib.sha256(raw).hexdigest()}
                         for path, raw in sorted(blobs.items())],
     }
     raw = json.dumps(record).encode()
-    plan = {"schema_version": 1, "release_track": "frontend", "version": frontend.VERSION,
-            "qualification": {"path": frontend.QUALIFICATION_PATH, "sha256": hashlib.sha256(raw).hexdigest()},
-            "required_integrated_revisions": sorted(frontend.ORIGINAL_HEADS)}
+    plan = {"schema_version": 1, "release_track": "frontend", "version": version,
+            "qualification": {"path": scope["qualification_path"], "sha256": hashlib.sha256(raw).hexdigest()},
+            "required_integrated_revisions": sorted(scope["heads"])}
     return policy, blobs, record, raw, plan
 
 
@@ -60,6 +64,11 @@ class QualificationTests(unittest.TestCase):
         with self.assertRaises(GateError):
             version_tuple("1.7.1.5")
         self.assertEqual(version_tuple("1.7.1"), (1, 7, 1))
+        policy, blobs, record, _, plan = fixtures(frontend.HEADLESS_VERSION)
+        frontend.validate_proposal(plan, plan, policy)
+        frontend.validate_qualification(record, REVISION, policy,
+                                        lambda revision, path: blobs[path], lambda old, new: True)
+        self.assertEqual(version_tuple(frontend.HEADLESS_VERSION), (1, 8, 1))
 
     def test_incomplete_templates_fail_closed(self):
         plan = copy.deepcopy(self.plan)
@@ -148,7 +157,8 @@ class QualificationTests(unittest.TestCase):
 
 
 class GateAPI:
-    def __init__(self):
+    def __init__(self, contributions=None):
+        self.contributions = frontend.CONTRIBUTIONS if contributions is None else contributions
         self.main = REVISION
         self.tags, self.releases, self.calls = [], [], []
     def request(self, path, method="GET", payload=None):
@@ -157,7 +167,7 @@ class GateAPI:
             return {"ref": "refs/heads/main", "object": {"type": "commit", "sha": self.main}}
         if "/issues/" in path:
             number = int(path.rsplit("/", 1)[1])
-            canonical = next(key for key, value in frontend.CONTRIBUTIONS.items() if value == number)
+            canonical = next(key for key, value in self.contributions.items() if value == number)
             return {"number": number, "body": f"<!-- warpdrive:delivery-id:{canonical} -->",
                     "title": canonical, "html_url": f"https://github.com/{REPO}/issues/{number}", "state": "open"}
         raise AssertionError((path, method))
@@ -194,14 +204,14 @@ class FrontendGateTests(unittest.TestCase):
         if path == "package.json":
             return json.loads(self.blobs[frontend.PACKAGE_PATH])
         if path == "docs/delivery/issue-map.json":
-            return {"issues": {key: {"number": number} for key, number in frontend.CONTRIBUTIONS.items()}}
+            return {"issues": {key: {"number": number} for key, number in self.policy["contributions"].items()}}
         return {key: value for key, value in self.plan.items() if key != "revision"}
 
     def git(self, *args, **kwargs):
         self.git_calls.append(args)
         if args[:2] == ("git", "show"):
             revision, path = args[2].split(":", 1)
-            return self.raw if path == frontend.QUALIFICATION_PATH else self.blobs[path]
+            return self.raw if path == self.policy["qualification_path"] else self.blobs[path]
         if args[:2] == ("git", "rev-list"):
             return self.recent
         if args[:3] == ("git", "merge-base", "--is-ancestor") and args[3] == self.missing_head:
@@ -212,23 +222,33 @@ class FrontendGateTests(unittest.TestCase):
         return frontend.frontend_release_gate(self.api, self.plan, self.core,
                                               self.require_revision, self.references, allow_published=allow)
 
-    def test_exact_main_ci_and_four_branch_ancestries_without_issue_completion(self):
-        evidence = self.gate()
-        self.require_revision.assert_called_once_with(REVISION)
-        required = self.ci.call_args.args[3]["required_workflows"]
-        self.assertEqual(required["full-ci.yml"], self.core["required_workflows"]["full-ci.yml"])
-        self.assertEqual(required["full-quality.yml"], ["Full browser smoke checks"])
-        self.assertEqual(set(required[frontend.CODEQL_WORKFLOW]), frontend.CODEQL_JOBS)
-        self.assertEqual(self.ci.call_args.kwargs["dynamic_codeql_workflow"], frontend.CODEQL_WORKFLOW)
-        for head in self.plan["required_integrated_revisions"]:
-            self.assertIn(("git", "merge-base", "--is-ancestor", head, REVISION), self.git_calls)
-        self.assertEqual(evidence["product_version"], "1.7.2")
-        self.assertEqual(evidence["version"], "1.7.2")
-        self.assertEqual(evidence["issues"], [])
-        self.assertFalse(evidence["close_milestone"])
-        self.assertTrue(all(row["source_state"] == "open" and row["acceptance_claimed"] is False
-                            for row in evidence["contributions"]))
-        self.assertTrue(all(method == "GET" for _, method, _ in self.api.calls))
+    def test_exact_main_ci_and_scoped_ancestries_without_issue_completion(self):
+        for version in (frontend.VERSION, frontend.HEADLESS_VERSION):
+            policy, self.blobs, self.record, self.raw, self.plan = fixtures(version)
+            self.policy.clear()
+            self.policy.update(policy)
+            self.plan["revision"] = REVISION
+            self.items.clear()
+            self.items.update({canonical: {"id": canonical, "kind": "task", "acceptance": ["Broad existing scope"]}
+                               for canonical in policy["contributions"]})
+            self.api.contributions = policy["contributions"]
+            self.require_revision.reset_mock()
+            evidence = self.gate()
+            self.require_revision.assert_called_once_with(REVISION)
+            required = self.ci.call_args.args[3]["required_workflows"]
+            self.assertEqual(required["full-ci.yml"], self.core["required_workflows"]["full-ci.yml"])
+            self.assertEqual(required["full-quality.yml"], ["Full browser smoke checks"])
+            self.assertEqual(set(required[frontend.CODEQL_WORKFLOW]), frontend.CODEQL_JOBS)
+            self.assertEqual(self.ci.call_args.kwargs["dynamic_codeql_workflow"], frontend.CODEQL_WORKFLOW)
+            for head in self.plan["required_integrated_revisions"]:
+                self.assertIn(("git", "merge-base", "--is-ancestor", head, REVISION), self.git_calls)
+            self.assertEqual(evidence["product_version"], version)
+            self.assertEqual(evidence["version"], version)
+            self.assertEqual(evidence["issues"], [])
+            self.assertFalse(evidence["close_milestone"])
+            self.assertTrue(all(row["source_state"] == "open" and row["acceptance_claimed"] is False
+                                for row in evidence["contributions"]))
+            self.assertTrue(all(method == "GET" for _, method, _ in self.api.calls))
 
     def test_product_package_must_match_the_selected_stable_release(self):
         original = self.candidate

@@ -48,7 +48,7 @@ import {
   setProviderEnabledAction,
   setProviderKeyAction,
   testProviderAction,
-} from "./settingsActions";
+} from "./settingsActions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 const KEY = "sk-live-abcdefgh";

@@ -1,82 +1,21 @@
 "use server";
 
-import { z } from "zod";
-import { MAIL_FOLLOW_UP_STATUS } from "@/constants/email";
-import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { db } from "@/db/client";
-import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
-import type { AuthUser } from "@/features/permissions/types";
-import { createContext } from "@/server/trpc/context";
-import { type ActionResult, clientErr, toClientResult } from "@/types/actionResult";
-import { err, ok, type Result } from "@/types/result";
-import { setFollowUpStatus, setThreadLabels } from "./threadAttributes";
+import { invokeAction } from "@/frontend/actions";
 
-const followUpStatusInput = z.object({
-  threadId: z.string().uuid(),
-  status: z.enum(MAIL_FOLLOW_UP_STATUS),
-});
+import type * as ImplementationModule from "./threadAttributesActions.backend";
 
-const threadLabelsInput = z.object({
-  threadId: z.string().uuid(),
-  // Mail-label catalog keys (U6): built-in tokens or custom slugs, not a fixed enum. Dedupe so
-  // repeated picks (e.g. a double-click race) persist the label once instead of storing it twice.
-  labels: z
-    .array(z.string().trim().min(1).max(120))
-    .transform((labels: string[]) => Array.from(new Set(labels))),
-});
+type Implementation = typeof ImplementationModule;
 
-async function actor(csrfToken: string | null): Promise<Result<AuthUser, AppError>> {
-  const csrf = await guardCsrf(csrfToken);
-  if (!csrf.ok) return err(new AppError(ERROR_IDS.PERM_DENIED, "csrf check failed", {}));
-  const ctx = await createContext();
-  if (ctx.actor === null)
-    return err(new AppError(ERROR_IDS.AUTH_LOGIN_REJECTED, "unauthenticated", {}));
-  return ok(ctx.actor);
-}
+export type * from "./threadAttributesActions.backend";
 
 export async function setFollowUpStatusAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ threadId: string }>> {
-  const who = await actor(csrfToken);
-  if (!who.ok) return clientErr(who.error);
-  const parsed = followUpStatusInput.safeParse(rawInput);
-  if (!parsed.success) {
-    return clientErr(
-      new AppError(ERROR_IDS.GMAIL_ATTR_INPUT_INVALID, "invalid follow-up status input", {
-        issues: parsed.error.issues,
-      }),
-    );
-  }
-  return toClientResult(
-    await setFollowUpStatus(
-      db,
-      { actor: who.value, threadId: parsed.data.threadId, status: parsed.data.status },
-      SIG(),
-    ),
-  );
+  ...args: Parameters<Implementation["setFollowUpStatusAction"]>
+): ReturnType<Implementation["setFollowUpStatusAction"]> {
+  return invokeAction("features/email/threadAttributesActions.setFollowUpStatusAction", args);
 }
 
 export async function setThreadLabelsAction(
-  csrfToken: string | null,
-  rawInput: unknown,
-): Promise<ActionResult<{ threadId: string }>> {
-  const who = await actor(csrfToken);
-  if (!who.ok) return clientErr(who.error);
-  const parsed = threadLabelsInput.safeParse(rawInput);
-  if (!parsed.success) {
-    return clientErr(
-      new AppError(ERROR_IDS.GMAIL_ATTR_INPUT_INVALID, "invalid labels input", {
-        issues: parsed.error.issues,
-      }),
-    );
-  }
-  return toClientResult(
-    await setThreadLabels(
-      db,
-      { actor: who.value, threadId: parsed.data.threadId, labels: parsed.data.labels },
-      SIG(),
-    ),
-  );
+  ...args: Parameters<Implementation["setThreadLabelsAction"]>
+): ReturnType<Implementation["setThreadLabelsAction"]> {
+  return invokeAction("features/email/threadAttributesActions.setThreadLabelsAction", args);
 }

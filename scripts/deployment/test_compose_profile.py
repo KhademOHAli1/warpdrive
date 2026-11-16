@@ -28,8 +28,10 @@ IMAGE_VARIABLES = {
     "WARPDRIVE_REALTIME_IMAGE": "ws",
     "WARPDRIVE_WORKER_IMAGE": "worker",
     "WARPDRIVE_MIGRATOR_IMAGE": "migrate",
+    "WARPDRIVE_CORE_IMAGE": "core-api",
 }
 SYNTHETIC_ENV = {
+    "CORE_PROXY_TOKEN": "synthetic_proxy_credential_01234567890123456789",
     "APP_DOMAIN": "image-profile.example.invalid",
     "ACME_EMAIL": "operator@example.invalid",
     "POSTGRES_USER": "image_profile_fixture",
@@ -186,7 +188,7 @@ class ImageComposeProfileTest(unittest.TestCase):
                 self.assertNotEqual(refused.returncode, 0)
                 self.assertIn(name, refused.stderr)
 
-    def test_optional_core_adds_only_one_private_pinned_service(self) -> None:
+    def test_core_private_overlay_replaces_only_core_service_and_its_networks(self) -> None:
         environment = {
             "WARPDRIVE_CORE_IMAGE_REPOSITORY": "ghcr.io/example/warpdrive-core",
             "WARPDRIVE_CORE_IMAGE_SHA256": "b" * 64,
@@ -201,7 +203,9 @@ class ImageComposeProfileTest(unittest.TestCase):
             network = with_core["networks"].pop(name)
             self.assertEqual(network.pop("ipam", {}), {})
             self.assertEqual(network, {"name": environment[variable], "external": True})
-        self.assertEqual(with_core, self.model(resolve_service_env=True))
+        baseline = self.model(resolve_service_env=True)
+        baseline["services"].pop("core-api")
+        self.assertEqual(with_core, baseline)
         self.assertEqual(service["image"], "ghcr.io/example/warpdrive-core@sha256:" + "b" * 64)
         self.assertTrue({"build", "ports", "depends_on"}.isdisjoint(service))
         self.assertEqual(set(service["networks"]), {"core-ingress", "core-db"})
@@ -249,7 +253,7 @@ class ImageComposeProfileTest(unittest.TestCase):
                     )
                 else:
                     expected_environment = {}
-                    if service in ("app", "ws", "worker"):
+                    if service in ("ws", "worker"):
                         expected_environment = {
                             "MIGRATION_DATABASE_URL": "",
                             "MIGRATION_DATABASE_URL_FILE": "",
@@ -257,7 +261,12 @@ class ImageComposeProfileTest(unittest.TestCase):
                             "POSTGRES_PASSWORD_FILE": "",
                         }
                     if service == "app":
-                        expected_environment["AUTH_TRUSTED_PROXY_HEADER"] = "x-real-ip"
+                        expected_environment = {
+                            "CORE_API_ORIGIN": "http://core-api:3010",
+                            "CORE_PROXY_TOKEN": SYNTHETIC_ENV["CORE_PROXY_TOKEN"],
+                            "FRONTEND_TRUSTED_PROXY_HEADER": "x-real-ip",
+                            "APP_VERSION": "fixture", "APP_COMMIT": "",
+                        }
                     if service == "createbuckets":
                         expected_environment = {
                             name: SYNTHETIC_ENV[name]
@@ -282,14 +291,14 @@ class ImageComposeProfileTest(unittest.TestCase):
             migrator = model["services"]["migrate"]["environment"]
             self.assertEqual(migrator["MIGRATION_DATABASE_URL"], owner)
             self.assertEqual(migrator["MIGRATION_DATABASE_URL_FILE"], owner_file)
-            for service in ("app", "ws", "worker"):
+            for service in ("core-api", "ws", "worker"):
                 with self.subTest(service=service):
                     environment = model["services"][service]["environment"]
                     self.assertEqual(environment["MIGRATION_DATABASE_URL"], "")
                     self.assertEqual(environment["MIGRATION_DATABASE_URL_FILE"], "")
                     self.assertEqual(environment["POSTGRES_PASSWORD"], "")
                     self.assertEqual(environment["POSTGRES_PASSWORD_FILE"], "")
-            for service in ("createbuckets", "caddy", "minio", "postgres"):
+            for service in ("app", "createbuckets", "caddy", "minio", "postgres"):
                 with self.subTest(service=service):
                     serialized = json.dumps(model["services"][service])
                     self.assertNotIn(owner, serialized)
@@ -306,16 +315,16 @@ class ImageComposeProfileTest(unittest.TestCase):
         actual = self.model()
         self.assertEqual(actual, expected)
         self.assertEqual(
-            actual["services"]["app"]["environment"]["AUTH_TRUSTED_PROXY_HEADER"],
+            actual["services"]["app"]["environment"]["FRONTEND_TRUSTED_PROXY_HEADER"],
             "x-real-ip",
         )
-        for service in ("app", "ws", "worker"):
+        for service in ("core-api", "ws", "worker"):
             self.assertEqual(
                 actual["services"][service]["depends_on"]["migrate"]["condition"],
                 "service_completed_successfully",
             )
         self.assertEqual(
-            actual["services"]["app"]["depends_on"]["createbuckets"]["condition"],
+            actual["services"]["core-api"]["depends_on"]["createbuckets"]["condition"],
             "service_completed_successfully",
         )
 

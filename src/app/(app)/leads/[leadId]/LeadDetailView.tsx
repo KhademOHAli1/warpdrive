@@ -1,34 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
-import { db } from "@/db/client";
-import { listDefs } from "@/features/custom-fields/defsRepo";
-import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
-import { resolveCustomFieldRefLabelsFor } from "@/features/custom-fields/refLabels";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
 import { getAppTranslations } from "@/features/i18n/server";
-import { getLeadById, getLeadRelations } from "@/features/leads/leadRepo";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
-import { createContext } from "@/server/trpc/context";
-import type { DealVisibilitySession } from "@/types/session";
+import { createContext } from "@/frontend/context";
+import { getLeadDetail } from "@/frontend/reads";
 import { LeadWorkspaceClient } from "./LeadWorkspaceClient";
-
-// The lead read uses the same visibility session shape as the deal reads (leadVisibilityClause).
-function toSession(actor: {
-  id: string;
-  type: string;
-  isActive: boolean;
-  groupIds: ReadonlySet<string>;
-  managedUserIds?: ReadonlySet<string>;
-}): DealVisibilitySession {
-  return {
-    userId: actor.id,
-    isAdmin: actor.type === "admin",
-    isActive: actor.isActive,
-    sessionLive: true,
-    visibilityGroupIds: Array.from(actor.groupIds),
-    managedUserIds: Array.from(actor.managedUserIds ?? []),
-  };
-}
 
 // Shared lead-detail loader. Exported so both the full page ([leadId]/page.tsx) and the intercepted
 // slide-over drawer (@modal/(.)[leadId]/page.tsx) render identical content, and generateMetadata can
@@ -36,9 +12,9 @@ function toSession(actor: {
 export async function loadLead(leadId: string) {
   const ctx = await createContext();
   if (ctx.actor === null) return { kind: "unauth" as const };
-  const lead = await getLeadById(db, toSession(ctx.actor), leadId, AbortSignal.timeout(10_000));
-  if (lead === null) return { kind: "notfound" as const };
-  return { kind: "ok" as const, lead, actor: ctx.actor };
+  const detail = await getLeadDetail(leadId);
+  if (detail === null) return { kind: "notfound" as const };
+  return { kind: "ok" as const, lead: detail.lead, actor: ctx.actor };
 }
 
 export async function LeadDetailView({ leadId }: { leadId: string }): Promise<React.ReactNode> {
@@ -47,45 +23,17 @@ export async function LeadDetailView({ leadId }: { leadId: string }): Promise<Re
   if (loaded.kind === "unauth") redirect("/login");
   if (loaded.kind === "notfound") notFound();
 
-  // Load the linked person/org records and the Settings > Data fields hides so the sidebar's
-  // Person/Organization blocks render the contact's full field set (PD parity), dropping the same
-  // built-in rows the contact detail pages do. Each linked contact is independently authorized.
-  const signal = AbortSignal.timeout(10_000);
-  const [
+  const detail = await getLeadDetail(leadId);
+  if (detail === null) notFound();
+  const {
     relations,
     hidden,
     personCustomFieldDefs,
     organizationCustomFieldDefs,
     leadCustomFieldDefs,
     baseCurrency,
-  ] = await Promise.all([
-    getLeadRelations(db, loaded.actor, loaded.lead, signal),
-    listHiddenBuiltins(db, signal),
-    listDefs(db, "person", {}, signal),
-    listDefs(db, "organization", {}, signal),
-    listDefs(db, "lead", {}, signal),
-    readBaseCurrency(db, signal),
-  ]);
-
-  const refLabels = await resolveCustomFieldRefLabelsFor(
-    db,
-    loaded.actor,
-    [
-      {
-        defs: leadCustomFieldDefs,
-        rows: [{ customFields: loaded.lead.customFields as Record<string, unknown> }],
-      },
-      {
-        defs: personCustomFieldDefs,
-        rows: [{ customFields: (relations.person?.customFields ?? {}) as Record<string, unknown> }],
-      },
-      {
-        defs: organizationCustomFieldDefs,
-        rows: [{ customFields: (relations.org?.customFields ?? {}) as Record<string, unknown> }],
-      },
-    ],
-    signal,
-  );
+    refLabels,
+  } = detail;
 
   return (
     <main aria-label={t("leadText")} className="h-full">

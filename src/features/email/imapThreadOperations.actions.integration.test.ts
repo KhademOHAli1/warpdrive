@@ -55,7 +55,7 @@ vi.mock("@/features/email/queueMailboxSync", () => ({
 import {
   listThreadMoveFoldersAction,
   moveThreadAction,
-} from "@/features/email/imapThreadOperationsActions";
+} from "@/features/email/imapThreadOperationsActions.backend";
 
 async function bindNativeOwner(
   db: Db,
@@ -167,7 +167,7 @@ it("dispatches the existing Delete server action to native IMAP without a Gmail 
       state.actor = f.actor;
       state.runtime = f.runtime;
       state.csrf = true;
-      const { trashThreadAction } = await import("@/features/email/actions");
+      const { trashThreadAction } = await import("@/features/email/actions.backend");
       expect(await trashThreadAction("csrf", { threadId: f.threadId })).toMatchObject({
         ok: true,
         value: { threadId: f.threadId },
@@ -192,7 +192,9 @@ it("queues verification after an ambiguous owner read without blindly issuing an
       state.runtime = f.runtime;
       state.csrf = true;
       queued.mockClear();
-      const { prepareThreadReadIntentAction } = await import("@/features/email/readIntentActions");
+      const { prepareThreadReadIntentAction } = await import(
+        "@/features/email/readIntentActions.backend"
+      );
       const prepared = await prepareThreadReadIntentAction("csrf", {
         threadId: f.threadId,
         read: true,
@@ -211,7 +213,7 @@ it("queues verification after an ambiguous owner read without blindly issuing an
       if (!prepared.ok || prepared.value.kind !== "created")
         throw new AppError(ERROR_IDS.DB_INVARIANT, "Native IMAP read was not prepared");
       f.server.state.dropMutationResponse = "STORE";
-      const { markThreadReadAction } = await import("@/features/email/readActions");
+      const { markThreadReadAction } = await import("@/features/email/readActions.backend");
       expect(
         await markThreadReadAction("csrf", {
           threadId: f.threadId,

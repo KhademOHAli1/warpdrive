@@ -26,7 +26,7 @@ vi.mock("@/server/trpc/context", () => ({ createContext }));
 const service = vi.hoisted(() => ({ revealProspects: vi.fn() }));
 vi.mock("./revealService", () => service);
 
-import { revealProspectsAction } from "./prospectActions";
+import { revealProspectsAction } from "./prospectActions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 const ORG_ID = "11111111-1111-4111-8111-111111111111";

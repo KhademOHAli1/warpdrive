@@ -33,7 +33,7 @@ const service = vi.hoisted(() => ({
 }));
 vi.mock("./prospectApply", () => service);
 
-import { applyProspectsAction } from "./prospectApplyActions";
+import { applyProspectsAction } from "./prospectApplyActions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 const ORG = "11111111-1111-4111-8111-111111111111";

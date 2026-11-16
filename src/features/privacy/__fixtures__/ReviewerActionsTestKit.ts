@@ -22,7 +22,7 @@ vi.mock("@/features/identity/actions/sig", () => ({ SIG: reviewerMocks.signal })
 vi.mock("../caseAssignmentQueue", () => ({ listPrivacyIntakeQueue: reviewerMocks.list }));
 vi.mock("../caseAssignment", () => ({ claimPrivacyCase: reviewerMocks.claim }));
 
-import { claimPrivacyCaseAction, listPrivacyIntakeQueueAction } from "../reviewerActions";
+import { claimPrivacyCaseAction, listPrivacyIntakeQueueAction } from "../reviewerActions.backend";
 
 // Native boundary isolation only. The real lazy DB handle is forwarded unchanged;
 // no query, transaction, database result or database authorization is simulated.

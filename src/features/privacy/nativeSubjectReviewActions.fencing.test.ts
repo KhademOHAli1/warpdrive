@@ -11,7 +11,7 @@ import {
   REVIEWER,
   resetNativeReviewAction,
 } from "./nativeSubjectReviewActionsTestKit";
-import { loadPrivacyNativeSubjectReviewAction as action } from "./reviewerActions";
+import { loadPrivacyNativeSubjectReviewAction as action } from "./reviewerActions.backend";
 
 beforeEach(resetNativeReviewAction);
 

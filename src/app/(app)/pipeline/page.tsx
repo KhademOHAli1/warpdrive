@@ -4,8 +4,8 @@ import { DashboardSelect } from "@/features/dashboards/DashboardSelect";
 import { createSalesStrings } from "@/features/deals/salesStrings";
 import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server";
 import { CreatePipelineButton } from "@/features/pipelines/CreatePipelineButton";
-import { createContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import { createContext } from "@/frontend/context";
+import { createCaller } from "@/frontend/trpc";
 
 export async function generateMetadata() {
   const nav = await getAppTranslations("nav");

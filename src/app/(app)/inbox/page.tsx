@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { GmailConnectionNotice } from "@/features/email/composer/GmailConnectionNotice";
 import { getEmailMessages } from "@/features/email/emailMessages.server";
 import { parseFolder } from "@/features/email/inboxFolders";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { InboxListClient } from "./InboxListClient";
 
 export async function generateMetadata() {

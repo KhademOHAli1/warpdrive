@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { BrandingClient } from "./BrandingClient";
 export default async function BrandingPage() {
   const { actor } = await createContext();

@@ -42,6 +42,7 @@ export interface CoreRuntimeOptions {
 }
 
 export interface CoreRuntimeDependencies {
+  acceptsPath?(path: string): boolean;
   serve(options: CoreServeOptions): CoreHttpServer;
   /** The complete existing Fetch tRPC handler, not a replacement read-only router. */
   handler(request: Request): Promise<Response>;
@@ -224,6 +225,7 @@ export function createCoreHttpRuntime(
   const options = Object.freeze({ ...configuration });
   validateOptions(options);
   const deps = Object.freeze({
+    acceptsPath: dependencies.acceptsPath?.bind(dependencies),
     serve: dependencies.serve.bind(dependencies),
     handler: dependencies.handler.bind(dependencies),
     startProducer: dependencies.startProducer.bind(dependencies),
@@ -456,7 +458,7 @@ export function createCoreHttpRuntime(
   async function fetch(request: Request): Promise<Response> {
     const path = new URL(request.url).pathname;
     if (path === "/healthz" || path === "/readyz") return healthResponse(request, path);
-    if (!isRpcPath(path)) return fixedResponse(404, "Not found");
+    if (!(deps.acceptsPath?.(path) ?? isRpcPath(path))) return fixedResponse(404, "Not found");
     if (!isReady()) return fixedResponse(503, "Unavailable");
     const length = declaredLength(request);
     if (length === "invalid") return fixedResponse(400, "Invalid request body");

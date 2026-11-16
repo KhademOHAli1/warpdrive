@@ -20,9 +20,8 @@ const entries = [
 ];
 
 const componentOutputs = {
-  // Browser/SSR requests can run workflow simulations; operator commands remain available
-  // in the web image for the existing operator runbooks.
-  web: ["next.config", "workflow-code-worker", "sweep-spam", "auth-operator"],
+  // Web renders through Core. Workflow execution and operator tools stay on the backend.
+  web: ["next.config"],
   worker: ["workflow-code-worker", "worker", "sweep-spam"],
   realtime: ["ws"],
   migrator: ["migrate", "auth-operator"],

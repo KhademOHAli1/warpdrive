@@ -18,7 +18,7 @@ import {
   claimPrivacyCaseAction,
   listPrivacyIntakeQueueAction,
   loadPrivacyNativeSubjectReviewAction,
-} from "./reviewerActions";
+} from "./reviewerActions.backend";
 import type { PrivacyReviewerCase, PrivacyReviewerCaseFailure } from "./reviewerCaseTypes";
 
 beforeEach(resetReviewerCaseAction);

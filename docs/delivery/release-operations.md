@@ -334,3 +334,29 @@ existing three-part SemVer contract and requires the committed package and
 frontend display to match. Existing stable tags and releases reserve versions;
 historical four-part display counters are not parsed as stable SemVer. The
 product update check and the independent core acceptance gates are unchanged.
+
+## Headless frontend source release 1.8.1
+
+The user authorized release `1.8.1` after local extraction makes Web independently
+hostable. The existing `frontend` source-publication track now has two explicit
+scope contracts: historical `1.7.2` and headless `1.8.1`. Historical qualification,
+publication and version checks remain intact. The fixed source-history and PR
+boundaries remain unchanged.
+
+For `1.8.1`, select `docs/delivery/releases/frontend/1.8.1.json` at the final Main
+revision. Its qualification record must pin the actual reviewed source and all
+required frontend/Core request, command, proxy and runtime boundaries. Evidence
+covers a credential-free normal frontend build, emitted import separation,
+authenticated SSR, a thin Server Action cookie roundtrip, native auth relay,
+backend command authority, native drain/cleanup and independent source review.
+Retained local behavior evidence names its real source revision; later version or
+qualification metadata must not be presented as an earlier exact-revision run.
+
+Publication still requires the selected current Main tip, merged-PR traceability,
+full exact-main CI, all four managed CodeQL languages and the live finding gate.
+It produces the exact source archive and stable release, without completing broad
+canonical issues or core human journeys. This source includes the self-hosted Core
+adapters required by the extracted Web; the source release is not a container,
+installation, migration, Cloudflare or provider acceptance claim. Conventional
+Next is the locally qualified frontend runtime. The remaining five DevOps phases,
+then tenancy, billing and SaaS feature monitoring remain separate work.

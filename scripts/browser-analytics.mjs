@@ -1229,6 +1229,10 @@ async function activateSyntheticCohort() {
         "utf8",
       ),
     );
+    // These disposable tables are installed after the restricted Core role's initial grants.
+    await fixturePool.query(
+      "GRANT SELECT ON public.analytics_history_coverage, public.analytics_history_events, public.analytics_history_heads, public.analytics_report_snapshots TO browser_runtime",
+    );
     await fixturePool.query(
       `INSERT INTO public.deals (id,title,owner_id,pipeline_id,stage_id,currency,visibility_level,created_at)
        VALUES ($1,$2,$3,$4,$5,$6,'owner',pg_catalog.transaction_timestamp() - interval '45 days')`,

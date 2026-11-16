@@ -10,12 +10,12 @@ const { csrf, context, org, person } = vi.hoisted(() => ({
 }));
 vi.mock("@/features/identity/actions/shared", () => ({ guardCsrf: csrf }));
 vi.mock("@/server/trpc/context", () => ({ createContext: context }));
-vi.mock("@/features/contacts/actions", () => ({
+vi.mock("@/features/contacts/actions.backend", () => ({
   createOrgAction: org,
   createPersonAction: person,
 }));
 
-import { createDealOrgAction, createDealPersonAction } from "./nativeContactActions";
+import { createDealOrgAction, createDealPersonAction } from "./nativeContactActions.backend";
 
 afterEach(() => vi.clearAllMocks());
 test("A-owned inline requests under B context are rejected before either contact delegate", async () => {

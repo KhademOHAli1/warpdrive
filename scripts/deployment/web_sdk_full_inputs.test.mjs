@@ -209,7 +209,10 @@ void test("untracked helper resolution and modified backend bytes hidden from Gi
   untracked.put("scripts/auth-operator.ts", 'export {ghost as operator} from "./ghost";');
   const before = untracked.commit();
   untracked.put("scripts/ghost.ts", "export const ghost = 1;");
-  await assert.rejects(untracked.sdk(before), /unresolved local|unresolved relative|untracked/iu);
+  await assert.rejects(
+    untracked.sdk(before),
+    /unresolved local|unresolved relative|untracked|Unreviewed Web source read: scripts\/ghost\.ts/iu,
+  );
   const hidden = fixture(t);
   const revision = hidden.commit();
   const path = "src/shared/backend.ts";

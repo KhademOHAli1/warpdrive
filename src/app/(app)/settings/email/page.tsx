@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import { db } from "@/db/client";
-import { listSignatures, listTemplatesForSettings } from "@/features/email/emailAuthoringReads";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { coreClient } from "@/frontend/trpc";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { SignaturesSettingsClient } from "./SignaturesSettingsClient";
@@ -20,11 +19,7 @@ export default async function EmailSettingsPage(): Promise<ReactNode> {
 
   const ctx = await createContext();
   if (ctx.actor === null) return null;
-  const signal = AbortSignal.timeout(15_000);
-  const [templates, signatures] = await Promise.all([
-    listTemplatesForSettings(db, { actor: ctx.actor }, signal),
-    listSignatures(db, { actor: ctx.actor }, signal),
-  ]);
+  const { templates, signatures } = await coreClient().frontend.emailSettings.query();
   const canShare = ctx.actor.type === "admin" || ctx.actor.flags.has("filter.share");
   return (
     <SettingsPage className="max-w-3xl">

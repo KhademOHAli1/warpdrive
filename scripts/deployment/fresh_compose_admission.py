@@ -23,6 +23,7 @@ from web_switch import HASH, SwitchConflict, canonical, content_hash, require
 ROOT = Path(__file__).resolve().parents[2]
 COMPOSE = ("docker-compose.yml", "docker-compose.newsletters.yml", "deploy/images/compose.yml", "deploy/images/compose.fresh.yml")
 IMAGES = {"WARPDRIVE_WEB_IMAGE": ("app",), "WARPDRIVE_REALTIME_IMAGE": ("ws",), "WARPDRIVE_WORKER_IMAGE": ("worker",),
+          "WARPDRIVE_CORE_IMAGE": ("core-api",),
           "WARPDRIVE_MIGRATOR_IMAGE": ("migrate",), "WARPDRIVE_CADDY_IMAGE": ("caddy",), "WARPDRIVE_POSTGRES_IMAGE": ("postgres",),
           "WARPDRIVE_STORAGE_IMAGE": ("minio",), "WARPDRIVE_STORAGE_INIT_IMAGE": ("createbuckets",),
           "WARPDRIVE_NEWSLETTER_IMAGE": ("newsletter-engine", "newsletter-engine-migrate")}
@@ -34,7 +35,7 @@ IMAGE_ASSIGNMENT = re.compile(r"\s*(?:export\s+)?(WARPDRIVE_[A-Z_]+_IMAGE)\s*=\s
 VOLUME_MOUNTS = {"caddy": {"caddydata": "/data", "caddyconfig": "/config"}, "postgres": {"pgdata": "/var/lib/postgresql/data"},
                  "minio": {"miniodata": "/data"}, "newsletter-engine": {"newsletter_uploads": "/listmonk/uploads"}}
 BIND_MOUNTS = {"Caddyfile": "/etc/caddy/Caddyfile", "deploy/newsletters/Caddyfile": "/etc/caddy/warpdrive-newsletters"}
-GATES = {"app": {"migrate": "service_completed_successfully", "createbuckets": "service_completed_successfully"},
+GATES = {"core-api": {"app": "service_healthy", "migrate": "service_completed_successfully", "createbuckets": "service_completed_successfully"},
          "caddy": {"app": "service_healthy", "ws": "service_started"}, "createbuckets": {"minio": "service_started"},
          "migrate": {"postgres": "service_healthy"}, "ws": {"migrate": "service_completed_successfully"},
          "worker": {"migrate": "service_completed_successfully"}, "newsletter-engine": {"postgres": "service_healthy"},
@@ -181,7 +182,9 @@ def _service(name, service, directory, expected, *, storage_client_bin="mc", cgr
         require(environment.get(STORAGE_CLIENT_ENV) == validate_storage_client_bin(storage_client_bin)
                 and service.get("entrypoint") == STORAGE_INIT_ENTRYPOINT and service.get("command") == [],
                 "Fresh storage client or fixed initialization entrypoint differs")
-    if name in {"app", "worker", "ws"}:
+    if name == "app":
+        require(all(environment.get(key, "") == "" for key in OWNER_FIELDS), "Fresh Compose runtime inherits a database owner binding")
+    if name in {"core-api", "worker", "ws"}:
         require(all(environment.get(key) == "" for key in OWNER_FIELDS), "Fresh Compose runtime inherits a database owner binding")
     if name == "newsletter-engine":
         require(environment.get("NEWSLETTER_DELIVERY_ENABLED") == "false" and service["command"][:2] == ["sh", "-ec"]

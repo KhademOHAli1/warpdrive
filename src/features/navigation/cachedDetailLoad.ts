@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import type { Result } from "@/types/result";
 
 type Ctx = Awaited<ReturnType<typeof createContext>>;

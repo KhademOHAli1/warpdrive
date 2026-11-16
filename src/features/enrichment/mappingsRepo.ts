@@ -1,13 +1,12 @@
 // Canonical-key to target-field mapping, and the run cache TTL. The client never names a target:
 // it names a canonical key, and this module is the only thing that decides where the value lands.
 import { and, eq } from "drizzle-orm";
-import { BUILTIN_FIELDS, isImportFieldHidden } from "@/constants/builtinFields";
+import { isImportFieldHidden } from "@/constants/builtinFields";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { customFieldDefs } from "@/db/schema";
 import { enrichmentFieldMappings, enrichmentSettings } from "@/db/schema/enrichment";
 import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
-import { ADDRESS_PREFIX, ENTITY_FIELDS } from "@/features/import/importFields";
 import { err, ok, type Result } from "@/types/result";
 import {
   canonicalField,
@@ -24,28 +23,9 @@ export type MappingTarget =
   | { kind: "builtin"; key: string }
   | { kind: "custom"; fieldDefId: string };
 
-// Built-ins enrichment must never write: owner and label are relationship pickers with their own
-// authorities, phones has no canonical source and is contact-point shaped, and "address" is
-// reached through its dotted leaves rather than as a whole object.
-const NON_ENRICHABLE_BUILTINS = new Set(["owner", "label", "phones", "address"]);
+import { WRITABLE_BUILTIN_TARGETS } from "./mappingTargets";
 
-function dataFieldsOf(entity: EnrichEntity): string[] {
-  return BUILTIN_FIELDS[entity]
-    .filter((f) => !NON_ENRICHABLE_BUILTINS.has(f.key))
-    .map((f) => f.key);
-}
-
-// The only keys a builtin mapping may name. plan.ts turns targetKey straight into an update-patch
-// key, so an unvetted string here is a write into an arbitrary column.
-export const WRITABLE_BUILTIN_TARGETS: Readonly<Record<EnrichEntity, ReadonlySet<string>>> = {
-  organization: new Set([
-    ...dataFieldsOf("organization"),
-    ...ENTITY_FIELDS.organization
-      .filter((f) => f.field.startsWith(ADDRESS_PREFIX))
-      .map((f) => f.field),
-  ]),
-  person: new Set(dataFieldsOf("person")),
-};
+export { WRITABLE_BUILTIN_TARGETS };
 
 export async function getCacheTtlDays(db: Db, signal: AbortSignal): Promise<number> {
   signal.throwIfAborted();

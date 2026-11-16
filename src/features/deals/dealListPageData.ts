@@ -1,10 +1,8 @@
-import { listDefs } from "@/features/custom-fields/defsRepo";
 import { EMPTY_REF_LABELS } from "@/features/custom-fields/refLabelsShared";
 import type { LocalePreferences } from "@/features/i18n/preferences";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
-import type { AppContext } from "@/server/trpc/context";
-import { createCaller } from "@/server/trpc/root";
+import type { AppContext } from "@/frontend/context";
+import { getPreferencesForActor, listDefs, readBaseCurrency } from "@/frontend/reads";
+import { createCaller } from "@/frontend/trpc";
 import { type BoardViewState, boardViewDefinition } from "./boardView";
 import { resolveInitialBoardView } from "./initialBoardView";
 import { rowToView } from "./savedFilterView";
@@ -24,7 +22,7 @@ export async function loadDealListPageData(
   unfilteredTotal: number | undefined;
 }> {
   const caller = createCaller(ctx);
-  const prefsPromise = getPreferencesForActor(ctx.db, ctx.actor.id);
+  const prefsPromise = getPreferencesForActor();
   const viewPromise = prefsPromise.then((p) =>
     resolveInitialBoardView(p.ui, async () => (await caller.deal.savedFilters()).map(rowToView)),
   );
@@ -66,8 +64,8 @@ export async function loadDealListPageData(
     await Promise.all([
       listPromise,
       prefsPromise,
-      listDefs(ctx.db, "deal", {}, AbortSignal.timeout(8000)),
-      readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
+      listDefs("deal"),
+      readBaseCurrency(),
       viewPromise,
       unfilteredPromise,
     ]);

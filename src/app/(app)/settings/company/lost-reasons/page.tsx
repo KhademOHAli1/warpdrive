@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { db } from "@/db/client";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { listLostReasons } from "@/features/settings/lostReasonsRepo";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listLostReasons } from "@/frontend/reads";
 import { LostReasonsClient } from "./LostReasonsClient";
 
 export async function generateMetadata() {
@@ -20,7 +19,7 @@ export default async function LostReasonsPage(): Promise<ReactNode> {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
-  const rows = await listLostReasons(db, AbortSignal.timeout(5000));
+  const rows = await listLostReasons();
   const serializable = rows.map((r) => ({ id: r.id, name: r.name }));
   return <LostReasonsClient rows={serializable} />;
 }

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { SubscribersNavigation } from "@/features/newsletter/audience/SubscribersNavigation";
 import { hasNewsletterPermission } from "@/features/newsletter/permissions";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 
 export default async function SubscribersLayout({ children }: { children: ReactNode }) {
   const { actor } = await createContext();

@@ -1,7 +1,2 @@
-// Next invokes instrumentation in both runtimes. Import Node-only dependencies only there.
-export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { registerNode } = await import("./instrumentation.node");
-    await registerNode();
-  }
-}
+/** Presentation has no database or queue startup. Core owns producers; Worker owns consumers. */
+export async function register(): Promise<void> {}

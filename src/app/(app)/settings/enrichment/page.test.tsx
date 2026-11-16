@@ -42,10 +42,18 @@ vi.mock("@/features/identity/settingsMessages.server", async () => {
   const { settingsMessagesForLocale } = await import("@/features/identity/settingsMessages");
   return { getServerSettingsMessages: () => Promise.resolve(settingsMessagesForLocale("en")) };
 });
-vi.mock("@/server/trpc/context", () => ({
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: async () => {
+    const { env } = await import("@/config/env");
+    return {
+      ...env,
+      GMAIL_CONFIGURED: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
+    };
+  },
+
   createContext: vi.fn(() => Promise.resolve({ db: {}, actor })),
 }));
-vi.mock("@/server/trpc/root", () => ({
+vi.mock("@/frontend/trpc", () => ({
   createCaller: () => ({ enrichment: { config }, customFields: { listDefs, hiddenBuiltins } }),
 }));
 vi.mock("./EnrichmentClient", () => ({

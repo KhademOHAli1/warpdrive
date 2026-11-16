@@ -5,7 +5,7 @@ import { canWorkflow } from "@/features/workflows/access";
 import { sanitizeLibraryReturnTo } from "@/features/workflows/ui/libraryLocation";
 import { WorkflowLibrary } from "@/features/workflows/ui/WorkflowLibrary";
 import { UnifiedWorkflowLibrary } from "@/features/workflows/v2/ui/UnifiedWorkflowLibrary";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 
 export async function generateMetadata() {
   return { title: messagesForLocale((await getLocalePreferences()).locale).workflows.title };

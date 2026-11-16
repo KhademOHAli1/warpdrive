@@ -1,7 +1,8 @@
 import { cookies, headers } from "next/headers";
 import { cache } from "react";
 import { db } from "@/db/client";
-import { type AppContext, createCoreContext } from "./context-core";
+import { backendRequest } from "@/server/request";
+import { type AppContext, createContextFromRequest, createCoreContext } from "./context-core";
 import { readRequestCsrf } from "./request-csrf";
 
 export type { AppContext } from "./context-core";
@@ -16,6 +17,11 @@ export type { AppContext } from "./context-core";
  * cache() is a pass-through, so behaviour there is unchanged.
  */
 export const createContext = cache(async (): Promise<AppContext> => {
+  const state = backendRequest();
+  if (state) {
+    state.context ??= createContextFromRequest(state.request, db, state.readWebIdentity);
+    return state.context;
+  }
   const [jar, requestHeaders] = await Promise.all([cookies(), headers()]);
   return createCoreContext({ db, cookies: jar, csrf: readRequestCsrf(requestHeaders, jar) });
 });

@@ -1,9 +1,8 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { db } from "@/db/client";
-import { SESSION_COOKIE } from "@/features/auth/session";
-import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
-import { createContext } from "@/server/trpc/context";
+import { SESSION_COOKIE } from "@/contracts/auth";
+import { createContext } from "@/frontend/context";
+import { getPreferencesForActor } from "@/frontend/reads";
 import { resolveAccountLocalePreferences } from "./accountPreferences";
 import { type AppNamespace, createAppTranslator } from "./catalog";
 import {
@@ -31,7 +30,7 @@ export const getLocalePreferences = cache(async () => {
     return { ...resolveLocalePreferences(raw), ...browserInitialization(raw) };
   const { actor } = await createContext();
   if (actor === null) return { ...resolveLocalePreferences(raw), ...browserInitialization(raw) };
-  const preferences = await getPreferencesForActor(db, actor.id);
+  const preferences = await getPreferencesForActor();
   return {
     ...resolveAccountLocalePreferences({
       saved: preferences.ui.localePreferences,

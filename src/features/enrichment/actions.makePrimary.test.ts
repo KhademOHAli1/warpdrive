@@ -33,7 +33,7 @@ const apply = vi.hoisted(() => ({
 }));
 vi.mock("./applyService", () => apply);
 
-import { applyEnrichmentAction } from "./actions";
+import { applyEnrichmentAction } from "./actions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 const UUID = "11111111-1111-4111-8111-111111111111";

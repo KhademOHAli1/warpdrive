@@ -168,7 +168,8 @@ describe("next.config consent-screen form-action exemption", () => {
 });
 
 describe("server dependency compatibility", () => {
-  it("loads DOMPurify and its DOM implementation outside the Next server bundle", () => {
-    expect(nextConfig.serverExternalPackages).toContain("isomorphic-dompurify");
+  it("keeps backend dependency overrides out of the presentation build", () => {
+    expect(nextConfig.serverExternalPackages ?? []).not.toContain("isomorphic-dompurify");
+    expect(nextConfig.serverExternalPackages ?? []).not.toContain("pg-boss");
   });
 });

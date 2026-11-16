@@ -10,7 +10,7 @@ import {
   claimPrivacyCaseAction,
   listPrivacyIntakeQueueAction,
   type loadPrivacyNativeSubjectReviewAction,
-} from "./reviewerActions";
+} from "./reviewerActions.backend";
 
 beforeEach(resetNativeReviewAction);
 const sourceOnlyFailures = [

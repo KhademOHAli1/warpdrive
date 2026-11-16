@@ -1,3 +1,15 @@
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: () =>
+    Promise.resolve({
+      POSTHOG_KEY: "",
+      POSTHOG_HOST: "",
+      APP_VERSION: "dev",
+      APP_COMMIT: "",
+      DISABLE_TELEMETRY: true,
+      TELEMETRY_CONSOLE_FORWARDING: false,
+    }),
+}));
+
 import { describe, expect, it, vi } from "vitest";
 
 const cookieValue = vi.hoisted(() => ({ value: "en" }));

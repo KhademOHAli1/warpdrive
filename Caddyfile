@@ -36,6 +36,7 @@
 	# limiter trusts this header only in the production Compose deployment.
 	reverse_proxy app:3000 {
 		header_up X-Real-IP {remote_host}
+		header_up -CF-Connecting-IP
 	}
 }
 

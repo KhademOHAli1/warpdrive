@@ -3,12 +3,8 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { listAssignableUsers } from "@/features/identity/users.service";
-import {
-  listGroupMembers,
-  listVisibilityGroups,
-} from "@/features/identity/visibility-groups.service";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listAssignableUsers, listGroupMembers, listVisibilityGroups } from "@/frontend/reads";
 import { SettingsHeading } from "../../SettingsHeading";
 import { SettingsPage } from "../../SettingsSurface";
 import { GroupMembersClient, GroupMembersUnavailable } from "./GroupMembersClient";
@@ -26,13 +22,12 @@ export default async function GroupDetailPage({
   const L = await getServerSettingsMessages();
 
   const { groupId } = await params;
-  const { actor, db } = await createContext();
+  const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
-  const signal = AbortSignal.timeout(5000);
-  const groups = await listVisibilityGroups(db, signal);
+  const groups = await listVisibilityGroups();
   const group = groups.find((g) => g.id === groupId);
   if (group === undefined) notFound();
 
@@ -43,10 +38,7 @@ export default async function GroupDetailPage({
       ]
     | undefined;
   try {
-    rosterData = await Promise.all([
-      listGroupMembers(db, actor, groupId, signal),
-      listAssignableUsers(db, signal),
-    ]);
+    rosterData = await Promise.all([listGroupMembers(groupId), listAssignableUsers()]);
   } catch {
     // The group is known; retain its heading and navigation while the roster is unavailable.
   }

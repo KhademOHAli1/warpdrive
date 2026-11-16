@@ -36,9 +36,9 @@ from restore_recovery_set import restore_existing
 TOTAL_SECONDS = 1500
 CAPTURE_LIMITS = {"files": 20000, "bytes": 1024**3, "fileBytes": 256 * 1024**2,
                   "seconds": 240, "reserveBytes": 2 * 1024**3, "repositoryBytes": 1024**3}
-STOP_WAVES = (("caddy",), ("app", "worker", "ws", "newsletter-engine"), ("minio", "postgres"))
-START_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine"), ("caddy",))
-CREATE_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine", "caddy"))
+STOP_WAVES = (("caddy",), ("app", "ws"), ("core-api",), ("worker", "newsletter-engine"), ("minio", "postgres"))
+START_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine"), ("core-api",), ("caddy",))
+CREATE_WAVES = (("postgres", "minio"), ("app", "core-api", "ws", "worker", "newsletter-engine", "caddy"))
 LIMITATIONS = [
     "Owned synthetic Linux AMD64 fixture only; no production or customer installation was recovered.",
     "Seeded CRM rows, migration ledger, private object, engine media, health, one worker job and WebSocket rejection only.",
@@ -192,7 +192,7 @@ class RecoveryFixture(FreshSmoke):
                 r.require(row["Image"] == self.images[phase][name] and row["State"]["Running"] is True
                           and row["State"]["Status"] == "running" and row["RestartCount"] == 0,
                           "Restored fixture service identity or state differs")
-            health = [rows[name]["State"].get("Health", {}).get("Status") for name in ("postgres", "app", "ws")]
+            health = [rows[name]["State"].get("Health", {}).get("Status") for name in ("postgres", "app", "core-api", "ws")]
             r.require(all(value in {"starting", "healthy"} for value in health), "Restored fixture healthcheck failed")
             if all(value == "healthy" for value in health):
                 return rows
@@ -211,7 +211,7 @@ def _stop(fixture):
             r.require(fixture._witness(rows) == witness, "Fresh recovery runtime changed before stopping")
             row = rows[service]
             r.require(row["State"]["Running"] is True, "Fresh recovery writer was already stopped")
-            grace = 75 if service == "worker" else 30
+            grace = 75 if service in {"worker", "core-api"} else 30
             fixture.docker.run(["stop", "--time", str(grace), row["Id"]], timeout=grace + 10)
             stopped = fixture._rows()
             r.require(fixture._witness(stopped) == witness and stopped[service]["State"]["Running"] is False

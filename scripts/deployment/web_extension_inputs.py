@@ -35,7 +35,7 @@ RETAINED = ("worker", "realtime", "migrator")
 ROOT_FILES = ("package.json", "bun.lock", "bunfig.toml", "deploy/images/Dockerfile")
 WEB_RECIPE = "deploy/images/Web.Dockerfile"
 REVIEWED_WEB_INPUTS = {
-    WEB_RECIPE: ("d88bc605f5a900c1cdb4c9397060594311fed786", "4f20572a0097ab74c008f4666b4b24e45b856a4ce7f5bbef61aa1e23cbda9eec"),
+    WEB_RECIPE: ("651d5d00db136b3e603e2377333c90400f98048d", "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402"),
     MANIFEST: ("e8fa268ffcad83549914dd5fda020ef4f0215911", "09ead474d329be4d9226a42bb61fe9fb970acba4f23fa5fac9b1737d50f13132"),
     LOCK: ("d46e02d61eda1184b96645b971be2501d6d677c0", "b569a2c43b0914012d6a480ef09c6ec699223e5574ebb344a02eac3854374f8a"),
 }

@@ -134,12 +134,11 @@ void test("fresh discovery is deterministic, includes all helpers/assets, and wr
       result.inputPolicySha256,
       createHash("sha256").update(canonical(result.policy)).digest("hex"),
     );
-    for (const name of ["worker", "web"]) {
-      for (const path of ["src/shared/code.ts", "src/shared/spam.ts"])
-        assert.ok(result.components[name].graphInputs.includes(path));
-    }
-    for (const name of ["web", "migrator"])
-      assert.ok(result.components[name].graphInputs.includes("src/shared/operator.ts"));
+    for (const path of ["src/shared/code.ts", "src/shared/spam.ts"])
+      assert.ok(result.components.worker.graphInputs.includes(path));
+    assert.ok(result.components.migrator.graphInputs.includes("src/shared/operator.ts"));
+    for (const path of ["src/shared/code.ts", "src/shared/spam.ts", "src/shared/operator.ts"])
+      assert.ok(!result.components.web.graphInputs.includes(path));
     assert.ok(
       result.components.migrator.inputs.some(
         (input) => input.path === "drizzle/meta/_journal.json",

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "release_track": "frontend",
+  "version": "1.8.1",
+  "qualification": {
+    "path": "docs/delivery/frontend-qualification-1.8.1.json",
+    "sha256": "6ec5416802bfefbfbb2b426c7ba35bb6010d1d134265d30cc461b512a22760c3"
+  },
+  "required_integrated_revisions": [
+    "22fbef5623cf8a13472b124e13c019632ff2c02e",
+    "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+    "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "c952aba4849d2a574a3801c8a53e27777fb9f295",
+    "ddbf7f318c2a9499188cdf86ce2695e6623f2f87"
+  ]
+}

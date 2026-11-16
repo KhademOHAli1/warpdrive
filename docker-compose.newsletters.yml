@@ -71,8 +71,8 @@ services:
       postgres:
         condition: service_healthy
 
-  app:
-    environment: &newsletter-app-connection
+  core-api:
+    environment: &newsletter-backend-connection
       NEWSLETTER_BASE_URL: http://newsletter-engine:9000
       NEWSLETTER_API_USER: ${NEWSLETTER_API_USER:-}
       NEWSLETTER_API_TOKEN: ${NEWSLETTER_API_TOKEN:-}
@@ -89,7 +89,7 @@ services:
     environment: *newsletter-unconfigured
 
   worker:
-    environment: *newsletter-app-connection
+    environment: *newsletter-backend-connection
 
   createbuckets:
     environment: *newsletter-unconfigured

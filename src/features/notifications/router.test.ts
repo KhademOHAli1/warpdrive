@@ -36,7 +36,9 @@ vi.mock("@/server/trpc/context", () => ({
 }));
 
 // Import actions AFTER mocks are in place.
-const { markReadAction, markAllReadAction, setPreferenceAction } = await import("./actions");
+const { markReadAction, markAllReadAction, setPreferenceAction } = await import(
+  "./actions.backend"
+);
 
 const VALID_TOKEN = "csrf-test-token";
 

@@ -1,7 +1,6 @@
-import { createContext } from "@/server/trpc/context";
-import { createTrpcHttpHandler } from "@/server/trpc/http";
-import { appRouter } from "@/server/trpc/root";
+import { proxyBackendRequest } from "@/frontend/proxy";
 
-const wrapped = createTrpcHttpHandler({ router: appRouter, createContext });
-
-export { wrapped as GET, wrapped as POST };
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const GET = proxyBackendRequest;
+export const POST = proxyBackendRequest;

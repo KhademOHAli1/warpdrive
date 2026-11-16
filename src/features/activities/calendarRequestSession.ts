@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import type { Db } from "@/db/client";
 import { sessions } from "@/db/schema";
 import {
@@ -8,6 +7,7 @@ import {
   sessionTokenFromCookie,
 } from "@/features/auth/better/sessionToken";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { cookies } from "@/server/request";
 
 // Credential binding only, not an authority/liveness decision. The caller must
 // immediately pass this server-only ref to withCalendarActor/currentNativeActor

@@ -18,8 +18,8 @@ vi.mock("next/headers", () => ({
     }),
 }));
 
-import { createTeamAction, runWithActor } from "./actions";
-import { guardCsrf } from "./actions/shared";
+import { guardCsrf, runWithActor } from "./actions/shared";
+import { createTeamAction } from "./actions/teams.backend";
 
 const VALID_TOKEN = "double-submit-token-value";
 

@@ -49,6 +49,8 @@ services:
         "$$WARPDRIVE_STORAGE_CLIENT_BIN" --config-dir /tmp/warpdrive-fixture-client anonymous set none "local/$$MINIO_BUCKET"
   app:
     pull_policy: never
+  core-api:
+    pull_policy: never
     environment:
       # First boot keeps the application integration unconfigured while the
       # engine remains available for separate passive qualification.

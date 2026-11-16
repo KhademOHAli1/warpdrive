@@ -34,6 +34,7 @@ type Configuration = {
   nonce: string;
   commonEnvironment: Record<string, string>;
   bundleDirectory?: string;
+  frontendSmoke?: boolean;
 };
 type ChildExit = { code: number | null; signal: NodeJS.Signals | null };
 type ManagedChild = {
@@ -134,6 +135,7 @@ function loadConfiguration(): Configuration {
     nonce: input.nonce,
     commonEnvironment,
     bundleDirectory,
+    frontendSmoke: input.frontendSmoke === true,
   };
 }
 function deferred<Value>() {
@@ -257,13 +259,26 @@ function errorCode(error: unknown): string | null {
   if (!record(error) || !record(error.data)) return null;
   return typeof error.data.code === "string" ? error.data.code : null;
 }
+function proxyHeaders(cookie = ""): Record<string, string> {
+  return {
+    cookie,
+    origin: new URL(env.BASE_URL).origin,
+    "sec-fetch-site": "same-origin",
+    ...(env.CORE_PROXY_TOKEN === ""
+      ? {}
+      : {
+          "x-warpdrive-proxy-token": env.CORE_PROXY_TOKEN,
+          "x-warpdrive-public-host": new URL(env.BASE_URL).host,
+        }),
+  };
+}
 function wireClient(origin: string, cookie: string, observed: { posts: number; timing: number }) {
   return createTRPCProxyClient<AppRouter>({
     links: [
       httpBatchLink({
         url: `${origin}/api/trpc`,
         transformer: superjson,
-        headers: { cookie, origin: new URL(env.BASE_URL).origin, "sec-fetch-site": "same-origin" },
+        headers: proxyHeaders(cookie),
         fetch: async (input, init) => {
           if (init?.method === "POST") observed.posts++;
           const response = await fetch(input, { ...init, signal: AbortSignal.timeout(5000) });
@@ -642,6 +657,151 @@ async function checkMutation(
   );
 }
 
+/** Exercise the extracted boundary with native credentials, reusing this owned fixture. */
+async function checkHeadlessTransport(
+  db: Db,
+  child: ManagedChild,
+  fixture: FixtureUsers,
+  observed: { posts: number; timing: number },
+): Promise<void> {
+  const token = mintCsrfToken();
+  const client = wireClient(child.origin, `${fixture.cookies[0]}; wd_csrf=${token}`, observed);
+  const bootstrap = await client.frontend.bootstrap.query();
+  assert.equal(bootstrap.actor?.id, fixture.users[0]);
+  assert.deepEqual(bootstrap.session, { userId: fixture.users[0] });
+  assert.equal(
+    (await client.frontend.personDetail.query({ id: fixture.people[0] }))?.person.id,
+    fixture.people[0],
+  );
+  assert.equal(await client.frontend.personDetail.query({ id: fixture.people[1] }), null);
+  const denied = await client.commands.execute.mutate({
+    name: "features/identity/preferencesActions.setDensityAction",
+    args: [{ density: "compact" }, null],
+  });
+  assert.deepEqual(denied.value, { ok: false, error: { id: "E_AUTH_CSRF" } });
+  const changed = await client.commands.execute.mutate({
+    name: "features/identity/preferencesActions.setDensityAction",
+    args: [{ density: "compact" }, token],
+  });
+  assert.deepEqual(changed.value, { ok: true });
+  const [saved] = await db
+    .select()
+    .from(schema.userPreferences)
+    .where(eq(schema.userPreferences.userId, fixture.users[0]));
+  assert.equal(saved?.density, "compact");
+  const csrfResponse = await fetch(`${child.origin}/api/trpc/commands.execute`, {
+    method: "POST",
+    headers: { ...proxyHeaders(), "content-type": "application/json" },
+    body: JSON.stringify(
+      superjson.serialize({ name: "features/auth/csrfRefresh.ensureCsrfAction", args: [] }),
+    ),
+    signal: AbortSignal.timeout(5_000),
+  });
+  assert.equal(csrfResponse.status, 200);
+  assert(csrfResponse.headers.getSetCookie().some((value) => /^wd_csrf=.+;.*Secure/iu.test(value)));
+  assert(
+    !JSON.stringify(await csrfResponse.json()).includes("set-cookie"),
+    "Cookies are HTTP response headers only",
+  );
+  const sessionResponse = await fetch(`${child.origin}/api/auth/get-session`, {
+    headers: proxyHeaders(fixture.cookies[0]),
+    signal: AbortSignal.timeout(5_000),
+  });
+  assert.equal(sessionResponse.status, 200, "Native auth route is mounted in Core");
+  const session: unknown = await sessionResponse.json();
+  assert(record(session) && record(session.user) && session.user.id === fixture.users[0]);
+  const rejected = await fetch(`${child.origin}/api/trpc/frontend.configuration`, {
+    headers: { "x-warpdrive-proxy-token": "invalid" },
+    signal: AbortSignal.timeout(5_000),
+  });
+  assert.equal(
+    rejected.status,
+    401,
+    "Transport identity is required for the configured headless profile",
+  );
+}
+
+/** Optional production Web proof using the same native actors, without backend credentials. */
+async function checkHeadlessFrontend(
+  child: ManagedChild,
+  fixture: FixtureUsers,
+  configuration: Configuration,
+): Promise<void> {
+  if (configuration.frontendSmoke !== true) return;
+  const port = await unusedPort();
+  const origin = `http://127.0.0.1:${port}`;
+  const frontend = spawn(
+    process.execPath,
+    ["--no-env-file", "--bun", "next", "start", "--hostname", "127.0.0.1", "--port", String(port)],
+    {
+      stdio: "inherit",
+      env: {
+        PATH: configuration.commonEnvironment.PATH,
+        NODE_ENV: "production",
+        NEXT_TELEMETRY_DISABLED: "1",
+        CORE_API_ORIGIN: child.origin,
+        CORE_PROXY_TOKEN: env.CORE_PROXY_TOKEN,
+        APP_COMMIT: "c".repeat(40),
+      },
+    },
+  );
+  const exited = once(frontend, "exit");
+  const requestHeaders = { host: new URL(env.BASE_URL).host, cookie: fixture.cookies[0] };
+  try {
+    await waitFor(async () => {
+      assert(frontend.exitCode === null, "Frontend must remain running");
+      try {
+        return (await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(1_000) })).ok;
+      } catch {
+        return false;
+      }
+    }, 15_000);
+    const read = await fetch(`${origin}/contacts/people/${fixture.people[0]}`, {
+      headers: requestHeaders,
+      signal: AbortSignal.timeout(15_000),
+      redirect: "manual",
+    });
+    assert.equal(read.status, 200, "Production Web renders a real backend-owned record");
+    assert((await read.text()).includes("Core private A"), "SSR contains the fixture record");
+    const manifest: unknown = JSON.parse(
+      readFileSync(".next/server/server-reference-manifest.json", "utf8"),
+    );
+    assert(record(manifest) && record(manifest.node));
+    const action = Object.entries(manifest.node).find(
+      ([, value]) => record(value) && value.exportedName === "ensureCsrfAction",
+    );
+    assert(action !== undefined, "Existing browser action must be present in the frontend build");
+    const response = await fetch(`${origin}/contacts/people/${fixture.people[0]}`, {
+      method: "POST",
+      headers: {
+        ...requestHeaders,
+        origin: new URL(env.BASE_URL).origin,
+        "sec-fetch-site": "same-origin",
+        "content-type": "text/plain;charset=UTF-8",
+        "next-action": action[0],
+        accept: "text/x-component",
+      },
+      body: "[]",
+      signal: AbortSignal.timeout(15_000),
+    });
+    assert.equal(response.status, 200, "Thin Next action reaches Core");
+    assert(
+      response.headers.getSetCookie().some((value) => value.startsWith("wd_csrf=")),
+      "Core cookie changes reach the browser response",
+    );
+    const session = await fetch(`${origin}/api/auth/get-session`, {
+      headers: requestHeaders,
+      signal: AbortSignal.timeout(5_000),
+    });
+    assert.equal(session.status, 200, "Public auth route relays to Core");
+    const value: unknown = await session.json();
+    assert(record(value) && record(value.user) && value.user.id === fixture.users[0]);
+  } finally {
+    frontend.kill("SIGTERM");
+    await within(exited, 10_000);
+  }
+}
+
 async function negativeStartup(
   manager: ReturnType<typeof childManager>,
   metadata: ReturnType<typeof metadataFixture>,
@@ -772,6 +932,10 @@ async function main(): Promise<void> {
     stage = "authenticated_full_router";
     const client = await checkReads(child, fixture, observed);
     await checkMutation(db, child, fixture, observed);
+    stage = "headless_transport";
+    await checkHeadlessTransport(db, child, fixture, observed);
+    stage = "headless_frontend";
+    await checkHeadlessFrontend(child, fixture, configuration);
     stage = "web_identity_swap";
     const requests = metadata.facts().requests;
     metadata.configure("healthy", "1.2.4");
@@ -801,6 +965,8 @@ async function main(): Promise<void> {
         event: "core.service.proof",
         status: "pass",
         authenticatedOwners: 2,
+        headlessTransport: true,
+        headlessFrontend: configuration.frontendSmoke === true,
         crossOwnerDenials: 2,
         positiveMutations: 2,
         mutationCsrfDenials: 1,

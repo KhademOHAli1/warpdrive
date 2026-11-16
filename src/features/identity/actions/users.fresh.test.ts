@@ -22,7 +22,11 @@ vi.mock("@/features/identity/users.service", () => ({
   setUserActive: mocks.active,
 }));
 
-import { assignPermissionSetAction, setUserActiveAction, setUserAdminAction } from "./users";
+import {
+  assignPermissionSetAction,
+  setUserActiveAction,
+  setUserAdminAction,
+} from "./users.backend";
 
 beforeEach(() => {
   vi.clearAllMocks();

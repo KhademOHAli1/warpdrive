@@ -14,7 +14,15 @@ vi.mock("@/features/identity/settingsMessages.server", async () => {
 vi.mock("@/features/permissions/can", () => ({
   can: vi.fn(() => true),
 }));
-vi.mock("@/server/trpc/context", () => ({
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: async () => {
+    const { env } = await import("@/config/env");
+    return {
+      ...env,
+      GMAIL_CONFIGURED: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
+    };
+  },
+
   createContext: vi.fn(() => Promise.resolve({ actor })),
 }));
 vi.mock("./ImportHistory", () => ({

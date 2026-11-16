@@ -26,10 +26,10 @@ vi.mock("@/server/trpc/context", () => ({
   createContext: vi.fn().mockResolvedValue({ actor: null, session: null, db: {} }),
 }));
 
-import { bulkStageAction } from "./bulkStageAction";
-import { createDealAction } from "./createDealAction";
-import { moveDealAction } from "./moveAction";
-import { updateDealAction } from "./updateAction";
+import { bulkStageAction } from "./bulkStageAction.backend";
+import { createDealAction } from "./createDealAction.backend";
+import { moveDealAction } from "./moveAction.backend";
+import { updateDealAction } from "./updateAction.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "headless-local-qualification",
+  "sourceRevision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+  "packageVersionDuringBehaviorProof": "1.7.2",
+  "observedAt": "2026-11-16T03:18:24.352744+00:00",
+  "native": {
+    "success": true,
+    "seconds": 40.449,
+    "peakOwnedRssBytes": 936132608,
+    "peakCombinedBunRssBytes": 530120704,
+    "ownedProcessGroupsClean": true,
+    "listenersClosed": true,
+    "fixtureRemoved": true,
+    "sourceFileCount": 1728,
+    "sourceUnchanged": true,
+    "postgresVersion": "postgres (PostgreSQL) 16.10 (Homebrew)",
+    "bunVersion": "1.4.4",
+    "scope": "production-profile standalone Core and separately started credential-free production Next Web on owned migrated native PG16; authenticated SSR, thin action cookies and HTTP relay; no cloud or deployment qualification"
+  },
+  "behavior": {
+    "event": "core.service.proof",
+    "status": "pass",
+    "authenticatedOwners": 2,
+    "headlessTransport": true,
+    "headlessFrontend": true,
+    "crossOwnerDenials": 2,
+    "positiveMutations": 2,
+    "mutationCsrfDenials": 1,
+    "versionRefreshWithoutRestart": true,
+    "liveRegistryConsumers": 0,
+    "repeatedSignalDrain": true,
+    "negativeStartupCases": 3,
+    "timingResponses": 17,
+    "postRequests": 5,
+    "childFacts": {
+      "children": 4,
+      "logBytes": 389,
+      "allExited": true
+    }
+  },
+  "sourceInputsSha256": "c5f88cd1e6bf1b9ae062dbedc91bcf6bb898d7544c453ac0968b9bab7de75e08",
+  "frontendBuild": {
+    "backendCredentialsSupplied": false,
+    "coreEndpointSuppliedAtBuild": false,
+    "normalProductionBuildPassed": true,
+    "nextRouteTraces": 134,
+    "backendRuntimePackageReferences": 0
+  },
+  "claims": {
+    "productionDeployment": false,
+    "cloudflareQualified": false,
+    "providerInstallationAccepted": false,
+    "tenantIsolationQualified": false
+  },
+  "limits": "Disposable native PG16, actual native sessions, separate production Next and Core processes; no provider traffic or production deployment. Version and qualification metadata are prepared afterward. This receipt is a sanitized summary of retained local execution, not a hosted CI or whole-product acceptance claim.",
+  "finalVersionBuild": {
+    "packageVersion": "1.8.1",
+    "normalProductionBuildPassed": true,
+    "seconds": 58.54,
+    "backendCredentialsSupplied": false,
+    "coreEndpointSuppliedAtBuild": false,
+    "allNextOutputTraces": 138,
+    "backendRuntimePackageReferences": 0,
+    "scope": "Final local source with 1.8.1 metadata and formatting follow-ons; native behavior proof above remains tied to its original 7f9b9a source. Final qualification pins this unchanged source at its reviewed ancestor."
+  }
+}

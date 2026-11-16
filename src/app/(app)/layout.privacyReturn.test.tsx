@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidElement } from "react";
 import { afterEach, beforeEach, expect, type MockInstance, test, vi } from "vitest";
 import { WorkspaceShellProvider } from "@/components/shell/WorkspaceShellProvider";
-import { db } from "@/db/client";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { PRIVACY_CASE_PATH_HEADER } from "@/features/privacy/requestPath";
@@ -12,28 +11,15 @@ import { proxy } from "@/proxy";
 
 const mocks = vi.hoisted(() => ({
   context: vi.fn(),
-  pending: vi.fn(),
-  preferences: vi.fn(),
-  currency: vi.fn(),
-  companyMember: vi.fn(),
-  workNavigation: vi.fn(),
-  projectLanding: vi.fn(),
+  bootstrap: vi.fn(),
   requestHeaders: new Headers(),
   headers: vi.fn(),
   jar: new Map<string, { value: string }>(),
 }));
-// The real DB module is untouched; only request identity and shell service boundaries are controlled.
-vi.mock("@/server/trpc/context", () => ({ createContext: mocks.context }));
-vi.mock("@/features/auth/better/sessionPolicy", () => ({ resolveWorkflowSession: mocks.pending }));
-vi.mock("@/features/identity/preferencesForActor", () => ({
-  getPreferencesForActor: mocks.preferences,
+vi.mock("@/frontend/context", () => ({
+  createContext: mocks.context,
+  getBootstrap: mocks.bootstrap,
 }));
-vi.mock("@/features/settings/readBaseCurrency", () => ({ readBaseCurrency: mocks.currency }));
-vi.mock("@/features/company-profile/repository", () => ({
-  getCompanyMemberProjection: mocks.companyMember,
-}));
-vi.mock("@/features/work-profile/navigation", () => ({ readWorkNavigation: mocks.workNavigation }));
-vi.mock("@/features/agency-projects/nativeViews", () => ({ projectLanding: mocks.projectLanding }));
 vi.mock("next/headers", () => ({
   headers: mocks.headers,
   cookies: () => Promise.resolve(mocks.jar),
@@ -77,13 +63,17 @@ beforeEach(() => {
   mocks.requestHeaders = new Headers();
   mocks.jar.clear();
   mocks.headers.mockImplementation(() => Promise.resolve(mocks.requestHeaders));
-  mocks.context.mockResolvedValue({ db, actor: null, session: null });
-  mocks.pending.mockResolvedValue(null);
-  mocks.preferences.mockResolvedValue({ density: "comfortable", ui: { appearance: "day" } });
-  mocks.currency.mockResolvedValue("EUR");
-  mocks.companyMember.mockResolvedValue(brand);
-  mocks.workNavigation.mockResolvedValue(navigation);
-  mocks.projectLanding.mockResolvedValue(null);
+  mocks.context.mockResolvedValue({ actor: null, session: null, pendingAuthentication: false });
+  mocks.bootstrap.mockResolvedValue({
+    shell: {
+      prefs: { density: "comfortable", ui: { appearance: "day" } },
+      baseCurrency: "EUR",
+      brand,
+      navigation,
+      projects: null,
+      newsletterConfigured: false,
+    },
+  });
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -102,14 +92,8 @@ async function expectDestination(path: string) {
   });
   expect(redirect).toHaveBeenCalledOnce();
   expect(redirect).toHaveBeenCalledWith(path);
-  expect(mocks.pending).toHaveBeenCalledWith(db, mocks.requestHeaders, expect.any(AbortSignal), {
-    allowPending: true,
-  });
-  expect(mocks.preferences).not.toHaveBeenCalled();
-  expect(mocks.currency).not.toHaveBeenCalled();
-  expect(mocks.companyMember).not.toHaveBeenCalled();
-  expect(mocks.workNavigation).not.toHaveBeenCalled();
-  expect(mocks.projectLanding).not.toHaveBeenCalled();
+  expect(mocks.context).toHaveBeenCalledOnce();
+  expect(mocks.bootstrap).not.toHaveBeenCalled();
 }
 
 test.each([
@@ -118,7 +102,11 @@ test.each([
 ] as const)(
   "preserves a cold own-case destination with pending session %s",
   async (pending, target) => {
-    mocks.pending.mockResolvedValueOnce(pending ? { authenticated: true } : null);
+    mocks.context.mockResolvedValueOnce({
+      actor: null,
+      session: null,
+      pendingAuthentication: pending,
+    });
     fromRequest(`${CASE_PATH}?summary=PRIVATE-query&next=https://evil.example.test`);
     await expectDestination(`${target}?returnTo=${encodeURIComponent(CASE_PATH)}`);
   },
@@ -130,7 +118,11 @@ test.each([
 ] as const)(
   "keeps ordinary navigation unchanged with pending session %s",
   async (pending, target) => {
-    mocks.pending.mockResolvedValueOnce(pending ? { authenticated: true } : null);
+    mocks.context.mockResolvedValueOnce({
+      actor: null,
+      session: null,
+      pendingAuthentication: pending,
+    });
     fromRequest("/pipeline?PRIVATE-query=1");
     await expectDestination(target);
   },
@@ -156,7 +148,7 @@ test("an authenticated actor keeps the existing shell without a return-path redi
     flags: new Set(),
     groupIds: new Set(),
   };
-  mocks.context.mockResolvedValueOnce({ db, actor, session: null });
+  mocks.context.mockResolvedValueOnce({ actor, session: null });
   mocks.requestHeaders.set(PRIVACY_CASE_PATH_HEADER, CASE_PATH);
   const tree = await AppLayout({ children: "PRIVATE-child" });
   expect(isValidElement(tree)).toBe(true);
@@ -176,13 +168,8 @@ test("an authenticated actor keeps the existing shell without a return-path redi
     },
   });
   expect(redirect).not.toHaveBeenCalled();
-  expect(mocks.pending).not.toHaveBeenCalled();
   expect(mocks.headers).not.toHaveBeenCalled();
-  expect(mocks.preferences).toHaveBeenCalledOnce();
-  expect(mocks.preferences).toHaveBeenCalledWith(db, actor.id);
-  expect(mocks.currency).toHaveBeenCalledWith(db, expect.any(AbortSignal));
-  expect(mocks.companyMember).toHaveBeenCalledWith(db, expect.any(AbortSignal));
-  expect(mocks.workNavigation).toHaveBeenCalledWith(db, actor, expect.any(AbortSignal));
+  expect(mocks.bootstrap).toHaveBeenCalledOnce();
 });
 
 test.each([
@@ -195,15 +182,23 @@ test.each([
   async (landing, visible) => {
     const session = { userId: "00000000-0000-4000-8000-000000000001", sessionId: "native-session" };
     mocks.context.mockResolvedValueOnce({
-      db,
       actor: { id: session.userId, name: "Member", email: "member@example.test", type: "regular" },
       session,
     });
-    mocks.projectLanding.mockResolvedValueOnce(landing);
+    mocks.bootstrap.mockResolvedValueOnce({
+      shell: {
+        prefs: { density: "comfortable", ui: { appearance: "day" } },
+        baseCurrency: "EUR",
+        brand,
+        navigation,
+        projects: landing,
+        newsletterConfigured: false,
+      },
+    });
     const tree = await AppLayout({ children: "PRIVATE-child" });
     expect(tree).toMatchObject({
       props: { children: { type: WorkspaceShellProvider, props: { canViewProjects: visible } } },
     });
-    expect(mocks.projectLanding).toHaveBeenCalledWith(db, session, expect.any(AbortSignal));
+    expect(mocks.bootstrap).toHaveBeenCalledOnce();
   },
 );

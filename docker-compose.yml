@@ -102,15 +102,13 @@ services:
     build: *app-build
     restart: unless-stopped
     command: ["bun", "--bun", "next", "start"]
-    env_file: .env
+    # The presentation process receives no backend credential file.
     environment:
-      MIGRATION_DATABASE_URL: ""
-      MIGRATION_DATABASE_URL_FILE: ""
-      POSTGRES_PASSWORD: ""
-      POSTGRES_PASSWORD_FILE: ""
-      # Caddy overwrites X-Real-IP with the actual peer. Never trust this header when
-      # exposing the app port directly; the dev override resets the setting to none.
-      AUTH_TRUSTED_PROXY_HEADER: x-real-ip
+      CORE_API_ORIGIN: ${CORE_API_ORIGIN:-http://core-api:3010}
+      CORE_PROXY_TOKEN: ${CORE_PROXY_TOKEN:?set CORE_PROXY_TOKEN to a shared random base64url secret}
+      FRONTEND_TRUSTED_PROXY_HEADER: x-real-ip
+      APP_VERSION: ${APP_VERSION:-}
+      APP_COMMIT: ${APP_COMMIT:-}
     healthcheck:
       test:
         [
@@ -123,7 +121,40 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
+  core-api:
+    build: *app-build
+    restart: unless-stopped
+    command: ["bun", "--no-env-file", "dist/core-api.mjs"]
+    env_file: .env
+    stop_grace_period: 75s
+    environment:
+      RUNTIME_COMPONENT: core-api
+      CORE_HOST: 0.0.0.0
+      CORE_PORT: "3010"
+      CORE_WEB_ORIGIN: ${CORE_WEB_ORIGIN:-http://app:3000}
+      CORE_PROXY_TOKEN: ${CORE_PROXY_TOKEN:?set CORE_PROXY_TOKEN}
+      AUTH_TRUSTED_PROXY_HEADER: x-real-ip
+      MIGRATION_DATABASE_URL: ""
+      MIGRATION_DATABASE_URL_FILE: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD_FILE: ""
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "--no-env-file",
+          "-e",
+          "fetch('http://127.0.0.1:3010/readyz',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
     depends_on:
+      app:
+        condition: service_healthy
       migrate:
         condition: service_completed_successfully
       createbuckets:

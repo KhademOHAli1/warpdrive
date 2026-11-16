@@ -13,10 +13,18 @@ vi.mock("next/navigation", () => ({
   redirect,
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
-vi.mock("@/server/trpc/context", () => ({
+vi.mock("@/frontend/context", () => ({
+  getFrontendConfig: async () => {
+    const { env } = await import("@/config/env");
+    return {
+      ...env,
+      GMAIL_CONFIGURED: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
+    };
+  },
+
   createContext: () => Promise.resolve({ actor: actorState.value }),
 }));
-vi.mock("@/server/trpc/root", () => ({ createCaller: () => ({ pipeline: { list } }) }));
+vi.mock("@/frontend/trpc", () => ({ createCaller: () => ({ pipeline: { list } }) }));
 vi.mock("@/features/i18n/server", () => ({
   getLocalePreferences: () => Promise.resolve({ locale: "en" }),
   getAppTranslations: () => Promise.resolve((key: string) => key),

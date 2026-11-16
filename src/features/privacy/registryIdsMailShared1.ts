@@ -24,8 +24,11 @@ export const mailRegionalIds1: string[] = [
   "sourceReview:src/features/i18n/regionalContext.ts#3254dbd66503fd2beaf96a934e0481a903670ea083d1c12adcae73bc0c3f7d88",
   "sourceReview:src/features/i18n/regionalCountries.ts#701ac5efe6168008a62e684080e4efa68043403897e0db8647bba9be9e7bdcf2",
   "writer:src/features/i18n/actions.ts#delete:COUNTRY_COOKIE",
+  "writer:src/features/i18n/actions.backend.ts#delete:COUNTRY_COOKIE",
   "writer:src/features/i18n/actions.ts#delete:IRANIAN_MONEY_UNIT_COOKIE",
+  "writer:src/features/i18n/actions.backend.ts#delete:IRANIAN_MONEY_UNIT_COOKIE",
   "writer:src/features/i18n/actions.ts#delete:TIME_ZONE_MODE_COOKIE",
+  "writer:src/features/i18n/actions.backend.ts#delete:TIME_ZONE_MODE_COOKIE",
 ];
 export const mailEndpointIds1: string[] = [
   "derived:src/features/connections/endpointPolicyHost.ts",

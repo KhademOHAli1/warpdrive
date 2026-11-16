@@ -1,4 +1,6 @@
-import { db } from "@/db/client";
-import { createTokenHandler } from "@/features/oauth/tokenHttp";
+import { proxyBackendRequest } from "@/frontend/proxy";
 
-export const POST = createTokenHandler(db);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export const POST = proxyBackendRequest;

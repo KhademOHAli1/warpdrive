@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from "vitest";
-import { GET as authorizationMetadata } from "@/app/.well-known/oauth-authorization-server/route";
-import { GET as protectedResourceMetadata } from "@/app/.well-known/oauth-protected-resource/route";
-import { POST as register } from "@/app/oauth/register/route";
+import { GET as authorizationMetadata } from "@/app/.well-known/oauth-authorization-server/route.backend";
+import { GET as protectedResourceMetadata } from "@/app/.well-known/oauth-protected-resource/route.backend";
+import { POST as register } from "@/app/oauth/register/route.backend";
 import { env } from "@/config/env";
 
 const original = {

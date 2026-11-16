@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, isNull, type SQL, sql } from "drizzle-orm";
+import { SESSION_COOKIE } from "@/contracts/auth";
 import type { Db } from "@/db/client";
 import { authUsers, sessions, users } from "@/db/schema";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
@@ -8,7 +9,8 @@ import { evaluateSessionAccess } from "./better/accessPolicy";
 import { sessionTokenFromCookie } from "./better/sessionToken";
 import { readAuthPolicy } from "./management/policy";
 
-export const SESSION_COOKIE = "wd_sid";
+export { SESSION_COOKIE };
+
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days absolute expiry.
 
 export function sessionCookieOptions() {

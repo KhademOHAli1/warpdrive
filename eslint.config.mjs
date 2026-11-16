@@ -135,11 +135,32 @@ export default tseslint.config(
     },
   },
 
+  // Runtime presentation may depend on Core contracts only through erased type imports.
+  {
+    files: ["src/frontend/**/*.ts", "src/app/**/*.tsx", "src/app/**/route.ts"],
+    ignores: ["**/*.test.*"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/db/**", "@/config/env", "@/server/**", "@/jobs/**", "**/*.backend"],
+              allowTypeImports: true,
+              message:
+                "Presentation calls Core through src/frontend; backend runtime imports stay in Core.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // The env boundary is the one place process.env is legitimately read and
   // where a raw Error throw at boot time is intentional (fails fast before
   // AppError's domain system is available).
   {
-    files: ["src/config/env.ts"],
+    files: ["src/config/env.ts", "src/frontend/config.ts"],
     rules: {
       "no-restricted-properties": "off",
       "no-restricted-syntax": "off",

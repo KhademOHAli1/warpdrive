@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { db } from "@/db/client";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
-import { listLabels } from "@/features/labels/labelsRepo";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
+import { listLabels } from "@/frontend/reads";
 import { LabelsClient } from "./LabelsClient";
 
 export async function generateMetadata() {
@@ -20,7 +19,7 @@ export default async function LabelsPage(): Promise<ReactNode> {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
-  const rows = await listLabels(db, {}, AbortSignal.timeout(5000));
+  const rows = await listLabels();
   const serializable = rows.map((l) => ({
     id: l.id,
     target: l.target,

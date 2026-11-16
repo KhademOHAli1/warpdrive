@@ -41,7 +41,11 @@ const { requestUpload, confirmUpload, requestDownload } = vi.hoisted(() => ({
 vi.mock("./actions", () => ({ requestUpload, confirmUpload, requestDownload }));
 vi.mock("./storage", () => ({ makeStorageClient: () => ({}) }));
 
-import { confirmUploadAction, requestDownloadAction, requestUploadAction } from "./serverActions";
+import {
+  confirmUploadAction,
+  requestDownloadAction,
+  requestUploadAction,
+} from "./serverActions.backend";
 
 const VALID_TOKEN = "csrf-test-token";
 

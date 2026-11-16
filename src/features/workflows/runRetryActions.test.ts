@@ -11,7 +11,7 @@ vi.mock("@/server/trpc/context", () => ({ createContext: deps.context }));
 vi.mock("./runRetry", () => ({ retryWorkflowRun: deps.retry }));
 vi.mock("./queue", () => ({ nudgeWorkflowRun: deps.nudge }));
 
-import { retryWorkflowAction } from "./actions";
+import { retryWorkflowAction } from "./actions.backend";
 
 beforeEach(() => vi.resetAllMocks());
 

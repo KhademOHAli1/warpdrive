@@ -20,8 +20,8 @@ const SIDECAR_LOCK = "tools/web-ui/bun.lock";
 // Same reviewed Git blobs and raw SHA-256s as web_extension_inputs.py.
 const REVIEWED = {
   [RECIPE]: [
-    "d88bc605f5a900c1cdb4c9397060594311fed786",
-    "4f20572a0097ab74c008f4666b4b24e45b856a4ce7f5bbef61aa1e23cbda9eec",
+    "651d5d00db136b3e603e2377333c90400f98048d",
+    "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402",
   ],
   [SIDECAR_MANIFEST]: [
     "e8fa268ffcad83549914dd5fda020ef4f0215911",

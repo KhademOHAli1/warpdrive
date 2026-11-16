@@ -1,0 +1,518 @@
+{
+  "schema_version": 1,
+  "qualification_type": "frontend_source_and_isolated_runtime",
+  "result": "qualified",
+  "version": "1.8.1",
+  "reviewed_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1dd01-e6b2-7522-99dc-0436bd038b30",
+    "task_id": "/root/security_preflight"
+  },
+  "acceptance_claimed": false,
+  "user_journey_accepted": false,
+  "provider_installation_accepted": false,
+  "deployment_performed": false,
+  "summary": "Web rendering is detached from database, native-auth, provider and job authority through fixed Core HTTP reads, an explicit command registry and preserved native protocol routes. A credential-free conventional Next production build and source/output graphs verify frontend import separation. An isolated production Next/Core/native PostgreSQL proof exercised authenticated SSR, a real thin Server Action cookie roundtrip, native auth relay, persisted commands, CSRF and cross-owner denials, metadata refresh and clean producer shutdown. Independent exact-diff source review covered the extraction and all final follow-ons without actionable findings.",
+  "limitations": "Source and isolated local runtime qualification only. The original native proof at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45/package 1.7.2 is preserved. The follow-on native proof at ad41fbc4cba15ac35e178fb3facd8ea63100ea76/package 1.8.1 passed after Core admission and deployment-tooling corrections. It reused the production Web build from d1ecfa99e1dd93d35643fcffb312c9ce3e94590e, whose frontend runtime sources remain unchanged; that build used the preceding checkout as APP_COMMIT. The independent reviewer inspected source and evidence declarations without rerunning the application. Earlier bounded/full hosted failures remain recorded below. At candidate 11d4b93c the entire browser pack, all four PR CodeQL analyses and 14,548 unit tests passed; PostgreSQL integration passed 4,727 tests and failed 11 in three existing fixtures. Those fixtures now target the moved backend action and locale boundaries, preserving their assertions; a fresh full hosted rerun remains required. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. Source-only image guard preparation passed at cc63ce5a. The candidate 11d4b93c image smoke passed identity, packaging, isolation and migration checks, then failed because the historical four-component fixture starts no Core and supplies no CORE_API_ORIGIN. That custody path fails closed without separately qualified Core and does not establish image runtime qualification. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. Newsletter activation, subscriber intake and sending remain deferred.",
+  "checks": [
+    {
+      "name": "authenticated-ssr",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
+    },
+    {
+      "name": "backend-command-authority",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
+    },
+    {
+      "name": "credential-free-frontend-build",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "emitted-frontend-boundary",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "independent-source-review",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/ddbf7f318c2a9499188cdf86ce2695e6623f2f87"
+    },
+    {
+      "name": "native-auth-relay",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
+    },
+    {
+      "name": "native-drain-and-cleanup",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
+    },
+    {
+      "name": "server-action-cookie-roundtrip",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".env.web.example",
+      "sha256": "715be8643975017227bb3b074f44693bd4c0bc8034cf2818065ea4063d084c58"
+    },
+    {
+      "path": ".github/workflows/full-ci.yml",
+      "sha256": "92d100d9c1440a5f83bc50b27c5b42be769c90c78d75b8273189980698c3bbe1"
+    },
+    {
+      "path": ".github/workflows/full-quality.yml",
+      "sha256": "efc905766821b034c354900a267dc1c69f7b5c7597c63233be68156eff2a1c14"
+    },
+    {
+      "path": "Caddyfile.test.ts",
+      "sha256": "99ea9298327e11d36feedacef5268c7dc2e3d514d8de79006f1f8402475213c1"
+    },
+    {
+      "path": "Dockerfile.test.ts",
+      "sha256": "a0b27ab807cbffea0cac057f6f8e807378ba059d58576e4a168f320ebf1480b9"
+    },
+    {
+      "path": "deploy/images/Dockerfile",
+      "sha256": "bda0b84eb1a4fb732ddd3df97c571aeda264cb8250b142b6c7e921bc6d9e125d"
+    },
+    {
+      "path": "deploy/images/Web.Dockerfile",
+      "sha256": "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402"
+    },
+    {
+      "path": "deploy/images/compose.fresh.yml",
+      "sha256": "f9859d410be906271a7720a7369f49c80995cdf1f5bac184b8d68cad885447d0"
+    },
+    {
+      "path": "docker-compose.newsletters.yml",
+      "sha256": "d2fff00e369218b972ef62336cca4eda5fee5b04ef253942d77e2539d27b5a56"
+    },
+    {
+      "path": "docker-compose.security.test.ts",
+      "sha256": "16861d03be1fd9442218887bb8f5ff0b5d0c2f4dc74621f719e1980543884188"
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "7a78dc30fdbbbe5b87838be62af0d97ad4aec4ade24a009144608b00f9101fd4"
+    },
+    {
+      "path": "docs/delivery/frontend-release-policy.json",
+      "sha256": "a168ce3f594dbde75d82095e5e951aff44347c8ddf330fdddafe34dcc08d2325"
+    },
+    {
+      "path": "docs/delivery/module-versions.json",
+      "sha256": "ef4fbb0c26dbdb2322a8981ea8bac8eae731bb4789bd47561a172d42b8bccee3"
+    },
+    {
+      "path": "docs/deployment-evidence/headless-native-20261116.json",
+      "sha256": "e206b17e73cd224af989cd06f93833f1cb0e291db25c7a87f9e3a5c8d1deb6b2"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "a4746cd8041f0c8eec9805d1a7ae476d570f71e9094b2042a25b863cd137871d"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "0c4b8e59b6e5e5c5a9fbb913ea4ff1dbac784dbb68b20be0f9d49b40b0b7f52f"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4b85e2a924076a5ad7fc4e30de5897dfc16b89c469fa21d5be33bc7918e647c0"
+    },
+    {
+      "path": "scripts/browser-analytics.mjs",
+      "sha256": "db9636913198c90fba5756f17f259b90a705fb24f94613f33d4f6202c357abde"
+    },
+    {
+      "path": "scripts/build-core.mjs",
+      "sha256": "1f4035813dfc64fef3fb7bfdddc45cea2310669cc43c3a6767a6c2f9680df40d"
+    },
+    {
+      "path": "scripts/build-workers.mjs",
+      "sha256": "d5011914eacdfa1d9a9ea5e46de65e5df2cf7be813a10f2d8f99fbe7db987439"
+    },
+    {
+      "path": "scripts/delivery/release_frontend.py",
+      "sha256": "4496d65dd59b9d45d8c35f2b1692a8f7f6430c217d31521713d0e09f7f4da2c1"
+    },
+    {
+      "path": "scripts/delivery/release_frontend_test.py",
+      "sha256": "2c96ebdd4e219416a877009e00e89c83a7c258fcb9ea130655c08135de4eafe7"
+    },
+    {
+      "path": "scripts/deployment/component_inputs.test.mjs",
+      "sha256": "4dbc44a3beb0a3e7c4890fba33cee2314134b1598688fce3e1618e4aa0288c35"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_admission.py",
+      "sha256": "5fde900359bcc3fb74cdc9b7dde84ce0ee38ff451710705901ac7017f5606e73"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_qualification.py",
+      "sha256": "93aa4f7e157b4a329b22bf4f3dafc3d21f66402be491996041b050bf796c0c52"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_recovery_smoke.py",
+      "sha256": "064563ead64d4966c4ac0c481b48b991e57245c2f94e7ef9476e15a52ce2f075"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_smoke.py",
+      "sha256": "b1a183758035dd3d560a8f84f2338b6c66cc06c66b2d70f44313a77e93ed3899"
+    },
+    {
+      "path": "scripts/deployment/image-build.test.mjs",
+      "sha256": "d8f347e30de3e84abf87ccf34301e80efc24b929c72f3b5f46fe449f934fa753"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_admission.py",
+      "sha256": "2fd0a2dcea59820826e978f2ea2010497396625e4e82a7b606a58f01188ef92d"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_qualification.py",
+      "sha256": "72685b5064d450f1ca2c690b90e81e1a1799740a911201ec258fb34140316c78"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_recovery_smoke.py",
+      "sha256": "84978abf2440f34a9eb3af177499ce6c70ca21dfc72f70bc7d6cb6f2a2f2a6b8"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_smoke.py",
+      "sha256": "916af79ad39f33e4ad5b9de93d9508a5222d8aab01b8feaba30d7f8c32104ca6"
+    },
+    {
+      "path": "scripts/deployment/web_extension_inputs.py",
+      "sha256": "ac5fd1978667d4218b4d46660fe6247cbde925be57d74b93bac503061baf1b13"
+    },
+    {
+      "path": "scripts/deployment/web_generation_routes.py",
+      "sha256": "9f25e51396763c126e62a24b3c5f844d9d58941e4866dc07ad5d3758e6894f3e"
+    },
+    {
+      "path": "scripts/deployment/web_sdk_full_inputs.mjs",
+      "sha256": "8ef2d223d29d6c943fefe6f37acb798547e968cf2a75003612c09c5310e384a9"
+    },
+    {
+      "path": "scripts/deployment/web_sdk_full_inputs.test.mjs",
+      "sha256": "9308c316f9e316cd27d0f17433fac101f4664596e8678acaf20daa078d268681"
+    },
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": "0d4778e98368ba5739e8b29633b3eb675eed7c0eddb8006da3bc76bf193c8c71"
+    },
+    {
+      "path": "src/app/(app)/settings/import/[batchId]/errors.csv/route.test.ts",
+      "sha256": "50d8474bd72744113e419149a74c4322d8d983343328500ba88c892b1669974e"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "sha256": "c6d460b08385f5ab17969ef6646be0e4c61aafb2315c2903ef4b7b944c644be7"
+    },
+    {
+      "path": "src/components/shell/LeftNav.test.tsx",
+      "sha256": "408c7374ffbcc8f4d8df8f1c0ae630775f67a74ae2ab87d90230fe6c7303a5db"
+    },
+    {
+      "path": "src/components/shell/SidebarMenu.tsx",
+      "sha256": "ec8b09ed57dab66925d9b15326cd796b0dcba59eb0cecdd59874c2644a32fc5b"
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "6e961cdcb6891412253e2840808387701768eea6c776f52366d43e160a52018f"
+    },
+    {
+      "path": "src/contracts/actionEffects.ts",
+      "sha256": "2e8077d0972fe5d326b30c239e9cfe5848eb5aa2e7c2f78b3294fb6d8edc9d0a"
+    },
+    {
+      "path": "src/contracts/auth.ts",
+      "sha256": "29e1738e2257a08bbaade3c3956866e6549f6b003a58594978406ace0770b30c"
+    },
+    {
+      "path": "src/features/auth/csrf.ts",
+      "sha256": "37099026c1728db756dcc48ab872bee6b4cff7f268c94c345e31a125e8c37e28"
+    },
+    {
+      "path": "src/features/auth/session.ts",
+      "sha256": "19bb35a6cf6b62e00c103c3a3fe676378aaab0010ab0210172b0ba7a58b96b52"
+    },
+    {
+      "path": "src/features/deals/nativeContactActions.test.ts",
+      "sha256": "3a50a2e73b5aa7339a49d7a767d9cd377416893eee34e9f92880a7252af396ec"
+    },
+    {
+      "path": "src/features/email/imapThreadOperations.actions.integration.test.ts",
+      "sha256": "b443a80261f2b6273f383f7451fa23863d21abce2979ce2f155daf80756fd97c"
+    },
+    {
+      "path": "src/features/i18n/server.ts",
+      "sha256": "6114ea9cb4ce3418a2d64ba06ea37b8aa011f984cc8817b10c54222d493cad5e"
+    },
+    {
+      "path": "src/features/notifications/router.test.ts",
+      "sha256": "79fbe9d4f7ad0acc2a49687c81febc50944d48f387bf0ac9c220afcf2e646fb6"
+    },
+    {
+      "path": "src/features/privacy/registryIdsCoreHttp2.ts",
+      "sha256": "5feb62f900e2c92f248a85d2d7557a91415dd8bd5e71e20f27b35c4777cc7ecf"
+    },
+    {
+      "path": "src/frontend/actions.ts",
+      "sha256": "77c4dd65dca388c987979ee3498222cfdfab5dbde124af17af80f7f936eefd80"
+    },
+    {
+      "path": "src/frontend/config.ts",
+      "sha256": "71bca423204313654a5ba36af5f6e2a15642f0250947d07222024868d59ae938"
+    },
+    {
+      "path": "src/frontend/context.ts",
+      "sha256": "46d33a2a0d8a42cfe95e08ad152a47fb68f998eb6690e8f606c8857dd6de9f1d"
+    },
+    {
+      "path": "src/frontend/headers.ts",
+      "sha256": "8ee98aa684bb9c19ecbdddc4eeb9ed0aae3a97816d3fa575b90d3d29578458f6"
+    },
+    {
+      "path": "src/frontend/proxy.ts",
+      "sha256": "dda0f8204dd95ae802c5c20d3a253ca25f65fe42feba2a200c09e217f0f485e6"
+    },
+    {
+      "path": "src/frontend/reads.ts",
+      "sha256": "4d523e4df30ac7ef996011c18d774a307852d02387eb0e505e5f66221ba2e7eb"
+    },
+    {
+      "path": "src/frontend/trpc.ts",
+      "sha256": "a31d0fbce6b4548a30081c3ed776345507c26d508391e329b4c57042f6de6bbb"
+    },
+    {
+      "path": "src/frontend/version.ts",
+      "sha256": "deb2e88d30efecd562c3e613dc8123fa55c16fa4fae12ab6d5263850170579e5"
+    },
+    {
+      "path": "src/instrumentation.ts",
+      "sha256": "1b4aed36031dbb5cf8a428f6c955a75b5b1d84faa964527110318339e489fb02"
+    },
+    {
+      "path": "src/server/actions/registry.ts",
+      "sha256": "77ee98889bc2850e5d1f105d340a941c56e4523e3b25f0bce00f11a36e62c5f9"
+    },
+    {
+      "path": "src/server/actions/router.ts",
+      "sha256": "ed4cfd93c6186f30e8fffe8c88ffc601651e1617ab4f465e019f1e57ec1b9638"
+    },
+    {
+      "path": "src/server/frontend/router.ts",
+      "sha256": "17162efc13cd32bc2a93c9d37d7a029a2d46deb89d1ffcdcfea149b331d8bc40"
+    },
+    {
+      "path": "src/server/http/handler.ts",
+      "sha256": "a503f496d6715017778a23d2dda45253ccb4f62f07e9967f64b612bbb830316c"
+    },
+    {
+      "path": "src/server/http/proxyAuthority.ts",
+      "sha256": "53221a6bd6301641b3e041438f3b59971651be1dbc214dc23bbac60e344fc643"
+    },
+    {
+      "path": "src/server/http/routes.ts",
+      "sha256": "e29cc9b864c5dac14642900c030f7eac31e51df5ecf2c8ae37f2fb5893925f31"
+    },
+    {
+      "path": "src/server/locale.ts",
+      "sha256": "5118805b2d104329dc79f026b574a706052a7157f350379afb3db8d5620fa023"
+    },
+    {
+      "path": "src/server/request.ts",
+      "sha256": "dd95cc778c49b5d623416a29e296a26b6a68909b14fc1d21a61defb4660fa4b1"
+    },
+    {
+      "path": "src/server/trpc/context.ts",
+      "sha256": "1cc69812b80abe0c0f6db93d9e4a4cc7f92486299d6a420a49762544f0f5bbcc"
+    },
+    {
+      "path": "src/server/trpc/core-runtime.ts",
+      "sha256": "8a3e35d3126ede2756258606b7e5700e17ab8f6f5db5bd86cd9b95ce58881602"
+    },
+    {
+      "path": "src/server/trpc/core-service.harness.ts",
+      "sha256": "20f5655f04fbb39c43ed37b07be3c2addbd65fb5d1281170e7db70491397063d"
+    },
+    {
+      "path": "src/server/trpc/core-service.ts",
+      "sha256": "bf36ccd570be988876c9b4207c3981f9155599fab49c6f2df4ee47670b2eaf8e"
+    },
+    {
+      "path": "src/server/trpc/http.ts",
+      "sha256": "6091ef738dc93e410df26c432a4b3ef7e6b5e07f8d97f17494d63352da1deb61"
+    },
+    {
+      "path": "src/server/trpc/root.ts",
+      "sha256": "e551bc80ca663745e35a055f474c30ac533316495190b43690e0c57ab3321d1c"
+    },
+    {
+      "path": "src/server/trpc/trpc.ts",
+      "sha256": "18334f7c6486f70ea08b174625df1e5a16c5b8d42a84dbab669074631337b136"
+    }
+  ],
+  "reviewer_provenance": {
+    "runtime_thread_id": "01a1e259-1079-7170-84b1-47aa690d2788",
+    "session_id_inherited_from_parent": true,
+    "independent_process": true,
+    "implementation_authored_by_reviewer": false,
+    "source_and_evidence_declarations_reviewed": true,
+    "application_checks_executed_by_reviewer": false
+  },
+  "source_review": {
+    "extraction": {
+      "base_revision": "22fbef5623cf8a13472b124e13c019632ff2c02e",
+      "head_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+      "scan_id": "121f74fb-a99f-475f-afd8-0e95c79eae5b",
+      "authoritative_items_reviewed": 428,
+      "additional_changed_artifacts_reviewed": 11,
+      "candidates": 0,
+      "findings": 0
+    },
+    "follow_on": {
+      "base_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+      "head_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+      "reviewed_paths": 15,
+      "head_tree": "211c4ce914084f6cc60e33b11f884f74b35577bc",
+      "diff_sha256": "5d790af4f07f8a2519566661d898694790bc0d30057ccc1193f84c533dccfa40",
+      "actionable_defects": 0
+    },
+    "ci_follow_on": {
+      "base_revision": "a96fd7dbc13fe492ec52ce27a49172eaa038735f",
+      "head_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+      "reviewed_paths": 15,
+      "head_tree": "a18afd2fc1732822cfd4d31c3ed9faa953c0f860",
+      "diff_sha256": "1a1be1fe0147fdee196a2cc1aa0f47b81d28480a6eea9bbf253b2175bf302d22",
+      "actionable_defects": 0
+    },
+    "final_ci_follow_on": {
+      "base_revision": "6a5fca0e3a4ad0c85b3a5f3b7c1ebb8a3221719d",
+      "head_revision": "c952aba4849d2a574a3801c8a53e27777fb9f295",
+      "reviewed_paths": 9,
+      "head_tree": "af943dd82c8b67879c528bbbe6eec64daddda7f3",
+      "diff_sha256": "40f20f51f7b4f688f6e7bde4f26d3d138fa509af90c980a8b188b4e6192a0a0f",
+      "actionable_defects": 0,
+      "scope": "Synchronize the second exact Web recipe pin; correct existing helper/version/Compose/contact mock expectations; grant the restricted synthetic Core reader SELECT on four capture tables installed late by the admitted browser fixture. Application runtime sources remain unchanged from ad41fbc4."
+    },
+    "integration_fixture_follow_on": {
+      "base_revision": "11d4b93c80e3d1e783342f931c4cb8cbfa4461fe",
+      "head_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
+      "reviewed_paths": 3,
+      "head_tree": "1f9d05bf68bde9b956d40e9ea210b3a3233efef0",
+      "diff_sha256": "3bc974b4e8360d1058978642fa43314b5a57cae60c09fc2e9a2ac5978b9f4355",
+      "actionable_defects": 0,
+      "resolved_fixture_defects": 1,
+      "scope": "Retarget existing notification/IMAP action imports and CSV locale mock to Core implementations; also correct the downstream IMAP read action identified during independent source review. Assertions and application runtime sources are unchanged. No local integration rerun is claimed; the existing suite uses Docker global setup."
+    }
+  },
+  "local_runtime": {
+    "receipt_path": "docs/deployment-evidence/headless-native-20261116.json",
+    "behavior_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+    "behavior_package_version": "1.7.2",
+    "final_package_version": "1.8.1",
+    "frontend_entry_graphs": 140,
+    "retained_backend_runtime_imports": 0,
+    "final_next_output_traces": 138,
+    "output_database_provider_runtime_references": 0,
+    "privacy_inventory_coverage": true,
+    "existing_registry_tests_passed": 20,
+    "existing_release_tooling_tests_passed": 272,
+    "next_build_seconds": 58.54,
+    "native_seconds": 40.449,
+    "owned_native_resources_cleaned": true,
+    "frontend_build_source_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+    "final_source_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
+    "follow_on_native_source_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "follow_on_native_seconds": 38.364,
+    "follow_on_owned_native_resources_cleaned": true,
+    "follow_on_receipt": {
+      "path": "docs/deployment-evidence/headless-native-followon-20261116.json",
+      "revision": "abbf436f56096162659b0da246a8e2e682d849e5",
+      "sha256": "9a905427a4d9baecc3b230597c19c33031fb8ba037b7beaa2ae5c1077c33ea59"
+    },
+    "resolved_existing_deployment_checks": {
+      "fresh_admission": 12,
+      "fresh_qualification": 52,
+      "fresh_smoke": 43,
+      "fresh_recovery": 38,
+      "sdk_receipt": 14,
+      "generation_routes": 13,
+      "engine_tooling": 78,
+      "native_caddy": 10,
+      "image_build": 8,
+      "image_build_skipped": 1,
+      "actionlint": true
+    },
+    "first_hosted_browser": {
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43802848781",
+      "source_revision": "a96fd7dbc13fe492ec52ce27a49172eaa038735f",
+      "result": "failed",
+      "last_passed": "agency-projects-fa",
+      "failed_step": "deal-persistence reload",
+      "rerun_required": true
+    },
+    "application_runtime_unchanged_since_native_proof": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "second_hosted_browser": {
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43804779190",
+      "head_revision": "6a5fca0e3a4ad0c85b3a5f3b7c1ebb8a3221719d",
+      "executed_merge_revision": "0787838faef586ae8bbc872732e30291255de22e",
+      "result": "failed",
+      "deal_reload_passed": true,
+      "failure": "Late private analytics capture tables lacked SELECT grants for the restricted Core fixture role",
+      "rerun_required": true
+    },
+    "full_hosted_unit_prior_candidate": {
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43804779180",
+      "passed": 14543,
+      "failed": 5,
+      "skipped": 3,
+      "seconds": 622.99,
+      "resolved_existing_suites_rechecked": 5,
+      "resolved_existing_tests_passed": 68,
+      "rerun_required": true
+    },
+    "source_only_image_guard": {
+      "source_revision": "cc63ce5a602ce0fe6be5e41c3aa60c6d78f9ce63",
+      "prepared": true,
+      "seconds": 7.87,
+      "existing_node_guard_tests_passed": 77,
+      "scope": "Exact Git source, build-input discovery and projected Web context only; no image compilation or runtime acceptance"
+    },
+    "third_hosted_candidate": {
+      "head_revision": "11d4b93c80e3d1e783342f931c4cb8cbfa4461fe",
+      "full_ci_run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783450",
+      "unit": {
+        "passed": 14548,
+        "skipped": 3,
+        "seconds": 572.92
+      },
+      "integration": {
+        "passed": 4727,
+        "failed": 11,
+        "files_failed": 3,
+        "seconds": 562.99,
+        "result": "failed",
+        "rerun_required": true
+      },
+      "browser": {
+        "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783425",
+        "result": "passed"
+      },
+      "pr_codeql_languages_passed": ["javascript-typescript", "actions", "python", "go"],
+      "image_smoke": {
+        "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783411",
+        "result": "failed",
+        "failure": "Historical four-component fixture omits Core startup and CORE_API_ORIGIN",
+        "installation_accepted": false
+      }
+    }
+  }
+}

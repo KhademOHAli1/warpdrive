@@ -33,8 +33,8 @@ vi.mock("@/server/trpc/context", () => ({
     Promise.resolve({ actor: context.actor, session: context.session, db: context.harness?.db }),
 }));
 
-import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions";
-import { prepareThreadReadIntentAction } from "@/features/email/readIntentActions";
+import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions.backend";
+import { prepareThreadReadIntentAction } from "@/features/email/readIntentActions.backend";
 
 function nativeDb() {
   if (context.harness === null)

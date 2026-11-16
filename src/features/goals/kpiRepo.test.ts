@@ -62,7 +62,7 @@ import {
   createKpiPackAction,
   recordKpiMeasurementAction,
   saveKpiDefinitionAction,
-} from "./kpiActions";
+} from "./kpiActions.backend";
 import {
   assignKpiGoal,
   evaluateKpi,

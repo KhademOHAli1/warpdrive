@@ -44,8 +44,8 @@ vi.mock("@/features/notifications/scrub", () => ({
   scrubInaccessible: vi.fn(() => Promise.resolve()),
 }));
 
-import { moveDealAction } from "./moveAction";
-import { updateDealAction } from "./updateAction";
+import { moveDealAction } from "./moveAction.backend";
+import { updateDealAction } from "./updateAction.backend";
 
 beforeEach(() => {
   afterCallbacks.length = 0;

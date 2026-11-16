@@ -35,30 +35,10 @@ ARG APP_COMMIT
 ARG NEXT_PUBLIC_WS_URL=same-origin
 ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
 RUN printf '%s\n' "$APP_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
-# These placeholders satisfy build-time validation. Runtime configuration is
-# supplied by the deployment profile.
+# Headless presentation builds without backend credentials or a live Core service.
 RUN NODE_ENV=production \
     APP_COMMIT=${APP_COMMIT} \
     NEXT_DEPLOYMENT_ID=wd-${APP_COMMIT} \
-    DATABASE_URL=postgres://build:build@localhost:5432/build \
-    GOOGLE_OAUTH_CLIENT_ID=build \
-    GOOGLE_OAUTH_CLIENT_SECRET=build \
-    GOOGLE_WORKSPACE_DOMAIN=build.example.com \
-    BASE_URL=https://build.example.invalid \
-    WS_TICKET_SECRET=build_placeholder_ws_ticket_secret_0123456789 \
-    WS_PUBLIC_URL=ws://localhost:8080 \
-    MINIO_ENDPOINT=http://localhost:9000 \
-    MINIO_ACCESS_KEY=build \
-    MINIO_SECRET_KEY=build \
-    TOKEN_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
-    OAUTH_SIGNING_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
-    SEED_ADMIN_EMAIL=build@example.com \
-    ALLOW_FIRST_LOGIN_ADMIN=false \
-    AUTH_SECRET=build_only_placeholder_auth_secret_not_for_deployment_0123456789 \
-    AUTH_MAIL_TRANSPORT=smtp \
-    AUTH_SMTP_HOST=smtp.example.invalid \
-    DISABLE_TELEMETRY=true \
-    DISABLE_UPDATE_CHECK=true \
     NEXT_TELEMETRY_DISABLED=1 \
     bun --bun next build --webpack
 RUN bun scripts/build-workers.mjs --component web

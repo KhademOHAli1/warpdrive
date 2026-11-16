@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { env } from "@/config/env";
+import { proxyBackendRequest } from "@/frontend/proxy";
 
-// Old Google callbacks cannot bypass invitation or MFA policy after the cutover.
-export function GET(): Response {
-  return NextResponse.redirect(new URL("/login?error=auth_failed", env.BASE_URL));
-}
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export const GET = proxyBackendRequest;

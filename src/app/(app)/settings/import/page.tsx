@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { can } from "@/features/permissions/can";
-import { createContext } from "@/server/trpc/context";
+import { createContext } from "@/frontend/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { ImportHistory } from "./ImportHistory";
