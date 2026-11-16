@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "qualification_type": "frontend_source_and_isolated_runtime",
+  "result": "qualified",
+  "version": "1.8.1",
+  "reviewed_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1dd01-e6b2-7522-99dc-0436bd038b30",
+    "task_id": "/root/security_preflight"
+  },
+  "acceptance_claimed": false,
+  "user_journey_accepted": false,
+  "provider_installation_accepted": false,
+  "deployment_performed": false,
+  "summary": "Web rendering is detached from database, native-auth, provider and job authority through fixed Core HTTP reads, an explicit command registry and preserved native protocol routes. A credential-free conventional Next production build and source/output graphs verify frontend import separation. An isolated production Next/Core/native PostgreSQL proof exercised authenticated SSR, a real thin Server Action cookie roundtrip, native auth relay, persisted commands, CSRF and cross-owner denials, metadata refresh and clean producer shutdown. Independent exact-diff source review covered the extraction and all final follow-ons without actionable findings.",
+  "limitations": "Source and isolated local runtime qualification only. Native behavior ran at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45 with package 1.7.2; d1ecfa99e1dd93d35643fcffb312c9ce3e94590e adds version/release metadata, newsletter environment ownership, the restored Web deployment stamp and formatting-only handler/harness changes. The final 1.8.1 credential-free build used those same final source bytes, with APP_COMMIT still identifying the preceding checkout. The independent reviewer inspected source and retained evidence declarations; they did not rerun the application. An earlier bounded full-unit campaign did not finish. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. Newsletter activation, subscriber intake and sending remain deferred.",
+  "checks": [
+    {
+      "name": "authenticated-ssr",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "backend-command-authority",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "credential-free-frontend-build",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "emitted-frontend-boundary",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "independent-source-review",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e"
+    },
+    {
+      "name": "native-auth-relay",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "native-drain-and-cleanup",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    },
+    {
+      "name": "server-action-cookie-roundtrip",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".env.web.example",
+      "sha256": "715be8643975017227bb3b074f44693bd4c0bc8034cf2818065ea4063d084c58"
+    },
+    {
+      "path": ".github/workflows/full-ci.yml",
+      "sha256": "92d100d9c1440a5f83bc50b27c5b42be769c90c78d75b8273189980698c3bbe1"
+    },
+    {
+      "path": ".github/workflows/full-quality.yml",
+      "sha256": "19eb7a4fa79f18dc692117087a647cfc91fe51c3fdb661940855845e89b90dbb"
+    },
+    {
+      "path": "deploy/images/Dockerfile",
+      "sha256": "bda0b84eb1a4fb732ddd3df97c571aeda264cb8250b142b6c7e921bc6d9e125d"
+    },
+    {
+      "path": "deploy/images/Web.Dockerfile",
+      "sha256": "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402"
+    },
+    {
+      "path": "deploy/images/compose.fresh.yml",
+      "sha256": "f9859d410be906271a7720a7369f49c80995cdf1f5bac184b8d68cad885447d0"
+    },
+    {
+      "path": "docker-compose.newsletters.yml",
+      "sha256": "d2fff00e369218b972ef62336cca4eda5fee5b04ef253942d77e2539d27b5a56"
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "b6948592b15b3c926e13ddd44b046534a0c9405b7c8e1ae36c9e77b2103697ab"
+    },
+    {
+      "path": "docs/delivery/frontend-release-policy.json",
+      "sha256": "a168ce3f594dbde75d82095e5e951aff44347c8ddf330fdddafe34dcc08d2325"
+    },
+    {
+      "path": "docs/delivery/module-versions.json",
+      "sha256": "ef4fbb0c26dbdb2322a8981ea8bac8eae731bb4789bd47561a172d42b8bccee3"
+    },
+    {
+      "path": "docs/deployment-evidence/headless-native-20261116.json",
+      "sha256": "e206b17e73cd224af989cd06f93833f1cb0e291db25c7a87f9e3a5c8d1deb6b2"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "a4746cd8041f0c8eec9805d1a7ae476d570f71e9094b2042a25b863cd137871d"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "0c4b8e59b6e5e5c5a9fbb913ea4ff1dbac784dbb68b20be0f9d49b40b0b7f52f"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4b85e2a924076a5ad7fc4e30de5897dfc16b89c469fa21d5be33bc7918e647c0"
+    },
+    {
+      "path": "scripts/build-core.mjs",
+      "sha256": "1f4035813dfc64fef3fb7bfdddc45cea2310669cc43c3a6767a6c2f9680df40d"
+    },
+    {
+      "path": "scripts/build-workers.mjs",
+      "sha256": "d5011914eacdfa1d9a9ea5e46de65e5df2cf7be813a10f2d8f99fbe7db987439"
+    },
+    {
+      "path": "scripts/delivery/release_frontend.py",
+      "sha256": "4496d65dd59b9d45d8c35f2b1692a8f7f6430c217d31521713d0e09f7f4da2c1"
+    },
+    {
+      "path": "scripts/delivery/release_frontend_test.py",
+      "sha256": "2c96ebdd4e219416a877009e00e89c83a7c258fcb9ea130655c08135de4eafe7"
+    },
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": "0d4778e98368ba5739e8b29633b3eb675eed7c0eddb8006da3bc76bf193c8c71"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "sha256": "c6d460b08385f5ab17969ef6646be0e4c61aafb2315c2903ef4b7b944c644be7"
+    },
+    {
+      "path": "src/components/shell/SidebarMenu.tsx",
+      "sha256": "ec8b09ed57dab66925d9b15326cd796b0dcba59eb0cecdd59874c2644a32fc5b"
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "6e961cdcb6891412253e2840808387701768eea6c776f52366d43e160a52018f"
+    },
+    {
+      "path": "src/contracts/actionEffects.ts",
+      "sha256": "2e8077d0972fe5d326b30c239e9cfe5848eb5aa2e7c2f78b3294fb6d8edc9d0a"
+    },
+    {
+      "path": "src/contracts/auth.ts",
+      "sha256": "29e1738e2257a08bbaade3c3956866e6549f6b003a58594978406ace0770b30c"
+    },
+    {
+      "path": "src/features/auth/csrf.ts",
+      "sha256": "37099026c1728db756dcc48ab872bee6b4cff7f268c94c345e31a125e8c37e28"
+    },
+    {
+      "path": "src/features/auth/session.ts",
+      "sha256": "19bb35a6cf6b62e00c103c3a3fe676378aaab0010ab0210172b0ba7a58b96b52"
+    },
+    {
+      "path": "src/features/i18n/server.ts",
+      "sha256": "6114ea9cb4ce3418a2d64ba06ea37b8aa011f984cc8817b10c54222d493cad5e"
+    },
+    {
+      "path": "src/features/privacy/registryIdsCoreHttp2.ts",
+      "sha256": "eb3c0862738981a9219640f20969930eddbdd7b00b2dba5993bd401dc3eabb30"
+    },
+    {
+      "path": "src/frontend/actions.ts",
+      "sha256": "77c4dd65dca388c987979ee3498222cfdfab5dbde124af17af80f7f936eefd80"
+    },
+    {
+      "path": "src/frontend/config.ts",
+      "sha256": "71bca423204313654a5ba36af5f6e2a15642f0250947d07222024868d59ae938"
+    },
+    {
+      "path": "src/frontend/context.ts",
+      "sha256": "46d33a2a0d8a42cfe95e08ad152a47fb68f998eb6690e8f606c8857dd6de9f1d"
+    },
+    {
+      "path": "src/frontend/headers.ts",
+      "sha256": "8ee98aa684bb9c19ecbdddc4eeb9ed0aae3a97816d3fa575b90d3d29578458f6"
+    },
+    {
+      "path": "src/frontend/proxy.ts",
+      "sha256": "dda0f8204dd95ae802c5c20d3a253ca25f65fe42feba2a200c09e217f0f485e6"
+    },
+    {
+      "path": "src/frontend/reads.ts",
+      "sha256": "4d523e4df30ac7ef996011c18d774a307852d02387eb0e505e5f66221ba2e7eb"
+    },
+    {
+      "path": "src/frontend/trpc.ts",
+      "sha256": "a31d0fbce6b4548a30081c3ed776345507c26d508391e329b4c57042f6de6bbb"
+    },
+    {
+      "path": "src/frontend/version.ts",
+      "sha256": "deb2e88d30efecd562c3e613dc8123fa55c16fa4fae12ab6d5263850170579e5"
+    },
+    {
+      "path": "src/instrumentation.ts",
+      "sha256": "1b4aed36031dbb5cf8a428f6c955a75b5b1d84faa964527110318339e489fb02"
+    },
+    {
+      "path": "src/server/actions/registry.ts",
+      "sha256": "77ee98889bc2850e5d1f105d340a941c56e4523e3b25f0bce00f11a36e62c5f9"
+    },
+    {
+      "path": "src/server/actions/router.ts",
+      "sha256": "ed4cfd93c6186f30e8fffe8c88ffc601651e1617ab4f465e019f1e57ec1b9638"
+    },
+    {
+      "path": "src/server/frontend/router.ts",
+      "sha256": "17162efc13cd32bc2a93c9d37d7a029a2d46deb89d1ffcdcfea149b331d8bc40"
+    },
+    {
+      "path": "src/server/http/handler.ts",
+      "sha256": "a503f496d6715017778a23d2dda45253ccb4f62f07e9967f64b612bbb830316c"
+    },
+    {
+      "path": "src/server/http/proxyAuthority.ts",
+      "sha256": "53221a6bd6301641b3e041438f3b59971651be1dbc214dc23bbac60e344fc643"
+    },
+    {
+      "path": "src/server/http/routes.ts",
+      "sha256": "e29cc9b864c5dac14642900c030f7eac31e51df5ecf2c8ae37f2fb5893925f31"
+    },
+    {
+      "path": "src/server/locale.ts",
+      "sha256": "5118805b2d104329dc79f026b574a706052a7157f350379afb3db8d5620fa023"
+    },
+    {
+      "path": "src/server/request.ts",
+      "sha256": "dd95cc778c49b5d623416a29e296a26b6a68909b14fc1d21a61defb4660fa4b1"
+    },
+    {
+      "path": "src/server/trpc/context.ts",
+      "sha256": "1cc69812b80abe0c0f6db93d9e4a4cc7f92486299d6a420a49762544f0f5bbcc"
+    },
+    {
+      "path": "src/server/trpc/core-runtime.ts",
+      "sha256": "8a3e35d3126ede2756258606b7e5700e17ab8f6f5db5bd86cd9b95ce58881602"
+    },
+    {
+      "path": "src/server/trpc/core-service.harness.ts",
+      "sha256": "20f5655f04fbb39c43ed37b07be3c2addbd65fb5d1281170e7db70491397063d"
+    },
+    {
+      "path": "src/server/trpc/core-service.ts",
+      "sha256": "ae69d57beb814b136a3077353ef7f3d2827aae0944302405fe0a27886f48f18c"
+    },
+    {
+      "path": "src/server/trpc/http.ts",
+      "sha256": "6091ef738dc93e410df26c432a4b3ef7e6b5e07f8d97f17494d63352da1deb61"
+    },
+    {
+      "path": "src/server/trpc/root.ts",
+      "sha256": "e551bc80ca663745e35a055f474c30ac533316495190b43690e0c57ab3321d1c"
+    },
+    {
+      "path": "src/server/trpc/trpc.ts",
+      "sha256": "18334f7c6486f70ea08b174625df1e5a16c5b8d42a84dbab669074631337b136"
+    }
+  ],
+  "reviewer_provenance": {
+    "runtime_thread_id": "01a1e259-1079-7170-84b1-47aa690d2788",
+    "session_id_inherited_from_parent": true,
+    "independent_process": true,
+    "implementation_authored_by_reviewer": false,
+    "source_and_evidence_declarations_reviewed": true,
+    "application_checks_executed_by_reviewer": false
+  },
+  "source_review": {
+    "extraction": {
+      "base_revision": "22fbef5623cf8a13472b124e13c019632ff2c02e",
+      "head_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+      "scan_id": "121f74fb-a99f-475f-afd8-0e95c79eae5b",
+      "authoritative_items_reviewed": 428,
+      "additional_changed_artifacts_reviewed": 11,
+      "candidates": 0,
+      "findings": 0
+    },
+    "follow_on": {
+      "base_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+      "head_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+      "reviewed_paths": 15,
+      "head_tree": "211c4ce914084f6cc60e33b11f884f74b35577bc",
+      "diff_sha256": "5d790af4f07f8a2519566661d898694790bc0d30057ccc1193f84c533dccfa40",
+      "actionable_defects": 0
+    }
+  },
+  "local_runtime": {
+    "receipt_path": "docs/deployment-evidence/headless-native-20261116.json",
+    "behavior_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
+    "behavior_package_version": "1.7.2",
+    "final_source_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+    "final_package_version": "1.8.1",
+    "frontend_entry_graphs": 140,
+    "retained_backend_runtime_imports": 0,
+    "final_next_output_traces": 138,
+    "output_database_provider_runtime_references": 0,
+    "privacy_inventory_coverage": true,
+    "existing_registry_tests_passed": 20,
+    "existing_release_tooling_tests_passed": 272,
+    "next_build_seconds": 58.54,
+    "native_seconds": 40.449,
+    "owned_native_resources_cleaned": true
+  }
+}
