@@ -3,7 +3,7 @@
   "qualification_type": "frontend_source_and_isolated_runtime",
   "result": "qualified",
   "version": "1.8.1",
-  "reviewed_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+  "reviewed_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
   "reviewer_agent": {
     "runtime": "codex",
     "session_id": "01a1dd01-e6b2-7522-99dc-0436bd038b30",
@@ -14,17 +14,17 @@
   "provider_installation_accepted": false,
   "deployment_performed": false,
   "summary": "Web rendering is detached from database, native-auth, provider and job authority through fixed Core HTTP reads, an explicit command registry and preserved native protocol routes. A credential-free conventional Next production build and source/output graphs verify frontend import separation. An isolated production Next/Core/native PostgreSQL proof exercised authenticated SSR, a real thin Server Action cookie roundtrip, native auth relay, persisted commands, CSRF and cross-owner denials, metadata refresh and clean producer shutdown. Independent exact-diff source review covered the extraction and all final follow-ons without actionable findings.",
-  "limitations": "Source and isolated local runtime qualification only. Native behavior ran at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45 with package 1.7.2; d1ecfa99e1dd93d35643fcffb312c9ce3e94590e adds version/release metadata, newsletter environment ownership, the restored Web deployment stamp and formatting-only handler/harness changes. The final 1.8.1 credential-free build used those same final source bytes, with APP_COMMIT still identifying the preceding checkout. The independent reviewer inspected source and retained evidence declarations; they did not rerun the application. An earlier bounded full-unit campaign did not finish. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. Newsletter activation, subscriber intake and sending remain deferred.",
+  "limitations": "Source and isolated local runtime qualification only. The original native proof at 7f9b9a927c4385ee0812b83f5d8a30ed2204ae45/package 1.7.2 is preserved. The follow-on native proof at ad41fbc4cba15ac35e178fb3facd8ea63100ea76/package 1.8.1 passed after Core admission and deployment-tooling corrections. It reused the production Web build from d1ecfa99e1dd93d35643fcffb312c9ce3e94590e, whose frontend runtime sources remain unchanged; that build used the preceding checkout as APP_COMMIT. The independent reviewer inspected source and evidence declarations without rerunning the application. The first hosted browser run passed public, mobile, shell and agency-project checks, then failed on deal-page reload; final-candidate hosted qualification remains required. An earlier bounded full-unit campaign did not finish. Full hosted application/PostgreSQL suites, Chromium qualification and all four CodeQL analyses remain separate required exact-main publication gates. No container/retained-installation, production deployment, Cloudflare adapter, provider delivery, tenancy, complete human journey or customer acceptance is claimed. The historical four-component custody path fails closed without separately qualified Core. Newsletter activation, subscriber intake and sending remain deferred.",
   "checks": [
     {
       "name": "authenticated-ssr",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
     },
     {
       "name": "backend-command-authority",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
     },
     {
       "name": "credential-free-frontend-build",
@@ -39,22 +39,22 @@
     {
       "name": "independent-source-review",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/commit/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e"
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/ad41fbc4cba15ac35e178fb3facd8ea63100ea76"
     },
     {
       "name": "native-auth-relay",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
     },
     {
       "name": "native-drain-and-cleanup",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
     },
     {
       "name": "server-action-cookie-roundtrip",
       "result": "passed",
-      "url": "https://github.com/KhademOHAli1/warpdrive/blob/d1ecfa99e1dd93d35643fcffb312c9ce3e94590e/docs/deployment-evidence/headless-native-20261116.json"
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/abbf436f56096162659b0da246a8e2e682d849e5/docs/deployment-evidence/headless-native-followon-20261116.json"
     }
   ],
   "source_pins": [
@@ -68,7 +68,7 @@
     },
     {
       "path": ".github/workflows/full-quality.yml",
-      "sha256": "19eb7a4fa79f18dc692117087a647cfc91fe51c3fdb661940855845e89b90dbb"
+      "sha256": "efc905766821b034c354900a267dc1c69f7b5c7597c63233be68156eff2a1c14"
     },
     {
       "path": "deploy/images/Dockerfile",
@@ -88,7 +88,7 @@
     },
     {
       "path": "docker-compose.yml",
-      "sha256": "b6948592b15b3c926e13ddd44b046534a0c9405b7c8e1ae36c9e77b2103697ab"
+      "sha256": "7a78dc30fdbbbe5b87838be62af0d97ad4aec4ade24a009144608b00f9101fd4"
     },
     {
       "path": "docs/delivery/frontend-release-policy.json",
@@ -131,6 +131,50 @@
       "sha256": "2c96ebdd4e219416a877009e00e89c83a7c258fcb9ea130655c08135de4eafe7"
     },
     {
+      "path": "scripts/deployment/fresh_compose_admission.py",
+      "sha256": "5fde900359bcc3fb74cdc9b7dde84ce0ee38ff451710705901ac7017f5606e73"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_qualification.py",
+      "sha256": "93aa4f7e157b4a329b22bf4f3dafc3d21f66402be491996041b050bf796c0c52"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_recovery_smoke.py",
+      "sha256": "064563ead64d4966c4ac0c481b48b991e57245c2f94e7ef9476e15a52ce2f075"
+    },
+    {
+      "path": "scripts/deployment/fresh_compose_smoke.py",
+      "sha256": "b1a183758035dd3d560a8f84f2338b6c66cc06c66b2d70f44313a77e93ed3899"
+    },
+    {
+      "path": "scripts/deployment/image-build.test.mjs",
+      "sha256": "d8f347e30de3e84abf87ccf34301e80efc24b929c72f3b5f46fe449f934fa753"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_admission.py",
+      "sha256": "2fd0a2dcea59820826e978f2ea2010497396625e4e82a7b606a58f01188ef92d"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_qualification.py",
+      "sha256": "72685b5064d450f1ca2c690b90e81e1a1799740a911201ec258fb34140316c78"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_recovery_smoke.py",
+      "sha256": "84978abf2440f34a9eb3af177499ce6c70ca21dfc72f70bc7d6cb6f2a2f2a6b8"
+    },
+    {
+      "path": "scripts/deployment/test_fresh_compose_smoke.py",
+      "sha256": "916af79ad39f33e4ad5b9de93d9508a5222d8aab01b8feaba30d7f8c32104ca6"
+    },
+    {
+      "path": "scripts/deployment/web_extension_inputs.py",
+      "sha256": "ac5fd1978667d4218b4d46660fe6247cbde925be57d74b93bac503061baf1b13"
+    },
+    {
+      "path": "scripts/deployment/web_generation_routes.py",
+      "sha256": "9f25e51396763c126e62a24b3c5f844d9d58941e4866dc07ad5d3758e6894f3e"
+    },
+    {
       "path": "src/app/(app)/layout.tsx",
       "sha256": "0d4778e98368ba5739e8b29633b3eb675eed7c0eddb8006da3bc76bf193c8c71"
     },
@@ -168,7 +212,7 @@
     },
     {
       "path": "src/features/privacy/registryIdsCoreHttp2.ts",
-      "sha256": "eb3c0862738981a9219640f20969930eddbdd7b00b2dba5993bd401dc3eabb30"
+      "sha256": "5feb62f900e2c92f248a85d2d7557a91415dd8bd5e71e20f27b35c4777cc7ecf"
     },
     {
       "path": "src/frontend/actions.ts",
@@ -252,7 +296,7 @@
     },
     {
       "path": "src/server/trpc/core-service.ts",
-      "sha256": "ae69d57beb814b136a3077353ef7f3d2827aae0944302405fe0a27886f48f18c"
+      "sha256": "bf36ccd570be988876c9b4207c3981f9155599fab49c6f2df4ee47670b2eaf8e"
     },
     {
       "path": "src/server/trpc/http.ts",
@@ -292,13 +336,20 @@
       "head_tree": "211c4ce914084f6cc60e33b11f884f74b35577bc",
       "diff_sha256": "5d790af4f07f8a2519566661d898694790bc0d30057ccc1193f84c533dccfa40",
       "actionable_defects": 0
+    },
+    "ci_follow_on": {
+      "base_revision": "a96fd7dbc13fe492ec52ce27a49172eaa038735f",
+      "head_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+      "reviewed_paths": 15,
+      "head_tree": "a18afd2fc1732822cfd4d31c3ed9faa953c0f860",
+      "diff_sha256": "1a1be1fe0147fdee196a2cc1aa0f47b81d28480a6eea9bbf253b2175bf302d22",
+      "actionable_defects": 0
     }
   },
   "local_runtime": {
     "receipt_path": "docs/deployment-evidence/headless-native-20261116.json",
     "behavior_revision": "7f9b9a927c4385ee0812b83f5d8a30ed2204ae45",
     "behavior_package_version": "1.7.2",
-    "final_source_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
     "final_package_version": "1.8.1",
     "frontend_entry_graphs": 140,
     "retained_backend_runtime_imports": 0,
@@ -309,6 +360,37 @@
     "existing_release_tooling_tests_passed": 272,
     "next_build_seconds": 58.54,
     "native_seconds": 40.449,
-    "owned_native_resources_cleaned": true
+    "owned_native_resources_cleaned": true,
+    "frontend_build_source_revision": "d1ecfa99e1dd93d35643fcffb312c9ce3e94590e",
+    "final_source_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "follow_on_native_source_revision": "ad41fbc4cba15ac35e178fb3facd8ea63100ea76",
+    "follow_on_native_seconds": 38.364,
+    "follow_on_owned_native_resources_cleaned": true,
+    "follow_on_receipt": {
+      "path": "docs/deployment-evidence/headless-native-followon-20261116.json",
+      "revision": "abbf436f56096162659b0da246a8e2e682d849e5",
+      "sha256": "9a905427a4d9baecc3b230597c19c33031fb8ba037b7beaa2ae5c1077c33ea59"
+    },
+    "resolved_existing_deployment_checks": {
+      "fresh_admission": 12,
+      "fresh_qualification": 52,
+      "fresh_smoke": 43,
+      "fresh_recovery": 38,
+      "sdk_receipt": 14,
+      "generation_routes": 13,
+      "engine_tooling": 78,
+      "native_caddy": 10,
+      "image_build": 8,
+      "image_build_skipped": 1,
+      "actionlint": true
+    },
+    "first_hosted_browser": {
+      "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43802848781",
+      "source_revision": "a96fd7dbc13fe492ec52ce27a49172eaa038735f",
+      "result": "failed",
+      "last_passed": "agency-projects-fa",
+      "failed_step": "deal-persistence reload",
+      "rerun_required": true
+    }
   }
 }
