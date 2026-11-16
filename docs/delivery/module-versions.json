@@ -26,10 +26,7 @@
         "src/frontend/",
         "src/contracts/"
       ],
-      "dependencies": [
-        "core-api",
-        "realtime"
-      ]
+      "dependencies": ["core-api", "realtime"]
     },
     "core-api": {
       "name": "Core API",
@@ -133,9 +130,7 @@
       "name": "Newsletter Engine integration",
       "kind": "integration",
       "version": "1.7.2",
-      "paths": [
-        "deploy/newsletters/engine/"
-      ],
+      "paths": ["deploy/newsletters/engine/"],
       "dependencies": []
     },
     "operations-collector": {
@@ -166,19 +161,14 @@
       "name": "Marketing site",
       "kind": "static-site",
       "version": "1.7.2",
-      "paths": [
-        "site/"
-      ],
+      "paths": ["site/"],
       "dependencies": []
     },
     "docs-content": {
       "name": "Public documentation content",
       "kind": "public-content",
       "version": "1.7.1",
-      "paths": [
-        "docs-site/",
-        ".github/actions/prepare-docs-renderer/"
-      ],
+      "paths": ["docs-site/", ".github/actions/prepare-docs-renderer/"],
       "dependencies": []
     }
   },
@@ -195,14 +185,7 @@
         "deploy/images/Dockerfile",
         "scripts/build-workers.mjs"
       ],
-      "modules": [
-        "web",
-        "core-api",
-        "worker",
-        "realtime",
-        "migrator",
-        "operations-collector"
-      ]
+      "modules": ["web", "core-api", "worker", "realtime", "migrator", "operations-collector"]
     },
     {
       "paths": [
@@ -219,14 +202,7 @@
         "src/server/auth/",
         "src/server/runtime/"
       ],
-      "modules": [
-        "web",
-        "core-api",
-        "worker",
-        "realtime",
-        "migrator",
-        "operations-collector"
-      ]
+      "modules": ["web", "core-api", "worker", "realtime", "migrator", "operations-collector"]
     }
   ],
   "ignoredPaths": [
@@ -234,8 +210,5 @@
     "docs/delivery/module-version-changes/",
     "docs/delivery/releases/"
   ],
-  "ignoreVersionOnlyChanges": [
-    "package.json",
-    "site/package.json"
-  ]
+  "ignoreVersionOnlyChanges": ["package.json", "site/package.json"]
 }

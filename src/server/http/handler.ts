@@ -38,7 +38,7 @@ export async function handleBackendHttp(request: Request): Promise<Response> {
   const method = request.method === "HEAD" && !handlers.HEAD ? "GET" : request.method;
   const handler = Object.hasOwn(handlers, method) ? handlers[method] : undefined;
   if (handler === undefined) {
-    const allowed = Object.keys(handlers).filter(name => /^[A-Z]+$/u.test(name));
+    const allowed = Object.keys(handlers).filter((name) => /^[A-Z]+$/u.test(name));
     if (allowed.includes("GET") && !allowed.includes("HEAD")) allowed.push("HEAD");
     if (!allowed.includes("OPTIONS")) allowed.push("OPTIONS");
     return new Response(null, {

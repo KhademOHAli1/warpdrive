@@ -38,6 +38,7 @@ RUN printf '%s\n' "$APP_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
 # Headless presentation builds without backend credentials or a live Core service.
 RUN NODE_ENV=production \
     APP_COMMIT=${APP_COMMIT} \
+    NEXT_DEPLOYMENT_ID=wd-${APP_COMMIT} \
     NEXT_TELEMETRY_DISABLED=1 \
     bun --bun next build --webpack
 RUN bun scripts/build-workers.mjs --component web

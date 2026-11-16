@@ -722,7 +722,11 @@ async function checkHeadlessTransport(
 }
 
 /** Optional production Web proof using the same native actors, without backend credentials. */
-async function checkHeadlessFrontend(child: ManagedChild, fixture: FixtureUsers, configuration: Configuration): Promise<void> {
+async function checkHeadlessFrontend(
+  child: ManagedChild,
+  fixture: FixtureUsers,
+  configuration: Configuration,
+): Promise<void> {
   if (configuration.frontendSmoke !== true) return;
   const port = await unusedPort();
   const origin = `http://127.0.0.1:${port}`;

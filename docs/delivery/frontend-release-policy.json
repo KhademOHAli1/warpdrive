@@ -2,23 +2,53 @@
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
   "release_track": "frontend",
-  "version": "1.7.2",
+  "version": "1.8.1",
   "mode": "source_qualified_artifact_publication",
   "plan_directory": "docs/delivery/releases/frontend",
-  "qualification_path": "docs/delivery/frontend-qualification-1.7.2.json",
+  "qualification_path": "docs/delivery/frontend-qualification-1.8.1.json",
   "pr_integration_baseline": "dfa3f3317e186cbb494aee012cb298363e1a89dd",
   "unreleased_context_baseline": "386e31652da094ddcc7daec7003164b5b9c81882",
   "contributions": {
-    "integration/UX-010": 119,
-    "integration/UX-014": 123
+    "integration/OPS-002": 483
   },
   "required_source_paths": [
+    "deploy/images/Dockerfile",
+    "deploy/images/Web.Dockerfile",
+    "docker-compose.newsletters.yml",
+    "docker-compose.yml",
     "package.json",
     "src/app/(app)/layout.tsx",
-    "src/app/(app)/settings/SettingsNav.tsx",
-    "src/components/shell/LeftNav.module.css",
+    "src/app/layout.tsx",
     "src/components/shell/SidebarMenu.tsx",
-    "src/features/release/ui/VersionBanner.tsx"
+    "src/config/env.ts",
+    "src/contracts/actionEffects.ts",
+    "src/contracts/auth.ts",
+    "src/features/auth/csrf.ts",
+    "src/features/auth/session.ts",
+    "src/features/i18n/server.ts",
+    "src/frontend/actions.ts",
+    "src/frontend/config.ts",
+    "src/frontend/context.ts",
+    "src/frontend/headers.ts",
+    "src/frontend/proxy.ts",
+    "src/frontend/reads.ts",
+    "src/frontend/trpc.ts",
+    "src/frontend/version.ts",
+    "src/instrumentation.ts",
+    "src/server/actions/registry.ts",
+    "src/server/actions/router.ts",
+    "src/server/frontend/router.ts",
+    "src/server/http/handler.ts",
+    "src/server/http/proxyAuthority.ts",
+    "src/server/http/routes.ts",
+    "src/server/locale.ts",
+    "src/server/request.ts",
+    "src/server/trpc/context.ts",
+    "src/server/trpc/core-runtime.ts",
+    "src/server/trpc/core-service.ts",
+    "src/server/trpc/http.ts",
+    "src/server/trpc/root.ts",
+    "src/server/trpc/trpc.ts"
   ],
   "required_workflows": {
     "403980173": [
@@ -29,14 +59,10 @@
     ]
   },
   "limits": [
-    "Only frontend 1.7.2 source qualification is published by this track.",
+    "Only the user-authorized headless frontend extraction source and isolated runtime qualification are published as 1.8.1.",
     "Canonical issue acceptance, whole-product readiness, deployment and provider/installation acceptance remain independent.",
-    "The frontend display, package and GitHub tag use stable version 1.7.2; independently versioned modules retain their own versions."
+    "The frontend display, package and stable GitHub release use 1.8.1; independently versioned modules retain their own versions.",
+    "Conventional Next rendering is the qualified frontend target; Cloudflare adapter qualification, the remaining five DevOps phases, tenancy and SaaS preparation remain separate."
   ],
-  "original_integrated_revisions": [
-    "37df6d0a4e8a6bf7480316f9afd7c13ea1fe62ea",
-    "7d2f652e2323d1ddcc933b5434e0fae306303538",
-    "9d73e62785e44c9c57491246b58efad764889407",
-    "fc07b5d835518fe3569541973a509dd40d40dada"
-  ]
+  "original_integrated_revisions": ["22fbef5623cf8a13472b124e13c019632ff2c02e"]
 }

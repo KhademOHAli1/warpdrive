@@ -1,4 +1,4 @@
-"""Bounded frontend 1.7.2 source publication; product acceptance stays independent."""
+"""Explicitly authorized frontend source publications; product acceptance stays independent."""
 from __future__ import annotations
 
 import hashlib
@@ -45,6 +45,42 @@ CHECKS = frozenset({
     "main-content-scroll", "sidebar-scroll-containment", "settings-navigation-scroll-containment",
     "keyboard-scroll", "mobile-navigation", "rtl-scroll", "release-notes-scroll",
 })
+# The historical 1.7.2 contract stays fixed. The user separately authorized the
+# complete headless extraction as 1.8.1; both reuse the same publication gates.
+HEADLESS_VERSION = "1.8.1"
+HEADLESS_SOURCE_PATHS = frozenset({
+    PACKAGE_PATH, FOOTER_PATH, "src/app/layout.tsx", "src/app/(app)/layout.tsx",
+    "src/config/env.ts", "src/contracts/auth.ts", "src/contracts/actionEffects.ts",
+    "src/frontend/config.ts", "src/frontend/headers.ts", "src/frontend/proxy.ts",
+    "src/frontend/trpc.ts", "src/frontend/context.ts", "src/frontend/actions.ts",
+    "src/frontend/reads.ts", "src/frontend/version.ts", "src/instrumentation.ts",
+    "src/server/actions/registry.ts", "src/server/actions/router.ts",
+    "src/server/frontend/router.ts", "src/server/http/handler.ts",
+    "src/server/http/proxyAuthority.ts", "src/server/http/routes.ts",
+    "src/server/request.ts", "src/server/locale.ts", "src/server/trpc/context.ts",
+    "src/server/trpc/core-runtime.ts", "src/server/trpc/core-service.ts",
+    "src/server/trpc/http.ts", "src/server/trpc/root.ts", "src/server/trpc/trpc.ts",
+    "src/features/auth/csrf.ts", "src/features/auth/session.ts",
+    "src/features/i18n/server.ts", "docker-compose.yml", "docker-compose.newsletters.yml",
+    "deploy/images/Dockerfile", "deploy/images/Web.Dockerfile",
+})
+HEADLESS_CHECKS = frozenset({
+    "credential-free-frontend-build", "emitted-frontend-boundary", "authenticated-ssr",
+    "server-action-cookie-roundtrip", "native-auth-relay", "backend-command-authority",
+    "native-drain-and-cleanup", "independent-source-review",
+})
+SCOPES = {
+    VERSION: {"version": VERSION, "qualification_path": QUALIFICATION_PATH,
+              "source_paths": SOURCE_PATHS, "contributions": CONTRIBUTIONS,
+              "heads": ORIGINAL_HEADS, "checks": CHECKS},
+    HEADLESS_VERSION: {"version": HEADLESS_VERSION,
+                      "qualification_path": "docs/delivery/frontend-qualification-1.8.1.json",
+                      "source_paths": HEADLESS_SOURCE_PATHS,
+                      "contributions": {"integration/OPS-002": 483},
+                      "heads": frozenset({"22fbef5623cf8a13472b124e13c019632ff2c02e"}),
+                      "checks": HEADLESS_CHECKS},
+}
+
 FALSE_CLAIMS = (
     "acceptance_claimed", "user_journey_accepted", "provider_installation_accepted",
     "deployment_performed",
@@ -58,26 +94,34 @@ def require(condition, reason):
         raise GateError(reason)
 
 
+def frontend_scope(version):
+    require(isinstance(version, str) and version in SCOPES,
+            "Unsupported authorized frontend release version")
+    return SCOPES[version]
+
+
 def validate_policy(policy):
+    require(isinstance(policy, dict), "Frontend policy must be an object")
+    scope = frontend_scope(policy.get("version"))
     require(isinstance(policy, dict) and type(policy.get("schema_version")) is int
             and policy["schema_version"] == 1 and policy.get("release_track") == "frontend"
-            and policy.get("version") == VERSION
+            and policy.get("version") == scope["version"]
             and policy.get("mode") == "source_qualified_artifact_publication"
             and policy.get("plan_directory") == PLAN_DIRECTORY
-            and policy.get("qualification_path") == QUALIFICATION_PATH,
+            and policy.get("qualification_path") == scope["qualification_path"],
             "Unsupported bounded frontend publication policy")
     require(policy.get("pr_integration_baseline") == PR_BASELINE
             and policy.get("unreleased_context_baseline") == CONTEXT_BASELINE,
             "Frontend publication must preserve the existing source-history boundaries")
-    require(policy.get("contributions") == CONTRIBUTIONS,
+    require(policy.get("contributions") == scope["contributions"],
             "Frontend publication must retain its registered contribution identities")
     heads = policy.get("original_integrated_revisions")
     require(isinstance(heads, list) and all(isinstance(head, str) for head in heads)
-            and len(heads) == len(ORIGINAL_HEADS) and set(heads) == ORIGINAL_HEADS,
+            and len(heads) == len(scope["heads"]) and set(heads) == scope["heads"],
             "Frontend publication must retain the original requested branch revisions")
     paths = policy.get("required_source_paths")
     require(isinstance(paths, list) and all(isinstance(path, str) for path in paths)
-            and len(paths) == len(SOURCE_PATHS) and set(paths) == SOURCE_PATHS,
+            and len(paths) == len(scope["source_paths"]) and set(paths) == scope["source_paths"],
             "Frontend qualification must pin every scoped source path")
     workflows = policy.get("required_workflows")
     require(isinstance(workflows, dict) and set(workflows) == {CODEQL_WORKFLOW}
@@ -86,14 +130,15 @@ def validate_policy(policy):
             and len(workflows[CODEQL_WORKFLOW]) == len(CODEQL_JOBS)
             and set(workflows[CODEQL_WORKFLOW]) == CODEQL_JOBS,
             "Frontend publication requires all four managed CodeQL analyses")
+    return scope
 
 
 def validate_proposal(plan, archive, policy):
-    validate_policy(policy)
+    scope = validate_policy(policy)
     require(isinstance(plan, dict) and type(plan.get("schema_version")) is int
             and plan["schema_version"] == 1 and plan.get("release_track") == "frontend"
-            and plan.get("version") == VERSION,
-            "Frontend plan must select the authorized frontend version 1.7.2")
+            and plan.get("version") == scope["version"],
+            "Frontend plan must select the authorized scoped frontend version")
     allowed = {"schema_version", "release_track", "version", "qualification",
                "required_integrated_revisions", "revision", "commit_issues", "delivery_scope"}
     require(set(plan).issubset(allowed), "Frontend plan cannot declare issue acceptance or milestone scope")
@@ -101,22 +146,22 @@ def validate_proposal(plan, archive, policy):
             "Frontend plan must equal its committed per-version plan")
     reference = plan.get("qualification")
     require(isinstance(reference, dict) and set(reference) == {"path", "sha256"}
-            and reference.get("path") == QUALIFICATION_PATH
+            and reference.get("path") == scope["qualification_path"]
             and isinstance(reference.get("sha256"), str) and DIGEST.fullmatch(reference["sha256"]),
             "Frontend plan must pin a completed qualification record")
     heads = plan.get("required_integrated_revisions")
-    require(isinstance(heads, list) and len(heads) >= len(ORIGINAL_HEADS)
+    require(isinstance(heads, list) and len(heads) >= len(scope["heads"])
             and all(isinstance(head, str) and SHA.fullmatch(head) and head != "0" * 40 for head in heads)
-            and len(set(heads)) == len(heads) and ORIGINAL_HEADS.issubset(heads),
+            and len(set(heads)) == len(heads) and scope["heads"].issubset(heads),
             "Frontend plan must retain the original requested revisions and unique additional branch pins")
 
 
 def validate_qualification(record, revision, policy, read_blob, is_ancestor):
-    validate_policy(policy)
+    scope = validate_policy(policy)
     require(isinstance(record, dict) and type(record.get("schema_version")) is int
             and record["schema_version"] == 1
             and record.get("qualification_type") == "frontend_source_and_isolated_runtime"
-            and record.get("result") == "qualified" and record.get("version") == VERSION
+            and record.get("result") == "qualified" and record.get("version") == scope["version"]
             and all(record.get(field) is False for field in FALSE_CLAIMS)
             and nonempty(record.get("summary")) and nonempty(record.get("limitations")),
             "Frontend qualification must state actual results and pending acceptance boundaries")
@@ -127,9 +172,9 @@ def validate_qualification(record, revision, policy, read_blob, is_ancestor):
             and is_ancestor(reviewed, revision),
             "Frontend qualification must identify an ancestor source revision")
     checks = record.get("checks")
-    require(passed_checks(checks) and len(checks) == len(CHECKS)
-            and {check["name"] for check in checks} == CHECKS,
-            "Frontend qualification must retain every actual scrolling and navigation check")
+    require(passed_checks(checks) and len(checks) == len(scope["checks"])
+            and {check["name"] for check in checks} == scope["checks"],
+            "Frontend qualification must retain every scoped runtime and source check")
     pins = record.get("source_pins")
     require(isinstance(pins, list) and bool(pins), "Frontend qualification needs source blob pins")
     seen = set()
@@ -138,15 +183,15 @@ def validate_qualification(record, revision, policy, read_blob, is_ancestor):
                 and isinstance(pin.get("sha256"), str) and DIGEST.fullmatch(pin["sha256"]),
                 "Frontend source pin is malformed")
         path = repository_path(pin.get("path"))
-        require(path not in seen and path != QUALIFICATION_PATH,
+        require(path not in seen and path != scope["qualification_path"],
                 "Frontend pins must be unique and cannot pin the qualification record itself")
         seen.add(path)
         for cut in {reviewed, revision}:
             require(hashlib.sha256(read_blob(cut, path)).hexdigest() == pin["sha256"],
                     f"Frontend qualified source blob changed at {cut}: {path}")
-    require(SOURCE_PATHS.issubset(seen), "Frontend qualification omits a required source path")
+    require(scope["source_paths"].issubset(seen), "Frontend qualification omits a required source path")
     matches = FOOTER.findall(read_blob(revision, FOOTER_PATH))
-    require(matches == [VERSION.encode("ascii")],
+    require(matches == [scope["version"].encode("ascii")],
             "Committed frontend footer must exactly match the frontend release version")
 
 
@@ -165,11 +210,12 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
     require_revision(revision)
     require_selected_main(api, repository, revision)
     policy = trusted_frontend_policy(revision, repository)
-    archive = load_candidate_json(revision, f"{PLAN_DIRECTORY}/{VERSION}.json")
+    scope = frontend_scope(policy["version"])
+    archive = load_candidate_json(revision, f"{PLAN_DIRECTORY}/{scope['version']}.json")
     validate_proposal(plan, archive, policy)
     for head in plan["required_integrated_revisions"]:
         run("git", "merge-base", "--is-ancestor", head, revision)
-    raw = run("git", "show", f"{revision}:{QUALIFICATION_PATH}", binary=True)
+    raw = run("git", "show", f"{revision}:{scope['qualification_path']}", binary=True)
     require(hashlib.sha256(raw).hexdigest() == plan["qualification"]["sha256"],
             "Frontend qualification record differs from its plan pin")
     record = json.loads(raw)
@@ -181,7 +227,7 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
     items = manifest_items(revision)
     mapping = load_candidate_json(revision, "docs/delivery/issue-map.json")["issues"]
     contributions = []
-    for canonical, number in CONTRIBUTIONS.items():
+    for canonical, number in scope["contributions"].items():
         require(mapping.get(canonical, {}).get("number") == number,
                 "Frontend contribution mapping changed")
         issue = api.request(f"repos/{repository}/issues/{number}")
@@ -196,13 +242,13 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
     ci = verify_ci(api, repository, revision, {"required_workflows": required},
                    dynamic_codeql_workflow=CODEQL_WORKFLOW)
     tags, releases = api.pages(f"repos/{repository}/tags"), api.pages(f"repos/{repository}/releases")
-    tag_name = "v" + VERSION
+    tag_name = "v" + scope["version"]
     names = [row["name"] for row in tags if row["name"] != tag_name]
     names += [row["tag_name"] for row in releases if row["tag_name"] != tag_name]
     product_version = load_candidate_json(revision, PACKAGE_PATH)["version"]
     # Stable publication uses the same canonical SemVer contract as the package.
     # Historical four-part display counters remain outside that version grammar.
-    validate_release_version(product_version, VERSION, names)
+    validate_release_version(product_version, scope["version"], names)
     existing_tag = next((row for row in tags if row["name"] == tag_name), None)
     require(existing_tag is None or existing_tag["commit"]["sha"] == revision,
             "Existing frontend tag points to another revision")
@@ -211,7 +257,7 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
             "Frontend version is already published")
     base = release_baseline(releases, tags, tag_name, core_policy["traceability_baseline"])
     commits = commit_references(api, repository, revision, base, plan)
-    # Broad canonical scopes stay unaccepted. The qualified visual contribution is
+    # Broad canonical scopes stay unaccepted. The qualified source contribution is
     # recorded separately; the whole source archive does not complete those scopes.
     ledger, context = classify_history(api, repository, commits, set(), items, revision,
                                        CONTEXT_BASELINE, allow_fresh_context=True)
@@ -222,7 +268,7 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
     require_selected_main(api, repository, revision)
     return {
         "schema_version": 1, "snapshot_stage": "pre-publication", "release_track": "frontend",
-        "mode": policy["mode"], "repository": repository, "version": VERSION,
+        "mode": policy["mode"], "repository": repository, "version": scope["version"],
         "product_version": product_version, "revision": revision, "base_revision": base,
         "contributions": contributions, "issues": [], "commits": ledger, "ci": ci,
         "unreleased_context": context, "required_integrated_revisions": plan["required_integrated_revisions"],

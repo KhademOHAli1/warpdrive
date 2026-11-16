@@ -86,7 +86,7 @@ export const coreHttpServiceQualificationIds2: string[] = [
   "log:src/server/trpc/core-service.harness.ts#warn",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#readFileSync:path",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#writeFileSync:dynamic",
-  "sourceReview:src/server/trpc/core-service.harness.ts#6476ea8c9048cdfcd186ed59a7dab3d674cd217675a85d20107d7e56c5bf37b9",
+  "sourceReview:src/server/trpc/core-service.harness.ts#20f5655f04fbb39c43ed37b07be3c2addbd65fb5d1281170e7db70491397063d",
   "writer:src/server/trpc/core-service.harness.ts#delete:response",
   "writer:src/server/trpc/core-service.harness.ts#insert:dynamic",
   "writer:src/server/trpc/core-service.harness.ts#query:CREATE ROLE smoke_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public,pgboss TO smoke_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO smoke_runtime; GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO smoke_runtime; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO smoke_runtime;",
