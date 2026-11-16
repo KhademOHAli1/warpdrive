@@ -506,12 +506,7 @@
         "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783425",
         "result": "passed"
       },
-      "pr_codeql_languages_passed": [
-        "javascript-typescript",
-        "actions",
-        "python",
-        "go"
-      ],
+      "pr_codeql_languages_passed": ["javascript-typescript", "actions", "python", "go"],
       "image_smoke": {
         "run_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/43806783411",
         "result": "failed",
