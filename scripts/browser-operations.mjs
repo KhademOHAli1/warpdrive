@@ -551,6 +551,38 @@ async function qualifyOperationsReleaseBanner(
   }
 }
 
+const receiptMetadataFields = [
+  "receiptId",
+  "sourceId",
+  "generationId",
+  "sequence",
+  "payloadSha256",
+  "observationCount",
+  "observedAt",
+  "receivedAt",
+  "recordedAt",
+];
+
+export function isOperationsReceiptFixturePage(items) {
+  if (!Array.isArray(items) || items.length !== 4) return false;
+  // Retained images can omit diagnostics. The seeded receipts contain no diagnostics.
+  const includesDiagnostics = Object.hasOwn(items[0] ?? {}, "diagnostics");
+  const fields = includesDiagnostics
+    ? [...receiptMetadataFields, "diagnostics"]
+    : receiptMetadataFields;
+  for (const item of items) {
+    if (
+      item === null ||
+      typeof item !== "object" ||
+      Object.keys(item).length !== fields.length ||
+      !fields.every((key) => Object.hasOwn(item, key)) ||
+      (includesDiagnostics && (!Array.isArray(item.diagnostics) || item.diagnostics.length !== 0))
+    )
+      return false;
+  }
+  return true;
+}
+
 export async function qualifyOperations({
   browser,
   profile,
@@ -675,24 +707,8 @@ export async function qualifyOperations({
               fail(data && Array.isArray(data.items), "Operations API did not return a page");
               accepted[name]++;
               if (name === "operations.events") {
-                const fields = [
-                  "receiptId",
-                  "sourceId",
-                  "generationId",
-                  "sequence",
-                  "payloadSha256",
-                  "observationCount",
-                  "observedAt",
-                  "receivedAt",
-                  "recordedAt",
-                ];
                 fail(
-                  data.items.length === 4 &&
-                    data.items.every(
-                      (item) =>
-                        Object.keys(item).length === fields.length &&
-                        fields.every((key) => Object.hasOwn(item, key)),
-                    ),
+                  isOperationsReceiptFixturePage(data.items),
                   "Receipt API exposed unexpected fields",
                 );
                 metadataOnly = true;

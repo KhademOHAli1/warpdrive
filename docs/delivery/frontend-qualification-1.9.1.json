@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "qualification_type": "frontend_source_and_isolated_runtime",
+  "result": "qualified",
+  "version": "1.9.1",
+  "reviewed_revision": "81cc291db9df5e86013fe1c93e4c4b804bf186a4",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1fa1e-e478-7980-bb26-9d375481e48f",
+    "task_id": "/root/deps_review"
+  },
+  "acceptance_claimed": false,
+  "deployment_performed": false,
+  "provider_installation_accepted": false,
+  "user_journey_accepted": false,
+  "summary": "The exact source passed independent Chrome development with a separately installed retained Core. Native AMD64 Web upgraded from 1.8.2 to 1.9.1 and rolled back to 1.8.2. Authenticated Inbox, the original session and durable records survived both transitions. Core, PostgreSQL, Worker, Realtime and all 120 migration entries were retained. The native v4 smoke, registry and collector steps verified mandatory Core and its readiness with Web offline, registry round-trip and signed Operations Collector delivery.",
+  "limitations": "These source and disposable runtime checks used synthetic accounts and data. Live ingress, installed diagnostic collection, provider operations and product acceptance remain separate. The first full-image run held at the browser receipt assertion for the new diagnostics field, before artifact custody. Merge requires the corrected browser assertion and a successful complete qualification run. Exact-main CI, CodeQL and image qualification remain publication requirements.",
+  "checks": [
+    {
+      "name": "independent-frontend-development",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/pull/1098#independent-frontend-development"
+    },
+    {
+      "name": "headless-amd64-web-rollout",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44835506285/job/136630767271#step:16:1"
+    },
+    {
+      "name": "required-core-bundle",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44835539853/job/136631426900#step:20:1"
+    },
+    {
+      "name": "core-runtime-diagnostics",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44835539853/job/136631426900#step:15:1"
+    },
+    {
+      "name": "independent-source-review",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/81cc291db9df5e86013fe1c93e4c4b804bf186a4"
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".env.web.example",
+      "sha256": "00ed0d499c27cffad505dea06976ccfd11726b8848d9767407991eb444064de3"
+    },
+    {
+      "path": ".github/actions/install-custody-oras/action.yml",
+      "sha256": "456c120c3ef32ba4edaa9307cba1cdc02437b08b0ed65d37909d326019a1a7c9"
+    },
+    {
+      "path": ".github/workflows/headless-web-qualification.yml",
+      "sha256": "897233693c00a184a64b1c89d5a2dca056bf23530a0064405d6e7273fbb86d6d"
+    },
+    {
+      "path": ".github/workflows/production-images.yml",
+      "sha256": "cc87c85c12c11610158316253e9004dfd6adfe21f98f1f07e9763fc94e685e72"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "28b6fb2e8edaa1b4a93753a6d42b65974a259499c024d48a488cedf404b3bcb2"
+    },
+    {
+      "path": "bunfig.toml",
+      "sha256": "d09eb18ffee6896a4b74523d80b1bcd642a6966974e20c30bac94027a31fc202"
+    },
+    {
+      "path": "deploy/images/Core.Dockerfile",
+      "sha256": "8240426f5f59b328f6377df2bd82a74f77795a89c6354cb460be3bdbf4da8c14"
+    },
+    {
+      "path": "deploy/images/Dockerfile",
+      "sha256": "3bdbbc0aea263e72fedeb77b1a5d774081263c95725cb2517855b7c1ab6a3a94"
+    },
+    {
+      "path": "deploy/images/Web.Dockerfile",
+      "sha256": "30df5547abaf3efcfb9ac17539103842cdee33d7aeaeead49c30e5666288b53a"
+    },
+    {
+      "path": "deploy/images/compose.core.yml",
+      "sha256": "d3026261ab72503c5d04c1465216ad5827d37aeea4ba75cb5efd4313884bd37c"
+    },
+    {
+      "path": "deploy/images/compose.web.yml",
+      "sha256": "b60af598c559875f27a6e30935e573be481c480eb54db11c2fda38bc9694df76"
+    },
+    {
+      "path": "deploy/images/compose.yml",
+      "sha256": "e58de3ee36ce803a55e7e446beea782bd516e40ec036e9da05449e474df44e3d"
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "3141946255b6382d045a937cc2f142f98bc17e535493a6a9add235cac5163d01"
+    },
+    {
+      "path": "docs/delivery/module-versions.json",
+      "sha256": "1a91f6da20d3b4a3c8d9f560d9a2751fc8f24cd41ab3969db0bb597636394a55"
+    },
+    {
+      "path": "docs/deployment-evidence/headless-web-rollout-20261120.json",
+      "sha256": "c0a319cf918ab24cc61e9ce5e0734c9db0648452d4c7b1ea594b3fcc2913f211"
+    },
+    {
+      "path": "docs/deployment-headless.md",
+      "sha256": "aaf3bf277a651d2b309c42a53e3cd90c89603b9ffd7652fb5ffa7f67ff645d2c"
+    },
+    {
+      "path": "package.json",
+      "sha256": "880717144c3b0bf9960215aa9968fc5e714dc785f558681d85223277e2000d15"
+    },
+    {
+      "path": "scripts/deployment/bundle.py",
+      "sha256": "c92911b1a4503ca96bf72b115bd80a58030c4f66b0e18df95d3036ef2cea5fe4"
+    },
+    {
+      "path": "scripts/deployment/candidate.py",
+      "sha256": "3df6be939263367985d65e53ef11bd674ce7c88e55da358ebafdf4f83b7d0166"
+    },
+    {
+      "path": "scripts/deployment/component_boundaries.mjs",
+      "sha256": "d60cf5546ba3fb86d597c825807196f8c1d1889008145de74602c5974e7dd2c8"
+    },
+    {
+      "path": "scripts/deployment/core_runtime_monitor.py",
+      "sha256": "3902c8e53ff879410ac2615f710706602a491a43e90e8686eead7ba62a8fdae3"
+    },
+    {
+      "path": "scripts/deployment/headless-web-baseline.json",
+      "sha256": "3396b220d7c68e29b9565688daf8344d1b46ebc052531068d7ceccfb273b9f4b"
+    },
+    {
+      "path": "scripts/deployment/headless_fixture.py",
+      "sha256": "659d42fa5a1b2960366ac302cb6fe3b8033bdb6d46fe96f126e635088a218ea6"
+    },
+    {
+      "path": "scripts/deployment/headless_image_smoke.py",
+      "sha256": "d714ee5d792962036a32be6dbfd356da9fc092716c24c61bb57fd70074124c01"
+    },
+    {
+      "path": "scripts/deployment/headless_web_custody.py",
+      "sha256": "478d8eaa3b3a1b33c7e818332cd7a39b5c17342e12e30106374ebd001e0d57fc"
+    },
+    {
+      "path": "scripts/deployment/headless_web_qualification_inputs.py",
+      "sha256": "c1249d7ebb5c8674202d8195dff56730097d16c886f469d4375d149c84ba142c"
+    },
+    {
+      "path": "scripts/deployment/headless_web_smoke.py",
+      "sha256": "15066ccd182cfdb128023ecc1ac1a98147301bb8abba54dc1154d83b02dc6b1f"
+    },
+    {
+      "path": "scripts/deployment/image_smoke.py",
+      "sha256": "2861777dd6d732d3f7c18e8037e67feb9d1d11a57c8d1775073aed5808e8c521"
+    },
+    {
+      "path": "scripts/deployment/install-web-ui.mjs",
+      "sha256": "974c3f0ee0eead036dd3320e94742f0b9378ce207a96487f4fbe73c2d804db1a"
+    },
+    {
+      "path": "scripts/deployment/native_image_identity.py",
+      "sha256": "5139f0500c57e2fa1bba9677fc6a9bd8238ee9a4fdbfc2fb06b4a1c0be58eec2"
+    },
+    {
+      "path": "scripts/deployment/registry_candidate.py",
+      "sha256": "6431b266ffc56bcdcae58b6399a75725ab97b457bd8b8631d29ccd4765d3073f"
+    },
+    {
+      "path": "scripts/deployment/registry_smoke.py",
+      "sha256": "19b544aa76e72bac850c11f392b7e09c84f535fd1e80ad37a1d40002662b0a71"
+    },
+    {
+      "path": "scripts/deployment/web_extension_inputs.py",
+      "sha256": "e0a23ee8d41e5441a4c010a6dc0bea8c2f919c1f29890b11f4c197ec30003ebb"
+    },
+    {
+      "path": "scripts/deployment/web_rollout_monitor.py",
+      "sha256": "97debe85d6d8af6cd0a1bc01930a80d7f177316067557996862873088e206283"
+    },
+    {
+      "path": "scripts/deployment/web_sdk_archive.py",
+      "sha256": "08a8e2ed1f247eb4dec20600ea7104793433d3831b26d7396872d7dc21b332a5"
+    },
+    {
+      "path": "scripts/deployment/web_sdk_full_inputs.mjs",
+      "sha256": "9bb53da45dedab2ff8f79ff8eceb1adbe50c155bef04f0af2ee0a6689828e67e"
+    },
+    {
+      "path": "scripts/deployment/web_sdk_full_receipt.py",
+      "sha256": "e6a0918237e25268387902d68f14021ef9d0d6928d4c5e008f6665369e9853d3"
+    },
+    {
+      "path": "src/app/api/health/route.ts",
+      "sha256": "2c70b1ae24c0b4eaf05421ee87223ea74d5aa6e7f786cdcc9ce8989364a56680"
+    },
+    {
+      "path": "src/app/api/readyz/route.ts",
+      "sha256": "d28aca36800f1d5a2951d98000cc76c78a2f10b91788d1cdc1027c6dd6084950"
+    },
+    {
+      "path": "src/app/api/trpc/[trpc]/route.ts",
+      "sha256": "00baab582370418edc6f775e278297b9963eb44df56f0443571860b02d926283"
+    },
+    {
+      "path": "src/components/shell/SidebarMenu.tsx",
+      "sha256": "9c159df0c010b0a97d76a0a7eef108fc13713a40cd8e56c571d0332776c036ea"
+    },
+    {
+      "path": "src/config/coreEnv.ts",
+      "sha256": "1794fdb7058053811d9f84610db41fea268197021608af3dd995efc7fca8da6c"
+    },
+    {
+      "path": "src/contracts/coreDiagnostics.ts",
+      "sha256": "ec07e136e032f3823a5fdc58e2b8862c4f6aba64b731d52ebf151ee0a19a5ae3"
+    },
+    {
+      "path": "src/entrypoints/core-api.ts",
+      "sha256": "9b6e416e077606daf3a6d48343daecbd4183692b3af77d086d2325287b003fbc"
+    },
+    {
+      "path": "src/features/operations/contracts.ts",
+      "sha256": "bc34a64b26fc94d1c3971bb3e121ecc7d17c826335d06a2a4f7a41ce63b78689"
+    },
+    {
+      "path": "src/features/operations/reads.ts",
+      "sha256": "f1465f6e1106137938cdc63b3a7ae51fa7241b4ab42debff5296bebb52c5aaf0"
+    },
+    {
+      "path": "src/features/operations/router.ts",
+      "sha256": "265000b2ecbc31486cfe0a8c86f70391b03949e27ca1a27df761e6a0a22711ae"
+    },
+    {
+      "path": "src/features/operations/ui/OperationsLogs.tsx",
+      "sha256": "4ca67299ed2ac0b3d78673cfd1586bd88c7e3f6e194f98ff14419ac3258f120d"
+    },
+    {
+      "path": "src/frontend/config.ts",
+      "sha256": "6b5a7e3d776dfed8927ad3da0ec909619e43a855f83a56ed3ae31d8e02e56677"
+    },
+    {
+      "path": "src/frontend/proxy.ts",
+      "sha256": "dda0f8204dd95ae802c5c20d3a253ca25f65fe42feba2a200c09e217f0f485e6"
+    },
+    {
+      "path": "src/frontend/readiness.ts",
+      "sha256": "902060eac0cfdb9c1bc140cc1f7be9951f30f9985adaf7c2bf3f8edad35b31a2"
+    },
+    {
+      "path": "src/server/runtime/coreDiagnostics.ts",
+      "sha256": "b56e401b2056d47d75b021e5b7b78f8334aea27d64cf5f6bc77ccf08afe4d03e"
+    },
+    {
+      "path": "src/server/trpc/core-runtime.ts",
+      "sha256": "9913e7aec312262216d9177addd5acffed69ea86a67c20617fdb401f0c3c414d"
+    },
+    {
+      "path": "src/server/trpc/core-service.ts",
+      "sha256": "750f524cfffcb3c9ff78df1dd8681bd29fcd7fb6665025839b33c7755b1836be"
+    },
+    {
+      "path": "tools/web-ui/bun.lock",
+      "sha256": "ecfab6706ac1a654bc3222cce5142ca31ee55306a32c24657426814e0e88a7ae"
+    },
+    {
+      "path": "tools/web-ui/package.json",
+      "sha256": "a17da2094494e2aee29360ab413dcef19b3398c0f27a09d7a474f4ee76073585"
+    }
+  ]
+}

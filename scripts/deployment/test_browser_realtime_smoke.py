@@ -270,6 +270,31 @@ for(const invalid of ['private-password', 'otpauth://private', null, {{secret:'p
         self.assertEqual(tested.returncode, 0, "Native authenticator vector control failed")
         self.assertEqual(tested.stdout, "")
 
+    def test_operations_receipts_admit_only_reviewed_metadata_for_the_four_seeded_rows(self):
+        module = (smoke.ROOT / "scripts/browser-operations.mjs").as_uri()
+        script = f"""import assert from 'node:assert/strict';
+const {{isOperationsReceiptFixturePage: admits}} = await import({json.dumps(module)});
+const metadata = {{receiptId:'receipt',sourceId:'source',generationId:'generation',sequence:1,
+  payloadSha256:'a'.repeat(64),observationCount:1,observedAt:'observed',receivedAt:'received',recordedAt:'recorded'}};
+const retained = Array.from({{length:4}}, () => ({{...metadata}}));
+const current = retained.map(item => ({{...item,diagnostics:[]}}));
+assert(admits(retained));
+assert(admits(current));
+const rejectedRows = [null, {{...metadata,rawPayload:'synthetic'}}, {{...metadata,diagnostics:null}},
+  {{...metadata,diagnostics:[{{component:'core_api',reason:'CORE_READY'}}]}},
+  {{...current[0],rawPayload:'synthetic'}}];
+const {{generationId, ...incomplete}} = current[0];
+rejectedRows.push({{...incomplete,rawPayload:'synthetic'}});
+for (const row of rejectedRows) assert(!admits([row,...current.slice(1)]));
+assert(!admits([retained[0],...current.slice(1)]));
+assert(!admits([current[0],...retained.slice(1)]));
+assert(!admits(current.slice(1)));
+assert(!admits([...current,current[0]]));
+assert(!admits(new Array(4)));
+"""
+        tested = subprocess.run(["node", "--input-type=module", "--eval", script], capture_output=True, text=True, timeout=10)
+        self.assertEqual(tested.returncode, 0, tested.stderr)
+
     def test_actual_browser_failure_writer_discards_secret_bearing_playwright_error(self):
         source = (smoke.ROOT / "scripts/browser-realtime.mjs").read_text()
         start = source.index('try {\n  const { chromium } = await import(')
