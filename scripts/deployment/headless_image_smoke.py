@@ -103,8 +103,8 @@ try {
   await client.query('BEGIN');
   await client.query("INSERT INTO users(id,email,name,is_admin,is_active) VALUES($1,$2,'Core image fixture',false,true)", [userId,email]);
   await client.query("INSERT INTO auth_users(id,email,name,email_verified,two_factor_enabled) VALUES($1,$2,'Core image fixture',true,false)", [userId,email]);
-  await client.query("INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-    [userId,await hashPassword(password)]);
+  await client.query("INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+    [userId,userId,await hashPassword(password)]);
   await client.query("INSERT INTO persons(id,owner_id,name,visibility_level) VALUES($1,$2,$3,'owner')", [personId,userId,personName]);
   await client.query('COMMIT');
 
