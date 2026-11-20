@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build the optional Core API without Next output or the other service artifacts.
-FROM oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 AS base
+FROM oven/bun@sha256:7c8e62d7fb0b0b5178cc4396ed24f026591ddbff6ce654ff1022acf195bb581b AS base
 WORKDIR /app
 
 FROM base AS deps

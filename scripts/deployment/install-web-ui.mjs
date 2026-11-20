@@ -22,10 +22,10 @@ import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const BUN_VERSION = "1.4.4";
+const BUN_VERSION = "1.4.5";
 const SIDECAR = new Map([
-  ["package.json", "09ead474d329be4d9226a42bb61fe9fb970acba4f23fa5fac9b1737d50f13132"],
-  ["bun.lock", "b569a2c43b0914012d6a480ef09c6ec699223e5574ebb344a02eac3854374f8a"],
+  ["package.json", "a17da2094494e2aee29360ab413dcef19b3398c0f27a09d7a474f4ee76073585"],
+  ["bun.lock", "ecfab6706ac1a654bc3222cce5142ca31ee55306a32c24657426814e0e88a7ae"],
 ]);
 const SDK = new Map([
   ["core", "dist/index.js"],
@@ -291,7 +291,7 @@ export function projectWebUiScope(sidecar, modules, modulesIdentity = directory(
 }
 
 export function installWebUi(target = ROOT) {
-  require(process.versions.bun === BUN_VERSION, "The project-pinned Bun 1.4.4 is required");
+  require(process.versions.bun === BUN_VERSION, "The project-pinned Bun 1.4.5 is required");
   require(isAbsolute(target), "An absolute owned target app directory is required");
   verifyTarget(ROOT, target);
   const modules = join(target, "node_modules");

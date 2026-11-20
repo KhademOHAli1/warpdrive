@@ -81,6 +81,43 @@ INBOX_CHECKS = frozenset({
     "shell-header-sidebar-alignment", "inbox-panel-spacing", "inbox-responsive-navigation",
     "rtl-shell-and-inbox", "independent-source-review",
 })
+HEADLESS_ROLLOUT_VERSION = "1.9.1"
+HEADLESS_ROLLOUT_SOURCE_PATHS = frozenset({
+    PACKAGE_PATH, FOOTER_PATH, ".env.web.example", "bun.lock", "bunfig.toml",
+    ".github/actions/install-custody-oras/action.yml",
+    ".github/workflows/headless-web-qualification.yml", ".github/workflows/production-images.yml",
+    "deploy/images/Core.Dockerfile", "deploy/images/Dockerfile", "deploy/images/Web.Dockerfile",
+    "deploy/images/compose.core.yml",
+    "deploy/images/compose.web.yml", "deploy/images/compose.yml", "docker-compose.yml",
+    "docs/delivery/module-versions.json", "docs/deployment-headless.md",
+    "scripts/deployment/bundle.py", "scripts/deployment/candidate.py",
+    "scripts/deployment/component_boundaries.mjs", "scripts/deployment/core_runtime_monitor.py",
+    "docs/deployment-evidence/headless-web-rollout-20261120.json",
+    "scripts/deployment/headless-web-baseline.json", "scripts/deployment/headless_fixture.py",
+    "scripts/deployment/headless_image_smoke.py", "scripts/deployment/headless_web_custody.py",
+    "scripts/deployment/headless_web_qualification_inputs.py", "scripts/deployment/headless_web_smoke.py",
+    "scripts/deployment/image_smoke.py", "scripts/deployment/install-web-ui.mjs",
+    "scripts/deployment/native_image_identity.py", "scripts/deployment/registry_candidate.py",
+    "scripts/deployment/registry_smoke.py", "scripts/deployment/web_extension_inputs.py",
+    "scripts/deployment/web_rollout_monitor.py", "scripts/deployment/web_sdk_archive.py",
+    "scripts/deployment/web_sdk_full_inputs.mjs", "scripts/deployment/web_sdk_full_receipt.py",
+    "tools/web-ui/bun.lock", "tools/web-ui/package.json",
+    "src/app/api/health/route.ts", "src/app/api/readyz/route.ts", "src/app/api/trpc/[trpc]/route.ts",
+    "src/config/coreEnv.ts", "src/contracts/coreDiagnostics.ts", "src/entrypoints/core-api.ts",
+    "src/features/operations/contracts.ts", "src/features/operations/reads.ts",
+    "src/features/operations/router.ts", "src/features/operations/ui/OperationsLogs.tsx",
+    "src/frontend/config.ts", "src/frontend/proxy.ts", "src/frontend/readiness.ts",
+    "src/server/runtime/coreDiagnostics.ts", "src/server/trpc/core-runtime.ts",
+    "src/server/trpc/core-service.ts",
+})
+HEADLESS_ROLLOUT_CHECKS = frozenset({
+    "independent-frontend-development", "headless-amd64-web-rollout", "required-core-bundle",
+    "core-runtime-diagnostics", "independent-source-review",
+})
+HEADLESS_ROLLOUT_WORKFLOWS = {
+    "425440847": ("headless-web-qualification.yml", "Qualify headless Web with retained Core"),
+    "414961940": ("production-images.yml", "Final production image smoke"),
+}
 SCOPES = {
     VERSION: {"version": VERSION, "qualification_path": QUALIFICATION_PATH,
               "source_paths": SOURCE_PATHS, "contributions": CONTRIBUTIONS,
@@ -97,6 +134,17 @@ SCOPES = {
                     "contributions": {"integration/UX-010": 119},
                     "heads": frozenset({"842d7022090ce355215bfae3e82f3e9a471279d9"}),
                     "checks": INBOX_CHECKS},
+    HEADLESS_ROLLOUT_VERSION: {
+        "version": HEADLESS_ROLLOUT_VERSION,
+        "qualification_path": "docs/delivery/frontend-qualification-1.9.1.json",
+        "source_paths": HEADLESS_ROLLOUT_SOURCE_PATHS,
+        "contributions": {"integration/OPS-002": 483, "integration/OPS-004": 485,
+                          "integration/OPS-011": 492, "integration/OSS-011": 529},
+        "heads": frozenset({"f4ca71162a9b6dd49a53f8afc729439b3d235334",
+                            "cf811ecba8ea3718132632709c255dd04873c21d"}),
+        "checks": HEADLESS_ROLLOUT_CHECKS,
+        "hosted_workflows": HEADLESS_ROLLOUT_WORKFLOWS,
+    },
 }
 
 FALSE_CLAIMS = (
@@ -142,12 +190,16 @@ def validate_policy(policy):
             and len(paths) == len(scope["source_paths"]) and set(paths) == scope["source_paths"],
             "Frontend qualification must pin every scoped source path")
     workflows = policy.get("required_workflows")
-    require(isinstance(workflows, dict) and set(workflows) == {CODEQL_WORKFLOW}
-            and isinstance(workflows[CODEQL_WORKFLOW], list)
+    require(isinstance(workflows, dict) and isinstance(workflows.get(CODEQL_WORKFLOW), list)
             and all(isinstance(job, str) for job in workflows[CODEQL_WORKFLOW])
             and len(workflows[CODEQL_WORKFLOW]) == len(CODEQL_JOBS)
             and set(workflows[CODEQL_WORKFLOW]) == CODEQL_JOBS,
             "Frontend publication requires all four managed CodeQL analyses")
+    hosted_workflows = scope.get("hosted_workflows", {})
+    require(set(workflows) == {CODEQL_WORKFLOW, *hosted_workflows}
+            and all(workflows[workflow_id] == [job]
+                    for workflow_id, (_, job) in hosted_workflows.items()),
+            "Frontend publication requires the exact scoped hosted qualification jobs")
     return scope
 
 
@@ -257,6 +309,12 @@ def frontend_release_gate(api, plan, core_policy, require_revision, commit_refer
     required = {name: list(jobs) for name, jobs in core_policy["required_workflows"].items()}
     for name, jobs in policy["required_workflows"].items():
         required[name] = list(dict.fromkeys(required.get(name, []) + jobs))
+    for workflow_id, (filename, _) in scope.get("hosted_workflows", {}).items():
+        workflow = api.request(f"repos/{repository}/actions/workflows/{workflow_id}")
+        require(isinstance(workflow, dict) and str(workflow.get("id")) == workflow_id
+                and workflow.get("path") == f".github/workflows/{filename}"
+                and workflow.get("state") == "active",
+                f"Frontend hosted qualification workflow identity differs: {filename}")
     ci = verify_ci(api, repository, revision, {"required_workflows": required},
                    dynamic_codeql_workflow=CODEQL_WORKFLOW)
     tags, releases = api.pages(f"repos/{repository}/tags"), api.pages(f"repos/{repository}/releases")

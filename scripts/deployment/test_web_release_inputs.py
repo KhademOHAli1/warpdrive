@@ -73,7 +73,8 @@ class WebReleaseInputsTests(unittest.TestCase):
         ).stdout
 
     def commit(self, message):
-        self.git("add", "-f", "--", ".")
+        # Finder can write this metadata into a temporary checkout on macOS.
+        self.git("add", "-f", "--", ".", ":(exclude,glob)**/.DS_Store")
         self.git("commit", "-qm", message)
         return self.git("rev-parse", "HEAD").decode("ascii").strip()
 

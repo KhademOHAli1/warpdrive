@@ -154,13 +154,13 @@ def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> Non
                         for key in ("receiptSha256", "inputPolicySha256")), "bound component input provenance required")
         policies = dict.fromkeys(COMPONENTS, inputs["inputPolicySha256"])
     if version in {3, HEADLESS_VERSION}:
-        from web_sdk_full_receipt import PROFILE
+        from web_sdk_full_receipt import PROFILES
 
         hashes = ("receiptSha256", "backendInputPolicySha256", "webInputPolicySha256")
         if headless:
             hashes += ("coreInputPolicySha256",)
         require(isinstance(inputs, dict) and set(inputs) == {"state", "webProfile", *hashes}
-                and inputs["state"] == "current-source-sdk-web-inputs-bound" and inputs["webProfile"] == PROFILE
+                and inputs["state"] == "current-source-sdk-web-inputs-bound" and inputs["webProfile"] in PROFILES
                 and all(isinstance(inputs[key], str) and HASH.fullmatch(inputs[key]) for key in hashes)
                 and inputs["webInputPolicySha256"] != inputs["backendInputPolicySha256"],
                 "Bound isolated SDK Web and backend input provenance required")

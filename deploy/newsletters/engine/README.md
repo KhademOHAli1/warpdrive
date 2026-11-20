@@ -1,6 +1,6 @@
 # Warpdrive newsletter engine
 
-The engine uses Listmonk [v6.2.0](https://github.com/knadh/listmonk/releases/tag/v6.2.0) at commit `ef0a75872463f10a4848af6c547d1c057405453a`. The Dockerfile pins its source archive, runtime image, and Go builder by digest. The build checks the source archive again, applies the patches in filename order, and builds against the upstream Go lockfile. The packaged admin frontend comes from the pinned upstream release. The derived executable packages the source tree's queries, schema, and public templates.
+The engine uses Listmonk [v6.2.0](https://github.com/knadh/listmonk/releases/tag/v6.2.0) at commit `ef0a75872463f10a4848af6c547d1c057405453a`. The Dockerfile pins its syntax frontend, source archive, runtime image, and Go builder by digest. The build checks the source archive again, applies the patches in filename order, and builds against the upstream Go lockfile. The packaged admin frontend comes from the pinned upstream release. The derived executable packages the source tree's queries, schema, and public templates.
 
 Listmonk is licensed under the [GNU AGPL v3](https://github.com/knadh/listmonk/blob/v6.2.0/LICENSE). The image includes the upstream license and a source archive with the pinned source, patches, build inputs, and test scripts. The subscriber page footer links to that archive at `/public/static/warpdrive-engine-source.tar.gz`. Preserve that route on the public newsletter host.
 
@@ -14,7 +14,7 @@ The final image defaults to numeric user/group `65532:65532`. Only its image-own
 
 The protected public form requires `/public/static/altcha.umd.js`. Upstream generates this file during frontend dependency installation, so it is absent from the source archive. The build extracts the exact ALTCHA 2.3.0 bundle from the pinned upstream binary and verifies SHA-256 `0f557a9f535a15acbe0fc7abb4fe896502a6d4c27de1c4145cfa001d0d2be099` before packing it. Its MIT license is included at `/public/static/altcha.LICENSE.txt` and in the corresponding-source archive. Final-image qualification requests the asset over the actual engine HTTP route and checks its digest; passive health alone cannot qualify the public form.
 
-To build a native development binary, supply the verified source tarball and the same platform's verified Listmonk v6.2.0 release binary. Use Go 1.26.1 and a fresh output directory. The script reads the upstream binary's embedded admin assets.
+To build a native development binary, supply the verified source tarball and the same platform's verified Listmonk v6.2.0 release binary. Use Go 1.27.4 and a fresh output directory. The script reads the upstream binary's embedded admin assets.
 
 ```sh
 sh deploy/newsletters/engine/build.sh /path/to/source.tar.gz /path/to/listmonk /path/to/output

@@ -370,7 +370,7 @@ graceful TERM status 143; the raw exit status remains evidence. Other nonzero
 statuses, unknown commands, identity changes and forced or OOM stops remain held.
 
 Select `fresh_recovery_rehearsal` only with the fresh and Web rehearsals. It uses
-pinned Restic 0.18.0 and the runner's matching PostgreSQL 16 control tool. The cold
+pinned Restic 0.20.0 and the runner's matching PostgreSQL 16 control tool. The cold
 fixture requires root access to the actual local Docker volume paths. Source,
 SDK context, archive, API and registry verification run as the original runner.
 Only the cold-recovery callback elevates, with pinned inputs and a separate private

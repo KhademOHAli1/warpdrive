@@ -1,0 +1,382 @@
+name: Headless Web image qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      retained_transport:
+        description: Read the pinned Core and rollback Web ZIPs from Actions or private OCI custody
+        type: choice
+        default: auto
+        options: [auto, actions, custody]
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/headless-web-qualification.yml"
+      - "docs/deployment-evidence/headless-web-rollout-20261120.json"
+      - "scripts/deployment/headless-web-baseline.json"
+      - "scripts/deployment/headless_image_smoke.py"
+      - "scripts/deployment/headless_web_qualification_inputs.py"
+      - "scripts/deployment/headless_web_smoke.py"
+
+# This workflow has no package write, release or deployment authority.
+permissions:
+  contents: read
+  actions: read
+  packages: read
+  pull-requests: read
+
+concurrency:
+  group: headless-web-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  web:
+    name: Qualify headless Web with retained Core
+    if: >-
+      github.repository == 'KhademOHAli1/warpdrive' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    env:
+      SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Admit the exact current main or same-repository PR head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(uname -m)" = x86_64
+          [[ "$SOURCE_REVISION" =~ ^[a-f0-9]{40}$ ]]
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+            endpoint="repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
+            query='. | select(.state == "open") | .head.sha'
+            artifact_scope=rehearsal
+          else
+            endpoint="repos/$GITHUB_REPOSITORY/git/ref/heads/main"
+            query=.object.sha
+            artifact_scope=tested
+          fi
+          test "$(gh api "$endpoint" --jq "$query")" = "$SOURCE_REVISION"
+          printf 'SOURCE_REF_ENDPOINT=%s\nSOURCE_REF_QUERY=%s\nARTIFACT_SCOPE=%s\n' \
+            "$endpoint" "$query" "$artifact_scope" >> "$GITHUB_ENV"
+      - name: Check out the exact Web candidate and qualification harness
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ env.SOURCE_REVISION }}
+          persist-credentials: false
+      - name: Read the checked candidate version and retained Core pins
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          test -z "$(git status --porcelain)"
+          python3 -I -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+
+          baseline = json.loads(Path("scripts/deployment/headless-web-baseline.json").read_bytes())
+          assert set(baseline) == {"schemaVersion", "sourceRevision", "version", "coreConfigId", "artifact"}
+          assert type(baseline["schemaVersion"]) is int and baseline["schemaVersion"] == 1
+          artifact = baseline["artifact"]
+          assert set(artifact) == {"runId", "runAttempt", "workflowPath", "headBranch", "headSha",
+                                   "id", "name", "zipSha256", "sizeBytes", "archiveSha256"}
+          stable = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
+          env = {
+              "WEB_VERSION": (json.loads(Path("package.json").read_bytes())["version"], stable),
+              "RETAINED_VERSION": (baseline["version"], stable),
+              "RETAINED_REVISION": (baseline["sourceRevision"], "[0-9a-f]{40}"),
+              "RETAINED_CORE_ID": (baseline["coreConfigId"], "sha256:[0-9a-f]{64}"),
+              "RETAINED_PRODUCER_SHA": (artifact["headSha"], "[0-9a-f]{40}"),
+              "RETAINED_PRODUCER_BRANCH": (artifact["headBranch"], "[a-zA-Z0-9/_.-]{1,128}"),
+              "RETAINED_PRODUCER_PATH": (artifact["workflowPath"], r"\.github/workflows/[a-zA-Z0-9_.-]{1,96}\.yml"),
+              "RETAINED_ARTIFACT_NAME": (artifact["name"], "[a-zA-Z0-9_.-]{1,128}"),
+              "RETAINED_ZIP_SHA256": (artifact["zipSha256"], "[0-9a-f]{64}"),
+              "RETAINED_ARCHIVE_SHA256": (artifact["archiveSha256"], "[0-9a-f]{64}"),
+          }
+          for name, (value, pattern) in env.items():
+              assert type(value) is str and re.fullmatch(pattern, value), name
+          assert baseline["sourceRevision"] != os.environ["SOURCE_REVISION"]
+          numbers = {
+              "RETAINED_RUN_ID": artifact["runId"], "RETAINED_RUN_ATTEMPT": artifact["runAttempt"],
+              "RETAINED_ARTIFACT_ID": artifact["id"], "RETAINED_ZIP_BYTES": artifact["sizeBytes"],
+          }
+          assert all(type(value) is int and 0 < value < 10**16 for value in numbers.values())
+          assert numbers["RETAINED_ZIP_BYTES"] <= 2 * 1024**3
+          with Path(os.environ["GITHUB_ENV"]).open("a") as output:
+              for name, (value, _) in env.items():
+                  print(f"{name}={value}", file=output)
+              for name, value in numbers.items():
+                  print(f"{name}={value}", file=output)
+          PY
+      - name: Select and authenticate the retained Core transport
+        id: transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RETAINED_TRANSPORT: ${{ inputs.retained_transport || 'auto' }}
+        run: |
+          selected="$REQUESTED_RETAINED_TRANSPORT"
+          case "$selected" in
+            auto|actions|custody) ;;
+            *) exit 1 ;;
+          esac
+          producer="repos/$GITHUB_REPOSITORY/actions/runs/$RETAINED_RUN_ID"
+          if [[ "$selected" != custody ]]; then
+            timeout 30s gh api "$producer" |
+              jq -e --arg revision "$RETAINED_PRODUCER_SHA" --arg branch "$RETAINED_PRODUCER_BRANCH" \
+                --arg path "$RETAINED_PRODUCER_PATH" --arg attempt "$RETAINED_RUN_ATTEMPT" '
+                .head_sha == $revision and .head_branch == $branch and .path == $path
+                and .status == "completed" and .conclusion == "success" and .run_attempt == ($attempt | tonumber)
+              ' >/dev/null
+          fi
+          if [[ "$selected" == auto ]]; then
+            selected=$(timeout 30s gh api "$producer/artifacts?per_page=100" |
+              jq -er --argjson id "$RETAINED_ARTIFACT_ID" --argjson run "$RETAINED_RUN_ID" \
+                --arg revision "$RETAINED_PRODUCER_SHA" --arg name "$RETAINED_ARTIFACT_NAME" \
+                --arg digest "sha256:$RETAINED_ZIP_SHA256" --argjson bytes "$RETAINED_ZIP_BYTES" '
+                if (.artifacts | type) != "array" or (.total_count | type) != "number"
+                  or .total_count != (.artifacts | length) or .total_count > 100 then
+                  error("Incomplete retained producer artifact listing")
+                else .artifacts end
+                | if all(.[]; (.id | type) == "number" and .id > 0 and (.id | floor) == .id
+                    and (.name | type) == "string" and (.name | length) > 0
+                    and (.expired | type) == "boolean")
+                    and (map(.id) | unique | length) == length then .
+                  else error("Malformed retained producer artifact metadata") end
+                | map(select(.id == $id or .name == $name))
+                | if length == 0 then "custody"
+                  elif length != 1 then error("Ambiguous retained Actions artifact identity")
+                  else .[0]
+                    | if .id != $id or .name != $name or .digest != $digest or .size_in_bytes != $bytes
+                        or .workflow_run.id != $run or .workflow_run.head_sha != $revision then
+                        error("Retained Actions artifact metadata differs from its pins")
+                      elif .expired then "custody" else "actions" end
+                  end
+              ')
+          fi
+          printf 'selected=%s\n' "$selected" >> "$GITHUB_OUTPUT"
+      - name: Authenticate and download the retained Actions artifact
+        if: steps.transport.outputs.selected == 'actions'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$RETAINED_ARTIFACT_ID" |
+            jq -e --arg id "$RETAINED_ARTIFACT_ID" --arg run "$RETAINED_RUN_ID" \
+              --arg revision "$RETAINED_PRODUCER_SHA" --arg name "$RETAINED_ARTIFACT_NAME" \
+              --arg digest "sha256:$RETAINED_ZIP_SHA256" --arg bytes "$RETAINED_ZIP_BYTES" '
+              .id == ($id | tonumber) and .workflow_run.id == ($run | tonumber)
+              and .workflow_run.head_sha == $revision and .name == $name
+              and .expired == false and .digest == $digest and .size_in_bytes == ($bytes | tonumber)
+            ' >/dev/null
+          PYTHONPATH=scripts/deployment python3 -B - <<'PY'
+          import os
+          from pathlib import Path
+          from web_publication_gate import download
+
+          download({
+              "id": int(os.environ["RETAINED_ARTIFACT_ID"]),
+              "sizeBytes": int(os.environ["RETAINED_ZIP_BYTES"]),
+              "digest": "sha256:" + os.environ["RETAINED_ZIP_SHA256"],
+          }, Path(os.environ["RUNNER_TEMP"]) / "retained-core.zip")
+          PY
+      - name: Select and authenticate the retained rollback Web transport
+        id: rollback-transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RETAINED_TRANSPORT: ${{ inputs.retained_transport || 'auto' }}
+        run: |
+          selected=$(python3 -B scripts/deployment/headless_web_qualification_inputs.py select "$REQUESTED_RETAINED_TRANSPORT")
+          case "$selected" in actions|custody) ;; *) exit 1 ;; esac
+          printf 'selected=%s\n' "$selected" >> "$GITHUB_OUTPUT"
+      - name: Install attested ORAS for the selected custody reads
+        if: steps.transport.outputs.selected == 'custody' || steps.rollback-transport.outputs.selected == 'custody'
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Read the same retained ZIP by deterministic private OCI digest
+        if: steps.transport.outputs.selected == 'custody'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: |
+          PYTHONPATH=scripts/deployment python3 -B - <<'PY'
+          import os
+          from pathlib import Path
+          from web_custody_workflow import registry_auth
+          from web_release_custody import retrieve
+
+          temp = Path(os.environ["RUNNER_TEMP"])
+          with registry_auth(temp):
+              retrieve(Path(os.environ["CUSTODY_ORAS"]), temp / "retained-core.zip", kind="archive",
+                       digest="sha256:" + os.environ["RETAINED_ZIP_SHA256"],
+                       size=int(os.environ["RETAINED_ZIP_BYTES"]))
+          PY
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Verify the retained archive and load the tested Core
+        run: |
+          umask 077
+          python3 -I -B - <<'PY'
+          from hashlib import sha256
+          import json
+          import os
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          temp = Path(os.environ["RUNNER_TEMP"])
+          expected = os.environ["RETAINED_ARCHIVE_SHA256"]
+          limits = {"SHA256SUMS": 256, "report.json": 256 * 1024, "core-and-web.tar.gz": 2 * 1024**3}
+          with ZipFile(temp / "retained-core.zip") as package:
+              entries = package.infolist()
+              assert len(entries) == len(limits) and {entry.filename for entry in entries} == set(limits)
+              assert all(0 < entry.file_size <= limits[entry.filename] for entry in entries)
+              assert package.read("SHA256SUMS").decode("ascii").split() == [expected, "core-and-web.tar.gz"]
+              report = json.loads(package.read("report.json"))
+              assert report["kind"] == "warpdrive-headless-final-image-smoke"
+              assert report["success"] is True and report["cleanup"]["success"] is True and report["failure"] is None
+              assert report["expectedRevision"] == report["coreImage"]["revision"] == os.environ["RETAINED_REVISION"]
+              assert report["coreImage"]["id"] == os.environ["RETAINED_CORE_ID"]
+              digest = sha256()
+              with package.open("core-and-web.tar.gz") as source, (temp / "core-and-web.tar.gz").open("xb") as dest:
+                  for block in iter(lambda: source.read(1024 * 1024), b""):
+                      digest.update(block)
+                      dest.write(block)
+              assert digest.hexdigest() == expected
+          PY
+          docker image load --input "$RUNNER_TEMP/core-and-web.tar.gz"
+          docker image inspect "$RETAINED_CORE_ID" |
+            jq -e --arg image "$RETAINED_CORE_ID" --arg revision "$RETAINED_REVISION" '
+              length == 1 and .[0].Id == $image and .[0].Os == "linux" and .[0].Architecture == "amd64"
+              and .[0].Config.Labels["org.opencontainers.image.revision"] == $revision
+              and .[0].Config.Labels["org.opencontainers.image.title"] == "Warpdrive Core API"
+            ' >/dev/null
+          rm -- "$RUNNER_TEMP/retained-core.zip" "$RUNNER_TEMP/core-and-web.tar.gz"
+      - name: Verify and load the tested rollback Web 1.8.2 image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+          SELECTED_ROLLBACK_TRANSPORT: ${{ steps.rollback-transport.outputs.selected }}
+        run: python3 -B scripts/deployment/headless_web_qualification_inputs.py load "$SELECTED_ROLLBACK_TRANSPORT"
+      - name: Build only Web from unmodified candidate source
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          test -z "$(git status --porcelain)"
+          docker buildx build --load --platform linux/amd64 --provenance=false \
+            --build-arg "APP_COMMIT=$SOURCE_REVISION" --build-arg NEXT_PUBLIC_WS_URL=same-origin \
+            --file deploy/images/Web.Dockerfile --target web --tag warpdrive-headless/web:qualified .
+      - name: Check out retained source for disposable fixture components
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ env.RETAINED_REVISION }}
+          path: retained-source
+          persist-credentials: false
+      - name: Build disposable Worker, Realtime and Migrator fixtures from retained source
+        working-directory: retained-source
+        run: |
+          test "$(git rev-parse HEAD)" = "$RETAINED_REVISION"
+          test -z "$(git status --porcelain)"
+          test "$(jq -r .version package.json)" = "$RETAINED_VERSION"
+          for component in worker realtime migrator; do
+            docker buildx build --load --platform linux/amd64 --provenance=false \
+              --build-arg "APP_COMMIT=$RETAINED_REVISION" --file deploy/images/Dockerfile \
+              --target "$component" --tag "warpdrive-headless-fixture/$component:qualified" .
+          done
+      - name: Rehearse upgrade and rollback with the pinned Web and retained Core
+        run: |
+          python3 -B scripts/deployment/headless_web_smoke.py \
+            --web-image warpdrive-headless/web:qualified \
+            --core-image-id "$RETAINED_CORE_ID" \
+            --worker-image warpdrive-headless-fixture/worker:qualified \
+            --realtime-image warpdrive-headless-fixture/realtime:qualified \
+            --migrator-image warpdrive-headless-fixture/migrator:qualified \
+            --expected-revision "$SOURCE_REVISION" \
+            --retained-revision "$RETAINED_REVISION" \
+            --web-version "$WEB_VERSION" \
+            --baseline-web-image "$BASELINE_WEB_IMAGE" \
+            --baseline-web-revision "$BASELINE_WEB_REVISION" \
+            --baseline-web-version "$BASELINE_WEB_VERSION" \
+            --output-dir "$RUNNER_TEMP/headless-web-smoke"
+      - name: Retain sanitized smoke evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: warpdrive-headless-web-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/headless-web-smoke/report.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Recheck the selected source and save only the tested Web image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api "$SOURCE_REF_ENDPOINT" --jq "$SOURCE_REF_QUERY")" = "$SOURCE_REVISION"
+          bundle="$RUNNER_TEMP/headless-web-bundle"
+          mkdir -m 700 "$bundle"
+          cp "$RUNNER_TEMP/headless-web-smoke/report.json" "$bundle/report.json"
+          web_id=$(jq -er --arg candidate "$SOURCE_REVISION" --arg retained "$RETAINED_REVISION" \
+            --arg core "$RETAINED_CORE_ID" --arg version "$WEB_VERSION" \
+            --arg baseline "$BASELINE_WEB_IMAGE" --arg baseline_revision "$BASELINE_WEB_REVISION" \
+            --arg baseline_version "$BASELINE_WEB_VERSION" '
+            .images.web.id as $candidate_image
+            | select(.kind == "warpdrive-headless-web-only-image-smoke" and .schemaVersion == 1
+              and .success == true and .failure == null and .cleanup.success == true
+              and .expectedWebVersion == $version and .expectedRevision == $candidate
+              and .images.web.revision == $candidate and .images.web.id != $baseline
+              and .retainedRevision == $retained and .coreImage.revision == $retained and .coreImage.id == $core
+              and .expectedBaselineWebVersion == $baseline_version
+              and .baselineWebImage.id == $baseline and .baselineWebImage.revision == $baseline_revision
+              and ([.checks[] | select(.name == "independent-web-upgrade-and-rollback")]
+                | length == 1 and .[0].status == "passed"
+                and (.[0].detail
+                  | .upgrade.identity.version == $version and .rollback.identity.version == $baseline_version
+                  and .upgrade.identity.sourceRevision == $candidate and .rollback.identity.sourceRevision == $baseline_revision
+                  and .upgrade.runtime.Image == $candidate_image and .rollback.runtime.Image == $baseline
+                  and all(.upgrade, .rollback; .session.authenticatedInboxSsr == true
+                    and .session.sameSession == true and .session.sameRecord == true
+                    and .session.sameSavedReport == true and .coreDuringWebOutage.ready == true
+                    and .coreDuringWebOutage.webOffline == true and .coreDuringWebOutage.admittedRpcServed == true)
+                  and (.retainedComponents | keys) == ["core", "postgres", "realtime", "worker"]
+                  and .retainedComponents.core.Image == $core
+                  and (.migrationLedger.rows | type) == "number" and .migrationLedger.rows > 0
+                  and (.migrationLedger.sha256 | test("^[a-f0-9]{64}$")))))
+            | .images.web.id | select(test("^sha256:[a-f0-9]{64}$"))
+          ' "$bundle/report.json")
+          test "$(docker image inspect --format '{{.Id}}' warpdrive-headless/web:qualified)" = "$web_id"
+          docker image save --platform linux/amd64 --output "$bundle/web-image.tar" "$web_id"
+          PYTHONPATH=scripts/deployment python3 -B - "$bundle" "$web_id" > "$bundle/archive.json" <<'PY'
+          import json
+          import os
+          import sys
+          import tarfile
+          from pathlib import Path
+          from web_candidate import verify_saved_web_image
+
+          bundle, image_id = Path(sys.argv[1]), sys.argv[2]
+          revision = os.environ["SOURCE_REVISION"]
+          verified = verify_saved_web_image(bundle, expected_image_id=image_id, expected_revision=revision)
+          with tarfile.open(bundle / "web-image.tar", "r:") as archive:
+              manifest_id = json.load(archive.extractfile("index.json"))["manifests"][0]["digest"]
+          assert manifest_id != image_id
+          print(json.dumps({
+              "schemaVersion": 1,
+              "kind": "warpdrive-headless-web-only-archive",
+              "artifactScope": os.environ["ARTIFACT_SCOPE"],
+              "version": os.environ["WEB_VERSION"],
+              "sourceRevision": revision,
+              "testedConfigId": image_id,
+              "imageManifestId": manifest_id,
+              "archiveSha256": verified["archiveSha256"],
+              "archiveSizeBytes": verified["archiveSizeBytes"],
+          }, sort_keys=True))
+          PY
+          (cd "$bundle" && sha256sum web-image.tar report.json archive.json > SHA256SUMS)
+      - name: Retain the exact Web image and its verified identities
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: warpdrive-headless-web-${{ env.ARTIFACT_SCOPE }}-${{ env.SOURCE_REVISION }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/headless-web-bundle/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0

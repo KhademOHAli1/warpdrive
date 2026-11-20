@@ -1,12 +1,12 @@
 "use client";
 
-import { useNodesInitialized, useReactFlow, useStore } from "@xyflow/react";
+import { useNodesInitialized, useReactFlow, useViewportStore } from "@xyflow/react";
 import { useEffect, useRef } from "react";
 
 // A side panel changes the width, not the viewer's zoom or vertical pan.
 export type RevealNode = { id: string; nonce: number };
 export function ResponsiveViewport({ reveal }: { reveal?: RevealNode }) {
-  const width = useStore((state) => state.width);
+  const width = useViewportStore((state) => state.width);
   const ready = useNodesInitialized();
   const { fitView, getNodes, getNodesBounds, getViewport, setViewport } = useReactFlow();
   const previousWidth = useRef<number | null>(null);
@@ -47,7 +47,7 @@ export function ResponsiveViewport({ reveal }: { reveal?: RevealNode }) {
       typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     void fitView({
       nodes: [{ id: reveal.id }],
-      padding: 0.6,
+      padding: "18.75%",
       minZoom: 0.8,
       maxZoom: 1,
       duration: reduced ? 0 : 180,

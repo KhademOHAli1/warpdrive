@@ -39,11 +39,10 @@ it("no-ops when the signal is already aborted", () => {
 it("captureServerError extracts the AppError id", () => {
   const error = new AppError(ERROR_IDS.PERM_DENIED, "no");
   captureServerError("u1", error);
-  expect(captureExceptionFn).toHaveBeenCalledWith(
-    expect.objectContaining({ message: "no" }),
-    "u1",
-    expect.objectContaining({ errorId: ERROR_IDS.PERM_DENIED }),
-  );
+  expect(captureExceptionFn).toHaveBeenCalledWith(expect.objectContaining({ message: "no" }), {
+    distinctId: "u1",
+    properties: expect.objectContaining({ errorId: ERROR_IDS.PERM_DENIED }),
+  });
 });
 
 it("captureServerError redacts emails from the exception payload itself", () => {
@@ -57,9 +56,8 @@ it("captureServerError redacts emails from the exception payload itself", () => 
 it("captureServerError extracts the AppError id from a wrapped cause", () => {
   const error = { cause: new AppError("E_PERM_DENIED" as ErrorId, "x") };
   captureServerError("u1", error);
-  expect(captureExceptionFn).toHaveBeenCalledWith(
-    error,
-    "u1",
-    expect.objectContaining({ errorId: "E_PERM_DENIED" }),
-  );
+  expect(captureExceptionFn).toHaveBeenCalledWith(error, {
+    distinctId: "u1",
+    properties: expect.objectContaining({ errorId: "E_PERM_DENIED" }),
+  });
 });

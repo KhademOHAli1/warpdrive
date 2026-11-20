@@ -38,6 +38,8 @@ DEFAULT_LIMITS = {"files": 100_000, "bytes": 1024**4, "fileBytes": 64 * 1024**3,
                   "seconds": 3600, "reserveBytes": 2 * 1024**3,
                   "repositoryBytes": 4 * 1024**4}
 MAX_METADATA = 32 * 1024**2
+RESTIC_FIXTURE_VERSION = "0.20.0"
+RESTIC_VERSIONS = ("0.18.0", "0.18.1", RESTIC_FIXTURE_VERSION)
 COLLECTOR_CONFIG = "/run/warpdrive-operations-config.json"
 COLLECTOR_SOCKET_DIR = "/run/warpdrive-operations"
 COLLECTOR_UID = 1000
@@ -1058,7 +1060,8 @@ class Restic:
         self.command, self.seconds = command or Command(), seconds
         self.directory = None
         version = self.command.run([self.binary, "version"], maximum=4096).decode()
-        require(version.startswith("restic 0.18.0 "), "This adapter is qualified against restic 0.18.0 only")
+        require(version.startswith(tuple(f"restic {release} " for release in RESTIC_VERSIONS)),
+                "Unsupported Restic command contract")
 
     def run(self, *args, data=None, maximum=MAX_METADATA):
         require(password_file(self.key)[1:] == (self.key_identity, self.key_sha), "Recovery key file changed")

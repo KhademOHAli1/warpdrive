@@ -51,7 +51,6 @@ it("connects a named If/Else route and opens insertion only for a configured fre
     port: "branch:if",
   });
 
-  act(() => result.current.initialize({ screenToFlowPosition: () => ({ x: 150, y: 330 }) }));
   const pane = document.createElement("div");
   pane.className = "react-flow__pane";
   const event = new MouseEvent("mouseup");
@@ -61,6 +60,7 @@ it("connects a named If/Else route and opens insertion only for a configured fre
       isValid: false,
       fromHandle: { type: "source", id, nodeId: "switch" },
       toNode: null,
+      to: { x: 150, y: 330 },
     } as FinalConnectionState;
     act(() => result.current.finish(event, state));
   }
@@ -89,7 +89,6 @@ it("opens the contextual picker only when a free source is dropped on empty canv
       onSelectEdge: vi.fn(),
     }),
   );
-  act(() => result.current.initialize({ screenToFlowPosition: () => ({ x: 200, y: 600 }) }));
   const pane = document.createElement("div");
   pane.className = "react-flow__pane";
   const event = new MouseEvent("mouseup", { clientX: 400, clientY: 600 });
@@ -98,6 +97,7 @@ it("opens the contextual picker only when a free source is dropped on empty canv
     isValid: false,
     fromHandle: { type: "source", id: "next", nodeId: "task" },
     toNode: null,
+    to: { x: 200, y: 600 },
   } as FinalConnectionState;
   act(() => result.current.finish(event, state));
   expect(onAdd).toHaveBeenCalledWith({ from: "task", port: "next" }, { x: 200, y: 600 });

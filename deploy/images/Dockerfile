@@ -3,9 +3,9 @@
 # Build from the repository root with --file deploy/images/Dockerfile --target COMPONENT.
 # Non-web targets have no dependency on web-build, next build or .next. They share the
 # locked production dependency layer because packages read runtime data from node_modules.
-# Bun 1.4.4, resolved from the registry's linux/amd64 manifest. The immutable
+# Bun 1.4.5, resolved from the registry's linux/amd64 manifest. The immutable
 # base is a component input; tag movement cannot silently change a reused build.
-FROM oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 AS base
+FROM oven/bun@sha256:7c8e62d7fb0b0b5178cc4396ed24f026591ddbff6ce654ff1022acf195bb581b AS base
 WORKDIR /app
 
 FROM base AS deps

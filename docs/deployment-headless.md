@@ -87,7 +87,7 @@ Compose waits for local liveness at `/api/health`. Check `/api/readyz` separatel
 
 Run the existing Core image/entrypoint with `RUNTIME_COMPONENT=core-api`, its restricted non-owner runtime database role, backend configuration, and `CORE_PROXY_TOKEN`. Core admits its database role and queue, then serves requests while Web is offline. Set optional `CORE_WEB_ORIGIN` to the accepted frontend ingress to enable version reporting. Missing Web identity leaves the frontend version unavailable while Core continues serving other requests. Reuse the existing explicit Migrator for schema changes.
 
-The single-box Compose model now includes Core and gives Web only frontend variables. Its source build remains a development/convenience path. The image overlay requires `WARPDRIVE_CORE_IMAGE` alongside the existing component image references. The production image workflow requires Core in the v4 candidate and tested bundle alongside Web, Worker, Realtime and Migrator. Historical bundles remain readable for their original qualification records. The private Core overlay remains available for installations using separate network admission settings.
+The single-box Compose model includes Core and gives Web only frontend variables. Its source build remains a development path. The image overlay requires `WARPDRIVE_CORE_IMAGE` alongside the existing component image references. The production image workflow publishes the full stack in bundle format v4, with Core, Web, Worker, Realtime and Migrator all required. The Web-only workflow publishes the standalone Web archive for the headless ingress and retained Core. Historical bundles remain readable for their original qualification records. The private Core overlay remains available for installations using separate network admission settings.
 
 For a separately hosted frontend, use HTTPS to a fixed backend gateway protected by the shared proxy credential. Generate at least 32 base64url characters, for example `openssl rand -hex 32`; configure the same value on Web and Core. Keep the backend listener private behind that gateway. Core validates the proxy credential before restoring the public host and client IP; it still derives user authority from the actual native session cookie. Never put this token in a `NEXT_PUBLIC_` variable.
 
@@ -97,8 +97,48 @@ The public ingress must route `/_ws` to Realtime independently of Web hosting. A
 
 ## Version and rollout compatibility
 
-Use the isolated headless final-image smoke to exercise Core startup before Web. For a mixed-version Web rehearsal, pass the pinned baseline through both `--baseline-web-image` and `--baseline-web-revision`. The fixture logs in once, switches to the new Web image, then reinstates the baseline Web image. Both transitions check the original session and contact as well as the container IDs, start times and image IDs of retained Core, PostgreSQL, Worker and Realtime. It also compares the migration ledger before and after the transitions. The single-slot fixture complements the separate Caddy rehearsal for concurrent and retained Web generations.
+Use the isolated headless final-image smoke to exercise Core startup before Web. The standby Core used by the Web-only workflow is the published 1.8.1 image and needs Web identity at startup. Once that Core is ready, the workflow checks that it remains ready and serves the private configuration API during both Web replacements. The five-role workflow separately exercises cold startup with the candidate Core and Web absent.
 
 Web declares its own bundled version and source revision; Core does not substitute its own version for Web. Deploy the backend command/projection additions before switching frontend traffic. Retain the previous compatible frontend assets and existing generation routing for open browsers, using the installation's established retention policy. Do not remove old action or backend contracts during the switch. Roll back the frontend to its retained compatible generation through the existing release path.
 
-Local build, native fixture qualification, image qualification, hosted CI, release publication and production deployment remain distinct evidence. No deployment or later SaaS acceptance follows from this source change. Newsletter activation, subscriber intake and sending remain deferred.
+## Qualify a Web image for an independent rollout
+
+Run **Headless Web image qualification** from canonical `main`. It builds the
+single Web image from that commit and exercises it on disposable PostgreSQL
+with the pinned retained Core 1.8.1 image. The fixture signs in to the retained
+Web 1.8.2 image, switches to the candidate, then restores the exact 1.8.2 image.
+It checks the existing session, durable data and authenticated Inbox across
+both transitions. It also verifies that Core, PostgreSQL, Worker and Realtime
+keep their container identities and start times, and that the migration ledger
+stays intact. Pull request rehearsals produce separate artifacts for review.
+
+```bash
+gh workflow run headless-web-qualification.yml -R KhademOHAli1/warpdrive --ref main
+```
+
+The workflow retains `web-image.tar`, its checksum, the archive identity and
+the native smoke report. Verify the ZIP size and digest from the GitHub artifact
+record, then match the report to the selected Web revision and retained Core.
+The archive binds the smoke-tested image config to the OCI manifest digest used
+by the installed Docker engine. Use that manifest digest when staging the image.
+The default transport uses the original retained Core and Web Actions artifacts
+while they are available, then reads the same bytes from private OCI custody.
+To retain the original ZIPs, run **Headless deployment input artifact custody**
+with `mode=retain` while the Actions artifacts are available. The default
+`mode=observe` verifies their immutable private copies.
+
+Stage Web on the existing ingress and private Core link. Check its exact
+identity, public login rendering, protected redirects and relay to Core before
+switching traffic. Preserve the existing Core, Worker, Realtime and PostgreSQL
+process witnesses across the switch. Verify the persisted route, public identity,
+Realtime upgrade and previous stamped browser assets after the switch.
+
+Keep the previous Web generation ready for rollback. Restore the prior default
+route through the relay's compare-and-swap operation and preserve stamped routes
+for existing tabs. Verify the restored default and asset availability. A Web
+rollback changes frontend routing only.
+
+[The 1.8.2 rollout record](deployment-evidence/headless-web-rollout-20261120.json)
+links the exact hosted checks and installed readback. The 1.8.2 Web image went
+live with the same 1.8.1 Core process and retained service witnesses. Realtime
+and the retained 1.7.2 and 1.8.1 assets passed public readback.

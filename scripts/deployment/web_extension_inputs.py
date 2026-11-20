@@ -19,25 +19,25 @@ import component_inputs as inputs
 from web_retained_backend_inputs import verify_retained_backend_inputs
 
 
-PROFILE = "warpdrive-web-ui-sdk-beta1-hoisted-v1"
+PROFILE = "warpdrive-web-ui-sdk-beta13-hoisted-v1"
 EXTENSION = "tools/web-ui"
 MANIFEST = EXTENSION + "/package.json"
 LOCK = EXTENSION + "/bun.lock"
-MANAGER = "bun@1.4.4"
+MANAGER = "bun@1.4.5"
 ROOT_PACKAGE = "warpdrive-web-ui"
-SDK_VERSION = "0.1.0-beta.1"
+SDK_VERSION = "0.1.0-beta.13"
 SDK = {
-    "@ui-sdk/core": "sha512-sWsZW8RN6Gviir7REQYuDIafm9hierHQE31OJ+2g+1Pp3lDVKp/dk0+0dxFvqOQRmBveRvlE9FiARgNlQ9dMFw==",
-    "@ui-sdk/react": "sha512-7wcUsZI+WoG2uo3N+PHrWntk97qI9ez2cUrHV9H507FiL118Pi4tuhWUCMDtWwEUCNQLybpBm1QRLkEXVOPAUg==",
+    "@ui-sdk/core": "sha512-URjk9hqdc/cZKDtw6Gb9NqjY48U8l0EgoP4d5ghlooa3av+GrR0iSmsav133UU4oelcuKIO1ZPJ4j7gIPMr1Vg==",
+    "@ui-sdk/react": "sha512-Gz85tAcPJHwnv90WMIAtED3fDamqVD3F3FF3uKsA/TsL+KbaeHSgX1gGdIpNcnzkmDO8YZk9aZBKgCFgpaCcHA==",
 }
-PEERS = {"react": ">=19", "react-dom": ">=19", "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.1"}
+PEERS = {"react": ">=19", "react-dom": ">=19", "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.13"}
 RETAINED = ("worker", "realtime", "migrator")
 ROOT_FILES = ("package.json", "bun.lock", "bunfig.toml", "deploy/images/Dockerfile")
 WEB_RECIPE = "deploy/images/Web.Dockerfile"
 REVIEWED_WEB_INPUTS = {
-    WEB_RECIPE: ("651d5d00db136b3e603e2377333c90400f98048d", "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402"),
-    MANIFEST: ("e8fa268ffcad83549914dd5fda020ef4f0215911", "09ead474d329be4d9226a42bb61fe9fb970acba4f23fa5fac9b1737d50f13132"),
-    LOCK: ("d46e02d61eda1184b96645b971be2501d6d677c0", "b569a2c43b0914012d6a480ef09c6ec699223e5574ebb344a02eac3854374f8a"),
+    WEB_RECIPE: ("a1736f6f8fdbc09fd061dd205a58fb8828855767", "30df5547abaf3efcfb9ac17539103842cdee33d7aeaeead49c30e5666288b53a"),
+    MANIFEST: ("3d007f6480e3698662d6ed6a2d0f0d757be7ba5b", "a17da2094494e2aee29360ab413dcef19b3398c0f27a09d7a474f4ee76073585"),
+    LOCK: ("4e9f3a512c443aaebff2df0a2e35879cd4770663", "ecfab6706ac1a654bc3222cce5142ca31ee55306a32c24657426814e0e88a7ae"),
 }
 SINGLETONS = ("react", "react-dom")
 RUNTIMES = (*SINGLETONS, "scheduler", "next")

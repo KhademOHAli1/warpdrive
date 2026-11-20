@@ -596,7 +596,7 @@ class RecoveryCoordinatorTests(unittest.TestCase):
                 patch.object(smoke.signal, "signal"), patch.object(smoke.signal, "alarm"), \
                 patch.object(smoke.os, "statvfs", return_value=SimpleNamespace(f_bavail=10 * 1024**3, f_frsize=1)), \
                 patch.object(smoke, "_recover", side_effect=r.RecoveryUnknown("PRIVATE_DO_NOT_SERIALIZE")):
-            command.return_value.run.return_value = b"restic 0.18.0 fixture"
+            command.return_value.run.return_value = f"restic {r.RESTIC_FIXTURE_VERSION} fixture".encode()
             result = smoke.run(self.baseline, self.candidate, restic=Path(sys.executable), restic_pin="a" * 64,
                                pg_control=Path(sys.executable), pg_control_pin="b" * 64, output_parent=self.directory,
                                storage_client_bin="mcli", cgroup_parent="warpdrivequalificationabcdef012345.slice")

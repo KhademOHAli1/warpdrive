@@ -185,7 +185,7 @@ jobs:
           printf 'context=%s\n' "$context" >> "$GITHUB_OUTPUT"
           node scripts/deployment/component_boundaries.mjs \
             --sdk-revision "$REVISION" \
-            --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
+            --base-image oven/bun@sha256:7c8e62d7fb0b0b5178cc4396ed24f026591ddbff6ce654ff1022acf195bb581b \
             --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin \
             > "$proof/component-boundaries.json"
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -317,7 +317,7 @@ jobs:
                   continue;
                 }
                 const metadata = JSON.parse(readFileSync(dir + "/package.json", "utf8"));
-                if (metadata.name !== name || metadata.version !== "0.1.0-beta.1" || existsSync(dir + "/node_modules")) throw Error("Unexpected Web SDK package");
+                if (metadata.name !== name || metadata.version !== "0.1.0-beta.13" || existsSync(dir + "/node_modules")) throw Error("Unexpected Web SDK package");
                 const fromSdk = createRequire(dir + "/package.json");
                 const fromApp = createRequire("/app/package.json");
                 for (const singleton of ["react", "react-dom"])
@@ -540,15 +540,18 @@ jobs:
           root.mkdir(mode=0o700)
           control = Path("/usr/lib/postgresql/16/bin/pg_controldata")
           assert control.is_file() and "16." in subprocess.check_output([str(control), "--version"], text=True, timeout=5)
-          expected = "98f6dd8bf5b59058d04bfd8dab58e196cc2a680666ccee90275a3b722374438e"
-          url = "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_amd64.bz2"
+          expected = "0ccd9fa7885074a24603b051e01bf9bd8b5e45d6a1791e9d9887e9e9372107f7"
+          expected_binary = "c109579d3a1a4d26094bef5400ac5645fceb1043414c05f51b8fb48272001c72"
+          asset_bytes = 12639573
+          url = "https://github.com/restic/restic/releases/download/v0.20.0/restic_0.20.0_linux_amd64.bz2"
           archive, total, started = bytearray(), 0, time.monotonic()
           with urllib.request.urlopen(url, timeout=15) as response:
+              assert response.geturl().startswith("https://")
               while chunk := response.read(1024**2):
                   total += len(chunk)
-                  assert total <= 9806593 and time.monotonic() - started <= 45
+                  assert total <= asset_bytes and time.monotonic() - started <= 45
                   archive.extend(chunk)
-          assert total == 9806593 and hashlib.sha256(archive).hexdigest() == expected
+          assert total == asset_bytes and hashlib.sha256(archive).hexdigest() == expected
           binary, expanded = root / "restic", 0
           decoder = bz2.BZ2Decompressor()
           with binary.open("xb") as target:
@@ -556,6 +559,7 @@ jobs:
               expanded += len(raw)
               assert decoder.eof and not decoder.unused_data and expanded <= 64 * 1024**2
               assert raw[:6] == b"\x7fELF\x02\x01" and int.from_bytes(raw[18:20], "little") == 62
+              assert hashlib.sha256(raw).hexdigest() == expected_binary
               target.write(raw)
           binary.chmod(0o700)
           PY

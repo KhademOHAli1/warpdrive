@@ -73,7 +73,7 @@ export const workflowBlocksIds1: string[] = [
   "sourceReview:src/features/workflows/v2/ui/StudioTrigger.tsx#69453399e29991c43a40830ee339c6eb0b0c2d8815703002ec00c207fc58dd8d",
   "sourceReview:src/features/workflows/v2/ui/StudioValue.tsx#9b1611b8095763082ff67e489e2da8bbbe43d5a7a13c5290ed571d8698cb8bb0",
   "sourceReview:src/features/workflows/v2/ui/WorkflowRunPanel.tsx#c84097df35835c208dbc3b3c57c47ec1accb7a32230fabf71a74cdccfa811229",
-  "sourceReview:src/features/workflows/v2/ui/WorkflowStudioCanvas.tsx#d50c1bc0db9a3295cd0d843328de5bc926badededc217f10a31970d342d67bec",
+  "sourceReview:src/features/workflows/v2/ui/WorkflowStudioCanvas.tsx#03d0b6a53bc5a6f7753c804656f7dd1d28568f1a37a5560db019d87c30777a4c",
   "sourceReview:src/features/workflows/v2/ui/studioModel.ts#88cc212a420406840f7d2a585fd3498b193ce88fa7a4895b9c07a58a53f4739e",
   "sourceReview:src/features/workflows/v2/waits.ts#5b8c84be3c96e2bd3db99d87b55e5cfec8293acbcd6ad61d65d7724a127c071b",
   "sourceReview:src/features/workflows/v2/webhook.ts#87eb77d0e0e142501f05b4cd6c5826400614267d613c74f82fb9c554fcf5316b",

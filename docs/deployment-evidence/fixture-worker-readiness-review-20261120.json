@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-source-bound-generated-fixture-worker-readiness-review",
+  "reviewer": "/root/release_review",
+  "reviewerIdentity": {
+    "runtime": "codex",
+    "session_id": "01a1fa1e-e478-7980-bb26-9d375481e48f",
+    "task_id": "/root/release_review",
+    "reviewerEditedImplementationSources": false
+  },
+  "reviewedAtUtc": "2026-11-20T22:25:14Z",
+  "comparisonRevision": "4ec90611f3fce5865ea86baa93b76dc627341422",
+  "reviewedImageSmokeRevision": "cf811ecba8ea3718132632709c255dd04873c21d",
+  "verdict": "scoped-source-review-with-open-qualification-gates",
+  "blockingFindings": [],
+  "sourceSha256": {
+    "scripts/deployment/engine_image_smoke.py": "3d3c32747196a1d280d04f6a58bf73241223d9659313247500bc2d741b413eda",
+    "scripts/deployment/test_engine_image_smoke.py": "b7393bb06b24f3310bedb1a2b878e83b18bfad9d12269338f92adf7317d0bfd0",
+    "scripts/deployment/image_smoke.py": "2861777dd6d732d3f7c18e8037e67feb9d1d11a57c8d1775073aed5808e8c521",
+    ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
+  },
+  "historicalIndependentReview": {
+    "path": "docs/deployment-evidence/fixture-public-captcha-review-20261115.json",
+    "sha256": "503bec226e0230a407963d017d2bb9988ad47ee866bb438a5b93d35ba8ae56d6",
+    "reviewer": "/root/review_newsletter"
+  },
+  "method": {
+    "plaintextSinkRemainsDirectAndVisible": true,
+    "managedSecurityAnalysisExecuted": false,
+    "callerScanPythonFiles": 340,
+    "callerScanBytes": 5151931,
+    "changedAstNode": "ImageSmoke.worker",
+    "scope": "Compared the four pinned sources and scanned executable Python for the generated-secret writer callers. The engine runtime and test callers, including the test cleanup alias, match the earlier review."
+  },
+  "currentAnnotations": {
+    "engineQueryAnnotationCount": 0,
+    "sinkStatement": "payload.write(password)",
+    "sinkLine": 332
+  },
+  "reviewedSecretBehavior": [
+    "The changed Worker fixture compares a bounded local log tail with a fixed startup marker and checks a clean stop within a finite grace period. It emits no raw log text and accepts no credential or file-path input. The Engine does not invoke this method.",
+    "Generated-only tmpfs credentials, private ancestor and leaf ownership, the read-only mount, and cleanup match the earlier review. The plaintext write remains visible to managed analysis."
+  ],
+  "securityGateCleanClaim": false,
+  "findingClosedClaim": false,
+  "canonicalAcceptanceClaim": false,
+  "deploymentAuthorized": false,
+  "alertDismissalApplied": false
+}

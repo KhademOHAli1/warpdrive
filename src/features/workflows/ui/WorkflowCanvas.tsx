@@ -294,7 +294,7 @@ export function WorkflowCanvas({
       removeCanvasNode(change.id);
     }
   }
-  function nodeChanges(changes: NodeChange<DiagramNode>[]) {
+  function nodeChanges(changes: Iterable<NodeChange<DiagramNode>>) {
     for (const change of changes) {
       if (change.type === "dimensions" && change.dimensions !== undefined)
         recordMeasurement(change.id, change.dimensions);
@@ -306,7 +306,7 @@ export function WorkflowCanvas({
       applyGraphNodeChange(change);
     }
   }
-  function edgeChanges(changes: EdgeChange<WorkflowCanvasEdge>[]) {
+  function edgeChanges(changes: Iterable<EdgeChange<WorkflowCanvasEdge>>) {
     for (const change of changes) {
       if (change.type === "select" && change.selected) onSelectEdge(change.id);
       if (change.type === "remove" && editable) {
@@ -342,6 +342,7 @@ export function WorkflowCanvas({
         nodesDraggable={editable}
         nodesConnectable={editable}
         edgesReconnectable={editable}
+        elevateEdgesOnSelect={false}
         onNodesChange={nodeChanges}
         onEdgesChange={edgeChanges}
         onConnect={gestures.connect}
@@ -349,7 +350,6 @@ export function WorkflowCanvas({
         connectionRadius={32}
         connectionDragThreshold={4}
         connectionLineComponent={WorkflowConnectionLine}
-        onInit={gestures.initialize}
         onConnectStart={() => onProblem(null)}
         onConnectEnd={gestures.finish}
         onReconnectStart={(_, edge) => gestures.startReconnect(edge.data?.spec)}

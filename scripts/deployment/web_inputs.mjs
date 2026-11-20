@@ -44,11 +44,11 @@ const REVIEWED_HOST_GLOBAL_SYNTAX = {
 };
 const TOOLCHAIN = {
   next: "16.4.6",
-  "next-intl": "4.15.0",
+  "next-intl": "4.15.3",
   tailwindcss: "4.3.5",
   "@tailwindcss/postcss": "4.3.5",
   typescript: "6.0.3",
-  postcss: "8.5.32",
+  postcss: "8.5.33",
   shadcn: "4.23.0",
   "tw-animate-css": "1.4.0",
 };

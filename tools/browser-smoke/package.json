@@ -2,8 +2,8 @@
   "name": "warpdrive-browser-smoke",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.4.4",
+  "packageManager": "bun@1.4.5",
   "dependencies": {
-    "playwright": "1.65.0"
+    "playwright": "1.65.1"
   }
 }

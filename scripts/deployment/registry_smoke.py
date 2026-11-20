@@ -34,6 +34,7 @@ except ImportError:
 
 
 OWNER_LABEL = "io.warpdrive.registry-smoke.owner"
+REGISTRY_IMAGE = "registry:3.1.2@sha256:82f6ff4a7f982960c8aa51617fea3aabc485df6e55cce80d22deb1de36f1bc3c"
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
 MANIFEST_TYPES = (
     "application/vnd.oci.image.manifest.v1+json",
@@ -272,7 +273,7 @@ class RegistrySmoke:
                  image_refs: dict[str, str] | None = None,
                  clock: Callable[[], float] = time.monotonic,
                  sleep: Callable[[float], None] = time.sleep, *,
-                 registry_image: str = "registry:2", registry_preloaded: bool = False, cgroup_parent: str | None = None):
+                 registry_image: str = REGISTRY_IMAGE, registry_preloaded: bool = False, cgroup_parent: str | None = None):
         self.cgroup_parent = validate_cgroup_parent(cgroup_parent)
         if image_refs is not None:
             from candidate import HEADLESS_COMPONENTS

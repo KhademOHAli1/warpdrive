@@ -6,7 +6,7 @@
 # files via __dirname-relative reads, so they must stay in a real node_modules, not a bundle.
 # See docs/superpowers/specs/2026-07-07-docker-single-box-deploy-design.md.
 
-FROM oven/bun:1.4.4 AS base
+FROM oven/bun:1.4.5 AS base
 WORKDIR /app
 
 # --- deps: full install (build needs devDeps: next, esbuild, drizzle types) ---

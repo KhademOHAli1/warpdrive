@@ -13,9 +13,21 @@ import component_inputs as inputs
 
 BACKEND = ("worker", "realtime", "migrator")
 KIND = "warpdrive-web-sdk-full-inputs"
-PROFILE = "warpdrive-web-ui-sdk-beta1-hoisted-v1"
+PROFILE = "warpdrive-web-ui-sdk-beta13-hoisted-v1"
 RECIPE = "deploy/images/Web.Dockerfile"
-BASE_IMAGE = "oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478"
+BASE_IMAGE = "oven/bun@sha256:7c8e62d7fb0b0b5178cc4396ed24f026591ddbff6ce654ff1022acf195bb581b"
+# Rollback must still reconstruct the original receipts and candidate bytes.
+RETAINED_PROFILE = "warpdrive-web-ui-sdk-beta1-hoisted-v1"
+PROFILES = (PROFILE, RETAINED_PROFILE)
+RETAINED_BASE_IMAGE = "oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478"
+RETAINED_WEB_INPUTS = {
+    RECIPE: ("651d5d00db136b3e603e2377333c90400f98048d",
+             "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402"),
+    "tools/web-ui/package.json": ("e8fa268ffcad83549914dd5fda020ef4f0215911",
+                                  "09ead474d329be4d9226a42bb61fe9fb970acba4f23fa5fac9b1737d50f13132"),
+    "tools/web-ui/bun.lock": ("d46e02d61eda1184b96645b971be2501d6d677c0",
+                             "b569a2c43b0914012d6a480ef09c6ec699223e5574ebb344a02eac3854374f8a"),
+}
 SDK_IMPORTS = {"@ui-sdk/react/menu", "@ui-sdk/react/dialog", "@ui-sdk/react/drawer"}
 REVISION = re.compile(r"[a-f0-9]{40}\Z")
 SCAN = "scripts/deployment/web_sdk_full_inputs.mjs"
@@ -143,15 +155,17 @@ def validate_web_sdk_full_receipt(value, *, expected_revision):
     web = value["web"]
     version = value["schemaVersion"]
     fields = WEB_FIELDS | SUCCESSOR_FIELDS if version >= 2 else WEB_FIELDS
-    inputs.require(type(web) is dict and set(web) == fields
-        and web["profile"] == PROFILE and web["context"] == backend["context"]
-        and web["context"]["baseImage"] == BASE_IMAGE and _hash(web["gitInventorySha256"]),
+    inputs.require(type(web) is dict and set(web) == fields and web["profile"] in PROFILES
+        and web["context"] == backend["context"] and _hash(web["gitInventorySha256"]),
         "SDK Web context, platform or isolated recipe profile differs")
+    base_image, reviewed_inputs = ((RETAINED_BASE_IMAGE, RETAINED_WEB_INPUTS)
+                                  if web["profile"] == RETAINED_PROFILE else (BASE_IMAGE, REVIEWED_WEB_INPUTS))
+    inputs.require(web["context"]["baseImage"] == base_image, "SDK Web base image differs from its reviewed profile")
 
     pinned = web["pinnedInputs"]
-    inputs.require(type(pinned) is dict and set(pinned) == set(REVIEWED_WEB_INPUTS),
+    inputs.require(type(pinned) is dict and set(pinned) == set(reviewed_inputs),
                    "Complete reviewed SDK Web recipe and sidecar pins required")
-    for path, (blob, digest) in REVIEWED_WEB_INPUTS.items():
+    for path, (blob, digest) in reviewed_inputs.items():
         record = pinned[path]
         inputs.require(type(record) is dict and set(record) == {"gitBlob", "sha256", "bytes"}
                        and record["gitBlob"] == blob and record["sha256"] == digest
@@ -275,7 +289,7 @@ def candidate_input_facts(value, *, expected_revision):
                          "inputPolicySha256": web_policy}
     return {"components": components, "inputProvenance": {
         "state": "current-source-sdk-web-inputs-bound", "receiptSha256": inputs.content_hash(value),
-        "backendInputPolicySha256": backend_policy, "webInputPolicySha256": web_policy, "webProfile": PROFILE,
+        "backendInputPolicySha256": backend_policy, "webInputPolicySha256": web_policy, "webProfile": web["profile"],
     }}
 
 

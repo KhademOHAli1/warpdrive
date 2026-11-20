@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "version": "1.8.1",
+  "sourceRevision": "842d7022090ce355215bfae3e82f3e9a471279d9",
+  "coreConfigId": "sha256:e14232712ac26f925cd43295c8517a67798b1f21796d50d9740eb04cc6d6a98b",
+  "artifact": {
+    "runId": 44798540710,
+    "runAttempt": 1,
+    "workflowPath": ".github/workflows/headless-1-8-1-image-qualification.yml",
+    "headBranch": "codex/headless-1.8.1-image-qualification",
+    "headSha": "2b8265908c13426f566c06f05ea0cd1fc029084e",
+    "id": 14659734071,
+    "name": "warpdrive-181-tested-images-1",
+    "zipSha256": "577971a9ec5550ea9b9a1f33dc0421aff81b4dcea30b8555482d6ab3984d9d8c",
+    "sizeBytes": 424816716,
+    "archiveSha256": "f94f3d146f824bf99bf23ea532dcd8598aef434b9a9493afad4c4600abb856b5"
+  }
+}

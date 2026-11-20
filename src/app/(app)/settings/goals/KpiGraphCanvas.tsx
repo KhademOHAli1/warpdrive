@@ -136,7 +136,7 @@ function FitPreview({
   useEffect(() => {
     if (!ready || measurements.size === 0) return;
     const frame = requestAnimationFrame(() => {
-      void fitView({ padding: 0.25, minZoom: 0.15, maxZoom: 1.05 });
+      void fitView({ padding: "10%", minZoom: 0.15, maxZoom: 1.05 });
     });
     return () => cancelAnimationFrame(frame);
   }, [ready, fitView, measurements]);
@@ -210,7 +210,7 @@ export function KpiGraphCanvas({
     deletable: !disabled,
     reconnectable: !disabled,
   }));
-  function nodeChanges(changes: NodeChange<CanvasNode>[]) {
+  function nodeChanges(changes: Iterable<NodeChange<CanvasNode>>) {
     for (const change of changes) {
       if (change.type === "dimensions" && change.dimensions !== undefined) {
         const dimensions = change.dimensions;
@@ -247,11 +247,12 @@ export function KpiGraphCanvas({
       }
     }
   }
-  function edgeChanges(changes: EdgeChange[]) {
+  function edgeChanges(changes: Iterable<EdgeChange>) {
     if (disabled) return;
-    const removed = new Set(
-      changes.filter((change) => change.type === "remove").map((change) => change.id),
-    );
+    const removed = new Set<string>();
+    for (const change of changes) {
+      if (change.type === "remove") removed.add(change.id);
+    }
     if (removed.size > 0)
       onChange({ ...graph, edges: graph.edges.filter((edge) => !removed.has(edge.id)) });
   }
@@ -284,12 +285,13 @@ export function KpiGraphCanvas({
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.25, minZoom: 0.15, maxZoom: 1.05 }}
+        fitViewOptions={{ padding: "10%", minZoom: 0.15, maxZoom: 1.05 }}
         minZoom={0.15}
         maxZoom={1.8}
         nodesDraggable={!disabled}
         nodesConnectable={!disabled}
         edgesReconnectable={!disabled}
+        elevateEdgesOnSelect={false}
         onNodesChange={nodeChanges}
         onEdgesChange={edgeChanges}
         onConnect={connect}

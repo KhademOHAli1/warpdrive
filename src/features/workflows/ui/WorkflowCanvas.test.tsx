@@ -1,11 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, render } from "@testing-library/react";
-import type {
-  FinalConnectionState,
-  NodeChange,
-  ReactFlowInstance,
-  ReactFlowProps,
-} from "@xyflow/react";
+import type * as XYFlow from "@xyflow/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { appendConnectedNode } from "../connectionGestures";
@@ -17,28 +12,31 @@ import type { CanvasNode } from "./WorkflowNodeCard";
 import { pendingEdgeId, pendingStepId } from "./workflowPendingInsertion";
 
 const flow = vi.hoisted(() => {
-  const props: ReactFlowProps<CanvasNode, WorkflowCanvasEdge> = {};
+  const props: XYFlow.ReactFlowProps<CanvasNode, WorkflowCanvasEdge> = {};
   return {
     nodes: [] as CanvasNode[],
-    change: undefined as undefined | ((changes: NodeChange<CanvasNode>[]) => void),
+    change: undefined as undefined | ((changes: XYFlow.NodeChange<CanvasNode>[]) => void),
     props,
   };
 });
-vi.mock("@xyflow/react", () => ({
-  ReactFlow: (props: ReactFlowProps<CanvasNode, WorkflowCanvasEdge>) => {
-    flow.props = props;
-    flow.nodes = props.nodes ?? [];
-    flow.change = props.onNodesChange;
-    return null;
-  },
-  Background: () => null,
-  Controls: () => null,
-  Handle: () => null,
-  MarkerType: { ArrowClosed: "arrowclosed" },
-  Position: { Top: "top", Bottom: "bottom" },
-  ConnectionLineType: { SmoothStep: "smoothstep" },
-  useConnection: () => ({ inProgress: false }),
-}));
+vi.mock("@xyflow/react", async (importOriginal) => {
+  const { NodeChangeset } = await importOriginal<typeof XYFlow>();
+  return {
+    ReactFlow: (props: XYFlow.ReactFlowProps<CanvasNode, WorkflowCanvasEdge>) => {
+      flow.props = props;
+      flow.nodes = props.nodes ?? [];
+      flow.change = (changes) => props.onNodesChange?.(new NodeChangeset(changes));
+      return null;
+    },
+    Background: () => null,
+    Controls: () => null,
+    Handle: () => null,
+    MarkerType: { ArrowClosed: "arrowclosed" },
+    Position: { Top: "top", Bottom: "bottom" },
+    ConnectionLineType: { SmoothStep: "smoothstep" },
+    useConnection: () => ({ inProgress: false }),
+  };
+});
 afterEach(cleanup);
 
 it("shows a transient step only for a free output and never commits its diagram changes", () => {
@@ -370,10 +368,6 @@ it("opens output and pane insertion at measured centers without rewriting legacy
     { from: "task", port: "next" },
     { x: 290, y: 572, anchor: "center" },
   );
-  const instance = {
-    screenToFlowPosition: () => ({ x: 200, y: 600 }),
-  } as unknown as ReactFlowInstance<CanvasNode, WorkflowCanvasEdge>;
-  act(() => flow.props.onInit?.(instance));
   const pane = document.createElement("div");
   pane.className = "react-flow__pane";
   const event = new MouseEvent("mouseup", { clientX: 400, clientY: 600 });
@@ -383,7 +377,8 @@ it("opens output and pane insertion at measured centers without rewriting legacy
       isValid: false,
       fromHandle: { type: "source", id: "next", nodeId: "task" },
       toNode: null,
-    } as FinalConnectionState),
+      to: { x: 200, y: 600 },
+    } as XYFlow.FinalConnectionState),
   );
   expect(onAdd).toHaveBeenLastCalledWith(
     { from: "task", port: "next" },

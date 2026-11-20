@@ -12,6 +12,8 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "happy-dom",
+    // Vitest's fork watchdog needs an IPC operation Bun does not implement.
+    pool: "threads",
     setupFiles: ["./vitest.setup.ts"],
   },
 });

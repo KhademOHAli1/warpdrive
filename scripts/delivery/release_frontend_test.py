@@ -21,9 +21,13 @@ REPO = "KhademOHAli1/warpdrive"
 def fixtures(version=frontend.VERSION):
     scope = frontend.frontend_scope(version)
     policy = json.loads((Path(__file__).resolve().parents[2] / frontend.POLICY_PATH).read_text())
+    required_workflows = {frontend.CODEQL_WORKFLOW: sorted(frontend.CODEQL_JOBS)}
+    required_workflows.update({workflow_id: [job]
+                               for workflow_id, (_, job) in scope.get("hosted_workflows", {}).items()})
     policy.update(version=version, qualification_path=scope["qualification_path"],
                   required_source_paths=sorted(scope["source_paths"]),
-                  contributions=scope["contributions"], original_integrated_revisions=sorted(scope["heads"]))
+                  contributions=scope["contributions"], original_integrated_revisions=sorted(scope["heads"]),
+                  required_workflows=required_workflows)
     blobs = {path: b"offline source fixture\n" for path in scope["source_paths"]}
     blobs[frontend.FOOTER_PATH] = f'const FRONTEND_VERSION = "{version}";\n'.encode()
     blobs[frontend.PACKAGE_PATH] = json.dumps({"version": version}).encode()
@@ -65,7 +69,8 @@ class QualificationTests(unittest.TestCase):
             version_tuple("1.7.1.5")
         self.assertEqual(version_tuple("1.7.1"), (1, 7, 1))
         for version, expected in ((frontend.HEADLESS_VERSION, (1, 8, 1)),
-                                  (frontend.INBOX_VERSION, (1, 8, 2))):
+                                  (frontend.INBOX_VERSION, (1, 8, 2)),
+                                  (frontend.HEADLESS_ROLLOUT_VERSION, (1, 9, 1))):
             with self.subTest(version=version):
                 policy, blobs, record, _, plan = fixtures(version)
                 frontend.validate_proposal(plan, plan, policy)
@@ -95,6 +100,16 @@ class QualificationTests(unittest.TestCase):
                        {"contributions": {"integration/UX-010": 999}}, {"original_integrated_revisions": []}):
             with self.subTest(change=change), self.assertRaises(GateError):
                 frontend.validate_policy(dict(self.policy, **change))
+
+    def test_headless_policy_requires_both_registered_hosted_jobs(self):
+        policy, _, _, _, _ = fixtures(frontend.HEADLESS_ROLLOUT_VERSION)
+        registered = policy["required_workflows"]
+        for workflow_id, (filename, _) in frontend.HEADLESS_ROLLOUT_WORKFLOWS.items():
+            omitted = {key: jobs for key, jobs in registered.items() if key != workflow_id}
+            for replacement in (omitted, {**omitted, filename: registered[workflow_id]},
+                                {**registered, workflow_id: ["Deployment tooling checks"]}):
+                with self.subTest(workflows=replacement), self.assertRaisesRegex(GateError, "exact scoped hosted"):
+                    frontend.validate_policy(dict(policy, required_workflows=replacement))
 
     def test_candidate_frontend_policy_must_match_trusted_main(self):
         with patch.object(frontend, "run", return_value=REVISION), \
@@ -170,10 +185,15 @@ class GateAPI:
         self.contributions = frontend.CONTRIBUTIONS if contributions is None else contributions
         self.main = REVISION
         self.tags, self.releases, self.calls = [], [], []
+        self.workflows = {workflow_id: {"id": int(workflow_id), "path": f".github/workflows/{filename}",
+                                        "state": "active"}
+                          for workflow_id, (filename, _) in frontend.HEADLESS_ROLLOUT_WORKFLOWS.items()}
     def request(self, path, method="GET", payload=None):
         self.calls.append((path, method, payload))
         if path.endswith("/git/ref/heads/main"):
             return {"ref": "refs/heads/main", "object": {"type": "commit", "sha": self.main}}
+        if "/actions/workflows/" in path:
+            return self.workflows[path.rsplit("/", 1)[1]]
         if "/issues/" in path:
             number = int(path.rsplit("/", 1)[1])
             canonical = next(key for key, value in self.contributions.items() if value == number)
@@ -231,23 +251,34 @@ class FrontendGateTests(unittest.TestCase):
         return frontend.frontend_release_gate(self.api, self.plan, self.core,
                                               self.require_revision, self.references, allow_published=allow)
 
+    def select_version(self, version):
+        policy, self.blobs, self.record, self.raw, self.plan = fixtures(version)
+        self.policy.clear()
+        self.policy.update(policy)
+        self.plan["revision"] = REVISION
+        self.items.clear()
+        self.items.update({canonical: {"id": canonical, "kind": "task", "acceptance": ["Broad existing scope"]}
+                           for canonical in policy["contributions"]})
+        self.api.contributions = policy["contributions"]
+
     def test_exact_main_ci_and_scoped_ancestries_without_issue_completion(self):
-        for version in (frontend.VERSION, frontend.HEADLESS_VERSION, frontend.INBOX_VERSION):
-            policy, self.blobs, self.record, self.raw, self.plan = fixtures(version)
-            self.policy.clear()
-            self.policy.update(policy)
-            self.plan["revision"] = REVISION
-            self.items.clear()
-            self.items.update({canonical: {"id": canonical, "kind": "task", "acceptance": ["Broad existing scope"]}
-                               for canonical in policy["contributions"]})
-            self.api.contributions = policy["contributions"]
+        for version in (frontend.VERSION, frontend.HEADLESS_VERSION, frontend.INBOX_VERSION,
+                        frontend.HEADLESS_ROLLOUT_VERSION):
+            self.select_version(version)
             self.require_revision.reset_mock()
+            self.api.calls.clear()
             evidence = self.gate()
             self.require_revision.assert_called_once_with(REVISION)
             required = self.ci.call_args.args[3]["required_workflows"]
             self.assertEqual(required["full-ci.yml"], self.core["required_workflows"]["full-ci.yml"])
             self.assertEqual(required["full-quality.yml"], ["Full browser smoke checks"])
             self.assertEqual(set(required[frontend.CODEQL_WORKFLOW]), frontend.CODEQL_JOBS)
+            self.assertEqual(set(required), set(self.core["required_workflows"]) | set(self.policy["required_workflows"]))
+            hosted = frontend.frontend_scope(version).get("hosted_workflows", {})
+            self.assertEqual({path.rsplit("/", 1)[1] for path, _, _ in self.api.calls if "/actions/workflows/" in path},
+                             set(hosted))
+            for workflow_id, (_, job) in hosted.items():
+                self.assertEqual(required[workflow_id], [job])
             self.assertEqual(self.ci.call_args.kwargs["dynamic_codeql_workflow"], frontend.CODEQL_WORKFLOW)
             for head in self.plan["required_integrated_revisions"]:
                 self.assertIn(("git", "merge-base", "--is-ancestor", head, REVISION), self.git_calls)
@@ -258,6 +289,17 @@ class FrontendGateTests(unittest.TestCase):
             self.assertTrue(all(row["source_state"] == "open" and row["acceptance_claimed"] is False
                                 for row in evidence["contributions"]))
             self.assertTrue(all(method == "GET" for _, method, _ in self.api.calls))
+
+    def test_headless_gate_rejects_changed_hosted_workflow_identity(self):
+        self.select_version(frontend.HEADLESS_ROLLOUT_VERSION)
+        for workflow_id, original in list(self.api.workflows.items()):
+            for change in ({"id": 999}, {"path": ".github/workflows/other.yml"}, {"state": "disabled_manually"}):
+                self.api.workflows[workflow_id] = {**original, **change}
+                with self.subTest(workflow=workflow_id, change=change), \
+                        self.assertRaisesRegex(GateError, "workflow identity differs"):
+                    self.gate()
+                self.api.workflows[workflow_id] = original
+        self.ci.assert_not_called()
 
     def test_product_package_must_match_the_selected_stable_release(self):
         original = self.candidate

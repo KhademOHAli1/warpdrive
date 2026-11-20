@@ -25,9 +25,11 @@ from image_smoke import (
 
 
 HISTORICAL_WEB_FIRST_REVISION = "12b9233bde834fca6628e540256ab4a4065d8a02"
+RETAINED_WEB_FIRST_CORE_REVISION = "842d7022090ce355215bfae3e82f3e9a471279d9"
 
 WEB_IDENTITY_PROBE = r"""
 import assert from 'node:assert/strict';
+const [sourceRevision, expectedVersion] = process.argv.slice(1);
 const base = 'http://127.0.0.1:3000';
 const get = path => fetch(base + path, {redirect:'manual',signal:AbortSignal.timeout(3000)});
 const health = await get('/api/health');
@@ -39,8 +41,8 @@ const identity = await metadata.json();
 assert.deepEqual(identity, {
   contract: 'warpdrive.web.identity.v1',
   component: 'web',
-  version: identity.version,
-  sourceRevision: process.argv.at(-1),
+  version: expectedVersion ?? identity.version,
+  sourceRevision,
 });
 assert.match(identity.version, /^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.+-]+)?$/u);
 assert(!Object.keys(process.env).some(name => /^(DATABASE_URL|MIGRATION_DATABASE_URL|AUTH_SECRET|AUTH_SMTP_|MINIO_|TOKEN_ENCRYPTION_KEY|WS_TICKET_SECRET)/u.test(name)),
@@ -56,19 +58,23 @@ console.log(JSON.stringify({ready:true}));
 
 CORE_OFFLINE_WEB_PROBE = r"""
 import assert from 'node:assert/strict';
+const legacyCore = process.argv[1] === 'legacy-core';
 const web = new URL(process.env.CORE_WEB_ORIGIN);
 await assert.rejects(fetch(web, {signal:AbortSignal.timeout(1000)}), 'Web must be offline');
 const origin = 'http://127.0.0.1:3010';
 const ready = await fetch(origin + '/readyz', {signal:AbortSignal.timeout(5000)});
 assert.equal(ready.status, 200);
-assert.equal(ready.headers.get('x-warpdrive-runtime-code'), 'CORE_READY');
+const diagnosticCode = ready.headers.get('x-warpdrive-runtime-code');
+if (!legacyCore || diagnosticCode !== null) assert.equal(diagnosticCode, 'CORE_READY');
 const response = await fetch(origin + '/api/trpc/frontend.configuration', {
   headers: {'x-warpdrive-proxy-token': process.env.CORE_PROXY_TOKEN},
   signal: AbortSignal.timeout(5000),
 });
 assert.equal(response.status, 200, 'Core serves admitted requests with Web offline');
 assert.equal(typeof (await response.json()).result.data.json.MCP_ENABLED, 'boolean');
-console.log(JSON.stringify({ready:true,webOffline:true,admittedRpcServed:true,diagnosticCode:'CORE_READY'}));
+console.log(JSON.stringify({ready:true,webOffline:true,admittedRpcServed:true,
+  ...(diagnosticCode === null ? {} : {diagnosticCode}),
+}));
 """
 
 # Retain the original Web smoke assertions and supply the Host an ingress would send.
@@ -86,6 +92,8 @@ import { existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { hashPassword } from 'better-auth/crypto';
 import pg from 'pg';
 
+const [expectedWebVersion, inboxFlag] = process.argv.slice(1);
+const expectInboxWorkspace = inboxFlag === 'inbox-workspace';
 let stage = 'core-packaging';
 async function run() {
   assert(process.getuid() > 0, 'Core must execute as a non-root user');
@@ -151,10 +159,16 @@ async function run() {
     const person = await request('/contacts/people/' + personId, {headers});
     assert.equal(person.status, 200, 'Authenticated Web renders the owned record');
     assert((await person.text()).includes(personName), 'SSR reads the fixture record from Core');
+    if (expectInboxWorkspace) {
+      stage = 'authenticated-inbox';
+      const inbox = await request('/inbox', {headers});
+      assert.equal(inbox.status, 200, 'Authenticated Inbox renders through the retained Core');
+      assert.match(await inbox.text(), /<[^>]*\bdata-inbox-workspace(?:=|[\s>])/u);
+    }
     stage = 'authenticated-rpc';
     const version = await request('/api/trpc/version.get', {headers});
     assert.equal(version.status, 200, 'Authenticated tRPC relays through Web');
-    assert.equal((await version.json()).result.data.json.current, process.argv.at(-1));
+    assert.equal((await version.json()).result.data.json.current, expectedWebVersion);
 
     stage = 'csrf-rejection';
     const csrfToken = randomBytes(32).toString('base64url');
@@ -165,21 +179,25 @@ async function run() {
       headers:{cookie:sessionCookie + '; wd_csrf=' + csrfToken,'content-type':'application/json'},
       body:JSON.stringify({json:{name,definition,csrfToken:token}}),
     });
-    const persistedOwners = async () => (await client.query(
-      "SELECT owner_id FROM saved_filters WHERE target_entity='stats-performance-report' AND name=$1", [name],
+    const persistedReports = async () => (await client.query(
+      "SELECT id, owner_id FROM saved_filters WHERE target_entity='stats-performance-report' AND name=$1", [name],
     )).rows;
     assert.equal((await save(null)).status, 403, 'Missing CSRF is denied through Web');
-    assert.deepEqual(await persistedOwners(), [], 'Denied mutation causes no write');
+    assert.deepEqual(await persistedReports(), [], 'Denied mutation causes no write');
     stage = 'durable-write';
     const saved = await save(csrfToken);
     assert.equal(saved.status, 200, 'Authorized mutation succeeds through Web');
     assert.equal((await saved.json()).result.data.json.state, 'created');
-    assert.deepEqual(await persistedOwners(), [{owner_id:userId}], 'One durable write for the actual actor');
-    writeFileSync('/tmp/web-rollout.json', JSON.stringify({sessionCookie,personId,personName}), {mode:0o600,flag:'wx'});
+    const reports = await persistedReports();
+    assert.equal(reports.length, 1, 'Exactly one durable write');
+    assert.equal(reports[0].owner_id, userId, 'The durable write belongs to the actual actor');
+    writeFileSync('/tmp/web-rollout.json', JSON.stringify({sessionCookie,personId,personName,userId,reportName:name,
+      reportId:reports[0].id}), {mode:0o600,flag:'wx'});
   } finally {
     await client.end();
   }
   console.log(JSON.stringify({nativeSession:true,authenticatedSsr:true,protectedRpc:true,proxyCredentialRequired:true,
+    ...(expectInboxWorkspace ? {authenticatedInboxSsr:true} : {}),
     csrfDenied:true,durableAuthorizedWrite:true,uid:process.getuid()}));
 }
 
@@ -198,26 +216,83 @@ try {
 WEB_ROLLOUT_SESSION_PROBE = r"""
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-const {sessionCookie,personId,personName} = JSON.parse(readFileSync('/tmp/web-rollout.json','utf8'));
-const web = new URL(process.env.CORE_WEB_ORIGIN);
-const headers = {host:new URL(process.env.BASE_URL).host,cookie:sessionCookie};
-const request = (path) => fetch(new URL(path, web), {headers,redirect:'manual',signal:AbortSignal.timeout(15000)});
-const response = await request('/contacts/people/' + personId);
-assert.equal(response.status, 200, 'The pre-rollout session works on the selected Web image');
-assert((await response.text()).includes(personName), 'The selected Web image reads the same Core record');
-const version = await request('/api/trpc/version.get');
-assert.equal(version.status, 200);
-assert.equal((await version.json()).result.data.json.current, process.argv.at(-1));
-console.log(JSON.stringify({sameSession:true,sameRecord:true,activeWebVersion:true}));
+import pg from 'pg';
+const [expectedWebVersion, inboxFlag] = process.argv.slice(1);
+const expectInboxWorkspace = inboxFlag === 'inbox-workspace';
+let stage = 'rollout-fixture';
+try {
+  const fixture = JSON.parse(readFileSync('/tmp/web-rollout.json','utf8'));
+  const {sessionCookie,personId,personName,userId,reportName,reportId} = fixture;
+  const web = new URL(process.env.CORE_WEB_ORIGIN);
+  const headers = {host:new URL(process.env.BASE_URL).host,cookie:sessionCookie};
+  const request = (path, timeout = 15000) => fetch(new URL(path, web), {
+    headers,redirect:'manual',signal:AbortSignal.timeout(timeout),
+  });
+  stage = 'rollout-session';
+  const response = await request('/contacts/people/' + personId);
+  assert.equal(response.status, 200, 'The pre-rollout session works on the selected Web image');
+  assert((await response.text()).includes(personName), 'The selected Web image reads the same Core record');
+  if (expectInboxWorkspace) {
+    stage = 'rollout-inbox';
+    const inbox = await request('/inbox');
+    assert.equal(inbox.status, 200, 'Authenticated Inbox renders after replacing Web');
+    assert.match(await inbox.text(), /<[^>]*\bdata-inbox-workspace(?:=|[\s>])/u);
+  }
+  stage = 'rollout-version';
+  // Retained Core can briefly cache the previous Web identity or the outage.
+  const versionDeadline = performance.now() + 8000;
+  let activeVersion;
+  do {
+    const version = await request('/api/trpc/version.get', 3000);
+    if (version.status === 503) {
+      await version.body?.cancel();
+    } else {
+      assert.equal(version.status, 200, 'Authenticated version RPC survives Web replacement');
+      activeVersion = (await version.json()).result.data.json.current;
+      if (activeVersion === expectedWebVersion) break;
+    }
+    await Bun.sleep(500);
+  } while (performance.now() < versionDeadline);
+  assert.equal(activeVersion, expectedWebVersion, 'Core resolves the exact selected Web version');
+
+  stage = 'rollout-persistence';
+  const dbUrl = new URL(process.env.DATABASE_URL);
+  assert.equal(dbUrl.hostname, 'postgres');
+  assert.equal(dbUrl.pathname, '/warpdrive_image_smoke');
+  assert.equal(dbUrl.username, 'smoke_runtime');
+  const client = new pg.Client({connectionString:dbUrl.href,connectionTimeoutMillis:3000,statement_timeout:3000});
+  await client.connect();
+  try {
+    const saved = await client.query(
+      "SELECT id, owner_id FROM saved_filters WHERE target_entity='stats-performance-report' AND name=$1", [reportName],
+    );
+    assert.deepEqual(saved.rows, [{id:reportId,owner_id:userId}], 'The same report remains owned by its actor');
+  } finally {
+    await client.end();
+  }
+  console.log(JSON.stringify({sameSession:true,sameRecord:true,sameSavedReport:true,activeWebVersion:true,
+    ...(expectInboxWorkspace ? {authenticatedInboxSsr:true} : {}),
+  }));
+} catch (error) {
+  const isStatus = value => Number.isInteger(value) && value >= 100 && value <= 599;
+  const status = isStatus(error?.actual) && isStatus(error?.expected)
+    ? ` (HTTP ${error.actual}, expected ${error.expected})` : '';
+  console.error('headless-probe-failed: ' + stage + status);
+  process.exitCode = 1;
+}
 """
 
 
 class HeadlessImageSmoke(ImageSmoke):
     def __init__(self, docker, images, core_image, output, revision, *, platform="linux/amd64",
-                 baseline_web=None, historical_web_first=False):
+                 baseline_web=None, baseline_web_version=None, historical_web_first=False,
+                 web_version=None, expect_inbox_workspace=False):
         super().__init__(docker, images, output, revision)
         self.core_image = validate_reference(core_image)
+        self.web_version = web_version
+        self.expect_inbox_workspace = expect_inbox_workspace
         self.baseline_web = baseline_web
+        self.baseline_web_version = baseline_web_version
         self.historical_web_first = historical_web_first
         self.platform = platform
         self.web_identity = None
@@ -225,6 +300,8 @@ class HeadlessImageSmoke(ImageSmoke):
         self.public_host = urlsplit(self.env["BASE_URL"]).netloc
         self.report["kind"] = "warpdrive-headless-final-image-smoke"
         self.report["platform"] = platform
+        if baseline_web_version is not None:
+            self.report["expectedBaselineWebVersion"] = baseline_web_version
         self.report["limitations"] = [
             "Exact final images exercised on fresh disposable PostgreSQL and an internal Docker bridge.",
             "Realtime rejects unauthenticated traffic. Worker processes one empty-database file reaper job after restart.",
@@ -247,18 +324,24 @@ class HeadlessImageSmoke(ImageSmoke):
             else:
                 self.report["images"][role] = identity
         if self.baseline_web is not None:
-            reference, revision = self.baseline_web
-            raw = self.docker.json(["image", "inspect", reference])
-            identity = image_metadata(raw, revision)
-            image_platform = f"{raw[0].get('Os')}/{raw[0].get('Architecture')}"
-            if image_platform != self.platform:
-                raise SmokeError(f"Baseline Web image must be {self.platform}")
-            if identity["id"] in local_ids or identity["revision"] == self.expected_revision:
-                raise SmokeError("Baseline Web must be a distinct image built from a different revision")
-            self.report["baselineWebImage"] = identity
+            self.inspect_baseline_web(local_ids)
         return {"revision": self.expected_revision, "components": [*COMPONENTS, "core"]}
 
-    def start_web(self, identity):
+    def inspect_baseline_web(self, local_ids):
+        reference, revision = self.baseline_web
+        raw = self.docker.json(["image", "inspect", reference])
+        identity = image_metadata(raw, revision)
+        if re.fullmatch(r"sha256:[a-f0-9]{64}", reference) and identity["id"] != reference:
+            raise SmokeError("Baseline Web image differs from the admitted config digest")
+        if f"{raw[0].get('Os')}/{raw[0].get('Architecture')}" != self.platform:
+            raise SmokeError(f"Baseline Web image must be {self.platform}")
+        if identity["id"] in local_ids or revision == self.expected_revision:
+            raise SmokeError("Baseline Web must be a distinct image built from a different revision")
+        self.report["baselineWebImage"] = identity
+
+    def start_web(self, identity=None):
+        if identity is None:
+            identity = self.report["images"]["web"]
         web = self.start_container(
             "web", identity["id"], [],
             environment={
@@ -273,7 +356,11 @@ class HeadlessImageSmoke(ImageSmoke):
         self.wait_for(lambda: self.docker.run(
             ["exec", web, "bun", "--no-env-file", "-e", HEALTH_PROBE], timeout=10, check=False,
         ).returncode == 0, "Web-local readiness", 120, web)
-        self.web_identity = self.probe(web, WEB_IDENTITY_PROBE, identity["revision"], timeout=15)
+        arguments = [identity["revision"]]
+        expected_version = self.web_version if identity["revision"] == self.expected_revision else self.baseline_web_version
+        if expected_version is not None:
+            arguments.append(expected_version)
+        self.web_identity = self.probe(web, WEB_IDENTITY_PROBE, *arguments, timeout=15)
         return self.web_identity
 
     def start_core(self):
@@ -323,12 +410,16 @@ class HeadlessImageSmoke(ImageSmoke):
         current = self.container_identity("web", previous["id"])
         self.docker.run(["stop", "--time", "20", current["Id"]], timeout=30)
         self.docker.run(["rm", current["Id"]], timeout=10)
-        core_during_web_outage = self.probe(self.containers["core"], CORE_OFFLINE_WEB_PROBE, timeout=10)
+        offline_args = ["legacy-core"] if self.historical_web_first else []
+        core_during_web_outage = self.probe(self.containers["core"], CORE_OFFLINE_WEB_PROBE, *offline_args, timeout=15)
         metadata = self.start_web(selected)
         runtime = self.container_identity("web", selected["id"])
         if runtime["Id"] == current["Id"]:
             raise SmokeError("Web replacement retained the previous container")
-        session = self.probe(self.containers["core"], WEB_ROLLOUT_SESSION_PROBE, metadata["version"], timeout=40)
+        session_args = [metadata["version"]]
+        if self.expect_inbox_workspace:
+            session_args.append("inbox-workspace")
+        session = self.probe_web_through_core(WEB_ROLLOUT_SESSION_PROBE, "Web replacement", *session_args, timeout=55)
         return {"identity": metadata, "runtime": runtime, "session": session,
                 "coreDuringWebOutage": core_during_web_outage}
 
@@ -337,7 +428,10 @@ class HeadlessImageSmoke(ImageSmoke):
         retained, ledger = self.retained_components(), self.migration_ledger()
         transitions = {}
         for phase, prior, selected in (("upgrade", baseline, candidate), ("rollback", candidate, baseline)):
-            transitions[phase] = self.replace_web(prior, selected)
+            transition = self.replace_web(prior, selected)
+            if phase == "upgrade":
+                transition["webProbe"] = self.probe_web()
+            transitions[phase] = transition
             if self.retained_components() != retained or self.migration_ledger() != ledger:
                 raise SmokeError(f"Web {phase} changed a retained service or the migration ledger")
             self.probe(self.containers["core"], CORE_READINESS_PROBE, timeout=5)
@@ -359,29 +453,36 @@ class HeadlessImageSmoke(ImageSmoke):
         state = self.state(core)
         if state["Running"] or state.get("OOMKilled") or state.get("ExitCode") != 0:
             raise SmokeError("Core image did not drain cleanly")
-        self.probe(self.containers["web"], WEB_IDENTITY_PROBE, self.web_identity["sourceRevision"], timeout=15)
+        self.probe(self.containers["web"], WEB_IDENTITY_PROBE, self.web_identity["sourceRevision"],
+                   self.web_identity["version"], timeout=15)
         return {"coreDrained": True, "webIdentityServedIndependently": True}
 
     def probe_authenticated_web(self):
+        return self.probe_web_through_core(
+            CORE_WEB_PROBE, "Authenticated Web", self.web_identity["version"],
+            "inbox-workspace" if self.expect_inbox_workspace else "original-inbox", timeout=100,
+        )
+
+    def probe_web_through_core(self, script, label, *arguments, timeout):
         result = self.docker.run(
-            ["exec", self.containers["core"], "bun", "--no-env-file", "-e", CORE_WEB_PROBE,
-             self.web_identity["version"]],
-            timeout=100, check=False,
+            ["exec", self.containers["core"], "bun", "--no-env-file", "-e", script, *arguments],
+            timeout=timeout, check=False,
         )
         if result.returncode:
             # Only emit a fixed phase and optional HTTP status codes, never raw probe stderr.
             evidence = re.search(
                 r"^headless-probe-failed: (core-packaging|core-and-anonymous-http|fixture-seeding|"
-                r"native-login|authenticated-ssr|authenticated-rpc|csrf-rejection|durable-write)"
+                r"native-login|authenticated-ssr|authenticated-inbox|authenticated-rpc|csrf-rejection|durable-write|"
+                r"rollout-fixture|rollout-session|rollout-inbox|rollout-version|rollout-persistence)"
                 r"( \(HTTP [1-5]\d{2}, expected [1-5]\d{2}\))?$",
                 result.stderr, re.MULTILINE,
             )
             phase = "probe process startup" if evidence is None else evidence[1] + (evidence[2] or "")
-            raise SmokeError(f"Authenticated Web probe failed at {phase} (exit {result.returncode})")
+            raise SmokeError(f"{label} probe failed at {phase} (exit {result.returncode})")
         try:
             return json.loads(result.stdout)
         except json.JSONDecodeError as error:
-            raise SmokeError("Authenticated Web probe returned invalid evidence") from error
+            raise SmokeError(f"{label} probe returned invalid evidence") from error
 
     def run(self):
         self.output_dir.mkdir(parents=True, exist_ok=False)

@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 
 # Use the admitted repository context with --file deploy/images/Web.Dockerfile --target web.
-# This is the same Bun 1.4.4 Linux amd64 base as deploy/images/Dockerfile.
-FROM oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 AS base
+# This is the same Bun 1.4.5 Linux amd64 base as deploy/images/Dockerfile.
+FROM oven/bun@sha256:7c8e62d7fb0b0b5178cc4396ed24f026591ddbff6ce654ff1022acf195bb581b AS base
 WORKDIR /app
 
 FROM base AS deps

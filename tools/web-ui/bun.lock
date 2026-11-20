@@ -5,17 +5,17 @@
     "": {
       "name": "warpdrive-web-ui",
       "dependencies": {
-        "@ui-sdk/core": "0.1.0-beta.1",
-        "@ui-sdk/react": "0.1.0-beta.1",
+        "@ui-sdk/core": "0.1.0-beta.13",
+        "@ui-sdk/react": "0.1.0-beta.13",
         "react": "19.3.1",
         "react-dom": "19.3.1",
       },
     },
   },
   "packages": {
-    "@ui-sdk/core": ["@ui-sdk/core@0.1.0-beta.1", "", {}, "sha512-sWsZW8RN6Gviir7REQYuDIafm9hierHQE31OJ+2g+1Pp3lDVKp/dk0+0dxFvqOQRmBveRvlE9FiARgNlQ9dMFw=="],
+    "@ui-sdk/core": ["@ui-sdk/core@0.1.0-beta.13", "", {}, "sha512-URjk9hqdc/cZKDtw6Gb9NqjY48U8l0EgoP4d5ghlooa3av+GrR0iSmsav133UU4oelcuKIO1ZPJ4j7gIPMr1Vg=="],
 
-    "@ui-sdk/react": ["@ui-sdk/react@0.1.0-beta.1", "", { "peerDependencies": { "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.1", "react": ">=19", "react-dom": ">=19" }, "optionalPeers": ["@types/react"] }, "sha512-7wcUsZI+WoG2uo3N+PHrWntk97qI9ez2cUrHV9H507FiL118Pi4tuhWUCMDtWwEUCNQLybpBm1QRLkEXVOPAUg=="],
+    "@ui-sdk/react": ["@ui-sdk/react@0.1.0-beta.13", "", { "peerDependencies": { "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.13", "react": ">=19", "react-dom": ">=19" }, "optionalPeers": ["@types/react"] }, "sha512-Gz85tAcPJHwnv90WMIAtED3fDamqVD3F3FF3uKsA/TsL+KbaeHSgX1gGdIpNcnzkmDO8YZk9aZBKgCFgpaCcHA=="],
 
     "react": ["react@19.3.1", "", {}, "sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw=="],
 

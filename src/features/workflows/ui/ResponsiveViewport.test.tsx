@@ -12,7 +12,8 @@ const flow = vi.hoisted(() => ({
   viewport: { x: 0, y: 150, zoom: 1 },
 }));
 vi.mock("@xyflow/react", () => ({
-  useStore: (selector: (state: { width: number }) => number) => selector({ width: flow.width }),
+  useViewportStore: (selector: (state: { width: number }) => number) =>
+    selector({ width: flow.width }),
   useNodesInitialized: () => true,
   useReactFlow: () => ({
     fitView: flow.fitView,
@@ -71,7 +72,7 @@ it("reveals an offscreen step at a readable scale only for an explicit navigatio
   const view = render(<ResponsiveViewport reveal={{ id: "task", nonce: 1 }} />);
   expect(flow.fitView).toHaveBeenLastCalledWith({
     nodes: [{ id: "task" }],
-    padding: 0.6,
+    padding: "18.75%",
     minZoom: 0.8,
     maxZoom: 1,
     duration: 180,
