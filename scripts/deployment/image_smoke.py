@@ -579,12 +579,20 @@ class ImageSmoke:
     def worker(self) -> dict[str, Any]:
         name = self.start_container("worker", self.report["images"]["worker"]["id"],
                                     ["bun", "dist/worker.mjs"], memory="1024m")
+
+        def started():
+            logs = self.docker.run(["logs", "--tail", "20", name], timeout=5)
+            return "worker (pg-boss) started" in (logs.stdout + logs.stderr).splitlines()
+
+        # Migrator already creates the queue, so queue presence alone cannot prove consumers started.
+        self.wait_for(started, "Worker handler registration", 65, name)
         if self.queue_helper("registered") != {"registered": True}:
             raise SmokeError("Application worker did not register its handler")
-        self.assert_running(name)
-        self.docker.run(["stop", "--time", "10", name], timeout=20)
-        if self.state(name)["Running"]:
-            raise SmokeError("Worker did not stop before durable enqueue")
+        # Match the deployed Worker's grace period before checking its durable queue.
+        self.docker.run(["stop", "--time", "75", name], timeout=85)
+        stopped = self.state(name)
+        if stopped["Running"] or stopped.get("OOMKilled") or stopped.get("ExitCode") != 0:
+            raise SmokeError("Worker did not drain cleanly before durable enqueue")
         queued = self.queue_helper("enqueue")
         job_id = queued.get("jobId")
         if (queued.get("state") != "created" or not isinstance(job_id, str)

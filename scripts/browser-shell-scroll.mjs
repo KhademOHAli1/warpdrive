@@ -270,6 +270,25 @@ async function waitForSidebarWidths(page, state) {
   );
 }
 
+async function assertDesktopHeaderAlignment(page) {
+  const topbar = page.locator("[data-app-topbar]");
+  const sidebarTopbar = page.locator("aside[data-sidebar-state] [data-sidebar-topbar]");
+  const [header, sidebar] = await Promise.all(
+    [topbar, sidebarTopbar].map((locator) =>
+      locator.evaluate((element) => {
+        const { bottom, height } = element.getBoundingClientRect();
+        const { borderBlockEndColor, borderBlockEndWidth } = getComputedStyle(element);
+        return { bottom, height, borderBlockEndColor, borderBlockEndWidth };
+      }),
+    ),
+  );
+  assert.equal(header.height, 57, "Desktop topbar must use the compact shell height");
+  assert(Math.abs(header.bottom - sidebar.bottom) <= 1, "Desktop shell dividers must align");
+  assert.equal(header.borderBlockEndWidth, "1px");
+  assert.equal(sidebar.borderBlockEndWidth, "1px");
+  assert.equal(header.borderBlockEndColor, sidebar.borderBlockEndColor);
+}
+
 export async function exerciseCollapsedSidebar(page) {
   const sidebar = page.locator("aside[data-sidebar-state]");
   const pin = sidebar.locator('button[aria-controls="primary-navigation"]');
@@ -278,10 +297,12 @@ export async function exerciseCollapsedSidebar(page) {
   await page.locator("[data-app-topbar]").hover();
   await sidebar.locator(':scope[data-sidebar-state="collapsed"]').waitFor();
   await waitForSidebarWidths(page, "collapsed");
+  await assertDesktopHeaderAlignment(page);
   const before = await page.locator("[data-app-content]").boundingBox();
   await page.locator("#primary-navigation").hover();
   await sidebar.locator(':scope[data-sidebar-state="peeking"]').waitFor();
   await waitForSidebarWidths(page, "peeking");
+  await assertDesktopHeaderAlignment(page);
   assert(
     await page.locator("#primary-navigation").evaluate((nav) => {
       const rect = nav.getBoundingClientRect();
@@ -305,6 +326,78 @@ export async function exerciseCollapsedSidebar(page) {
   await pin.click();
   assert.equal(await pin.getAttribute("aria-pressed"), "true");
   await waitForSidebarWidths(page, "expanded");
+  await assertDesktopHeaderAlignment(page);
+}
+
+async function exerciseInboxWorkspace(page, locale, mobile = false) {
+  const response = await page.goto("/inbox", { waitUntil: "networkidle" });
+  assert.equal(response?.status(), 200);
+  await assertShellLocale(page, locale);
+  const workspace = page.locator("[data-app-content] > [data-inbox-workspace]");
+  await workspace.waitFor();
+  const geometry = await workspace.evaluate((element) => {
+    const main = element.parentElement;
+    const grid = element.firstElementChild;
+    const mainBounds = main.getBoundingClientRect();
+    const gridBounds = grid.getBoundingClientRect();
+    const style = getComputedStyle(grid);
+    return {
+      insets: [
+        gridBounds.top - mainBounds.top,
+        gridBounds.right - mainBounds.right,
+        gridBounds.bottom - mainBounds.bottom,
+        gridBounds.left - mainBounds.left,
+      ],
+      hasHorizontalOverflow: main.scrollWidth > main.clientWidth + 1,
+      hasFrame: style.borderWidth !== "0px" || style.borderRadius !== "0px",
+    };
+  });
+  assert(
+    geometry.insets.every((inset) => Math.abs(inset) <= 1),
+    "Inbox must meet all workspace edges",
+  );
+  assert.equal(geometry.hasHorizontalOverflow, false);
+  assert.equal(geometry.hasFrame, false);
+
+  const folders = locale === "fa" ? "پوشه‌های ایمیل" : "Mail folders";
+  const drafts = locale === "fa" ? "پیش‌نویس‌ها" : "Drafts";
+  const rail = workspace.getByRole("navigation", { name: folders });
+  const picker = workspace.getByRole("combobox", { name: folders });
+  const [list, reader] = await workspace
+    .locator('[data-mail="true"] > section[data-reading]')
+    .all();
+  await list.waitFor();
+  await workspace.getByRole("searchbox").waitFor();
+  if (mobile) {
+    assert.equal((await page.locator("[data-app-topbar]").boundingBox())?.height, 64);
+    assert.equal(await rail.isVisible(), false);
+    assert.equal(await reader.isVisible(), false);
+    await picker.tap();
+    await page.getByRole("option", { name: drafts, exact: true }).tap();
+  } else {
+    assert.equal(await picker.isVisible(), false);
+    await rail.waitFor();
+    await reader.waitFor();
+    for (const panel of [rail, list]) {
+      assert.equal(
+        await panel.evaluate((element) => getComputedStyle(element).borderInlineEndWidth),
+        "1px",
+        "Desktop inbox keeps its logical column dividers",
+      );
+    }
+    const [folderBounds, listBounds, readerBounds] = await Promise.all(
+      [rail, list, reader].map((panel) => panel.boundingBox()),
+    );
+    assert(folderBounds && listBounds && readerBounds);
+    if (locale === "fa") {
+      assert(folderBounds.x > listBounds.x && listBounds.x > readerBounds.x);
+    } else {
+      assert(folderBounds.x < listBounds.x && listBounds.x < readerBounds.x);
+    }
+    await rail.getByRole("link", { name: drafts, exact: true }).click();
+  }
+  await page.waitForURL((url) => url.searchParams.get("folder") === "drafts");
+  await workspace.getByRole("heading", { name: drafts, exact: true }).first().waitFor();
 }
 
 export async function exerciseMobileSidebar(page, locale) {
@@ -416,6 +509,8 @@ export async function runShellScrollBrowserSmoke({ journey, signIn }) {
         await prepareShellLocale(page, locale);
         await exerciseShellScrollBoundaries(page, locale);
         await exerciseCollapsedSidebar(page);
+        await page.setViewportSize({ width: 1440, height });
+        await exerciseInboxWorkspace(page, locale);
       },
       { width: 1280, height },
     );
@@ -426,6 +521,7 @@ export async function runShellScrollBrowserSmoke({ journey, signIn }) {
         await signIn(page);
         await prepareShellLocale(page, locale);
         await exerciseMobileSidebar(page, locale);
+        await exerciseInboxWorkspace(page, locale, true);
         // Later smoke journeys share this account and start from English.
         if (locale !== "en") await prepareShellLocale(page, "en");
       },

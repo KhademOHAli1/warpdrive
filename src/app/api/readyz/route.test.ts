@@ -126,7 +126,7 @@ describe("Web to Core readiness", () => {
   it("applies the same deadline to a stalled response body", async () => {
     vi.useFakeTimers();
     const aborted = vi.fn();
-    fetchCore.mockImplementationOnce(async (_url, init) => {
+    fetchCore.mockImplementationOnce((_url, init) => {
       const body = new ReadableStream<Uint8Array>({
         start(stream) {
           stream.enqueue(new TextEncoder().encode("{"));
@@ -136,7 +136,9 @@ describe("Web to Core readiness", () => {
           });
         },
       });
-      return new Response(body, { headers: { "content-type": "application/json" } });
+      return Promise.resolve(
+        new Response(body, { headers: { "content-type": "application/json" } }),
+      );
     });
     const pending = expectReadiness("WEB_READINESS_CORE_TIMEOUT");
     await vi.advanceTimersByTimeAsync(3_000);

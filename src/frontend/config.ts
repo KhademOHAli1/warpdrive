@@ -13,7 +13,7 @@ export function parseHttpOrigin(value: string): string | null {
 /** Presentation needs an HTTP origin, never database or provider credentials. */
 export function coreOrigin(): string {
   const value = process.env.CORE_API_ORIGIN;
-  if (!value) throw new Error("CORE_API_ORIGIN is required");
+  if (value === undefined || value === "") throw new Error("CORE_API_ORIGIN is required");
   const origin = parseHttpOrigin(value);
   if (origin === null) throw new Error("CORE_API_ORIGIN must be an HTTP origin");
   return origin;
@@ -22,7 +22,7 @@ export function coreOrigin(): string {
 /** Compare readiness against the operator-owned public origin when configured. */
 export function webPublicOrigin(): string | null {
   const value = process.env.WEB_PUBLIC_ORIGIN;
-  if (!value) return null;
+  if (value === undefined || value === "") return null;
   const origin = parseHttpOrigin(value);
   if (origin === null) throw new Error("WEB_PUBLIC_ORIGIN must be an HTTP origin");
   return origin;

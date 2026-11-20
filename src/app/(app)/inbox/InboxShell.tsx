@@ -16,7 +16,7 @@ export function InboxShell({
 }): React.ReactNode {
   return (
     <InboxMailboxProvider value={newEmailEnabled}>
-      <div className={styles.shellRoot}>
+      <div className={styles.shellRoot} data-inbox-workspace>
         <div className={styles.shell}>
           <div className={styles.folders}>
             <InboxFolderRail newEmailEnabled={newEmailEnabled} hideComposeOnList />

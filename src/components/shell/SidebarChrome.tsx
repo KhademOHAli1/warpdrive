@@ -54,6 +54,7 @@ export function SidebarChrome({
   );
   return (
     <div
+      data-sidebar-topbar
       className={cn(
         styles.sidebarTopbar,
         expanded ? styles.sidebarTopbarExpanded : styles.sidebarTopbarCollapsed,

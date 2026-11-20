@@ -13,7 +13,7 @@ const processGeneration = randomUUID();
 export const writeCoreDiagnostic: CoreDiagnosticSink = (event) => {
   // One stream preserves process order even when severity changes.
   // biome-ignore lint/suspicious/noConsole: Write the structured runtime diagnostic to host stdout.
-  console.info(JSON.stringify(event));
+  console.info(JSON.stringify(event)); // eslint-disable-line no-console -- Structured stdout sink.
 };
 
 export function reportCoreDiagnostic(

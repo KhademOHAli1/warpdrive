@@ -83,7 +83,7 @@ export const operationsContractInventoryEntry = classifyInventory(
     "sourceReview:src/features/operations/workerHeartbeat.ts#01bb8e05210a790bfd1303fdd2362f5726aa9eabe68044f1b9be15a75c30fba7",
     "writer:src/features/operations/ui/OperationsBellLink.tsx#query:undefined",
     "sourceReview:src/features/operations/ui/ObservationDetails.tsx#fa6be2530e2109fadf41bdc143f113575f5602e572cfd3d2472f34b0d7ebd99a",
-    "sourceReview:src/features/operations/ui/OperationsLogs.tsx#44d617d699110f09b0015fffce8805a2d2d02624b42d67a0fa08bc3c4241fdd9",
+    "sourceReview:src/features/operations/ui/OperationsLogs.tsx#4ca67299ed2ac0b3d78673cfd1586bd88c7e3f6e194f98ff14419ac3258f120d",
     "sourceReview:src/features/operations/ui/OperationsMaintenance.tsx#915f1fa2304d36e5a6759d4ad45cdf20739f49ca6ca5e0834cf4edbfdf92a132",
     "sourceReview:src/features/operations/ui/OperationsShared.tsx#1bf962c2aa513213636a41907b5cef1a4bce8768294c052075d98ec4a97ad3c8",
     "sourceReview:src/features/operations/ui/readCycle.ts#f630e0bfbca27be2cda779f142b56b7d948b59fc4cf982edfbaa2e4dd5181d21",

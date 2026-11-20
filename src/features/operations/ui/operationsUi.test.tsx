@@ -396,6 +396,17 @@ describe("operations UI freshness and privacy", () => {
           ],
           payload: "not-rendered-private-payload",
         },
+        {
+          receiptId: "retained-core-receipt",
+          sourceId: "source-private",
+          generationId: "generation",
+          sequence: 2,
+          payloadSha256: "b".repeat(64),
+          observationCount: 1,
+          observedAt: iso,
+          receivedAt: iso,
+          recordedAt: iso,
+        },
       ],
       nextCursor: null,
     });
@@ -403,6 +414,7 @@ describe("operations UI freshness and privacy", () => {
     await flush();
     expect(screen.getByText(english.recovered)).toBeTruthy();
     expect(screen.getByText("receipt-private")).toBeTruthy();
+    expect(screen.getByText("retained-core-receipt")).toBeTruthy();
     expect(screen.getByText("CORE_DB_ROLE_REJECTED")).toBeTruthy();
     expect(screen.getByText(processGeneration)).toBeTruthy();
     expect(screen.getByText(english.deploymentStages.switch_intent)).toBeTruthy();

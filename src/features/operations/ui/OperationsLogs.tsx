@@ -27,11 +27,11 @@ import { useOperationsCursor } from "./viewState";
 
 const readSlot = createOperationsReadSlot();
 
-function DiagnosticDetails({
-  diagnostic,
-}: {
-  diagnostic: EventPage["items"][number]["diagnostics"][number];
-}) {
+type Receipt = EventPage["items"][number];
+// A retained Core can return the receipt envelope without its new diagnostics field.
+type CompatibleReceipt = Omit<Receipt, "diagnostics"> & Partial<Pick<Receipt, "diagnostics">>;
+
+function DiagnosticDetails({ diagnostic }: { diagnostic: Receipt["diagnostics"][number] }) {
   const L = useOperationsLabels();
   const { component, reason, state, deployment, processGeneration } = diagnostic;
   const stage = deployment?.stage ?? null;
@@ -64,7 +64,7 @@ function DiagnosticDetails({
           </Metric>
         </dl>
       )}
-      {processGeneration && (
+      {processGeneration !== null && processGeneration !== "" && (
         <dl className="text-sm">
           <Metric label={L.processGeneration}>
             <OperationsCode>{processGeneration}</OperationsCode>
@@ -207,7 +207,7 @@ export function OperationsLogs() {
                     <EmptyState title={L.emptyEvents} body={L.emptyEventsInfo} />
                   ) : (
                     <div className="divide-y">
-                      {result.data.receipts.items.slice(0, 30).map((receipt) => (
+                      {result.data.receipts.items.slice(0, 30).map((receipt: CompatibleReceipt) => (
                         <article key={receipt.receiptId} className="py-3">
                           {(receipt.diagnostics ?? []).map((diagnostic) => (
                             <DiagnosticDetails key={diagnostic.component} diagnostic={diagnostic} />

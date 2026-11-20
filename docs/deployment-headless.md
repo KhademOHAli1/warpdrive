@@ -28,6 +28,35 @@ Pages use request-scoped HTTP clients and uncached authenticated reads. Existing
 
 Protocol, callback, export and binary URLs retain their public paths. Their Next route handlers relay raw bodies, response streams, individual cookies and redirects to the fixed Core origin. Web's `/api/health` and `/api/runtime/web-identity` remain local liveness and identity endpoints. Web's `/api/readyz` checks the configured Core gateway, proxy credential, RPC response and public origin. Core's `/readyz` reports backend readiness.
 
+## Develop Web against a retained Core
+
+Use a compatible non-production Core that already has development data and native accounts. Keep that Core, its database and its migrations fixed while you edit and restart Web. Install the locked application packages and the reviewed Web UI sidecar with Bun 1.4.4.
+
+```sh
+bun --no-env-file install --frozen-lockfile
+bun --no-env-file scripts/deployment/install-web-ui.mjs
+(umask 077 && cp .env.web.example .env.web)
+```
+
+In `.env.web`, set `CORE_API_ORIGIN` to the private Core HTTP endpoint and `CORE_PROXY_TOKEN` to the matching transport credential. Set `WEB_PUBLIC_ORIGIN` to Core's `BASE_URL` and open Web through that exact browser-facing origin. For direct local access, use `http://127.0.0.1:3000` for the public origin on both services, `http://127.0.0.1:3010` for the private Core endpoint, and `FRONTEND_TRUSTED_PROXY_HEADER=none`. Use a reachable Realtime WebSocket URL in `NEXT_PUBLIC_WS_URL`, use `same-origin` when development ingress routes `/_ws`, or leave the value empty while working without Realtime.
+
+Keep database, native authentication, storage and provider settings in the backend environment. Next.js loads its standard dotenv files from the checkout, so keep backend settings out of `.env`, `.env.local` and `.env.development*` in the Web checkout. Start the Web development process on loopback.
+
+```sh
+bun --no-env-file --env-file=.env.web --bun next dev --webpack --hostname 127.0.0.1 --port 3000
+```
+
+Check liveness and Core pairing from a second terminal.
+
+```sh
+curl -fsS http://127.0.0.1:3000/api/health
+curl -fsS http://127.0.0.1:3000/api/readyz
+```
+
+Use a development account to check sign-in and an authenticated page, then edit a presentation component and verify the browser refreshes with the same Core still running. Login and authenticated pages call Core at runtime. Web liveness, identity and isolated component tests are available while Core is offline.
+
+Develop custom screens in the monorepo using the module's UI components, app routes and the existing typed reads and command adapters. Presentation changes can use the retained Core whenever they keep its API contract. New or changed API procedures, permissions and data models need corresponding Core changes and compatibility checks before a Web rollout relies on them.
+
 ## Deploy Web alone
 
 Use [the Web-only Compose file](../deploy/images/compose.web.yml) as its own project on the frontend host. Load the qualified AMD64 Web image by its digest and configure `WARPDRIVE_WEB_IMAGE`, `CORE_API_ORIGIN`, `CORE_PROXY_TOKEN` and `WEB_PUBLIC_ORIGIN` in a private frontend environment file. Set `WEB_PUBLIC_ORIGIN` to the same canonical public URL as Core's `BASE_URL`. The project binds port 3000 on loopback by default for a TLS ingress running on that host.
