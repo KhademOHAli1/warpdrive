@@ -99,7 +99,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                         data-app-content
                         // biome-ignore lint/a11y/noNoninteractiveTabindex: the content scroll owner needs keyboard scrolling
                         tabIndex={0}
-                        className="relative min-h-0 min-w-0 flex-1 overflow-auto overscroll-y-contain bg-muted/70 p-6 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                        className="relative min-h-0 min-w-0 flex-1 overflow-auto overscroll-y-contain bg-muted/70 p-6 has-[>[data-inbox-workspace]]:bg-background has-[>[data-inbox-workspace]]:p-0 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                       >
                         {children}
                       </main>

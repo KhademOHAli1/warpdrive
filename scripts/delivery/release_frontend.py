@@ -69,6 +69,18 @@ HEADLESS_CHECKS = frozenset({
     "server-action-cookie-roundtrip", "native-auth-relay", "backend-command-authority",
     "native-drain-and-cleanup", "independent-source-review",
 })
+INBOX_VERSION = "1.8.2"
+INBOX_SOURCE_PATHS = frozenset({
+    PACKAGE_PATH, FOOTER_PATH, "scripts/browser-shell-scroll.mjs",
+    "src/app/(app)/layout.tsx", "src/app/(app)/inbox/InboxShell.tsx",
+    "src/app/globals.css", "src/components/shell/LeftNav.module.css",
+    "src/components/shell/SidebarChrome.tsx", "src/components/shell/TopBar.module.css",
+    "src/features/email/inboxWorkspace.module.css",
+})
+INBOX_CHECKS = frozenset({
+    "shell-header-sidebar-alignment", "inbox-panel-spacing", "inbox-responsive-navigation",
+    "rtl-shell-and-inbox", "independent-source-review",
+})
 SCOPES = {
     VERSION: {"version": VERSION, "qualification_path": QUALIFICATION_PATH,
               "source_paths": SOURCE_PATHS, "contributions": CONTRIBUTIONS,
@@ -79,6 +91,12 @@ SCOPES = {
                       "contributions": {"integration/OPS-002": 483},
                       "heads": frozenset({"22fbef5623cf8a13472b124e13c019632ff2c02e"}),
                       "checks": HEADLESS_CHECKS},
+    INBOX_VERSION: {"version": INBOX_VERSION,
+                    "qualification_path": "docs/delivery/frontend-qualification-1.8.2.json",
+                    "source_paths": INBOX_SOURCE_PATHS,
+                    "contributions": {"integration/UX-010": 119},
+                    "heads": frozenset({"842d7022090ce355215bfae3e82f3e9a471279d9"}),
+                    "checks": INBOX_CHECKS},
 }
 
 FALSE_CLAIMS = (

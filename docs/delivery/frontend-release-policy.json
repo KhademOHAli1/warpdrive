@@ -2,53 +2,26 @@
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
   "release_track": "frontend",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "mode": "source_qualified_artifact_publication",
   "plan_directory": "docs/delivery/releases/frontend",
-  "qualification_path": "docs/delivery/frontend-qualification-1.8.1.json",
+  "qualification_path": "docs/delivery/frontend-qualification-1.8.2.json",
   "pr_integration_baseline": "dfa3f3317e186cbb494aee012cb298363e1a89dd",
   "unreleased_context_baseline": "386e31652da094ddcc7daec7003164b5b9c81882",
   "contributions": {
-    "integration/OPS-002": 483
+    "integration/UX-010": 119
   },
   "required_source_paths": [
-    "deploy/images/Dockerfile",
-    "deploy/images/Web.Dockerfile",
-    "docker-compose.newsletters.yml",
-    "docker-compose.yml",
     "package.json",
+    "scripts/browser-shell-scroll.mjs",
+    "src/app/(app)/inbox/InboxShell.tsx",
     "src/app/(app)/layout.tsx",
-    "src/app/layout.tsx",
+    "src/app/globals.css",
+    "src/components/shell/LeftNav.module.css",
+    "src/components/shell/SidebarChrome.tsx",
     "src/components/shell/SidebarMenu.tsx",
-    "src/config/env.ts",
-    "src/contracts/actionEffects.ts",
-    "src/contracts/auth.ts",
-    "src/features/auth/csrf.ts",
-    "src/features/auth/session.ts",
-    "src/features/i18n/server.ts",
-    "src/frontend/actions.ts",
-    "src/frontend/config.ts",
-    "src/frontend/context.ts",
-    "src/frontend/headers.ts",
-    "src/frontend/proxy.ts",
-    "src/frontend/reads.ts",
-    "src/frontend/trpc.ts",
-    "src/frontend/version.ts",
-    "src/instrumentation.ts",
-    "src/server/actions/registry.ts",
-    "src/server/actions/router.ts",
-    "src/server/frontend/router.ts",
-    "src/server/http/handler.ts",
-    "src/server/http/proxyAuthority.ts",
-    "src/server/http/routes.ts",
-    "src/server/locale.ts",
-    "src/server/request.ts",
-    "src/server/trpc/context.ts",
-    "src/server/trpc/core-runtime.ts",
-    "src/server/trpc/core-service.ts",
-    "src/server/trpc/http.ts",
-    "src/server/trpc/root.ts",
-    "src/server/trpc/trpc.ts"
+    "src/components/shell/TopBar.module.css",
+    "src/features/email/inboxWorkspace.module.css"
   ],
   "required_workflows": {
     "403980173": [
@@ -59,10 +32,9 @@
     ]
   },
   "limits": [
-    "Only the user-authorized headless frontend extraction source and isolated runtime qualification are published as 1.8.1.",
+    "Version 1.8.2 covers the user-authorized header alignment and inbox layout fixes with isolated browser and source qualification.",
     "Canonical issue acceptance, whole-product readiness, deployment and provider/installation acceptance remain independent.",
-    "The frontend display, package and stable GitHub release use 1.8.1; independently versioned modules retain their own versions.",
-    "Conventional Next rendering is the qualified frontend target; Cloudflare adapter qualification, the remaining five DevOps phases, tenancy and SaaS preparation remain separate."
+    "The frontend display, package and stable GitHub release use 1.8.2."
   ],
-  "original_integrated_revisions": ["22fbef5623cf8a13472b124e13c019632ff2c02e"]
+  "original_integrated_revisions": ["842d7022090ce355215bfae3e82f3e9a471279d9"]
 }
