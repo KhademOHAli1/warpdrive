@@ -362,9 +362,10 @@ then tenancy, billing and SaaS feature monitoring remain separate work.
 ## Inbox and workspace frontend release 1.8.2
 
 Select `docs/delivery/releases/frontend/1.8.2.json` at the final Main revision.
-The qualification record pins the published 1.8.1 ancestor and reviewed 1.8.2
-source. The isolated browser checks cover header and sidebar alignment, inbox
-panel spacing and folder navigation in English and Persian on desktop and mobile.
+The release plan pins the published 1.8.1 ancestor. Its qualification record
+pins the reviewed 1.8.2 source. Isolated browser checks cover header and sidebar
+alignment, inbox panel spacing and folder navigation in English and Persian on
+desktop and mobile.
 Source publication requires full exact-main CI and a clean live CodeQL gate.
 
 Web deployment requires a separately qualified image and installed readback.
