@@ -94,6 +94,8 @@ describe("German DatePicker", () => {
   });
 
   it("keeps navigation and an unsaved draft when switching calendars, then follows an external ISO value", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-01T12:00:00Z"));
     const onChange = vi.fn();
     const draft = (value: string) => (
       <LocaleProvider locale="de" calendar="gregory">

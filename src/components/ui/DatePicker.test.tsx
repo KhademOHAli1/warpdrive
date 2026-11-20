@@ -22,6 +22,8 @@ afterEach(() => {
 
 describe("DatePicker", () => {
   it("keeps the visible civil month across locale/calendar changes and follows an external value", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-01T12:00:00Z"));
     const onChange = vi.fn();
     const draft = (locale: "en" | "fa", calendar: "gregory" | "persian", value = "2026-07-04") => (
       <LocaleProvider locale={locale} calendar={calendar}>
