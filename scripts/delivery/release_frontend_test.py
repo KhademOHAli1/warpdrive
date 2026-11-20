@@ -64,11 +64,20 @@ class QualificationTests(unittest.TestCase):
         with self.assertRaises(GateError):
             version_tuple("1.7.1.5")
         self.assertEqual(version_tuple("1.7.1"), (1, 7, 1))
-        policy, blobs, record, _, plan = fixtures(frontend.HEADLESS_VERSION)
-        frontend.validate_proposal(plan, plan, policy)
-        frontend.validate_qualification(record, REVISION, policy,
-                                        lambda revision, path: blobs[path], lambda old, new: True)
-        self.assertEqual(version_tuple(frontend.HEADLESS_VERSION), (1, 8, 1))
+        for version, expected in ((frontend.HEADLESS_VERSION, (1, 8, 1)),
+                                  (frontend.INBOX_VERSION, (1, 8, 2))):
+            with self.subTest(version=version):
+                policy, blobs, record, _, plan = fixtures(version)
+                frontend.validate_proposal(plan, plan, policy)
+                frontend.validate_qualification(record, REVISION, policy,
+                                                lambda revision, path: blobs[path], lambda old, new: True)
+                self.assertEqual(version_tuple(version), expected)
+
+    def test_active_policy_matches_a_supported_scope_and_names_existing_sources(self):
+        root = Path(__file__).resolve().parents[2]
+        policy = json.loads((root / frontend.POLICY_PATH).read_text())
+        scope = frontend.validate_policy(policy)
+        self.assertTrue(all((root / path).is_file() for path in scope["source_paths"]))
 
     def test_incomplete_templates_fail_closed(self):
         plan = copy.deepcopy(self.plan)
@@ -223,7 +232,7 @@ class FrontendGateTests(unittest.TestCase):
                                               self.require_revision, self.references, allow_published=allow)
 
     def test_exact_main_ci_and_scoped_ancestries_without_issue_completion(self):
-        for version in (frontend.VERSION, frontend.HEADLESS_VERSION):
+        for version in (frontend.VERSION, frontend.HEADLESS_VERSION, frontend.INBOX_VERSION):
             policy, self.blobs, self.record, self.raw, self.plan = fixtures(version)
             self.policy.clear()
             self.policy.update(policy)

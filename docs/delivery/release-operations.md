@@ -337,11 +337,9 @@ product update check and the independent core acceptance gates are unchanged.
 
 ## Headless frontend source release 1.8.1
 
-The user authorized release `1.8.1` after local extraction makes Web independently
-hostable. The existing `frontend` source-publication track now has two explicit
-scope contracts: historical `1.7.2` and headless `1.8.1`. Historical qualification,
-publication and version checks remain intact. The fixed source-history and PR
-boundaries remain unchanged.
+The user authorized release `1.8.1` after local extraction made Web independently
+hostable. The `frontend` source-publication track defines version-specific scope
+contracts and uses fixed source-history and PR boundaries.
 
 For `1.8.1`, select `docs/delivery/releases/frontend/1.8.1.json` at the final Main
 revision. Its qualification record must pin the actual reviewed source and all
@@ -360,3 +358,16 @@ adapters required by the extracted Web; the source release is not a container,
 installation, migration, Cloudflare or provider acceptance claim. Conventional
 Next is the locally qualified frontend runtime. The remaining five DevOps phases,
 then tenancy, billing and SaaS feature monitoring remain separate work.
+
+## Inbox and workspace frontend release 1.8.2
+
+Select `docs/delivery/releases/frontend/1.8.2.json` at the final Main revision.
+The release plan pins the published 1.8.1 ancestor. Its qualification record
+pins the reviewed 1.8.2 source. Isolated browser checks cover header and sidebar
+alignment, inbox panel spacing and folder navigation in English and Persian on
+desktop and mobile.
+Source publication requires full exact-main CI and a clean live CodeQL gate.
+
+Web deployment requires a separately qualified image and installed readback.
+Record the Core and retained service process identities across the Web rollout,
+and verify that browser assets from the previous deployment still load.

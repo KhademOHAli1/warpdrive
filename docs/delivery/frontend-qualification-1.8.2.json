@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "qualification_type": "frontend_source_and_isolated_runtime",
+  "result": "qualified",
+  "version": "1.8.2",
+  "reviewed_revision": "78dd1f43097809e5b4222f650a4a84b9ecf160fa",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a1fa74-9d1c-7751-8d27-ea01b44cdbd2",
+    "task_id": "/root/version_182"
+  },
+  "acceptance_claimed": false,
+  "user_journey_accepted": false,
+  "provider_installation_accepted": false,
+  "deployment_performed": false,
+  "summary": "Authenticated Chromium checked the shared 57px header and sidebar dividers while the sidebar was expanded, collapsed and peeking, and the 64px mobile header. In English and Persian, the inbox filled the workspace, kept its desktop column dividers, and allowed folder navigation through the desktop rail and mobile picker. An independent exact-source review covered shell CSS, inbox layout and browser assertions.",
+  "limitations": "The hosted Chromium checks used disposable PostgreSQL and a synthetic test account. The source review did not exercise production or provider-connected mailboxes. Exact-main source checks, image qualification and installed rollout readback are separate evidence.",
+  "checks": [
+    {
+      "name": "shell-header-sidebar-alignment",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44804225414"
+    },
+    {
+      "name": "inbox-panel-spacing",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44804225414"
+    },
+    {
+      "name": "inbox-responsive-navigation",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44804225414"
+    },
+    {
+      "name": "rtl-shell-and-inbox",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44804225414"
+    },
+    {
+      "name": "independent-source-review",
+      "result": "passed",
+      "url": "https://github.com/KhademOHAli1/warpdrive/commit/78dd1f43097809e5b4222f650a4a84b9ecf160fa"
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/delivery/frontend-release-policy.json",
+      "sha256": "b62cb4edd9e5a810e84d3c63caef257e14ba1eedbf201b58a96a60d2cba9ab16"
+    },
+    {
+      "path": "package.json",
+      "sha256": "da452683a509f53d3bb3e3e0e0be78059d7c68372656f3be99fbd813fecd3db8"
+    },
+    {
+      "path": "scripts/browser-shell-scroll.mjs",
+      "sha256": "ed6224d0c67629417e33a87bf535c4bebd9922aceecc8b1c0a784925eb2d852d"
+    },
+    {
+      "path": "scripts/delivery/release_frontend.py",
+      "sha256": "653f2387579df0dc4225e8a832a5983aad66a74dfaad9ff5d16d4dac7481043c"
+    },
+    {
+      "path": "scripts/delivery/release_frontend_test.py",
+      "sha256": "d41378349b0fceb1bf6c3fefb963777e6f1e1ac17236073e8e3a09870ada55ff"
+    },
+    {
+      "path": "src/app/(app)/inbox/InboxShell.tsx",
+      "sha256": "50926f0ccead1259c43646ed9fdff2ce2668b3c93f80a049b9d181d8e82145d5"
+    },
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": "2cab6dc8e5214a032afae93ef09d58ace06ad9ec4c39fb0aa5ef7657229fc5c1"
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "dbb9895d6ee18afe0c4882eb85e6c39c4ba57b87db6270410216e566842d9a16"
+    },
+    {
+      "path": "src/components/shell/LeftNav.module.css",
+      "sha256": "81bfc52971b34f26f4611ea2f84d10b9b608337aeb76949dff7ed1fc4a128d49"
+    },
+    {
+      "path": "src/components/shell/SidebarChrome.tsx",
+      "sha256": "d78b052c42741c505ab90c476ad0bbe345ff3a9de7d7a5cdb259fd8514cf8d80"
+    },
+    {
+      "path": "src/components/shell/SidebarMenu.tsx",
+      "sha256": "171f9572de90173396221915186a68a4d2b2038d03bc511a16f917c951bfd4f8"
+    },
+    {
+      "path": "src/components/shell/TopBar.module.css",
+      "sha256": "093bccda9a27817fa6a1d89950441936b04669af22130cfc3cc946732ce2dbb8"
+    },
+    {
+      "path": "src/features/email/inboxWorkspace.module.css",
+      "sha256": "638f8a75b0a930352ec6f00402ffde8d54866fe4d85cd7f47f462b486b84b16a"
+    }
+  ]
+}

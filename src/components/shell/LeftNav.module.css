@@ -50,8 +50,7 @@
 .sidebarTopbar {
   display: flex;
   width: 100%;
-  height: 57px;
-  flex: 0 0 57px;
+  flex: 0 0 var(--workspace-shell-topbar-height);
   align-items: center;
   overflow: hidden;
   border-block-end: 1px solid var(--portal-border);
