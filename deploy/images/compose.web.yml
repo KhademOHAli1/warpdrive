@@ -1,0 +1,33 @@
+# Standalone frontend for the image-only deployment.
+# Load the qualified Web image by registry digest before starting this project.
+# Liveness stays compatible with older Web images retained for rollback.
+services:
+  web:
+    image: "${WARPDRIVE_WEB_IMAGE:?set the qualified Web image reference}"
+    platform: linux/amd64
+    pull_policy: never
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      CORE_API_ORIGIN: "${CORE_API_ORIGIN:?set the private Core HTTP origin}"
+      CORE_PROXY_TOKEN: "${CORE_PROXY_TOKEN:?set the shared proxy token}"
+      WEB_PUBLIC_ORIGIN: "${WEB_PUBLIC_ORIGIN:?set the public Web origin}"
+      FRONTEND_TRUSTED_PROXY_HEADER: "${FRONTEND_TRUSTED_PROXY_HEADER:-none}"
+    ports:
+      - "127.0.0.1:${WARPDRIVE_WEB_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          CMD,
+          bun,
+          --no-env-file,
+          -e,
+          "fetch('http://127.0.0.1:3000/api/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 4

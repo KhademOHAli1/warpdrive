@@ -281,9 +281,14 @@ def candidate_input_facts(value, *, expected_revision):
 
 def create_web_sdk_full_candidate(revision, report, report_digest, inspections, *, input_receipt):
     """Apply the full-image smoke admission and attach SDK-specific input facts."""
-    from candidate import create_candidate, require
+    from candidate import create_candidate
 
-    result = create_candidate(revision, report, report_digest, inspections)
+    return create_candidate(revision, report, report_digest, inspections, input_receipt=input_receipt)
+
+
+def bind_web_sdk_full_candidate(result, revision, inspections, *, input_receipt):
+    from candidate import require
+
     facts = candidate_input_facts(input_receipt, expected_revision=revision)
     web = inspections["web"]["Config"]
     environment = web.get("Env")
@@ -297,8 +302,8 @@ def create_web_sdk_full_candidate(revision, report, report_digest, inspections, 
     require(web.get("Cmd") == ["bun", "--bun", "next", "start"] and web.get("WorkingDir") == "/app"
             and web.get("Labels", {}).get("org.opencontainers.image.title") == "Warpdrive Web",
             "SDK Web image runtime profile differs")
-    for name, component in result["components"].items():
-        component.update(facts["components"][name])
+    for name, component in facts["components"].items():
+        result["components"][name].update(component)
     result.update(schemaVersion=3, releaseRevision=revision, inputProvenance=facts["inputProvenance"])
     result["pendingGates"].append("independently-qualified-component-reuse")
     return result

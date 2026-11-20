@@ -35,7 +35,7 @@ IMAGE_ASSIGNMENT = re.compile(r"\s*(?:export\s+)?(WARPDRIVE_[A-Z_]+_IMAGE)\s*=\s
 VOLUME_MOUNTS = {"caddy": {"caddydata": "/data", "caddyconfig": "/config"}, "postgres": {"pgdata": "/var/lib/postgresql/data"},
                  "minio": {"miniodata": "/data"}, "newsletter-engine": {"newsletter_uploads": "/listmonk/uploads"}}
 BIND_MOUNTS = {"Caddyfile": "/etc/caddy/Caddyfile", "deploy/newsletters/Caddyfile": "/etc/caddy/warpdrive-newsletters"}
-GATES = {"core-api": {"app": "service_healthy", "migrate": "service_completed_successfully", "createbuckets": "service_completed_successfully"},
+GATES = {"core-api": {"migrate": "service_completed_successfully", "createbuckets": "service_completed_successfully"},
          "caddy": {"app": "service_healthy", "ws": "service_started"}, "createbuckets": {"minio": "service_started"},
          "migrate": {"postgres": "service_healthy"}, "ws": {"migrate": "service_completed_successfully"},
          "worker": {"migrate": "service_completed_successfully"}, "newsletter-engine": {"postgres": "service_healthy"},

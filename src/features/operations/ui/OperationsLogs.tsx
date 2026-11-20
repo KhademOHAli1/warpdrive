@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Select } from "@/components/ui/Select";
 import { trpc } from "@/lib/trpc-client";
 import {
   OperationsMetric as Metric,
@@ -20,16 +21,66 @@ import {
   useOperationsLabels,
 } from "./OperationsShared";
 import { createOperationsReadSlot, readOperationsPair } from "./readCycle";
-import type { HistoryCursor } from "./types";
+import type { EventPage, HistoryCursor } from "./types";
 import { useOperationsRead } from "./useOperationsRead";
 import { useOperationsCursor } from "./viewState";
 
 const readSlot = createOperationsReadSlot();
+
+function DiagnosticDetails({
+  diagnostic,
+}: {
+  diagnostic: EventPage["items"][number]["diagnostics"][number];
+}) {
+  const L = useOperationsLabels();
+  const { component, reason, state, deployment, processGeneration } = diagnostic;
+  const stage = deployment?.stage ?? null;
+  const code = stage ?? (reason.startsWith("core_") ? reason.toUpperCase() : null);
+  return (
+    <div className="mb-3 space-y-2">
+      <p className="text-sm font-semibold">
+        {L.components[component]} ·{" "}
+        {deployment ? L.deploymentOutcomes[deployment.outcome] : L.state[state]}
+      </p>
+      {code !== null && <OperationsCode>{code}</OperationsCode>}
+      <p className="text-sm">
+        {stage === null ? operationsReason(reason, L) : L.deploymentStages[stage]}
+      </p>
+      {deployment !== null && (
+        <dl className="grid gap-3 text-sm sm:grid-cols-2">
+          <Metric label={L.sourceRevision}>
+            {deployment.sourceRevision === null ? (
+              L.unknownValue
+            ) : (
+              <OperationsCode>{deployment.sourceRevision}</OperationsCode>
+            )}
+          </Metric>
+          <Metric label={L.proofHash}>
+            {deployment.proofSha256 === null ? (
+              L.unknownValue
+            ) : (
+              <OperationsCode>{deployment.proofSha256}</OperationsCode>
+            )}
+          </Metric>
+        </dl>
+      )}
+      {processGeneration && (
+        <dl className="text-sm">
+          <Metric label={L.processGeneration}>
+            <OperationsCode>{processGeneration}</OperationsCode>
+          </Metric>
+        </dl>
+      )}
+    </div>
+  );
+}
+
 export function OperationsLogs() {
   const L = useOperationsLabels();
   const format = useOperationsFormat();
   const client = trpc.useUtils().client;
   const [openOnly, setOpenOnly] = useState(true);
+  const [component, setComponent] = useState<"core_api" | "web" | undefined>();
   const filterId = useId();
   const incidents = useOperationsCursor<HistoryCursor>();
   const events = useOperationsCursor<HistoryCursor>();
@@ -37,20 +88,26 @@ export function OperationsLogs() {
     async (signal: AbortSignal, denied: () => void) => {
       const [history, receipts] = await readOperationsPair(
         () => client.operations.incidents.query({ openOnly, cursor: incidents.cursor }, { signal }),
-        () => client.operations.events.query({ cursor: events.cursor }, { signal }),
+        () =>
+          client.operations.events.query(
+            component === undefined
+              ? { cursor: events.cursor }
+              : { cursor: events.cursor, component },
+            { signal },
+          ),
         denied,
       );
       return { history, receipts };
     },
-    [client, openOnly, incidents.cursor, events.cursor],
+    [client, openOnly, incidents.cursor, events.cursor, component],
   );
   const result = useOperationsRead(
-    JSON.stringify([openOnly, incidents.cursor, events.cursor]),
+    JSON.stringify([openOnly, incidents.cursor, events.cursor, component]),
     read,
     readSlot,
   );
   return (
-    <SettingsCard>
+    <SettingsCard id="operations-history">
       <SettingsCardHeader
         title={L.logsTitle}
         description={L.logsInfo}
@@ -128,13 +185,33 @@ export function OperationsLogs() {
                   />
                 </section>
                 <section aria-label={L.eventsTitle} className="space-y-3 border-t pt-5">
-                  <h3 className="text-sm font-semibold">{L.eventsTitle}</h3>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold">{L.eventsTitle}</h3>
+                    <Select
+                      ariaLabel={L.filterComponent}
+                      disabled={result.busy}
+                      value={component ?? "all"}
+                      onChange={(value) => {
+                        setComponent(value === "core_api" || value === "web" ? value : undefined);
+                        events.first();
+                      }}
+                      options={[
+                        { value: "all", label: L.allComponents },
+                        { value: "core_api", label: L.components.core_api },
+                        { value: "web", label: L.components.web },
+                      ]}
+                      triggerClassName="w-auto gap-2"
+                    />
+                  </div>
                   {result.data.receipts.items.length === 0 ? (
                     <EmptyState title={L.emptyEvents} body={L.emptyEventsInfo} />
                   ) : (
                     <div className="divide-y">
                       {result.data.receipts.items.slice(0, 30).map((receipt) => (
                         <article key={receipt.receiptId} className="py-3">
+                          {(receipt.diagnostics ?? []).map((diagnostic) => (
+                            <DiagnosticDetails key={diagnostic.component} diagnostic={diagnostic} />
+                          ))}
                           <dl className="grid gap-3 text-sm sm:grid-cols-3">
                             <Metric label={L.receipt}>
                               <OperationsCode>{receipt.receiptId}</OperationsCode>

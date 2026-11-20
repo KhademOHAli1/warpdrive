@@ -1,4 +1,5 @@
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { reportCoreDiagnostic, writeCoreDiagnostic } from "@/server/runtime/coreDiagnostics";
 import type { CoreRuntimeDependencies } from "@/server/trpc/core-runtime";
 
 type BunHttpRuntime = { serve: CoreRuntimeDependencies["serve"] };
@@ -14,9 +15,17 @@ async function main(): Promise<void> {
   await service.starting.catch(() => service.shutdown.request());
 }
 
-void main().catch(() => {
+void main().catch((error: unknown) => {
   try {
-    console.error("Core startup failed", { id: ERROR_IDS.RUNTIME_CORE_API_STARTUP_FAILED });
+    const invalidConfiguration =
+      (error instanceof AppError &&
+        error.id === ERROR_IDS.RUNTIME_CORE_API_CONFIGURATION_INVALID) ||
+      (error instanceof Error && error.message.startsWith("Invalid environment:"));
+    reportCoreDiagnostic(
+      writeCoreDiagnostic,
+      invalidConfiguration ? "CORE_CONFIGURATION_INVALID" : "CORE_STARTUP_FAILED",
+      { state: "failed" },
+    );
   } finally {
     process.exit(1);
   }

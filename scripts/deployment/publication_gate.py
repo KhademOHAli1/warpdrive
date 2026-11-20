@@ -12,8 +12,8 @@ import subprocess
 import sys
 import zipfile
 
-from bundle import ARCHIVE, MANIFEST, MAX_ARCHIVE_BYTES, MAX_METADATA_BYTES, METADATA_FILES, load_bundle, metadata_files, regular_file
-from candidate import CandidateError, REVISION, require
+from bundle import ARCHIVE, MANIFEST, MAX_ARCHIVE_BYTES, MAX_METADATA_BYTES, load_bundle, metadata_files, regular_file
+from candidate import HEADLESS_VERSION, CandidateError, REVISION, require
 from component_inputs import InputError, decode as decode_inputs
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "delivery"))
@@ -101,7 +101,7 @@ def admit(api, run_id: int, expected_main: str, *, policy: dict | None = None) -
 def validate_zip_inventory(source):
     allowed_dirs = {"smoke/", "inspections/"}
     items = source.infolist()
-    require(len(items) <= len(metadata_files(2)) + 2 + len(allowed_dirs), "artifact has unexpected entries")
+    require(len(items) <= len(metadata_files(HEADLESS_VERSION)) + 2 + len(allowed_dirs), "artifact has unexpected entries")
     names = [item.filename for item in items]
     require(len(set(names)) == len(names), "duplicate artifact members are not admitted")
     require(MANIFEST in names, "artifact manifest is missing")

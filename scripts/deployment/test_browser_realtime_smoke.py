@@ -62,7 +62,7 @@ class Process:
 class AdmissionTests(unittest.TestCase):
     def test_legacy_bundle_cannot_qualify_current_application_producer(self):
         with patch.object(smoke, "load_input_receipt") as load, patch.object(smoke, "verify_current_inputs") as verify:
-            with self.assertRaisesRegex(smoke.BrowserRealtimeError, "Version2"):
+            with self.assertRaisesRegex(smoke.BrowserRealtimeError, "source-input bundle"):
                 smoke.admit_bundle_source(Path("/source"), Path("/bundle"), {"schemaVersion": 1}, SHA)
             load.assert_not_called()
             verify.assert_not_called()

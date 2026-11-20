@@ -1,4 +1,5 @@
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import type { CoreDiagnosticCode, CoreDiagnosticFacts } from "@/contracts/coreDiagnostics";
 import type { ShutdownStep } from "@/server/runtime/shutdown";
 
 /** Body admission preserves the existing edge envelope; it is not an RSS or batch-work bound. */
@@ -28,6 +29,24 @@ export type CoreUnavailableReason =
   | "transport";
 type RuntimeState = "new" | "starting" | "ready" | "draining" | "closed" | "failed";
 
+const UNAVAILABLE_CODES = {
+  startup: "CORE_STARTUP_FAILED",
+  producer: "CORE_PRODUCER_FAILED",
+  database: "CORE_DATABASE_FAILED",
+  listener: "CORE_LISTENER_FAILED",
+  health: "CORE_READINESS_FAILED",
+  transport: "CORE_TRANSPORT_FAILED",
+} as const satisfies Record<CoreUnavailableReason, CoreDiagnosticCode>;
+
+type CoreResponseCode =
+  | "CORE_LIVE"
+  | "CORE_NOT_LIVE"
+  | "CORE_READY"
+  | "CORE_NOT_READY"
+  | "CORE_ADMISSION_BUSY"
+  | "CORE_REQUEST_FAILED"
+  | "CORE_TRANSPORT_FAILED";
+
 export interface CoreRuntimeOptions {
   hostname: string;
   /** Zero is admitted for an explicitly owned test listener. Production configuration chooses a port. */
@@ -55,6 +74,7 @@ export interface CoreRuntimeDependencies {
   /** A cheap bounded DB/producer observation. The full catalog is admitted at startup. */
   probeReadiness(signal: AbortSignal): Promise<boolean>;
   onUnavailable?(reason: CoreUnavailableReason): void | Promise<void>;
+  reportDiagnostic?(code: CoreDiagnosticCode, facts: CoreDiagnosticFacts): void;
 }
 
 export interface CoreRuntimeSnapshot {
@@ -71,10 +91,15 @@ type BodyRead = { result: BodyResult; settled: Promise<void> };
 type Lease = { release(): void };
 type BodyChunks = { ok: true; chunks: Uint8Array<ArrayBuffer>[] };
 
-function fixedResponse(status: number, text: string): Response {
+function fixedResponse(status: number, text: string, code?: CoreResponseCode): Response {
+  const headers = new Headers({
+    "cache-control": "no-store",
+    "content-type": "text/plain; charset=utf-8",
+  });
+  if (code !== undefined) headers.set("x-warpdrive-runtime-code", code);
   return new Response(text, {
     status,
-    headers: { "cache-control": "no-store", "content-type": "text/plain; charset=utf-8" },
+    headers,
   });
 }
 
@@ -234,6 +259,7 @@ export function createCoreHttpRuntime(
     closeDatabase: dependencies.closeDatabase.bind(dependencies),
     probeReadiness: dependencies.probeReadiness.bind(dependencies),
     onUnavailable: dependencies.onUnavailable?.bind(dependencies),
+    reportDiagnostic: dependencies.reportDiagnostic?.bind(dependencies),
   });
   let state: RuntimeState = "new";
   let failure: CoreUnavailableReason | null = null;
@@ -252,11 +278,28 @@ export function createCoreHttpRuntime(
     | { actual: Promise<void>; result: Promise<boolean>; controller: AbortController }
     | undefined;
 
-  function markUnavailable(reason: CoreUnavailableReason): void {
+  function reportDiagnostic(code: CoreDiagnosticCode): void {
+    try {
+      deps.reportDiagnostic?.(code, {
+        state,
+        failure: failure ?? undefined,
+        activeRequests: active.size,
+        admittedBodyBytes,
+      });
+    } catch {
+      // A diagnostics sink cannot change a runtime transition.
+    }
+  }
+
+  function markUnavailable(
+    reason: CoreUnavailableReason,
+    code: CoreDiagnosticCode = UNAVAILABLE_CODES[reason],
+  ): void {
     if (failure !== null || state === "closed") return;
     failure = reason;
     state = "failed";
     healthyUntil = 0;
+    reportDiagnostic(code);
     try {
       void Promise.resolve(deps.onUnavailable?.(reason)).catch(() => undefined);
     } catch {
@@ -265,10 +308,12 @@ export function createCoreHttpRuntime(
   }
 
   function beginDrain(): void {
+    if (draining) return;
     draining = true;
     healthyUntil = 0;
     if (failure === null && state !== "closed") state = "draining";
     probe?.controller.abort();
+    reportDiagnostic("CORE_DRAINING");
   }
 
   function isReady(): boolean {
@@ -297,7 +342,7 @@ export function createCoreHttpRuntime(
     const expireProbe = () => {
       timedOut = true;
       controller.abort();
-      if (!draining) markUnavailable("health");
+      if (!draining) markUnavailable("health", "CORE_READINESS_TIMEOUT");
       expire(false);
     };
     const timer = setTimeout(expireProbe, options.probeTimeoutMs);
@@ -364,7 +409,7 @@ export function createCoreHttpRuntime(
     if (response.body.locked) {
       markUnavailable("transport");
       // The owner of this locked stream is unknown. Keep the barrier until process failure.
-      return fixedResponse(500, "Core API response unavailable");
+      return fixedResponse(500, "Core API response unavailable", "CORE_TRANSPORT_FAILED");
     }
     const reader = response.body.getReader();
     let closing: Promise<void> | undefined;
@@ -448,18 +493,23 @@ export function createCoreHttpRuntime(
   async function healthResponse(request: Request, path: string): Promise<Response> {
     if (request.method !== "GET" && request.method !== "HEAD")
       return fixedResponse(405, "Method not allowed");
-    const healthy =
-      path === "/healthz"
-        ? failure === null && (state === "ready" || state === "draining")
-        : isReady() && (await observeReadiness()) && isReady();
-    return fixedResponse(healthy ? 200 : 503, healthy ? "OK" : "Unavailable");
+    if (path === "/healthz") {
+      const live = failure === null && (state === "ready" || state === "draining");
+      return live
+        ? fixedResponse(200, "OK", "CORE_LIVE")
+        : fixedResponse(503, "Unavailable", "CORE_NOT_LIVE");
+    }
+    const ready = isReady() && (await observeReadiness()) && isReady();
+    return ready
+      ? fixedResponse(200, "OK", "CORE_READY")
+      : fixedResponse(503, "Unavailable", "CORE_NOT_READY");
   }
 
   async function fetch(request: Request): Promise<Response> {
     const path = new URL(request.url).pathname;
     if (path === "/healthz" || path === "/readyz") return healthResponse(request, path);
     if (!(deps.acceptsPath?.(path) ?? isRpcPath(path))) return fixedResponse(404, "Not found");
-    if (!isReady()) return fixedResponse(503, "Unavailable");
+    if (!isReady()) return fixedResponse(503, "Unavailable", "CORE_NOT_READY");
     const length = declaredLength(request);
     if (length === "invalid") return fixedResponse(400, "Invalid request body");
     if (length !== null && length > options.maxRequestBodyBytes)
@@ -469,7 +519,7 @@ export function createCoreHttpRuntime(
       active.size >= options.maxConcurrentRequests ||
       bytes > options.maxAdmittedBodyBytes - admittedBodyBytes
     )
-      return fixedResponse(503, "Core API admission busy");
+      return fixedResponse(503, "Core API admission busy", "CORE_ADMISSION_BUSY");
     const reservation = lease(bytes);
     let prepared: BodyRead;
     try {
@@ -495,7 +545,7 @@ export function createCoreHttpRuntime(
     } catch {
       markUnavailable("transport");
       // A reader whose completion cannot be proved retains its reservation.
-      return fixedResponse(500, "Core API request unavailable");
+      return fixedResponse(500, "Core API request unavailable", "CORE_TRANSPORT_FAILED");
     }
     if (request.signal.aborted) {
       reservation.release();
@@ -505,21 +555,21 @@ export function createCoreHttpRuntime(
       // The request was admitted before this failure, but no command has started.
       // A healthy graceful drain may finish admitted work; a known fatal failure may not.
       reservation.release();
-      return fixedResponse(503, "Unavailable");
+      return fixedResponse(503, "Unavailable", "CORE_NOT_READY");
     }
     let response: Response;
     try {
       response = await deps.handler(prepared.result.request);
     } catch {
       reservation.release();
-      return fixedResponse(500, "Core API request failed");
+      return fixedResponse(500, "Core API request failed", "CORE_REQUEST_FAILED");
     }
     try {
       return ownResponse(response, request, reservation);
     } catch {
       markUnavailable("transport");
       // A response that could not be owned must not be mistaken for a finished command.
-      return fixedResponse(500, "Core API response unavailable");
+      return fixedResponse(500, "Core API response unavailable", "CORE_TRANSPORT_FAILED");
     }
   }
 
@@ -570,6 +620,7 @@ export function createCoreHttpRuntime(
     starting ??= Promise.resolve().then(async () => {
       if (isDraining()) return;
       state = "starting";
+      reportDiagnostic("CORE_STARTING");
       try {
         producerTouched = true;
         await deps.startProducer();
@@ -585,13 +636,16 @@ export function createCoreHttpRuntime(
             idleTimeout: options.idleTimeoutSeconds,
             maxRequestBodySize: options.maxRequestBodyBytes,
             fetch,
-            error: () => fixedResponse(500, "Core API transport failed"),
+            error: () => fixedResponse(500, "Core API transport failed", "CORE_TRANSPORT_FAILED"),
           });
         } catch {
           markUnavailable("listener");
           throw new AppError(ERROR_IDS.RUNTIME_CORE_API_STARTUP_FAILED, "Core API listener failed");
         }
-        if (!isDraining() && failure === null) state = "ready";
+        if (!isDraining() && failure === null) {
+          state = "ready";
+          reportDiagnostic("CORE_READY");
+        }
       } catch {
         markUnavailable("startup");
         // The owner must request the returned shared shutdown steps on this rejection.

@@ -15,6 +15,7 @@ import stat
 import module_versions as versions
 
 ROLES = frozenset({"web", "worker", "realtime", "migrator"})
+HEADLESS_ROLES = ROLES | {"core-api"}
 MANIFEST_TYPES = frozenset({"application/vnd.oci.image.manifest.v1+json",
                            "application/vnd.docker.distribution.manifest.v2+json"})
 MAX_METADATA = 4 * 1024**2
@@ -42,13 +43,15 @@ def join_build(git, revision, release_version, candidate, smoke, inspections, ev
     versions.require(package.get("version") == release_version,
                      "Release version must equal the exact committed package version")
     source = versions.manifest(git, revision, release_version)
-    versions.require(type(candidate) is dict and candidate.get("schemaVersion") in {2, 3}
+    headless = type(candidate) is dict and candidate.get("schemaVersion") == 4
+    roles = HEADLESS_ROLES if headless else ROLES
+    versions.require(type(candidate) is dict and candidate.get("schemaVersion") in {2, 3, 4}
                      and candidate.get("kind") == "warpdrive-image-candidate"
                      and candidate.get("revision") == revision
                      and candidate.get("deploymentAuthorized") is False
                      and type(candidate.get("components")) is dict
-                     and set(candidate["components"]) == ROLES,
-                     "Exact unpromoted four-image candidate required")
+                     and set(candidate["components"]) == roles,
+                     "Exact unpromoted image candidate required")
     versions.require(type(smoke) is dict and smoke.get("expectedRevision") == revision
                      and smoke.get("success") is True and smoke.get("failure") is None
                      and smoke.get("cleanup", {}).get("success") is True
@@ -57,19 +60,24 @@ def join_build(git, revision, release_version, candidate, smoke, inspections, ev
                      and type(smoke.get("checks")) is list and smoke["checks"]
                      and all(row.get("status") == "passed" for row in smoke["checks"]),
                      "Completed exact producer image smoke and cleanup required")
-    versions.require(set(inspections) == ROLES and set(evidence) == {"candidate", "smoke", "inspections"}
-                     and set(evidence["inspections"]) == ROLES,
+    smoke_images = smoke["images"]
+    if headless:
+        versions.require(smoke.get("kind") == "warpdrive-headless-final-image-smoke"
+                         and type(smoke.get("coreImage")) is dict, "Headless Core smoke required")
+        smoke_images = {**smoke_images, "core-api": smoke["coreImage"]}
+    versions.require(set(inspections) == roles and set(evidence) == {"candidate", "smoke", "inspections"}
+                     and set(evidence["inspections"]) == roles,
                      "Complete original producer inspection/evidence inventory required")
     built = {}
-    for role in sorted(ROLES):
+    for role in sorted(roles):
         rows = inspections[role]
         versions.require(type(rows) is list and len(rows) == 1 and type(rows[0]) is dict,
                          "One original inspection per built module required")
         row = rows[0]
         identity = candidate["components"][role].get("imageId")
         versions.require(type(identity) is str and versions.DIGEST.fullmatch(identity)
-                         and row.get("Id") == identity == smoke["images"][role].get("id")
-                         and smoke["images"][role].get("revision") == revision
+                         and row.get("Id") == identity == smoke_images[role].get("id")
+                         and smoke_images[role].get("revision") == revision
                          and candidate["components"][role].get("sourceRevision", revision) == revision
                          and row.get("Config", {}).get("Labels", {}).get("org.opencontainers.image.revision") == revision,
                          "Candidate, smoke, inspection and source identity differ")
@@ -110,7 +118,8 @@ def main(argv=None):
     candidate, candidate_pin = metadata(args.candidate)
     smoke, smoke_pin = metadata(args.smoke_report)
     inspections, pins = {}, {}
-    for role in sorted(ROLES):
+    roles = HEADLESS_ROLES if type(candidate) is dict and candidate.get("schemaVersion") == 4 else ROLES
+    for role in sorted(roles):
         inspections[role], pins[role] = metadata(args.inspections / (role + ".json"))
     result = join_build(versions.Git(args.repo), args.revision, args.release_version, candidate, smoke,
                         inspections, {"candidate": candidate_pin, "smoke": smoke_pin, "inspections": pins})

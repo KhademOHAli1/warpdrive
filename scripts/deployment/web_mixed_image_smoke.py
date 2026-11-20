@@ -28,6 +28,8 @@ sys.dont_write_bytecode = True
 from bundle import MANIFEST, MAX_METADATA_BYTES, load_bundle, regular_file, sha256
 from browser_realtime_smoke import (BrowserProcess, admit_bundle_source, admit_fixture_result, admit_profile,
                                     admit_source, source_runtime_environment)
+from candidate import HEADLESS_VERSION
+import headless_fixture
 from image_smoke import COMPONENTS, OWNER_LABEL, ImageSmoke, image_metadata, utc_now, validate_revision
 from loopback_forwarder import owned_bridge_forwarder
 from registry_smoke import IsolatedDocker, loopback_authority
@@ -42,6 +44,14 @@ from web_switch_smoke import (
 
 
 HEADER = "X-Warpdrive-Fixture-Web-Generation"
+CORE_METADATA_PORT = 8081
+CORE_METADATA_PROBE = """
+const origin = new URL(process.env.CORE_WEB_ORIGIN);
+if (!/^http:\\/\\/wd-image-smoke-[a-f0-9]{12}-caddy:8081\\/$/u.test(origin.href)) throw Error('wrong Core metadata origin');
+const response = await fetch(new URL('/api/runtime/web-identity', origin), {redirect:'error',signal:AbortSignal.timeout(3000)});
+if (!response.ok || response.headers.get('cache-control') !== 'no-store') throw Error('Core selected Web metadata unavailable');
+console.log(JSON.stringify(await response.json()));
+"""
 ROOT = Path(__file__).resolve().parents[2]
 BROWSER_SCRIPT = "scripts/browser-web-rollout.mjs"
 SEED_SCRIPT = "scripts/browser-realtime-fixture.mjs"
@@ -371,8 +381,9 @@ class LoginAssets(HTMLParser):
 
 
 class WebHTTP:
-    def __init__(self, authority, certificate=None):
+    def __init__(self, authority, certificate=None, *, public_host=None):
         self.origin = ("https://" if certificate else "http://") + loopback_authority(authority)
+        self.public_host = public_host
         handlers = [ProxyHandler({}), NoRedirect()]
         if certificate:
             context = ssl.create_default_context(cafile=certificate)
@@ -384,7 +395,10 @@ class WebHTTP:
         require(path in {HEALTH, IDENTITY, LOGIN} or re.fullmatch(
             r"/_next/static/[A-Za-z0-9_.@()+%~/\[\]-]+\?dpl=wd-[a-f0-9]{40}", path),
             "request is outside the fixed fixture Web readback surface")
-        request = Request(self.origin + path, headers={"Connection": "close", "Accept-Encoding": "identity"})
+        headers = {"Connection": "close", "Accept-Encoding": "identity"}
+        if self.public_host is not None:
+            headers["Host"] = self.public_host
+        request = Request(self.origin + path, headers=headers)
         try:
             response = self.opener.open(request, timeout=6)
         except HTTPError as error:
@@ -624,6 +638,8 @@ class MixedCaddyTarget:
 
 
 class MixedWebSmoke(WebSwitchSmoke):
+    accepts_headless_bundle = True
+
     def __init__(self, docker, args, private, *, sdk_scenario=None):
         # A caller that authenticated the successor profile may select an extra witness.
         # Standalone CLI arguments, browser profiles and reports do not select it here.
@@ -667,12 +683,14 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(sha256(manifest) == self.args.baseline_manifest_sha256, "baseline differs from the pinned manifest")
         loaded = load_bundle(self.bundle_dir, expected_revision=self.revision)
         candidate = loaded["candidate"]
+        headless = candidate["schemaVersion"] == HEADLESS_VERSION and self.accepts_headless_bundle
         require(loaded["origin"]["kind"] == "github-actions"
-                and (candidate["schemaVersion"] == 2 or not self.repeat and candidate["schemaVersion"] == 3)
+                and (candidate["schemaVersion"] == 2 or not self.repeat and (candidate["schemaVersion"] == 3 or headless))
                 and loaded["provenance"]["bundleManifestSha256"] == self.args.baseline_manifest_sha256,
                 "authenticated hosted baseline manifest with exact source inputs required")
         images = {key: candidate["components"][key]["imageId"] for key in COMPONENTS}
-        require(self.args.new_web_revision != self.revision and self.args.new_web_image_id not in images.values(),
+        require(self.args.new_web_revision != self.revision
+                and self.args.new_web_image_id not in {row["imageId"] for row in candidate["components"].values()},
                 "distinct newly built Web source and image required")
         if self.successor:
             return self.load_successor(loaded, images)
@@ -687,6 +705,9 @@ class MixedWebSmoke(WebSwitchSmoke):
                 "loaded baseline component IDs differ from the tested candidate")
         require(read_web_image(self.docker, new["imageId"], new["sourceRevision"]) == new,
                 "new Web image changed while loading the retained bundle")
+        if headless:
+            self.headless_core = headless_fixture.admit_core_image(self.fixture, candidate["components"]["core-api"])["id"]
+            images["core-api"] = self.headless_core
         self.old_image = read_web_image(self.docker, images["web"], self.revision)
         self.new_image = new
         self.assembly = {"baselineRevision": self.revision, "baselineOrigin": loaded["origin"],
@@ -775,7 +796,7 @@ class MixedWebSmoke(WebSwitchSmoke):
         return common_web_configuration(row, revision)
 
     def runtime_memory_limit(self):
-        return sum(LIMITS.values()) * MIB
+        return (sum(LIMITS.values()) + (headless_fixture.CORE_MEMORY_MIB if self.headless_core else 0)) * MIB
 
     def setup_runtimes(self):
         with Path("/proc/meminfo").open(encoding="ascii") as source:
@@ -796,9 +817,10 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(self.fixture.queue_helper("registered") == {"registered": True}, "retained worker did not register its queue")
         self.protected = self.protected_runtimes()
         self.schema_sha = self.schema()
+        web_environment = headless_fixture.web_environment(self.fixture, "x-real-ip") if self.headless_core else self.fixture.env
         for suffix, image in (("a", self.old_image), ("b", self.new_image)):
             name = self.fixture.start_container("web-" + suffix, image["imageId"],
-                                                self.web_command(suffix, image), memory="1536m")
+                                                self.web_command(suffix, image), environment=web_environment, memory="1536m")
             self.wait_web(name)
             uid = self.docker.run(["exec", name, "id", "-u"], timeout=10).stdout.strip()
             require(re.fullmatch(r"[1-9][0-9]{0,9}", uid), "Web process runs as root or with unknown UID")
@@ -834,8 +856,12 @@ class MixedWebSmoke(WebSwitchSmoke):
     def protected_runtimes(self):
         expected = {key: self.retained_images[key] for key in ("worker", "realtime")}
         expected["caddy"] = self.caddy_id
+        roles = ("postgres", "worker", "realtime", "caddy")
+        if self.headless_core and "core" in self.fixture.containers:
+            expected["core"] = self.headless_core
+            roles = (*roles, "core")
         result = {}
-        for key in ("postgres", "worker", "realtime", "caddy"):
+        for key in roles:
             row = self.owned(self.fixture.containers[key])
             state = row["State"]
             require(state.get("Running") is True and not state.get("Paused") and not state.get("OOMKilled")
@@ -859,7 +885,22 @@ class MixedWebSmoke(WebSwitchSmoke):
         return forwarding.authority
 
     def compile_documents(self, adapted, before, after):
-        return generation_configs(adapted, before, after)
+        documents = generation_configs(adapted, before, after)
+        if self.headless_core:
+            for active in (before, after):
+                servers = documents[active.deployment_id]["apps"]["http"]["servers"]
+                require("core_fixture_metadata" not in servers, "Competing fixture metadata listener")
+                servers["core_fixture_metadata"] = {
+                    "listen": [f":{CORE_METADATA_PORT}"],
+                    "routes": [
+                        {"match": [{"path": [IDENTITY], "method": ["GET", "HEAD"]}], "terminal": True,
+                         "handle": [{"handler": "reverse_proxy", "upstreams": [{"dial": f"{active.target}:3000"}]}]},
+                        {"terminal": True, "handle": [{"handler": "static_response", "status_code": 404}]},
+                    ],
+                }
+                require(len(canonical(documents[active.deployment_id])) <= MAX_HTTP_BYTES,
+                        "Compiled headless Caddy configuration exceeds its byte bound")
+        return documents
 
     def start_caddy(self):
         before, after = (WebGeneration(self.web_images[name]["generation"], name) for name in (self.web_a, self.web_b))
@@ -897,13 +938,16 @@ class MixedWebSmoke(WebSwitchSmoke):
         self.storage = caddy_storage(self.owned(self.caddy))
         self.admin = FixtureHTTP(self.forwarder(self.caddy, 2019), lambda: self.owned(self.caddy), admin=True)
         self.traffic = WebHTTP(self.forwarder(self.caddy, 8443 if certificate else 8080, browser=bool(certificate)), certificate)
-        if certificate:
+        if certificate or self.headless_core:
             self.fixture.env.update(BASE_URL=self.traffic.origin, AUTH_TRUSTED_PROXY_HEADER="x-real-ip")
+        if self.headless_core:
+            headless_fixture.start_core(self.fixture, self.headless_core, f"http://{self.caddy}:{CORE_METADATA_PORT}")
         self.before_generation, self.after_generation = before, after
 
     def setup_caddy(self):
         before, after = self.before_generation, self.after_generation
-        self.direct = {name: WebHTTP(self.forwarder(name, 3000)) for name in (self.web_a, self.web_b)}
+        host = urlsplit(self.traffic.origin).netloc if self.headless_core else None
+        self.direct = {name: WebHTTP(self.forwarder(name, 3000), public_host=host) for name in (self.web_a, self.web_b)}
         self.direct_readback = {}
         slots = {}
         for item in (before, after):
@@ -938,6 +982,10 @@ class MixedWebSmoke(WebSwitchSmoke):
         require(count == direct["pageAssetCount"] and paths == {kind: value["path"] for kind, value in direct["assets"].items()}
                 and observe_identity(self.traffic, active, proxied=True) == direct["identity"],
                 "proxied login inventory or Web version differs from the direct runtime")
+        core_metadata = None
+        if self.headless_core:
+            core_metadata = self.fixture.probe(self.fixture.containers["core"], CORE_METADATA_PROBE, timeout=5)
+            require(core_metadata == direct["identity"], "Retained Core metadata no longer follows the accepted Web generation")
         asset_generations = self.generations if include_retained else (active,)
         for generation in asset_generations:
             value = self.direct_readback[generation]
@@ -953,7 +1001,8 @@ class MixedWebSmoke(WebSwitchSmoke):
                 "database schema or protected runtime identities changed")
         return {"activeGeneration": active, "identity": direct["identity"], "verifiedAssetGenerations": list(asset_generations),
                 "verifiedAssetsPerGeneration": 2, "unknownGenerationStatus": status,
-                "backendFingerprint": self.qualification["backendFingerprint"], "schemaSha256": self.schema_sha}
+                "backendFingerprint": self.qualification["backendFingerprint"], "schemaSha256": self.schema_sha,
+                **({"coreMetadataIdentity": core_metadata} if core_metadata is not None else {})}
 
     def rollout_plan(self, operation, before, after):
         return {"schemaVersion": 1, "kind": "warpdrive-web-rollout", "operationId": operation,

@@ -21,7 +21,8 @@ import re
 import tempfile
 from typing import Any, Protocol
 
-from candidate import COMPONENTS, PENDING, SMOKE_CHECKS
+from candidate import (COMPONENTS, CORE_INPUT_POLICY, HEADLESS_COMPONENTS, HEADLESS_SMOKE_CHECKS,
+                       HEADLESS_VERSION, PENDING, SMOKE_CHECKS, components_for_version)
 from image_smoke import Docker
 from registry_absence import AbsenceError, confirm_absent
 
@@ -58,6 +59,8 @@ class RemoteImage:
 
 
 class RegistryAdapter(Protocol):
+    """Digest reads must verify the fetched manifest bytes against the requested digest."""
+
     def inspect_local(self, image_id: str) -> dict[str, Any]: ...
     def resolve_tag(self, tag: str) -> RemoteImage | None: ...
     def fetch_manifest(self, immutable_ref: str) -> dict[str, Any]: ...
@@ -77,7 +80,7 @@ def content_hash(value: Any) -> str:
     return hashlib.sha256(canonical(value)).hexdigest()
 
 
-def decode_json(text: str) -> Any:
+def decode_json(text: str | bytes) -> Any:
     def unique(pairs):
         value = {}
         for key, item in pairs:
@@ -112,7 +115,7 @@ def validate_repository_prefix(value: str) -> str:
 
 def candidate_tag(repository_prefix: str, component: str, revision: str, image_id: str) -> str:
     validate_repository_prefix(repository_prefix)
-    require(component in COMPONENTS, "unknown image component")
+    require(component in HEADLESS_COMPONENTS, "unknown image component")
     require(isinstance(revision, str) and bool(REVISION.fullmatch(revision)), "invalid source revision")
     require(isinstance(image_id, str) and bool(DIGEST.fullmatch(image_id)), "invalid tested image ID")
     repository = f"{repository_prefix}-{component}"
@@ -132,13 +135,16 @@ def _nonroot(value: Any) -> bool:
 def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> None:
     require(isinstance(revision, str) and bool(REVISION.fullmatch(revision)), "invalid expected revision")
     require(isinstance(candidate, dict) and type(candidate.get("schemaVersion")) is int
-            and candidate["schemaVersion"] in {1, 2, 3} and candidate.get("kind") == "warpdrive-image-candidate",
+            and candidate["schemaVersion"] in {1, 2, 3, HEADLESS_VERSION}
+            and candidate.get("kind") == "warpdrive-image-candidate",
             "reconstructed image candidate required")
     require(candidate.get("revision") == revision and candidate.get("platform") == "linux/amd64",
             "candidate source/platform mismatch")
     version = candidate["schemaVersion"]
+    roles = components_for_version(version)
+    headless = version == HEADLESS_VERSION
     policies = {}
-    if version in {2, 3}:
+    if version != 1:
         require(candidate.get("releaseRevision") == revision, "candidate release revision mismatch")
         inputs = candidate.get("inputProvenance")
     if version == 2:
@@ -147,10 +153,12 @@ def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> Non
                 and all(isinstance(inputs[key], str) and HASH.fullmatch(inputs[key])
                         for key in ("receiptSha256", "inputPolicySha256")), "bound component input provenance required")
         policies = dict.fromkeys(COMPONENTS, inputs["inputPolicySha256"])
-    if version == 3:
+    if version in {3, HEADLESS_VERSION}:
         from web_sdk_full_receipt import PROFILE
 
         hashes = ("receiptSha256", "backendInputPolicySha256", "webInputPolicySha256")
+        if headless:
+            hashes += ("coreInputPolicySha256",)
         require(isinstance(inputs, dict) and set(inputs) == {"state", "webProfile", *hashes}
                 and inputs["state"] == "current-source-sdk-web-inputs-bound" and inputs["webProfile"] == PROFILE
                 and all(isinstance(inputs[key], str) and HASH.fullmatch(inputs[key]) for key in hashes)
@@ -158,13 +166,19 @@ def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> Non
                 "Bound isolated SDK Web and backend input provenance required")
         policies = dict.fromkeys(COMPONENTS, inputs["backendInputPolicySha256"])
         policies["web"] = inputs["webInputPolicySha256"]
+        if headless:
+            from component_inputs import content_hash as input_hash
+
+            require(inputs["coreInputPolicySha256"] == input_hash(CORE_INPUT_POLICY),
+                    "Core tracked-source input policy differs")
+            policies["core-api"] = inputs["coreInputPolicySha256"]
     require(candidate.get("deploymentAuthorized") is False and candidate.get("compatibility") == "unassessed",
             "candidate must retain deployment and compatibility boundaries")
     qualification = candidate.get("qualification")
     require(isinstance(qualification, dict) and qualification.get("state") == "image-smoke-passed"
             and isinstance(qualification.get("reportSha256"), str)
             and bool(HASH.fullmatch(qualification["reportSha256"]))
-            and qualification.get("checks") == list(SMOKE_CHECKS)
+            and qualification.get("checks") == list(HEADLESS_SMOKE_CHECKS if headless else SMOKE_CHECKS)
             and isinstance(qualification.get("limitations"), list) and qualification["limitations"],
             "complete image-smoke qualification required")
     gates = candidate.get("pendingGates")
@@ -174,25 +188,27 @@ def _validate_candidate(candidate: dict, revision: str, provenance: dict) -> Non
     require(version == 1 or "independently-qualified-component-reuse" in gates,
             "fresh-build candidate does not qualify retained component reuse")
     components = candidate.get("components")
-    require(isinstance(components, dict) and set(components) == set(COMPONENTS), "all tested Core images required")
-    for name in COMPONENTS:
+    require(isinstance(components, dict) and set(components) == set(roles), "all tested image roles required")
+    for name in roles:
         component = components[name]
         require(isinstance(component, dict) and isinstance(component.get("imageId"), str)
                 and bool(DIGEST.fullmatch(component["imageId"])) and _nonroot(component.get("runtimeUser"))
                 and component.get("registryRef") is None, f"{name}: invalid tested image identity")
-        if version in {2, 3}:
+        if version != 1:
             require(component.get("sourceRevision") == revision
                     and isinstance(component.get("inputSha256"), str) and HASH.fullmatch(component["inputSha256"])
                     and component.get("inputPolicySha256") == policies[name],
                     f"{name}: fresh-build source/input identity differs")
+    if headless:
+        require(len({component["imageId"] for component in components.values()}) == len(roles),
+                "headless component images must have distinct IDs")
     require(isinstance(provenance, dict) and set(provenance) == {"archiveSha256", "bundleManifestSha256"}
             and all(isinstance(value, str) and HASH.fullmatch(value) for value in provenance.values()),
             "verified bundle/archive provenance hashes required")
 
 
 def _validate_local(adapter: RegistryAdapter, candidate: dict, revision: str) -> None:
-    for name in COMPONENTS:
-        expected = candidate["components"][name]
+    for name, expected in candidate["components"].items():
         try:
             actual = adapter.inspect_local(expected["imageId"])
         except Exception as error:
@@ -210,7 +226,8 @@ def _validate_local(adapter: RegistryAdapter, candidate: dict, revision: str) ->
 
 def _manifest_config(manifest: Any) -> str:
     require(isinstance(manifest, dict) and type(manifest.get("schemaVersion")) is int
-            and manifest["schemaVersion"] == 2 and manifest.get("mediaType") in MANIFEST_TYPES
+            and manifest["schemaVersion"] == 2 and isinstance(manifest.get("mediaType"), str)
+            and manifest["mediaType"] in MANIFEST_TYPES
             and "manifests" not in manifest, "single native image manifest required")
     config = manifest.get("config")
     require(isinstance(config, dict) and isinstance(config.get("digest"), str)
@@ -229,14 +246,14 @@ def _verified_remote(adapter: RegistryAdapter, tag: str, image_id: str) -> dict 
         return None
     require(isinstance(remote, RemoteImage) and isinstance(remote.digest, str)
             and bool(DIGEST.fullmatch(remote.digest)), "registry did not return an immutable manifest digest")
-    if _manifest_config(remote.manifest) != image_id:
+    if image_id not in (_manifest_config(remote.manifest), remote.digest):
         raise RegistryConflict("existing candidate tag has different image content")
     immutable = f"{tag.rsplit(':', 1)[0]}@{remote.digest}"
     try:
         manifest = adapter.fetch_manifest(immutable)
     except Exception as error:
         raise RegistryError("immutable registry manifest could not be independently read") from error
-    if _manifest_config(manifest) != image_id:
+    if image_id not in (_manifest_config(manifest), remote.digest):
         raise RegistryConflict("immutable registry manifest differs from tested image")
     if canonical(manifest) != canonical(remote.manifest):
         raise RegistryConflict("tag resolution and immutable manifest differ")
@@ -246,8 +263,8 @@ def _verified_remote(adapter: RegistryAdapter, tag: str, image_id: str) -> dict 
 class DockerRegistryAdapter:
     """Docker CLI transport using the already admitted, pinned local Unix context.
 
-    Buildx's documented .Manifest JSON digest is registry identity. Raw JSON is used
-    only to inspect config, never pretty-printed/rehashed to invent a registry digest.
+    Buildx's .Manifest JSON reports the registry digest. The original bytes from
+    an immutable read must hash to that digest before the manifest is parsed.
     """
 
     def __init__(self, docker: Docker | None = None):
@@ -288,10 +305,16 @@ class DockerRegistryAdapter:
         return RemoteImage(metadata["digest"], self.fetch_manifest(immutable))
 
     def fetch_manifest(self, immutable_ref: str) -> dict[str, Any]:
+        repository, _, digest = immutable_ref.rpartition("@")
+        require(bool(repository) and bool(DIGEST.fullmatch(digest)), "immutable manifest digest required")
+        # Binary I/O preserves Buildx's unformatted manifest bytes, including line endings.
         result = self.docker.run(
-            ["buildx", "imagetools", "inspect", "--raw", immutable_ref], timeout=60,
+            ["buildx", "imagetools", "inspect", "--raw", immutable_ref], timeout=60, input_bytes=b"",
         )
-        return decode_json(result.stdout)
+        raw = result.stdout
+        require(isinstance(raw, bytes) and f"sha256:{hashlib.sha256(raw).hexdigest()}" == digest,
+                "registry manifest bytes differ from the requested digest")
+        return decode_json(raw)
 
     def push(self, image_id: str, tag: str) -> None:
         self.docker.run(["image", "tag", image_id, tag])
@@ -338,6 +361,7 @@ def _journal_lock(path: Path):
 class _Journal:
     def __init__(self, path: Path, binding: dict):
         self.path = path
+        roles = binding["components"]
         if path.exists():
             self.envelope = _read(path)
             require(set(self.envelope) == {"payload", "sha256"}, "invalid promotion journal envelope")
@@ -349,11 +373,11 @@ class _Journal:
                     and self.payload["kind"] == "warpdrive-registry-promotion-journal"
                     and self.payload["binding"] == binding, "promotion journal binding mismatch")
             rows = self.payload["components"]
-            require(isinstance(rows, dict) and set(rows) == set(COMPONENTS), "invalid journal components")
+            require(isinstance(rows, dict) and rows.keys() == roles.keys(), "invalid journal components")
             unfinished = False
             ambiguous = False
             pending_seen = False
-            for name in COMPONENTS:
+            for name in roles:
                 row = rows[name]
                 require(isinstance(row, dict) and set(row) == {
                     "state", "tag", "imageId", "registryRef", "manifestCanonicalSha256",
@@ -383,7 +407,7 @@ class _Journal:
                     name: {"state": "PENDING", "tag": binding["components"][name]["tag"],
                            "imageId": binding["components"][name]["imageId"], "registryRef": None,
                            "manifestCanonicalSha256": None}
-                    for name in COMPONENTS
+                    for name in roles
                 },
             }
             self.envelope = {"payload": copy.deepcopy(self.payload), "sha256": content_hash(self.payload)}
@@ -413,6 +437,7 @@ def promote_candidate(
 ) -> dict:
     """Publish tested IDs once; reconcile uncertain outcomes without replaying pushes."""
     _validate_candidate(candidate, expected_revision, bundle_provenance)
+    roles = components_for_version(candidate["schemaVersion"])
     validate_repository_prefix(repository_prefix)
     require(isinstance(attempt_id, str) and bool(ATTEMPT.fullmatch(attempt_id)), "invalid publication attempt ID")
     journal_path, output_path = Path(journal_path), Path(output_path)
@@ -430,7 +455,7 @@ def promote_candidate(
             name: {"imageId": candidate["components"][name]["imageId"],
                    "tag": candidate_tag(repository_prefix, name, expected_revision,
                                         candidate["components"][name]["imageId"])}
-            for name in COMPONENTS
+            for name in roles
         },
     }
     lock_path = journal_path.with_name(journal_path.name + ".lock")
@@ -443,7 +468,7 @@ def promote_candidate(
         # Read all destinations before any new external write. A conflict in a later
         # component must not partially publish an otherwise fresh candidate.
         resolved = {}
-        for name in COMPONENTS:
+        for name in roles:
             row = rows[name]
             try:
                 remote = _verified_remote(transport, row["tag"], row["imageId"])
@@ -461,7 +486,7 @@ def promote_candidate(
                 if remote != {key: row[key] for key in ("registryRef", "manifestCanonicalSha256")}:
                     raise RegistryConflict(f"{name}: verified candidate tag changed or disappeared")
             resolved[name] = remote
-        for name in COMPONENTS:
+        for name in roles:
             row = rows[name]
             if row["state"] == "VERIFIED":
                 continue
@@ -486,7 +511,7 @@ def promote_candidate(
             journal.save()
         result = copy.deepcopy(candidate)
         result["kind"] = "warpdrive-registry-candidate"
-        for name in COMPONENTS:
+        for name in roles:
             result["components"][name].update({
                 "registryRef": rows[name]["registryRef"], "sourceRevision": expected_revision,
                 "manifestCanonicalSha256": rows[name]["manifestCanonicalSha256"],

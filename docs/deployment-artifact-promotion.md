@@ -1,5 +1,30 @@
 # Tested image bundles and candidate publication
 
+## Headless image bundles
+
+Production image qualification now emits schema 4. The tested archive carries Web, Core API,
+Worker, Realtime and Migrator. Core starts without Web before the native fixture exercises
+authenticated rendering and a persisted write through Web. The candidate manifest and registry
+readback identify each exact tested image. For the image-only Compose profile, set
+`WARPDRIVE_CORE_IMAGE` to the accepted Core registry digest alongside the Web, Worker, Realtime
+and Migrator references. Candidate publication and installed release acceptance remain separate.
+[Production image qualification](../.github/workflows/production-images.yml) · [Image Compose profile](../deploy/images/compose.yml)
+
+Normal production qualification runs on Web-only changes. The optional Web release rehearsal
+builds one additional Web generation and switches between it and the baseline through Caddy.
+It verifies that the same Core and database remain in use and that Core can read metadata
+for the active Web generation. Fresh Compose admission uses the exact five-image baseline
+and verifies that a Web-only switch and rollback preserve the Core image and migration ledger.
+[Web release rehearsal](../scripts/deployment/web_mixed_image_smoke.py) · [Fresh Compose qualification](../scripts/deployment/fresh_compose_qualification.py)
+
+Offline Web projection accepts a schema 4 archive after checking independent native identities
+for all five roles. The installed SDK operator still consumes its historical schema 3 receipts.
+Extending that operator requires separate proof that its installed runtime lineage and reuse
+qualification include retained Core. Existing schema 1–3 receipts retain their original meaning.
+[Offline Web projection](../scripts/deployment/web_sdk_archive.py) · [Installed SDK operator](../scripts/deployment/installed_web_sdk_operator.py)
+
+## Historical four-image bundles
+
 This increment carries the exact tested Web, Worker, Realtime and Migrator image IDs into
 registry candidates. It contributes to [OPS-002](https://github.com/KhademOHAli1/warpdrive/issues/483)
 and [OPS-011](https://github.com/KhademOHAli1/warpdrive/issues/492). It does not authorize

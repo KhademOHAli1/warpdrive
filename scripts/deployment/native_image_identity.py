@@ -12,7 +12,7 @@ from pathlib import Path
 import re
 import tarfile
 
-from candidate import CandidateError
+from candidate import HEADLESS_COMPONENTS, CandidateError
 from component_inputs import InputError, decode
 from web_candidate import _directory, _opened, _PlainTarMember, _stream_digest
 
@@ -106,8 +106,9 @@ def _runtime(config):
 
 
 def _expectations(expected_images):
-    require(type(expected_images) is dict and 0 < len(expected_images) <= 4
-            and all(_matches(ROLE, role) for role in expected_images), "One to four explicit image roles required")
+    require(type(expected_images) is dict and (0 < len(expected_images) <= 4 or set(expected_images) == set(HEADLESS_COMPONENTS))
+            and all(_matches(ROLE, role) for role in expected_images),
+            "One to four explicit image roles or the complete five-role headless inventory required")
     result = {}
     for role, expected in expected_images.items():
         require(type(expected) is dict and set(expected) == {"configDigest", "sourceRevision", "metadata"}

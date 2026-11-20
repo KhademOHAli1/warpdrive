@@ -1,14 +1,16 @@
-// Independently reviewed optional Core process configuration, public metadata and owned work.
+// Core process configuration, optional frontend metadata, owned work and fixed diagnostics.
 // delete:marker and delete:settled remove in-memory Promise Set entries, not subject records.
 export const coreHttpRuntimeIds2: string[] = [
   "derived:src/server/runtime/queueOwnership.ts",
   "derived:src/server/trpc/core-runtime.ts",
-  "log:src/entrypoints/core-api.ts#error",
+  "log:src/server/runtime/coreDiagnostics.ts#info",
+  "log:src/server/trpc/core-service.ts#warn",
   "writer:src/server/runtime/queueOwnership.ts#delete:marker",
   "writer:src/server/trpc/core-runtime.ts#delete:settled",
   "writer:src/server/trpc/core-service.ts#query:configuration",
   "writer:src/db/coreRoleAdmission.ts#query:dynamic",
-  "sourceReview:src/config/coreEnv.ts#767ddc642e2fb9aef126748060ce67611fd6fe0ae4fd0627d29a6e8aca7de484",
+  "sourceReview:src/config/coreEnv.ts#1794fdb7058053811d9f84610db41fea268197021608af3dd995efc7fca8da6c",
+  "sourceReview:src/contracts/coreDiagnostics.ts#ec07e136e032f3823a5fdc58e2b8862c4f6aba64b731d52ebf151ee0a19a5ae3",
   "sourceReview:src/db/client.ts#c29de5acdeeccbd9a2854bceb185648faaaa950f1f5f9fb9c168f30d701a9327",
   "sourceReview:src/db/corePoolProfile.ts#46030bfc906ddf591bbaea919d877203f0e9d7c0ace56846fd9a26b9a225c686",
   "sourceReview:src/jobs/coreProducer.ts#c5b94783fa5dda8c010d870c8d4f787e923627bf9025ea298f2e68990d6b5864",
@@ -17,10 +19,11 @@ export const coreHttpRuntimeIds2: string[] = [
   "sourceReview:src/features/release/webVersion.ts#78f1c8610d2ee6a92225f0007868b532ec95e662c7f01241787f004356fea414",
   "sourceReview:src/app/api/runtime/web-identity/route.ts#29e43bee60de4fbd6ea8efacaffb66ea3a1eccd119f668274614d8586754188f",
   "sourceReview:src/db/coreRoleAdmission.ts#f0a4441b9297bbafefd082d1ba6fe9a9bf7ba6d6069339e6ba11a262c35f63e2",
-  "sourceReview:src/entrypoints/core-api.ts#6f156057442ec0e20bd5a0095f9f6f53df4a766f11f042414a495cb4abfd129f",
+  "sourceReview:src/entrypoints/core-api.ts#9b6e416e077606daf3a6d48343daecbd4183692b3af77d086d2325287b003fbc",
+  "sourceReview:src/server/runtime/coreDiagnostics.ts#eaf0ac38b27369c7df73b4973216462f7d01b53ef648029562497ab7a61c244b",
   "sourceReview:src/server/runtime/queueOwnership.ts#02400e4371fe1cb1d3f1c324a9f2198dfbaca48cb0a53cd6f086d23ff2148c9b",
-  "sourceReview:src/server/trpc/core-runtime.ts#8a3e35d3126ede2756258606b7e5700e17ab8f6f5db5bd86cd9b95ce58881602",
-  "sourceReview:src/server/trpc/core-service.ts#bf36ccd570be988876c9b4207c3981f9155599fab49c6f2df4ee47670b2eaf8e",
+  "sourceReview:src/server/trpc/core-runtime.ts#9913e7aec312262216d9177addd5acffed69ea86a67c20617fdb401f0c3c414d",
+  "sourceReview:src/server/trpc/core-service.ts#750f524cfffcb3c9ff78df1dd8681bd29fcd7fb6665025839b33c7755b1836be",
 ];
 
 // Synthetic domain writes and cleanup are restricted to the supervisor-owned loopback fixture.
@@ -86,7 +89,7 @@ export const coreHttpServiceQualificationIds2: string[] = [
   "log:src/server/trpc/core-service.harness.ts#warn",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#readFileSync:path",
   "objectNamespace:filesystem:src/server/trpc/core-service.harness.ts#writeFileSync:dynamic",
-  "sourceReview:src/server/trpc/core-service.harness.ts#20f5655f04fbb39c43ed37b07be3c2addbd65fb5d1281170e7db70491397063d",
+  "sourceReview:src/server/trpc/core-service.harness.ts#f3c60a0536876c483d3f39748057c19b8dad2925c6fadc8539fb727c84eff144",
   "writer:src/server/trpc/core-service.harness.ts#delete:response",
   "writer:src/server/trpc/core-service.harness.ts#insert:dynamic",
   "writer:src/server/trpc/core-service.harness.ts#query:CREATE ROLE smoke_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public,pgboss TO smoke_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO smoke_runtime; GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO smoke_runtime; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO smoke_runtime;",

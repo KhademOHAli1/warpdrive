@@ -214,12 +214,14 @@ class RegistryClient:
         if result is None:
             raise RegistrySmokeError("Accepted immutable manifest disappeared")
         digest, manifest = result
-        if manifest["config"]["digest"] != expected_image_id:
-            raise RegistrySmokeError("Registry config differs from the tested local image ID")
+        config_digest = manifest["config"]["digest"]
+        # Docker can report a single-platform manifest digest or its config digest as .Id.
+        if expected_image_id not in (digest, config_digest):
+            raise RegistrySmokeError("Registry manifest and config differ from the tested local image ID")
         repository, _ = self.split_reference(reference, immutable=True)
-        content, _, status = self.get(f"/v2/{repository}/blobs/{expected_image_id}")
-        if status != 200 or "sha256:" + hashlib.sha256(content).hexdigest() != expected_image_id:
-            raise RegistrySmokeError("Registry config blob bytes do not match the tested image ID")
+        content, _, status = self.get(f"/v2/{repository}/blobs/{config_digest}")
+        if status != 200 or "sha256:" + hashlib.sha256(content).hexdigest() != config_digest:
+            raise RegistrySmokeError("Registry config blob bytes do not match the immutable manifest")
         try:
             config = json.loads(content)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -272,8 +274,11 @@ class RegistrySmoke:
                  sleep: Callable[[float], None] = time.sleep, *,
                  registry_image: str = "registry:2", registry_preloaded: bool = False, cgroup_parent: str | None = None):
         self.cgroup_parent = validate_cgroup_parent(cgroup_parent)
-        if image_refs is not None and set(image_refs) != set(COMPONENTS):
-            raise ValueError("All four source image references are required")
+        if image_refs is not None:
+            from candidate import HEADLESS_COMPONENTS
+
+            if set(image_refs) not in (set(COMPONENTS), set(HEADLESS_COMPONENTS)):
+                raise ValueError("All source image references are required")
         self.docker, self.bundle_dir, self.output_dir = docker, bundle_dir, output_dir
         self.image_refs = ({name: validate_reference(value) for name, value in image_refs.items()}
                            if image_refs is not None else None)
@@ -316,12 +321,12 @@ class RegistrySmoke:
             from bundle import load_bundle
         loaded = load_bundle(self.bundle_dir, expected_revision=self.revision)
         self.candidate, self.provenance = loaded["candidate"], loaded["provenance"]
-        self.image_ids = {name: self.candidate["components"][name]["imageId"] for name in COMPONENTS}
+        self.image_ids = {name: image["imageId"] for name, image in self.candidate["components"].items()}
         # Reuse the transported tested archive. This command does not rebuild images.
         self.docker.run(["image", "load", "--input", str(loaded["archivePath"])], timeout=300)
         self.assert_sources(self.image_refs or self.image_ids)
         sizes = []
-        for name in COMPONENTS:
+        for name in self.image_ids:
             rows = self.docker.json(["image", "inspect", self.image_ids[name]])
             metadata = image_metadata(rows, self.revision)
             size = rows[0].get("Size")
@@ -334,7 +339,9 @@ class RegistrySmoke:
                 "rebuilds": 0}
 
     def assert_sources(self, refs):
-        for name in COMPONENTS:
+        if refs.keys() != self.image_ids.keys():
+            raise RegistrySmokeError("Source references differ from the exact tested bundle roles")
+        for name in self.image_ids:
             rows = self.docker.json(["image", "inspect", refs[name]])
             inspected = image_metadata(rows, self.revision)
             if inspected["id"] != self.image_ids[name]:
@@ -476,7 +483,7 @@ class RegistrySmoke:
             from registry_candidate import candidate_tag
         self.accepted_refs = {}
         results = {}
-        for name in COMPONENTS:
+        for name in self.image_ids:
             tag = candidate_tag(self.repository_prefix, name, self.revision, self.image_ids[name])
             remote = self.client.manifest(tag)
             if remote is None:
@@ -494,22 +501,21 @@ class RegistrySmoke:
             from registry_candidate import DockerRegistryAdapter, candidate_tag
         transport = DockerRegistryAdapter(self.docker)
         results = {}
-        for name in COMPONENTS:
+        for name in self.image_ids:
             tag = candidate_tag(self.repository_prefix, name, self.revision, self.image_ids[name])
             reference = self.accepted_refs[name]
             independently_read = self.client.manifest(reference, immutable=True)
             if independently_read is None:
                 raise RegistrySmokeError("Accepted fixture manifest disappeared before Buildx readback")
             expected_digest, expected_manifest = independently_read
+            if self.image_ids[name] not in (expected_digest, expected_manifest["config"]["digest"]):
+                raise RegistrySmokeError("Independently read manifest differs from the tested image ID")
             resolved = transport.resolve_tag(tag)
             if (resolved is None or resolved.digest != expected_digest
-                    or not isinstance(resolved.manifest, dict)
-                    or resolved.manifest.get("config", {}).get("digest") != self.image_ids[name]
                     or resolved.manifest != expected_manifest):
                 raise RegistrySmokeError("Production Buildx tag resolution differs from independent HTTP readback")
             immutable = transport.fetch_manifest(reference)
-            if (not isinstance(immutable, dict) or immutable.get("config", {}).get("digest") != self.image_ids[name]
-                    or immutable != expected_manifest):
+            if immutable != expected_manifest:
                 raise RegistrySmokeError("Production Buildx immutable readback differs from tested artifact")
             results[name] = {"registryRef": reference, "manifestDigest": expected_digest,
                              "imageId": self.image_ids[name]}
@@ -523,7 +529,7 @@ class RegistrySmoke:
         except ImportError:
             from registry_candidate import promote_candidate
         refs = {}
-        for name in COMPONENTS:
+        for name in self.image_ids:
             refs[name] = f"{self.prefix}/source-{name}:tested"
             self.tag_image(self.image_ids[name], refs[name])
         self.assert_sources(refs)
@@ -574,7 +580,10 @@ class RegistrySmoke:
         conflict_tag = candidate_tag(conflict_prefix, "web", self.revision, self.image_ids["web"])
         self.adapter.push(alternate, conflict_tag)
         seeded = self.client.manifest(conflict_tag)
-        if seeded is None or seeded[1]["config"]["digest"] != alternate:
+        if seeded is None:
+            raise RegistrySmokeError("Conflict fixture was not independently established")
+        seeded_ids = (seeded[0], seeded[1]["config"]["digest"])
+        if alternate not in seeded_ids or self.image_ids["web"] in seeded_ids:
             raise RegistrySmokeError("Conflict fixture was not independently established")
         rejected_output = self.output_dir / "rejected-candidate.json"
         try:

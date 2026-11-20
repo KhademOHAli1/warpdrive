@@ -141,7 +141,8 @@ def _report(role, report, rows, revision, baseline):
             and all(type(item) is dict and item.get("status") == "passed" for item in checks), "All exact optional runtime checks must pass")
     evidence = report.get("images")
     require(type(evidence) is dict and set(evidence) == set(COMPONENTS), "Optional runtime report must identify the exact retained four-image fixture")
-    for component, value in baseline["candidate"]["components"].items():
+    for component in COMPONENTS:
+        value = baseline["candidate"]["components"][component]
         require(_projection(evidence[component]) == {"id": value["imageId"], "revision": value.get("sourceRevision", revision), "user": value["runtimeUser"]},
                 "Optional runtime evidence uses a different baseline image")
     identity = _image(role, rows, revision)

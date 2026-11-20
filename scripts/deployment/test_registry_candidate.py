@@ -10,11 +10,12 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from test_bundle import write_candidate
 from test_candidate import fixture as image_fixture
 from test_component_inputs import fixture as input_fixture
 from candidate import create_candidate
 
-from candidate import COMPONENTS, PENDING, SMOKE_CHECKS
+from candidate import COMPONENTS, HEADLESS_COMPONENTS, HEADLESS_VERSION, PENDING, SMOKE_CHECKS
 from registry_absence import AbsenceError
 from registry_candidate import (
     DockerRegistryAdapter, PromotionUnknown, RegistryConflict, RegistryError, RemoteImage,
@@ -55,6 +56,10 @@ def manifest(image_id: str) -> dict:
     }
 
 
+def fixture_manifest_digest(body: dict) -> str:
+    return f"sha256:{hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}"
+
+
 class FakeRegistry:
     def __init__(self, local):
         self.local = copy.deepcopy(local)
@@ -81,7 +86,7 @@ class FakeRegistry:
 
     def seed(self, tag, image_id):
         body = manifest(image_id)
-        digest = f"sha256:{hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}"
+        digest = fixture_manifest_digest(body)
         self.tags[tag] = RemoteImage(digest, body)
         self.manifests[f"{tag.rsplit(':', 1)[0]}@{digest}"] = copy.deepcopy(body)
 
@@ -99,6 +104,26 @@ class FakeRegistry:
 
 
 class RegistryCandidateTest(unittest.TestCase):
+    def test_headless_promotion_verifies_fifth_role_and_resumes_without_replay(self):
+        source = self.directory / "headless-source"
+        self.candidate = write_candidate(source, version=HEADLESS_VERSION)
+        local = {}
+        for role, component in self.candidate["components"].items():
+            row, = json.loads((source / "inspections" / f"{role}.json").read_text())
+            local[component["imageId"]] = row
+        self.registry = FakeRegistry(local)
+        revision = self.candidate["revision"]
+        image_id = self.candidate["components"]["core-api"]["imageId"]
+        tag = candidate_tag(PREFIX, "core-api", revision, image_id)
+        self.registry.outcomes[tag] = "lost-response"
+        with self.assertRaises(PromotionUnknown):
+            self.promote(expected_revision=revision)
+        self.assertEqual(self.journal_payload()["components"]["core-api"]["state"], "UNKNOWN")
+        result = self.promote(expected_revision=revision)
+        self.assertEqual(len(self.registry.pushes), len(HEADLESS_COMPONENTS))
+        self.assertEqual(self.registry.fetch_manifest(result["components"]["core-api"]["registryRef"])["config"]["digest"], image_id)
+        self.assertIs(result["deploymentAuthorized"], False)
+
     def test_v2_preserves_fresh_component_source_inputs_and_still_refuses_relabeling(self):
         report, inspections = image_fixture()
         # Bind the fixture to this test's source revision and actual fake registry IDs.
@@ -145,6 +170,15 @@ class RegistryCandidateTest(unittest.TestCase):
         transform(envelope["payload"])
         envelope["sha256"] = content_hash(envelope["payload"])
         self.journal.write_text(json.dumps(envelope))
+
+    def set_web_manifest_id(self):
+        component = self.candidate["components"]["web"]
+        config_id = component["imageId"]
+        image_id = fixture_manifest_digest(manifest(config_id))
+        component["imageId"] = image_id
+        row = self.registry.local.pop(config_id)
+        self.registry.local[image_id] = {**row, "Id": image_id}
+        return config_id, image_id
 
     def test_repository_prefix_rejects_options_schemes_tags_and_ambiguous_names(self):
         for value in (
@@ -198,6 +232,36 @@ class RegistryCandidateTest(unittest.TestCase):
         self.promote()
         self.assertEqual(self.registry.pushes, [])
 
+    def test_manifest_image_id_is_accepted_after_publish_and_resume(self):
+        config_id, image_id = self.set_web_manifest_id()
+        self.assertNotEqual(config_id, image_id)
+        push = self.registry.push
+
+        def publish(tested_id, tag):
+            if tag == self.tag():
+                self.assertEqual(tested_id, image_id)
+                self.registry.pushes.append((tested_id, tag))
+                self.registry.seed(tag, config_id)
+            else:
+                push(tested_id, tag)
+
+        self.registry.push = publish
+        result = self.promote()
+        reference = result["components"]["web"]["registryRef"]
+        self.assertEqual(reference, f"{PREFIX}-web@{image_id}")
+        self.assertEqual(self.registry.fetch_manifest(reference)["config"]["digest"], config_id)
+        self.assertEqual(self.promote(), result)
+        self.assertEqual(len(self.registry.pushes), len(COMPONENTS))
+
+    def test_manifest_image_id_does_not_excuse_inconsistent_immutable_readback(self):
+        config_id, image_id = self.set_web_manifest_id()
+        self.registry.seed(self.tag(), config_id)
+        self.registry.manifests[f"{PREFIX}-web@{image_id}"] = manifest(f"sha256:{'f' * 64}")
+        with self.assertRaisesRegex(RegistryConflict, "tag resolution and immutable manifest differ"):
+            self.promote()
+        self.assertEqual(self.registry.pushes, [])
+        self.assertFalse(self.output.exists())
+
     def test_conflicting_later_tag_rejects_before_any_fresh_component_push(self):
         self.registry.seed(self.tag("migrator"), self.candidate["components"]["worker"]["imageId"])
         with self.assertRaises(RegistryConflict):
@@ -206,7 +270,7 @@ class RegistryCandidateTest(unittest.TestCase):
         self.assertFalse(self.output.exists())
 
     def test_multi_platform_manifest_is_not_admitted_as_a_single_native_image(self):
-        self.registry.tags[self.tag()] = RemoteImage(f"sha256:{'e' * 64}", {
+        self.registry.tags[self.tag()] = RemoteImage(self.candidate["components"]["web"]["imageId"], {
             "schemaVersion": 2, "mediaType": "application/vnd.oci.image.index.v1+json",
             "manifests": [{"digest": f"sha256:{'f' * 64}",
                            "platform": {"os": "linux", "architecture": "amd64"}}],
@@ -214,6 +278,15 @@ class RegistryCandidateTest(unittest.TestCase):
         with self.assertRaises(RegistryError):
             self.promote()
         self.assertEqual(self.registry.pushes, [])
+
+    def test_matching_manifest_digest_still_requires_valid_manifest_and_config_fields(self):
+        image_id = self.candidate["components"]["web"]["imageId"]
+        for changed in ({"mediaType": []}, {"config": {"digest": "invalid"}}):
+            with self.subTest(changed=changed):
+                self.registry.tags[self.tag()] = RemoteImage(image_id, {**manifest(image_id), **changed})
+                with self.assertRaises(RegistryError):
+                    self.promote()
+                self.assertEqual(self.registry.pushes, [])
 
     def test_wrong_local_source_user_platform_or_image_is_rejected_before_external_write(self):
         image_id = self.candidate["components"]["web"]["imageId"]
@@ -380,19 +453,33 @@ class DockerRegistryAdapterTest(unittest.TestCase):
                     DockerRegistryAdapter(docker).resolve_tag("ghcr.io/example/app:candidate-fixture")
                 probe.assert_not_called()
 
-    def test_registry_digest_is_read_from_descriptor_not_hash_of_rendered_json(self):
+    def test_registry_descriptor_digest_is_verified_against_original_manifest_bytes(self):
         calls = []
         image_id = f"sha256:{'1' * 64}"
-        digest = f"sha256:{'f' * 64}"
-        def run(arguments, **_options):
+        raw = json.dumps(manifest(image_id), indent=2).replace("\n", "\r\n").encode()
+        digest = f"sha256:{hashlib.sha256(raw).hexdigest()}"
+
+        def run(arguments, **options):
             calls.append(arguments)
-            document = {"digest": digest} if "--format" in arguments else manifest(image_id)
-            return SimpleNamespace(returncode=0, stdout=json.dumps(document, indent=2), stderr="")
+            if "--format" in arguments:
+                output = json.dumps({"digest": digest})
+            else:
+                self.assertEqual(options["input_bytes"], b"")
+                output = raw
+            return SimpleNamespace(returncode=0, stdout=output, stderr="")
+
         adapter = DockerRegistryAdapter(SimpleNamespace(run=run))
         resolved = adapter.resolve_tag("ghcr.io/example/app:candidate-fixture")
         self.assertEqual(resolved.digest, digest)
         self.assertEqual(calls[1][-1], f"ghcr.io/example/app@{digest}")
         self.assertEqual(resolved.manifest["config"]["digest"], image_id)
+
+    def test_immutable_readback_rejects_changed_bytes_even_when_json_is_equivalent(self):
+        raw = json.dumps(manifest(f"sha256:{'1' * 64}")).encode()
+        digest = f"sha256:{hashlib.sha256(raw).hexdigest()}"
+        docker = SimpleNamespace(run=lambda *_args, **_kw: SimpleNamespace(stdout=raw + b"\n"))
+        with self.assertRaisesRegex(RegistryError, "manifest bytes differ"):
+            DockerRegistryAdapter(docker).fetch_manifest(f"ghcr.io/example/app@{digest}")
 
 
 if __name__ == "__main__":

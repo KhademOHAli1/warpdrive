@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gt, isNull, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, lt, or, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import {
   operationsCurrent,
@@ -10,6 +10,7 @@ import {
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor } from "@/features/auth/currentNativeActor";
 import type { AppContext } from "@/server/trpc/context";
+import { operationsBatchSchema } from "./contracts";
 import { requireOperationsAdmin } from "./policy";
 import { projectOperationsCurrent } from "./projection";
 import type { OperationsCurrentCursor } from "./repository";
@@ -185,6 +186,7 @@ export async function readOperationsEvents(
   installationId: string | null,
   signal: AbortSignal,
   cursor?: OperationsHistoryCursor,
+  component?: "core_api" | "web",
 ) {
   if (installationId === null) return { items: [], nextCursor: null };
   const after = cursor
@@ -200,7 +202,15 @@ export async function readOperationsEvents(
     .select({ receipt: operationsReceipts, recordedAt: operationsReceipts.receivedAt })
     .from(operationsReceipts)
     .innerJoin(operationsSources, eq(operationsSources.id, operationsReceipts.sourceId))
-    .where(and(eq(operationsSources.installationId, installationId), after))
+    .where(
+      and(
+        eq(operationsSources.installationId, installationId),
+        after,
+        component === undefined
+          ? undefined
+          : sql`${operationsReceipts.payload} @> ${JSON.stringify({ observations: [{ kind: component === "core_api" ? "component" : "deployment", component }] })}::jsonb`,
+      ),
+    )
     .orderBy(desc(operationsReceipts.receivedAt), desc(operationsReceipts.id))
     .limit(OPERATIONS_PAGE_SIZE);
   signal.throwIfAborted();
@@ -216,10 +226,33 @@ export async function readOperationsEvents(
       observedAt: receipt.observedAt.toISOString(),
       receivedAt: receipt.receivedAt.toISOString(),
       recordedAt: recordedAt.toISOString(),
+      diagnostics: projectReceiptDiagnostics(receipt.payload, component),
     })),
     nextCursor:
       rows.length === OPERATIONS_PAGE_SIZE && last
         ? { at: last.recordedAt.toISOString(), id: last.receipt.id }
         : null,
   };
+}
+
+function projectReceiptDiagnostics(payload: unknown, selectedComponent?: "core_api" | "web") {
+  const parsed = operationsBatchSchema.safeParse(payload);
+  if (!parsed.success) return [];
+  return parsed.data.observations.flatMap((observation) => {
+    if (observation.kind !== "component" && observation.kind !== "deployment") return [];
+    const { component, kind, reason, state } = observation;
+    if (component !== (kind === "component" ? "core_api" : "web")) return [];
+    if (selectedComponent !== undefined && component !== selectedComponent) return [];
+    const deployment =
+      kind === "deployment"
+        ? {
+            outcome: observation.outcome,
+            stage: observation.stage ?? null,
+            sourceRevision: observation.sourceRevision,
+            proofSha256: observation.proofSha256,
+          }
+        : null;
+    const processGeneration = kind === "component" ? (observation.processGeneration ?? null) : null;
+    return [{ component, reason, state, deployment, processGeneration }];
+  });
 }

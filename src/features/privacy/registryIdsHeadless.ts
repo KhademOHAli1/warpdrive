@@ -3,6 +3,7 @@
 export const headlessTransportIds: string[] = [
   "derived:src/server/request.ts",
   "external:src/frontend/proxy.ts#fetch",
+  "external:src/frontend/readiness.ts#fetch",
   "external:src/frontend/trpc.ts#fetch",
   "log:src/server/request.ts#warn",
   "sourceReview:src/app/(app)/settings/email/page.tsx#27512bc344474d524849fc275b6e44ef1682954fc68c31f7f875de71e077a8ae",
@@ -12,6 +13,7 @@ export const headlessTransportIds: string[] = [
   "sourceReview:src/frontend/context.ts#46d33a2a0d8a42cfe95e08ad152a47fb68f998eb6690e8f606c8857dd6de9f1d",
   "sourceReview:src/frontend/headers.ts#8ee98aa684bb9c19ecbdddc4eeb9ed0aae3a97816d3fa575b90d3d29578458f6",
   "sourceReview:src/frontend/proxy.ts#dda0f8204dd95ae802c5c20d3a253ca25f65fe42feba2a200c09e217f0f485e6",
+  "sourceReview:src/frontend/readiness.ts#902060eac0cfdb9c1bc140cc1f7be9951f30f9985adaf7c2bf3f8edad35b31a2",
   "sourceReview:src/frontend/reads.ts#4d523e4df30ac7ef996011c18d774a307852d02387eb0e505e5f66221ba2e7eb",
   "sourceReview:src/frontend/trpc.ts#a31d0fbce6b4548a30081c3ed776345507c26d508391e329b4c57042f6de6bbb",
   "sourceReview:src/server/frontend/router.ts#17162efc13cd32bc2a93c9d37d7a029a2d46deb89d1ffcdcfea149b331d8bc40",

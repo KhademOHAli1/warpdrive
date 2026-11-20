@@ -305,6 +305,8 @@ process.once('SIGTERM',() => { proxy.close(); monitor.close(); for(const socket 
 
 
 class CoreMixedImageSmoke(MixedWebSmoke):
+    accepts_headless_bundle = False
+
     def __init__(self, docker, args, private):
         super().__init__(docker, args, private)
         require(not self.repeat, "Core mixed fixture requires the original authenticated baseline")

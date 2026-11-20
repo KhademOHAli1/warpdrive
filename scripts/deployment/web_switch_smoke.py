@@ -17,16 +17,19 @@ import tempfile
 import threading
 import time
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 try:
     from .bundle import load_bundle
+    from . import headless_fixture
     from .image_smoke import COMPONENTS, HEALTH_PROBE, OWNER_LABEL, ImageSmoke, SmokeError, utc_now, validate_revision
     from .registry_smoke import IsolatedDocker, loopback_authority
     from . import loopback_forwarder as relay
     from . import web_switch as engine
 except ImportError:
     from bundle import load_bundle
+    import headless_fixture
     from image_smoke import COMPONENTS, HEALTH_PROBE, OWNER_LABEL, ImageSmoke, SmokeError, utc_now, validate_revision
     from registry_smoke import IsolatedDocker, loopback_authority
     import loopback_forwarder as relay
@@ -84,14 +87,14 @@ def safe_causes(error):
     return chain
 
 
-def memory_budget(meminfo):
+def memory_budget(meminfo, limits=MEMORY_LIMITS_MIB):
     require(isinstance(meminfo, str) and 0 < len(meminfo) <= 65536, "bounded native Linux memory information required")
     matches = re.findall(r"^MemAvailable:[ \t]+([0-9]+)[ \t]+kB[ \t]*$", meminfo, re.MULTILINE)
     require(len(matches) == 1 and len(re.findall(r"^MemAvailable:", meminfo, re.MULTILINE)) == 1,
             "one MemAvailable value in native Linux kB required")
     available = int(matches[0]) * 1024
     require(0 < available <= 2 ** 63, "native available-memory value is invalid")
-    configured = {name: amount * MIB for name, amount in MEMORY_LIMITS_MIB.items()}
+    configured = {name: amount * MIB for name, amount in limits.items()}
     required = sum(configured.values()) + HOST_RESERVE_BYTES
     return {"source": "native Linux /proc/meminfo MemAvailable", "availableBytes": available,
             "configuredPeakLimitsBytes": configured, "configuredPeakBytes": sum(configured.values()),
@@ -426,7 +429,9 @@ const generation = `wd-${process.env.APP_COMMIT}`;
 if (!/^wd-[a-f0-9]{40}$/.test(generation) || process.env.NEXT_DEPLOYMENT_ID !== generation)
     throw Error('Web runtime generation mismatch');
 const origin = 'http://127.0.0.1:3000';
-const page = await fetch(origin + '/login', {redirect:'error',signal:AbortSignal.timeout(8000)});
+const publicHost = process.argv.at(-1);
+const headers = publicHost === 'local' ? {} : {host:publicHost};
+const page = await fetch(origin + '/login', {headers,redirect:'error',signal:AbortSignal.timeout(8000)});
 if (page.status !== 200) throw Error('Web generation page did not render');
 const html = await page.text();
 if (!html.includes(`data-dpl-id="${generation}"`)) throw Error('Web generation stamp is missing');
@@ -446,6 +451,8 @@ class WebSwitchSmoke:
         self.revision, self.output_dir = validate_revision(expected_revision), Path(output_dir)
         self.require_web_generation = require_web_generation
         self.fixture = None
+        self.headless_core = None
+        self.memory_limits = MEMORY_LIMITS_MIB
         self.relays, self.web_names, self.protected_names = [], set(), []
         self.runtime_configs = {}
         self.environment_identities = {}
@@ -473,6 +480,11 @@ class WebSwitchSmoke:
         self.fixture = ImageSmoke(self.docker, images, self.output_dir / "fixture", expected_revision=self.revision)
         self.fixture.inspect_images()
         self.report["images"] = self.fixture.report["images"]
+        core = loaded["candidate"]["components"].get("core-api")
+        if core is not None:
+            self.headless_core = headless_fixture.admit_core_image(self.fixture, core)["id"]
+            self.report["images"] = {**self.report["images"], "core-api": core}
+            self.memory_limits = {**MEMORY_LIMITS_MIB, "core": headless_fixture.CORE_MEMORY_MIB}
         self.web_image = images["web"]
         return {"archiveSha256": loaded["provenance"]["archiveSha256"], "rebuilds": 0, "nativeArchitecture": architecture}
 
@@ -552,7 +564,8 @@ class WebSwitchSmoke:
                 "--cpus", "1", "--pids-limit", "192", "--cap-drop", "ALL", "--security-opt", "no-new-privileges"]
         if operation:
             args += ["--label", f"{OPERATION_LABEL}={operation}"]
-        for key, value in sorted(self.fixture.env.items()):
+        env = headless_fixture.web_environment(self.fixture) if self.headless_core else self.fixture.env
+        for key, value in sorted(env.items()):
             args += ["--env", f"{key}={value}"]
         self.docker.run([*args, self.web_image, "bun", "--bun", "next", "start"], timeout=120)
 
@@ -564,7 +577,7 @@ class WebSwitchSmoke:
     def setup(self):
         require(sys.platform == "linux", "this capacity admission requires the native Linux runner")
         with Path("/proc/meminfo").open(encoding="ascii") as source:
-            self.report["memoryAdmission"] = memory_budget(source.read(65537))
+            self.report["memoryAdmission"] = memory_budget(source.read(65537), self.memory_limits)
         require(self.report["memoryAdmission"]["admitted"], "native memory cannot cover fixture peak limits plus 1 GiB reserve")
         self.fixture.output_dir.mkdir(parents=True, exist_ok=False)
         isolation = self.fixture.create_environment()
@@ -578,6 +591,8 @@ class WebSwitchSmoke:
         self.web_names = {self.web_a, *(self.fixture.prefix + "-" + suffix for suffix in ("web-rejected", "web-b", "web-c"))}
         self.start_web(self.web_a)
         self.wait_web(self.web_a)
+        if self.headless_core:
+            headless_fixture.start_core(self.fixture, self.headless_core, f"http://{self.web_a}:3000")
         caddyfile = self.fixture.output_dir / "Caddyfile.generated"
         caddyfile.write_text(fixture_caddyfile(self.web_a, self.fixture.containers["realtime"]))
         mount = f"type=bind,source={caddyfile.resolve()},target=/etc/caddy/Caddyfile,readonly"
@@ -604,6 +619,8 @@ class WebSwitchSmoke:
         self.traffic = FixtureHTTP(self.relays[1].authority, lambda: self.owned(self.caddy))
         self.fixture.wait_for(lambda: self.traffic.health() == (True, "generation-a"), "proxied accepted Web readiness", 30, self.caddy)
         self.protected_names = [self.fixture.containers[name] for name in ("postgres", "worker", "realtime")] + [self.caddy, self.web_a]
+        if self.headless_core:
+            self.protected_names.append(self.fixture.containers["core"])
         self.protected = self.unrelated()
         self.accepted = {"schemaVersion": 1, "kind": "warpdrive-accepted-web", "scope": engine.SCOPE,
                          "targetKey": self.fixture.prefix, "runtime": self.runtime(self.web_a),
@@ -684,7 +701,7 @@ class WebSwitchSmoke:
 
     def memory_peaks(self):
         measured = {}
-        for component, admitted_mib in MEMORY_LIMITS_MIB.items():
+        for component, admitted_mib in self.memory_limits.items():
             name = self.fixture.prefix + "-" + component
             row = self.owned(name)
             limit = row.get("HostConfig", {}).get("Memory")
@@ -707,8 +724,9 @@ class WebSwitchSmoke:
             self.check("verified-native-tested-bundle", self.load)
             self.check("isolated-services-and-generated-caddy", self.setup)
             if self.require_web_generation:
+                host = urlsplit(self.fixture.env["BASE_URL"]).netloc if self.headless_core else "local"
                 self.check("immutable-web-generation-on-page-and-assets", lambda: self.fixture.probe(
-                    self.web_a, WEB_GENERATION_PROBE, timeout=12))
+                    self.web_a, WEB_GENERATION_PROBE, host, timeout=12))
             self.check("actual-caddy-cas-rejection-preserves-traffic", self.cas)
             self.check("real-candidate-readiness-rejection", self.reject)
             self.check("actual-web-switch-and-idempotent-readback", self.successful)

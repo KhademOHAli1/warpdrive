@@ -681,9 +681,21 @@ class FreshSmoke:
         self._sql(f"BEGIN;\nINSERT INTO pipelines(id,name) VALUES('{self.seed}','Fresh Compose qualification');\n"
                   f"INSERT INTO stages(pipeline_id,name) VALUES('{self.seed}','Qualified');\nCOMMIT;\n", user="smoke_runtime")
         self._object("seed")
+        self.compose("baseline", "up", "-d", "--no-deps", "--no-build", "--pull", "never", "core-api")
+        deadline = time.monotonic() + 60
+        while True:
+            rows = self._rows()
+            core = rows["core-api"]
+            require("app" not in rows and core["State"]["Running"] is True
+                    and core["Image"] == self.images["baseline"]["core-api"] and core["RestartCount"] == 0,
+                    "Fresh Core must start before creation of the Web runtime")
+            status = core["State"].get("Health", {}).get("Status")
+            if status == "healthy":
+                break
+            require(status == "starting" and time.monotonic() < deadline, "Fresh Core readiness without Web was not proven")
+            time.sleep(0.5)
+        self.receipt["checks"]["coreReadyWithoutWeb"] = True
         self.compose("baseline", "up", "-d", "--no-deps", "--no-build", "--pull", "never", "app", "ws", "worker", "newsletter-engine", "caddy")
-        # Core resolves the independently served Web identity before becoming ready.
-        self.compose("baseline", "up", "-d", "--no-build", "--pull", "never", "core-api")
 
     def _completed(self, service, timeout):
         row = self._rows()[service]

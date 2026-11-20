@@ -50,6 +50,7 @@ const api = vi.hoisted(() => {
 });
 vi.mock("@/lib/trpc-client", () => ({ trpc: { useUtils: () => ({ client: api.client }) } }));
 vi.mock("@/features/i18n/LocaleProvider", () => ({
+  useAppTranslations: () => (key: string) => key,
   useMessages: () => ({ operations: english }),
   useLocalePreferences: () => ({ locale: "en", calendar: "gregory", timeZone: "UTC" }),
 }));
@@ -342,7 +343,8 @@ describe("operations UI freshness and privacy", () => {
     expect(screen.queryByText("Healthy")).toBeNull();
   });
 
-  it("labels recovered incidents from recoveredAt and exposes only receipt metadata", async () => {
+  it("shows scoped deployment diagnostics and keeps raw receipt data out of the Logs view", async () => {
+    const processGeneration = "af571da2-b78c-4079-9cf9-7b629416eaee";
     api.incidents.mockResolvedValue({
       items: [
         {
@@ -371,6 +373,27 @@ describe("operations UI freshness and privacy", () => {
           observedAt: iso,
           receivedAt: iso,
           recordedAt: iso,
+          diagnostics: [
+            {
+              component: "core_api",
+              state: "failed",
+              reason: "core_db_role_rejected",
+              deployment: null,
+              processGeneration,
+            },
+            {
+              component: "web",
+              state: "unknown",
+              reason: "submission_unknown",
+              deployment: {
+                outcome: "unknown",
+                stage: "switch_intent",
+                sourceRevision: null,
+                proofSha256: null,
+              },
+              processGeneration: null,
+            },
+          ],
           payload: "not-rendered-private-payload",
         },
       ],
@@ -380,7 +403,13 @@ describe("operations UI freshness and privacy", () => {
     await flush();
     expect(screen.getByText(english.recovered)).toBeTruthy();
     expect(screen.getByText("receipt-private")).toBeTruthy();
+    expect(screen.getByText("CORE_DB_ROLE_REJECTED")).toBeTruthy();
+    expect(screen.getByText(processGeneration)).toBeTruthy();
+    expect(screen.getByText(english.deploymentStages.switch_intent)).toBeTruthy();
+    expect(document.getElementById("operations-history")?.textContent).toContain(english.logsTitle);
+    expect(screen.getByRole("combobox", { name: english.filterComponent })).toBeTruthy();
     expect(screen.queryByText("not-rendered-private-payload")).toBeNull();
+    expect(api.events.mock.calls[0]![0]).toEqual({ cursor: undefined });
     expect(api.incidents.mock.calls[0]![0]).toMatchObject({ openOnly: true });
     fireEvent.click(screen.getByRole("checkbox", { name: english.openOnly }));
     await flush();

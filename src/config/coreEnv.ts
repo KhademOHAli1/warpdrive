@@ -15,7 +15,7 @@ export const coreEnvShape = {
   CORE_DB_STATEMENT_MS: milliseconds(5_000, 120_000, 30_000),
   CORE_DB_QUERY_MS: milliseconds(6_000, 125_000, 35_000),
   CORE_DB_LOCK_MS: milliseconds(100, 5_000, 2_000),
-  // Must name the accepted Web ingress, so a UI swap does not require restarting Core.
+  // Optional accepted Web metadata ingress. Core admission never depends on it.
   CORE_WEB_ORIGIN: z.string().trim().max(2048).default(""),
 };
 
@@ -52,7 +52,7 @@ export function validateCoreEnvironment(value: CoreEnvironment, ctx: z.Refinemen
     ["CORE_HOST", !/[\s\0/]/u.test(value.CORE_HOST)],
     ["CORE_DB_QUERY_MS", value.CORE_DB_QUERY_MS >= value.CORE_DB_STATEMENT_MS + 1_000],
     ["CORE_DB_LOCK_MS", value.CORE_DB_LOCK_MS < value.CORE_DB_STATEMENT_MS],
-    ["CORE_WEB_ORIGIN", validOrigin(value.CORE_WEB_ORIGIN)],
+    ["CORE_WEB_ORIGIN", value.CORE_WEB_ORIGIN === "" || validOrigin(value.CORE_WEB_ORIGIN)],
     ["MIGRATION_DATABASE_URL", value.MIGRATION_DATABASE_URL === ""],
   ];
   for (const [path, valid] of issues)

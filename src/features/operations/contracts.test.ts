@@ -99,6 +99,34 @@ describe("operations batch admission", () => {
     });
   });
 
+  it("admits only component-scoped Core diagnostics and evidence-consistent Web journal stages", () => {
+    const core = {
+      ...component,
+      component: "core_api",
+      state: "failed",
+      reason: "core_db_role_rejected",
+      processGeneration: eventId,
+    };
+    const rollout = {
+      kind: "deployment",
+      component: "web",
+      state: "unknown",
+      reason: "submission_unknown",
+      stage: "switch_intent",
+      outcome: "unknown",
+      sourceRevision: null,
+      proofSha256: null,
+    };
+    expect(admit(batch([core, rollout])).ok).toBe(true);
+    expect(admit(batch([{ ...core, component: "web" }])).ok).toBe(false);
+    expect(admit(batch([{ ...core, state: "healthy" }])).ok).toBe(false);
+    expect(admit(batch([{ ...core, processGeneration: undefined }])).ok).toBe(false);
+    expect(admit(batch([{ ...core, processGeneration: "private" }])).ok).toBe(false);
+    expect(admit(batch([{ ...core, message: "private" }])).ok).toBe(false);
+    expect(admit(batch([{ ...rollout, stage: "accepted" }])).ok).toBe(false);
+    expect(admit(batch([{ ...rollout, component: "core_api" }])).ok).toBe(false);
+  });
+
   it("refuses generation changes and unsafe sequence/event identities", () => {
     expect(admit({ ...batch(), generationId: eventId })).toEqual({
       ok: false,

@@ -58,7 +58,7 @@ jobs:
             --worker-image warpdrive-181/worker:qualified \
             --realtime-image warpdrive-181/realtime:qualified \
             --migrator-image warpdrive-181/migrator:qualified \
-            --expected-revision "$SOURCE_REVISION" \
+            --expected-revision "$SOURCE_REVISION" --historical-web-first \
             --output-dir "$RUNNER_TEMP/headless-smoke"
       - name: Preserve sanitized runtime proof
         if: always()

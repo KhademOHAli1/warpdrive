@@ -22,10 +22,6 @@ on:
         description: Build one additional Web image and rehearse a presentation-only rollout
         type: boolean
         default: false
-      core_image_rehearsal:
-        description: Build and rehearse the optional standalone Core image
-        type: boolean
-        default: false
       operations_collector_rehearsal:
         description: Build and rehearse the optional Operations Collector image
         type: boolean
@@ -71,8 +67,6 @@ jobs:
     if: github.event.action != 'labeled' || github.event.label.name == 'web-release-rehearsal'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    outputs:
-      independent_web: ${{ steps.scope.outputs.independent_web }}
     env:
       # Imported engine guards hash the original build context. Never write Python
       # bytecode into that context while collecting these tooling tests.
@@ -80,18 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          fetch-depth: 2
           persist-credentials: false
-      - name: Select independent qualification for the reviewed Web-only push
-        if: github.event_name == 'push'
-        id: scope
-        env:
-          PREVIOUS_REVISION: ${{ github.event.before }}
-          CURRENT_REVISION: ${{ github.sha }}
-        run: |
-          if python3 -B scripts/deployment/web_push_scope.py "$PREVIOUS_REVISION" "$CURRENT_REVISION"; then
-            echo 'independent_web=true' >> "$GITHUB_OUTPUT"
-          fi
       - name: Admit explicit fresh qualification inputs before image builds
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -138,7 +121,6 @@ jobs:
   images:
     name: Final production image smoke
     needs: tooling
-    if: needs.tooling.outputs.independent_web != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.fresh_compose_rehearsal && 120 || 60 }}
     env:
@@ -148,7 +130,6 @@ jobs:
       IMAGE_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
       REVISION: ${{ github.sha }}
       WEB_RELEASE_REHEARSAL: ${{ (github.event_name == 'workflow_dispatch' && inputs.web_release_rehearsal) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'web-release-rehearsal')) }}
-      CORE_IMAGE_REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && inputs.core_image_rehearsal }}
       OPERATIONS_COLLECTOR_REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && inputs.operations_collector_rehearsal }}
       FRESH_COMPOSE_REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && inputs.fresh_compose_rehearsal }}
       FRESH_RECOVERY_REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && inputs.fresh_recovery_rehearsal }}
@@ -183,25 +164,13 @@ jobs:
           node --test scripts/deployment/web_protected_projection.test.mjs scripts/deployment/web_client_effect_projection.test.mjs
           proof="$RUNNER_TEMP/production-images"
           mkdir -p "$proof"
-          sdk_inputs=$(git --no-replace-objects ls-tree -r --name-only "$REVISION" -- \
-            deploy/images/Web.Dockerfile tools/web-ui/package.json tools/web-ui/bun.lock)
-          boundary_args=()
-          if [[ -n "$sdk_inputs" ]]; then
-            context="$RUNNER_TEMP/production-sdk-web-context"
-            python3 -B scripts/deployment/web_sdk_full_receipt.py prepare \
-              --root "$GITHUB_WORKSPACE" --revision "$REVISION" --context "$context" \
-              --output "$proof/component-inputs.json"
-            boundary_args=(--sdk-revision "$REVISION")
-            printf 'profile=sdk\ncontext=%s\nrecipe=%s\n' "$context" "$context/deploy/images/Web.Dockerfile" >> "$GITHUB_OUTPUT"
-          else
-            node scripts/deployment/component_inputs.mjs \
-              --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
-              --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin > "$proof/component-inputs.json"
-            python3 scripts/deployment/component_inputs.py --receipt "$proof/component-inputs.json" --root "$GITHUB_WORKSPACE"
-            printf 'profile=legacy\ncontext=.\nrecipe=deploy/images/Dockerfile\n' >> "$GITHUB_OUTPUT"
-          fi
+          context="$RUNNER_TEMP/production-headless-context"
+          python3 -B scripts/deployment/web_sdk_full_receipt.py prepare \
+            --root "$GITHUB_WORKSPACE" --revision "$REVISION" --context "$context" \
+            --output "$proof/component-inputs.json"
+          printf 'context=%s\n' "$context" >> "$GITHUB_OUTPUT"
           node scripts/deployment/component_boundaries.mjs \
-            "${boundary_args[@]}" \
+            --sdk-revision "$REVISION" \
             --base-image oven/bun@sha256:3f23864d3e8c923975c61971cabe67ee3d5a728f1e25a559256b95af719a3478 \
             --platform linux/amd64 --build-arg NEXT_PUBLIC_WS_URL=same-origin \
             > "$proof/component-boundaries.json"
@@ -210,7 +179,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: ${{ steps.image-inputs.outputs.context }}
-          file: ${{ steps.image-inputs.outputs.recipe }}
+          file: ${{ steps.image-inputs.outputs.context }}/deploy/images/Web.Dockerfile
           target: web
           platforms: linux/amd64
           load: true
@@ -264,21 +233,11 @@ jobs:
           build-args: APP_COMMIT=${{ env.REVISION }}
           cache-from: type=gha,scope=warpdrive-production-migrator
           cache-to: type=gha,mode=max,scope=warpdrive-production-migrator
-      - name: Exercise actual final images with no source mounts
-        run: |
-          python3 scripts/deployment/image_smoke.py \
-            --web-image "$IMAGE_PREFIX/web:$IMAGE_TAG" \
-            --worker-image "$IMAGE_PREFIX/worker:$IMAGE_TAG" \
-            --realtime-image "$IMAGE_PREFIX/realtime:$IMAGE_TAG" \
-            --migrator-image "$IMAGE_PREFIX/migrator:$IMAGE_TAG" \
-            --expected-revision "$REVISION" \
-            --output-dir "$RUNNER_TEMP/production-images/smoke"
-      - name: Build optional standalone Core image
-        if: env.CORE_IMAGE_REHEARSAL == 'true'
+      - name: Build final standalone Core image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
-          context: .
-          file: deploy/images/Core.Dockerfile
+          context: ${{ steps.image-inputs.outputs.context }}
+          file: ${{ steps.image-inputs.outputs.context }}/deploy/images/Core.Dockerfile
           target: core-api
           platforms: linux/amd64
           load: true
@@ -288,18 +247,16 @@ jobs:
           build-args: APP_COMMIT=${{ env.REVISION }}
           cache-from: type=gha,scope=warpdrive-production-core-api
           cache-to: type=gha,mode=max,scope=warpdrive-production-core-api
-      - name: Rehearse optional Core against exact Web and Migrator images
-        if: env.CORE_IMAGE_REHEARSAL == 'true'
+      - name: Exercise all five actual final images with no source mounts
         run: |
-          report="$RUNNER_TEMP/production-images/smoke/report.json"
-          python3 -B scripts/deployment/core_image_smoke.py \
+          python3 -B scripts/deployment/headless_image_smoke.py \
             --core-image "$IMAGE_PREFIX/core-api:$IMAGE_TAG" \
-            --web-image "$(jq -er '.images.web.id' "$report")" \
-            --worker-image "$(jq -er '.images.worker.id' "$report")" \
-            --realtime-image "$(jq -er '.images.realtime.id' "$report")" \
-            --migrator-image "$(jq -er '.images.migrator.id' "$report")" \
+            --web-image "$IMAGE_PREFIX/web:$IMAGE_TAG" \
+            --worker-image "$IMAGE_PREFIX/worker:$IMAGE_TAG" \
+            --realtime-image "$IMAGE_PREFIX/realtime:$IMAGE_TAG" \
+            --migrator-image "$IMAGE_PREFIX/migrator:$IMAGE_TAG" \
             --expected-revision "$REVISION" \
-            --output-dir "$RUNNER_TEMP/production-images/optional-core-smoke"
+            --output-dir "$RUNNER_TEMP/production-images/smoke"
       - name: Build optional Operations Collector image
         if: env.OPERATIONS_COLLECTOR_REHEARSAL == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -328,11 +285,10 @@ jobs:
             --expected-revision "$REVISION" \
             --output-dir "$RUNNER_TEMP/production-images/operations-collector-smoke"
       - name: Verify SDK packaging in exact final image IDs
-        if: steps.image-inputs.outputs.profile == 'sdk'
         run: |
           proof="$RUNNER_TEMP/production-images"
-          for component in web worker realtime migrator; do
-            image=$(jq -er --arg component "$component" '.images[$component].id | select(test("^sha256:[a-f0-9]{64}$"))' "$proof/smoke/report.json")
+          for component in web worker realtime migrator core-api; do
+            image=$(jq -er --arg component "$component" '(if $component == "core-api" then .coreImage else .images[$component] end).id | select(test("^sha256:[a-f0-9]{64}$"))' "$proof/smoke/report.json")
             docker run --rm --pull never --network none --read-only --entrypoint bun "$image" --no-env-file -e '
               import { readFileSync, existsSync } from "node:fs";
               import { createRequire } from "node:module";
@@ -368,24 +324,19 @@ jobs:
           done
       - name: Bind smoke evidence to exact inspected image IDs
         env:
-          SDK_WEB_PROFILE: ${{ steps.image-inputs.outputs.profile }}
           SDK_WEB_CONTEXT: ${{ steps.image-inputs.outputs.context }}
         run: |
           mkdir -p "$RUNNER_TEMP/production-images/inspections"
-          for component in web worker realtime migrator; do
+          for component in web worker realtime migrator core-api; do
             docker image inspect "$IMAGE_PREFIX/$component:$IMAGE_TAG" \
               > "$RUNNER_TEMP/production-images/inspections/$component.json"
           done
-          context_args=()
-          if [[ "$SDK_WEB_PROFILE" == sdk ]]; then
-            context_args=(--web-context "$SDK_WEB_CONTEXT")
-          fi
           python3 scripts/deployment/candidate.py record \
             --revision "$REVISION" \
             --report "$RUNNER_TEMP/production-images/smoke/report.json" \
             --inspections "$RUNNER_TEMP/production-images/inspections" \
             --inputs "$RUNNER_TEMP/production-images/component-inputs.json" \
-            "${context_args[@]}" \
+            --web-context "$SDK_WEB_CONTEXT" \
             --output "$RUNNER_TEMP/production-images/candidate.json"
       - name: Record module versions and exact tested build identities
         run: |
@@ -472,7 +423,7 @@ jobs:
             APP_COMMIT=${{ steps.web-release-source.outputs.revision }}
             NEXT_PUBLIC_WS_URL=same-origin
           cache-from: type=gha,scope=warpdrive-production-web
-      - name: Rehearse mixed-image Web rollout and restoration
+      - name: Rehearse mixed Web generations through the retained Core image
         if: env.WEB_RELEASE_REHEARSAL == 'true'
         env:
           WEB_REVISION: ${{ steps.web-release-source.outputs.revision }}
@@ -521,25 +472,6 @@ jobs:
                                           expected_revision=sys.argv[3])
           print(json.dumps(result, sort_keys=True))
           PY
-      - name: Rehearse both Web generations through one retained Core image
-        if: env.WEB_RELEASE_REHEARSAL == 'true' && env.CORE_IMAGE_REHEARSAL == 'true'
-        timeout-minutes: 12
-        env:
-          WEB_REVISION: ${{ steps.web-release-source.outputs.revision }}
-          BASELINE_MANIFEST_SHA: ${{ steps.web-release-source.outputs.baseline-manifest-sha }}
-        run: |
-          web_image=$(jq -er '.image.imageId' "$RUNNER_TEMP/production-images/web-release-archive.json")
-          core_image=$(jq -er '.coreImage.id' "$RUNNER_TEMP/production-images/optional-core-smoke/report.json")
-          test "$web_image" = "$(docker image inspect --format '{{.Id}}' "$IMAGE_PREFIX/web-release:$IMAGE_TAG")"
-          test "$core_image" = "$(docker image inspect --format '{{.Id}}' "$IMAGE_PREFIX/core-api:$IMAGE_TAG")"
-          gaps=$(jq -er '.topBarGaps | if . == [24,22] or . == [20,18] then join(" ") else error("unreviewed gap pair") end' \
-            "$RUNNER_TEMP/production-images/web-release-build.json")
-          read -r old_gap new_gap <<< "$gaps"
-          python3 -B scripts/deployment/core_mixed_image_smoke.py \
-            --baseline-preloaded --bundle-dir "$RUNNER_TEMP/image-bundle" --baseline-revision "$REVISION" \
-            --baseline-manifest-sha256 "$BASELINE_MANIFEST_SHA" --new-web-image-id "$web_image" \
-            --new-web-revision "$WEB_REVISION" --core-image-id "$core_image" --core-revision "$REVISION" \
-            --output-dir "$RUNNER_TEMP/production-images/core-mixed-web" --browser --topbar-gaps "$old_gap" "$new_gap"
       - name: Prepare pinned support images and exact historical engine source
         if: env.FRESH_COMPOSE_REHEARSAL == 'true'
         timeout-minutes: 12
@@ -674,8 +606,8 @@ jobs:
                       destination.write(raw)
           raise SystemExit(outcome)
           PY
-      - name: Retain exact tested optional images without rebuilding
-        if: success() && (env.CORE_IMAGE_REHEARSAL == 'true' || env.OPERATIONS_COLLECTOR_REHEARSAL == 'true')
+      - name: Retain the exact tested optional Operations Collector without rebuilding
+        if: success() && env.OPERATIONS_COLLECTOR_REHEARSAL == 'true'
         run: |
           python3 -B - <<'PY'
           import hashlib
@@ -695,11 +627,8 @@ jobs:
           arguments = [sys.executable, "-B", "scripts/deployment/optional_image_bundle.py", "pack",
               "--expected-revision", os.environ["REVISION"], "--baseline-dir", str(root / "image-bundle"),
               "--baseline-manifest-sha256", hashlib.sha256((root / "image-bundle/bundle.json").read_bytes()).hexdigest(),
-              "--producer-origin-file", str(origin), "--output-dir", str(root / "optional-image-bundle")]
-          if os.environ["CORE_IMAGE_REHEARSAL"] == "true":
-              arguments += ["--core-report", str(proof / "optional-core-smoke/report.json")]
-          if os.environ["OPERATIONS_COLLECTOR_REHEARSAL"] == "true":
-              arguments += ["--collector-report", str(proof / "operations-collector-smoke/report.json")]
+              "--producer-origin-file", str(origin), "--output-dir", str(root / "optional-image-bundle"),
+              "--collector-report", str(proof / "operations-collector-smoke/report.json")]
           result = subprocess.run(arguments, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, timeout=360, check=True)
           assert 0 < len(result.stdout) <= 524288
           with (proof / "optional-image-bundle.json").open("xb") as output:
@@ -719,8 +648,8 @@ jobs:
           if-no-files-found: error
           retention-days: 3
           compression-level: 0
-      - name: Preserve optional image custody separately from the four-image bundle
-        if: success() && github.event_name != 'pull_request' && (env.CORE_IMAGE_REHEARSAL == 'true' || env.OPERATIONS_COLLECTOR_REHEARSAL == 'true')
+      - name: Preserve optional collector custody separately from the headless image bundle
+        if: success() && github.event_name != 'pull_request' && env.OPERATIONS_COLLECTOR_REHEARSAL == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: optional-image-bundle-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

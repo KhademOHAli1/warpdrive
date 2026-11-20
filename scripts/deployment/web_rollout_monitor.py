@@ -80,6 +80,7 @@ def read_observation(original, state, operation, plan_sha256):
         require(0 <= observed <= time.time_ns() // 1_000_000 + 30_000, "Invalid rollout journal clock")
         reverse = operation.endswith("-rollback") or re.fullmatch(r"emergency-[a-f0-9]{48}", operation) is not None
         observation = web_rollout_observation(plan, receipt, explicit_rollback=reverse)
+        observation["stage"] = phase.replace("-", "_")
         return {"planSha256": plan_sha256, "observedAtMs": observed, "observation": observation}
 
 
@@ -96,13 +97,20 @@ def _validate_event(event, plan_sha256):
             and type(event["observedAtMs"]) is int and 0 <= event["observedAtMs"] <= 8_640_000_000_000_000,
             "Exact monitoring observation required")
     observation = event["observation"]
-    require(type(observation) is dict and set(observation) == {
+    required = {
         "kind", "component", "state", "reason", "outcome", "sourceRevision", "proofSha256",
-    } and observation["kind"] == "deployment" and observation["component"] == "web",
+    }
+    require(type(observation) is dict and set(observation) in (required, required | {"stage"})
+        and observation["kind"] == "deployment" and observation["component"] == "web",
         "Exact Web deployment observation required")
     outcome = observation["outcome"]
     state, reason = observation["state"], observation["reason"]
     revision, proof = observation["sourceRevision"], observation["proofSha256"]
+    if "stage" in observation:
+        allowed_stages = ("switch_intent", "switch_acknowledged", "rollback_intent") if outcome == "unknown" else (
+            ("accepted", "rolled_back") if outcome == "rolled_back" else (outcome,)
+        )
+        require(observation["stage"] in allowed_stages, "Web journal stage conflicts with rollout outcome")
     if outcome == "unknown":
         require((state, reason, revision, proof) == ("unknown", "submission_unknown", None, None),
                 "Unknown Web outcome cannot declare a revision or proof")
@@ -261,19 +269,21 @@ def _retain_pending(filename, state, prior):
         Path(temporary).unlink(missing_ok=True)
 
 
-def report_observation(outbox, config, load_observation, *, plan_sha256, send=_send):
+def _report_sequenced_observation(outbox, config, load_observation, *, digest, filename, digest_field,
+                                  validate, send):
     """Retain one sequence before sending, including across a lost response or restart."""
-    require(isinstance(plan_sha256, str) and HASH.fullmatch(plan_sha256), "Exact rollout plan digest required")
+    require(digest is None or (isinstance(digest, str) and HASH.fullmatch(digest)), "Exact monitoring digest required")
     path, binding, key = _configuration(config)
     with _locked_outbox(outbox):
-        filename = outbox / "web-monitor.json"
+        filename = outbox / filename
         prior = _state(filename) if os.path.lexists(filename) else None
         state = {"binding": binding, "sequence": 0, "published": None, "pending": None} if prior is None else prior
         require(type(state) is dict and set(state) == {"binding", "sequence", "published", "pending"}
                 and state["binding"] == binding and type(state["sequence"]) is int
                 and 0 <= state["sequence"] <= _MAX_SEQUENCE, "Exact outbox generation required")
         if state["pending"] is None:
-            event = _validate_event(load_observation(), plan_sha256)
+            require(digest is not None, "No retained observation to retry")
+            event = validate(load_observation(), digest)
             if state["published"] == event:
                 return "unchanged"
             require(state["published"] is None or event["observedAtMs"] >= state["published"]["observedAtMs"],
@@ -284,15 +294,23 @@ def report_observation(outbox, config, load_observation, *, plan_sha256, send=_s
         else:
             _fsync(outbox)
         event = state["pending"]
-        require(state["sequence"] > 0 and event["planSha256"] == plan_sha256,
-                "A pending observation belongs to a different plan")
-        _validate_event(event, plan_sha256)
+        retained_digest = event[digest_field]
+        require(state["sequence"] > 0 and (digest is None or retained_digest == digest),
+                "A pending observation belongs to a different plan or event")
+        validate(event, retained_digest)
         batch = {"schemaVersion": 2, "generationId": binding["generationId"], "sequence": state["sequence"],
                  "observedAtMs": event["observedAtMs"], "observations": [event["observation"]]}
         result = send(path, binding, key, batch)
         if result == "accepted":
             _write_state(filename, {**state, "published": event, "pending": None}, previous=state)
         return result
+
+
+def report_observation(outbox, config, load_observation, *, plan_sha256, send=_send):
+    require(isinstance(plan_sha256, str) and HASH.fullmatch(plan_sha256), "Exact rollout plan digest required")
+    return _report_sequenced_observation(outbox, config, load_observation, digest=plan_sha256,
+                                         filename="web-monitor.json", digest_field="planSha256",
+                                         validate=_validate_event, send=send)
 
 
 def main():

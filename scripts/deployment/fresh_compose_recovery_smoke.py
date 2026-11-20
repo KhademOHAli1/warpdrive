@@ -37,7 +37,7 @@ TOTAL_SECONDS = 1500
 CAPTURE_LIMITS = {"files": 20000, "bytes": 1024**3, "fileBytes": 256 * 1024**2,
                   "seconds": 240, "reserveBytes": 2 * 1024**3, "repositoryBytes": 1024**3}
 STOP_WAVES = (("caddy",), ("app", "ws"), ("core-api",), ("worker", "newsletter-engine"), ("minio", "postgres"))
-START_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine"), ("core-api",), ("caddy",))
+START_WAVES = (("postgres", "minio"), ("core-api",), ("app", "ws", "worker", "newsletter-engine"), ("caddy",))
 CREATE_WAVES = (("postgres", "minio"), ("app", "core-api", "ws", "worker", "newsletter-engine", "caddy"))
 LIMITATIONS = [
     "Owned synthetic Linux AMD64 fixture only; no production or customer installation was recovered.",
