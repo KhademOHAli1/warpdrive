@@ -1,0 +1,80 @@
+name: Headless deployment input artifact custody
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify private custody or retain the exact 1.8.1 and 1.8.2 deployment inputs
+        type: choice
+        required: true
+        default: observe
+        options: [observe, retain]
+
+permissions: {}
+
+concurrency:
+  group: warpdrive-web-release-custody
+  cancel-in-progress: false
+
+jobs:
+  retain:
+    name: Retain the two exact Actions ZIPs privately
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'retain'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    permissions:
+      actions: read
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Install attested ORAS
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Retain the two exact Actions ZIPs privately
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: python3 -B scripts/deployment/headless_web_custody.py retain --oras "$CUSTODY_ORAS"
+      - name: Preserve sanitized custody evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: headless-web-custody-retain-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/headless-web-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  observe:
+    name: Read back both private custody objects
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/main' && inputs.mode == 'observe'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Install attested ORAS
+        id: oras
+        uses: ./.github/actions/install-custody-oras
+      - name: Read back both private custody objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+        run: python3 -B scripts/deployment/headless_web_custody.py observe --oras "$CUSTODY_ORAS"
+      - name: Preserve sanitized custody evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: headless-web-custody-observe-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/headless-web-custody-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 30

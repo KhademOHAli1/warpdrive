@@ -44,4 +44,41 @@ The public ingress must route `/_ws` to Realtime independently of Web hosting. A
 
 Web declares its own bundled version and source revision; Core does not substitute its own version for Web. Deploy the backend command/projection additions before switching frontend traffic. Retain the previous compatible frontend assets and existing generation routing for open browsers, using the installation's established retention policy. Do not remove old action or backend contracts during the switch. Roll back the frontend to its retained compatible generation through the existing release path.
 
-Local build, native fixture qualification, image qualification, hosted CI, release publication and production deployment remain distinct evidence. No deployment or later SaaS acceptance follows from this source change. Newsletter activation, subscriber intake and sending remain deferred.
+## Qualify a Web image for an independent rollout
+
+Run **Headless Web image qualification** from canonical `main`. It builds the
+single Web image from that commit and exercises it on disposable PostgreSQL
+with the pinned retained Core image. The fixture covers native login,
+authenticated inbox rendering, a durable write and clean shutdown. Pull request
+rehearsals produce separate artifacts for review.
+
+```bash
+gh workflow run headless-web-qualification.yml -R KhademOHAli1/warpdrive --ref main
+```
+
+The workflow retains `web-image.tar`, its checksum, the archive identity and
+the native smoke report. Verify the ZIP size and digest from the GitHub artifact
+record, then match the report to the selected Web revision and retained Core.
+The archive binds the smoke-tested image config to the OCI manifest digest used
+by the installed Docker engine. Use that manifest digest when staging the image.
+The default transport uses the original retained Core Actions artifact while
+it is available, then reads the same bytes from private OCI custody. To retain
+the original Core and Web ZIPs, run **Headless deployment input artifact custody**
+with `mode=retain` while the Actions artifacts are available. The default
+`mode=observe` verifies their immutable private copies.
+
+Stage Web on the existing ingress and private Core link. Check its exact
+identity, public login rendering, protected redirects and relay to Core before
+switching traffic. Preserve the existing Core, Worker, Realtime and PostgreSQL
+process witnesses across the switch. Verify the persisted route, public identity,
+Realtime upgrade and previous stamped browser assets after the switch.
+
+Keep the previous Web generation ready for rollback. Restore the prior default
+route through the relay's compare-and-swap operation and preserve stamped routes
+for existing tabs. Verify the restored default and asset availability. A Web
+rollback changes frontend routing only.
+
+[The 1.8.2 rollout record](deployment-evidence/headless-web-rollout-20261120.json)
+links the exact hosted checks and installed readback. The 1.8.2 Web image went
+live with the same 1.8.1 Core process and retained service witnesses. Realtime
+and the retained 1.7.2 and 1.8.1 assets passed public readback.
