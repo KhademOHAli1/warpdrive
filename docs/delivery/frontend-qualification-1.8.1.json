@@ -3,7 +3,7 @@
   "qualification_type": "frontend_source_and_isolated_runtime",
   "result": "qualified",
   "version": "1.8.1",
-  "reviewed_revision": "ddbf7f318c2a9499188cdf86ce2695e6623f2f87",
+  "reviewed_revision": "c43be7a4432e3fdd4821757659128f09407aab59",
   "reviewer_agent": {
     "runtime": "codex",
     "session_id": "01a1dd01-e6b2-7522-99dc-0436bd038b30",
@@ -108,7 +108,7 @@
     },
     {
       "path": "docs/delivery/module-versions.json",
-      "sha256": "ef4fbb0c26dbdb2322a8981ea8bac8eae731bb4789bd47561a172d42b8bccee3"
+      "sha256": "392401e97bf7e7dc2d85bbcf738aba53844f39a04f6902c04ce4acdd467525d0"
     },
     {
       "path": "docs/deployment-evidence/headless-native-20261116.json",
@@ -411,6 +411,19 @@
       "actionable_defects": 0,
       "resolved_fixture_defects": 1,
       "scope": "Retarget existing notification/IMAP action imports and CSV locale mock to Core implementations; also correct the downstream IMAP read action identified during independent source review. Assertions and application runtime sources are unchanged. No local integration rerun is claimed; the existing suite uses Docker global setup."
+    },
+    "module_catalog_follow_on": {
+      "reviewed_on": "2026-11-20",
+      "base_revision": "12b9233bde834fca6628e540256ab4a4065d8a02",
+      "head_revision": "c43be7a4432e3fdd4821757659128f09407aab59",
+      "reviewed_paths": 1,
+      "pull_request": "https://github.com/KhademOHAli1/warpdrive/pull/1082",
+      "reviewer_agent": {
+        "runtime": "codex",
+        "session_id": "01a1fa1d-afff-75d1-b347-d9c342454f5c",
+        "task_id": "/root/module_merge_review"
+      },
+      "scope": "The catalog changes seven source module patch versions. The other 74 pinned blobs match the earlier review. The native evidence keeps its original runtime revision. Exact-main CI remains a separate publication gate."
     }
   },
   "local_runtime": {
