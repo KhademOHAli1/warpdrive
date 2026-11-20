@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "kind": "warpdrive-installed-headless-web-rollout",
+  "observedAt": "2026-11-20",
+  "core": {
+    "version": "1.8.1",
+    "sourceRevision": "842d7022090ce355215bfae3e82f3e9a471279d9",
+    "testedConfigId": "sha256:e14232712ac26f925cd43295c8517a67798b1f21796d50d9740eb04cc6d6a98b",
+    "installedManifestId": "sha256:86398d8a3ec264d1f5d1c96a4776250a3a88cdbfbe6cfdffa74e0f062732637d",
+    "startedAt": "2026-11-20T19:27:35.746783062Z",
+    "restartCount": 0,
+    "qualificationRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44798540710",
+    "imageArtifact": {
+      "id": 14659734071,
+      "sizeBytes": 424816716,
+      "zipSha256": "sha256:577971a9ec5550ea9b9a1f33dc0421aff81b4dcea30b8555482d6ab3984d9d8c"
+    }
+  },
+  "web": {
+    "version": "1.8.2",
+    "sourceRevision": "519190c3dc2be84593b7465307a45266b5bba857",
+    "testedConfigId": "sha256:009e1275fbe2aca5c460a87a8109741bb9048e84c66bc292feb7ceb52c4a8de8",
+    "installedManifestId": "sha256:87a5774d7e55191ec74aafcde615810e7154e4a7ee48a11a11dc3c31129c8039",
+    "qualificationRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44811376394",
+    "imageArtifact": {
+      "id": 14667890889,
+      "name": "warpdrive-182-tested-web-44811376394-1",
+      "runId": 44811376394,
+      "runAttempt": 1,
+      "headBranch": "codex/headless-1.8.1-image-qualification",
+      "headSha": "77388a5987d7007b65eb4078ec030c4798638341",
+      "workflowPath": ".github/workflows/headless-1-8-1-image-qualification.yml",
+      "sizeBytes": 1241381849,
+      "zipSha256": "sha256:94f7ff08484b20e1d72252842ad469c137ce9b6f26e8a1b9e40d9d472120c30d",
+      "archiveSha256": "e51cf9ae53df49ee80f8d17d073f6372b6f53f63e24ca448775beeafd54b2be7"
+    },
+    "fullCiRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44811311028",
+    "browserRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44811311049",
+    "releaseRun": "https://github.com/KhademOHAli1/warpdrive/actions/runs/44815461113",
+    "release": "https://github.com/KhademOHAli1/warpdrive/releases/tag/v1.8.2"
+  },
+  "installedReadback": {
+    "privateCheckedAt": "2026-11-20T20:45:03.295345+00:00",
+    "stageReceiptSha256": "9e0d129a01e0318688e99c41d68492dd8eb969cf083060b1a77a35842d0c63f4",
+    "currentRouteSha256": "c244ebef9442d0f18a246c145d64b3383fd4509b69fe632b06c40b7458c906f6",
+    "rollbackRouteSha256": "0437c44f462224682789ea42da6cecff2ed55764c302b7452c82cb737a9820a3",
+    "retainedRuntimeWitnesses": 12,
+    "sameCoreProcess": true,
+    "retainedRuntimeWitnessesUnchanged": true,
+    "publicWebIdentityVerified": true,
+    "publicLoginVerified": true,
+    "anonymousCoreRelayVerified": true,
+    "realtimeUpgradeStatus": 101,
+    "retainedStampedAssetVersions": ["1.7.2", "1.8.1"],
+    "productionMigrationsRun": false,
+    "productionRollbackPerformed": false
+  },
+  "limits": "The mixed-image fixture exercised native login, authenticated inbox rendering and a durable write on disposable PostgreSQL. Production verification used liveness, login, anonymous relay, Realtime and asset readbacks. The installed rollback route was prepared and the promotion helper was checked with offline failure injection."
+}
