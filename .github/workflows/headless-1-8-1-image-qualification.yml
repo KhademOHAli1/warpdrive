@@ -1,4 +1,4 @@
-name: Warpdrive 1.8.1 Core and Web image qualification
+name: Warpdrive 1.8.2 Web-only image qualification
 
 on:
   push:
@@ -6,85 +6,198 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: warpdrive-headless-1-8-1-qualification
-  cancel-in-progress: true
+  group: warpdrive-headless-1-8-2-web-qualification
+  cancel-in-progress: false
 
 env:
-  SOURCE_REVISION: 842d7022090ce355215bfae3e82f3e9a471279d9
+  SOURCE_REVISION: 519190c3dc2be84593b7465307a45266b5bba857
+  RETAINED_REVISION: 842d7022090ce355215bfae3e82f3e9a471279d9
+  RETAINED_RUN_ID: "44798540710"
+  RETAINED_PRODUCER_SHA: 2b8265908c13426f566c06f05ea0cd1fc029084e
+  RETAINED_ARTIFACT_ID: "14659734071"
+  RETAINED_ZIP_BYTES: "424816716"
+  RETAINED_ZIP_SHA256: 577971a9ec5550ea9b9a1f33dc0421aff81b4dcea30b8555482d6ab3984d9d8c
+  RETAINED_ARCHIVE_SHA256: f94f3d146f824bf99bf23ea532dcd8598aef434b9a9493afad4c4600abb856b5
+  RETAINED_CORE_ID: sha256:e14232712ac26f925cd43295c8517a67798b1f21796d50d9740eb04cc6d6a98b
+  PYTHONDONTWRITEBYTECODE: "1"
 
 jobs:
-  images:
-    name: Test actual 1.8.1 images on isolated PostgreSQL
-    if: github.repository == 'KhademOHAli1/warpdrive'
+  web:
+    name: Qualify 1.8.2 Web with retained 1.8.1 Core
+    if: github.repository == 'KhademOHAli1/warpdrive' && github.ref == 'refs/heads/codex/headless-1.8.1-image-qualification'
     runs-on: ubuntu-24.04
     timeout-minutes: 65
     steps:
+      - name: Admit the exact current main revision and retained artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(uname -m)" = x86_64
+          [[ "$SOURCE_REVISION" =~ ^[a-f0-9]{40}$ && "$SOURCE_REVISION" != "$RETAINED_REVISION" ]]
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$SOURCE_REVISION"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RETAINED_RUN_ID" |
+            jq -e --arg revision "$RETAINED_PRODUCER_SHA" '
+              .head_sha == $revision and .head_branch == "codex/headless-1.8.1-image-qualification"
+              and .path == ".github/workflows/headless-1-8-1-image-qualification.yml"
+              and .status == "completed" and .conclusion == "success" and .run_attempt == 1
+            ' >/dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$RETAINED_ARTIFACT_ID" |
+            jq -e --arg id "$RETAINED_ARTIFACT_ID" --arg run "$RETAINED_RUN_ID" \
+              --arg revision "$RETAINED_PRODUCER_SHA" --arg digest "sha256:$RETAINED_ZIP_SHA256" \
+              --arg bytes "$RETAINED_ZIP_BYTES" '
+              .id == ($id | tonumber) and .workflow_run.id == ($run | tonumber)
+              and .workflow_run.head_sha == $revision and .name == "warpdrive-181-tested-images-1"
+              and .expired == false and .digest == $digest and .size_in_bytes == ($bytes | tonumber)
+            ' >/dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$RETAINED_ARTIFACT_ID/zip" > "$RUNNER_TEMP/web-181.zip"
+          test "$(stat -c %s "$RUNNER_TEMP/web-181.zip")" = "$RETAINED_ZIP_BYTES"
+          printf '%s  %s\n' "$RETAINED_ZIP_SHA256" "$RUNNER_TEMP/web-181.zip" | sha256sum -c -
       - name: Check out the qualification harness
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Check out the exact 1.8.1 source
+      - name: Check out the exact candidate source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ env.SOURCE_REVISION }}
           path: release-source
           persist-credentials: false
+      - name: Check out retained source for disposable fixture components
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ env.RETAINED_REVISION }}
+          path: retained-source
+          persist-credentials: false
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
-      - name: Build unmodified release source
+      - name: Verify the retained archive and load the tested 1.8.1 Core
+        run: |
+          python3 -I -B - <<'PY'
+          from hashlib import sha256
+          import json
+          import os
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          temp = Path(os.environ["RUNNER_TEMP"])
+          expected = os.environ["RETAINED_ARCHIVE_SHA256"]
+          limits = {"SHA256SUMS": 256, "report.json": 256 * 1024, "core-and-web.tar.gz": 2 * 1024**3}
+          with ZipFile(temp / "web-181.zip") as package:
+              entries = package.infolist()
+              assert len(entries) == len(limits) and {entry.filename for entry in entries} == set(limits)
+              assert all(0 < entry.file_size <= limits[entry.filename] for entry in entries)
+              assert package.read("SHA256SUMS").decode("ascii").split() == [expected, "core-and-web.tar.gz"]
+              report = json.loads(package.read("report.json"))
+              assert report["kind"] == "warpdrive-headless-final-image-smoke"
+              assert report["success"] is True and report["cleanup"]["success"] is True and report["failure"] is None
+              assert report["expectedRevision"] == report["coreImage"]["revision"] == os.environ["RETAINED_REVISION"]
+              assert report["coreImage"]["id"] == os.environ["RETAINED_CORE_ID"]
+              digest = sha256()
+              with package.open("core-and-web.tar.gz") as source, (temp / "core-and-web.tar.gz").open("xb") as dest:
+                  for block in iter(lambda: source.read(1024 * 1024), b""):
+                      digest.update(block)
+                      dest.write(block)
+              assert digest.hexdigest() == expected
+          PY
+          docker image load --input "$RUNNER_TEMP/core-and-web.tar.gz"
+          docker image inspect "$RETAINED_CORE_ID" |
+            jq -e --arg image "$RETAINED_CORE_ID" --arg revision "$RETAINED_REVISION" '
+              length == 1 and .[0].Id == $image and .[0].Os == "linux" and .[0].Architecture == "amd64"
+              and .[0].Config.Labels["org.opencontainers.image.revision"] == $revision
+              and .[0].Config.Labels["org.opencontainers.image.title"] == "Warpdrive Core API"
+            ' >/dev/null
+          rm -- "$RUNNER_TEMP/web-181.zip" "$RUNNER_TEMP/core-and-web.tar.gz"
+      - name: Build only Web from unmodified 1.8.2 source
         working-directory: release-source
         run: |
-          test "$(uname -m)" = x86_64
           test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
           test -z "$(git status --porcelain)"
-          test "$(jq -r .version package.json)" = 1.8.1
+          test "$(jq -r .version package.json)" = 1.8.2
           docker buildx build --load --platform linux/amd64 --provenance=false \
             --build-arg "APP_COMMIT=$SOURCE_REVISION" --build-arg NEXT_PUBLIC_WS_URL=same-origin \
-            --file deploy/images/Web.Dockerfile --target web --tag warpdrive-181/web:qualified .
-          docker buildx build --load --platform linux/amd64 --provenance=false \
-            --build-arg "APP_COMMIT=$SOURCE_REVISION" --file deploy/images/Core.Dockerfile \
-            --target core-api --tag warpdrive-181/core:qualified .
+            --file deploy/images/Web.Dockerfile --target web --tag warpdrive-182/web:qualified .
+      - name: Build disposable Worker, Realtime and Migrator fixtures from retained source
+        working-directory: retained-source
+        run: |
+          test "$(git rev-parse HEAD)" = "$RETAINED_REVISION"
+          test -z "$(git status --porcelain)"
+          test "$(jq -r .version package.json)" = 1.8.1
           for component in worker realtime migrator; do
             docker buildx build --load --platform linux/amd64 --provenance=false \
-              --build-arg "APP_COMMIT=$SOURCE_REVISION" --file deploy/images/Dockerfile \
-              --target "$component" --tag "warpdrive-181/$component:qualified" .
+              --build-arg "APP_COMMIT=$RETAINED_REVISION" --file deploy/images/Dockerfile \
+              --target "$component" --tag "warpdrive-181-fixture/$component:qualified" .
           done
-      - name: Exercise final images on the owned fixture
+      - name: Exercise the 1.8.2 Web image with the pinned 1.8.1 backend
         run: |
-          python3 -B scripts/deployment/headless_image_smoke.py \
-            --web-image warpdrive-181/web:qualified \
-            --core-image warpdrive-181/core:qualified \
-            --worker-image warpdrive-181/worker:qualified \
-            --realtime-image warpdrive-181/realtime:qualified \
-            --migrator-image warpdrive-181/migrator:qualified \
-            --expected-revision "$SOURCE_REVISION" \
-            --output-dir "$RUNNER_TEMP/headless-smoke"
-      - name: Preserve sanitized runtime proof
+          PYTHONPATH="$GITHUB_WORKSPACE/release-source/scripts/deployment" \
+            python3 -B .github/qualification/headless_web_smoke_182.py \
+              --web-image warpdrive-182/web:qualified \
+              --core-image-id "$RETAINED_CORE_ID" \
+              --worker-image warpdrive-181-fixture/worker:qualified \
+              --realtime-image warpdrive-181-fixture/realtime:qualified \
+              --migrator-image warpdrive-181-fixture/migrator:qualified \
+              --expected-revision "$SOURCE_REVISION" \
+              --retained-revision "$RETAINED_REVISION" \
+              --output-dir "$RUNNER_TEMP/web-smoke"
+      - name: Retain sanitized smoke evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: warpdrive-181-image-smoke-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/headless-smoke/report.json
+          name: warpdrive-182-web-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-smoke/report.json
           if-no-files-found: ignore
           retention-days: 7
-      - name: Save the exact tested Core and Web images
+      - name: Recheck exact main and save the tested Web image only
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir "$RUNNER_TEMP/headless-images"
-          report="$RUNNER_TEMP/headless-smoke/report.json"
-          web_id=$(jq -er '.images.web.id | select(test("^sha256:[a-f0-9]{64}$"))' "$report")
-          core_id=$(jq -er '.coreImage.id | select(test("^sha256:[a-f0-9]{64}$"))' "$report")
-          test "$(docker image inspect --format '{{.Id}}' warpdrive-181/web:qualified)" = "$web_id"
-          test "$(docker image inspect --format '{{.Id}}' warpdrive-181/core:qualified)" = "$core_id"
-          cd "$RUNNER_TEMP/headless-images"
-          docker image save warpdrive-181/core:qualified warpdrive-181/web:qualified | gzip -1 > core-and-web.tar.gz
-          sha256sum core-and-web.tar.gz > SHA256SUMS
-          cp "$report" report.json
-      - name: Retain both tested images
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$SOURCE_REVISION"
+          bundle="$RUNNER_TEMP/web-bundle"
+          mkdir -m 700 "$bundle"
+          cp "$RUNNER_TEMP/web-smoke/report.json" "$bundle/report.json"
+          web_id=$(jq -er --arg candidate "$SOURCE_REVISION" --arg retained "$RETAINED_REVISION" \
+            --arg core "$RETAINED_CORE_ID" '
+            select(.kind == "warpdrive-headless-web-only-image-smoke" and .schemaVersion == 1
+              and .success == true and .failure == null and .cleanup.success == true
+              and .expectedWebVersion == "1.8.2" and .expectedRevision == $candidate
+              and .images.web.revision == $candidate and .retainedRevision == $retained
+              and .coreImage.revision == $retained and .coreImage.id == $core)
+            | .images.web.id | select(test("^sha256:[a-f0-9]{64}$"))
+          ' "$bundle/report.json")
+          test "$(docker image inspect --format '{{.Id}}' warpdrive-182/web:qualified)" = "$web_id"
+          docker image save --platform linux/amd64 --output "$bundle/web-image.tar" "$web_id"
+          PYTHONPATH="$GITHUB_WORKSPACE/release-source/scripts/deployment" \
+            python3 -B - "$bundle" "$web_id" "$SOURCE_REVISION" > "$bundle/archive.json" <<'PY'
+          import json
+          import sys
+          import tarfile
+          from pathlib import Path
+          from web_candidate import verify_saved_web_image
+
+          bundle, image_id, revision = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+          verified = verify_saved_web_image(bundle, expected_image_id=image_id, expected_revision=revision)
+          with tarfile.open(bundle / "web-image.tar", "r:") as archive:
+              manifest_id = json.load(archive.extractfile("index.json"))["manifests"][0]["digest"]
+          assert manifest_id != image_id
+          print(json.dumps({
+              "schemaVersion": 1,
+              "kind": "warpdrive-headless-web-only-archive",
+              "version": "1.8.2",
+              "sourceRevision": revision,
+              "testedConfigId": image_id,
+              "imageManifestId": manifest_id,
+              "archiveSha256": verified["archiveSha256"],
+              "archiveSizeBytes": verified["archiveSizeBytes"],
+          }, sort_keys=True))
+          PY
+          (cd "$bundle" && sha256sum web-image.tar report.json archive.json > SHA256SUMS)
+      - name: Retain the exact Web image and its verified identities
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: warpdrive-181-tested-images-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/headless-images/
+          name: warpdrive-182-tested-web-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-bundle/
           if-no-files-found: error
           retention-days: 7
           compression-level: 0
