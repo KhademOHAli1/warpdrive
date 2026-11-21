@@ -123,7 +123,7 @@ export function WorkHub({ data, actorId }: { data: Overview; actorId: string }) 
               resetPage();
             }}
           >
-            <label htmlFor={searchId} className="block font-medium">
+            <label htmlFor={searchId} className="font-medium">
               {m.search}
             </label>
             <div className="flex items-center gap-2">
