@@ -5,6 +5,11 @@ import { deals, permissionSets, pipelines, sessions, stages, users } from "@/db/
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { FakeStorageClient } from "@/features/files/storageFake";
+import {
+  directoryLocations,
+  directorySiteGrants,
+  directorySites,
+} from "@/features/locations/schema";
 import { internalProjectItemEvents } from "@/features/projects/profile/schema";
 import { internalProjectItems } from "@/features/projects/schema";
 import {
@@ -15,6 +20,10 @@ import {
 } from "@/features/projects/service";
 import { makeTestDb, type TestDb } from "@/test/db";
 import type { Result } from "@/types/result";
+import { readBomPlanningWorkspace } from "./bom/service";
+import { blankCatalogProfile } from "./catalog/contracts";
+import { inventoryPartProfiles } from "./catalog/schema";
+import { runCatalogCommand } from "./catalog/service";
 import type { InventoryCommand, InventoryResult, InventoryWorkspace } from "./contracts";
 import { readInventoryWorkspace } from "./reads";
 import {
@@ -23,10 +32,15 @@ import {
   requestReleaseArtifactUpload,
 } from "./releases/artifacts";
 import { createReleaseFixture } from "./releases/fixtures";
-import { inventoryBuildReleases, inventoryReleaseArtifacts } from "./releases/schema";
+import {
+  inventoryBuildReleases,
+  inventoryProductReleases,
+  inventoryReleaseArtifacts,
+} from "./releases/schema";
 import { executeReleaseMetadata, readBuildRelease, readReleaseWorkspace } from "./releases/service";
 import { inventoryCommandReceipts, inventoryMovements, inventoryOrders } from "./schema";
 import { runInventoryCommand } from "./service";
+import { runWarehouseCommand } from "./warehouse/service";
 
 let fixture: TestDb;
 const signal = () => AbortSignal.timeout(15_000);
@@ -751,4 +765,385 @@ test("approves versioned Gerber packages and pins builds, materials and authoriz
   storage.objectBytes.set(stored.key, Buffer.alloc(gerber.length, 0));
   expect(await access(operator, manifestA, a.id)).toMatchObject({ ok: false });
   expect(value(await access(operator, manifestB, b.id)).bytes).toEqual(gerber);
+});
+
+test("plans a released diamond BOM by exact child revision and preserves incumbent CRM build materials", async () => {
+  const admin = await staff("BOM administrator", "admin");
+  const planner = await staff("Material planner");
+  const seller = await staff("BOM sales", "seller");
+  const outsider = await staff("Unassigned engineer");
+  const [parent, pcba, enclosure, template] = await Promise.all([
+    catalogueItem(admin, "product"),
+    catalogueItem(admin, "product"),
+    catalogueItem(admin, "product"),
+    catalogueItem(admin, "product"),
+  ]);
+  const [common, cable, alternateCable, paste] = await Promise.all([
+    catalogueItem(admin, "component"),
+    catalogueItem(admin, "component"),
+    catalogueItem(admin, "component"),
+    catalogueItem(admin, "component"),
+  ]);
+  await fixture.db
+    .update(inventoryPartProfiles)
+    .set({ unit: "mm" })
+    .where(eq(inventoryPartProfiles.itemId, cable.id));
+  await fixture.db
+    .update(inventoryPartProfiles)
+    .set({ unit: "cm" })
+    .where(eq(inventoryPartProfiles.itemId, alternateCable.id));
+
+  async function storageBin(name: string) {
+    const siteId = randomUUID();
+    const id = randomUUID();
+    await fixture.db
+      .insert(directorySites)
+      .values({ id: siteId, code: siteId.slice(0, 8).toUpperCase(), name });
+    await fixture.db.insert(directoryLocations).values({ id, siteId, code: "BIN", name });
+    return { id, siteId };
+  }
+
+  const local = await storageBin("Main assembly stockroom");
+  const remote = await storageBin("Remote stockroom");
+  await fixture.db.insert(directorySiteGrants).values({
+    siteId: local.siteId,
+    userId: planner.userId,
+    role: "viewer",
+  });
+  async function receiveInBin(itemId: string, quantity: number, lot: string, overrides = {}) {
+    const result = await runWarehouseCommand(
+      fixture.db,
+      admin,
+      {
+        type: "receive",
+        requestId: randomUUID(),
+        itemId,
+        locationId: local.id,
+        quantity,
+        lot,
+        state: "available",
+        serial: null,
+        expiryDate: null,
+        ownerOrganizationId: null,
+        incomingId: null,
+        ...overrides,
+      },
+      signal(),
+    );
+    expect(result).toMatchObject({ ok: true });
+  }
+
+  const storage = new FakeStorageClient();
+  const metadata = (who: NativeSessionRef, input: Parameters<typeof executeReleaseMetadata>[2]) =>
+    executeReleaseMetadata(fixture.db, who, input, signal(), storage);
+  const archive = createReleaseFixture({ ...parent, sku: "IO-24-DIN" }).releases[0]?.artifacts.find(
+    ({ kind }) => kind === "pcbFabrication",
+  );
+  if (archive === undefined) throw new Error("Missing fixture Gerber archive");
+  const gerber = Buffer.from(await archive.bytes.arrayBuffer());
+
+  async function prepareRelease(itemId: string, revision: string, csv: string) {
+    const { releaseId } = value(await metadata(admin, { type: "createDraft", itemId, revision }));
+    if (releaseId === undefined) throw new Error("Expected a draft release ID");
+    for (const [kind, name, bytes] of [
+      ["pcbFabrication", "fabrication.zip", gerber],
+      ["manufacturingBom", "bom.csv", Buffer.from(csv)],
+    ] as const) {
+      const { artifactId, post } = value(
+        await requestReleaseArtifactUpload(
+          fixture.db,
+          admin,
+          {
+            releaseId,
+            kind,
+            name,
+            sizeBytes: bytes.length,
+          },
+          signal(),
+          storage,
+        ),
+      );
+      const key = post.fields.key;
+      const contentType = post.fields["Content-Type"];
+      if (key === undefined || contentType === undefined) {
+        throw new Error("Expected signed BOM upload fields");
+      }
+      storage.objectsByKey.set(key, { size: bytes.length, contentType });
+      storage.objectBytes.set(key, bytes);
+      value(
+        await confirmReleaseArtifactUpload(
+          fixture.db,
+          admin,
+          { releaseId, artifactId },
+          signal(),
+          storage,
+        ),
+      );
+    }
+    return releaseId;
+  }
+
+  async function approve(itemId: string, revision: string, csv: string) {
+    const releaseId = await prepareRelease(itemId, revision, csv);
+    value(await metadata(admin, { type: "approve", releaseId }));
+    return releaseId;
+  }
+
+  const old = await approve(parent.id, "LEGACY", `sku,quantity\n${common.sku},2\n`);
+  const crm = await realDeal(seller);
+  const projectId = await productionProject(admin, []);
+  inventory(
+    await command(admin, {
+      type: "saveTemplate",
+      requestId: randomUUID(),
+      itemId: parent.id,
+      projectId,
+      steps: [{ title: "Wire and test", assigneeId: admin.userId }],
+    }),
+  );
+  const place = () =>
+    command(
+      seller,
+      { type: "place", requestId: randomUUID(), dealId: crm.id, itemId: parent.id, quantity: 1 },
+      crm.id,
+    );
+  const incumbent = soleOrder(inventory(await place()));
+  await receiveInBin(common.id, 6, "UNRESERVED-AND-COMMITTED");
+  const active = soleOrder(
+    inventory(
+      await command(
+        admin,
+        {
+          type: "reserveMaterials",
+          requestId: randomUUID(),
+          orderId: incumbent.id,
+          revision: incumbent.revision,
+        },
+        crm.id,
+      ),
+    ),
+  );
+  expect(active.status).toBe("in_production");
+
+  await receiveInBin(common.id, 7, "HELD", { state: "hold" });
+  await receiveInBin(common.id, 2, "EXPIRED", { expiryDate: "2000-01-01" });
+  await receiveInBin(common.id, 11, "OTHER-SITE", { locationId: remote.id });
+  await receive(admin, common.id, 12);
+  await receiveInBin(pcba.id, 5, "RELEASE-UNATTRIBUTED");
+  await receiveInBin(cable.id, 800, "CABLE");
+  await receiveInBin(alternateCable.id, 50, "SWAP");
+
+  const pcbaA = await approve(pcba.id, "A", `sku,quantity\n${common.sku},2\n`);
+  await approve(enclosure.id, "A", `sku,quantity\n${common.sku},3\n`);
+  await approve(template.id, "A", `sku,quantity,consumable\n${paste.sku},1,true\n`);
+  const csv = (length: string, pieces: number) =>
+    [
+      "sku,quantity,unit,child_release,alternates,optional,consumable,inherited,pieces",
+      `${pcba.sku},1,,A,,,,,`,
+      `${enclosure.sku},1,,A,,,,,`,
+      `${template.sku},1,,A,,,,true,`,
+      `${cable.sku}@A,${length},m,,${alternateCable.sku},true,,,${pieces}`,
+    ].join("\n");
+  const parentA = await approve(parent.id, "A", csv("0.75", 3));
+  const pcbaB = await approve(pcba.id, "B", `sku,quantity\n${common.sku},20\n`);
+  const parentB = await approve(parent.id, "B", csv("0.5", 2));
+  const cyclic = await prepareRelease(
+    pcba.id,
+    "CYCLIC",
+    `sku,quantity,child_release\n${parent.sku},1,A\n`,
+  );
+  const badUnit = await prepareRelease(
+    parent.id,
+    "BAD-UNIT",
+    `sku,quantity,unit\n${common.sku},1,m\n`,
+  );
+  for (const releaseId of [cyclic, badUnit]) {
+    expect(await metadata(admin, { type: "approve", releaseId })).toMatchObject({ ok: false });
+  }
+
+  for (const itemId of [parent.id, pcba.id, enclosure.id, template.id]) {
+    value(
+      await metadata(admin, { type: "setGrant", itemId, userId: planner.userId, role: "editor" }),
+    );
+  }
+  const scope = { releaseId: parentA, siteId: local.siteId, partId: common.id, quantity: 2 };
+  const plan = (who: NativeSessionRef, query = scope) =>
+    readBomPlanningWorkspace(fixture.db, who, query, signal());
+  const baseline = value(await plan(planner));
+  expect(baseline.plan?.subassemblies.map(({ id }) => id)).toContain(pcbaA);
+  expect(baseline.plan?.subassemblies.map(({ id }) => id)).not.toContain(pcbaB);
+  expect(baseline.plan?.requirements.find(({ part }) => part.id === common.id)).toMatchObject({
+    required: 10,
+    available: 4,
+    shortage: 6,
+    releaseId: null,
+  });
+  expect(baseline.plan?.requirements.find(({ part }) => part.id === pcba.id)).toMatchObject({
+    required: 2,
+    available: 0,
+    shortage: 2,
+    releaseId: pcbaA,
+    genericAssemblyAvailable: 5,
+  });
+  expect(baseline.plan?.requirements.find(({ part }) => part.id === paste.id)).toMatchObject({
+    required: 2,
+    consumable: true,
+  });
+  expect(baseline.plan?.requirements.some(({ part }) => part.id === template.id)).toBe(false);
+  expect(baseline.plan?.requirements.some(({ part }) => part.id === cable.id)).toBe(false);
+  expect(baseline.whereUsed).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ release: expect.objectContaining({ id: pcbaA }), direct: true }),
+      expect.objectContaining({ release: expect.objectContaining({ id: parentA }), direct: false }),
+    ]),
+  );
+
+  const substitute = {
+    releaseId: parentA,
+    itemId: cable.id,
+    substituteItemId: alternateCable.id,
+    include: true,
+  };
+  const planned = value(
+    await readBomPlanningWorkspace(
+      fixture.db,
+      planner,
+      {
+        ...scope,
+        choices: [substitute],
+        compareReleaseId: parentB,
+      },
+      signal(),
+    ),
+  );
+  expect(
+    planned.plan?.requirements.find(({ part }) => part.id === alternateCable.id),
+  ).toMatchObject({
+    part: { unit: "cm" },
+    required: 150,
+    available: 50,
+    shortage: 100,
+  });
+  expect(planned.plan?.edges.find(({ primary }) => primary.id === cable.id)).toMatchObject({
+    chosenItemId: alternateCable.id,
+    enteredQuantity: "0.75",
+    enteredUnit: "m",
+    requiredPieces: 6,
+  });
+  expect(planned.comparison?.changes).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        item: expect.objectContaining({ id: cable.id }),
+        before: expect.objectContaining({ piecesPerParent: expect.any(Number) }),
+        after: expect.objectContaining({ piecesPerParent: expect.any(Number) }),
+      }),
+    ]),
+  );
+  const successor = await runCatalogCommand(
+    fixture.db,
+    admin,
+    {
+      type: "savePart",
+      requestId: randomUUID(),
+      id: null,
+      code: parent.sku,
+      name: parent.name,
+      revision: "B",
+      kind: "product",
+      profile: blankCatalogProfile("product"),
+    },
+    signal(),
+  );
+  if (!successor.ok || successor.focusId === undefined)
+    throw new Error("Expected a new part revision");
+  const successorRelease = await approve(successor.focusId, "A", csv("0.5", 2));
+  const compared = value(
+    await readBomPlanningWorkspace(
+      fixture.db,
+      admin,
+      {
+        ...scope,
+        compareReleaseId: successorRelease,
+      },
+      signal(),
+    ),
+  );
+  expect(compared.comparison?.release.part).toMatchObject({ id: successor.focusId, revision: "B" });
+  expect(
+    await readBomPlanningWorkspace(
+      fixture.db,
+      admin,
+      { ...scope, compareReleaseId: pcbaB },
+      signal(),
+    ),
+  ).toEqual({
+    ok: false,
+    error: "invalid",
+  });
+
+  expect(await plan(outsider)).toEqual({ ok: false, error: "unavailable" });
+  expect(await plan(planner, { ...scope, siteId: remote.siteId })).toEqual({
+    ok: false,
+    error: "unavailable",
+  });
+  expect(
+    await readBomPlanningWorkspace(
+      fixture.db,
+      planner,
+      {
+        ...scope,
+        choices: [
+          {
+            ...substitute,
+            substituteItemId: outsider.userId,
+          },
+        ],
+      },
+      signal(),
+    ),
+  ).toEqual({ ok: false, error: "invalid" });
+
+  expect(await place()).toMatchObject({
+    ok: false,
+    error: expect.stringContaining("release-aware"),
+  });
+  expect(soleOrder(inventory(await read(seller, crm.id)))).toMatchObject({
+    id: incumbent.id,
+    materials: [{ itemId: common.id, quantity: 2 }],
+  });
+  expect(value(await readBuildRelease(fixture.db, admin, incumbent.id, signal())).release.id).toBe(
+    old,
+  );
+  const sealed = value(await readReleaseWorkspace(fixture.db, planner, parent.id, signal()));
+  expect(sealed.releases.find(({ id }) => id === parentA)?.bom[0]).toEqual({
+    itemId: pcba.id,
+    sku: pcba.sku,
+    name: pcba.name,
+    quantity: 1,
+  });
+  await expect(
+    fixture.db
+      .update(inventoryProductReleases)
+      .set({ bom: [] })
+      .where(eq(inventoryProductReleases.id, parentA)),
+  ).rejects.toThrow();
+  value(
+    await metadata(admin, {
+      type: "setGrant",
+      itemId: pcba.id,
+      userId: planner.userId,
+      role: null,
+    }),
+  );
+  expect(await plan(planner)).toEqual({ ok: false, error: "unavailable" });
+  const scoped = value(
+    await readBomPlanningWorkspace(fixture.db, planner, { partId: common.id }, signal()),
+  );
+  expect(scoped.whereUsed.map(({ release }) => release.id)).not.toContain(parentA);
+
+  await fixture.db
+    .update(inventoryPartProfiles)
+    .set({ unit: "mm" })
+    .where(eq(inventoryPartProfiles.itemId, common.id));
+  expect(await plan(admin)).toEqual({ ok: false, error: "unitChanged" });
 });

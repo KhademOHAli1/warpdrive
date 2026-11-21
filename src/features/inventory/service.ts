@@ -6,6 +6,7 @@ import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockDirectory } from "@/features/locations/service";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { currentInventoryActor, lockInventoryOrderDeal, readInventoryDeal } from "./access";
+import { requireLegacyBuildMaterials, requirePinnedLegacyBuildMaterials } from "./bom/legacyBuilds";
 import { canHoldInventory } from "./catalog/eligibility";
 import { catalogItemPolicy, createLegacyPartProfile, lockInventoryCatalog } from "./catalog/policy";
 import { type InventoryCommand, type InventoryResult, inventoryCommand } from "./contracts";
@@ -160,6 +161,7 @@ async function changeCatalog(
 async function productionMaterials(tx: Db, item: Item) {
   const release = await findActiveRelease(tx, item.id);
   if (release !== null) {
+    await requireLegacyBuildMaterials(tx, release.bom);
     return {
       releaseId: release.id,
       bom: release.bom.map(({ itemId, quantity }) => ({ componentId: itemId, quantity })),
@@ -304,6 +306,10 @@ async function changeOrder(
   const expectedStates: readonly Order["status"][] = transitionStates[type];
   if (order.revision !== command.revision || !expectedStates.includes(order.status)) {
     fail("This order changed. Refresh it and try again.");
+  }
+
+  if (type === "reserveMaterials" || type === "completeBuild") {
+    await requirePinnedLegacyBuildMaterials(tx, orderId);
   }
 
   const usesMaterials =

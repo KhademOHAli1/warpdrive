@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
+import { BomCsvGuide } from "../../bom/ui/BomCsvGuide";
 import { type ReleaseArtifactKind, releaseArtifactKinds } from "../contracts";
 import type { ReleaseView } from "../liveContracts";
 import { manufacturingReleaseLiveMessages } from "./manufacturingReleaseLiveMessages";
@@ -108,6 +109,7 @@ export function UploadReleaseArtifact({
           disabled={pending}
         />
       </div>
+      {kind === "manufacturingBom" && <BomCsvGuide />}
       <label className="grid min-w-0 gap-1 text-xs font-medium" htmlFor={inputId}>
         {t.productionFile}
         <Input

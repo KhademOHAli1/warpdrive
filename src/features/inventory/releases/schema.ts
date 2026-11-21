@@ -14,13 +14,42 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "@/db/schema/identity";
+import type { CatalogUnit } from "../catalog/contracts";
 import type { InventoryBomLine, InventoryTemplate } from "../contracts";
 import { inventoryItems, inventoryOrders } from "../schema";
 import { type ReleaseArtifactKind, releaseFixtureMaxFileBytes } from "./contracts";
 
 export type InventoryReleaseRole = "editor" | "approver";
-export type ReleaseBomEntry = { sku: string; quantity: number };
-export type ApprovedBomLine = InventoryBomLine & { sku: string; name: string };
+export type ReleaseBomEntry = {
+  sku: string;
+  quantity: number;
+  details?: {
+    enteredQuantity: string;
+    unit: CatalogUnit | null;
+    childRelease: string | null;
+    alternateSkus: string[];
+    optional: boolean;
+    consumable: boolean;
+    inherited: boolean;
+    pieces: number | null;
+  };
+};
+
+type ApprovedBomPart = InventoryBomLine & { sku: string; name: string };
+
+export type ApprovedBomLine = ApprovedBomPart & {
+  spec?: {
+    enteredQuantity: string;
+    enteredUnit: CatalogUnit;
+    stockUnit: CatalogUnit;
+    childReleaseId: string | null;
+    alternatives: (ApprovedBomPart & { stockUnit: CatalogUnit })[];
+    optional: boolean;
+    consumable: boolean;
+    inherited: boolean;
+    pieces: number | null;
+  };
+};
 
 export const inventoryProductReleases = pgTable(
   "inventory_product_releases",

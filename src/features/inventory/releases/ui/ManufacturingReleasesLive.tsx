@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -8,6 +9,8 @@ import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { bomHref } from "../../bom/ui/links";
+import { bomMessages } from "../../bom/ui/messages";
 import type { InventoryItem } from "../../contracts";
 import { type ReleaseArtifactKind, releaseFixtureMaxFileBytes } from "../contracts";
 import type {
@@ -290,7 +293,8 @@ function LiveReleasePackage({
   pending: boolean;
   run: RunRelease;
 }) {
-  const t = manufacturingReleaseMessages[useLocale()];
+  const locale = useLocale();
+  const t = manufacturingReleaseMessages[locale];
   const draft = release.status === "draft";
   const mutable = draft && canEdit;
   return (
@@ -330,7 +334,16 @@ function LiveReleasePackage({
           }
         />
       )}
-      <ReleaseBom bom={release.bom} />
+      {release.hasPlanningBom !== true && <ReleaseBom bom={release.bom} />}
+      {!draft && (
+        <Link
+          href={bomHref({ releaseId: release.id })}
+          prefetch={false}
+          className="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          {bomMessages[locale].title}
+        </Link>
+      )}
       <ReleaseApprovalHistory release={release} />
     </section>
   );

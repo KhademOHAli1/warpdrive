@@ -17,7 +17,7 @@ import { InventoryDomainError } from "../errors";
 import { inventoryItems } from "../schema";
 import { authorizeArtifactRelease } from "./access";
 import { validReleaseArchive } from "./archive";
-import { parseReleaseBom, releaseBomMaxBytes } from "./bomCsv";
+import { inspectReleaseBom, releaseBomMaxBytes } from "./bomCsv";
 import { type ReleaseArtifactKind, releaseFixtureMaxFileBytes } from "./contracts";
 import { inventoryReleaseArtifacts, type ReleaseBomEntry } from "./schema";
 
@@ -192,9 +192,8 @@ function validateStagingBytes(
         : "Use a valid ZIP archive.",
     );
   }
-  const bomEntries = artifact.kind === "manufacturingBom" ? parseReleaseBom(bytes) : null;
-  if (artifact.kind === "manufacturingBom" && bomEntries === null)
-    return err("Use a BOM CSV with sku and quantity columns and 1–30 unique component rows.");
+  const bom = artifact.kind === "manufacturingBom" ? inspectReleaseBom(bytes) : ok(null);
+  if (!bom.ok) return bom;
   if (artifact.contentType === "application/pdf" && bytes.subarray(0, 5).toString() !== "%PDF-")
     return err(uploadInvalid);
   if (
@@ -202,7 +201,7 @@ function validateStagingBytes(
     bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
   )
     return err(uploadInvalid);
-  return ok({ bytes, sha256: checksum(bytes), bomEntries });
+  return ok({ bytes, sha256: checksum(bytes), bomEntries: bom.value });
 }
 
 export async function requestReleaseArtifactUpload(

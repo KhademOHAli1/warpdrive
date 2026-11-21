@@ -18,7 +18,7 @@ export const industrialInventoryEntry = classifyInventory(
     "sourceReview:src/features/inventory/reads.ts#5932f4af3104e7e434038dafa7a00874ade25670dbe258e523633286c63017fc",
     "sourceReview:src/features/inventory/router.ts#5c6de9bab429519608c87742843fec6eb377028544a327a8b13cdab15dfd0c2d",
     "sourceReview:src/features/inventory/schema.ts#29d3feac022044e3c52aba0661f9a8dd65d4b44b7e5ff2d86fcc300475315e7e",
-    "sourceReview:src/features/inventory/service.ts#86e04517bebbf72f7291d7dadf61e3d0d64c7579510b68eb92c9d7e5bbddac73",
+    "sourceReview:src/features/inventory/service.ts#e189b143fb669c040b3d1cad0efb4e88b6389b06397d6ec4bffa1b2e08b1a493",
     "sourceReview:src/features/inventory/stock.ts#0947eea5543129297c5a7f2b29fb104660f2c3687f754ccf50d13c25db95cecd",
     "sourceReview:src/features/inventory/ui/InventoryClient.tsx#e4e1b9ceef61cb99c10eadec63a46af148fe6bf76a44c7ee970a405c30ece271",
     "table:inventory_bom_lines",

@@ -74,6 +74,7 @@ export type ReleaseView = {
     sha256: string;
   }[];
   bom: { itemId: string; sku: string; name: string; quantity: number }[];
+  hasPlanningBom?: true;
 };
 
 export type ReleaseWorkspace = {

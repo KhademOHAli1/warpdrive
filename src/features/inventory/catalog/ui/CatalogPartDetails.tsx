@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
+import { bomHref } from "../../bom/ui/links";
+import { bomMessages } from "../../bom/ui/messages";
 import { CatalogPartFiles } from "../CatalogPartFiles";
 import type { CatalogPart, CatalogWorkspace } from "../contracts";
 import { CatalogField, CatalogSelect } from "./CatalogFields";
@@ -198,12 +200,21 @@ export function CatalogPartDetails({
           </div>
         )}
         {!fixture && (
-          <Link
-            href={`/inventory?itemId=${encodeURIComponent(part.id)}`}
-            className="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            {t.openInventory}
-          </Link>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium text-primary">
+            <Link
+              href={`/inventory?itemId=${encodeURIComponent(part.id)}`}
+              className="underline-offset-4 hover:underline"
+            >
+              {t.openInventory}
+            </Link>
+            <Link
+              href={bomHref({ partId: part.id })}
+              prefetch={false}
+              className="underline-offset-4 hover:underline"
+            >
+              {bomMessages[locale].catalogEntry}
+            </Link>
+          </div>
         )}
       </section>
       <CatalogParameterDetails part={part} t={t} />

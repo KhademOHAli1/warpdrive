@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Db } from "@/db/client";
@@ -9,9 +10,16 @@ import { makeStorageClient, type StorageClient } from "@/features/files/storage"
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { currentInventoryActor } from "../access";
+import { lockInventoryCatalog } from "../catalog/policy";
 import { InventoryDomainError } from "../errors";
 import { inventoryItems } from "../schema";
 import { authorizeBuildRelease, releaseUnavailable, requireItemReleaseAccess } from "./access";
+import {
+  lockBomApprovalParts,
+  prepareApprovedBom,
+  requireApprovalGraphAccess,
+} from "./approvedBom";
+import { parseReleaseBom } from "./bomCsv";
 import {
   type BuildRelease,
   type ReleaseMetadataCommand,
@@ -24,7 +32,6 @@ import {
   inventoryProductReleases,
   inventoryReleaseArtifacts,
   inventoryReleaseGrants,
-  type ReleaseBomEntry,
 } from "./schema";
 
 type ReleaseResult<T> = Result<T, string>;
@@ -71,6 +78,19 @@ export async function findActiveRelease(tx: Db, itemId: string) {
 
 const releaseCreator = alias(users, "inventory_release_creator");
 const releaseApprover = alias(users, "inventory_release_approver");
+
+function hasPlanningSpec({ spec }: ApprovedBomLine) {
+  if (spec === undefined) return false;
+  return (
+    spec.childReleaseId !== null ||
+    spec.optional ||
+    spec.consumable ||
+    spec.inherited ||
+    spec.alternatives.length > 0 ||
+    spec.pieces !== null ||
+    spec.enteredUnit !== spec.stockUnit
+  );
+}
 
 async function releaseViews(tx: Db, itemId: string, releaseId?: string): Promise<ReleaseView[]> {
   const revisions = await tx
@@ -124,8 +144,13 @@ async function releaseViews(tx: Db, itemId: string, releaseId?: string): Promise
     files.set(key, group);
   }
 
-  return revisions.map(({ createdAt, approvedAt, ...release }) => ({
+  return revisions.map(({ createdAt, approvedAt, bom, ...release }) => ({
     ...release,
+    // The existing package and pinned build views carry the direct BOM only.
+    bom: bom.map(({ itemId, sku, name, quantity }) => ({ itemId, sku, name, quantity })),
+    ...(releaseId === undefined && bom.some(hasPlanningSpec)
+      ? { hasPlanningBom: true as const }
+      : {}),
     createdAt: createdAt.toISOString(),
     approvedAt: approvedAt?.toISOString() ?? null,
     artifacts: files.get(release.id) ?? [],
@@ -204,52 +229,36 @@ async function lockReleaseProduct(tx: Db, itemId: string, mode: "share" | "updat
   if (row === undefined) fail();
 }
 
-async function resolveApprovedBom(tx: Db, entries: ReleaseBomEntry[]): Promise<ApprovedBomLine[]> {
-  const codes = new Set(entries.map(({ sku }) => sku));
-  if (
-    entries.length === 0 ||
-    entries.length > 30 ||
-    codes.size !== entries.length ||
-    entries.some(
-      ({ quantity }) => !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1_000_000,
-    )
-  ) {
-    fail("Use distinct stock component SKUs and valid quantities in the manufacturing BOM.");
-  }
-  const components = await tx
-    .select({ itemId: inventoryItems.id, sku: inventoryItems.sku, name: inventoryItems.name })
-    .from(inventoryItems)
-    .where(and(eq(inventoryItems.kind, "component"), inArray(inventoryItems.sku, [...codes])));
-  const bySku = new Map(components.map((component) => [component.sku, component]));
-  return entries.map(({ sku, quantity }) => {
-    const component = bySku.get(sku);
-    if (component === undefined)
-      fail("Every manufacturing BOM entry must use an existing component SKU.");
-    return { ...component, quantity };
-  });
-}
-
-async function lockApprovalTarget(
+async function requireApprovalTarget(
   tx: Db,
   actor: HydratedActor,
+  itemId: string,
   releaseId: string,
   mode: "share" | "update",
 ) {
+  await requireItemReleaseAccess(tx, actor, itemId, "approve");
+  const [release] = await tx
+    .select({ status: inventoryProductReleases.status })
+    .from(inventoryProductReleases)
+    .where(
+      and(eq(inventoryProductReleases.id, releaseId), eq(inventoryProductReleases.itemId, itemId)),
+    )
+    .for(mode);
+  if (release === undefined) fail();
+  return release;
+}
+
+async function readApprovalCandidate(tx: Db, actor: HydratedActor, releaseId: string) {
   const [candidate] = await tx
     .select({ itemId: inventoryProductReleases.itemId })
     .from(inventoryProductReleases)
     .where(eq(inventoryProductReleases.id, releaseId));
   if (candidate === undefined) fail();
-  // Match order placement and artifact confirmation lock order.
-  await lockReleaseProduct(tx, candidate.itemId, mode);
-  await requireItemReleaseAccess(tx, actor, candidate.itemId, "approve");
-  const [release] = await tx
-    .select({ status: inventoryProductReleases.status })
-    .from(inventoryProductReleases)
-    .where(eq(inventoryProductReleases.id, releaseId))
-    .for(mode);
-  if (release === undefined) fail();
-  return release;
+  const { itemId } = candidate;
+  await lockReleaseProduct(tx, itemId, "share");
+  const release = await requireApprovalTarget(tx, actor, itemId, releaseId, "share");
+  if (release.status === "released") return null;
+  return { itemId, ...(await approvalManifest(tx, releaseId)) };
 }
 
 async function approvalManifest(tx: Db, releaseId: string) {
@@ -294,6 +303,12 @@ async function checkApprovalBytes(
     ) {
       return false;
     }
+    if (
+      file.kind === "manufacturingBom" &&
+      !isDeepStrictEqual(parseReleaseBom(bytes.value), file.bomEntries)
+    ) {
+      return false;
+    }
   }
   return true;
 }
@@ -305,10 +320,9 @@ async function approveRelease(
   signal: AbortSignal,
   storage?: StorageClient,
 ) {
-  const preflight = await withReleaseActor(db, who, signal, async (tx, actor) => {
-    const release = await lockApprovalTarget(tx, actor, releaseId, "share");
-    return release.status === "released" ? null : approvalManifest(tx, releaseId);
-  });
+  const preflight = await withReleaseActor(db, who, signal, (tx, actor) =>
+    readApprovalCandidate(tx, actor, releaseId),
+  );
   if (!preflight.ok) return preflight;
   if (preflight.value === null) return ok({ releaseId });
 
@@ -325,17 +339,33 @@ async function approveRelease(
     );
 
   return withReleaseActor(db, who, signal, async (tx, actor) => {
-    const release = await lockApprovalTarget(tx, actor, releaseId, "update");
+    await lockInventoryCatalog(tx, signal);
+    const { itemId, bomEntries } = verifiedManifest;
+    await requireItemReleaseAccess(tx, actor, itemId, "approve");
+    const graph = await prepareApprovedBom(
+      tx,
+      actor,
+      { id: releaseId, itemId },
+      bomEntries,
+      signal,
+    );
+    await lockBomApprovalParts(tx, itemId, graph.parts);
+    const release = await requireApprovalTarget(tx, actor, itemId, releaseId, "update");
     if (release.status === "released") return { releaseId };
+    await requireApprovalGraphAccess(tx, actor, graph);
 
     const manifest = await approvalManifest(tx, releaseId);
-    if (JSON.stringify(manifest.files) !== JSON.stringify(verifiedManifest.files)) {
+    if (!isDeepStrictEqual(manifest.files, verifiedManifest.files)) {
       fail("The package changed during verification. Review its files and approve again.");
     }
-    const bom = await resolveApprovedBom(tx, manifest.bomEntries);
     await tx
       .update(inventoryProductReleases)
-      .set({ status: "released", approvedBy: actor.id, approvedAt: sql`clock_timestamp()`, bom })
+      .set({
+        status: "released",
+        approvedBy: actor.id,
+        approvedAt: sql`clock_timestamp()`,
+        bom: graph.bom,
+      })
       .where(eq(inventoryProductReleases.id, releaseId));
     return { releaseId };
   });
