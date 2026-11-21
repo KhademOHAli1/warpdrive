@@ -58,6 +58,7 @@ import { toolingIds1 } from "./registryIdsTooling1";
 import { industrialInventoryEntry } from "./registryIndustrialInventory";
 import { internalProjectsInventoryEntry } from "./registryInternalProjects";
 import { inventoryCatalogEntry } from "./registryInventoryCatalog";
+import { inventorySourcingEntry } from "./registryInventorySourcing";
 import { inventoryWarehouseEntry } from "./registryInventoryWarehouse";
 import { kpiInventoryEntry } from "./registryKpis";
 import { mailInventoryEntries } from "./registryMail";
@@ -121,6 +122,7 @@ export const registryEntries: RegistryEntry[] = [
   industrialInventoryEntry,
   inventoryCatalogEntry,
   inventoryWarehouseEntry,
+  inventorySourcingEntry,
   warehouseOperationsEntry,
   operationsAccessEntry,
   sharedLocationsEntry,

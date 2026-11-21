@@ -1,16 +1,35 @@
 "use client";
 
-import { LibraryBig, Warehouse } from "lucide-react";
+import { LibraryBig, Truck, Warehouse } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
+import { trpc } from "@/lib/trpc-client";
 import { catalogMessages } from "../catalog/ui/catalogMessages";
+import { sourcingMessages } from "../sourcing/ui/messages";
 import { warehouseMessages } from "../warehouse/ui/warehouseMessages";
 
 const linkStyle =
   "inline-flex items-center gap-2 border-b-2 border-transparent px-2 py-2 text-sm font-medium text-muted-foreground hover:text-foreground";
 
-export function InventoryCatalogLinks() {
+function SourcingCatalogLink() {
+  const locale = useLocale();
+  const scope = trpc.operationsAccess.scope.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: "always",
+  });
+  const canSource =
+    scope.data?.ok === true &&
+    scope.data.value.sites.some(({ canBuy, canViewCosts }) => canBuy || canViewCosts);
+  if (!canSource) return null;
+  return (
+    <Link href="/inventory/sourcing" prefetch={false} className={linkStyle}>
+      <Truck aria-hidden="true" className="size-4" /> {sourcingMessages[locale].title}
+    </Link>
+  );
+}
+
+export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }) {
   const locale = useLocale();
   return (
     <>
@@ -20,6 +39,7 @@ export function InventoryCatalogLinks() {
       <Link href="/inventory/warehouse" prefetch={false} className={linkStyle}>
         <Warehouse aria-hidden="true" className="size-4" /> {warehouseMessages[locale].title}
       </Link>
+      {!fixture && <SourcingCatalogLink />}
       <LocationDirectoryLink />
     </>
   );

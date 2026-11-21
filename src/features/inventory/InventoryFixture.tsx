@@ -31,7 +31,7 @@ export function InventoryFixture({
         submit={submit}
         ProductReleases={ManufacturingReleasesFixture}
         openReleases={openReleases}
-        catalogLinks={initial.deal === null && <InventoryCatalogLinks />}
+        catalogLinks={initial.deal === null && <InventoryCatalogLinks fixture />}
       />
     </ManufacturingReleaseFixtureProvider>
   );

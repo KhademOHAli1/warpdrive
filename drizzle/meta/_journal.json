@@ -946,6 +946,13 @@
       "when": 1795286920271,
       "tag": "0134_operations_site_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 135,
+      "version": "7",
+      "when": 1795287791918,
+      "tag": "0135_inventory_sourcing",
+      "breakpoints": true
     }
   ]
 }
