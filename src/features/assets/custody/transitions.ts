@@ -1,4 +1,5 @@
 import type { AssetBalance, AssetEvent, AssetRecord, AssetsWorkspace } from "../contracts";
+import { kitUsesAsset } from "../kits/usage";
 import {
   type Custodian,
   type CustodyCommand,
@@ -304,6 +305,8 @@ function applySingle(
   if (asset.archivedAt !== null || asset.tracking === "consumable_pool")
     return failure("ineligible");
   if (asset.tracking === "individual" && command.quantity !== 1) return failure("quantity");
+  if (asset.tracking === "individual" && kitUsesAsset(workspace.kits, asset.id))
+    return failure("held");
   const effect = changeHolding(workspace, asset, command, audit.at);
   if (typeof effect === "string") return failure(effect);
   const { event, detail } = custodyHistory(command, effect, audit);

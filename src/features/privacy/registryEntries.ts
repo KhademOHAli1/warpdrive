@@ -17,6 +17,7 @@ import {
 } from "./registryAnalytics";
 import { assetCommissioningEntry } from "./registryAssetCommissioning";
 import { assetCustodyEntry } from "./registryAssetCustody";
+import { assetKitsEntry } from "./registryAssetKits";
 import { assetRegisterEntry } from "./registryAssets";
 import { billingInventoryEntry } from "./registryBilling";
 import { bomPlanningEntry } from "./registryBomPlanning";
@@ -141,6 +142,7 @@ export const registryEntries: RegistryEntry[] = [
   sharedLocationsEntry,
   assetRegisterEntry,
   assetCustodyEntry,
+  assetKitsEntry,
   assetCommissioningEntry,
   manufacturingReleasesEntry,
   bomPlanningEntry,

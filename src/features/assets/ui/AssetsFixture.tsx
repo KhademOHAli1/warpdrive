@@ -9,12 +9,15 @@ import {
 } from "../custody/contracts";
 import { applyCustodyCommand } from "../custody/transitions";
 import { assetsFixture } from "../fixtures";
+import { emptyKitWorkspace, type KitCommand, type KitResult } from "../kits/contracts";
+import { applyKitCommand } from "../kits/transitions";
 import { applyAssetWorkspaceCommand } from "../registerCommands";
 import { AssetsRegister } from "./AssetsWorkspace";
 
 export function AssetsFixture({ canManage }: { canManage: boolean }) {
   const [initial] = useState<AssetsWorkspace>(() => ({
     ...assetsFixture(canManage),
+    kits: emptyKitWorkspace(),
     custody: {
       ...emptyCustodyWorkspace(),
       staff: canManage
@@ -26,6 +29,7 @@ export function AssetsFixture({ canManage }: { canManage: boolean }) {
     },
   }));
   const current = useRef(initial);
+  const kitReceipts = useRef(new Map<string, { signature: string; kitId: string }>());
   const receipts = useRef(
     new Map<
       string,
@@ -61,5 +65,32 @@ export function AssetsFixture({ canManage }: { canManage: boolean }) {
     return Promise.resolve(result);
   }
 
-  return <AssetsRegister initial={initial} submit={submit} submitCustody={submitCustody} fixture />;
+  function submitKit(command: KitCommand): Promise<KitResult> {
+    const signature = JSON.stringify(command);
+    const saved = kitReceipts.current.get(command.requestId);
+    const kits = current.current.kits;
+    if (saved !== undefined && kits !== undefined) {
+      return Promise.resolve(
+        saved.signature === signature
+          ? { ok: true, value: { ...current.current, kits }, kitId: saved.kitId }
+          : { ok: false, error: "conflict" },
+      );
+    }
+    const result = applyKitCommand(current.current, command, "Demo operator");
+    if (result.ok) {
+      current.current = result.value;
+      kitReceipts.current.set(command.requestId, { signature, kitId: result.kitId });
+    }
+    return Promise.resolve(result);
+  }
+
+  return (
+    <AssetsRegister
+      initial={initial}
+      submit={submit}
+      submitCustody={submitCustody}
+      submitKit={submitKit}
+      fixture
+    />
+  );
 }

@@ -2,11 +2,15 @@ import { Archive, ArrowLeftRight, NotebookPen, Pencil, RotateCcw } from "lucide-
 import type { MouseEvent, ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useHydrated } from "@/lib/useHydrated";
 import type { AssetField, AssetRecord, AssetsWorkspace, AssetValue } from "../contracts";
 import type { CustodyOpener } from "../custody/ui/CustodyDialogs";
 import { AssetCustodyPanel } from "../custody/ui/CustodyPanels";
 import type { CustodyWords } from "../custody/ui/messages";
+import { KitAssociations } from "../kits/ui/KitsRegister";
+import { type KitWords, kitMessages } from "../kits/ui/messages";
+import { kitAssetUsage, kitUsesAsset } from "../kits/usage";
 import type { AssetEditor } from "./AssetEditors";
 import type { AssetWords } from "./assetMessages";
 
@@ -44,6 +48,12 @@ function fieldDisplay(
   return value;
 }
 
+function custodyWordsForKit(words: CustodyWords, kitWords: KitWords, held: boolean) {
+  return held
+    ? { ...words, currentHolder: kitWords.looseCustody, noHolder: kitWords.noLooseCustody }
+    : words;
+}
+
 export function AssetDetail({
   record,
   workspace,
@@ -65,6 +75,7 @@ export function AssetDetail({
   custodyWords: CustodyWords;
   openCustody?: CustodyOpener;
 }) {
+  const kitWords = kitMessages[useLocale()];
   const hydrated = useHydrated();
   const number = hydrated ? new Intl.NumberFormat(locale) : null;
   const timestamp = hydrated
@@ -79,6 +90,11 @@ export function AssetDetail({
   const archived = record.archivedAt !== null;
   const held = workspace.custody?.holdings.some(({ assetId }) => assetId === record.id) === true;
   const individual = record.tracking === "individual";
+  const inKit = kitUsesAsset(workspace.kits, record.id);
+  const kitHeld = kitAssetUsage(workspace.kits, record.id).held > 0;
+  const canMoveLoose = !individual || (!held && !inKit);
+  const canArchive = !held && !inKit;
+  const ordinaryCustody = site?.canManage === true && !archived && (!individual || !inKit);
   const model = individual ? workspace.models.find(({ id }) => id === record.modelId) : undefined;
   const balances = individual ? [] : record.balances.filter(({ quantity }) => quantity > 0);
   const total = balances.reduce((sum, bin) => sum + bin.quantity, 0);
@@ -133,7 +149,7 @@ export function AssetDetail({
                   <Pencil aria-hidden="true" size={14} />
                   {t.editAsset}
                 </Button>
-                {(!held || !individual) && (
+                {canMoveLoose && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -157,7 +173,7 @@ export function AssetDetail({
                 </Button>
               </>
             )}
-            {!held && (
+            {canArchive && (
               <Button
                 size="sm"
                 variant="outline"
@@ -256,14 +272,16 @@ export function AssetDetail({
         </div>
       )}
 
+      <KitAssociations workspace={workspace} assetId={record.id} />
+
       {workspace.custody !== undefined && (
         <AssetCustodyPanel
           record={record}
           custody={workspace.custody}
           display={{ time: formatTimestamp, number: formatNumber, location }}
           busy={busy}
-          open={site?.canManage === true && !archived ? openCustody : undefined}
-          words={custodyWords}
+          open={ordinaryCustody ? openCustody : undefined}
+          words={custodyWordsForKit(custodyWords, kitWords, kitHeld)}
         />
       )}
 

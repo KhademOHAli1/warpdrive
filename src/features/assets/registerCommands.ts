@@ -10,6 +10,7 @@ import {
   type AssetsWorkspace,
   assetCommand,
 } from "./contracts";
+import { kitUsesAsset } from "./kits/usage";
 import { assetKey, resolveAssetValues, uniqueAssetKeys, validAssetFields } from "./registerRules";
 
 type RecordCommand = Extract<AssetCommand, { assetId: string }>;
@@ -399,12 +400,20 @@ function changeRecord(
   if (asset.version !== command.version) return fail("stale");
   if (
     (command.type === "move" || (command.type === "setArchive" && command.archived)) &&
-    workspace.custody?.holdings.some(({ assetId }) => assetId === asset.id) === true
+    (workspace.custody?.holdings.some(({ assetId }) => assetId === asset.id) === true ||
+      kitUsesAsset(workspace.kits, asset.id))
   )
     return fail("state");
   if (command.type === "setArchive")
     return changeArchive(workspace, asset, command.archived, command.reason, event);
   if (asset.archivedAt !== null) return fail("state");
+  if (
+    command.type === "update" &&
+    asset.tracking === "individual" &&
+    (command.modelId !== asset.modelId || command.serial !== asset.serial) &&
+    kitUsesAsset(workspace.kits, asset.id)
+  )
+    return fail("state");
   switch (command.type) {
     case "note":
       return saveRecord(workspace, append(asset, event({ kind: "note", reason: command.reason })));

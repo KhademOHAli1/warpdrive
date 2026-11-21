@@ -1,12 +1,18 @@
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useHydrated } from "@/lib/useHydrated";
 import type { AssetRecord, AssetsWorkspace } from "../contracts";
 import type { CustodyHolding } from "../custody/contracts";
 import type { CustodyWords } from "../custody/ui/messages";
+import { kitRemaining, kitsForAsset } from "../kits/ui/kitView";
+import { kitMessages } from "../kits/ui/messages";
+import { kitUsesAsset } from "../kits/usage";
 import type { AssetWords } from "./assetMessages";
 
 const header = "px-3 py-2.5 font-medium text-muted-foreground";
 const cell = "px-3 py-2.5 align-middle";
+
+type Holder = Pick<CustodyHolding, "id" | "custodianName" | "quantity">;
 
 type AssetSelection = {
   selected: ReadonlySet<string>;
@@ -36,16 +42,19 @@ export function AssetTable({
   selection?: AssetSelection;
 }) {
   const number = useHydrated() ? new Intl.NumberFormat(locale) : null;
+  const kitWords = kitMessages[useLocale()];
   const sites = new Map(workspace.sites.map(({ id, name }) => [id, name]));
   const categories = new Map(workspace.categories.map(({ id, name }) => [id, name]));
-  const held = new Map<string, CustodyHolding[]>();
-  for (const holding of workspace.custody?.holdings ?? []) {
-    const matches = held.get(holding.assetId);
-    if (matches === undefined) held.set(holding.assetId, [holding]);
-    else matches.push(holding);
-  }
-  const hasCustody = workspace.custody !== undefined;
-  const visibleIds = records.map(({ id }) => id);
+  const held = holdersByAsset(workspace);
+  const hasCustody = workspace.custody !== undefined || workspace.kits !== undefined;
+  const kitManaged = new Set(
+    records
+      .filter(
+        (record) => record.tracking === "individual" && kitUsesAsset(workspace.kits, record.id),
+      )
+      .map(({ id }) => id),
+  );
+  const visibleIds = records.filter(({ id }) => !kitManaged.has(id)).map(({ id }) => id);
   const selectedCount = visibleIds.filter((id) => selection?.selected.has(id) === true).length;
   const toggleState =
     selectedCount === visibleIds.length ? true : selectedCount === 0 ? false : "indeterminate";
@@ -63,7 +72,7 @@ export function AssetTable({
           <tr>
             {selection !== undefined && (
               <th scope="col" className={`${header} w-12`}>
-                {visibleIds.length <= 100 && (
+                {visibleIds.length > 0 && visibleIds.length <= 100 && (
                   <Checkbox
                     checked={toggleState}
                     label={custodyWords.selectAll}
@@ -113,7 +122,9 @@ export function AssetTable({
               : balances.reduce((total, bin) => total + bin.quantity, 0);
 
             const holdingRows = held.get(record.id) ?? [];
-            const checked = selection?.selected.has(record.id) === true;
+            const locked = kitManaged.has(record.id);
+            const checked = !locked && selection?.selected.has(record.id) === true;
+            const kits = kitsForAsset(workspace, record.id);
 
             return (
               <tr
@@ -126,7 +137,9 @@ export function AssetTable({
                     <Checkbox
                       checked={checked}
                       label={`${custodyWords.selectAsset} ${record.name}`}
-                      disabled={selection.busy || (!checked && selection.selected.size >= 100)}
+                      disabled={
+                        selection.busy || locked || (!checked && selection.selected.size >= 100)
+                      }
                       onCheckedChange={(next) => selection.onChange([record.id], next)}
                     />
                   </td>
@@ -147,6 +160,12 @@ export function AssetTable({
                     <bdi dir="auto">{record.code}</bdi>
                     {category != null && <bdi dir="auto">{category}</bdi>}
                   </span>
+                  {kits.length > 0 && (
+                    <span className="block text-xs text-muted-foreground">
+                      <span className="me-1">{kitWords.kit}</span>
+                      <bdi>{kits.map(({ name }) => name).join(" · ")}</bdi>
+                    </span>
+                  )}
                 </th>
                 <td className={cell}>
                   <span>{t[record.tracking]}</span>
@@ -184,6 +203,25 @@ export function AssetTable({
   );
 }
 
+function holdersByAsset(workspace: AssetsWorkspace) {
+  const result = new Map<string, Holder[]>();
+  function add(assetId: string, holder: Holder) {
+    const existing = result.get(assetId);
+    if (existing === undefined) result.set(assetId, [holder]);
+    else existing.push(holder);
+  }
+  for (const holding of workspace.custody?.holdings ?? []) add(holding.assetId, holding);
+  for (const checkout of workspace.kits?.checkouts ?? []) {
+    if (checkout.closedAt !== null) continue;
+    for (const line of checkout.lines) {
+      const quantity = kitRemaining(line);
+      if (quantity > 0)
+        add(line.assetId, { id: line.id, custodianName: checkout.custodianName, quantity });
+    }
+  }
+  return result;
+}
+
 function RegisterHolder({
   record,
   holdings,
@@ -191,19 +229,23 @@ function RegisterHolder({
   words: t,
 }: {
   record: AssetRecord;
-  holdings: CustodyHolding[];
+  holdings: Holder[];
   number: Intl.NumberFormat | null;
   words: CustodyWords;
 }) {
-  if (record.tracking === "consumable_pool")
-    return <span className="text-muted-foreground">—</span>;
-  if (holdings.length === 0) return <span className="text-muted-foreground">{t.noHolder}</span>;
+  if (holdings.length === 0) {
+    return (
+      <span className="text-muted-foreground">
+        {record.tracking === "consumable_pool" ? "—" : t.noHolder}
+      </span>
+    );
+  }
   return (
     <ul className="space-y-0.5">
       {holdings.map(({ id, custodianName, quantity }) => (
         <li key={id}>
           <bdi>{custodianName}</bdi>
-          {record.tracking === "returnable_pool" && (
+          {record.tracking !== "individual" && (
             <span className="ms-2 text-xs text-muted-foreground">
               {number?.format(quantity) ?? quantity}
             </span>

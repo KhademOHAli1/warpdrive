@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { CustodyWorkspace } from "./custody/contracts";
+import type { KitWorkspace } from "./kits/contracts";
 
 export const assetTrackingMethods = ["individual", "returnable_pool", "consumable_pool"] as const;
 export const assetFieldTypes = ["text", "number", "date", "boolean", "choice", "link"] as const;
@@ -162,6 +163,7 @@ export type AssetsWorkspace = {
   models: AssetModel[];
   records: AssetRecord[];
   custody?: CustodyWorkspace;
+  kits?: KitWorkspace;
 };
 export type AssetError = "unavailable" | "invalid" | "stale" | "conflict" | "stock" | "state";
 export type AssetResult =

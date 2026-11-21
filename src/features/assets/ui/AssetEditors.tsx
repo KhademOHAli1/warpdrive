@@ -21,6 +21,7 @@ import {
   assetTrackingMethods,
   validAssetIntent,
 } from "../contracts";
+import { kitUsesAsset } from "../kits/usage";
 import { uniqueAssetKeys, validAssetFields } from "../registerRules";
 import {
   AssetDetailsFields,
@@ -121,6 +122,7 @@ function RecordEditor({
   const locale = localeTagForFormatting(preferences);
   const binOptions = siteLocations(workspace, siteId);
   const isIndividual = tracking === "individual";
+  const identityDisabled = pending || kitUsesAsset(workspace.kits, asset?.id ?? "");
   const openingQuantity = isIndividual ? 0 : readQuantity(quantity, locale);
   const content = readDetails(draft, categories, locale);
 
@@ -174,7 +176,7 @@ function RecordEditor({
             label={t.model}
             value={modelId}
             options={[{ value: "", label: t.noModel }, ...modelOptions(models)]}
-            disabled={pending}
+            disabled={identityDisabled}
             onChange={selectModel}
           />
         )}
@@ -184,7 +186,7 @@ function RecordEditor({
         <SalesInput
           label={t.serial}
           value={serial}
-          disabled={pending}
+          disabled={identityDisabled}
           maxLength={80}
           dir="ltr"
           onChange={(event) => setSerial(event.target.value)}

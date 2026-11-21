@@ -31,12 +31,15 @@ import {
 } from "../custody/ui/CustodyPanels";
 import { type CustodyWords, custodyMessages } from "../custody/ui/messages";
 import { type SubmitCustody, useCustodyWorkspace } from "../custody/ui/useCustodyWorkspace";
+import { KitsTab, KitsTabTrigger } from "../kits/ui/KitsRegister";
+import { type SubmitKit, useKitWorkspace } from "../kits/ui/useKitWorkspace";
+import { kitUsesAsset } from "../kits/usage";
 import { AssetDetail } from "./AssetDetail";
 import { type AssetEditor, AssetEditorDialog } from "./AssetEditors";
 import { AssetTable } from "./AssetTable";
 import { type AssetWords, assetMessages } from "./assetMessages";
 
-const registerTabs = ["register", "categories", "models", "custodians"] as const;
+const registerTabs = ["register", "categories", "models", "custodians", "kits"] as const;
 type RegisterTab = (typeof registerTabs)[number];
 type EditHandler = (event: MouseEvent<HTMLButtonElement>, editor: AssetEditor) => void;
 
@@ -287,7 +290,7 @@ function AssetHeaderActions({
   onEdit: EditHandler;
   words: AssetWords;
 }) {
-  if (manageSiteId === null || tab === "custodians")
+  if (manageSiteId === null || tab === "custodians" || tab === "kits")
     return fixture ? <Badge variant="outline">{t.demo}</Badge> : null;
   const add: AssetEditor =
     tab === "register"
@@ -374,8 +377,18 @@ function custodyManagement(
   return {
     canManage,
     canSelect: canManage && managedSiteId === filters.site && filters.status === "active",
-    tab: tab === "custodians" && !canManage ? "register" : tab,
+    tab: availableRegisterTab(tab, canManage, workspace.kits !== undefined),
   };
+}
+
+function availableRegisterTab(
+  tab: RegisterTab,
+  canManageCustody: boolean,
+  kitsAvailable: boolean,
+): RegisterTab {
+  if (tab === "custodians" && !canManageCustody) return "register";
+  if (tab === "kits" && !kitsAvailable) return "register";
+  return tab;
 }
 
 function scopedCustodyEditor(
@@ -391,6 +404,10 @@ function scopedCustodyEditor(
         ? editor.record.siteId
         : editor.custodian.siteId;
   return workspace.sites.some((site) => site.id === siteId && site.canManage) ? editor : null;
+}
+
+function isLooseAsset(workspace: AssetsWorkspace, record: AssetRecord): boolean {
+  return record.tracking !== "individual" || !kitUsesAsset(workspace.kits, record.id);
 }
 
 function RegisterResults({
@@ -428,7 +445,9 @@ function RegisterResults({
   words: AssetWords;
   custodyWords: CustodyWords;
 }) {
-  const selectedCustody = canSelect ? records.filter(({ id }) => custody.selected.has(id)) : [];
+  const selectedCustody = canSelect
+    ? records.filter((record) => custody.selected.has(record.id) && isLooseAsset(workspace, record))
+    : [];
   return (
     <>
       <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
@@ -507,12 +526,14 @@ export function AssetsRegister({
   initial,
   submit,
   submitCustody,
+  submitKit,
   fixture,
   initialAssetId = null,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
   submitCustody?: SubmitCustody;
+  submitKit?: SubmitKit;
   fixture: boolean;
   initialAssetId?: string | null;
 }) {
@@ -538,7 +559,14 @@ export function AssetsRegister({
     inFlightRef: inFlight,
     fallbackFocus: searchInput,
   });
-  const busy = pending || custody.pending;
+  const kitSearchInput = useRef<HTMLInputElement | null>(null);
+  const kit = useKitWorkspace({
+    submit: submitKit,
+    onWorkspace: setWorkspace,
+    inFlightRef: inFlight,
+    fallbackFocus: kitSearchInput,
+  });
+  const busy = pending || custody.pending || kit.pending;
 
   if (source !== initial) {
     setSource(initial);
@@ -720,7 +748,16 @@ export function AssetsRegister({
                 {custodyWords.custodians}
               </TabsTrigger>
             )}
+            <KitsTabTrigger available={workspace.kits !== undefined} />
           </TabsList>
+
+          <KitsTab
+            {...{ workspace, locationLabels, busy, kit }}
+            siteId={filters.site}
+            siteFilter={renderSiteFilter()}
+            searchInput={kitSearchInput}
+            submitEnabled={submitKit !== undefined}
+          />
 
           <TabsContent value="register" className="space-y-3">
             <RegisterFilters
