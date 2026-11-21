@@ -4,7 +4,7 @@ export const projectIntakeInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/projects/intake/router.ts#d365248a2b4be2b002777d2c4eb2571703f2a152151b00de403699c9759b575d",
     "sourceReview:src/features/projects/intake/schema.ts#ba4558dadd9d20efdcd5037b714d91ecdbfab7f7481eb18bb89f9d24e9f6814c",
-    "sourceReview:src/features/projects/intake/service.ts#618412d598b6d4b4e9ad6830e9152a02474df6b376450338a8c631647acb3180",
+    "sourceReview:src/features/projects/intake/service.ts#d98ffb3f14ab62d4020012bcc04d3f21822cc80a5346c5fe4e82fb7cf41d57b7",
     "sourceReview:src/features/projects/intake/ui/IntakeDecisionDialog.tsx#5d7359fca59c041154281ad3ee2d8dcd8aff10fc69c6249ab1b7b891a1504efc",
     "sourceReview:src/features/projects/intake/ui/IntakeEditorDialog.tsx#a1eedf0e2dbfe85048e173d35164c4d6ef021ae153d618c3eed0e82f16ebaf17",
     "sourceReview:src/features/projects/intake/ui/ProjectIntakeSettings.tsx#7aea1394d2f7e804bd64afc63e6ef282f7279f6e90f0fc81adf4d3abfc4d3780",

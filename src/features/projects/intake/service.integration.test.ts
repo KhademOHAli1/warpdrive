@@ -291,7 +291,13 @@ test("snoozes, accepts exactly once into the native project and keeps duplicate 
       signal(),
     ),
   ).items[0];
-  if (foreignItem === undefined) throw new Error("Missing linked item");
+  if (foreignItem === undefined || ordinary === undefined) throw new Error("Missing linked item");
+  const sourceProject = value(await readInternalProject(db, owner, projectId, signal())).project;
+  const matchingKey = `${sourceProject.identifier}-${ordinary.sequenceNumber}`;
+  expect(foreignItem.sequenceNumber).toBe(ordinary.sequenceNumber);
+  expect(value(await findIntakeWorkItems(db, owner, projectId, matchingKey, signal()))).toEqual([
+    { id: ordinary.id, title: ordinary.title, identifier: matchingKey },
+  ]);
   const duplicate = value(
     await createProjectIntake(db, owner, draft(projectId, "Duplicate request"), signal()),
   );

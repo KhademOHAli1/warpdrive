@@ -382,6 +382,7 @@ async function decideIntake(
           and(
             eq(internalProjectItems.projectId, row.projectId),
             eq(internalProjectItems.id, input.workItemId),
+            isNull(internalProjectItems.archivedAt),
           ),
         );
       return item === undefined
@@ -478,10 +479,11 @@ export function findIntakeWorkItems(
       .where(
         and(
           eq(internalProjectItems.projectId, projectId),
-          sql`
-        strpos(lower(${title}), lower(${search})) > 0
-        or strpos(lower(${prefix} || '-' || ${sequenceNumber}::text), lower(${search})) > 0
-      `,
+          isNull(internalProjectItems.archivedAt),
+          or(
+            sql`strpos(lower(${title}), lower(${search})) > 0`,
+            sql`strpos(lower(${prefix} || '-' || ${sequenceNumber}::text), lower(${search})) > 0`,
+          ),
         ),
       )
       .orderBy(desc(sequenceNumber), asc(id))
