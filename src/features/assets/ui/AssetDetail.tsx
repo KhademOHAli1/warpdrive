@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useHydrated } from "@/lib/useHydrated";
 import type { AssetField, AssetRecord, AssetsWorkspace, AssetValue } from "../contracts";
+import type { CustodyOpener } from "../custody/ui/CustodyDialogs";
+import { AssetCustodyPanel } from "../custody/ui/CustodyPanels";
+import type { CustodyWords } from "../custody/ui/messages";
 import type { AssetEditor } from "./AssetEditors";
 import type { AssetWords } from "./assetMessages";
 
@@ -49,6 +52,8 @@ export function AssetDetail({
   onEdit,
   locale,
   words: t,
+  custodyWords,
+  openCustody,
 }: {
   record: AssetRecord;
   workspace: AssetsWorkspace;
@@ -57,6 +62,8 @@ export function AssetDetail({
   onEdit: (event: MouseEvent<HTMLButtonElement>, editor: AssetEditor) => void;
   locale: string;
   words: AssetWords;
+  custodyWords: CustodyWords;
+  openCustody?: CustodyOpener;
 }) {
   const hydrated = useHydrated();
   const number = hydrated ? new Intl.NumberFormat(locale) : null;
@@ -70,6 +77,7 @@ export function AssetDetail({
   const site = workspace.sites.find(({ id }) => id === record.siteId);
   const category = workspace.categories.find(({ id }) => id === record.categoryId);
   const archived = record.archivedAt !== null;
+  const held = workspace.custody?.holdings.some(({ assetId }) => assetId === record.id) === true;
   const individual = record.tracking === "individual";
   const model = individual ? workspace.models.find(({ id }) => id === record.modelId) : undefined;
   const balances = individual ? [] : record.balances.filter(({ quantity }) => quantity > 0);
@@ -125,17 +133,19 @@ export function AssetDetail({
                   <Pencil aria-hidden="true" size={14} />
                   {t.editAsset}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={(event) =>
-                    onEdit(event, { type: individual ? "move" : "changePool", asset: record })
-                  }
-                >
-                  <ArrowLeftRight aria-hidden="true" size={14} />
-                  {individual ? t.move : t.changePool}
-                </Button>
+                {(!held || !individual) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={(event) =>
+                      onEdit(event, { type: individual ? "move" : "changePool", asset: record })
+                    }
+                  >
+                    <ArrowLeftRight aria-hidden="true" size={14} />
+                    {individual ? t.move : t.changePool}
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -147,19 +157,21 @@ export function AssetDetail({
                 </Button>
               </>
             )}
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busy}
-              onClick={(event) => onEdit(event, { type: "setArchive", asset: record })}
-            >
-              {archived ? (
-                <RotateCcw aria-hidden="true" size={14} />
-              ) : (
-                <Archive aria-hidden="true" size={14} />
-              )}
-              {archived ? t.reinstate : t.archive}
-            </Button>
+            {!held && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={(event) => onEdit(event, { type: "setArchive", asset: record })}
+              >
+                {archived ? (
+                  <RotateCcw aria-hidden="true" size={14} />
+                ) : (
+                  <Archive aria-hidden="true" size={14} />
+                )}
+                {archived ? t.reinstate : t.archive}
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -242,6 +254,17 @@ export function AssetDetail({
             </table>
           )}
         </div>
+      )}
+
+      {workspace.custody !== undefined && (
+        <AssetCustodyPanel
+          record={record}
+          custody={workspace.custody}
+          display={{ time: formatTimestamp, number: formatNumber, location }}
+          busy={busy}
+          open={site?.canManage === true && !archived ? openCustody : undefined}
+          words={custodyWords}
+        />
       )}
 
       <div className="p-4">

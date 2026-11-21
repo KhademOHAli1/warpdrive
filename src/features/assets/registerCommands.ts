@@ -397,6 +397,11 @@ function changeRecord(
   event: MakeEvent,
 ): AssetResult {
   if (asset.version !== command.version) return fail("stale");
+  if (
+    (command.type === "move" || (command.type === "setArchive" && command.archived)) &&
+    workspace.custody?.holdings.some(({ assetId }) => assetId === asset.id) === true
+  )
+    return fail("state");
   if (command.type === "setArchive")
     return changeArchive(workspace, asset, command.archived, command.reason, event);
   if (asset.archivedAt !== null) return fail("state");

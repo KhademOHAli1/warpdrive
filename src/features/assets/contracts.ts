@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { CustodyWorkspace } from "./custody/contracts";
 
 export const assetTrackingMethods = ["individual", "returnable_pool", "consumable_pool"] as const;
 export const assetFieldTypes = ["text", "number", "date", "boolean", "choice", "link"] as const;
@@ -160,6 +161,7 @@ export type AssetsWorkspace = {
   categories: AssetCategory[];
   models: AssetModel[];
   records: AssetRecord[];
+  custody?: CustodyWorkspace;
 };
 export type AssetError = "unavailable" | "invalid" | "stale" | "conflict" | "stock" | "state";
 export type AssetResult =

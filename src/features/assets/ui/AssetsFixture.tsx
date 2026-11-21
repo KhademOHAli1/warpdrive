@@ -1,14 +1,37 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { AssetCommand, AssetResult } from "../contracts";
+import type { AssetCommand, AssetResult, AssetsWorkspace } from "../contracts";
+import {
+  type CustodyCommand,
+  type CustodyResult,
+  emptyCustodyWorkspace,
+} from "../custody/contracts";
+import { applyCustodyCommand } from "../custody/transitions";
 import { assetsFixture } from "../fixtures";
 import { applyAssetWorkspaceCommand } from "../registerCommands";
 import { AssetsRegister } from "./AssetsWorkspace";
 
 export function AssetsFixture({ canManage }: { canManage: boolean }) {
-  const [initial] = useState(() => assetsFixture(canManage));
+  const [initial] = useState<AssetsWorkspace>(() => ({
+    ...assetsFixture(canManage),
+    custody: {
+      ...emptyCustodyWorkspace(),
+      staff: canManage
+        ? [
+            { id: "693fde54-eb03-424f-86e5-40e576c95991", name: "Ada Schneider" },
+            { id: "1e829425-a1cf-4267-81fd-e592772936e8", name: "Leon Becker" },
+          ]
+        : [],
+    },
+  }));
   const current = useRef(initial);
+  const receipts = useRef(
+    new Map<
+      string,
+      { signature: string; outcomes: Extract<CustodyResult, { ok: true }>["outcomes"] }
+    >(),
+  );
 
   function submit(command: AssetCommand): Promise<AssetResult> {
     const result = applyAssetWorkspaceCommand(current.current, command, "Demo operator");
@@ -16,5 +39,27 @@ export function AssetsFixture({ canManage }: { canManage: boolean }) {
     return Promise.resolve(result);
   }
 
-  return <AssetsRegister initial={initial} submit={submit} fixture />;
+  function submitCustody(command: CustodyCommand): Promise<CustodyResult> {
+    const signature = JSON.stringify(command);
+    const saved = receipts.current.get(command.requestId);
+    if (saved !== undefined && current.current.custody !== undefined) {
+      return Promise.resolve(
+        saved.signature === signature
+          ? {
+              ok: true,
+              value: { ...current.current, custody: current.current.custody },
+              outcomes: saved.outcomes,
+            }
+          : { ok: false, error: "conflict" },
+      );
+    }
+    const result = applyCustodyCommand(current.current, command, "Demo operator");
+    if (result.ok) {
+      current.current = result.value;
+      receipts.current.set(command.requestId, { signature, outcomes: result.outcomes });
+    }
+    return Promise.resolve(result);
+  }
+
+  return <AssetsRegister initial={initial} submit={submit} submitCustody={submitCustody} fixture />;
 }

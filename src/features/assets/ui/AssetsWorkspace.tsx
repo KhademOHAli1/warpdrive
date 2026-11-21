@@ -22,12 +22,22 @@ import {
   type AssetsWorkspace,
   assetTrackingMethods,
 } from "../contracts";
+import { type CustodyEditor, CustodyEditorDialog } from "../custody/ui/CustodyDialogs";
+import {
+  CustodianRoster,
+  CustodyBulkActions,
+  CustodyOutcomePanel,
+  custodyErrorText,
+} from "../custody/ui/CustodyPanels";
+import { type CustodyWords, custodyMessages } from "../custody/ui/messages";
+import { type SubmitCustody, useCustodyWorkspace } from "../custody/ui/useCustodyWorkspace";
 import { AssetDetail } from "./AssetDetail";
 import { type AssetEditor, AssetEditorDialog } from "./AssetEditors";
 import { AssetTable } from "./AssetTable";
 import { type AssetWords, assetMessages } from "./assetMessages";
 
-type RegisterTab = "register" | "categories" | "models";
+const registerTabs = ["register", "categories", "models", "custodians"] as const;
+type RegisterTab = (typeof registerTabs)[number];
 type EditHandler = (event: MouseEvent<HTMLButtonElement>, editor: AssetEditor) => void;
 
 type Filters = {
@@ -277,7 +287,8 @@ function AssetHeaderActions({
   onEdit: EditHandler;
   words: AssetWords;
 }) {
-  if (manageSiteId === null) return fixture ? <Badge variant="outline">{t.demo}</Badge> : null;
+  if (manageSiteId === null || tab === "custodians")
+    return fixture ? <Badge variant="outline">{t.demo}</Badge> : null;
   const add: AssetEditor =
     tab === "register"
       ? { type: "create", siteId: manageSiteId }
@@ -339,19 +350,170 @@ function RegisterResultCount({ count, locale }: { count: number; locale: string 
   );
 }
 
+function hasMoreFilters(filters: Filters): boolean {
+  return (
+    filters.status !== "active" ||
+    filters.search !== "" ||
+    filters.category !== "" ||
+    filters.tracking !== "" ||
+    filters.location !== ""
+  );
+}
+
+function custodyManagement(
+  workspace: AssetsWorkspace,
+  submit: SubmitCustody | undefined,
+  managedSiteId: string | null,
+  tab: RegisterTab,
+  filters: Filters,
+) {
+  const canManage =
+    workspace.custody !== undefined &&
+    submit !== undefined &&
+    workspace.sites.some(({ canManage }) => canManage);
+  return {
+    canManage,
+    canSelect: canManage && managedSiteId === filters.site && filters.status === "active",
+    tab: tab === "custodians" && !canManage ? "register" : tab,
+  };
+}
+
+function canEditCustody(editor: CustodyEditor, workspace: AssetsWorkspace): boolean {
+  const siteId =
+    "siteId" in editor
+      ? editor.siteId
+      : "record" in editor
+        ? editor.record.siteId
+        : editor.custodian.siteId;
+  return workspace.sites.some((site) => site.id === siteId && site.canManage);
+}
+
+function RegisterResults({
+  workspace,
+  filters,
+  records,
+  chosen,
+  locationLabels,
+  custody,
+  canSelect,
+  canManage,
+  busy,
+  locale,
+  matchingScope,
+  onClearFilters,
+  onSelect,
+  onEdit,
+  words: t,
+  custodyWords,
+}: {
+  workspace: AssetsWorkspace;
+  filters: Filters;
+  records: AssetRecord[];
+  chosen: AssetRecord | undefined;
+  locationLabels: ReadonlyMap<string, string>;
+  custody: ReturnType<typeof useCustodyWorkspace>;
+  canSelect: boolean;
+  canManage: boolean;
+  busy: boolean;
+  locale: string;
+  matchingScope: boolean;
+  onClearFilters: () => void;
+  onSelect: (id: string) => void;
+  onEdit: EditHandler;
+  words: AssetWords;
+  custodyWords: CustodyWords;
+}) {
+  const selectedCustody = canSelect ? records.filter(({ id }) => custody.selected.has(id)) : [];
+  return (
+    <>
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          {t.results} <RegisterResultCount count={records.length} locale={locale} />
+        </p>
+        {hasMoreFilters(filters) && (
+          <Button size="sm" variant="ghost" onClick={onClearFilters}>
+            <X size={15} aria-hidden="true" />
+            {t.clearFilters}
+          </Button>
+        )}
+      </div>
+      {canSelect && (
+        <CustodyBulkActions
+          siteId={filters.site}
+          records={selectedCustody}
+          onClear={custody.clearSelection}
+          open={custody.open}
+          busy={busy}
+          words={custodyWords}
+        />
+      )}
+      {canSelect && (
+        <CustodyOutcomePanel
+          outcomes={custody.outcomes}
+          records={workspace.records}
+          words={custodyWords}
+        />
+      )}
+      {chosen ? (
+        <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,5fr)_minmax(19rem,3fr)]">
+          <AssetTable
+            records={records}
+            workspace={workspace}
+            locationLabels={locationLabels}
+            selectedId={chosen.id}
+            onSelect={onSelect}
+            locale={locale}
+            words={t}
+            custodyWords={custodyWords}
+            selection={
+              canSelect
+                ? {
+                    selected: custody.selected,
+                    onChange: custody.selectMany,
+                    busy,
+                  }
+                : undefined
+            }
+          />
+          <AssetDetail
+            record={chosen}
+            workspace={workspace}
+            locationLabels={locationLabels}
+            busy={busy}
+            onEdit={onEdit}
+            locale={locale}
+            words={t}
+            custodyWords={custodyWords}
+            openCustody={canManage ? custody.open : undefined}
+          />
+        </div>
+      ) : (
+        <RegisterEmpty
+          matchingScope={matchingScope}
+          archived={filters.status === "archived"}
+          words={t}
+        />
+      )}
+    </>
+  );
+}
+
 export function AssetsRegister({
   initial,
   submit,
+  submitCustody,
   fixture,
   initialAssetId = null,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
+  submitCustody?: SubmitCustody;
   fixture: boolean;
   initialAssetId?: string | null;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
+  const custodyWords = custodyMessages[locale];
   const [source, setSource] = useState(initial);
   const [workspace, setWorkspace] = useState(initial);
   const [tab, setTab] = useState<RegisterTab>("register");
@@ -365,6 +527,13 @@ export function AssetsRegister({
   const unconfirmed = useRef<{ intent: string; requestId: string } | null>(null);
   const focusTrigger = useRef<HTMLButtonElement | null>(null);
   const searchInput = useRef<HTMLInputElement | null>(null);
+  const custody = useCustodyWorkspace({
+    submit: submitCustody,
+    onWorkspace: setWorkspace,
+    inFlightRef: inFlight,
+    fallbackFocus: searchInput,
+  });
+  const busy = pending || custody.pending;
 
   if (source !== initial) {
     setSource(initial);
@@ -406,12 +575,10 @@ export function AssetsRegister({
       ? workspace.sites.find(({ canManage }) => canManage)
       : sites.get(filters.site);
   const manageSiteId = createSite?.canManage === true ? createSite.id : null;
-  const hasMoreFilters =
-    filters.status !== "active" ||
-    filters.search !== "" ||
-    filters.category !== "" ||
-    filters.tracking !== "" ||
-    filters.location !== "";
+  const management = custodyManagement(workspace, submitCustody, manageSiteId, tab, filters);
+  const custodyEditor = custody.editor;
+  const showCustodyEditor =
+    management.canManage && custodyEditor !== null && canEditCustody(custodyEditor, workspace);
   const hasRecordsInScope = workspace.records.some(
     (record) =>
       inScope(filters.site, record) &&
@@ -427,9 +594,16 @@ export function AssetsRegister({
       includeSublocations: false,
     }));
     setSelectedId(null);
+    custody.clearSelection();
+  }
+
+  function changeFilters(next: Filters) {
+    setFilters(next);
+    custody.clearSelection();
   }
 
   function showEditor(event: MouseEvent<HTMLButtonElement>, next: AssetEditor) {
+    if (inFlight.current) return;
     focusTrigger.current = event.currentTarget;
     setEditor(next);
     setSaved(false);
@@ -494,15 +668,15 @@ export function AssetsRegister({
   }
 
   return (
-    <section className={`${BLOCK_CLASS} ph-no-capture min-w-0`} aria-busy={pending}>
+    <section className={`${BLOCK_CLASS} ph-no-capture min-w-0`} aria-busy={busy}>
       <PageHeading
         title={t.title}
         actions={
           <AssetHeaderActions
             manageSiteId={manageSiteId}
-            tab={tab}
+            tab={management.tab}
             fixture={fixture}
-            pending={pending}
+            pending={busy}
             onEdit={showEditor}
             words={t}
           />
@@ -513,14 +687,17 @@ export function AssetsRegister({
           {t.saved}
         </p>
       )}
+      {custody.saved && (
+        <p role="status" className="mb-3 text-sm text-muted-foreground">
+          {custodyWords.saved}
+        </p>
+      )}
       {workspace.sites.length === 0 ? (
         <EmptyState className="rounded-lg border bg-card" title={t.noSites} body={t.noSitesBody} />
       ) : (
         <Tabs
-          value={tab}
-          onValueChange={(next) =>
-            setTab(next === "categories" || next === "models" ? next : "register")
-          }
+          value={management.tab}
+          onValueChange={(next) => setTab(registerTabs.find((tab) => tab === next) ?? "register")}
         >
           <TabsList
             aria-label={t.title}
@@ -535,6 +712,11 @@ export function AssetsRegister({
             <TabsTrigger className={PILL_TAB} value="models">
               {t.models}
             </TabsTrigger>
+            {management.canManage && (
+              <TabsTrigger className={PILL_TAB} value="custodians">
+                {custodyWords.custodians}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="register" className="space-y-3">
@@ -544,52 +726,20 @@ export function AssetsRegister({
               siteFilter={renderSiteFilter()}
               categories={categories}
               locationOptions={locationOptions}
-              setFilters={setFilters}
+              setFilters={changeFilters}
               words={t}
             />
-            <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-muted-foreground">
-                {t.results} <RegisterResultCount count={records.length} locale={locale} />
-              </p>
-              {hasMoreFilters && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setFilters(defaultFilters(filters.site))}
-                >
-                  <X size={15} aria-hidden="true" />
-                  {t.clearFilters}
-                </Button>
-              )}
-            </div>
-            {chosen ? (
-              <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,5fr)_minmax(19rem,3fr)]">
-                <AssetTable
-                  records={records}
-                  workspace={workspace}
-                  locationLabels={locationLabels}
-                  selectedId={chosen.id}
-                  onSelect={setSelectedId}
-                  locale={locale}
-                  words={t}
-                />
-                <AssetDetail
-                  record={chosen}
-                  workspace={workspace}
-                  locationLabels={locationLabels}
-                  busy={pending}
-                  onEdit={showEditor}
-                  locale={locale}
-                  words={t}
-                />
-              </div>
-            ) : (
-              <RegisterEmpty
-                matchingScope={hasRecordsInScope}
-                archived={filters.status === "archived"}
-                words={t}
-              />
-            )}
+            <RegisterResults
+              {...{ workspace, filters, records, chosen, locationLabels, custody, busy, locale }}
+              canSelect={management.canSelect}
+              canManage={management.canManage}
+              onClearFilters={() => changeFilters(defaultFilters(filters.site))}
+              matchingScope={hasRecordsInScope}
+              onSelect={setSelectedId}
+              onEdit={showEditor}
+              words={t}
+              custodyWords={custodyWords}
+            />
           </TabsContent>
 
           <TabsContent value="categories" className="space-y-3">
@@ -653,7 +803,7 @@ export function AssetsRegister({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                disabled={pending}
+                                disabled={busy}
                                 onClick={(event) =>
                                   showEditor(event, {
                                     type: "saveCategory",
@@ -674,6 +824,20 @@ export function AssetsRegister({
               </div>
             )}
           </TabsContent>
+
+          {management.canManage && workspace.custody !== undefined && (
+            <TabsContent value="custodians" className="space-y-3">
+              <div className="max-w-64">{renderSiteFilter()}</div>
+              <CustodianRoster
+                siteId={filters.site === "" ? null : manageSiteId}
+                custody={workspace.custody}
+                busy={busy}
+                locale={locale}
+                open={custody.open}
+                words={custodyWords}
+              />
+            </TabsContent>
+          )}
 
           <TabsContent value="models" className="space-y-3">
             <div className="max-w-64">{renderSiteFilter()}</div>
@@ -731,7 +895,7 @@ export function AssetsRegister({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                disabled={pending}
+                                disabled={busy}
                                 onClick={(event) =>
                                   showEditor(event, { type: "saveModel", siteId: site.id, model })
                                 }
@@ -749,6 +913,19 @@ export function AssetsRegister({
             )}
           </TabsContent>
         </Tabs>
+      )}
+      {showCustodyEditor && (
+        <CustodyEditorDialog
+          editor={custodyEditor}
+          workspace={workspace}
+          state={{
+            pending: custody.pending,
+            error: custody.error === null ? null : custodyErrorText(custody.error, custodyWords),
+            close: custody.close,
+            restoreFocus: custody.restoreFocus,
+            save: (intent) => void custody.save(intent),
+          }}
+        />
       )}
       {editor !== null && (
         <AssetEditorDialog

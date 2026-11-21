@@ -1,9 +1,18 @@
+import { Checkbox } from "@/components/ui/Checkbox";
 import { useHydrated } from "@/lib/useHydrated";
 import type { AssetRecord, AssetsWorkspace } from "../contracts";
+import type { CustodyHolding } from "../custody/contracts";
+import type { CustodyWords } from "../custody/ui/messages";
 import type { AssetWords } from "./assetMessages";
 
 const header = "px-3 py-2.5 font-medium text-muted-foreground";
 const cell = "px-3 py-2.5 align-middle";
+
+type AssetSelection = {
+  selected: ReadonlySet<string>;
+  onChange: (ids: string[], checked: boolean) => void;
+  busy: boolean;
+};
 
 export function AssetTable({
   records,
@@ -13,6 +22,8 @@ export function AssetTable({
   onSelect,
   locale,
   words: t,
+  custodyWords,
+  selection,
 }: {
   records: AssetRecord[];
   workspace: AssetsWorkspace;
@@ -21,15 +32,47 @@ export function AssetTable({
   onSelect: (id: string) => void;
   locale: string;
   words: AssetWords;
+  custodyWords: CustodyWords;
+  selection?: AssetSelection;
 }) {
   const number = useHydrated() ? new Intl.NumberFormat(locale) : null;
   const sites = new Map(workspace.sites.map(({ id, name }) => [id, name]));
   const categories = new Map(workspace.categories.map(({ id, name }) => [id, name]));
+  const held = new Map<string, CustodyHolding[]>();
+  for (const holding of workspace.custody?.holdings ?? []) {
+    const matches = held.get(holding.assetId);
+    if (matches === undefined) held.set(holding.assetId, [holding]);
+    else matches.push(holding);
+  }
+  const hasCustody = workspace.custody !== undefined;
+  const visibleIds = records.map(({ id }) => id);
+  const selectedCount = visibleIds.filter((id) => selection?.selected.has(id) === true).length;
+  const toggleState =
+    selectedCount === visibleIds.length ? true : selectedCount === 0 ? false : "indeterminate";
   return (
     <div className="min-w-0 overflow-x-auto rounded-lg border bg-card">
-      <table aria-label={t.register} className="w-full min-w-[31rem] border-collapse text-sm">
+      <table
+        aria-label={t.register}
+        className={
+          hasCustody
+            ? "w-full min-w-[38rem] border-collapse text-sm"
+            : "w-full min-w-[31rem] border-collapse text-sm"
+        }
+      >
         <thead className="border-b bg-muted/40">
           <tr>
+            {selection !== undefined && (
+              <th scope="col" className={`${header} w-12`}>
+                {visibleIds.length <= 100 && (
+                  <Checkbox
+                    checked={toggleState}
+                    label={custodyWords.selectAll}
+                    disabled={selection.busy}
+                    onCheckedChange={(checked) => selection.onChange(visibleIds, checked)}
+                  />
+                )}
+              </th>
+            )}
             <th scope="col" className={`${header} text-start`}>
               {t.name}
             </th>
@@ -39,6 +82,11 @@ export function AssetTable({
             <th scope="col" className={`${header} text-start`}>
               {t.location}
             </th>
+            {hasCustody && (
+              <th scope="col" className={`${header} text-start`}>
+                {custodyWords.currentHolder}
+              </th>
+            )}
             <th scope="col" className={`${header} text-end`}>
               {t.quantity}
             </th>
@@ -64,12 +112,25 @@ export function AssetTable({
               ? 1
               : balances.reduce((total, bin) => total + bin.quantity, 0);
 
+            const holdingRows = held.get(record.id) ?? [];
+            const checked = selection?.selected.has(record.id) === true;
+
             return (
               <tr
                 key={record.id}
                 data-selected={record.id === selectedId}
                 className="hover:bg-muted/40 data-[selected=true]:bg-accent/75"
               >
+                {selection !== undefined && (
+                  <td className={cell}>
+                    <Checkbox
+                      checked={checked}
+                      label={`${custodyWords.selectAsset} ${record.name}`}
+                      disabled={selection.busy || (!checked && selection.selected.size >= 100)}
+                      onCheckedChange={(next) => selection.onChange([record.id], next)}
+                    />
+                  </td>
+                )}
                 <th scope="row" className={`${cell} max-w-72 text-start font-normal`}>
                   <button
                     type="button"
@@ -101,6 +162,16 @@ export function AssetTable({
                     {sites.get(record.siteId)}
                   </bdi>
                 </td>
+                {hasCustody && (
+                  <td className={`${cell} max-w-48 [overflow-wrap:anywhere]`}>
+                    <RegisterHolder
+                      record={record}
+                      holdings={holdingRows}
+                      number={number}
+                      words={custodyWords}
+                    />
+                  </td>
+                )}
                 <td className={`${cell} text-end tabular-nums`}>
                   {number === null ? quantity : number.format(quantity)}
                 </td>
@@ -110,5 +181,35 @@ export function AssetTable({
         </tbody>
       </table>
     </div>
+  );
+}
+
+function RegisterHolder({
+  record,
+  holdings,
+  number,
+  words: t,
+}: {
+  record: AssetRecord;
+  holdings: CustodyHolding[];
+  number: Intl.NumberFormat | null;
+  words: CustodyWords;
+}) {
+  if (record.tracking === "consumable_pool")
+    return <span className="text-muted-foreground">—</span>;
+  if (holdings.length === 0) return <span className="text-muted-foreground">{t.noHolder}</span>;
+  return (
+    <ul className="space-y-0.5">
+      {holdings.map(({ id, custodianName, quantity }) => (
+        <li key={id}>
+          <bdi>{custodianName}</bdi>
+          {record.tracking === "returnable_pool" && (
+            <span className="ms-2 text-xs text-muted-foreground">
+              {number?.format(quantity) ?? quantity}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
