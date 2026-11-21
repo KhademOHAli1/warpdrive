@@ -1,14 +1,16 @@
 "use client";
 
 import { keepPreviousData } from "@tanstack/react-query";
+import Link from "next/link";
 import { useId, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { trpc } from "@/lib/trpc-client";
 import { CatalogField, CatalogSelect } from "../../catalog/ui/CatalogFields";
+import { productionHref, siteCanPlan } from "../../production/ui/types";
 import type { BomPlanningQuery, BomPlanningResult, BomPlanningWorkspace } from "../contracts";
 import { BomPlanViews } from "./BomPlanViews";
 import { BomComparisonView, BomWhereUsed } from "./BomReferenceViews";
@@ -152,6 +154,38 @@ function BomPlannerFilters({
   );
 }
 
+function PlanBuildLink({
+  releaseId,
+  siteId,
+  label,
+}: {
+  releaseId: string;
+  siteId?: string;
+  label: string;
+}) {
+  const query = trpc.inventory.production.workspace.useQuery(
+    { releaseId },
+    { refetchOnWindowFocus: "always", retry: false },
+  );
+  const workspace = !query.isError && query.data?.ok === true ? query.data.value : null;
+  const admitted =
+    workspace?.releases.some(({ id }) => id === releaseId) === true &&
+    workspace.sites.some(
+      (site) => (siteId === undefined || site.id === siteId) && siteCanPlan(site),
+    );
+  if (!admitted) return null;
+  return (
+    <Link
+      href={productionHref({ releaseId, siteId })}
+      prefetch={false}
+      className={buttonVariants({ size: "sm", variant: "outline" })}
+      data-bom-plan-build
+    >
+      {label}
+    </Link>
+  );
+}
+
 export function BomPlanner({
   initialScope,
   initial,
@@ -184,6 +218,16 @@ export function BomPlanner({
       <PageHeading
         title={t.title}
         description={t.description}
+        actions={
+          currentPlan != null &&
+          !stalePlan && (
+            <PlanBuildLink
+              releaseId={currentPlan.release.id}
+              siteId={scope.siteId}
+              label={t.planProductionBuild}
+            />
+          )
+        }
         crumbs={[{ label: t.inventory, href: "/inventory" }, { label: t.title }]}
       />
       {error !== null && (

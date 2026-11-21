@@ -4,7 +4,7 @@ import type { CatalogUnit } from "../catalog/contracts";
 
 const id = z.uuid().toLowerCase();
 
-const lineChoice = z.strictObject({
+export const bomLineChoice = z.strictObject({
   releaseId: id,
   itemId: id,
   substituteItemId: id.optional(),
@@ -17,7 +17,7 @@ export const bomPlanningQuery = z.strictObject({
   siteId: id.optional(),
   compareReleaseId: id.optional(),
   quantity: z.number().int().min(1).max(1_000_000).optional(),
-  choices: z.array(lineChoice).max(120).optional(),
+  choices: z.array(bomLineChoice).max(120).optional(),
 });
 
 export type BomPlanningQuery = z.infer<typeof bomPlanningQuery>;

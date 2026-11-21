@@ -103,6 +103,7 @@ export type ProjectItem = ProjectItemContent &
     createdBy: string | null;
     revision: number;
     productionReleaseOrderId?: string;
+    productionBuildId?: string;
   };
 
 export type ProjectSettings = {

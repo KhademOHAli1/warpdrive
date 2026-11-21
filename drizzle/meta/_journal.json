@@ -967,6 +967,13 @@
       "when": 1795289476422,
       "tag": "0137_inventory_stocktakes",
       "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1795291833894,
+      "tag": "0138_inventory_production_builds",
+      "breakpoints": true
     }
   ]
 }

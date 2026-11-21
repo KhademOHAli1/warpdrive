@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { applyMigrations } from "@/db/migrate";
 import {
@@ -113,18 +113,13 @@ async function seed(h: TestDb) {
       requestId,
     },
   ]);
-  await h.db.insert(inventoryStockPositions).values([
-    {
-      id: lotId,
-      itemId,
-      ...from,
-      lot: "LOT-A40",
-      onHand: 10,
-      reserved: 4,
-      expiryDate: "2099-12-31",
-    },
-    { id: serialId, itemId, ...from, lot: "LOT-A40", serial: "RELAY-0131", onHand: 1 },
-  ]);
+  await h.db.execute(sql`
+    INSERT INTO inventory_stock_positions (
+      id, item_id, site_id, location_id, lot, serial, expiry_date, on_hand, reserved
+    ) VALUES
+      (${lotId}, ${itemId}, ${from.siteId}, ${from.locationId}, 'LOT-A40', NULL, '2099-12-31', 10, 4),
+      (${serialId}, ${itemId}, ${from.siteId}, ${from.locationId}, 'LOT-A40', 'RELAY-0131', NULL, 1, 0)
+  `);
   await h.db
     .insert(inventoryStockAllocations)
     .values({ orderId, itemId, positionId: lotId, quantity: 4 });
@@ -169,7 +164,8 @@ const command = (h: TestDb, who: NativeSessionRef, input: Record<string, unknown
 async function originalRows(h: TestDb) {
   const [items, positions, orders, allocations, movements, events] = await Promise.all([
     h.db.select().from(inventoryItems).orderBy(asc(inventoryItems.id)),
-    h.db.select().from(inventoryStockPositions).orderBy(asc(inventoryStockPositions.id)),
+    h.db.execute(sql`SELECT id, item_id, site_id, location_id, lot, serial, expiry_date, state,
+          owner_organization_id, on_hand, reserved FROM inventory_stock_positions ORDER BY id`),
     h.db.select().from(inventoryOrders).orderBy(asc(inventoryOrders.id)),
     h.db
       .select()
@@ -178,7 +174,7 @@ async function originalRows(h: TestDb) {
     h.db.select().from(inventoryMovements).orderBy(asc(inventoryMovements.id)),
     h.db.select().from(inventoryStockEvents).orderBy(asc(inventoryStockEvents.id)),
   ]);
-  return { items, positions, orders, allocations, movements, events };
+  return { items, positions: positions.rows, orders, allocations, movements, events };
 }
 
 async function counts(h: TestDb, itemId: string) {

@@ -34,7 +34,12 @@ export type InventoryStockKind =
   | "correction-reversal"
   | "component-install"
   | "component-remove"
-  | "stock-disassemble";
+  | "stock-disassemble"
+  | "production-reserve"
+  | "production-release"
+  | "production-consume"
+  | "production-output"
+  | "production-reversal";
 
 export const inventoryItems = pgTable(
   "inventory_items",
@@ -265,7 +270,8 @@ export const inventoryMovements = pgTable(
       "inventory_movements_kind_check",
       sql`${table.kind} IN ('receipt', 'order-reserve', 'materials-reserve', 'build-consume', 'build-output', 'shipment', 'cancel-release',
         'transfer-dispatch', 'transfer-receive', 'correction', 'correction-reversal',
-        'component-install', 'component-remove', 'stock-disassemble')`,
+        'component-install', 'component-remove', 'stock-disassemble', 'production-reserve', 'production-release',
+        'production-consume', 'production-output', 'production-reversal')`,
     ),
   ],
 );

@@ -11,7 +11,7 @@ import {
 } from "./access";
 import { readStockPositionRows, unlocatedBalance } from "./balances";
 import type { WarehouseCommand } from "./contracts";
-import { hasOpenWarehouseTransfer } from "./operations/placement";
+import { hasOpenProductionBuild, hasOpenWarehouseTransfer } from "./operations/placement";
 import { isReceivableStockItem } from "./reads";
 import {
   inventoryStockEvents,
@@ -85,6 +85,29 @@ async function stockItem(tx: Db, itemId: string) {
   return item;
 }
 
+async function requireBinClearForDemotion(
+  tx: Db,
+  siteId: string,
+  locationId: string,
+  kind: "structure" | "external",
+) {
+  if (await hasOpenProductionBuild(tx, siteId, locationId)) failWarehouse("conflict");
+  const [stock] = await tx
+    .select({ id: inventoryStockPositions.id })
+    .from(inventoryStockPositions)
+    .where(
+      and(
+        eq(inventoryStockPositions.locationId, locationId),
+        gt(
+          kind === "structure" ? inventoryStockPositions.onHand : inventoryStockPositions.reserved,
+          0,
+        ),
+      ),
+    )
+    .limit(1);
+  if (stock !== undefined) failWarehouse("conflict");
+}
+
 async function updateLocationPolicy(
   tx: Db,
   { site, location }: ResolvedLocation,
@@ -92,24 +115,7 @@ async function updateLocationPolicy(
 ) {
   if (site.archived || location.archived) failWarehouse("incompatibleLocation");
   if (kind === location.kind) return location.id;
-  if (kind === "structure" || kind === "external") {
-    const [stock] = await tx
-      .select({ id: inventoryStockPositions.id })
-      .from(inventoryStockPositions)
-      .where(
-        and(
-          eq(inventoryStockPositions.locationId, location.id),
-          gt(
-            kind === "structure"
-              ? inventoryStockPositions.onHand
-              : inventoryStockPositions.reserved,
-            0,
-          ),
-        ),
-      )
-      .limit(1);
-    if (stock !== undefined) failWarehouse("conflict");
-  }
+  if (kind !== "storage") await requireBinClearForDemotion(tx, site.id, location.id, kind);
   if (kind === "external") {
     const [pendingPurchase] = await tx
       .select({ id: purchaseOrderLines.id })
@@ -339,7 +345,17 @@ async function movePositionState(
       .where(eq(inventoryStockPositions.id, position.id));
     return { positionId: position.id, sourcePositionId: null, onHandDelta: 0 };
   }
-  const { id, itemId, siteId, locationId, lot, serial, expiryDate, ownerOrganizationId } = position;
+  const {
+    id,
+    itemId,
+    siteId,
+    locationId,
+    buildOutputId,
+    lot,
+    serial,
+    expiryDate,
+    ownerOrganizationId,
+  } = position;
   await tx
     .update(inventoryStockPositions)
     .set({ onHand: position.onHand - quantity })
@@ -348,6 +364,7 @@ async function movePositionState(
     itemId,
     siteId,
     locationId,
+    buildOutputId,
     onHand: quantity,
     lot,
     serial,

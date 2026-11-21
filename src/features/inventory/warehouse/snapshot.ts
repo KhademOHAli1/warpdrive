@@ -3,7 +3,7 @@ import type { Db } from "@/db/client";
 import { directoryLocations, directorySites } from "@/features/locations/schema";
 import { inventoryItems } from "../schema";
 import type { StockPositionRow } from "./balances";
-import { hasOpenWarehouseTransfer } from "./operations/placement";
+import { hasOpenProductionBuild, hasOpenWarehouseTransfer } from "./operations/placement";
 import {
   inventoryStockIncoming,
   inventoryStockLocationPolicies,
@@ -47,6 +47,7 @@ export async function readStockSnapshot(tx: Db, itemIds: readonly string[]) {
         itemId: details.itemId,
         siteId: details.siteId,
         locationId: details.locationId,
+        buildOutputId: details.buildOutputId,
         lot: details.lot,
         serial: details.serial,
         expiryDate: details.expiryDate,
@@ -90,6 +91,8 @@ export async function hasWarehouseStock(tx: Db, siteId: string, locationId: stri
           AND ${inventoryStockIncoming.received} < ${inventoryStockIncoming.quantity}) AS has_stock
   `);
   return (
-    rows.rows[0]?.has_stock === true || (await hasOpenWarehouseTransfer(tx, siteId, locationId))
+    rows.rows[0]?.has_stock === true ||
+    (await hasOpenWarehouseTransfer(tx, siteId, locationId)) ||
+    (await hasOpenProductionBuild(tx, siteId, locationId))
   );
 }

@@ -94,6 +94,14 @@ export function ProjectWorkItemPeek({
             {labels("workspace.productionRelease")}
           </Link>
         )}
+        {item.productionBuildId !== undefined && (
+          <Link
+            className="mb-4 inline-flex text-sm font-medium text-action hover:underline"
+            href={`/inventory/production?buildId=${encodeURIComponent(item.productionBuildId)}`}
+          >
+            {labels("workspace.productionBuild")}
+          </Link>
+        )}
         {workspace.canEdit ? (
           <ProjectWorkItemForm
             key={`${item.id}:${item.revision}`}

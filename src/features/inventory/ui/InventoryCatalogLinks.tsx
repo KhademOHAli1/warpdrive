@@ -1,12 +1,13 @@
 "use client";
 
-import { ClipboardList, LibraryBig, ListTree, Truck, Warehouse } from "lucide-react";
+import { ClipboardList, Factory, LibraryBig, ListTree, Truck, Warehouse } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
 import { trpc } from "@/lib/trpc-client";
 import { bomMessages } from "../bom/ui/messages";
 import { catalogMessages } from "../catalog/ui/catalogMessages";
+import { productionMessages } from "../production/ui/messages";
 import { purchaseMessages } from "../purchasing/ui/messages";
 import { sourcingMessages } from "../sourcing/ui/messages";
 import { warehouseMessages } from "../warehouse/ui/warehouseMessages";
@@ -59,6 +60,9 @@ export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }
         <>
           <Link href="/inventory/bom" prefetch={false} className={linkStyle}>
             <ListTree aria-hidden="true" className="size-4" /> {bomMessages[locale].title}
+          </Link>
+          <Link href="/inventory/production" prefetch={false} className={linkStyle}>
+            <Factory aria-hidden="true" className="size-4" /> {productionMessages[locale].title}
           </Link>
           <SourcingCatalogLink />
           <PurchaseOrdersLink />

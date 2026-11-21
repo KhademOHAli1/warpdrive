@@ -13,6 +13,7 @@ import {
 } from "@/features/agency-projects/schema/agencyProjects";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { readProductionTaskLinks } from "@/features/inventory/production/projectLinks";
 import { inventoryBuildReleases } from "@/features/inventory/releases/schema";
 import { inventoryOrderTasks } from "@/features/inventory/schema";
 import type { HydratedActor } from "@/server/hydrateActor";
@@ -205,6 +206,7 @@ export async function projectWorkspaceSnapshot(
   db: Db,
   access: InternalProjectAccess,
   includeProductionReleases = false,
+  productionActor?: HydratedActor,
 ): Promise<ProjectWorkspace> {
   const { summary, ownerEligible, canEdit, canAssign, canManageMembers, canManageSettings } =
     access;
@@ -228,6 +230,11 @@ export async function projectWorkspaceSnapshot(
           .where(eq(inventoryOrderTasks.projectId, projectId))
       : [];
   const orderByTask = new Map(releaseLinks.map(({ itemId, orderId }) => [itemId, orderId]));
+  const productionLinks =
+    includeProductionReleases && access.guestAccess === null && productionActor !== undefined
+      ? await readProductionTaskLinks(db, projectId, productionActor)
+      : [];
+  const buildByTask = new Map(productionLinks.map(({ itemId, buildId }) => [itemId, buildId]));
   const workStructure = await readProjectWorkStructure(db, projectId);
   const settings = await readInternalProjectSettings(db, projectId);
   const states = await readProjectWorkflowStates(db, projectId);
@@ -249,7 +256,12 @@ export async function projectWorkspaceSnapshot(
     ...(access.guestAccess === null ? {} : { guestAccess: access.guestAccess }),
     items: items.map((item) => {
       const orderId = orderByTask.get(item.id);
-      return orderId === undefined ? item : { ...item, productionReleaseOrderId: orderId };
+      const buildId = buildByTask.get(item.id);
+      return {
+        ...item,
+        ...(orderId === undefined ? {} : { productionReleaseOrderId: orderId }),
+        ...(buildId === undefined ? {} : { productionBuildId: buildId }),
+      };
     }),
     workStructure,
     settings,

@@ -220,12 +220,16 @@ async function receivePosition(tx: Db, transfer: Transfer, line: TransferLine, q
       .where(eq(inventoryStockPositions.id, position.id));
     return position.id;
   }
+  // The source position stays linked for the life of the transfer. Its build
+  // origin is immutable even when other stock operations change its balance.
+  const source = await readPosition(tx, line.sourcePositionId);
   const [created] = await tx
     .insert(inventoryStockPositions)
     .values({
       ...target,
       ...identity,
       itemId: line.itemId,
+      buildOutputId: source.buildOutputId,
       onHand: quantity,
     })
     .returning({ id: inventoryStockPositions.id });

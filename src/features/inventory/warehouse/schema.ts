@@ -18,6 +18,7 @@ import {
 import { users } from "@/db/schema/identity";
 import { organizations } from "@/db/schema/organizations";
 import { directoryLocations } from "@/features/locations/schema";
+import { inventoryProductionOutputs } from "../production/buildSchema";
 import {
   inventoryItems,
   inventoryMovements,
@@ -48,7 +49,12 @@ export type WarehouseStockEventKind =
   | "stock-merge"
   | "component-install"
   | "component-remove"
-  | "stock-disassemble";
+  | "stock-disassemble"
+  | "production-reserve"
+  | "production-release"
+  | "production-consume"
+  | "production-output"
+  | "production-reversal";
 
 export type WarehouseTransferStatus = "draft" | "in_transit" | "received" | "cancelled";
 
@@ -85,6 +91,7 @@ export const inventoryStockPositions = pgTable(
       .references(() => inventoryItems.id),
     siteId: uuid("site_id").notNull(),
     locationId: uuid("location_id").notNull(),
+    buildOutputId: uuid("build_output_id"),
     lot: text("lot"),
     serial: text("serial"),
     expiryDate: date("expiry_date", { mode: "string" }),
@@ -99,6 +106,9 @@ export const inventoryStockPositions = pgTable(
       .on(table.itemId, table.serial)
       .where(sql`${table.serial} IS NOT NULL`),
     index("inventory_stock_positions_item_idx").on(table.itemId),
+    index("inventory_stock_positions_build_output_idx")
+      .on(table.buildOutputId)
+      .where(sql`${table.buildOutputId} IS NOT NULL`),
     index("inventory_stock_positions_site_location_idx").on(table.siteId, table.locationId),
     foreignKey({
       name: "inventory_stock_position_location_fk",
@@ -109,6 +119,11 @@ export const inventoryStockPositions = pgTable(
       name: "inventory_stock_position_owner_fk",
       columns: [table.ownerOrganizationId],
       foreignColumns: [organizations.id],
+    }),
+    foreignKey({
+      name: "inventory_stock_position_build_output_fk",
+      columns: [table.buildOutputId, table.itemId],
+      foreignColumns: [inventoryProductionOutputs.id, inventoryProductionOutputs.itemId],
     }),
     check(
       "inventory_stock_position_balance_check",
@@ -262,7 +277,9 @@ export const inventoryStockEvents = pgTable(
       sql`${table.kind} IN ('receipt', 'reconcile', 'state', 'incoming-create', 'incoming-cancel',
         'order-reserve', 'materials-reserve', 'build-consume', 'shipment', 'cancel-release',
         'transfer-draft', 'transfer-dispatch', 'transfer-receive', 'transfer-cancel', 'correction', 'correction-reversal',
-        'stock-split', 'stock-merge', 'component-install', 'component-remove', 'stock-disassemble')`,
+        'stock-split', 'stock-merge', 'component-install', 'component-remove', 'stock-disassemble',
+        'production-reserve', 'production-release', 'production-consume', 'production-output',
+        'production-reversal')`,
     ),
     check(
       "inventory_stock_event_previous_state_check",

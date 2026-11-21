@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { inventoryBomRouter } from "./bom/router";
 import { inventoryCatalogRouter } from "./catalog/router";
+import { inventoryProductionRouter } from "./production/router";
 import { inventoryPurchasingRouter } from "./purchasing/router";
 import { readInventoryWorkspace } from "./reads";
 import { manufacturingReleaseRouter } from "./releases/router";
@@ -11,6 +12,7 @@ import { inventoryWarehouseRouter } from "./warehouse/router";
 export const inventoryRouter = router({
   bom: inventoryBomRouter,
   catalog: inventoryCatalogRouter,
+  production: inventoryProductionRouter,
   purchasing: inventoryPurchasingRouter,
   releases: manufacturingReleaseRouter,
   sourcing: inventorySourcingRouter,

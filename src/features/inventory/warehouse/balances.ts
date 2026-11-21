@@ -139,7 +139,7 @@ export function summarizeStockAvailability(
   };
 }
 
-function earliestExpiryFirst(a: StockPositionRow, b: StockPositionRow) {
+export function earliestExpiryFirst(a: StockPositionRow, b: StockPositionRow) {
   const aExpiry = a.expiryDate ?? "9999-12-31";
   const bExpiry = b.expiryDate ?? "9999-12-31";
   return (

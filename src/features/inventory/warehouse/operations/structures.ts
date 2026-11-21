@@ -72,6 +72,7 @@ function compatibleBulkPositions(source: Position, destination: Position) {
     destination.serial === null &&
     source.itemId === destination.itemId &&
     source.lot === destination.lot &&
+    source.buildOutputId === destination.buildOutputId &&
     source.expiryDate === destination.expiryDate &&
     source.state === destination.state &&
     source.ownerOrganizationId === destination.ownerOrganizationId
@@ -97,6 +98,7 @@ async function createPosition(
     .values({
       ...endpoint,
       itemId: original.itemId,
+      buildOutputId: original.buildOutputId,
       lot: original.lot,
       expiryDate: original.expiryDate,
       ownerOrganizationId: original.ownerOrganizationId,

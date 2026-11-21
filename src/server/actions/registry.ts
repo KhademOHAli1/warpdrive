@@ -58,6 +58,7 @@ import * as actions55 from "@/features/import/actions.backend";
 import * as actions56 from "@/features/integrations/actions.backend";
 import { executeInventoryAction } from "@/features/inventory/actions.backend";
 import { executeCatalogAction } from "@/features/inventory/catalog/actions.backend";
+import { executeProductionAction } from "@/features/inventory/production/actions.backend";
 import { executePurchasingAction } from "@/features/inventory/purchasing/actions.backend";
 import { executeManufacturingReleaseAction } from "@/features/inventory/releases/actions.backend";
 import { executeSourcingAction } from "@/features/inventory/sourcing/actions.backend";
@@ -133,6 +134,7 @@ export const commandHandlers = {
     actions8.enableAgencyProjectsAction,
   "features/inventory/actions.executeInventoryAction": executeInventoryAction,
   "features/inventory/catalog/actions.executeCatalogAction": executeCatalogAction,
+  "features/inventory/production/actions.executeProductionAction": executeProductionAction,
   "features/inventory/purchasing/actions.executePurchasingAction": executePurchasingAction,
   "features/inventory/releases.executeManufacturingReleaseAction":
     executeManufacturingReleaseAction,

@@ -64,7 +64,7 @@ export function lockedItem(locked: StockLocks, itemId: string) {
 
 export async function addOperationEvent(
   tx: Db,
-  actor: OperationsActor,
+  actor: Pick<OperationsActor, "id">,
   context: AuditContext,
   event: Omit<typeof inventoryStockEvents.$inferInsert, "actorId" | "requestId">,
   details: Omit<typeof inventoryStockEventDetails.$inferInsert, "eventId" | "reason">,

@@ -147,6 +147,9 @@ export async function correctStock(tx: Db, actor: OperationsActor, command: Corr
     failOperations("stale");
   }
   managedEndpoint(actor, position.locationId);
+  if (position.buildOutputId !== null && command.countedQuantity > position.onHand) {
+    failOperations("incompatibleStock");
+  }
   await validateCount(tx, position, command.countedQuantity, policy.flags.trackable);
   return postCorrection(tx, actor, command, position, stock, command.countedQuantity, null);
 }

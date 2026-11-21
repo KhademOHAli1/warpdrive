@@ -362,4 +362,21 @@ export const movementKindMessages = {
   "component-install": ["Component installed", "Komponente eingebaut", "قطعه نصب شد"],
   "component-remove": ["Component removed", "Komponente ausgebaut", "قطعه جدا شد"],
   "stock-disassemble": ["Stock disassembled", "Baugruppe demontiert", "مجموعه باز شد"],
+  "production-reserve": ["Production reservation", "Fertigungsreservierung", "رزرو تولید"],
+  "production-release": [
+    "Production reservation released",
+    "Fertigungsreservierung aufgehoben",
+    "رزرو تولید آزاد شد",
+  ],
+  "production-consume": [
+    "Production material consumed",
+    "Fertigungsmaterial verbraucht",
+    "مواد تولید مصرف شد",
+  ],
+  "production-output": ["Production output", "Fertigungsausgang", "خروجی تولید"],
+  "production-reversal": [
+    "Production posting reversed",
+    "Fertigungsbuchung storniert",
+    "ثبت تولید برگشت داده شد",
+  ],
 } as const;

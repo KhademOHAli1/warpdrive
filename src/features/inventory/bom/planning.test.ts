@@ -45,7 +45,12 @@ function fixture(): BomGraph {
   const parts = new Map<string, BomPartRecord>(
     [...baseIds, copper, alternate, flux].map((item) => [
       item.id,
-      { part: item, kind: baseIds.includes(item) ? "product" : "component", stockable: true },
+      {
+        part: item,
+        kind: baseIds.includes(item) ? "product" : "component",
+        stockable: true,
+        trackable: false,
+      },
     ]),
   );
   const released = (item: BomPart, bom: ApprovedBomLine[]) => ({
@@ -152,6 +157,68 @@ describe("released BOM planning", () => {
     expect(() => planBom({ ...graph, parts: changed }, 1, [accepted], noStock)).toThrow(
       "unitChanged",
     );
+  });
+
+  it("deducts exact release stock only after shared child demand is aggregated", () => {
+    const plan = planBom(
+      fixture(),
+      2,
+      [{ releaseId: "pcba:A", itemId: "primary-copper", include: true }],
+      new Map([["pcba", 16]]),
+      new Map([
+        ["pcba:A", 5],
+        ["pcba:B", 7],
+        ["controller:A", 10],
+      ]),
+    );
+    expect(plan.quantity).toBe(2);
+    expect(plan.requirements.find(({ releaseId }) => releaseId === "pcba:A")).toMatchObject({
+      required: 8,
+      available: 5,
+      shortage: 3,
+      genericAssemblyAvailable: 11,
+    });
+    expect(plan.requirements.find(({ part }) => part.id === "primary-copper")).toMatchObject({
+      required: 3600,
+      shortage: 3600,
+    });
+    expect(plan.edges.find(({ releaseId }) => releaseId === "pcba:A")).toMatchObject({
+      requiredPieces: 9,
+    });
+  });
+
+  it("explodes inherited quantities even when the same release has ample assembly stock", () => {
+    const graph = fixture();
+    const ordered = graph.ordered.map((node) =>
+      node.release.id === "io:A"
+        ? {
+            ...node,
+            bom: node.bom.map((entry) =>
+              entry.spec === undefined
+                ? entry
+                : { ...entry, spec: { ...entry.spec, inherited: true } },
+            ),
+          }
+        : node,
+    );
+    const plan = planBom(
+      { ...graph, ordered },
+      2,
+      [{ releaseId: "pcba:A", itemId: "primary-copper", include: true }],
+      new Map([["pcba", 16]]),
+      new Map([["pcba:A", 8]]),
+    );
+    expect(plan.requirements.find(({ releaseId }) => releaseId === "pcba:A")).toMatchObject({
+      required: 4,
+      available: 8,
+      shortage: 0,
+    });
+    expect(plan.requirements.find(({ part }) => part.id === "primary-copper")).toMatchObject({
+      required: 4800,
+    });
+    expect(plan.edges.find(({ releaseId }) => releaseId === "pcba:A")).toMatchObject({
+      requiredPieces: 12,
+    });
   });
 
   it("compares the sealed child pins and describes the baseline release graph", () => {

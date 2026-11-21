@@ -55,6 +55,7 @@ function nativeProductionStep(
   id: string,
   step: ProductionStep,
   orderId?: string,
+  standalone = false,
 ) {
   const parsed = createProjectItemInput.safeParse({
     projectId,
@@ -62,7 +63,7 @@ function nativeProductionStep(
     title: step.title,
     assigneeId: step.assigneeId,
     status: "todo",
-    ...(orderId === undefined ? {} : { description: `Production order: ${orderId}` }),
+    ...(orderId === undefined || standalone ? {} : { description: `Production order: ${orderId}` }),
   });
   if (!parsed.success || parsed.data.assigneeId == null)
     throw new InventoryDomainError("Check the production step title and assignee.");
@@ -102,6 +103,7 @@ export async function createInventoryProjectTasks(
   template: InventoryTemplate & { configuredBy: string },
   signal: AbortSignal,
   orderId: string,
+  standalone = false,
 ): Promise<string[]> {
   const { projectId, configuredBy, steps } = template;
   const delegation = await nativeProjectOwner(tx, configuredBy, signal);
@@ -117,6 +119,7 @@ export async function createInventoryProjectTasks(
       productionStepIntent(orderId, position),
       step,
       orderId,
+      standalone,
     );
     const created = await createInternalProjectItemInTransaction(tx, access, actorId, input);
     if (!created.ok)

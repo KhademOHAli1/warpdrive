@@ -155,7 +155,14 @@ export function readInternalProject(
   return withInternalProjects<ProjectWorkspace>(db, who, signal, async (tx, actor) => {
     const access = await lockInternalProject(tx, actor, projectId, "read", "work-items");
     return access.ok
-      ? ok(await projectWorkspaceSnapshot(tx, access.value, !isProjectIntegratorPrincipal(who)))
+      ? ok(
+          await projectWorkspaceSnapshot(
+            tx,
+            access.value,
+            !isProjectIntegratorPrincipal(who),
+            actor,
+          ),
+        )
       : access;
   });
 }
@@ -290,7 +297,14 @@ function changeWorkspace(
     if (!access.value[capability]) return err("project_forbidden");
     const result = await change(tx, access.value, actor);
     return result.ok
-      ? ok(await projectWorkspaceSnapshot(tx, access.value, !isProjectIntegratorPrincipal(who)))
+      ? ok(
+          await projectWorkspaceSnapshot(
+            tx,
+            access.value,
+            !isProjectIntegratorPrincipal(who),
+            actor,
+          ),
+        )
       : result;
   });
 }

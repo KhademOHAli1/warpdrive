@@ -95,8 +95,9 @@ function addDemand(requirements: Map<string, DemandedLine>, line: DemandedLine) 
   requirements.set(key, { ...line, required });
 }
 
+type ReleaseDemand = { physical: number; inherited: number };
 type Demand = {
-  byRelease: Map<string, number>;
+  byRelease: Map<string, ReleaseDemand>;
   byPart: Map<string, DemandedLine>;
 };
 
@@ -112,8 +113,10 @@ function rollUpEdge(
   if (!edge.inherited && chosen.unit !== part.unit) failBom("unitChanged");
   const required = boundedQuantity(parentQuantity * chosen.quantity);
   if (edge.childReleaseId !== null) {
-    const existing = demand.byRelease.get(edge.childReleaseId) ?? 0;
-    demand.byRelease.set(edge.childReleaseId, boundedQuantity(existing + required));
+    const existing = demand.byRelease.get(edge.childReleaseId) ?? { physical: 0, inherited: 0 };
+    const kind = edge.inherited ? "inherited" : "physical";
+    const updated = boundedQuantity(existing[kind] + required);
+    demand.byRelease.set(edge.childReleaseId, { ...existing, [kind]: updated });
   }
   if (!edge.inherited) {
     addDemand(demand.byPart, {
@@ -125,18 +128,29 @@ function rollUpEdge(
   }
 }
 
-function netRequirement(line: DemandedLine, availability: ReadonlyMap<string, number>) {
+function netRequirement(
+  line: DemandedLine,
+  availability: ReadonlyMap<string, number>,
+  releaseAvailability?: ReadonlyMap<string, number>,
+) {
   const stock = availability.get(line.part.id) ?? 0;
-  const assembly = line.releaseId !== null;
-  const available = assembly || line.consumable ? 0 : stock;
+  const leafAvailable = line.consumable ? 0 : stock;
+  const available =
+    line.releaseId === null ? leafAvailable : (releaseAvailability?.get(line.releaseId) ?? 0);
   return {
     ...line,
     available,
     shortage: line.consumable ? 0 : Math.max(0, line.required - available),
-    // Current positions identify catalog items only. They do not prove which
-    // approved engineering release produced a stocked assembly.
-    genericAssemblyAvailable: assembly ? stock : 0,
+    genericAssemblyAvailable: line.releaseId === null ? 0 : Math.max(0, stock - available),
   };
+}
+
+function childBuildQuantity(counts: ReleaseDemand | undefined, available: number) {
+  if (counts === undefined) return 0;
+  const physicalShortage = Math.max(0, counts.physical - available);
+  // An inherited BOM adds material directly to its parent. Stock of the
+  // referenced assembly can cover physical demand only.
+  return boundedQuantity(physicalShortage + counts.inherited);
 }
 
 function requiredPieces(line: ComparisonEdge, parentQuantity: number) {
@@ -149,16 +163,23 @@ export function planBom(
   quantity: number,
   requested: readonly Choice[],
   availability: ReadonlyMap<string, number>,
+  releaseAvailability?: ReadonlyMap<string, number>,
 ): BomPlan {
   const choices = indexChoices(requested);
   const root = graph.root.release;
-  const demand: Demand = { byRelease: new Map([[root.id, quantity]]), byPart: new Map() };
+  const demand: Demand = { byRelease: new Map(), byPart: new Map() };
   const edges: BomEdge[] = [];
 
-  // Visit every parent before its children. Shared child releases accumulate all due
-  // demand before their own edges are multiplied. Leaf stock is netted only after rollup.
+  // Visit every parent first. A shared release accumulates all physical demand
+  // before exact stock offsets it and the remaining build requirements flow down.
   for (const { release, bom } of graph.ordered) {
-    const parentQuantity = demand.byRelease.get(release.id) ?? 0;
+    const parentQuantity =
+      release.id === root.id
+        ? quantity
+        : childBuildQuantity(
+            demand.byRelease.get(release.id),
+            releaseAvailability?.get(release.id) ?? 0,
+          );
     for (const line of bom) {
       const key = choiceKey(release.id, line.itemId);
       const { projected, chosen } = projectLine(graph.parts, line, choices.get(key));
@@ -177,7 +198,9 @@ export function planBom(
     quantity,
     subassemblies: graph.ordered.slice(1).map(({ release }) => release),
     edges,
-    requirements: [...demand.byPart.values()].map((line) => netRequirement(line, availability)),
+    requirements: [...demand.byPart.values()].map((line) =>
+      netRequirement(line, availability, releaseAvailability),
+    ),
   };
 }
 

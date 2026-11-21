@@ -17,6 +17,7 @@ import {
 import { inventoryItems } from "../schema";
 import { readStockPositionRows, stockPositionAvailable } from "../warehouse/balances";
 import { readOrderWarehouseSites } from "../warehouse/legacyScope";
+import { readEligibleBuildOrigins } from "../warehouse/productionOrigin";
 import type { BomPart, BomRelease, BomSite, BomUsage } from "./contracts";
 import { failBom } from "./failure";
 
@@ -32,7 +33,12 @@ const usageLimit = 120;
 
 type ReleaseScope = readonly string[] | null;
 export type BomNode = { release: BomRelease; bom: ApprovedBomLine[] };
-export type BomPartRecord = { part: BomPart; kind: "product" | "component"; stockable: boolean };
+export type BomPartRecord = {
+  part: BomPart;
+  kind: "product" | "component";
+  stockable: boolean;
+  trackable: boolean;
+};
 
 const partColumns = {
   id: item.id,
@@ -95,6 +101,7 @@ export async function readBomParts(
       stockable: sql<boolean>`coalesce(${state.active}, true)
         AND NOT coalesce(${profile.isTemplate}, false)
         AND coalesce(${profile.stockMode}, 'stocked') <> 'virtual'`,
+      trackable: sql<boolean>`coalesce((${profile.flags}->>'trackable')::boolean, false)`,
     })
     .from(item)
     .leftJoin(profile, eq(profile.itemId, item.id))
@@ -272,13 +279,23 @@ export async function readBomAvailability(
   siteId: string | null,
   parts: ReadonlyMap<string, BomPartRecord>,
 ) {
-  const availability = new Map<string, number>();
-  if (siteId === null) return availability;
+  const byItem = new Map<string, number>();
+  const byRelease = new Map<string, number>();
+  if (siteId === null) return { byItem, byRelease };
   const items = [...parts.entries()].flatMap(([id, { stockable }]) => (stockable ? [id] : []));
   const today = new Date().toISOString().slice(0, 10);
-  for (const row of await readStockPositionRows(tx, items, [siteId])) {
-    const previous = availability.get(row.itemId) ?? 0;
-    availability.set(row.itemId, previous + stockPositionAvailable(row, today));
+  const positions = await readStockPositionRows(tx, items, [siteId]);
+  const origins = await readEligibleBuildOrigins(tx, siteId, items);
+  for (const row of positions) {
+    const known = parts.get(row.itemId);
+    if (known === undefined || (known.trackable && row.serial === null)) continue;
+    const free = stockPositionAvailable(row, today);
+    if (free <= 0) continue;
+    byItem.set(row.itemId, (byItem.get(row.itemId) ?? 0) + free);
+    const origin = origins.get(row.id);
+    if (origin?.stockUnit === known.part.unit) {
+      byRelease.set(origin.releaseId, (byRelease.get(origin.releaseId) ?? 0) + free);
+    }
   }
-  return availability;
+  return { byItem, byRelease };
 }

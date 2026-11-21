@@ -608,7 +608,9 @@ it("upgrades populated 0130 stock as an explicit unlocated balance and settles a
     expect(canonical[131]?.tag).toBe("0131_inventory_warehouse");
     expect(migrated[131]?.hash).toBe(canonical[131]?.hash);
     expect(await legacySnapshot(h)).toEqual(before);
-    expect(await h.db.select().from(inventoryStockPositions)).toEqual([]);
+    expect(
+      await h.db.select({ id: inventoryStockPositions.id }).from(inventoryStockPositions),
+    ).toEqual([]);
     expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), target.folder)).toEqual(
       success,
     );

@@ -68,7 +68,7 @@ async function materialPlan(
     return null;
   }
   const availability = await readBomAvailability(tx, siteId, graph.parts);
-  return planBom(graph, query.quantity ?? 1, choices, availability);
+  return planBom(graph, query.quantity ?? 1, choices, availability.byItem, availability.byRelease);
 }
 
 async function readUsagePart(tx: Db, scope: Scope, partId: string | undefined) {

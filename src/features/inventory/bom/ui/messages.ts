@@ -3,6 +3,7 @@ import type { Locale } from "@/features/i18n/registry";
 const en = {
   inventory: "Inventory",
   title: "BOM planner",
+  planProductionBuild: "Plan build",
   description: "Calculate material requirements for an approved manufacturing release.",
   release: "Manufacturing release",
   chooseRelease: "Select a release",
@@ -26,9 +27,9 @@ const en = {
   required: "Required",
   available: "Available at site",
   shortage: "Shortage",
-  genericStock: "Assembly stock without release traceability",
+  genericStock: "Other assembly stock",
   genericHelp:
-    "Assembly stock without release traceability appears separately. The plan uses the pinned release to calculate child requirements.",
+    "Only available units tied to the pinned manufacturing release reduce the subassembly build requirement.",
   noRequirements: "There are no material requirements for these choices.",
   bom: "Released BOM",
   checksum: "BOM checksum",
@@ -73,6 +74,7 @@ export const bomMessages: Record<Locale, BomWords> = {
   en,
   de: {
     inventory: "Lagerbestand",
+    planProductionBuild: "Fertigungsauftrag planen",
     title: "Stücklistenplanung",
     description: "Berechnen Sie den Materialbedarf für einen freigegebenen Fertigungsstand.",
     release: "Fertigungsfreigabe",
@@ -97,9 +99,9 @@ export const bomMessages: Record<Locale, BomWords> = {
     required: "Bedarf",
     available: "Am Standort verfügbar",
     shortage: "Fehlmenge",
-    genericStock: "Baugruppenbestand ohne Freigabenachweis",
+    genericStock: "Sonstiger Baugruppenbestand",
     genericHelp:
-      "Baugruppenbestand ohne Freigabenachweis wird separat angezeigt. Die Bedarfsplanung für Komponenten folgt der festgelegten Freigabe.",
+      "Nur verfügbare Einheiten mit Nachweis der festgelegten Fertigungsfreigabe senken den Bedarf für die Herstellung der Baugruppe.",
     noRequirements: "Für diese Auswahl besteht kein Materialbedarf.",
     bom: "Freigegebene Stückliste",
     checksum: "Stücklisten-Prüfsumme",
@@ -139,6 +141,7 @@ export const bomMessages: Record<Locale, BomWords> = {
   },
   fa: {
     inventory: "موجودی",
+    planProductionBuild: "برنامه‌ریزی ساخت",
     title: "برنامه‌ریزی فهرست مواد",
     description: "مواد مورد نیاز نسخهٔ تأییدشدهٔ ساخت را محاسبه کنید.",
     release: "نسخهٔ ساخت",
@@ -163,9 +166,9 @@ export const bomMessages: Record<Locale, BomWords> = {
     required: "مورد نیاز",
     available: "در دسترس در محل",
     shortage: "کسری",
-    genericStock: "موجودی مجموعه بدون ردیابی نسخه",
+    genericStock: "سایر موجودی مجموعه‌ها",
     genericHelp:
-      "موجودی مجموعه‌های بدون ردیابی نسخه جداگانه نمایش داده می‌شود. نیاز قطعات زیرمجموعه از نسخهٔ تثبیت‌شده محاسبه می‌شود.",
+      "فقط واحدهای موجود که به همان نسخهٔ تأییدشدهٔ ساخت پیوند دارند، نیاز به ساخت زیرمجموعه را کاهش می‌دهند.",
     noRequirements: "برای این انتخاب‌ها نیازی به مواد نیست.",
     bom: "فهرست مواد تأییدشده",
     checksum: "جمع کنترلی فهرست مواد",
