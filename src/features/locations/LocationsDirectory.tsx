@@ -1,10 +1,11 @@
 "use client";
 
 import { Archive, Building2, MapPin, Plus, RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -163,9 +164,16 @@ export function LocationsDirectory({
           </TabsTrigger>
         </TabsList>
         <TabsContent value={context} className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {context === "assets" ? t.assetsContext : t.inventoryContext}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {context === "assets" ? t.assetsContext : t.inventoryContext}
+            </p>
+            {fixture && context === "assets" && (
+              <Link href="/assets" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                {t.assetRegister}
+              </Link>
+            )}
+          </div>
           <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3">
             {site !== undefined && (
               <div className="grid w-full min-w-0 gap-1.5 sm:w-auto sm:max-w-64 sm:min-w-36 sm:flex-1">
