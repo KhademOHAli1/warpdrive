@@ -1016,6 +1016,13 @@
       "when": 1795302157905,
       "tag": "0144_asset_commissioning",
       "breakpoints": true
+    },
+    {
+      "idx": 145,
+      "version": "7",
+      "when": 1795303268005,
+      "tag": "0145_asset_custody",
+      "breakpoints": true
     }
   ]
 }

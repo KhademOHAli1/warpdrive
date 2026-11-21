@@ -378,14 +378,19 @@ function custodyManagement(
   };
 }
 
-function canEditCustody(editor: CustodyEditor, workspace: AssetsWorkspace): boolean {
+function scopedCustodyEditor(
+  editor: CustodyEditor | null,
+  enabled: boolean,
+  workspace: AssetsWorkspace,
+): CustodyEditor | null {
+  if (!enabled || editor === null) return null;
   const siteId =
     "siteId" in editor
       ? editor.siteId
       : "record" in editor
         ? editor.record.siteId
         : editor.custodian.siteId;
-  return workspace.sites.some((site) => site.id === siteId && site.canManage);
+  return workspace.sites.some((site) => site.id === siteId && site.canManage) ? editor : null;
 }
 
 function RegisterResults({
@@ -576,9 +581,7 @@ export function AssetsRegister({
       : sites.get(filters.site);
   const manageSiteId = createSite?.canManage === true ? createSite.id : null;
   const management = custodyManagement(workspace, submitCustody, manageSiteId, tab, filters);
-  const custodyEditor = custody.editor;
-  const showCustodyEditor =
-    management.canManage && custodyEditor !== null && canEditCustody(custodyEditor, workspace);
+  const custodyEditor = scopedCustodyEditor(custody.editor, management.canManage, workspace);
   const hasRecordsInScope = workspace.records.some(
     (record) =>
       inScope(filters.site, record) &&
@@ -914,7 +917,7 @@ export function AssetsRegister({
           </TabsContent>
         </Tabs>
       )}
-      {showCustodyEditor && (
+      {custodyEditor !== null && (
         <CustodyEditorDialog
           editor={custodyEditor}
           workspace={workspace}

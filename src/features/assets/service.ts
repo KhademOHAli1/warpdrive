@@ -14,6 +14,7 @@ import type { HydratedActor } from "@/server/hydrateActor";
 import { assetRoleSiteIds } from "./access";
 import { commissionedAssetSerial } from "./commissioning/protection";
 import { type AssetCommand, type AssetResult, type AssetSite, assetCommand } from "./contracts";
+import { custodyWorkspace, hasAssetCustody } from "./custody/repository";
 import { applyAssetWorkspaceCommand } from "./registerCommands";
 import { assetRegisterData, persistAssetChanges } from "./repository";
 import { assetCommandReceipts, assetRecords } from "./schema";
@@ -50,7 +51,7 @@ export async function lockAssetRegister(tx: Db, mode: "read" | "write", signal: 
   signal.throwIfAborted();
 }
 
-async function assetActor(tx: Db, who: NativeSessionRef, signal: AbortSignal) {
+export async function assetActor(tx: Db, who: NativeSessionRef, signal: AbortSignal) {
   const actor = await currentOperationsActor(tx, who, signal);
   return actor?.projectsGuestOnly === true ? null : actor;
 }
@@ -65,7 +66,12 @@ async function projectWorkspace(
     sites.map(({ id }) => id),
     true,
   );
-  return { ok: true, value: { sites, ...data }, focusId };
+  const custody = sites.length === 0 ? undefined : await custodyWorkspace(tx, sites, true);
+  return {
+    ok: true,
+    value: { sites, ...data, ...(custody === undefined ? {} : { custody }) },
+    focusId,
+  };
 }
 
 export function readAssetsWorkspace(
@@ -118,6 +124,11 @@ async function applyCommand(
   }
 
   const before = { sites: [site], ...(await assetRegisterData(tx, [site.id], false)) };
+  if (
+    (command.type === "move" || (command.type === "setArchive" && command.archived)) &&
+    (await hasAssetCustody(tx, command.assetId))
+  )
+    return { ok: false, error: "state" };
   if (command.type === "update") {
     const recorded = await commissionedAssetSerial(tx, command.assetId);
     if (recorded !== null && command.serial !== recorded) return { ok: false, error: "state" };

@@ -10,6 +10,7 @@ import * as actions7 from "@/features/activities/typeActions.backend";
 import * as actions8 from "@/features/agency-projects/actions.backend";
 import { executeAssetAction } from "@/features/assets/actions.backend";
 import { executeCommissionAssetAction } from "@/features/assets/commissioning/actions.backend";
+import { executeCustodyAction } from "@/features/assets/custody/actions.backend";
 import * as actions9 from "@/features/auth/csrfRefresh.backend";
 import * as actions10 from "@/features/collaboration/actions.backend";
 import * as actions11 from "@/features/collaboration/commentActions.backend";
@@ -154,6 +155,7 @@ export const commandHandlers = {
   "features/inventory/warehouse/stocktakes/actions.executeStocktakeAction": executeStocktakeAction,
   "features/locations/actions.executeLocationsAction": executeLocationsAction,
   "features/assets/webActions.executeAssetAction": executeAssetAction,
+  "features/assets/custody/webActions.executeCustodyAction": executeCustodyAction,
   "features/assets/commissioning/webActions.executeCommissionAssetAction":
     executeCommissionAssetAction,
   "features/operations-access/actions.executeOperationsAccessAction": executeOperationsAccessAction,
