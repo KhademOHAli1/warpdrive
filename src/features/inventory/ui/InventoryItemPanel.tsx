@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { type FormEvent, useId, useState } from "react";
+import { type ComponentType, type FormEvent, useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import type { InventoryItem, InventoryWorkspace } from "../contracts";
@@ -225,107 +226,140 @@ export function InventoryNewItem({
   );
 }
 
+export type InventoryProductReleases = ComponentType<{ item: InventoryItem }>;
+
 export function InventorySelectedItem({
   item,
   workspace,
   quantity,
   pending,
   run,
+  ProductReleases,
+  openReleases,
 }: {
   item: InventoryItem;
   workspace: InventoryWorkspace;
   quantity: FormatQuantity;
   pending: boolean;
   run: RunInventoryIntent;
+  ProductReleases?: InventoryProductReleases;
+  openReleases: boolean;
 }) {
   const t = inventoryMessages[useLocale()];
+  const ReleasePanel = item.kind === "product" ? ProductReleases : undefined;
   const receiptId = useId();
   const [receiveQuantity, setReceiveQuantity] = useState("1");
+  const details = (
+    <div className="space-y-4 p-4">
+      <dl className="grid grid-cols-3 gap-2 rounded-md bg-muted/35 p-2.5 text-sm">
+        {[
+          [t.onHand, item.onHand],
+          [t.reserved, item.reserved],
+          [t.available, item.onHand - item.reserved],
+        ].map(([label, value]) => (
+          <div key={label}>
+            <dt className="text-xs text-muted-foreground">{label}</dt>
+            <dd className="font-semibold tabular-nums">{quantity(Number(value))}</dd>
+          </div>
+        ))}
+      </dl>
+      {workspace.canManage && (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const amount = Number(receiveQuantity);
+            if (!Number.isSafeInteger(amount) || amount <= 0) return;
+            void run({ type: "receive", itemId: item.id, quantity: amount }).then((updated) => {
+              if (updated !== null) setReceiveQuantity("1");
+            });
+          }}
+        >
+          <label htmlFor={receiptId} className="grid min-w-24 flex-1 gap-1 text-sm">
+            {t.receiveQuantity}
+            <Input
+              id={receiptId}
+              type="number"
+              min={1}
+              max={1_000_000}
+              required
+              value={receiveQuantity}
+              onChange={(event) => setReceiveQuantity(event.target.value)}
+              disabled={pending}
+            />
+          </label>
+          <Button type="submit" variant="outline" disabled={pending}>
+            {t.receiveStock}
+          </Button>
+        </form>
+      )}
+      {item.kind === "product" && (
+        <>
+          <section className="border-t pt-3" aria-label={t.bom}>
+            <h3 className="mb-1.5 text-sm font-semibold">{t.bom}</h3>
+            {item.bom.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t.noMaterials}</p>
+            ) : (
+              <ul className="divide-y text-sm">
+                {item.bom.map(({ itemId, quantity: count }) => {
+                  const component = workspace.items.find(({ id }) => id === itemId);
+                  return (
+                    <li key={itemId} className="flex justify-between gap-2 py-1.5">
+                      <bdi>{component?.name ?? t.materialUnavailable}</bdi>
+                      <span className="tabular-nums text-muted-foreground">{quantity(count)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+          <InventoryTemplateEditor
+            key={JSON.stringify(item.template)}
+            item={item}
+            workspace={workspace}
+            pending={pending}
+            run={run}
+          />
+        </>
+      )}
+    </div>
+  );
   return (
     <section className="min-w-0 rounded-lg border bg-card" aria-label={t.itemDetail}>
       <div className="border-b px-4 py-3">
         <p className="mb-0.5 text-xs text-muted-foreground">
-          <bdi dir="ltr">{item.sku}</bdi> · {t.revision} <bdi>{item.revision}</bdi>
+          <bdi dir="ltr">{item.sku}</bdi>
+          {ReleasePanel === undefined && (
+            <>
+              {" "}
+              · {t.revision} <bdi>{item.revision}</bdi>
+            </>
+          )}
         </p>
         <h2 className="font-semibold">
           <bdi>{item.name}</bdi>
         </h2>
       </div>
-      <div className="space-y-4 p-4">
-        <dl className="grid grid-cols-3 gap-2 rounded-md bg-muted/35 p-2.5 text-sm">
-          {[
-            [t.onHand, item.onHand],
-            [t.reserved, item.reserved],
-            [t.available, item.onHand - item.reserved],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-xs text-muted-foreground">{label}</dt>
-              <dd className="font-semibold tabular-nums">{quantity(Number(value))}</dd>
-            </div>
-          ))}
-        </dl>
-        {workspace.canManage && (
-          <form
-            className="flex flex-wrap items-end gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const amount = Number(receiveQuantity);
-              if (!Number.isSafeInteger(amount) || amount <= 0) return;
-              void run({ type: "receive", itemId: item.id, quantity: amount }).then((updated) => {
-                if (updated !== null) setReceiveQuantity("1");
-              });
-            }}
-          >
-            <label htmlFor={receiptId} className="grid min-w-24 flex-1 gap-1 text-sm">
-              {t.receiveQuantity}
-              <Input
-                id={receiptId}
-                type="number"
-                min={1}
-                max={1_000_000}
-                required
-                value={receiveQuantity}
-                onChange={(event) => setReceiveQuantity(event.target.value)}
-                disabled={pending}
-              />
-            </label>
-            <Button type="submit" variant="outline" disabled={pending}>
-              {t.receiveStock}
-            </Button>
-          </form>
-        )}
-        {item.kind === "product" && (
-          <>
-            <section className="border-t pt-3" aria-label={t.bom}>
-              <h3 className="mb-1.5 text-sm font-semibold">{t.bom}</h3>
-              {item.bom.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t.noMaterials}</p>
-              ) : (
-                <ul className="divide-y text-sm">
-                  {item.bom.map(({ itemId, quantity: count }) => {
-                    const component = workspace.items.find(({ id }) => id === itemId);
-                    return (
-                      <li key={itemId} className="flex justify-between gap-2 py-1.5">
-                        <bdi>{component?.name ?? t.materialUnavailable}</bdi>
-                        <span className="tabular-nums text-muted-foreground">
-                          {quantity(count)}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-            <InventoryTemplateEditor
-              key={JSON.stringify(item.template)}
-              item={item}
-              workspace={workspace}
-              pending={pending}
-              run={run}
-            />
-          </>
-        )}
-      </div>
+      {ReleasePanel === undefined ? (
+        details
+      ) : (
+        <Tabs defaultValue={openReleases ? "releases" : "details"}>
+          <TabsList aria-label={t.itemDetail} className="gap-1 border-b px-4 py-2">
+            <TabsTrigger value="details" className={PILL_TAB}>
+              {t.detailsTab}
+            </TabsTrigger>
+            <TabsTrigger value="releases" className={PILL_TAB}>
+              {t.releasesTab}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="details" className="mt-0">
+            {details}
+          </TabsContent>
+          <TabsContent value="releases" className="mt-0">
+            <ReleasePanel item={item} />
+          </TabsContent>
+        </Tabs>
+      )}
     </section>
   );
 }

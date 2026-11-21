@@ -11,7 +11,11 @@ import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import type { InventoryCommand, InventoryResult, InventoryWorkspace } from "../contracts";
-import { InventoryNewItem, InventorySelectedItem } from "./InventoryItemPanel";
+import {
+  InventoryNewItem,
+  type InventoryProductReleases,
+  InventorySelectedItem,
+} from "./InventoryItemPanel";
 import { InventoryOrderForm, InventoryOrderQueue } from "./InventoryOrderPanel";
 import { inventoryMessages } from "./inventoryMessages";
 
@@ -29,9 +33,13 @@ function workspaceArea(view: "items" | "orders", current: "items" | "orders") {
 export function InventoryClient({
   initial,
   submit,
+  ProductReleases,
+  openReleases = false,
 }: {
   initial: InventoryWorkspace;
   submit: (command: InventoryCommand) => Promise<InventoryResult>;
+  ProductReleases?: InventoryProductReleases;
+  openReleases?: boolean;
 }) {
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
@@ -245,6 +253,8 @@ export function InventoryClient({
               quantity={quantity}
               pending={pending}
               run={run}
+              ProductReleases={ProductReleases}
+              openReleases={openReleases}
             />
           )}
           {newItem && (

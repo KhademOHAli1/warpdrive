@@ -2,12 +2,16 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
-import type { InventoryCommand, InventoryResult } from "../contracts";
+import type { InventoryCommand, InventoryItem, InventoryResult } from "../contracts";
 import { applyInventoryFixture, inventoryFixture } from "../fixtures";
 import { InventoryClient } from "./InventoryClient";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 afterEach(cleanup);
+
+function ProductReleasesPreview({ item }: { item: InventoryItem }) {
+  return <div>{item.sku} release preview</div>;
+}
 
 test("retries an unconfirmed receipt with its original intent without receiving stock twice", async () => {
   const initial = inventoryFixture(undefined);
@@ -41,4 +45,24 @@ test("retries an unconfirmed receipt with its original intent without receiving 
   fireEvent.click(receive);
   expect(await detail.findAllByText("9")).toHaveLength(2);
   expect(submit.mock.calls[2]?.[0].requestId).not.toBe(submit.mock.calls[1]?.[0].requestId);
+});
+
+test("shows the Releases panel only on a product with a release adapter", () => {
+  const initial = inventoryFixture(undefined);
+  const submit = vi.fn(() => Promise.resolve({ ok: true as const, value: initial }));
+  const { rerender } = render(<InventoryClient initial={initial} submit={submit} />);
+  expect(screen.queryByRole("tab", { name: "Releases" })).not.toBeInTheDocument();
+
+  rerender(
+    <InventoryClient
+      initial={initial}
+      submit={submit}
+      ProductReleases={ProductReleasesPreview}
+      openReleases
+    />,
+  );
+  expect(screen.getByRole("tab", { name: "Releases", selected: true })).toBeVisible();
+  expect(screen.getByText("IO-24-DIN release preview")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: /PCB-IO-24/ }));
+  expect(screen.queryByRole("tab", { name: "Releases" })).not.toBeInTheDocument();
 });

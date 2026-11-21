@@ -11,16 +11,23 @@ import { coreClient } from "@/frontend/trpc";
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dealId?: string | string[] }>;
+  searchParams: Promise<{ dealId?: string | string[]; tab?: string | string[] }>;
 }) {
   const { actor } = await createContext();
   if (!actor) redirect("/login");
-  const { dealId } = await searchParams;
+  const { dealId, tab } = await searchParams;
   const parsed = z.uuid().toLowerCase().optional().safeParse(dealId);
   if (!parsed.success) notFound();
   const view = parsed.data ?? "catalog";
   if (inventoryFixturesEnabled()) {
-    return <InventoryFixture key={view} initial={inventoryFixture(parsed.data)} />;
+    const openReleases = tab === "releases" && parsed.data === undefined;
+    return (
+      <InventoryFixture
+        key={openReleases ? "catalog-releases" : view}
+        initial={inventoryFixture(parsed.data)}
+        openReleases={openReleases}
+      />
+    );
   }
   if ((await getBootstrap()).shell?.inventoryAvailable !== true) notFound();
 

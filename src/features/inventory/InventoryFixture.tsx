@@ -3,9 +3,19 @@
 import { useRef } from "react";
 import type { InventoryCommand, InventoryWorkspace } from "./contracts";
 import { applyInventoryFixture } from "./fixtures";
+import {
+  ManufacturingReleaseFixtureProvider,
+  ManufacturingReleasesFixture,
+} from "./releases/ui/ManufacturingReleasesFixture";
 import { InventoryClient } from "./ui/InventoryClient";
 
-export function InventoryFixture({ initial }: { initial: InventoryWorkspace }) {
+export function InventoryFixture({
+  initial,
+  openReleases,
+}: {
+  initial: InventoryWorkspace;
+  openReleases: boolean;
+}) {
   const workspace = useRef(initial);
   function submit(command: InventoryCommand) {
     const result = applyInventoryFixture(workspace.current, command);
@@ -13,5 +23,14 @@ export function InventoryFixture({ initial }: { initial: InventoryWorkspace }) {
     return Promise.resolve(result);
   }
 
-  return <InventoryClient initial={initial} submit={submit} />;
+  return (
+    <ManufacturingReleaseFixtureProvider>
+      <InventoryClient
+        initial={initial}
+        submit={submit}
+        ProductReleases={ManufacturingReleasesFixture}
+        openReleases={openReleases}
+      />
+    </ManufacturingReleaseFixtureProvider>
+  );
 }
