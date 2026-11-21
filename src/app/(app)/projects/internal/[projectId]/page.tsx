@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
-import type { ProjectResult } from "@/features/projects/contracts";
+import { notFound, redirect } from "next/navigation";
+import type { ProjectItem, ProjectResult } from "@/features/projects/contracts";
 import { InternalProjectsClient } from "@/features/projects/InternalProjectsClient";
 import { projectIdInput } from "@/features/projects/input";
 import { ProjectTypeNav } from "@/features/projects/ProjectTypeNav";
@@ -10,6 +10,7 @@ import {
 } from "@/features/projects/planning/webReads";
 import { resolveProjectView } from "@/features/projects/ui/planeWorkItemView";
 import { readInternalWorkspace, requireInternalProjects } from "@/features/projects/webReads";
+import { coreClient } from "@/frontend/trpc";
 
 type QueryValue = string | string[];
 type WorkspaceSearch = {
@@ -42,6 +43,19 @@ function resolvePlanningScope(
   return { kind, group };
 }
 
+async function redirectArchivedItem(
+  projectId: string,
+  itemId: string | undefined,
+  items: ProjectItem[],
+) {
+  if (itemId === undefined || items.some(({ id }) => id === itemId)) return;
+  const result = await coreClient().internalProjects.automation.archiveLookup.query({
+    projectId,
+    itemId,
+  });
+  if (result.ok && result.value) redirect(`/projects/internal/${projectId}/archive?item=${itemId}`);
+}
+
 export default async function InternalProjectPage({
   params,
   searchParams,
@@ -63,6 +77,7 @@ export default async function InternalProjectPage({
   const savedView = saved?.value;
   const planningScope = resolvePlanningScope(query, planning);
   const item = projectIdInput.safeParse(query.item);
+  await redirectArchivedItem(id.data, item.data, workspace.value.items);
   const location = {
     view: resolveProjectView(
       typeof query.view === "string" ? query.view : (savedView?.layout ?? null),

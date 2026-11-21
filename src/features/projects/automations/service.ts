@@ -120,6 +120,25 @@ export function readArchivedProjectItems(
   });
 }
 
+export function isProjectItemArchived(
+  db: Db,
+  who: NativeSessionRef,
+  projectId: string,
+  itemId: string,
+  signal: AbortSignal,
+) {
+  return withInternalProjects<boolean>(db, who, signal, async (tx, actor) => {
+    const access = await lockInternalProject(tx, actor, projectId, "read");
+    if (!access.ok) return access;
+    const item = internalProjectItems;
+    const [record] = await tx
+      .select({ id: item.id })
+      .from(item)
+      .where(and(eq(item.projectId, projectId), eq(item.id, itemId), isNotNull(item.archivedAt)));
+    return ok(record !== undefined);
+  });
+}
+
 export function archiveProjectItem(
   db: Db,
   who: NativeSessionRef,

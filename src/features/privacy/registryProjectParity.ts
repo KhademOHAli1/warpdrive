@@ -50,7 +50,7 @@ export const projectWorkStructureInventoryEntry = classifyInventory(
     "derived:src/features/projects/work-structure/input.ts",
     "derived:src/features/projects/work-structure/itemStructure.ts",
     "derived:src/features/projects/work-structure/labels.ts",
-    "sourceReview:src/features/projects/work-structure/EstimateSettings.tsx#d8773a32cdfba1b1b0740b737c83f400fcedf76a218639ceef19271ab4c1aaba",
+    "sourceReview:src/features/projects/work-structure/EstimateSettings.tsx#7dff7b9a62da0434c04ca187c58d66ed351bd3387465d9090317b0d60034ce52",
     "sourceReview:src/features/projects/work-structure/LabelSettings.tsx#eb37e720ed4063f6facacb940bd1533a570a41ac700e02f1df8a7ac87052eee0",
     "sourceReview:src/features/projects/work-structure/WorkStructureClient.tsx#88d87e71b9059a059c0c0bfddb7f48eb7a939fb647e5425e591ea3761f704e03",
     "sourceReview:src/features/projects/work-structure/access.ts#051f57921af65a8c884eba51aa61a22d19a444548629f9f71752738b2208660b",
@@ -106,12 +106,12 @@ export const projectWorkStructureInventoryEntry = classifyInventory(
 export const projectAutomationsInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/projects/automations/ProjectAutomationClient.tsx#796cafe44ac7345e3480d169feef3c586105531c8ac901d8f7a5a640198a3354",
-    "sourceReview:src/features/projects/automations/service.ts#85427b526503cd8c1c6bbf81496b1d8ca486d8c6e4da8d6caa70dcfbaa91627b",
+    "sourceReview:src/features/projects/automations/service.ts#4e2eb6e81cdee3e09547fc89a419f4978280feedd472db1ff62c28dee5f65db5",
     "derived:src/features/projects/automations/ProjectAutomationClient.tsx",
     "queue:project.automations",
     "sourceReview:src/app/(app)/projects/internal/[projectId]/archive/page.tsx#beb254fc91b97c2f82b8a8fcdfc7557a0f3104f58e9ae49aafa91a2bf15aca16",
     "sourceReview:src/app/(app)/projects/internal/[projectId]/settings/automations/page.tsx#67dcad3bf104200d1d28bdd952cd976dd420d0a3ba6362844651bd15fe7213cb",
-    "sourceReview:src/features/projects/automations/router.ts#a6426d36da63a6a2a24f8912b6e990e5f6f26104e59d9a8514a46a278839ade6",
+    "sourceReview:src/features/projects/automations/router.ts#03f7e5908cddddeccb713909bab0c0bd1e08a5eec2cc7a2db9d019a0e1f89a22",
     "sourceReview:src/features/projects/automations/schema.ts#e359ff180032d288d2d053099704e83a03f28816bc0ccc3cab4b8a579cabcdc1",
     "sourceReview:src/features/projects/automations/worker.ts#e55eca22eaaa230d112a6bf1f314c5694540e4eb0e851d89755a1eda69c4e0aa",
     "table:internal_project_automation_events",

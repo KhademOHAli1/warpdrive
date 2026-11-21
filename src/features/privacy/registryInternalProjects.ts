@@ -2,6 +2,8 @@ import { classifyInventory } from "./registryClassification";
 
 export const internalProjectsInventoryEntry = classifyInventory(
   [
+    "writer:src/app/(app)/projects/internal/[projectId]/page.tsx#query:dynamic",
+    "sourceReview:src/app/(app)/projects/internal/[projectId]/page.tsx#3e600cabe63146b6da2ec777f0dd6893beb64df753ceaaa4dc226c4223ff96fb",
     "sourceReview:drizzle/0125_projects_plane_parity.sql#c59cfbd5c8f23b038d35bf6c3d0d86e4d922b622d5410d58c82c25a0bf4747b0",
     "sourceReview:src/features/projects/ui/projectWorkItemGroups.ts#c7f4e29524b4a6e70c310dc748a20b3a0a26cf2f00c1f365acd3ef740377d915",
     "sourceReview:src/features/projects/ui/ProjectWorkItems.tsx#cf756d987c8b9ea427c79b3ba50b3c333add6b24ec4814486aee0e8131b6c9fa",

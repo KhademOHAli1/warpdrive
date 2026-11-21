@@ -306,6 +306,7 @@ function EstimateScaleEditor({
           <span>{labels.type}</span>
           <select
             className="h-9 rounded-md border bg-background px-2"
+            aria-label={labels.type}
             value={draft.type}
             disabled={pending}
             onChange={(event) => {
@@ -322,6 +323,7 @@ function EstimateScaleEditor({
           <span>{labels.template}</span>
           <select
             className="h-9 rounded-md border bg-background px-2"
+            aria-label={labels.template}
             value={template}
             disabled={pending}
             onChange={(event) => applyPreset(event.target.value)}
@@ -416,6 +418,7 @@ function EstimateScaleEditor({
             </span>
             <select
               className="h-9 rounded-md border bg-background px-2"
+              aria-label={`${labels.replace} ${point.value}`}
               value={replacements[point.id] ?? ""}
               onChange={(event) =>
                 setReplacements({ ...replacements, [point.id]: event.target.value })
