@@ -2,6 +2,7 @@ import { Archive, ArrowLeftRight, NotebookPen, Pencil, RotateCcw } from "lucide-
 import type { MouseEvent, ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useHydrated } from "@/lib/useHydrated";
 import type { AssetField, AssetRecord, AssetsWorkspace, AssetValue } from "../contracts";
 import type { AssetEditor } from "./AssetEditors";
 import type { AssetWords } from "./assetMessages";
@@ -20,10 +21,10 @@ function DetailItem({ label, value }: { label: string; value: ReactNode }) {
 function fieldDisplay(
   field: AssetField,
   value: AssetValue | undefined,
-  number: Intl.NumberFormat,
+  formatNumber: (value: number) => string,
   t: AssetWords,
 ) {
-  if (typeof value === "number") return number.format(value);
+  if (typeof value === "number") return formatNumber(value);
   if (typeof value === "boolean") return value ? t.yes : t.no;
   if (typeof value === "string" && field.type === "link" && /^https?:\/\//i.test(value)) {
     return (
@@ -57,12 +58,15 @@ export function AssetDetail({
   locale: string;
   words: AssetWords;
 }) {
-  const number = new Intl.NumberFormat(locale);
-  const timestamp = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
-  });
+  const hydrated = useHydrated();
+  const number = hydrated ? new Intl.NumberFormat(locale) : null;
+  const timestamp = hydrated
+    ? new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "UTC",
+      })
+    : null;
   const site = workspace.sites.find(({ id }) => id === record.siteId);
   const category = workspace.categories.find(({ id }) => id === record.categoryId);
   const archived = record.archivedAt !== null;
@@ -71,6 +75,14 @@ export function AssetDetail({
   const balances = individual ? [] : record.balances.filter(({ quantity }) => quantity > 0);
   const total = balances.reduce((sum, bin) => sum + bin.quantity, 0);
   const events = [...record.events].reverse().sort((a, b) => b.at.localeCompare(a.at));
+
+  function formatNumber(value: number) {
+    return number === null ? String(value) : number.format(value);
+  }
+
+  function formatTimestamp(value: string) {
+    return timestamp === null ? value.slice(0, 10) : timestamp.format(new Date(value));
+  }
 
   function location(id: string | null) {
     return id === null ? t.unassigned : (locationLabels.get(id) ?? "—");
@@ -162,7 +174,7 @@ export function AssetDetail({
               <DetailItem label={t.location} value={location(record.locationId)} />
             </>
           ) : (
-            <DetailItem label={t.totalQuantity} value={number.format(total)} />
+            <DetailItem label={t.totalQuantity} value={formatNumber(total)} />
           )}
         </dl>
 
@@ -189,7 +201,7 @@ export function AssetDetail({
                 <DetailItem
                   key={field.id}
                   label={field.label}
-                  value={fieldDisplay(field, record.fieldValues[field.id], number, t)}
+                  value={fieldDisplay(field, record.fieldValues[field.id], formatNumber, t)}
                 />
               ))}
             </dl>
@@ -223,7 +235,7 @@ export function AssetDetail({
                     >
                       <bdi dir="auto">{location(locationId)}</bdi>
                     </th>
-                    <td className="py-1.5 text-end tabular-nums">{number.format(quantity)}</td>
+                    <td className="py-1.5 text-end tabular-nums">{formatNumber(quantity)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -247,12 +259,12 @@ export function AssetDetail({
                       {label}
                       {event.quantity !== null && (
                         <span className="ms-2 text-muted-foreground tabular-nums">
-                          {number.format(event.quantity)}
+                          {formatNumber(event.quantity)}
                         </span>
                       )}
                     </p>
                     <time dateTime={event.at} className="text-xs text-muted-foreground">
-                      {timestamp.format(new Date(event.at))}
+                      {formatTimestamp(event.at)}
                     </time>
                   </div>
                   <p className="text-xs text-muted-foreground">
