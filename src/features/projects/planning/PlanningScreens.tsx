@@ -15,6 +15,7 @@ import {
 import type { ProjectSummary } from "../contracts";
 import { projectIdInput } from "../input";
 import { ProjectTypeNav } from "../ProjectTypeNav";
+import { projectToday } from "../settings/projectTime";
 import { ProjectWorkspaceNav } from "../ui/ProjectWorkspaceNav";
 import { readInternalWorkspace, requireInternalProjects } from "../webReads";
 import { planningAdvancedLabels } from "./advancedMessages";
@@ -92,23 +93,23 @@ function PlanningFrame({
   );
 }
 
-function canRollover(group: PlanningGroup, canEdit: boolean) {
+function canRollover(group: PlanningGroup, canEdit: boolean, today: string) {
   return (
     canEdit &&
     group.kind === "cycles" &&
     !group.archived &&
-    planningCyclePhase(group) === "completed" &&
+    planningCyclePhase(group, today) === "completed" &&
     group.itemCount > group.closedCount
   );
 }
 
-function rolloverTargets(groups: PlanningGroup[]): RolloverDestination[] {
+function rolloverTargets(groups: PlanningGroup[], today: string): RolloverDestination[] {
   return groups
     .filter(({ archived }) => !archived)
     .map(({ id, title, startDate, endDate }) => ({
       id,
       title,
-      phase: planningCyclePhase({ startDate, endDate }),
+      phase: planningCyclePhase({ startDate, endDate }, today),
     }))
     .filter(({ phase }) => phase !== "completed");
 }
@@ -219,12 +220,14 @@ function GroupFacts({
   entry,
   labels,
   preferences,
+  today,
 }: {
   entry: PlanningGroup;
   labels: PlanningLabels;
   preferences: FormattingPreferences;
+  today: string;
 }) {
-  const status = entry.kind === "cycles" ? planningCyclePhase(entry) : entry.moduleStatus;
+  const status = entry.kind === "cycles" ? planningCyclePhase(entry, today) : entry.moduleStatus;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
       {entry.archived && <Badge variant="secondary">{labels.archived}</Badge>}
@@ -291,7 +294,8 @@ export async function planningGroupsPage(rawProjectId: string, kind: PlanningGro
   const { project, canEdit, canManageSettings, intakeEnabled, groups } = result.value;
   const labels = planningLabels[preferences.locale];
   const cycle = kind === "cycles";
-  const targets = cycle ? rolloverTargets(groups) : [];
+  const today = projectToday(project.timeZone);
+  const targets = cycle ? rolloverTargets(groups, today) : [];
   return (
     <PlanningFrame
       project={project}
@@ -316,8 +320,8 @@ export async function planningGroupsPage(rawProjectId: string, kind: PlanningGro
             <Link href={planningPath(projectId, kind, group.id)} className={detailLink}>
               <bdi>{group.title}</bdi>
             </Link>
-            <GroupFacts entry={group} labels={labels} preferences={preferences} />
-            {canRollover(group, canEdit) && (
+            <GroupFacts entry={group} labels={labels} preferences={preferences} today={today} />
+            {canRollover(group, canEdit, today) && (
               <PlanningCycleRollover
                 actorId={actorId}
                 projectId={projectId}
@@ -347,10 +351,11 @@ export async function planningGroupPage(
   if (!result.ok) notFound();
   const { project, group, items, canEdit, canManageSettings, intakeEnabled } = result.value;
   const labels = planningLabels[preferences.locale];
-  const cycleCompleted = kind === "cycles" && planningCyclePhase(group) === "completed";
+  const today = projectToday(project.timeZone);
+  const cycleCompleted = kind === "cycles" && planningCyclePhase(group, today) === "completed";
   const canAdd = canEdit && !group.archived && !cycleCompleted;
-  const canArchive = canArchivePlanningGroup(group);
-  const canTransfer = canRollover(group, canEdit);
+  const canArchive = canArchivePlanningGroup(group, today);
+  const canTransfer = canRollover(group, canEdit, today);
   const candidates = canTransfer ? await readPlanningGroups(projectId, "cycles") : null;
   return (
     <PlanningFrame
@@ -361,7 +366,7 @@ export async function planningGroupPage(
       intakeEnabled={intakeEnabled}
       entry={group}
     >
-      <GroupFacts entry={group} preferences={preferences} labels={labels} />
+      <GroupFacts entry={group} preferences={preferences} labels={labels} today={today} />
       {group.description && (
         <p className="whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">{group.description}</p>
       )}
@@ -371,7 +376,7 @@ export async function planningGroupPage(
           actorId={actorId}
           projectId={projectId}
           source={group}
-          targets={candidates?.ok === true ? rolloverTargets(candidates.value.groups) : []}
+          targets={candidates?.ok === true ? rolloverTargets(candidates.value.groups, today) : []}
         />
       )}
       <RolloverSnapshot group={group} projectId={projectId} preferences={preferences} />

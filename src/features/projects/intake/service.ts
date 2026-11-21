@@ -3,10 +3,11 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
 import { agencyProjectMembers } from "@/features/agency-projects/schema/agencyProjects";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { civilDateRange } from "@/lib/zonedDateTime";
 import { err, ok } from "@/types/result";
 import {
   type InternalProjectAccess,
+  type InternalProjectPrincipal,
   lockInternalProject,
   personFields,
   withInternalProjects,
@@ -46,6 +47,29 @@ const summaryFields = {
   workItemId: requests.workItemId,
 };
 
+function intakeSummaryFields(db: Db, creatorId: string | null) {
+  if (creatorId === null) return summaryFields;
+  const item = internalProjectItems;
+  const visibleItem = exists(
+    db
+      .select({ id: item.id })
+      .from(item)
+      .where(
+        and(
+          eq(item.projectId, requests.projectId),
+          eq(item.id, requests.workItemId),
+          eq(item.createdBy, creatorId),
+        ),
+      ),
+  );
+  return {
+    ...summaryFields,
+    workItemId: sql<
+      string | null
+    >`CASE WHEN ${visibleItem} THEN ${requests.workItemId} ELSE NULL END`,
+  };
+}
+
 async function intakeEnabled(db: Db, projectId: string) {
   const [settings] = await db
     .select({ enabled: internalProjectSettings.intakeEnabled })
@@ -61,10 +85,9 @@ function acceptsRequests({ lifecycle }: InternalProjectAccess) {
 }
 
 function visibleRequests(db: Db, access: InternalProjectAccess, actorId: string) {
-  // Read-only project members are Plane's guest equivalent and can see their own intake.
-  // Use the stable membership grant for read scope even in read-only project lifecycle states.
+  // A restricted guest and a Viewer see their own requests. Expanded guest read is explicit.
   const scope = and(eq(requests.projectId, access.summary.id), isNull(requests.withdrawnAt));
-  if (access.canManageSettings) return scope;
+  if (access.canManageSettings || access.guestAccess === "all") return scope;
   const editor = exists(
     db
       .select({ userId: agencyProjectMembers.userId })
@@ -80,7 +103,7 @@ function visibleRequests(db: Db, access: InternalProjectAccess, actorId: string)
   return and(scope, or(eq(requests.requesterId, actorId), editor));
 }
 
-function statusAt(status: ProjectIntakeStatus, until: Date | null, now: Date) {
+export function statusAt(status: ProjectIntakeStatus, until: Date | null, now: Date) {
   return status === "snoozed" && until !== null && until <= now ? "pending" : status;
 }
 
@@ -113,13 +136,14 @@ function summarize(row: SummaryRow, now: Date): ProjectIntakeSummary {
   };
 }
 
-function isUnresolved(status: ProjectIntakeStatus) {
+export function isUnresolved(status: ProjectIntakeStatus) {
   return status === "pending" || status === "snoozed";
 }
 
 async function readSelected(
   db: Db,
   scope: SQL | undefined,
+  fields: ReturnType<typeof intakeSummaryFields>,
   requestId: string,
   actorId: string,
   canSubmit: boolean,
@@ -127,13 +151,13 @@ async function readSelected(
   now: Date,
 ): Promise<ProjectIntakeRequest | null> {
   const [row] = await db
-    .select({ ...summaryFields, description: requests.description })
+    .select({ ...fields, description: requests.description })
     .from(requests)
     .innerJoin(users, eq(requests.requesterId, users.id))
     .where(and(scope, eq(requests.id, requestId)));
   if (row === undefined) return null;
-  const { description, ...fields } = row;
-  const summary = summarize(fields, now);
+  const { description, ...summaryRow } = row;
+  const summary = summarize(summaryRow, now);
   return {
     ...summary,
     description,
@@ -144,13 +168,13 @@ async function readSelected(
 
 export function readProjectIntake(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: ReadIntakeWorkspaceInput,
   signal: AbortSignal,
 ) {
   return withInternalProjects<ProjectIntakeWorkspace>(db, who, signal, async (tx, actor) => {
     const { projectId, filter, page, requestId } = input;
-    const access = await lockInternalProject(tx, actor, projectId, "read");
+    const access = await lockInternalProject(tx, actor, projectId, "read", "intake");
     if (!access.ok) return access;
     const enabled = await intakeEnabled(tx, projectId);
     const canManageSettings = access.value.canManageSettings;
@@ -169,8 +193,9 @@ export function readProjectIntake(
       });
     const now = new Date();
     const scope = visibleRequests(tx, access.value, actor.id);
+    const fields = intakeSummaryFields(tx, access.value.workItemCreatorId);
     const rows = await tx
-      .select(summaryFields)
+      .select(fields)
       .from(requests)
       .innerJoin(users, eq(requests.requesterId, users.id))
       .where(and(scope, matchesFilter(filter, now)))
@@ -181,7 +206,7 @@ export function readProjectIntake(
     const selected =
       selectedId === undefined
         ? null
-        : await readSelected(tx, scope, selectedId, actor.id, canSubmit, canReview, now);
+        : await readSelected(tx, scope, fields, selectedId, actor.id, canSubmit, canReview, now);
     if (requestId !== undefined && selected === null) return err("project_unavailable");
     return ok({
       enabled,
@@ -201,13 +226,13 @@ type Receipt = { id: string };
 
 function guardIntake<T>(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   projectId: string,
   signal: AbortSignal,
   operation: (intake: LockedIntake) => Promise<ProjectResult<T>>,
 ) {
   return withInternalProjects<T>(db, who, signal, async (tx, actor) => {
-    const access = await lockInternalProject(tx, actor, projectId, "write");
+    const access = await lockInternalProject(tx, actor, projectId, "write", "intake");
     if (!access.ok) return access;
     if (!acceptsRequests(access.value) || !(await intakeEnabled(tx, projectId)))
       return err("project_forbidden");
@@ -217,53 +242,73 @@ function guardIntake<T>(
 
 export function createProjectIntake(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: CreateIntakeRequestInput,
   signal: AbortSignal,
 ) {
-  return guardIntake<Receipt>(db, who, input.projectId, signal, async ({ db: tx, actorId }) => {
-    const { projectId, intentId, title, description, priority } = input;
-    const [existing] = await tx
-      .select()
-      .from(requests)
-      .where(
-        and(
-          eq(requests.projectId, projectId),
-          eq(requests.requesterId, actorId),
-          eq(requests.createIntentId, intentId),
-        ),
-      );
-    if (existing !== undefined) {
-      if (existing.withdrawnAt !== null) return err("project_conflict");
-      const identical =
-        existing.title === title &&
-        existing.description === description &&
-        existing.priority === priority;
-      return existing.revision > 0 || identical ? ok({ id: existing.id }) : err("project_conflict");
-    }
-    const [created] = await tx
-      .insert(requests)
-      .values({
-        projectId,
-        requesterId: actorId,
-        createIntentId: intentId,
-        title,
-        description,
-        priority,
-      })
-      .returning({ id: requests.id });
-    if (created === undefined)
-      throw new AppError(ERROR_IDS.DB_INVARIANT, "Intake request was not created");
-    return ok(created);
-  });
+  return guardIntake<Receipt>(db, who, input.projectId, signal, ({ db: tx, actorId }) =>
+    insertProjectIntakeRequest(tx, actorId, input),
+  );
+}
+
+// Callers must hold the project write lock and verify their Intake entry point's grants.
+export async function insertProjectIntakeRequest(
+  tx: Db,
+  actorId: string,
+  input: CreateIntakeRequestInput,
+  fromPublication = false,
+): Promise<ProjectResult<Receipt>> {
+  const { projectId, intentId, title, description, priority } = input;
+  const [existing] = await tx
+    .select()
+    .from(requests)
+    .where(
+      and(
+        eq(requests.projectId, projectId),
+        eq(requests.requesterId, actorId),
+        eq(requests.createIntentId, intentId),
+      ),
+    );
+  if (existing !== undefined) {
+    if (existing.withdrawnAt !== null || existing.fromPublication !== fromPublication)
+      return err("project_conflict");
+    const identical =
+      existing.title === title &&
+      existing.description === description &&
+      existing.priority === priority;
+    return existing.revision > 0 || identical ? ok({ id: existing.id }) : err("project_conflict");
+  }
+  const [created] = await tx
+    .insert(requests)
+    .values({
+      projectId,
+      requesterId: actorId,
+      createIntentId: intentId,
+      fromPublication,
+      title,
+      description,
+      priority,
+    })
+    .returning({ id: requests.id });
+  if (created === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Intake request was not created");
+  return ok(created);
 }
 
 type IntakeRow = typeof requests.$inferSelect;
 type Versioned = WithdrawIntakeRequestInput;
 
+function canChangeIntake(row: IntakeRow, revision: number, now: Date) {
+  return (
+    row.revision === revision &&
+    row.revision < Number.MAX_SAFE_INTEGER &&
+    isUnresolved(statusAt(row.status, row.snoozedUntil, now))
+  );
+}
+
 function changeIntake(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: Versioned,
   signal: AbortSignal,
   ownerOnly: boolean,
@@ -280,14 +325,35 @@ function changeIntake(
     if (!canReview && (ownerOnly || row.requesterId !== intake.actorId))
       return err("project_forbidden");
     const now = new Date();
-    if (
-      row.revision !== input.revision ||
-      row.revision === Number.MAX_SAFE_INTEGER ||
-      !isUnresolved(statusAt(row.status, row.snoozedUntil, now))
-    )
-      return err("project_conflict");
+    if (!canChangeIntake(row, input.revision, now)) return err("project_conflict");
     return change(intake, row, now);
   });
+}
+
+export function ownPublishedIntakeRequests(projectId: string, requesterId: string) {
+  return and(
+    eq(requests.projectId, projectId),
+    eq(requests.requesterId, requesterId),
+    eq(requests.fromPublication, true),
+    isNull(requests.withdrawnAt),
+  );
+}
+
+// The caller has locked a published project and verified the visitor's Intake grant.
+export async function changeOwnPublishedIntakeRequest(
+  tx: Db,
+  requesterId: string,
+  { projectId, requestId, revision }: Versioned,
+  changes: Pick<UpdateIntakeRequestInput, "title" | "description" | "priority"> | null,
+): Promise<ProjectResult<Receipt>> {
+  const [row] = await tx
+    .select()
+    .from(requests)
+    .where(and(ownPublishedIntakeRequests(projectId, requesterId), eq(requests.id, requestId)));
+  if (row === undefined) return err("project_unavailable");
+  const now = new Date();
+  if (!canChangeIntake(row, revision, now)) return err("project_conflict");
+  return updateIntake(tx, row, changes ?? { withdrawnAt: now });
 }
 
 type Update = Partial<
@@ -325,7 +391,7 @@ async function updateIntake(db: Db, row: IntakeRow, fields: Update) {
 
 export function updateProjectIntake(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: UpdateIntakeRequestInput,
   signal: AbortSignal,
 ) {
@@ -340,7 +406,7 @@ export function updateProjectIntake(
 
 export function withdrawProjectIntake(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: WithdrawIntakeRequestInput,
   signal: AbortSignal,
 ) {
@@ -390,8 +456,11 @@ async function decideIntake(
         : ok({ status: "duplicate", workItemId: item.id });
     }
     case "snooze": {
-      const until = new Date(input.until);
-      const maxSnoozeMs = 366 * 24 * 60 * 60 * 1000;
+      const until =
+        input.until.length === 10
+          ? civilDateRange(input.until, input.until, access.summary.timeZone ?? "UTC").from
+          : new Date(input.until);
+      const maxSnoozeMs = 367 * 24 * 60 * 60 * 1000;
       return until > now && until.getTime() - now.getTime() <= maxSnoozeMs
         ? ok({ status: "snoozed", snoozedUntil: until })
         : err("project_invalid");
@@ -405,7 +474,7 @@ async function decideIntake(
 
 export function reviewProjectIntake(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: ReviewIntakeRequestInput,
   signal: AbortSignal,
 ) {
@@ -423,7 +492,7 @@ export function reviewProjectIntake(
 
 export function setProjectIntakeEnabled(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   { projectId, enabled, revision }: { projectId: string; enabled: boolean; revision: number },
   signal: AbortSignal,
 ) {
@@ -457,7 +526,7 @@ export function setProjectIntakeEnabled(
 
 export function findIntakeWorkItems(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   projectId: string,
   search: string,
   signal: AbortSignal,

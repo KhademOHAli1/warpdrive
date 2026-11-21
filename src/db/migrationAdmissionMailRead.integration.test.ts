@@ -1,5 +1,4 @@
 import { expect, it } from "vitest";
-import { seedUser } from "@/db/testing/factories";
 import { getThread } from "@/features/email/emailReads";
 import type { TestDb } from "@/test/db";
 import { applyMigrations } from "./migrate";
@@ -8,6 +7,7 @@ import {
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 
 const tables = [
@@ -42,7 +42,7 @@ it("upgrades populated 103-entry mailboxes without changing content, drafts or r
     expect(
       (await h.pool.query("SELECT to_regclass('public.email_read_intents') AS value")).rows,
     ).toEqual([{ value: null }]);
-    const owner = await seedUser(h.db);
+    const owner = await seedHistoricalUser(h);
     const account = (
       await h.pool.query<{ id: string }>(
         "INSERT INTO email_accounts (user_id,email_address,provider,status,connection_generation,credential_version) VALUES ($1,'upgrade@example.test','imap_smtp','connected',7,3) RETURNING id",

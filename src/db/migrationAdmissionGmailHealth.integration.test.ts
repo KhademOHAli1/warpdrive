@@ -1,11 +1,11 @@
 import { expect, it } from "vitest";
-import { seedUser } from "@/db/testing/factories";
 import { applyMigrations } from "./migrate";
 import {
   freshMigrationDb,
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 
 it("upgrades populated Gmail health from 0108 to 0109 without inventing a last check", async () => {
@@ -14,7 +14,7 @@ it("upgrades populated Gmail health from 0108 to 0109 without inventing a last c
   try {
     await installPrefix(h, 109);
     target = await migrationFolder(110);
-    const owner = await seedUser(h.db);
+    const owner = await seedHistoricalUser(h);
     const lastSyncAt = new Date("2026-11-05T11:12:13.456Z");
     const lastCheckedAt = new Date("2026-11-05T13:14:15.678Z");
     const emailAddress = "gmail-migration@example.test";

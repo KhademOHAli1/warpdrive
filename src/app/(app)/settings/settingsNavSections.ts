@@ -5,6 +5,7 @@ import {
   Eye,
   FileText,
   Globe2,
+  KeyRound,
   ListChecks,
   type LucideIcon,
   Mail,
@@ -29,6 +30,7 @@ import type { Locale } from "@/features/i18n/registry";
 import type { SettingsMessages } from "@/features/identity/settingsMessages";
 import { adminMessages } from "@/features/newsletter/admin/messages";
 import { privacyRequestMessagesForLocale } from "@/features/privacy/privacyRequestMessages";
+import { integratorMessages } from "@/features/projects/integrator/messages";
 import { workflowRuntimeMessages } from "@/features/workflows/v2/workflowRuntimeMessages";
 
 export interface SettingsNavItem {
@@ -47,13 +49,20 @@ export interface SettingsNavAccess {
   canManageCompany: boolean;
   canImport: boolean;
   billingEnabled?: boolean;
+  projectsEnabled?: boolean;
 }
 
 // Keep permission gates beside the route inventory so search cannot expose hidden destinations.
 export function settingsNavSections(
   L: SettingsMessages,
   locale: Locale,
-  { isAdmin, canManageCompany, canImport, billingEnabled = false }: SettingsNavAccess,
+  {
+    isAdmin,
+    canManageCompany,
+    canImport,
+    billingEnabled = false,
+    projectsEnabled = false,
+  }: SettingsNavAccess,
 ): SettingsNavSection[] {
   const H = L._hierarchy;
   const securityLabel = authScreensMessagesForLocale(locale).flow.securityTitle;
@@ -138,6 +147,15 @@ export function settingsNavSections(
           : []),
         ...(canImport ? [{ href: "/settings/import", label: L.importData, icon: Upload }] : []),
         { href: "/settings/connections", label: L.connectedApps, icon: Plug },
+        ...(projectsEnabled
+          ? [
+              {
+                href: "/settings/projects-integrator",
+                label: integratorMessages[locale].title,
+                icon: KeyRound,
+              },
+            ]
+          : []),
         // Enrichment requires a real administrator; MANAGE alone is insufficient.
         ...(isAdmin
           ? [{ href: "/settings/enrichment", label: L._enrichment.nav, icon: Sparkles }]

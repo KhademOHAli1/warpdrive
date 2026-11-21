@@ -4,10 +4,10 @@ export const projectProfileInventoryEntry = classifyInventory(
   [
     "sourceReview:drizzle/0123_internal_project_profile_activity.sql#47a2aeb67baf2377f52106976d36fcdf8eac4b912de206fa753cb75b618ae2ab",
     "sourceReview:src/features/projects/profile/events.ts#2ccb8818f76218d4e33fea3d5cf28acda45c2618b91fad97b3b51c5217faa5c9",
-    "sourceReview:src/features/projects/profile/router.ts#723739df262de12e6eccbe37ceb87a0e9a4ed7425cdb4e3be7641453de2cd404",
+    "sourceReview:src/features/projects/profile/router.ts#1f1bfe0234b4cda3e6aa37429cb8548aa347801622f5c08bcc4526ae9f1a6a31",
     "sourceReview:src/features/projects/profile/schema.ts#c99b8dd21d21848801533c26b7da76318a952a578cb2425afb69378eb3217614",
-    "sourceReview:src/features/projects/profile/service.ts#6591ffd8a540b19659d87908cb6560a621740627c70e04864bcedfce68676941",
-    "sourceReview:src/features/projects/profile/subscriptions.ts#14f93b120d556b318e9e29d8c88abc38d3d6488163890930bca2ba3ddc9063aa",
+    "sourceReview:src/features/projects/profile/service.ts#c206e7ab589f11f66035bb70e0db8d24eea92c380d0a1d78d8eba5218144058c",
+    "sourceReview:src/features/projects/profile/subscriptions.ts#896908738a4eb563b605305bb54e78d199799fe5dac4bbf416250c76a0862817",
     "sourceReview:src/features/projects/profile/webReads.ts#298ceb812c31f26ee9959c267ca2f329e38971a07318ff03addf49f6f89f2c36",
     "table:internal_project_item_events",
     "table:internal_project_item_subscriptions",

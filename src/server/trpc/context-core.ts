@@ -1,11 +1,11 @@
 import type { Db } from "@/db/client";
-import { loadLiveSessionByToken, SESSION_COOKIE } from "@/features/auth/session";
+import { loadLiveProjectSessionByToken, SESSION_COOKIE } from "@/features/auth/session";
 import {
   type LocalePreferenceFallback,
   readLocalePreferenceCookies,
 } from "@/features/i18n/localePreferenceCookies";
 import type { ReadWebIdentity } from "@/features/release/webIdentity";
-import { type HydratedActor, hydrateActor } from "@/server/hydrateActor";
+import { type HydratedActor, hydrateProjectActor } from "@/server/hydrateActor";
 import {
   type RequestCookieSource,
   type RequestCsrfFacts,
@@ -17,6 +17,11 @@ export interface AppContext {
   db: Db;
   session: { userId: string; sessionId: string } | null;
   actor: HydratedActor | null;
+  /** Restricted identity separate from the generic Core actor and session. */
+  projectGuest?: {
+    actor: HydratedActor;
+    session: { userId: string; sessionId: string };
+  };
   localeFallback?: LocalePreferenceFallback;
   /** Captured by a server request adapter, never deserialized from RPC input. */
   csrf?: RequestCsrfFacts;
@@ -47,12 +52,18 @@ export async function createCoreContext(input: CoreContextInput): Promise<AppCon
 
   const deadline = AbortSignal.timeout(5000);
   const signal = input.signal === undefined ? deadline : AbortSignal.any([input.signal, deadline]);
-  const live = await loadLiveSessionByToken(input.db, sid, signal);
+  const live = await loadLiveProjectSessionByToken(input.db, sid, signal);
   signal.throwIfAborted();
   if (!live.ok) return anonymous;
 
-  const actor = await hydrateActor(input.db, live.value.userId, signal);
+  const actor = await hydrateProjectActor(input.db, live.value.userId, signal);
   signal.throwIfAborted();
+  if (actor?.projectsGuestOnly)
+    return {
+      ...anonymous,
+      projectGuest: { actor, session: live.value },
+      localeFallback: readLocalePreferenceCookies(input.cookies),
+    };
   return {
     db: input.db,
     session: live.value,

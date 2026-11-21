@@ -10,4 +10,13 @@ export const sessionRecordingOptions = {
   maskAllInputs: false,
   maskTextSelector: `.${MASK_CLASS}`,
   blockSelector: `.${BLOCK_CLASS}`,
-} as const;
+  maskCapturedNetworkRequestFn: (request) =>
+    containsProjectPublicationLink(request.name) ||
+    request.name.includes("internalProjects.publication") ||
+    request.name.includes("internalProjects.integrator")
+      ? null
+      : request,
+} satisfies NonNullable<PostHogConfig["session_recording"]>;
+
+import type { PostHogConfig } from "posthog-js";
+import { containsProjectPublicationLink } from "./scrub";

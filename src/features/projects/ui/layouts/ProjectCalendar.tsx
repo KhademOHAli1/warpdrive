@@ -163,7 +163,7 @@ export function ProjectCalendar({
 }: WorkItemsProps & { createOnDay?: (date: string) => ReactNode }) {
   const options = useLocalePreferences();
   const now = useLocalNow();
-  const today = now === null ? null : localDayIso(now, options.timeZone);
+  const today = now === null ? null : localDayIso(now, workspace.project.timeZone);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [period, setPeriod] = useState<"month" | "week">("month");
   const [showWeekends, setShowWeekends] = useState(true);

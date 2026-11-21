@@ -1,4 +1,5 @@
 import type { Result } from "@/types/result";
+import type { ProjectBrandChange, ProjectCover, ProjectLogo } from "./brand/contracts";
 import type {
   ProjectItemStructure,
   ProjectItemStructurePatch,
@@ -33,10 +34,24 @@ export type ProjectSummary = {
   owner: ProjectPerson;
   createdAt: string;
   archived: boolean;
+  timeZone?: string;
+  logo?: ProjectLogo | null;
+  cover?: ProjectCover | null;
 };
-export type ProjectIndex = { projects: ProjectSummary[]; canCreate: boolean };
-export type ProjectMemberGrant = { role: "editor" | "viewer"; canAssign: boolean };
-export type ProjectMembership = ProjectMemberGrant & { person: ProjectPerson };
+export type ProjectVisibility = "private" | "workspace";
+export type ProjectGuestAccess = "restricted" | "all";
+export type DiscoverableProject = Pick<ProjectSummary, "id" | "title" | "identifier">;
+export type ProjectIndex = {
+  projects: ProjectSummary[];
+  canCreate: boolean;
+  discoverableProjects?: DiscoverableProject[];
+};
+export type ProjectMemberGrant = { role: "editor" | "viewer" | "guest"; canAssign: boolean };
+export type ProjectMembership = ProjectMemberGrant & {
+  person: ProjectPerson;
+  invitationPending?: true;
+  projectsGuestOnly?: true;
+};
 export type ProjectWorkflowState = {
   id: string;
   name: string;
@@ -95,6 +110,9 @@ export type ProjectSettings = {
   leadUserId: string | null;
   defaultAssigneeId: string | null;
   intakeEnabled: boolean;
+  visibility?: ProjectVisibility;
+  guestViewAllFeatures?: boolean;
+  timeZone?: string;
 };
 
 export type ProjectWorkspace = {
@@ -110,6 +128,7 @@ export type ProjectWorkspace = {
   canAssign: boolean;
   canManageMembers: boolean;
   canManageSettings: boolean;
+  guestAccess?: ProjectGuestAccess;
 };
 
 export type ProjectFailure =
@@ -119,7 +138,7 @@ export type ProjectFailure =
   | "project_invalid";
 export type ProjectResult<T> = Result<T, ProjectFailure>;
 
-export type CreateProjectInput = { id: string; title: string };
+export type CreateProjectInput = { id: string; title: string } & ProjectBrandChange;
 export type CreateProjectItemInput = {
   projectId: string;
   id: string;
@@ -149,7 +168,7 @@ export type SaveProjectSettingsInput = {
   identifier?: string;
   leadUserId?: string | null;
   defaultAssigneeId?: string | null;
-};
+} & ProjectBrandChange;
 
 export type SetProjectArchivedInput = {
   projectId: string;

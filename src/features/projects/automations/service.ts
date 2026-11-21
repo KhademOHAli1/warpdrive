@@ -2,7 +2,7 @@ import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
-import { lockInternalProject, readProjectWorkspaceItems, withInternalProjects } from "../access";
+import { type InternalProjectPrincipal, lockInternalProject, readProjectWorkspaceItems, withInternalProjects } from "../access";
 import type { ProjectItem, ProjectResult } from "../contracts";
 import { recordProjectItemEvent } from "../profile/events";
 import { internalProjectItems, internalProjectStates } from "../schema";
@@ -109,14 +109,14 @@ export function saveProjectAutomation(
 
 export function readArchivedProjectItems(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   projectId: string,
   signal: AbortSignal,
 ) {
   return withInternalProjects<ProjectItem[]>(db, who, signal, async (tx, actor) => {
-    const access = await lockInternalProject(tx, actor, projectId, "read");
+    const access = await lockInternalProject(tx, actor, projectId, "read", "work-items");
     if (!access.ok) return access;
-    return ok(await readProjectWorkspaceItems(tx, projectId, "archived"));
+    return ok(await readProjectWorkspaceItems(tx, projectId, "archived", access.value.workItemCreatorId));
   });
 }
 
@@ -128,20 +128,22 @@ export function isProjectItemArchived(
   signal: AbortSignal,
 ) {
   return withInternalProjects<boolean>(db, who, signal, async (tx, actor) => {
-    const access = await lockInternalProject(tx, actor, projectId, "read");
+    const access = await lockInternalProject(tx, actor, projectId, "read", "work-items");
     if (!access.ok) return access;
     const item = internalProjectItems;
     const [record] = await tx
       .select({ id: item.id })
       .from(item)
-      .where(and(eq(item.projectId, projectId), eq(item.id, itemId), isNotNull(item.archivedAt)));
+      .where(and(eq(item.projectId, projectId), eq(item.id, itemId), isNotNull(item.archivedAt),
+        access.value.workItemCreatorId === null ? undefined : eq(item.createdBy, access.value.workItemCreatorId),
+      ));
     return ok(record !== undefined);
   });
 }
 
 export function archiveProjectItem(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   { projectId, itemId, revision, archived }: ArchiveProjectItem,
   signal: AbortSignal,
 ): Promise<ProjectResult<true>> {

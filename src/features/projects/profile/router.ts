@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { validateRequestCsrf } from "@/server/trpc/request-csrf";
-import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { protectedProjectProcedure, router } from "@/server/trpc/trpc";
 import {
   profileActivityInput,
   profileItemsInput,
@@ -15,20 +15,20 @@ import {
 import { readProjectSubscription, setProjectSubscription } from "./subscriptions";
 
 export const projectProfileRouter = router({
-  summary: protectedProcedure.query(({ ctx }) =>
+  summary: protectedProjectProcedure.query(({ ctx }) =>
     readProjectProfileSummary(ctx.db, ctx.session, AbortSignal.timeout(10_000)),
   ),
-  assigned: protectedProcedure
+  assigned: protectedProjectProcedure
     .input(profileItemsInput)
     .query(({ ctx, input }) =>
       readProjectProfileItems(ctx.db, ctx.session, "assigned", input, AbortSignal.timeout(10_000)),
     ),
-  created: protectedProcedure
+  created: protectedProjectProcedure
     .input(profileItemsInput)
     .query(({ ctx, input }) =>
       readProjectProfileItems(ctx.db, ctx.session, "created", input, AbortSignal.timeout(10_000)),
     ),
-  subscribed: protectedProcedure
+  subscribed: protectedProjectProcedure
     .input(profileItemsInput)
     .query(({ ctx, input }) =>
       readProjectProfileItems(
@@ -39,19 +39,21 @@ export const projectProfileRouter = router({
         AbortSignal.timeout(10_000),
       ),
     ),
-  activity: protectedProcedure
+  activity: protectedProjectProcedure
     .input(profileActivityInput)
     .query(({ ctx, input }) =>
       readProjectProfileActivity(ctx.db, ctx.session, input.cursor, AbortSignal.timeout(10_000)),
     ),
-  subscriptionStatus: protectedProcedure
+  subscriptionStatus: protectedProjectProcedure
     .input(profileSubscriptionTarget)
     .query(({ ctx, input }) =>
       readProjectSubscription(ctx.db, ctx.session, input, AbortSignal.timeout(10_000)),
     ),
-  setSubscription: protectedProcedure.input(profileSubscriptionInput).mutation(({ ctx, input }) => {
-    if (!validateRequestCsrf(ctx.csrf, input.csrfToken).ok)
-      throw new TRPCError({ code: "FORBIDDEN" });
-    return setProjectSubscription(ctx.db, ctx.session, input, AbortSignal.timeout(10_000));
-  }),
+  setSubscription: protectedProjectProcedure
+    .input(profileSubscriptionInput)
+    .mutation(({ ctx, input }) => {
+      if (!validateRequestCsrf(ctx.csrf, input.csrfToken).ok)
+        throw new TRPCError({ code: "FORBIDDEN" });
+      return setProjectSubscription(ctx.db, ctx.session, input, AbortSignal.timeout(10_000));
+    }),
 });

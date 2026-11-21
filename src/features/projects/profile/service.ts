@@ -5,6 +5,7 @@ import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { ok } from "@/types/result";
 import { listInternalProjectScope, withInternalProjects } from "../access";
+import { projectItemVisibilityForMember } from "../guests/itemScope";
 import { internalProjectItems } from "../schema";
 import type {
   ProfileActivityPage,
@@ -48,7 +49,8 @@ export function readProjectProfileSummary(db: Db, session: NativeSessionRef, sig
       .innerJoin(agencyProjects, eq(item.projectId, agencyProjects.id))
       .where(
         and(
-          listInternalProjectScope(tx, actor.id),
+          listInternalProjectScope(tx, actor.id, actor.projectsGuestOnly),
+          projectItemVisibilityForMember(tx, actor.id),
           isNull(item.archivedAt),
           or(assignedToActor, createdByActor, subscribedByActor),
         ),
@@ -111,7 +113,8 @@ export function readProjectProfileItems(
       .innerJoin(agencyProjects, eq(item.projectId, agencyProjects.id))
       .where(
         and(
-          listInternalProjectScope(tx, actor.id),
+          listInternalProjectScope(tx, actor.id, actor.projectsGuestOnly),
+          projectItemVisibilityForMember(tx, actor.id),
           workOfMember(tx, actor.id, view),
           isNull(item.archivedAt),
           status === undefined ? undefined : eq(item.status, status),
@@ -163,7 +166,8 @@ export function readProjectProfileActivity(
       .innerJoin(agencyProjects, eq(item.projectId, agencyProjects.id))
       .where(
         and(
-          listInternalProjectScope(tx, actor.id),
+          listInternalProjectScope(tx, actor.id, actor.projectsGuestOnly),
+          projectItemVisibilityForMember(tx, actor.id),
           eq(event.actorId, actor.id),
           earlierThanCursor(event.recordedAt, event.id, cursor),
         ),

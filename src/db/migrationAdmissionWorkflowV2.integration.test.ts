@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import * as schema from "@/db/schema";
-import { seedUser } from "@/db/testing/factories";
 import type { WorkflowV2Definition } from "@/features/blocks/contracts";
 import { applyMigrations } from "./migrate";
 import {
@@ -10,6 +9,7 @@ import {
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 
 it("upgrades populated 0107 to 0108, preserving legacy workflows and installing guarded record events", async () => {
@@ -18,7 +18,7 @@ it("upgrades populated 0107 to 0108, preserving legacy workflows and installing 
   const target = await migrationFolder(prefix + 1);
   try {
     await installPrefix(h, prefix);
-    const owner = await seedUser(h.db, { isAdmin: true });
+    const owner = await seedHistoricalUser(h, { isAdmin: true });
     const [legacy] = await h.db
       .insert(schema.workflows)
       .values({

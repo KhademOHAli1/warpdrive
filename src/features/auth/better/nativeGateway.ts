@@ -86,6 +86,7 @@ export async function nativeAuthGateway(
     return await withCurrentAuthority(db, "write", signal, async (authorityTx) =>
       authorityTx.transaction(async (tx) => {
         const current = await resolveWorkflowSession(tx, request.headers, signal, {
+          allowProjectsGuest: true,
           allowPending: true,
         });
         const owner = await proofOwner(tx, request, signal);

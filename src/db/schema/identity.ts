@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   customType,
   index,
   jsonb,
@@ -66,6 +67,7 @@ export const users = pgTable(
     // multiple NULLs under a unique constraint).
     googleSub: text("google_sub").unique(),
     isAdmin: boolean("is_admin").notNull().default(false),
+    projectsGuestOnly: boolean("projects_guest_only").notNull().default(false),
     permissionSetId: uuid("permission_set_id").references(() => permissionSets.id),
     primaryVisibilityGroupId: uuid("primary_visibility_group_id").references(
       () => visibilityGroups.id,
@@ -81,7 +83,10 @@ export const users = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [index("users_permission_set_idx").on(t.permissionSetId)],
+  (t) => [
+    index("users_permission_set_idx").on(t.permissionSetId),
+    check("users_projects_guest_scope_check", sql`NOT ${t.projectsGuestOnly} OR (NOT ${t.isAdmin} AND ${t.permissionSetId} IS NULL AND ${t.primaryVisibilityGroupId} IS NULL)`),
+  ],
 );
 
 export const sessions = pgTable(

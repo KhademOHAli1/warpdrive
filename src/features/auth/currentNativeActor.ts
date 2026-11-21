@@ -3,7 +3,7 @@ import { PgTransaction } from "drizzle-orm/pg-core";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { authUsers, sessions, users } from "@/db/schema";
-import { type HydratedActor, hydrateActor } from "@/server/hydrateActor";
+import { type HydratedActor, hydrateActor, hydrateProjectActor } from "@/server/hydrateActor";
 import { evaluateSessionAccess } from "./better/accessPolicy";
 import { requireCurrentAuthority } from "./currentAuthority";
 import { readAuthPolicy } from "./management/policy";
@@ -27,6 +27,15 @@ export async function currentNativeActor(
 ): Promise<CurrentNativeActor | null> {
   await requireCurrentAuthority(tx, signal);
   return readNativeActor(tx, who, signal);
+}
+
+export async function currentNativeProjectActor(
+  tx: Db,
+  who: NativeSessionRef,
+  signal: AbortSignal,
+): Promise<CurrentNativeActor | null> {
+  await requireCurrentAuthority(tx, signal);
+  return readNativeActor(tx, who, signal, true);
 }
 
 /**
@@ -63,6 +72,7 @@ async function readNativeActor(
   tx: Db,
   who: NativeSessionRef,
   signal: AbortSignal,
+  allowProjectsGuest = false,
 ): Promise<CurrentNativeActor | null> {
   const [row] = await tx
     .select({ session: sessions, authUser: authUsers, user: users })
@@ -81,7 +91,11 @@ async function readNativeActor(
   signal.throwIfAborted();
   if (row === undefined) return null;
   const policy = row.session.authMethod === "legacy" ? null : await readAuthPolicy(tx, signal);
-  const actor = await hydrateActor(tx, who.userId, signal);
+  const actor = await (allowProjectsGuest ? hydrateProjectActor : hydrateActor)(
+    tx,
+    who.userId,
+    signal,
+  );
   if (actor === null) return null;
   // Sample wall time after policy/hydration waits: transaction now() would freeze at BEGIN.
   const clock = await tx.execute<{ milliseconds: string }>(

@@ -15,7 +15,12 @@ import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
-import type { ProjectResult, ProjectSummary, ProjectWorkspace } from "./contracts";
+import type { ProjectGuestAccess, ProjectResult, ProjectSummary, ProjectWorkspace } from "./contracts";
+import {
+  currentProjectIntegratorActor,
+  isProjectIntegratorPrincipal,
+  type ProjectIntegratorPrincipal,
+} from "./integrator/principal";
 import { internalProjectItems, internalProjectSettings } from "./schema";
 import { readProjectWorkflowStates } from "./settings/states";
 
@@ -27,19 +32,26 @@ import {
 
 class ProjectSessionExpired extends Error {}
 
+export type InternalProjectPrincipal = NativeSessionRef | ProjectIntegratorPrincipal;
+
+async function currentInternalProjectActor(tx: Db, who: InternalProjectPrincipal, signal: AbortSignal) {
+  if (isProjectIntegratorPrincipal(who)) return currentProjectIntegratorActor(tx, who, signal);
+  return (await nativeProjectActor(tx, who, signal, "internal"))?.actor ?? null;
+}
+
 export async function withInternalProjects<T>(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   signal: AbortSignal,
   operation: (tx: Db, actor: HydratedActor) => Promise<ProjectResult<T>>,
 ): Promise<ProjectResult<T>> {
   try {
     return await withCurrentAuthority(db, "read", signal, async (tx) => {
-      const current = await nativeProjectActor(tx, who, signal);
+      const current = await currentInternalProjectActor(tx, who, signal);
       if (current === null) return err("project_unavailable");
-      const result = await operation(tx, current.actor);
-      // Throw to roll back writes if the native credential expires during a database wait.
-      if ((await nativeProjectActor(tx, who, signal)) === null) throw new ProjectSessionExpired();
+      const result = await operation(tx, current);
+      // Roll back writes if the current credential expires during a database wait.
+      if ((await currentInternalProjectActor(tx, who, signal)) === null) throw new ProjectSessionExpired();
       return result;
     });
   } catch (error) {
@@ -65,30 +77,25 @@ const memberFields = {
   invitedAt: users.invitedAt,
   edit: agencyProjectMembers.projectEdit,
   coordinate: agencyProjectMembers.assignmentCoordinate,
+  guest: agencyProjectMembers.projectGuest,
+  projectsGuestOnly: users.projectsGuestOnly,
 };
 
 export function eligibleStaff(userId: string) {
-  return and(eq(users.id, userId), eq(users.isActive, true), isNull(users.invitedAt));
+  return and(eq(users.id, userId), eq(users.isActive, true), isNull(users.invitedAt), eq(users.projectsGuestOnly, false));
 }
 
-export function listInternalProjectScope(db: Db, userId: string) {
-  return and(
-    eq(agencyProjects.kind, "internal"),
-    or(
-      eq(agencyProjects.ownerUserId, userId),
-      exists(
-        db
-          .select({ userId: agencyProjectMembers.userId })
-          .from(agencyProjectMembers)
-          .where(
-            and(
-              eq(agencyProjectMembers.projectId, agencyProjects.id),
-              eq(agencyProjectMembers.userId, userId),
-            ),
-          ),
-      ),
-    ),
-  );
+export function listInternalProjectScope(db: Db, userId: string, guestOnly = false) {
+  const member = exists(db.select({ userId: agencyProjectMembers.userId }).from(agencyProjectMembers)
+    .where(and(eq(agencyProjectMembers.projectId, agencyProjects.id), eq(agencyProjectMembers.userId, userId),
+      guestOnly ? eq(agencyProjectMembers.projectGuest, true) : undefined,
+    )));
+  return and(eq(agencyProjects.kind, "internal"), guestOnly ? member : or(eq(agencyProjects.ownerUserId, userId), member));
+}
+
+function projectGuestAccess(guest: boolean, viewAll: boolean): ProjectGuestAccess | null {
+  if (!guest) return null;
+  return viewAll ? "all" : "restricted";
 }
 
 export async function lockInternalProject(
@@ -96,11 +103,15 @@ export async function lockInternalProject(
   actor: HydratedActor,
   projectId: string,
   mode: "read" | "write",
+  surface: "full" | "work-items" | "intake" = "full",
 ) {
   const [row] = await db
     .select({
       project: agencyProjects,
       identifier: internalProjectSettings.identifier,
+      timeZone: internalProjectSettings.timeZone,
+      logo: internalProjectSettings.logo,
+      cover: internalProjectSettings.cover,
       owner: personFields,
       ownerActive: users.isActive,
       ownerInvitedAt: users.invitedAt,
@@ -108,13 +119,21 @@ export async function lockInternalProject(
     .from(agencyProjects)
     .innerJoin(internalProjectSettings, eq(internalProjectSettings.projectId, agencyProjects.id))
     .innerJoin(users, eq(users.id, agencyProjects.ownerUserId))
-    .where(and(eq(agencyProjects.id, projectId), listInternalProjectScope(db, actor.id)))
+    .where(and(eq(agencyProjects.id, projectId), listInternalProjectScope(db, actor.id, actor.projectsGuestOnly)))
     .for(mode === "write" ? "update" : "share", { of: agencyProjects });
   if (row === undefined) return err("project_unavailable" as const);
-  const { project, identifier, owner, ownerActive, ownerInvitedAt } = row;
+  const { project, identifier, owner, ownerActive, ownerInvitedAt, timeZone, logo, cover } = row;
   const [membership] = await db
-    .select()
+    .select({
+      projectId: agencyProjectMembers.projectId,
+      userId: agencyProjectMembers.userId,
+      projectEdit: agencyProjectMembers.projectEdit,
+      assignmentCoordinate: agencyProjectMembers.assignmentCoordinate,
+      projectGuest: agencyProjectMembers.projectGuest,
+      guestViewAllFeatures: internalProjectSettings.guestViewAllFeatures,
+    })
     .from(agencyProjectMembers)
+    .innerJoin(internalProjectSettings, eq(internalProjectSettings.projectId, agencyProjectMembers.projectId))
     .where(
       and(
         eq(agencyProjectMembers.projectId, project.id),
@@ -122,20 +141,32 @@ export async function lockInternalProject(
       ),
     );
   const local = { actor, projectId, ownerUserId: owner.id, membership: membership ?? null };
+  if (actor.projectsGuestOnly && (membership?.projectGuest !== true || actor.id === owner.id))
+    return err("project_unavailable" as const);
   if (!checkProjectLocalAction(local, project, "read").ok)
     return err("project_unavailable" as const);
-  const canEdit = checkProjectLocalAction(local, project, "edit-content").ok;
-  const canManageSettings = checkProjectLocalAction(local, project, "manage-members").ok;
+  const guestAccess = projectGuestAccess(
+    membership?.projectGuest === true && actor.id !== owner.id,
+    membership?.guestViewAllFeatures === true,
+  );
+  if (guestAccess === "restricted" && surface === "full") return err("project_unavailable" as const);
+  const canEdit = guestAccess === null && checkProjectLocalAction(local, project, "edit-content").ok;
+  const canManageSettings = guestAccess === null && checkProjectLocalAction(local, project, "manage-members").ok;
   const summary: ProjectSummary = {
     id: project.id,
     title: project.title,
     identifier,
+    timeZone,
+    logo,
+    cover,
     owner,
     createdAt: project.createdAt.toISOString(),
     archived: project.state === "archived",
   };
   return ok({
     summary,
+    guestAccess,
+    workItemCreatorId: guestAccess === "restricted" ? actor.id : null,
     ownerEligible: ownerActive && ownerInvitedAt === null,
     canEdit,
     canAssign: canEdit && hasProjectAssignmentCoordinateEligibility(local),
@@ -164,7 +195,7 @@ export async function isEligibleProjectMember(
     .select({ id: users.id })
     .from(agencyProjectMembers)
     .innerJoin(users, eq(users.id, agencyProjectMembers.userId))
-    .where(and(eq(agencyProjectMembers.projectId, access.summary.id), eligibleStaff(userId)));
+    .where(and(eq(agencyProjectMembers.projectId, access.summary.id), eq(agencyProjectMembers.projectGuest, false), eligibleStaff(userId)));
   return member !== undefined;
 }
 
@@ -181,7 +212,7 @@ export async function projectWorkspaceSnapshot(
     .innerJoin(users, eq(users.id, agencyProjectMembers.userId))
     .where(eq(agencyProjectMembers.projectId, projectId))
     .orderBy(asc(users.name), asc(users.id));
-  const items = await readProjectWorkspaceItems(db, projectId, "active");
+  const items = await readProjectWorkspaceItems(db, projectId, "active", access.workItemCreatorId);
   const workStructure = await readProjectWorkStructure(db, projectId);
   const settings = await readInternalProjectSettings(db, projectId);
   const states = await readProjectWorkflowStates(db, projectId);
@@ -189,24 +220,29 @@ export async function projectWorkspaceSnapshot(
     ? await db
         .select(personFields)
         .from(users)
-        .where(and(eq(users.isActive, true), isNull(users.invitedAt)))
+        .where(and(eq(users.isActive, true), isNull(users.invitedAt), eq(users.projectsGuestOnly, false)))
         .orderBy(asc(users.name), asc(users.id))
     : [];
   return {
     project: summary,
+    ...(access.guestAccess === null ? {} : { guestAccess: access.guestAccess }),
     items,
     workStructure,
     settings,
     states,
-    members: memberships.map(({ person, edit, coordinate }) => ({
-      person,
-      role: edit ? "editor" : "viewer",
-      canAssign: edit && coordinate,
-    })),
+    members: memberships
+      .filter(({ invitedAt }) => canManageMembers || invitedAt === null)
+      .map(({ person, edit, coordinate, guest, invitedAt, projectsGuestOnly }) => ({
+        person,
+        role: guest ? "guest" : edit ? "editor" : "viewer",
+        canAssign: !guest && edit && coordinate,
+        ...(guest && invitedAt !== null ? { invitationPending: true as const } : {}),
+        ...(projectsGuestOnly ? { projectsGuestOnly: true as const } : {}),
+      })),
     assignees: [
       ...(ownerEligible ? [summary.owner] : []),
       ...memberships
-        .filter(({ active, invitedAt }) => active && invitedAt === null)
+        .filter(({ active, invitedAt, guest }) => active && invitedAt === null && !guest)
         .map(({ person }) => person),
     ],
     staff,
@@ -221,6 +257,7 @@ export async function readProjectWorkspaceItems(
   db: Db,
   projectId: string,
   scope: "active" | "archived",
+  creatorId: string | null = null,
 ) {
   const { id, revision, createdAt, updatedAt, archivedAt, createdBy, stateId, sequenceNumber } =
     internalProjectItems;
@@ -240,6 +277,7 @@ export async function readProjectWorkspaceItems(
     .where(
       and(
         eq(internalProjectItems.projectId, projectId),
+        creatorId === null ? undefined : eq(createdBy, creatorId),
         scope === "archived" ? isNotNull(archivedAt) : isNull(archivedAt),
       ),
     )
@@ -266,10 +304,10 @@ export async function readProjectWorkspaceItems(
 }
 
 export async function readInternalProjectSettings(db: Db, projectId: string) {
-  const { description, revision, leadUserId, defaultAssigneeId, intakeEnabled } =
+  const { description, revision, leadUserId, defaultAssigneeId, intakeEnabled, timeZone, visibility, guestViewAllFeatures } =
     internalProjectSettings;
   const [settings] = await db
-    .select({ description, revision, leadUserId, defaultAssigneeId, intakeEnabled })
+    .select({ description, revision, leadUserId, defaultAssigneeId, intakeEnabled, timeZone, visibility, guestViewAllFeatures })
     .from(internalProjectSettings)
     .where(eq(internalProjectSettings.projectId, projectId));
   if (settings === undefined)

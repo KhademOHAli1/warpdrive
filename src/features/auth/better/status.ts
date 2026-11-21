@@ -16,7 +16,10 @@ export async function readSecurityStatus(
   headers: Headers,
   signal: AbortSignal,
 ): Promise<SecurityStatus | null> {
-  const current = await resolveWorkflowSession(db, headers, signal, { allowPending: true });
+  const current = await resolveWorkflowSession(db, headers, signal, {
+    allowProjectsGuest: true,
+    allowPending: true,
+  });
   if (current === null) return null;
   const userId = current.user.id;
   const [accounts, passkeys, devices, audit, factors] = await Promise.all([

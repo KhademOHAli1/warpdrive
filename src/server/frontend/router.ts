@@ -91,9 +91,10 @@ export const frontendRouter = router({
     const actor = ctx.actor;
     const request = backendRequest()?.request;
     const pending =
-      ctx.actor === null && request !== undefined
+      ctx.actor === null && ctx.projectGuest === undefined && request !== undefined
         ? await resolveWorkflowSession(ctx.db, request.headers, AbortSignal.timeout(5_000), {
             allowPending: true,
+            allowProjectsGuest: true,
           })
         : null;
     const shell =
@@ -120,6 +121,10 @@ export const frontendRouter = router({
           })();
     return {
       actor: ctx.actor,
+      projectGuest:
+        ctx.projectGuest === undefined
+          ? null
+          : { id: ctx.projectGuest.actor.id, name: ctx.projectGuest.actor.name },
       session: ctx.session === null ? null : { userId: ctx.session.userId },
       localeFallback: ctx.localeFallback,
       pendingAuthentication: pending !== null,

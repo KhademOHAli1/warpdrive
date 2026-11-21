@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt, inArray, isNull } from "drizzle-orm";
+import { and, eq, gt, inArray, isNotNull, isNull } from "drizzle-orm";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -103,6 +103,76 @@ async function mintInvitation(
   return { userId, invitationId: created.id };
 }
 
+/** The project owner authorizes the invitation in its transaction before provisioning this new identity. */
+export async function mintProjectsGuestInvitation(
+  db: Db,
+  actor: PermSetUser,
+  { userId, email, locale }: { userId: string; email: string; locale: Locale },
+  signal: AbortSignal,
+) {
+  const [guest] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(
+      and(
+        eq(users.id, userId),
+        eq(users.email, email),
+        eq(users.projectsGuestOnly, true),
+        eq(users.isActive, true),
+        isNotNull(users.invitedAt),
+      ),
+    );
+  if (guest === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Expected a pending Projects guest identity");
+  return mintInvitation(db, actor, userId, email, locale, signal);
+}
+
+/** Called by the project owner after the final guest seat has been removed in the same transaction. */
+export async function revokePendingProjectsGuestInvitation(
+  db: Db,
+  actor: PermSetUser,
+  userId: string,
+  signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  const [guest] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(
+      and(eq(users.id, userId), eq(users.projectsGuestOnly, true), isNotNull(users.invitedAt)),
+    );
+  if (guest === undefined) return;
+  const revoked = await db
+    .update(authInvitations)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(
+        eq(authInvitations.userId, userId),
+        isNull(authInvitations.acceptedAt),
+        isNull(authInvitations.revokedAt),
+      ),
+    )
+    .returning({ id: authInvitations.id });
+  if (revoked.length === 0) return;
+  await db
+    .update(authMailOutbox)
+    .set({ status: "cancelled" })
+    .where(
+      and(
+        inArray(
+          authMailOutbox.invitationId,
+          revoked.map(({ id }) => id),
+        ),
+        inArray(authMailOutbox.status, ["pending", "failed"]),
+      ),
+    );
+  await recordSecurityEvent(
+    db,
+    { actorId: actor.id, targetUserId: userId, action: "invitation.revoke", outcome: "success" },
+    signal,
+  );
+}
+
 export async function issueInvitation(
   db: Db,
   actor: PermSetUser,
@@ -118,6 +188,7 @@ export async function issueInvitation(
       if (
         !existing.isActive ||
         existing.invitedAt === null ||
+        existing.projectsGuestOnly ||
         existing.googleSub !== null ||
         existing.isAdmin !== input.isAdmin
       )

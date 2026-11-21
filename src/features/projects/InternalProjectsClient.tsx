@@ -39,7 +39,7 @@ export function InternalProjectsClient(props: Screen & { actorId: string }) {
     setMember: (input) => setProjectMemberAction(actorId, input, readCsrfToken()),
   };
   if (props.screen === "index") {
-    return <InternalProjectsList initial={props.initial} locale={locale} commands={commands} />;
+    return <InternalProjectsList initial={props.initial} locale={locale} commands={commands} actorId={actorId} />;
   }
   return (
     <InternalProjectWorkspace

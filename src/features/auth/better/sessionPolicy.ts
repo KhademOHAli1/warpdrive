@@ -15,7 +15,7 @@ export async function resolveWorkflowSession(
   db: Db,
   headers: Headers,
   signal: AbortSignal,
-  options: { allowPending?: boolean; requireFresh?: boolean } = {},
+  options: { allowPending?: boolean; requireFresh?: boolean; allowProjectsGuest?: boolean } = {},
 ) {
   signal.throwIfAborted();
   const cookie = readCookie(headers, AUTH_SESSION_COOKIE);
@@ -33,6 +33,7 @@ export async function resolveWorkflowSession(
         isNull(sessions.revokedAt),
         gt(sessions.expiresAt, now),
         eq(users.isActive, true),
+        options.allowProjectsGuest === true ? undefined : eq(users.projectsGuestOnly, false),
       ),
     )
     .limit(1);

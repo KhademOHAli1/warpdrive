@@ -23,7 +23,9 @@ import * as route4 from "@/app/api/gmail/oauth/callback/route.backend";
 import * as route2 from "@/app/api/integrations/slack/callback/route.backend";
 import * as route15 from "@/app/api/mail-connections/[...path]/route.backend";
 import * as route35 from "@/app/api/mcp/route.backend";
+import * as projectCover from "@/app/api/projects/[projectId]/cover/[version]/route.backend";
 import * as route9 from "@/app/api/users/[userId]/avatar/route.backend";
+import * as projectIntegrator from "@/app/api/v1/workspaces/[workspaceSlug]/[...path]/route.backend";
 import * as route18 from "@/app/api/work-profile/[[...path]]/route.backend";
 import * as route5 from "@/app/api/workflows/[workflowId]/webhook/[versionId]/route.backend";
 import * as route16 from "@/app/api/workflows-v2/[workflowId]/route.backend";
@@ -110,4 +112,14 @@ export const httpRoutes = [
   { pattern: /^\/oauth\/token\/?$/, params: [], handlers: route33 },
   { pattern: /^\/auth\/start\/?$/, params: [], handlers: route34 },
   { pattern: /^\/api\/mcp\/?$/, params: [], handlers: route35 },
+  {
+    pattern: /^\/api\/projects\/([^/]+)\/cover\/([^/]+)\/?$/,
+    params: [{ name: "projectId" }, { name: "version" }],
+    handlers: projectCover,
+  },
+  {
+    pattern: /^\/api\/v1\/workspaces\/([^/]+)\/(.+?)\/?$/,
+    params: [{ name: "workspaceSlug" }, { name: "path", many: true }],
+    handlers: projectIntegrator,
+  },
 ];

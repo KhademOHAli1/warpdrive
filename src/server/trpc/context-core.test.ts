@@ -8,9 +8,9 @@ import { readRequestCsrf, requestCookiesFromHeaders } from "./request-csrf";
 const auth = vi.hoisted(() => ({ load: vi.fn(), hydrate: vi.fn() }));
 vi.mock("@/features/auth/session", () => ({
   SESSION_COOKIE: "wd_sid",
-  loadLiveSessionByToken: auth.load,
+  loadLiveProjectSessionByToken: auth.load,
 }));
-vi.mock("@/server/hydrateActor", () => ({ hydrateActor: auth.hydrate }));
+vi.mock("@/server/hydrateActor", () => ({ hydrateProjectActor: auth.hydrate }));
 
 const db = {} as Db;
 function actor(id: string): HydratedActor {
@@ -109,6 +109,18 @@ describe("portable request authentication context", () => {
     expect(context.session).toBeNull();
     expect(context.actor).toBeNull();
     expect(auth.hydrate).not.toHaveBeenCalled();
+  });
+
+  it("keeps a Projects-only identity separate from the ordinary actor and session", async () => {
+    const guest = { ...actor("guest"), projectsGuestOnly: true };
+    const session = { userId: guest.id, sessionId: "guest-session" };
+    auth.load.mockResolvedValue(ok(session));
+    auth.hydrate.mockResolvedValue(guest);
+    expect(await createContextFromRequest(request("wd_sid=guest"), db)).toMatchObject({
+      actor: null,
+      session: null,
+      projectGuest: { actor: guest, session },
+    });
   });
 
   it("does not manufacture an actor when hydration refuses a live session", async () => {

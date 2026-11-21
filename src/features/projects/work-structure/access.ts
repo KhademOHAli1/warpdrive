@@ -1,9 +1,8 @@
 import { and, eq, type SQL, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
-import { lockInternalProject, withInternalProjects } from "../access";
+import { type InternalProjectPrincipal, lockInternalProject, withInternalProjects } from "../access";
 import type { ProjectResult } from "../contracts";
 import { internalProjectItems } from "../schema";
 import { readProjectWorkStructure } from "./catalog";
@@ -15,7 +14,7 @@ type CatalogChange = { activeScaleId?: string | null } | null;
 
 export function changeProjectWorkStructure(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   { projectId, revision }: Target,
   signal: AbortSignal,
   change: (

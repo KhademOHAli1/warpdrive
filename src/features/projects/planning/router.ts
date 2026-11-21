@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { type RequestCsrfFacts, validateRequestCsrf } from "@/server/trpc/request-csrf";
-import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { protectedProjectProcedure, router } from "@/server/trpc/trpc";
 import { changePlanningGroupItems, readWorkspacePlanning, setItemPlanning } from "./assignments";
 import {
   changePlanningGroupItemsInput,
@@ -47,69 +47,79 @@ function requirePlanningWrite(
 }
 
 export const projectPlanningRouter = router({
-  workspace: protectedProcedure
+  workspace: protectedProjectProcedure
     .input(planningProjectKey)
     .query(({ ctx, input }) =>
       readWorkspacePlanning(ctx.db, ctx.session, input.projectId, signal()),
     ),
-  groups: protectedProcedure
+  groups: protectedProjectProcedure
     .input(planningProjectKey.extend({ kind: z.enum(planningGroupKinds) }))
     .query(({ ctx, input }) =>
       listPlanningGroups(ctx.db, ctx.session, input.projectId, input.kind, signal()),
     ),
-  group: protectedProcedure
+  group: protectedProjectProcedure
     .input(planningGroupKey)
     .query(({ ctx, input }) => readPlanningGroup(ctx.db, ctx.session, input, signal())),
-  views: protectedProcedure
+  views: protectedProjectProcedure
     .input(planningProjectKey)
     .query(({ ctx, input }) => listPlanningViews(ctx.db, ctx.session, input.projectId, signal())),
-  view: protectedProcedure
+  view: protectedProjectProcedure
     .input(planningViewKey)
     .query(({ ctx, input }) => readPlanningView(ctx.db, ctx.session, input, signal())),
-  saveGroup: protectedProcedure.input(savePlanningGroupInput).mutation(({ ctx, input }) => {
+  saveGroup: protectedProjectProcedure.input(savePlanningGroupInput).mutation(({ ctx, input }) => {
     requirePlanningWrite(ctx, input);
     return savePlanningGroup(ctx.db, ctx.session, input, signal());
   }),
-  archiveGroup: protectedProcedure
+  archiveGroup: protectedProjectProcedure
     .input(setPlanningGroupArchiveInput)
     .mutation(({ ctx, input }) => {
       requirePlanningWrite(ctx, input);
       return setPlanningGroupArchive(ctx.db, ctx.session, input, signal());
     }),
-  changeGroupItems: protectedProcedure
+  changeGroupItems: protectedProjectProcedure
     .input(changePlanningGroupItemsInput)
     .mutation(({ ctx, input }) => {
       requirePlanningWrite(ctx, input);
       return changePlanningGroupItems(ctx.db, ctx.session, input, signal());
     }),
-  setItemPlanning: protectedProcedure.input(setItemPlanningInput).mutation(({ ctx, input }) => {
-    requirePlanningWrite(ctx, input);
-    return setItemPlanning(ctx.db, ctx.session, input, signal());
-  }),
-  saveView: protectedProcedure.input(savePlanningViewInput).mutation(({ ctx, input }) => {
+  setItemPlanning: protectedProjectProcedure
+    .input(setItemPlanningInput)
+    .mutation(({ ctx, input }) => {
+      requirePlanningWrite(ctx, input);
+      return setItemPlanning(ctx.db, ctx.session, input, signal());
+    }),
+  saveView: protectedProjectProcedure.input(savePlanningViewInput).mutation(({ ctx, input }) => {
     requirePlanningWrite(ctx, input);
     return savePlanningView(ctx.db, ctx.session, input, signal());
   }),
-  archiveView: protectedProcedure.input(setPlanningViewArchiveInput).mutation(({ ctx, input }) => {
-    requirePlanningWrite(ctx, input);
-    return setPlanningViewArchive(ctx.db, ctx.session, input, signal());
-  }),
-  rolloverCycle: protectedProcedure.input(rolloverPlanningCycleInput).mutation(({ ctx, input }) => {
-    requirePlanningWrite(ctx, input);
-    return rolloverPlanningCycle(ctx.db, ctx.session, input, signal());
-  }),
-  setViewLock: protectedProcedure.input(setPlanningViewLockInput).mutation(({ ctx, input }) => {
-    requirePlanningWrite(ctx, input);
-    return setPlanningViewLock(ctx.db, ctx.session, input, signal());
-  }),
-  setViewFavorite: protectedProcedure
+  archiveView: protectedProjectProcedure
+    .input(setPlanningViewArchiveInput)
+    .mutation(({ ctx, input }) => {
+      requirePlanningWrite(ctx, input);
+      return setPlanningViewArchive(ctx.db, ctx.session, input, signal());
+    }),
+  rolloverCycle: protectedProjectProcedure
+    .input(rolloverPlanningCycleInput)
+    .mutation(({ ctx, input }) => {
+      requirePlanningWrite(ctx, input);
+      return rolloverPlanningCycle(ctx.db, ctx.session, input, signal());
+    }),
+  setViewLock: protectedProjectProcedure
+    .input(setPlanningViewLockInput)
+    .mutation(({ ctx, input }) => {
+      requirePlanningWrite(ctx, input);
+      return setPlanningViewLock(ctx.db, ctx.session, input, signal());
+    }),
+  setViewFavorite: protectedProjectProcedure
     .input(setPlanningViewFavoriteInput)
     .mutation(({ ctx, input }) => {
       requirePlanningWrite(ctx, input);
       return setPlanningViewFavorite(ctx.db, ctx.session, input, signal());
     }),
-  deleteView: protectedProcedure.input(deletePlanningViewInput).mutation(({ ctx, input }) => {
-    requirePlanningWrite(ctx, input);
-    return deletePlanningView(ctx.db, ctx.session, input, signal());
-  }),
+  deleteView: protectedProjectProcedure
+    .input(deletePlanningViewInput)
+    .mutation(({ ctx, input }) => {
+      requirePlanningWrite(ctx, input);
+      return deletePlanningView(ctx.db, ctx.session, input, signal());
+    }),
 });

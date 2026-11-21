@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Select } from "@/components/ui/Select";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import type {
   ProjectMemberGrant,
@@ -12,17 +13,34 @@ import type {
   ProjectResult,
   ProjectWorkspace,
 } from "../contracts";
+import { InviteProjectGuest } from "../guests/InviteProjectGuest";
+import { guestLabels } from "../guests/messages";
 import type { ProjectsTranslator } from "./projectMessages";
 
 type MembersProps = {
   workspace: ProjectWorkspace;
   labels: ProjectsTranslator;
   pending: boolean;
+  actorId?: string | undefined;
+  onGuestInvited?: (person: ProjectPerson) => void;
   setMember: (
     userId: string,
     membership: ProjectMemberGrant | null,
   ) => Promise<ProjectResult<ProjectWorkspace>>;
 };
+
+function roleOptions(labels: ProjectsTranslator, guest: string) {
+  return [
+    { value: "editor", label: labels("members.editor") },
+    { value: "viewer", label: labels("members.viewer") },
+    { value: "guest", label: guest },
+  ];
+}
+
+function selectedRole(value: string): ProjectMemberGrant["role"] {
+  if (value === "viewer" || value === "guest") return value;
+  return "editor";
+}
 
 function MemberRow({
   member,
@@ -32,11 +50,9 @@ function MemberRow({
   setMember,
 }: MembersProps & { member: ProjectMembership }) {
   const { person, role, canAssign } = member;
+  const { locale } = useLocalePreferences();
+  const { guest, pending: invitationPending } = guestLabels[locale];
   const assignmentPermissionId = useId();
-  const roles = [
-    { value: "editor", label: labels("members.editor") },
-    { value: "viewer", label: labels("members.viewer") },
-  ];
   return (
     <li className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
       <bdi className="min-w-0 flex-1 text-sm font-medium [overflow-wrap:anywhere]">
@@ -44,17 +60,25 @@ function MemberRow({
       </bdi>
       {workspace.canManageMembers ? (
         <div className="flex flex-wrap items-center gap-2.5">
-          <Select
-            ariaLabel={labels("members.access", { name: person.name })}
-            value={role}
-            disabled={pending}
-            options={roles}
-            triggerClassName="w-auto min-w-28"
-            onChange={(value) => {
-              const next = value === "viewer" ? "viewer" : "editor";
-              void setMember(person.id, { role: next, canAssign: next === "editor" && canAssign });
-            }}
-          />
+          {member.invitationPending && <Badge variant="outline">{invitationPending}</Badge>}
+          {member.projectsGuestOnly ? (
+            <Badge variant="secondary">{guest}</Badge>
+          ) : (
+            <Select
+              ariaLabel={labels("members.access", { name: person.name })}
+              value={role}
+              disabled={pending}
+              options={roleOptions(labels, guest)}
+              triggerClassName="w-auto min-w-28"
+              onChange={(value) => {
+                const next = selectedRole(value);
+                void setMember(person.id, {
+                  role: next,
+                  canAssign: next === "editor" && canAssign,
+                });
+              }}
+            />
+          )}
           {role === "editor" && (
             <label
               htmlFor={assignmentPermissionId}
@@ -93,7 +117,7 @@ function MemberRow({
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{labels(`members.${role}`)}</Badge>
+          <Badge variant="secondary">{role === "guest" ? guest : labels(`members.${role}`)}</Badge>
           {canAssign && <Badge variant="outline">{labels("members.canAssign")}</Badge>}
         </div>
       )}
@@ -108,12 +132,15 @@ function AddMember({
   setMember,
 }: Omit<MembersProps, "workspace"> & { staff: ProjectPerson[] }) {
   const [selected, setSelected] = useState("");
+  const [role, setRole] = useState<ProjectMemberGrant["role"]>("editor");
+  const { locale } = useLocalePreferences();
+  const { guest, memberRole } = guestLabels[locale];
   const userId = staff.some((person) => person.id === selected) ? selected : "";
 
   async function add(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || userId === "") return;
-    const result = await setMember(userId, { role: "editor", canAssign: false });
+    const result = await setMember(userId, { role, canAssign: false });
     if (result.ok) setSelected("");
   }
 
@@ -129,6 +156,14 @@ function AddMember({
         triggerClassName="w-auto min-w-40"
         onChange={setSelected}
       />
+      <Select
+        ariaLabel={memberRole}
+        disabled={pending}
+        value={role}
+        options={roleOptions(labels, guest)}
+        onChange={(value) => setRole(selectedRole(value))}
+        triggerClassName="w-auto min-w-28"
+      />
       <Button type="submit" disabled={pending || userId === ""}>
         {labels("members.add")}
       </Button>
@@ -137,7 +172,7 @@ function AddMember({
 }
 
 export function ProjectMembers(props: MembersProps) {
-  const { workspace, labels } = props;
+  const { workspace, labels, actorId, onGuestInvited } = props;
   const { owner } = workspace.project;
   const staff = workspace.staff.filter(
     ({ id }) => id !== owner.id && !workspace.members.some(({ person }) => person.id === id),
@@ -145,7 +180,18 @@ export function ProjectMembers(props: MembersProps) {
 
   return (
     <div className="space-y-3">
-      {workspace.canManageMembers && staff.length > 0 && <AddMember staff={staff} {...props} />}
+      {workspace.canManageMembers && (
+        <div className="flex flex-wrap items-start gap-2">
+          {staff.length > 0 && <AddMember staff={staff} {...props} />}
+          {actorId !== undefined && onGuestInvited !== undefined && (
+            <InviteProjectGuest
+              actorId={actorId}
+              projectId={workspace.project.id}
+              onInvited={onGuestInvited}
+            />
+          )}
+        </div>
+      )}
       <ul className="divide-y rounded-lg border bg-card">
         <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <bdi className="min-w-0 text-sm font-medium [overflow-wrap:anywhere]">{owner.name}</bdi>

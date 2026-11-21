@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactElement, useId, useRef, useState } from "react";
+import { type FormEvent, type ReactElement, type ReactNode, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
@@ -39,6 +39,9 @@ export function ProjectTitleDialog({
   initialTitle,
   pending,
   submit,
+  extra,
+  canSubmit = true,
+  onOpen,
 }: {
   labels: ProjectsTranslator;
   title: string;
@@ -49,6 +52,9 @@ export function ProjectTitleDialog({
   initialTitle?: string;
   pending: boolean;
   submit: (title: string, getRequestId: () => string) => Promise<ProjectResult<unknown>>;
+  extra?: ReactNode;
+  canSubmit?: boolean;
+  onOpen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initialTitle ?? "");
@@ -62,13 +68,14 @@ export function ProjectTitleDialog({
       setValue(initialTitle ?? "");
       setError(null);
       requestId.current = null;
+      onOpen?.();
     }
     setOpen(next);
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || value.trim() === "") return;
+    if (!canSubmit || pending || value.trim() === "") return;
     setError(null);
     const result = await submit(value.trim(), () => (requestId.current ??= crypto.randomUUID()));
     if (result.ok) setOpen(false);
@@ -78,7 +85,9 @@ export function ProjectTitleDialog({
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className={`${BLOCK_CLASS} ph-no-capture`}>
+      <DialogContent
+        className={`${BLOCK_CLASS} ph-no-capture max-h-[calc(100dvh-2rem)] overflow-y-auto`}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -98,14 +107,22 @@ export function ProjectTitleDialog({
               required
             />
           </div>
+          {extra}
           <ProjectWriteNotice error={error} labels={labels} />
           <DialogFooter>
-            <Button variant="outline" disabled={pending} onClick={() => changeOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() => changeOpen(false)}
+            >
               {labels("actions.cancel")}
             </Button>
             <Button
               type="submit"
-              disabled={pending || value.trim() === "" || value.trim() === initialTitle}
+              disabled={
+                !canSubmit || pending || value.trim() === "" || value.trim() === initialTitle
+              }
             >
               {labels(pending ? "actions.saving" : "actions.save")}
             </Button>

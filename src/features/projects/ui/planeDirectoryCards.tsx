@@ -6,7 +6,7 @@
 
 // Adapted from Plane Community v1.5.0 (18caf808a3af3fcabeeba7d1e8473f1367bff2d4),
 // apps/web/components/project/{card-list,card}.tsx.
-import { ExternalLink, FolderKanban, Link2, MoreHorizontal } from "lucide-react";
+import { ExternalLink, Link2, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/Button";
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
+import { projectCoverPath } from "../brand/contracts";
+import { ProjectBrandMark, ProjectCoverArt } from "../brand/ProjectBrand";
 import type { ProjectSummary } from "../contracts";
 import type { ProjectsTranslator } from "./projectMessages";
 import { useProjectFormatters } from "./useProjectFormatters";
@@ -44,10 +46,17 @@ function ProjectCard({ project, labels }: CardProps) {
         href={projectLink}
         className="flex h-full min-w-0 flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
-        <div className="relative h-16 w-full rounded-t bg-muted/55">
-          <div className="absolute start-3 top-3 grid size-9 place-items-center rounded-md bg-primary/10 text-primary">
-            <FolderKanban aria-hidden="true" className="size-4" />
-          </div>
+        <div className="relative">
+          <ProjectCoverArt
+            cover={project.cover}
+            imageSrc={
+              project.cover?.kind === "image"
+                ? projectCoverPath(project.id, project.cover.value)
+                : undefined
+            }
+            className="h-16 w-full rounded-t"
+          />
+          <ProjectBrandMark logo={project.logo} className="absolute start-3 top-3" />
         </div>
         <div className="w-full space-y-3 px-4 pb-4 pt-3">
           <div className="flex flex-wrap items-baseline justify-between gap-1">

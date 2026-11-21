@@ -268,7 +268,7 @@ export type PlanningReadHeader = {
 
 export function planningCyclePhase(
   { startDate, endDate }: Pick<PlanningGroup, "startDate" | "endDate">,
-  // Cycles use civil dates. A shared UTC date keeps this classification consistent for every member.
+  // Callers with project context supply the project's civil date.
   today = new Date().toISOString().slice(0, 10),
 ): PlanningCyclePhase {
   if (startDate === null || endDate === null) return "draft";
@@ -278,9 +278,10 @@ export function planningCyclePhase(
 
 export function canArchivePlanningGroup(
   group: Pick<PlanningGroup, "kind" | "startDate" | "endDate" | "moduleStatus">,
+  today?: string,
 ) {
   return group.kind === "cycles"
-    ? planningCyclePhase(group) === "completed"
+    ? planningCyclePhase(group, today) === "completed"
     : group.moduleStatus === "completed" || group.moduleStatus === "cancelled";
 }
 

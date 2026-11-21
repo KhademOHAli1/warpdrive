@@ -1,8 +1,9 @@
 import { and, asc, eq, exists, gte, inArray, isNull, or } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
+import { type InternalProjectPrincipal, readInternalProjectSettings } from "../access";
 import { internalProjectItems as items } from "../schema";
+import { projectToday } from "../settings/projectTime";
 import { withPlanningProject } from "./access";
 import {
   type ChangePlanningGroupItems,
@@ -21,6 +22,7 @@ export async function projectPlanningSnapshot(
   tx: Db,
   projectId: string,
 ): Promise<WorkspacePlanning> {
+  const today = projectToday((await readInternalProjectSettings(tx, projectId)).timeZone);
   const entries = await tx
     .select({
       id: groups.id,
@@ -66,7 +68,7 @@ export async function projectPlanningSnapshot(
         archived: entry.archivedAt !== null,
         acceptsWork:
           entry.archivedAt === null &&
-          (kind !== "cycles" || planningCyclePhase(entry) !== "completed"),
+          (kind !== "cycles" || planningCyclePhase(entry, today) !== "completed"),
       }));
   return {
     cycles: choices("cycles"),
@@ -77,7 +79,7 @@ export async function projectPlanningSnapshot(
 
 export function readWorkspacePlanning(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   projectId: string,
   signal: AbortSignal,
 ) {
@@ -105,7 +107,13 @@ async function activeGroupsInProject(
   if (groupIds.length === 0) return true;
   const openDates =
     adding && kind === "cycles"
-      ? or(isNull(groups.endDate), gte(groups.endDate, new Date().toISOString().slice(0, 10)))
+      ? or(
+          isNull(groups.endDate),
+          gte(
+            groups.endDate,
+            projectToday((await readInternalProjectSettings(tx, projectId)).timeZone),
+          ),
+        )
       : undefined;
   const active = and(isNull(groups.archivedAt), openDates);
   const available =
@@ -191,7 +199,7 @@ export async function attachNewItemPlanning(
 
 export function setItemPlanning(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   input: SetItemPlanning,
   signal: AbortSignal,
 ) {
@@ -219,7 +227,7 @@ export function setItemPlanning(
 
 export function changePlanningGroupItems(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   input: ChangePlanningGroupItems,
   signal: AbortSignal,
 ) {

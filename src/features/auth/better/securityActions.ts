@@ -144,6 +144,7 @@ export async function runSecurityAction(
     async (db): Promise<WorkflowResponse<Record<string, never>>> => {
       const auth = rebindBetterAuth(sourceAuth, db);
       const current = await resolveWorkflowSession(db, headers, signal, {
+        allowProjectsGuest: true,
         allowPending: command.action === "reauthenticate",
         requireFresh: command.action !== "reauthenticate",
       });

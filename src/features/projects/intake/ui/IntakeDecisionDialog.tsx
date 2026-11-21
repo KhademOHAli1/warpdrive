@@ -238,8 +238,7 @@ function decisionPayload({
     case "duplicate":
       return { action, workItemId };
     case "snooze": {
-      const date = new Date(`${snoozeDate}T00:00:00`);
-      return Number.isFinite(date.getTime()) ? { action, until: date.toISOString() } : null;
+      return snoozeDate === "" ? null : { action, until: snoozeDate };
     }
     case "decline":
     case "unsnooze":

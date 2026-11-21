@@ -66,6 +66,7 @@ async function requireFreshFactor(
   signal: AbortSignal,
 ) {
   const current = await resolveWorkflowSession(db, new Headers(ctx.headers), signal, {
+    allowProjectsGuest: true,
     allowPending: !sensitive,
   });
   if (

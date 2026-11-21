@@ -51,7 +51,8 @@ async function loadLiveSessionWhere(
   match: SQL | undefined,
   signal: AbortSignal,
   touch = false,
-): Promise<Result<{ userId: string; sessionId: string }, "not_found">> {
+  allowProjectsGuest = false,
+) {
   signal.throwIfAborted();
   const rows = await db
     .select({
@@ -70,14 +71,15 @@ async function loadLiveSessionWhere(
         isNull(sessions.revokedAt),
         gt(sessions.expiresAt, sql`now()`),
         eq(users.isActive, true),
+        allowProjectsGuest ? undefined : eq(users.projectsGuestOnly, false),
       ),
     )
     .limit(1);
   signal.throwIfAborted();
   const row = rows[0];
-  if (row === undefined) return err("not_found");
+  if (row === undefined) return err("not_found" as const);
   if (row.session.authMethod !== "legacy") {
-    if (row.authUser === null) return err("not_found");
+    if (row.authUser === null) return err("not_found" as const);
     const policy = await readAuthPolicy(db, signal);
     const now = new Date();
     const access = evaluateSessionAccess({
@@ -92,7 +94,7 @@ async function loadLiveSessionWhere(
       createdAt: row.session.createdAt,
       now,
     });
-    if (!access.allowed) return err("not_found");
+    if (!access.allowed) return err("not_found" as const);
     if (touch && now.getTime() - row.session.lastSeenAt.getTime() >= 60_000) {
       await db.update(sessions).set({ lastSeenAt: now }).where(eq(sessions.id, row.sessionId));
       signal.throwIfAborted();
@@ -113,6 +115,23 @@ export function loadLiveSessionByToken(
   const raw = sessionTokenFromCookie(cookieValue);
   if (raw === null) return Promise.resolve(err("not_found"));
   return loadLiveSessionWhere(db, eq(sessions.tokenHash, hashSessionToken(raw)), signal, true);
+}
+
+/** Used only by request-context construction, which keeps project guests in a separate principal. */
+export function loadLiveProjectSessionByToken(
+  db: Db,
+  cookieValue: string,
+  signal: AbortSignal,
+): Promise<Result<{ userId: string; sessionId: string }, "not_found">> {
+  const raw = sessionTokenFromCookie(cookieValue);
+  if (raw === null) return Promise.resolve(err("not_found"));
+  return loadLiveSessionWhere(
+    db,
+    eq(sessions.tokenHash, hashSessionToken(raw)),
+    signal,
+    true,
+    true,
+  );
 }
 
 /**

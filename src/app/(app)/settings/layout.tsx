@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { can } from "@/features/permissions/can";
-import { createContext, getFrontendConfig } from "@/frontend/context";
+import { getBootstrap, getFrontendConfig } from "@/frontend/context";
 import { SettingsNav } from "./SettingsNav";
 
 // Administrative links remain hidden unless the actor has their existing permission.
@@ -10,8 +10,7 @@ export default async function SettingsLayout({
 }: {
   children: ReactNode;
 }): Promise<ReactNode> {
-  const env = await getFrontendConfig();
-  const { actor } = await createContext();
+  const [env, { actor, shell }] = await Promise.all([getFrontendConfig(), getBootstrap()]);
   const isAdmin = actor !== null && actor.type === "admin";
   const canManageCompany =
     actor !== null && (actor.type === "admin" || actor.flags.has(PERMISSION_FLAGS.MANAGE));
@@ -23,6 +22,7 @@ export default async function SettingsLayout({
         canManageCompany={canManageCompany}
         canImport={canImport}
         billingEnabled={env.BILLING_ENABLED === "true"}
+        projectsEnabled={shell?.projects?.enabled === true}
       />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

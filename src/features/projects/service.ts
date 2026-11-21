@@ -8,12 +8,13 @@ import {
   agencyProjectMembers,
   agencyProjects,
 } from "@/features/agency-projects/schema/agencyProjects";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { can } from "@/features/permissions/can";
+import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import {
   eligibleStaff,
   type InternalProjectAccess,
+  type InternalProjectPrincipal,
   isEligibleProjectMember,
   listInternalProjectScope,
   lockInternalProject,
@@ -23,6 +24,7 @@ import {
   readInternalProjectSettings,
   withInternalProjects,
 } from "./access";
+import { normalizeProjectCover, storeProjectCover } from "./brand/cover";
 import {
   type CreateProjectInput,
   type CreateProjectItemInput,
@@ -35,6 +37,8 @@ import {
   type SetProjectMemberInput,
   type UpdateProjectItemInput,
 } from "./contracts";
+import { revokeInvitationWithoutGuestSeat } from "./guests/invitations";
+import { discoverInternalProjects } from "./guests/service";
 import {
   initialProjectItemContent,
   matchesInitialProjectItemContent,
@@ -107,13 +111,16 @@ function intentRecordId(scope: string, actorId: string, intentId: string): strin
   ].join("-");
 }
 
-export function listInternalProjects(db: Db, who: NativeSessionRef, signal: AbortSignal) {
+export function listInternalProjects(db: Db, who: InternalProjectPrincipal, signal: AbortSignal) {
   return withInternalProjects<ProjectIndex>(db, who, signal, async (tx, actor) => {
     const projects = await tx
       .select({
         id: agencyProjects.id,
         title: agencyProjects.title,
         identifier: internalProjectSettings.identifier,
+        timeZone: internalProjectSettings.timeZone,
+        logo: internalProjectSettings.logo,
+        cover: internalProjectSettings.cover,
         owner: personFields,
         createdAt: agencyProjects.createdAt,
         state: agencyProjects.state,
@@ -121,39 +128,46 @@ export function listInternalProjects(db: Db, who: NativeSessionRef, signal: Abor
       .from(agencyProjects)
       .innerJoin(users, eq(users.id, agencyProjects.ownerUserId))
       .innerJoin(internalProjectSettings, eq(internalProjectSettings.projectId, agencyProjects.id))
-      .where(listInternalProjectScope(tx, actor.id))
+      .where(listInternalProjectScope(tx, actor.id, actor.projectsGuestOnly))
       .orderBy(desc(agencyProjects.createdAt), asc(agencyProjects.id));
+    const discoverable = actor.projectsGuestOnly
+      ? []
+      : await discoverInternalProjects(tx, actor.id);
     return ok({
       projects: projects.map(({ state, ...project }) => ({
         ...project,
         createdAt: project.createdAt.toISOString(),
         archived: state === "archived",
       })),
-      canCreate: can(actor, "project.create"),
+      canCreate: !actor.projectsGuestOnly && can(actor, "project.create"),
+      ...(discoverable.length === 0 ? {} : { discoverableProjects: discoverable }),
     });
   });
 }
 
 export function readInternalProject(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   projectId: string,
   signal: AbortSignal,
 ) {
   return withInternalProjects<ProjectWorkspace>(db, who, signal, async (tx, actor) => {
-    const access = await lockInternalProject(tx, actor, projectId, "read");
+    const access = await lockInternalProject(tx, actor, projectId, "read", "work-items");
     return access.ok ? ok(await projectWorkspaceSnapshot(tx, access.value)) : access;
   });
 }
 
 export function createInternalProject(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: CreateProjectInput,
   signal: AbortSignal,
 ) {
   return withInternalProjects<ProjectSummary>(db, who, signal, async (tx, actor) => {
     if (!can(actor, "project.create")) return err("project_forbidden");
+    const image =
+      input.coverImage === undefined ? undefined : await normalizeProjectCover(input.coverImage);
+    if (image === null) return err("project_invalid");
     const id = intentRecordId("project", actor.id, input.id);
     const [inserted] = await tx
       .insert(agencyProjects)
@@ -171,6 +185,9 @@ export function createInternalProject(
         .select({
           title: agencyProjects.title,
           identifier: internalProjectSettings.identifier,
+          logo: internalProjectSettings.logo,
+          cover: internalProjectSettings.cover,
+          timeZone: internalProjectSettings.timeZone,
           createdAt: agencyProjects.createdAt,
           state: agencyProjects.state,
           creationTitle: internalProjectSettings.creationTitle,
@@ -193,6 +210,9 @@ export function createInternalProject(
         id,
         title: existing.title,
         identifier: existing.identifier,
+        logo: existing.logo,
+        cover: existing.cover,
+        timeZone: existing.timeZone,
         owner,
         createdAt: existing.createdAt.toISOString(),
         archived: existing.state === "archived",
@@ -211,8 +231,29 @@ export function createInternalProject(
         ERROR_IDS.DB_INVARIANT,
         "Internal project creation did not record its history",
       );
+    if (
+      input.timeZone !== undefined ||
+      input.logo !== undefined ||
+      input.cover !== undefined ||
+      image !== undefined
+    ) {
+      const cover = image === undefined ? input.cover : await storeProjectCover(tx, id, image);
+      await tx
+        .update(internalProjectSettings)
+        .set({
+          timeZone: input.timeZone,
+          logo: input.logo,
+          cover,
+        })
+        .where(eq(internalProjectSettings.projectId, id));
+    }
     const [settings] = await tx
-      .select({ identifier: internalProjectSettings.identifier })
+      .select({
+        identifier: internalProjectSettings.identifier,
+        logo: internalProjectSettings.logo,
+        cover: internalProjectSettings.cover,
+        timeZone: internalProjectSettings.timeZone,
+      })
       .from(internalProjectSettings)
       .where(eq(internalProjectSettings.projectId, id));
     if (settings === undefined)
@@ -220,7 +261,7 @@ export function createInternalProject(
     return ok({
       id,
       title: input.title,
-      identifier: settings.identifier,
+      ...settings,
       owner,
       createdAt: inserted.createdAt.toISOString(),
       archived: false,
@@ -230,17 +271,21 @@ export function createInternalProject(
 
 function changeWorkspace(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   projectId: string,
   capability: "canEdit" | "canAssign" | "canManageMembers",
   signal: AbortSignal,
-  change: (tx: Db, access: InternalProjectAccess) => Promise<ProjectResult<undefined>>,
+  change: (
+    tx: Db,
+    access: InternalProjectAccess,
+    actor: HydratedActor,
+  ) => Promise<ProjectResult<undefined>>,
 ) {
   return withInternalProjects<ProjectWorkspace>(db, who, signal, async (tx, actor) => {
     const access = await lockInternalProject(tx, actor, projectId, "write");
     if (!access.ok) return access;
     if (!access.value[capability]) return err("project_forbidden");
-    const result = await change(tx, access.value);
+    const result = await change(tx, access.value, actor);
     return result.ok ? ok(await projectWorkspaceSnapshot(tx, access.value)) : result;
   });
 }
@@ -391,7 +436,7 @@ export async function createInternalProjectItemInTransaction(
 
 export function createInternalProjectItem(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: CreateProjectItemInput,
   signal: AbortSignal,
 ) {
@@ -420,7 +465,7 @@ async function validateItemEdit(
 
 export function updateInternalProjectItem(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: UpdateProjectItemInput,
   signal: AbortSignal,
 ) {
@@ -500,67 +545,84 @@ export function updateInternalProjectItem(
 
 export function setInternalProjectMember(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: SetProjectMemberInput,
   signal: AbortSignal,
 ) {
   const { projectId, userId, membership } = input;
-  return changeWorkspace(db, who, projectId, "canManageMembers", signal, async (tx, access) => {
-    if (userId === access.summary.owner.id) return err("project_invalid");
-    if (membership === null) {
-      const assigned = and(
-        eq(internalProjectItems.projectId, projectId),
-        eq(internalProjectItems.assigneeId, userId),
-      );
-      const [exhausted] = await tx
-        .select({ id: internalProjectItems.id })
-        .from(internalProjectItems)
-        .where(and(assigned, eq(internalProjectItems.revision, Number.MAX_SAFE_INTEGER)))
-        .limit(1);
-      if (exhausted !== undefined) return err("project_conflict");
-      await tx
-        .update(internalProjectItems)
-        .set({ assigneeId: null, revision: sql`${internalProjectItems.revision} + 1` })
-        .where(assigned);
-      await tx
-        .delete(agencyProjectMembers)
-        .where(
-          and(
-            eq(agencyProjectMembers.projectId, projectId),
-            eq(agencyProjectMembers.userId, userId),
-          ),
+  return changeWorkspace(
+    db,
+    who,
+    projectId,
+    "canManageMembers",
+    signal,
+    async (tx, access, actor) => {
+      if (userId === access.summary.owner.id) return err("project_invalid");
+      if (membership?.role !== "editor" && membership?.canAssign === true)
+        return err("project_invalid");
+      if (membership !== null) {
+        const [staff] = await tx.select({ id: users.id }).from(users).where(eligibleStaff(userId));
+        if (staff === undefined) return err("project_invalid");
+      }
+      if (membership === null || membership.role === "guest") {
+        const assigned = and(
+          eq(internalProjectItems.projectId, projectId),
+          eq(internalProjectItems.assigneeId, userId),
         );
-      await tx
-        .update(internalProjectSettings)
-        .set({
-          leadUserId: sql`CASE WHEN ${internalProjectSettings.leadUserId} = ${userId} THEN NULL ELSE ${internalProjectSettings.leadUserId} END`,
-          defaultAssigneeId: sql`CASE WHEN ${internalProjectSettings.defaultAssigneeId} = ${userId} THEN NULL ELSE ${internalProjectSettings.defaultAssigneeId} END`,
-          revision: sql`LEAST(${internalProjectSettings.revision} + 1, 9007199254740991)`,
-        })
-        .where(
-          and(
-            eq(internalProjectSettings.projectId, projectId),
-            or(
-              eq(internalProjectSettings.leadUserId, userId),
-              eq(internalProjectSettings.defaultAssigneeId, userId),
+        const [exhausted] = await tx
+          .select({ id: internalProjectItems.id })
+          .from(internalProjectItems)
+          .where(and(assigned, eq(internalProjectItems.revision, Number.MAX_SAFE_INTEGER)))
+          .limit(1);
+        if (exhausted !== undefined) return err("project_conflict");
+        await tx
+          .update(internalProjectItems)
+          .set({ assigneeId: null, revision: sql`${internalProjectItems.revision} + 1` })
+          .where(assigned);
+        await tx
+          .update(internalProjectSettings)
+          .set({
+            leadUserId: sql`CASE WHEN ${internalProjectSettings.leadUserId} = ${userId} THEN NULL ELSE ${internalProjectSettings.leadUserId} END`,
+            defaultAssigneeId: sql`CASE WHEN ${internalProjectSettings.defaultAssigneeId} = ${userId} THEN NULL ELSE ${internalProjectSettings.defaultAssigneeId} END`,
+            revision: sql`LEAST(${internalProjectSettings.revision} + 1, 9007199254740991)`,
+          })
+          .where(
+            and(
+              eq(internalProjectSettings.projectId, projectId),
+              or(
+                eq(internalProjectSettings.leadUserId, userId),
+                eq(internalProjectSettings.defaultAssigneeId, userId),
+              ),
             ),
-          ),
-        );
-    } else {
-      const [staff] = await tx.select({ id: users.id }).from(users).where(eligibleStaff(userId));
-      if (staff === undefined) return err("project_invalid");
-      const grants = {
-        projectEdit: membership.role === "editor",
-        assignmentCoordinate: membership.canAssign,
-      };
-      await tx
-        .insert(agencyProjectMembers)
-        .values({ projectId, userId, ...grants })
-        .onConflictDoUpdate({
-          target: [agencyProjectMembers.projectId, agencyProjectMembers.userId],
-          set: grants,
-        });
-    }
-    return ok(undefined);
-  });
+          );
+      }
+      if (membership === null) {
+        const [removed] = await tx
+          .delete(agencyProjectMembers)
+          .where(
+            and(
+              eq(agencyProjectMembers.projectId, projectId),
+              eq(agencyProjectMembers.userId, userId),
+            ),
+          )
+          .returning({ projectGuest: agencyProjectMembers.projectGuest });
+        if (removed?.projectGuest === true)
+          await revokeInvitationWithoutGuestSeat(tx, actor, userId, signal);
+      } else {
+        const grants = {
+          projectEdit: membership.role === "editor",
+          assignmentCoordinate: membership.role === "editor" && membership.canAssign,
+          projectGuest: membership.role === "guest",
+        };
+        await tx
+          .insert(agencyProjectMembers)
+          .values({ projectId, userId, ...grants })
+          .onConflictDoUpdate({
+            target: [agencyProjectMembers.projectId, agencyProjectMembers.userId],
+            set: grants,
+          });
+      }
+      return ok(undefined);
+    },
+  );
 }

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { type RequestCsrfFacts, validateRequestCsrf } from "@/server/trpc/request-csrf";
-import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { protectedProcedure, protectedProjectProcedure, router } from "@/server/trpc/trpc";
 import { projectIdInput } from "../input";
 import {
   archiveProjectItemInput,
@@ -31,12 +31,12 @@ export const projectAutomationRouter = router({
     .query(({ ctx, input }) =>
       readProjectAutomation(ctx.db, ctx.session, input.projectId, signal()),
     ),
-  archive: protectedProcedure
+  archive: protectedProjectProcedure
     .input(projectAutomationKey)
     .query(({ ctx, input }) =>
       readArchivedProjectItems(ctx.db, ctx.session, input.projectId, signal()),
     ),
-  archiveLookup: protectedProcedure
+  archiveLookup: protectedProjectProcedure
     .input(projectAutomationKey.extend({ itemId: projectIdInput }))
     .query(({ ctx, input }) =>
       isProjectItemArchived(ctx.db, ctx.session, input.projectId, input.itemId, signal()),

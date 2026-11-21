@@ -28,6 +28,7 @@ export function ProjectWorkspaceNav({
   active,
   canManageSettings = false,
   intakeEnabled = false,
+  restrictedGuest = false,
 }: {
   projectId: string;
   active:
@@ -41,6 +42,7 @@ export function ProjectWorkspaceNav({
     | "archive";
   canManageSettings?: boolean;
   intakeEnabled?: boolean;
+  restrictedGuest?: boolean;
 }) {
   const { locale, numberingSystem } = useLocalePreferences();
   const labels = projectsTranslator(locale, numberingSystem);
@@ -69,6 +71,10 @@ export function ProjectWorkspaceNav({
   return (
     <nav aria-label={labels("workspace.views")} className="mb-4 flex flex-wrap gap-x-3 border-b">
       {navigationItems
+        .filter(
+          ({ key }) =>
+            !restrictedGuest || key === "work_items" || key === "intake" || key === "archive",
+        )
         .filter(({ key }) => key !== "settings" || active === "settings" || canManageSettings)
         .filter(({ key }) => key !== "intake" || active === "intake" || intakeEnabled)
         .map(({ key, name, href, icon: Icon }) => (

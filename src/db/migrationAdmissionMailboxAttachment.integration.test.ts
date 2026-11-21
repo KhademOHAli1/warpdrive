@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { seedPipelineWithStages } from "@/db/testing/factories";
 import type { TestDb } from "@/test/db";
 import { applyMigrations } from "./migrate";
 import {
@@ -9,6 +9,7 @@ import {
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 
 const legacyTypes = ["deal", "person", "organization", "activity", "email_message"] as const;
@@ -143,7 +144,7 @@ async function seedReceipt(h: TestDb, ownerId: string, accountId: string, thread
 }
 
 async function seedPopulatedPrefix(h: TestDb) {
-  const owner = await seedUser(h.db);
+  const owner = await seedHistoricalUser(h);
   const mail = await seedMail(h, owner.id);
   const parents = await seedCrmParents(h, owner.id, mail.messageId);
   const attachments: Awaited<ReturnType<typeof insertFile>>[] = [];

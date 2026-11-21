@@ -7,6 +7,7 @@ import {
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "@/db/migrationAdmission.test-helpers";
 import { organizations, permissionSets, sessions, users } from "@/db/schema";
 import { createNativeProjectRepository } from "@/features/agency-projects/nativeProject";
@@ -465,7 +466,16 @@ test("upgrades populated work items, preserving identity, unknown authorship and
   try {
     await installPrefix(h, 122);
     target = await migrationFolder(123);
-    const owner = await staff("Legacy project owner", {}, h);
+    const { id: userId } = await seedHistoricalUser(h, { name: "Legacy project owner" });
+    const owner = { userId, sessionId: randomUUID() };
+    await h.db.insert(sessions).values({
+      id: owner.sessionId,
+      userId,
+      tokenHash: randomUUID(),
+      expiresAt: new Date(Date.now() + 600_000),
+      authMethod: "legacy",
+      assurance: "legacy",
+    });
     const projectId = randomUUID();
     const itemId = randomUUID();
     const clientProjectId = randomUUID();
@@ -533,7 +543,7 @@ test("upgrades populated work items, preserving identity, unknown authorship and
     });
     expect(await ledger(h)).toEqual(nextLedger);
 
-    workflowUpgrade = await migrationFolder(126);
+    workflowUpgrade = await migrationFolder();
     expect(
       await applyMigrations(h.db, AbortSignal.timeout(30_000), workflowUpgrade.folder),
     ).toEqual({

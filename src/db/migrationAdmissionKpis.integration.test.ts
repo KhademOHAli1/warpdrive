@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { expect, it } from "vitest";
 import * as schema from "@/db/schema";
-import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { seedPipelineWithStages } from "@/db/testing/factories";
 import { assignKpiGoal, saveKpiDefinition } from "@/features/goals/kpiRepo";
 import { toActor } from "@/features/stats/statsTestHelpers";
 import type { TestDb } from "@/test/db";
@@ -11,6 +11,7 @@ import {
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 
 const retainedTables = [
@@ -110,7 +111,7 @@ it("upgrades populated 0106 to 0107, preserving CRM, Goals and Company Work data
   try {
     await installPrefix(h, prefix);
     target = await migrationFolder(prefix + 1);
-    const owner = await seedUser(h.db, { isAdmin: true });
+    const owner = await seedHistoricalUser(h, { isAdmin: true });
     const { pipeline, stages } = await seedPipelineWithStages(h.db, ["Retained stage"]);
     const stage = stages[0];
     if (!stage) throw new Error("Migration stage fixture missing");

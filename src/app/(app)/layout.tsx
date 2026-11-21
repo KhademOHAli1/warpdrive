@@ -17,6 +17,8 @@ import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/privacy/requestPath";
+import { ProjectGuestShell } from "@/features/projects/guests/ProjectGuestShell";
+import { PROJECT_GUEST_PATH_HEADER } from "@/features/projects/guests/requestPath";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
 import { GlobalShortcuts } from "@/features/shortcuts/GlobalShortcuts";
@@ -27,6 +29,14 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   const ctx = await createContext();
   if (ctx.actor === null) {
     const requestHeaders = await headers();
+    if (ctx.projectGuest != null) {
+      if (requestHeaders.get(PROJECT_GUEST_PATH_HEADER) !== "1") redirect("/projects/internal");
+      return (
+        <ProjectGuestShell guest={ctx.projectGuest} hasCsrf={(await cookies()).has(CSRF_COOKIE)}>
+          {children}
+        </ProjectGuestShell>
+      );
+    }
     const target = ctx.pendingAuthentication ? "/auth/continue" : "/login";
     const returnPath = privacyCaseReturnPath(requestHeaders.get(PRIVACY_CASE_PATH_HEADER));
     redirect(returnPath === null ? target : `${target}?returnTo=${encodeURIComponent(returnPath)}`);

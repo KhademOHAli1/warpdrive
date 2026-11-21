@@ -158,7 +158,7 @@ async function lockVerification(
     db,
     new Headers(ctx.headers),
     AbortSignal.timeout(5000),
-    { allowPending: true },
+    { allowProjectsGuest: true, allowPending: true },
   );
   if (current !== null && current.user.id !== candidate.userId)
     throw new APIError("BAD_REQUEST", {

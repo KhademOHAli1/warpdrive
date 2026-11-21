@@ -10,6 +10,23 @@ import { parseMigrationJournal } from "./migrationAdmission";
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 export const canonicalFolder = path.join(ROOT, "drizzle");
 
+// Older ledger prefixes must seed only columns that existed at the tested revision.
+export async function seedHistoricalUser(
+  { pool }: TestDb,
+  { name = "Test User", isAdmin = false }: { name?: string; isAdmin?: boolean } = {},
+) {
+  const id = randomUUID();
+  const email = `${id}@example.test`;
+  await pool.query("INSERT INTO users(id,email,name,google_sub,is_admin) VALUES($1,$2,$3,$4,$5)", [
+    id,
+    email,
+    name,
+    `sub-${id}`,
+    isAdmin,
+  ]);
+  return { id, email, name, isAdmin, isActive: true };
+}
+
 export async function freshMigrationDb(): Promise<TestDb> {
   const h = await makeTestDb();
   await h.db.execute(sql`DROP SCHEMA public CASCADE`);
@@ -99,3 +116,5 @@ export async function ledgerExists(h: TestDb) {
   return (await h.db.execute(sql`SELECT to_regclass('drizzle.__drizzle_migrations') AS value`))
     .rows;
 }
+
+import { randomUUID } from "node:crypto";

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { type RequestCsrfFacts, validateRequestCsrf } from "@/server/trpc/request-csrf";
-import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { protectedProjectProcedure, router } from "@/server/trpc/trpc";
 import {
   createProjectIntakeInput,
   findIntakeWorkItemsInput,
@@ -31,32 +31,36 @@ function requireIntakeWrite(
 }
 
 export const projectIntakeRouter = router({
-  workspace: protectedProcedure
+  workspace: protectedProjectProcedure
     .input(projectIntakeWorkspaceInput)
     .query(({ ctx, input }) => readProjectIntake(ctx.db, ctx.session, input, deadline())),
-  workItems: protectedProcedure
+  workItems: protectedProjectProcedure
     .input(findIntakeWorkItemsInput)
     .query(({ ctx, input }) =>
       findIntakeWorkItems(ctx.db, ctx.session, input.projectId, input.search, deadline()),
     ),
-  create: protectedProcedure.input(createProjectIntakeInput).mutation(({ ctx, input }) => {
+  create: protectedProjectProcedure.input(createProjectIntakeInput).mutation(({ ctx, input }) => {
     requireIntakeWrite(ctx, input);
     return createProjectIntake(ctx.db, ctx.session, input, deadline());
   }),
-  update: protectedProcedure.input(updateProjectIntakeInput).mutation(({ ctx, input }) => {
+  update: protectedProjectProcedure.input(updateProjectIntakeInput).mutation(({ ctx, input }) => {
     requireIntakeWrite(ctx, input);
     return updateProjectIntake(ctx.db, ctx.session, input, deadline());
   }),
-  withdraw: protectedProcedure.input(withdrawProjectIntakeInput).mutation(({ ctx, input }) => {
-    requireIntakeWrite(ctx, input);
-    return withdrawProjectIntake(ctx.db, ctx.session, input, deadline());
-  }),
-  review: protectedProcedure.input(reviewProjectIntakeInput).mutation(({ ctx, input }) => {
+  withdraw: protectedProjectProcedure
+    .input(withdrawProjectIntakeInput)
+    .mutation(({ ctx, input }) => {
+      requireIntakeWrite(ctx, input);
+      return withdrawProjectIntake(ctx.db, ctx.session, input, deadline());
+    }),
+  review: protectedProjectProcedure.input(reviewProjectIntakeInput).mutation(({ ctx, input }) => {
     requireIntakeWrite(ctx, input);
     return reviewProjectIntake(ctx.db, ctx.session, input, deadline());
   }),
-  setEnabled: protectedProcedure.input(setProjectIntakeEnabledInput).mutation(({ ctx, input }) => {
-    requireIntakeWrite(ctx, input);
-    return setProjectIntakeEnabled(ctx.db, ctx.session, input, deadline());
-  }),
+  setEnabled: protectedProjectProcedure
+    .input(setProjectIntakeEnabledInput)
+    .mutation(({ ctx, input }) => {
+      requireIntakeWrite(ctx, input);
+      return setProjectIntakeEnabled(ctx.db, ctx.session, input, deadline());
+    }),
 });

@@ -13,15 +13,16 @@ import {
   freshMigrationDb,
   installPrefix,
   ledger,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 import { readCanonicalMigrations } from "./migrationAdmissionSource";
-import { seedPipelineWithStages, seedUser } from "./testing/factories";
+import { seedPipelineWithStages } from "./testing/factories";
 
 async function agencySnapshot(h: TestDb) {
   const result = await h.pool.query<{ value: unknown }>(`
     SELECT jsonb_build_object(
       'project', (SELECT to_jsonb(p) - 'kind' FROM agency_projects p),
-      'member', (SELECT to_jsonb(m) FROM agency_project_members m),
+      'member', (SELECT to_jsonb(m) - 'project_guest' FROM agency_project_members m),
       'setting', (SELECT to_jsonb(s) FROM agency_project_settings s),
       'history', (SELECT jsonb_agg(to_jsonb(h) ORDER BY revision) FROM agency_project_history h),
       'requests', (SELECT jsonb_agg(to_jsonb(r) ORDER BY result_revision) FROM agency_project_requests r),
@@ -90,9 +91,9 @@ async function seedLegacyReceipt(
 }
 
 async function seedClientProject(h: TestDb, signal: AbortSignal) {
-  const creator = await seedUser(h.db, { isAdmin: true });
-  const owner = await seedUser(h.db);
-  const outsider = await seedUser(h.db, { isAdmin: true });
+  const creator = await seedHistoricalUser(h, { isAdmin: true });
+  const owner = await seedHistoricalUser(h);
+  const outsider = await seedHistoricalUser(h, { isAdmin: true });
   const who = await legacySession(h, creator.id);
   const outside = await legacySession(h, outsider.id);
   const {
@@ -158,6 +159,13 @@ test("upgrades populated 0119 while preserving Agency identity, access and creat
     expect((await h.pool.query("SELECT id, kind FROM agency_projects")).rows).toEqual([
       { id: projectId, kind: "client" },
     ]);
+    expect(
+      (
+        await h.pool.query(
+          "SELECT count(*)::int AS count FROM agency_project_members WHERE project_guest",
+        )
+      ).rows,
+    ).toEqual([{ count: 0 }]);
     const upgradedLedger = await ledger(h);
     const canonical = await readCanonicalMigrations(canonicalFolder, signal);
     assert(canonical.ok);

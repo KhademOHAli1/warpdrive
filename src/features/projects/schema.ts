@@ -7,6 +7,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   pgSequence,
   pgTable,
   primaryKey,
@@ -17,7 +18,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { users } from "@/db/schema/identity";
 import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects";
-import type { ProjectPriority, ProjectStateCategory, ProjectStatus } from "./contracts";
+import type { ProjectCover, ProjectLogo } from "./brand/contracts";
+import type { ProjectPriority, ProjectStateCategory, ProjectStatus, ProjectVisibility } from "./contracts";
 
 export const internalProjectIdentifierSequence = pgSequence("internal_project_identifier_seq", {
   maxValue: 999_999_999,
@@ -29,9 +31,14 @@ export const internalProjectSettings = pgTable(
     projectId: uuid("project_id").primaryKey(),
     identifier: text("identifier").notNull(),
     description: text("description").notNull().default(""),
+    timeZone: text("time_zone").notNull().default("UTC"),
+    logo: jsonb("logo").$type<ProjectLogo>(),
+    cover: jsonb("cover").$type<ProjectCover>(),
     creationTitle: text("creation_title"),
     leadUserId: uuid("lead_user_id"),
     intakeEnabled: boolean("intake_enabled").notNull().default(false),
+    visibility: text("visibility").$type<ProjectVisibility>().notNull().default("private"),
+    guestViewAllFeatures: boolean("guest_view_all_features").notNull().default(false),
     defaultAssigneeId: uuid("default_assignee_id"),
     lastItemSequence: bigint("last_item_sequence", { mode: "number" }).notNull().default(0),
     revision: bigint("revision", { mode: "number" }).notNull().default(0),
@@ -53,6 +60,7 @@ export const internalProjectSettings = pgTable(
       foreignColumns: [users.id],
     }).onDelete("set null"),
     unique("internal_project_settings_identifier_key").on(table.identifier),
+    check("internal_project_settings_visibility_check", sql`${table.visibility} IN ('private', 'workspace')`),
     check(
       "internal_project_settings_identifier_check",
       sql`${table.identifier} ~ '^[A-Z0-9]{1,10}$'`,
@@ -64,6 +72,10 @@ export const internalProjectSettings = pgTable(
     check(
       "internal_project_settings_description_check",
       sql`char_length(${table.description}) <= 10000`,
+    ),
+    check(
+      "internal_project_settings_time_zone_check",
+      sql`${table.timeZone} ~ '^[A-Za-z][A-Za-z0-9_+/-]{0,99}$'`,
     ),
     check(
       "internal_project_settings_creation_title_check",

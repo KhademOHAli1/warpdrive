@@ -1,8 +1,9 @@
 import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
+import type { InternalProjectPrincipal } from "../access";
 import { internalProjectItems as items, internalProjectStates as states } from "../schema";
+import { projectToday } from "../settings/projectTime";
 import { withPlanningProject } from "./access";
 import { planningCyclePhase, type RolloverPlanningCycle } from "./contracts";
 import {
@@ -22,12 +23,12 @@ function sourceLinks(projectId: string, sourceCycleId: string) {
 
 export function rolloverPlanningCycle(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   input: RolloverPlanningCycle,
   signal: AbortSignal,
 ) {
   const { projectId, sourceCycleId, targetCycleId } = input;
-  return withPlanningProject(db, session, projectId, "write", signal, async (tx) => {
+  return withPlanningProject(db, session, projectId, "write", signal, async (tx, { summary }) => {
     if (sourceCycleId === targetCycleId) return err("project_invalid");
     const cycles = await tx
       .select()
@@ -43,7 +44,7 @@ export function rolloverPlanningCycle(
     const source = cycles.find(({ id }) => id === sourceCycleId);
     const target = cycles.find(({ id }) => id === targetCycleId);
     if (source === undefined || target === undefined) return err("project_unavailable");
-    const today = new Date().toISOString().slice(0, 10);
+    const today = projectToday(summary.timeZone);
     if (
       planningCyclePhase(source, today) !== "completed" ||
       planningCyclePhase(target, today) === "completed"

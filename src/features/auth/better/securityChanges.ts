@@ -158,7 +158,7 @@ async function snapshot(
     db,
     new Headers(ctx.headers),
     AbortSignal.timeout(5000),
-    { allowPending: true },
+    { allowProjectsGuest: true, allowPending: true },
   );
   return current === null
     ? null

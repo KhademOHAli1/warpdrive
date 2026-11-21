@@ -18,6 +18,7 @@ export const createContext = cache(async () => {
   const bootstrap = await getBootstrap();
   return {
     actor: bootstrap.actor,
+    projectGuest: bootstrap.projectGuest,
     session: bootstrap.session,
     localeFallback: bootstrap.localeFallback,
     pendingAuthentication: bootstrap.pendingAuthentication,

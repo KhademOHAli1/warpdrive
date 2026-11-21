@@ -10,6 +10,7 @@ import { Button, buttonVariants } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
+import { instantCivilDate } from "@/lib/zonedDateTime";
 import type { ProjectSummary } from "../../contracts";
 import { ProjectWorkspaceNav } from "../../ui/ProjectWorkspaceNav";
 import { type ProjectsTranslator, projectsTranslator } from "../../ui/projectMessages";
@@ -41,6 +42,7 @@ function IntakeRequestDetails({
   canReview,
   onEdit,
   onDecision,
+  timeZone,
 }: {
   request: ProjectIntakeRequest;
   projectPath: string;
@@ -49,8 +51,9 @@ function IntakeRequestDetails({
   canReview: boolean;
   onEdit: () => void;
   onDecision: (action: IntakeDecision) => void;
+  timeZone?: string;
 }) {
-  const { dateTime } = useProjectFormatters();
+  const { dateOnly, dateTime } = useProjectFormatters();
   const unresolved = request.status === "pending" || request.status === "snoozed";
   return (
     <article className="min-w-0 space-y-5 rounded-lg border bg-card p-4 sm:p-5">
@@ -77,7 +80,9 @@ function IntakeRequestDetails({
       {request.snoozedUntil !== null && (
         <p className="text-sm text-muted-foreground">
           {labels.snoozeUntil}{" "}
-          <time dateTime={request.snoozedUntil}>{dateTime(request.snoozedUntil)}</time>
+          <time dateTime={request.snoozedUntil}>
+            {dateOnly(instantCivilDate(request.snoozedUntil, timeZone))}
+          </time>
         </p>
       )}
       {request.workItemId !== null && (
@@ -194,12 +199,14 @@ export function ProjectIntakePage({
   queue,
   filter,
   page,
+  restrictedGuest,
 }: {
   actorId: string;
   project: ProjectSummary;
   queue: ProjectIntakeWorkspace;
   filter: ProjectIntakeFilter;
   page: number;
+  restrictedGuest?: boolean;
 }) {
   const router = useRouter();
   const { locale, numberingSystem } = useLocalePreferences();
@@ -239,6 +246,7 @@ export function ProjectIntakePage({
         active="intake"
         intakeEnabled={queue.enabled}
         canManageSettings={queue.canManageSettings}
+        restrictedGuest={restrictedGuest}
       />
       {queue.enabled ? (
         <>
@@ -268,6 +276,7 @@ export function ProjectIntakePage({
                 canReview={queue.canReview}
                 onEdit={() => setEditor("edit")}
                 onDecision={setDecision}
+                timeZone={project.timeZone}
               />
             )}
           </div>

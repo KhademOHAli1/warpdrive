@@ -12,6 +12,7 @@ export interface HydratedActor extends PermSetUser {
   name: string;
   email: string;
   avatarUrl: string | null;
+  projectsGuestOnly?: true;
 }
 
 // Build a HydratedActor from a userId with no request/session context. Used by
@@ -22,12 +23,44 @@ export async function hydrateActor(
   userId: string,
   signal: AbortSignal,
 ): Promise<HydratedActor | null> {
+  return hydrateScopedActor(db, userId, signal, false);
+}
+
+export async function hydrateProjectActor(
+  db: DbOrTx,
+  userId: string,
+  signal: AbortSignal,
+): Promise<HydratedActor | null> {
+  return hydrateScopedActor(db, userId, signal, true);
+}
+
+async function hydrateScopedActor(
+  db: DbOrTx,
+  userId: string,
+  signal: AbortSignal,
+  permitProjectGuest: boolean,
+): Promise<HydratedActor | null> {
   signal.throwIfAborted();
   const [u] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   signal.throwIfAborted();
   if (u === undefined || !u.isActive) return null;
 
   const flags = new Set<PermissionFlagKey>();
+  if (u.projectsGuestOnly) {
+    if (!permitProjectGuest || u.invitedAt !== null) return null;
+    return {
+      id: u.id,
+      isActive: true,
+      type: "regular",
+      projectsGuestOnly: true,
+      name: u.name,
+      email: u.email,
+      avatarUrl: null,
+      flags,
+      groupIds: new Set(),
+      managedUserIds: new Set(),
+    };
+  }
   if (!u.isAdmin && u.permissionSetId !== null) {
     const [ps] = await db
       .select({ flags: permissionSets.flags })

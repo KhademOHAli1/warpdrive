@@ -45,12 +45,38 @@ work structure, and automations add project-scoped records and no provider
 connection. Project archiving pauses the rules and leaves the records
 available to authorized readers.
 
-Plane’s separately authenticated published-board Intake and integrator API
-are a different surface from internal Project Intake. Project branding,
-project time zones, public or guest access, and feature configuration
-outside the implemented Projects workflows still differ from Plane. Saved
-view controls apply to the work-item fields available in Warpdrive, including
-its existing project membership and assignment model.
+Saved view controls apply to the work-item fields available in Warpdrive,
+including its existing project membership and assignment model.
+
+## Published boards, guest access, branding and the integrator API
+
+| Plane Community source | Warpdrive behavior |
+| --- | --- |
+| `apps/web/components/project/publish-project`, `apps/space/app/issues/[anchor]`, and `apps/api/plane/space/views/intake.py` | Project owners publish or revoke an opaque link. Each publication chooses List and Board layouts and can explicitly expose work-item keys, titles, states, or branding. Authenticated visitors can submit, read, edit, snooze-track, and withdraw their own published requests. Review remains in the native Intake queue. |
+| `apps/api/plane/app/views/project/member.py`, `apps/api/plane/app/views/workspace/invite.py`, and `guest_view_all_features` in `apps/api/plane/db/models/project.py` | Workspace-visible projects are discoverable by signed-in staff, with explicit join. Owners can grant an existing user the project guest role or invite a verified Projects-only account. Restricted guests see their own items and Intake. Owners can expand guest reads. Projects-only accounts use a scoped shell and cannot use staff or integrator credentials. |
+| `apps/web/components/project/form.tsx`, `apps/web/components/project/card.tsx`, and `apps/api/plane/db/models/project.py` | Creation and General settings support emoji or colored icon, preset or uploaded cover, and an IANA time zone. Warpdrive renders branding in the directory, work workspace, and optionally on the public board. Custom cover bytes are normalized and served through current access checks. |
+| `apps/api/plane/app/views/cycle/base.py`, `apps/api/plane/api/serializers/cycle.py`, and `apps/api/plane/db/models/project.py` | The saved zone determines cycle boundaries, valid cycle assignments, ongoing-plan protection, and Calendar and Gantt day selection. Snoozes wake at the chosen day's local midnight. Changing the zone retimes pending snoozes to the same civil date. Existing projects start in UTC. |
+| `apps/api/plane/api/urls/__init__.py` and `apps/api/plane/api/views` | Personal keys use Plane’s `X-API-Key` convention. The native API understands projects, work items and legacy `issues` paths, workflow states, labels, members, cycles, modules, activity, and internal Intake. Reads and changes recheck the same project grants as Web. |
+
+Use Settings → Projects API keys to issue and revoke credentials. The API
+base on a Warpdrive installation is `/api/v1/workspaces/warpdrive`. Keys
+can be read-only or read/write. Warpdrive has one installation workspace,
+one work-item assignee, and native archiving semantics. Integration clients
+see native Intake request IDs and separate linked work-item IDs.
+
+The public board uses Warpdrive's verified invitation flow for external
+accounts. Plane Spaces also supports instance-configured direct signup
+and public comments, reactions and votes. Those engagement features are
+outside this published Intake path. Plane Integrator routes for work-item
+links, comments, attachments, and relations, workspace-wide invitation
+administration and asset services require backing features outside this
+Projects API implementation. Plane’s pinned estimate-management endpoint
+code is not mounted in its v1 API. Warpdrive work-item estimate references
+use the existing project catalog.
+
+Migration `0126` adds dormant-by-default publication and guest controls,
+normalized cover storage, and hashed API key custody. It preserves
+the existing internal and client project data through the same journal.
 
 Pages collaboration uses authenticated HTTP exchanges. Peers disappear from
 the active list after 15 seconds. Expired rows are removed on later

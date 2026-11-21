@@ -3,9 +3,19 @@
 import Link from "next/link";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { guestLabels } from "../guests/messages";
 import { projectSettingsMessages } from "./messages";
 
-const sections = ["general", "states", "labels", "estimates", "intake", "automations"] as const;
+const sections = [
+  "general",
+  "states",
+  "labels",
+  "estimates",
+  "intake",
+  "automations",
+  "publication",
+  "access",
+] as const;
 type SettingsSection = (typeof sections)[number];
 
 export function ProjectSettingsTabs({
@@ -30,7 +40,7 @@ export function ProjectSettingsTabs({
             section === active ? "bg-accent font-medium" : "text-muted-foreground hover:bg-muted",
           )}
         >
-          {labels[section]}
+          {section === "access" ? guestLabels[locale].access : labels[section]}
         </Link>
       ))}
     </nav>

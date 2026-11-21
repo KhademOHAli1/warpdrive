@@ -8,6 +8,14 @@ import type { ProjectResult } from "./contracts";
 
 export async function requireInternalProjects() {
   const context = await createContext();
+  if (context.projectGuest != null)
+    return {
+      actorId: context.projectGuest.id,
+      actorName: context.projectGuest.name,
+      enabled: true,
+      canEnable: false,
+      canCreate: false,
+    };
   if (context.session === null) redirect("/login");
   const landing = await projectLanding();
   if (landing === null) redirect("/login");

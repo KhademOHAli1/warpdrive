@@ -9,7 +9,9 @@ function uniq(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function toActor(user: typeof schema.users.$inferSelect): PermSetUser {
+export function toActor(
+  user: Pick<typeof schema.users.$inferSelect, "id" | "isAdmin" | "isActive">,
+): PermSetUser {
   return {
     id: user.id,
     type: user.isAdmin ? "admin" : "regular",

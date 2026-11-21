@@ -12,11 +12,13 @@ import type { Db } from "@/db/client";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
+import { readInternalProjectSettings } from "../access";
 import {
   internalProjectPlanningAssignments as assignments,
   internalProjectPlanningGroups as groups,
 } from "../planning/schema";
 import { internalProjectItems as items, internalProjectStates as states } from "../schema";
+import { projectToday } from "../settings/projectTime";
 import {
   internalProjectAutomationEvents as events,
   internalProjectAutomations as rules,
@@ -47,7 +49,7 @@ function boundToOngoingPlan(db: Db, day: string) {
     );
 }
 
-async function applyAction(db: Db, projectId: string, action: Action, now: Date) {
+async function applyAction(db: Db, projectId: string, action: Action, now: Date, today: string) {
   if (action.months === 0) return 0;
   const boundary = new Date(now.getTime() - action.months * inactiveMonthMs);
   const candidates = await db
@@ -66,7 +68,7 @@ async function applyAction(db: Db, projectId: string, action: Action, now: Date)
             ? ["completed", "cancelled"]
             : ["backlog", "unstarted", "started"],
         ),
-        notExists(boundToOngoingPlan(db, now.toISOString().slice(0, 10))),
+        notExists(boundToOngoingPlan(db, today)),
       ),
     )
     .orderBy(asc(items.updatedAt), asc(items.id))
@@ -105,12 +107,13 @@ async function drainAction(
   projectId: string,
   action: Action,
   now: Date,
+  today: string,
   signal: AbortSignal,
 ) {
   let count = 0;
   for (;;) {
     signal.throwIfAborted();
-    const changed = await applyAction(db, projectId, action, now);
+    const changed = await applyAction(db, projectId, action, now, today);
     count += changed;
     if (changed < batchSize) return count;
   }
@@ -136,11 +139,13 @@ async function applyProjectAutomations(db: Db, projectId: string, now: Date, sig
       .for("update");
     if (project === undefined) return { archived: 0, closed: 0 };
     const settings = await readProjectAutomationSettings(tx, projectId);
+    const today = projectToday((await readInternalProjectSettings(tx, projectId)).timeZone, now);
     const archived = await drainAction(
       tx,
       projectId,
       { kind: "archived", months: settings.archiveAfterMonths },
       now,
+      today,
       signal,
     );
     if (settings.closeStateId === null) return { archived, closed: 0 };
@@ -160,6 +165,7 @@ async function applyProjectAutomations(db: Db, projectId: string, now: Date, sig
       projectId,
       { kind: "closed", months: settings.closeAfterMonths, stateId: target.id },
       now,
+      today,
       signal,
     );
     return { archived, closed };

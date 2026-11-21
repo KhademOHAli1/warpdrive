@@ -24,6 +24,20 @@ describe("scrubProperties", () => {
       "failed for [email]",
     );
   });
+
+  it("removes publication anchors and encoded sign-in destinations from analytics", () => {
+    const publication = "/published/project/10bab32c-d56b-41ef-87bc-c39ea219769e";
+    const result = scrubProperties({
+      $pathname: publication,
+      $current_url: `https://demo.example/login?returnTo=${encodeURIComponent(publication)}`,
+      $set_once: { $initial_referrer: `https://demo.example${publication}` },
+    });
+    expect(result).toEqual({
+      $pathname: "[redacted]",
+      $current_url: "[redacted]",
+      $set_once: { $initial_referrer: "[redacted]" },
+    });
+  });
 });
 
 describe("sanitizeErrorEmails", () => {

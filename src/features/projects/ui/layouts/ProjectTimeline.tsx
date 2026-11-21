@@ -195,7 +195,7 @@ export function ProjectTimeline({
   const options = useLocalePreferences();
   const rtl = useDirection() === "rtl";
   const now = useLocalNow();
-  const today = now === null ? null : localDayIso(now, options.timeZone);
+  const today = now === null ? null : localDayIso(now, workspace.project.timeZone);
   const [selected, setSelected] = useState<string | null>(null);
   const [zoom, setZoom] = useState<Zoom>("month");
   const date = selected ?? today;

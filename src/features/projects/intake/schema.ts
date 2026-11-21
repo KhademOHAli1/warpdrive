@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   check,
   foreignKey,
   index,
@@ -27,6 +28,7 @@ export const internalProjectIntakeRequests = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
     createIntentId: uuid("create_intent_id").notNull(),
+    fromPublication: boolean("from_publication").notNull().default(false),
     title: text("title").notNull(),
     description: text("description").notNull().default(""),
     priority: text("priority").$type<ProjectPriority>().notNull().default("none"),

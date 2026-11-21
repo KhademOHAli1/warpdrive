@@ -30,14 +30,16 @@ function withItemSubscription(
   operation: (tx: Db, userId: string) => Promise<ProjectResult<{ subscribed: boolean }>>,
 ) {
   return withInternalProjects(db, session, signal, async (tx, actor) => {
-    const access = await lockInternalProject(tx, actor, projectId, "read");
+    const access = await lockInternalProject(tx, actor, projectId, "read", "work-items");
     if (!access.ok) return access;
     if (mutating && access.value.summary.archived) return err("project_forbidden");
     const item = internalProjectItems;
     const [current] = await tx
       .select({ id: item.id })
       .from(item)
-      .where(and(eq(item.id, itemId), eq(item.projectId, projectId), isNull(item.archivedAt)));
+      .where(and(eq(item.id, itemId), eq(item.projectId, projectId), isNull(item.archivedAt),
+        access.value.workItemCreatorId === null ? undefined : eq(item.createdBy, access.value.workItemCreatorId),
+      ));
     if (current === undefined) return err("project_unavailable");
     return operation(tx, actor.id);
   });

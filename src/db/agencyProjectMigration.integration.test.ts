@@ -9,9 +9,10 @@ import {
   freshMigrationDb,
   installPrefix,
   ledger,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 import { readCanonicalMigrations } from "./migrationAdmissionSource";
-import { seedPipelineWithStages, seedUser } from "./testing/factories";
+import { seedPipelineWithStages } from "./testing/factories";
 
 async function businessSnapshot(h: TestDb) {
   return Promise.all(
@@ -29,7 +30,7 @@ async function businessSnapshot(h: TestDb) {
       async (table) =>
         (
           await h.pool.query(
-            `SELECT to_jsonb(r) AS value FROM ${table} r ORDER BY to_jsonb(r)::text`,
+            `SELECT to_jsonb(r) - 'projects_guest_only' AS value FROM ${table} r ORDER BY (to_jsonb(r) - 'projects_guest_only')::text`,
           )
         ).rows,
     ),
@@ -61,7 +62,7 @@ test("canonical 0112 upgrades populated 0111 without changing CRM, identity, pri
     expect(
       (await h.pool.query("SELECT to_regclass('public.agency_projects') AS value")).rows,
     ).toEqual([{ value: null }]);
-    const owner = await seedUser(h.db, { isAdmin: true });
+    const owner = await seedHistoricalUser(h, { isAdmin: true });
     const { pipeline, stages } = await seedPipelineWithStages(h.db, ["Upgrade stage"]);
     const open = stages[0];
     assert(open !== undefined);
@@ -101,6 +102,9 @@ test("canonical 0112 upgrades populated 0111 without changing CRM, identity, pri
     const beforeLedger = await ledger(h);
     expect(await applyMigrations(h.db, signal)).toEqual({ ok: true, value: { applied: true } });
     expect(await businessSnapshot(h)).toEqual(before);
+    expect(
+      (await h.pool.query("SELECT projects_guest_only FROM users WHERE id=$1", [owner.id])).rows,
+    ).toEqual([{ projects_guest_only: false }]);
     expect((await ledger(h)).slice(0, beforeLedger.length)).toEqual(beforeLedger);
     const canonical = await readCanonicalMigrations(canonicalFolder, signal);
     assert(canonical.ok);

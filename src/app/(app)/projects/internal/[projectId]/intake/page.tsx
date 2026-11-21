@@ -39,6 +39,7 @@ export default async function Page({
         queue={queue.value}
         filter={input.data.filter}
         page={input.data.page}
+        restrictedGuest={workspace.value.guestAccess === "restricted"}
       />
     </div>
   );

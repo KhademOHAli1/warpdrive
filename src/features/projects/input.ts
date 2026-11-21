@@ -2,6 +2,12 @@ import { z } from "zod";
 import { projectCreateInputSchema } from "@/features/agency-projects/projectCreationInput";
 import { canonicalUuidSchema, revisionSchema } from "@/features/agency-projects/valueSchemas";
 import {
+  projectCoverImageInput,
+  projectCoverInput,
+  projectLogoInput,
+  projectTimeZoneInput,
+} from "./brand/input";
+import {
   type CreateProjectItemInput,
   type ProjectItemContent,
   projectDescriptionMaxLength,
@@ -69,10 +75,16 @@ export function matchesInitialProjectItemContent(
   );
 }
 
-export const createProjectInput = z.strictObject({
-  id: canonicalUuidSchema,
-  title: projectTitle.pipe(z.string().max(projectTitleMaxLength)),
-});
+export const createProjectInput = z
+  .strictObject({
+    id: canonicalUuidSchema,
+    title: projectTitle.pipe(z.string().max(projectTitleMaxLength)),
+    timeZone: projectTimeZoneInput.optional(),
+    logo: projectLogoInput.nullable().optional(),
+    cover: projectCoverInput.nullable().optional(),
+    coverImage: projectCoverImageInput.optional(),
+  })
+  .refine(({ cover, coverImage }) => cover === undefined || coverImage === undefined);
 
 export const createProjectItemInput = z
   .strictObject({
@@ -135,7 +147,7 @@ export const setProjectMemberInput = z.strictObject({
   projectId: canonicalUuidSchema,
   userId: canonicalUuidSchema,
   membership: z
-    .strictObject({ role: z.enum(["editor", "viewer"]), canAssign: z.boolean() })
+    .strictObject({ role: z.enum(["editor", "viewer", "guest"]), canAssign: z.boolean() })
     .refine(({ role, canAssign }) => role === "editor" || !canAssign)
     .nullable(),
 });
@@ -144,21 +156,27 @@ export const projectIdInput = canonicalUuidSchema;
 
 const settingsTarget = { projectId: projectIdInput, revision: revisionSchema };
 
-export const saveProjectSettingsInput = z.strictObject({
-  ...settingsTarget,
-  title: projectTitle.pipe(z.string().max(projectTitleMaxLength)),
-  description: plainText(projectDescriptionMaxLength),
-  identifier: z
-    .string()
-    .trim()
-    .min(1)
-    .max(projectIdentifierMaxLength)
-    .regex(/^[A-Za-z0-9]+$/u)
-    .toUpperCase()
-    .optional(),
-  leadUserId: canonicalUuidSchema.nullable().optional(),
-  defaultAssigneeId: canonicalUuidSchema.nullable().optional(),
-});
+export const saveProjectSettingsInput = z
+  .strictObject({
+    ...settingsTarget,
+    title: projectTitle.pipe(z.string().max(projectTitleMaxLength)),
+    description: plainText(projectDescriptionMaxLength),
+    identifier: z
+      .string()
+      .trim()
+      .min(1)
+      .max(projectIdentifierMaxLength)
+      .regex(/^[A-Za-z0-9]+$/u)
+      .toUpperCase()
+      .optional(),
+    leadUserId: canonicalUuidSchema.nullable().optional(),
+    defaultAssigneeId: canonicalUuidSchema.nullable().optional(),
+    timeZone: projectTimeZoneInput.optional(),
+    logo: projectLogoInput.nullable().optional(),
+    cover: projectCoverInput.nullable().optional(),
+    coverImage: projectCoverImageInput.optional(),
+  })
+  .refine(({ cover, coverImage }) => cover === undefined || coverImage === undefined);
 
 export const setProjectArchivedInput = z.strictObject({
   ...settingsTarget,

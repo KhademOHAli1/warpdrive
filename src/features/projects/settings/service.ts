@@ -2,9 +2,9 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { transitionProject } from "@/features/agency-projects/projectLifecycle";
 import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
 import {
+  type InternalProjectPrincipal,
   type InternalProjectAccess,
   isEligibleProjectMember,
   lockInternalProject,
@@ -13,6 +13,8 @@ import {
   withInternalProjects,
 } from "../access";
 import { readProjectAutomationSettings } from "../automations/service";
+import type { ProjectCover, ProjectLogo } from "../brand/contracts";
+import { clearProjectCover, normalizeProjectCover, storeProjectCover } from "../brand/cover";
 import {
   type ProjectResult,
   type ProjectSettings,
@@ -25,17 +27,21 @@ import {
   type SaveProjectStatesInput,
   type SetProjectArchivedInput,
 } from "../contracts";
+import { retimeProjectIntakeSnoozes } from "../intake/snoozeTimeZone";
 import { internalProjectItems, internalProjectSettings, internalProjectStates } from "../schema";
 import { orderProjectWorkflowStates, readProjectWorkflowStates } from "./states";
 
 type SettingsTarget = { projectId: string; revision: number };
 type SettingsChange = Partial<
-  Pick<SaveProjectSettingsInput, "description" | "identifier" | "leadUserId" | "defaultAssigneeId">
+  Pick<
+    SaveProjectSettingsInput,
+    "description" | "identifier" | "leadUserId" | "defaultAssigneeId" | "timeZone"
+  > & { logo: ProjectLogo | null; cover: ProjectCover | null }
 > | null;
 
 function changeSettings(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   { projectId, revision }: SettingsTarget,
   signal: AbortSignal,
   allowArchived: boolean,
@@ -85,26 +91,39 @@ function identifierAlreadyInUse(error: unknown): boolean {
 
 export async function saveInternalProjectSettings(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: SaveProjectSettingsInput,
   signal: AbortSignal,
 ): Promise<ProjectResult<ProjectWorkspace>> {
   try {
     return await changeSettings(db, who, input, signal, false, async (tx, access, settings) => {
       const { summary } = access;
+      const oldZone = settings.timeZone ?? "UTC";
       const {
         title,
         description,
         identifier = summary.identifier,
         leadUserId = settings.leadUserId,
         defaultAssigneeId = settings.defaultAssigneeId,
+        timeZone = oldZone,
+        logo = summary.logo ?? null,
+        coverImage,
       } = input;
+      const cover = input.cover === undefined ? (summary.cover ?? null) : input.cover;
       if (
         title === summary.title &&
         description === settings.description &&
         identifier === summary.identifier &&
         leadUserId === settings.leadUserId &&
-        defaultAssigneeId === settings.defaultAssigneeId
+        defaultAssigneeId === settings.defaultAssigneeId &&
+        timeZone === oldZone &&
+        logo?.kind === summary.logo?.kind &&
+        logo?.value === summary.logo?.value &&
+        (logo?.kind !== "icon" ||
+          (summary.logo?.kind === "icon" && logo.color === summary.logo.color)) &&
+        cover?.kind === summary.cover?.kind &&
+        cover?.value === summary.cover?.value &&
+        coverImage === undefined
       )
         return ok(null);
       if (
@@ -119,13 +138,29 @@ export async function saveInternalProjectSettings(
         !(await isEligibleProjectMember(tx, access, defaultAssigneeId))
       )
         return err("project_invalid");
+      const image = coverImage === undefined ? undefined : await normalizeProjectCover(coverImage);
+      if (image === null) return err("project_invalid");
+      const currentCover =
+        image === undefined ? cover : await storeProjectCover(tx, summary.id, image);
+      if (input.cover !== undefined && summary.cover?.kind === "image")
+        await clearProjectCover(tx, summary.id);
+      if (timeZone !== oldZone)
+        await retimeProjectIntakeSnoozes(tx, summary.id, oldZone, timeZone, new Date());
       if (title !== summary.title) {
         await tx
           .update(agencyProjects)
           .set({ title, updatedAt: new Date() })
           .where(and(eq(agencyProjects.id, summary.id), eq(agencyProjects.kind, "internal")));
       }
-      return ok({ description, identifier, leadUserId, defaultAssigneeId });
+      return ok({
+        description,
+        identifier,
+        leadUserId,
+        defaultAssigneeId,
+        timeZone,
+        logo,
+        cover: currentCover,
+      });
     });
   } catch (error) {
     if (!identifierAlreadyInUse(error)) throw error;
@@ -135,7 +170,7 @@ export async function saveInternalProjectSettings(
 
 export function setInternalProjectArchived(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: SetProjectArchivedInput,
   signal: AbortSignal,
 ) {
@@ -188,7 +223,7 @@ function sameState(left: ProjectWorkflowState, right: ProjectWorkflowState | und
 
 export function saveInternalProjectStates(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: SaveProjectStatesInput,
   signal: AbortSignal,
 ) {

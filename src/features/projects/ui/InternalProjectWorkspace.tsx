@@ -22,6 +22,8 @@ import type { Locale } from "@/features/i18n/registry";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import { ProjectItemArchiveControl } from "../automations/ProjectItemArchiveControl";
+import { projectCoverPath } from "../brand/contracts";
+import { ProjectBrandMark, ProjectCoverArt } from "../brand/ProjectBrand";
 import type {
   ProjectCommands,
   ProjectItem,
@@ -254,6 +256,25 @@ export function InternalProjectWorkspace({
     ) : null;
   return (
     <section className={`${BLOCK_CLASS} ph-no-capture`}>
+      {(workspace.project.cover || workspace.project.logo) && (
+        <div className="relative mb-3">
+          <ProjectCoverArt
+            cover={workspace.project.cover}
+            imageSrc={
+              workspace.project.cover?.kind === "image"
+                ? projectCoverPath(projectId, workspace.project.cover.value)
+                : undefined
+            }
+            className={workspace.project.cover ? "h-20 rounded-lg border sm:h-28" : "hidden"}
+          />
+          {workspace.project.logo && (
+            <ProjectBrandMark
+              logo={workspace.project.logo}
+              className={workspace.project.cover ? "absolute bottom-3 start-3" : undefined}
+            />
+          )}
+        </div>
+      )}
       <PageHeading
         title={workspace.project.title}
         crumbs={[
@@ -272,6 +293,7 @@ export function InternalProjectWorkspace({
         active="work_items"
         canManageSettings={workspace.canManageSettings}
         intakeEnabled={workspace.settings.intakeEnabled}
+        restrictedGuest={workspace.guestAccess === "restricted"}
       />
       <ProjectWorkspaceContext
         projectId={projectId}
@@ -357,6 +379,22 @@ export function InternalProjectWorkspace({
             labels={labels}
             pending={pending}
             setMember={setMember}
+            actorId={actorId}
+            onGuestInvited={(person) =>
+              setWorkspace((current) => ({
+                ...current,
+                members: [
+                  ...current.members.filter((member) => member.person.id !== person.id),
+                  {
+                    person,
+                    role: "guest",
+                    canAssign: false,
+                    invitationPending: true,
+                    projectsGuestOnly: true,
+                  },
+                ],
+              }))
+            }
           />
         </TabsContent>
       </Tabs>

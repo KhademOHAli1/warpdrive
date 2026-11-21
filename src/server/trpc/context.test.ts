@@ -18,9 +18,9 @@ vi.mock("react", () => ({ cache: deps.cache }));
 vi.mock("@/db/client", () => ({ db: deps.db }));
 vi.mock("@/features/auth/session", () => ({
   SESSION_COOKIE: "wd_sid",
-  loadLiveSessionByToken: deps.load,
+  loadLiveProjectSessionByToken: deps.load,
 }));
-vi.mock("@/server/hydrateActor", () => ({ hydrateActor: deps.hydrate }));
+vi.mock("@/server/hydrateActor", () => ({ hydrateProjectActor: deps.hydrate }));
 
 function source(cookie: string) {
   const headers = new Headers({

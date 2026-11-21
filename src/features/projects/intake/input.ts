@@ -47,7 +47,7 @@ export const reviewProjectIntakeInput = z.discriminatedUnion("action", [
   z.strictObject({
     ...decision,
     action: z.literal("snooze"),
-    until: z.iso.datetime({ offset: true }),
+    until: z.union([z.iso.date(), z.iso.datetime({ offset: true })]),
   }),
   z.strictObject({ ...decision, action: z.literal("unsnooze") }),
   z.strictObject({ ...decision, action: z.literal("duplicate"), workItemId: canonicalUuidSchema }),

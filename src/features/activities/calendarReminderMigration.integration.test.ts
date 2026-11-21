@@ -6,11 +6,11 @@ import {
   installPrefix,
   ledger,
   migrationFolder,
+  seedHistoricalUser,
 } from "@/db/migrationAdmission.test-helpers";
 import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
 import { activityTypes, notifications } from "@/db/schema";
 import { activityReminderIntents } from "@/db/schema/activityReminderIntents";
-import { seedUser } from "@/db/testing/factories";
 import { hydrateActor } from "@/server/hydrateActor";
 import { getActivityForEdit } from "./getForEdit";
 import { processActivityReminder } from "./reminderDelivery";
@@ -32,7 +32,7 @@ it("upgrades populated 102-entry customers without inventing zones or reminder h
         )
       ).rows,
     ).toEqual([{ absent: true }]);
-    const user = await seedUser(h.db, { isAdmin: true });
+    const user = await seedHistoricalUser(h, { isAdmin: true });
     const [type] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "meeting"));
     if (type === undefined) throw new Error("Upgrade meeting fixture missing");
     const old = (

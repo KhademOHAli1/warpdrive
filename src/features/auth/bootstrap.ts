@@ -59,13 +59,17 @@ export async function upsertUserOnLogin(
       // old CRM user (and its admin state) to the new Google identity (F25). The one exception
       // is a googleSub IS NULL placeholder: that row was created by inviteUser specifically to
       // be claimed by whoever first signs in with this verified email (Task 11), so bind the
-      // real Google identity now instead of rejecting.
+      // real Google identity now instead of rejecting. Projects-only guests use the native signed invitation.
       const byEmail = await tx
-        .select({ id: users.id, googleSub: users.googleSub })
+        .select({
+          id: users.id,
+          googleSub: users.googleSub,
+          projectsGuestOnly: users.projectsGuestOnly,
+        })
         .from(users)
         .where(eq(users.email, email));
       if (byEmail[0] !== undefined) {
-        if (byEmail[0].googleSub === null) {
+        if (byEmail[0].googleSub === null && !byEmail[0].projectsGuestOnly) {
           const [adopted] = await tx
             .update(users)
             .set({

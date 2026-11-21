@@ -1,7 +1,7 @@
 import { and, eq, exists, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
+import type { InternalProjectPrincipal } from "../access";
 import { internalProjectItems } from "../schema";
 import { bumpStructureItemRevisions, changeProjectWorkStructure } from "./access";
 import type { ProjectLabel, SaveProjectLabels } from "./contracts";
@@ -54,7 +54,7 @@ async function unlinkDeletedLabels(tx: Db, projectId: string, removed: string[])
 
 export function saveProjectLabels(
   db: Db,
-  who: NativeSessionRef,
+  who: InternalProjectPrincipal,
   input: SaveProjectLabels,
   signal: AbortSignal,
 ) {

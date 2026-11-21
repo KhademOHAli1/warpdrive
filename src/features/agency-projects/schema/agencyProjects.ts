@@ -90,9 +90,11 @@ export const agencyProjectMembers = pgTable(
     userId: uuid("user_id").notNull(),
     projectEdit: boolean("project_edit").notNull().default(false),
     assignmentCoordinate: boolean("assignment_coordinate").notNull().default(false),
+    projectGuest: boolean("project_guest").notNull().default(false),
   },
   (table) => [
     primaryKey({ name: "agency_project_members_pkey", columns: [table.projectId, table.userId] }),
+    check("agency_project_members_guest_grants_check", sql`NOT ${table.projectGuest} OR (NOT ${table.projectEdit} AND NOT ${table.assignmentCoordinate})`),
     foreignKey({
       name: "agency_project_members_project_id_fkey",
       columns: [table.projectId],

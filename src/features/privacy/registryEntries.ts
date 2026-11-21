@@ -71,6 +71,12 @@ import {
 } from "./registryProjectParity";
 import { projectPlanningInventoryEntry } from "./registryProjectPlanning";
 import { projectProfileInventoryEntry } from "./registryProjectProfile";
+import {
+  projectBrandInventoryEntry,
+  projectGuestInventoryEntry,
+  projectIntegratorInventoryEntry,
+  projectPublicationInventoryEntry,
+} from "./registryProjectsAccess";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import type { RegistryEntry } from "./registryTypes";
@@ -100,6 +106,10 @@ export const registryEntries: RegistryEntry[] = [
   projectWorkStructureInventoryEntry,
   projectAutomationsInventoryEntry,
   projectProfileInventoryEntry,
+  projectBrandInventoryEntry,
+  projectGuestInventoryEntry,
+  projectIntegratorInventoryEntry,
+  projectPublicationInventoryEntry,
   internalProjectsInventoryEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,

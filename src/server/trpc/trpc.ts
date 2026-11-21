@@ -14,3 +14,11 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   }
   return next({ ctx: { ...ctx, actor: ctx.actor, session: ctx.session } });
 });
+
+// Projects opts in explicitly. Every other protected procedure still treats the guest as anonymous.
+export const protectedProjectProcedure = t.procedure.use(({ ctx, next }) => {
+  const actor = ctx.actor ?? ctx.projectGuest?.actor;
+  const session = ctx.session ?? ctx.projectGuest?.session;
+  if (!actor || !session) throw new TRPCError({ code: "UNAUTHORIZED", message: "E_AUTH_003" });
+  return next({ ctx: { ...ctx, actor, session } });
+});

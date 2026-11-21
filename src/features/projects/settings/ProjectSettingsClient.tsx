@@ -37,6 +37,14 @@ import {
   saveProjectStatesAction,
   setProjectArchivedAction,
 } from "../actions";
+import type { ProjectLogo } from "../brand/contracts";
+import { projectLogoInput, projectTimeZoneInput } from "../brand/input";
+import {
+  type CoverDraft,
+  ProjectBrandFields,
+  ProjectTimeZoneField,
+  projectCoverChange,
+} from "../brand/ProjectBrandFields";
 import {
   type ProjectResult,
   type ProjectWorkspace,
@@ -54,7 +62,13 @@ import { ProjectSettingsTabs } from "./ProjectSettingsTabs";
 import { ProjectStateGroups } from "./ProjectStateGroups";
 
 export type ProjectSettingsSection = "general" | "states";
-type DetailsDraft = Required<Omit<SaveProjectSettingsInput, "projectId" | "revision">>;
+type DetailsInput = Omit<SaveProjectSettingsInput, "projectId" | "revision">;
+type DetailsDraft = Required<
+  Pick<
+    DetailsInput,
+    "title" | "identifier" | "description" | "leadUserId" | "defaultAssigneeId" | "timeZone"
+  >
+>;
 
 export function ProjectSettingsClient({
   actorId,
@@ -186,24 +200,35 @@ function ProjectDetailsFields({
   workspace: ProjectWorkspace;
   labels: ProjectSettingsMessages;
   pending: boolean;
-  save: (details: DetailsDraft) => void;
+  save: (details: DetailsInput) => void;
 }) {
   const fields = useId();
   const { leadUserId, defaultAssigneeId, description } = workspace.settings;
+  const savedTimeZone = workspace.settings.timeZone ?? "UTC";
+  const [logo, setLogo] = useState<ProjectLogo | null>(workspace.project.logo ?? null);
+  const [cover, setCover] = useState<CoverDraft>({ kind: "existing" });
   const [draft, setDraft] = useState<DetailsDraft>({
     title: workspace.project.title,
     identifier: workspace.project.identifier,
     description,
     leadUserId,
     defaultAssigneeId,
+    timeZone: savedTimeZone,
   });
   const unchanged =
     draft.title.trim() === workspace.project.title &&
     draft.identifier === workspace.project.identifier &&
     draft.description === description &&
     draft.leadUserId === leadUserId &&
-    draft.defaultAssigneeId === defaultAssigneeId;
-  const valid = draft.title.trim() !== "" && /^[A-Z0-9]{1,10}$/u.test(draft.identifier);
+    draft.defaultAssigneeId === defaultAssigneeId &&
+    draft.timeZone === savedTimeZone &&
+    JSON.stringify(logo) === JSON.stringify(workspace.project.logo ?? null) &&
+    cover.kind === "existing";
+  const valid =
+    draft.title.trim() !== "" &&
+    /^[A-Z0-9]{1,10}$/u.test(draft.identifier) &&
+    projectTimeZoneInput.safeParse(draft.timeZone).success &&
+    (logo === null || projectLogoInput.safeParse(logo).success);
   const options = [
     { value: "", label: labels.none },
     ...workspace.assignees.map(({ id, name }) => ({ value: id, label: name })),
@@ -221,7 +246,8 @@ function ProjectDetailsFields({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (valid && !unchanged && !pending) save({ ...draft, title: draft.title.trim() });
+    if (!valid || unchanged || pending) return;
+    save({ ...draft, title: draft.title.trim(), logo, ...projectCoverChange(cover) });
   }
 
   return (
@@ -300,6 +326,21 @@ function ProjectDetailsFields({
           <p className="text-sm text-muted-foreground">{labels.defaultAssigneeHelp}</p>
         </div>
       </div>
+      <ProjectTimeZoneField
+        labels={labels}
+        value={draft.timeZone}
+        pending={pending}
+        setValue={(timeZone) => set("timeZone", timeZone)}
+      />
+      <ProjectBrandFields
+        project={workspace.project}
+        logo={logo}
+        setLogo={setLogo}
+        cover={cover}
+        setCover={setCover}
+        labels={labels}
+        pending={pending}
+      />
       <Button type="submit" disabled={pending || unchanged || !valid}>
         {pending ? labels.saving : labels.save}
       </Button>

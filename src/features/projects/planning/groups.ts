@@ -1,9 +1,9 @@
 import { and, asc, count, eq, gte, isNull, lte, ne, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
-import { readInternalProjectSettings } from "../access";
+import { type InternalProjectPrincipal, readInternalProjectSettings } from "../access";
 import { internalProjectItems as items } from "../schema";
+import { projectToday } from "../settings/projectTime";
 import { withPlanningProject } from "./access";
 import {
   canArchivePlanningGroup,
@@ -51,7 +51,7 @@ function groupKey({ projectId, groupId, kind }: GroupTarget) {
 
 export function listPlanningGroups(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   projectId: string,
   kind: PlanningGroupKind,
   signal: AbortSignal,
@@ -95,7 +95,7 @@ export function listPlanningGroups(
 
 export function readPlanningGroup(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   input: GroupTarget,
   signal: AbortSignal,
 ) {
@@ -108,7 +108,9 @@ export function readPlanningGroup(
     async (tx, { summary, canEdit, canManageSettings }) => {
       const [group] = await tx.select().from(groups).where(groupKey(input));
       if (group === undefined) return err("project_unavailable");
-      const closedCycle = group.kind === "cycles" && planningCyclePhase(group) === "completed";
+      const closedCycle =
+        group.kind === "cycles" &&
+        planningCyclePhase(group, projectToday(summary.timeZone)) === "completed";
       const rows = await tx
         .select({
           id: items.id,
@@ -196,7 +198,7 @@ function validGroupFields({ kind, startDate, endDate, moduleStatus }: SavePlanni
 
 export function savePlanningGroup(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   input: SavePlanningGroup,
   signal: AbortSignal,
 ) {
@@ -211,7 +213,7 @@ export function savePlanningGroup(
     description,
     revision,
   } = input;
-  return withPlanningProject(db, session, projectId, "write", signal, async (tx) => {
+  return withPlanningProject(db, session, projectId, "write", signal, async (tx, { summary }) => {
     if (!validGroupFields(input)) return err("project_invalid");
     if (kind === "modules" && (await moduleNameInUse(tx, input))) return err("project_conflict");
     if (
@@ -244,7 +246,8 @@ export function savePlanningGroup(
     if (current === undefined) return err("project_unavailable");
     if (
       current.archivedAt !== null ||
-      (kind === "cycles" && planningCyclePhase(current) === "completed")
+      (kind === "cycles" &&
+        planningCyclePhase(current, projectToday(summary.timeZone)) === "completed")
     )
       return err("project_forbidden");
     const [updated] = await tx
@@ -258,17 +261,18 @@ export function savePlanningGroup(
 
 export function setPlanningGroupArchive(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   input: SetPlanningGroupArchive,
   signal: AbortSignal,
 ) {
   const { projectId, groupId, archived, revision } = input;
-  return withPlanningProject(db, session, projectId, "write", signal, async (tx) => {
+  return withPlanningProject(db, session, projectId, "write", signal, async (tx, { summary }) => {
     const [current] = await tx.select().from(groups).where(groupKey(input));
     if (current === undefined) return err("project_unavailable");
     if ((current.archivedAt !== null) === archived) return ok(groupResult(current));
     if (current.revision !== revision) return err("project_conflict");
-    if (archived && !canArchivePlanningGroup(current)) return err("project_invalid");
+    if (archived && !canArchivePlanningGroup(current, projectToday(summary.timeZone)))
+      return err("project_invalid");
     if (
       !archived &&
       current.kind === "cycles" &&

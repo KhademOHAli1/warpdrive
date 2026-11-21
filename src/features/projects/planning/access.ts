@@ -1,13 +1,12 @@
 import type { Db } from "@/db/client";
-import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err } from "@/types/result";
-import { type InternalProjectAccess, lockInternalProject, withInternalProjects } from "../access";
+import { type InternalProjectPrincipal, type InternalProjectAccess, lockInternalProject, withInternalProjects } from "../access";
 import type { ProjectResult } from "../contracts";
 
 export function withPlanningProject<T>(
   db: Db,
-  session: NativeSessionRef,
+  session: InternalProjectPrincipal,
   projectId: string,
   mode: "read" | "write",
   signal: AbortSignal,

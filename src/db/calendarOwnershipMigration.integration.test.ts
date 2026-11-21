@@ -6,16 +6,16 @@ import {
   freshMigrationDb,
   installPrefix,
   ledger,
+  seedHistoricalUser,
 } from "./migrationAdmission.test-helpers";
 import { readCanonicalMigrations } from "./migrationAdmissionSource";
-import { seedUser } from "./testing/factories";
 
 it("upgrades populated 0110 without firing activity automation or changing native reminder intent", async () => {
   const h = await freshMigrationDb();
   const signal = AbortSignal.timeout(30_000);
   try {
     await installPrefix(h, 111);
-    const user = await seedUser(h.db, { isAdmin: true });
+    const user = await seedHistoricalUser(h, { isAdmin: true });
     const type = (await h.pool.query<{ id: string }>("SELECT id FROM activity_types LIMIT 1"))
       .rows[0];
     assert(type !== undefined);

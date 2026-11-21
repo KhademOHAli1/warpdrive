@@ -57,6 +57,7 @@ export function ProjectArchiveClient({
         active="archive"
         canManageSettings={workspace.canManageSettings}
         intakeEnabled={workspace.settings.intakeEnabled}
+        restrictedGuest={workspace.guestAccess === "restricted"}
       />
       {restored && (
         <p role="status" className="mb-3 text-sm text-muted-foreground">

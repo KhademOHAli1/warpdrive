@@ -1,15 +1,15 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { deals, persons, users } from "@/db/schema";
-import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { currentNativeActor, currentNativeProjectActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { ProjectCreateInput } from "./projectCreationInput";
 import { agencyProjectSettings } from "./schema/agencyProjectSettings";
 
-export async function nativeProjectActor(db: Db, who: NativeSessionRef, signal: AbortSignal) {
-  const current = await currentNativeActor(db, who, signal);
+export async function nativeProjectActor(db: Db, who: NativeSessionRef, signal: AbortSignal, scope: "client" | "internal" = "client") {
+  const current = await (scope === "internal" ? currentNativeProjectActor : currentNativeActor)(db, who, signal);
   if (current === null) return null;
   const [staff] = await db.select().from(users).where(eq(users.id, current.actor.id));
   const [settings] = await db
