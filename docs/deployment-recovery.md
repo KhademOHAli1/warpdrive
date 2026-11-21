@@ -341,12 +341,13 @@ both restore paths; partial files remain quarantined on any failure.
 independent credentials, operators or physical custody. Different existing restic passwords
 are allowed when both authenticate the same fixed repository.
 
-This adapter uses the installed restic **0.18.0** command contract. It requires encrypted
-repository format 2 and relies on restic's authenticated repository data, rather than custom
-cryptography. See the versioned primary documentation for the
-[repository format](https://restic.readthedocs.io/en/v0.18.0/100_references.html),
-[backup identity](https://restic.readthedocs.io/en/v0.18.0/040_backup.html) and
-[isolated restore](https://restic.readthedocs.io/en/v0.18.0/050_restore.html).
+New recovery rehearsals pin Restic **0.20.0**. The adapter accepts exact Restic
+**0.18.0**, **0.18.1**, and **0.20.0** command contracts for operators. It
+requires encrypted repository format 2, uses Restic's authenticated repository
+data, and runs no repository migration. See the versioned documentation for the
+[repository format](https://restic.readthedocs.io/en/v0.20.0/100_references.html),
+[backup identity](https://restic.readthedocs.io/en/v0.20.0/040_backup.html) and
+[isolated restore](https://restic.readthedocs.io/en/v0.20.0/050_restore.html).
 
 The opt-in synthetic crypto test uses a task-owned local repository, random synthetic data,
 two local password files and an isolated restore target. It checks encrypted storage,

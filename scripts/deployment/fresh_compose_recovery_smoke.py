@@ -37,7 +37,7 @@ TOTAL_SECONDS = 1500
 CAPTURE_LIMITS = {"files": 20000, "bytes": 1024**3, "fileBytes": 256 * 1024**2,
                   "seconds": 240, "reserveBytes": 2 * 1024**3, "repositoryBytes": 1024**3}
 STOP_WAVES = (("caddy",), ("app", "ws"), ("core-api",), ("worker", "newsletter-engine"), ("minio", "postgres"))
-START_WAVES = (("postgres", "minio"), ("app", "ws", "worker", "newsletter-engine"), ("core-api",), ("caddy",))
+START_WAVES = (("postgres", "minio"), ("core-api",), ("app", "ws", "worker", "newsletter-engine"), ("caddy",))
 CREATE_WAVES = (("postgres", "minio"), ("app", "core-api", "ws", "worker", "newsletter-engine", "caddy"))
 LIMITATIONS = [
     "Owned synthetic Linux AMD64 fixture only; no production or customer installation was recovered.",
@@ -660,8 +660,8 @@ def run(baseline, candidate, *, restic, restic_pin, pg_control, pg_control_pin, 
     docker_pin = r.digest(r.read_regular(docker_binary, maximum=128 * 1024**2))
     pins = {restic: restic_pin, pg_control: pg_control_pin, docker_binary: docker_pin}
     command = PinnedCommand({restic: restic_pin})
-    r.require(command.run([str(restic), "version"], maximum=4096).startswith(b"restic 0.18.0 "),
-              "Recovery fixture requires the qualified Restic 0.18.0")
+    r.require(command.run([str(restic), "version"], maximum=4096).startswith(f"restic {r.RESTIC_FIXTURE_VERSION} ".encode()),
+              f"Recovery fixture requires pinned Restic {r.RESTIC_FIXTURE_VERSION}")
     free = os.statvfs(output_parent)
     r.require(free.f_bavail * free.f_frsize >= 4 * CAPTURE_LIMITS["bytes"] + CAPTURE_LIMITS["reserveBytes"],
               "Native recovery scratch capacity is insufficient")

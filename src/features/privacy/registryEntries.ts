@@ -82,7 +82,7 @@ export const registryEntries: RegistryEntry[] = [
     retention:
       "HTTP bytes, request-local context, cookies and read batches last for their request or actual stream completion. Post-commit callbacks remain tracked until settled and are drained before dependency shutdown. The scanner's delete:work removes a Promise marker and other deletes remove headers or request cookies; none erases subject records. Existing domain retention and pending installation gates remain authoritative.",
     externalEffects:
-      "The external fetch calls target one fixed Core origin, preserve original protocol bodies and do not replay uncertain writes. Query scanner entries are typed RPC reads, not SQL mutations. Core executes only the explicit existing action/HTTP allowlists, including each handler's original effects. Request callback failure logs a fixed message without arguments, credentials or provider diagnostics. This extraction adds no provider, queue destination, durable personal-data store or lifecycle capability.",
+      "The external fetch calls target one fixed Core origin, preserve original protocol bodies and do not replay uncertain writes. The Web readiness probe sends its server-only proxy credential to the fixed Core configuration procedure with no browser cookies, forwarded host or redirect. It bounds the reply bytes and deadline and returns only a fixed readiness code. Query scanner entries are typed RPC reads, not SQL mutations. Core executes only the explicit existing action/HTTP allowlists, including each handler's original effects. Request callback failure logs a fixed message without arguments, credentials or provider diagnostics. This extraction adds no provider, queue destination, durable personal-data store or lifecycle capability.",
   }),
   agencyProjectInventoryEntry,
   analyticsInventoryEntry,
@@ -202,19 +202,19 @@ export const registryEntries: RegistryEntry[] = [
   }),
   classifyInventory(coreHttpRuntimeIds2, {
     ...classifications.infrastructure,
-    owner: "optional Core process and public Web identity",
+    owner: "Core runtime diagnostics and optional public Web identity",
     categories: [
       "existing authenticated RPC request and response data",
       "runtime role and privilege admission booleans",
       "public Web version and source declaration",
-      "finite process state and pending-operation markers",
+      "finite process state, generated process generation and pending-operation markers",
     ],
     subjectRelation:
       "The complete existing router retains its native session and procedure authority. Runtime role/catalog facts and public build declarations describe installation infrastructure, not reviewed subject identity or an image digest.",
     purpose:
-      "Configure an explicit bounded Core profile, admit the current runtime role and metadata-capable accepted Web ingress, and own actual HTTP, queue and metadata transport settlement through one shutdown controller. Legacy profiles retain their original connection options and inactive Core settings are ignored. A development pool profile change requires a restart rather than accumulating generations.",
+      "Configure a bounded Core profile, admit the current database role and queue, and own actual HTTP, queue and optional metadata transport settlement through one shutdown controller. Web metadata is read only when an authenticated version procedure needs it. Runtime diagnostics identify admission, readiness, failure and drain transitions. Legacy profiles retain their original connection options and inactive Core settings are ignored.",
     disclosure:
-      "The public metadata GET contains only the versioned Web component/version/source declaration. The peer reader uses one operator-owned fixed HTTP origin, GET, no forwarded credentials or redirects, a 1 KiB decoded payload bound and short singleflight TTL. Failed peer reads never substitute Core build identity. Logs and owner notifications use fixed finite classifications, never raw SQL, URLs, credentials, request bodies or vendor diagnostics.",
+      "The optional peer metadata read uses one fixed operator-owned origin, a credential-free GET, no redirects, a 1 KiB decoded payload bound and short singleflight TTL. It reads only the public Web component/version/source declaration and never substitutes Core build identity. Host diagnostics contain a generated process identifier, a timestamp and bounded runtime facts. Request bodies, identifiers, URLs, credentials, SQL and raw exceptions are excluded.",
     retention:
       "Request/response bytes remain transient under admitted leases until actual completion or transport cleanup; timeout and abort are not memory erasure or backend rollback proof. Queue Promise markers and metadata cache remain process-local. Unknown/rejected cleanup retains its barrier and fails the bounded drain rather than authorizing replacement work. Set delete:marker and delete:settled remove in-memory Promise bookkeeping only, not subject rows.",
     externalEffects:

@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import sys
 
-from headless_image_smoke import HeadlessImageSmoke
+from headless_image_smoke import RETAINED_WEB_FIRST_CORE_REVISION, HeadlessImageSmoke
 from image_smoke import COMPONENTS, Docker, SmokeError, image_metadata, validate_reference, validate_revision
 
 
@@ -25,15 +25,32 @@ def validate_core_image_id(value: str) -> str:
     return value
 
 
+def validate_baseline_web_image_id(value: str) -> str:
+    if not IMAGE_CONFIG_ID.fullmatch(value):
+        raise argparse.ArgumentTypeError("Exact baseline Web config image ID required")
+    return value
+
+
 class HeadlessWebSmoke(HeadlessImageSmoke):
-    def __init__(self, docker, images, core_image_id, output, revision, retained_revision, web_version):
+    def __init__(self, docker, images, core_image_id, output, revision, retained_revision, web_version,
+                 *, baseline_web=None, baseline_web_version=None):
         core_image_id = validate_core_image_id(core_image_id)
         web_version = validate_web_version(web_version)
         self.retained_revision = validate_revision(retained_revision)
         if self.retained_revision == revision:
             raise ValueError("The Web candidate and retained backend require distinct source pins")
+        if (baseline_web is None) != (baseline_web_version is None):
+            raise ValueError("Baseline Web requires an image ID, revision, and version")
+        if baseline_web is not None:
+            image_id, baseline_revision = baseline_web
+            baseline_web = (validate_baseline_web_image_id(image_id), validate_revision(baseline_revision))
+            baseline_web_version = validate_web_version(baseline_web_version)
+            if baseline_revision == revision:
+                raise ValueError("The candidate and baseline Web require distinct source pins")
         super().__init__(docker, images, core_image_id, output, revision,
-                         web_version=web_version, expect_inbox_workspace=True)
+                         web_version=web_version, expect_inbox_workspace=True,
+                         baseline_web=baseline_web, baseline_web_version=baseline_web_version,
+                         historical_web_first=self.retained_revision == RETAINED_WEB_FIRST_CORE_REVISION)
         self.report.update(kind="warpdrive-headless-web-only-image-smoke",
                            retainedRevision=self.retained_revision, expectedWebVersion=self.web_version)
         self.report["limitations"] = [
@@ -61,6 +78,8 @@ class HeadlessWebSmoke(HeadlessImageSmoke):
                 self.report["coreImage"] = identity
             else:
                 self.report["images"][role] = identity
+        if self.baseline_web is not None:
+            self.inspect_baseline_web(local_ids)
         return {
             "webRevision": self.expected_revision,
             "retainedRevision": self.retained_revision,
@@ -76,14 +95,22 @@ def main():
     parser.add_argument("--expected-revision", required=True, type=validate_revision)
     parser.add_argument("--retained-revision", required=True, type=validate_revision)
     parser.add_argument("--web-version", required=True, type=validate_web_version)
+    parser.add_argument("--baseline-web-image", type=validate_baseline_web_image_id)
+    parser.add_argument("--baseline-web-revision", type=validate_revision)
+    parser.add_argument("--baseline-web-version", type=validate_web_version)
     parser.add_argument("--output-dir", required=True, type=Path)
     args = parser.parse_args()
+    baseline_pins = (args.baseline_web_image, args.baseline_web_revision, args.baseline_web_version)
+    if any(baseline_pins) and not all(baseline_pins):
+        parser.error("Baseline Web requires an image ID, revision, and version")
+    baseline = baseline_pins[:2] if all(baseline_pins) else None
     images = {component: getattr(args, f"{component}_image") for component in COMPONENTS}
     try:
         smoke = HeadlessWebSmoke(Docker(), images, args.core_image_id, args.output_dir,
-                                 args.expected_revision, args.retained_revision, args.web_version)
+                                 args.expected_revision, args.retained_revision, args.web_version,
+                                 baseline_web=baseline, baseline_web_version=args.baseline_web_version)
         return 0 if smoke.run() else 1
-    except (SmokeError, ValueError, OSError) as error:
+    except (SmokeError, ValueError, OSError, argparse.ArgumentTypeError) as error:
         print(f"Headless Web smoke admission failed ({type(error).__name__}).", file=sys.stderr)
         return 1
 

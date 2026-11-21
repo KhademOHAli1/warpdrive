@@ -996,15 +996,15 @@ function exactDependencies(read) {
   }
 }
 
-const SDK_VERSION = "0.1.0-beta.1";
+const SDK_VERSION = "0.1.0-beta.13";
 const SDK_INTEGRITIES = new Map([
   [
     "@ui-sdk/core",
-    "sha512-sWsZW8RN6Gviir7REQYuDIafm9hierHQE31OJ+2g+1Pp3lDVKp/dk0+0dxFvqOQRmBveRvlE9FiARgNlQ9dMFw==",
+    "sha512-URjk9hqdc/cZKDtw6Gb9NqjY48U8l0EgoP4d5ghlooa3av+GrR0iSmsav133UU4oelcuKIO1ZPJ4j7gIPMr1Vg==",
   ],
   [
     "@ui-sdk/react",
-    "sha512-7wcUsZI+WoG2uo3N+PHrWntk97qI9ez2cUrHV9H507FiL118Pi4tuhWUCMDtWwEUCNQLybpBm1QRLkEXVOPAUg==",
+    "sha512-Gz85tAcPJHwnv90WMIAtED3fDamqVD3F3FF3uKsA/TsL+KbaeHSgX1gGdIpNcnzkmDO8YZk9aZBKgCFgpaCcHA==",
   ],
 ]);
 
@@ -1020,7 +1020,7 @@ function verifySdkSource(root, files, read) {
     parsed.error ||
     sidecar.private !== true ||
     sidecar.name !== "warpdrive-web-ui" ||
-    sidecar.packageManager !== "bun@1.4.4"
+    sidecar.packageManager !== "bun@1.4.5"
   )
     reject("Invalid reviewed Web SDK sidecar source");
   for (const [name, integrity] of SDK_INTEGRITIES) {

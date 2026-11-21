@@ -229,7 +229,7 @@ export function WorkflowStudioCanvas({
       ? current
       : { ...current, layout: { ...(current.layout ?? layout), [id]: position } };
   }
-  function changes(values: NodeChange<DiagramNode>[]) {
+  function changes(values: Iterable<NodeChange<DiagramNode>>) {
     let next = definition;
     for (const change of values) {
       switch (change.type) {
@@ -246,18 +246,21 @@ export function WorkflowStudioCanvas({
           if (!disabled) next = applyPosition(next, change);
           break;
         case "add":
+        case "data":
         case "replace":
         case "select":
+        case "update":
           break;
       }
     }
     if (next !== definition) onChange(next);
   }
-  function edgeChanges(values: EdgeChange[]) {
+  function edgeChanges(values: Iterable<EdgeChange>) {
     if (disabled) return;
-    const removed = new Set(
-      values.filter((change) => change.type === "remove").map((change) => change.id),
-    );
+    const removed = new Set<string>();
+    for (const change of values) {
+      if (change.type === "remove") removed.add(change.id);
+    }
     if (removed.size === 0) return;
     onChange({
       ...definition,
@@ -326,10 +329,11 @@ export function WorkflowStudioCanvas({
         }
         nodesDraggable={!disabled}
         nodesConnectable={!disabled}
+        elevateEdgesOnSelect={false}
         deleteKeyCode={disabled ? null : ["Backspace", "Delete"]}
         multiSelectionKeyCode={null}
         fitView
-        fitViewOptions={{ padding: 0.3, maxZoom: 1.05 }}
+        fitViewOptions={{ padding: "11.54%", maxZoom: 1.05 }}
         minZoom={0.15}
         maxZoom={1.8}
         connectionLineComponent={WorkflowConnectionLine}

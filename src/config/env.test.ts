@@ -19,7 +19,7 @@ describe("env boundary", () => {
       expect(parsed.value.CORE_DB_MAX).toBe(8);
     }
   });
-  test("requires accepted Web metadata origin and no migration credential for Core", () => {
+  test("allows optional Web metadata origin and requires no migration credential for Core", () => {
     const candidate = {
       ...process.env,
       RUNTIME_COMPONENT: "core-api",
@@ -28,8 +28,9 @@ describe("env boundary", () => {
       MIGRATION_DATABASE_URL_FILE: undefined,
     };
     expect(parseEnv(candidate).ok).toBe(true);
+    expect(parseEnv({ ...candidate, CORE_WEB_ORIGIN: "" }).ok).toBe(true);
+    expect(parseEnv({ ...candidate, CORE_WEB_ORIGIN: undefined }).ok).toBe(true);
     for (const CORE_WEB_ORIGIN of [
-      "",
       "http://user:secret@ingress/",
       "http://ingress/path",
       "http://ingress/?x",

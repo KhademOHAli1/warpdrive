@@ -16,7 +16,7 @@ import unittest
 from unittest.mock import Mock, patch
 import zipfile
 
-from candidate import CandidateError
+from candidate import HEADLESS_COMPONENTS, HEADLESS_VERSION, CandidateError
 from engine_image_smoke import CONTEXT_LABEL, REQUIRED_CHECKS, UPSTREAM_SOURCE, engine_metadata
 import fresh_compose_qualification as qualification
 from image_smoke import COMPONENTS, SmokeError
@@ -269,11 +269,11 @@ class PreloadedAdmissionTests(unittest.TestCase):
                                     storage_client_bin="mc")
         self.images = {}
         components = {}
-        for index, role in enumerate(COMPONENTS, 1):
+        for index, role in enumerate(HEADLESS_COMPONENTS, 1):
             identifier = "sha256:" + str(index) * 64
             self.images[identifier] = row(identifier)
             components[role] = {"imageId": identifier, "runtimeUser": "bun"}
-        self.web_id = "sha256:" + "5" * 64
+        self.web_id = "sha256:" + "c" * 64
         self.images[self.web_id] = row(self.web_id, WEB_REVISION)
         self.proof = {"candidateWebImageId": self.web_id, "sourceDelta": {"releaseRevision": WEB_REVISION},
                       "availableDiskBytesAfterBuild": 5 * 1024**3, "sourceVerifiedAfterBuild": True}
@@ -287,7 +287,7 @@ class PreloadedAdmissionTests(unittest.TestCase):
             setattr(self.args, role + "_image", reference)
             self.images[reference] = {**row(identifier), "RepoDigests": [reference]}
         self.origin = {"kind": "github-actions", "runId": 100}
-        self.loaded = {"origin": self.origin, "candidate": {"components": components},
+        self.loaded = {"origin": self.origin, "candidate": {"schemaVersion": HEADLESS_VERSION, "components": components},
                        "provenance": {"bundleManifestSha256": "f" * 64, "archiveSha256": "e" * 64}}
         self.docker = Mock()
         self.docker.run.return_value.stdout = "linux x86_64"
@@ -304,13 +304,23 @@ class PreloadedAdmissionTests(unittest.TestCase):
 
     def test_authenticated_baseline_is_reused_without_reload_or_rebuild(self):
         roles, revisions, supports, custody = self.admit()
-        self.assertEqual(len(roles), 6)
+        self.assertEqual(len(roles), 7)
+        self.assertEqual(roles["core-api"], self.loaded["candidate"]["components"]["core-api"]["imageId"])
         self.assertEqual(revisions["engine"], ENGINE_REVISION)
         self.assertEqual(len(supports), 5)
         self.assertEqual(custody["producer"], self.origin)
         self.loader.assert_called_once_with(self.args.bundle_dir, expected_revision=REVISION)
         self.assertEqual(self.docker.run.call_args_list[0].args[0][0], "info")
         self.assertFalse(any(call.args[0][:2] == ["image", "load"] for call in self.docker.run.call_args_list))
+
+    def test_legacy_and_missing_core_baselines_hold_before_engine_transport(self):
+        stored = self.loaded["candidate"]
+        for version in (3, HEADLESS_VERSION):
+            with self.subTest(version=version), self.assertRaises(CandidateError):
+                self.loaded["candidate"] = {"schemaVersion": version,
+                                            "components": {role: stored["components"][role] for role in COMPONENTS}}
+                self.admit()
+        self.engine.assert_not_called()
 
     def test_forged_bundle_origin_holds_before_engine_transport(self):
         self.loaded["origin"] = {"kind": "local"}

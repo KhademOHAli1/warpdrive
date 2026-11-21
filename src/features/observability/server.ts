@@ -56,11 +56,10 @@ export function captureServerError(
   try {
     // errorId is derived from the original error above; the payload handed to captureException is
     // email-redacted because posthog-node builds $exception_list from the raw error.
-    c.captureException(
-      sanitizeErrorEmails(error),
-      actorId ?? "anonymous",
-      scrubProperties({ ...props, errorId }),
-    );
+    c.captureException(sanitizeErrorEmails(error), {
+      distinctId: actorId ?? "anonymous",
+      properties: scrubProperties({ ...props, errorId }),
+    });
   } catch (e) {
     console.warn("[telemetry] server capture failed", e);
   }

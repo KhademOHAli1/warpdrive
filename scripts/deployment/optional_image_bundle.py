@@ -14,17 +14,18 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import subprocess
 import sys
 import tarfile
 
 from bundle import load_bundle, validate_origin
 from candidate import COMPONENTS, CandidateError, IMAGE_ID, REVISION, admit_capacity, require
 from component_inputs import InputError, decode
-from image_smoke import Docker, image_metadata
+from image_smoke import Docker, SmokeError, image_metadata
 import native_image_identity as native_identity
 from web_candidate import (
     IMAGE_MANIFEST_TYPES, MAX_ARCHIVE_BYTES, MAX_TAR_MEMBERS,
-    _PlainTarMember, _directory, _opened, _stream_digest,
+    _PlainTarMember, _directory, _identity, _opened, _stream_digest,
 )
 
 
@@ -96,6 +97,37 @@ def _writer(directory):
                 "Optional output directory ownership changed")
 
 
+def _save_archive(parent, docker, identifiers):
+    require(isinstance(docker.context, str) and re.fullmatch(r"[A-Za-z0-9_.-]+", docker.context),
+            "Exact admitted local Docker context required")
+    descriptor = os.open(ARCHIVE, os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
+    with os.fdopen(descriptor, "w+b") as archive:
+        before = os.fstat(descriptor)
+        # Docker's --output replaces the destination. Keep custody of the archive
+        # descriptor and give the admitted CLI only the immutable image IDs.
+        try:
+            result = docker.runner(["docker", "--context", docker.context, "image", "save", *identifiers],
+                                   stdin=subprocess.DEVNULL, stdout=archive, stderr=subprocess.DEVNULL,
+                                   timeout=300, env=docker.environment, check=False)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise SmokeError("Docker image did not complete") from error
+        if result.returncode != 0:
+            raise SmokeError(f"Docker image failed (exit {result.returncode})")
+        archive.flush()
+        os.fsync(descriptor)
+        after = os.fstat(descriptor)
+        require(os.path.samestat(before, after) and stat.S_ISREG(after.st_mode)
+                and after.st_uid == os.geteuid() and after.st_nlink == 1 and stat.S_IMODE(after.st_mode) == 0o600
+                and 0 < after.st_size <= MAX_ARCHIVE_BYTES, "Bounded private owned optional archive required")
+        archive.seek(0)
+        digest = _stream_digest(archive, after.st_size)
+        named = os.stat(ARCHIVE, dir_fd=parent, follow_symlinks=False)
+        require(_identity(after) == _identity(os.fstat(descriptor)) == _identity(named)
+                and named.st_uid == os.geteuid() and named.st_nlink == 1,
+                "Private owned optional archive changed during save or readback")
+        return {"sha256": digest, "sizeBytes": after.st_size}
+
+
 def _baseline(directory, revision, manifest_pin, expected_origin):
     require(_matches(REVISION, revision) and _matches(HASH, manifest_pin), "Exact baseline source and independent manifest pin required")
     with _directory(directory) as parent:
@@ -141,7 +173,8 @@ def _report(role, report, rows, revision, baseline):
             and all(type(item) is dict and item.get("status") == "passed" for item in checks), "All exact optional runtime checks must pass")
     evidence = report.get("images")
     require(type(evidence) is dict and set(evidence) == set(COMPONENTS), "Optional runtime report must identify the exact retained four-image fixture")
-    for component, value in baseline["candidate"]["components"].items():
+    for component in COMPONENTS:
+        value = baseline["candidate"]["components"][component]
         require(_projection(evidence[component]) == {"id": value["imageId"], "revision": value.get("sourceRevision", revision), "user": value["runtimeUser"]},
                 "Optional runtime evidence uses a different baseline image")
     identity = _image(role, rows, revision)
@@ -266,17 +299,10 @@ def create_bundle(output_dir, *, expected_revision, baseline_dir, baseline_manif
     with _writer(output_dir) as parent:
         for name, raw in raw_files.items():
             _write(parent, name, raw)
-        _write(parent, ARCHIVE, b"")
-        before = os.stat(ARCHIVE, dir_fd=parent, follow_symlinks=False)
         identifiers = [components[role]["imageId"] for role in sorted(components)]
-        docker.run(["image", "save", "--output", str(output_dir / ARCHIVE), *identifiers], timeout=300)
-        after = os.stat(ARCHIVE, dir_fd=parent, follow_symlinks=False)
-        require(stat.S_ISREG(after.st_mode) and (before.st_dev, before.st_ino) == (after.st_dev, after.st_ino)
-                and after.st_uid == os.geteuid() and after.st_nlink == 1 and stat.S_IMODE(after.st_mode) == 0o600,
-                "Docker save replaced the private owned optional archive")
-        files = {}
-        for name in (*raw_files, ARCHIVE):
-            with _opened(parent, name, MAX_ARCHIVE_BYTES if name == ARCHIVE else MAX_METADATA) as (source, size):
+        files = {ARCHIVE: _save_archive(parent, docker, identifiers)}
+        for name in raw_files:
+            with _opened(parent, name, MAX_METADATA) as (source, size):
                 files[name] = {"sha256": _stream_digest(source, size), "sizeBytes": size}
         require(shutil.disk_usage(output_dir).free >= 1024**3, "Optional archive consumed the operating reserve")
         manifest = {"schemaVersion": 1, "kind": "warpdrive-tested-optional-image-bundle", "revision": expected_revision,

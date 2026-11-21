@@ -59,10 +59,15 @@ export const operationsRouter = router({
     }),
   ),
   events: protectedProcedure
-    .input(z.strictObject({ cursor: historyCursor.optional() }))
+    .input(
+      z.strictObject({
+        cursor: historyCursor.optional(),
+        component: z.enum(["core_api", "web"]).optional(),
+      }),
+    )
     .query(({ ctx, input, signal }) =>
       withOperationsAdminRead(ctx, signal, (tx, installationId, bounded) =>
-        readOperationsEvents(tx, installationId, bounded, input.cursor),
+        readOperationsEvents(tx, installationId, bounded, input.cursor, input.component),
       ),
     ),
 });

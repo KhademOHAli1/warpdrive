@@ -2,22 +2,30 @@ import { resolveVersion } from "@/features/release/resolveVersion";
 import { declareWebIdentity } from "@/features/release/webIdentity";
 import packageJson from "../../package.json";
 
+export function parseHttpOrigin(value: string): string | null {
+  if (!URL.canParse(value)) return null;
+  const url = new URL(value);
+  return ["http:", "https:"].includes(url.protocol) && url.href === `${url.origin}/`
+    ? url.origin
+    : null;
+}
+
 /** Presentation needs an HTTP origin, never database or provider credentials. */
 export function coreOrigin(): string {
   const value = process.env.CORE_API_ORIGIN;
-  if (value === undefined || value === "" || !URL.canParse(value))
-    throw new Error("CORE_API_ORIGIN is required");
-  const url = new URL(value);
-  if (
-    !["http:", "https:"].includes(url.protocol) ||
-    url.username ||
-    url.password ||
-    url.pathname !== "/" ||
-    url.search ||
-    url.hash
-  )
-    throw new Error("CORE_API_ORIGIN must be an HTTP origin");
-  return url.origin;
+  if (value === undefined || value === "") throw new Error("CORE_API_ORIGIN is required");
+  const origin = parseHttpOrigin(value);
+  if (origin === null) throw new Error("CORE_API_ORIGIN must be an HTTP origin");
+  return origin;
+}
+
+/** Compare readiness against the operator-owned public origin when configured. */
+export function webPublicOrigin(): string | null {
+  const value = process.env.WEB_PUBLIC_ORIGIN;
+  if (value === undefined || value === "") return null;
+  const origin = parseHttpOrigin(value);
+  if (origin === null) throw new Error("WEB_PUBLIC_ORIGIN must be an HTTP origin");
+  return origin;
 }
 
 /** Transport identity only; the backend still authenticates every user's actual session. */
@@ -28,10 +36,15 @@ export function coreProxyToken(): string {
   return token;
 }
 
-export function frontendClientIp(incoming: Headers): string | null {
+export function frontendTrustedProxyHeader(): "none" | "x-real-ip" | "cf-connecting-ip" {
   const trusted = process.env.FRONTEND_TRUSTED_PROXY_HEADER ?? "none";
-  if (!["none", "x-real-ip", "cf-connecting-ip"].includes(trusted))
-    throw new Error("Invalid FRONTEND_TRUSTED_PROXY_HEADER");
+  if (trusted === "none" || trusted === "x-real-ip" || trusted === "cf-connecting-ip")
+    return trusted;
+  throw new Error("Invalid FRONTEND_TRUSTED_PROXY_HEADER");
+}
+
+export function frontendClientIp(incoming: Headers): string | null {
+  const trusted = frontendTrustedProxyHeader();
   return trusted === "none" ? null : incoming.get(trusted);
 }
 

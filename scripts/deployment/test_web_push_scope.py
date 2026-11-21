@@ -9,6 +9,15 @@ from web_release_inputs import STYLE_FILE
 
 
 class PushScopeTests(TestCase):
+    def test_production_workflow_uses_the_scope_for_main_pushes(self):
+        workflow = Path(__file__).resolve().parents[2] / ".github/workflows/production-images.yml"
+        tooling, images = workflow.read_text(encoding="utf-8").split("\n  images:\n", 1)
+        self.assertIn("independent_web: ${{ steps.scope.outputs.independent_web }}", tooling)
+        self.assertIn("if: github.event_name == 'push'\n        id: scope", tooling)
+        self.assertIn('web_push_scope.py "$PREVIOUS_REVISION" "$CURRENT_REVISION"', tooling)
+        self.assertIn("echo 'independent_web=true'", tooling)
+        self.assertIn("if: needs.tooling.outputs.independent_web != 'true'", images)
+
     def test_functional_profile_keeps_backend_source_and_reviewed_adapters_fixed(self):
         module = "src/components/shell/FeatureView.tsx"
         adapter = "src/components/shell/FeatureAdapter.tsx"

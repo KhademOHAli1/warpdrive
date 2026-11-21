@@ -29,12 +29,14 @@ sys.dont_write_bytecode = True
 
 try:
     from .bundle import load_bundle
+    from . import headless_fixture
     from .component_inputs import content_hash as input_receipt_hash, load_receipt as load_input_receipt, verify_current as verify_current_inputs
     from .image_smoke import ImageSmoke, SmokeError, COMPONENTS, OWNER_LABEL, HEALTH_PROBE, sanitized_log, utc_now, validate_revision
     from .loopback_forwarder import owned_bridge_forwarder
     from .registry_smoke import IsolatedDocker
 except ImportError:
     from bundle import load_bundle
+    import headless_fixture
     from component_inputs import content_hash as input_receipt_hash, load_receipt as load_input_receipt, verify_current as verify_current_inputs
     from image_smoke import ImageSmoke, SmokeError, COMPONENTS, OWNER_LABEL, HEALTH_PROBE, sanitized_log, utc_now, validate_revision
     from loopback_forwarder import owned_bridge_forwarder
@@ -87,12 +89,18 @@ def admit_bundle_source(root, directory, candidate, revision):
     # The producer imports application code too. A quiet Git diff or harness-only
     # check cannot prove those bytes when index optimization flags hide changes.
     version = candidate.get("schemaVersion")
-    if version == 3:
+    from candidate import HEADLESS_VERSION, core_input_facts
+
+    if version in {3, HEADLESS_VERSION}:
         from candidate import load
         from web_sdk_full_receipt import candidate_input_facts, verify_current_web_sdk_full_receipt
 
         receipt = load(Path(directory) / "component-inputs.json")
         facts = candidate_input_facts(receipt, expected_revision=revision)
+        if version == HEADLESS_VERSION:
+            core = core_input_facts(receipt, revision)
+            facts["components"]["core-api"] = core
+            facts["inputProvenance"]["coreInputPolicySha256"] = core["inputPolicySha256"]
         if (candidate.get("inputProvenance") != facts["inputProvenance"] or
                 any(any(candidate["components"][name].get(key) != value for key, value in component.items())
                     for name, component in facts["components"].items())):
@@ -100,7 +108,7 @@ def admit_bundle_source(root, directory, candidate, revision):
         verify_current_web_sdk_full_receipt(root, receipt, expected_revision=revision)
         return {"freshInputReceipt": True, "rawHeadBlobBinding": True}
     if version != 2:
-        raise BrowserRealtimeError("Current browser journeys require a Version2 or Version3 source-input bundle")
+        raise BrowserRealtimeError("Current browser journeys require a source-input bundle")
     receipt = load_input_receipt(Path(directory) / "component-inputs.json")
     provenance = candidate.get("inputProvenance")
     if (not isinstance(provenance, dict) or provenance.get("state") != "current-source-inputs-bound"
@@ -284,6 +292,7 @@ class BrowserRealtimeSmoke:
         self.docker, self.bundle_dir, self.output_dir = docker, Path(bundle_dir), Path(output_dir)
         self.revision = validate_revision(revision)
         self.fixture = self.browser = None
+        self.headless_core = None
         self.forwarders = []
         self.private = None
         self.report = {"schemaVersion": 1, "kind": "warpdrive-persistent-browser-realtime-smoke", "success": False,
@@ -325,6 +334,11 @@ class BrowserRealtimeSmoke:
         self.fixture = ImageSmoke(self.docker, images, self.output_dir / "fixture", self.revision)
         self.fixture.inspect_images()
         self.report["images"] = self.fixture.report["images"]
+        core = self.candidate["components"].get("core-api")
+        if core is not None:
+            identity = headless_fixture.admit_core_image(self.fixture, core)
+            self.headless_core = identity["id"]
+            self.report["images"] = {**self.report["images"], "core-api": identity}
         return {"sourceRevisionBound": True, "exactFinalImages": True, "archiveSha256": loaded["provenance"]["archiveSha256"], "rebuilds": 0}
 
     def verify_source_inputs(self):
@@ -345,7 +359,7 @@ class BrowserRealtimeSmoke:
         (tls / "key.pem").chmod(0o444)
         (tls / "cert.pem").chmod(0o444)
         web_name = self.fixture.prefix + "-web"
-        config = "{\n admin off\n auto_https off\n}\nhttps://:8443 {\n tls /fixture/cert.pem /fixture/key.pem\n @realtime path /_ws\n reverse_proxy @realtime realtime:8080\n reverse_proxy " + web_name + ":3000\n}\n"
+        config = "{\n admin off\n auto_https off\n}\nhttps://:8443 {\n tls /fixture/cert.pem /fixture/key.pem\n @realtime path /_ws\n reverse_proxy @realtime realtime:8080\n reverse_proxy " + web_name + ":3000 {\n header_up X-Real-IP {remote_host}\n }\n}\n"
         (tls / "Caddyfile").write_text(config)
         (tls / "Caddyfile").chmod(0o444)
         proxy = self.fixture.start_container("browser-proxy", "caddy:2-alpine", ["caddy", "run", "--config", "/fixture/Caddyfile", "--adapter", "caddyfile"],
@@ -361,11 +375,15 @@ class BrowserRealtimeSmoke:
         self.fixture.env["BASE_URL"] = base
         self.fixture.env["AUTH_TRUSTED_PROXY_HEADER"] = "x-real-ip"
         self.realtime = self.fixture.start_container("realtime", self.fixture.report["images"]["realtime"]["id"], ["bun", "dist/ws.mjs"])
-        self.web = self.fixture.start_container("web", self.fixture.report["images"]["web"]["id"], ["bun", "--bun", "next", "start"], memory="1536m")
+        web_environment = headless_fixture.web_environment(self.fixture, "x-real-ip") if self.headless_core else self.fixture.env
+        self.web = self.fixture.start_container("web", self.fixture.report["images"]["web"]["id"], ["bun", "--bun", "next", "start"],
+                                                environment=web_environment, memory="1536m")
         self.fixture.wait_for(lambda: self.docker.run(["exec", self.realtime, "bun", "--no-env-file", "-e", LISTENER_PROBE], timeout=5, check=False).returncode == 0,
                               "realtime browser fixture listener", 45, self.realtime)
         self.fixture.wait_for(lambda: self.docker.run(["exec", self.web, "bun", "--no-env-file", "-e", HEALTH_PROBE], timeout=10, check=False).returncode == 0,
                               "native browser Web HTTP readiness", 90, self.web)
+        if self.headless_core:
+            headless_fixture.start_core(self.fixture, self.headless_core, f"http://{self.web}:3000")
         database_port = int(pg_forwarder.authority.split(":")[1])
         self.source_env = source_runtime_environment(self.host_env, self.fixture.env, database_port)
         browser_dir = self.output_dir / "browser"

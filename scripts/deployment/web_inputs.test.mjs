@@ -59,16 +59,16 @@ void test("bounded policy keeps app roots, helper edges and CSS while omitting o
   assert.deepEqual(WEB_INPUT_POLICY.sourceRules, WEB_SOURCE_RULES);
 });
 
-void test("reviewed next-intl 4.15.0 admission remains exact and retains every other toolchain gate", async () => {
+void test("reviewed next-intl 4.15.3 admission remains exact and retains every other toolchain gate", async () => {
   const versions = WEB_INPUT_POLICY.reviewedLockedVersions;
-  assert.equal(versions["next-intl"], "4.15.0");
+  assert.equal(versions["next-intl"], "4.15.3");
   const packages = Object.fromEntries(
     Object.entries(versions).map(([name, version]) => [name, [`${name}@${version}`]]),
   );
   const f = fixture();
   const manifest = { dependencies: { next: versions.next } };
   await f.run({ manifest, lock: { packages } });
-  for (const version of ["4.14.10", "4.15.1", "4.16.0", "^4.15.0"]) {
+  for (const version of ["4.14.10", "4.15.0", "4.16.0", "^4.15.3"]) {
     await assert.rejects(
       f.run({
         manifest,

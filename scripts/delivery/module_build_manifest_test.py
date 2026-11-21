@@ -22,12 +22,12 @@ class ModuleBuildManifestTests(unittest.TestCase):
         self.git("config", "user.email", "version@example.invalid")
         self.write("package.json", {"version": "1.7.1"})
         modules = {role: {"name": role, "kind": "service", "version": "1.7.1",
-                          "paths": [role + ".ts"], "dependencies": []} for role in build.ROLES}
+                          "paths": [role + ".ts"], "dependencies": []} for role in build.HEADLESS_ROLES}
         registry = {"schemaVersion": 1, "kind": versions.KIND, "versionMeaning": versions.MEANING,
                     "baselineSourceRevision": "a" * 40, "modules": modules, "sharedPaths": [],
                     "ignoredPaths": [versions.REGISTRY], "ignoreVersionOnlyChanges": ["package.json"]}
         self.write(versions.REGISTRY, registry)
-        for role in build.ROLES:
+        for role in build.HEADLESS_ROLES:
             (self.root / (role + ".ts")).write_text("export const value = 1;\n")
         self.git("add", ".")
         self.git("commit", "-qm", "Create versioned local fixture")
@@ -77,6 +77,20 @@ class ModuleBuildManifestTests(unittest.TestCase):
     def test_wrong_product_version_is_rejected_against_committed_package(self):
         with self.assertRaises(versions.VersionError):
             self.result(release_version="1.7.2")
+
+    def test_headless_manifest_joins_exact_core_without_reusing_web_identity(self):
+        identifier = "sha256:" + "5" * 64
+        self.candidate["schemaVersion"] = 4
+        self.candidate["components"]["core-api"] = {"imageId": identifier, "sourceRevision": self.revision}
+        self.smoke.update(kind="warpdrive-headless-final-image-smoke", coreImage={"id": identifier, "revision": self.revision})
+        self.inspections["core-api"] = [{"Id": identifier, "Config": {"Labels": {"org.opencontainers.image.revision": self.revision}}}]
+        self.evidence["inspections"]["core-api"] = {"sha256": "d" * 64, "bytes": 1}
+        result = self.result()
+        self.assertEqual(set(result["builtModules"]), build.HEADLESS_ROLES)
+        self.assertEqual(result["builtModules"]["core-api"]["testedNativeImageId"], identifier)
+        self.smoke["coreImage"]["id"] = self.smoke["images"]["web"]["id"]
+        with self.assertRaises(versions.VersionError):
+            self.result()
 
     def test_native_id_mismatch_is_rejected(self):
         changed = deepcopy(self.inspections)

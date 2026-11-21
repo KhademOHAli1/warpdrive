@@ -5,10 +5,13 @@
   "sourcesTitle": "Observation sources",
   "sourcesInfo": "Enabled enrollment allows a source to report. It does not mean a service is healthy.",
   "logsTitle": "Operations history",
-  "logsInfo": "Incident and receipt metadata for the visible pages. Receipt payloads are not shown.",
+  "logsInfo": "Browse incidents and retained deployment diagnostics for this installation.",
   "incidentsTitle": "Incidents",
   "bellOpenIncidents": "View open operations incidents",
   "eventsTitle": "Observation receipts",
+  "filterComponent": "Filter receipts by component",
+  "allComponents": "All components",
+  "processGeneration": "Process generation",
   "refresh": "Refresh",
   "previous": "Previous page",
   "next": "Next page",
@@ -130,6 +133,14 @@
     "rejected": "Rejected",
     "unknown": "Unknown"
   },
+  "deploymentStages": {
+    "switch_intent": "Route switch started. Verify which Web generation the ingress serves before retrying.",
+    "switch_acknowledged": "Ingress acknowledged the route switch. Check public health and the accepted Web generation before proceeding.",
+    "rollback_intent": "Route restoration started. Verify ingress and health of the retained Web generation.",
+    "accepted": "The controller confirmed the route and health of the selected Web generation.",
+    "rolled_back": "The controller restored the retained Web generation after the candidate failed its public health check.",
+    "rejected": "The route stayed on the retained Web generation. Check candidate startup, retained health and ingress admission."
+  },
   "providers": {
     "smtp": "SMTP",
     "imap": "IMAP",
@@ -150,6 +161,18 @@
     "restore_bytes_verified": "Restore bytes verified"
   },
   "reasons": {
+    "core_configuration_invalid": "Core configuration failed validation. Check the runtime profile and secret-file references.",
+    "core_startup_failed": "Core failed during startup. Check the preceding host diagnostics for this process.",
+    "core_startup_timeout": "Core exceeded its startup deadline. Check database, queue initialization and network availability.",
+    "core_db_role_rejected": "Core rejected its PostgreSQL runtime role. Check runtime grants and the migration ledger.",
+    "core_producer_failed": "Core's queue producer failed. Check the queue schema, runtime grants and database availability.",
+    "core_database_failed": "Core lost its PostgreSQL connection. Check reachability, connection limits and database health.",
+    "core_listener_failed": "Core could not bind its listener. Check the configured address, port and port ownership.",
+    "core_readiness_failed": "Core failed its database or queue readiness probe. Check both dependencies.",
+    "core_readiness_timeout": "Core's readiness probe timed out. Check database latency and queue health.",
+    "core_transport_failed": "Core's HTTP transport failed. Check the runtime listener and host resource limits.",
+    "core_drain_failed": "Core reported a shutdown step failure. Check request, queue and database cleanup.",
+    "core_drain_timeout": "Core exceeded its shutdown deadline. Inspect host diagnostics before recycling the process.",
     "ok": "Check passed",
     "queue_backlog": "Queue backlog",
     "retry_pending": "Retry pending",

@@ -141,6 +141,46 @@ outbox. Pending delivery is reconciled before a newer observation. Unknown and
 unrelated journal states hold reporting and never invoke deployment. The Core-only
 activation and route-only reconciliation journals retain their own authority.
 
+### Core diagnostics after recovery
+
+Set up a dedicated `host_collector` enrollment and private outbox for each
+monitored Core target. Reuse that enrollment across process restarts. If an
+installation has a concurrently running candidate, enroll its reporter separately
+so its readiness cannot close an incident for the accepted Core process. Add the
+binding and unique signing key to the Operations collector configuration. The
+Core reporter uses the same private configuration shape as the Web reporter. Use
+an Operations collector image that supports the Core diagnostic fields and Web
+journal stages before enabling the updated reporters.
+
+Configure the host supervisor to keep the selected Core process's diagnostic
+stream when that process exits. Pass one `warpdrive.runtime.diagnostic` JSON
+record at a time on stdin to this command under the Operations account:
+
+```sh
+python3 -B scripts/deployment/core_runtime_monitor.py \
+  --outbox /private/operations/core-outbox \
+  --reporter-config /private/operations/core-reporter.json
+```
+
+Submit records in observed order. Keep the outbox and its enrollment together
+across restarts. If submission is uncertain, run the same command with
+`--retry-pending` before submitting a later record. The reporter stores the
+original bounded event before sending it. The reporter and collector can run
+while Core is down. If the database is also down, keep the outbox and replay
+after it returns. A subsequent `CORE_READY` from the same target records recovery
+and retains the previous failure in receipt history. A process killed before
+logging needs independent host availability detection.
+
+Current administrators can open
+**Settings → Logs → Operations history → Observation receipts** or navigate to
+`/settings/logs#operations-history`. Filter by **Core API** or **Web application**.
+Core receipts show the observed time, the stable failure code, process generation
+and troubleshooting guidance. Web receipts show the observed rollout outcome and
+journal stage, with the accepted revision and proof fingerprint when present.
+Every payload field displayed comes from a bounded allowlist. The outbox and
+installed reporter remain host-managed, so Core diagnostic receipts begin only
+after the supervisor handoff and collector have been configured.
+
 ## First increment: native final-image gate
 
 `deploy/images/Dockerfile` supplies four targets:
@@ -330,7 +370,7 @@ graceful TERM status 143; the raw exit status remains evidence. Other nonzero
 statuses, unknown commands, identity changes and forced or OOM stops remain held.
 
 Select `fresh_recovery_rehearsal` only with the fresh and Web rehearsals. It uses
-pinned Restic 0.18.0 and the runner's matching PostgreSQL 16 control tool. The cold
+pinned Restic 0.20.0 and the runner's matching PostgreSQL 16 control tool. The cold
 fixture requires root access to the actual local Docker volume paths. Source,
 SDK context, archive, API and registry verification run as the original runner.
 Only the cold-recovery callback elevates, with pinned inputs and a separate private

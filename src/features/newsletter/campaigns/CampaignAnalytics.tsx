@@ -44,6 +44,10 @@ interface Report {
   to: string;
   type: AnalyticsMetric;
 }
+interface CampaignPoint {
+  timestamp: string;
+  [series: `campaign${number}`]: number;
+}
 const colors = ["var(--link)", "#ac6b26", "#26a69a", "#805ad5", "#cb5379"];
 
 function rangeDefaults() {
@@ -54,10 +58,10 @@ function rangeDefaults() {
 }
 
 function metricRows(rows: AnalyticsRow[], names: Map<number, string>) {
-  const series = new Map<string, { timestamp: string } & Record<string, string | number>>();
+  const series = new Map<string, CampaignPoint>();
   for (const row of rows) {
     if (!("timestamp" in row)) continue;
-    const point = series.get(row.timestamp) ?? { timestamp: row.timestamp };
+    const point: CampaignPoint = series.get(row.timestamp) ?? { timestamp: row.timestamp };
     point[`campaign${row.campaign_id}`] = row.count;
     series.set(row.timestamp, point);
   }

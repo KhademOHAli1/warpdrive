@@ -9,12 +9,9 @@ import shutil
 import stat
 import sys
 
-from candidate import COMPONENTS, CandidateError, REVISION, create_candidate, load, require, sha256
+from candidate import CandidateError, REVISION, components_for_version, create_candidate, load, require, sha256
 from image_smoke import Docker, SmokeError
 
-METADATA_FILES = ("candidate.json", "smoke/report.json", *(
-    f"inspections/{name}.json" for name in COMPONENTS
-))
 INPUT_RECEIPT = "component-inputs.json"
 ARCHIVE = "core-images.tar"
 MANIFEST = "bundle.json"
@@ -23,8 +20,13 @@ MAX_ARCHIVE_BYTES = 8 * 1024 ** 3
 
 
 def metadata_files(version):
-    require(type(version) is int and version in {1, 2, 3}, "unsupported bundle/candidate version")
-    return METADATA_FILES if version == 1 else (*METADATA_FILES, INPUT_RECEIPT)
+    inventory = ("candidate.json", "smoke/report.json", *(
+        f"inspections/{name}.json" for name in components_for_version(version)
+    ))
+    return inventory if version == 1 else (*inventory, INPUT_RECEIPT)
+
+
+METADATA_FILES = metadata_files(1)
 
 
 def regular_file(root: Path, name: str, maximum: int) -> Path:
@@ -52,11 +54,11 @@ def reconstruct_candidate(directory: Path, expected_revision: str) -> dict:
         regular_file(directory, name, MAX_METADATA_BYTES)
     report_path = directory / "smoke/report.json"
     inspections = {}
-    for name in COMPONENTS:
+    for name in components_for_version(stored["schemaVersion"]):
         rows = load(directory / f"inspections/{name}.json")
         require(isinstance(rows, list) and len(rows) == 1, "one image inspection per component required")
         inspections[name] = rows[0]
-    receipt = load(directory / INPUT_RECEIPT) if stored["schemaVersion"] in {2, 3} else None
+    receipt = load(directory / INPUT_RECEIPT) if stored["schemaVersion"] != 1 else None
     candidate = create_candidate(expected_revision, load(report_path), sha256(report_path), inspections,
                                  input_receipt=receipt)
     require(json.dumps(stored, sort_keys=True, allow_nan=False)
@@ -94,7 +96,7 @@ def create_bundle(candidate_dir: Path, output_dir: Path, *, expected_revision: s
         destination = output_dir / name
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(candidate_dir / name, destination)
-    identifiers = [candidate["components"][name]["imageId"] for name in COMPONENTS]
+    identifiers = [candidate["components"][name]["imageId"] for name in components_for_version(candidate["schemaVersion"])]
     docker.run(["image", "save", "--output", str(output_dir / ARCHIVE), *identifiers], timeout=600)
     archive = regular_file(output_dir, ARCHIVE, MAX_ARCHIVE_BYTES)
     archive.chmod(0o600)
@@ -106,7 +108,7 @@ def create_bundle(candidate_dir: Path, output_dir: Path, *, expected_revision: s
     manifest = {"schemaVersion": candidate["schemaVersion"], "kind": "warpdrive-tested-image-bundle",
                 "revision": expected_revision, "platform": "linux/amd64",
                 "origin": origin, "files": files}
-    if candidate["schemaVersion"] in {2, 3}:
+    if candidate["schemaVersion"] != 1:
         manifest["releaseRevision"] = expected_revision
     with (output_dir / MANIFEST).open("x") as output:
         output.write(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
@@ -121,9 +123,8 @@ def load_bundle(directory: Path, *, expected_revision: str) -> dict:
     version = manifest.get("schemaVersion")
     inventory = metadata_files(version)
     require(set(manifest) == {"schemaVersion", "kind", "revision", "platform", "origin", "files"}
-            | ({"releaseRevision"} if version in {2, 3} else set()), "invalid bundle manifest")
-    require(type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] in {1, 2, 3}
-            and manifest["kind"] == "warpdrive-tested-image-bundle", "unsupported bundle schema")
+            | ({"releaseRevision"} if version != 1 else set()), "invalid bundle manifest")
+    require(manifest["kind"] == "warpdrive-tested-image-bundle", "unsupported bundle schema")
     require(manifest["revision"] == expected_revision and manifest["platform"] == "linux/amd64",
             "bundle source or platform mismatch")
     require(version == 1 or manifest["releaseRevision"] == expected_revision, "bundle release revision differs")

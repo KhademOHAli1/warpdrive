@@ -465,7 +465,8 @@ def publish(registry, docker, identities, proofs):
         manifest_digest, manifest = registry.client.manifest(tag)
         reference = tag.rsplit(":", 1)[0] + "@" + manifest_digest
         config = registry.client.verify_config(reference, identity["configDigest"], identity["sourceRevision"])
-        require(config["imageId"] == identity["configDigest"], "Published config differs from archived source identity")
+        require(manifest["config"]["digest"] == config["imageId"] == identity["configDigest"],
+                "Published config differs from archived source identity")
         rows = docker.json(["image", "inspect", reference], timeout=10)
         require(reference in (rows[0].get("RepoDigests") or []), "Literal local published RepoDigest missing")
         adapted = deepcopy(identity)

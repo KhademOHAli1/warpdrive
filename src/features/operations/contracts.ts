@@ -75,6 +75,29 @@ export const operationsQueues = [
 ] as const;
 export const operationsStates = ["healthy", "degraded", "failed", "unknown", "unchecked"] as const;
 export type OperationsState = (typeof operationsStates)[number];
+export const coreOperationsFailureReasons = [
+  "core_configuration_invalid",
+  "core_startup_failed",
+  "core_startup_timeout",
+  "core_db_role_rejected",
+  "core_producer_failed",
+  "core_database_failed",
+  "core_listener_failed",
+  "core_readiness_failed",
+  "core_readiness_timeout",
+  "core_transport_failed",
+  "core_drain_failed",
+  "core_drain_timeout",
+] as const;
+const coreFailureReasons: readonly string[] = coreOperationsFailureReasons;
+export const webDeploymentStages = [
+  "switch_intent",
+  "switch_acknowledged",
+  "rollback_intent",
+  "accepted",
+  "rolled_back",
+  "rejected",
+] as const;
 const reasonsByState = {
   healthy: ["ok"],
   degraded: ["queue_backlog", "retry_pending", "limited"],
@@ -86,6 +109,7 @@ const reasonsByState = {
     "operation_failed",
     "key_unavailable",
     "integrity_failed",
+    ...coreOperationsFailureReasons,
   ],
   unknown: ["not_reported", "sample_failed", "sample_timeout", "unsupported", "submission_unknown"],
   unchecked: ["not_checked", "not_configured"],
@@ -129,6 +153,10 @@ export const operationsObservationSchema = z
       ...health,
       installed: installedIdentity,
       latencyMs: z.number().int().min(0).max(300_000).nullable(),
+      processGeneration: z
+        .uuidv4()
+        .regex(/^[0-9a-f-]+$/)
+        .optional(),
     }),
     z.strictObject({
       kind: z.literal("feature"),
@@ -156,6 +184,7 @@ export const operationsObservationSchema = z
       component: z.enum(operationsComponents),
       ...health,
       outcome: z.enum(["accepted", "rolled_back", "rejected", "unknown"]),
+      stage: z.enum(webDeploymentStages).optional(),
       sourceRevision: z
         .string()
         .regex(/^[a-f0-9]{40}$/u)
@@ -218,6 +247,20 @@ export const operationsObservationSchema = z
     },
   )
   .refine(
+    (observation) => {
+      const coreComponent =
+        observation.kind === "component" && observation.component === "core_api";
+      if (coreFailureReasons.includes(observation.reason))
+        return coreComponent && observation.processGeneration !== undefined;
+      return (
+        observation.kind !== "component" ||
+        observation.processGeneration === undefined ||
+        coreComponent
+      );
+    },
+    { message: "Core diagnostics require a Core component observation" },
+  )
+  .refine(
     (observation) =>
       observation.kind !== "recovery" ||
       observation.state !== "healthy" ||
@@ -240,6 +283,17 @@ export const operationsObservationSchema = z
   .refine(
     (observation) => {
       if (observation.kind !== "deployment") return true;
+      if (
+        observation.stage !== undefined &&
+        (observation.component !== "web" ||
+          !(observation.outcome === "unknown"
+            ? ["switch_intent", "switch_acknowledged", "rollback_intent"].includes(
+                observation.stage,
+              )
+            : observation.stage === observation.outcome ||
+              (observation.stage === "accepted" && observation.outcome === "rolled_back")))
+      )
+        return false;
       if (observation.outcome === "unknown")
         return (
           observation.state === "unknown" &&

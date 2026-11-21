@@ -20,7 +20,7 @@ import native_image_identity as native
 import publication_gate
 from installed_web_stage import _publish_record
 from bundle import ARCHIVE as FULL_ARCHIVE, INPUT_RECEIPT, MANIFEST, MAX_METADATA_BYTES
-from candidate import COMPONENTS
+from candidate import HEADLESS_VERSION, components_for_version
 import web_candidate as web
 from web_sdk_full_receipt import KIND as SDK_INPUT_KIND, validate_web_sdk_full_receipt
 
@@ -188,8 +188,8 @@ def project_downloaded_sdk_web_archive(directory, destination, *, admission, exp
         expected_images, expected_web_manifest_digest, archive_mode="docker-save-compatibility"):
     """Return an explicit projection receipt after atomically publishing one Web tar.
 
-    ``expected_images`` contains independent config/source/role metadata for all
-    four tested roles, as required by native_image_identity.verify_archive.
+    ``expected_images`` contains independent config/source/role metadata for every
+    original role, including Core in a headless archive.
     The API admission and its digest must already be authenticated by the caller.
     The returned loader-compatible image uses the config digest deliberately;
     original tested native IDs and transport custody are retained separately.
@@ -202,20 +202,22 @@ def project_downloaded_sdk_web_archive(directory, destination, *, admission, exp
     require(_match(HASH, expected_bundle_manifest_sha256) and _match(HASH, expected_archive_sha256)
             and type(expected_archive_bytes) is int and 1024 <= expected_archive_bytes <= MAX_ORIGINAL_BYTES
             and _match(DIGEST, expected_web_manifest_digest), "Exact original custody and Web manifest pins required")
-    require(type(expected_images) is dict and set(expected_images) == set(COMPONENTS),
-            "Independent four-role native image expectations required")
     require(not destination.is_relative_to(directory) and not directory.is_relative_to(destination.parent),
             "Original and projected transport directories must be distinct")
     loaded = publication_gate.verify_downloaded(admission, directory, expected_revision=expected_revision)
     candidate = loaded["candidate"]
-    require(candidate.get("schemaVersion") == 3 and candidate.get("kind") == "warpdrive-image-candidate"
-            and set(candidate.get("components", {})) == set(COMPONENTS)
-            and candidate.get("deploymentAuthorized") is False, "Ordinary schema3 full four-image candidate required")
+    version = candidate.get("schemaVersion")
+    require(type(version) is int and version in {3, HEADLESS_VERSION}
+            and candidate.get("kind") == "warpdrive-image-candidate" and candidate.get("deploymentAuthorized") is False,
+            "Original schema3 or headless SDK image candidate required")
+    roles = set(components_for_version(version))
+    require(type(expected_images) is dict and set(expected_images) == roles and set(candidate["components"]) == roles,
+            "Independent native image expectations required for all original image roles")
     require(loaded["provenance"] == {"archiveSha256": expected_archive_sha256,
             "bundleManifestSha256": expected_bundle_manifest_sha256}, "Original bundle custody differs")
     with web._directory(directory) as parent:
         manifest = _metadata(parent, MANIFEST, expected_bundle_manifest_sha256)
-        require(manifest["schemaVersion"] == 3 and manifest["kind"] == "warpdrive-tested-image-bundle",
+        require(manifest["schemaVersion"] == version and manifest["kind"] == "warpdrive-tested-image-bundle",
                 "Original full-bundle kind must remain explicit")
         sdk = _metadata(parent, INPUT_RECEIPT, manifest["files"][INPUT_RECEIPT]["sha256"])
         require(sdk.get("kind") == SDK_INPUT_KIND, "A genuine full SDK source input receipt is required")
@@ -276,7 +278,7 @@ def project_downloaded_sdk_web_archive(directory, destination, *, admission, exp
                 if not published:
                     os.fsync(output_parent)
     return {"schemaVersion": 1, "kind": KIND, "policy": POLICY, "sourceRevision": expected_revision,
-        "platform": "linux/amd64", "original": {"kind": manifest["kind"], "schemaVersion": 3,
+        "platform": "linux/amd64", "original": {"kind": manifest["kind"], "schemaVersion": version,
             "publicationAdmissionSha256": expected_admission_sha256, "origin": loaded["origin"],
             "bundleManifestSha256": expected_bundle_manifest_sha256, "archiveSha256": expected_archive_sha256,
             "archiveSizeBytes": expected_archive_bytes, "testedNativeImageId": candidate["components"]["web"]["imageId"],

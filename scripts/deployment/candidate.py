@@ -11,6 +11,10 @@ import sys
 from component_inputs import InputError, content_hash as input_hash, load_receipt, validate_receipt, verify_current
 
 COMPONENTS = ("web", "worker", "realtime", "migrator")
+HEADLESS_VERSION = 4
+HEADLESS_COMPONENTS = (*COMPONENTS, "core-api")
+HEADLESS_SMOKE_KIND = "warpdrive-headless-final-image-smoke"
+CORE_INPUT_POLICY = {"recipe": "deploy/images/Core.Dockerfile", "context": "exact-tracked-source"}
 REVISION = re.compile(r"[0-9a-f]{40}")
 IMAGE_ID = re.compile(r"sha256:[0-9a-f]{64}")
 SMOKE_CHECKS = (
@@ -21,6 +25,15 @@ SMOKE_CHECKS = (
     "web-startup-http-assets-and-stability",
     "realtime-unauthenticated-rejection",
     "worker-durable-job-across-restart",
+)
+HEADLESS_SMOKE_CHECKS = (
+    *SMOKE_CHECKS[:4],
+    "private-core-readiness-without-web",
+    "web-local-health-and-identity",
+    "web-login-assets-and-stability",
+    "native-session-ssr-and-durable-write-through-web",
+    *SMOKE_CHECKS[5:],
+    "independent-core-drain",
 )
 PENDING = [
     "exact-main-source-and-security-qualification",
@@ -59,15 +72,27 @@ def load(path: Path):
     return json.loads(path.read_text(), object_pairs_hook=unique)
 
 
+def components_for_version(version):
+    require(type(version) is int and version in {1, 2, 3, HEADLESS_VERSION}, "unsupported bundle/candidate version")
+    return HEADLESS_COMPONENTS if version == HEADLESS_VERSION else COMPONENTS
+
+
+def core_input_facts(receipt, revision):
+    return {"sourceRevision": revision, "inputPolicySha256": input_hash(CORE_INPUT_POLICY),
+            "inputSha256": receipt["web"]["gitInventorySha256"]}
+
+
 def create_candidate(revision: str, report: dict, report_digest: str, inspections: dict,
                      *, input_receipt: dict | None = None) -> dict:
-    if isinstance(input_receipt, dict) and input_receipt.get("kind") == "warpdrive-web-sdk-full-inputs":
-        from web_sdk_full_receipt import create_web_sdk_full_candidate
-
-        return create_web_sdk_full_candidate(revision, report, report_digest, inspections, input_receipt=input_receipt)
+    sdk = isinstance(input_receipt, dict) and input_receipt.get("kind") == "warpdrive-web-sdk-full-inputs"
+    headless = isinstance(report, dict) and report.get("kind") == HEADLESS_SMOKE_KIND
+    roles = HEADLESS_COMPONENTS if headless else COMPONENTS
+    require(not headless or sdk, "headless qualification requires exact SDK Web and tracked source inputs")
     require(bool(REVISION.fullmatch(revision)), "full lowercase source revision required")
     require(isinstance(report, dict) and type(report.get("schemaVersion")) is int
             and report["schemaVersion"] == 1, "invalid smoke report")
+    require(not headless or report.get("platform") == "linux/amd64",
+            "headless publication requires completed native linux/amd64 smoke")
     require(isinstance(report_digest, str) and bool(re.fullmatch(r"[0-9a-f]{64}", report_digest)),
             "valid smoke report hash required")
     require(report.get("success") is True, "image smoke did not succeed")
@@ -82,19 +107,22 @@ def create_candidate(revision: str, report: dict, report_digest: str, inspection
                 and isinstance(c.get("name"), str) and c["name"] for c in checks),
             "smoke has missing or unsuccessful checks")
     names = [c["name"] for c in checks]
-    require(tuple(names) == SMOKE_CHECKS, "the complete versioned image smoke check sequence is required")
+    require(tuple(names) == (HEADLESS_SMOKE_CHECKS if headless else SMOKE_CHECKS),
+            "the complete versioned image smoke check sequence is required")
     require(isinstance(report.get("limitations"), list) and report["limitations"],
             "scope limitations must remain explicit")
     images = report.get("images")
-    require(isinstance(images, dict) and set(images) == set(COMPONENTS), "all Core images required")
-    require(set(inspections) == set(COMPONENTS), "all image inspections required")
-    if input_receipt is not None:
+    require(isinstance(images, dict) and set(images) == set(COMPONENTS), "all smoke image identities required")
+    require(set(inspections) == set(roles), "all image inspections required")
+    if headless:
+        images = {**images, "core-api": report.get("coreImage")}
+    if input_receipt is not None and not sdk:
         try:
             validate_receipt(input_receipt)
         except (InputError, TypeError, KeyError) as error:
             raise CandidateError("component input receipt is not valid") from error
     components = {}
-    for name in COMPONENTS:
+    for name in roles:
         image = inspections[name]
         require(isinstance(image, dict), f"{name}: image inspection missing")
         identifier = image.get("Id", "")
@@ -113,10 +141,18 @@ def create_candidate(revision: str, report: dict, report_digest: str, inspection
                 and observed.get("revision") == revision and observed.get("user") == config.get("User"),
                 f"{name}: inspected artifact differs from smoke artifact")
         components[name] = {"imageId": identifier, "runtimeUser": config["User"], "registryRef": None}
-        if input_receipt is not None:
+        if name == "core-api":
+            require(labels.get("org.opencontainers.image.title") == "Warpdrive Core API"
+                    and config.get("Cmd") == ["bun", "--no-env-file", "dist/core-api.mjs"]
+                    and config.get("WorkingDir") == "/app" and config.get("ExposedPorts") == {"3010/tcp": {}}
+                    and not config.get("Volumes"), "Core inspection differs from the standalone runtime profile")
+        if input_receipt is not None and not sdk:
             components[name].update({"sourceRevision": revision,
                                      "inputSha256": input_receipt["components"][name]["componentInputSha256"],
                                      "inputPolicySha256": input_receipt["inputPolicySha256"]})
+    if headless:
+        require(len({component["imageId"] for component in components.values()}) == len(roles),
+                "headless component images must have distinct IDs")
     result = {
         "schemaVersion": 1,
         "kind": "warpdrive-image-candidate",
@@ -129,7 +165,18 @@ def create_candidate(revision: str, report: dict, report_digest: str, inspection
         "deploymentAuthorized": False,
         "pendingGates": list(PENDING),
     }
-    if input_receipt is not None:
+    if sdk:
+        from web_sdk_full_receipt import bind_web_sdk_full_candidate
+
+        bind_web_sdk_full_candidate(result, revision, inspections, input_receipt=input_receipt)
+        if headless:
+            # Core runs from the same staged exact Git inventory used by Web.
+            # The inventory is full-source provenance, with reuse qualified separately.
+            core = core_input_facts(input_receipt, revision)
+            components["core-api"].update(core)
+            result["inputProvenance"]["coreInputPolicySha256"] = core["inputPolicySha256"]
+            result["schemaVersion"] = HEADLESS_VERSION
+    elif input_receipt is not None:
         result.update({"schemaVersion": 2, "releaseRevision": revision,
                        "inputProvenance": {"state": "current-source-inputs-bound",
                                            "receiptSha256": input_hash(input_receipt),
@@ -168,8 +215,10 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "record":
+            report = load(args.report)
+            roles = HEADLESS_COMPONENTS if isinstance(report, dict) and report.get("kind") == HEADLESS_SMOKE_KIND else COMPONENTS
             inspections = {}
-            for name in COMPONENTS:
+            for name in roles:
                 rows = load(args.inspections / f"{name}.json")
                 require(isinstance(rows, list) and len(rows) == 1, f"{name}: expected exactly one inspected image")
                 inspections[name] = rows[0]
@@ -184,7 +233,7 @@ def main(argv=None) -> int:
             elif args.inputs:
                 receipt = load_receipt(args.inputs)
                 verify_current(root, receipt, expected_revision=args.revision)
-            result = create_candidate(args.revision, load(args.report), sha256(args.report), inspections,
+            result = create_candidate(args.revision, report, sha256(args.report), inspections,
                                       input_receipt=receipt)
             if receipt is not None:
                 inputs_path = args.output.parent / "component-inputs.json"

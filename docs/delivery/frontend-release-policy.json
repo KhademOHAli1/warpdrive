@@ -2,26 +2,75 @@
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
   "release_track": "frontend",
-  "version": "1.8.2",
+  "version": "1.9.1",
   "mode": "source_qualified_artifact_publication",
   "plan_directory": "docs/delivery/releases/frontend",
-  "qualification_path": "docs/delivery/frontend-qualification-1.8.2.json",
+  "qualification_path": "docs/delivery/frontend-qualification-1.9.1.json",
   "pr_integration_baseline": "dfa3f3317e186cbb494aee012cb298363e1a89dd",
   "unreleased_context_baseline": "386e31652da094ddcc7daec7003164b5b9c81882",
   "contributions": {
-    "integration/UX-010": 119
+    "integration/OPS-002": 483,
+    "integration/OPS-004": 485,
+    "integration/OPS-011": 492,
+    "integration/OSS-011": 529
   },
   "required_source_paths": [
+    ".env.web.example",
+    ".github/actions/install-custody-oras/action.yml",
+    ".github/workflows/headless-web-qualification.yml",
+    ".github/workflows/production-images.yml",
+    "bun.lock",
+    "bunfig.toml",
+    "deploy/images/Core.Dockerfile",
+    "deploy/images/Dockerfile",
+    "deploy/images/Web.Dockerfile",
+    "deploy/images/compose.core.yml",
+    "deploy/images/compose.web.yml",
+    "deploy/images/compose.yml",
+    "docker-compose.yml",
+    "docs/delivery/module-versions.json",
+    "docs/deployment-evidence/headless-web-rollout-20261120.json",
+    "docs/deployment-headless.md",
     "package.json",
-    "scripts/browser-shell-scroll.mjs",
-    "src/app/(app)/inbox/InboxShell.tsx",
-    "src/app/(app)/layout.tsx",
-    "src/app/globals.css",
-    "src/components/shell/LeftNav.module.css",
-    "src/components/shell/SidebarChrome.tsx",
+    "scripts/deployment/bundle.py",
+    "scripts/deployment/candidate.py",
+    "scripts/deployment/component_boundaries.mjs",
+    "scripts/deployment/core_runtime_monitor.py",
+    "scripts/deployment/headless-web-baseline.json",
+    "scripts/deployment/headless_fixture.py",
+    "scripts/deployment/headless_image_smoke.py",
+    "scripts/deployment/headless_web_custody.py",
+    "scripts/deployment/headless_web_qualification_inputs.py",
+    "scripts/deployment/headless_web_smoke.py",
+    "scripts/deployment/image_smoke.py",
+    "scripts/deployment/install-web-ui.mjs",
+    "scripts/deployment/native_image_identity.py",
+    "scripts/deployment/registry_candidate.py",
+    "scripts/deployment/registry_smoke.py",
+    "scripts/deployment/web_extension_inputs.py",
+    "scripts/deployment/web_rollout_monitor.py",
+    "scripts/deployment/web_sdk_archive.py",
+    "scripts/deployment/web_sdk_full_inputs.mjs",
+    "scripts/deployment/web_sdk_full_receipt.py",
+    "src/app/api/health/route.ts",
+    "src/app/api/readyz/route.ts",
+    "src/app/api/trpc/[trpc]/route.ts",
     "src/components/shell/SidebarMenu.tsx",
-    "src/components/shell/TopBar.module.css",
-    "src/features/email/inboxWorkspace.module.css"
+    "src/config/coreEnv.ts",
+    "src/contracts/coreDiagnostics.ts",
+    "src/entrypoints/core-api.ts",
+    "src/features/operations/contracts.ts",
+    "src/features/operations/reads.ts",
+    "src/features/operations/router.ts",
+    "src/features/operations/ui/OperationsLogs.tsx",
+    "src/frontend/config.ts",
+    "src/frontend/proxy.ts",
+    "src/frontend/readiness.ts",
+    "src/server/runtime/coreDiagnostics.ts",
+    "src/server/trpc/core-runtime.ts",
+    "src/server/trpc/core-service.ts",
+    "tools/web-ui/bun.lock",
+    "tools/web-ui/package.json"
   ],
   "required_workflows": {
     "403980173": [
@@ -29,12 +78,17 @@
       "Analyze (actions)",
       "Analyze (python)",
       "Analyze (go)"
-    ]
+    ],
+    "425440847": ["Qualify headless Web with retained Core"],
+    "414961940": ["Final production image smoke"]
   },
   "limits": [
-    "Version 1.8.2 covers the user-authorized header alignment and inbox layout fixes with isolated browser and source qualification.",
+    "Version 1.9.1 covers independent frontend development and AMD64 Web upgrade and rollback with a retained Core, mandatory Core in the production image bundle, and Core and Web diagnostics in Operations.",
     "Canonical issue acceptance, whole-product readiness, deployment and provider/installation acceptance remain independent.",
-    "The frontend display, package and stable GitHub release use 1.8.2."
+    "The frontend display, package and stable GitHub release use 1.9.1."
   ],
-  "original_integrated_revisions": ["842d7022090ce355215bfae3e82f3e9a471279d9"]
+  "original_integrated_revisions": [
+    "f4ca71162a9b6dd49a53f8afc729439b3d235334",
+    "cf811ecba8ea3718132632709c255dd04873c21d"
+  ]
 }

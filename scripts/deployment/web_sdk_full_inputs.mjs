@@ -13,23 +13,23 @@ import { hasReviewedSdkControl, inspectWebSdkImports } from "./web_sdk_imports.m
 import importPolicy from "./web-sdk-import-policy.json" with { type: "json" };
 
 const BACKEND = ["worker", "realtime", "migrator"];
-const PROFILE = "warpdrive-web-ui-sdk-beta1-hoisted-v1";
+const PROFILE = "warpdrive-web-ui-sdk-beta13-hoisted-v1";
 const RECIPE = "deploy/images/Web.Dockerfile";
 const SIDECAR_MANIFEST = "tools/web-ui/package.json";
 const SIDECAR_LOCK = "tools/web-ui/bun.lock";
 // Same reviewed Git blobs and raw SHA-256s as web_extension_inputs.py.
 const REVIEWED = {
   [RECIPE]: [
-    "651d5d00db136b3e603e2377333c90400f98048d",
-    "b57a3a7d6af34a046354ad6bd21fb6ac0621f20177dbfefb5a3e85eb7f865402",
+    "a1736f6f8fdbc09fd061dd205a58fb8828855767",
+    "30df5547abaf3efcfb9ac17539103842cdee33d7aeaeead49c30e5666288b53a",
   ],
   [SIDECAR_MANIFEST]: [
-    "e8fa268ffcad83549914dd5fda020ef4f0215911",
-    "09ead474d329be4d9226a42bb61fe9fb970acba4f23fa5fac9b1737d50f13132",
+    "3d007f6480e3698662d6ed6a2d0f0d757be7ba5b",
+    "a17da2094494e2aee29360ab413dcef19b3398c0f27a09d7a474f4ee76073585",
   ],
   [SIDECAR_LOCK]: [
-    "d46e02d61eda1184b96645b971be2501d6d677c0",
-    "b569a2c43b0914012d6a480ef09c6ec699223e5574ebb344a02eac3854374f8a",
+    "4e9f3a512c443aaebff2df0a2e35879cd4770663",
+    "ecfab6706ac1a654bc3222cce5142ca31ee55306a32c24657426814e0e88a7ae",
   ],
 };
 const SDK = ["@ui-sdk/core", "@ui-sdk/react"];

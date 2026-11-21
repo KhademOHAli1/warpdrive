@@ -96,6 +96,89 @@ it("shows open operations in the bell only while the administrator remains autho
   });
 });
 
+it("retains authorized Core failure diagnostics after recovery and scopes the receipt filter", async () => {
+  await withTestDb(async (db) => {
+    const ctx = await context(db);
+    const caller = operationsRouter.createCaller(ctx);
+    const binding = await enrollOperationsSource(db, "host_collector", signal());
+    const processGeneration = randomUUID();
+    const observedAtMs = Date.now() - 1000;
+    const core = {
+      kind: "component",
+      component: "core_api",
+      processGeneration,
+      installed: { evidence: "unchecked" },
+      latencyMs: null,
+    } as const;
+    const reports: OperationsObservation[] = [
+      { ...core, state: "failed", reason: "core_db_role_rejected" },
+      { ...core, state: "failed", reason: "core_drain_timeout" },
+      { ...core, state: "healthy", reason: "ok", processGeneration: randomUUID() },
+      {
+        kind: "deployment",
+        component: "web",
+        state: "unknown",
+        reason: "submission_unknown",
+        outcome: "unknown",
+        stage: "rollback_intent",
+        sourceRevision: null,
+        proofSha256: null,
+      },
+    ];
+    for (const [index, observation] of reports.entries()) {
+      const result = await recordOperationsBatch(
+        db,
+        binding,
+        JSON.stringify({
+          schemaVersion: 2,
+          generationId: binding.generationId,
+          sequence: index + 1,
+          observedAtMs: observedAtMs + index,
+          observations: [observation],
+        }),
+        signal(),
+      );
+      expect(result.ok).toBe(true);
+    }
+    const coreEvents = (await caller.events({ component: "core_api" })).items;
+    expect(coreEvents).toHaveLength(3);
+    const failed = coreEvents.find((receipt) => receipt.sequence === 1);
+    expect(failed?.diagnostics).toEqual([
+      {
+        component: "core_api",
+        reason: "core_db_role_rejected",
+        state: "failed",
+        deployment: null,
+        processGeneration,
+      },
+    ]);
+    expect(failed).not.toHaveProperty("payload");
+    expect(coreEvents.find((receipt) => receipt.sequence === 2)?.diagnostics).toEqual([
+      {
+        component: "core_api",
+        reason: "core_drain_timeout",
+        state: "failed",
+        deployment: null,
+        processGeneration,
+      },
+    ]);
+    expect((await caller.incidents({ openOnly: false })).items).toContainEqual(
+      expect.objectContaining({
+        observationKey: "component:core_api",
+        recoveredAt: expect.any(String),
+      }),
+    );
+    expect((await caller.events({ component: "web" })).items).toMatchObject([
+      { diagnostics: [{ component: "web", deployment: { stage: "rollback_intent" } }] },
+    ]);
+    if (!ctx.actor) throw new Error("Missing fixture actor");
+    await db.update(users).set({ isAdmin: false }).where(eq(users.id, ctx.actor.id));
+    await expect(caller.events({ component: "core_api" })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+  });
+});
+
 it("pages exactly30 finite observations without a pg-boss aggregate or request workspace authority", async () => {
   await withTestDb(async (db) => {
     const ctx = await context(db);

@@ -14,7 +14,8 @@ from unittest.mock import patch
 import zipfile
 
 from bundle import ARCHIVE, MANIFEST, create_bundle, metadata_files
-from candidate import COMPONENTS, SMOKE_CHECKS, create_candidate
+from candidate import (COMPONENTS, HEADLESS_COMPONENTS, HEADLESS_SMOKE_CHECKS, HEADLESS_SMOKE_KIND,
+                       HEADLESS_VERSION, SMOKE_CHECKS, create_candidate)
 import component_inputs as inputs
 import native_image_identity as native
 import publication_gate
@@ -50,12 +51,12 @@ def archive_bytes(files, *, reverse=False, extra_member=None):
     return output.getvalue()
 
 
-def image_fixture(*, wrapped=False):
+def image_fixture(*, wrapped=False, headless=False):
     files, descriptors, compatibility, expected, inspections, identities = {}, [], [], {}, {}, {}
     shared = b"shared synthetic layer bytes"
     shared_digest = digest(shared)
     files["blobs/sha256/" + shared_digest[7:]] = shared
-    for role in COMPONENTS:
+    for role in HEADLESS_COMPONENTS if headless else COMPONENTS:
         expanded = ("private synthetic " + role + " layer").encode()
         stored = gzip.compress(expanded, mtime=0)
         role_digest = digest(stored)
@@ -71,6 +72,9 @@ def image_fixture(*, wrapped=False):
                 "Env": ["APP_COMMIT=" + REVISION, "NEXT_DEPLOYMENT_ID=wd-" + REVISION, "APP_VERSION="],
                 "Labels": {"org.opencontainers.image.revision": REVISION,
                     "org.opencontainers.image.title": "Warpdrive Web" if role == "web" else role}}}
+        if role == "core-api":
+            config["config"].update(Cmd=["bun", "--no-env-file", "dist/core-api.mjs"], ExposedPorts={"3010/tcp": {}})
+            config["config"]["Labels"]["org.opencontainers.image.title"] = "Warpdrive Core API"
         raw_config = encoded(config)
         config_digest = digest(raw_config)
         config_path = "blobs/sha256/" + config_digest[7:]
@@ -148,7 +152,11 @@ class ProjectionTests(unittest.TestCase):
         source, destination = self.root / (label + "-source"), self.root / label
         (source / "smoke").mkdir(parents=True)
         (source / "inspections").mkdir()
-        receipt = sdk_input_fixture(source / "inputs") if version == 3 else input_fixture(source / "inputs") if version == 2 else None
+        receipt = None
+        if version in {3, HEADLESS_VERSION}:
+            receipt = sdk_input_fixture(source / "inputs")
+        elif version == 2:
+            receipt = input_fixture(source / "inputs")
         if receipt is not None:
             (source / "component-inputs.json").write_bytes(encoded(receipt))
         report = {"schemaVersion": 1, "success": True, "expectedRevision": REVISION,
@@ -157,6 +165,9 @@ class ProjectionTests(unittest.TestCase):
             "limitations": ["Synthetic offline fixture only; no release authority"],
             "images": {role: {"id": row["Id"], "revision": REVISION, "user": "bun"}
                        for role, row in self.inspections.items()}}
+        if version == HEADLESS_VERSION:
+            report.update(kind=HEADLESS_SMOKE_KIND, platform="linux/amd64", coreImage=report["images"].pop("core-api"),
+                          checks=[{"name": name, "status": "passed"} for name in HEADLESS_SMOKE_CHECKS])
         report_raw = encoded(report)
         (source / "smoke/report.json").write_bytes(report_raw)
         for role, row in self.inspections.items():
@@ -245,6 +256,25 @@ class ProjectionTests(unittest.TestCase):
         for version in [1, 2]:
             directory, output, arguments = self.bundle(version=version)
             with self.subTest(version=version), self.assertRaisesRegex(ValueError, "schema3"):
+                projection.project_downloaded_sdk_web_archive(directory, output, **arguments)
+            self.assertFalse(output.exists())
+
+    def test_v4_requires_independent_core_identity_but_projects_only_web(self):
+        self.files, self.expected, self.inspections, self.identities = image_fixture(headless=True)
+        result, output, _ = self.project(version=HEADLESS_VERSION)
+        self.assertEqual(result["original"]["schemaVersion"], HEADLESS_VERSION)
+        self.assertEqual(result["image"]["imageId"], self.identities["web"]["config"])
+        self.assertFalse(result["backendReuseQualified"])
+        self.assertFalse(result["installationAuthorized"])
+        with tarfile.open(output, "r:") as archive:
+            self.assertNotIn("blobs/sha256/" + self.identities["core-api"]["config"][7:], archive.getnames())
+        for failure in ("missing-role", "wrong-command"):
+            directory, output, arguments = self.bundle(version=HEADLESS_VERSION)
+            if failure == "missing-role":
+                del arguments["expected_images"]["core-api"]
+            else:
+                arguments["expected_images"]["core-api"]["metadata"]["Cmd"] = ["bun", "wrong-core.mjs"]
+            with self.subTest(failure=failure), self.assertRaises(ValueError):
                 projection.project_downloaded_sdk_web_archive(directory, output, **arguments)
             self.assertFalse(output.exists())
 

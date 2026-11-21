@@ -76,11 +76,11 @@ The Web process continues to own authentication HTTP routes, Next rendering, ass
 
 `src/entrypoints/core-api.ts` requires Bun and the explicit `RUNTIME_COMPONENT=core-api` profile. It serves `/api/trpc`, `/api/trpc/*`, the explicitly registered native protocol/binary routes, `/healthz` and `/readyz`. Core is required by the [headless frontend](deployment-headless.md). The request context uses the actual cookie credential, database-derived actor and captured CSRF facts. Actor headers and RPC inputs cannot install a resolver or authentication authority.
 
-Startup admits the actual runtime database role, reads the Web metadata contract, admits the preprovisioned queue schema, starts a producer without consumers/migrations, checks cheap database/queue health, and then binds the listener. Failure remains unavailable and invokes the same bounded shutdown controller. The startup deadline uses both a timer and monotonic checks at awaited/publication/bind boundaries.
+Startup admits the actual runtime database role and preprovisioned queue schema, starts a producer without consumers or migrations, checks database and queue health, and then binds the listener. Core starts and serves while the Web origin is offline. Failure remains unavailable and invokes the same bounded shutdown controller. The startup deadline uses both a timer and monotonic checks at awaited/publication/bind boundaries.
 
-`CORE_WEB_ORIGIN` must follow **accepted Web ingress**, rather than a particular old/new Web slot. The fixed public `/api/runtime/web-identity` endpoint exposes only version and source declarations; it does not attest an inspected image digest or routing acceptance. Core forwards no cookie or provider credential. The version procedure has no local Core-version fallback when this read fails.
+When configured, `CORE_WEB_ORIGIN` follows **accepted Web ingress** across slot changes. The fixed public `/api/runtime/web-identity` endpoint declares version and source. Deployment admission verifies the actual digest and routing independently. Core sends the metadata request without cookie or provider credentials. The version procedure reports unavailable if the read fails.
 
-The optional routing profile must first install a metadata-capable Web baseline. An older Web without the endpoint cannot admit this Core process. On fresh installation, Web and ingress must serve metadata before Core admission; ingress must **not** wait for Core health to start. Switching the API route remains a deployment readiness gate. Do not retry an uncertain mutation through Web or another Core instance.
+Validate the metadata contract at Web rollout admission. Core reads Web identity only when serving version queries, so a Web restart or missing endpoint affects version reporting while Core continues serving business requests. Switching the API route remains a deployment readiness gate. Resolve uncertain mutation outcomes before retrying.
 
 ### Connection profile
 
@@ -106,7 +106,7 @@ Absent a Core profile, inactive Core settings do not change legacy configuration
 
 One signal controller stops HTTP admission, awaits native listener/handler/stream/probe completion, detaches and stops the producer, closes the Web identity reader, and ends the application pool. Actual queue startup/catalog/close promises remain owned behind visible timeouts. Failed or unknown cleanup cannot be reported as a clean drain. Deadline expiry is nonzero and does not advance to close dependencies under unfinished work.
 
-The current 80 MiB body envelope preserves the existing ingress limit. Aggregate body reservations and four admitted HTTP requests do **not** bound tRPC procedure batches, materialized result sizes, process RSS or whole transaction duration. Client/server batch compatibility, pagination/output contracts, actual process/final-image failure checks, feature/component monitoring, image custody and installed deployment acceptance remain required. Thousands of workspaces is optional design headroom, not an acceptance target.
+The current 80 MiB body envelope preserves the existing ingress limit. Core admits at most 32 concurrent HTTP requests. Procedure batch cardinality, materialized response size, process RSS, and full transaction duration require separate budgets. Client/server batch compatibility, pagination/output contracts, actual process/final-image failure checks, feature/component monitoring, image custody and installed deployment acceptance remain required. The programme treats thousands of workspaces as optional design headroom.
 
 ### Stable source checkpoint
 

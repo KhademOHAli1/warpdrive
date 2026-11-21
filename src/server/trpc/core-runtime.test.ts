@@ -1,6 +1,8 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { coreDiagnosticSchema } from "@/contracts/coreDiagnostics";
+import { reportCoreDiagnostic } from "@/server/runtime/coreDiagnostics";
 import { installSignalShutdown } from "@/server/runtime/shutdown";
 import {
   CORE_API_EDGE_BODY_BYTES,
@@ -141,14 +143,17 @@ describe("Core HTTP admission and native adapter boundary", () => {
   it("requires admitted producer and successful health observation before binding", async () => {
     const admitted = deferred<void>();
     const healthy = deferred<boolean>();
+    const diagnostic = vi.fn();
     const f = fixture({
       startProducer: () => admitted.promise,
       probeReadiness: () => healthy.promise,
+      reportDiagnostic: diagnostic,
     });
     const starting = f.runtime.start();
     expect(f.runtime.start()).toBe(starting);
     await turn();
     expect((await f.runtime.fetch(request())).status).toBe(503);
+    expect(diagnostic.mock.calls.map(([code]) => code)).toEqual(["CORE_STARTING"]);
     expect(f.serve).not.toHaveBeenCalled();
     admitted.resolve(undefined);
     await turn();
@@ -156,6 +161,12 @@ describe("Core HTTP admission and native adapter boundary", () => {
     healthy.resolve(true);
     await starting;
     expect(f.runtime.snapshot().state).toBe("ready");
+    expect(diagnostic).toHaveBeenLastCalledWith("CORE_READY", {
+      state: "ready",
+      failure: undefined,
+      activeRequests: 0,
+      admittedBodyBytes: 0,
+    });
     expect(f.serve).toHaveBeenCalledTimes(1);
     expect(f.serve.mock.calls[0]?.[0]).toMatchObject({
       hostname: "127.0.0.1",
@@ -166,6 +177,11 @@ describe("Core HTTP admission and native adapter boundary", () => {
     expect(f.handler).not.toHaveBeenCalled();
     expect(f.runtime.url?.href).toBe("http://127.0.0.1:8081/");
     expect(await owner(f.runtime).shutdown.request()).toMatchObject({ status: "drained" });
+    expect(diagnostic.mock.calls.map(([code]) => code)).toEqual([
+      "CORE_STARTING",
+      "CORE_READY",
+      "CORE_DRAINING",
+    ]);
   });
 
   it("preserves exact body, cookies, origin, timing and response headers without a replay", async () => {
@@ -213,6 +229,9 @@ describe("Core HTTP admission and native adapter boundary", () => {
   it("routes only the exact complete RPC prefix and exposes separate private health/readiness", async () => {
     const f = fixture();
     expect((await f.runtime.fetch(request("/healthz"))).status).toBe(503);
+    const initialReadiness = await f.runtime.fetch(request("/readyz"));
+    expect(initialReadiness.status).toBe(503);
+    expect(initialReadiness.headers.get("x-warpdrive-runtime-code")).toBe("CORE_NOT_READY");
     await f.runtime.start();
     for (const path of [
       "/api/trpcx",
@@ -223,7 +242,9 @@ describe("Core HTTP admission and native adapter boundary", () => {
     ])
       expect((await f.runtime.fetch(request(path))).status).toBe(404);
     expect((await f.runtime.fetch(request("/healthz"))).status).toBe(200);
-    expect((await f.runtime.fetch(request("/readyz"))).status).toBe(200);
+    const readiness = await f.runtime.fetch(request("/readyz"));
+    expect(readiness.status).toBe(200);
+    expect(readiness.headers.get("x-warpdrive-runtime-code")).toBe("CORE_READY");
     expect((await f.runtime.fetch(request("/readyz", { method: "POST" }))).status).toBe(405);
     expect(await (await f.runtime.fetch(request("/api/trpc/nested.procedure"))).text()).toBe("ok");
     expect(f.handler).toHaveBeenCalledTimes(1);
@@ -663,9 +684,11 @@ describe("Core startup and readiness failure", () => {
   it("refuses an elapsed successful probe before timeout tasks can run", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     let clock = 100;
+    const diagnostic = vi.fn();
     vi.spyOn(performance, "now").mockImplementation(() => clock);
     const f = fixture(
       {
+        reportDiagnostic: diagnostic,
         probeReadiness: () => {
           clock = 120;
           return Promise.resolve(true);
@@ -679,6 +702,10 @@ describe("Core startup and readiness failure", () => {
     });
     expect(f.serve).not.toHaveBeenCalled();
     expect(f.runtime.snapshot().failure).toBe("health");
+    expect(diagnostic).toHaveBeenLastCalledWith(
+      "CORE_READINESS_TIMEOUT",
+      expect.objectContaining({ state: "failed", failure: "health" }),
+    );
     expect(await control.shutdown.request()).toMatchObject({ status: "failed" });
   });
 
@@ -709,8 +736,13 @@ describe("Core startup and readiness failure", () => {
   });
 
   it("cleans partial producer startup through the shared owner and retains startup failure", async () => {
+    const sink = vi.fn();
+    const observe: NonNullable<CoreRuntimeDependencies["reportDiagnostic"]> = (code, facts) => {
+      reportCoreDiagnostic(sink, code, facts);
+    };
     const f = fixture({
       startProducer: () => Promise.reject(new Error("private connection string")),
+      reportDiagnostic: observe,
     });
     const control = owner(f.runtime);
     await expect(f.runtime.start()).rejects.toMatchObject({
@@ -722,6 +754,17 @@ describe("Core startup and readiness failure", () => {
     expect(f.order).toEqual(["detach", "producer", "database"]);
     expect(f.unavailable).toHaveBeenCalledExactlyOnceWith("startup");
     expect(JSON.stringify(control.report.mock.calls)).not.toContain("private connection string");
+    expect(JSON.stringify(sink.mock.calls)).not.toContain("private connection string");
+    const events = sink.mock.calls.map(([event]) => coreDiagnosticSchema.parse(event));
+    expect(events.map(({ code }) => code)).toEqual([
+      "CORE_STARTING",
+      "CORE_STARTUP_FAILED",
+      "CORE_DRAINING",
+    ]);
+    expect(coreDiagnosticSchema.safeParse({ ...events[0], phase: "drain" }).success).toBe(false);
+    expect(coreDiagnosticSchema.safeParse({ ...events[0], arbitrary: "rejected" }).success).toBe(
+      false,
+    );
   });
 
   it("cleans producer and DB after bind failure without claiming a listening server", async () => {

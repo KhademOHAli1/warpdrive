@@ -129,61 +129,77 @@ Authentication uses Better Auth. The root application uses **Bun 1.4.4**.
 
 ## Quickstart (local development)
 
-Requires Bun 1.4.4, PostgreSQL 16, a private S3-compatible bucket and configured authentication
-mail. Docker is used by the integration-test lane and the supplied Compose topology.
+To work on Web against an existing development Core, follow the
+[frontend-only development guide](docs/deployment-headless.md#develop-web-against-a-retained-core).
+To run your own backend locally, use Bun 1.4.4, PostgreSQL 16, a private S3-compatible bucket and configured
+authentication mail. Docker is used by the integration-test lane and the supplied Compose topology.
 
 ```sh
 git clone https://github.com/KhademOHAli1/warpdrive.git
 cd warpdrive
-bun install --frozen-lockfile
-cp .env.example .env
+bun --no-env-file install --frozen-lockfile
+bun --no-env-file scripts/deployment/install-web-ui.mjs
+(umask 077 && cp .env.example .env.core.local && cp .env.web.example .env.web)
 ```
 
-Configure [.env](.env.example) using the [deployment guide](docs/deploy.md): database, storage,
-public URLs, authentication and secrets. Set `MIGRATION_DATABASE_URL` for the database owner
-and `DATABASE_URL` for the separate runtime role. For local development use
-`BASE_URL=http://localhost:3000`. Storage must be browser-reachable and the private bucket
-must exist before testing uploads.
+Configure [`.env.core.local`](.env.example) using the [deployment guide](docs/deploy.md). Set
+`DATABASE_URL` to the runtime role and put the separate owner credential `MIGRATION_DATABASE_URL`
+in a private `.env.migrate.local` file. Use `BASE_URL=http://127.0.0.1:3000` for this setup.
+Set `CORE_WEB_ORIGIN` to the same address to let Core report Web's running revision.
+Storage must be browser-reachable and the private bucket must exist before testing uploads.
+
+In [`.env.web`](.env.web.example), set `CORE_API_ORIGIN=http://127.0.0.1:3010`,
+`WEB_PUBLIC_ORIGIN=http://127.0.0.1:3000`, and `FRONTEND_TRUSTED_PROXY_HEADER=none`. Generate
+`CORE_PROXY_TOKEN` with `openssl rand -hex 32` and put the same value in both runtime files. Keep
+backend variables in `.env.core.local` so Next.js does not load them from its default dotenv files.
+Leave `NEXT_PUBLIC_WS_URL` empty while working without Realtime.
 
 The Compose files reference unversioned MinIO server/client images. Confirm their availability
 and pin suitable images, or provide another S3-compatible service, before a fresh installation.
 The [development override](docker-compose.dev.yml) exposes PostgreSQL on host port **5433**;
 match that port in your local `DATABASE_URL`.
 
-Apply the app and queue migrations to the fresh, dedicated development database:
+Apply the app and queue migrations to the fresh, dedicated development database.
 
 ```sh
-bun run db:migrate
+bun --no-env-file --env-file=.env.core.local --env-file=.env.migrate.local src/entrypoints/migrate.ts
 ```
 
 Create or verify the runtime role and its grants on the app and queue schemas as described in
 [Bring it up](docs/deploy.md#2-bring-it-up), adjusting the host and database names for your
-environment. Keep the owner credentials out of the app and worker environments.
+environment. Build and run Core from its own terminal.
 
 ```sh
-bun run dev
+bun --no-env-file scripts/build-core.mjs
+NODE_ENV=development RUNTIME_COMPONENT=core-api CORE_HOST=127.0.0.1 CORE_PORT=3010 \
+  bun --no-env-file --env-file=.env.core.local dist/core-api.mjs
 ```
 
-Open **http://localhost:3000**. Run the background worker and realtime service in separate
-terminals with the same environment:
+Start Web from another terminal and open **http://127.0.0.1:3000**.
+
+```sh
+bun --no-env-file --env-file=.env.web --bun next dev --webpack --hostname 127.0.0.1 --port 3000
+```
+
+Run the Worker and Realtime separately for features that use jobs or WebSockets.
 
 ```sh
 # Background jobs
-bun src/entrypoints/worker.ts
+bun --no-env-file --env-file=.env.core.local src/entrypoints/worker.ts
 ```
 
 ```sh
 # Realtime updates on port 8080
-bun src/entrypoints/ws.ts
+WS_HOST=127.0.0.1 bun --no-env-file --env-file=.env.core.local src/entrypoints/ws.ts
 ```
 
-For a host-local realtime service set `WS_HOST=127.0.0.1`. Configure `WS_PUBLIC_URL` and
-`NEXT_PUBLIC_WS_URL` consistently; the browser-facing URL is also required at build time.
+For direct local Realtime, set `WS_PUBLIC_URL` on Core and `NEXT_PUBLIC_WS_URL` on Web to
+`ws://127.0.0.1:8080`. The browser-facing URL is also a Web build setting.
 
 Set `SEED_ADMIN_EMAIL`, then queue the first administrator's invitation using that address:
 
 ```sh
-bun run auth:operator bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
+bun --no-env-file --env-file=.env.core.local run auth:operator bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
 ```
 
 Complete invitation acceptance, email verification and administrator MFA in the normal UI.

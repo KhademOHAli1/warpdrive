@@ -5,10 +5,13 @@
   "sourcesTitle": "Quellen der Statusmeldungen",
   "sourcesInfo": "Eine aktivierte Registrierung erlaubt einer Quelle, Meldungen zu übermitteln. Sie bedeutet nicht, dass ein Dienst fehlerfrei läuft.",
   "logsTitle": "Betriebsverlauf",
-  "logsInfo": "Metadaten zu Vorfällen und Erfassungsbelegen auf den sichtbaren Seiten. Die Inhalte der Erfassungsbelege werden nicht angezeigt.",
+  "logsInfo": "Vorfälle und gespeicherte Bereitstellungsdiagnosen für diese Installation.",
   "incidentsTitle": "Vorfälle",
   "bellOpenIncidents": "Offene Betriebsvorfälle ansehen",
   "eventsTitle": "Belege zu Statusmeldungen",
+  "filterComponent": "Belege nach Komponente filtern",
+  "allComponents": "Alle Komponenten",
+  "processGeneration": "Prozessgeneration",
   "refresh": "Aktualisieren",
   "previous": "Vorherige Seite",
   "next": "Nächste Seite",
@@ -130,6 +133,14 @@
     "rejected": "Abgelehnt",
     "unknown": "Unbekannt"
   },
+  "deploymentStages": {
+    "switch_intent": "Die Routenumschaltung wurde gestartet. Prüfen Sie vor einer Wiederholung, welche Web-Generation der Ingress ausliefert.",
+    "switch_acknowledged": "Der Ingress hat die Routenumschaltung bestätigt. Prüfen Sie den öffentlichen Status und die freigegebene Web-Generation.",
+    "rollback_intent": "Die Wiederherstellung der Route wurde gestartet. Prüfen Sie den Ingress und den Status der beibehaltenen Web-Generation.",
+    "accepted": "Die Steuerung hat die Route und den Status der ausgewählten Web-Generation bestätigt.",
+    "rolled_back": "Die Steuerung hat die beibehaltene Web-Generation wiederhergestellt, nachdem die öffentliche Prüfung des Kandidaten fehlgeschlagen ist.",
+    "rejected": "Die Route blieb bei der beibehaltenen Web-Generation. Prüfen Sie den Start des Kandidaten, den Status der bisherigen Generation und die Ingress-Freigabe."
+  },
   "providers": {
     "smtp": "E-Mail-Versand (SMTP)",
     "imap": "E-Mail-Empfang (IMAP)",
@@ -150,6 +161,18 @@
     "restore_bytes_verified": "Wiederhergestellte Daten auf Byteebene geprüft"
   },
   "reasons": {
+    "core_configuration_invalid": "Die Core-Konfiguration ist ungültig. Prüfen Sie das Laufzeitprofil und die Verweise auf die Secret-Dateien.",
+    "core_startup_failed": "Der Core-Start ist fehlgeschlagen. Prüfen Sie die vorherigen Host-Diagnosen für diesen Prozess.",
+    "core_startup_timeout": "Core hat das Startzeitlimit überschritten. Prüfen Sie Datenbank, Warteschlangeninitialisierung und Netzwerk.",
+    "core_db_role_rejected": "Core hat die PostgreSQL-Laufzeitrolle abgelehnt. Prüfen Sie die Berechtigungen und die Migrationshistorie.",
+    "core_producer_failed": "Der Warteschlangenproduzent von Core ist ausgefallen. Prüfen Sie das Schema, die Berechtigungen und die Datenbank.",
+    "core_database_failed": "Core hat die Verbindung zu PostgreSQL verloren. Prüfen Sie Erreichbarkeit, Verbindungslimits und Datenbankstatus.",
+    "core_listener_failed": "Core konnte den Listener nicht binden. Prüfen Sie Adresse, Port und Portbelegung.",
+    "core_readiness_failed": "Die Bereitschaftsprüfung von Core ist bei Datenbank oder Warteschlange fehlgeschlagen. Prüfen Sie beide Abhängigkeiten.",
+    "core_readiness_timeout": "Die Bereitschaftsprüfung von Core hat das Zeitlimit überschritten. Prüfen Sie Datenbanklatenz und Warteschlangenstatus.",
+    "core_transport_failed": "Der HTTP-Transport von Core ist ausgefallen. Prüfen Sie den Listener und die Ressourcenlimits des Hosts.",
+    "core_drain_failed": "Ein Schritt beim Herunterfahren von Core ist fehlgeschlagen. Prüfen Sie Anfragen, Warteschlange und Datenbankverbindungen.",
+    "core_drain_timeout": "Core hat das Zeitlimit für das Herunterfahren überschritten. Prüfen Sie die Host-Diagnosen vor einem Neustart.",
     "ok": "Prüfung bestanden",
     "queue_backlog": "Rückstau in der Warteschlange",
     "retry_pending": "Erneuter Versuch ausstehend",

@@ -1,0 +1,6 @@
+diff --git a/dist/chunks/index.ER9afepi.js b/dist/chunks/index.ER9afepi.js
+--- a/dist/chunks/index.ER9afepi.js
++++ b/dist/chunks/index.ER9afepi.js
+@@ -5536 +5536 @@
+-	child.channel?.unref();
++	child.channel?.unref?.();

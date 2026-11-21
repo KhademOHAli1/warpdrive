@@ -10,7 +10,7 @@ from test_web_rollout import Target, slot
 from test_web_switch import FakeClock
 from web_generation_routes import WebGeneration
 from web_mixed_image_smoke import (
-    HEADER, LoginAssets, MixedCaddyTarget, MixedWebSmoke, RolloutBrowser, browser_message, common_web_configuration,
+    CORE_METADATA_PORT, HEADER, LoginAssets, MixedCaddyTarget, MixedWebSmoke, RolloutBrowser, browser_message, common_web_configuration,
     generation_configs, observe_asset, observe_identity, owned_resources_absent, read_web_image,
 )
 from web_rollout import rollout_web
@@ -128,6 +128,22 @@ class MixedImageTests(unittest.TestCase):
             self.assertEqual(last_proxy["upstreams"], [{"dial": active.target + ":3000"}])
             self.assertEqual(last_proxy["headers"]["response"]["set"][HEADER], [active.deployment_id])
         self.assertEqual(base, original)
+
+    def test_headless_core_metadata_uses_only_the_active_caddy_generation(self):
+        base = {"apps": {"http": {"servers": {"fixture": {"routes": [{"handle": [
+            {"handler": "reverse_proxy", "upstreams": [{"dial": "web-a:3000"}]},
+        ]}]}}}}}
+        public = generation_configs(base, BEFORE, AFTER)
+        variants = MixedWebSmoke.compile_documents(SimpleNamespace(headless_core=True), base, BEFORE, AFTER)
+        for active in (BEFORE, AFTER):
+            servers = variants[active.deployment_id]["apps"]["http"]["servers"]
+            self.assertEqual(servers["fixture"], public[active.deployment_id]["apps"]["http"]["servers"]["fixture"])
+            metadata = servers["core_fixture_metadata"]
+            self.assertEqual(metadata["listen"], [f":{CORE_METADATA_PORT}"])
+            served, fallback = metadata["routes"]
+            self.assertEqual(served["match"], [{"path": ["/api/runtime/web-identity"], "method": ["GET", "HEAD"]}])
+            self.assertEqual(served["handle"][0]["upstreams"], [{"dial": active.target + ":3000"}])
+            self.assertEqual(fallback["handle"][0]["status_code"], 404)
 
     def test_refuses_foreign_caddy_readback_and_stale_route(self):
         docs = {item.deployment_id: {"fixture": item.target} for item in (BEFORE, AFTER)}

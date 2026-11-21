@@ -59,6 +59,7 @@ class WebRolloutMonitorTests(unittest.TestCase):
             self.roll()
         pending = self.observe()
         self.assertEqual(pending["observation"]["outcome"], "unknown")
+        self.assertEqual(pending["observation"]["stage"], "switch_intent")
         self.assertIsNone(pending["observation"]["sourceRevision"])
         with self.assertRaisesRegex(SwitchConflict, "Another operation"):
             with installed_web_readback_locks(self.original, self.state):
@@ -66,6 +67,7 @@ class WebRolloutMonitorTests(unittest.TestCase):
         self.roll(initialize=False)
         accepted = self.observe()
         self.assertEqual(accepted["observation"]["outcome"], "accepted")
+        self.assertEqual(accepted["observation"]["stage"], "accepted")
         self.assertEqual(accepted["observation"]["sourceRevision"], "b" * 40)
         self.assertGreaterEqual(accepted["observedAtMs"], pending["observedAtMs"])
         self.assertEqual(self.target.updates, [self.plan["after"]["route"]])
@@ -105,6 +107,8 @@ class WebRolloutMonitorTests(unittest.TestCase):
         for candidate in (raw[:-1], raw + b" " * 1024,
                           canonical({**envelope, "operationId": "other"}) + b"\n",
                           canonical({**envelope, "event": {**event, "planSha256": "f" * 64}}) + b"\n",
+                          canonical({**envelope, "event": {**event, "observation": {
+                              **event["observation"], "stage": "rollback_intent"}}}) + b"\n",
                           canonical({**envelope, "event": {**event, "observation": {
                               **event["observation"], "proofSha256": None}}}) + b"\n"):
             with self.subTest(candidate=candidate[:64]), self.assertRaises(SwitchConflict):

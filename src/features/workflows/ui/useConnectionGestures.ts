@@ -1,6 +1,6 @@
 "use client";
 
-import type { Connection, Edge, OnConnectEnd, ReactFlowInstance } from "@xyflow/react";
+import type { Connection, Edge, OnConnectEnd } from "@xyflow/react";
 import { type Dispatch, type SetStateAction, useRef } from "react";
 import { drawConnection, type OutputTarget } from "../connectionGestures";
 import { type ConnectionProblem, edgeId } from "../graphEditor";
@@ -34,7 +34,6 @@ export function useConnectionGestures({
   onAdd?: AddFromOutput;
 }) {
   const reconnecting = useRef<WorkflowEdge | undefined>(undefined);
-  const viewport = useRef<Pick<ReactFlowInstance, "screenToFlowPosition"> | null>(null);
   function isValidConnection(connection: Connection | Edge) {
     const spec = asEdge(connection);
     return editable && spec !== null && drawConnection(definition, spec, reconnecting.current).ok;
@@ -75,20 +74,11 @@ export function useConnectionGestures({
     const occupied = definition.edges.some(
       (edge) => edge.from === output.from && edge.port === output.port,
     );
-    if (!pane || occupied || reconnecting.current !== undefined) return;
-    const pointer = "changedTouches" in event ? event.changedTouches[0] : event;
-    if (pointer === undefined || viewport.current === null) return;
-    const position = viewport.current.screenToFlowPosition({
-      x: pointer.clientX,
-      y: pointer.clientY,
-    });
+    if (!pane || occupied || reconnecting.current !== undefined || state.to === null) return;
     onProblem(null);
-    onAdd?.(output, position);
+    onAdd?.(output, state.to);
   };
   return {
-    initialize: (instance: Pick<ReactFlowInstance, "screenToFlowPosition">) => {
-      viewport.current = instance;
-    },
     startReconnect: (edge: WorkflowEdge | undefined) => {
       reconnecting.current = edge;
       onProblem(null);

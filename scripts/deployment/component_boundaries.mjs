@@ -67,7 +67,21 @@ async function sdkSnapshot(root, snapshot, revision, options) {
   git("checkout", "--quiet", "--detach", revision);
   await symlink(await realpath(join(root, "node_modules")), join(snapshot, "node_modules"), "dir");
   return async () => {
-    git("add", "-A", "--", "src", NEXT);
+    // Stage only the fixture's writes. Desktop metadata can appear in the private checkout
+    // without belonging to the source boundary being tested.
+    git(
+      "add",
+      "-A",
+      "--",
+      CATALOG,
+      NEXT,
+      UI_COPY,
+      MAIL_COPY,
+      WORKER,
+      RELEASE_JOB,
+      REVIEW_LEDGER,
+      ...["en", "de", "fa"].map((locale) => `${NAMESPACE}.${locale}.json`),
+    );
     git("commit", "--quiet", "--allow-empty", "-m", "Exercise component input boundary");
     const selected = git("rev-parse", "HEAD").toString("ascii").trim();
     return sdkReceipt(
@@ -326,7 +340,7 @@ export async function qualifyComponentBoundaries({ sdkRevision, ...options }) {
     report.success = true;
   } finally {
     // rm never follows the dependency directory symlink. All mutations stayed here.
-    await rm(snapshot, { recursive: true, force: true });
+    await rm(snapshot, { recursive: true, force: true, maxRetries: 4, retryDelay: 100 });
     report.cleanupSuccess = true;
     report.seconds = Math.round((performance.now() - started) / 10) / 100;
   }

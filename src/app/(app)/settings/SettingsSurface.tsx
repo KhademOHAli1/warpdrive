@@ -14,12 +14,14 @@ export function SettingsPage({
 export function SettingsCard({
   children,
   className,
+  id,
 }: {
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }): React.ReactElement {
   return (
-    <div className={cn("overflow-hidden rounded-lg border bg-card shadow-sm", className)}>
+    <div id={id} className={cn("overflow-hidden rounded-lg border bg-card shadow-sm", className)}>
       {children}
     </div>
   );

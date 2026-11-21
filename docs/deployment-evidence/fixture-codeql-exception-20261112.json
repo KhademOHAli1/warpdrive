@@ -5,7 +5,7 @@
   "sourceSha256": {
     "scripts/deployment/engine_image_smoke.py": "3d3c32747196a1d280d04f6a58bf73241223d9659313247500bc2d741b413eda",
     "scripts/deployment/test_engine_image_smoke.py": "b7393bb06b24f3310bedb1a2b878e83b18bfad9d12269338f92adf7317d0bfd0",
-    "scripts/deployment/image_smoke.py": "714dc212c7ed310a3e52ad4bd32996e2b346a2a612c24d9b139b855343f33070",
+    "scripts/deployment/image_smoke.py": "2861777dd6d732d3f7c18e8037e67feb9d1d11a57c8d1775073aed5808e8c521",
     ".github/workflows/production-engine.yml": "5f20d46796b8f4d0a1fd45da05d8bdce00b52c0a883279a7c151b371d1d5b417"
   },
   "observedFinding": {
@@ -17,10 +17,10 @@
     "state": "open"
   },
   "independentReview": {
-    "path": "docs/deployment-evidence/fixture-public-captcha-review-20261115.json",
-    "sha256": "503bec226e0230a407963d017d2bb9988ad47ee866bb438a5b93d35ba8ae56d6",
-    "reviewer": "/root/review_newsletter",
-    "scope": "Independent exact-source public CAPTCHA asset/readiness refresh; full plaintext writer, runtime/test callers, fixed owned-loopback HTTP access, CLI and workflow boundaries reviewed unchanged. Earlier independent witnesses remain preserved."
+    "path": "docs/deployment-evidence/fixture-worker-readiness-review-20261120.json",
+    "sha256": "b5768793d462f66869e9e04fdd9047bdcbabcbc32271a50c13579fca3a4a0ae3",
+    "reviewer": "/root/release_review",
+    "scope": "Independent exact-source review of Worker registration and graceful stop. The plaintext writer, generated fixture inputs, callers and Engine workflow match the pinned earlier review."
   },
   "rationale": [
     "The actual _FILE probe requires generated plaintext bytes. Runtime callers accept no deployment/user credential input; all current callers were independently reviewed.",

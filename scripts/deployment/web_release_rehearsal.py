@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 from bundle import INPUT_RECEIPT, MAX_METADATA_BYTES, load_bundle, regular_file
-from candidate import CandidateError, admit_capacity
+from candidate import HEADLESS_VERSION, CandidateError, admit_capacity
 import component_inputs as inputs
 from image_smoke import Docker, SmokeError, image_metadata
 from web_release_inputs import (MAX_PRESENTATION_BYTES, STYLE_FILE, WebReleaseInputError, _blob, _tree,
@@ -58,9 +58,9 @@ def _hosted_baseline(bundle_dir, revision, manifest_sha):
     bundle = load_bundle(bundle_dir, expected_revision=revision)
     version = bundle["candidate"]["schemaVersion"]
     require(bundle["origin"] == origin and bundle["provenance"]["bundleManifestSha256"] == manifest_sha
-            and version in {2, 3}, "same-run source-bound baseline bundle required")
+            and version in {2, 3, HEADLESS_VERSION}, "same-run source-bound baseline bundle required")
     baseline = inputs.load_receipt(regular_file(bundle_dir, INPUT_RECEIPT, MAX_METADATA_BYTES))
-    if version == 3:
+    if version in {3, HEADLESS_VERSION}:
         validate_web_sdk_full_receipt(baseline, expected_revision=revision)
     else:
         inputs.validate_receipt(baseline)
@@ -118,7 +118,7 @@ def prepare(root: Path, scratch: Path, bundle_dir: Path, revision: str, manifest
             "the baseline bundle must match the checked out revision")
     require(not scratch.exists() and not scratch.is_symlink(), "scratch directory already exists")
     bundle, baseline = _hosted_baseline(bundle_dir, revision, manifest_sha)
-    sdk = bundle["candidate"]["schemaVersion"] == 3
+    sdk = bundle["candidate"]["schemaVersion"] in {3, HEADLESS_VERSION}
     context = baseline["web"]["context"] if sdk else baseline["context"]
     require(context["buildArgs"] == {"APP_VERSION": "", "NEXT_PUBLIC_WS_URL": "same-origin"},
             "this native rehearsal uses the ordinary production-image build arguments")
@@ -212,7 +212,7 @@ def verify_built(root, scratch, bundle_dir, revision, manifest_sha, image_id):
     before = inputs.decode(regular_file(scratch, "source-delta.json", MAX_METADATA_BYTES).read_bytes())
     retained_inputs = inputs.decode(regular_file(scratch, "candidate-inputs.json", MAX_METADATA_BYTES).read_bytes())
     candidate_revision = before["sourceDelta"]["releaseRevision"]
-    sdk = bundle["candidate"]["schemaVersion"] == 3
+    sdk = bundle["candidate"]["schemaVersion"] in {3, HEADLESS_VERSION}
     topbar_gaps = _fixture_delta(source, revision, candidate_revision)
     require(before["topBarGaps"] == topbar_gaps and before["webBuildContext"] == ("context" if sdk else "source")
             and before["webRecipe"] == (SDK_RECIPE if sdk else "deploy/images/Dockerfile"),

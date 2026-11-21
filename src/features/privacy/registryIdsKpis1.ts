@@ -22,7 +22,7 @@ export const kpiIds1: string[] = [
   "sourceReview:src/features/goals/kpiGraph.ts#3a53a7c3b75ca7a0a53e34ebd1eb316b15030dbae19ffd277f2771b2bcb326b4",
   "sourceReview:src/features/goals/kpiGraphUnits.ts#004735334030d251a55f00847ef77738e1170978a15955b3236d79fc60920519",
   "sourceReview:src/features/goals/kpiGraphValidation.ts#9fd93382c719bf89d9c13a6374a733b6ce704bf88b02dca005e89601125a05e3",
-  "sourceReview:src/app/(app)/settings/goals/KpiGraphCanvas.tsx#1bc08f88c3d391938d3bec0529b35add7a45aa695fdf848636930c8ae4ac0a37",
+  "sourceReview:src/app/(app)/settings/goals/KpiGraphCanvas.tsx#93f4690f6d9a8072e1c5eafc59d47b6429b6706d2c207c19989921982fd81af3",
   "sourceReview:src/app/(app)/settings/goals/KpiGraphEditor.tsx#e20778855cf6ac42d1e33930c39690c63f1de914ede5af068a5c22dda52b268f",
   "sourceReview:src/app/(app)/settings/goals/KpiGraphModel.ts#6ec36b7ddba01f74f2decd7fe37586c19a46f9cc8693061691dbaf4c6f297a37",
   "table:kpi_definitions",

@@ -13,6 +13,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import superjson from "superjson";
 import { env } from "@/config/env";
+import { type CoreDiagnostic, coreDiagnosticSchema } from "@/contracts/coreDiagnostics";
 import type { Db } from "@/db/client";
 import { applyCoreMigrations } from "@/db/migrate";
 import * as schema from "@/db/schema";
@@ -488,6 +489,17 @@ function shutdownOutcomes(child: ManagedChild): unknown[] {
     }
   });
 }
+function runtimeDiagnostics(child: ManagedChild): CoreDiagnostic[] {
+  return child.log.split("\n").flatMap((line) => {
+    try {
+      const value: unknown = JSON.parse(line);
+      if (!record(value) || value.event !== "warpdrive.runtime.diagnostic") return [];
+      return [coreDiagnosticSchema.parse(value)];
+    } catch {
+      return [];
+    }
+  });
+}
 async function requestStatus(origin: string, path: string): Promise<number | null> {
   try {
     const response = await fetch(`${origin}${path}`, { signal: AbortSignal.timeout(200) });
@@ -806,12 +818,10 @@ async function negativeStartup(
   manager: ReturnType<typeof childManager>,
   metadata: ReturnType<typeof metadataFixture>,
   pool: Pool,
-  mode: "old" | "malformed" | "owner",
 ): Promise<void> {
-  metadata.configure(mode === "owner" ? "healthy" : mode);
   const before = await producerRows(pool),
     requests = metadata.facts().requests;
-  const child = await manager.start(`negative_${mode}`, mode === "owner");
+  const child = await manager.start("negative_owner", true);
   let exposed = false;
   const listenerExposed = (): boolean => exposed;
   await waitFor(async () => {
@@ -832,13 +842,46 @@ async function negativeStartup(
     step: "runtime",
     exitCode: 1,
   });
-  if (mode === "owner")
-    assert.equal(
-      metadata.facts().requests,
-      requests,
-      "Owner credentials fail before metadata/producer",
-    );
+  assert.equal(metadata.facts().requests, requests, "Core never reads Web identity during startup");
+  assert.deepEqual(
+    runtimeDiagnostics(child).map(({ code }) => code),
+    ["CORE_STARTING", "CORE_DB_ROLE_REJECTED", "CORE_DRAINING", "CORE_DRAIN_FAILED"],
+  );
   await noCoreBackends(pool);
+}
+
+async function checkIndependentStartup(
+  child: ManagedChild,
+  metadata: ReturnType<typeof metadataFixture>,
+  fixture: FixtureUsers,
+  observed: { posts: number; timing: number },
+): Promise<void> {
+  await ready(child);
+  assert.equal(metadata.facts().requests, 0, "Core reaches readiness without checking Web");
+  const client = wireClient(child.origin, fixture.cookies[0], observed);
+  for (const mode of ["old", "malformed"] as const) {
+    metadata.configure(mode);
+    const requests = metadata.facts().requests;
+    await waitFor(async () => {
+      await assert.rejects(
+        client.version.get.query(),
+        (error: unknown) => errorCode(error) === "SERVICE_UNAVAILABLE",
+      );
+      return metadata.facts().requests > requests;
+    }, 5_000);
+    const contact = await client.contacts.getPerson.query({ id: fixture.people[0] });
+    assert.equal(contact.ownerId, fixture.users[0]);
+    assert.equal(await requestStatus(child.origin, "/readyz"), 200);
+  }
+  metadata.configure("healthy");
+  await waitFor(
+    () =>
+      client.version.get.query().then(
+        (value) => value.current === "1.2.3",
+        () => false,
+      ),
+    5_000,
+  );
 }
 
 async function drainWithHeldVersion(
@@ -888,6 +931,18 @@ async function drainWithHeldVersion(
     step: "runtime",
     exitCode: 0,
   });
+  const diagnostics = runtimeDiagnostics(child);
+  assert.deepEqual(
+    diagnostics.map(({ code }) => code),
+    [
+      "CORE_STARTING",
+      "CORE_READY",
+      "CORE_WEB_IDENTITY_UNAVAILABLE",
+      "CORE_DRAINING",
+      "CORE_DRAINED",
+    ],
+  );
+  assert.equal(new Set(diagnostics.map(({ processGeneration }) => processGeneration)).size, 1);
 }
 
 async function main(): Promise<void> {
@@ -926,8 +981,9 @@ async function main(): Promise<void> {
       "CREATE ROLE smoke_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public,pgboss TO smoke_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public,pgboss TO smoke_runtime; GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public,pgboss TO smoke_runtime; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public,pgboss TO smoke_runtime;",
     );
     stage = "real_entrypoint_ready";
+    metadata.configure("old");
     const child = await manager.start("positive");
-    await ready(child);
+    await checkIndependentStartup(child, metadata, fixture, observed);
     await registry(pool, false);
     stage = "authenticated_full_router";
     const client = await checkReads(child, fixture, observed);
@@ -950,10 +1006,8 @@ async function main(): Promise<void> {
     stage = "native_signal_drain";
     await drainWithHeldVersion(child, metadata, client);
     await noCoreBackends(pool);
-    stage = "negative_metadata_and_role";
-    await negativeStartup(manager, metadata, pool, "old");
-    await negativeStartup(manager, metadata, pool, "malformed");
-    await negativeStartup(manager, metadata, pool, "owner");
+    stage = "negative_runtime_role";
+    await negativeStartup(manager, metadata, pool);
     assert.equal(
       metadata.facts().credentials,
       0,
@@ -973,7 +1027,9 @@ async function main(): Promise<void> {
         versionRefreshWithoutRestart: true,
         liveRegistryConsumers: 0,
         repeatedSignalDrain: true,
-        negativeStartupCases: 3,
+        coreStartedIndependently: true,
+        unavailableMetadataCases: 2,
+        negativeStartupCases: 1,
         timingResponses: observed.timing,
         postRequests: observed.posts,
         childFacts: manager.facts(),

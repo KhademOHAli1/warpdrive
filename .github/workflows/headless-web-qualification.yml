@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       retained_transport:
-        description: Use an available pinned Actions artifact or read it from private OCI custody
+        description: Read the pinned Core and rollback Web ZIPs from Actions or private OCI custody
         type: choice
         default: auto
         options: [auto, actions, custody]
@@ -12,8 +12,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/headless-web-qualification.yml"
+      - "docs/deployment-evidence/headless-web-rollout-20261120.json"
       - "scripts/deployment/headless-web-baseline.json"
       - "scripts/deployment/headless_image_smoke.py"
+      - "scripts/deployment/headless_web_qualification_inputs.py"
       - "scripts/deployment/headless_web_smoke.py"
 
 # This workflow has no package write, release or deployment authority.
@@ -181,8 +183,18 @@ jobs:
               "digest": "sha256:" + os.environ["RETAINED_ZIP_SHA256"],
           }, Path(os.environ["RUNNER_TEMP"]) / "retained-core.zip")
           PY
-      - name: Install attested ORAS for the selected custody read
-        if: steps.transport.outputs.selected == 'custody'
+      - name: Select and authenticate the retained rollback Web transport
+        id: rollback-transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RETAINED_TRANSPORT: ${{ inputs.retained_transport || 'auto' }}
+        run: |
+          selected=$(python3 -B scripts/deployment/headless_web_qualification_inputs.py select "$REQUESTED_RETAINED_TRANSPORT")
+          case "$selected" in actions|custody) ;; *) exit 1 ;; esac
+          printf 'selected=%s\n' "$selected" >> "$GITHUB_OUTPUT"
+      - name: Install attested ORAS for the selected custody reads
+        if: steps.transport.outputs.selected == 'custody' || steps.rollback-transport.outputs.selected == 'custody'
         id: oras
         uses: ./.github/actions/install-custody-oras
       - name: Read the same retained ZIP by deterministic private OCI digest
@@ -242,6 +254,12 @@ jobs:
               and .[0].Config.Labels["org.opencontainers.image.title"] == "Warpdrive Core API"
             ' >/dev/null
           rm -- "$RUNNER_TEMP/retained-core.zip" "$RUNNER_TEMP/core-and-web.tar.gz"
+      - name: Verify and load the tested rollback Web 1.8.2 image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CUSTODY_ORAS: ${{ steps.oras.outputs.binary }}
+          SELECTED_ROLLBACK_TRANSPORT: ${{ steps.rollback-transport.outputs.selected }}
+        run: python3 -B scripts/deployment/headless_web_qualification_inputs.py load "$SELECTED_ROLLBACK_TRANSPORT"
       - name: Build only Web from unmodified candidate source
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
@@ -266,7 +284,7 @@ jobs:
               --build-arg "APP_COMMIT=$RETAINED_REVISION" --file deploy/images/Dockerfile \
               --target "$component" --tag "warpdrive-headless-fixture/$component:qualified" .
           done
-      - name: Exercise the exact Web image with the pinned backend
+      - name: Rehearse upgrade and rollback with the pinned Web and retained Core
         run: |
           python3 -B scripts/deployment/headless_web_smoke.py \
             --web-image warpdrive-headless/web:qualified \
@@ -277,6 +295,9 @@ jobs:
             --expected-revision "$SOURCE_REVISION" \
             --retained-revision "$RETAINED_REVISION" \
             --web-version "$WEB_VERSION" \
+            --baseline-web-image "$BASELINE_WEB_IMAGE" \
+            --baseline-web-revision "$BASELINE_WEB_REVISION" \
+            --baseline-web-version "$BASELINE_WEB_VERSION" \
             --output-dir "$RUNNER_TEMP/headless-web-smoke"
       - name: Retain sanitized smoke evidence
         if: always()
@@ -295,12 +316,31 @@ jobs:
           mkdir -m 700 "$bundle"
           cp "$RUNNER_TEMP/headless-web-smoke/report.json" "$bundle/report.json"
           web_id=$(jq -er --arg candidate "$SOURCE_REVISION" --arg retained "$RETAINED_REVISION" \
-            --arg core "$RETAINED_CORE_ID" --arg version "$WEB_VERSION" '
-            select(.kind == "warpdrive-headless-web-only-image-smoke" and .schemaVersion == 1
+            --arg core "$RETAINED_CORE_ID" --arg version "$WEB_VERSION" \
+            --arg baseline "$BASELINE_WEB_IMAGE" --arg baseline_revision "$BASELINE_WEB_REVISION" \
+            --arg baseline_version "$BASELINE_WEB_VERSION" '
+            .images.web.id as $candidate_image
+            | select(.kind == "warpdrive-headless-web-only-image-smoke" and .schemaVersion == 1
               and .success == true and .failure == null and .cleanup.success == true
               and .expectedWebVersion == $version and .expectedRevision == $candidate
-              and .images.web.revision == $candidate and .retainedRevision == $retained
-              and .coreImage.revision == $retained and .coreImage.id == $core)
+              and .images.web.revision == $candidate and .images.web.id != $baseline
+              and .retainedRevision == $retained and .coreImage.revision == $retained and .coreImage.id == $core
+              and .expectedBaselineWebVersion == $baseline_version
+              and .baselineWebImage.id == $baseline and .baselineWebImage.revision == $baseline_revision
+              and ([.checks[] | select(.name == "independent-web-upgrade-and-rollback")]
+                | length == 1 and .[0].status == "passed"
+                and (.[0].detail
+                  | .upgrade.identity.version == $version and .rollback.identity.version == $baseline_version
+                  and .upgrade.identity.sourceRevision == $candidate and .rollback.identity.sourceRevision == $baseline_revision
+                  and .upgrade.runtime.Image == $candidate_image and .rollback.runtime.Image == $baseline
+                  and all(.upgrade, .rollback; .session.authenticatedInboxSsr == true
+                    and .session.sameSession == true and .session.sameRecord == true
+                    and .session.sameSavedReport == true and .coreDuringWebOutage.ready == true
+                    and .coreDuringWebOutage.webOffline == true and .coreDuringWebOutage.admittedRpcServed == true)
+                  and (.retainedComponents | keys) == ["core", "postgres", "realtime", "worker"]
+                  and .retainedComponents.core.Image == $core
+                  and (.migrationLedger.rows | type) == "number" and .migrationLedger.rows > 0
+                  and (.migrationLedger.sha256 | test("^[a-f0-9]{64}$")))))
             | .images.web.id | select(test("^sha256:[a-f0-9]{64}$"))
           ' "$bundle/report.json")
           test "$(docker image inspect --format '{{.Id}}' warpdrive-headless/web:qualified)" = "$web_id"

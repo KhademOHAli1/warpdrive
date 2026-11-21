@@ -65,6 +65,8 @@ class FakeDocker:
             stdout = self.buildx.get(tuple(arguments), "")
             if tuple(arguments) in self.buildx_errors:
                 code, stderr = self.buildx_errors[tuple(arguments)]
+        if options.get("input_bytes") is not None:
+            stdout, stderr = stdout.encode(), stderr.encode()
         return subprocess.CompletedProcess(arguments, code, stdout, stderr)
 
     def json(self, arguments, **options):
@@ -392,15 +394,31 @@ class RegistryReadbackTests(unittest.TestCase):
             "Labels": {"org.opencontainers.image.revision": SHA}}}).encode()
         identifier = "sha256:" + hashlib.sha256(config).hexdigest()
         body, digest = manifest(identifier)
-        opener = Opener([Response(body, {"Docker-Content-Digest": digest}), Response(config)])
-        client = smoke.RegistryClient("127.0.0.1:5000", opener)
-        result = client.verify_config("127.0.0.1:5000/web@" + digest, identifier, SHA)
-        self.assertEqual(result["imageId"], identifier)
-        self.assertTrue(all(request.full_url.startswith("http://127.0.0.1:5000/") for request, _ in opener.calls))
-        self.assertFalse(any(request.has_header("Authorization") for request, _ in opener.calls))
+        for tested_id in (identifier, digest):
+            with self.subTest(tested_id=tested_id):
+                opener = Opener([Response(body, {"Docker-Content-Digest": digest}), Response(config)])
+                client = smoke.RegistryClient("127.0.0.1:5000", opener)
+                result = client.verify_config("127.0.0.1:5000/web@" + digest, tested_id, SHA)
+                self.assertEqual(result["imageId"], tested_id)
+                self.assertEqual(result["manifestDigest"], digest)
+                self.assertEqual(opener.calls[1][0].full_url, "http://127.0.0.1:5000/v2/web/blobs/" + identifier)
+                self.assertFalse(any(request.has_header("Authorization") for request, _ in opener.calls))
+
+    def test_tested_manifest_id_does_not_bypass_config_bytes_platform_or_source(self):
+        for architecture, revision, altered in (("amd64", SHA, True), ("arm64", SHA, False),
+                                                 ("amd64", "f" * 40, False)):
+            with self.subTest(architecture=architecture, revision=revision, altered=altered):
+                config = json.dumps({"os": "linux", "architecture": architecture, "config": {
+                    "Labels": {"org.opencontainers.image.revision": revision}}}).encode()
+                body, digest = manifest("sha256:" + hashlib.sha256(config).hexdigest())
+                opener = Opener([Response(body, {"Docker-Content-Digest": digest}),
+                                 Response(config + b" " if altered else config)])
+                client = smoke.RegistryClient("127.0.0.1:5000", opener)
+                with self.assertRaises(smoke.RegistrySmokeError):
+                    client.verify_config("127.0.0.1:5000/web@" + digest, digest, SHA)
 
     @staticmethod
-    def production_transport_fixture():
+    def production_transport_fixture(*, manifest_ids=False):
         try:
             from .registry_candidate import candidate_tag
         except ImportError:
@@ -411,23 +429,26 @@ class RegistryReadbackTests(unittest.TestCase):
         for name in smoke.COMPONENTS:
             body, digest = manifest(IDS[name])
             parsed = json.loads(body)
-            tag = candidate_tag(value.repository_prefix, name, SHA, IDS[name])
+            value.image_ids[name] = digest if manifest_ids else IDS[name]
+            tag = candidate_tag(value.repository_prefix, name, SHA, value.image_ids[name])
             reference = tag.rsplit(":", 1)[0] + "@" + digest
             value.accepted_refs[name] = reference
             responses[reference] = (digest, parsed)
             value.docker.buildx[("buildx", "imagetools", "inspect", "--format", "{{json .Manifest}}", tag)] = json.dumps({"digest": digest})
-            value.docker.buildx[("buildx", "imagetools", "inspect", "--raw", reference)] = json.dumps(parsed)
+            value.docker.buildx[("buildx", "imagetools", "inspect", "--raw", reference)] = body.decode()
         value.client = SimpleNamespace(manifest=lambda reference, **options: responses[reference])
         return value
 
     def test_shipping_adapter_is_exercised_for_existing_tags_and_immutable_refs_without_push(self):
-        value = self.production_transport_fixture()
-        result = value.production_transport_readback()
-        self.assertEqual(result["newPushes"], 0)
-        self.assertEqual(set(result["components"]), set(smoke.COMPONENTS))
-        calls = value.docker.calls
-        self.assertEqual(sum(args[:3] == ["buildx", "imagetools", "inspect"] for args in calls), 12)
-        self.assertFalse(any("push" in args or "build" in args for args in calls))
+        for manifest_ids in (False, True):
+            with self.subTest(manifest_ids=manifest_ids):
+                value = self.production_transport_fixture(manifest_ids=manifest_ids)
+                result = value.production_transport_readback()
+                self.assertEqual(result["newPushes"], 0)
+                self.assertEqual({name: row["imageId"] for name, row in result["components"].items()}, value.image_ids)
+                calls = value.docker.calls
+                self.assertEqual(sum(args[:3] == ["buildx", "imagetools", "inspect"] for args in calls), 12)
+                self.assertFalse(any("push" in args or "build" in args for args in calls))
 
     def test_shipping_missing_tag_path_is_required_before_first_publication(self):
         try:
@@ -454,14 +475,36 @@ class RegistryReadbackTests(unittest.TestCase):
     def test_shipping_adapter_metadata_mismatch_cannot_pass_the_independent_gate(self):
         value = self.production_transport_fixture()
         key = next(key for key in value.docker.buildx if "--format" in key)
-        wrong_digest = "sha256:" + "f" * 64
+        wrong_body, wrong_digest = manifest(IDS["worker"])
         original_reference = value.accepted_refs["web"]
         wrong_reference = original_reference.rsplit("@", 1)[0] + "@" + wrong_digest
         value.docker.buildx[key] = json.dumps({"digest": wrong_digest})
-        value.docker.buildx[("buildx", "imagetools", "inspect", "--raw", wrong_reference)] = value.docker.buildx[
-            ("buildx", "imagetools", "inspect", "--raw", original_reference)]
+        value.docker.buildx[("buildx", "imagetools", "inspect", "--raw", wrong_reference)] = wrong_body.decode()
         with self.assertRaises(smoke.RegistrySmokeError):
             value.production_transport_readback()
+
+    def test_conflict_seed_accepts_a_manifest_id_and_rejects_a_config_alias_of_the_same_image(self):
+        try:
+            from .registry_candidate import RegistryConflict
+        except ImportError:
+            from registry_candidate import RegistryConflict
+        with tempfile.TemporaryDirectory() as directory:
+            value = fixture(Path(directory))
+            body, digest = manifest(IDS["worker"])
+            value.image_ids["worker"] = digest
+            value.client = SimpleNamespace(authority="127.0.0.1:5000",
+                                           manifest=lambda _tag: (digest, json.loads(body)))
+            value.adapter = Mock()
+            value.candidate, value.provenance, value.accepted_refs = {}, {}, {}
+            value.accepted_path = Path(directory) / "accepted-candidate.json"
+            value.accepted_path.write_bytes(b"retained receipt")
+            value.accepted_hash = hashlib.sha256(b"retained receipt").hexdigest()
+            with patch("registry_candidate.promote_candidate", side_effect=RegistryConflict) as publish:
+                self.assertTrue(value.conflict()["conflictRejected"])
+                value.image_ids["web"] = IDS["worker"]
+                with self.assertRaisesRegex(smoke.RegistrySmokeError, "not independently established"):
+                    value.conflict()
+                self.assertEqual(publish.call_count, 1)
 
 
 class OwnershipAndFailureTests(unittest.TestCase):

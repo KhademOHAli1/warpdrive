@@ -63,7 +63,7 @@ describe("NotificationsBell", () => {
     const incidents = await screen.findByRole("button", { name: /open operations incidents/i });
     expect(bellQuery).toHaveBeenCalledTimes(1);
     await user.click(incidents);
-    expect(push).toHaveBeenCalledWith("/settings/logs");
+    expect(push).toHaveBeenCalledWith("/settings/logs#operations-history");
     expect(screen.queryByRole("button", { name: /open operations incidents/i })).toBeNull();
   });
 

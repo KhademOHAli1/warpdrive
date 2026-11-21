@@ -203,9 +203,9 @@ jobs:
           bun --no-env-file scripts/deployment/install-web-ui.mjs --target "$projection"
           proof="$RUNNER_TEMP/functional-proof"
           curl --fail --silent --show-error --proto '=https' --connect-timeout 15 --max-time 45 --max-filesize 8388608 \
-            https://registry.npmjs.org/@ui-sdk/core/-/core-0.1.0-beta.1.tgz --output "$proof/core.tgz"
+            https://registry.npmjs.org/@ui-sdk/core/-/core-0.1.0-beta.13.tgz --output "$proof/core.tgz"
           curl --fail --silent --show-error --proto '=https' --connect-timeout 15 --max-time 45 --max-filesize 8388608 \
-            https://registry.npmjs.org/@ui-sdk/react/-/react-0.1.0-beta.1.tgz --output "$proof/react.tgz"
+            https://registry.npmjs.org/@ui-sdk/react/-/react-0.1.0-beta.13.tgz --output "$proof/react.tgz"
       - name: Admit functional source, dependencies and exact Docker context
         id: build-inputs
         env:

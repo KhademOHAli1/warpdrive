@@ -23,3 +23,29 @@ describe("single-box security settings", () => {
     expect(exampleEnv).toMatch(/^AUTH_TRUSTED_PROXY_HEADER=none$/m);
   });
 });
+
+describe("standalone Web runtime", () => {
+  const standalone = readFileSync("deploy/images/compose.web.yml", "utf8");
+  const webEnv = readFileSync(".env.web.example", "utf8");
+
+  test("runs only the qualified Web image with a loopback port and independent liveness", () => {
+    expect(standalone.match(/^ {2}[a-z-]+:$/gm)).toEqual(["  web:"]);
+    expect(standalone).toContain("pull_policy: never");
+    expect(standalone).toContain("127.0.0.1:");
+    expect(standalone).toContain("/api/health");
+    expect(standalone).not.toMatch(/^\s+(build|depends_on|env_file):/m);
+    const environment = standalone.split("    environment:\n")[1]?.split(/^ {4}ports:/m)[0] ?? "";
+    expect([...environment.matchAll(/^ {6}([A-Z_]+):/gm)].map((match) => match[1])).toEqual([
+      "CORE_API_ORIGIN",
+      "CORE_PROXY_TOKEN",
+      "WEB_PUBLIC_ORIGIN",
+      "FRONTEND_TRUSTED_PROXY_HEADER",
+    ]);
+    expect(webEnv).toContain("WEB_PUBLIC_ORIGIN=");
+  });
+
+  test("retains same-origin realtime by default in the source Compose build", () => {
+    expect(production).toContain(`NEXT_PUBLIC_WS_URL: \${NEXT_PUBLIC_WS_URL:-same-origin}`);
+    expect(exampleEnv).toMatch(/^NEXT_PUBLIC_WS_URL=same-origin$/m);
+  });
+});

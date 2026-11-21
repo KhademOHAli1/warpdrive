@@ -33,7 +33,7 @@ export const newsletterIds = [
   "sourceReview:src/features/newsletter/attribution/service.ts#3dd6b53aea092fccd6c725c3e26ec3d1098ad38d1420d2fea749e4988bfdc221",
   "sourceReview:src/features/newsletter/audience/operations.ts#d873dbb109920a84c62023ec259641bc68e7ddcd7aeac1457693c294d5657615",
   "sourceReview:src/features/newsletter/audience/subscriberRecords.ts#3248d8c463a5e1fea9f7054f47f25c49345689372d5961abcae595b131f18186",
-  "sourceReview:src/features/newsletter/campaigns/CampaignAnalytics.tsx#f2fcc792762ae30845b0dc4ea74bb676cbe43116f7955ac1b4b76023569ca7ea",
+  "sourceReview:src/features/newsletter/campaigns/CampaignAnalytics.tsx#55bd5e4fa9ad66da5b9e073d03c0b2b14665bb4e3dafb0115ca67d45d9d61d47",
   "sourceReview:src/features/newsletter/campaigns/CampaignEditor.tsx#ab868442f51133fc790287260c46c2b762e58c44c302b8bfeb85da4bd7eb66c0",
   "sourceReview:src/features/newsletter/campaigns/model.ts#bf7b63052e72f4c690155ad3857fd59a37f078bbcb4d48cb7647d97c25ea37ed",
   "sourceReview:src/features/newsletter/campaigns/operations.ts#d1f22b5d5576304bb289431edc1f970ebc9c77a7b42ccc5d9a43ba29ef517854",

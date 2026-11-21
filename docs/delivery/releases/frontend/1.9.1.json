@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "release_track": "frontend",
+  "version": "1.9.1",
+  "qualification": {
+    "path": "docs/delivery/frontend-qualification-1.9.1.json",
+    "sha256": "2d24726a80fb5aae9ae194fc2a0b3e8a6692d106c64d354ea18a6026a424c786"
+  },
+  "required_integrated_revisions": [
+    "f4ca71162a9b6dd49a53f8afc729439b3d235334",
+    "cf811ecba8ea3718132632709c255dd04873c21d",
+    "81cc291db9df5e86013fe1c93e4c4b804bf186a4"
+  ]
+}

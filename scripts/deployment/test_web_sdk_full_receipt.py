@@ -86,6 +86,20 @@ class ReceiptTests(unittest.TestCase):
         with self.assertRaisesRegex(CandidateError, "APP_VERSION differs"):
             receipt.create_web_sdk_full_candidate(SHA, report, "a" * 64, images, input_receipt=self.value)
 
+    def test_retained_sdk_profile_keeps_its_original_image_and_source_pins(self):
+        retained = copy.deepcopy(self.value)
+        backend = retained["backendInputs"]
+        backend["context"]["baseImage"] = receipt.RETAINED_BASE_IMAGE
+        rehash_legacy(backend)
+        retained["web"].update(profile=receipt.RETAINED_PROFILE, context=copy.deepcopy(backend["context"]),
+                               pinnedInputs={path: {"gitBlob": blob, "sha256": digest, "bytes": 100}
+                                             for path, (blob, digest) in receipt.RETAINED_WEB_INPUTS.items()})
+        facts = receipt.candidate_input_facts(rehash(retained), expected_revision=SHA)
+        self.assertEqual(facts["inputProvenance"]["webProfile"], receipt.RETAINED_PROFILE)
+        retained["web"]["pinnedInputs"][receipt.RECIPE] = self.value["web"]["pinnedInputs"][receipt.RECIPE]
+        with self.assertRaisesRegex(inputs.InputError, "Reviewed SDK Web recipe or sidecar"):
+            receipt.validate_web_sdk_full_receipt(rehash(retained), expected_revision=SHA)
+
     def test_rejects_self_consistent_metadata_with_wrong_scope(self):
         for mutate in (
             lambda value: value.update(schemaVersion=True),

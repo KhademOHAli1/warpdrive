@@ -132,7 +132,7 @@ export function NotificationsBell({
           <OperationsBellLink
             onOpen={() => {
               setOpen(false);
-              router.push("/settings/logs");
+              router.push("/settings/logs#operations-history");
             }}
           />
         )}

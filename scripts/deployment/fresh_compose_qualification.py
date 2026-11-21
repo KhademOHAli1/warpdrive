@@ -23,7 +23,7 @@ import time
 import zipfile
 
 from bundle import load_bundle
-from candidate import CandidateError, IMAGE_ID, REVISION
+from candidate import HEADLESS_COMPONENTS, HEADLESS_VERSION, CandidateError, IMAGE_ID, REVISION
 from component_inputs import decode
 from engine_image_smoke import context_record, engine_metadata, required_checks_passed
 from fresh_compose_admission import IMAGE, IMAGES
@@ -284,6 +284,8 @@ def admit_images(api, docker, args, environment, output):
     origin, repository_id = producer_origin(api, args.expected_revision, environment)
     loaded = load_bundle(args.bundle_dir, expected_revision=args.expected_revision)
     require(loaded["origin"] == origin, "Baseline is not from the authenticated current producer")
+    require(loaded["candidate"]["schemaVersion"] == HEADLESS_VERSION,
+            "Fresh headless Compose requires the original tested five-image bundle")
     roles, revisions = {}, {}
     for role, image in loaded["candidate"]["components"].items():
         rows = docker.json(["image", "inspect", image["imageId"]], timeout=10)
@@ -291,8 +293,8 @@ def admit_images(api, docker, args, environment, output):
         require(actual["id"] == image["imageId"] and actual["user"] == image["runtimeUser"]
                 and rows[0].get("Os") == "linux" and rows[0].get("Architecture") == "amd64", "Preloaded baseline differs from authenticated bundle")
         roles[role], revisions[role] = actual["id"], args.expected_revision
-    require(set(roles) == {"web", "worker", "realtime", "migrator"} and len(set(roles.values())) == 4,
-            "Four distinct admitted baseline images required")
+    require(set(roles) == set(HEADLESS_COMPONENTS) and len(set(roles.values())) == len(HEADLESS_COMPONENTS),
+            "All distinct headless baseline images are required")
     proof = metadata(args.web_build_proof)
     web_id = proof.get("candidateWebImageId")
     require(isinstance(web_id, str) and IMAGE_ID.fullmatch(web_id) and web_id not in roles.values(), "Distinct candidate Web image required")
@@ -338,9 +340,7 @@ def admit_images(api, docker, args, environment, output):
 
 
 def publish_roles(registry, docker, roles, revisions):
-    expected = {"web", "worker", "realtime", "migrator", "candidate_web", "engine"}
-    if "core-api" in roles:
-        expected.add("core-api")
+    expected = {*HEADLESS_COMPONENTS, "candidate_web", "engine"}
     require(set(roles) == expected and len(set(roles.values())) == len(expected) and set(revisions) == expected,
             "Fixed admitted local image roles and the headless Core image are required")
     registry.image_ids = dict(roles)

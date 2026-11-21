@@ -137,7 +137,7 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/ui/ConditionFields.tsx#85a2736937b04d1ebc583cead0cba86f488d230dd18c271bd662b30b44422d4f",
   "sourceReview:src/features/workflows/ui/DefinitionIssues.tsx#eb49da641d781d7dc0aedc2ca257864e0a88e0312442ed68b2576e7e071d4bee",
   "sourceReview:src/features/workflows/ui/RunTrace.tsx#f12b9872c254ae086b0823d59add8231dfbdec012fc93fef5a4b697fcec5b9f1",
-  "sourceReview:src/features/workflows/ui/WorkflowCanvas.tsx#7a627635d5bd03bfc948b9bfb155bc0fd6f080dfe5a431fa13872ca39ebd8436",
+  "sourceReview:src/features/workflows/ui/WorkflowCanvas.tsx#36d001227d0343cd20347745a4ac2f8b09347d33705bcdf4718410ead83064b0",
   "sourceReview:src/features/workflows/worker.ts#de83f83cc6c5978bc6d30e2549fa2c14fea144dd39abd97320a9d8658f3de2b5",
   "sourceReview:src/features/workflows/nodeOrder.ts#9f1334d3128f1ef785979438985410fca79bf19ce414b666ffd8fa42b053fcf7",
   "table:workflow_runs",

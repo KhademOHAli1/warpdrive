@@ -1218,6 +1218,15 @@ class HybridRestoreTests(unittest.TestCase):
         adapter.directory = self.handle
         return adapter, command
 
+    def test_admits_only_exact_current_or_legacy_restic_release(self):
+        for release in ("0.18.0", "0.18.1", "0.20.0"):
+            with self.subTest(release=release), patch.object(HybridCommand, "run", return_value=f"restic {release} fixture\n".encode()):
+                self.adapter([], {})
+        for release in ("0.18.10", "0.19.0", "0.20.0-dev", "0.20.1"):
+            with self.subTest(release=release), patch.object(HybridCommand, "run", return_value=f"restic {release} fixture\n".encode()):
+                with self.assertRaisesRegex(r.RecoveryError, "Unsupported Restic command contract"):
+                    self.adapter([], {})
+
     def inventory(self, entries):
         return {"roots": [row["path"] for row in entries], "entries": entries,
                 "bytes": sum(row.get("bytes", 0) for row in entries)}
@@ -1538,7 +1547,8 @@ def owned_mixed_snapshot(root, binary, command, budget, progress):
         else:
             raise r.RecoveryError("Privileged launcher timeout was not proved")
         progress["mixedProducerStage"] = "pinned-version-proof"
-        r.require(launch(["/restic", "version"]).startswith(b"restic 0.18.0 "), "Pinned namespace binary required")
+        r.require(launch(["/restic", "version"]).startswith(f"restic {r.RESTIC_FIXTURE_VERSION} ".encode()),
+                  "Pinned namespace binary required")
         key = namespace / "key"
         put(key, secrets.token_hex(32).encode() + b"\n")
         repository = namespace / "repository"
