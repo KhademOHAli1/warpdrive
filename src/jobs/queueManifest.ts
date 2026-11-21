@@ -1,4 +1,5 @@
 import type { Queue, QueueResult } from "pg-boss";
+import { PGBOSS_QUEUE_PROJECT_AUTOMATIONS } from "@/constants/jobNames";
 
 // Fixed infrastructure, independent of workspace/account count. The update-check queue is
 // harmless when disabled; only the Worker decides whether to register its handler/schedule.
@@ -25,6 +26,7 @@ export const QUEUE_NAMES = Object.freeze([
   "workflow-v2-run",
   "workflow-v2-reconcile",
   "newsletter-operations-monitor",
+  PGBOSS_QUEUE_PROJECT_AUTOMATIONS,
   "__pgboss__send-it",
 ] as const);
 
