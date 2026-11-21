@@ -11,6 +11,8 @@ export * from "@/features/inventory/releases/schema";
 export * from "@/features/inventory/schema";
 export * from "@/features/inventory/sourcing/schema";
 export * from "@/features/inventory/warehouse/schema";
+export * from "@/features/inventory/warehouse/stocktakes/countSchema";
+export * from "@/features/inventory/warehouse/stocktakes/valuationSchema";
 export * from "@/features/locations/schema";
 export * from "@/features/newsletter/attribution/schema";
 export * from "@/features/newsletter/schema/operationReceipts";

@@ -87,9 +87,11 @@ function OperationEditor({
 export function WarehouseOperationsLive({
   actorId,
   initial,
+  initialMovementId,
 }: {
   actorId: string;
   initial: WarehouseResult;
+  initialMovementId?: string;
 }) {
   const locale = useLocale();
   const t = operationsMessages[locale];
@@ -274,7 +276,12 @@ export function WarehouseOperationsLive({
               ))}
             </TabsList>
             <TabsContent value="history">
-              <HistoryView workspace={workspace} open={open} busy={busy} />
+              <HistoryView
+                workspace={workspace}
+                open={open}
+                busy={busy}
+                initialMovementId={initialMovementId}
+              />
             </TabsContent>
             <TabsContent value="transfers">
               <TransfersView workspace={workspace} open={open} busy={busy} />

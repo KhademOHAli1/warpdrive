@@ -36,8 +36,11 @@ function OperationReference({ id }: { id: string }) {
   );
 }
 
-function useOperationList<Cursor>(tab: OperationsTab) {
-  const [filter, setFilter] = useState(() => defaultOperationsFilter(tab));
+function useOperationList<Cursor>(tab: OperationsTab, initialSearch = "") {
+  const [filter, setFilter] = useState(() => ({
+    ...defaultOperationsFilter(tab),
+    search: initialSearch,
+  }));
   const [cursor, setCursor] = useState<Cursor | undefined>();
   function change(next: OperationsFilter) {
     setCursor(undefined);
@@ -436,11 +439,13 @@ export function HistoryView({
   open,
   busy,
   corrections = false,
+  initialMovementId,
 }: {
   workspace: WarehouseWorkspace;
   open: OpenEditor;
   busy: boolean;
   corrections?: boolean;
+  initialMovementId?: string;
 }) {
   const preferences = useLocalePreferences();
   const t = operationsMessages[preferences.locale];
@@ -449,11 +454,16 @@ export function HistoryView({
   const numbers = new Intl.NumberFormat(tag);
   const deltas = new Intl.NumberFormat(tag, { signDisplay: "exceptZero" });
   const tab = corrections ? "corrections" : "history";
-  const { filter, change, common, cursor, setCursor } =
-    useOperationList<WarehouseMovementCursor>(tab);
+  const { filter, change, common, cursor, setCursor } = useOperationList<WarehouseMovementCursor>(
+    tab,
+    initialMovementId,
+  );
+  const movementId = filter.search === initialMovementId ? initialMovementId : undefined;
   const query = trpc.inventory.warehouse.history.useQuery(
     {
       ...common,
+      movementId,
+      search: movementId === undefined ? common.search : undefined,
       kind: filter.kind || undefined,
       from: filter.from || undefined,
       to: filter.to || undefined,
@@ -466,7 +476,12 @@ export function HistoryView({
 
   return (
     <div className="space-y-3">
-      <OperationsFilters tab={tab} workspace={workspace} change={change} />
+      <OperationsFilters
+        tab={tab}
+        workspace={workspace}
+        change={change}
+        initialSearch={initialMovementId}
+      />
       {query.isPending && (
         <p role="status" className="text-sm text-muted-foreground">
           {t.loading}

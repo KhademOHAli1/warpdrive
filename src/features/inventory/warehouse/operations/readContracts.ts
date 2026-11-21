@@ -24,6 +24,7 @@ const filters = {
 
 export const warehouseMovementHistoryQuery = z.strictObject({
   ...filters,
+  movementId: id.optional(),
   kind: z
     .string()
     .regex(/^[a-z][a-z-]{0,31}$/)

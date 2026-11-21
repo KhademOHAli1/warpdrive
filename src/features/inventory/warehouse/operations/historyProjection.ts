@@ -160,6 +160,7 @@ function unlocatedRows(): SQL {
 }
 
 function historyFilters({
+  movementId,
   itemId,
   siteId,
   locationId,
@@ -170,6 +171,7 @@ function historyFilters({
   search,
 }: WarehouseMovementHistoryQuery): SQL {
   const conditions = [sql`TRUE`];
+  if (movementId !== undefined) conditions.push(sql`id = ${movementId}::uuid`);
   if (itemId !== undefined) conditions.push(sql`item_id = ${itemId}::uuid`);
   if (siteId !== undefined) conditions.push(sql`site_id = ${siteId}::uuid`);
   if (locationId !== undefined) conditions.push(sql`location_id = ${locationId}::uuid`);

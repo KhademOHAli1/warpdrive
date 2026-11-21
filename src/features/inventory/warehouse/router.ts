@@ -8,8 +8,10 @@ import {
 } from "./operations/readContracts";
 import { readWarehouseMovementHistory, readWarehouseTransfers } from "./operations/reads";
 import { readWarehouseWorkspace } from "./service";
+import { stocktakesRouter } from "./stocktakes/router";
 
 export const inventoryWarehouseRouter = router({
+  stocktakes: stocktakesRouter,
   installations: protectedProcedure
     .input(warehouseInstallationsQuery)
     .query(({ ctx, input }) =>

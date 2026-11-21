@@ -40,15 +40,20 @@ export function OperationsFilters({
   tab,
   workspace,
   change,
+  initialSearch = "",
 }: {
   tab: OperationsTab;
   workspace: WarehouseWorkspace;
   change: (value: OperationsFilter) => void;
+  initialSearch?: string;
 }) {
   const locale = useLocale();
   const t = operationsMessages[locale];
   const keys = useId();
-  const [draft, setDraft] = useState(() => defaultOperationsFilter(tab));
+  const [draft, setDraft] = useState(() => ({
+    ...defaultOperationsFilter(tab),
+    search: initialSearch,
+  }));
   const isTransfer = tab === "transfers";
   const locations = workspace.locations.filter(
     ({ siteId }) => draft.siteId === "" || siteId === draft.siteId,

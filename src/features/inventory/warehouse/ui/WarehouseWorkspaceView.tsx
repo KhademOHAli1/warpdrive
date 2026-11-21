@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightLeft, Plus, RefreshCw, Search, Settings2 } from "lucide-react";
+import { ArrowRightLeft, ClipboardCheck, Plus, RefreshCw, Search, Settings2 } from "lucide-react";
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
@@ -22,6 +22,7 @@ import type {
   WarehouseWorkspace,
 } from "../contracts";
 import { operationsMessages } from "../operations/ui/operationsMessages";
+import { stocktakeMessages } from "../stocktakes/ui/messages";
 import {
   WarehouseIntakeDialog,
   WarehousePolicyDialog,
@@ -181,13 +182,23 @@ export function WarehouseWorkspaceView({
           <div className="flex flex-wrap items-center gap-2">
             {fixture && <Badge variant="outline">{t.demo}</Badge>}
             {!fixture && (
-              <Link
-                href="/inventory/warehouse/operations"
-                className={buttonVariants({ size: "sm", variant: "outline" })}
-              >
-                <ArrowRightLeft aria-hidden="true" />
-                {operationsMessages[locale].title}
-              </Link>
+              <>
+                <Link
+                  href="/inventory/warehouse/operations"
+                  className={buttonVariants({ size: "sm", variant: "outline" })}
+                >
+                  <ArrowRightLeft aria-hidden="true" />
+                  {operationsMessages[locale].title}
+                </Link>
+                <Link
+                  href="/inventory/warehouse/stocktakes"
+                  prefetch={false}
+                  className={buttonVariants({ size: "sm", variant: "outline" })}
+                >
+                  <ClipboardCheck aria-hidden="true" />
+                  {stocktakeMessages[locale].title}
+                </Link>
+              </>
             )}
             {!fixture && refresh !== undefined && (
               <Button size="sm" variant="outline" disabled={busy} onClick={refresh}>
