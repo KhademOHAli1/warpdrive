@@ -29,6 +29,7 @@ import { billingMessagesForLocale } from "@/features/billing/messages";
 import type { Locale } from "@/features/i18n/registry";
 import type { SettingsMessages } from "@/features/identity/settingsMessages";
 import { adminMessages } from "@/features/newsletter/admin/messages";
+import { operationsAccessMessages } from "@/features/operations-access/ui/messages";
 import { privacyRequestMessagesForLocale } from "@/features/privacy/privacyRequestMessages";
 import { integratorMessages } from "@/features/projects/integrator/messages";
 import { workflowRuntimeMessages } from "@/features/workflows/v2/workflowRuntimeMessages";
@@ -101,6 +102,11 @@ export function settingsNavSections(
               { href: "/settings/visibility-groups", label: L.visibilityGroups, icon: Eye },
               ...(isAdmin
                 ? [
+                    {
+                      href: "/settings/operations-access",
+                      label: operationsAccessMessages[locale].title,
+                      icon: ShieldCheck,
+                    },
                     { href: "/settings/campaigns", label: newsletter.settings, icon: Megaphone },
                     { href: "/settings/maintenance", label: newsletter.maintenance, icon: Wrench },
                     { href: "/settings/logs", label: newsletter.logs, icon: FileText },

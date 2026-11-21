@@ -18,6 +18,7 @@ import { newsletterRouter } from "@/features/newsletter/router";
 import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
 import { operationsRouter } from "@/features/operations/router";
+import { operationsAccessRouter } from "@/features/operations-access/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
 import { projectDocumentsRouter } from "@/features/projects/documents/router";
 import { internalProjectsRouter } from "@/features/projects/router";
@@ -57,6 +58,7 @@ export const appRouter = router({
   notifications: notificationsRouter,
   oauth: oauthRouter,
   operations: operationsRouter,
+  operationsAccess: operationsAccessRouter,
   internalProjects: internalProjectsRouter,
   inventory: inventoryRouter,
   locations: locationsRouter,

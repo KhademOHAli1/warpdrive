@@ -13,6 +13,7 @@ export * from "@/features/locations/schema";
 export * from "@/features/newsletter/attribution/schema";
 export * from "@/features/newsletter/schema/operationReceipts";
 export * from "@/features/newsletter/schema/personAddresses";
+export * from "@/features/operations-access/schema";
 export * from "@/features/projects/automations/schema";
 export * from "@/features/projects/brand/schema";
 export * from "@/features/projects/documents/schema";

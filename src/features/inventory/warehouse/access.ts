@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, or } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { listOrgOptions } from "@/features/contacts/orgOptionsRepo";
 import {
@@ -6,6 +6,10 @@ import {
   directorySiteGrants,
   directorySites,
 } from "@/features/locations/schema";
+import {
+  operationsSiteCapabilities,
+  readOperationsSiteGrants,
+} from "@/features/operations-access/scope";
 import type { HydratedActor } from "@/server/hydrateActor";
 import type { WarehouseError, WarehouseLocation, WarehouseSite } from "./contracts";
 import { inventoryStockLocationPolicies } from "./schema";
@@ -33,6 +37,10 @@ export async function readWarehouseAccess(
   signal: AbortSignal,
 ): Promise<WarehouseAccess> {
   const isAdmin = actor.type === "admin";
+  const operationsGrants = isAdmin ? [] : await readOperationsSiteGrants(tx, actor.id);
+  const warehouseSiteIds = operationsGrants
+    .filter(({ role }) => role === "warehouse_viewer" || role === "warehouse_manager")
+    .map(({ siteId }) => siteId);
   const siteRows = await tx
     .select({ site: directorySites, role: directorySiteGrants.role })
     .from(directorySites)
@@ -43,11 +51,17 @@ export async function readWarehouseAccess(
         eq(directorySiteGrants.userId, actor.id),
       ),
     )
-    .where(isAdmin ? undefined : isNotNull(directorySiteGrants.role))
+    .where(
+      isAdmin
+        ? undefined
+        : or(isNotNull(directorySiteGrants.role), inArray(directorySites.id, warehouseSiteIds)),
+    )
     .orderBy(asc(directorySites.code));
   const sites = siteRows.map(({ site, role }) => ({
     ...site,
-    canManage: isAdmin || role === "manager",
+    canManage:
+      role === "manager" ||
+      operationsSiteCapabilities(operationsGrants, isAdmin, site.id).canManageWarehouse,
   }));
   const locationRows = await tx
     .select({ location: directoryLocations, kind: inventoryStockLocationPolicies.kind })
