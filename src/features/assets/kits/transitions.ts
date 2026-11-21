@@ -108,11 +108,19 @@ function recordEffect(change: Change, record: AssetRecord, quantity: number | nu
 function changeFreeQuantity(change: Change, pool: Pool, locationId: string, delta: number) {
   const current = pool.balances.find((row) => row.locationId === locationId)?.quantity ?? 0;
   const next = current + delta;
-  if (next < 0 || next > maxBalance) return false;
+  if (next < 0) return false;
   const balances = pool.balances.filter((row) => row.locationId !== locationId);
   if (next > 0) balances.push({ locationId, quantity: next });
   recordEffect(change, { ...pool, balances }, null);
   return true;
+}
+
+function exceedsFreeBalanceLimit(change: Change) {
+  return [...change.assets.values()].some(
+    ({ record }) =>
+      record.tracking !== "individual" &&
+      record.balances.some(({ quantity }) => quantity > maxBalance),
+  );
 }
 
 function unpackPrior(change: Change, kit: Kit): KitError | null {
@@ -535,5 +543,8 @@ export function applyKitCommand(
     command.type === "saveKit"
       ? saveKit(change, command, prior)
       : applyExisting(change, command, prior);
-  return typeof effect === "string" ? fail(effect) : recordActivity(change, effect, command.note);
+  if (typeof effect === "string") return fail(effect);
+  // Repacking can temporarily add to and subtract from the same loose balance.
+  if (exceedsFreeBalanceLimit(change)) return fail("quantity");
+  return recordActivity(change, effect, command.note);
 }

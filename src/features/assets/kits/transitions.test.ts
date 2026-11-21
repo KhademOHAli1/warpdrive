@@ -294,4 +294,53 @@ describe("shared kit transitions", () => {
     expect(valid.kit).toMatchObject({ version: 1, definitionVersion: 1 });
     expect(equipment(valid.value, pool.code)).toBe(pool);
   });
+
+  it("renames and repacks at a saturated loose bin while rejecting a true overflow", () => {
+    const { workspace, definition, pool, bin, recovery } = seed();
+    const limit = 1_000_000;
+    const saturated = {
+      ...workspace,
+      records: workspace.records.map((row) =>
+        row.id === pool.id && row.tracking === "returnable_pool"
+          ? {
+              ...row,
+              balances: [
+                { locationId: bin.id, quantity: limit },
+                { locationId: recovery.id, quantity: limit },
+              ],
+            }
+          : row,
+      ),
+    };
+    const slice = {
+      mode: "returnable_pool",
+      assetId: pool.id,
+      modelId: null,
+      quantity: 1,
+      sourceLocationId: bin.id,
+    } as const;
+    const initial = accepted(
+      submit(saturated, { ...definition, locationId: recovery.id, lines: [slice] }),
+    );
+    const edit = {
+      ...definition,
+      ...kitTarget(initial.kit),
+      name: "Renamed kit",
+      locationId: recovery.id,
+      lines: [{ ...slice, sourceLocationId: recovery.id }],
+    } satisfies KitIntent;
+    const renamed = accepted(submit(initial.value, edit));
+    expect(renamed.kit).toMatchObject({ name: "Renamed kit", definitionVersion: 2 });
+    expect(renamed.kit.lines).toMatchObject([{ packedQuantity: 1 }]);
+    expect(equipment(renamed.value, pool.code)).toMatchObject({
+      balances: expect.arrayContaining([
+        { locationId: bin.id, quantity: limit - 1 },
+        { locationId: recovery.id, quantity: limit },
+      ]),
+    });
+    expect(submit(renamed.value, { ...edit, ...kitTarget(renamed.kit), lines: [] })).toEqual({
+      ok: false,
+      error: "quantity",
+    });
+  });
 });

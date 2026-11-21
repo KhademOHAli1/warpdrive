@@ -391,6 +391,25 @@ function changePool(
   );
 }
 
+function conflictsWithHolding(
+  workspace: AssetsWorkspace,
+  asset: AssetRecord,
+  command: RecordCommand,
+) {
+  const kitManaged = kitUsesAsset(workspace.kits, asset.id);
+  if (command.type === "move" || (command.type === "setArchive" && command.archived)) {
+    return (
+      kitManaged || workspace.custody?.holdings.some(({ assetId }) => assetId === asset.id) === true
+    );
+  }
+  return (
+    kitManaged &&
+    command.type === "update" &&
+    asset.tracking === "individual" &&
+    (command.modelId !== asset.modelId || command.serial !== asset.serial)
+  );
+}
+
 function changeRecord(
   workspace: AssetsWorkspace,
   asset: AssetRecord,
@@ -398,22 +417,10 @@ function changeRecord(
   event: MakeEvent,
 ): AssetResult {
   if (asset.version !== command.version) return fail("stale");
-  if (
-    (command.type === "move" || (command.type === "setArchive" && command.archived)) &&
-    (workspace.custody?.holdings.some(({ assetId }) => assetId === asset.id) === true ||
-      kitUsesAsset(workspace.kits, asset.id))
-  )
-    return fail("state");
+  if (conflictsWithHolding(workspace, asset, command)) return fail("state");
   if (command.type === "setArchive")
     return changeArchive(workspace, asset, command.archived, command.reason, event);
   if (asset.archivedAt !== null) return fail("state");
-  if (
-    command.type === "update" &&
-    asset.tracking === "individual" &&
-    (command.modelId !== asset.modelId || command.serial !== asset.serial) &&
-    kitUsesAsset(workspace.kits, asset.id)
-  )
-    return fail("state");
   switch (command.type) {
     case "note":
       return saveRecord(workspace, append(asset, event({ kind: "note", reason: command.reason })));

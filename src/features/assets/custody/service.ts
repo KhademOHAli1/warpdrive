@@ -6,6 +6,8 @@ import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockDirectory } from "@/features/locations/service";
 import type { HydratedActor } from "@/server/hydrateActor";
 import type { AssetSite } from "../contracts";
+import { kitWorkspace } from "../kits/repository";
+import { projectAssetsWorkspace } from "../projection";
 import { assetRegisterData } from "../repository";
 import { assetActor, assetSites, lockAssetRegister } from "../service";
 import {
@@ -13,6 +15,7 @@ import {
   type CustodyOutcome,
   type CustodyResult,
   custodyCommand,
+  emptyCustodyWorkspace,
 } from "./contracts";
 import { custodyWorkspace, persistCustodyChanges } from "./repository";
 import { assetCustodyReceipts } from "./schema";
@@ -27,13 +30,12 @@ async function project(
   sites: AssetSite[],
   outcomes: CustodyOutcome[],
 ): Promise<CustodyResult> {
-  const assets = await assetRegisterData(
-    tx,
-    sites.map(({ id }) => id),
-    true,
-  );
-  const custody = await custodyWorkspace(tx, sites, true);
-  return { ok: true, value: { ...assets, sites, custody }, outcomes };
+  const workspace = await projectAssetsWorkspace(tx, sites);
+  return {
+    ok: true,
+    value: { ...workspace, custody: workspace.custody ?? emptyCustodyWorkspace() },
+    outcomes,
+  };
 }
 
 async function applyCommand(
@@ -61,7 +63,8 @@ async function applyCommand(
   }
   const assets = await assetRegisterData(tx, [site.id], false);
   const custody = await custodyWorkspace(tx, [site], false);
-  const before = { ...assets, sites: [site], custody };
+  const kits = await kitWorkspace(tx, [site.id], false);
+  const before = { ...assets, sites: [site], custody, kits };
   const result = applyCustodyCommand(before, command, actor.name);
   if (!result.ok) return result;
   await persistCustodyChanges(tx, before, result.value, actor.id);

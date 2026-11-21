@@ -14,7 +14,9 @@ import type { HydratedActor } from "@/server/hydrateActor";
 import { assetRoleSiteIds } from "./access";
 import { commissionedAssetSerial } from "./commissioning/protection";
 import { type AssetCommand, type AssetResult, type AssetSite, assetCommand } from "./contracts";
-import { custodyWorkspace, hasAssetCustody } from "./custody/repository";
+import { hasAssetCustody } from "./custody/repository";
+import { isKitAsset } from "./kits/repository";
+import { projectAssetsWorkspace } from "./projection";
 import { applyAssetWorkspaceCommand } from "./registerCommands";
 import { assetRegisterData, persistAssetChanges } from "./repository";
 import { assetCommandReceipts, assetRecords } from "./schema";
@@ -61,17 +63,7 @@ async function projectWorkspace(
   sites: AssetSite[],
   focusId: string | null = null,
 ): Promise<AssetResult> {
-  const data = await assetRegisterData(
-    tx,
-    sites.map(({ id }) => id),
-    true,
-  );
-  const custody = sites.length === 0 ? undefined : await custodyWorkspace(tx, sites, true);
-  return {
-    ok: true,
-    value: { sites, ...data, ...(custody === undefined ? {} : { custody }) },
-    focusId,
-  };
+  return { ok: true, value: await projectAssetsWorkspace(tx, sites), focusId };
 }
 
 export function readAssetsWorkspace(
@@ -126,10 +118,17 @@ async function applyCommand(
   const before = { sites: [site], ...(await assetRegisterData(tx, [site.id], false)) };
   if (
     (command.type === "move" || (command.type === "setArchive" && command.archived)) &&
-    (await hasAssetCustody(tx, command.assetId))
+    ((await hasAssetCustody(tx, command.assetId)) || (await isKitAsset(tx, command.assetId)))
   )
     return { ok: false, error: "state" };
   if (command.type === "update") {
+    const asset = before.records.find(({ id }) => id === command.assetId);
+    if (
+      asset?.tracking === "individual" &&
+      (command.modelId !== asset.modelId || command.serial !== asset.serial) &&
+      (await isKitAsset(tx, command.assetId))
+    )
+      return { ok: false, error: "state" };
     const recorded = await commissionedAssetSerial(tx, command.assetId);
     if (recorded !== null && command.serial !== recorded) return { ok: false, error: "state" };
   }

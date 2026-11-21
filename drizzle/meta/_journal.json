@@ -1023,6 +1023,13 @@
       "when": 1795303268005,
       "tag": "0145_asset_custody",
       "breakpoints": true
+    },
+    {
+      "idx": 146,
+      "version": "7",
+      "when": 1795304405531,
+      "tag": "0146_asset_kits",
+      "breakpoints": true
     }
   ]
 }

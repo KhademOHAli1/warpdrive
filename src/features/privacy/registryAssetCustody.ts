@@ -12,7 +12,7 @@ export const assetCustodyEntry = classifyInventory(
     "sourceReview:src/features/assets/custody/contracts.ts#51ff421149453f84d6a0e3645d5ed8b5289c504ac217822e2e62221567e4db70",
     "sourceReview:src/features/assets/custody/repository.ts#fc62c5db672f1102c0d7b4ad08a3600010d7659849b578bf2124f0bc03c9303a",
     "sourceReview:src/features/assets/custody/schema.ts#78fe08d886e893ac286ac84f7d2c3bba4fc2c47eedfa94864919d03abfca23a3",
-    "sourceReview:src/features/assets/custody/service.ts#e8833ff73bdd7bc21653b1d116447739877cf4676c0c1c1b2566f51e094f07c5",
+    "sourceReview:src/features/assets/custody/service.ts#05d4e43300a3143fbf9072127da0392a6f539feff43cc18e54857696b21ec52a",
     "sourceReview:src/features/assets/custody/transitions.ts#1fe0d180aec2962d1fac56a13b02a45ff64f81e278315cd18f64f43fe45066ef",
     "sourceReview:src/features/assets/custody/ui/CustodyDialogs.tsx#efdce9cf32c42f8a48e9cbea51671ecb01e5b0f571f7e5f6f5b35fad8468e1f0",
     "sourceReview:src/features/assets/custody/ui/CustodyPanels.tsx#81c04bf3a09892a9c5d080cb628311db2e0f456be00e9cccd963618614791c09",

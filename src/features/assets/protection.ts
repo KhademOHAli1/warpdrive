@@ -1,5 +1,11 @@
-import { and, eq, exists, isNull, or } from "drizzle-orm";
+import { and, eq, exists, gt, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import {
+  assetKitCheckoutLines,
+  assetKitCheckouts,
+  assetKitMembers,
+  assetKits,
+} from "./kits/schema";
 import { assetBalances, assetRecords } from "./schema";
 
 /** The caller holds the directory write lock, which serializes archive against placements. */
@@ -31,5 +37,42 @@ export async function hasActiveAssetPlacement(
     .from(assetRecords)
     .where(and(eq(assetRecords.siteId, siteId), isNull(assetRecords.archivedAt), placement))
     .limit(1);
-  return record !== undefined;
+  if (record !== undefined) return true;
+  const [kit] = await tx
+    .select({ id: assetKits.id })
+    .from(assetKits)
+    .where(
+      and(
+        eq(assetKits.siteId, siteId),
+        locationId === null ? undefined : eq(assetKits.locationId, locationId),
+        or(
+          exists(
+            tx
+              .select({ id: assetKitMembers.id })
+              .from(assetKitMembers)
+              .where(
+                and(eq(assetKitMembers.kitId, assetKits.id), gt(assetKitMembers.packedQuantity, 0)),
+              ),
+          ),
+          exists(
+            tx
+              .select({ id: assetKitCheckoutLines.id })
+              .from(assetKitCheckoutLines)
+              .innerJoin(
+                assetKitCheckouts,
+                eq(assetKitCheckoutLines.checkoutId, assetKitCheckouts.id),
+              )
+              .where(
+                and(
+                  eq(assetKitCheckouts.kitId, assetKits.id),
+                  isNull(assetKitCheckouts.closedAt),
+                  sql`${assetKitCheckoutLines.returned} + ${assetKitCheckoutLines.consumed} < ${assetKitCheckoutLines.quantity}`,
+                ),
+              ),
+          ),
+        ),
+      ),
+    )
+    .limit(1);
+  return kit !== undefined;
 }
