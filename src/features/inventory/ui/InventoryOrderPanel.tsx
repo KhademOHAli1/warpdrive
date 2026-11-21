@@ -40,7 +40,7 @@ export function InventoryOrderForm({
   const formId = useId();
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState("1");
-  const products = items.filter(({ kind }) => kind === "product");
+  const products = items.filter(({ kind, canSell }) => kind === "product" && canSell !== false);
   return (
     <section className="rounded-lg border bg-card" aria-labelledby={`${formId}-title`}>
       <h2 id={`${formId}-title`} className="border-b px-4 py-3 text-sm font-semibold">
@@ -67,9 +67,9 @@ export function InventoryOrderForm({
             <Select
               ariaLabel={t.orderItem}
               value={itemId}
-              options={products.map(({ id, name, sku }) => ({
+              options={products.map(({ id, name, sku, partCode, revision }) => ({
                 value: id,
-                label: `${name} (${sku})`,
+                label: `${name} (${partCode ?? sku} · ${revision})`,
               }))}
               disabled={pending}
               contentClassName={mask}
@@ -170,7 +170,11 @@ function InventoryOrderCard({
             <bdi>{item?.name ?? t.orderUnavailable}</bdi>
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-            {item !== undefined && <bdi dir="ltr">{item.sku}</bdi>}
+            {item !== undefined && (
+              <bdi dir="ltr">
+                {item.partCode ?? item.sku} · {item.revision}
+              </bdi>
+            )}
             <bdi dir="ltr">#{order.id.slice(0, 8)}</bdi>
             {workspace.deal === null && order.dealId !== null && !workspace.fixture && (
               <Link

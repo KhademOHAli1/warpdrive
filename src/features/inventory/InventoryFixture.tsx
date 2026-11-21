@@ -1,13 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
 import type { InventoryCommand, InventoryWorkspace } from "./contracts";
 import { applyInventoryFixture } from "./fixtures";
 import {
   ManufacturingReleaseFixtureProvider,
   ManufacturingReleasesFixture,
 } from "./releases/ui/ManufacturingReleasesFixture";
+import { InventoryCatalogLinks } from "./ui/InventoryCatalogLinks";
 import { InventoryClient } from "./ui/InventoryClient";
 
 export function InventoryFixture({
@@ -31,7 +31,7 @@ export function InventoryFixture({
         submit={submit}
         ProductReleases={ManufacturingReleasesFixture}
         openReleases={openReleases}
-        locationsLink={initial.deal === null && <LocationDirectoryLink />}
+        catalogLinks={initial.deal === null && <InventoryCatalogLinks />}
       />
     </ManufacturingReleaseFixtureProvider>
   );

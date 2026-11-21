@@ -49,6 +49,10 @@ export type InventoryItem = {
   bom: InventoryBomLine[];
   template: InventoryTemplate | null;
   releaseAccess?: boolean;
+  partCode?: string;
+  canSell?: boolean;
+  canReceive?: boolean;
+  canUseAsComponent?: boolean;
 };
 
 export type InventoryProject = {

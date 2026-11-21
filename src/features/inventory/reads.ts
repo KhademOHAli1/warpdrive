@@ -14,6 +14,8 @@ import {
 } from "@/features/projects/access";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { currentInventoryActor, inventoryDealVisibility, readInventoryDeal } from "./access";
+import { canHoldInventory } from "./catalog/eligibility";
+import { catalogItemPolicies, lockInventoryCatalog } from "./catalog/policy";
 import type {
   InventoryOrder,
   InventoryProject,
@@ -145,7 +147,11 @@ async function readCatalog(tx: Db, projects: InventoryProject[], actor: Hydrated
           .from(inventoryReleaseGrants)
           .where(eq(inventoryReleaseGrants.userId, actor.id));
   const releaseItems = new Set(grants.map(({ itemId }) => itemId));
-  const items = await tx.select().from(inventoryItems).orderBy(asc(inventoryItems.sku));
+  const policies = await catalogItemPolicies(tx);
+  const items = (await tx.select().from(inventoryItems).orderBy(asc(inventoryItems.sku))).filter(
+    ({ id }) => actor.type === "admin" || policies.get(id)?.visibility !== "admin",
+  );
+  const visibleIds = new Set(items.map(({ id }) => id));
   const bom = await tx
     .select({
       itemId: inventoryBomLines.itemId,
@@ -156,6 +162,7 @@ async function readCatalog(tx: Db, projects: InventoryProject[], actor: Hydrated
     .orderBy(asc(inventoryBomLines.componentId));
   const bomByItem = new Map<string, { itemId: string; quantity: number }[]>();
   for (const { itemId, componentId, quantity } of bom) {
+    if (!visibleIds.has(componentId)) continue;
     const lines = bomByItem.get(itemId) ?? [];
     lines.push({ itemId: componentId, quantity });
     bomByItem.set(itemId, lines);
@@ -177,12 +184,20 @@ async function readCatalog(tx: Db, projects: InventoryProject[], actor: Hydrated
       );
     for (const { itemId, projectId, steps } of rows) templates.set(itemId, { projectId, steps });
   }
-  return items.map((item) => ({
-    ...item,
-    bom: bomByItem.get(item.id) ?? [],
-    template: templates.get(item.id) ?? null,
-    releaseAccess: actor.type === "admin" || releaseItems.has(item.id),
-  }));
+  return items.map((item) => {
+    const policy = policies.get(item.id) ?? null;
+    const canReceive = canHoldInventory(policy);
+    return {
+      ...item,
+      partCode: policy?.code ?? item.sku,
+      canReceive,
+      canSell: canReceive && policy?.flags.salable === true,
+      canUseAsComponent: canReceive && policy?.flags.component === true,
+      bom: bomByItem.get(item.id) ?? [],
+      template: templates.get(item.id) ?? null,
+      releaseAccess: actor.type === "admin" || releaseItems.has(item.id),
+    };
+  });
 }
 
 async function addOrderDetails(
@@ -249,6 +264,7 @@ export async function readInventoryWorkspace(
   return withCurrentAuthority(db, "read", signal, async (tx) => {
     const actor = await currentInventoryActor(tx, who, signal);
     if (actor === null) return { ok: false, error: inventoryUnavailable };
+    await lockInventoryCatalog(tx, signal, "read");
     if (dealId !== null && !(await readInventoryDeal(tx, actor, dealId))) {
       return { ok: false, error: "The deal is unavailable." };
     }

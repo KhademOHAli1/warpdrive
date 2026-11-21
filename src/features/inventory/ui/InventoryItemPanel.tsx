@@ -45,7 +45,9 @@ export function InventoryNewItem({
   ];
   const [kind, setKind] = useState<InventoryItem["kind"]>("component");
   const [bom, setBom] = useState<{ key: string; itemId: string; quantity: number }[]>([]);
-  const components = items.filter((item) => item.kind === "component");
+  const components = items.filter(
+    (item) => item.kind === "component" && item.canUseAsComponent !== false,
+  );
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -150,9 +152,9 @@ export function InventoryNewItem({
                       <Select
                         ariaLabel={`${t.component} ${index + 1}`}
                         value={line.itemId}
-                        options={available.map(({ id, name, sku }) => ({
+                        options={available.map(({ id, name, sku, partCode, revision }) => ({
                           value: id,
-                          label: `${name} (${sku})`,
+                          label: `${name} (${partCode ?? sku} · ${revision})`,
                         }))}
                         contentClassName={mask}
                         onChange={(itemId) =>
@@ -266,7 +268,7 @@ export function InventorySelectedItem({
           </div>
         ))}
       </dl>
-      {workspace.canManage && (
+      {workspace.canManage && item.canReceive !== false && (
         <form
           className="flex flex-wrap items-end gap-2"
           onSubmit={(event) => {
@@ -331,7 +333,7 @@ export function InventorySelectedItem({
     <section className="min-w-0 rounded-lg border bg-card" aria-label={t.itemDetail}>
       <div className="border-b px-4 py-3">
         <p className="mb-0.5 text-xs text-muted-foreground">
-          <bdi dir="ltr">{item.sku}</bdi>
+          <bdi dir="ltr">{item.partCode ?? item.sku}</bdi>
           {ReleasePanel === undefined && (
             <>
               {" "}

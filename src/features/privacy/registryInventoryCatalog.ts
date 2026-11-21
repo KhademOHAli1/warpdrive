@@ -1,0 +1,65 @@
+import { classifyInventory } from "./registryClassification";
+
+export const inventoryCatalogEntry = classifyInventory(
+  [
+    "browserStore:src/features/inventory/catalog/ui/CatalogWorkspaceView.tsx#key",
+    "derived:src/features/inventory/catalog/changes.ts",
+    "derived:src/features/inventory/catalog/parameters.ts",
+    "derived:src/features/inventory/catalog/policy.ts",
+    "derived:src/features/inventory/catalog/reads.ts",
+    "derived:src/features/inventory/catalog/ui/CatalogPartEditor.tsx",
+    "derived:src/features/inventory/catalog/ui/CatalogWorkspaceView.tsx",
+    "sourceReview:drizzle/0130_inventory_catalog.sql#d136c19a705d2f1e81ff9299f00afddb156ec124db1197f7a86871e5d27790dd",
+    "sourceReview:src/app/(app)/inventory/catalog/page.tsx#2cba72a9a244266d24b6653ef94887c454ba754d55addc90d38953c90fe9a77c",
+    "sourceReview:src/features/inventory/catalog/changes.ts#51d0f13db7fd31da070510129a30ddfe406e3745e34dabcc04135aab01bb5258",
+    "sourceReview:src/features/inventory/catalog/parameters.ts#7c773048a3f008de1aa3611ba5539039a7c7007fe3d94cde2a89cd6d424dadf8",
+    "sourceReview:src/features/inventory/catalog/policy.ts#40cfa255d93e29fe1039d85ea97d0475ec5cc7de1dcf33ee9d9729b5cebe5c00",
+    "sourceReview:src/features/inventory/catalog/reads.ts#3fdd3467a9f2adb6195e886ab3fa95324d10d9f2a50cf6b1403e4f935a5f17a6",
+    "sourceReview:src/features/inventory/catalog/router.ts#74833f46969094c438cb69d3450960c896c067afc66ff608d3a90ba88bdca61e",
+    "sourceReview:src/features/inventory/catalog/schema.ts#3d7046e341c3f8996c69792e599837d7bdf5e9ca6b98c79cb888cffd093bdd70",
+    "sourceReview:src/features/inventory/catalog/service.ts#6bfa2e04ce2646d21f1d92235e238a2ac369869a49e661952c1288fa27fca3ba",
+    "sourceReview:src/features/inventory/catalog/ui/CatalogPartEditor.tsx#96d3dc565dd3a4939a5a4f55adf04b91b92afb9fc3fc2ee6a297b8b063d76aa5",
+    "sourceReview:src/features/inventory/catalog/ui/CatalogWorkspaceView.tsx#f80abccc858d2585c040f43f2e33cd4011bff4907bb3025ff970afb08a737a8f",
+    "table:inventory_catalog_receipts",
+    "table:inventory_part_categories",
+    "table:inventory_part_families",
+    "table:inventory_part_profiles",
+    "table:inventory_part_states",
+    "writer:src/app/(app)/inventory/catalog/page.tsx#query:dynamic",
+    "writer:src/features/inventory/catalog/changes.ts#insert:inventoryItems",
+    "writer:src/features/inventory/catalog/changes.ts#insert:inventoryPartCategories",
+    "writer:src/features/inventory/catalog/changes.ts#insert:inventoryPartFamilies",
+    "writer:src/features/inventory/catalog/changes.ts#insert:inventoryPartProfiles",
+    "writer:src/features/inventory/catalog/changes.ts#insert:inventoryPartStates",
+    "writer:src/features/inventory/catalog/changes.ts#update:inventoryItems",
+    "writer:src/features/inventory/catalog/changes.ts#update:inventoryPartCategories",
+    "writer:src/features/inventory/catalog/changes.ts#update:inventoryPartProfiles",
+    "writer:src/features/inventory/catalog/changes.ts#update:inventoryPartStates",
+    "writer:src/features/inventory/catalog/policy.ts#execute:dynamic",
+    "writer:src/features/inventory/catalog/policy.ts#insert:inventoryPartFamilies",
+    "writer:src/features/inventory/catalog/policy.ts#insert:inventoryPartProfiles",
+    "writer:src/features/inventory/catalog/router.ts#query:dynamic",
+    "writer:src/features/inventory/catalog/service.ts#insert:inventoryCatalogReceipts",
+    "writer:src/features/inventory/catalog/service.ts#update:dynamic",
+    "writer:src/features/inventory/catalog/ui/CatalogWorkspaceView.tsx#delete:intentKey",
+    "writer:src/features/inventory/catalog/ui/CatalogWorkspaceView.tsx#setItem:key",
+  ],
+  {
+    owner: "inventory part master",
+    categories: [
+      "part family and revision, hierarchy, parameters, states, flags, related parts, notes and tags",
+      "native command actor and retry fingerprint, confirmed part attachment metadata and object keys",
+    ],
+    subjectRelation:
+      "Catalog references use immutable inventory item IDs. The file uploader and command receipt identify the native acting account.",
+    purpose:
+      "Maintain the industrial part master, preserve stock and engineering release references across revisions, and present authorized part files and metadata.",
+    disclosure:
+      "Accepted staff read visible catalog records. Administrators edit metadata and attach files to unlocked revisions. Restricted metadata and files are filtered by the current part scope, and catalog UI content is masked from replay.",
+    retention:
+      "Part revisions and movement IDs stay readable for existing authorized workflows. PostgreSQL retains catalog records and retry receipts. Part files use the existing confirmed attachment lifecycle. The browser saves a per-session display density preference.",
+    externalEffects:
+      "Authenticated Web queries and CSRF-guarded commands use Core. Attachments use the existing signed upload and download handshake with the configured object store.",
+    erasureTask: "DPL-15 / DPL-18 / DPL-21",
+  },
+);

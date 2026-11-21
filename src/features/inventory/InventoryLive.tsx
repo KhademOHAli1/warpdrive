@@ -3,11 +3,11 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
-import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { executeInventoryAction } from "./actions";
 import type { InventoryResult } from "./contracts";
 import { ManufacturingReleasesLive } from "./releases/ui/ManufacturingReleasesLive";
+import { InventoryCatalogLinks } from "./ui/InventoryCatalogLinks";
 import { InventoryClient } from "./ui/InventoryClient";
 import { inventoryMessages } from "./ui/inventoryMessages";
 
@@ -43,7 +43,7 @@ export function InventoryLive({
       ProductReleases={ManufacturingReleasesLive}
       openReleases={openReleases}
       initialItemId={initialItemId}
-      locationsLink={initial.deal === null && <LocationDirectoryLink />}
+      catalogLinks={initial.deal === null && <InventoryCatalogLinks />}
       submit={(command) =>
         executeInventoryAction(actorId, command, initial.deal?.id ?? null, readCsrfToken())
       }

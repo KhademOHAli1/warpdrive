@@ -11,6 +11,7 @@ import {
 import { resolveActivityVisibility } from "@/features/activities/visibility";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { canSeeEmail } from "@/features/email/emailVisibility";
+import { canAccessCatalogFiles } from "@/features/inventory/catalog/fileScope";
 import { canSee } from "@/features/permissions/canSee";
 import type { AuthUser, VisiblePersonOrOrg } from "@/features/permissions/types";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
@@ -42,6 +43,8 @@ export async function canActorAccessParent(
       return canSeeEmailParent(db, actor, entityId, signal);
     case "email_mailbox":
       return canUseMailboxFiles(db, actor, entityId, signal);
+    case "inventory_item":
+      return canAccessCatalogFiles(db, actor, entityId, "read", signal);
     default:
       return false;
   }

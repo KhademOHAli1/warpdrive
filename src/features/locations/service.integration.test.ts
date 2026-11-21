@@ -11,8 +11,6 @@ import {
 import { deals, pipelines, sessions, stages, users } from "@/db/schema";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
-import type { InventoryCommand } from "@/features/inventory/contracts";
-import { readInventoryWorkspace } from "@/features/inventory/reads";
 import {
   inventoryBuildReleases,
   inventoryProductReleases,
@@ -26,9 +24,9 @@ import {
   inventoryOrderMaterials,
   inventoryOrders,
   inventoryOrderTasks,
+  inventoryTemplates,
 } from "@/features/inventory/schema";
-import { runInventoryCommand } from "@/features/inventory/service";
-import { createInternalProject } from "@/features/projects/service";
+import { createInternalProject, createInternalProjectItem } from "@/features/projects/service";
 import { makeTestDb, type TestDb } from "@/test/db";
 import type { Result } from "@/types/result";
 import type { LocationsCommand, LocationsResult } from "./contracts";
@@ -479,6 +477,7 @@ async function priorRelease(h: TestDb, admin: NativeSessionRef, productId: strin
 }
 
 async function priorStock(h: TestDb, admin: NativeSessionRef) {
+  // Seed the 0128 records directly. Current Inventory workflows expect the current schema.
   const productId = randomUUID();
   await h.db.insert(inventoryItems).values({
     id: productId,
@@ -487,43 +486,70 @@ async function priorStock(h: TestDb, admin: NativeSessionRef) {
     name: "DIN controller before PLAT-01",
     revision: "A",
     releaseRequired: true,
+    onHand: 4,
+    reserved: 4,
   });
   const { releaseId, componentId } = await priorRelease(h, admin, productId);
   const dealId = await priorDeal(h, admin);
   const projectId = await priorProductionProject(h, admin);
-  const submit = async (command: InventoryCommand, deal: string | null = null) =>
-    value(await runInventoryCommand(h.db, admin, command, deal, signal()));
-  await submit({ type: "receive", itemId: productId, quantity: 4, requestId: randomUUID() });
-  await submit({ type: "receive", itemId: componentId, quantity: 10, requestId: randomUUID() });
-  await submit({
-    type: "saveTemplate",
+  const orderId = randomUUID();
+  const step = { title: "Build retained release", assigneeId: admin.userId };
+  const steps = [step];
+  await h.db
+    .update(inventoryItems)
+    .set({ onHand: 10, reserved: 2 })
+    .where(eq(inventoryItems.id, componentId));
+  await h.db.insert(inventoryTemplates).values({
     itemId: productId,
     projectId,
-    steps: [{ title: "Build retained release", assigneeId: admin.userId }],
-    requestId: randomUUID(),
+    configuredBy: admin.userId,
+    steps,
   });
-  const placed = await submit(
-    {
-      type: "place",
-      dealId,
-      itemId: productId,
-      quantity: 5,
-      requestId: randomUUID(),
-    },
+  await h.db.insert(inventoryOrders).values({
+    id: orderId,
     dealId,
+    itemId: productId,
+    quantity: 5,
+    reserved: 4,
+    buildQuantity: 1,
+    status: "in_production",
+    revision: 2,
+    projectId,
+    templateRevision: 1,
+    createdBy: admin.userId,
+  });
+  await h.db.insert(inventoryOrderMaterials).values({ orderId, componentId, quantity: 2 });
+  await h.db
+    .insert(inventoryBuildReleases)
+    .values({ orderId, itemId: productId, releaseId, templateSteps: steps });
+  const project = value(
+    await createInternalProjectItem(
+      h.db,
+      admin,
+      { id: randomUUID(), projectId, ...step, status: "todo" },
+      signal(),
+    ),
   );
-  const [order] = placed.orders;
-  if (!order) throw new Error("The incumbent build order is missing");
-  await submit(
-    {
-      type: "reserveMaterials",
-      orderId: order.id,
-      revision: order.revision,
-      requestId: randomUUID(),
-    },
-    dealId,
-  );
-  return { productId, componentId, orderId: order.id, releaseId, dealId };
+  const task = project.items.find(({ title }) => title === step.title);
+  if (!task) throw new Error("The incumbent build task is missing");
+  await h.db
+    .insert(inventoryOrderTasks)
+    .values({ orderId, projectId, itemId: task.id, position: 0 });
+  const movements = [
+    { itemId: productId, kind: "receipt", onHandDelta: 4, reservedDelta: 0, orderId: null },
+    { itemId: componentId, kind: "receipt", onHandDelta: 10, reservedDelta: 0, orderId: null },
+    { itemId: productId, kind: "order-reserve", onHandDelta: 0, reservedDelta: 4, orderId },
+    { itemId: componentId, kind: "materials-reserve", onHandDelta: 0, reservedDelta: 2, orderId },
+  ] as const;
+  for (const movement of movements) {
+    const actorId = admin.userId;
+    const requestId = randomUUID();
+    await h.db
+      .insert(inventoryCommandReceipts)
+      .values({ actorId, requestId, fingerprint: "a".repeat(64) });
+    await h.db.insert(inventoryMovements).values({ ...movement, actorId, requestId });
+  }
+  return { productId, componentId, orderId, releaseId };
 }
 
 it("upgrades populated migration 0128 to 0129 and retains reservations, movements, and a pinned build", async () => {
@@ -532,7 +558,7 @@ it("upgrades populated migration 0128 to 0129 and retains reservations, movement
   try {
     await installPrefix(h, 129);
     const admin = await staff(h, "Stock owner", { admin: true });
-    const { productId, componentId, orderId, releaseId, dealId } = await priorStock(h, admin);
+    const { productId, componentId, orderId, releaseId } = await priorStock(h, admin);
     const before = await inventorySnapshot(h);
     const previousLedger = await ledger(h);
     expect(previousLedger).toHaveLength(129);
@@ -550,7 +576,6 @@ it("upgrades populated migration 0128 to 0129 and retains reservations, movement
       "receipt",
     ]);
     expect(before.pins).toMatchObject([{ orderId, itemId: productId, releaseId }]);
-    const priorWorkspace = value(await readInventoryWorkspace(h.db, admin, dealId, signal()));
     const priorBuild = value(await readBuildRelease(h.db, admin, orderId, signal()));
 
     const success = { ok: true, value: { applied: true } };
@@ -561,9 +586,6 @@ it("upgrades populated migration 0128 to 0129 and retains reservations, movement
     expect(upgradedLedger).toHaveLength(130);
     expect(upgradedLedger.slice(0, 129)).toEqual(previousLedger);
     expect(await inventorySnapshot(h)).toEqual(before);
-    expect(value(await readInventoryWorkspace(h.db, admin, dealId, signal()))).toEqual(
-      priorWorkspace,
-    );
     expect(value(await readBuildRelease(h.db, admin, orderId, signal()))).toEqual(priorBuild);
     expect(value(await read(h, admin)).directory).toEqual({ sites: [], locations: [] });
 

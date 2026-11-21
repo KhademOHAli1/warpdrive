@@ -36,14 +36,14 @@ export function InventoryClient({
   ProductReleases,
   openReleases = false,
   initialItemId,
-  locationsLink,
+  catalogLinks,
 }: {
   initial: InventoryWorkspace;
   submit: (command: InventoryCommand) => Promise<InventoryResult>;
   ProductReleases?: InventoryProductReleases;
   openReleases?: boolean;
   initialItemId?: string;
-  locationsLink?: ReactNode;
+  catalogLinks?: ReactNode;
 }) {
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
@@ -101,8 +101,8 @@ export function InventoryClient({
 
   const selected = workspace.items.find(({ id }) => id === selectedId);
   const query = search.trim().toLocaleLowerCase(locale);
-  const items = workspace.items.filter(({ sku, name, revision }) =>
-    `${sku} ${name} ${revision}`.toLocaleLowerCase(locale).includes(query),
+  const items = workspace.items.filter(({ sku, partCode, name, revision }) =>
+    `${partCode ?? sku} ${sku} ${name} ${revision}`.toLocaleLowerCase(locale).includes(query),
   );
   const openOrders = workspace.orders.filter(
     ({ status }) => status !== "shipped" && status !== "cancelled",
@@ -143,7 +143,7 @@ export function InventoryClient({
             </span>
           )}
         </button>
-        {locationsLink}
+        {catalogLinks}
       </nav>
       {error !== null && !newItem && (
         <p
@@ -231,7 +231,8 @@ export function InventoryClient({
                           >
                             <bdi className="whitespace-normal">{item.name}</bdi>
                             <span className="text-xs font-normal text-muted-foreground">
-                              <bdi dir="ltr">{item.sku}</bdi> · <bdi>{item.revision}</bdi>
+                              <bdi dir="ltr">{item.partCode ?? item.sku}</bdi> ·{" "}
+                              <bdi>{item.revision}</bdi>
                             </span>
                           </Button>
                         </td>

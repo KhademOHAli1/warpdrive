@@ -5,6 +5,8 @@ import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { currentInventoryActor, lockInventoryOrderDeal, readInventoryDeal } from "./access";
+import { canHoldInventory } from "./catalog/eligibility";
+import { catalogItemPolicy, createLegacyPartProfile, lockInventoryCatalog } from "./catalog/policy";
 import { type InventoryCommand, type InventoryResult, inventoryCommand } from "./contracts";
 import { InventoryDomainError, inventoryUnavailable } from "./errors";
 import {
@@ -78,6 +80,12 @@ async function createItem(tx: Db, command: Extract<CatalogCommand, { type: "crea
     if (components.length !== bom.length || components.some((row) => row.kind !== "component")) {
       fail("Each BOM line must reference a stock component.");
     }
+    for (const componentId of componentIds) {
+      const policy = await catalogItemPolicy(tx, componentId);
+      if (!canHoldInventory(policy) || policy?.flags.component !== true) {
+        fail("Each BOM line must reference an active stock component.");
+      }
+    }
   }
   const id = randomUUID();
   const [created] = await tx
@@ -86,6 +94,9 @@ async function createItem(tx: Db, command: Extract<CatalogCommand, { type: "crea
     .onConflictDoNothing({ target: inventoryItems.sku })
     .returning({ id: inventoryItems.id });
   if (!created) fail("This SKU already exists.");
+  if (!(await createLegacyPartProfile(tx, { id, sku, revision, kind }))) {
+    fail("This part code already exists. Open the part master to add a revision.");
+  }
   if (bom.length > 0) {
     await tx
       .insert(inventoryBomLines)
@@ -111,6 +122,9 @@ async function changeCatalog(
   const { requestId, itemId } = command;
   const item = stockItem(await lockInventoryStock(tx, [itemId]), itemId);
   if (command.type === "receive") {
+    if (!canHoldInventory(await catalogItemPolicy(tx, itemId))) {
+      fail("Stock can only be received for an active, stocked part revision.");
+    }
     return postInventoryMovement(tx, item, {
       actorId: actor.id,
       requestId,
@@ -149,10 +163,19 @@ async function productionMaterials(tx: Db, item: Item) {
   return { releaseId: null, bom };
 }
 
-async function placeOrder(tx: Db, actorId: string, command: Place, signal: AbortSignal) {
+async function placeOrder(tx: Db, actor: HydratedActor, command: Place, signal: AbortSignal) {
+  const actorId = actor.id;
   const { dealId, itemId, quantity, requestId } = command;
   const item = stockItem(await lockInventoryStock(tx, [itemId]), itemId);
-  if (item.kind !== "product") fail("Select a sellable finished product.");
+  const policy = await catalogItemPolicy(tx, itemId);
+  if (
+    item.kind !== "product" ||
+    !canHoldInventory(policy) ||
+    policy?.flags.salable !== true ||
+    (actor.type !== "admin" && policy.visibility === "admin")
+  ) {
+    fail("Select a sellable finished product.");
+  }
   const reserved = Math.min(quantity, item.onHand - item.reserved);
   const buildQuantity = quantity - reserved;
   const orderId = randomUUID();
@@ -340,6 +363,7 @@ export async function runInventoryCommand(
     await withCurrentAuthority(db, "read", signal, async (tx) => {
       const actor = await currentInventoryActor(tx, who, signal);
       if (actor === null) fail(inventoryUnavailable);
+      await lockInventoryCatalog(tx, signal, command.type === "createItem" ? "write" : "read");
       if (dealContext !== null && !(await readInventoryDeal(tx, actor, dealContext))) {
         fail("The deal is unavailable.");
       }
@@ -351,7 +375,7 @@ export async function runInventoryCommand(
         fail("Inventory management requires an administrator.");
       }
       if (!(await claimInventoryReceipt(tx, actor.id, command))) return;
-      if (command.type === "place") await placeOrder(tx, actor.id, command, signal);
+      if (command.type === "place") await placeOrder(tx, actor, command, signal);
       else if ("orderId" in command) await changeOrder(tx, actor, command, signal);
       else await changeCatalog(tx, actor, command, signal);
 

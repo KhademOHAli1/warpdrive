@@ -1,15 +1,8 @@
 import { bigint, index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { FILE_STATUS } from "@/constants/fileEntityTypes";
+import { FILE_ENTITY_TYPE, FILE_STATUS } from "@/constants/fileEntityTypes";
 import { users } from "./identity";
 
-export const fileEntityType = pgEnum("file_entity_type", [
-  "deal",
-  "person",
-  "organization",
-  "activity",
-  "email_message",
-  "email_mailbox",
-]);
+export const fileEntityType = pgEnum("file_entity_type", FILE_ENTITY_TYPE);
 
 export const fileStatus = pgEnum("file_status", FILE_STATUS);
 

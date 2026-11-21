@@ -911,6 +911,13 @@
       "when": 1795280881767,
       "tag": "0129_shared_locations",
       "breakpoints": true
+    },
+    {
+      "idx": 130,
+      "version": "7",
+      "when": 1795282324527,
+      "tag": "0130_inventory_catalog",
+      "breakpoints": true
     }
   ]
 }
