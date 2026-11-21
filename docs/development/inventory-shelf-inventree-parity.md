@@ -23,6 +23,14 @@ The Web checkpoint at `27d0bd00` is available in the loopback demo at `http://12
 
 The integrated checkpoint at `d9571535` qualified live Web and Core with native PostgreSQL 16. Migration `0129_shared_locations` advanced a populated installation from 129 to 130 migration receipts. A rerun kept the same receipt count and rows. The PostgreSQL suite preserved existing Inventory balances, reservations, order and movement history, and the approved Rev A release and BOM pinned to an open build. Chrome verified both contexts, site-specific grants, denied cross-site writes, actor and CSRF checks, persistence across reload, and revocation in the same session. The commissioning handoff remains part of PLAT-01.
 
+### Delegated operations roles (PLAT-02)
+
+**Settings → Operations access** assigns Warehouse viewer or manager, Asset viewer or manager, Buyer, and Cost viewer to accepted staff at a specific site. Administrators reauthenticate for grant changes. Core records the exact actor, subject, site, role and grant or revocation in an append-only receipt. Replaying a completed request returns current assignments.
+
+Warehouse roles authorize stock access at their site. Directory editor grants continue to apply to existing deployments. The asset, buying and cost capabilities are separately scoped. Buying permission and Cost viewer can be granted independently. Supplier prices will use these permissions in INVT-03, and asset records will consume the asset scope in SHELF-02. Native CRM ACLs, internal Projects membership, and product or pinned-build design-file grants apply independently. External recipient contacts get no staff or site grant from their contact records.
+
+The checkpoint at `efa3da69` passed 36 PostgreSQL integration tests and live Chrome against Core on PostgreSQL 16.10. The populated 0133 to 0134 upgrade retained incumbent sites and grants, stock, lots, serials, reservations and movement history. Chrome granted three independent roles across two sites, revoked warehouse access in the same session, and confirmed the remaining roles after reload. The [operations backlog](warpdrive-operations-backlog.tsv) links the local receipts.
+
 ## Part master and warehouse stock (INVT-02 and INVT-04)
 
 - **Part master.** Migration `0130_inventory_catalog` binds existing inventory items to part families and retains their item IDs and stock SKUs. Additional revisions share the part number and have separate stock identities. The Part master Web and Core surfaces support hierarchical categories, templates and variants, typed parameter inheritance and compatible-unit conversion, lifecycle states, notes, tags, related parts and scoped files. The populated 0129 to 0130 upgrade and live Chrome catalog run preserved incumbent stock and verified creation, search and revision identity.
