@@ -10,6 +10,7 @@ import { enrichmentRouter } from "@/features/enrichment/router";
 import { filesRouter } from "@/features/files/router";
 import { goalsRouter } from "@/features/goals/router";
 import { importRouter } from "@/features/import/router";
+import { inventoryRouter } from "@/features/inventory/router";
 import { labelsRouter } from "@/features/labels/router";
 import { leadRouter } from "@/features/leads/leadRouter";
 import { newsletterRouter } from "@/features/newsletter/router";
@@ -56,6 +57,7 @@ export const appRouter = router({
   oauth: oauthRouter,
   operations: operationsRouter,
   internalProjects: internalProjectsRouter,
+  inventory: inventoryRouter,
   projectDocuments: projectDocumentsRouter,
   savedFilters: savedFiltersRouter,
   search: searchRouter,

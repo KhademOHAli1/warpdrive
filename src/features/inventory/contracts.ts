@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const id = z.uuid();
+const id = z.uuid().toLowerCase();
 const quantity = z.number().int().positive().max(1_000_000);
 const bomLine = z.object({ itemId: id, quantity });
 const templateStep = z.object({ title: z.string().trim().min(1).max(100), assigneeId: id });

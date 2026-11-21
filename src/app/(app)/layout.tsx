@@ -62,7 +62,9 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         canViewWork={navigation.canViewWork}
         canViewProjects={projects !== null && (projects.enabled || projects.canEnable)}
         canViewCampaigns={hasNewsletterPermission(ctx.actor, "view") && shell.newsletterConfigured}
-        canViewInventory={ctx.actor.isActive && inventoryFixturesEnabled()}
+        canViewInventory={
+          ctx.actor.isActive && (inventoryFixturesEnabled() || shell.inventoryAvailable === true)
+        }
         campaignCapabilities={{
           edit: hasNewsletterPermission(ctx.actor, "edit"),
           send: hasNewsletterPermission(ctx.actor, "send"),

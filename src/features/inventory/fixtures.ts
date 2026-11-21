@@ -68,7 +68,7 @@ export function inventoryFixture(dealId: string | undefined): InventoryWorkspace
         ],
       },
     ],
-    deal: dealId ? { id: dealId, name: "Demo customer inquiry" } : null,
+    deal: dealId === undefined ? null : { id: dealId, name: "Demo customer inquiry" },
     canManage: true,
     canOrder: Boolean(dealId),
     fixture: true,
@@ -112,6 +112,165 @@ function fixtureOrder(
   };
 }
 
+type CreateFixtureItem = Extract<InventoryCommand, { type: "createItem" }>;
+type SaveFixtureTemplate = Extract<InventoryCommand, { type: "saveTemplate" }>;
+type FixtureOrderCommand = Extract<InventoryCommand, { orderId: string }>;
+
+function createFixtureItem(
+  workspace: InventoryWorkspace,
+  command: CreateFixtureItem,
+): string | null {
+  const { requestId, sku, name, revision, kind, bom } = command;
+  if (workspace.items.some((row) => row.sku === sku)) return "This SKU already exists.";
+  const components = new Set(
+    workspace.items.filter(({ kind }) => kind === "component").map(({ id }) => id),
+  );
+  if (
+    new Set(bom.map(({ itemId }) => itemId)).size !== bom.length ||
+    bom.some(({ itemId }) => !components.has(itemId)) ||
+    (kind === "component" && bom.length > 0)
+  ) {
+    return "Use distinct component SKUs in the BOM.";
+  }
+  workspace.items.push({
+    id: requestId,
+    sku,
+    name,
+    revision,
+    kind,
+    bom,
+    onHand: 0,
+    reserved: 0,
+    template: null,
+  });
+  return null;
+}
+
+function saveFixtureTemplate(
+  workspace: InventoryWorkspace,
+  item: InventoryItem,
+  command: SaveFixtureTemplate,
+): string | null {
+  const project = workspace.projects.find((row) => row.id === command.projectId);
+  if (
+    item.kind !== "product" ||
+    !project ||
+    command.steps.some(({ assigneeId }) => !project.members.some(({ id }) => id === assigneeId))
+  ) {
+    return "Select a production project and valid members.";
+  }
+  item.template = { projectId: project.id, steps: command.steps };
+  return null;
+}
+
+const invalidFixtureOrder = "This order changed. Open the latest order and try again.";
+
+function postFixtureMaterials(
+  workspace: InventoryWorkspace,
+  order: InventoryOrder,
+  operation: "reserve" | "consume" | "release",
+): string | null {
+  for (const line of order.materials) {
+    const component = workspace.items.find(({ id }) => id === line.itemId);
+    if (!component) return invalidFixtureOrder;
+    if (operation === "reserve") {
+      if (component.onHand - component.reserved < line.quantity)
+        return "There is insufficient stock to reserve all materials.";
+      component.reserved += line.quantity;
+    } else {
+      component.reserved -= line.quantity;
+      if (operation === "consume") component.onHand -= line.quantity;
+    }
+  }
+  return null;
+}
+
+function changeFixtureOrder(
+  workspace: InventoryWorkspace,
+  command: FixtureOrderCommand,
+): string | null {
+  const order = workspace.orders.find(({ id }) => id === command.orderId);
+  if (!order || order.revision !== command.revision) return invalidFixtureOrder;
+  const item = workspace.items.find(({ id }) => id === order.itemId);
+  if (!item) return invalidFixtureOrder;
+  const error = postFixtureOrderChange(workspace, order, item, command.type);
+  if (error === null) order.revision++;
+  return error;
+}
+
+function postFixtureOrderChange(
+  workspace: InventoryWorkspace,
+  order: InventoryOrder,
+  item: InventoryItem,
+  type: FixtureOrderCommand["type"],
+): string | null {
+  switch (type) {
+    case "reserveMaterials": {
+      if (order.status !== "awaiting_materials") return invalidFixtureOrder;
+      const error = postFixtureMaterials(workspace, order, "reserve");
+      if (error !== null) return error;
+      order.status = "in_production";
+      return null;
+    }
+    case "completeBuild": {
+      if (order.status !== "in_production") return invalidFixtureOrder;
+      const error = postFixtureMaterials(workspace, order, "consume");
+      if (error !== null) return error;
+      // The fixture can post without opening a live project. Core checks native task states.
+      item.onHand += order.buildQuantity;
+      item.reserved += order.buildQuantity;
+      order.reserved += order.buildQuantity;
+      for (const task of order.tasks) task.done = true;
+      order.status = "ready";
+      return null;
+    }
+    case "ship":
+      if (order.status !== "ready") return invalidFixtureOrder;
+      item.onHand -= order.reserved;
+      item.reserved -= order.reserved;
+      order.reserved = 0;
+      order.status = "shipped";
+      return null;
+    case "cancel":
+      return cancelFixtureOrder(workspace, order, item);
+  }
+}
+
+function cancelFixtureOrder(
+  workspace: InventoryWorkspace,
+  order: InventoryOrder,
+  item: InventoryItem,
+): string | null {
+  if (order.status === "cancelled" || order.status === "shipped") return invalidFixtureOrder;
+  if (order.status === "in_production") {
+    const error = postFixtureMaterials(workspace, order, "release");
+    if (error !== null) return error;
+  }
+  item.reserved -= order.reserved;
+  order.reserved = 0;
+  order.status = "cancelled";
+  return null;
+}
+
+function applyFixtureCommand(
+  workspace: InventoryWorkspace,
+  command: InventoryCommand,
+): string | null {
+  if (command.type === "createItem") return createFixtureItem(workspace, command);
+  if (command.type === "place") {
+    const order = fixtureOrder(command.dealId, command.itemId, command.quantity, workspace);
+    if (typeof order === "string") return order;
+    workspace.orders.unshift(order);
+    return null;
+  }
+  if ("orderId" in command) return changeFixtureOrder(workspace, command);
+  const item = workspace.items.find(({ id }) => id === command.itemId);
+  if (!item) return "Item could not be found.";
+  if (command.type === "saveTemplate") return saveFixtureTemplate(workspace, item, command);
+  item.onHand += command.quantity;
+  return null;
+}
+
 export function applyInventoryFixture(
   current: InventoryWorkspace,
   submitted: InventoryCommand,
@@ -119,118 +278,7 @@ export function applyInventoryFixture(
   const parsed = inventoryCommand.safeParse(submitted);
   if (!parsed.success)
     return { ok: false, error: "Check the stock, quantity and required fields." };
-  const command = parsed.data;
   const value = structuredClone(current);
-  if (command.type === "createItem") {
-    const { requestId, sku, name, revision, kind, bom } = command;
-    if (value.items.some((row) => row.sku === sku))
-      return { ok: false, error: "This SKU already exists." };
-    if (
-      new Set(bom.map((line) => line.itemId)).size !== bom.length ||
-      bom.some(
-        (line) => !value.items.some((item) => item.id === line.itemId && item.kind === "component"),
-      ) ||
-      (kind === "component" && bom.length > 0)
-    ) {
-      return { ok: false, error: "Use distinct component SKUs in the BOM." };
-    }
-    value.items.push({
-      id: requestId,
-      sku,
-      name,
-      revision,
-      kind,
-      bom,
-      onHand: 0,
-      reserved: 0,
-      template: null,
-    });
-    return { ok: true, value };
-  }
-  if (command.type === "receive" || command.type === "saveTemplate") {
-    const item = value.items.find((row) => row.id === command.itemId);
-    if (!item) return { ok: false, error: "Item could not be found." };
-    if (command.type === "receive") item.onHand += command.quantity;
-    else {
-      const project = value.projects.find((row) => row.id === command.projectId);
-      if (
-        item.kind !== "product" ||
-        !project ||
-        command.steps.some(
-          (step) => !project.members.some((member) => member.id === step.assigneeId),
-        )
-      ) {
-        return { ok: false, error: "Select a production project and valid members." };
-      }
-      item.template = { projectId: project.id, steps: command.steps };
-    }
-    return { ok: true, value };
-  }
-  if (command.type === "place") {
-    const result = fixtureOrder(command.dealId, command.itemId, command.quantity, value);
-    if (typeof result === "string") return { ok: false, error: result };
-    value.orders.unshift(result);
-    return { ok: true, value };
-  }
-  return applyFixtureOrderChange(value, command);
-}
-
-function applyFixtureOrderChange(
-  value: InventoryWorkspace,
-  command: Extract<InventoryCommand, { orderId: string }>,
-): InventoryResult {
-  const denied = {
-    ok: false,
-    error: "This order changed. Open the latest order and try again.",
-  } as const;
-  const order = value.orders.find((row) => row.id === command.orderId);
-  if (!order || order.revision !== command.revision) return denied;
-  const item = value.items.find(({ id }) => id === order.itemId);
-  if (!item) return denied;
-  if (command.type === "reserveMaterials" && order.status === "awaiting_materials") {
-    for (const line of order.materials) {
-      const material = value.items.find(({ id }) => id === line.itemId);
-      if (!material || material.onHand - material.reserved < line.quantity) {
-        return { ok: false, error: "There is insufficient stock to reserve all materials." };
-      }
-      material.reserved += line.quantity;
-    }
-    order.status = "in_production";
-  } else if (command.type === "completeBuild" && order.status === "in_production") {
-    // The fixture can post without opening a live project. Core checks native task states.
-    for (const line of order.materials) {
-      const material = value.items.find(({ id }) => id === line.itemId);
-      if (!material) return denied;
-      material.onHand -= line.quantity;
-      material.reserved -= line.quantity;
-    }
-    item.onHand += order.buildQuantity;
-    item.reserved += order.buildQuantity;
-    order.reserved += order.buildQuantity;
-    for (const task of order.tasks) task.done = true;
-    order.status = "ready";
-  } else if (command.type === "ship" && order.status === "ready") {
-    item.onHand -= order.reserved;
-    item.reserved -= order.reserved;
-    order.reserved = 0;
-    order.status = "shipped";
-  } else if (
-    command.type === "cancel" &&
-    ["awaiting_materials", "in_production", "ready"].includes(order.status)
-  ) {
-    item.reserved -= order.reserved;
-    order.reserved = 0;
-    if (order.status === "in_production") {
-      for (const line of order.materials) {
-        const material = value.items.find(({ id }) => id === line.itemId);
-        if (!material) return denied;
-        material.reserved -= line.quantity;
-      }
-    }
-    order.status = "cancelled";
-  } else {
-    return denied;
-  }
-  order.revision++;
-  return { ok: true, value };
+  const error = applyFixtureCommand(value, parsed.data);
+  return error === null ? { ok: true, value } : { ok: false, error };
 }

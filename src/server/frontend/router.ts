@@ -117,6 +117,7 @@ export const frontendRouter = router({
               navigation,
               projects,
               newsletterConfigured: newsletterConfigured(),
+              inventoryAvailable: actor.isActive,
             };
           })();
     return {

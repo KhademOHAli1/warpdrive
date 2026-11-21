@@ -55,6 +55,7 @@ import { requestServicesIds1 } from "./registryIdsRequestServices1";
 import { scopeDraftIds1 } from "./registryIdsScopeDraft1";
 import { stagingQualificationIds1 } from "./registryIdsStagingQualification1";
 import { toolingIds1 } from "./registryIdsTooling1";
+import { industrialInventoryEntry } from "./registryIndustrialInventory";
 import { internalProjectsInventoryEntry } from "./registryInternalProjects";
 import { kpiInventoryEntry } from "./registryKpis";
 import { mailInventoryEntries } from "./registryMail";
@@ -111,6 +112,7 @@ export const registryEntries: RegistryEntry[] = [
   projectIntegratorInventoryEntry,
   projectPublicationInventoryEntry,
   internalProjectsInventoryEntry,
+  industrialInventoryEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,
   currentLeadHandoffInventoryEntry,

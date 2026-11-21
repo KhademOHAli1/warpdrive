@@ -7,10 +7,10 @@ import { InventoryClient } from "./ui/InventoryClient";
 
 export function InventoryFixture({ initial }: { initial: InventoryWorkspace }) {
   const workspace = useRef(initial);
-  async function submit(command: InventoryCommand) {
+  function submit(command: InventoryCommand) {
     const result = applyInventoryFixture(workspace.current, command);
     if (result.ok) workspace.current = result.value;
-    return result;
+    return Promise.resolve(result);
   }
 
   return <InventoryClient initial={initial} submit={submit} />;

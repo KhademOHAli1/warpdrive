@@ -156,7 +156,8 @@ function InventoryOrderCard({
       ? `/projects/internal/${encodeURIComponent(order.projectId)}`
       : null;
   const incomplete = order.tasks.some(({ done }) => !done);
-  const mayComplete = workspace.fixture || !incomplete;
+  const mayComplete =
+    workspace.fixture || (order.projectId !== null && order.tasks.length > 0 && !incomplete);
   const orderRef = { orderId: order.id, revision: order.revision };
 
   return (

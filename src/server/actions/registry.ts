@@ -56,6 +56,7 @@ import * as actions53 from "@/features/identity/preferencesActions.backend";
 import * as actions54 from "@/features/identity/profileActions.backend";
 import * as actions55 from "@/features/import/actions.backend";
 import * as actions56 from "@/features/integrations/actions.backend";
+import { executeInventoryAction } from "@/features/inventory/actions.backend";
 import * as actions57 from "@/features/labels/actions.backend";
 import * as actions58 from "@/features/leads/leadServerActions.backend";
 import * as actions59 from "@/features/notifications/actions.backend";
@@ -121,6 +122,7 @@ export const commandHandlers = {
     actions8.agencyProjectOptionsAction,
   "features/agency-projects/actions.enableAgencyProjectsAction":
     actions8.enableAgencyProjectsAction,
+  "features/inventory/actions.executeInventoryAction": executeInventoryAction,
   "features/projects/actions.createProjectAction": projectActions.createProjectAction,
   "features/projects/actions.createProjectItemAction": projectActions.createProjectItemAction,
   "features/projects/actions.updateProjectItemAction": projectActions.updateProjectItemAction,
