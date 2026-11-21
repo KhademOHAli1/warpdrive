@@ -18,6 +18,8 @@ InvenTree models one parent/child stock location tree, with structural locations
 - **Domain ownership.** Inventory will point material placements and transfers at directory IDs. Assets will point placements, custody and kits at those same IDs. Each domain defines placement eligibility and authorizes its own operations. Commissioning stock as equipment requires a logged handoff with both references. Existing SKU-level quantities require an explicit initial assignment and reconciliation before site-level availability is introduced.
 - **Delivery order.** Qualify the shared Web directory with disposable data (PLAT-01-WEB), then implement Core persistence, authenticated reads, management permissions and migration checks (PLAT-01-DIR). The persisted directory unblocks Inventory placement and the Assets register. Close PLAT-01 after scoped access and a logged commissioning handoff are exercised with persisted Inventory and Assets records.
 
+The Web checkpoint at `27d0bd00` is available in the loopback demo at `http://127.0.0.1:3090/locations`. Authenticated Chrome created a site and nested bin, moved and renamed the bin across contexts with its ID intact, denied parent archive with an active child, restored the bin and verified desktop and 390 px layouts. Fixture edits reset on reload and the browser attempted zero business writes. The [backlog](warpdrive-operations-backlog.tsv) links the local receipt and keeps the Core directory gate open.
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
