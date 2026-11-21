@@ -3,18 +3,47 @@ import { classifyInventory } from "./registryClassification";
 export const sharedLocationsEntry = classifyInventory(
   [
     "derived:src/features/locations/directory.ts",
+    "derived:src/features/locations/LocationsDirectory.tsx",
+    "sourceReview:drizzle/0129_shared_locations.sql#dddc8ebd0ea3fad0de8f5205ad486d3d874f9506307a096a8ba72c5fb29fb4d3",
+    "sourceReview:src/app/(app)/locations/page.tsx#db1403803fe9d5124cb638e73070c5e89663bfb9afb130cdc5876a2daee2a38c",
     "sourceReview:src/features/locations/directory.ts#b53d02706b7be9cd3fa652a6390d97a5834bd8444640509893971904cfddba84",
+    "sourceReview:src/features/locations/LocationsDirectory.tsx#5a1b8d10511c51f3cfde5a3b1d7fb98211dc4f0b2b1ba61580eaa9285f3ef099",
+    "sourceReview:src/features/locations/router.ts#728197737102fe9225dec9084037dc4742f57ef01c9321ce758934f460cef399",
+    "sourceReview:src/features/locations/schema.ts#42bab566fc010e28fed905d1f4205d5d31c42a1839c1384cc07137677860f82b",
+    "sourceReview:src/features/locations/service.ts#c9413d0360cf95b87ba761b990824f907fd51d095fdb73f73f083e0b6b4a6601",
+    "table:directory_command_receipts",
+    "table:directory_locations",
+    "table:directory_site_grants",
+    "table:directory_sites",
+    "writer:src/app/(app)/locations/page.tsx#query:none",
+    "writer:src/features/locations/LocationsDirectory.tsx#delete:key",
+    "writer:src/features/locations/router.ts#query:dynamic",
+    "writer:src/features/locations/service.ts#delete:directorySiteGrants",
+    "writer:src/features/locations/service.ts#execute:dynamic",
+    "writer:src/features/locations/service.ts#insert:directoryCommandReceipts",
+    "writer:src/features/locations/service.ts#insert:directoryLocations",
+    "writer:src/features/locations/service.ts#insert:directorySiteGrants",
+    "writer:src/features/locations/service.ts#insert:directorySites",
+    "writer:src/features/locations/service.ts#update:directoryLocations",
+    "writer:src/features/locations/service.ts#update:directorySites",
+    "writer:src/features/locations/service.ts#update:dynamic",
   ],
   {
     owner: "shared sites and locations",
-    categories: ["demo sites, location names and codes, site and parent relationships"],
+    categories: [
+      "site and location names, codes, archive state and parent relationships",
+      "native staff identifiers, site roles and staff account names and email addresses shown to administrators, and command receipts containing an actor, digest and record IDs",
+    ],
     subjectRelation:
-      "The directory fixture contains operational places. It does not store user or customer IDs.",
-    purpose: "Exercise one site and location hierarchy across the Inventory and Assets contexts.",
+      "A grant connects a native staff account with a site. Command receipts refer to the native actor and the affected site and location.",
+    purpose:
+      "Maintain a shared operations directory and enforce site-scoped access across Inventory and Assets.",
     disclosure:
-      "The development fixture uses the native active session for access. An administrator can edit the browser-local directory. Directory fields and dialogs are masked from replay.",
-    retention: "Location edits exist only in Web component state and reset on reload.",
-    externalEffects: "Directory edits do not invoke Core, provider APIs or external storage.",
+      "Core verifies the current accepted native session. Staff receive only their granted sites and locations. Administrators also receive eligible staff names, email addresses, identifiers and grants. Directory fields and dialogs are masked from replay.",
+    retention:
+      "PostgreSQL retains site and location identities after archive. Revocation removes the grant. Account deletion cascades to grants and command receipts. Receipt replay recalculates current access. The explicit development fixture resets on reload.",
+    externalEffects:
+      "Authenticated reads and CSRF-guarded commands use the configured Core boundary. Directory changes and their receipts commit in one PostgreSQL transaction.",
     erasureTask: "DPL-15 / DPL-18 / DPL-21",
   },
 );

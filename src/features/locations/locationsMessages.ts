@@ -40,6 +40,27 @@ const en = {
   invalidParent: "Choose an active parent in the same site.",
   circularParent: "A location cannot be moved under itself or a descendant.",
   activeChildren: "Archive the active locations below this record first.",
+  noSharedSites: "No sites have been shared with you.",
+  refreshDirectory: "Refresh directory",
+  unavailable: "The directory or this record is unavailable. Refresh to check your access.",
+  requestConflict: "This request has already been used for another change. Try again.",
+  invalidCommand: "Check the details and try again.",
+  invalidGrant: "Choose an active staff member.",
+  transport: "The change could not be confirmed. Retry the same action.",
+  siteAccess: "Site access",
+  siteAccessDescription:
+    "Viewers can see this site and its locations. Managers can also change locations.",
+  noGrants: "Only workspace administrators have access to this site.",
+  noEligibleMembers: "No active staff members are available.",
+  staffMember: "Staff member",
+  selectMember: "Select a staff member",
+  siteRole: "Site role",
+  viewer: "Viewer",
+  manager: "Manager",
+  grantAccess: "Grant access",
+  revokeAccess: "Revoke access",
+  revokeAccessFor: "Revoke access for {name}",
+  unavailableMember: "Unavailable staff member",
 };
 
 const de = {
@@ -85,6 +106,29 @@ const de = {
   circularParent:
     "Ein Lagerort kann sich selbst oder einem untergeordneten Lagerort nicht zugeordnet werden.",
   activeChildren: "Archivieren Sie zuerst die aktiven Lagerorte unter diesem Eintrag.",
+  noSharedSites: "Es wurden keine Standorte für Sie freigegeben.",
+  refreshDirectory: "Verzeichnis aktualisieren",
+  unavailable:
+    "Das Verzeichnis oder dieser Eintrag ist nicht verfügbar. Aktualisieren Sie die Ansicht, um Ihren Zugriff zu prüfen.",
+  requestConflict:
+    "Diese Anfrage wurde bereits für eine andere Änderung verwendet. Versuchen Sie es erneut.",
+  invalidCommand: "Prüfen Sie die Angaben und versuchen Sie es erneut.",
+  invalidGrant: "Wählen Sie ein aktives Teammitglied.",
+  transport: "Die Änderung konnte nicht bestätigt werden. Wiederholen Sie dieselbe Aktion.",
+  siteAccess: "Standortzugriff",
+  siteAccessDescription:
+    "Leseberechtigte können den Standort und seine Lagerorte sehen. Standortverantwortliche können Lagerorte auch bearbeiten.",
+  noGrants: "Nur Arbeitsbereichsadministratoren haben Zugriff auf diesen Standort.",
+  noEligibleMembers: "Es sind keine aktiven Teammitglieder verfügbar.",
+  staffMember: "Teammitglied",
+  selectMember: "Teammitglied auswählen",
+  siteRole: "Standortrolle",
+  viewer: "Leseberechtigt",
+  manager: "Standortverantwortlich",
+  grantAccess: "Zugriff gewähren",
+  revokeAccess: "Zugriff entziehen",
+  revokeAccessFor: "Zugriff für {name} entziehen",
+  unavailableMember: "Nicht verfügbares Teammitglied",
 } satisfies Record<keyof typeof en, string>;
 
 const fa = {
@@ -129,6 +173,27 @@ const fa = {
   invalidParent: "یک محل بالادست فعال در همان مرکز انتخاب کنید.",
   circularParent: "نمی‌توانید محل را زیرمجموعه خودش یا یکی از محل‌های زیرمجموعه‌اش کنید.",
   activeChildren: "ابتدا محل‌های فعال زیرمجموعه این مورد را بایگانی کنید.",
+  noSharedSites: "هیچ مرکزی با شما به اشتراک گذاشته نشده است.",
+  refreshDirectory: "تازه‌سازی فهرست",
+  unavailable: "فهرست یا این مورد در دسترس نیست. برای بررسی دسترسی خود آن را تازه‌سازی کنید.",
+  requestConflict: "این درخواست قبلاً برای تغییر دیگری استفاده شده است. دوباره تلاش کنید.",
+  invalidCommand: "جزئیات را بررسی کنید و دوباره تلاش کنید.",
+  invalidGrant: "یک عضو فعال تیم را انتخاب کنید.",
+  transport: "تغییر تأیید نشد. همان اقدام را دوباره انجام دهید.",
+  siteAccess: "دسترسی به مرکز",
+  siteAccessDescription:
+    "مشاهده‌کنندگان می‌توانند مرکز و محل‌های آن را ببینند. مدیران مرکز می‌توانند محل‌ها را نیز تغییر دهند.",
+  noGrants: "فقط مدیران فضای کاری به این مرکز دسترسی دارند.",
+  noEligibleMembers: "هیچ عضو فعالی در دسترس نیست.",
+  staffMember: "عضو تیم",
+  selectMember: "انتخاب عضو تیم",
+  siteRole: "نقش در مرکز",
+  viewer: "مشاهده‌کننده",
+  manager: "مدیر مرکز",
+  grantAccess: "اعطای دسترسی",
+  revokeAccess: "لغو دسترسی",
+  revokeAccessFor: "لغو دسترسی برای {name}",
+  unavailableMember: "عضو غیردردسترس",
 } satisfies Record<keyof typeof en, string>;
 
 export const locationsMessages = { en, de, fa } as const;

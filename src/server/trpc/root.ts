@@ -13,6 +13,7 @@ import { importRouter } from "@/features/import/router";
 import { inventoryRouter } from "@/features/inventory/router";
 import { labelsRouter } from "@/features/labels/router";
 import { leadRouter } from "@/features/leads/leadRouter";
+import { locationsRouter } from "@/features/locations/router";
 import { newsletterRouter } from "@/features/newsletter/router";
 import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
@@ -58,6 +59,7 @@ export const appRouter = router({
   operations: operationsRouter,
   internalProjects: internalProjectsRouter,
   inventory: inventoryRouter,
+  locations: locationsRouter,
   projectDocuments: projectDocumentsRouter,
   savedFilters: savedFiltersRouter,
   search: searchRouter,

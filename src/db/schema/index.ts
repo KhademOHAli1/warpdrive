@@ -7,6 +7,7 @@ export * from "@/features/billing/schema";
 export * from "@/features/company-profile/schema";
 export * from "@/features/inventory/releases/schema";
 export * from "@/features/inventory/schema";
+export * from "@/features/locations/schema";
 export * from "@/features/newsletter/attribution/schema";
 export * from "@/features/newsletter/schema/operationReceipts";
 export * from "@/features/newsletter/schema/personAddresses";

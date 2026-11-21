@@ -18,10 +18,10 @@ import {
   type Location,
   type LocationChange,
   type LocationDirectory,
-  type LocationError,
   locationPath,
   type Site,
 } from "./directory";
+import type { LocationWriteError } from "./LocationsDirectory";
 import { locationsMessages } from "./locationsMessages";
 
 export type LocationEditorTarget =
@@ -32,12 +32,14 @@ export function LocationEditor({
   directory,
   target,
   submit,
+  pending,
   close,
   focusTrigger,
 }: {
   directory: LocationDirectory;
   target: LocationEditorTarget;
-  submit: (change: LocationChange) => LocationError | null;
+  submit: (change: LocationChange) => Promise<LocationWriteError | null>;
+  pending: boolean;
   close: () => void;
   focusTrigger: () => void;
 }) {
@@ -50,7 +52,7 @@ export function LocationEditor({
   const [parent, setParent] = useState(
     target.kind === "location" ? (target.record?.parentId ?? "") : "",
   );
-  const [error, setError] = useState<LocationError | null>(null);
+  const [error, setError] = useState<LocationWriteError | null>(null);
   const editingLocation = target.kind === "location";
   const title = editingLocation
     ? target.record === null
@@ -71,21 +73,24 @@ export function LocationEditor({
         .sort((a, b) => a.label.localeCompare(b.label, locale))
     : [];
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
+    setError(null);
     const values = { id: target.record?.id ?? null, name, code };
     const change: LocationChange =
       target.kind === "location"
         ? { type: "saveLocation", siteId: target.siteId, parentId: parent || null, ...values }
         : { type: "saveSite", ...values };
-    setError(submit(change));
+    const issue = await submit(change);
+    if (issue !== null) setError(issue);
   }
 
   return (
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open) close();
+        if (!pending && !open) close();
       }}
     >
       <DialogContent
@@ -101,7 +106,7 @@ export function LocationEditor({
             {editingLocation ? t.editorDescription : t.siteEditorDescription}
           </DialogDescription>
         </DialogHeader>
-        <form className="grid gap-4" onSubmit={onSubmit}>
+        <form className="grid gap-4" onSubmit={(event) => void onSubmit(event)}>
           <div className="grid gap-1.5">
             <label htmlFor={nameId} className="text-sm font-medium">
               {t.name}
@@ -109,6 +114,7 @@ export function LocationEditor({
             <Input
               id={nameId}
               required
+              disabled={pending}
               maxLength={100}
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -122,6 +128,7 @@ export function LocationEditor({
               id={codeId}
               dir="ltr"
               required
+              disabled={pending}
               maxLength={24}
               value={code}
               onChange={(event) => setCode(event.target.value)}
@@ -134,6 +141,7 @@ export function LocationEditor({
                 ariaLabel={t.parent}
                 value={parent}
                 onChange={setParent}
+                disabled={pending}
                 options={[{ value: "", label: t.noParent }, ...parents]}
                 triggerClassName="h-9 min-w-0 gap-2 [&>span]:min-w-0 [&>span]:truncate"
                 contentClassName={`${BLOCK_CLASS} ph-no-capture max-w-[min(28rem,90vw)]`}
@@ -146,10 +154,12 @@ export function LocationEditor({
             </p>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={close}>
+            <Button type="button" variant="outline" disabled={pending} onClick={close}>
               {t.cancel}
             </Button>
-            <Button type="submit">{t.save}</Button>
+            <Button type="submit" disabled={pending}>
+              {t.save}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

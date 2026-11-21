@@ -1,10 +1,7 @@
 "use client";
 
-import { MapPin } from "lucide-react";
-import Link from "next/link";
 import { useRef } from "react";
-import { useLocale } from "@/features/i18n/LocaleProvider";
-import { locationsMessages } from "@/features/locations/locationsMessages";
+import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
 import type { InventoryCommand, InventoryWorkspace } from "./contracts";
 import { applyInventoryFixture } from "./fixtures";
 import {
@@ -20,7 +17,6 @@ export function InventoryFixture({
   initial: InventoryWorkspace;
   openReleases: boolean;
 }) {
-  const locale = useLocale();
   const workspace = useRef(initial);
   function submit(command: InventoryCommand) {
     const result = applyInventoryFixture(workspace.current, command);
@@ -35,17 +31,7 @@ export function InventoryFixture({
         submit={submit}
         ProductReleases={ManufacturingReleasesFixture}
         openReleases={openReleases}
-        locationsLink={
-          initial.deal === null && (
-            <Link
-              href="/locations"
-              prefetch={false}
-              className="inline-flex items-center gap-2 border-b-2 border-transparent px-2 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              <MapPin aria-hidden="true" className="size-4" /> {locationsMessages[locale].title}
-            </Link>
-          )
-        }
+        locationsLink={initial.deal === null && <LocationDirectoryLink />}
       />
     </ManufacturingReleaseFixtureProvider>
   );

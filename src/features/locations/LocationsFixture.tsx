@@ -1,26 +1,9 @@
 "use client";
 
-import { Archive, Building2, MapPin, Plus } from "lucide-react";
-import { useId, useRef, useState } from "react";
-import { PageHeading } from "@/components/shell/PageHeading";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLocale } from "@/features/i18n/LocaleProvider";
-import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import { cn } from "@/lib/utils";
-import {
-  applyLocationChange,
-  type LocationChange,
-  type LocationDirectory,
-  type LocationError,
-  locationPath,
-} from "./directory";
-import { LocationEditor, type LocationEditorTarget } from "./LocationEditor";
-import { locationsMessages } from "./locationsMessages";
+import { useRef, useState } from "react";
+import type { LocationsCommand, LocationsResult, LocationsWorkspace } from "./contracts";
+import { applyLocationChange, type LocationDirectory } from "./directory";
+import { LocationsDirectory } from "./LocationsDirectory";
 
 export function LocationsFixture({
   initial,
@@ -29,332 +12,30 @@ export function LocationsFixture({
   initial: LocationDirectory;
   canManage: boolean;
 }) {
-  const locale = useLocale();
-  const t = locationsMessages[locale];
-  const [directory, setDirectory] = useState(initial);
-  const [context, setContext] = useState("inventory");
-  const [siteId, setSiteId] = useState(initial.sites[0]?.id ?? "");
-  const [locationId, setLocationId] = useState<string | null>(null);
-  const [showArchived, setShowArchived] = useState(false);
-  const [search, setSearch] = useState("");
-  const [editor, setEditor] = useState<LocationEditorTarget | null>(null);
-  const [error, setError] = useState<LocationError | null>(null);
-  const [saved, setSaved] = useState(false);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const archivedFilterId = useId();
-  const listId = useId();
-  const sites = directory.sites.filter((site) => showArchived || !site.archived);
-  const site = sites.find(({ id }) => id === siteId) ?? sites[0];
-  const query = search.trim().toLocaleLowerCase(locale);
-  const locations = directory.locations
-    .filter((location) => location.siteId === site?.id && (showArchived || !location.archived))
-    .map((location) => {
-      const path = locationPath(directory.locations, location);
-      return {
-        location,
-        path: path.map(({ name }) => name).join(" / "),
-        parentPath: path
-          .slice(0, -1)
-          .map(({ name }) => name)
-          .join(" / "),
-      };
-    })
-    .filter(({ location, path }) =>
-      `${path} ${location.code}`.toLocaleLowerCase(locale).includes(query),
-    )
-    .sort(
-      (a, b) =>
-        a.path.localeCompare(b.path, locale) || a.location.code.localeCompare(b.location.code),
+  const [initialWorkspace] = useState<LocationsWorkspace>(() => ({
+    directory: initial,
+    canManageSites: canManage,
+    managedSiteIds: [],
+    eligibleUsers: [],
+    grants: [],
+  }));
+  const workspace = useRef(initialWorkspace);
+
+  function submit(command: LocationsCommand): Promise<LocationsResult> {
+    if (!canManage || command.type === "setGrant")
+      return Promise.resolve({ ok: false, error: "unavailable" });
+    const result = applyLocationChange(workspace.current.directory, command, () =>
+      crypto.randomUUID(),
     );
-  const selected = locations.find(({ location }) => location.id === locationId) ?? locations[0];
-
-  function openEditor(button: HTMLButtonElement, target: LocationEditorTarget) {
-    trigger.current = button;
-    setError(null);
-    setSaved(false);
-    setEditor(target);
+    if (!result.ok) return Promise.resolve(result);
+    workspace.current = { ...workspace.current, directory: result.directory };
+    return Promise.resolve({
+      ok: true,
+      value: workspace.current,
+      siteId: result.siteId,
+      locationId: result.locationId,
+    });
   }
 
-  function apply(change: LocationChange): LocationError | null {
-    const result = applyLocationChange(directory, change, () => crypto.randomUUID());
-    if (!result.ok) return result.error;
-    setDirectory(result.directory);
-    setSiteId(result.siteId);
-    setLocationId(result.locationId);
-    setError(null);
-    setSaved(true);
-    return null;
-  }
-
-  function setArchive(change: LocationChange) {
-    setSaved(false);
-    setError(apply(change));
-  }
-
-  return (
-    <section className={`${BLOCK_CLASS} ph-no-capture min-w-0`}>
-      <PageHeading
-        title={t.title}
-        crumbs={[{ label: t.inventory, href: "/inventory" }, { label: t.title }]}
-        actions={<Badge variant="outline">{t.demo}</Badge>}
-      />
-      <Tabs value={context} onValueChange={setContext}>
-        <TabsList
-          aria-label={t.contexts}
-          className="inline-flex w-fit gap-1 rounded-lg border bg-card p-0.5"
-        >
-          <TabsTrigger value="inventory" className={PILL_TAB}>
-            {t.inventory}
-          </TabsTrigger>
-          <TabsTrigger value="assets" className={PILL_TAB}>
-            {t.assets}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value={context} className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {context === "assets" ? t.assetsContext : t.inventoryContext}
-          </p>
-          <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3">
-            {site !== undefined && (
-              <div className="grid w-full min-w-0 gap-1.5 sm:w-auto sm:max-w-64 sm:flex-1">
-                <span className="text-sm font-medium">{t.site}</span>
-                <Select
-                  ariaLabel={t.site}
-                  value={site.id}
-                  options={sites.map((entry) => ({ value: entry.id, label: entry.name }))}
-                  onChange={(id) => {
-                    setSiteId(id);
-                    setLocationId(null);
-                    setError(null);
-                    setSaved(false);
-                  }}
-                  triggerClassName="h-9 min-w-0 gap-2 [&>span]:min-w-0 [&>span]:truncate"
-                  contentClassName={`${BLOCK_CLASS} ph-no-capture max-w-[min(28rem,90vw)]`}
-                />
-              </div>
-            )}
-            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-              {canManage && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9"
-                    onClick={(event) =>
-                      openEditor(event.currentTarget, { kind: "site", record: null })
-                    }
-                  >
-                    <Plus aria-hidden="true" /> {t.addSite}
-                  </Button>
-                  {site !== undefined && (
-                    <>
-                      {!site.archived && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-9"
-                          onClick={(event) =>
-                            openEditor(event.currentTarget, { kind: "site", record: site })
-                          }
-                        >
-                          {t.editSite}
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-9"
-                        onClick={() =>
-                          setArchive({
-                            type: "setSiteArchived",
-                            id: site.id,
-                            archived: !site.archived,
-                          })
-                        }
-                      >
-                        {site.archived ? t.restoreSite : t.archiveSite}
-                      </Button>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-            <label
-              htmlFor={archivedFilterId}
-              className="flex h-9 cursor-pointer items-center gap-2 px-2 text-sm sm:ms-auto"
-            >
-              <Checkbox
-                id={archivedFilterId}
-                label={t.showArchived}
-                checked={showArchived}
-                onCheckedChange={setShowArchived}
-              />
-              {t.showArchived}
-            </label>
-          </div>
-          {saved && (
-            <p className="sr-only" role="status">
-              {t.saved}
-            </p>
-          )}
-          {error !== null && (
-            <p role="alert" className="text-sm text-destructive">
-              {t[error]}
-            </p>
-          )}
-          {site === undefined ? (
-            <p className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-              {t.noSites}
-            </p>
-          ) : (
-            <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]">
-              <section className="min-w-0 rounded-lg border bg-card" aria-labelledby={listId}>
-                <div className="flex flex-wrap items-center gap-3 border-b p-3">
-                  <h2 id={listId} className="me-auto flex items-center gap-2 text-sm font-semibold">
-                    <Building2 className="size-4 text-muted-foreground" aria-hidden="true" />
-                    {t.locations}
-                    <bdi
-                      className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
-                      dir="ltr"
-                    >
-                      {site.code}
-                    </bdi>
-                    {site.archived && <Badge variant="outline">{t.archived}</Badge>}
-                  </h2>
-                  <Input
-                    type="search"
-                    aria-label={t.search}
-                    placeholder={t.search}
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    className="h-9 w-full sm:w-44"
-                  />
-                  {canManage && !site.archived && (
-                    <Button
-                      onClick={(event) =>
-                        openEditor(event.currentTarget, {
-                          kind: "location",
-                          record: null,
-                          siteId: site.id,
-                        })
-                      }
-                    >
-                      <Plus aria-hidden="true" /> {t.addLocation}
-                    </Button>
-                  )}
-                </div>
-                {locations.length === 0 ? (
-                  <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-                    {t.noLocations}
-                  </p>
-                ) : (
-                  <ul className="divide-y">
-                    {locations.map(({ location, parentPath }) => (
-                      <li key={location.id}>
-                        <Button
-                          variant="ghost"
-                          aria-pressed={location.id === selected?.location.id}
-                          data-location-id={location.id}
-                          className={cn(
-                            "h-auto min-h-12 w-full justify-start gap-2.5 rounded-none px-3 py-2 text-start",
-                            location.id === selected?.location.id && "bg-muted/60",
-                          )}
-                          onClick={() => {
-                            setLocationId(location.id);
-                            setError(null);
-                          }}
-                        >
-                          {location.archived ? (
-                            <Archive className="text-muted-foreground" aria-hidden="true" />
-                          ) : (
-                            <MapPin className="text-muted-foreground" aria-hidden="true" />
-                          )}
-                          <span className="min-w-0 grow whitespace-normal [overflow-wrap:anywhere]">
-                            <bdi className="block">{location.name}</bdi>
-                            {parentPath !== "" && (
-                              <bdi className="block text-xs font-normal text-muted-foreground">
-                                {parentPath}
-                              </bdi>
-                            )}
-                          </span>
-                          <bdi
-                            dir="ltr"
-                            className="shrink-0 font-mono text-xs text-muted-foreground"
-                          >
-                            {location.code}
-                          </bdi>
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-              {selected !== undefined && (
-                <section
-                  aria-label={t.locationDetails}
-                  className="min-w-0 space-y-3 rounded-lg border bg-card p-4"
-                >
-                  <h2 className="text-sm font-semibold">{t.locationDetails}</h2>
-                  <p className="text-sm text-muted-foreground [overflow-wrap:anywhere]">
-                    <bdi>{site.name}</bdi>
-                    {" / "}
-                    <bdi>{selected.path}</bdi>
-                  </p>
-                  {selected.location.archived && <Badge variant="outline">{t.archived}</Badge>}
-                  {canManage && !site.archived && (
-                    <div className="flex flex-wrap gap-2">
-                      {!selected.location.archived && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(event) =>
-                            openEditor(event.currentTarget, {
-                              kind: "location",
-                              record: selected.location,
-                              siteId: site.id,
-                            })
-                          }
-                        >
-                          {t.editLocation}
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          setArchive({
-                            type: "setLocationArchived",
-                            id: selected.location.id,
-                            archived: !selected.location.archived,
-                          })
-                        }
-                      >
-                        {selected.location.archived ? t.restoreLocation : t.archiveLocation}
-                      </Button>
-                    </div>
-                  )}
-                </section>
-              )}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-      {editor !== null && (
-        <LocationEditor
-          directory={directory}
-          target={editor}
-          close={() => setEditor(null)}
-          focusTrigger={() => trigger.current?.focus()}
-          submit={(change) => {
-            const issue = apply(change);
-            if (issue === null) {
-              setSearch("");
-              setEditor(null);
-            }
-            return issue;
-          }}
-        />
-      )}
-    </section>
-  );
+  return <LocationsDirectory initial={initialWorkspace} submit={submit} fixture />;
 }

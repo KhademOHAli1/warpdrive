@@ -4,7 +4,7 @@ export const industrialInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/inventory/releases/ui/ManufacturingReleasesFixture.tsx#ef148385d4a8f4185d5e4b43ffe56bcc10baa667244d2d4749f8dc8aa9c1d088",
     "sourceReview:src/features/inventory/releases/fixtures.ts#d31a68530b9339a96294b2d38d44fc6d8b4c58b5295f1bed1c10c92cd792a8a6",
-    "sourceReview:src/features/inventory/InventoryFixture.tsx#4bf14cba019223405d042fb5e96b5623e38f9314c17f7095bec6a6b6e11b5271",
+    "sourceReview:src/features/inventory/InventoryFixture.tsx#61ae0604ca6fcff39cd4f40610b0771047f8f99259fb62e39638f5731498c759",
     "derived:src/features/inventory/fixtures.ts",
     "derived:src/features/inventory/projectBridge.ts",
     "derived:src/features/inventory/reads.ts",

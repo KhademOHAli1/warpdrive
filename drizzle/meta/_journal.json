@@ -904,6 +904,13 @@
       "when": 1795278253477,
       "tag": "0128_manufacturing_releases",
       "breakpoints": true
+    },
+    {
+      "idx": 129,
+      "version": "7",
+      "when": 1795280881767,
+      "tag": "0129_shared_locations",
+      "breakpoints": true
     }
   ]
 }
