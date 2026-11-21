@@ -201,7 +201,9 @@ test("renders a viewer’s list and board without project mutation controls", as
   render(<InternalProjectWorkspace initial={initial} commands={fixture.commands} locale="en" />);
   expect(screen.getByText("Check network outlets")).toBeVisible();
   expect(screen.queryByRole("button", { name: "New work item" })).not.toBeInTheDocument();
-  expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  expect(screen.getByRole("combobox", { name: "Filter by status" })).toBeVisible();
+  expect(screen.queryByRole("combobox", { name: /^Status for/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole("combobox", { name: /^Assignee for/ })).not.toBeInTheDocument();
 
   await user.click(screen.getByRole("tab", { name: "Board" }));
   expect(
@@ -214,6 +216,39 @@ test("renders a viewer’s list and board without project mutation controls", as
   await user.click(screen.getByRole("tab", { name: "Members" }));
   expect(screen.getByText("Alex Morgan")).toBeVisible();
   expect(screen.queryByRole("button", { name: "Add member" })).not.toBeInTheDocument();
+});
+
+test("edits work-item properties from the side panel and retains search across layouts", async () => {
+  const fixture = createProjectsFixture();
+  const user = userEvent.setup();
+  render(
+    <InternalProjectWorkspace
+      initial={getWorkspace(fixture)}
+      commands={fixture.commands}
+      locale="en"
+    />,
+  );
+
+  const search = screen.getByRole("searchbox", { name: "Search work items" });
+  await user.type(search, "network");
+  expect(screen.queryByText("Confirm moving date")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Check network outlets" }));
+  const panel = screen.getByRole("dialog", { name: "Check network outlets" });
+  await user.type(
+    within(panel).getByRole("textbox", { name: "Description" }),
+    "Verify power and cabling.",
+  );
+  choose("Priority", "High");
+  await user.click(within(panel).getByRole("button", { name: "Save" }));
+  await waitFor(() =>
+    expect(
+      getWorkspace(fixture).items.find(({ title }) => title === "Check network outlets"),
+    ).toMatchObject({ priority: "high", description: "Verify power and cabling." }),
+  );
+  await user.keyboard("{Escape}");
+  await user.click(screen.getByRole("tab", { name: "Board" }));
+  expect(search).toHaveValue("network");
+  expect(within(screen.getByRole("region", { name: "To do" })).getByText("High")).toBeVisible();
 });
 
 test("shows a historical assignee without offering an ineligible staff member for assignment", () => {

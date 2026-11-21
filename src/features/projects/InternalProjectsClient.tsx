@@ -12,11 +12,12 @@ import {
 import type { ProjectCommands, ProjectIndex, ProjectWorkspace } from "./contracts";
 import { InternalProjectsList } from "./ui/InternalProjectsList";
 import { InternalProjectWorkspace } from "./ui/InternalProjectWorkspace";
+import type { ProjectWorkspaceLocation } from "./ui/planeWorkItemView";
 import { projectsTranslator } from "./ui/projectMessages";
 
 type Screen =
   | { screen: "index"; initial: ProjectIndex }
-  | { screen: "workspace"; initial: ProjectWorkspace };
+  | { screen: "workspace"; initial: ProjectWorkspace; location: ProjectWorkspaceLocation };
 
 export function InternalProjectsClient(props: Screen & { actorId: string }) {
   const { locale } = useLocalePreferences();
@@ -30,7 +31,14 @@ export function InternalProjectsClient(props: Screen & { actorId: string }) {
   if (props.screen === "index") {
     return <InternalProjectsList initial={props.initial} locale={locale} commands={commands} />;
   }
-  return <InternalProjectWorkspace initial={props.initial} locale={locale} commands={commands} />;
+  return (
+    <InternalProjectWorkspace
+      initial={props.initial}
+      initialLocation={props.location}
+      locale={locale}
+      commands={commands}
+    />
+  );
 }
 
 export function InternalProjectsUnavailable() {

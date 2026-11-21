@@ -65,6 +65,7 @@ import * as actions62 from "@/features/pipelines/pipelineLifecycleActions.backen
 import * as actions63 from "@/features/privacy/requestActions.backend";
 import * as actions64 from "@/features/privacy/reviewerActions.backend";
 import * as projectActions from "@/features/projects/actions.backend";
+import * as projectDocumentActions from "@/features/projects/documents/actions.backend";
 import * as actions65 from "@/features/saved-filters/serverActions.backend";
 import * as actions66 from "@/features/settings/lostReasonActions.backend";
 import * as actions67 from "@/features/workflows/actions.backend";
@@ -123,6 +124,14 @@ export const commandHandlers = {
   "features/projects/actions.createProjectItemAction": projectActions.createProjectItemAction,
   "features/projects/actions.updateProjectItemAction": projectActions.updateProjectItemAction,
   "features/projects/actions.setProjectMemberAction": projectActions.setProjectMemberAction,
+  "features/projects/documents/actions.createProjectDocumentAction":
+    projectDocumentActions.createProjectDocumentAction,
+  "features/projects/documents/actions.saveProjectDocumentAction":
+    projectDocumentActions.saveProjectDocumentAction,
+  "features/projects/documents/actions.setProjectDocumentLifecycleAction":
+    projectDocumentActions.setProjectDocumentLifecycleAction,
+  "features/projects/documents/actions.restoreProjectDocumentVersionAction":
+    projectDocumentActions.restoreProjectDocumentVersionAction,
   "features/auth/csrfRefresh.ensureCsrfAction": actions9.ensureCsrfAction,
   "features/collaboration/actions.createNoteAction": actions10.createNoteAction,
   "features/collaboration/actions.togglePinAction": actions10.togglePinAction,

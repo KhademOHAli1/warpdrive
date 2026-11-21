@@ -848,6 +848,20 @@
       "when": 1795231531715,
       "tag": "0120_internal_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 121,
+      "version": "7",
+      "when": 1795261921063,
+      "tag": "0121_internal_project_documents",
+      "breakpoints": true
+    },
+    {
+      "idx": 122,
+      "version": "7",
+      "when": 1795262194320,
+      "tag": "0122_internal_project_item_details",
+      "breakpoints": true
     }
   ]
 }

@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { projectProfileTranslator } from "./profile/messages";
 import { projectsTranslator } from "./ui/projectMessages";
 
 const pages = [
   { kind: "client", href: "/projects" },
   { kind: "internal", href: "/projects/internal" },
+  { kind: "profile", href: "/projects/internal/profile" },
 ] as const;
 
 export function ProjectTypeNav({ active }: { active: (typeof pages)[number]["kind"] }) {
@@ -16,9 +18,15 @@ export function ProjectTypeNav({ active }: { active: (typeof pages)[number]["kin
   const segment = "rounded-sm px-2.5 py-1 text-sm transition-colors";
 
   return (
-    <nav aria-label={t("navigation.type")} className="inline-flex rounded-md border bg-card p-0.5">
+    <nav
+      aria-label={t("navigation.title")}
+      className="inline-flex flex-wrap rounded-md border bg-card p-0.5"
+    >
       {pages.map(({ kind, href }) => {
-        const label = t(`navigation.${kind}`);
+        const label =
+          kind === "profile"
+            ? projectProfileTranslator(locale, numberingSystem)("title")
+            : t(`navigation.${kind}`);
         return active === kind ? (
           <span
             key={kind}

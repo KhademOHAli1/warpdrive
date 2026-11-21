@@ -8,7 +8,13 @@ import { replayContext } from "@/features/agency-projects/persistence/projectRep
 import type { ProjectReplayInput } from "@/features/agency-projects/persistence/projectRepositoryTypes";
 import type { TestDb } from "@/test/db";
 import { applyMigrations } from "./migrate";
-import { freshMigrationDb, installPrefix, ledger } from "./migrationAdmission.test-helpers";
+import {
+  canonicalFolder,
+  freshMigrationDb,
+  installPrefix,
+  ledger,
+} from "./migrationAdmission.test-helpers";
+import { readCanonicalMigrations } from "./migrationAdmissionSource";
 import { seedPipelineWithStages, seedUser } from "./testing/factories";
 
 async function agencySnapshot(h: TestDb) {
@@ -153,7 +159,16 @@ test("upgrades populated 0119 while preserving Agency identity, access and creat
       { id: projectId, kind: "client" },
     ]);
     const upgradedLedger = await ledger(h);
-    expect(upgradedLedger).toHaveLength(oldLedger.length + 1);
+    const canonical = await readCanonicalMigrations(canonicalFolder, signal);
+    assert(canonical.ok);
+    const projectMigration = canonical.value[oldLedger.length];
+    assert(projectMigration !== undefined);
+    expect(projectMigration.tag).toBe("0120_internal_projects");
+    expect(upgradedLedger).toHaveLength(canonical.value.length);
+    expect(upgradedLedger[oldLedger.length]).toMatchObject({
+      hash: projectMigration.hash,
+      created_at: String(projectMigration.when),
+    });
     expect(upgradedLedger.slice(0, oldLedger.length)).toEqual(oldLedger);
     expect(await applyMigrations(h.db, signal)).toMatchObject({ ok: true });
     expect(await ledger(h)).toEqual(upgradedLedger);

@@ -56,9 +56,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
       "agency_project_requests",
       "agency_project_settings",
       "internal_project_items",
+      "internal_project_documents",
+      "internal_project_document_versions",
     ],
     "unsupported",
-    "Project and work-item titles, CRM anchors, workforce memberships and assignments, work-item status, immutable audit history and keyed actor-bound receipts require dedicated subject/provenance and safe-projection adapters. Native project membership and current CRM visibility grant ordinary product access only. The default-disabled module, receipt tombstones and append-only triggers establish no discovery, export, rectification, restriction, erasure or retention execution capability.",
+    "Project documents and version bodies, authored titles, CRM anchors, workforce memberships and assignments, work-item status, immutable audit history and keyed actor-bound receipts require dedicated subject/provenance and safe-projection adapters. Native project membership and current CRM visibility grant ordinary product access only. The default-disabled module, receipt tombstones and append-only triggers establish no discovery, export, rectification, restriction, erasure or retention execution capability.",
   ),
   ...group(
     [

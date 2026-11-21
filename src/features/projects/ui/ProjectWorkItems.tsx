@@ -10,11 +10,13 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Pencil } from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import {
   type ProjectItem,
@@ -28,12 +30,14 @@ import {
 import { ProjectTitleDialog } from "./ProjectTitleDialog";
 import type { ProjectsTranslator } from "./projectMessages";
 
-export type ProjectItemChanges = Pick<UpdateProjectItemInput, "title" | "status" | "assigneeId">;
+export type ProjectItemChanges = Omit<UpdateProjectItemInput, "projectId" | "itemId" | "revision">;
 
 type WorkItemsProps = {
   workspace: ProjectWorkspace;
   labels: ProjectsTranslator;
   pending: boolean;
+  openItem: (id: string, trigger: HTMLElement) => void;
+  createInColumn?: (status: ProjectStatus) => ReactNode;
   updateItem: (
     item: ProjectItem,
     changes: ProjectItemChanges,
@@ -49,12 +53,16 @@ const statusColor = {
   done: "bg-success",
 } satisfies Record<ProjectStatus, string>;
 
-function ItemTitle({ workspace, item, pending, labels, updateItem }: WorkItemProps) {
+function ItemTitle({ workspace, item, pending, labels, updateItem, openItem }: WorkItemProps) {
   return (
     <div className="flex min-w-0 items-start justify-between gap-2">
-      <span className="min-w-0 py-1 text-sm font-medium [overflow-wrap:anywhere]">
+      <button
+        type="button"
+        className="min-w-0 rounded-sm py-1 text-start text-sm font-medium [overflow-wrap:anywhere] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        onClick={(event) => openItem(item.id, event.currentTarget)}
+      >
         <bdi>{item.title}</bdi>
-      </span>
+      </button>
       {workspace.canEdit && (
         <ProjectTitleDialog
           labels={labels}
@@ -145,6 +153,7 @@ function ItemAssignee({ workspace, item, labels, pending, updateItem }: WorkItem
 
 export function ProjectWorkItemList(props: WorkItemsProps) {
   const { workspace, labels } = props;
+  const format = useFormatters();
   if (workspace.items.length === 0) {
     return (
       <EmptyState
@@ -156,10 +165,10 @@ export function ProjectWorkItemList(props: WorkItemsProps) {
   }
   return (
     <div className="overflow-x-auto rounded-lg border bg-card">
-      <table className="w-full min-w-[28rem] table-fixed text-start text-sm">
+      <table className="w-full min-w-[40rem] table-fixed text-start text-sm">
         <thead className="border-b bg-muted/40 text-muted-foreground">
           <tr>
-            <th scope="col" className="w-[46%] px-4 py-2.5 text-start font-medium">
+            <th scope="col" className="w-[32%] px-4 py-2.5 text-start font-medium">
               {labels("workspace.titleColumn")}
             </th>
             <th scope="col" className="px-3 py-2.5 text-start font-medium">
@@ -168,25 +177,74 @@ export function ProjectWorkItemList(props: WorkItemsProps) {
             <th scope="col" className="px-3 py-2.5 text-start font-medium">
               {labels("workspace.assigneeColumn")}
             </th>
+            <th scope="col" className="px-3 py-2.5 text-start font-medium">
+              {labels("workspace.priority")}
+            </th>
+            <th scope="col" className="px-3 py-2.5 text-start font-medium">
+              {labels("workspace.dueDate")}
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y">
-          {workspace.items.map((item) => (
-            <tr key={item.id}>
-              <td className="px-4 py-2.5">
-                <ItemTitle {...props} item={item} />
-              </td>
-              <td className="px-3 py-2.5">
-                <ItemStatus {...props} item={item} />
-              </td>
-              <td className="px-3 py-2.5">
-                <ItemAssignee {...props} item={item} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
+        {projectStatuses.map((status) => {
+          const items = workspace.items.filter((item) => item.status === status);
+          if (items.length === 0) return null;
+          return (
+            <tbody key={status} className="divide-y border-b last:border-b-0">
+              <tr>
+                <th
+                  scope="rowgroup"
+                  colSpan={5}
+                  className="bg-muted/30 px-4 py-2 text-start font-medium"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn("me-2 inline-block size-2 rounded-full", statusColor[status])}
+                  />
+                  {labels(`status.${status}`)}
+                  <span className="ms-2 text-xs text-muted-foreground">
+                    {format.number(items.length)}
+                  </span>
+                </th>
+              </tr>
+              {items.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-4 py-2.5">
+                    <ItemTitle {...props} item={item} />
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <ItemStatus {...props} item={item} />
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <ItemAssignee {...props} item={item} />
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <ItemPriority item={item} labels={labels} />
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">
+                    {item.dueDate === null ? (
+                      "—"
+                    ) : (
+                      <time dateTime={item.dueDate}>{format.dateOnly(item.dueDate)}</time>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          );
+        })}
       </table>
     </div>
+  );
+}
+
+function ItemPriority({ item, labels }: Pick<WorkItemProps, "item" | "labels">) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn(item.priority === "urgent" && "border-destructive/50 text-destructive")}
+    >
+      {labels(`priority.${item.priority}`)}
+    </Badge>
   );
 }
 
@@ -194,6 +252,7 @@ function BoardCard(props: WorkItemProps) {
   const { item, labels, workspace, pending } = props;
   const { attributes, listeners, transform, setNodeRef, setActivatorNodeRef, isDragging } =
     useDraggable({ id: item.id, disabled: pending || !workspace.canEdit });
+  const format = useFormatters();
   return (
     <li
       ref={setNodeRef}
@@ -225,6 +284,14 @@ function BoardCard(props: WorkItemProps) {
       </div>
       {workspace.canEdit && <ItemStatus {...props} />}
       <ItemAssignee {...props} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ItemPriority item={item} labels={labels} />
+        {item.dueDate !== null && (
+          <time dateTime={item.dueDate} className="text-xs text-muted-foreground">
+            {format.dateOnly(item.dueDate)}
+          </time>
+        )}
+      </div>
     </li>
   );
 }
@@ -254,7 +321,12 @@ function BoardColumn({ status, ...props }: WorkItemsProps & { status: ProjectSta
           />
           {title}
         </h2>
-        <Badge variant="outline">{labels("workspace.columnCount", { count: cards.length })}</Badge>
+        <div className="flex items-center gap-1">
+          <Badge variant="outline">
+            {labels("workspace.columnCount", { count: cards.length })}
+          </Badge>
+          {props.createInColumn?.(status)}
+        </div>
       </div>
       {cards.length === 0 ? (
         <p className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">

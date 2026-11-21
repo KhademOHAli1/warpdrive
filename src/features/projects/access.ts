@@ -41,6 +41,16 @@ export async function withInternalProjects<T>(
 }
 
 export const personFields = { id: users.id, name: users.name };
+export const projectItemContentFields = {
+  title: internalProjectItems.title,
+  status: internalProjectItems.status,
+  assigneeId: internalProjectItems.assigneeId,
+  priority: internalProjectItems.priority,
+  startDate: internalProjectItems.startDate,
+  dueDate: internalProjectItems.dueDate,
+  description: internalProjectItems.description,
+};
+
 const memberFields = {
   person: personFields,
   active: users.isActive,
@@ -105,7 +115,12 @@ export async function lockInternalProject(
   if (!checkProjectLocalAction(local, project, "read").ok)
     return err("project_unavailable" as const);
   const canEdit = checkProjectLocalAction(local, project, "edit-content").ok;
-  const summary: ProjectSummary = { id: project.id, title: project.title, owner };
+  const summary: ProjectSummary = {
+    id: project.id,
+    title: project.title,
+    owner,
+    createdAt: project.createdAt.toISOString(),
+  };
   return ok({
     summary,
     ownerEligible: ownerActive && ownerInvitedAt === null,
@@ -132,9 +147,9 @@ export async function projectWorkspaceSnapshot(
     .innerJoin(users, eq(users.id, agencyProjectMembers.userId))
     .where(eq(agencyProjectMembers.projectId, projectId))
     .orderBy(asc(users.name), asc(users.id));
-  const { id, title, status, assigneeId, revision, createdAt } = internalProjectItems;
+  const { id, revision, createdAt, createdBy } = internalProjectItems;
   const items = await db
-    .select({ id, title, status, assigneeId, revision })
+    .select({ id, ...projectItemContentFields, createdBy, revision })
     .from(internalProjectItems)
     .where(eq(internalProjectItems.projectId, projectId))
     .orderBy(asc(createdAt), asc(id));

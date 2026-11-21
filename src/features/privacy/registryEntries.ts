@@ -63,6 +63,7 @@ import { migrationInventoryEntry } from "./registryMigrations";
 import { newsletterInventoryEntry } from "./registryNewsletter";
 import { newsletterOperationalInventoryEntry } from "./registryNewsletterOperations";
 import { operationsContractInventoryEntry } from "./registryOperations";
+import { projectDocumentsInventoryEntry } from "./registryProjectDocuments";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import type { RegistryEntry } from "./registryTypes";
@@ -86,6 +87,7 @@ export const registryEntries: RegistryEntry[] = [
       "The external fetch calls target one fixed Core origin, preserve original protocol bodies and do not replay uncertain writes. The Web readiness probe sends its server-only proxy credential to the fixed Core configuration procedure with no browser cookies, forwarded host or redirect. It bounds the reply bytes and deadline and returns only a fixed readiness code. Query scanner entries are typed RPC reads, not SQL mutations. Core executes only the explicit existing action/HTTP allowlists, including each handler's original effects. Request callback failure logs a fixed message without arguments, credentials or provider diagnostics. This extraction adds no provider, queue destination, durable personal-data store or lifecycle capability.",
   }),
   agencyProjectInventoryEntry,
+  projectDocumentsInventoryEntry,
   internalProjectsInventoryEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,

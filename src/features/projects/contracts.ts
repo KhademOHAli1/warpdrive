@@ -1,20 +1,30 @@
 import type { Result } from "@/types/result";
 
 export const projectStatuses = ["todo", "in-progress", "done"] as const;
+export const projectPriorities = ["urgent", "high", "medium", "low", "none"] as const;
 export const projectTitleMaxLength = 120;
 export const projectItemTitleMaxLength = 160;
+export const projectItemDescriptionMaxLength = 10_000;
 
 export type ProjectStatus = (typeof projectStatuses)[number];
+export type ProjectPriority = (typeof projectPriorities)[number];
 export type ProjectPerson = { id: string; name: string };
-export type ProjectSummary = { id: string; title: string; owner: ProjectPerson };
+export type ProjectSummary = { id: string; title: string; owner: ProjectPerson; createdAt: string };
 export type ProjectIndex = { projects: ProjectSummary[]; canCreate: boolean };
 export type ProjectMemberGrant = { role: "editor" | "viewer"; canAssign: boolean };
 export type ProjectMembership = ProjectMemberGrant & { person: ProjectPerson };
-export type ProjectItem = {
-  id: string;
+export type ProjectItemContent = {
   title: string;
   status: ProjectStatus;
   assigneeId: string | null;
+  priority: ProjectPriority;
+  startDate: string | null;
+  dueDate: string | null;
+  description: string;
+};
+export type ProjectItem = ProjectItemContent & {
+  id: string;
+  createdBy: string | null;
   revision: number;
 };
 
@@ -40,17 +50,13 @@ export type CreateProjectInput = { id: string; title: string };
 export type CreateProjectItemInput = {
   projectId: string;
   id: string;
-  title: string;
-  status: ProjectStatus;
-};
+} & Pick<ProjectItemContent, "title" | "status"> &
+  Partial<Omit<ProjectItemContent, "title" | "status">>;
 export type UpdateProjectItemInput = {
   projectId: string;
   itemId: string;
   revision: number;
-  title?: string;
-  status?: ProjectStatus;
-  assigneeId?: string | null;
-};
+} & Partial<ProjectItemContent>;
 export type SetProjectMemberInput = {
   projectId: string;
   userId: string;

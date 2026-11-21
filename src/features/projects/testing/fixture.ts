@@ -12,8 +12,11 @@ import type {
 import {
   createProjectInput,
   createProjectItemInput,
+  initialProjectItemContent,
+  matchesInitialProjectItemContent,
   setProjectMemberInput,
   updateProjectItemInput,
+  validProjectItemDates,
 } from "../input";
 
 export const fixtureProjectId = "cf761674-6fce-4c84-a13e-693c2dcc0325";
@@ -37,7 +40,12 @@ export function createProjectsFixture() {
     [
       fixtureProjectId,
       {
-        project: { id: fixtureProjectId, title: "Office move", owner },
+        project: {
+          id: fixtureProjectId,
+          title: "Office move",
+          owner,
+          createdAt: "2026-11-10T12:00:00.000Z",
+        },
         members: [
           { person: editor, role: "editor", canAssign: true },
           { person: viewer, role: "viewer", canAssign: false },
@@ -48,6 +56,11 @@ export function createProjectsFixture() {
             title: "Check network outlets",
             status: "todo",
             assigneeId: null,
+            priority: "none",
+            startDate: null,
+            dueDate: null,
+            description: "",
+            createdBy: null,
             revision: 0,
           },
           {
@@ -55,6 +68,11 @@ export function createProjectsFixture() {
             title: "Confirm moving date",
             status: "in-progress",
             assigneeId: editor.id,
+            priority: "medium",
+            startDate: "2026-11-10",
+            dueDate: "2026-11-30",
+            description: "Confirm when the lift and loading zone are available.",
+            createdBy: editor.id,
             revision: 0,
           },
         ],
@@ -85,38 +103,52 @@ export function createProjectsFixture() {
           ? accept(structuredClone(existing.project))
           : refuse("project_conflict");
       }
-      const project = { id, title, owner };
+      const project = { id, title, owner, createdAt: new Date().toISOString() };
       projects.set(id, { project, items: [], members: [] });
       return accept(structuredClone(project));
     },
     createItem(raw) {
       const parsed = createProjectItemInput.safeParse(raw);
       if (!parsed.success) return refuse("project_invalid");
-      const { projectId, id, title, status } = parsed.data;
+      const { projectId, id } = parsed.data;
       const project = projects.get(projectId);
       if (!project) return refuse("project_unavailable");
+      const content = initialProjectItemContent(parsed.data);
+      const { assigneeId } = content;
+      if (assigneeId !== null && !snapshot(project).assignees.some(({ id }) => id === assigneeId)) {
+        return refuse("project_invalid");
+      }
       const existing = project.items.find((item) => item.id === id);
       if (existing) {
-        return existing.title === title && existing.status === status
+        return existing.revision > 0 || matchesInitialProjectItemContent(existing, content)
           ? accept(snapshot(project))
           : refuse("project_conflict");
       }
-      project.items.push({ id, title, status, assigneeId: null, revision: 0 });
+      project.items.push({ ...content, id, createdBy: owner.id, revision: 0 });
       return accept(snapshot(project));
     },
     updateItem(raw) {
       const parsed = updateProjectItemInput.safeParse(raw);
       if (!parsed.success) return refuse("project_invalid");
-      const { projectId, itemId, revision, title, status, assigneeId } = parsed.data;
+      const { projectId, itemId, revision, ...content } = parsed.data;
+      const { assigneeId } = content;
       const project = projects.get(projectId);
       const item = project?.items.find(({ id }) => id === itemId);
       if (!project || !item) return refuse("project_unavailable");
-      if (item.revision !== revision) return refuse("project_conflict");
+      if (item.revision !== revision || revision === Number.MAX_SAFE_INTEGER)
+        return refuse("project_conflict");
+      const startDate = content.startDate === undefined ? item.startDate : content.startDate;
+      const dueDate = content.dueDate === undefined ? item.dueDate : content.dueDate;
+      if (!validProjectItemDates(startDate, dueDate)) return refuse("project_invalid");
       if (assigneeId != null && !snapshot(project).assignees.some(({ id }) => id === assigneeId)) {
         return refuse("project_invalid");
       }
-      item.title = title ?? item.title;
-      item.status = status ?? item.status;
+      item.title = content.title ?? item.title;
+      item.status = content.status ?? item.status;
+      item.priority = content.priority ?? item.priority;
+      item.description = content.description ?? item.description;
+      item.startDate = startDate;
+      item.dueDate = dueDate;
       if (assigneeId !== undefined) item.assigneeId = assigneeId;
       item.revision += 1;
       return accept(snapshot(project));

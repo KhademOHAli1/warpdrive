@@ -1,6 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
+import { applyMigrations } from "@/db/migrate";
+import {
+  freshMigrationDb,
+  installPrefix,
+  ledger,
+  migrationFolder,
+} from "@/db/migrationAdmission.test-helpers";
 import { organizations, permissionSets, sessions, users } from "@/db/schema";
 import { createNativeProjectRepository } from "@/features/agency-projects/nativeProject";
 import { listNativeProjects } from "@/features/agency-projects/nativeProjectList";
@@ -46,13 +53,12 @@ function value<T, E>(result: Result<T, E>): T {
 async function staff(
   name: string,
   fields: { isAdmin?: boolean; invitedAt?: Date; isActive?: boolean } = {},
+  h = fixture,
 ) {
   const userId = randomUUID();
   const sessionId = randomUUID();
-  await fixture.db
-    .insert(users)
-    .values({ id: userId, name, email: `${userId}@example.test`, ...fields });
-  await fixture.db.insert(sessions).values({
+  await h.db.insert(users).values({ id: userId, name, email: `${userId}@example.test`, ...fields });
+  await h.db.insert(sessions).values({
     id: sessionId,
     userId,
     tokenHash: randomUUID(),
@@ -204,9 +210,33 @@ test("enforces project-local editor, viewer and assignment grants and clears rem
   expect(await createInternalProjectItem(fixture.db, viewer, draft, signal())).toEqual(
     err("project_forbidden"),
   );
+  expect(
+    await createInternalProjectItem(
+      fixture.db,
+      editor,
+      { ...draft, assigneeId: viewer.userId },
+      signal(),
+    ),
+  ).toEqual(err("project_forbidden"));
+  expect(
+    await createInternalProjectItem(
+      fixture.db,
+      coordinator,
+      { ...draft, assigneeId: invited.userId },
+      signal(),
+    ),
+  ).toEqual(err("project_invalid"));
   const created = value(await createInternalProjectItem(fixture.db, editor, draft, signal()));
   const [item] = created.items;
   if (item === undefined) throw new TypeError("Expected a project item");
+  expect(item).toMatchObject({
+    assigneeId: null,
+    priority: "none",
+    startDate: null,
+    dueDate: null,
+    description: "",
+    createdBy: editor.userId,
+  });
   const update = { projectId, itemId: item.id, revision: item.revision };
   expect(
     await updateInternalProjectItem(fixture.db, viewer, { ...update, status: "done" }, signal()),
@@ -296,6 +326,11 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
     id: randomUUID(),
     title: "Plan acceptance",
     status: "todo",
+    priority: "high",
+    startDate: "2026-11-21",
+    dueDate: "2026-11-30",
+    description: "Confirm the scope.\nSchedule sign-off.",
+    assigneeId: owner.userId,
   } as const;
   const [firstItem, repeatedItem] = await Promise.all([
     createInternalProjectItem(fixture.db, owner, itemDraft, signal()),
@@ -306,6 +341,18 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
   expect(items).toHaveLength(1);
   const [item] = items;
   if (item === undefined) throw new TypeError("Expected a project item");
+  expect(item).toMatchObject({
+    priority: itemDraft.priority,
+    startDate: itemDraft.startDate,
+    dueDate: itemDraft.dueDate,
+    description: itemDraft.description,
+    assigneeId: itemDraft.assigneeId,
+    createdBy: owner.userId,
+    revision: 0,
+  });
+  expect(
+    await createInternalProjectItem(fixture.db, owner, { ...itemDraft, priority: "low" }, signal()),
+  ).toEqual(err("project_conflict"));
   expect(
     await updateInternalProjectItem(
       fixture.db,
@@ -317,4 +364,88 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
   expect(value(await readInternalProject(fixture.db, owner, created.id, signal())).items).toEqual(
     items,
   );
+  const update = { projectId: created.id, itemId: item.id, revision: 0 };
+  expect(
+    await updateInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...update, dueDate: "2026-11-20", description: "This must not be stored" },
+      signal(),
+    ),
+  ).toEqual(err("project_invalid"));
+  expect(value(await readInternalProject(fixture.db, owner, created.id, signal())).items).toEqual(
+    items,
+  );
+  const rescheduled = value(
+    await updateInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...update, dueDate: "2026-11-20", startDate: null, priority: "medium" },
+      signal(),
+    ),
+  );
+  expect(rescheduled.items).toMatchObject([
+    { ...item, dueDate: "2026-11-20", startDate: null, priority: "medium", revision: 1 },
+  ]);
+  expect(
+    value(await createInternalProjectItem(fixture.db, owner, itemDraft, signal())).items,
+  ).toEqual(rescheduled.items);
+});
+
+test("upgrades populated 0121 work items with stable identity and unknown authorship", async () => {
+  const h = await freshMigrationDb();
+  let target: Awaited<ReturnType<typeof migrationFolder>> | undefined;
+  try {
+    await installPrefix(h, 122);
+    target = await migrationFolder(123);
+    const owner = await staff("Legacy project owner", {}, h);
+    const projectId = randomUUID();
+    const itemId = randomUUID();
+    const createdAt = "2026-11-14T12:30:00.000Z";
+    await h.pool.query(
+      "INSERT INTO agency_project_settings(id,enabled) VALUES (true,true) ON CONFLICT(id) DO UPDATE SET enabled=true",
+    );
+    await h.pool.query(
+      "INSERT INTO agency_projects(id,kind,title,owner_user_id) VALUES($1,'internal','Legacy project',$2)",
+      [projectId, owner.userId],
+    );
+    await h.pool.query(
+      `INSERT INTO internal_project_items(id,project_id,title,status,assignee_id,revision,created_at)
+       VALUES($1,$2,'Inspect fixtures','in-progress',$3,7,$4)`,
+      [itemId, projectId, owner.userId, createdAt],
+    );
+    const priorLedger = await ledger(h);
+    expect(priorLedger).toHaveLength(122);
+    expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), target.folder)).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
+    const nextLedger = await ledger(h);
+    expect(nextLedger).toHaveLength(123);
+    expect(nextLedger.slice(0, 122)).toEqual(priorLedger);
+    expect(
+      (await h.pool.query("SELECT created_at FROM internal_project_items WHERE id=$1", [itemId]))
+        .rows,
+    ).toEqual([{ created_at: new Date(createdAt) }]);
+    expect(value(await readInternalProject(h.db, owner, projectId, signal())).items).toEqual([
+      {
+        id: itemId,
+        title: "Inspect fixtures",
+        status: "in-progress",
+        assigneeId: owner.userId,
+        priority: "none",
+        startDate: null,
+        dueDate: null,
+        description: "",
+        createdBy: null,
+        revision: 7,
+      },
+    ]);
+    expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), target.folder)).toMatchObject({
+      ok: true,
+    });
+    expect(await ledger(h)).toEqual(nextLedger);
+  } finally {
+    await Promise.all([target?.dispose(), h.close()]);
+  }
 });

@@ -17,6 +17,7 @@ import {
   listInternalProjectScope,
   lockInternalProject,
   personFields,
+  projectItemContentFields,
   projectWorkspaceSnapshot,
   withInternalProjects,
 } from "./access";
@@ -30,6 +31,11 @@ import type {
   SetProjectMemberInput,
   UpdateProjectItemInput,
 } from "./contracts";
+import {
+  initialProjectItemContent,
+  matchesInitialProjectItemContent,
+  validProjectItemDates,
+} from "./input";
 import { internalProjectItems } from "./schema";
 
 // Derive a stable UUID for an intent within its actor and record scope. The client
@@ -53,12 +59,23 @@ function intentRecordId(scope: string, actorId: string, intentId: string): strin
 export function listInternalProjects(db: Db, who: NativeSessionRef, signal: AbortSignal) {
   return withInternalProjects<ProjectIndex>(db, who, signal, async (tx, actor) => {
     const projects = await tx
-      .select({ id: agencyProjects.id, title: agencyProjects.title, owner: personFields })
+      .select({
+        id: agencyProjects.id,
+        title: agencyProjects.title,
+        owner: personFields,
+        createdAt: agencyProjects.createdAt,
+      })
       .from(agencyProjects)
       .innerJoin(users, eq(users.id, agencyProjects.ownerUserId))
       .where(listInternalProjectScope(tx, actor.id))
       .orderBy(desc(agencyProjects.createdAt), asc(agencyProjects.id));
-    return ok({ projects, canCreate: can(actor, "project.create") });
+    return ok({
+      projects: projects.map((project) => ({
+        ...project,
+        createdAt: project.createdAt.toISOString(),
+      })),
+      canCreate: can(actor, "project.create"),
+    });
   });
 }
 
@@ -91,10 +108,12 @@ export function createInternalProject(
         state: agencyProjects.state,
         revision: agencyProjects.revision,
         archivedFrom: agencyProjects.archivedFrom,
+        createdAt: agencyProjects.createdAt,
       });
+    const owner = { id: actor.id, name: actor.name };
     if (inserted === undefined) {
       const [existing] = await tx
-        .select({ title: agencyProjects.title })
+        .select({ title: agencyProjects.title, createdAt: agencyProjects.createdAt })
         .from(agencyProjects)
         .where(
           and(
@@ -104,22 +123,22 @@ export function createInternalProject(
           ),
         );
       if (existing?.title !== input.title) return err("project_conflict");
-    } else {
-      const recorded = await appendProjectHistory(
-        { db: tx, actor },
-        "create",
-        id,
-        null,
-        inserted,
-        signal,
-      );
-      if (!recorded.ok)
-        throw new AppError(
-          ERROR_IDS.DB_INVARIANT,
-          "Internal project creation did not record its history",
-        );
+      return ok({ id, title: input.title, owner, createdAt: existing.createdAt.toISOString() });
     }
-    return ok({ id, title: input.title, owner: { id: actor.id, name: actor.name } });
+    const recorded = await appendProjectHistory(
+      { db: tx, actor },
+      "create",
+      id,
+      null,
+      inserted,
+      signal,
+    );
+    if (!recorded.ok)
+      throw new AppError(
+        ERROR_IDS.DB_INVARIANT,
+        "Internal project creation did not record its history",
+      );
+    return ok({ id, title: input.title, owner, createdAt: inserted.createdAt.toISOString() });
   });
 }
 
@@ -146,33 +165,41 @@ export function createInternalProjectItem(
   input: CreateProjectItemInput,
   signal: AbortSignal,
 ) {
-  return changeWorkspace(db, who, input.projectId, "canEdit", signal, async (tx) => {
-    const id = intentRecordId(input.projectId, who.userId, input.id);
-    const [inserted] = await tx
-      .insert(internalProjectItems)
-      .values({ ...input, id })
-      .onConflictDoNothing({ target: internalProjectItems.id })
-      .returning({ id: internalProjectItems.id });
-    if (inserted === undefined) {
-      const [existing] = await tx
-        .select({
-          title: internalProjectItems.title,
-          status: internalProjectItems.status,
-          revision: internalProjectItems.revision,
-        })
-        .from(internalProjectItems)
-        .where(
-          and(eq(internalProjectItems.id, id), eq(internalProjectItems.projectId, input.projectId)),
-        );
-      if (
-        existing === undefined ||
-        (existing.revision === 0 &&
-          (existing.title !== input.title || existing.status !== input.status))
-      )
-        return err("project_conflict");
-    }
-    return ok(undefined);
-  });
+  const { projectId } = input;
+  const content = initialProjectItemContent(input);
+  const { assigneeId, startDate, dueDate } = content;
+  return changeWorkspace(
+    db,
+    who,
+    projectId,
+    assigneeId === null ? "canEdit" : "canAssign",
+    signal,
+    async (tx, access) => {
+      if (!validProjectItemDates(startDate, dueDate)) return err("project_invalid");
+      if (assigneeId !== null && !(await canAssignStaff(tx, access, assigneeId)))
+        return err("project_invalid");
+      const id = intentRecordId(projectId, who.userId, input.id);
+      const [inserted] = await tx
+        .insert(internalProjectItems)
+        .values({ ...content, id, projectId, createdBy: who.userId })
+        .onConflictDoNothing({ target: internalProjectItems.id })
+        .returning({ id: internalProjectItems.id });
+      if (inserted === undefined) {
+        const [existing] = await tx
+          .select({ ...projectItemContentFields, revision: internalProjectItems.revision })
+          .from(internalProjectItems)
+          .where(
+            and(eq(internalProjectItems.id, id), eq(internalProjectItems.projectId, projectId)),
+          );
+        if (
+          existing === undefined ||
+          (existing.revision === 0 && !matchesInitialProjectItemContent(existing, content))
+        )
+          return err("project_conflict");
+      }
+      return ok(undefined);
+    },
+  );
 }
 
 async function canAssignStaff(db: Db, access: InternalProjectAccess, userId: string) {
@@ -191,7 +218,8 @@ export function updateInternalProjectItem(
   input: UpdateProjectItemInput,
   signal: AbortSignal,
 ) {
-  const { projectId, itemId, revision, title, status, assigneeId } = input;
+  const { projectId, itemId, revision, ...content } = input;
+  const { assigneeId, startDate, dueDate } = content;
   return changeWorkspace(
     db,
     who,
@@ -204,17 +232,37 @@ export function updateInternalProjectItem(
         eq(internalProjectItems.id, itemId),
       );
       const [item] = await tx
-        .select({ revision: internalProjectItems.revision })
+        .select({
+          revision: internalProjectItems.revision,
+          startDate: internalProjectItems.startDate,
+          dueDate: internalProjectItems.dueDate,
+        })
         .from(internalProjectItems)
         .where(target);
       if (item === undefined) return err("project_unavailable");
       if (item.revision !== revision || revision === Number.MAX_SAFE_INTEGER)
         return err("project_conflict");
+      if (
+        !validProjectItemDates(
+          startDate === undefined ? item.startDate : startDate,
+          dueDate === undefined ? item.dueDate : dueDate,
+        )
+      )
+        return err("project_invalid");
       if (assigneeId != null && !(await canAssignStaff(tx, access, assigneeId)))
         return err("project_invalid");
       const [updated] = await tx
         .update(internalProjectItems)
-        .set({ title, status, assigneeId, revision: revision + 1 })
+        .set({
+          title: content.title,
+          status: content.status,
+          assigneeId,
+          priority: content.priority,
+          startDate,
+          dueDate,
+          description: content.description,
+          revision: revision + 1,
+        })
         .where(and(target, eq(internalProjectItems.revision, revision)))
         .returning({ id: internalProjectItems.id });
       return updated === undefined ? err("project_conflict") : ok(undefined);
