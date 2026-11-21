@@ -394,9 +394,14 @@ class PublicationAPI(GateAPI):
             return {"object": {"type": "commit", "sha": REVISION}}
         if path.endswith("/releases/latest"):
             return dict(self.release, id=self.latest_id)
+        if path.endswith("/releases") and method == "POST":
+            self.release.update(payload)
+            self.releases.append(self.release)
+            return self.release
         if path.endswith("/releases/9"):
-            if payload:
-                self.release.update(payload)
+            if method == "PATCH":
+                # GitHub detaches the draft when a release update omits its tag.
+                self.release.update({"tag_name": "untagged-fixture", **payload})
             return self.release
         return super().request(path, method, payload)
 
@@ -448,6 +453,37 @@ class PublicationTests(unittest.TestCase):
         api.latest_id = 10
         with self.assertRaisesRegex(GateError, "latest stable"):
             record_publication(api, publication_evidence(), 9)
+
+    def test_updating_an_existing_draft_preserves_the_tag(self):
+        api = PublicationAPI()
+        self.assertEqual(self.publish(api, mode="draft"), api.release["html_url"])
+        self.assertTrue(api.release["draft"])
+        self.assertEqual(api.release["tag_name"], "v1.7.2")
+        self.assertEqual([(path, method) for path, method, _ in api.writes],
+                         [(f"repos/{REPO}/releases/9", "PATCH")])
+
+    def test_publishing_a_new_draft_preserves_the_tag(self):
+        api = PublicationAPI()
+        api.releases.clear()
+        self.assertEqual(self.publish(api), api.release["html_url"])
+        self.assertFalse(api.release["draft"])
+        self.assertEqual(api.release["tag_name"], "v1.7.2")
+        self.assertEqual([(path, method) for path, method, _ in api.writes],
+                         [(f"repos/{REPO}/releases", "POST"), (f"repos/{REPO}/releases/9", "PATCH")])
+
+    def test_publish_holds_if_readback_loses_the_draft_tag(self):
+        class DetachedReadbackAPI(PublicationAPI):
+            def request(self, path, method="GET", payload=None):
+                response = super().request(path, method, payload)
+                if path.endswith("/releases/9") and method == "GET":
+                    return dict(response, tag_name="untagged-fixture")
+                return response
+
+        api = DetachedReadbackAPI()
+        with self.assertRaisesRegex(GateError, "expected stable draft and tag"):
+            self.publish(api)
+        self.assertTrue(api.release["draft"])
+        self.assertEqual(len(api.writes), 1)
 
     def test_notes_and_checksum_assets_preserve_source_only_boundaries(self):
         evidence = publication_evidence()
