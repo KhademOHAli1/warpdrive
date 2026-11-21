@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightLeft, Plus, RefreshCw } from "lucide-react";
+import { ArrowRightLeft, Merge, Plus, RefreshCw, Split } from "lucide-react";
 import { type MouseEvent, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +9,7 @@ import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import type { WarehouseResult, WarehouseWorkspace } from "../../contracts";
+import type { WarehousePosition, WarehouseResult, WarehouseWorkspace } from "../../contracts";
 import { receivableLocations } from "../../ui/warehouseDisplay";
 import { warehouseMessages } from "../../ui/warehouseMessages";
 import type { WarehouseOperationsError, WarehouseOperationsIntent } from "../contracts";
@@ -21,26 +21,27 @@ import {
   StockCorrectionDialog,
   TransferProgressDialog,
 } from "./OperationsDialogs";
-import type { OperationsTab } from "./OperationsFilters";
 import { HistoryView, TransfersView } from "./OperationsViews";
 import { operationsMessages } from "./operationsMessages";
+import { StockStructurePositionDialog, StockStructureRecoveryDialog } from "./StructureDialogs";
+import { StockStructureView } from "./StructureView";
+import { mergeSources, splitLimit } from "./structureDisplay";
 
-const sections = ["history", "transfers", "corrections"] as const;
+const sections = ["history", "transfers", "corrections", "structure"] as const;
 
 function OperationEditor({
   editor,
   workspace,
   dialog,
   managed,
+  positions,
 }: {
   editor: OperationsEditor;
   workspace: WarehouseWorkspace;
   dialog: OperationsDialogProps;
   managed: ReturnType<typeof receivableLocations>;
+  positions: WarehousePosition[];
 }) {
-  const positions = workspace.positions.filter((row) =>
-    managed.some(({ id }) => id === row.locationId),
-  );
   switch (editor.type) {
     case "createTransfer":
       return <NewTransferDialog {...dialog} workspace={workspace} locations={managed} />;
@@ -59,6 +60,27 @@ function OperationEditor({
     case "receiveTransfer":
     case "cancelTransfer":
       return <TransferProgressDialog {...dialog} mode={editor.type} transfer={editor.transfer} />;
+    case "splitStock":
+    case "mergeStock":
+    case "installComponent":
+      return (
+        <StockStructurePositionDialog
+          {...dialog}
+          editor={editor}
+          workspace={workspace}
+          positions={positions}
+        />
+      );
+    case "removeComponent":
+    case "disassembleStock":
+      return (
+        <StockStructureRecoveryDialog
+          {...dialog}
+          editor={editor}
+          workspace={workspace}
+          locations={managed}
+        />
+      );
   }
 }
 
@@ -71,7 +93,7 @@ export function WarehouseOperationsLive({
 }) {
   const locale = useLocale();
   const t = operationsMessages[locale];
-  const [tab, setTab] = useState<OperationsTab>("history");
+  const [tab, setTab] = useState<(typeof sections)[number]>("history");
   const [editor, setEditor] = useState<OperationsEditor | null>(null);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -87,8 +109,9 @@ export function WarehouseOperationsLive({
   );
   const workspace = !stock.isError && stock.data.ok ? stock.data.value : null;
   const managed = workspace === null ? [] : receivableLocations(workspace);
+  const managedIds = new Set(managed.map(({ id }) => id));
   const positions =
-    workspace?.positions.filter((row) => managed.some(({ id }) => id === row.locationId)) ?? [];
+    workspace?.positions.filter(({ locationId }) => managedIds.has(locationId)) ?? [];
   const canTransfer = managed.length > 1 && positions.some((row) => row.onHand > row.reserved);
   const canCorrect = positions.length > 0;
 
@@ -97,6 +120,7 @@ export function WarehouseOperationsLive({
       utils.inventory.warehouse.workspace.invalidate({ showEmpty: true }),
       utils.inventory.warehouse.history.invalidate(),
       utils.inventory.warehouse.transfers.invalidate(),
+      utils.inventory.warehouse.installations.invalidate(),
     ]);
   }
 
@@ -192,6 +216,32 @@ export function WarehouseOperationsLive({
                 {t.correctStock}
               </Button>
             )}
+            {tab === "structure" && (
+              <>
+                {positions.some((position) => splitLimit(position) > 0) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={(event) => open(event, { type: "splitStock" })}
+                  >
+                    <Split aria-hidden="true" />
+                    {t.splitStock}
+                  </Button>
+                )}
+                {mergeSources(positions).length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={(event) => open(event, { type: "mergeStock" })}
+                  >
+                    <Merge aria-hidden="true" />
+                    {t.mergeStock}
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         }
       />
@@ -232,6 +282,14 @@ export function WarehouseOperationsLive({
             <TabsContent value="corrections">
               <HistoryView workspace={workspace} open={open} busy={busy} corrections />
             </TabsContent>
+            <TabsContent value="structure">
+              <StockStructureView
+                workspace={workspace}
+                managedPositions={positions}
+                open={open}
+                busy={busy}
+              />
+            </TabsContent>
           </Tabs>
           {editor !== null && (
             <OperationEditor
@@ -239,6 +297,7 @@ export function WarehouseOperationsLive({
               workspace={workspace}
               dialog={dialog}
               managed={managed}
+              positions={positions}
             />
           )}
         </>

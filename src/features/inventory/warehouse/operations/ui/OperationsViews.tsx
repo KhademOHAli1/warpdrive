@@ -293,6 +293,8 @@ function HistoryReferences({
     { value: movement.orderId, label: t.orderReference },
     { value: movement.incomingId, label: t.incoming },
     { value: movement.reversesEventId, label: t.reversedMovement },
+    { value: movement.structureOperationId, label: t.structureReference },
+    { value: movement.sourcePositionId, label: t.positionReference },
   ];
   return (
     <ul className="space-y-0.5 text-xs text-muted-foreground">

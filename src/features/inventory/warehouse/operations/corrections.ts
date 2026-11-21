@@ -1,10 +1,11 @@
-import { and, eq, gt, lt, ne, or } from "drizzle-orm";
+import { and, eq, gt, isNull, lt, ne, or } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { lockInventoryStock, postInventoryMovement } from "../../stock";
 import { inventoryStockEvents, inventoryStockPositions } from "../schema";
 import type { WarehouseOperationsCommand } from "./contracts";
 import {
   inventoryStockEventDetails,
+  inventoryStockInstallations,
   inventoryStockTransferLines,
   inventoryStockTransfers,
 } from "./schema";
@@ -23,6 +24,47 @@ import {
 
 type Correction = Extract<WarehouseOperationsCommand, { type: "correctStock" }>;
 type Reversal = Extract<WarehouseOperationsCommand, { type: "reverseCorrection" }>;
+
+async function guardAssemblyCount(tx: Db, position: Position, quantity: number) {
+  if (quantity > position.onHand) {
+    const [installed] = await tx
+      .select({ id: inventoryStockInstallations.id })
+      .from(inventoryStockInstallations)
+      .where(
+        and(
+          eq(inventoryStockInstallations.componentPositionId, position.id),
+          isNull(inventoryStockInstallations.removedEventId),
+        ),
+      )
+      .limit(1);
+    if (installed !== undefined) failOperations("conflict");
+    const [retired] = await tx
+      .select({ id: inventoryStockEvents.id })
+      .from(inventoryStockEvents)
+      .where(
+        and(
+          eq(inventoryStockEvents.positionId, position.id),
+          eq(inventoryStockEvents.kind, "stock-disassemble"),
+          lt(inventoryStockEvents.onHandDelta, 0),
+        ),
+      )
+      .limit(1);
+    if (retired !== undefined) failOperations("conflict");
+  }
+  if (quantity === 0 && position.onHand > 0) {
+    const [populated] = await tx
+      .select({ id: inventoryStockInstallations.id })
+      .from(inventoryStockInstallations)
+      .where(
+        and(
+          eq(inventoryStockInstallations.assemblyPositionId, position.id),
+          isNull(inventoryStockInstallations.removedEventId),
+        ),
+      )
+      .limit(1);
+    if (populated !== undefined) failOperations("conflict");
+  }
+}
 
 async function validateCount(tx: Db, position: Position, quantity: number, trackable: boolean) {
   if (quantity < position.reserved) failOperations("insufficientStock");
@@ -47,6 +89,7 @@ async function validateCount(tx: Db, position: Position, quantity: number, track
     )
     .limit(1);
   if (active !== undefined) failOperations("conflict");
+  await guardAssemblyCount(tx, position, quantity);
 }
 
 async function postCorrection(

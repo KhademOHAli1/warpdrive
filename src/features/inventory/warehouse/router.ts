@@ -1,10 +1,20 @@
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { warehouseQuery } from "./contracts";
-import { warehouseMovementHistoryQuery, warehouseTransfersQuery } from "./operations/readContracts";
+import { readWarehouseInstallations } from "./operations/installationsRead";
+import {
+  warehouseInstallationsQuery,
+  warehouseMovementHistoryQuery,
+  warehouseTransfersQuery,
+} from "./operations/readContracts";
 import { readWarehouseMovementHistory, readWarehouseTransfers } from "./operations/reads";
 import { readWarehouseWorkspace } from "./service";
 
 export const inventoryWarehouseRouter = router({
+  installations: protectedProcedure
+    .input(warehouseInstallationsQuery)
+    .query(({ ctx, input }) =>
+      readWarehouseInstallations(ctx.db, ctx.session, input, AbortSignal.timeout(15_000)),
+    ),
   history: protectedProcedure
     .input(warehouseMovementHistoryQuery)
     .query(({ ctx, input }) =>

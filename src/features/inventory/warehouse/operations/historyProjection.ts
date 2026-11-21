@@ -8,6 +8,7 @@ import type { WarehouseAccess } from "../access";
 import {
   inventoryStockEventDetails,
   inventoryStockEvents,
+  inventoryStockInstallations,
   inventoryStockLocationPolicies,
   inventoryStockPositions,
   inventoryStockTransferLines,
@@ -21,6 +22,22 @@ import {
   readableSite,
   readableTransfer,
 } from "./readSql";
+
+const isStructuralEvent = sql`event.kind IN (
+  'stock-split', 'stock-merge', 'component-install', 'component-remove', 'stock-disassemble'
+)`;
+
+function visibleStructureReference(access: WarehouseAccess) {
+  if (access.isAdmin) return sql`TRUE`;
+  return sql`NOT EXISTS (
+    SELECT 1 FROM ${inventoryStockEvents} AS peer
+    INNER JOIN ${inventoryStockEventDetails} AS peer_details ON peer_details.event_id = peer.id
+    LEFT JOIN ${inventoryPartProfiles} AS peer_profile ON peer_profile.item_id = peer.item_id
+    WHERE peer.actor_id = event.actor_id AND peer.request_id = event.request_id
+      AND (peer_profile.visibility = 'admin' OR peer_details.site_id IS NULL
+        OR NOT ${readableSite(access, sql`peer_details.site_id`)})
+  )`;
+}
 
 function visibleTransferReference(access: WarehouseAccess) {
   return sql`details.transfer_id IS NULL OR (
@@ -41,6 +58,10 @@ function reversibleCorrection(access: WarehouseAccess) {
     AND (stock_position.serial IS NOT NULL OR NOT coalesce((profile.flags->>'trackable')::boolean, FALSE)
       OR details.previous_on_hand <= stock_position.on_hand)
     AND (stock_position.serial IS NULL OR details.previous_on_hand <= 1)
+    AND (details.previous_on_hand <> 0 OR NOT EXISTS (
+      SELECT 1 FROM ${inventoryStockInstallations} AS installation
+      WHERE installation.assembly_position_id = stock_position.id AND installation.removed_event_id IS NULL
+    ))
     AND NOT EXISTS (
       SELECT 1 FROM ${inventoryStockEventDetails} AS reversal
       WHERE reversal.reverses_event_id = event.id
@@ -63,6 +84,7 @@ function reversibleCorrection(access: WarehouseAccess) {
 
 function eventRows(access: WarehouseAccess): SQL {
   const canSeeReference = visibleTransferReference(access);
+  const canSeeStructure = visibleStructureReference(access);
   return sql`
     SELECT
       event.id, 'event'::text AS source, event.kind, event.created_at,
@@ -73,11 +95,16 @@ function eventRows(access: WarehouseAccess): SQL {
       event.reserved_delta, event.incoming_delta,
       CASE WHEN event.kind IN ('reconcile', 'state') THEN nullif(event.on_hand_delta, 0) END AS affected_quantity,
       event.previous_state, event.state, details.previous_on_hand,
-      CASE WHEN (${canSeeReference}) THEN details.reason END AS reason,
+      CASE WHEN (${canSeeReference}) AND (NOT (${isStructuralEvent}) OR (${canSeeStructure}))
+        THEN details.reason END AS reason,
       CASE WHEN ${access.isAdmin} THEN event.order_id END AS order_id,
       event.incoming_id,
       CASE WHEN (${canSeeReference}) THEN details.transfer_id END AS transfer_id,
       CASE WHEN (${canSeeReference}) THEN details.transfer_line_id END AS transfer_line_id,
+      CASE WHEN (${isStructuralEvent}) AND (${canSeeStructure}) THEN event.request_id END AS structure_operation_id,
+      CASE WHEN event.kind IN ('stock-split', 'stock-merge', 'component-remove')
+        AND (${canSeeStructure}) AND ${readableSite(access, sql`origin_position.site_id`)}
+        THEN event.source_position_id END AS source_position_id,
       details.reverses_event_id,
       ${reversibleCorrection(access)} AS can_reverse
     FROM ${inventoryStockEvents} AS event
@@ -86,6 +113,7 @@ function eventRows(access: WarehouseAccess): SQL {
     LEFT JOIN ${inventoryPartProfiles} AS profile ON profile.item_id = item.id
     LEFT JOIN ${inventoryPartFamilies} AS family ON family.id = profile.family_id
     LEFT JOIN ${inventoryStockPositions} AS stock_position ON stock_position.id = event.position_id
+    LEFT JOIN ${inventoryStockPositions} AS origin_position ON origin_position.id = event.source_position_id
     LEFT JOIN ${directorySites} AS site ON site.id = details.site_id
     LEFT JOIN ${directoryLocations} AS location ON location.id = details.location_id
     LEFT JOIN ${inventoryStockLocationPolicies} AS location_policy
@@ -113,7 +141,8 @@ function unlocatedRows(): SQL {
       NULL::text AS state,
       NULL::int AS previous_on_hand, NULL::text AS reason,
       movement.order_id, NULL::uuid AS incoming_id, NULL::uuid AS transfer_id,
-      NULL::uuid AS transfer_line_id, NULL::uuid AS reverses_event_id, FALSE AS can_reverse
+      NULL::uuid AS transfer_line_id, NULL::uuid AS structure_operation_id,
+      NULL::uuid AS source_position_id, NULL::uuid AS reverses_event_id, FALSE AS can_reverse
     FROM ${inventoryMovements} AS movement
     INNER JOIN ${inventoryItems} AS item ON item.id = movement.item_id
     LEFT JOIN ${inventoryPartProfiles} AS profile ON profile.item_id = item.id
@@ -162,7 +191,8 @@ function historyFilters({
     conditions.push(
       containsText(
         sql`concat_ws(' ', code, name, revision, lot, serial,
-      site_name, location_name, actor_name, reason, transfer_id::text, order_id::text)`,
+      site_name, location_name, actor_name, reason, transfer_id::text, order_id::text,
+      structure_operation_id::text, position_id::text, source_position_id::text)`,
         term,
       ),
     );
@@ -191,7 +221,8 @@ export async function projectMovementHistory(
       affected_quantity AS "affectedQuantity",
       previous_state AS "previousState", state, previous_on_hand AS "previousOnHand", reason,
       order_id AS "orderId", incoming_id AS "incomingId", transfer_id AS "transferId",
-      transfer_line_id AS "transferLineId", reverses_event_id AS "reversesEventId",
+      transfer_line_id AS "transferLineId", structure_operation_id AS "structureOperationId",
+      source_position_id AS "sourcePositionId", reverses_event_id AS "reversesEventId",
       can_reverse AS "canReverse"
     FROM history
     WHERE ${historyFilters(query)}

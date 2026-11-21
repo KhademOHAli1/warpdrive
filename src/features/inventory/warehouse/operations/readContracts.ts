@@ -39,8 +39,11 @@ export const warehouseTransfersQuery = z.strictObject({
   cursor: cursor.optional(),
 });
 
+export const warehouseInstallationsQuery = z.strictObject({ assemblyPositionId: id });
+
 export type WarehouseMovementHistoryQuery = z.infer<typeof warehouseMovementHistoryQuery>;
 export type WarehouseTransfersQuery = z.infer<typeof warehouseTransfersQuery>;
+export type WarehouseInstallationsQuery = z.infer<typeof warehouseInstallationsQuery>;
 export type WarehouseMovementCursor = z.infer<typeof movementCursor>;
 export type WarehouseTransferCursor = z.infer<typeof cursor>;
 export type WarehouseTransferStatus = z.infer<typeof status>;
@@ -74,6 +77,8 @@ export type WarehouseMovementRow = {
   incomingId: string | null;
   transferId: string | null;
   transferLineId: string | null;
+  structureOperationId: string | null;
+  sourcePositionId: string | null;
   reversesEventId: string | null;
   canReverse: boolean;
 };
@@ -123,4 +128,23 @@ export type WarehouseMovementHistoryResult = WarehouseOperationsResult<{
 export type WarehouseTransfersResult = WarehouseOperationsResult<{
   rows: WarehouseTransferRow[];
   nextCursor: WarehouseTransferCursor | null;
+}>;
+
+export type WarehouseInstallationRow = {
+  id: string;
+  componentItemId: string;
+  componentCode: string;
+  componentName: string;
+  componentRevision: string;
+  lot: string | null;
+  serial: string | null;
+  expiryDate: string | null;
+  quantity: number;
+  installedAt: string;
+};
+
+export type WarehouseInstallationsResult = WarehouseOperationsResult<{
+  rows: WarehouseInstallationRow[];
+  canManage: boolean;
+  canDisassemble: boolean;
 }>;

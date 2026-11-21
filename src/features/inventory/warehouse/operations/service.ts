@@ -24,6 +24,13 @@ import {
   visiblePartPolicy,
   WarehouseOperationsFailure,
 } from "./shared";
+import {
+  disassembleStock,
+  installComponent,
+  removeComponent,
+  repartitionStock,
+  replayStructureCommand,
+} from "./structures";
 import { changeTransfer, createTransfer, requireTransferReplay } from "./transfers";
 
 async function claimOperationsReceipt(
@@ -51,7 +58,27 @@ async function claimOperationsReceipt(
   return false;
 }
 
-async function replayOperations(tx: Db, actor: OperationsActor, requestId: string) {
+async function replayOperations(
+  tx: Db,
+  actor: OperationsActor,
+  command: WarehouseOperationsCommand,
+) {
+  const { requestId } = command;
+  switch (command.type) {
+    case "splitStock":
+    case "mergeStock":
+    case "installComponent":
+    case "removeComponent":
+    case "disassembleStock":
+      return replayStructureCommand(tx, actor, requestId);
+    case "createTransfer":
+    case "dispatchTransfer":
+    case "receiveTransfer":
+    case "cancelTransfer":
+    case "correctStock":
+    case "reverseCorrection":
+      break;
+  }
   const [recorded] = await tx
     .select({
       id: inventoryStockEvents.id,
@@ -93,6 +120,15 @@ function applyOperations(tx: Db, actor: OperationsActor, command: WarehouseOpera
       return correctStock(tx, actor, command);
     case "reverseCorrection":
       return reverseCorrection(tx, actor, command);
+    case "splitStock":
+    case "mergeStock":
+      return repartitionStock(tx, actor, command);
+    case "installComponent":
+      return installComponent(tx, actor, command);
+    case "removeComponent":
+      return removeComponent(tx, actor, command);
+    case "disassembleStock":
+      return disassembleStock(tx, actor, command);
   }
 }
 
@@ -115,7 +151,7 @@ export async function runWarehouseOperationsCommand(
       const claimed = await claimOperationsReceipt(tx, actor.id, command);
       const result = claimed
         ? await applyOperations(tx, actor, command)
-        : await replayOperations(tx, actor, command.requestId);
+        : await replayOperations(tx, actor, command);
       if ((await currentInventoryActor(tx, who, signal)) === null) failOperations("unavailable");
       return result;
     });

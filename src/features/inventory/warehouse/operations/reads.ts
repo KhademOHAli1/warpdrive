@@ -15,7 +15,7 @@ import type {
 } from "./readContracts";
 import { projectTransfers } from "./transferProjection";
 
-function readWithWarehouseScope<T>(
+export function readWithWarehouseScope<T>(
   db: Db,
   who: NativeSessionRef,
   signal: AbortSignal,

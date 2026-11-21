@@ -43,7 +43,12 @@ export type WarehouseStockEventKind =
   | "transfer-receive"
   | "transfer-cancel"
   | "correction"
-  | "correction-reversal";
+  | "correction-reversal"
+  | "stock-split"
+  | "stock-merge"
+  | "component-install"
+  | "component-remove"
+  | "stock-disassemble";
 
 export type WarehouseTransferStatus = "draft" | "in_transit" | "received" | "cancelled";
 
@@ -256,7 +261,8 @@ export const inventoryStockEvents = pgTable(
       "inventory_stock_event_kind_check",
       sql`${table.kind} IN ('receipt', 'reconcile', 'state', 'incoming-create', 'incoming-cancel',
         'order-reserve', 'materials-reserve', 'build-consume', 'shipment', 'cancel-release',
-        'transfer-draft', 'transfer-dispatch', 'transfer-receive', 'transfer-cancel', 'correction', 'correction-reversal')`,
+        'transfer-draft', 'transfer-dispatch', 'transfer-receive', 'transfer-cancel', 'correction', 'correction-reversal',
+        'stock-split', 'stock-merge', 'component-install', 'component-remove', 'stock-disassemble')`,
     ),
     check(
       "inventory_stock_event_previous_state_check",
@@ -418,6 +424,48 @@ export const inventoryStockEventDetails = pgTable(
     check(
       "inventory_stock_event_detail_count_check",
       sql`${table.previousOnHand} BETWEEN 0 AND ${sql.raw(String(inventoryStockLimit))}`,
+    ),
+  ],
+);
+
+export const inventoryStockInstallations = pgTable(
+  "inventory_stock_installations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    assemblyPositionId: uuid("assembly_position_id")
+      .notNull()
+      .references(() => inventoryStockPositions.id),
+    componentPositionId: uuid("component_position_id")
+      .notNull()
+      .references(() => inventoryStockPositions.id),
+    quantity: integer("quantity").notNull(),
+    installedEventId: uuid("installed_event_id")
+      .notNull()
+      .references(() => inventoryStockEvents.id),
+    removedEventId: uuid("removed_event_id").references(() => inventoryStockEvents.id),
+    recoveredPositionId: uuid("recovered_position_id").references(() => inventoryStockPositions.id),
+  },
+  (table) => [
+    unique("inventory_stock_installation_installed_event_key").on(table.installedEventId),
+    unique("inventory_stock_installation_removed_event_key").on(table.removedEventId),
+    index("inventory_stock_installation_assembly_idx")
+      .on(table.assemblyPositionId)
+      .where(sql`${table.removedEventId} IS NULL`),
+    index("inventory_stock_installation_component_idx")
+      .on(table.componentPositionId)
+      .where(sql`${table.removedEventId} IS NULL`),
+    check(
+      "inventory_stock_installation_positions_check",
+      sql`${table.assemblyPositionId} <> ${table.componentPositionId}`,
+    ),
+    check(
+      "inventory_stock_installation_quantity_check",
+      sql`${table.quantity} BETWEEN 1 AND 1000000`,
+    ),
+    check(
+      "inventory_stock_installation_recovery_check",
+      sql`(${table.removedEventId} IS NULL) = (${table.recoveredPositionId} IS NULL)
+        AND ${table.installedEventId} <> ${table.removedEventId}`,
     ),
   ],
 );

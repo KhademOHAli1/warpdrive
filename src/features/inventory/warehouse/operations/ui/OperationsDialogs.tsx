@@ -18,6 +18,7 @@ import type { WarehouseOperationsIntent } from "../contracts";
 import type { WarehouseMovementRow, WarehouseTransferRow } from "../readContracts";
 import { displayStockPosition } from "./display";
 import { operationsMessages } from "./operationsMessages";
+import type { StockStructureEditor } from "./structureDisplay";
 
 export type OperationsEditor =
   | { type: "createTransfer" }
@@ -26,7 +27,8 @@ export type OperationsEditor =
   | {
       type: "dispatchTransfer" | "receiveTransfer" | "cancelTransfer";
       transfer: WarehouseTransferRow;
-    };
+    }
+  | StockStructureEditor;
 
 export type OperationsDialogProps = {
   pending: boolean;
@@ -40,7 +42,7 @@ const maxMovementQuantity = 1_000_000;
 const maxReasonLength = 500;
 const maxTransferLines = 20;
 
-function useDialogWords() {
+export function useDialogWords() {
   const preferences = useLocalePreferences();
   return {
     t: operationsMessages[preferences.locale],
@@ -48,7 +50,7 @@ function useDialogWords() {
   };
 }
 
-function ReasonField({
+export function ReasonField({
   value,
   change,
   pending,

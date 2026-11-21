@@ -1,5 +1,6 @@
 export {
   inventoryStockEventDetails,
+  inventoryStockInstallations,
   inventoryStockTransferLines,
   inventoryStockTransfers,
   type WarehouseTransferStatus,

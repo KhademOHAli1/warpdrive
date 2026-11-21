@@ -8,6 +8,7 @@ import {
   installPrefix,
   ledger,
 } from "@/db/migrationAdmission.test-helpers";
+import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
 import { sessions, users } from "@/db/schema";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import {
@@ -199,8 +200,14 @@ it("upgrades populated 0131 lots, serials and order allocations and keeps an exa
     const migrated = await applyMigrations(h.db, signal(), canonicalFolder);
     expect(migrated.ok).toBe(true);
     expect(await originalRows(h)).toEqual(before);
+    const canonical = await readCanonicalMigrations(canonicalFolder, signal());
+    if (!canonical.ok) throw new Error(canonical.error);
     const after = await ledger(h);
-    expect(after).toHaveLength(133);
+    expect(after).toHaveLength(canonical.value.length);
+    expect(after[132]?.hash).toBe(
+      canonical.value.find((migration) => migration.tag === "0132_inventory_warehouse_operations")
+        ?.hash,
+    );
     expect(after.slice(0, 132)).toEqual(receipts);
     expect(
       await h.db

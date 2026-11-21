@@ -4,6 +4,29 @@ const en = {
   history: "Movement history",
   transfers: "Transfer orders",
   corrections: "Stock corrections",
+  structure: "Stock structure",
+  splitStock: "Split stock",
+  splitDescription: "Move free units into a new position in the same bin.",
+  mergeStock: "Merge stock",
+  mergeDescription: "Move free units into a matching position in the same bin.",
+  installComponent: "Install component",
+  installDescription: "Take free units from this bin and install them in the selected assembly.",
+  removeComponent: "Remove component",
+  removeDescription: "Return this installed component to stock at the recovery location.",
+  disassembleStock: "Disassemble stock",
+  disassembleDescription:
+    "Consume the assembly and return all its components to stock at the recovery location.",
+  destinationPosition: "Destination position",
+  assemblyPosition: "Assembly position",
+  componentPosition: "Component position",
+  installedComponent: "Installed component",
+  installedComponents: "Installed components",
+  installedAt: "Installed",
+  recoveryLocation: "Recovery location",
+  pickAssembly: "Select a serialized stock position to view its installed components.",
+  noAssemblies: "No serialized stock positions are available to view.",
+  noInstallations: "No visible installed components.",
+  noInstallableComponents: "There is no free component stock in this bin.",
   newTransfer: "New transfer",
   transferDescription:
     "Plan stock to move between two locations. Dispatch the order when the stock leaves the source.",
@@ -72,6 +95,8 @@ const en = {
   invalid: "Check the quantities and required fields.",
   conflict: "This request conflicts with another recorded change.",
   insufficientStock: "The change would exceed the free stock or affect reserved units.",
+  incompatibleStock: "Choose stock that meets the requirements for this change.",
+  assemblyLimit: "This assembly has reached its component limit.",
   incompatibleLocation: "The stock cannot move to the selected location.",
   stale: "The stock or transfer changed. Refresh and reopen this action.",
   alreadyReversed: "This correction has already been reversed.",
@@ -79,6 +104,8 @@ const en = {
   unlocated: "Unlocated",
   reversedMovement: "Original movement",
   transferReference: "Transfer",
+  structureReference: "Stock operation",
+  positionReference: "Source position",
 };
 
 type Words = { [Key in keyof typeof en]: string };
@@ -89,6 +116,32 @@ const de = {
   history: "Bewegungsverlauf",
   transfers: "Umlagerungsaufträge",
   corrections: "Bestandskorrekturen",
+  structure: "Bestandsstruktur",
+  splitStock: "Bestand teilen",
+  splitDescription: "Buchen Sie freie Einheiten auf eine neue Position am selben Lagerplatz.",
+  mergeStock: "Bestand zusammenführen",
+  mergeDescription: "Buchen Sie freie Einheiten auf eine passende Position am selben Lagerplatz.",
+  installComponent: "Komponente einbauen",
+  installDescription:
+    "Entnehmen Sie freie Einheiten an diesem Lagerplatz und bauen Sie sie in die gewählte Baugruppe ein.",
+  removeComponent: "Komponente ausbauen",
+  removeDescription:
+    "Buchen Sie die ausgebaute Komponente am Rückführungsplatz wieder in den Bestand.",
+  disassembleStock: "Baugruppe demontieren",
+  disassembleDescription:
+    "Buchen Sie die Baugruppe aus und führen Sie alle Komponenten am Rückführungsplatz dem Bestand zu.",
+  destinationPosition: "Zielposition",
+  assemblyPosition: "Baugruppenposition",
+  componentPosition: "Komponentenposition",
+  installedComponent: "Eingebaute Komponente",
+  installedComponents: "Eingebaute Komponenten",
+  installedAt: "Einbaudatum",
+  recoveryLocation: "Rückführungsplatz",
+  pickAssembly:
+    "Wählen Sie eine Position mit Seriennummer, um ihre eingebauten Komponenten anzuzeigen.",
+  noAssemblies: "Keine Bestandspositionen mit Seriennummer verfügbar.",
+  noInstallations: "Keine eingebauten Komponenten sichtbar.",
+  noInstallableComponents: "An diesem Lagerplatz sind keine freien Komponenten verfügbar.",
   newTransfer: "Neue Umlagerung",
   transferDescription:
     "Planen Sie eine Umlagerung zwischen zwei Lagerplätzen. Versenden Sie den Auftrag, sobald der Bestand den Quelllagerplatz verlässt.",
@@ -158,6 +211,9 @@ const de = {
   conflict: "Diese Anfrage steht im Konflikt mit einer bereits erfassten Änderung.",
   insufficientStock:
     "Die Änderung würde den freien Bestand überschreiten oder reservierte Einheiten betreffen.",
+  incompatibleStock:
+    "Wählen Sie einen Bestand, der die Voraussetzungen für diese Änderung erfüllt.",
+  assemblyLimit: "Diese Baugruppe hat die Höchstzahl an Komponenten erreicht.",
   incompatibleLocation: "Der Bestand kann nicht an den gewählten Lagerplatz umgelagert werden.",
   stale:
     "Bestand oder Umlagerung haben sich geändert. Aktualisieren und öffnen Sie den Vorgang erneut.",
@@ -167,6 +223,8 @@ const de = {
   unlocated: "Ohne Lagerplatz",
   reversedMovement: "Ursprüngliche Bewegung",
   transferReference: "Umlagerung",
+  structureReference: "Bestandsvorgang",
+  positionReference: "Quellposition",
 } satisfies Words;
 
 const fa = {
@@ -175,6 +233,29 @@ const fa = {
   history: "تاریخچه جابه‌جایی",
   transfers: "سفارش‌های انتقال",
   corrections: "اصلاحات موجودی",
+  structure: "ساختار موجودی",
+  splitStock: "تقسیم موجودی",
+  splitDescription: "واحدهای آزاد را به ردیفی جدید در همان مکان منتقل کنید.",
+  mergeStock: "ادغام موجودی",
+  mergeDescription: "واحدهای آزاد را به ردیفی با مشخصات یکسان در همان مکان منتقل کنید.",
+  installComponent: "نصب قطعه",
+  installDescription: "واحدهای آزاد را از این مکان بردارید و در مجموعه انتخاب‌شده نصب کنید.",
+  removeComponent: "جداسازی قطعه",
+  removeDescription: "قطعه نصب‌شده را در مکان بازگشت به موجودی برگردانید.",
+  disassembleStock: "بازکردن مجموعه",
+  disassembleDescription:
+    "مجموعه را از موجودی خارج کنید و همه قطعات آن را در مکان بازگشت به موجودی برگردانید.",
+  destinationPosition: "ردیف مقصد",
+  assemblyPosition: "ردیف مجموعه",
+  componentPosition: "ردیف قطعه",
+  installedComponent: "قطعه نصب‌شده",
+  installedComponents: "قطعات نصب‌شده",
+  installedAt: "زمان نصب",
+  recoveryLocation: "مکان بازگشت",
+  pickAssembly: "برای دیدن قطعات نصب‌شده، یک ردیف دارای شماره سریال انتخاب کنید.",
+  noAssemblies: "ردیف موجودی دارای شماره سریال برای نمایش وجود ندارد.",
+  noInstallations: "قطعه نصب‌شده‌ای برای نمایش وجود ندارد.",
+  noInstallableComponents: "در این مکان قطعه آزادی برای نصب وجود ندارد.",
   newTransfer: "انتقال جدید",
   transferDescription:
     "جابه‌جایی موجودی بین دو مکان را برنامه‌ریزی کنید. هنگام خروج موجودی از مبدا، سفارش را ارسال کنید.",
@@ -242,6 +323,8 @@ const fa = {
   invalid: "تعدادها و فیلدهای الزامی را بررسی کنید.",
   conflict: "این درخواست با یک تغییر ثبت‌شده دیگر تداخل دارد.",
   insufficientStock: "این تغییر از موجودی آزاد بیشتر است یا بر واحدهای رزروشده اثر می‌گذارد.",
+  incompatibleStock: "موجودی متناسب با شرایط این تغییر را انتخاب کنید.",
+  assemblyLimit: "این مجموعه به حداکثر تعداد قطعات رسیده است.",
   incompatibleLocation: "انتقال موجودی به مکان انتخاب‌شده امکان‌پذیر نیست.",
   stale: "موجودی یا انتقال تغییر کرده است. صفحه را به‌روزرسانی و این اقدام را باز کنید.",
   alreadyReversed: "این اصلاح قبلاً برگشت داده شده است.",
@@ -249,6 +332,8 @@ const fa = {
   unlocated: "بدون مکان",
   reversedMovement: "گردش اولیه",
   transferReference: "انتقال",
+  structureReference: "عملیات موجودی",
+  positionReference: "ردیف مبدا",
 } satisfies Words;
 
 export type OperationsWords = Words;
@@ -272,4 +357,9 @@ export const movementKindMessages = {
   "transfer-receive": ["Transfer received", "Umlagerung empfangen", "انتقال دریافت شد"],
   correction: ["Stock correction", "Bestandskorrektur", "اصلاح موجودی"],
   "correction-reversal": ["Correction reversed", "Korrektur gegengebucht", "اصلاح برگشت داده شد"],
+  "stock-split": ["Stock split", "Bestand geteilt", "موجودی تقسیم شد"],
+  "stock-merge": ["Stock merged", "Bestand zusammengeführt", "موجودی ادغام شد"],
+  "component-install": ["Component installed", "Komponente eingebaut", "قطعه نصب شد"],
+  "component-remove": ["Component removed", "Komponente ausgebaut", "قطعه جدا شد"],
+  "stock-disassemble": ["Stock disassembled", "Baugruppe demontiert", "مجموعه باز شد"],
 } as const;

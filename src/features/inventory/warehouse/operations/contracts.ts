@@ -13,6 +13,9 @@ const reason = z
 const transferChange = { requestId: id, id, version: z.number().int().positive(), reason };
 const sourceLine = z.strictObject({ positionId: id, quantity });
 const receiveLine = z.strictObject({ lineId: id, quantity });
+const structureChange = { requestId: id, reason };
+const repartition = { ...structureChange, sourcePositionId: id, locationId: id, quantity };
+const recover = { ...structureChange, assemblyLocationId: id, destinationLocationId: id };
 
 export const warehouseOperationsCommand = z.discriminatedUnion("type", [
   z.strictObject({
@@ -46,6 +49,18 @@ export const warehouseOperationsCommand = z.discriminatedUnion("type", [
     expectedOnHand: stockCount,
     reason,
   }),
+  z.strictObject({ type: z.literal("splitStock"), ...repartition }),
+  z.strictObject({ type: z.literal("mergeStock"), ...repartition, destinationPositionId: id }),
+  z.strictObject({
+    type: z.literal("installComponent"),
+    ...structureChange,
+    assemblyPositionId: id,
+    componentPositionId: id,
+    locationId: id,
+    quantity,
+  }),
+  z.strictObject({ type: z.literal("removeComponent"), ...recover, installationId: id }),
+  z.strictObject({ type: z.literal("disassembleStock"), ...recover, assemblyPositionId: id }),
 ]);
 
 export type WarehouseOperationsCommand = z.infer<typeof warehouseOperationsCommand>;
@@ -57,6 +72,8 @@ export type WarehouseOperationsError =
   | "invalid"
   | "conflict"
   | "insufficientStock"
+  | "incompatibleStock"
+  | "assemblyLimit"
   | "incompatibleLocation"
   | "stale"
   | "alreadyReversed";
