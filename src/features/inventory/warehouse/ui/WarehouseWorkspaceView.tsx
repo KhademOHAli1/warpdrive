@@ -8,6 +8,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  type CommissionStockAdapter,
+  useCommissionStock,
+} from "@/features/assets/commissioning/ui/CommissionStockPanel";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import {
@@ -129,12 +133,14 @@ export function WarehouseWorkspaceView({
   fixture = false,
   refresh,
   refreshing = false,
+  commissioning,
 }: {
   initial: WarehouseWorkspace;
   submit: (command: WarehouseCommand) => Promise<WarehouseResult>;
   fixture?: boolean;
   refresh?: () => void;
   refreshing?: boolean;
+  commissioning?: CommissionStockAdapter;
 }) {
   const locale = useLocale();
   const t = warehouseMessages[locale];
@@ -144,7 +150,15 @@ export function WarehouseWorkspaceView({
   const [filters, setFilters] = useState(warehouseFilters);
   const [editor, setEditor] = useState<WarehouseEditor | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const positionsTab = useRef<HTMLButtonElement | null>(null);
   const command = useWarehouseCommand(submit, refreshing);
+  const warehouseBusy = command.pending || refreshing;
+  const commission = useCommissionStock({
+    adapter: commissioning,
+    busy: warehouseBusy,
+    positionsTab,
+    updateWorkspace: setWorkspace,
+  });
 
   if (source !== initial) {
     setSource(initial);
@@ -153,7 +167,7 @@ export function WarehouseWorkspaceView({
     command.clear();
   }
 
-  const busy = command.pending || refreshing;
+  const busy = warehouseBusy || commission.pending;
   const rows = filteredRows(workspace, filters, locale);
 
   function show(triggerButton: HTMLButtonElement, next: WarehouseEditor) {
@@ -228,6 +242,7 @@ export function WarehouseWorkspaceView({
           {t[command.error]}
         </p>
       )}
+      {commission.notice}
       <Tabs
         value={tab}
         onValueChange={(next) => {
@@ -241,7 +256,7 @@ export function WarehouseWorkspaceView({
           <TabsTrigger className={PILL_TAB} value="balances">
             {t.balances}
           </TabsTrigger>
-          <TabsTrigger className={PILL_TAB} value="positions">
+          <TabsTrigger ref={positionsTab} className={PILL_TAB} value="positions">
             {t.positions}
           </TabsTrigger>
           <TabsTrigger className={PILL_TAB} value="incomingStock">
@@ -257,6 +272,7 @@ export function WarehouseWorkspaceView({
             workspace={workspace}
             busy={busy}
             changeState={(button, position) => show(button, { type: "setPositionState", position })}
+            commissioning={commission.row}
           />
         </TabsContent>
         <TabsContent value="incomingStock">
@@ -286,6 +302,7 @@ export function WarehouseWorkspaceView({
           save={save}
         />
       )}
+      {commission.dialog}
     </main>
   );
 }

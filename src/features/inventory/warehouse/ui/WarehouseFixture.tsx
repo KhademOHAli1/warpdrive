@@ -2,6 +2,16 @@
 
 import { useRef, useState } from "react";
 import {
+  type CommissionAssetCommand,
+  type CommissionAssetResult,
+  commissionAssetCommand,
+} from "@/features/assets/commissioning/contracts";
+import {
+  type CommissionStockAdapter,
+  commissionStockSource,
+} from "@/features/assets/commissioning/ui/CommissionStockPanel";
+import { assetKey } from "@/features/assets/registerRules";
+import {
   type WarehouseBalance,
   type WarehouseCommand,
   type WarehouseError,
@@ -96,6 +106,21 @@ function sample(canManage: boolean): WarehouseWorkspace {
         reserved: 0,
         available: 0,
       },
+      {
+        id: fixtureId(10),
+        siteId: north,
+        locationId: racks,
+        itemId: partB,
+        lot: "RUN-03",
+        serial: "PLC-120-0002",
+        expiryDate: null,
+        state: "available",
+        ownerOrganizationId: null,
+        owned: false,
+        onHand: 1,
+        reserved: 0,
+        available: 1,
+      },
     ],
     incoming: [
       {
@@ -136,6 +161,8 @@ function sample(canManage: boolean): WarehouseWorkspace {
 export function WarehouseFixture({ canManage }: { canManage: boolean }) {
   const [initial] = useState(() => sample(canManage));
   const current = useRef(initial);
+  const receipts = useRef(new Map<string, FixtureCommissionReceipt>());
+  const commissioningSiteIds = canManage ? [north] : [];
 
   function submit(raw: WarehouseCommand): Promise<WarehouseResult> {
     if (!canManage) return Promise.resolve(failure("unavailable"));
@@ -146,7 +173,83 @@ export function WarehouseFixture({ canManage }: { canManage: boolean }) {
     return Promise.resolve(result);
   }
 
-  return <WarehouseWorkspaceView initial={initial} submit={submit} fixture />;
+  const commission: CommissionStockAdapter["submit"] = (raw) => {
+    const result = applyFixtureCommission(
+      current.current,
+      raw,
+      commissioningSiteIds,
+      receipts.current,
+    );
+    if (result.ok && result.workspace !== undefined) current.current = result.workspace;
+    return Promise.resolve(result);
+  };
+
+  return (
+    <WarehouseWorkspaceView
+      initial={initial}
+      submit={submit}
+      fixture
+      commissioning={{ siteIds: commissioningSiteIds, submit: commission }}
+    />
+  );
+}
+
+type FixtureCommissionReceipt = {
+  command: CommissionAssetCommand;
+  result: Extract<CommissionAssetResult, { ok: true }>;
+};
+
+function applyFixtureCommission(
+  workspace: WarehouseWorkspace,
+  raw: CommissionAssetCommand,
+  siteIds: readonly string[],
+  receipts: Map<string, FixtureCommissionReceipt>,
+): Awaited<ReturnType<CommissionStockAdapter["submit"]>> {
+  const parsed = commissionAssetCommand.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const command = parsed.data;
+  if (!siteIds.includes(command.siteId)) return { ok: false, error: "unavailable" };
+
+  const existing = receipts.get(command.requestId);
+  if (existing !== undefined) {
+    return JSON.stringify(existing.command) === JSON.stringify(command)
+      ? { ...existing.result, workspace }
+      : { ok: false, error: "conflict" };
+  }
+
+  const position = workspace.positions.find(({ id }) => id === command.positionId);
+  if (position === undefined || !siteIds.includes(position.siteId)) {
+    return { ok: false, error: "unavailable" };
+  }
+  if (
+    position.siteId !== command.siteId ||
+    position.locationId !== command.locationId ||
+    position.serial !== command.serial ||
+    position.lot !== command.lot
+  ) {
+    return { ok: false, error: "stale" };
+  }
+  if (commissionStockSource(workspace, position, siteIds) === null) {
+    return { ok: false, error: "ineligible" };
+  }
+  const duplicate = [...receipts.values()].some(
+    ({ command: past }) =>
+      past.siteId === command.siteId &&
+      (assetKey(past.code) === assetKey(command.code) ||
+        assetKey(past.serial) === assetKey(command.serial)),
+  );
+  if (duplicate) return { ok: false, error: "conflict" };
+
+  const positions = workspace.positions.map((row) =>
+    row.id === position.id ? { ...row, onHand: 0 } : row,
+  );
+  const result = {
+    ok: true,
+    assetId: crypto.randomUUID(),
+    handoffId: crypto.randomUUID(),
+  } as const;
+  receipts.set(command.requestId, { command, result });
+  return { ...result, workspace: refreshBalances({ ...workspace, positions }) };
 }
 
 function failure(error: WarehouseError): WarehouseResult {

@@ -2,6 +2,7 @@ import { classifyInventory } from "./registryClassification";
 
 export const assetRegisterEntry = classifyInventory(
   [
+    "derived:src/features/assets/commissioning/ui/CommissionStockPanel.tsx",
     "derived:src/features/assets/registerRules.ts",
     "derived:src/features/assets/repository.ts",
     "derived:src/features/assets/ui/AssetEditorFields.tsx",
@@ -12,6 +13,7 @@ export const assetRegisterEntry = classifyInventory(
     "sourceReview:src/app/(app)/assets/page.tsx#2dcc84ca85ab461c48cb97e9da5b236252af4773dc64786e18ae18c14c757a64",
     "sourceReview:src/features/assets/access.ts#be36a02b93ebe54874423f832d99906d80e078906f308285745a26f7d6bfdcff",
     "sourceReview:src/features/assets/actions.backend.ts#ed778c3f07a11703fcc25c8da06e9d69a178fa954310d34b783b2fa6d66a2904",
+    "sourceReview:src/features/assets/commissioning/ui/CommissionStockPanel.tsx#5c5ba69a9a425c4ef93f0e928e870f98109cc7d383891f3618fc81fec51ff6aa",
     "sourceReview:src/features/assets/protection.ts#c0374214141556565efc8514baab77bc611c4f13ff37eb2522037a3c974fd819",
     "sourceReview:src/features/assets/registerCommands.ts#a4770121fed02c331c95ffdc8bf8f7671248528814525c10a0c581263ea80486",
     "sourceReview:src/features/assets/registerRules.ts#c5ea24729144c3fb5982280635fb40dbaafc8c718cde8ae8a4fff727d9424fcc",
@@ -32,6 +34,7 @@ export const assetRegisterEntry = classifyInventory(
     "table:asset_models",
     "table:asset_records",
     "writer:src/app/(app)/assets/page.tsx#query:none",
+    "writer:src/features/assets/commissioning/ui/CommissionStockPanel.tsx#delete:key",
     "writer:src/features/assets/registerCommands.ts#update:workspace",
     "writer:src/features/assets/repository.ts#delete:assetBalances",
     "writer:src/features/assets/repository.ts#insert:assetBalances",
@@ -64,7 +67,7 @@ export const assetRegisterEntry = classifyInventory(
     retention:
       "PostgreSQL retains archive records and historical bin and quantity events. Staff deletion removes command receipts and clears the linked actor from retained events. Explicit development fixtures reset on reload.",
     externalEffects:
-      "Authenticated Core commands update equipment records and their history in one transaction. Equipment balance changes are independent of Inventory stock movements.",
+      "Authenticated Core commands update equipment records and their history in one transaction. Equipment balance changes are independent of Inventory stock movements. Commissioning is previewed with local Warehouse fixture data.",
     erasureTask: "DPL-15 / DPL-18 / DPL-21",
   },
 );

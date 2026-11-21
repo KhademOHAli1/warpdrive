@@ -4,6 +4,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import {
+  CommissionStockButton,
+  type OpenCommissionStock,
+} from "@/features/assets/commissioning/ui/CommissionStockPanel";
 import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import type {
   WarehouseBalance,
@@ -158,11 +162,13 @@ export function WarehousePositionsTable({
   workspace,
   busy,
   changeState,
+  commissioning,
 }: {
   rows: WarehousePosition[];
   workspace: WarehouseWorkspace;
   busy: boolean;
   changeState: (trigger: HTMLButtonElement, position: WarehousePosition) => void;
+  commissioning?: { siteIds: readonly string[]; open: OpenCommissionStock } | undefined;
 }) {
   const numbers = useWarehouseNumbers();
   const t = warehouseMessages[useLocale()];
@@ -232,16 +238,27 @@ export function WarehousePositionsTable({
             <Count count={row.available} numbers={numbers} />
             {manage && (
               <td className="px-3 py-2.5">
-                {canChange && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={(event) => changeState(event.currentTarget, row)}
-                  >
-                    {t.changeState}
-                  </Button>
-                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {canChange && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={(event) => changeState(event.currentTarget, row)}
+                    >
+                      {t.changeState}
+                    </Button>
+                  )}
+                  {commissioning !== undefined && (
+                    <CommissionStockButton
+                      workspace={workspace}
+                      position={row}
+                      busy={busy}
+                      siteIds={commissioning.siteIds}
+                      open={commissioning.open}
+                    />
+                  )}
+                </div>
               </td>
             )}
           </tr>
