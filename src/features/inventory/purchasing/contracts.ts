@@ -113,6 +113,8 @@ export type PurchaseOrderLine = {
   orderedUnits: number;
   receivedUnits: number;
   trackable: boolean;
+  subcontracted?: true;
+  subcontractBuildId?: string;
 };
 export type PurchaseReceiptLine = {
   id: string;
@@ -124,6 +126,7 @@ export type PurchaseReceiptLine = {
   disposition: PurchaseReceiptDisposition;
   reason: string | null;
   positionId: string | null;
+  heldForRelease?: true;
 };
 export type PurchaseReceipt = {
   id: string;
@@ -145,6 +148,7 @@ export type PurchaseOrder = {
   version: number;
   canEdit: boolean;
   canReceive: boolean;
+  subcontractCancellationBlocked?: true;
   lines: PurchaseOrderLine[];
   receipts: PurchaseReceipt[];
   pricing?: PurchasePrice[];

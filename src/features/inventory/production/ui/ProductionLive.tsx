@@ -42,7 +42,13 @@ function canOpenEditor(
   scope: ProductionQuery,
 ) {
   if (editor.type === "createBuild") return productionCanPlan(workspace, scope.siteId);
-  return workspace.detail?.canManage === true && workspace.detail.id === editor.build.id;
+  const current = workspace.detail;
+  if (current?.canManage !== true || current.id !== editor.build.id) return false;
+  if (editor.type === "linkSubcontract") return current.subcontractOptions !== null;
+  if (editor.type === "dispatchSubcontract") return current.subcontract?.canDispatch === true;
+  if (editor.type === "returnSubcontractMaterial") return current.subcontract?.canReturn === true;
+  if (editor.type === "releaseSubcontractOutput") return current.subcontract?.canRelease === true;
+  return true;
 }
 
 function initialEditor(
@@ -137,6 +143,7 @@ export function ProductionLive({
         utils.inventory.production.workspace.invalidate(),
         utils.inventory.warehouse.workspace.invalidate(),
         utils.inventory.workspace.invalidate(),
+        utils.inventory.purchasing.workspace.invalidate(),
       ]);
       if (intent.type === "createBuild") {
         transition(() =>

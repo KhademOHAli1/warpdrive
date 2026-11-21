@@ -12,6 +12,7 @@ export * from "@/features/inventory/purchasing/schema";
 export * from "@/features/inventory/releases/schema";
 export * from "@/features/inventory/schema";
 export * from "@/features/inventory/sourcing/schema";
+export * from "@/features/inventory/subcontract/schema";
 export * from "@/features/inventory/warehouse/schema";
 export * from "@/features/inventory/warehouse/stocktakes/countSchema";
 export * from "@/features/inventory/warehouse/stocktakes/valuationSchema";

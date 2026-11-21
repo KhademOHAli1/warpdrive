@@ -8,6 +8,7 @@ import {
   installPrefix,
   ledger,
 } from "@/db/migrationAdmission.test-helpers";
+import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { directorySiteGrants } from "@/features/locations/schema";
@@ -113,7 +114,11 @@ it("upgrades populated 0137 lots, serials, movement evidence and reservations be
     expect(previous).toHaveLength(138);
     expect((await applyMigrations(h.db, signal(), canonicalFolder)).ok).toBe(true);
     const upgraded = await ledger(h);
-    expect(upgraded).toHaveLength(139);
+    const manifest = await readCanonicalMigrations(canonicalFolder, signal());
+    assert(manifest.ok);
+    expect(upgraded).toHaveLength(manifest.value.length);
+    expect(manifest.value[138]?.tag).toBe("0138_inventory_production_builds");
+    expect(upgraded[138]?.hash).toBe(manifest.value[138]?.hash);
     expect(upgraded.slice(0, 138)).toEqual(previous);
     expect(await incumbentRows(h)).toEqual(before);
     expect(await position(h, fixture.lot.positionId)).toMatchObject({

@@ -2,7 +2,13 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
-import type { ProductionDetail, ProductionWorkspace } from "../contracts";
+import { subcontractMessages } from "../../subcontract/ui/messages";
+import type {
+  ProductionDetail,
+  ProductionMaterial,
+  ProductionWorkspace,
+  SubcontractView,
+} from "../contracts";
 import { productionMessages } from "./messages";
 import { ProductionBuildView } from "./ProductionBuildView";
 import { ProductionEditors } from "./ProductionEditors";
@@ -38,6 +44,8 @@ const build: ProductionDetail = {
   children: [],
   materials: [],
   history: [],
+  subcontractOptions: null,
+  subcontract: null,
   outputs: [
     {
       id: "wip-batch",
@@ -131,4 +139,125 @@ test("prevents a stale editor from submitting", () => {
   expect(dialog.getByRole("alert")).toHaveTextContent(t.stale);
   fireEvent.click(submit);
   expect(save).not.toHaveBeenCalled();
+});
+
+const subcontractText = subcontractMessages.en;
+const companyMaterial: ProductionMaterial = {
+  id: "board-material",
+  part: { ...part, code: "PCB" },
+  releaseId: null,
+  perUnit: 1,
+  demand: 4,
+  allocated: 4,
+  consumed: 0,
+  consumable: false,
+  positions: [],
+  allocations: [
+    {
+      quantity: 3,
+      position: {
+        id: "copper",
+        location: "W01",
+        lot: "CU-001",
+        serial: null,
+        free: 0,
+        buildOutputId: null,
+      },
+    },
+    {
+      quantity: 1,
+      position: {
+        id: "serial",
+        location: "W02",
+        lot: "CU-002",
+        serial: "PART-009",
+        free: 0,
+        buildOutputId: null,
+      },
+    },
+  ],
+};
+const subcontract: SubcontractView = {
+  orderId: "purchase",
+  reference: "PO-27",
+  orderStatus: "partial",
+  supplierBin: "Partner dock",
+  companyMaterialIds: [companyMaterial.id],
+  custody: [],
+  outputs: [{ outputId: "wip-batch", receiptLineId: "receipt-row" }],
+  canDispatch: true,
+  canReturn: true,
+  canRelease: true,
+};
+
+test("keeps a held supplier receipt on the subcontract release path", () => {
+  const open = vi.fn();
+  const linkedBuild = { ...build, materials: [companyMaterial], subcontract };
+  const { rerender } = render(
+    <ProductionBuildView build={linkedBuild} {...{ open, t }} busy={false} />,
+  );
+  const batches = within(screen.getByRole("region", { name: t.batches }));
+  expect(batches.queryByRole("button", { name: t.startBatch })).not.toBeInTheDocument();
+  expect(batches.queryByRole("button", { name: t.completeBatch })).not.toBeInTheDocument();
+  expect(batches.getByText(subcontractText.pendingRelease)).toBeVisible();
+  expect(screen.getByRole("link", { name: "PO-27" })).toHaveAttribute(
+    "href",
+    "/inventory/purchase-orders?siteId=west&orderId=purchase",
+  );
+  fireEvent.click(batches.getByRole("button", { name: subcontractText.releaseSubcontractOutput }));
+  expect(open).toHaveBeenCalledWith(expect.anything(), {
+    type: "releaseSubcontractOutput",
+    build: linkedBuild,
+    output: linkedBuild.outputs[0],
+  });
+  rerender(
+    <ProductionBuildView
+      build={{
+        ...linkedBuild,
+        subcontract: { ...subcontract, orderId: null, reference: null, canRelease: false },
+      }}
+      {...{ open, t }}
+      busy={false}
+    />,
+  );
+  expect(
+    batches.queryByRole("button", { name: subcontractText.releaseSubcontractOutput }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "PO-27" })).not.toBeInTheDocument();
+});
+
+test("dispatches the selected quantity from its exact allocation", () => {
+  const save = vi.fn();
+  const linkedBuild = { ...build, subcontract, materials: [companyMaterial] };
+  render(
+    <ProductionEditors
+      workspace={workspace}
+      editor={{ type: "dispatchSubcontract", build: linkedBuild, link: subcontract }}
+      t={t}
+      dialog={{
+        pending: false,
+        blocked: false,
+        error: null,
+        close: vi.fn(),
+        restoreFocus: vi.fn(),
+        save,
+      }}
+    />,
+  );
+  const dialog = within(screen.getByRole("dialog", { name: subcontractText.dispatchSubcontract }));
+  const [lot, serial] = dialog.getAllByRole("textbox", { name: t.allocationQuantity });
+  if (lot === undefined || serial === undefined) throw new Error("Expected both allocation rows");
+  fireEvent.change(lot, { target: { value: "2" } });
+  fireEvent.change(serial, { target: { value: "" } });
+  fireEvent.change(dialog.getByRole("textbox", { name: t.reason }), {
+    target: { value: "Supplier shipment" },
+  });
+  fireEvent.click(dialog.getByRole("button", { name: "Save" }));
+  expect(save).toHaveBeenCalledWith({
+    type: "dispatchSubcontract",
+    buildId: build.id,
+    version: build.version,
+    reason: "Supplier shipment",
+    allocations: [{ materialId: companyMaterial.id, positionId: "copper", quantity: 2 }],
+  });
 });

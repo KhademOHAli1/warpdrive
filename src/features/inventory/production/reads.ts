@@ -9,6 +9,7 @@ import { readBomNodes, readBomReleaseDirectory } from "../bom/reads";
 import { inventoryPartProfiles } from "../catalog/schema";
 import { inventoryProjectsEnabled } from "../projectBridge";
 import { inventoryItems, inventoryTemplates } from "../schema";
+import { readSubcontractDetail } from "../subcontract/reads";
 import type { WarehouseAccess } from "../warehouse/access";
 import { inventoryStockEventDetails } from "../warehouse/operations/schema";
 import { inventoryStockPositions } from "../warehouse/schema";
@@ -307,6 +308,7 @@ async function readDetail(
     children: family.filter(({ parentId }) => parentId === build.id),
     history: audit.map((entry) => ({ ...entry, at: entry.at.toISOString() })),
     project: await readProductionProject(tx, actor, build, signal),
+    ...(await readSubcontractDetail(tx, actor, build, access, current.canManage, signal)),
   };
 }
 

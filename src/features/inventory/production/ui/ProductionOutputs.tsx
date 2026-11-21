@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import { subcontractMessages } from "../../subcontract/ui/messages";
 import type { ProductionDetail, ProductionOutput } from "../contracts";
 import type { ProductionMessages } from "./messages";
 import { ProductionTime, useProductionNumber } from "./ProductionFields";
@@ -81,8 +83,13 @@ function OutputRow({
   t: ProductionMessages;
 }) {
   const number = useProductionNumber();
-  const changingWip = build.canManage && output.status === "wip";
+  const labels = subcontractMessages[useLocale()];
+  const linked = build.subcontract;
+  const receipt = linked?.outputs.find(({ outputId }) => outputId === output.id);
+  const changingWip = linked === null && build.canManage && output.status === "wip";
+  const needsRelease = receipt !== undefined && output.status === "wip";
   const canReverse =
+    linked === null &&
     build.canManage &&
     (build.status === "issued" || build.status === "on_hold" || build.status === "closed") &&
     (output.status === "completed" || output.status === "scrapped");
@@ -97,6 +104,7 @@ function OutputRow({
       className="min-w-0 space-y-3 p-3"
       data-production-output-id={output.id}
       data-production-output-status={output.status}
+      data-subcontract-receipt-line-id={receipt?.receiptLineId}
     >
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 space-y-1 text-sm">
@@ -108,7 +116,7 @@ function OutputRow({
             <ProductionTime value={output.createdAt} />
           </p>
         </div>
-        <Badge variant={variant}>{t[output.status]}</Badge>
+        <Badge variant={variant}>{needsRelease ? labels.pendingRelease : t[output.status]}</Badge>
       </div>
       {output.lot !== null && (
         <p className="break-words text-sm" data-production-output-lot={output.lot}>
@@ -138,6 +146,16 @@ function OutputRow({
       )}
       <OutputMaterials output={output} t={t} />
       <div className="flex flex-wrap items-center gap-2 empty:hidden">
+        {build.canManage && needsRelease && linked?.canRelease === true && (
+          <Button
+            size="sm"
+            data-production-action="releaseSubcontractOutput"
+            disabled={busy}
+            onClick={(event) => open(event, { type: "releaseSubcontractOutput", build, output })}
+          >
+            {labels.releaseSubcontractOutput}
+          </Button>
+        )}
         {changingWip && build.status === "issued" && (
           <>
             <Button
@@ -197,7 +215,7 @@ export function ProductionOutputs({
   open: OpenProductionEditor;
   t: ProductionMessages;
 }) {
-  const mayStart = build.canManage && build.status === "issued";
+  const mayStart = build.subcontract === null && build.canManage && build.status === "issued";
   return (
     <section className="min-w-0 rounded-lg border bg-card" aria-labelledby="production-outputs">
       <div className="flex flex-wrap items-center justify-between gap-2 p-3">

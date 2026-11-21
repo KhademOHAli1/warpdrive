@@ -4,10 +4,12 @@ import { listOrgOptions } from "@/features/contacts/orgOptionsRepo";
 import { currencyCode } from "@/features/currencies/currencySchema";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import type { HydratedActor } from "@/server/hydrateActor";
+import { inventoryProductionBuilds } from "../production/buildSchema";
 import { calculateStockUnits } from "../sourcing/contracts";
 import { inventorySupplierOffers, inventorySupplierPriceTiers } from "../sourcing/schema";
 import { lockSourcingRecords } from "../sourcing/scope";
 import { lockInventoryStock } from "../stock";
+import { inventorySubcontracts } from "../subcontract/schema";
 import { inventoryStockEvents, inventoryStockIncoming } from "../warehouse/schema";
 import type { PurchasingCommand } from "./contracts";
 import { purchaseOrderLineCosts, purchaseOrderLines, purchaseOrders } from "./schema";
@@ -18,6 +20,11 @@ import {
   requirePurchaseLocation,
   requirePurchaseOrganizations,
 } from "./scope";
+import {
+  confirmSubcontractCanCancel,
+  lockOrderSubcontracts,
+  verifyLinkedPurchaseLine,
+} from "./subcontract";
 
 type Draft = Extract<PurchasingCommand, { type: "saveDraft" }>;
 type Issue = Extract<PurchasingCommand, { type: "issue" }>;
@@ -83,7 +90,7 @@ async function readCurrentOffers(
       manufacturerOrganizationId === null ? [] : [manufacturerOrganizationId],
     ),
   ]);
-  return new Map(offers.map(({ offer }) => [offer.id, offer]));
+  return new Map(offers.map((candidate) => [candidate.offer.id, candidate]));
 }
 
 export async function savePurchaseDraft(
@@ -100,6 +107,14 @@ export async function savePurchaseDraft(
       current.siteId !== command.siteId)
   ) {
     failPurchasing("stale");
+  }
+  if (current !== null) {
+    const [linked] = await tx
+      .select({ id: inventorySubcontracts.buildId })
+      .from(inventorySubcontracts)
+      .where(eq(inventorySubcontracts.orderId, current.id))
+      .limit(1);
+    if (linked !== undefined) failPurchasing("conflict");
   }
 
   await requirePurchaseLocation(tx, command.siteId, command.locationId);
@@ -134,7 +149,7 @@ export async function savePurchaseDraft(
 
   await tx.insert(purchaseOrderLines).values(
     command.lines.map(({ offerId, packs }) => {
-      const offer = offers.get(offerId);
+      const offer = offers.get(offerId)?.offer;
       if (offer === undefined) failPurchasing("unavailable");
       const {
         version,
@@ -204,6 +219,7 @@ export async function issuePurchaseOrder(
     failPurchasing("stale");
   }
   await requirePurchaseLocation(tx, order.siteId, order.locationId);
+  const subcontracts = await lockOrderSubcontracts(tx, order.id);
   const offers = await readCurrentOffers(
     tx,
     actor,
@@ -218,7 +234,8 @@ export async function issuePurchaseOrder(
 
   const currency = currencyCode.safeParse(await readBaseCurrency(tx, signal));
   for (const line of lines) {
-    const offer = offers.get(line.offerId);
+    const candidate = offers.get(line.offerId);
+    const offer = candidate?.offer;
     if (
       offer === undefined ||
       offer.version !== line.offerVersion ||
@@ -227,6 +244,21 @@ export async function issuePurchaseOrder(
       offer.stockUnit !== line.stockUnit
     ) {
       failPurchasing("stale");
+    }
+    const associated = subcontracts.get(line.id);
+    if (associated !== undefined) {
+      verifyLinkedPurchaseLine(order, line, associated);
+      const { build } = associated;
+      if (
+        build.status !== "planned" ||
+        offer.trackable !== build.trackable ||
+        candidate?.manufacturerOrganizationId !== order.supplierOrganizationId
+      )
+        failPurchasing("stale");
+      await tx
+        .update(inventoryProductionBuilds)
+        .set({ status: "issued", version: build.version + 1 })
+        .where(eq(inventoryProductionBuilds.id, build.id));
     }
 
     const [plan] = await tx
@@ -284,6 +316,12 @@ export async function cancelPurchaseOrder(
   ) {
     failPurchasing("stale");
   }
+  const subcontracts = await lockOrderSubcontracts(tx, order.id);
+  await confirmSubcontractCanCancel(
+    tx,
+    order.id,
+    [...subcontracts.values()].map(({ build }) => build.id),
+  );
 
   if (order.status !== "draft") {
     await lockInventoryStock(

@@ -138,8 +138,11 @@ function OrderActions({
   t: PurchaseMessages;
 }) {
   const draft = order.status === "draft";
+  const linked = order.lines.some(({ subcontracted }) => subcontracted === true);
   const mayCancel =
-    order.canEdit && (draft || order.status === "open" || order.status === "partial");
+    order.canEdit &&
+    order.subcontractCancellationBlocked !== true &&
+    (draft || order.status === "open" || order.status === "partial");
   if (!order.canReceive && !(draft && order.canEdit) && !mayCancel) return null;
   return (
     <div className="flex flex-wrap gap-2">
@@ -153,15 +156,17 @@ function OrderActions({
           >
             {t.issue}
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={busy}
-            onClick={(event) => open(event, { type: "draft", order })}
-          >
-            {t.editOrder}
-          </Button>
+          {!linked && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={(event) => open(event, { type: "draft", order })}
+            >
+              {t.editOrder}
+            </Button>
+          )}
         </>
       )}
       {order.canReceive && (order.status === "open" || order.status === "partial") && (
@@ -315,6 +320,22 @@ function OrderLines({ order, t }: { order: PurchaseOrder; t: PurchaseMessages })
                 <div className="text-xs text-muted-foreground">
                   <bdi>{line.partNumber}</bdi>
                 </div>
+                {line.subcontracted === true && (
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" data-purchase-subcontract-line>
+                      {t.subcontractLine}
+                    </Badge>
+                    {line.subcontractBuildId !== undefined && (
+                      <Link
+                        href={`/inventory/production?buildId=${encodeURIComponent(line.subcontractBuildId)}`}
+                        prefetch={false}
+                        className="text-xs text-primary underline-offset-4 hover:underline"
+                      >
+                        {t.openSubcontractBuild}
+                      </Link>
+                    )}
+                  </div>
+                )}
               </td>
               <td className={narrowCell}>
                 <bdi>{number(line.packs)}</bdi>
@@ -353,7 +374,10 @@ function ReceiptLineRow({
 }) {
   const format = useFormatters();
   return (
-    <tr data-purchase-receipt-disposition={row.disposition}>
+    <tr
+      data-purchase-receipt-disposition={row.disposition}
+      data-purchase-held-for-release={row.heldForRelease}
+    >
       <td className={dataCell}>
         <bdi>{line === undefined ? "—" : `${line.partCode} · ${line.revision}`}</bdi>
       </td>
@@ -377,6 +401,9 @@ function ReceiptLineRow({
         <Badge variant={row.disposition === "accepted" ? "success" : "destructive"}>
           {t[row.disposition]}
         </Badge>
+        {row.heldForRelease === true && (
+          <p className="mt-1 text-xs text-muted-foreground">{t.awaitingSubcontractRelease}</p>
+        )}
         {row.reason !== null && (
           <p className="mt-1 max-w-48 break-words text-xs text-muted-foreground">
             <bdi>{row.reason}</bdi>
@@ -504,6 +531,9 @@ function OrderDetail({
             <OrderActions {...{ order, busy, open, t }} />
           </div>
           <OrderMetadata {...{ order, t }} />
+          {order.canEdit && order.subcontractCancellationBlocked === true && (
+            <p className="text-sm text-muted-foreground">{t.subcontractCancellationBlocked}</p>
+          )}
         </div>
         <OrderLines {...{ order, t }} />
       </section>

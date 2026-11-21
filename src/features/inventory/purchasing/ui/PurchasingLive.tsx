@@ -33,7 +33,12 @@ function canOpenEditor(workspace: PurchasingWorkspace, editor: PurchaseEditor) {
   if (editor.order === null) return site.canBuy;
   const order = workspace.orders.find(({ id }) => id === editor.order?.id);
   if (order === undefined) return false;
-  return editor.type === "receive" ? order.canReceive : order.canEdit;
+  if (editor.type === "receive") return order.canReceive;
+  if (editor.type === "draft")
+    return order.canEdit && !order.lines.some(({ subcontracted }) => subcontracted === true);
+  if (editor.type === "cancel")
+    return order.canEdit && order.subcontractCancellationBlocked !== true;
+  return order.canEdit;
 }
 
 export function PurchasingLive({
@@ -100,6 +105,7 @@ export function PurchasingLive({
       setSaved(true);
       void utils.inventory.purchasing.workspace.invalidate();
       void utils.inventory.warehouse.workspace.invalidate();
+      void utils.inventory.production.workspace.invalidate();
       if (intent.type === "saveDraft" && intent.id === null) {
         transition(() => router.push(purchaseOrderHref(intent.siteId, result.id)));
       }

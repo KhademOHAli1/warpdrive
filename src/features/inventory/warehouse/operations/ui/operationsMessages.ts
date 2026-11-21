@@ -374,6 +374,21 @@ export const movementKindMessages = {
     "مواد تولید مصرف شد",
   ],
   "production-output": ["Production output", "Fertigungsausgang", "خروجی تولید"],
+  "production-dispatch": [
+    "Subcontract material dispatched",
+    "Material an Fremdfertiger versendet",
+    "مواد برای تولید برون‌سپاری ارسال شد",
+  ],
+  "production-return": [
+    "Subcontract material returned",
+    "Material aus Fremdfertigung zurückgenommen",
+    "مواد از تولید برون‌سپاری بازگشت",
+  ],
+  "production-accept": [
+    "Subcontract output released",
+    "Fremdgefertigte Ausgabe freigegeben",
+    "خروجی تولید برون‌سپاری آزاد شد",
+  ],
   "production-reversal": [
     "Production posting reversed",
     "Fertigungsbuchung storniert",

@@ -93,7 +93,8 @@ function eventRows(access: WarehouseAccess): SQL {
       event.position_id, stock_position.lot, stock_position.serial, actor.name AS actor_name,
       CASE WHEN event.kind IN ('reconcile', 'state') THEN 0 ELSE event.on_hand_delta END AS on_hand_delta,
       event.reserved_delta, event.incoming_delta,
-      CASE WHEN event.kind IN ('reconcile', 'state') THEN nullif(event.on_hand_delta, 0) END AS affected_quantity,
+      CASE WHEN event.kind IN ('reconcile', 'state') THEN nullif(event.on_hand_delta, 0)
+        WHEN event.kind = 'production-accept' THEN details.previous_on_hand END AS affected_quantity,
       event.previous_state, event.state, details.previous_on_hand,
       CASE WHEN (${canSeeReference}) AND (NOT (${isStructuralEvent}) OR (${canSeeStructure}))
         THEN details.reason END AS reason,
@@ -102,7 +103,7 @@ function eventRows(access: WarehouseAccess): SQL {
       CASE WHEN (${canSeeReference}) THEN details.transfer_id END AS transfer_id,
       CASE WHEN (${canSeeReference}) THEN details.transfer_line_id END AS transfer_line_id,
       CASE WHEN (${isStructuralEvent}) AND (${canSeeStructure}) THEN event.request_id END AS structure_operation_id,
-      CASE WHEN event.kind IN ('stock-split', 'stock-merge', 'component-remove')
+      CASE WHEN event.kind IN ('stock-split', 'stock-merge', 'component-remove', 'production-dispatch', 'production-return')
         AND (${canSeeStructure}) AND ${readableSite(access, sql`origin_position.site_id`)}
         THEN event.source_position_id END AS source_position_id,
       details.reverses_event_id,

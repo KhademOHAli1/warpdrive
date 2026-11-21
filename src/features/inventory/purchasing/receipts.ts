@@ -1,14 +1,17 @@
+import { randomUUID } from "node:crypto";
 import { and, asc, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { HydratedActor } from "@/server/hydrateActor";
+import { inventoryProductionOutputs } from "../production/buildSchema";
 import { lockInventoryStock } from "../stock";
+import { inventorySubcontractReceipts } from "../subcontract/schema";
 import {
   managedWarehouseLocation,
   readWarehouseAccess,
   type WarehouseAccess,
   WarehouseFailure,
 } from "../warehouse/access";
-import { applyWarehouseCommand, resolveWarehouseTarget } from "../warehouse/changes";
+import { applyPurchaseWarehouseReceipt } from "../warehouse/changes";
 import type { WarehouseCommand } from "../warehouse/contracts";
 import { inventoryStockEvents, inventoryStockIncoming } from "../warehouse/schema";
 import type { PurchasingCommand } from "./contracts";
@@ -19,6 +22,11 @@ import {
   purchaseReceipts,
 } from "./schema";
 import { failPurchasing } from "./scope";
+import {
+  type LinkedPurchaseBuild,
+  lockOrderSubcontracts,
+  verifyLinkedPurchaseLine,
+} from "./subcontract";
 
 type Order = typeof purchaseOrders.$inferSelect;
 type Receive = Extract<PurchasingCommand, { type: "receive" }>;
@@ -26,6 +34,7 @@ type ReceiptLine = Receive["lines"][number];
 type PurchaseLine = typeof purchaseOrderLines.$inferSelect;
 type InboundPlan = typeof inventoryStockIncoming.$inferSelect;
 type ReceiptStock = { positionId: string; eventId: string };
+type ReceiptPlacement = ReturnType<typeof prepareReceipt>["received"][number];
 
 async function readPurchasePlans(tx: Db, orderId: string) {
   return tx
@@ -73,7 +82,7 @@ function prepareReceipt(
       if (entry.quantity > pending) failPurchasing("invalid");
       remaining.set(entry.lineId, pending - entry.quantity);
     }
-    return { entry, incomingId: ordered.plan.id, itemId: ordered.line.itemId };
+    return { entry, incomingId: ordered.plan.id, line: ordered.line };
   });
   const complete = [...remaining.values()].every((quantity) => quantity === 0);
   const hasAcceptedStock = plans.some(
@@ -91,23 +100,26 @@ async function postWarehouseReceipt(
   actorId: string,
   order: Order,
   requestId: string,
-  { incomingId, itemId, entry }: ReturnType<typeof prepareReceipt>["received"][number],
+  { incomingId, line, entry }: ReceiptPlacement,
+  buildOutputId?: string,
 ): Promise<ReceiptStock> {
   const command: Extract<WarehouseCommand, { type: "receive" }> = {
     type: "receive",
     requestId,
-    itemId,
+    itemId: line.itemId,
     locationId: order.locationId,
     quantity: entry.quantity,
     lot: entry.lot,
     serial: entry.serial,
     expiryDate: entry.expiryDate,
-    state: "available",
+    state: buildOutputId === undefined ? "available" : "hold",
     ownerOrganizationId: null,
     incomingId,
   };
-  const target = await resolveWarehouseTarget(tx, access, command);
-  const positionId = await applyWarehouseCommand(tx, access, target, actorId, command, order.id);
+  const positionId = await applyPurchaseWarehouseReceipt(tx, access, actorId, command, {
+    orderId: order.id,
+    buildOutputId,
+  });
   const [event] = await tx
     .select({ id: inventoryStockEvents.id })
     .from(inventoryStockEvents)
@@ -125,6 +137,35 @@ async function postWarehouseReceipt(
   return { positionId, eventId: event.id };
 }
 
+async function openSupplierOutput(
+  tx: Db,
+  actorId: string,
+  order: Order,
+  record: ReceiptPlacement,
+  associated: LinkedPurchaseBuild,
+) {
+  verifyLinkedPurchaseLine(order, record.line, associated);
+  const { build } = associated;
+  if (build.status !== "issued") failPurchasing("conflict");
+  const { quantity, lot, serial } = record.entry;
+  if (lot === null) failPurchasing("invalid");
+
+  const [output] = await tx
+    .insert(inventoryProductionOutputs)
+    .values({
+      buildId: build.id,
+      itemId: build.itemId,
+      releaseId: build.releaseId,
+      createdBy: actorId,
+      quantity,
+      lot,
+      serials: serial === null ? [] : [serial],
+    })
+    .returning({ id: inventoryProductionOutputs.id });
+  if (output === undefined) failPurchasing("conflict");
+  return output.id;
+}
+
 async function writeReceipt(
   tx: Db,
   actor: HydratedActor,
@@ -139,6 +180,7 @@ async function writeReceipt(
 
   const plans = await readPurchasePlans(tx, order.id);
   const { received, status } = prepareReceipt(order, plans, command.lines);
+  const subcontracts = await lockOrderSubcontracts(tx, order.id);
   await lockInventoryStock(
     tx,
     plans.map(({ line }) => line.itemId),
@@ -155,15 +197,42 @@ async function writeReceipt(
   if (receipt === undefined) failPurchasing("conflict");
 
   const recorded: (typeof purchaseReceiptLines.$inferInsert)[] = [];
+  const links: (typeof inventorySubcontractReceipts.$inferInsert)[] = [];
   for (const record of received) {
     signal.throwIfAborted();
-    const stock =
-      record.entry.disposition === "accepted"
-        ? await postWarehouseReceipt(tx, access, actor.id, order, command.requestId, record)
-        : { positionId: null, eventId: null };
-    recorded.push({ ...record.entry, ...stock, receiptId: receipt.id, orderId: order.id });
+    const id = randomUUID();
+    const row = { ...record.entry, id, receiptId: receipt.id, orderId: order.id };
+    if (record.entry.disposition === "rejected") {
+      recorded.push({ ...row, positionId: null, eventId: null });
+      continue;
+    }
+    const linked = subcontracts.get(row.lineId);
+    const outputId =
+      linked === undefined
+        ? undefined
+        : await openSupplierOutput(tx, actor.id, order, record, linked);
+    const stock = await postWarehouseReceipt(
+      tx,
+      access,
+      actor.id,
+      order,
+      command.requestId,
+      record,
+      outputId,
+    );
+    recorded.push({ ...row, ...stock });
+    if (linked !== undefined && outputId !== undefined) {
+      links.push({
+        outputId,
+        buildId: linked.build.id,
+        receiptLineId: id,
+        positionId: stock.positionId,
+        orderId: order.id,
+      });
+    }
   }
   await tx.insert(purchaseReceiptLines).values(recorded);
+  if (links.length > 0) await tx.insert(inventorySubcontractReceipts).values(links);
   await tx
     .update(purchaseOrders)
     .set({ status, version: order.version + 1, updatedAt: new Date() })

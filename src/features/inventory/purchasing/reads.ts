@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, asc, eq, exists, inArray, isNotNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
@@ -7,6 +7,14 @@ import { lockDirectory } from "@/features/locations/service";
 import { currentOperationsActor } from "@/features/operations-access/scope";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { lockInventoryCatalog } from "../catalog/policy";
+import { inventoryProductionBuilds, inventoryProductionOutputs } from "../production/buildSchema";
+import { inventoryReleaseGrants } from "../releases/schema";
+import {
+  inventorySubcontractDispatches,
+  inventorySubcontractReceipts,
+  inventorySubcontracts,
+} from "../subcontract/schema";
+import { readOrderWarehouseSites } from "../warehouse/legacyScope";
 import { inventoryStockIncoming } from "../warehouse/schema";
 import type {
   PurchaseOrder,
@@ -112,8 +120,17 @@ async function projectOrderReceipts(tx: Db, orderIds: string[]) {
         reason: table.reason,
         positionId: table.positionId,
       },
+      outputStatus: inventoryProductionOutputs.status,
     })
     .from(table)
+    .leftJoin(
+      inventorySubcontractReceipts,
+      eq(inventorySubcontractReceipts.receiptLineId, table.id),
+    )
+    .leftJoin(
+      inventoryProductionOutputs,
+      eq(inventoryProductionOutputs.id, inventorySubcontractReceipts.outputId),
+    )
     .where(
       inArray(
         table.receiptId,
@@ -126,14 +143,81 @@ async function projectOrderReceipts(tx: Db, orderIds: string[]) {
     rows.map(({ postedAt, ...row }) => ({
       ...row,
       postedAt: postedAt.toISOString(),
-      lines: (lineGroups.get(row.id) ?? []).map(({ line }) => line),
+      lines: (lineGroups.get(row.id) ?? []).map(({ line, outputStatus }) => ({
+        ...line,
+        ...(outputStatus === "wip" ? { heldForRelease: true as const } : {}),
+      })),
     })),
     ({ orderId }) => orderId,
   );
 }
 
+async function projectSubcontracts(
+  tx: Db,
+  actor: HydratedActor,
+  siteId: string,
+  orderIds: string[],
+) {
+  const managedSites = await readOrderWarehouseSites(tx, actor);
+  const canReadBuilds = managedSites === null || managedSites.includes(siteId);
+  const engineering =
+    actor.type === "admin"
+      ? sql`true`
+      : exists(
+          tx
+            .select({ allowed: sql`1` })
+            .from(inventoryReleaseGrants)
+            .where(
+              and(
+                eq(inventoryReleaseGrants.userId, actor.id),
+                eq(inventoryReleaseGrants.itemId, inventoryProductionBuilds.itemId),
+              ),
+            ),
+        );
+  const dispatch = inventorySubcontractDispatches;
+  const subcontract = inventorySubcontracts;
+  const linked = await tx
+    .select({
+      lineId: subcontract.lineId,
+      orderId: subcontract.orderId,
+      buildId: subcontract.buildId,
+      canOpenBuild: sql<boolean>`${canReadBuilds} AND ${engineering}`,
+      outstandingCustody: exists(
+        tx
+          .select({ pending: sql`1` })
+          .from(dispatch)
+          .where(
+            and(
+              eq(dispatch.buildId, subcontract.buildId),
+              sql`${dispatch.quantity} > ${dispatch.consumed} + ${dispatch.returned}`,
+            ),
+          ),
+      ),
+    })
+    .from(subcontract)
+    .innerJoin(inventoryProductionBuilds, eq(inventoryProductionBuilds.id, subcontract.buildId))
+    .where(inArray(subcontract.orderId, orderIds));
+  return {
+    byLine: new Map(
+      linked.map(({ lineId, buildId, canOpenBuild }) => [
+        lineId,
+        {
+          subcontracted: true as const,
+          ...(canOpenBuild ? { subcontractBuildId: buildId } : {}),
+        },
+      ]),
+    ),
+    pendingCustody: new Set(
+      linked
+        .filter(({ outstandingCustody }) => outstandingCustody === true)
+        .map(({ orderId }) => orderId),
+    ),
+  };
+}
+
 async function readOrdersForSite(
   tx: Db,
+  actor: HydratedActor,
   access: PurchaseSiteAccess,
   parts: Parts,
   organizations: ReadonlyMap<string, string>,
@@ -168,6 +252,12 @@ async function readOrdersForSite(
     tx,
     visibleOrders.map(({ id }) => id),
   );
+  const subcontracts = await projectSubcontracts(
+    tx,
+    actor,
+    site.id,
+    visibleOrders.map(({ id }) => id),
+  );
   const prices = site.canReadCosts
     ? await tx
         .select()
@@ -186,7 +276,11 @@ async function readOrdersForSite(
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || a.id.localeCompare(b.id))
     .map((order): PurchaseOrder => {
       const lines: PurchaseOrderLine[] = (orderLines.get(order.id) ?? []).map(
-        ({ line, planReceived }) => ({ ...line, receivedUnits: planReceived ?? 0 }),
+        ({ line, planReceived }) => ({
+          ...line,
+          receivedUnits: planReceived ?? 0,
+          ...subcontracts.byLine.get(line.id),
+        }),
       );
       const orderReceipts: PurchaseReceipt[] = (receipts.get(order.id) ?? []).map(
         ({ id, supplierSlip, postedAt, lines }) => ({ id, supplierSlip, postedAt, lines }),
@@ -209,6 +303,12 @@ async function readOrdersForSite(
         version: order.version,
         canEdit: site.canBuy && (order.status === "draft" || pending),
         canReceive: site.canReceive && pending,
+        ...(subcontracts.pendingCustody.has(order.id) ||
+        orderReceipts.some((receipt) =>
+          receipt.lines.some(({ heldForRelease }) => heldForRelease === true),
+        )
+          ? { subcontractCancellationBlocked: true as const }
+          : {}),
         lines,
         receipts: orderReceipts,
         ...(site.canReadCosts ? { pricing } : {}),
@@ -258,6 +358,7 @@ async function projectWorkspace(
   const locationRows = await readPurchaseLocations(tx, site.id);
   const orders = await readOrdersForSite(
     tx,
+    actor,
     selection,
     parts,
     new Map(organizations.map(({ id, name }) => [id, name])),

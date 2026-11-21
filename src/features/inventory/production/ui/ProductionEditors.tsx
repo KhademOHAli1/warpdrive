@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { CatalogEditorDialog, CatalogField, CatalogSelect } from "../../catalog/ui/CatalogFields";
+import { SubcontractEditors } from "../../subcontract/ui/SubcontractEditors";
 import type { ProductionWorkspace } from "../contracts";
 import type { ProductionMessages } from "./messages";
 import {
@@ -137,7 +138,7 @@ function AllocationEditor({
   const stock = material.positions.find(({ id }) => id === positionId);
   const maximum = releasing
     ? editor.quantity
-    : Math.min(stock?.free ?? 0, materialRemaining(material));
+    : Math.min(stock?.free ?? 0, materialRemaining(material, build.subcontract));
   const count = parsedQuantity(quantity, Math.min(maximum, 1_000_000));
   const title = releasing ? t.releaseStock : t.allocate;
   return (
@@ -314,6 +315,11 @@ export function ProductionEditors({
       return (
         <ProductionPlanEditor {...{ workspace, initialSiteId, initialReleaseId, dialog, t }} />
       );
+    case "linkSubcontract":
+    case "dispatchSubcontract":
+    case "returnSubcontractMaterial":
+    case "releaseSubcontractOutput":
+      return <SubcontractEditors {...{ editor, dialog, t }} />;
     case "allocate":
     case "deallocate":
       return <AllocationEditor {...{ editor, dialog, t }} />;

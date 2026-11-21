@@ -1,3 +1,4 @@
+import { custodyRemaining, type SubcontractEditor } from "../../subcontract/ui/types";
 import type {
   ProductionBuild,
   ProductionDetail,
@@ -7,6 +8,7 @@ import type {
   ProductionPosition,
   ProductionQuery,
   ProductionWorkspace,
+  SubcontractView,
 } from "../contracts";
 
 export type ProductionDialog = {
@@ -20,6 +22,7 @@ export type ProductionDialog = {
 
 export type ProductionEditor =
   | { type: "createBuild" }
+  | SubcontractEditor
   | {
       type:
         | "schedule"
@@ -76,8 +79,17 @@ export function buildCanChange(build: ProductionBuild) {
   return build.canManage && build.status !== "closed" && build.status !== "cancelled";
 }
 
-export function materialRemaining({ demand, allocated, consumed }: ProductionMaterial) {
-  return Math.max(0, demand - allocated - consumed);
+export function materialRemaining(
+  { id, demand, allocated, consumed }: ProductionMaterial,
+  subcontract: SubcontractView | null = null,
+) {
+  const dispatched =
+    subcontract?.custody.reduce(
+      (quantity, dispatch) =>
+        dispatch.materialId === id ? quantity + custodyRemaining(dispatch) : quantity,
+      0,
+    ) ?? 0;
+  return Math.max(0, demand - allocated - consumed - dispatched);
 }
 
 export function batchRemaining(build: ProductionDetail) {

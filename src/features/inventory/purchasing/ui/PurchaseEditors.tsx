@@ -319,6 +319,7 @@ function ReceiptEntry({
   const format = useFormatters();
   const line = lines.find(({ id }) => id === row.lineId);
   const serialRequired = row.disposition === "accepted" && line?.trackable === true;
+  const lotRequired = row.disposition === "accepted" && line?.subcontracted === true;
   return (
     <fieldset className="min-w-0 space-y-3 rounded-md border p-3">
       <legend className="px-1 text-xs font-medium text-muted-foreground">
@@ -362,6 +363,7 @@ function ReceiptEntry({
           <Input
             id={`${id}-lot`}
             value={row.lot}
+            required={lotRequired}
             maxLength={80}
             disabled={disabled}
             onChange={(event) => update({ lot: event.target.value })}
@@ -420,6 +422,13 @@ function ReceiptEntry({
   );
 }
 
+type AcceptedReceiptInput = Extract<PurchasingIntent, { type: "receive" }>["lines"][number];
+
+function validAcceptedIdentity(line: PurchaseOrderLine, entry: AcceptedReceiptInput) {
+  if (line.subcontracted === true && entry.lot === null) return false;
+  return entry.serial === null ? !line.trackable : entry.quantity === 1;
+}
+
 function receiptIsWithinOrder(
   lines: readonly PurchaseOrderLine[],
   input: Extract<PurchasingIntent, { type: "receive" }>["lines"],
@@ -431,8 +440,7 @@ function receiptIsWithinOrder(
     if (line === undefined) return false;
     if (entry.disposition === "rejected" && entry.reason === null) return false;
     if (entry.disposition === "rejected") continue;
-    const serialValid = entry.serial === null ? !line.trackable : entry.quantity === 1;
-    if (!serialValid) return false;
+    if (!validAcceptedIdentity(line, entry)) return false;
     const next = (accepted.get(line.id) ?? 0) + entry.quantity;
     if (next > line.orderedUnits - line.receivedUnits) return false;
     accepted.set(line.id, next);
@@ -495,6 +503,9 @@ function ReceiptDialog({
           <bdi className="py-2 text-sm">{order.locationName}</bdi>
         </CatalogField>
       </div>
+      {availableLines.some(({ subcontracted }) => subcontracted === true) && (
+        <p className="text-sm text-muted-foreground">{t.subcontractReceiptHold}</p>
+      )}
       <div className="space-y-3">
         {rows.map((row, index) => (
           <ReceiptEntry

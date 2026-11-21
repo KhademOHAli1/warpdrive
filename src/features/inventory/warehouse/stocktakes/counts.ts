@@ -81,7 +81,12 @@ async function lockStocktake(tx: Db, actor: OperationsActor, id: string) {
 }
 
 function stockChangingEvents() {
-  return or(ne(events.onHandDelta, 0), ne(events.reservedDelta, 0), eq(events.kind, "state"));
+  return or(
+    ne(events.onHandDelta, 0),
+    ne(events.reservedDelta, 0),
+    eq(events.kind, "state"),
+    eq(events.kind, "production-accept"),
+  );
 }
 
 /** The bin watermark also detects transient arrivals that have already left the current cohort. */

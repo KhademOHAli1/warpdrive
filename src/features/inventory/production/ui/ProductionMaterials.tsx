@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { bomHref } from "../../bom/ui/links";
+import { subcontractMessages } from "../../subcontract/ui/messages";
+import { companyProvides } from "../../subcontract/ui/types";
 import type { ProductionDetail, ProductionMaterial, ProductionPosition } from "../contracts";
 import type { ProductionMessages } from "./messages";
 import { useProductionNumber } from "./ProductionFields";
@@ -47,11 +50,16 @@ function MaterialRow({
   t: ProductionMessages;
 }) {
   const number = useProductionNumber();
+  const labels = subcontractMessages[useLocale()];
+  const linked = build.subcontract;
+  const supplied = companyProvides(linked, material);
   const mayAllocate =
     build.canManage &&
     (build.status === "planned" || build.status === "issued") &&
     !material.consumable &&
-    materialRemaining(material) > 0;
+    supplied &&
+    linked?.orderStatus !== "cancelled" &&
+    materialRemaining(material, linked) > 0;
   const mayDeallocate =
     build.canManage && build.status !== "closed" && build.status !== "cancelled";
   const available = material.positions.some(({ free }) => free > 0);
@@ -80,6 +88,11 @@ function MaterialRow({
               </Link>
             )}
             {material.consumable && <Badge variant="outline">{t.consumable}</Badge>}
+            {linked !== null && (
+              <Badge variant="outline">
+                {supplied ? labels.companyProvided : labels.supplierProvided}
+              </Badge>
+            )}
           </div>
         </div>
         {mayAllocate && (

@@ -41,8 +41,9 @@ export async function readStockPositionRows(
   tx: Db,
   itemIds?: readonly string[],
   siteIds?: readonly string[] | null,
+  positionIds?: readonly string[],
 ): Promise<StockPositionRow[]> {
-  if (itemIds?.length === 0 || siteIds?.length === 0) return [];
+  if (itemIds?.length === 0 || siteIds?.length === 0 || positionIds?.length === 0) return [];
   const rows = await tx
     .select({
       ...getTableColumns(inventoryStockPositions),
@@ -70,6 +71,7 @@ export async function readStockPositionRows(
       and(
         itemIds === undefined ? undefined : inArray(inventoryStockPositions.itemId, itemIds),
         siteIds == null ? undefined : inArray(inventoryStockPositions.siteId, siteIds),
+        positionIds === undefined ? undefined : inArray(inventoryStockPositions.id, positionIds),
       ),
     );
   return rows.map((row) => ({ ...row, locationKind: row.locationKind ?? "storage" }));

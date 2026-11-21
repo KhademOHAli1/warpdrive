@@ -20,6 +20,8 @@ const ledgerReasons = {
   "production-consume": "Consume reserved production material",
   "production-output": "Post approved production output",
   "production-reversal": "Reverse production output and return consumed material",
+  "production-dispatch": "Dispatch company material to subcontract custody",
+  "production-return": "Return company material from subcontract custody",
 } as const;
 
 type ProductionStockKind = keyof typeof ledgerReasons;
@@ -29,6 +31,7 @@ export type ProductionStockDelta = {
   onHandDelta: number;
   reservedDelta: number;
   reversesEventId?: string;
+  sourcePositionId?: string;
 };
 
 export async function requireStorageBin(tx: Db, siteId: string, locationId: string) {
@@ -79,7 +82,7 @@ export async function writeProductionStock(
   kind: ProductionStockKind,
   delta: ProductionStockDelta,
 ) {
-  const { position, onHandDelta, reservedDelta, reversesEventId } = delta;
+  const { position, onHandDelta, reservedDelta, reversesEventId, sourcePositionId } = delta;
   const item = stock.get(position.itemId);
   if (item === undefined) failProduction("unavailable");
   const update = {
@@ -119,6 +122,7 @@ export async function writeProductionStock(
     {
       itemId: position.itemId,
       positionId: position.id,
+      sourcePositionId,
       movementId,
       kind,
       onHandDelta,

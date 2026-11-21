@@ -8,6 +8,7 @@ const en = {
   finalizeBatch: "Output posted",
   stock: "There is insufficient eligible stock for this operation.",
   state: "This action is unavailable in the current build state.",
+  subcontract: "Check the purchase line, supplier stock, and received output before retrying.",
   serialError: "Use unique serial numbers and match the batch quantity.",
   reversal: "This output can no longer be reversed.",
   projectError: "The production project or its tasks block this action.",
@@ -118,6 +119,8 @@ const de: ProductionMessages = {
   finalizeBatch: "Ausgabe gebucht",
   stock: "Für diesen Vorgang ist nicht genügend geeigneter Bestand vorhanden.",
   state: "Diese Aktion ist im aktuellen Auftragsstatus nicht verfügbar.",
+  subcontract:
+    "Prüfen Sie die Bestellposition, den Bestand beim Lieferanten und den Wareneingang. Versuchen Sie es anschließend erneut.",
   serialError: "Verwenden Sie eindeutige Seriennummern entsprechend der Losmenge.",
   reversal: "Diese Ausgabe kann nicht mehr rückgängig gemacht werden.",
   projectError: "Das Produktionsprojekt oder seine Aufgaben verhindern diese Aktion.",
@@ -233,6 +236,8 @@ const fa: ProductionMessages = {
   finalizeBatch: "خروجی ثبت شد",
   stock: "موجودی مناسب برای این عملیات کافی نیست.",
   state: "این اقدام در وضعیت فعلی دستور ساخت در دسترس نیست.",
+  subcontract:
+    "ردیف سفارش خرید، موجودی نزد تأمین‌کننده و محصول دریافتی را بررسی کنید و دوباره تلاش کنید.",
   serialError: "تعداد سریال‌های یکتا باید برابر مقدار بچ باشد.",
   reversal: "این خروجی دیگر قابل برگشت نیست.",
   projectError: "پروژهٔ تولید یا وظیفه‌های آن مانع این عملیات است.",

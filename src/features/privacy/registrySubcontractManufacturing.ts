@@ -1,0 +1,66 @@
+import { classifyInventory } from "./registryClassification";
+
+export const subcontractManufacturingEntry = classifyInventory(
+  [
+    "derived:src/features/inventory/purchasing/subcontract.ts",
+    "derived:src/features/inventory/subcontract/configure.ts",
+    "derived:src/features/inventory/subcontract/custody.ts",
+    "derived:src/features/inventory/subcontract/reads.ts",
+    "derived:src/features/inventory/subcontract/settle.ts",
+    "derived:src/features/inventory/subcontract/ui/SubcontractEditors.tsx",
+    "sourceReview:drizzle/0139_inventory_subcontract_manufacturing.sql#252ae435103e2296fc759dc52bd9ea4171bd18b501287ba2061749021383bf95",
+    "sourceReview:src/features/inventory/purchasing/subcontract.ts#49a2eba81408f42e39f2b1084b780d3f52084d968576409a861e5333d0c1ebf9",
+    "sourceReview:src/features/inventory/subcontract/configure.ts#a4ea0f9bec9d31bce80f09a255b1c18f8b07177665de2b6c4ef223960f5c40a9",
+    "sourceReview:src/features/inventory/subcontract/custody.ts#4092866867f05ed28153743d80303c61275b67361c4f13ee186137b6f72b19a4",
+    "sourceReview:src/features/inventory/subcontract/custodyBalance.ts#b6b684a4e91be0b6f69371ee2e2c0c901e9782a46e35f874b8cd67269e2cbf12",
+    "sourceReview:src/features/inventory/subcontract/reads.ts#216582a48b2b5cf10dae9641cd7b6d42fcd614fdc11e3d293637d054ccdd5833",
+    "sourceReview:src/features/inventory/subcontract/schema.ts#b4a73b61d6940d3badd6165b6141e1e821e772deae2da348b060355ecf56bf70",
+    "sourceReview:src/features/inventory/subcontract/settle.ts#ee3fe7d2f6601b010fd9581f4b769c785cd5a2784dede60d657edfe1b7197a97",
+    "sourceReview:src/features/inventory/subcontract/ui/SubcontractEditors.tsx#0a386aba3b8a441e5997a6bbd31d2c213ea4677083f9f4c7ea9902019efac4ff",
+    "table:inventory_subcontract_consumptions",
+    "table:inventory_subcontract_dispatches",
+    "table:inventory_subcontract_materials",
+    "table:inventory_subcontract_receipts",
+    "table:inventory_subcontract_returns",
+    "table:inventory_subcontracts",
+    "writer:src/features/inventory/purchasing/orders.ts#update:inventoryProductionBuilds",
+    "writer:src/features/inventory/purchasing/receipts.ts#insert:inventoryProductionOutputs",
+    "writer:src/features/inventory/purchasing/receipts.ts#insert:inventorySubcontractReceipts",
+    "writer:src/features/inventory/purchasing/subcontract.ts#execute:sql",
+    "writer:src/features/inventory/subcontract/configure.ts#insert:inventorySubcontractMaterials",
+    "writer:src/features/inventory/subcontract/configure.ts#insert:inventorySubcontracts",
+    "writer:src/features/inventory/subcontract/custody.ts#delete:inventoryProductionAllocations",
+    "writer:src/features/inventory/subcontract/custody.ts#insert:inventoryStockPositions",
+    "writer:src/features/inventory/subcontract/custody.ts#insert:inventorySubcontractDispatches",
+    "writer:src/features/inventory/subcontract/custody.ts#insert:inventorySubcontractReturns",
+    "writer:src/features/inventory/subcontract/custody.ts#update:inventoryProductionAllocations",
+    "writer:src/features/inventory/subcontract/custody.ts#update:inventoryStockPositions",
+    "writer:src/features/inventory/subcontract/custody.ts#update:inventorySubcontractDispatches",
+    "writer:src/features/inventory/subcontract/custodyBalance.ts#execute:sql",
+    "writer:src/features/inventory/subcontract/settle.ts#insert:inventoryProductionInputs",
+    "writer:src/features/inventory/subcontract/settle.ts#insert:inventorySubcontractConsumptions",
+    "writer:src/features/inventory/subcontract/settle.ts#update:inventoryProductionBuilds",
+    "writer:src/features/inventory/subcontract/settle.ts#update:inventoryProductionOutputs",
+    "writer:src/features/inventory/subcontract/settle.ts#update:inventoryStockPositions",
+    "writer:src/features/inventory/subcontract/settle.ts#update:inventorySubcontractDispatches",
+  ],
+  {
+    owner: "subcontracted manufacturing",
+    categories: [
+      "supplier purchase lines, released engineering identifiers, warehouse lots and serials",
+      "received output, dispatch, return, consumption and acceptance evidence",
+      "native operator identities and scoped command records",
+    ],
+    subjectRelation:
+      "Native operators record purchase, warehouse and engineering actions. Supplier organizations stay in CRM and are linked through authorized purchase records.",
+    purpose:
+      "Link outsourced production to its approved release and reconcile external custody and received stock in the production and purchasing ledgers.",
+    disclosure:
+      "Purchasing and warehouse scope govern orders and receipts. Engineering and site grants govern builds and custody. Pricing stays within its existing cost-viewer scope. Web replay masks operational records.",
+    retention:
+      "The link, dispatched stock and receipt history retain exact lot and serial provenance. Dispatch and consumption identifiers remain available after material leaves supplier custody.",
+    externalEffects:
+      "Authorized Core commands post company material movements, held receipts and release evidence to PostgreSQL.",
+    erasureTask: "DPL-15 / DPL-18 / DPL-21",
+  },
+);

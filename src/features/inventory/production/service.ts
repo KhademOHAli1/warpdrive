@@ -12,9 +12,18 @@ import { readBomGraph } from "../bom/graph";
 import { lockBomReleaseGrants } from "../bom/reads";
 import { lockInventoryCatalog } from "../catalog/policy";
 import { InventoryDomainError } from "../errors";
+import { PurchasingFailure } from "../purchasing/scope";
 import { requireItemReleaseAccess } from "../releases/access";
 import { inventoryProductReleases } from "../releases/schema";
+import { lockSourcingRecords } from "../sourcing/scope";
 import { InventoryStockError, lockInventoryStock } from "../stock";
+import {
+  applySubcontractCommand,
+  isSubcontractCommand,
+  requireInternalBuildOperation,
+  requireSubcontractBuyer,
+} from "../subcontract/commands";
+import { lockSubcontractPurchase } from "../subcontract/configure";
 import { readWarehouseAccess, type WarehouseAccess } from "../warehouse/access";
 import { inventoryProductionBuilds, type ProductionBuildRow } from "./buildSchema";
 import {
@@ -35,6 +44,8 @@ import { projectProductionWorkspace } from "./reads";
 function productionError(error: unknown): ProductionError {
   if (error instanceof ProductionFailure || error instanceof BomPlanningFailure) return error.code;
   if (error instanceof InventoryStockError) return "stock";
+  if (error instanceof PurchasingFailure)
+    return error.code === "unavailable" ? "unavailable" : "subcontract";
   if (error instanceof InventoryDomainError) return "project";
   throw error;
 }
@@ -154,11 +165,26 @@ async function applyProductionCommand(
     const graph = await authorizedGraph(tx, actor, command.releaseId, signal);
     return createProductionTree(tx, actor, command, graph, signal);
   }
+  const purchase =
+    command.type === "linkSubcontract" ? await lockSubcontractPurchase(tx, command.orderId) : null;
   const build = await lockProductionBuild(tx, access, command.buildId);
   const descendants =
     command.type === "cancelBuild" ? await lockProductionDescendants(tx, access, build) : [];
+  if (purchase !== null) {
+    await requireSubcontractBuyer(tx, actor, build, purchase);
+    await lockSourcingRecords(tx, build.siteId, build.itemId, "read", signal);
+  }
   await authorizedGraph(tx, actor, build.releaseId, signal);
   if (build.version !== command.version) failProduction("stale");
+  if (isSubcontractCommand(command)) {
+    await applySubcontractCommand(tx, actor, access, build, command, purchase, signal);
+    await tx
+      .update(inventoryProductionBuilds)
+      .set({ version: build.version + 1 })
+      .where(eq(inventoryProductionBuilds.id, build.id));
+    return build.id;
+  }
+  await requireInternalBuildOperation(tx, build, command);
   if (command.type === "finalizeBatch" && command.disposition === "completed") {
     await requireCompletedProductionTasks(tx, actor, build, signal);
   }
@@ -166,6 +192,7 @@ async function applyProductionCommand(
   if (command.type === "cancelBuild") {
     for (const child of descendants) {
       if (child.status === "closed" || child.status === "cancelled") continue;
+      await requireInternalBuildOperation(tx, child, command);
       await executeBuildOperation(
         tx,
         actor.id,
@@ -207,7 +234,12 @@ async function changeOrReplay(
       ),
     );
   if (receipt !== undefined) {
+    const purchase =
+      command.type === "linkSubcontract"
+        ? await lockSubcontractPurchase(tx, command.orderId)
+        : null;
     const build = await lockProductionBuild(tx, access, receipt.buildId);
+    if (purchase !== null) await requireSubcontractBuyer(tx, actor, build, purchase);
     await authorizedGraph(tx, actor, build.releaseId, signal);
     if (receipt.fingerprint !== fingerprint) failProduction("stale");
     return build.id;

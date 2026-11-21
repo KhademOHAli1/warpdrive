@@ -24,18 +24,20 @@ export function ProductionQuantityField({
   value,
   change,
   disabled,
+  required = true,
 }: {
   label: string;
   value: string;
   change: (value: string) => void;
   disabled: boolean;
+  required?: boolean;
 }) {
   const id = useId();
   return (
     <CatalogField id={id} label={label}>
       <Input
         id={id}
-        required
+        required={required}
         inputMode="numeric"
         value={value}
         maxLength={7}

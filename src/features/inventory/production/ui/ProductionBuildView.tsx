@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { bomHref } from "../../bom/ui/links";
+import { subcontractMessages } from "../../subcontract/ui/messages";
+import { SubcontractPanel } from "../../subcontract/ui/SubcontractPanel";
+import { companyProvides, subcontractAllowsCancel } from "../../subcontract/ui/types";
 import type { ProductionDetail } from "../contracts";
 import type { ProductionMessages } from "./messages";
 import { ProductionTime, useProductionNumber } from "./ProductionFields";
@@ -38,12 +42,21 @@ const buildCommands = {
 
 function ProductionHeader({ build, busy, open, t }: DetailViewProps) {
   const number = useProductionNumber();
+  const linked = build.subcontract;
   const mayAutoAllocate = build.materials.some(
     (material) =>
       !material.consumable &&
-      materialRemaining(material) > 0 &&
+      companyProvides(linked, material) &&
+      materialRemaining(material, linked) > 0 &&
       material.positions.some(({ free }) => free > 0),
   );
+  const actions = buildCommands[build.status].filter((type) => {
+    if (linked === null) return true;
+    if (type === "cancelBuild") return subcontractAllowsCancel(build);
+    if (type === "autoAllocate")
+      return linked.orderStatus !== "cancelled" && linked.companyMaterialIds.length > 0;
+    return type === "schedule";
+  });
   return (
     <section
       className="space-y-3 rounded-lg border bg-card p-3"
@@ -111,9 +124,9 @@ function ProductionHeader({ build, busy, open, t }: DetailViewProps) {
           </div>
         )}
       </dl>
-      {buildCanChange(build) && (
+      {buildCanChange(build) && actions.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {buildCommands[build.status].map((type) => (
+          {actions.map((type) => (
             <Button
               key={type}
               size="sm"
@@ -218,12 +231,9 @@ function BuildRelations({ build, t }: { build: ProductionDetail; t: ProductionMe
 }
 
 function BuildHistory({ build, t }: { build: ProductionDetail; t: ProductionMessages }) {
+  const subcontract = subcontractMessages[useLocale()];
   if (build.history.length === 0) return null;
-  const label = (type: ProductionDetail["history"][number]["type"]) => {
-    if (type === "createBuild") return t.planBuild;
-    if (type === "deallocate") return t.releaseStock;
-    return t[type];
-  };
+  const labels = { ...t, ...subcontract, createBuild: t.planBuild, deallocate: t.releaseStock };
   return (
     <details className="min-w-0 rounded-lg border bg-card">
       <summary className="cursor-pointer rounded-md p-3 text-sm font-semibold outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50">
@@ -233,7 +243,7 @@ function BuildHistory({ build, t }: { build: ProductionDetail; t: ProductionMess
         {build.history.map((entry) => (
           <li key={entry.id} className="space-y-1 p-3" data-production-history-type={entry.type}>
             <div className="flex flex-wrap items-baseline justify-between gap-1 text-sm">
-              <span>{label(entry.type)}</span>
+              <span>{labels[entry.type]}</span>
               <span className="text-xs text-muted-foreground">
                 <ProductionTime value={entry.at} />
               </span>
@@ -260,6 +270,7 @@ export function ProductionBuildView({ build, busy, open, t }: DetailViewProps) {
     >
       <ProductionHeader {...{ build, busy, open, t }} />
       <BuildRelations build={build} t={t} />
+      <SubcontractPanel {...{ build, busy, open, t }} />
       <ProductionMaterials {...{ build, busy, open, t }} />
       <ProductionOutputs {...{ build, busy, open, t }} />
       <BuildHistory build={build} t={t} />

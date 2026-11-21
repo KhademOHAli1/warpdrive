@@ -33,6 +33,12 @@ const en = {
   cancellationReason: "Cancellation reason",
   receive: "Receive delivery",
   receiptDescription: "Record each received or rejected lot against its order line.",
+  subcontractLine: "Subcontracted production",
+  openSubcontractBuild: "Open production build",
+  awaitingSubcontractRelease: "Held for production release",
+  subcontractReceiptHold: "Accepted subcontract items stay on hold until Production releases them.",
+  subcontractCancellationBlocked:
+    "Resolve held deliveries and material at the subcontractor before cancelling this order.",
   packingSlip: "Packing slip reference",
   receiptEntry: "Receipt entry",
   addReceiptEntry: "Add receipt entry",
@@ -119,6 +125,13 @@ const de: Words = {
   receive: "Lieferung erfassen",
   receiptDescription:
     "Erfassen Sie jede angenommene oder abgelehnte Charge für ihre Bestellposition.",
+  subcontractLine: "Fremdfertigung",
+  openSubcontractBuild: "Fertigungsauftrag öffnen",
+  awaitingSubcontractRelease: "Gesperrt bis zur Fertigungsfreigabe",
+  subcontractReceiptHold:
+    "Angenommene Fremdfertigungsware bleibt bis zur Fertigungsfreigabe gesperrt.",
+  subcontractCancellationBlocked:
+    "Klären Sie gesperrte Lieferungen und Material beim Fremdfertiger vor der Stornierung.",
   packingSlip: "Lieferscheinreferenz",
   receiptEntry: "Eingangsposition",
   addReceiptEntry: "Eingangsposition hinzufügen",
@@ -202,6 +215,12 @@ const fa: Words = {
   cancellationReason: "دلیل لغو",
   receive: "ثبت تحویل",
   receiptDescription: "هر سری ساخت پذیرفته یا ردشده را برای ردیف سفارش خود ثبت کنید.",
+  subcontractLine: "تولید پیمانکاری",
+  openSubcontractBuild: "باز کردن سفارش ساخت",
+  awaitingSubcontractRelease: "در انتظار تأیید تولید",
+  subcontractReceiptHold: "اقلام پذیرفته‌شده از پیمانکار تا تأیید تولید در وضعیت نگهداری می‌مانند.",
+  subcontractCancellationBlocked:
+    "پیش از لغو سفارش، وضعیت محموله‌های در انتظار تأیید و مواد نزد پیمانکار را تعیین کنید.",
   packingSlip: "مرجع برگهٔ تحویل",
   receiptEntry: "ردیف دریافت",
   addReceiptEntry: "افزودن ردیف دریافت",

@@ -11,6 +11,8 @@ import {
   type WarehouseLocationKind,
 } from "./schema";
 
+import { hasSubcontractLocationUse } from "./subcontractProtection";
+
 type ItemBalance = { id: string; onHand: number; reserved: number };
 
 /** Read aggregate and positioned quantities in the same PostgreSQL statement snapshot. */
@@ -93,6 +95,7 @@ export async function hasWarehouseStock(tx: Db, siteId: string, locationId: stri
   return (
     rows.rows[0]?.has_stock === true ||
     (await hasOpenWarehouseTransfer(tx, siteId, locationId)) ||
-    (await hasOpenProductionBuild(tx, siteId, locationId))
+    (await hasOpenProductionBuild(tx, siteId, locationId)) ||
+    (locationId !== null && (await hasSubcontractLocationUse(tx, siteId, locationId)))
   );
 }

@@ -20,6 +20,11 @@ import {
   inventoryStockPositions,
 } from "./schema";
 
+import {
+  hasSubcontractLocationUse,
+  isSubcontractControlledPosition,
+} from "./subcontractProtection";
+
 type PositionRow = typeof inventoryStockPositions.$inferSelect;
 type PositionInsert = typeof inventoryStockPositions.$inferInsert;
 type IncomingRow = typeof inventoryStockIncoming.$inferSelect;
@@ -31,6 +36,7 @@ type CancelIncoming = Extract<WarehouseCommand, { type: "cancelIncoming" }>;
 type ResolvedLocation = ReturnType<typeof managedWarehouseLocation>;
 
 type Target = ResolvedLocation & { itemId: string | null; policy: CatalogItemPolicy | null };
+type PurchaseOrigin = { orderId: string; buildOutputId?: string };
 
 async function readPosition(tx: Db, id: string) {
   return (
@@ -115,6 +121,7 @@ async function updateLocationPolicy(
 ) {
   if (site.archived || location.archived) failWarehouse("incompatibleLocation");
   if (kind === location.kind) return location.id;
+  if (await hasSubcontractLocationUse(tx, site.id, location.id)) failWarehouse("conflict");
   if (kind !== "storage") await requireBinClearForDemotion(tx, site.id, location.id, kind);
   if (kind === "external") {
     const [pendingPurchase] = await tx
@@ -206,11 +213,15 @@ async function placeStock(
   target: Target,
   actorId: string,
   command: Placement,
-  purchaseOrderId: string | null,
+  purchase?: PurchaseOrigin,
 ) {
   assertPhysicalInput(target, command);
-  if (purchaseOrderId !== null && target.location.kind !== "storage")
-    failWarehouse("incompatibleLocation");
+  if (purchase !== undefined) {
+    if (target.location.kind !== "storage") failWarehouse("incompatibleLocation");
+    if (purchase.buildOutputId !== undefined && command.state !== "hold") {
+      failWarehouse("planMismatch");
+    }
+  }
   requireWarehouseOwner(access, command.ownerOrganizationId);
   const {
     itemId,
@@ -230,7 +241,7 @@ async function placeStock(
     const balance = unlocatedBalance(item, await readStockPositionRows(tx, [itemId]));
     if (quantity > balance.onHand - balance.reserved) failWarehouse("insufficientStock");
   } else {
-    await deliverIncoming(tx, command, purchaseOrderId);
+    await deliverIncoming(tx, command, purchase?.orderId ?? null);
     movementId = await postInventoryMovement(tx, item, {
       actorId,
       requestId,
@@ -250,6 +261,7 @@ async function placeStock(
     state,
     ownerOrganizationId,
     onHand: quantity,
+    buildOutputId: purchase?.buildOutputId,
   });
   await tx.insert(inventoryStockEvents).values({
     itemId,
@@ -264,6 +276,18 @@ async function placeStock(
     state,
   });
   return positionId;
+}
+
+/** Core purchasing owns the order and build locks before attributing a supplier receipt. */
+export async function applyPurchaseWarehouseReceipt(
+  tx: Db,
+  access: WarehouseAccess,
+  actorId: string,
+  command: Extract<Placement, { type: "receive" }>,
+  purchase: PurchaseOrigin,
+) {
+  const target = await resolveWarehouseTarget(tx, access, command);
+  return placeStock(tx, access, target, actorId, command, purchase);
 }
 
 async function createIncoming(
@@ -382,6 +406,7 @@ async function setPositionState(tx: Db, actorId: string, target: Target, command
   const position = await readPosition(tx, id);
   if (position === undefined) failWarehouse("unavailable");
   if (position.locationId !== target.location.id) failWarehouse("conflict");
+  if (await isSubcontractControlledPosition(tx, position)) failWarehouse("conflict");
   if (position.state === state) {
     if (quantity > position.onHand) failWarehouse("insufficientStock");
     return id;
@@ -405,7 +430,6 @@ export async function applyWarehouseCommand(
   target: Target,
   actorId: string,
   command: WarehouseCommand,
-  purchaseOrderId: string | null = null,
 ) {
   try {
     switch (command.type) {
@@ -413,7 +437,7 @@ export async function applyWarehouseCommand(
         return await updateLocationPolicy(tx, target, command);
       case "receive":
       case "reconcile":
-        return await placeStock(tx, access, target, actorId, command, purchaseOrderId);
+        return await placeStock(tx, access, target, actorId, command);
       case "createIncoming":
         return await createIncoming(tx, access, target, actorId, command);
       case "cancelIncoming":

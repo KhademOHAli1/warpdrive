@@ -85,6 +85,44 @@ export const productionCommand = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("cancelBatch"), ...versioned, outputId: id, reason }),
   z.strictObject({ type: z.literal("reverseOutput"), ...versioned, outputId: id, reason }),
   z.strictObject({ type: z.literal("cancelBuild"), ...versioned, reason }),
+  z.strictObject({
+    type: z.literal("linkSubcontract"),
+    ...versioned,
+    orderId: id,
+    lineId: id,
+    supplierBinId: id,
+    companyMaterialIds: z
+      .array(id)
+      .max(600)
+      .refine((ids) => new Set(ids).size === ids.length),
+  }),
+  z.strictObject({
+    type: z.literal("dispatchSubcontract"),
+    ...versioned,
+    reason,
+    allocations: z
+      .array(z.strictObject({ materialId: id, positionId: id, quantity }))
+      .min(1)
+      .max(600)
+      .refine(
+        (lines) =>
+          new Set(lines.map(({ materialId, positionId }) => `${materialId}:${positionId}`)).size ===
+          lines.length,
+      ),
+  }),
+  z.strictObject({
+    type: z.literal("returnSubcontractMaterial"),
+    ...versioned,
+    dispatchId: id,
+    quantity,
+    reason,
+  }),
+  z.strictObject({
+    type: z.literal("releaseSubcontractOutput"),
+    ...versioned,
+    outputId: id,
+    reason,
+  }),
 ]);
 
 export const productionQuery = z.strictObject({
@@ -94,7 +132,20 @@ export const productionQuery = z.strictObject({
 });
 export type ProductionQuery = z.infer<typeof productionQuery>;
 export type ProductionCommand = z.infer<typeof productionCommand>;
-export type ExistingProductionCommand = Exclude<ProductionCommand, { type: "createBuild" }>;
+export type SubcontractCommand = Extract<
+  ProductionCommand,
+  {
+    type:
+      | "linkSubcontract"
+      | "dispatchSubcontract"
+      | "returnSubcontractMaterial"
+      | "releaseSubcontractOutput";
+  }
+>;
+export type ExistingProductionCommand = Exclude<
+  ProductionCommand,
+  { type: "createBuild" } | SubcontractCommand
+>;
 type WithNoReceipt<C> = C extends { requestId: string } ? Omit<C, "requestId"> : never;
 export type ProductionIntent = WithNoReceipt<ProductionCommand>;
 
@@ -161,6 +212,34 @@ export type ProductionDetail = ProductionBuild & {
     tasks: { id: string; title: string; completed: boolean }[];
   } | null;
   history: { id: string; type: ProductionCommand["type"]; reason: string | null; at: string }[];
+  subcontractOptions: SubcontractOptions | null;
+  subcontract: SubcontractView | null;
+};
+
+export type SubcontractOptions = {
+  lines: { id: string; orderId: string; reference: string; supplier: string; quantity: number }[];
+  bins: { id: string; code: string; name: string }[];
+};
+
+export type SubcontractView = {
+  orderId: string | null;
+  reference: string | null;
+  orderStatus: "draft" | "open" | "partial" | "received" | "cancelled";
+  supplierBin: string;
+  companyMaterialIds: string[];
+  custody: {
+    id: string;
+    materialId: string;
+    quantity: number;
+    consumed: number;
+    returned: number;
+    lot: string | null;
+    serial: string | null;
+  }[];
+  outputs: { outputId: string; receiptLineId: string }[];
+  canDispatch: boolean;
+  canReturn: boolean;
+  canRelease: boolean;
 };
 
 export type ProductionWorkspace = {
@@ -186,6 +265,7 @@ export type ProductionError =
   | "limit"
   | "project"
   | "serial"
-  | "reversal";
+  | "reversal"
+  | "subcontract";
 export type ProductionResult = Result<ProductionWorkspace, ProductionError>;
 export type ProductionEffect = Result<{ buildId: string }, ProductionError>;

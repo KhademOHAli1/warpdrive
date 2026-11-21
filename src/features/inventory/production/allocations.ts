@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import { canHoldInventory } from "../catalog/eligibility";
 import { catalogItemPolicy } from "../catalog/policy";
 import { lockInventoryStock } from "../stock";
+import { readSubcontractMaterialDemand } from "../subcontract/custodyBalance";
 import {
   earliestExpiryFirst,
   isStockPositionEligible,
@@ -120,10 +121,6 @@ export function readBuildAllocations(tx: Db, buildId: string): Promise<BuildAllo
     );
 }
 
-function remainingMaterialDemand(build: ProductionBuildRow, material: ProductionMaterialRow) {
-  return material.perUnit * (build.quantity - build.completed - build.scrapped);
-}
-
 async function reserveMaterial(
   tx: Db,
   actorId: string,
@@ -173,15 +170,14 @@ export async function autoAllocateProductionMaterial(
 ) {
   if (material.consumable) return 0;
   const stock = await lockInventoryStock(tx, [material.itemId]);
+  const demand = await readSubcontractMaterialDemand(tx, build, material);
+  if (demand === 0) return 0;
   const { usable, trackable, unitMatches } = await materialStockPolicy(tx, material);
   if (!unitMatches) failProduction("unitChanged");
   if (!usable) return 0;
   const allocations = await materialAllocations(tx, material.id);
   const allocated = allocations.reduce((total, row) => total + row.quantity, 0);
-  const goal = Math.min(
-    targetQuantity ?? remainingMaterialDemand(build, material),
-    remainingMaterialDemand(build, material),
-  );
+  const goal = Math.min(targetQuantity ?? demand, demand);
   let remaining = Math.max(0, goal - allocated);
   if (remaining === 0) return 0;
   let added = 0;
@@ -243,10 +239,8 @@ export async function changeBuildAllocation(
     (sum, row) => sum + row.quantity,
     0,
   );
-  if (
-    command.quantity >
-    Math.min(stockPositionAvailable(position), remainingMaterialDemand(build, material) - allocated)
-  ) {
+  const demand = await readSubcontractMaterialDemand(tx, build, material);
+  if (command.quantity > Math.min(stockPositionAvailable(position), demand - allocated)) {
     failProduction("stock");
   }
   await reserveMaterial(
