@@ -6,6 +6,7 @@ export * from "@/features/agency-projects/schema/agencyProjects";
 export * from "@/features/billing/schema";
 export * from "@/features/company-profile/schema";
 export * from "@/features/inventory/catalog/schema";
+export * from "@/features/inventory/purchasing/schema";
 export * from "@/features/inventory/releases/schema";
 export * from "@/features/inventory/schema";
 export * from "@/features/inventory/sourcing/schema";

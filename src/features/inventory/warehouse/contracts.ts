@@ -118,6 +118,8 @@ export type WarehouseIncoming = {
   reference: string | null;
   ownerOrganizationId: string | null;
   owned: boolean;
+  purchaseOwned: boolean;
+  purchaseOrderId: string | null;
 };
 export type WarehouseBalance = {
   itemId: string;

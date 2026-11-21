@@ -83,6 +83,7 @@ import {
   projectIntegratorInventoryEntry,
   projectPublicationInventoryEntry,
 } from "./registryProjectsAccess";
+import { purchaseOrdersEntry } from "./registryPurchaseOrders";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import { sharedLocationsEntry } from "./registrySharedLocations";
@@ -124,6 +125,7 @@ export const registryEntries: RegistryEntry[] = [
   inventoryWarehouseEntry,
   inventorySourcingEntry,
   warehouseOperationsEntry,
+  purchaseOrdersEntry,
   operationsAccessEntry,
   sharedLocationsEntry,
   manufacturingReleasesEntry,

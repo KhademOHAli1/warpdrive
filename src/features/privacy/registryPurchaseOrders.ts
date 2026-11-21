@@ -1,0 +1,65 @@
+import { classifyInventory } from "./registryClassification";
+
+export const purchaseOrdersEntry = classifyInventory(
+  [
+    "derived:src/features/inventory/purchasing/orders.ts",
+    "derived:src/features/inventory/purchasing/reads.ts",
+    "derived:src/features/inventory/purchasing/receipts.ts",
+    "derived:src/features/inventory/purchasing/scope.ts",
+    "derived:src/features/inventory/purchasing/ui/PurchaseEditors.tsx",
+    "derived:src/features/inventory/purchasing/ui/PurchasingView.tsx",
+    "sourceReview:drizzle/0136_inventory_purchase_orders.sql#7198db7785ff572056a4451e89ec1a9902f2d1eec62fbb75522afe2101c90668",
+    "sourceReview:src/app/(app)/inventory/purchase-orders/page.tsx#7753fad6d99383dc04a7f58856f40bc218d54cb4769b6f42483dde35596ef8e5",
+    "sourceReview:src/features/inventory/purchasing/orders.ts#6c949e1af75abedad759fc8700b30bddd7a8e398bb3a5f83f3bd853bc5f7fed9",
+    "sourceReview:src/features/inventory/purchasing/reads.ts#42b762f88f658963a6df9068a8b9c5aa21384375ba4b5004c4ed133df8e22701",
+    "sourceReview:src/features/inventory/purchasing/receipts.ts#9e1097c79d519dbbcc4b9e4cefd45863e1e8b050291570da0d8ff375610532cc",
+    "sourceReview:src/features/inventory/purchasing/router.ts#90d5a1f5c5bd5d41b5ec6b2a8d798eae1d5c9ca61df557b4d5241ffc4aa1b09f",
+    "sourceReview:src/features/inventory/purchasing/schema.ts#85c94fd66a0d1c814947fa67b78aa350372f12a0f851387d4079dd9430d30b14",
+    "sourceReview:src/features/inventory/purchasing/scope.ts#66924217a46b7a89fe10678467cc7485c1a6c26cdd945af7ca4cd01331f9dd5c",
+    "sourceReview:src/features/inventory/purchasing/service.ts#26c4c191255d89dcb024b5c9e90db8269e161f33efe7b963ad5896db401bb027",
+    "sourceReview:src/features/inventory/purchasing/ui/PurchaseEditors.tsx#93cabfda03b1086b24e002a96dc3feb39651d24251230f9472c5547c22fb5e52",
+    "sourceReview:src/features/inventory/purchasing/ui/PurchasingView.tsx#a404a6570a7ec4caed7064c5311e11f8cb916c3e789f51949a7322926b5cf608",
+    "table:inventory_purchase_order_line_costs",
+    "table:inventory_purchase_order_lines",
+    "table:inventory_purchase_orders",
+    "table:inventory_purchase_receipt_lines",
+    "table:inventory_purchase_receipts",
+    "writer:src/app/(app)/inventory/purchase-orders/page.tsx#query:dynamic",
+    "writer:src/features/inventory/purchasing/orders.ts#delete:purchaseOrderLines",
+    "writer:src/features/inventory/purchasing/orders.ts#insert:inventoryStockEvents",
+    "writer:src/features/inventory/purchasing/orders.ts#insert:inventoryStockIncoming",
+    "writer:src/features/inventory/purchasing/orders.ts#insert:purchaseOrderLineCosts",
+    "writer:src/features/inventory/purchasing/orders.ts#insert:purchaseOrderLines",
+    "writer:src/features/inventory/purchasing/orders.ts#insert:purchaseOrders",
+    "writer:src/features/inventory/purchasing/orders.ts#update:inventoryStockIncoming",
+    "writer:src/features/inventory/purchasing/orders.ts#update:purchaseOrderLines",
+    "writer:src/features/inventory/purchasing/orders.ts#update:purchaseOrders",
+    "writer:src/features/inventory/purchasing/receipts.ts#insert:purchaseReceiptLines",
+    "writer:src/features/inventory/purchasing/receipts.ts#insert:purchaseReceipts",
+    "writer:src/features/inventory/purchasing/receipts.ts#update:purchaseOrders",
+    "writer:src/features/inventory/purchasing/router.ts#query:dynamic",
+    "writer:src/features/inventory/purchasing/service.ts#insert:table",
+    "writer:src/features/inventory/purchasing/service.ts#update:dynamic",
+    "writer:src/features/inventory/purchasing/service.ts#update:inventory-purchasing-v1:",
+    "writer:src/features/inventory/purchasing/ui/PurchaseEditors.tsx#update:dynamic",
+  ],
+  {
+    owner: "inventory purchase orders",
+    categories: [
+      "site, bin, CRM supplier and part references, packs, order state and receipt balances",
+      "native buyer and warehouse staff identifiers, packing slip references, lot and serial evidence",
+      "restricted commercial prices and currencies, protected receipt attachment metadata and object keys",
+    ],
+    subjectRelation:
+      "Purchasing links existing CRM suppliers and records the staff who place and receive orders.",
+    purpose:
+      "Record commitments, priced offer snapshots, receipt exceptions and traceable supplier evidence.",
+    disclosure:
+      "Core scopes orders by current native role, site, supplier and part visibility. Costs require separate cost authority. Packing slip files inherit receipt visibility and warehouse write authorization.",
+    retention:
+      "Issued cost snapshots and receipt history are append-only. Attached evidence follows the confirmed file lifecycle. The live purchasing surface masks receipt and supplier details from replay.",
+    externalEffects:
+      "Typed Web commands update PostgreSQL and authorized packing slip files use the shared object-store handshake.",
+    erasureTask: "DPL-15 / DPL-18 / DPL-21",
+  },
+);

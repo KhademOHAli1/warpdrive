@@ -3,11 +3,13 @@ import { and, eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { applyMigrations } from "@/db/migrate";
 import {
+  canonicalFolder,
   freshMigrationDb,
   installPrefix,
   ledger,
   migrationFolder,
 } from "@/db/migrationAdmission.test-helpers";
+import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
 import { deals, organizations, pipelines, sessions, stages, users } from "@/db/schema";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import {
@@ -602,6 +604,23 @@ it("upgrades populated 0130 stock as an explicit unlocated balance and settles a
     const migrated = await ledger(h);
     expect(migrated).toHaveLength(132);
     expect(migrated.slice(0, 131)).toEqual(ledgerBefore);
+    const canonical = value(await readCanonicalMigrations(canonicalFolder, signal()));
+    expect(canonical[131]?.tag).toBe("0131_inventory_warehouse");
+    expect(migrated[131]?.hash).toBe(canonical[131]?.hash);
+    expect(await legacySnapshot(h)).toEqual(before);
+    expect(await h.db.select().from(inventoryStockPositions)).toEqual([]);
+    expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), target.folder)).toEqual(
+      success,
+    );
+    expect(await ledger(h)).toEqual(migrated);
+
+    // The running warehouse service also reads purchase plans introduced after 0131.
+    expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), canonicalFolder)).toEqual(
+      success,
+    );
+    const currentLedger = await ledger(h);
+    expect(currentLedger).toHaveLength(canonical.length);
+    expect(currentLedger.slice(0, 132)).toEqual(migrated);
     expect(await legacySnapshot(h)).toEqual(before);
     const first = value(await warehouse(h, admin, { itemId }));
     expect(first.positions).toEqual([]);
@@ -638,10 +657,10 @@ it("upgrades populated 0130 stock as an explicit unlocated balance and settles a
     expect(await h.db.select().from(inventoryStockPositions)).toMatchObject([
       { id: positionId, itemId, onHand: 2, reserved: 0 },
     ]);
-    expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), target.folder)).toEqual(
+    expect(await applyMigrations(h.db, AbortSignal.timeout(30_000), canonicalFolder)).toEqual(
       success,
     );
-    expect(await ledger(h)).toEqual(migrated);
+    expect(await ledger(h)).toEqual(currentLedger);
   } finally {
     await target.dispose();
     await h.close();

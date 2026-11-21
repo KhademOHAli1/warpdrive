@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { Input } from "@/components/ui/Input";
+import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { useCompanyCurrency } from "@/features/currencies/CurrencyProvider";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { currencyCode, moneyAmount } from "@/features/currencies/currencySchema";
@@ -223,7 +224,7 @@ function PriceDialog({
     String(editor.type === "tier" ? (editor.tier?.minPacks ?? 1) : 1),
   );
   const companyCurrency = currencyCode.safeParse(useCompanyCurrency());
-  const defaultCurrency = companyCurrency.success ? companyCurrency.data : "EUR";
+  const defaultCurrency = companyCurrency.success ? companyCurrency.data : DEFAULT_BASE_CURRENCY;
   const [currency, setCurrency] = useState(record?.currency ?? defaultCurrency);
   const [amount, setAmount] = useState(record?.amount ?? "");
   const tier = editor.type === "tier";

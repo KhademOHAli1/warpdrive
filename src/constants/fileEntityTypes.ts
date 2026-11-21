@@ -6,5 +6,6 @@ export const FILE_ENTITY_TYPE = [
   "email_message",
   "email_mailbox",
   "inventory_item",
+  "inventory_purchase_receipt",
 ] as const;
 export const FILE_STATUS = ["uploading", "ready"] as const;

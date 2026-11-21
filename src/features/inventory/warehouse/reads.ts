@@ -1,6 +1,8 @@
-import { and, asc, inArray } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, inArray, notExists, notInArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import type { Db } from "@/db/client";
 import { type CatalogItemPolicy, catalogItemPolicies } from "../catalog/policy";
+import { purchaseOrderLines, purchaseOrders } from "../purchasing/schema";
 import { inventoryItems } from "../schema";
 import type { WarehouseAccess } from "./access";
 import { stockPositionAvailable, unlocatedBalance } from "./balances";
@@ -16,7 +18,6 @@ import { inventoryStockIncoming } from "./schema";
 import { readStockSnapshot } from "./snapshot";
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect;
-type InboundRow = typeof inventoryStockIncoming.$inferSelect;
 
 export function isReceivableStockItem(policy: CatalogItemPolicy) {
   return policy.active && !policy.isTemplate && policy.stockMode !== "virtual";
@@ -79,11 +80,36 @@ async function readVisibleParts(tx: Db, access: WarehouseAccess) {
   });
 }
 
-async function readIncoming(tx: Db, itemIds: string[], siteIds: string[]): Promise<InboundRow[]> {
+async function readIncoming(
+  tx: Db,
+  itemIds: string[],
+  siteIds: string[],
+  visibleItemIds: string[],
+  visibleSupplierIds: string[],
+) {
   if (itemIds.length === 0 || siteIds.length === 0) return [];
+  const siblings = alias(purchaseOrderLines, "warehouse_purchase_siblings");
+  const inaccessibleParts = tx
+    .select({ id: siblings.id })
+    .from(siblings)
+    .where(
+      and(eq(siblings.orderId, purchaseOrders.id), notInArray(siblings.itemId, visibleItemIds)),
+    );
+  const canSeePurchase = and(
+    inArray(purchaseOrders.supplierOrganizationId, visibleSupplierIds),
+    notExists(inaccessibleParts),
+  );
   return tx
-    .select()
+    .select({
+      ...getTableColumns(inventoryStockIncoming),
+      purchaseOwned: sql<boolean>`${purchaseOrderLines.orderId} IS NOT NULL`,
+      purchaseOrderId: sql<
+        string | null
+      >`CASE WHEN ${canSeePurchase} THEN ${purchaseOrders.id} END`,
+    })
     .from(inventoryStockIncoming)
+    .leftJoin(purchaseOrderLines, eq(purchaseOrderLines.incomingId, inventoryStockIncoming.id))
+    .leftJoin(purchaseOrders, eq(purchaseOrders.id, purchaseOrderLines.orderId))
     .where(
       and(
         inArray(inventoryStockIncoming.siteId, siteIds),
@@ -158,7 +184,13 @@ export async function projectWarehouse(
   }
   const [snapshot, plans] = await Promise.all([
     readStockSnapshot(tx, partIds),
-    readIncoming(tx, partIds, siteIds),
+    readIncoming(
+      tx,
+      partIds,
+      siteIds,
+      items.map(({ item }) => item.id),
+      [...ownerNames.keys()],
+    ),
   ]);
   const allowedSites = new Set(siteIds);
   const positionRows = [...snapshot.positions.values()]
@@ -198,13 +230,14 @@ export async function projectWarehouse(
   const incoming = plans.flatMap((row) => {
     const part = byItem.get(row.itemId);
     const location = byLocation.get(row.locationId);
+    const reference = row.purchaseOwned && row.purchaseOrderId === null ? null : row.reference;
     if (
       part === undefined ||
       !queryAllowsPlacement(query, row) ||
-      !matchingText(search, [...partTerms(part), row.reference, location?.name, location?.code])
+      !matchingText(search, [...partTerms(part), reference, location?.name, location?.code])
     )
       return [];
-    return [{ ...row, ...ownedStock(row.ownerOrganizationId, ownerNames) }];
+    return [{ ...row, reference, ...ownedStock(row.ownerOrganizationId, ownerNames) }];
   });
   const unlocated =
     access.isAdmin && query.siteId === undefined && query.locationId === undefined

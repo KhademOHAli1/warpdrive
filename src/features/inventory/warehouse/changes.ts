@@ -1,6 +1,7 @@
 import { and, eq, gt, lt } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { type CatalogItemPolicy, catalogItemPolicy } from "../catalog/policy";
+import { purchaseOrderLines } from "../purchasing/schema";
 import { InventoryStockError, lockInventoryStock, postInventoryMovement } from "../stock";
 import {
   failWarehouse,
@@ -41,6 +42,15 @@ async function readPlan(tx: Db, id: string) {
   return (
     await tx.select().from(inventoryStockIncoming).where(eq(inventoryStockIncoming.id, id))
   )[0];
+}
+
+/** Check only after taking the SKU lock, which also serializes issuing the owning PO. */
+async function requireIncomingOwnership(tx: Db, planId: string, purchaseOrderId: string | null) {
+  const [line] = await tx
+    .select({ orderId: purchaseOrderLines.orderId })
+    .from(purchaseOrderLines)
+    .where(eq(purchaseOrderLines.incomingId, planId));
+  if ((line?.orderId ?? null) !== purchaseOrderId) failWarehouse("unavailable");
 }
 
 export async function resolveWarehouseTarget(
@@ -100,6 +110,21 @@ async function updateLocationPolicy(
       .limit(1);
     if (stock !== undefined) failWarehouse("conflict");
   }
+  if (kind === "external") {
+    const [pendingPurchase] = await tx
+      .select({ id: purchaseOrderLines.id })
+      .from(inventoryStockIncoming)
+      .innerJoin(purchaseOrderLines, eq(purchaseOrderLines.incomingId, inventoryStockIncoming.id))
+      .where(
+        and(
+          eq(inventoryStockIncoming.locationId, location.id),
+          eq(inventoryStockIncoming.cancelled, false),
+          lt(inventoryStockIncoming.received, inventoryStockIncoming.quantity),
+        ),
+      )
+      .limit(1);
+    if (pendingPurchase !== undefined) failWarehouse("conflict");
+  }
   if (kind === "structure") {
     if (await hasOpenWarehouseTransfer(tx, site.id, location.id)) failWarehouse("conflict");
     const [incoming] = await tx
@@ -138,8 +163,13 @@ async function insertPosition(tx: Db, values: PositionInsert) {
 async function deliverIncoming(
   tx: Db,
   command: Extract<Placement, { type: "receive" }>,
+  purchaseOrderId: string | null,
 ): Promise<void> {
-  if (command.incomingId === null) return;
+  if (command.incomingId === null) {
+    if (purchaseOrderId !== null) failWarehouse("planMismatch");
+    return;
+  }
+  await requireIncomingOwnership(tx, command.incomingId, purchaseOrderId);
   const plan = await readPlan(tx, command.incomingId);
   if (
     plan === undefined ||
@@ -170,8 +200,11 @@ async function placeStock(
   target: Target,
   actorId: string,
   command: Placement,
+  purchaseOrderId: string | null,
 ) {
   assertPhysicalInput(target, command);
+  if (purchaseOrderId !== null && target.location.kind !== "storage")
+    failWarehouse("incompatibleLocation");
   requireWarehouseOwner(access, command.ownerOrganizationId);
   const {
     itemId,
@@ -191,7 +224,7 @@ async function placeStock(
     const balance = unlocatedBalance(item, await readStockPositionRows(tx, [itemId]));
     if (quantity > balance.onHand - balance.reserved) failWarehouse("insufficientStock");
   } else {
-    await deliverIncoming(tx, command);
+    await deliverIncoming(tx, command, purchaseOrderId);
     movementId = await postInventoryMovement(tx, item, {
       actorId,
       requestId,
@@ -273,6 +306,7 @@ async function cancelIncoming(
   await stockItem(tx, target.itemId);
   const plan: IncomingRow | undefined = await readPlan(tx, id);
   if (plan === undefined) failWarehouse("unavailable");
+  await requireIncomingOwnership(tx, id, null);
   if (plan.cancelled) return plan.id;
   const remaining = plan.quantity - plan.received;
   if (remaining === 0) failWarehouse("planMismatch");
@@ -354,6 +388,7 @@ export async function applyWarehouseCommand(
   target: Target,
   actorId: string,
   command: WarehouseCommand,
+  purchaseOrderId: string | null = null,
 ) {
   try {
     switch (command.type) {
@@ -361,7 +396,7 @@ export async function applyWarehouseCommand(
         return await updateLocationPolicy(tx, target, command);
       case "receive":
       case "reconcile":
-        return await placeStock(tx, access, target, actorId, command);
+        return await placeStock(tx, access, target, actorId, command, purchaseOrderId);
       case "createIncoming":
         return await createIncoming(tx, access, target, actorId, command);
       case "cancelIncoming":

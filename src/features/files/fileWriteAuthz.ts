@@ -4,6 +4,7 @@ import { activities, deals, organizations, persons, pipelines } from "@/db/schem
 import { resolveActivityVisibility } from "@/features/activities/visibility";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { canAccessCatalogFiles } from "@/features/inventory/catalog/fileScope";
+import { canAccessPurchaseReceiptFiles } from "@/features/inventory/purchasing/fileScope";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
@@ -40,6 +41,8 @@ export async function canActorModifyParent(
       return canUseMailboxFiles(db, actor, entityId, signal);
     case "inventory_item":
       return canAccessCatalogFiles(db, actor, entityId, "write", signal);
+    case "inventory_purchase_receipt":
+      return canAccessPurchaseReceiptFiles(db, actor, entityId, "write", signal);
     default:
       return false;
   }

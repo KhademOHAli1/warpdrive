@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -287,7 +288,7 @@ export function WarehouseIncomingTable({
         const canManage = workspace.sites.find(({ id }) => id === row.siteId)?.canManage === true;
         const location = workspace.locations.find(({ id }) => id === row.locationId);
         const part = workspace.parts.find(({ id }) => id === row.itemId);
-        const open = canManage && !row.cancelled && outstanding > 0;
+        const open = !row.purchaseOwned && canManage && !row.cancelled && outstanding > 0;
         const canReceive =
           open &&
           location?.archived === false &&
@@ -304,8 +305,26 @@ export function WarehouseIncomingTable({
             />
             <td className="min-w-24 px-3 py-2.5">
               <p>
-                <bdi>{row.reference ?? "—"}</bdi>
+                {row.purchaseOrderId === null ? (
+                  <bdi>{row.reference ?? "—"}</bdi>
+                ) : (
+                  <Link
+                    href={{
+                      pathname: "/inventory/purchase-orders",
+                      query: { siteId: row.siteId, orderId: row.purchaseOrderId },
+                    }}
+                    prefetch={false}
+                    className="font-medium underline-offset-4 hover:underline"
+                  >
+                    <bdi>{row.reference ?? t.purchaseOrder}</bdi>
+                  </Link>
+                )}
               </p>
+              {row.purchaseOwned && (
+                <Badge variant="outline" className="mt-1">
+                  {t.purchaseOrder}
+                </Badge>
+              )}
               <WarehouseOwner
                 ownerId={row.ownerOrganizationId}
                 owned={row.owned}
