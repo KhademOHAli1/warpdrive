@@ -8,6 +8,7 @@ import {
   installPrefix,
   ledger,
 } from "@/db/migrationAdmission.test-helpers";
+import { readCanonicalMigrations } from "@/db/migrationAdmissionSource";
 import { directorySiteGrants } from "@/features/locations/schema";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { inventoryPartProfiles } from "../../catalog/schema";
@@ -63,8 +64,12 @@ it("upgrades populated 0132 stock, preserves movement history and ships an exist
     expect(receipts).toHaveLength(133);
 
     expect((await applyMigrations(h.db, signal(), canonicalFolder)).ok).toBe(true);
+    const canonical = await readCanonicalMigrations(canonicalFolder, signal());
+    if (!canonical.ok) throw new Error(canonical.error);
     const after = await ledger(h);
-    expect(after).toHaveLength(134);
+    expect(after).toHaveLength(canonical.value.length);
+    expect(canonical.value[133]?.tag).toBe("0133_inventory_stock_structure");
+    expect(after[133]?.hash).toBe(canonical.value[133]?.hash);
     expect(after.slice(0, 133)).toEqual(receipts);
     expect(await incumbentRows(h)).toEqual(before);
     expect((await applyMigrations(h.db, signal(), canonicalFolder)).ok).toBe(true);
