@@ -19,7 +19,7 @@ import {
   type ProjectIntegratorAccess,
   type ProjectIntegratorKey,
   projectIntegratorAccess,
-  projectIntegratorWorkspace,
+  projectIntegratorCurlExample,
 } from "./contracts";
 import { integratorMessages } from "./messages";
 
@@ -43,7 +43,6 @@ export function ProjectIntegratorSettings({
   const [expiration, setExpiration] = useState("90");
   const [token, setToken] = useState<string | null>(null);
   const nameId = useId();
-  const sample = `curl -H 'X-API-Key: YOUR_KEY' "$WARPDRIVE_URL/api/v1/workspaces/${projectIntegratorWorkspace}/projects/"`;
 
   function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -92,7 +91,7 @@ export function ProjectIntegratorSettings({
       />
       <p className="text-sm text-muted-foreground">{labels.description}</p>
       <pre dir="ltr" className="overflow-auto rounded-md border bg-card p-3 text-sm">
-        <code>{sample}</code>
+        <code>{projectIntegratorCurlExample}</code>
       </pre>
       <ProjectWriteNotice error={error} labels={common} />
       <form className="grid gap-3 rounded-lg border bg-card p-4" onSubmit={create}>

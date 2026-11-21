@@ -100,7 +100,7 @@ export const projectIntegratorInventoryEntry = classifyInventory(
     "derived:src/features/projects/integrator/runtime.ts",
     "derived:src/features/projects/integrator/workItems.ts",
     "sourceReview:src/app/(app)/settings/projects-integrator/page.tsx#7bcea875e311e5e8ab6ae2be9b04984992280a2d3d83726ab794f915adb7bbdd",
-    "sourceReview:src/features/projects/integrator/ProjectIntegratorSettings.tsx#db117948fa8fb37ee30dc0c25fec9966bf697a62ce639b6c745580330f0779a8",
+    "sourceReview:src/features/projects/integrator/ProjectIntegratorSettings.tsx#76e1363cbe398bfe22ba66e2ebf45941eeae1cc993ec1dad61c32cd91d3ce84f",
     "sourceReview:src/features/projects/integrator/keyFormat.ts#248d3d0b53c91ffb391d115ef8453ed92153e5df07e844172aeda788f0b4dedb",
     "sourceReview:src/features/projects/integrator/management.ts#17bbd6a30505df23bb0678996c60198fa5b036432c0182aa8dcf27357c2830a2",
     "sourceReview:src/features/projects/integrator/planning.ts#0dcc6af1754b6724354e7fb9cd4eb3fdbf048f806c50a48d5fd31af1cdf71cff",

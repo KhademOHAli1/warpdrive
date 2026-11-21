@@ -4,9 +4,7 @@
  *
  * Adapted from Plane Community v1.5.0, apps/space/app/issues/[anchor]/page.tsx.
  */
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buttonVariants } from "@/components/ui/Button";
 import { getLocalePreferences } from "@/features/i18n/server";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { createContext } from "@/frontend/context";
@@ -20,6 +18,7 @@ import {
 } from "./contracts";
 import { publicationAnchorInput, publicationPageInput } from "./input";
 import { publicationMessages } from "./messages";
+import { PublicationLink } from "./PublicationLink";
 import { PublicIntakePortal } from "./PublicIntakePortal";
 import { readPublishedBoardFromCore } from "./webReads";
 
@@ -88,9 +87,9 @@ export async function PublishedProjectPage({
       </header>
       {board.showIntake &&
         (actorId === null ? (
-          <Link href={`/login?returnTo=${returnTo}`} prefetch={false} className={buttonVariants()}>
+          <PublicationLink href={`/login?returnTo=${returnTo}`}>
             {board.acceptsRequests ? labels.signIn : labels.signInForRequests}
-          </Link>
+          </PublicationLink>
         ) : (
           <PublicIntakePortal
             key={`${anchor.data}:${actorId}`}
@@ -104,18 +103,15 @@ export async function PublishedProjectPage({
           {(["list", "board"] as const).map((layout) => {
             const available = layout === "list" ? board.listEnabled : board.boardEnabled;
             return available ? (
-              <Link
+              <PublicationLink
                 key={layout}
                 href={boardHref(anchor.data, layout, page)}
-                prefetch={false}
-                aria-current={view === layout ? "page" : undefined}
-                className={buttonVariants({
-                  variant: view === layout ? "outline" : "ghost",
-                  size: "sm",
-                })}
+                current={view === layout}
+                variant={view === layout ? "outline" : "ghost"}
+                size="sm"
               >
                 {labels[layout]}
-              </Link>
+              </PublicationLink>
             ) : null;
           })}
         </nav>
@@ -123,22 +119,17 @@ export async function PublishedProjectPage({
         {(page > 1 || board.nextPage !== null) && (
           <div className="flex flex-wrap gap-2">
             {page > 1 && (
-              <Link
-                className={buttonVariants({ variant: "outline" })}
-                prefetch={false}
-                href={boardHref(anchor.data, view, page - 1)}
-              >
+              <PublicationLink variant="outline" href={boardHref(anchor.data, view, page - 1)}>
                 {labels.prev}
-              </Link>
+              </PublicationLink>
             )}
             {board.nextPage !== null && (
-              <Link
-                className={buttonVariants({ variant: "outline" })}
-                prefetch={false}
+              <PublicationLink
+                variant="outline"
                 href={boardHref(anchor.data, view, board.nextPage)}
               >
                 {labels.next}
-              </Link>
+              </PublicationLink>
             )}
           </div>
         )}
