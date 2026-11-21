@@ -1,6 +1,13 @@
 "use client";
 
-import { BriefcaseBusiness, Folders, GitBranch, LayoutDashboard, Megaphone } from "lucide-react";
+import {
+  Boxes,
+  BriefcaseBusiness,
+  Folders,
+  GitBranch,
+  LayoutDashboard,
+  Megaphone,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DOCS_SITE_URL } from "@/constants/docs";
 import type { NavKey } from "@/constants/nav";
@@ -26,6 +33,7 @@ const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   dashboard: LayoutDashboard,
   work: BriefcaseBusiness,
   projects: Folders,
+  inventory: Boxes,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,

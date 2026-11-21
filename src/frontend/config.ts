@@ -48,6 +48,10 @@ export function frontendClientIp(incoming: Headers): string | null {
   return trusted === "none" ? null : incoming.get(trusted);
 }
 
+export function inventoryFixturesEnabled(): boolean {
+  return process.env.NODE_ENV === "development" && process.env.WARPDRIVE_INVENTORY_FIXTURES === "1";
+}
+
 export function frontendIdentity() {
   return declareWebIdentity(
     resolveVersion({

@@ -7,6 +7,16 @@ it("shows Projects only when native project navigation allows it, independently 
   expect(workspaceNavItems([], true).some((item) => item.href === "/projects")).toBe(false);
 });
 
+it("shows Inventory when its own navigation capability is enabled", () => {
+  expect(
+    workspaceNavItems(["work"], true, true, true).find((item) => item.key === "inventory"),
+  ).toBeUndefined();
+  expect(
+    workspaceNavItems(["work"], false, false, false, true).find((item) => item.key === "inventory")
+      ?.href,
+  ).toBe("/inventory");
+});
+
 it("keeps established navigation when no module choice exists and gates work", () => {
   expect(workspaceNavItems([], false).find((item) => item.key === "dashboard")?.href).toBe(
     "/pipeline",

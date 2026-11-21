@@ -36,6 +36,7 @@ vi.mock("@/features/deal-workspace/DealActionErrorProvider", () => ({
   useDealActionError: () => reportError,
 }));
 
+import { WorkspaceShellProvider } from "@/components/shell/WorkspaceShellProvider";
 import { DetailDrawerCloseContext } from "@/features/navigation/detailDrawerClose";
 import { DealActionsMenu } from "./DealActionsMenu";
 
@@ -89,6 +90,31 @@ it("renders the six deal-actions items in Pipedrive order", async () => {
     "Archive",
     "Delete deal",
   ]);
+});
+
+it("links to Inventory with the current deal ID when the module is available to a deal reader", async () => {
+  const user = userEvent.setup();
+  const dealId = "4d73164a-881e-4602-8fde-cdeb19aa0ebc";
+  render(
+    <WorkspaceShellProvider
+      brand={{
+        displayName: "Warpdrive",
+        iconUrl: null,
+        accentColor: null,
+        foregroundColor: "#fff",
+      }}
+      modules={[]}
+      canViewWork={false}
+      canViewInventory
+    >
+      <DealActionsMenu {...props} dealId={dealId} canDelete={false} />
+    </WorkspaceShellProvider>,
+  );
+  await user.click(screen.getByRole("button", { name: "Deal actions" }));
+  expect(screen.getByRole("menuitem", { name: "Open Inventory" }).getAttribute("href")).toBe(
+    `/inventory?dealId=${dealId}`,
+  );
+  expect(screen.queryByRole("menuitem", { name: "Delete deal" })).toBeNull();
 });
 
 it("Copy link writes the deal URL to the clipboard", async () => {

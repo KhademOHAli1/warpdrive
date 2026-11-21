@@ -15,7 +15,8 @@
     "settings": "Einstellungen",
     "docs": "Hilfe & Dokumentation",
     "work": "Arbeit",
-    "projects": "Projekte"
+    "projects": "Projekte",
+    "inventory": "Lager"
   },
   "auth": {
     "signInWithGoogle": "Mit Google anmelden",

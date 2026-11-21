@@ -14,6 +14,7 @@ import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
+import { inventoryFixturesEnabled } from "@/features/inventory/availability";
 import { hasNewsletterPermission } from "@/features/newsletter/permissions";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/privacy/requestPath";
@@ -61,6 +62,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         canViewWork={navigation.canViewWork}
         canViewProjects={projects !== null && (projects.enabled || projects.canEnable)}
         canViewCampaigns={hasNewsletterPermission(ctx.actor, "view") && shell.newsletterConfigured}
+        canViewInventory={ctx.actor.isActive && inventoryFixturesEnabled()}
         campaignCapabilities={{
           edit: hasNewsletterPermission(ctx.actor, "edit"),
           send: hasNewsletterPermission(ctx.actor, "send"),

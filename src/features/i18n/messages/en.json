@@ -15,7 +15,8 @@
     "settings": "Settings",
     "docs": "Help & docs",
     "work": "Work",
-    "projects": "Projects"
+    "projects": "Projects",
+    "inventory": "Inventory"
   },
   "auth": {
     "signInWithGoogle": "Sign in with Google",

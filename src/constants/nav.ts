@@ -11,6 +11,7 @@ export const WORKSPACE_NAV_ITEMS = [
   { href: "/leads", key: "leads", section: "/leads" },
   { href: "/inbox", key: "inbox", section: "/inbox" },
   { href: "/contacts/people", key: "contacts", section: "/contacts" },
+  { href: "/inventory", key: "inventory", section: "/inventory" },
 ] as const;
 
 export const ACTION_NAV_ITEMS = [

@@ -1,9 +1,11 @@
 "use client";
 import { EllipsisVertical } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,9 +37,7 @@ interface DealActionsMenuProps {
   canDelete: boolean;
 }
 
-// Overflow (ellipsis) menu for deal-level actions (Pipedrive parity): Copy link, Duplicate,
-// Convert to a lead, Merge, Archive, Delete deal. Each item is backed by a real, permission-gated
-// action; the destructive Convert/Merge/Delete flows confirm before firing.
+// Deal-level actions and related Inventory. The destructive flows confirm before firing.
 export function DealActionsMenu({
   dealId,
   pipelineId,
@@ -45,6 +45,7 @@ export function DealActionsMenu({
   canDelete,
 }: DealActionsMenuProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const { canViewInventory } = useWorkspaceShell();
 
   const router = useRouter();
   const reportError = useDealActionError();
@@ -99,6 +100,13 @@ export function DealActionsMenu({
         <DropdownMenuItem onSelect={() => void copyLink()}>
           {translateSales("copy_link_dbf36")}
         </DropdownMenuItem>
+        {canViewInventory && (
+          <DropdownMenuItem asChild>
+            <Link href={`/inventory?dealId=${encodeURIComponent(dealId)}`} prefetch={false}>
+              {translateSales("open_inventory")}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => void duplicate()}>
           {translateSales("duplicate_02cda")}
         </DropdownMenuItem>
