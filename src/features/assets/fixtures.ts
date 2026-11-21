@@ -166,7 +166,7 @@ export function assetsFixture(canManage: boolean): AssetsWorkspace {
       name,
       code,
       parentId,
-      archivedAt: archived ? archivedAt : null,
+      archived,
     })),
     categories: [meterCategory],
     models: [meterModel],

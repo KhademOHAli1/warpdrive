@@ -1,5 +1,6 @@
 import { calendarsRouter } from "@/features/activities/calendarRouter";
 import { activitiesRouter } from "@/features/activities/router";
+import { assetsRouter } from "@/features/assets/router";
 import { collaborationRouter } from "@/features/collaboration/router";
 import { contactsRouter } from "@/features/contacts/router";
 import { customFieldsRouter } from "@/features/custom-fields/router";
@@ -62,6 +63,7 @@ export const appRouter = router({
   internalProjects: internalProjectsRouter,
   inventory: inventoryRouter,
   locations: locationsRouter,
+  assets: assetsRouter,
   projectDocuments: projectDocumentsRouter,
   savedFilters: savedFiltersRouter,
   search: searchRouter,

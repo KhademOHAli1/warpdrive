@@ -16,7 +16,8 @@
     "docs": "Help & docs",
     "work": "Work",
     "projects": "Projects",
-    "inventory": "Inventory"
+    "inventory": "Inventory",
+    "assets": "Assets"
   },
   "auth": {
     "signInWithGoogle": "Sign in with Google",

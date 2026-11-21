@@ -16,7 +16,8 @@
     "docs": "Hilfe & Dokumentation",
     "work": "Arbeit",
     "projects": "Projekte",
-    "inventory": "Lager"
+    "inventory": "Lager",
+    "assets": "Betriebsmittel"
   },
   "auth": {
     "signInWithGoogle": "Mit Google anmelden",

@@ -11,6 +11,7 @@ import { Select, type SelectOption } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
+import { useHydrated } from "@/lib/useHydrated";
 import {
   type AssetCommand,
   type AssetError,
@@ -321,6 +322,15 @@ function RegisterEmpty({
   return <EmptyState className="rounded-lg border bg-card" title={title} body={body} />;
 }
 
+function RegisterResultCount({ count, locale }: { count: number; locale: string }) {
+  const hydrated = useHydrated();
+  return (
+    <Badge variant="outline">
+      {hydrated ? new Intl.NumberFormat(locale).format(count) : count}
+    </Badge>
+  );
+}
+
 export function AssetsRegister({
   initial,
   submit,
@@ -371,11 +381,11 @@ export function AssetsRegister({
   );
   const locationOptions = workspace.locations
     .filter((location) => inScope(filters.site, location))
-    .map(({ id, siteId, name, archivedAt }) => {
+    .map(({ id, siteId, name, archived }) => {
       const path = locationLabels.get(id) ?? name;
       const site = filters.site === "" && sites.size > 1 ? sites.get(siteId)?.name : undefined;
       const label = site !== undefined ? `${site} / ${path}` : path;
-      return { value: id, label: archivedAt === null ? label : `${label} (${t.archived})` };
+      return { value: id, label: archived ? `${label} (${t.archived})` : label };
     });
   const siteOptions = [
     { value: "", label: t.allSites },
@@ -529,10 +539,7 @@ export function AssetsRegister({
             />
             <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
-                {t.results}{" "}
-                <Badge variant="outline">
-                  {new Intl.NumberFormat(locale).format(records.length)}
-                </Badge>
+                {t.results} <RegisterResultCount count={records.length} locale={locale} />
               </p>
               {hasMoreFilters && (
                 <Button

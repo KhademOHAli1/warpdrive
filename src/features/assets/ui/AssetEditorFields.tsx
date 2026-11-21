@@ -170,7 +170,7 @@ export function siteLocations({ locations }: AssetsWorkspace, siteId: string) {
   const local = locations.filter((location) => location.siteId === siteId);
   const byId = new Map(local.map((location) => [location.id, location]));
   return local
-    .filter(({ archivedAt }) => archivedAt === null)
+    .filter(({ archived }) => !archived)
     .map((location) => ({ value: location.id, label: locationLabel(location, byId) }));
 }
 

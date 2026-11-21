@@ -3,9 +3,12 @@ import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
+import { assetRoleSiteIds } from "@/features/assets/access";
+import { hasActiveAssetPlacement } from "@/features/assets/protection";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { hasWarehouseStock } from "@/features/inventory/warehouse/snapshot";
+import { readOperationsSiteGrants } from "@/features/operations-access/scope";
 import {
   type LocationsCommand,
   type LocationsError,
@@ -67,7 +70,8 @@ async function projectDirectory(
     .from(directorySiteGrants)
     .where(isAdmin ? undefined : eq(directorySiteGrants.userId, actorId))
     .orderBy(asc(directorySiteGrants.siteId), asc(directorySiteGrants.userId));
-  const grantedSiteIds = grants.map(({ siteId }) => siteId);
+  const assetSites = isAdmin ? [] : assetRoleSiteIds(await readOperationsSiteGrants(tx, actorId));
+  const grantedSiteIds = [...new Set([...grants.map(({ siteId }) => siteId), ...assetSites])];
   const sites = await tx
     .select()
     .from(directorySites)
@@ -191,6 +195,12 @@ async function saveLocation(tx: Db, { id, siteId, ...values }: Location, create:
   }
 }
 
+async function archiveBlock(tx: Db, siteId: string, locationId: string | null) {
+  if (await hasWarehouseStock(tx, siteId, locationId)) return fail("warehouseStock");
+  if (await hasActiveAssetPlacement(tx, siteId, locationId)) return fail("activeAssets");
+  return null;
+}
+
 async function applyDirectoryChange(
   tx: Db,
   workspace: LocationsWorkspace,
@@ -203,10 +213,10 @@ async function applyDirectoryChange(
 
   if (
     (command.type === "setSiteArchived" || command.type === "setLocationArchived") &&
-    command.archived &&
-    (await hasWarehouseStock(tx, siteId, locationId))
+    command.archived
   ) {
-    return fail("warehouseStock");
+    const blocked = await archiveBlock(tx, siteId, locationId);
+    if (blocked !== null) return blocked;
   }
 
   if (locationId === null) {

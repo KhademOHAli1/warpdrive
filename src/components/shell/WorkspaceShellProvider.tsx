@@ -22,6 +22,7 @@ type WorkspaceShell = {
   canViewProjects: boolean;
   canViewCampaigns: boolean;
   canViewInventory: boolean;
+  canViewAssets: boolean;
   canViewSalesOrders: boolean;
   campaignCapabilities: CampaignCapabilities;
 };
@@ -32,6 +33,7 @@ const defaults: WorkspaceShell = {
   canViewProjects: false,
   canViewCampaigns: false,
   canViewInventory: false,
+  canViewAssets: false,
   canViewSalesOrders: false,
   campaignCapabilities: noCampaignCapabilities,
 };
@@ -43,6 +45,7 @@ export function WorkspaceShellProvider({
   canViewProjects = false,
   canViewCampaigns = false,
   canViewInventory = false,
+  canViewAssets = false,
   canViewSalesOrders = false,
   campaignCapabilities = noCampaignCapabilities,
   children,
@@ -53,6 +56,7 @@ export function WorkspaceShellProvider({
   canViewProjects?: boolean;
   canViewCampaigns?: boolean;
   canViewInventory?: boolean;
+  canViewAssets?: boolean;
   canViewSalesOrders?: boolean;
   campaignCapabilities?: CampaignCapabilities;
   children: ReactNode;
@@ -66,6 +70,7 @@ export function WorkspaceShellProvider({
         canViewProjects,
         canViewCampaigns,
         canViewInventory,
+        canViewAssets,
         canViewSalesOrders,
         campaignCapabilities,
       }}
@@ -78,13 +83,20 @@ export function useWorkspaceShell() {
   return useContext(Context);
 }
 export function useWorkspaceNavigation() {
-  const { modules, canViewWork, canViewProjects, canViewCampaigns, canViewInventory } =
-    useWorkspaceShell();
+  const {
+    modules,
+    canViewWork,
+    canViewProjects,
+    canViewCampaigns,
+    canViewInventory,
+    canViewAssets,
+  } = useWorkspaceShell();
   return workspaceNavItems(
     modules,
     canViewWork,
     canViewProjects,
     canViewCampaigns,
     canViewInventory,
+    canViewAssets,
   );
 }

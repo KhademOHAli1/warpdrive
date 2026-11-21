@@ -7,6 +7,7 @@ import { activityTypes, teams } from "@/db/schema";
 import { goals } from "@/db/schema/goals";
 import { listTypes } from "@/features/activities/typesRepo";
 import { projectLanding } from "@/features/agency-projects/nativeViews";
+import { canBrowseAssets } from "@/features/assets/access";
 import { resolveWorkflowSession } from "@/features/auth/better/sessionPolicy";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { parseBillingConfig } from "@/features/billing/config";
@@ -101,15 +102,17 @@ export const frontendRouter = router({
       actor === null
         ? null
         : await (async () => {
-            const [prefs, baseCurrency, brand, navigation, projects] = await Promise.all([
-              getPreferencesForActor(ctx.db, actor.id),
-              readBaseCurrency(ctx.db, AbortSignal.timeout(5_000)),
-              getCompanyMemberProjection(ctx.db, AbortSignal.timeout(5_000)),
-              readWorkNavigation(ctx.db, actor, AbortSignal.timeout(5_000)),
-              ctx.session === null
-                ? null
-                : projectLanding(ctx.db, ctx.session, AbortSignal.timeout(5_000)),
-            ]);
+            const [prefs, baseCurrency, brand, navigation, projects, assetsAvailable] =
+              await Promise.all([
+                getPreferencesForActor(ctx.db, actor.id),
+                readBaseCurrency(ctx.db, AbortSignal.timeout(5_000)),
+                getCompanyMemberProjection(ctx.db, AbortSignal.timeout(5_000)),
+                readWorkNavigation(ctx.db, actor, AbortSignal.timeout(5_000)),
+                ctx.session === null
+                  ? null
+                  : projectLanding(ctx.db, ctx.session, AbortSignal.timeout(5_000)),
+                canBrowseAssets(ctx.db, actor),
+              ]);
             return {
               prefs,
               baseCurrency,
@@ -118,6 +121,7 @@ export const frontendRouter = router({
               projects,
               newsletterConfigured: newsletterConfigured(),
               inventoryAvailable: actor.isActive,
+              assetsAvailable,
             };
           })();
     return {

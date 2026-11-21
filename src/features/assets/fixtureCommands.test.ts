@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { AssetIntent, AssetsWorkspace } from "./contracts";
-import { applyAssetFixtureCommand } from "./fixtureCommands";
 import { assetsFixture } from "./fixtures";
+import { applyAssetWorkspaceCommand } from "./registerCommands";
 
 function apply(workspace: AssetsWorkspace, intent: AssetIntent) {
-  return applyAssetFixtureCommand(workspace, { ...intent, requestId: crypto.randomUUID() });
+  return applyAssetWorkspaceCommand(
+    workspace,
+    { ...intent, requestId: crypto.randomUUID() },
+    "Demo operator",
+  );
 }
 
 function seed() {

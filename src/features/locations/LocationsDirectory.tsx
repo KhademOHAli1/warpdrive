@@ -4,6 +4,7 @@ import { Archive, Building2, MapPin, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
+import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -41,6 +42,7 @@ export function LocationsDirectory({
   | { fixture?: false; refresh: () => void; refreshing?: boolean }
 )) {
   const locale = useLocale();
+  const { canViewAssets } = useWorkspaceShell();
   const t = locationsMessages[locale];
   const [workspace, setWorkspace] = useState(initial);
   const [source, setSource] = useState(initial);
@@ -168,7 +170,7 @@ export function LocationsDirectory({
             <p className="text-sm text-muted-foreground">
               {context === "assets" ? t.assetsContext : t.inventoryContext}
             </p>
-            {fixture && context === "assets" && (
+            {(fixture || canViewAssets) && context === "assets" && (
               <Link href="/assets" className={buttonVariants({ variant: "outline", size: "sm" })}>
                 {t.assetRegister}
               </Link>

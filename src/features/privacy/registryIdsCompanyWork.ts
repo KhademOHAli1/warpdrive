@@ -21,7 +21,7 @@ export const companyWorkIds: string[] = [
   "sourceReview:src/app/api/company-billing-copy/route.backend.ts#d8b92c4d92988708861cd5ba9f37198f58bc18c3a0d233d1dde5d7b0421e3c45",
   "sourceReview:src/app/api/company-profile/[[...path]]/route.ts#678d89a364ff9cbea890d6d89b4f7c07d88bb37b88287ffb9babfb8ade66ca45",
   "sourceReview:src/app/api/company-profile/[[...path]]/route.backend.ts#d20e033635d7f69af5a9056a9d1662fed389dc535dbeeff5a2dc16747826b06c",
-  "sourceReview:src/components/shell/WorkspaceShellProvider.tsx#a76af9ea42727f7cb68553e32d738b05260e7044b284550822a14df4d91d2a9f",
+  "sourceReview:src/components/shell/WorkspaceShellProvider.tsx#5d1807843270a22e0e28f9659a6e6246d9ff712404a411d9dab151261cd07c12",
   "sourceReview:src/features/billing/ui/CompanyBillingCopy.tsx#1fc1f26db091b6e00f2349476fcef46f5b2a2ecdf6c9a53120ddc1ea3d19e14b",
   "sourceReview:src/features/billing/ui/companyPrefill.ts#e4c616c349a6ca863f14c59f574fb68d036af503ae517b028c2a1f4d2200794a",
   "sourceReview:src/features/company-profile/assetSanitizer.ts#593ddaf3255fcf9e1ef47a656011462d4fafb5a0192b5f2187b6327005b3d040",

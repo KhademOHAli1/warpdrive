@@ -1,3 +1,4 @@
+import { useHydrated } from "@/lib/useHydrated";
 import type { AssetRecord, AssetsWorkspace } from "../contracts";
 import type { AssetWords } from "./assetMessages";
 
@@ -21,7 +22,7 @@ export function AssetTable({
   locale: string;
   words: AssetWords;
 }) {
-  const number = new Intl.NumberFormat(locale);
+  const number = useHydrated() ? new Intl.NumberFormat(locale) : null;
   const sites = new Map(workspace.sites.map(({ id, name }) => [id, name]));
   const categories = new Map(workspace.categories.map(({ id, name }) => [id, name]));
   return (
@@ -100,7 +101,9 @@ export function AssetTable({
                     {sites.get(record.siteId)}
                   </bdi>
                 </td>
-                <td className={`${cell} text-end tabular-nums`}>{number.format(quantity)}</td>
+                <td className={`${cell} text-end tabular-nums`}>
+                  {number === null ? quantity : number.format(quantity)}
+                </td>
               </tr>
             );
           })}

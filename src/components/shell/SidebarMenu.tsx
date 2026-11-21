@@ -7,6 +7,7 @@ import {
   GitBranch,
   LayoutDashboard,
   Megaphone,
+  Toolbox,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DOCS_SITE_URL } from "@/constants/docs";
@@ -34,6 +35,7 @@ const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   work: BriefcaseBusiness,
   projects: Folders,
   inventory: Boxes,
+  assets: Toolbox,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,

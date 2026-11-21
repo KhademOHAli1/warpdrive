@@ -40,7 +40,7 @@ function saveRecord(workspace: AssetsWorkspace, asset: AssetRecord): AssetResult
 
 function activeLocation(workspace: AssetsWorkspace, siteId: string, id: string): boolean {
   return workspace.locations.some(
-    (entry) => entry.id === id && entry.siteId === siteId && entry.archivedAt === null,
+    (entry) => entry.id === id && entry.siteId === siteId && !entry.archived,
   );
 }
 
@@ -60,21 +60,24 @@ function metadata(workspace: AssetsWorkspace, siteId: string, input: Metadata): 
     : { code, name, description, categoryId, tags, fieldValues: values };
 }
 
-function event({ kind, reason, fromLocationId, locationId, quantity }: EventDraft): AssetEvent {
-  return {
+type MakeEvent = (draft: EventDraft) => AssetEvent;
+
+function eventFor(actor: string): MakeEvent {
+  const at = new Date().toISOString();
+  return ({ kind, reason, fromLocationId, locationId, quantity }) => ({
     id: crypto.randomUUID(),
-    actor: "Demo operator",
-    at: new Date().toISOString(),
+    actor,
+    at,
     kind,
     reason: reason ?? null,
     fromLocationId: fromLocationId ?? null,
     locationId: locationId ?? null,
     quantity: quantity ?? null,
-  };
+  });
 }
 
-function append(asset: AssetRecord, draft: EventDraft): AssetRecord {
-  return { ...asset, version: asset.version + 1, events: [event(draft), ...asset.events] };
+function append(asset: AssetRecord, event: AssetEvent): AssetRecord {
+  return { ...asset, version: asset.version + 1, events: [event, ...asset.events] };
 }
 
 function existingIdentity(
@@ -105,6 +108,7 @@ function registeredModel(workspace: AssetsWorkspace, siteId: string, id: string 
 function createRecord(
   workspace: AssetsWorkspace,
   command: Extract<AssetCommand, { type: "create" }>,
+  event: MakeEvent,
 ) {
   const { siteId, locationId, tracking, openingQuantity, modelId, serial } = command;
   const value = metadata(workspace, siteId, command);
@@ -146,6 +150,7 @@ function createRecord(
 function createFleet(
   workspace: AssetsWorkspace,
   command: Extract<AssetCommand, { type: "createFleet" }>,
+  event: MakeEvent,
 ) {
   const { siteId, locationId, units, modelId } = command;
   const model = registeredModel(workspace, siteId, modelId);
@@ -254,6 +259,7 @@ function update(
   workspace: AssetsWorkspace,
   asset: AssetRecord,
   command: Extract<RecordCommand, { type: "update" }>,
+  event: MakeEvent,
 ) {
   const { serial, modelId } = command;
   const values = metadata(workspace, asset.siteId, command);
@@ -269,7 +275,7 @@ function update(
       asset.tracking === "individual"
         ? { ...asset, ...values, serial, modelId }
         : { ...asset, ...values },
-      { kind: "updated" },
+      event({ kind: "updated" }),
     ),
   );
 }
@@ -287,17 +293,16 @@ function changeArchive(
   asset: AssetRecord,
   archived: boolean,
   reason: string,
+  event: MakeEvent,
 ) {
   if (archived === (asset.archivedAt !== null)) return fail("state");
   if (!archived && placement(asset).some((id) => !activeLocation(workspace, asset.siteId, id))) {
     return fail("state");
   }
+  const activity = event({ kind: archived ? "archived" : "reinstated", reason });
   return saveRecord(
     workspace,
-    append(
-      { ...asset, archivedAt: archived ? new Date().toISOString() : null },
-      { kind: archived ? "archived" : "reinstated", reason },
-    ),
+    append({ ...asset, archivedAt: archived ? activity.at : null }, activity),
   );
 }
 
@@ -313,7 +318,13 @@ function withBalance(
 type Pool = Extract<AssetRecord, { balances: AssetBalance[] }>;
 type PoolCommand = Extract<RecordCommand, { type: "changePool" }>;
 
-function movePool(workspace: AssetsWorkspace, asset: Pool, command: PoolCommand, source: number) {
+function movePool(
+  workspace: AssetsWorkspace,
+  asset: Pool,
+  command: PoolCommand,
+  source: number,
+  event: MakeEvent,
+) {
   const { locationId, toLocationId, quantity, reason } = command;
   if (toLocationId === null || toLocationId === locationId) return fail("invalid");
   if (!activeLocation(workspace, asset.siteId, toLocationId)) return fail("unavailable");
@@ -329,18 +340,23 @@ function movePool(workspace: AssetsWorkspace, asset: Pool, command: PoolCommand,
     workspace,
     append(
       { ...asset, balances },
-      {
+      event({
         kind: "moved",
         fromLocationId: locationId,
         locationId: toLocationId,
         quantity,
         reason,
-      },
+      }),
     ),
   );
 }
 
-function changePool(workspace: AssetsWorkspace, asset: AssetRecord, command: PoolCommand) {
+function changePool(
+  workspace: AssetsWorkspace,
+  asset: AssetRecord,
+  command: PoolCommand,
+  event: MakeEvent,
+) {
   const { operation, locationId, toLocationId, quantity, reason } = command;
   if (
     asset.tracking === "individual" ||
@@ -350,7 +366,7 @@ function changePool(workspace: AssetsWorkspace, asset: AssetRecord, command: Poo
     return fail("invalid");
   if (!activeLocation(workspace, asset.siteId, locationId)) return fail("unavailable");
   const source = asset.balances.find((entry) => entry.locationId === locationId)?.quantity ?? 0;
-  if (operation === "move") return movePool(workspace, asset, command, source);
+  if (operation === "move") return movePool(workspace, asset, command, source, event);
   if (toLocationId !== null) return fail("invalid");
   const next =
     operation === "adjust"
@@ -369,7 +385,7 @@ function changePool(workspace: AssetsWorkspace, asset: AssetRecord, command: Poo
         ...asset,
         balances: withBalance(asset.balances, locationId, next),
       },
-      { kind, locationId, quantity: next - source, reason },
+      event({ kind, locationId, quantity: next - source, reason }),
     ),
   );
 }
@@ -378,16 +394,17 @@ function changeRecord(
   workspace: AssetsWorkspace,
   asset: AssetRecord,
   command: RecordCommand,
+  event: MakeEvent,
 ): AssetResult {
   if (asset.version !== command.version) return fail("stale");
   if (command.type === "setArchive")
-    return changeArchive(workspace, asset, command.archived, command.reason);
+    return changeArchive(workspace, asset, command.archived, command.reason, event);
   if (asset.archivedAt !== null) return fail("state");
   switch (command.type) {
     case "note":
-      return saveRecord(workspace, append(asset, { kind: "note", reason: command.reason }));
+      return saveRecord(workspace, append(asset, event({ kind: "note", reason: command.reason })));
     case "update":
-      return update(workspace, asset, command);
+      return update(workspace, asset, command, event);
     case "move":
       if (asset.tracking !== "individual") return fail("invalid");
       if (
@@ -401,26 +418,28 @@ function changeRecord(
         workspace,
         append(
           { ...asset, locationId: command.locationId },
-          {
+          event({
             kind: "moved",
             reason: command.reason,
             fromLocationId: asset.locationId,
             locationId: command.locationId,
-          },
+          }),
         ),
       );
     case "changePool":
-      return changePool(workspace, asset, command);
+      return changePool(workspace, asset, command, event);
   }
 }
 
-export function applyAssetFixtureCommand(
+export function applyAssetWorkspaceCommand(
   workspace: AssetsWorkspace,
   input: AssetCommand,
+  actor: string,
 ): AssetResult {
   const parsed = assetCommand.safeParse(input);
   if (!parsed.success) return fail("invalid");
   const command = parsed.data;
+  const event = eventFor(actor);
   if ("assetId" in command) {
     const asset = workspace.records.find(({ id }) => id === command.assetId);
     if (
@@ -429,15 +448,15 @@ export function applyAssetFixtureCommand(
     ) {
       return fail("unavailable");
     }
-    return changeRecord(workspace, asset, command);
+    return changeRecord(workspace, asset, command, event);
   }
   if (!workspace.sites.some((site) => site.id === command.siteId && site.canManage))
     return fail("unavailable");
   switch (command.type) {
     case "create":
-      return createRecord(workspace, command);
+      return createRecord(workspace, command, event);
     case "createFleet":
-      return createFleet(workspace, command);
+      return createFleet(workspace, command, event);
     case "saveCategory":
       return saveCategory(workspace, command);
     case "saveModel":

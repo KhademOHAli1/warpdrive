@@ -16,7 +16,8 @@
     "docs": "راهنما و مستندات",
     "work": "کارها",
     "projects": "پروژه‌ها",
-    "inventory": "موجودی"
+    "inventory": "موجودی",
+    "assets": "تجهیزات"
   },
   "auth": {
     "signInWithGoogle": "ورود با حساب گوگل",

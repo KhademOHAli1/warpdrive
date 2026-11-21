@@ -4,13 +4,14 @@ export const sharedLocationsEntry = classifyInventory(
   [
     "derived:src/features/locations/directory.ts",
     "derived:src/features/locations/LocationsDirectory.tsx",
+    "derived:src/features/locations/service.ts",
     "sourceReview:drizzle/0129_shared_locations.sql#dddc8ebd0ea3fad0de8f5205ad486d3d874f9506307a096a8ba72c5fb29fb4d3",
     "sourceReview:src/app/(app)/locations/page.tsx#db1403803fe9d5124cb638e73070c5e89663bfb9afb130cdc5876a2daee2a38c",
     "sourceReview:src/features/locations/directory.ts#b53d02706b7be9cd3fa652a6390d97a5834bd8444640509893971904cfddba84",
-    "sourceReview:src/features/locations/LocationsDirectory.tsx#6d34bd105af0987f7b3b3c87c2490d4026278df7f05cc85e8ca6bf2fd30248f5",
+    "sourceReview:src/features/locations/LocationsDirectory.tsx#f4d462ddeb23d88168a7b307adacaec3b8c9f459c4b473d66d22999697f4c93f",
     "sourceReview:src/features/locations/router.ts#728197737102fe9225dec9084037dc4742f57ef01c9321ce758934f460cef399",
     "sourceReview:src/features/locations/schema.ts#42bab566fc010e28fed905d1f4205d5d31c42a1839c1384cc07137677860f82b",
-    "sourceReview:src/features/locations/service.ts#a88632e8979af99b4f4aac4f9ea8537544ab518b3107ed9e484ee5efbab18307",
+    "sourceReview:src/features/locations/service.ts#30840db730990c04498e668b28ed98cc48fbf48ae7860a6046237e7dff03aa56",
     "table:directory_command_receipts",
     "table:directory_locations",
     "table:directory_site_grants",
@@ -39,7 +40,7 @@ export const sharedLocationsEntry = classifyInventory(
     purpose:
       "Maintain a shared operations directory and enforce site-scoped access across Inventory and Assets.",
     disclosure:
-      "Core verifies the current accepted native session. Staff receive only their granted sites and locations. Administrators also receive eligible staff names, email addresses, identifiers and grants. Directory fields and dialogs are masked from replay.",
+      "Core verifies the current accepted native session. Directory or Asset roles provide read access at their sites. Directory managers retain the existing location editing authority. Administrators also receive eligible staff names, email addresses, identifiers and grants. Directory fields and dialogs are masked from replay.",
     retention:
       "PostgreSQL retains site and location identities after archive. Revocation removes the grant. Account deletion cascades to grants and command receipts. Receipt replay recalculates current access. The explicit development fixture resets on reload.",
     externalEffects:

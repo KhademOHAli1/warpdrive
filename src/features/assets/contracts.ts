@@ -16,25 +16,28 @@ export const assetEventKinds = [
 
 const id = z.uuid().toLowerCase();
 const version = z.number().int().positive();
-const code = z.string().trim().min(1).max(80);
-const name = z.string().trim().min(1).max(120);
-const description = z.string().trim().min(1).max(1000).nullable();
-const reason = z.string().trim().min(1).max(400);
+function text(maximum: number) {
+  return z
+    .string()
+    .trim()
+    .min(1)
+    .max(maximum)
+    .refine((input) => !input.includes("\u0000"));
+}
+const code = text(80);
+const name = text(120);
+const description = text(1_000).nullable();
+const reason = text(400);
 const quantity = z.number().int().min(0).max(1_000_000);
-const assetValue = z.union([
-  z.string().trim().min(1).max(1_000),
-  z.number(),
-  z.boolean(),
-  z.null(),
-]);
+const assetValue = z.union([text(1_000), z.number(), z.boolean(), z.null()]);
 const fieldValues = z.record(id, assetValue).refine((values) => Object.keys(values).length <= 32);
-const tags = z.array(z.string().trim().min(1).max(40)).max(20);
+const tags = z.array(text(40)).max(20);
 
 const field = z.strictObject({
   id,
-  label: z.string().trim().min(1).max(80),
+  label: text(80),
   type: z.enum(assetFieldTypes),
-  options: z.array(z.string().trim().min(1).max(80)).max(30),
+  options: z.array(text(80)).max(30),
   required: z.boolean(),
   defaultValue: assetValue,
 });
@@ -111,7 +114,7 @@ export type AssetLocation = {
   parentId: string | null;
   code: string;
   name: string;
-  archivedAt: string | null;
+  archived: boolean;
 };
 export type AssetCategory = {
   id: string;
