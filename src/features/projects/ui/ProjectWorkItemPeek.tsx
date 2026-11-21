@@ -1,13 +1,20 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import type { ProjectItem, ProjectResult, ProjectWorkspace } from "../contracts";
+import {
+  type ProjectItem,
+  type ProjectResult,
+  type ProjectWorkspace,
+  projectItemKey,
+} from "../contracts";
 import { ProjectItemSubscription } from "./ProjectItemSubscription";
 import { draftForProjectWorkItem, ProjectWorkItemForm } from "./ProjectWorkItemForm";
 import type { ProjectItemChanges } from "./ProjectWorkItems";
 import type { ProjectsTranslator } from "./projectMessages";
+import { workflowStateLabel } from "./projectWorkflowUi";
 import { useProjectFormatters } from "./useProjectFormatters";
 
 export function ProjectWorkItemPeek({
@@ -18,6 +25,7 @@ export function ProjectWorkItemPeek({
   updateItem,
   close,
   restoreFocus,
+  planning,
 }: {
   item: ProjectItem;
   workspace: ProjectWorkspace;
@@ -30,8 +38,10 @@ export function ProjectWorkItemPeek({
   ) => Promise<ProjectResult<ProjectWorkspace>>;
   close: () => void;
   restoreFocus: () => boolean;
+  planning?: ReactNode;
 }) {
   const format = useProjectFormatters();
+  const state = workspace.states.find(({ id }) => id === item.stateId);
   const assignees = [workspace.project.owner, ...workspace.members.map(({ person }) => person)];
   const assignee = assignees.find(({ id }) => id === item.assigneeId);
   return (
@@ -52,16 +62,24 @@ export function ProjectWorkItemPeek({
           <div className="min-w-0">
             <p className="mb-1 truncate text-sm text-muted-foreground">
               <bdi>{workspace.project.title}</bdi>
+              <span className="mx-2" aria-hidden="true">
+                ·
+              </span>
+              <bdi dir="ltr">
+                {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
+              </bdi>
             </p>
             <SheetTitle className="wrap-anywhere text-xl">
               <bdi>{item.title}</bdi>
             </SheetTitle>
           </div>
-          <ProjectItemSubscription
-            projectId={workspace.project.id}
-            itemId={item.id}
-            labels={labels}
-          />
+          {!workspace.project.archived && (
+            <ProjectItemSubscription
+              projectId={workspace.project.id}
+              itemId={item.id}
+              labels={labels}
+            />
+          )}
         </header>
         {workspace.canEdit ? (
           <ProjectWorkItemForm
@@ -91,7 +109,11 @@ export function ProjectWorkItemPeek({
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 text-sm">
               <dt className="text-muted-foreground">{labels("workspace.statusColumn")}</dt>
               <dd>
-                <Badge variant="secondary">{labels(`status.${item.status}`)}</Badge>
+                <Badge variant="secondary">
+                  {state === undefined
+                    ? labels(`status.${item.status}`)
+                    : workflowStateLabel(state, labels)}
+                </Badge>
               </dd>
               <dt className="text-muted-foreground">{labels("workspace.priority")}</dt>
               <dd>{labels(`priority.${item.priority}`)}</dd>
@@ -114,6 +136,7 @@ export function ProjectWorkItemPeek({
             </dl>
           </div>
         )}
+        {planning}
       </SheetContent>
     </Sheet>
   );

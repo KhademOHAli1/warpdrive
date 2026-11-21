@@ -50,9 +50,14 @@ function ProjectCard({ project, labels }: CardProps) {
           </div>
         </div>
         <div className="w-full space-y-3 px-4 pb-4 pt-3">
-          <h3 className="text-sm font-semibold [overflow-wrap:anywhere]">
-            <bdi>{project.title}</bdi>
-          </h3>
+          <div className="flex flex-wrap items-baseline justify-between gap-1">
+            <h3 className="text-sm font-semibold [overflow-wrap:anywhere]">
+              <bdi>{project.title}</bdi>
+            </h3>
+            <bdi dir="ltr" className="text-xs text-muted-foreground">
+              {project.identifier}
+            </bdi>
+          </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{labels("index.owner")}</span>
             <bdi className="min-w-0 font-medium text-foreground [overflow-wrap:anywhere]">

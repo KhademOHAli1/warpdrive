@@ -869,6 +869,13 @@
       "when": 1795262850664,
       "tag": "0123_internal_project_profile_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 124,
+      "version": "7",
+      "when": 1795265018103,
+      "tag": "0124_projects_plane_workflows",
+      "breakpoints": true
     }
   ]
 }

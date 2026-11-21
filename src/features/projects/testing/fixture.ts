@@ -1,13 +1,15 @@
 import { err, ok } from "@/types/result";
-import type {
-  ProjectCommands,
-  ProjectFailure,
-  ProjectIndex,
-  ProjectItem,
-  ProjectMembership,
-  ProjectPerson,
-  ProjectSummary,
-  ProjectWorkspace,
+import {
+  defaultProjectWorkflowStates,
+  type ProjectCommands,
+  type ProjectFailure,
+  type ProjectIndex,
+  type ProjectItem,
+  type ProjectMembership,
+  type ProjectPerson,
+  type ProjectSummary,
+  type ProjectWorkspace,
+  projectStateLegacyStatus,
 } from "../contracts";
 import {
   createProjectInput,
@@ -21,6 +23,26 @@ import {
 
 export const fixtureProjectId = "cf761674-6fce-4c84-a13e-693c2dcc0325";
 export const fixtureEditorId = "669004ee-2320-40cf-8e62-23dd5100825b";
+
+const fixtureStates = defaultProjectWorkflowStates.map((state, index) => ({
+  ...state,
+  id: `0b9c0fa8-5ce9-4755-8ac2-3fae9897c64${index}`,
+}));
+export const fixtureInProgressStateId = "0b9c0fa8-5ce9-4755-8ac2-3fae9897c641";
+
+function resolveFixtureState({
+  stateId,
+  status,
+}: {
+  stateId?: string;
+  status?: ProjectItem["status"];
+}) {
+  if (stateId !== undefined) return fixtureStates.find(({ id }) => id === stateId);
+  if (status !== undefined)
+    return fixtureStates.find(({ category }) => projectStateLegacyStatus(category) === status);
+  return fixtureStates.find(({ isDefault }) => isDefault);
+}
+
 const owner = { id: "74207b95-4ded-4818-987b-c1e5b6d16629", name: "Alex Morgan" };
 const editor = { id: fixtureEditorId, name: "Jules Kim" };
 const viewer = { id: "a5280626-a7b8-45a8-9f77-f0cd32051faa", name: "Sam Rivera" };
@@ -30,6 +52,7 @@ type FixtureProject = {
   project: ProjectSummary;
   items: ProjectItem[];
   members: ProjectMembership[];
+  lastItemSequence: number;
 };
 
 const accept = <T>(value: T) => Promise.resolve(ok(value));
@@ -43,7 +66,9 @@ export function createProjectsFixture() {
         project: {
           id: fixtureProjectId,
           title: "Office move",
+          identifier: "OFFICE",
           owner,
+          archived: false,
           createdAt: "2026-11-10T12:00:00.000Z",
         },
         members: [
@@ -55,6 +80,8 @@ export function createProjectsFixture() {
             id: "5358f615-4145-479d-9db9-fc7a48d1987d",
             title: "Check network outlets",
             status: "todo",
+            stateId: "0b9c0fa8-5ce9-4755-8ac2-3fae9897c640",
+            sequenceNumber: 1,
             assigneeId: null,
             priority: "none",
             startDate: null,
@@ -67,6 +94,8 @@ export function createProjectsFixture() {
             id: "908c9312-e974-487b-afc4-74c553d5f688",
             title: "Confirm moving date",
             status: "in-progress",
+            stateId: fixtureInProgressStateId,
+            sequenceNumber: 2,
             assigneeId: editor.id,
             priority: "medium",
             startDate: "2026-11-10",
@@ -76,16 +105,22 @@ export function createProjectsFixture() {
             revision: 0,
           },
         ],
+        lastItemSequence: 2,
       },
     ],
   ]);
 
-  function snapshot(project: FixtureProject): ProjectWorkspace {
-    const assignees: ProjectPerson[] = [owner, ...project.members.map(({ person }) => person)];
+  function snapshot({ project, items, members }: FixtureProject): ProjectWorkspace {
+    const assignees: ProjectPerson[] = [owner, ...members.map(({ person }) => person)];
     return structuredClone({
-      ...project,
+      project,
+      items,
+      members,
       assignees,
       staff,
+      states: fixtureStates,
+      settings: { description: "", revision: 0, leadUserId: null, defaultAssigneeId: null },
+      canManageSettings: true,
       canEdit: true,
       canAssign: true,
       canManageMembers: true,
@@ -103,8 +138,15 @@ export function createProjectsFixture() {
           ? accept(structuredClone(existing.project))
           : refuse("project_conflict");
       }
-      const project = { id, title, owner, createdAt: new Date().toISOString() };
-      projects.set(id, { project, items: [], members: [] });
+      const project = {
+        id,
+        title,
+        identifier: `P${projects.size + 1}`,
+        owner,
+        archived: false,
+        createdAt: new Date().toISOString(),
+      };
+      projects.set(id, { project, items: [], members: [], lastItemSequence: 0 });
       return accept(structuredClone(project));
     },
     createItem(raw) {
@@ -113,18 +155,32 @@ export function createProjectsFixture() {
       const { projectId, id } = parsed.data;
       const project = projects.get(projectId);
       if (!project) return refuse("project_unavailable");
-      const content = initialProjectItemContent(parsed.data);
+      const state = resolveFixtureState(parsed.data);
+      if (state === undefined) return refuse("project_invalid");
+      const content = initialProjectItemContent({
+        ...parsed.data,
+        status: projectStateLegacyStatus(state.category),
+      });
       const { assigneeId } = content;
       if (assigneeId !== null && !snapshot(project).assignees.some(({ id }) => id === assigneeId)) {
         return refuse("project_invalid");
       }
       const existing = project.items.find((item) => item.id === id);
       if (existing) {
-        return existing.revision > 0 || matchesInitialProjectItemContent(existing, content)
+        return existing.revision > 0 ||
+          (existing.stateId === state.id && matchesInitialProjectItemContent(existing, content))
           ? accept(snapshot(project))
           : refuse("project_conflict");
       }
-      project.items.push({ ...content, id, createdBy: owner.id, revision: 0 });
+      project.lastItemSequence += 1;
+      project.items.push({
+        ...content,
+        id,
+        stateId: state.id,
+        sequenceNumber: project.lastItemSequence,
+        createdBy: owner.id,
+        revision: 0,
+      });
       return accept(snapshot(project));
     },
     updateItem(raw) {
@@ -143,8 +199,13 @@ export function createProjectsFixture() {
       if (assigneeId != null && !snapshot(project).assignees.some(({ id }) => id === assigneeId)) {
         return refuse("project_invalid");
       }
+      if (content.stateId !== undefined || content.status !== undefined) {
+        const state = resolveFixtureState(content);
+        if (state === undefined) return refuse("project_invalid");
+        item.stateId = state.id;
+        item.status = projectStateLegacyStatus(state.category);
+      }
       item.title = content.title ?? item.title;
-      item.status = content.status ?? item.status;
       item.priority = content.priority ?? item.priority;
       item.description = content.description ?? item.description;
       item.startDate = startDate;

@@ -50,3 +50,39 @@ export async function setProjectMemberAction(
     csrfToken,
   ]);
 }
+
+export async function saveProjectSettingsAction(
+  expectedActorId: string,
+  raw: unknown,
+  csrfToken: string | null,
+): Promise<ProjectResult<ProjectWorkspace>> {
+  return invokeAction("features/projects/actions.saveProjectSettingsAction", [
+    expectedActorId,
+    raw,
+    csrfToken,
+  ]);
+}
+
+export async function setProjectArchivedAction(
+  expectedActorId: string,
+  raw: unknown,
+  csrfToken: string | null,
+): Promise<ProjectResult<ProjectWorkspace>> {
+  return invokeAction("features/projects/actions.setProjectArchivedAction", [
+    expectedActorId,
+    raw,
+    csrfToken,
+  ]);
+}
+
+export async function saveProjectStatesAction(
+  expectedActorId: string,
+  raw: unknown,
+  csrfToken: string | null,
+): Promise<ProjectResult<ProjectWorkspace>> {
+  return invokeAction("features/projects/actions.saveProjectStatesAction", [
+    expectedActorId,
+    raw,
+    csrfToken,
+  ]);
+}

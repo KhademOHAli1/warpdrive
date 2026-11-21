@@ -3,8 +3,10 @@ import {
   bigint,
   boolean,
   check,
+  customType,
   foreignKey,
   index,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -12,9 +14,12 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { users } from "@/db/schema/identity";
+import { sessions, users } from "@/db/schema/identity";
 import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects";
 import type { ProjectDocumentVisibility } from "./contracts";
+import type { ProjectDocumentCursor } from "./live/contracts";
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 
 export const internalProjectDocuments = pgTable(
   "internal_project_documents",
@@ -30,6 +35,8 @@ export const internalProjectDocuments = pgTable(
     title: text("title").notNull(),
     visibility: text("visibility").$type<ProjectDocumentVisibility>().notNull(),
     bodyHtml: text("body_html").notNull().default(""),
+    collaborationState: bytea("collaboration_state"),
+    collaborationEpoch: bigint("collaboration_epoch", { mode: "number" }).notNull().default(0),
     locked: boolean("locked").notNull().default(false),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     revision: bigint("revision", { mode: "number" }).notNull().default(0),
@@ -54,6 +61,14 @@ export const internalProjectDocuments = pgTable(
       sql`${table.revision} BETWEEN 0 AND 9007199254740991`,
     ),
     check("internal_project_documents_body_check", sql`octet_length(${table.bodyHtml}) <= 262144`),
+    check(
+      "internal_project_documents_collaboration_state_check",
+      sql`octet_length(${table.collaborationState}) <= 1048576`,
+    ),
+    check(
+      "internal_project_documents_collaboration_epoch_check",
+      sql`${table.collaborationEpoch} BETWEEN 0 AND 9007199254740991`,
+    ),
     index("internal_project_documents_project_updated_idx").on(
       table.projectId,
       table.updatedAt.desc(),
@@ -93,5 +108,38 @@ export const internalProjectDocumentVersions = pgTable(
       "internal_project_document_versions_body_check",
       sql`octet_length(${table.bodyHtml}) <= 262144`,
     ),
+  ],
+);
+
+export const internalProjectDocumentPresence = pgTable(
+  "internal_project_document_presence",
+  {
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => internalProjectDocuments.id, { onDelete: "cascade" }),
+    clientId: bigint("client_id", { mode: "number" }).notNull(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => sessions.id, { onDelete: "cascade" }),
+    epoch: bigint("epoch", { mode: "number" }).notNull(),
+    cursor: jsonb("cursor").$type<ProjectDocumentCursor>(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.documentId, table.clientId] }),
+    check(
+      "internal_project_document_presence_client_id_check",
+      sql`${table.clientId} BETWEEN 0 AND 4294967295`,
+    ),
+    check(
+      "internal_project_document_presence_epoch_check",
+      sql`${table.epoch} BETWEEN 0 AND 9007199254740991`,
+    ),
+    check(
+      "internal_project_document_presence_cursor_check",
+      sql`pg_column_size(${table.cursor}) <= 512`,
+    ),
+    index("internal_project_document_presence_expiry_idx").on(table.expiresAt),
+    index("internal_project_document_presence_session_idx").on(table.sessionId),
   ],
 );

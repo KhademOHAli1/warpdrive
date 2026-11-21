@@ -14,11 +14,30 @@ Pages route. These are separate from Plane’s account settings and public Space
 | Pages              | Adapted Plane’s Project, Private, and Archived tabs, create-and-open flow, and editor commands. Core stores one project-scoped page with sanitized rich text, lock and archive state, and revision history. A private page and its revisions require current project access and authorship.                                                           |
 | Compatibility      | Client projects keep their paths, existing data and access. Projects uses the native Web/Core command boundary and project-local roles. Existing Work Profile and CRM activity records remain separate.                                                                                                                                               |
 
-This increment covers the core directory, work item, personal queue, and Pages
-journeys above. Remaining Plane behavior includes custom workflows, Cycles,
-Modules, Saved Views, additional work-item layouts, subscription notifications,
-and live Pages collaboration.
+## Project workflows
 
-The source files containing adopted code identify their original source and
-retain its copyright notice. The comparison checkout and instance remain
-available for checking behavior against the local Warpdrive demo.
+| Plane Community source | Warpdrive behavior |
+| --- | --- |
+| `packages/constants/src/settings/project.ts` and `apps/web/components/settings/project` | Owners manage the project name, identifier, description, lead, default assignee, archive and restore. States have categories, colors, order and a default. Work items keep their project-scoped sequence across edits and their UUID links across identifier changes. |
+| `apps/web/components/cycles`, `apps/web/components/modules` and `apps/web/components/views` | Cycles schedule work in non-overlapping periods. Modules group related work. A work item can belong to one cycle and several modules. Their detail pages open scoped work in any of the five layouts. Saved views store the layout and filters and can be private or available to project members. |
+| `apps/web/components/issues/issue-layouts` | List, Board, Calendar, Gantt and Spreadsheet use the same Core work items. Calendar supports month and week navigation, date assignment and creation. Gantt supports date changes by drag, resize or keyboard. Spreadsheet supports editing items in place. |
+| `apps/web/components/pages` and `packages/editor` | Project Pages merge live Yjs changes and show same-page cursors and participants over the authenticated Web/Core boundary. Core continues to enforce project membership, private authorship, locking and archive controls. Restoring a version invalidates edit deltas from the previous session. |
+
+Migration `0124` seeds and backfills internal project states, identifiers and
+work-item sequences. It retains client projects and their links, history and
+receipts. The populated PostgreSQL suite covers preexisting work items,
+project-role checks, cross-project denial, planning assignment, private views
+and live editing. The previous milestone's image rehearsal predates this
+migration.
+
+Additional Plane Community workflows include project appearance, per-project
+time zones, public project access and guest controls, permanent deletion,
+feature toggles, Intake, labels, estimates, and auto-close and auto-archive
+rules. Cycle transfer, advanced progress analytics, module member metadata and
+saved view favorites and locks also remain open. Pages collaboration uses
+short authenticated HTTP exchanges. Peers disappear from the active list
+after 15 seconds. Expired presence rows are removed on later collaboration
+traffic or when their session or page is deleted.
+
+Adapted source files retain their notices. The Plane comparison checkout is
+available for checking these workflows against the local Warpdrive demo.

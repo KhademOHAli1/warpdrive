@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { projectIdInput } from "./input";
+import { projectPlanningRouter } from "./planning/router";
 import { projectProfileRouter } from "./profile/router";
 import { listInternalProjects, readInternalProject } from "./service";
 
 export const internalProjectsRouter = router({
+  planning: projectPlanningRouter,
   profile: projectProfileRouter,
   index: protectedProcedure.query(({ ctx }) =>
     listInternalProjects(ctx.db, ctx.session, AbortSignal.timeout(10_000)),

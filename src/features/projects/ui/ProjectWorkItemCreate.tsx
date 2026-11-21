@@ -10,25 +10,30 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import type { ProjectResult, ProjectStatus, ProjectWorkspace } from "../contracts";
+import type { ProjectResult, ProjectWorkspace } from "../contracts";
 import { type ProjectWorkItemDraft, ProjectWorkItemForm } from "./ProjectWorkItemForm";
 import type { ProjectsTranslator } from "./projectMessages";
 
 export function ProjectWorkItemCreate({
   workspace,
-  status,
+  stateId,
+  dueDate = null,
   trigger,
   pending,
   labels,
   submit,
 }: {
   workspace: ProjectWorkspace;
-  status: ProjectStatus;
+  stateId: string;
+  dueDate?: string | null;
   trigger: ReactElement;
   pending: boolean;
   labels: ProjectsTranslator;
   submit: (draft: ProjectWorkItemDraft, intent: string) => Promise<ProjectResult<ProjectWorkspace>>;
 }) {
+  const defaultAssignee = workspace.canAssign
+    ? workspace.assignees.find(({ id }) => id === workspace.settings.defaultAssigneeId)
+    : undefined;
   const [open, setOpen] = useState(false);
   const intent = useRef<string | null>(null);
   function changeOpen(value: boolean) {
@@ -54,10 +59,10 @@ export function ProjectWorkItemCreate({
               title: "",
               description: "",
               priority: "none",
-              status,
+              stateId,
               startDate: null,
-              dueDate: null,
-              assigneeId: null,
+              dueDate,
+              assigneeId: defaultAssignee?.id ?? null,
             }}
             submit={async (draft) => {
               intent.current ??= crypto.randomUUID();

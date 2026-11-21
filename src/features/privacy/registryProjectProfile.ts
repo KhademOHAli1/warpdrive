@@ -7,7 +7,7 @@ export const projectProfileInventoryEntry = classifyInventory(
     "sourceReview:src/features/projects/profile/router.ts#723739df262de12e6eccbe37ceb87a0e9a4ed7425cdb4e3be7641453de2cd404",
     "sourceReview:src/features/projects/profile/schema.ts#c99b8dd21d21848801533c26b7da76318a952a578cb2425afb69378eb3217614",
     "sourceReview:src/features/projects/profile/service.ts#b1179ceb1fd55701885a15dac880fd02deb2a01eed122e440f64e395fa16dd21",
-    "sourceReview:src/features/projects/profile/subscriptions.ts#56388ff7b45a3c9466fc28adc03213dddaf054a9d2dbd830f6180bb59d1efb25",
+    "sourceReview:src/features/projects/profile/subscriptions.ts#469597932dc8525c7c6fa6b313ef714dbb91dcdc6b49de7a55099d9643c48e67",
     "sourceReview:src/features/projects/profile/webReads.ts#298ceb812c31f26ee9959c267ca2f329e38971a07318ff03addf49f6f89f2c36",
     "table:internal_project_item_events",
     "table:internal_project_item_subscriptions",

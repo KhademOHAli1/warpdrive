@@ -17,7 +17,9 @@ import {
 } from "@/features/agency-projects/schema/agencyProjects";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { err, type Result } from "@/types/result";
-import type { ProjectMemberGrant } from "./contracts";
+import { type ProjectMemberGrant, projectItemKey } from "./contracts";
+import { readWorkspacePlanning } from "./planning/assignments";
+import { internalProjectPlanningGroups } from "./planning/schema";
 import { internalProjectItemEvents } from "./profile/schema";
 import {
   createInternalProject,
@@ -27,6 +29,11 @@ import {
   setInternalProjectMember,
   updateInternalProjectItem,
 } from "./service";
+import {
+  saveInternalProjectSettings,
+  saveInternalProjectStates,
+  setInternalProjectArchived,
+} from "./settings/service";
 
 let fixture: TestDb;
 const signal = () => AbortSignal.timeout(10_000);
@@ -368,6 +375,7 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
     assigneeId: itemDraft.assigneeId,
     createdBy: owner.userId,
     revision: 0,
+    sequenceNumber: 1,
   });
   expect(
     await createInternalProjectItem(fixture.db, owner, { ...itemDraft, priority: "low" }, signal()),
@@ -423,17 +431,39 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
     { actorId: owner.userId, kind: "created" },
     { actorId: owner.userId, kind: "updated" },
   ]);
+  const next = value(
+    await createInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...itemDraft, id: randomUUID(), title: "Second item" },
+      signal(),
+    ),
+  );
+  expect(next.items.map(({ sequenceNumber }) => sequenceNumber)).toEqual([1, 2]);
+  const otherWorkspace = value(
+    await createInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...itemDraft, projectId: other.id },
+      signal(),
+    ),
+  );
+  expect(otherWorkspace.items[0]).toMatchObject({ sequenceNumber: 1 });
 });
 
-test("upgrades populated 0121 work items with stable identity and unknown authorship", async () => {
+test("upgrades populated work items, preserving identity, unknown authorship and project-local state", async () => {
   const h = await freshMigrationDb();
   let target: Awaited<ReturnType<typeof migrationFolder>> | undefined;
+  let workflowUpgrade: Awaited<ReturnType<typeof migrationFolder>> | undefined;
   try {
     await installPrefix(h, 122);
     target = await migrationFolder(123);
     const owner = await staff("Legacy project owner", {}, h);
     const projectId = randomUUID();
     const itemId = randomUUID();
+    const clientProjectId = randomUUID();
+    const phantomClientItemId = randomUUID();
+    const clientOrgId = randomUUID();
     const createdAt = "2026-11-14T12:30:00.000Z";
     await h.pool.query(
       "INSERT INTO agency_project_settings(id,enabled) VALUES (true,true) ON CONFLICT(id) DO UPDATE SET enabled=true",
@@ -446,6 +476,18 @@ test("upgrades populated 0121 work items with stable identity and unknown author
       `INSERT INTO internal_project_items(id,project_id,title,status,assignee_id,revision,created_at)
        VALUES($1,$2,'Inspect fixtures','in-progress',$3,7,$4)`,
       [itemId, projectId, owner.userId, createdAt],
+    );
+    await h.pool.query(
+      "INSERT INTO organizations(id,name,owner_id,visibility_level) VALUES($1,'Legacy client',$2,'all')",
+      [clientOrgId, owner.userId],
+    );
+    await h.pool.query(
+      "INSERT INTO agency_projects(id,kind,title,owner_user_id,org_id) VALUES($1,'client','Legacy client project',$2,$3)",
+      [clientProjectId, owner.userId, clientOrgId],
+    );
+    await h.pool.query(
+      "INSERT INTO internal_project_items(id,project_id,title) VALUES($1,$2,'Previously inserted out of band')",
+      [phantomClientItemId, clientProjectId],
     );
     const priorLedger = await ledger(h);
     expect(priorLedger).toHaveLength(122);
@@ -460,17 +502,22 @@ test("upgrades populated 0121 work items with stable identity and unknown author
       (await h.pool.query("SELECT created_at FROM internal_project_items WHERE id=$1", [itemId]))
         .rows,
     ).toEqual([{ created_at: new Date(createdAt) }]);
-    expect(value(await readInternalProject(h.db, owner, projectId, signal())).items).toEqual([
+    const saved = await h.pool.query(
+      `SELECT id,title,status,assignee_id,priority,start_date,due_date,description,created_by,revision::int
+         FROM internal_project_items WHERE project_id=$1`,
+      [projectId],
+    );
+    expect(saved.rows).toEqual([
       {
         id: itemId,
         title: "Inspect fixtures",
         status: "in-progress",
-        assigneeId: owner.userId,
+        assignee_id: owner.userId,
         priority: "none",
-        startDate: null,
-        dueDate: null,
+        start_date: null,
+        due_date: null,
         description: "",
-        createdBy: null,
+        created_by: null,
         revision: 7,
       },
     ]);
@@ -478,7 +525,390 @@ test("upgrades populated 0121 work items with stable identity and unknown author
       ok: true,
     });
     expect(await ledger(h)).toEqual(nextLedger);
+
+    workflowUpgrade = await migrationFolder(125);
+    expect(
+      await applyMigrations(h.db, AbortSignal.timeout(30_000), workflowUpgrade.folder),
+    ).toEqual({
+      ok: true,
+      value: { applied: true },
+    });
+    const workspace = value(await readInternalProject(h.db, owner, projectId, signal()));
+    expect(workspace.states).toHaveLength(3);
+    expect(workspace.project.identifier).toMatch(/^P[0-9]+$/u);
+    const started = workspace.states.find(({ category }) => category === "started");
+    if (started === undefined) throw new TypeError("Started state missing after upgrade");
+    expect(workspace.items).toMatchObject([
+      {
+        id: itemId,
+        stateId: started.id,
+        status: "in-progress",
+        revision: 7,
+        createdBy: null,
+        sequenceNumber: 1,
+      },
+    ]);
+    expect(
+      (
+        await h.pool.query(
+          "SELECT state_id, sequence_number FROM internal_project_items WHERE id=$1",
+          [phantomClientItemId],
+        )
+      ).rows,
+    ).toEqual([{ state_id: null, sequence_number: null }]);
+    expect(await readInternalProject(h.db, owner, clientProjectId, signal())).toEqual(
+      err("project_unavailable"),
+    );
+    expect((await ledger(h)).slice(0, nextLedger.length)).toEqual(nextLedger);
   } finally {
-    await Promise.all([target?.dispose(), h.close()]);
+    await Promise.all([target?.dispose(), workflowUpgrade?.dispose(), h.close()]);
   }
+});
+
+test("authorizes settings and archive lifecycle only for the owner, preserving the create replay", async () => {
+  const [owner, editor] = await Promise.all([
+    staff("Settings owner", { isAdmin: true }),
+    staff("Settings editor"),
+  ]);
+  const intent = { id: randomUUID(), title: "Original settings title" };
+  const project = value(await createInternalProject(fixture.db, owner, intent, signal()));
+  const target = { projectId: project.id, revision: 0 };
+  value(
+    await setInternalProjectMember(
+      fixture.db,
+      owner,
+      { projectId: project.id, userId: editor.userId, membership: standardEditor },
+      signal(),
+    ),
+  );
+  const details = { ...target, title: "Renamed project", description: "Updated scope" };
+  expect(await saveInternalProjectSettings(fixture.db, editor, details, signal())).toEqual(
+    err("project_forbidden"),
+  );
+  const configured = value(await saveInternalProjectSettings(fixture.db, owner, details, signal()));
+  expect(configured).toMatchObject({
+    project: { title: details.title },
+    settings: { description: details.description, revision: 1 },
+  });
+  expect(value(await createInternalProject(fixture.db, owner, intent, signal()))).toMatchObject({
+    id: project.id,
+    title: details.title,
+  });
+  expect(
+    await createInternalProject(fixture.db, owner, { ...intent, title: details.title }, signal()),
+  ).toEqual(err("project_conflict"));
+  const archived = value(
+    await setInternalProjectArchived(
+      fixture.db,
+      owner,
+      { ...target, revision: 1, archived: true },
+      signal(),
+    ),
+  );
+  expect(archived).toMatchObject({
+    project: { archived: true },
+    canEdit: false,
+    canManageMembers: false,
+    canManageSettings: true,
+  });
+  expect(value(await readInternalProject(fixture.db, editor, project.id, signal()))).toMatchObject({
+    project: { archived: true },
+    canEdit: false,
+    canManageSettings: false,
+  });
+  expect(value(await listInternalProjects(fixture.db, owner, signal())).projects).toContainEqual(
+    archived.project,
+  );
+  expect(
+    await createInternalProjectItem(
+      fixture.db,
+      owner,
+      { projectId: project.id, id: randomUUID(), title: "Blocked while archived" },
+      signal(),
+    ),
+  ).toEqual(err("project_forbidden"));
+  expect(
+    await saveInternalProjectSettings(fixture.db, owner, { ...details, revision: 2 }, signal()),
+  ).toEqual(err("project_forbidden"));
+  expect(
+    await setInternalProjectMember(
+      fixture.db,
+      owner,
+      { projectId: project.id, userId: editor.userId, membership: null },
+      signal(),
+    ),
+  ).toEqual(err("project_forbidden"));
+  expect(
+    await setInternalProjectArchived(
+      fixture.db,
+      editor,
+      { ...target, revision: 2, archived: false },
+      signal(),
+    ),
+  ).toEqual(err("project_forbidden"));
+  expect(
+    await setInternalProjectArchived(
+      fixture.db,
+      owner,
+      { ...target, revision: 1, archived: false },
+      signal(),
+    ),
+  ).toEqual(err("project_conflict"));
+  expect(
+    value(
+      await setInternalProjectArchived(
+        fixture.db,
+        owner,
+        { ...target, revision: 2, archived: false },
+        signal(),
+      ),
+    ),
+  ).toMatchObject({ project: { archived: false }, canEdit: true, settings: { revision: 3 } });
+});
+
+test("keeps item keys stable by project sequence and applies permitted metadata defaults", async () => {
+  const [owner, editor, outsider] = await Promise.all([
+    staff("Key owner", { isAdmin: true }),
+    staff("Project lead"),
+    staff("Unrelated staff"),
+  ]);
+  const intent = { id: randomUUID(), title: "Incoming inventory" };
+  const project = value(await createInternalProject(fixture.db, owner, intent, signal()));
+  const other = value(
+    await createInternalProject(
+      fixture.db,
+      owner,
+      { id: randomUUID(), title: "Other inventory" },
+      signal(),
+    ),
+  );
+  const target = { projectId: project.id, revision: 0, title: project.title, description: "" };
+  value(
+    await setInternalProjectMember(
+      fixture.db,
+      owner,
+      { projectId: project.id, userId: editor.userId, membership: standardEditor },
+      signal(),
+    ),
+  );
+  expect(
+    await saveInternalProjectSettings(
+      fixture.db,
+      owner,
+      { ...target, leadUserId: outsider.userId },
+      signal(),
+    ),
+  ).toEqual(err("project_invalid"));
+  expect(
+    await saveInternalProjectSettings(
+      fixture.db,
+      owner,
+      { ...target, title: "Conflict must roll back", identifier: other.identifier },
+      signal(),
+    ),
+  ).toEqual(err("project_conflict"));
+  expect(value(await readInternalProject(fixture.db, owner, project.id, signal())).project).toEqual(
+    project,
+  );
+
+  const configured = value(
+    await saveInternalProjectSettings(
+      fixture.db,
+      owner,
+      {
+        ...target,
+        identifier: "INV",
+        leadUserId: editor.userId,
+        defaultAssigneeId: editor.userId,
+      },
+      signal(),
+    ),
+  );
+  expect(configured.settings).toMatchObject({
+    leadUserId: editor.userId,
+    defaultAssigneeId: editor.userId,
+  });
+  const draft = { projectId: project.id, id: randomUUID(), title: "Count stock" };
+  const first = value(await createInternalProjectItem(fixture.db, owner, draft, signal())).items[0];
+  if (first === undefined) throw new TypeError("Expected the first numbered item");
+  expect(first).toMatchObject({ sequenceNumber: 1, assigneeId: editor.userId });
+  expect(projectItemKey(configured.project.identifier, first.sequenceNumber)).toBe("INV-1");
+  const editorItems = value(
+    await createInternalProjectItem(
+      fixture.db,
+      editor,
+      { ...draft, id: randomUUID(), title: "Count returns" },
+      signal(),
+    ),
+  ).items;
+  expect(editorItems).toContainEqual(
+    expect.objectContaining({ sequenceNumber: 2, assigneeId: null }),
+  );
+  const withoutDefault = value(
+    await createInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...draft, id: randomUUID(), title: "Count supplies", assigneeId: null },
+      signal(),
+    ),
+  ).items;
+  expect(withoutDefault).toContainEqual(
+    expect.objectContaining({ sequenceNumber: 3, assigneeId: null }),
+  );
+  const renamed = value(
+    await saveInternalProjectSettings(
+      fixture.db,
+      owner,
+      {
+        ...target,
+        revision: 1,
+        identifier: "STOCK",
+      },
+      signal(),
+    ),
+  );
+  expect(projectItemKey(renamed.project.identifier, first.sequenceNumber)).toBe("STOCK-1");
+  expect(renamed.items).toContainEqual(first);
+  const cleared = value(
+    await setInternalProjectMember(
+      fixture.db,
+      owner,
+      { projectId: project.id, userId: editor.userId, membership: null },
+      signal(),
+    ),
+  );
+  expect(cleared.settings).toMatchObject({
+    leadUserId: null,
+    defaultAssigneeId: null,
+    revision: 3,
+  });
+  expect(cleared.items).toContainEqual(
+    expect.objectContaining({ id: first.id, sequenceNumber: 1, assigneeId: null }),
+  );
+});
+
+test("applies project-specific state defaults and ordering and retains the legacy status projection", async () => {
+  const owner = await staff("Workflow owner", { isAdmin: true });
+  const createProject = async (title: string) =>
+    value(await createInternalProject(fixture.db, owner, { id: randomUUID(), title }, signal()));
+  const project = await createProject("Workflow project");
+  const other = await createProject("Unrelated workflow");
+  const workspace = value(await readInternalProject(fixture.db, owner, project.id, signal()));
+  const foreignState = value(await readInternalProject(fixture.db, owner, other.id, signal()))
+    .states[0];
+  const started = workspace.states.find(({ category }) => category === "started");
+  if (started === undefined || foreignState === undefined)
+    throw new TypeError("Seeded states missing");
+  expect(workspace.states.map(({ name }) => name)).toEqual(["To do", "In progress", "Done"]);
+  const custom = { ...started, id: randomUUID(), name: "In review", position: 0, isDefault: true };
+  const states = workspace.states.map((state) => ({
+    ...state,
+    isDefault: false,
+    position: state.id === started.id ? 1 : state.position,
+  }));
+  const set = value(
+    await saveInternalProjectStates(
+      fixture.db,
+      owner,
+      { projectId: project.id, revision: 0, states: [...states, custom] },
+      signal(),
+    ),
+  );
+  expect(set.states.map(({ name }) => name)).toEqual(["To do", "In review", "In progress", "Done"]);
+  const moduleId = randomUUID();
+  const alternateModuleId = randomUUID();
+  await fixture.db.insert(internalProjectPlanningGroups).values([
+    {
+      id: moduleId,
+      projectId: project.id,
+      title: "Receiving",
+      kind: "modules",
+      description: "",
+      moduleStatus: "planned",
+    },
+    {
+      id: alternateModuleId,
+      projectId: project.id,
+      title: "Dispatch",
+      kind: "modules",
+      description: "",
+      moduleStatus: "planned",
+    },
+  ]);
+  const item = {
+    projectId: project.id,
+    id: randomUUID(),
+    title: "First custom state item",
+    planning: { moduleId },
+  };
+  expect(
+    await createInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...item, stateId: foreignState.id },
+      signal(),
+    ),
+  ).toEqual(err("project_invalid"));
+  const created = value(await createInternalProjectItem(fixture.db, owner, item, signal()))
+    .items[0];
+  if (created === undefined) throw new TypeError("Work item missing");
+  expect(created).toMatchObject({ stateId: custom.id, status: "in-progress", revision: 0 });
+  expect(
+    value(await readWorkspacePlanning(fixture.db, owner, project.id, signal())).assignments,
+  ).toEqual([{ itemId: created.id, cycleId: null, moduleIds: [moduleId] }]);
+  expect(value(await createInternalProjectItem(fixture.db, owner, item, signal())).items).toEqual([
+    created,
+  ]);
+  expect(
+    await createInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...item, planning: { moduleId: alternateModuleId } },
+      signal(),
+    ),
+  ).toEqual(err("project_conflict"));
+  const itemTarget = { projectId: project.id, itemId: created.id, revision: 0 };
+  expect(
+    value(
+      await updateInternalProjectItem(
+        fixture.db,
+        owner,
+        { ...itemTarget, status: "in-progress" },
+        signal(),
+      ),
+    ).items,
+  ).toEqual([created]);
+  expect(
+    await updateInternalProjectItem(
+      fixture.db,
+      owner,
+      { ...itemTarget, stateId: foreignState.id },
+      signal(),
+    ),
+  ).toEqual(err("project_invalid"));
+  expect(
+    await saveInternalProjectStates(
+      fixture.db,
+      owner,
+      { projectId: project.id, revision: 1, states: workspace.states },
+      signal(),
+    ),
+  ).toEqual(err("project_conflict"));
+  const recategorized = value(
+    await saveInternalProjectStates(
+      fixture.db,
+      owner,
+      {
+        projectId: project.id,
+        revision: 1,
+        states: set.states.map((state) =>
+          state.id === custom.id ? { ...state, category: "completed" } : state,
+        ),
+      },
+      signal(),
+    ),
+  );
+  expect(recategorized.items).toMatchObject([
+    { id: created.id, stateId: custom.id, status: "done", revision: 1 },
+  ]);
 });

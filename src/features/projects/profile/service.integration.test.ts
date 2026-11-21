@@ -84,8 +84,7 @@ test("only assigned or created work in currently visible internal projects reach
   await fixture.db
     .insert(agencyProjectMembers)
     .values({ projectId: memberProject, userId: member.userId });
-  // Deliberately seed stale or incompatible assignments to verify that the read also checks the
-  // kind and project membership, independent of the normal assignment writer's safeguards.
+  // The native read still checks current project membership for legacy assignments.
   await fixture.db.insert(internalProjectItems).values([
     {
       projectId: memberProject,
@@ -121,14 +120,16 @@ test("only assigned or created work in currently visible internal projects reach
       createdBy: member.userId,
       status: "done",
     },
-    {
+  ]);
+  await expect(
+    fixture.db.insert(internalProjectItems).values({
       projectId: clientProject,
       title: "Client item",
       assigneeId: member.userId,
       createdBy: member.userId,
       status: "done",
-    },
-  ]);
+    }),
+  ).rejects.toMatchObject({ cause: { code: "23514" } });
 
   expect(value(await readProjectProfileSummary(fixture.db, member, signal()))).toEqual({
     member: { id: member.userId, name: "Assigned administrator" },

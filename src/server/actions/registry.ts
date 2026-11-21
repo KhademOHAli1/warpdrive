@@ -124,6 +124,9 @@ export const commandHandlers = {
   "features/projects/actions.createProjectItemAction": projectActions.createProjectItemAction,
   "features/projects/actions.updateProjectItemAction": projectActions.updateProjectItemAction,
   "features/projects/actions.setProjectMemberAction": projectActions.setProjectMemberAction,
+  "features/projects/actions.saveProjectSettingsAction": projectActions.saveProjectSettingsAction,
+  "features/projects/actions.setProjectArchivedAction": projectActions.setProjectArchivedAction,
+  "features/projects/actions.saveProjectStatesAction": projectActions.saveProjectStatesAction,
   "features/projects/documents/actions.createProjectDocumentAction":
     projectDocumentActions.createProjectDocumentAction,
   "features/projects/documents/actions.saveProjectDocumentAction":

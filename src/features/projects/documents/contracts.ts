@@ -48,7 +48,7 @@ export type CreateProjectDocumentInput = {
 export type SaveProjectDocumentInput = ProjectDocumentKey & {
   revision: number;
   title: string;
-  bodyHtml: string;
+  bodyHtml?: string;
 };
 
 export type SetProjectDocumentLifecycleInput = ProjectDocumentKey & {

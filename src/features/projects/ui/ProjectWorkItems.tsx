@@ -20,24 +20,25 @@ import { cn } from "@/lib/utils";
 import {
   type ProjectItem,
   type ProjectResult,
-  type ProjectStatus,
+  type ProjectWorkflowState,
   type ProjectWorkspace,
+  projectItemKey,
   projectItemTitleMaxLength,
-  projectStatuses,
   type UpdateProjectItemInput,
 } from "../contracts";
 import { ProjectTitleDialog } from "./ProjectTitleDialog";
 import type { ProjectsTranslator } from "./projectMessages";
+import { workflowStateLabel } from "./projectWorkflowUi";
 import { useProjectFormatters } from "./useProjectFormatters";
 
 export type ProjectItemChanges = Omit<UpdateProjectItemInput, "projectId" | "itemId" | "revision">;
 
-type WorkItemsProps = {
+export type WorkItemsProps = {
   workspace: ProjectWorkspace;
   labels: ProjectsTranslator;
   pending: boolean;
   openItem: (id: string, trigger: HTMLElement) => void;
-  createInColumn?: (status: ProjectStatus) => ReactNode;
+  createInColumn?: (state: ProjectWorkflowState) => ReactNode;
   updateItem: (
     item: ProjectItem,
     changes: ProjectItemChanges,
@@ -47,12 +48,6 @@ type WorkItemsProps = {
 
 type WorkItemProps = WorkItemsProps & { item: ProjectItem };
 
-const statusColor = {
-  todo: "bg-muted-foreground",
-  "in-progress": "bg-primary",
-  done: "bg-success",
-} satisfies Record<ProjectStatus, string>;
-
 function ItemTitle({ workspace, item, pending, labels, updateItem, openItem }: WorkItemProps) {
   return (
     <div className="flex min-w-0 items-start justify-between gap-2">
@@ -60,7 +55,11 @@ function ItemTitle({ workspace, item, pending, labels, updateItem, openItem }: W
         type="button"
         className="min-w-0 rounded-sm py-1 text-start text-sm font-medium [overflow-wrap:anywhere] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={(event) => openItem(item.id, event.currentTarget)}
+        aria-label={item.title}
       >
+        <bdi className="me-2 whitespace-nowrap text-xs font-normal text-muted-foreground" dir="ltr">
+          {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
+        </bdi>
         <bdi>{item.title}</bdi>
       </button>
       {workspace.canEdit && (
@@ -90,34 +89,32 @@ function ItemTitle({ workspace, item, pending, labels, updateItem, openItem }: W
   );
 }
 
-function ItemStatus({ workspace, item, labels, pending, updateItem }: WorkItemProps) {
+export function ItemStatus({ workspace, item, labels, pending, updateItem }: WorkItemProps) {
+  const state = workspace.states.find(({ id }) => id === item.stateId);
   if (!workspace.canEdit) {
     return (
       <Badge variant={item.status === "done" ? "success" : "secondary"}>
-        {labels(`status.${item.status}`)}
+        {state === undefined ? labels(`status.${item.status}`) : workflowStateLabel(state, labels)}
       </Badge>
     );
   }
   return (
     <Select
       ariaLabel={labels("workspace.status", { title: item.title })}
-      value={item.status}
+      value={item.stateId}
       disabled={pending}
-      options={projectStatuses.map((status) => ({
-        value: status,
-        label: labels(`status.${status}`),
+      options={workspace.states.map((state) => ({
+        value: state.id,
+        label: workflowStateLabel(state, labels),
       }))}
-      onChange={(value) => {
-        const status = projectStatuses.find((candidate) => candidate === value);
-        if (status !== undefined && status !== item.status) {
-          void updateItem(item, { status });
-        }
+      onChange={(stateId) => {
+        if (stateId !== item.stateId) void updateItem(item, { stateId });
       }}
     />
   );
 }
 
-function ItemAssignee({ workspace, item, labels, pending, updateItem }: WorkItemProps) {
+export function ItemAssignee({ workspace, item, labels, pending, updateItem }: WorkItemProps) {
   const unassigned = labels("workspace.unassigned");
   const eligible = workspace.assignees.find(({ id }) => id === item.assigneeId);
   const historical =
@@ -185,11 +182,11 @@ export function ProjectWorkItemList(props: WorkItemsProps) {
             </th>
           </tr>
         </thead>
-        {projectStatuses.map((status) => {
-          const items = workspace.items.filter((item) => item.status === status);
+        {workspace.states.map((state) => {
+          const items = workspace.items.filter((item) => item.stateId === state.id);
           if (items.length === 0) return null;
           return (
-            <tbody key={status} className="divide-y border-b last:border-b-0">
+            <tbody key={state.id} className="divide-y border-b last:border-b-0">
               <tr>
                 <th
                   scope="rowgroup"
@@ -198,9 +195,10 @@ export function ProjectWorkItemList(props: WorkItemsProps) {
                 >
                   <span
                     aria-hidden="true"
-                    className={cn("me-2 inline-block size-2 rounded-full", statusColor[status])}
+                    className="me-2 inline-block size-2 rounded-full"
+                    style={{ backgroundColor: state.color }}
                   />
-                  {labels(`status.${status}`)}
+                  {workflowStateLabel(state, labels)}
                   <span className="ms-2 text-xs text-muted-foreground">
                     {format.number(items.length)}
                   </span>
@@ -296,12 +294,12 @@ function BoardCard(props: WorkItemProps) {
   );
 }
 
-function BoardColumn({ status, ...props }: WorkItemsProps & { status: ProjectStatus }) {
+function BoardColumn({ state, ...props }: WorkItemsProps & { state: ProjectWorkflowState }) {
   const { labels, workspace, pending } = props;
-  const title = labels(`status.${status}`);
-  const cards = workspace.items.filter((item) => item.status === status);
+  const title = workflowStateLabel(state, labels);
+  const cards = workspace.items.filter((item) => item.stateId === state.id);
   const { setNodeRef, isOver } = useDroppable({
-    id: status,
+    id: state.id,
     disabled: pending || !workspace.canEdit,
   });
   return (
@@ -317,7 +315,8 @@ function BoardColumn({ status, ...props }: WorkItemsProps & { status: ProjectSta
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <span
             aria-hidden="true"
-            className={cn("size-2 shrink-0 rounded-full", statusColor[status])}
+            className="size-2 shrink-0 rounded-full"
+            style={{ backgroundColor: state.color }}
           />
           {title}
         </h2>
@@ -325,7 +324,7 @@ function BoardColumn({ status, ...props }: WorkItemsProps & { status: ProjectSta
           <Badge variant="outline">
             {labels("workspace.columnCount", { count: cards.length })}
           </Badge>
-          {props.createInColumn?.(status)}
+          {props.createInColumn?.(state)}
         </div>
       </div>
       {cards.length === 0 ? (
@@ -347,15 +346,15 @@ export function ProjectWorkItemBoard(props: WorkItemsProps) {
   const { workspace, labels, pending, updateItem } = props;
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const itemById = (id: string | number) => workspace.items.find((item) => item.id === id);
-  const statusById = (id: string | number | undefined) =>
-    projectStatuses.find((status) => status === id);
+  const stateById = (id: string | number | undefined) =>
+    workspace.states.find((state) => state.id === id);
 
   function move({ active, over }: DragEndEvent) {
     if (pending || !workspace.canEdit) return;
     const item = itemById(active.id);
-    const status = statusById(over?.id);
-    if (item !== undefined && status !== undefined && status !== item.status) {
-      void updateItem(item, { status });
+    const state = stateById(over?.id);
+    if (item !== undefined && state !== undefined && state.id !== item.stateId) {
+      void updateItem(item, { stateId: state.id });
     }
   }
 
@@ -365,9 +364,9 @@ export function ProjectWorkItemBoard(props: WorkItemsProps) {
     target: string | number | undefined,
   ) {
     const item = itemById(id);
-    const status = statusById(target);
-    if (item !== undefined && status !== undefined) {
-      return labels(key, { title: item.title, status: labels(`status.${status}`) });
+    const state = stateById(target);
+    if (item !== undefined && state !== undefined) {
+      return labels(key, { title: item.title, status: workflowStateLabel(state, labels) });
     }
   }
 
@@ -391,8 +390,8 @@ export function ProjectWorkItemBoard(props: WorkItemsProps) {
       }}
     >
       <div className="grid auto-cols-[minmax(14rem,1fr)] grid-flow-col items-start gap-3 overflow-x-auto pb-2">
-        {projectStatuses.map((status) => (
-          <BoardColumn key={status} {...props} status={status} />
+        {workspace.states.map((state) => (
+          <BoardColumn key={state.id} {...props} state={state} />
         ))}
       </div>
     </DndContext>

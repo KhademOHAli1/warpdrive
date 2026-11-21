@@ -13,7 +13,9 @@ const lana = { id: "lana", name: "Lana Rivera" };
 const project = (id: string, title: string, owner: ProjectSummary["owner"], daysAgo: number) => ({
   id,
   title,
+  identifier: id.toUpperCase(),
   owner,
+  archived: false,
   createdAt: new Date(Date.now() - daysAgo * 86_400_000).toISOString(),
 });
 const projects = [

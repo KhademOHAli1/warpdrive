@@ -4,6 +4,45 @@ import type { Locale } from "@/features/i18n/registry";
 import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
 
 const en = {
+  sections: {
+    cycles: "Cycles",
+    modules: "Modules",
+    views: "Saved views",
+    settings: "Settings",
+    active: "Active",
+    archived: "Archived",
+    noArchives: "No archived projects",
+    archiveDescription: "Archived projects you have access to will appear here.",
+  },
+  layout: {
+    calendar: "Calendar",
+    timeline: "Gantt chart",
+    spreadsheet: "Spreadsheet",
+    previousPeriod: "Previous period",
+    nextPeriod: "Next period",
+    today: "Today",
+    period: "Time scale",
+    month: "Month",
+    week: "Week",
+    quarter: "Quarter",
+    weekends: "Show weekends",
+    unscheduled: "Unscheduled",
+    adjustStart: "Adjust start of {title}",
+    adjustEnd: "Adjust end of {title}",
+    moveSchedule: "Move dates for {title}",
+  },
+  planning: {
+    filters: "Work item filters",
+    allPriorities: "All priorities",
+    allCycles: "All cycles",
+    allModules: "All modules",
+    cycle: "Cycle",
+    modules: "Modules",
+    noCycle: "No cycle",
+    noModules: "No modules",
+    closeSavedView: "Close saved view",
+  },
+
   navigation: {
     title: "Projects",
     client: "Client projects",
@@ -114,6 +153,45 @@ const en = {
 };
 
 const de = {
+  sections: {
+    cycles: "Zyklen",
+    modules: "Module",
+    views: "Gespeicherte Ansichten",
+    settings: "Einstellungen",
+    active: "Aktiv",
+    archived: "Archiviert",
+    noArchives: "Keine archivierten Projekte",
+    archiveDescription: "Archivierte Projekte, auf die du Zugriff hast, werden hier angezeigt.",
+  },
+  layout: {
+    calendar: "Kalender",
+    timeline: "Gantt-Diagramm",
+    spreadsheet: "Tabelle",
+    previousPeriod: "Vorheriger Zeitraum",
+    nextPeriod: "Nächster Zeitraum",
+    today: "Heute",
+    period: "Zeitskala",
+    month: "Monat",
+    week: "Woche",
+    quarter: "Quartal",
+    weekends: "Wochenenden anzeigen",
+    unscheduled: "Ohne Termin",
+    adjustStart: "Start von {title} ändern",
+    adjustEnd: "Ende von {title} ändern",
+    moveSchedule: "Zeitraum für {title} verschieben",
+  },
+  planning: {
+    filters: "Arbeitsaufgaben filtern",
+    allPriorities: "Alle Prioritäten",
+    allCycles: "Alle Zyklen",
+    allModules: "Alle Module",
+    cycle: "Zyklus",
+    modules: "Module",
+    noCycle: "Kein Zyklus",
+    noModules: "Keine Module",
+    closeSavedView: "Gespeicherte Ansicht schließen",
+  },
+
   navigation: {
     title: "Projekte",
     client: "Kundenprojekte",
@@ -224,6 +302,45 @@ const de = {
 };
 
 const fa = {
+  sections: {
+    cycles: "چرخه‌ها",
+    modules: "ماژول‌ها",
+    views: "نماهای ذخیره‌شده",
+    settings: "تنظیمات",
+    active: "فعال",
+    archived: "بایگانی‌شده",
+    noArchives: "پروژه بایگانی‌شده‌ای وجود ندارد",
+    archiveDescription: "پروژه‌های بایگانی‌شده‌ای که به آن‌ها دسترسی دارید اینجا نمایش داده می‌شوند.",
+  },
+  layout: {
+    calendar: "تقویم",
+    timeline: "نمودار گانت",
+    spreadsheet: "صفحه گسترده",
+    previousPeriod: "دوره قبلی",
+    nextPeriod: "دوره بعدی",
+    today: "امروز",
+    period: "مقیاس زمانی",
+    month: "ماه",
+    week: "هفته",
+    quarter: "سه‌ماهه",
+    weekends: "نمایش آخر هفته",
+    unscheduled: "بدون زمان‌بندی",
+    adjustStart: "تغییر تاریخ شروع {title}",
+    adjustEnd: "تغییر تاریخ پایان {title}",
+    moveSchedule: "جابجایی تاریخ‌های {title}",
+  },
+  planning: {
+    filters: "فیلتر کارها",
+    allPriorities: "همه اولویت‌ها",
+    allCycles: "همه چرخه‌ها",
+    allModules: "همه ماژول‌ها",
+    cycle: "چرخه",
+    modules: "ماژول‌ها",
+    noCycle: "بدون چرخه",
+    noModules: "بدون ماژول",
+    closeSavedView: "بستن نمای ذخیره‌شده",
+  },
+
   navigation: {
     title: "پروژه‌ها",
     client: "پروژه‌های مشتریان",

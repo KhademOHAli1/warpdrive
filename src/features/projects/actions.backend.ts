@@ -5,11 +5,14 @@ import { guardCsrf } from "@/features/identity/actions/shared";
 import { revalidatePath } from "@/server/request";
 import { createContext } from "@/server/trpc/context";
 import { err } from "@/types/result";
-import type { ProjectResult } from "./contracts";
+import type { ProjectResult, ProjectWorkspace } from "./contracts";
 import {
   createProjectInput,
   createProjectItemInput,
   projectIdInput,
+  saveProjectSettingsInput,
+  saveProjectStatesInput,
+  setProjectArchivedInput,
   setProjectMemberInput,
   updateProjectItemInput,
 } from "./input";
@@ -19,6 +22,11 @@ import {
   setInternalProjectMember,
   updateInternalProjectItem,
 } from "./service";
+import {
+  saveInternalProjectSettings,
+  saveInternalProjectStates,
+  setInternalProjectArchived,
+} from "./settings/service";
 
 async function runProjectAction<Input, Output>(
   expectedActorId: string,
@@ -99,5 +107,65 @@ export function setProjectMemberAction(
     csrfToken,
     setProjectMemberInput,
     setInternalProjectMember,
+  );
+}
+
+async function revalidateProjectSettings(resultRequest: Promise<ProjectResult<ProjectWorkspace>>) {
+  const result = await resultRequest;
+  if (result.ok) {
+    const project = `/projects/internal/${result.value.project.id}`;
+    revalidatePath("/projects/internal");
+    revalidatePath(project);
+    revalidatePath(`${project}/settings`);
+    revalidatePath(`${project}/settings/states`);
+  }
+  return result;
+}
+
+export function saveProjectSettingsAction(
+  expectedActorId: string,
+  raw: unknown,
+  csrfToken: string | null,
+) {
+  return revalidateProjectSettings(
+    runProjectAction(
+      expectedActorId,
+      raw,
+      csrfToken,
+      saveProjectSettingsInput,
+      saveInternalProjectSettings,
+    ),
+  );
+}
+
+export function setProjectArchivedAction(
+  expectedActorId: string,
+  raw: unknown,
+  csrfToken: string | null,
+) {
+  return revalidateProjectSettings(
+    runProjectAction(
+      expectedActorId,
+      raw,
+      csrfToken,
+      setProjectArchivedInput,
+      setInternalProjectArchived,
+    ),
+  );
+}
+
+export function saveProjectStatesAction(
+  expectedActorId: string,
+  raw: unknown,
+  csrfToken: string | null,
+) {
+  return revalidateProjectSettings(
+    runProjectAction(
+      expectedActorId,
+      raw,
+      csrfToken,
+      saveProjectStatesInput,
+      saveInternalProjectStates,
+    ),
   );
 }

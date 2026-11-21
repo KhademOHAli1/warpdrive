@@ -1,4 +1,5 @@
 import { and, asc, eq, exists, isNull, or } from "drizzle-orm";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
 import { nativeProjectActor } from "@/features/agency-projects/nativeAccess";
@@ -15,7 +16,8 @@ import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import type { ProjectResult, ProjectSummary, ProjectWorkspace } from "./contracts";
-import { internalProjectItems } from "./schema";
+import { internalProjectItems, internalProjectSettings } from "./schema";
+import { readProjectWorkflowStates } from "./settings/states";
 
 class ProjectSessionExpired extends Error {}
 
@@ -92,16 +94,18 @@ export async function lockInternalProject(
   const [row] = await db
     .select({
       project: agencyProjects,
+      identifier: internalProjectSettings.identifier,
       owner: personFields,
       ownerActive: users.isActive,
       ownerInvitedAt: users.invitedAt,
     })
     .from(agencyProjects)
+    .innerJoin(internalProjectSettings, eq(internalProjectSettings.projectId, agencyProjects.id))
     .innerJoin(users, eq(users.id, agencyProjects.ownerUserId))
     .where(and(eq(agencyProjects.id, projectId), listInternalProjectScope(db, actor.id)))
     .for(mode === "write" ? "update" : "share", { of: agencyProjects });
   if (row === undefined) return err("project_unavailable" as const);
-  const { project, owner, ownerActive, ownerInvitedAt } = row;
+  const { project, identifier, owner, ownerActive, ownerInvitedAt } = row;
   const [membership] = await db
     .select()
     .from(agencyProjectMembers)
@@ -115,18 +119,27 @@ export async function lockInternalProject(
   if (!checkProjectLocalAction(local, project, "read").ok)
     return err("project_unavailable" as const);
   const canEdit = checkProjectLocalAction(local, project, "edit-content").ok;
+  const canManageSettings = checkProjectLocalAction(local, project, "manage-members").ok;
   const summary: ProjectSummary = {
     id: project.id,
     title: project.title,
+    identifier,
     owner,
     createdAt: project.createdAt.toISOString(),
+    archived: project.state === "archived",
   };
   return ok({
     summary,
     ownerEligible: ownerActive && ownerInvitedAt === null,
     canEdit,
     canAssign: canEdit && hasProjectAssignmentCoordinateEligibility(local),
-    canManageMembers: checkProjectLocalAction(local, project, "manage-members").ok,
+    canManageMembers: !summary.archived && canManageSettings,
+    canManageSettings,
+    lifecycle: {
+      state: project.state,
+      revision: project.revision,
+      archivedFrom: project.archivedFrom,
+    },
   });
 }
 
@@ -135,11 +148,26 @@ export type InternalProjectAccess = Extract<
   { ok: true }
 >["value"];
 
+export async function isEligibleProjectMember(
+  db: Db,
+  access: InternalProjectAccess,
+  userId: string,
+) {
+  if (access.summary.owner.id === userId) return access.ownerEligible;
+  const [member] = await db
+    .select({ id: users.id })
+    .from(agencyProjectMembers)
+    .innerJoin(users, eq(users.id, agencyProjectMembers.userId))
+    .where(and(eq(agencyProjectMembers.projectId, access.summary.id), eligibleStaff(userId)));
+  return member !== undefined;
+}
+
 export async function projectWorkspaceSnapshot(
   db: Db,
   access: InternalProjectAccess,
 ): Promise<ProjectWorkspace> {
-  const { summary, ownerEligible, canEdit, canAssign, canManageMembers } = access;
+  const { summary, ownerEligible, canEdit, canAssign, canManageMembers, canManageSettings } =
+    access;
   const projectId = summary.id;
   const memberships = await db
     .select(memberFields)
@@ -147,12 +175,14 @@ export async function projectWorkspaceSnapshot(
     .innerJoin(users, eq(users.id, agencyProjectMembers.userId))
     .where(eq(agencyProjectMembers.projectId, projectId))
     .orderBy(asc(users.name), asc(users.id));
-  const { id, revision, createdAt, createdBy } = internalProjectItems;
+  const { id, revision, createdAt, createdBy, stateId, sequenceNumber } = internalProjectItems;
   const items = await db
-    .select({ id, ...projectItemContentFields, createdBy, revision })
+    .select({ id, ...projectItemContentFields, createdBy, revision, stateId, sequenceNumber })
     .from(internalProjectItems)
     .where(eq(internalProjectItems.projectId, projectId))
     .orderBy(asc(createdAt), asc(id));
+  const settings = await readInternalProjectSettings(db, projectId);
+  const states = await readProjectWorkflowStates(db, projectId);
   const staff = canManageMembers
     ? await db
         .select(personFields)
@@ -162,7 +192,21 @@ export async function projectWorkspaceSnapshot(
     : [];
   return {
     project: summary,
-    items,
+    items: items.map((item) => {
+      if (item.stateId === null)
+        throw new AppError(
+          ERROR_IDS.DB_INVARIANT,
+          "Internal work item is missing a workflow state",
+        );
+      if (item.sequenceNumber === null)
+        throw new AppError(
+          ERROR_IDS.DB_INVARIANT,
+          "Internal work item is missing its sequence number",
+        );
+      return { ...item, stateId: item.stateId, sequenceNumber: item.sequenceNumber };
+    }),
+    settings,
+    states,
     members: memberships.map(({ person, edit, coordinate }) => ({
       person,
       role: edit ? "editor" : "viewer",
@@ -178,5 +222,20 @@ export async function projectWorkspaceSnapshot(
     canEdit,
     canAssign,
     canManageMembers,
+    canManageSettings,
   };
+}
+
+export async function readInternalProjectSettings(db: Db, projectId: string) {
+  const { description, revision, leadUserId, defaultAssigneeId } = internalProjectSettings;
+  const [settings] = await db
+    .select({ description, revision, leadUserId, defaultAssigneeId })
+    .from(internalProjectSettings)
+    .where(eq(internalProjectSettings.projectId, projectId));
+  if (settings === undefined)
+    throw new AppError(
+      ERROR_IDS.DB_INVARIANT,
+      "Internal project settings are missing a seeded row",
+    );
+  return settings;
 }

@@ -12,20 +12,20 @@ import {
   projectItemDescriptionMaxLength,
   projectItemTitleMaxLength,
   projectPriorities,
-  projectStatuses,
 } from "../contracts";
 import { ProjectWriteNotice } from "./ProjectTitleDialog";
 import type { ProjectsTranslator } from "./projectMessages";
+import { workflowStateLabel } from "./projectWorkflowUi";
 import type { ProjectWriteError } from "./projectWrites";
 
 export type ProjectWorkItemDraft = Pick<
   ProjectItem,
-  "title" | "description" | "status" | "priority" | "startDate" | "dueDate" | "assigneeId"
+  "title" | "description" | "stateId" | "priority" | "startDate" | "dueDate" | "assigneeId"
 >;
 
 export function draftForProjectWorkItem(item: ProjectItem): ProjectWorkItemDraft {
-  const { title, description, status, priority, startDate, dueDate, assigneeId } = item;
-  return { title, description, status, priority, startDate, dueDate, assigneeId };
+  const { title, description, stateId, priority, startDate, dueDate, assigneeId } = item;
+  return { title, description, stateId, priority, startDate, dueDate, assigneeId };
 }
 
 export function ProjectWorkItemForm({
@@ -105,15 +105,12 @@ export function ProjectWorkItemForm({
           <Field label={labels("workspace.statusColumn")}>
             <Select
               ariaLabel={labels("workspace.statusColumn")}
-              value={draft.status}
-              options={projectStatuses.map((status) => ({
-                value: status,
-                label: labels(`status.${status}`),
+              value={draft.stateId}
+              options={workspace.states.map((state) => ({
+                value: state.id,
+                label: workflowStateLabel(state, labels),
               }))}
-              onChange={(value) => {
-                const status = projectStatuses.find((choice) => choice === value);
-                if (status !== undefined) set("status", status);
-              }}
+              onChange={(value) => set("stateId", value)}
             />
           </Field>
           <Field label={labels("workspace.priority")}>

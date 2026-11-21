@@ -36,11 +36,13 @@ export function ProjectPagesList({
   project,
   index,
   pageType,
+  canManageSettings,
 }: {
   actorId: string;
   project: ProjectSummary;
   index: ProjectDocumentsIndex;
   pageType: PageType;
+  canManageSettings: boolean;
 }) {
   const router = useRouter();
   const { locale, numberingSystem } = useLocalePreferences();
@@ -95,7 +97,11 @@ export function ProjectPagesList({
           ) : null
         }
       />
-      <ProjectWorkspaceNav projectId={project.id} active="pages" />
+      <ProjectWorkspaceNav
+        projectId={project.id}
+        active="pages"
+        canManageSettings={canManageSettings}
+      />
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <nav aria-label={t.pages} className="inline-flex flex-wrap rounded-md border bg-card p-0.5">
           {pageTypes.map((type) => (

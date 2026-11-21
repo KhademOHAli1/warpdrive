@@ -9,6 +9,7 @@ export * from "@/features/newsletter/attribution/schema";
 export * from "@/features/newsletter/schema/operationReceipts";
 export * from "@/features/newsletter/schema/personAddresses";
 export * from "@/features/projects/documents/schema";
+export * from "@/features/projects/planning/schema";
 export * from "@/features/projects/profile/schema";
 export * from "@/features/projects/schema";
 export * from "@/features/work-profile/schema";

@@ -2,6 +2,7 @@
 
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   createProjectAction,
@@ -10,6 +11,7 @@ import {
   updateProjectItemAction,
 } from "./actions";
 import type { ProjectCommands, ProjectIndex, ProjectWorkspace } from "./contracts";
+import type { PlanningSavedView, PlanningScope, WorkspacePlanning } from "./planning/contracts";
 import { InternalProjectsList } from "./ui/InternalProjectsList";
 import { InternalProjectWorkspace } from "./ui/InternalProjectWorkspace";
 import type { ProjectWorkspaceLocation } from "./ui/planeWorkItemView";
@@ -17,9 +19,17 @@ import { projectsTranslator } from "./ui/projectMessages";
 
 type Screen =
   | { screen: "index"; initial: ProjectIndex }
-  | { screen: "workspace"; initial: ProjectWorkspace; location: ProjectWorkspaceLocation };
+  | {
+      screen: "workspace";
+      initial: ProjectWorkspace;
+      location: ProjectWorkspaceLocation;
+      planning?: WorkspacePlanning;
+      savedView?: PlanningSavedView;
+      planningScope?: PlanningScope;
+    };
 
 export function InternalProjectsClient(props: Screen & { actorId: string }) {
+  const utils = trpc.useUtils();
   const { locale } = useLocalePreferences();
   const { actorId } = props;
   const commands: ProjectCommands = {
@@ -35,6 +45,13 @@ export function InternalProjectsClient(props: Screen & { actorId: string }) {
     <InternalProjectWorkspace
       initial={props.initial}
       initialLocation={props.location}
+      initialPlanning={props.planning}
+      reloadPlanning={(projectId) =>
+        utils.client.internalProjects.planning.workspace.query({ projectId })
+      }
+      savedView={props.savedView}
+      planningScope={props.planningScope}
+      actorId={actorId}
       locale={locale}
       commands={commands}
     />

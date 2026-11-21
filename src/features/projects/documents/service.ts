@@ -1,5 +1,4 @@
-import { and, asc, desc, eq, or, sql } from "drizzle-orm";
-import { sanitize } from "isomorphic-dompurify";
+import { and, asc, desc, eq, isNotNull, or, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
@@ -25,6 +24,13 @@ import {
   type SaveProjectDocumentInput,
   type SetProjectDocumentLifecycleInput,
 } from "./contracts";
+import type {
+  ProjectDocumentCollaboration,
+  ProjectDocumentCollaborationInput,
+} from "./live/contracts";
+import { projectDocumentHtml } from "./live/html";
+import { exchangeProjectDocumentPresence } from "./live/presence";
+import { mergeProjectDocument } from "./live/state";
 import {
   internalProjectDocuments as documents,
   internalProjectDocumentVersions as versions,
@@ -47,41 +53,6 @@ const versionSummaryFields = {
   recordedAt: versions.recordedAt,
 };
 
-// The document editor stores its own allowlist. In particular saving a document never embeds
-// sources that can automatically make a browser request, even when the HTML was pasted.
-function documentHtml(html: string): string {
-  return sanitize(html, {
-    ALLOWED_TAGS: [
-      "p",
-      "br",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "ul",
-      "ol",
-      "li",
-      "blockquote",
-      "pre",
-      "code",
-      "strong",
-      "em",
-      "b",
-      "i",
-      "s",
-      "u",
-      "hr",
-      "a",
-    ],
-    ALLOWED_ATTR: ["href", "title", "start", "rel"],
-    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|#|\/(?![\\/]))/i,
-    ALLOW_DATA_ATTR: false,
-    ALLOW_ARIA_ATTR: false,
-  });
-}
-
 function visibleDocument(projectId: string, actorId: string) {
   return and(
     eq(documents.projectId, projectId),
@@ -103,7 +74,12 @@ async function loadDocument(
   { projectId, documentId }: ProjectDocumentKey,
 ) {
   const [row] = await db
-    .select({ ...summaryFields, bodyHtml: documents.bodyHtml })
+    .select({
+      ...summaryFields,
+      bodyHtml: documents.bodyHtml,
+      collaborationEpoch: documents.collaborationEpoch,
+      collaborationActive: sql<boolean>`${isNotNull(documents.collaborationState)}`,
+    })
     .from(documents)
     .innerJoin(users, eq(users.id, documents.authorUserId))
     .where(and(visibleDocument(projectId, actorId), eq(documents.id, documentId)));
@@ -111,6 +87,28 @@ async function loadDocument(
 }
 
 type DocumentRow = NonNullable<Awaited<ReturnType<typeof loadDocument>>>;
+
+function publicDocument({
+  id,
+  title,
+  author,
+  visibility,
+  locked,
+  archivedAt,
+  updatedAt,
+  revision,
+}: DocumentRow) {
+  return documentSummary({
+    id,
+    title,
+    author,
+    visibility,
+    locked,
+    archivedAt,
+    updatedAt,
+    revision,
+  });
+}
 
 function mayManageDocument(access: InternalProjectAccess, actorId: string, row: DocumentRow) {
   return access.canEdit && (row.author.id === actorId || access.summary.owner.id === actorId);
@@ -132,7 +130,7 @@ async function documentDetail(
     .where(eq(versions.documentId, row.id))
     .orderBy(desc(versions.revision));
   return {
-    document: documentSummary({ ...row, bodyHtml: documentHtml(row.bodyHtml) }),
+    document: { ...publicDocument(row), bodyHtml: projectDocumentHtml(row.bodyHtml) },
     versions: history.map((entry) => ({ ...entry, recordedAt: entry.recordedAt.toISOString() })),
     canEdit: mayEditDocument(access, row),
     canManage: mayManageDocument(access, actorId, row),
@@ -199,7 +197,7 @@ export function readProjectDocumentVersion(
       : ok({
           ...version,
           recordedAt: version.recordedAt.toISOString(),
-          bodyHtml: documentHtml(version.bodyHtml),
+          bodyHtml: projectDocumentHtml(version.bodyHtml),
         });
   });
 }
@@ -276,7 +274,10 @@ async function claimedDocumentDetail(
 }
 
 type DocumentChange = Partial<
-  Pick<typeof documents.$inferInsert, "title" | "bodyHtml" | "locked" | "archivedAt">
+  Pick<
+    typeof documents.$inferInsert,
+    "title" | "bodyHtml" | "locked" | "archivedAt" | "collaborationState" | "collaborationEpoch"
+  >
 >;
 
 async function updateDocument(
@@ -328,14 +329,26 @@ async function writeContent(
   editorUserId: string,
   row: DocumentRow,
   input: SaveProjectDocumentInput,
+  restore = false,
 ) {
-  if (Buffer.byteLength(input.bodyHtml) > projectDocumentBodyMaxLength)
+  if (
+    input.bodyHtml !== undefined &&
+    Buffer.byteLength(input.bodyHtml) > projectDocumentBodyMaxLength
+  )
     return err("project_invalid" as const);
-  const bodyHtml = documentHtml(input.bodyHtml);
+  const bodyHtml =
+    input.bodyHtml === undefined ? row.bodyHtml : projectDocumentHtml(input.bodyHtml);
   if (Buffer.byteLength(bodyHtml) > projectDocumentBodyMaxLength)
     return err("project_invalid" as const);
-  if (row.title === input.title && row.bodyHtml === bodyHtml) return ok(undefined);
-  if (!(await updateDocument(db, input, { title: input.title, bodyHtml })))
+  if (!restore && row.collaborationActive && row.bodyHtml !== bodyHtml)
+    return err("project_conflict" as const);
+  if (!restore && row.title === input.title && row.bodyHtml === bodyHtml) {
+    if (input.bodyHtml === undefined && (await loadVersion(db, row.id, row.revision)) === undefined)
+      await recordVersion(db, editorUserId, row.id, row.revision, row.title, row.bodyHtml);
+    return ok(undefined);
+  }
+  const reset = restore ? { collaborationState: null, collaborationEpoch: row.revision + 1 } : {};
+  if (!(await updateDocument(db, input, { title: input.title, bodyHtml, ...reset })))
     return err("project_conflict" as const);
   await recordVersion(
     db,
@@ -359,6 +372,116 @@ export function saveProjectDocument(
   );
 }
 
+export function collaborateProjectDocument(
+  db: Db,
+  who: NativeSessionRef,
+  input: ProjectDocumentCollaborationInput,
+  signal: AbortSignal,
+) {
+  return withInternalProjects<ProjectDocumentCollaboration>(db, who, signal, async (tx, actor) => {
+    if (input.update !== null && (input.epoch === null || input.stateVector === null))
+      return err("project_invalid");
+    const mode = input.epoch === null || input.update !== null ? "write" : "read";
+    const access = await lockInternalProject(tx, actor, input.projectId, mode);
+    if (!access.ok) return access;
+    const row = await loadDocument(tx, actor.id, input);
+    if (row === undefined) return err("project_unavailable");
+    const canEdit = mayEditDocument(access.value, row);
+    const canManage = mayManageDocument(access.value, actor.id, row);
+    const atCurrentEpoch = input.epoch === row.collaborationEpoch;
+    if (input.update !== null && atCurrentEpoch && !canEdit) return err("project_forbidden");
+    const response = {
+      epoch: row.collaborationEpoch,
+      document: publicDocument(row),
+      canEdit,
+      canManage,
+    };
+    const result = await exchangeDocumentState(tx, input, row, response);
+    if (!result.ok) return result;
+    const update = atCurrentEpoch ? (input.presence ?? null) : null;
+    const peers = result.value.live
+      ? await exchangeProjectDocumentPresence(tx, who, access.value, result.value, update)
+      : [];
+    return ok({ ...result.value, peers });
+  });
+}
+
+async function exchangeDocumentState(
+  db: Db,
+  input: ProjectDocumentCollaborationInput,
+  row: DocumentRow,
+  response: Pick<ProjectDocumentCollaboration, "epoch" | "document" | "canEdit" | "canManage">,
+): Promise<ProjectResult<Omit<ProjectDocumentCollaboration, "peers">>> {
+  // Only a current editor initializes the shared copy. Other readers pick it up
+  // on their next exchange, when it is available.
+  if (!row.collaborationActive && (!response.canEdit || input.epoch !== null))
+    return ok({
+      ...response,
+      live: false,
+      update: null,
+      previewHtml: projectDocumentHtml(row.bodyHtml),
+    });
+  if (
+    row.collaborationActive &&
+    input.epoch === row.collaborationEpoch &&
+    input.revision === row.revision &&
+    input.update === null &&
+    input.stateVector !== null
+  )
+    return ok({ ...response, live: true, update: null, previewHtml: null });
+  const synchronized = await synchronizeDocumentState(db, input, row);
+  return synchronized.ok
+    ? ok({ ...response, ...synchronized.value, live: true, previewHtml: null })
+    : synchronized;
+}
+
+async function synchronizeDocumentState(
+  db: Db,
+  input: ProjectDocumentCollaborationInput,
+  row: DocumentRow,
+) {
+  // The caller holds the project authority lock, covering ordinary saves,
+  // lifecycle changes and membership writes as well as this shared state.
+  const scope = and(eq(documents.projectId, input.projectId), eq(documents.id, input.documentId));
+  const [stored] = await db
+    .select({ state: documents.collaborationState })
+    .from(documents)
+    .where(scope);
+  if (stored === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Live project page disappeared");
+  const current = input.epoch === row.collaborationEpoch;
+  const merged = mergeProjectDocument(stored.state, row.bodyHtml, {
+    stateVector: current ? input.stateVector : null,
+    update: current ? input.update : null,
+  });
+  if (merged === null) return err("project_invalid" as const);
+  if (merged.initialState !== null) {
+    await db.update(documents).set({ collaborationState: merged.initialState }).where(scope);
+  }
+  if (merged.change === null) return ok({ document: publicDocument(row), update: merged.update });
+  if (row.revision === Number.MAX_SAFE_INTEGER) return err("project_conflict" as const);
+  const [persisted] = await db
+    .update(documents)
+    .set({
+      collaborationState: merged.change.state,
+      bodyHtml: merged.change.bodyHtml,
+      revision: row.revision + 1,
+      updatedAt: sql`clock_timestamp()`,
+    })
+    .where(scope)
+    .returning({ updatedAt: documents.updatedAt });
+  if (persisted === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Live project page did not persist");
+  return ok({
+    document: publicDocument({
+      ...row,
+      revision: row.revision + 1,
+      updatedAt: persisted.updatedAt,
+    }),
+    update: merged.update,
+  });
+}
+
 export function setProjectDocumentLifecycle(
   db: Db,
   who: NativeSessionRef,
@@ -370,14 +493,19 @@ export function setProjectDocumentLifecycle(
     if (action === "archive" || action === "restore") {
       const archived = action === "archive";
       if (archived === (row.archivedAt !== null)) return ok(undefined);
-      return (await updateDocument(tx, input, { archivedAt: archived ? new Date() : null }))
+      return (await updateDocument(tx, input, {
+        archivedAt: archived ? new Date() : null,
+        collaborationEpoch: row.revision + 1,
+      }))
         ? ok(undefined)
         : err("project_conflict");
     }
     if (row.archivedAt !== null) return err("project_forbidden");
     const locked = action === "lock";
     if (locked === row.locked) return ok(undefined);
-    return (await updateDocument(tx, input, { locked })) ? ok(undefined) : err("project_conflict");
+    return (await updateDocument(tx, input, { locked, collaborationEpoch: row.revision + 1 }))
+      ? ok(undefined)
+      : err("project_conflict");
   });
 }
 
@@ -390,10 +518,16 @@ export function restoreProjectDocumentVersion(
   return changeDocument(db, who, input, "edit", signal, async (tx, actorId, row) => {
     const version = await loadVersion(tx, input.documentId, input.versionRevision);
     if (version === undefined) return err("project_unavailable");
-    return writeContent(tx, actorId, row, {
-      ...input,
-      title: version.title,
-      bodyHtml: version.bodyHtml,
-    });
+    return writeContent(
+      tx,
+      actorId,
+      row,
+      {
+        ...input,
+        title: version.title,
+        bodyHtml: version.bodyHtml,
+      },
+      true,
+    );
   });
 }

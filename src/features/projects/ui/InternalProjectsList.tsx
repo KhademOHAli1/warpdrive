@@ -4,6 +4,8 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
@@ -25,6 +27,8 @@ export function InternalProjectsList({
   const { numberingSystem } = useLocalePreferences();
   const labels = projectsTranslator(locale, numberingSystem);
   const [projects, setProjects] = useState(initial.projects);
+  const [showArchive, setShowArchive] = useState(false);
+  const archives = projects.filter(({ archived }) => archived);
   const { execute, pending } = useProjectWrites();
 
   return (
@@ -50,11 +54,13 @@ export function InternalProjectsList({
               submit={(title, getRequestId) =>
                 execute(
                   () => commands.createProject({ title, id: getRequestId() }),
-                  (project) =>
+                  (project) => {
                     setProjects((current) => [
                       project,
                       ...current.filter((row) => row.id !== project.id),
-                    ]),
+                    ]);
+                    setShowArchive(false);
+                  },
                   false,
                 )
               }
@@ -62,7 +68,40 @@ export function InternalProjectsList({
           )
         }
       />
-      <PlaneProjectDirectory projects={projects} labels={labels} locale={locale} />
+      <Tabs
+        value={showArchive ? "archive" : "active"}
+        onValueChange={(next) => setShowArchive(next === "archive")}
+      >
+        <TabsList
+          className="w-fit gap-1 rounded-md border bg-card p-1"
+          aria-label={labels("navigation.internal")}
+        >
+          <TabsTrigger value="active" className={PILL_TAB}>
+            {labels("sections.active")}
+          </TabsTrigger>
+          <TabsTrigger value="archive" className={PILL_TAB}>
+            {labels("sections.archived")}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="active">
+          <PlaneProjectDirectory
+            projects={projects.filter(({ archived }) => !archived)}
+            labels={labels}
+            locale={locale}
+          />
+        </TabsContent>
+        <TabsContent value="archive">
+          {archives.length > 0 ? (
+            <PlaneProjectDirectory projects={archives} labels={labels} locale={locale} />
+          ) : (
+            <EmptyState
+              className="rounded-lg border bg-card"
+              title={labels("sections.noArchives")}
+              body={labels("sections.archiveDescription")}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
     </section>
   );
 }

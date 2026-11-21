@@ -6,7 +6,12 @@ import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { err } from "@/types/result";
-import { createProjectsFixture, fixtureEditorId, fixtureProjectId } from "../testing/fixture";
+import {
+  createProjectsFixture,
+  fixtureEditorId,
+  fixtureInProgressStateId,
+  fixtureProjectId,
+} from "../testing/fixture";
 import { InternalProjectsList } from "./InternalProjectsList";
 import { InternalProjectWorkspace } from "./InternalProjectWorkspace";
 
@@ -101,7 +106,10 @@ test("creates, assigns, and moves the same work item through list and board", as
   expect(item?.assigneeId).toBe(fixtureEditorId);
   expect(drag.end).toBeDefined();
   act(() => {
-    drag.end?.({ active: { id: item?.id }, over: { id: "in-progress" } } as DndKit.DragEndEvent);
+    drag.end?.({
+      active: { id: item?.id },
+      over: { id: fixtureInProgressStateId },
+    } as DndKit.DragEndEvent);
   });
   expect(
     await within(screen.getByRole("region", { name: "In progress" })).findByText(
@@ -133,7 +141,7 @@ test("keeps the previous work item and reports a rejected write in either view",
     expect.objectContaining({
       projectId: fixtureProjectId,
       revision: 0,
-      status: "done",
+      stateId: getWorkspace(fixture).states.find(({ category }) => category === "completed")?.id,
     }),
   );
 
@@ -203,7 +211,9 @@ test("renders a viewer’s list and board without project mutation controls", as
   render(<InternalProjectWorkspace initial={initial} commands={fixture.commands} locale="en" />);
   expect(screen.getByText("Check network outlets")).toBeVisible();
   expect(screen.queryByRole("button", { name: "New work item" })).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Work item filters" }));
   expect(screen.getByRole("combobox", { name: "Filter by status" })).toBeVisible();
+  await user.keyboard("{Escape}");
   expect(screen.queryByRole("combobox", { name: /^Status for/ })).not.toBeInTheDocument();
   expect(screen.queryByRole("combobox", { name: /^Assignee for/ })).not.toBeInTheDocument();
 

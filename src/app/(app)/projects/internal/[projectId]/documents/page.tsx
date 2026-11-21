@@ -28,6 +28,7 @@ export default async function Page({
       <ProjectPagesList
         actorId={actorId}
         project={workspace.value.project}
+        canManageSettings={workspace.value.canManageSettings}
         index={index.value}
         pageType={getPageType(typeof type === "string" ? type : null)}
       />

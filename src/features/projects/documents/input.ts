@@ -7,6 +7,11 @@ import {
   projectDocumentTitleMaxLength,
   projectDocumentVisibilities,
 } from "./contracts";
+import {
+  projectDocumentCollaborationMaxBytes,
+  projectDocumentStateVectorMaxBytes,
+} from "./live/contracts";
+import { projectDocumentPresenceInput } from "./live/presenceInput";
 
 const projectId = canonicalUuidSchema;
 const title = projectCreateInputSchema.shape.title.pipe(
@@ -32,7 +37,19 @@ export const saveProjectDocumentInput = z.strictObject({
   ...documentKey,
   revision: revisionSchema,
   title,
-  bodyHtml: z.string().max(projectDocumentBodyMaxLength),
+  bodyHtml: z.string().max(projectDocumentBodyMaxLength).optional(),
+});
+
+const encodedBytes = (maxBytes: number) => z.string().max(4 * Math.ceil(maxBytes / 3));
+
+export const collaborateProjectDocumentInput = z.strictObject({
+  ...documentKey,
+  epoch: revisionSchema.nullable(),
+  revision: revisionSchema.nullable(),
+  stateVector: encodedBytes(projectDocumentStateVectorMaxBytes).nullable(),
+  update: encodedBytes(projectDocumentCollaborationMaxBytes).nullable(),
+  presence: projectDocumentPresenceInput.nullable().optional(),
+  csrfToken: z.string().max(128).nullable(),
 });
 
 export const setProjectDocumentLifecycleInput = z.strictObject({

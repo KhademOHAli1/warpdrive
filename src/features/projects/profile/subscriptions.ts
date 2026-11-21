@@ -26,11 +26,13 @@ function withItemSubscription(
   session: NativeSessionRef,
   { projectId, itemId }: ProfileSubscriptionTarget,
   signal: AbortSignal,
+  mutating: boolean,
   operation: (tx: Db, userId: string) => Promise<ProjectResult<{ subscribed: boolean }>>,
 ) {
   return withInternalProjects(db, session, signal, async (tx, actor) => {
     const access = await lockInternalProject(tx, actor, projectId, "read");
     if (!access.ok) return access;
+    if (mutating && access.value.summary.archived) return err("project_forbidden");
     const item = internalProjectItems;
     const [current] = await tx
       .select({ id: item.id })
@@ -47,7 +49,7 @@ export function readProjectSubscription(
   target: ProfileSubscriptionTarget,
   signal: AbortSignal,
 ) {
-  return withItemSubscription(db, session, target, signal, async (tx, userId) => {
+  return withItemSubscription(db, session, target, signal, false, async (tx, userId) => {
     const [row] = await tx
       .select({ itemId: subscriptions.itemId })
       .from(subscriptions)
@@ -62,7 +64,7 @@ export function setProjectSubscription(
   input: ProfileSubscriptionTarget & { subscribed: boolean },
   signal: AbortSignal,
 ) {
-  return withItemSubscription(db, session, input, signal, async (tx, userId) => {
+  return withItemSubscription(db, session, input, signal, true, async (tx, userId) => {
     if (input.subscribed) {
       await tx.insert(subscriptions).values({ userId, itemId: input.itemId }).onConflictDoNothing();
     } else {

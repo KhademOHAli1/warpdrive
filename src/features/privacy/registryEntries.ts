@@ -64,6 +64,7 @@ import { newsletterInventoryEntry } from "./registryNewsletter";
 import { newsletterOperationalInventoryEntry } from "./registryNewsletterOperations";
 import { operationsContractInventoryEntry } from "./registryOperations";
 import { projectDocumentsInventoryEntry } from "./registryProjectDocuments";
+import { projectPlanningInventoryEntry } from "./registryProjectPlanning";
 import { projectProfileInventoryEntry } from "./registryProjectProfile";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
@@ -89,6 +90,7 @@ export const registryEntries: RegistryEntry[] = [
   }),
   agencyProjectInventoryEntry,
   projectDocumentsInventoryEntry,
+  projectPlanningInventoryEntry,
   projectProfileInventoryEntry,
   internalProjectsInventoryEntry,
   analyticsInventoryEntry,
