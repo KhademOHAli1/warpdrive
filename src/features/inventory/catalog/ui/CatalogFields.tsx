@@ -84,6 +84,7 @@ export function CatalogEditorDialog({
   close,
   restoreFocus,
   submit,
+  submitDisabled = false,
   children,
 }: {
   title: string;
@@ -93,6 +94,7 @@ export function CatalogEditorDialog({
   close: () => void;
   restoreFocus: () => void;
   submit: () => void;
+  submitDisabled?: boolean;
   children: ReactNode;
 }) {
   const t = catalogMessages[useLocale()];
@@ -104,7 +106,7 @@ export function CatalogEditorDialog({
       }}
     >
       <DialogContent
-        className={`${BLOCK_CLASS} ph-no-capture grid max-h-[calc(100dvh-2rem)] sm:max-w-2xl`}
+        className={`${BLOCK_CLASS} ph-no-capture max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl`}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           restoreFocus();
@@ -115,13 +117,13 @@ export function CatalogEditorDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form
-          className="flex min-h-0 flex-col"
+          className="min-w-0"
           onSubmit={(event) => {
             event.preventDefault();
-            if (!pending) submit();
+            if (!pending && !submitDisabled) submit();
           }}
         >
-          <div className="min-h-0 space-y-4 overflow-y-auto p-1">{children}</div>
+          <div className="space-y-4 p-1">{children}</div>
           {error !== null && (
             <p role="alert" className="mt-3 text-sm text-destructive">
               {error}
@@ -131,7 +133,7 @@ export function CatalogEditorDialog({
             <Button type="button" variant="outline" disabled={pending} onClick={close}>
               {t.cancel}
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending || submitDisabled}>
               {t.save}
             </Button>
           </DialogFooter>
