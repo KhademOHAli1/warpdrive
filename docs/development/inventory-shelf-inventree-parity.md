@@ -143,6 +143,18 @@ Integrated Chrome followed the shared Locations link, created a category and mod
 
 Web rollback reopened the original Locations and Warehouse screens at `f568bdbc` against the retained Core and PostgreSQL. The earlier Web transport still read all four Asset records. The PostgreSQL process and its stored rows stayed the same. The [operations backlog](warpdrive-operations-backlog.tsv) links the two Web receipts and the database results.
 
+### Commissioning stock as equipment (PLAT-01)
+
+The Warehouse Positions view lets an operator with both Warehouse and Asset management at the same site commission one available, unreserved, company-owned serial into the Asset register. The dialog shows the part revision, original serial, lot and bin, and requires a handoff reason. Core verifies the exact stock position and its custody before posting one Inventory debit, one individual Asset and a handoff linked to both ledgers. A draft or in-transit transfer, an active assembly relation and other custody holds prevent commissioning.
+
+The source remains at zero with the original stock position, serial, lot and optional build-output reference. The Asset keeps its serial even when the equipment moves to another bin. A command retry returns its existing handoff. Warehouse correction and Asset editing cannot reverse commissioning by restoring the old stock or replacing the equipment serial.
+
+The Web fixture at `acbe2dcb` verified the exact serial and lot, required reason, one-unit debit, repeat prevention, keyboard focus and narrow layout. Fixture changes reset on reload and wrote no Warehouse or Asset records to Core. At `0082fbe2`, 65 PostgreSQL integration tests and 22 scoped unit tests passed. The populated 0143 to 0144 upgrade retained existing stock, site roles and Asset history. The atomicity test forced a bridge insert to fail after both ledger effects, confirmed that both changes rolled back, and successfully retried the same request.
+
+Authenticated Chrome commissioned a serial from Warehouse, reopened that exact Equipment record through the success link, and found the handoff reason after reload. The SQL proof ties the zero-balance source and exact original lot to one Asset, one stock movement and their history events. A repeat returned the same handoff and left both ledgers unchanged. Warehouse-only, Asset-only, wrong-site and invalid requests were denied.
+
+Previous Web `acbe2dcb` reopened Warehouse and Assets on the retained Core and PostgreSQL. It displayed the original stock, commissioned equipment and history, and replayed the exact command through the previous transport. PostgreSQL confirmed that the same handoff and both ledger effects persisted. The [operations backlog](warpdrive-operations-backlog.tsv) links the fixture and native evidence.
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
