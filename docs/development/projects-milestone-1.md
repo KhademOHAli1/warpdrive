@@ -24,3 +24,15 @@ The functional reference is the read-only Plane Community v1.5.0 checkout at `18
 2. Use PostgreSQL populated at the baseline journal. Check Client identity, CRM anchors, membership, receipts, history and legacy access and replay after applying the successor.
 3. Exercise real Core reads and commands for authorized creation, listing, item updates and assignments. Check denied reads and writes for non-members, viewers, inactive actors, cross-project items and unauthorized assignments.
 4. Switch Web baseline → candidate → baseline against one retained upgraded Core and PostgreSQL instance. Check existing sessions and client access, then check persisted Internal data and permissions directly through Core and after candidate Web returns. Record source and image evidence separately.
+
+## Local qualification
+
+| Evidence | Result |
+| --- | --- |
+| Frontend fixtures | Six component tests passed against the local adapter. They exercised project creation, one item across List and Board, assignment, membership removal, and visible state after a rejected write. |
+| Populated PostgreSQL and Core source | Seventy-eight tests passed across the populated migration, legacy Agency and internal Projects suites. The upgrade preserved the legacy project's exact UUID, CRM links, memberships, history and receipts. Core covered no administrator bypass, viewer and editor grants, assignment eligibility, scope isolation, revision conflicts, and concurrent creation retries. |
+| Privacy compatibility | The new item table is registered in the installed privacy discovery catalog as unsupported for subject discovery. Privacy inventory and ten PostgreSQL discovery tests passed. |
+| Local image rehearsal | All 15 checks passed with baseline Web at `8613411a08f2cef0a36ec85a78b707b48a3bcf06` and candidate Web and Core at `458130fafcc9291559710a66c5ae2d644bbc5167`. The canonical migrator applied `0120` to a client-populated PostgreSQL 16 fixture before the Web switches. |
+| Independent Web rollback | Baseline → candidate → baseline → candidate kept the same running Core, PostgreSQL and 121-entry migration ledger. Native browser sessions survived the switches. The baseline Client workspace opened and replayed its original receipts. The retained Core preserved the internal item's revision, status, assignee and permitted and denied access. Candidate Web displayed the persisted item after returning. |
+
+The rehearsal used local Linux ARM64 images built with the official ARM64 Bun base substitution. The receipt records image identities, ledger fingerprints and teardown under `.runtime/projects-milestone-1/image-rollback-458130fafcc9.json`. This is local ARM64 evidence for Projects. AMD64 distribution and production rollout are outside this milestone.
