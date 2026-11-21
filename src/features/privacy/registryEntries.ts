@@ -85,6 +85,7 @@ import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import { sharedLocationsEntry } from "./registrySharedLocations";
 import type { RegistryEntry } from "./registryTypes";
+import { warehouseOperationsEntry } from "./registryWarehouseOperations";
 import {
   workflowBlocksInventoryEntry,
   workflowRuntimeInventoryEntry,
@@ -119,6 +120,7 @@ export const registryEntries: RegistryEntry[] = [
   industrialInventoryEntry,
   inventoryCatalogEntry,
   inventoryWarehouseEntry,
+  warehouseOperationsEntry,
   sharedLocationsEntry,
   manufacturingReleasesEntry,
   analyticsInventoryEntry,

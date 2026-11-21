@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import { directoryLocations, directorySites } from "@/features/locations/schema";
 import { inventoryItems } from "../schema";
 import type { StockPositionRow } from "./balances";
+import { hasOpenWarehouseTransfer } from "./operations/placement";
 import {
   inventoryStockIncoming,
   inventoryStockLocationPolicies,
@@ -88,5 +89,7 @@ export async function hasWarehouseStock(tx: Db, siteId: string, locationId: stri
         WHERE ${incomingScope} AND NOT ${inventoryStockIncoming.cancelled}
           AND ${inventoryStockIncoming.received} < ${inventoryStockIncoming.quantity}) AS has_stock
   `);
-  return rows.rows[0]?.has_stock === true;
+  return (
+    rows.rows[0]?.has_stock === true || (await hasOpenWarehouseTransfer(tx, siteId, locationId))
+  );
 }

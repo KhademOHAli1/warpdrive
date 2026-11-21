@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigserial,
   boolean,
   check,
   date,
@@ -36,7 +37,15 @@ export type WarehouseStockEventKind =
   | "materials-reserve"
   | "build-consume"
   | "shipment"
-  | "cancel-release";
+  | "cancel-release"
+  | "transfer-draft"
+  | "transfer-dispatch"
+  | "transfer-receive"
+  | "transfer-cancel"
+  | "correction"
+  | "correction-reversal";
+
+export type WarehouseTransferStatus = "draft" | "in_transit" | "received" | "cancelled";
 
 export const inventoryStockLocationPolicies = pgTable(
   "inventory_stock_location_policies",
@@ -246,7 +255,8 @@ export const inventoryStockEvents = pgTable(
     check(
       "inventory_stock_event_kind_check",
       sql`${table.kind} IN ('receipt', 'reconcile', 'state', 'incoming-create', 'incoming-cancel',
-        'order-reserve', 'materials-reserve', 'build-consume', 'shipment', 'cancel-release')`,
+        'order-reserve', 'materials-reserve', 'build-consume', 'shipment', 'cancel-release',
+        'transfer-draft', 'transfer-dispatch', 'transfer-receive', 'transfer-cancel', 'correction', 'correction-reversal')`,
     ),
     check(
       "inventory_stock_event_previous_state_check",
@@ -255,6 +265,159 @@ export const inventoryStockEvents = pgTable(
     check(
       "inventory_stock_event_state_check",
       sql`${table.state} IN ('available', 'quarantine', 'hold')`,
+    ),
+  ],
+);
+
+export const inventoryStockTransfers = pgTable(
+  "inventory_stock_transfers",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    sourceSiteId: uuid("source_site_id").notNull(),
+    sourceLocationId: uuid("source_location_id").notNull(),
+    destinationSiteId: uuid("destination_site_id").notNull(),
+    destinationLocationId: uuid("destination_location_id").notNull(),
+    status: text("status").$type<WarehouseTransferStatus>().notNull().default("draft"),
+    version: integer("version").notNull().default(1),
+    reason: text("reason").notNull(),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("inventory_stock_transfer_source_idx").on(
+      table.sourceSiteId,
+      table.sourceLocationId,
+      table.status,
+    ),
+    index("inventory_stock_transfer_destination_idx").on(
+      table.destinationSiteId,
+      table.destinationLocationId,
+      table.status,
+    ),
+    foreignKey({
+      name: "inventory_stock_transfer_source_fk",
+      columns: [table.sourceSiteId, table.sourceLocationId],
+      foreignColumns: [directoryLocations.siteId, directoryLocations.id],
+    }),
+    foreignKey({
+      name: "inventory_stock_transfer_destination_fk",
+      columns: [table.destinationSiteId, table.destinationLocationId],
+      foreignColumns: [directoryLocations.siteId, directoryLocations.id],
+    }),
+    check(
+      "inventory_stock_transfer_locations_check",
+      sql`${table.sourceLocationId} <> ${table.destinationLocationId}`,
+    ),
+    check(
+      "inventory_stock_transfer_status_check",
+      sql`${table.status} IN ('draft', 'in_transit', 'received', 'cancelled')`,
+    ),
+    check("inventory_stock_transfer_version_check", sql`${table.version} > 0`),
+    check(
+      "inventory_stock_transfer_reason_check",
+      sql`length(btrim(${table.reason})) BETWEEN 1 AND 500`,
+    ),
+  ],
+);
+
+export const inventoryStockTransferLines = pgTable(
+  "inventory_stock_transfer_lines",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    transferId: uuid("transfer_id")
+      .notNull()
+      .references(() => inventoryStockTransfers.id),
+    itemId: uuid("item_id").notNull(),
+    sourcePositionId: uuid("source_position_id").notNull(),
+    quantity: integer("quantity").notNull(),
+    received: integer("received").notNull().default(0),
+    lot: text("lot"),
+    serial: text("serial"),
+    expiryDate: date("expiry_date", { mode: "string" }),
+    state: text("state").$type<WarehouseStockState>().notNull(),
+    ownerOrganizationId: uuid("owner_organization_id").references(() => organizations.id),
+  },
+  (table) => [
+    unique("inventory_stock_transfer_line_parent_key").on(table.transferId, table.id),
+    unique("inventory_stock_transfer_line_position_key").on(
+      table.transferId,
+      table.sourcePositionId,
+    ),
+    index("inventory_stock_transfer_line_position_idx").on(table.sourcePositionId),
+    foreignKey({
+      name: "inventory_stock_transfer_line_position_fk",
+      columns: [table.sourcePositionId, table.itemId],
+      foreignColumns: [inventoryStockPositions.id, inventoryStockPositions.itemId],
+    }),
+    check(
+      "inventory_stock_transfer_line_count_check",
+      sql`${table.quantity} BETWEEN 1 AND 1000000 AND ${table.received} BETWEEN 0 AND ${table.quantity}`,
+    ),
+    check(
+      "inventory_stock_transfer_line_serial_check",
+      sql`${table.serial} IS NULL OR ${table.quantity} = 1`,
+    ),
+    check(
+      "inventory_stock_transfer_line_state_check",
+      sql`${table.state} IN ('available', 'quarantine', 'hold')`,
+    ),
+  ],
+);
+
+/** Immutable context captured when a stock event is inserted. */
+export const inventoryStockEventDetails = pgTable(
+  "inventory_stock_event_details",
+  {
+    eventId: uuid("event_id")
+      .primaryKey()
+      .references(() => inventoryStockEvents.id),
+    sequence: bigserial("sequence", { mode: "bigint" }).notNull(),
+    siteId: uuid("site_id"),
+    locationId: uuid("location_id"),
+    transferId: uuid("transfer_id"),
+    transferLineId: uuid("transfer_line_id"),
+    reason: text("reason"),
+    reversesEventId: uuid("reverses_event_id").references(() => inventoryStockEvents.id),
+    previousOnHand: integer("previous_on_hand"),
+  },
+  (table) => [
+    unique("inventory_stock_event_detail_sequence_key").on(table.sequence),
+    uniqueIndex("inventory_stock_event_detail_reversal_key")
+      .on(table.reversesEventId)
+      .where(sql`${table.reversesEventId} IS NOT NULL`),
+    index("inventory_stock_event_detail_site_sequence_idx").on(table.siteId, table.sequence),
+    foreignKey({
+      name: "inventory_stock_event_detail_location_fk",
+      columns: [table.siteId, table.locationId],
+      foreignColumns: [directoryLocations.siteId, directoryLocations.id],
+    }),
+    foreignKey({
+      name: "inventory_stock_event_detail_transfer_fk",
+      columns: [table.transferId, table.transferLineId],
+      foreignColumns: [inventoryStockTransferLines.transferId, inventoryStockTransferLines.id],
+    }),
+    check(
+      "inventory_stock_event_detail_location_pair_check",
+      sql`(${table.siteId} IS NULL) = (${table.locationId} IS NULL)`,
+    ),
+    check(
+      "inventory_stock_event_detail_transfer_pair_check",
+      sql`(${table.transferId} IS NULL) = (${table.transferLineId} IS NULL)`,
+    ),
+    check(
+      "inventory_stock_event_detail_reason_check",
+      sql`length(btrim(${table.reason})) BETWEEN 1 AND 500`,
+    ),
+    check(
+      "inventory_stock_event_detail_reversal_check",
+      sql`${table.reversesEventId} <> ${table.eventId}`,
+    ),
+    check(
+      "inventory_stock_event_detail_count_check",
+      sql`${table.previousOnHand} BETWEEN 0 AND ${sql.raw(String(inventoryStockLimit))}`,
     ),
   ],
 );

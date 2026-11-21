@@ -1,11 +1,11 @@
 "use client";
 
-import { Plus, RefreshCw, Search, Settings2 } from "lucide-react";
+import { ArrowRightLeft, Plus, RefreshCw, Search, Settings2 } from "lucide-react";
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocale } from "@/features/i18n/LocaleProvider";
@@ -21,6 +21,7 @@ import type {
   WarehouseResult,
   WarehouseWorkspace,
 } from "../contracts";
+import { operationsMessages } from "../operations/ui/operationsMessages";
 import {
   WarehouseIntakeDialog,
   WarehousePolicyDialog,
@@ -179,6 +180,15 @@ export function WarehouseWorkspaceView({
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {fixture && <Badge variant="outline">{t.demo}</Badge>}
+            {!fixture && (
+              <Link
+                href="/inventory/warehouse/operations"
+                className={buttonVariants({ size: "sm", variant: "outline" })}
+              >
+                <ArrowRightLeft aria-hidden="true" />
+                {operationsMessages[locale].title}
+              </Link>
+            )}
             {!fixture && refresh !== undefined && (
               <Button size="sm" variant="outline" disabled={busy} onClick={refresh}>
                 <RefreshCw aria-hidden="true" />

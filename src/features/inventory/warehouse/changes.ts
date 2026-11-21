@@ -10,6 +10,7 @@ import {
 } from "./access";
 import { readStockPositionRows, unlocatedBalance } from "./balances";
 import type { WarehouseCommand } from "./contracts";
+import { hasOpenWarehouseTransfer } from "./operations/placement";
 import { isReceivableStockItem } from "./reads";
 import {
   inventoryStockEvents,
@@ -100,6 +101,7 @@ async function updateLocationPolicy(
     if (stock !== undefined) failWarehouse("conflict");
   }
   if (kind === "structure") {
+    if (await hasOpenWarehouseTransfer(tx, site.id, location.id)) failWarehouse("conflict");
     const [incoming] = await tx
       .select({ id: inventoryStockIncoming.id })
       .from(inventoryStockIncoming)
@@ -328,6 +330,7 @@ async function setPositionState(tx: Db, actorId: string, target: Target, command
   await stockItem(tx, target.itemId);
   const position = await readPosition(tx, id);
   if (position === undefined) failWarehouse("unavailable");
+  if (position.locationId !== target.location.id) failWarehouse("conflict");
   if (position.state === state) {
     if (quantity > position.onHand) failWarehouse("insufficientStock");
     return id;
