@@ -27,7 +27,7 @@ export const qualityInspectionsEntry = classifyInventory(
     "sourceReview:src/features/inventory/quality/schema.ts#c9b22ac00f486b4dd63347b0e1ff2ca3590822697e318102b7949d5437714b93",
     "sourceReview:src/features/inventory/quality/ui/InspectionForm.tsx#9fd2716368f4cce2865eb652f46c1192302fb6acc0d32038f291513fc50c4f5e",
     "sourceReview:src/features/inventory/quality/ui/InspectionTarget.tsx#7b24e8f604826b0267530847756e336c0852d9c130eb9d38c905158ac10a4c4d",
-    "sourceReview:src/features/inventory/quality/ui/QualityLive.tsx#14a59244b731a7f46fd7c045def9f9be50ce0015210498d765521dce1fb77b7a",
+    "sourceReview:src/features/inventory/quality/ui/QualityLive.tsx#61744968320d37235402817c039f5cc1271f5a096f08f6b7411c0950deb14275",
     "sourceReview:src/features/inventory/releases/ui/QualityPlanEditor.tsx#607fdc399b804a9c8cd5d5e679b99d73d50d0f382dfc7a74f765af01d7817f42",
     "sourceReview:src/features/inventory/releases/ui/ReleaseQualityPlan.tsx#23267c9e4bc5d9495d09bfccfd8293736a2a6c091ad88a06d5f52a6615b650d4",
     "table:inventory_quality_evidence",

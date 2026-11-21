@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { trpc } from "@/lib/trpc-client";
+import { useHydrated } from "@/lib/useHydrated";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CatalogField, CatalogSelect } from "../../catalog/ui/CatalogFields";
 import type {
@@ -156,6 +157,7 @@ export function QualityLive({
   const t = inspectionMessages[useLocale()];
   const router = useRouter();
   const utils = trpc.useUtils();
+  const hydrated = useHydrated();
   const [navigating, transition] = useTransition();
   const [saved, setSaved] = useState(false);
   const query = trpc.inventory.quality.workspace.useQuery(scope, {
@@ -165,7 +167,7 @@ export function QualityLive({
     refetchOnWindowFocus: "always",
   });
   const workspace = !query.isError && query.data.ok ? query.data.value : null;
-  const busy = navigating || query.isFetching;
+  const busy = !hydrated || navigating || query.isFetching;
 
   async function afterSave() {
     setSaved(true);
