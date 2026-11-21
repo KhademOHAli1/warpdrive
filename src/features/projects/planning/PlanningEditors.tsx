@@ -201,20 +201,17 @@ export function PlanningGroupEditor({
       {cycle ? (
         <p className="text-sm text-muted-foreground">{labels.dates}</p>
       ) : (
-        <label className={fieldClass}>
-          {labels.moduleStatus}
-          <select
-            className={planningSelectClass}
-            name="moduleStatus"
-            defaultValue={group?.moduleStatus ?? "planned"}
-          >
-            {planningModuleStatuses.map((status) => (
-              <option key={status} value={status}>
-                {labels[status]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <FilterSelect
+          name="moduleStatus"
+          label={labels.moduleStatus}
+          value={group?.moduleStatus ?? "planned"}
+        >
+          {planningModuleStatuses.map((status) => (
+            <option key={status} value={status}>
+              {labels[status]}
+            </option>
+          ))}
+        </FilterSelect>
       )}
       {dateError !== null && (
         <p role="alert" className="text-sm text-destructive">
@@ -237,13 +234,14 @@ function FilterSelect({
   value: string;
   children: ReactNode;
 }) {
+  const id = useId();
   return (
-    <label className={fieldClass}>
-      {label}
-      <select name={name} className={planningSelectClass} defaultValue={value}>
+    <div className={fieldClass}>
+      <label htmlFor={id}>{label}</label>
+      <select id={id} name={name} className={planningSelectClass} defaultValue={value}>
         {children}
       </select>
-    </label>
+    </div>
   );
 }
 

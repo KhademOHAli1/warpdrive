@@ -130,6 +130,7 @@ export function PlanningGroupItems({
             {labels.chooseItem}
             <select
               className={planningSelectClass}
+              aria-label={labels.chooseItem}
               value={itemId}
               onChange={(event) => setItemId(event.target.value)}
             >
