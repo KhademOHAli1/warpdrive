@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import tarfile
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -16,7 +17,7 @@ from unittest.mock import patch
 
 from bundle import create_bundle as create_baseline
 from candidate import CandidateError
-from image_smoke import COMPONENTS, image_metadata
+from image_smoke import COMPONENTS, SmokeError, image_metadata
 import optional_image_bundle as optional
 from test_bundle import FakeDocker as BaselineDocker, write_candidate
 from test_candidate import SHA
@@ -77,8 +78,10 @@ class OptionalDocker:
         self.images, self.blobs, self.manifests, self.descriptors = optional_images()
         self.calls = []
         self.archive_change = None
-        self.replace_output = False
+        self.replace_output = None
         self.classic = False
+        self.context = "admitted-local-fixture"
+        self.environment = {"PATH": "/fixture/bin"}
 
     def json(self, command, **_options):
         self.calls.append(command)
@@ -86,11 +89,16 @@ class OptionalDocker:
             raise AssertionError("Only exact image inspection is allowed")
         return [deepcopy(next(row for row in self.images.values() if row["Id"] == command[2]))]
 
-    def run(self, command, **_options):
-        self.calls.append(command)
-        if command[:3] != ["image", "save", "--output"]:
-            raise AssertionError("No build, load, pull, push or container operation allowed")
-        selected = command[4:]
+    def runner(self, command, *, stdin, stdout, stderr, timeout, env, check):
+        if command[:5] != ["docker", "--context", self.context, "image", "save"] or "--output" in command:
+            raise AssertionError("Exact pinned Docker save to stdout required")
+        if (stdin, stderr, timeout, env, check) != (subprocess.DEVNULL, subprocess.DEVNULL, 300, self.environment, False):
+            raise AssertionError("Exact finite and isolated Docker save required")
+        destination = os.fstat(stdout.fileno())
+        if not stat.S_ISREG(destination.st_mode) or stat.S_IMODE(destination.st_mode) != 0o600 or destination.st_size != 0:
+            raise AssertionError("Fresh owned private file descriptor required")
+        self.calls.append(command[3:])
+        selected = command[5:]
         manifests = [entry for entry in self.manifests if "sha256:" + entry["Config"].rsplit("/", 1)[1] in selected]
         descriptors = [item for item in self.descriptors if json.loads(self.blobs["blobs/sha256/" + item["digest"][7:]])["config"]["digest"] in selected]
         used = {entry["Config"] for entry in manifests} | {layer for entry in manifests for layer in entry["Layers"]}
@@ -104,14 +112,14 @@ class OptionalDocker:
         files.extend(legacy.items())
         if self.archive_change:
             files = self.archive_change(files)
-        path = Path(command[3])
         raw = saved_tar(files)
+        stdout.write(raw)
         if self.replace_output:
-            other = path.with_suffix(".replacement")
+            other = self.replace_output.with_suffix(".replacement")
             other.write_bytes(raw)
-            os.replace(other, path)
-        else:
-            path.write_bytes(raw)
+            other.chmod(0o600)
+            os.replace(other, self.replace_output)
+        return SimpleNamespace(returncode=0)
 
 
 class OptionalBundleTests(unittest.TestCase):
@@ -177,7 +185,7 @@ class OptionalBundleTests(unittest.TestCase):
         loaded = self.pack()
         saves = [call for call in self.docker.calls if call[:2] == ["image", "save"]]
         self.assertEqual(len(saves), 1)
-        self.assertEqual(set(saves[0][4:]), {row["Id"] for row in self.docker.images.values()})
+        self.assertEqual(set(saves[0][2:]), {row["Id"] for row in self.docker.images.values()})
         self.assertEqual(set(loaded["manifest"]["components"]), set(optional.ROLES))
         self.assertFalse(loaded["deploymentAuthorized"])
         self.assertTrue(loaded["independentProducerApiAdmissionRequired"])
@@ -415,8 +423,19 @@ class OptionalBundleTests(unittest.TestCase):
         self.assertFalse(any(call[:2] == ["image", "save"] for call in self.docker.calls))
 
     def test_docker_cannot_replace_owned_archive_inode(self):
-        self.docker.replace_output = True
+        self.docker.replace_output = self.output / optional.ARCHIVE
         with self.assertRaises(CandidateError):
+            self.pack()
+        self.assertFalse((self.output / optional.MANIFEST).exists())
+
+    def test_docker_save_timeout_or_failure_never_writes_manifest(self):
+        with patch.object(self.docker, "runner", side_effect=subprocess.TimeoutExpired(["docker", "image", "save"], 300)), \
+                self.assertRaisesRegex(SmokeError, "Docker image did not complete"):
+            self.pack()
+        self.assertFalse((self.output / optional.MANIFEST).exists())
+        self.output = self.root / "optional-failed"
+        with patch.object(self.docker, "runner", return_value=SimpleNamespace(returncode=2)), \
+                self.assertRaisesRegex(SmokeError, "Docker image failed.*2"):
             self.pack()
         self.assertFalse((self.output / optional.MANIFEST).exists())
 
