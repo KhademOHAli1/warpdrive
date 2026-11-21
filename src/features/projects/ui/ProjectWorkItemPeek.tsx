@@ -3,11 +3,12 @@
 import { Badge } from "@/components/ui/Badge";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import { useFormatters } from "@/lib/useFormatters";
 import type { ProjectItem, ProjectResult, ProjectWorkspace } from "../contracts";
+import { ProjectItemSubscription } from "./ProjectItemSubscription";
 import { draftForProjectWorkItem, ProjectWorkItemForm } from "./ProjectWorkItemForm";
 import type { ProjectItemChanges } from "./ProjectWorkItems";
 import type { ProjectsTranslator } from "./projectMessages";
+import { useProjectFormatters } from "./useProjectFormatters";
 
 export function ProjectWorkItemPeek({
   item,
@@ -30,7 +31,7 @@ export function ProjectWorkItemPeek({
   close: () => void;
   restoreFocus: () => boolean;
 }) {
-  const format = useFormatters();
+  const format = useProjectFormatters();
   const assignees = [workspace.project.owner, ...workspace.members.map(({ person }) => person)];
   const assignee = assignees.find(({ id }) => id === item.assigneeId);
   return (
@@ -47,13 +48,20 @@ export function ProjectWorkItemPeek({
           if (restoreFocus()) event.preventDefault();
         }}
       >
-        <header className="mb-5 border-b pe-8 pb-4">
-          <p className="mb-1 truncate text-sm text-muted-foreground">
-            <bdi>{workspace.project.title}</bdi>
-          </p>
-          <SheetTitle className="wrap-anywhere text-xl">
-            <bdi>{item.title}</bdi>
-          </SheetTitle>
+        <header className="mb-5 flex flex-wrap items-start gap-3 border-b pe-8 pb-4 sm:justify-between">
+          <div className="min-w-0">
+            <p className="mb-1 truncate text-sm text-muted-foreground">
+              <bdi>{workspace.project.title}</bdi>
+            </p>
+            <SheetTitle className="wrap-anywhere text-xl">
+              <bdi>{item.title}</bdi>
+            </SheetTitle>
+          </div>
+          <ProjectItemSubscription
+            projectId={workspace.project.id}
+            itemId={item.id}
+            labels={labels}
+          />
         </header>
         {workspace.canEdit ? (
           <ProjectWorkItemForm

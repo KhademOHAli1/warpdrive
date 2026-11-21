@@ -19,7 +19,7 @@ export default async function ProjectProfileItemsPage({
     params,
     searchParams,
   ]);
-  if (view !== "assigned" && view !== "created") notFound();
+  if (view !== "assigned" && view !== "created" && view !== "subscribed") notFound();
   const input = profileItemsInput.safeParse({
     status,
     priority,

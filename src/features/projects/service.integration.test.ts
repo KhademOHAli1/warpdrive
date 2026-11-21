@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { applyMigrations } from "@/db/migrate";
 import {
@@ -18,6 +18,7 @@ import {
 import { makeTestDb, type TestDb } from "@/test/db";
 import { err, type Result } from "@/types/result";
 import type { ProjectMemberGrant } from "./contracts";
+import { internalProjectItemEvents } from "./profile/schema";
 import {
   createInternalProject,
   createInternalProjectItem,
@@ -75,6 +76,15 @@ async function grantCreation(userId: string) {
     .insert(permissionSets)
     .values({ id, name: id, flags: { "project.create": true } });
   await fixture.db.update(users).set({ permissionSetId: id }).where(eq(users.id, userId));
+}
+
+function storedItemActivity(itemId: string) {
+  const { actorId, kind } = internalProjectItemEvents;
+  return fixture.db
+    .select({ actorId, kind })
+    .from(internalProjectItemEvents)
+    .where(eq(internalProjectItemEvents.itemId, itemId))
+    .orderBy(asc(kind), asc(actorId));
 }
 
 test("requires a creation grant and keeps internal and client projects private and distinct", async () => {
@@ -299,6 +309,15 @@ test("enforces project-local editor, viewer and assignment grants and clears rem
     err("project_unavailable"),
   );
   expect(value(await listInternalProjects(fixture.db, viewer, signal())).projects).toEqual([]);
+  const activity = await storedItemActivity(item.id);
+  expect(activity).toHaveLength(3);
+  expect(activity).toEqual(
+    expect.arrayContaining([
+      { actorId: editor.userId, kind: "created" },
+      { actorId: editor.userId, kind: "updated" },
+      { actorId: coordinator.userId, kind: "updated" },
+    ]),
+  );
 });
 
 test("keeps concurrent same-intent creates idempotent and rejects cross-project item writes", async () => {
@@ -366,6 +385,16 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
   );
   const update = { projectId: created.id, itemId: item.id, revision: 0 };
   expect(
+    value(
+      await updateInternalProjectItem(
+        fixture.db,
+        owner,
+        { ...update, status: item.status, priority: item.priority, startDate: item.startDate },
+        signal(),
+      ),
+    ).items,
+  ).toEqual(items);
+  expect(
     await updateInternalProjectItem(
       fixture.db,
       owner,
@@ -390,6 +419,10 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
   expect(
     value(await createInternalProjectItem(fixture.db, owner, itemDraft, signal())).items,
   ).toEqual(rescheduled.items);
+  expect(await storedItemActivity(item.id)).toEqual([
+    { actorId: owner.userId, kind: "created" },
+    { actorId: owner.userId, kind: "updated" },
+  ]);
 });
 
 test("upgrades populated 0121 work items with stable identity and unknown authorship", async () => {

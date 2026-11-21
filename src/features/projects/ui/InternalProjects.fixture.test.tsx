@@ -12,6 +12,8 @@ import { InternalProjectWorkspace } from "./InternalProjectWorkspace";
 
 const drag = vi.hoisted(() => ({ end: undefined as DndKit.DndContextProps["onDragEnd"] }));
 
+vi.mock("./ProjectItemSubscription", () => ({ ProjectItemSubscription: () => null }));
+
 vi.mock("@dnd-kit/core", async (load) => {
   const actual = await load<typeof DndKit>();
   return {

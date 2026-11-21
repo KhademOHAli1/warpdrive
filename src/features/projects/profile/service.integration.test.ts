@@ -10,7 +10,14 @@ import { makeTestDb, type TestDb } from "@/test/db";
 import type { Result } from "@/types/result";
 import { internalProjectItems } from "../schema";
 import { profileItemsInput } from "./contracts";
-import { readProjectProfileItems, readProjectProfileSummary } from "./service";
+import { recordProjectItemEvent } from "./events";
+import { internalProjectItemSubscriptions } from "./schema";
+import {
+  readProjectProfileActivity,
+  readProjectProfileItems,
+  readProjectProfileSummary,
+} from "./service";
+import { readProjectSubscription, setProjectSubscription } from "./subscriptions";
 
 let fixture: TestDb;
 const signal = () => AbortSignal.timeout(10_000);
@@ -128,6 +135,7 @@ test("only assigned or created work in currently visible internal projects reach
     counts: { todo: 1, "in-progress": 0, done: 1 },
     priorityCounts: { urgent: 1, high: 1, medium: 0, low: 0, none: 0 },
     createdCount: 1,
+    subscribedCount: 0,
   });
   const page = value(await readProjectProfileItems(fixture.db, member, "assigned", {}, signal()));
   expect(page.items).toHaveLength(2);
@@ -177,6 +185,130 @@ test("only assigned or created work in currently visible internal projects reach
     ok: false,
     error: "project_unavailable",
   });
+});
+
+test("subscriptions belong to the signed-in actor and require current project access", async () => {
+  const viewer = await staff("Subscriber", true);
+  const owner = await staff("Subscription project owner");
+  const projectId = randomUUID();
+  const otherProjectId = randomUUID();
+  const itemId = randomUUID();
+  await fixture.db.insert(agencyProjects).values([
+    { id: projectId, kind: "internal", ownerUserId: owner.userId, title: "Subscribed project" },
+    { id: otherProjectId, kind: "internal", ownerUserId: viewer.userId, title: "Other project" },
+  ]);
+  await fixture.db.insert(agencyProjectMembers).values({ projectId, userId: viewer.userId });
+  await fixture.db
+    .insert(internalProjectItems)
+    .values({ id: itemId, projectId, title: "Follow release" });
+
+  const target = { projectId, itemId };
+  expect(value(await readProjectSubscription(fixture.db, viewer, target, signal()))).toEqual({
+    subscribed: false,
+  });
+  for (const actor of [viewer, viewer, owner]) {
+    expect(
+      value(
+        await setProjectSubscription(fixture.db, actor, { ...target, subscribed: true }, signal()),
+      ),
+    ).toEqual({ subscribed: true });
+  }
+  const subscriptions = await fixture.db
+    .select()
+    .from(internalProjectItemSubscriptions)
+    .where(eq(internalProjectItemSubscriptions.itemId, itemId));
+  expect(subscriptions).toHaveLength(2);
+  expect(value(await readProjectProfileSummary(fixture.db, viewer, signal())).subscribedCount).toBe(
+    1,
+  );
+  expect(
+    value(await readProjectProfileItems(fixture.db, viewer, "subscribed", {}, signal())).items.map(
+      ({ id }) => id,
+    ),
+  ).toEqual([itemId]);
+  expect(
+    await setProjectSubscription(
+      fixture.db,
+      viewer,
+      { projectId: otherProjectId, itemId, subscribed: false },
+      signal(),
+    ),
+  ).toEqual({ ok: false, error: "project_unavailable" });
+
+  expect(
+    value(
+      await setProjectSubscription(fixture.db, viewer, { ...target, subscribed: false }, signal()),
+    ),
+  ).toEqual({ subscribed: false });
+  expect(value(await readProjectSubscription(fixture.db, owner, target, signal()))).toEqual({
+    subscribed: true,
+  });
+  await setProjectSubscription(fixture.db, viewer, { ...target, subscribed: true }, signal());
+  await fixture.db
+    .delete(agencyProjectMembers)
+    .where(eq(agencyProjectMembers.projectId, projectId));
+  expect(await readProjectSubscription(fixture.db, viewer, target, signal())).toEqual({
+    ok: false,
+    error: "project_unavailable",
+  });
+  expect(
+    await setProjectSubscription(fixture.db, viewer, { ...target, subscribed: false }, signal()),
+  ).toEqual({ ok: false, error: "project_unavailable" });
+  expect(value(await readProjectProfileSummary(fixture.db, viewer, signal())).subscribedCount).toBe(
+    0,
+  );
+  expect(
+    value(await readProjectProfileItems(fixture.db, viewer, "subscribed", {}, signal())).items,
+  ).toEqual([]);
+});
+
+test("activity projects only the actor’s persisted events in currently visible internal projects", async () => {
+  const actor = await staff("Activity author", true);
+  const owner = await staff("Activity project owner");
+  const projectId = randomUUID();
+  const hiddenProjectId = randomUUID();
+  const itemId = randomUUID();
+  const hiddenItemId = randomUUID();
+  await fixture.db.insert(agencyProjects).values([
+    { id: projectId, kind: "internal", ownerUserId: owner.userId, title: "Activity project" },
+    {
+      id: hiddenProjectId,
+      kind: "internal",
+      ownerUserId: owner.userId,
+      title: "Hidden activity project",
+    },
+  ]);
+  await fixture.db
+    .insert(agencyProjectMembers)
+    .values({ projectId, userId: actor.userId, projectEdit: true });
+  await fixture.db.insert(internalProjectItems).values([
+    { id: itemId, projectId, title: "Activity item", description: "Private body" },
+    { id: hiddenItemId, projectId: hiddenProjectId, title: "Hidden activity item" },
+  ]);
+  await recordProjectItemEvent(fixture.db, {
+    itemId: hiddenItemId,
+    actorId: actor.userId,
+    kind: "created",
+  });
+  await recordProjectItemEvent(fixture.db, { itemId, actorId: actor.userId, kind: "created" });
+  await recordProjectItemEvent(fixture.db, { itemId, actorId: owner.userId, kind: "updated" });
+  await recordProjectItemEvent(fixture.db, { itemId, actorId: actor.userId, kind: "updated" });
+
+  const { events } = value(
+    await readProjectProfileActivity(fixture.db, actor, undefined, signal()),
+  );
+  expect(events.map(({ kind }) => kind)).toEqual(["updated", "created"]);
+  expect(events[0]?.item).toEqual({
+    id: itemId,
+    title: "Activity item",
+    project: { id: projectId, title: "Activity project" },
+  });
+  await fixture.db
+    .delete(agencyProjectMembers)
+    .where(eq(agencyProjectMembers.projectId, projectId));
+  expect(
+    value(await readProjectProfileActivity(fixture.db, actor, undefined, signal())).events,
+  ).toEqual([]);
 });
 
 test("the assigned page cursor preserves PostgreSQL microseconds", async () => {

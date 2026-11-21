@@ -12,7 +12,7 @@ import type { FormattingPreferences } from "@/lib/localeFormatting";
 import { cn } from "@/lib/utils";
 import type { ProfileTab } from "./contracts";
 import { projectProfileTranslator } from "./messages";
-import { PROJECT_PROFILE_PATH, profileItemsPath } from "./paths";
+import { PROJECT_PROFILE_PATH, profileActivityPath, profileItemsPath } from "./paths";
 
 type Props = {
   active: ProfileTab;
@@ -25,6 +25,8 @@ export function ProfileNavigation({ active, preferences }: Props) {
     { key: "summary", route: PROJECT_PROFILE_PATH },
     { key: "assigned", route: profileItemsPath("assigned") },
     { key: "created", route: profileItemsPath("created") },
+    { key: "subscribed", route: profileItemsPath("subscribed") },
+    { key: "activity", route: profileActivityPath() },
   ] as const;
 
   return (

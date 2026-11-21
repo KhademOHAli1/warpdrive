@@ -862,6 +862,13 @@
       "when": 1795262194320,
       "tag": "0122_internal_project_item_details",
       "breakpoints": true
+    },
+    {
+      "idx": 123,
+      "version": "7",
+      "when": 1795262850664,
+      "tag": "0123_internal_project_profile_activity",
+      "breakpoints": true
     }
   ]
 }

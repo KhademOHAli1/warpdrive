@@ -8,7 +8,7 @@
  * https://github.com/makeplane/plane/blob/18caf808a3af3fcabeeba7d1e8473f1367bff2d4/apps/web/components/profile/overview/stats.tsx.
  */
 
-import { type LucideIcon, SquarePlus, UserRound } from "lucide-react";
+import { Bell, type LucideIcon, SquarePlus, UserRound } from "lucide-react";
 import Link from "next/link";
 import { type FormattingPreferences, formatNumber } from "@/lib/localeFormatting";
 import { projectPriorities, projectStatuses } from "../contracts";
@@ -56,7 +56,7 @@ function StatBreakdown({
 }
 
 export function ProfileStats({ summary, preferences }: Props) {
-  const { counts, createdCount, priorityCounts } = summary;
+  const { counts, createdCount, subscribedCount, priorityCounts } = summary;
   const { locale, numberingSystem } = preferences;
   const t = projectProfileTranslator(locale, numberingSystem);
   const project = projectsTranslator(locale, numberingSystem);
@@ -74,13 +74,19 @@ export function ProfileStats({ summary, preferences }: Props) {
       label: t("created"),
       value: createdCount,
     },
+    {
+      icon: Bell,
+      route: profileItemsPath("subscribed"),
+      label: t("subscribed"),
+      value: subscribedCount,
+    },
   ];
 
   return (
     <div className="@container space-y-4">
       <section className="space-y-2">
         <h2 className="text-sm font-semibold">{t("overview")}</h2>
-        <div className="grid grid-cols-1 gap-3 @xs:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 @lg:grid-cols-3">
           {overviewCards.map((card) => (
             <Link
               key={card.route}

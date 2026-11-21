@@ -63,6 +63,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Project documents and version bodies, authored titles, CRM anchors, workforce memberships and assignments, work-item status, immutable audit history and keyed actor-bound receipts require dedicated subject/provenance and safe-projection adapters. Native project membership and current CRM visibility grant ordinary product access only. The default-disabled module, receipt tombstones and append-only triggers establish no discovery, export, rectification, restriction, erasure or retention execution capability.",
   ),
   ...group(
+    ["internal_project_item_subscriptions", "internal_project_item_events"],
+    "unsupported",
+    "The actor and item links record voluntary subscription and authenticated work-item actions. Safe subject discovery and disclosure require dedicated provenance and projection adapters. Project access and foreign-key cleanup provide no privacy-case discovery, export or erasure procedure.",
+  ),
+  ...group(
     [
       "workflows_v2",
       "workflow_v2_versions",

@@ -54,9 +54,11 @@ export function ProfileItems({
   const project = projectsTranslator(locale, numberingSystem);
   const filtered = filter.status !== undefined || filter.priority !== undefined;
   const first = profileItemsPath(view, { status: filter.status, priority: filter.priority });
-  const emptyTitle = view === "assigned" ? t("emptyAssigned") : t("emptyCreated");
-  const emptyDescription =
-    view === "assigned" ? t("emptyAssignedDescription") : t("emptyCreatedDescription");
+  const emptyCopy = {
+    assigned: { title: t("emptyAssigned"), body: t("emptyAssignedDescription") },
+    created: { title: t("emptyCreated"), body: t("emptyCreatedDescription") },
+    subscribed: { title: t("emptySubscribed"), body: t("emptySubscribedDescription") },
+  }[view];
 
   return (
     <div className="space-y-3">
@@ -79,8 +81,8 @@ export function ProfileItems({
       {page.items.length === 0 ? (
         <EmptyState
           className="rounded-lg border bg-card"
-          title={filtered ? t("emptyFiltered") : emptyTitle}
-          body={emptyDescription}
+          title={filtered ? t("emptyFiltered") : emptyCopy.title}
+          body={emptyCopy.body}
           action={
             filtered ? (
               <Link

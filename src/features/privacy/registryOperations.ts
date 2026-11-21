@@ -44,7 +44,7 @@ export const operationsContractInventoryEntry = classifyInventory(
     "sourceReview:src/features/operations/ui/OperationsBellLink.tsx#e7de88939b1087288ceb7621acf5f7676bc444b388a9e173ec1e8450ee3fd6d6",
     "sourceReview:drizzle/0118_operations_monitoring.sql#77aae491ca4336dc1eb0544c50987dec6641987b31970cd1bdd0b2b832628780",
     "sourceReview:src/db/schema/operations.ts#e98a4518bf6f6c5a60b0c0143e828769e84854c7f739836d2eca87f7ac895c7c",
-    "sourceReview:src/db/schema/index.ts#e8be08cd74be2a814de2accd9c37e1649ecf6180b6c092d7716966104ef2d0a0",
+    "sourceReview:src/db/schema/index.ts#a8bd14601f70ebd83b86c5c7e44cddf518a5decf001730320f3442ad81ca6b53",
     "sourceReview:src/server/trpc/root.ts#282f96371162a25329d817d97dbb7813365fb70b06ef2cada5f01dd007eaea82",
     "sourceReview:src/features/operations/contracts.ts#bc34a64b26fc94d1c3971bb3e121ecc7d17c826335d06a2a4f7a41ce63b78689",
     "sourceReview:src/features/operations/current.ts#2eb2c6e8dabc574bb35c82f4120156960693a672d35afcd3cfc13e363289c02c",

@@ -1,10 +1,10 @@
-import type { ProfileItem, ProfileItemsInput, ProfileView } from "./contracts";
+import type { ProfileCursor, ProfileItem, ProfileItemsInput, ProfileView } from "./contracts";
 
 export const PROJECT_PROFILE_PATH = "/projects/internal/profile";
 
-export function profileItemsPath(
-  view: ProfileView,
-  { status, priority, cursor }: ProfileItemsInput = {},
+function profileViewPath(
+  view: ProfileView | "activity",
+  { status, priority, cursor }: ProfileItemsInput,
 ) {
   const params = new URLSearchParams();
   if (status !== undefined) params.set("status", status);
@@ -17,6 +17,14 @@ export function profileItemsPath(
   return `${PROJECT_PROFILE_PATH}/${view}${query === "" ? "" : `?${query}`}`;
 }
 
-export function profileItemPath(item: ProfileItem) {
+export function profileItemsPath(view: ProfileView, filter: ProfileItemsInput = {}) {
+  return profileViewPath(view, filter);
+}
+
+export function profileActivityPath(cursor?: ProfileCursor) {
+  return profileViewPath("activity", { cursor });
+}
+
+export function profileItemPath(item: Pick<ProfileItem, "id" | "project">) {
   return `/projects/internal/${encodeURIComponent(item.project.id)}?item=${encodeURIComponent(item.id)}`;
 }

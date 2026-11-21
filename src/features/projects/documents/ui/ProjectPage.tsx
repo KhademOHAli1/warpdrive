@@ -19,13 +19,13 @@ import { useCompanyMessages } from "@/features/company-profile/messages";
 import { useDepartureGuard } from "@/features/company-profile/ui/useDepartureGuard";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { ProjectSummary } from "../../contracts";
 import { ProjectWriteNotice } from "../../ui/ProjectTitleDialog";
 import { projectsTranslator } from "../../ui/projectMessages";
 import { useProjectWrites } from "../../ui/projectWrites";
+import { useProjectFormatters } from "../../ui/useProjectFormatters";
 import {
   restoreProjectDocumentVersionAction,
   saveProjectDocumentAction,
@@ -53,7 +53,7 @@ export function ProjectPage({
 }) {
   const router = useRouter();
   const { locale, numberingSystem } = useLocalePreferences();
-  const { dateTime, number } = useFormatters();
+  const { dateTime, number } = useProjectFormatters();
   const company = useCompanyMessages();
   const labels = projectsTranslator(locale, numberingSystem);
   const t = pageLabels[locale];

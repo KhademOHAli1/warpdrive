@@ -36,6 +36,7 @@ import {
   matchesInitialProjectItemContent,
   validProjectItemDates,
 } from "./input";
+import { recordProjectItemEvent } from "./profile/events";
 import { internalProjectItems } from "./schema";
 
 // Derive a stable UUID for an intent within its actor and record scope. The client
@@ -184,19 +185,23 @@ export function createInternalProjectItem(
         .values({ ...content, id, projectId, createdBy: who.userId })
         .onConflictDoNothing({ target: internalProjectItems.id })
         .returning({ id: internalProjectItems.id });
-      if (inserted === undefined) {
-        const [existing] = await tx
-          .select({ ...projectItemContentFields, revision: internalProjectItems.revision })
-          .from(internalProjectItems)
-          .where(
-            and(eq(internalProjectItems.id, id), eq(internalProjectItems.projectId, projectId)),
-          );
-        if (
-          existing === undefined ||
-          (existing.revision === 0 && !matchesInitialProjectItemContent(existing, content))
-        )
-          return err("project_conflict");
+      if (inserted !== undefined) {
+        await recordProjectItemEvent(tx, {
+          itemId: inserted.id,
+          actorId: who.userId,
+          kind: "created",
+        });
+        return ok(undefined);
       }
+      const [existing] = await tx
+        .select({ ...projectItemContentFields, revision: internalProjectItems.revision })
+        .from(internalProjectItems)
+        .where(and(eq(internalProjectItems.id, id), eq(internalProjectItems.projectId, projectId)));
+      if (
+        existing === undefined ||
+        (existing.revision === 0 && !matchesInitialProjectItemContent(existing, content))
+      )
+        return err("project_conflict");
       return ok(undefined);
     },
   );
@@ -232,11 +237,7 @@ export function updateInternalProjectItem(
         eq(internalProjectItems.id, itemId),
       );
       const [item] = await tx
-        .select({
-          revision: internalProjectItems.revision,
-          startDate: internalProjectItems.startDate,
-          dueDate: internalProjectItems.dueDate,
-        })
+        .select({ ...projectItemContentFields, revision: internalProjectItems.revision })
         .from(internalProjectItems)
         .where(target);
       if (item === undefined) return err("project_unavailable");
@@ -251,21 +252,31 @@ export function updateInternalProjectItem(
         return err("project_invalid");
       if (assigneeId != null && !(await canAssignStaff(tx, access, assigneeId)))
         return err("project_invalid");
+      const changes = {
+        title: content.title,
+        status: content.status,
+        assigneeId,
+        priority: content.priority,
+        startDate,
+        dueDate,
+        description: content.description,
+      };
+      const fields = Object.keys(changes) as (keyof typeof changes)[];
+      if (!fields.some((field) => changes[field] !== undefined && changes[field] !== item[field]))
+        return ok(undefined);
+
       const [updated] = await tx
         .update(internalProjectItems)
-        .set({
-          title: content.title,
-          status: content.status,
-          assigneeId,
-          priority: content.priority,
-          startDate,
-          dueDate,
-          description: content.description,
-          revision: revision + 1,
-        })
+        .set({ ...changes, revision: revision + 1 })
         .where(and(target, eq(internalProjectItems.revision, revision)))
         .returning({ id: internalProjectItems.id });
-      return updated === undefined ? err("project_conflict") : ok(undefined);
+      if (updated === undefined) return err("project_conflict");
+      await recordProjectItemEvent(tx, {
+        itemId: updated.id,
+        actorId: who.userId,
+        kind: "updated",
+      });
+      return ok(undefined);
     },
   );
 }

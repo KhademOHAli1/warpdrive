@@ -4,7 +4,7 @@ export const candidateDiscoveryIds1: string[] = [
   "derived:src/features/privacy/discoveryCoverage.ts",
   "sourceReview:src/features/privacy/discovery.ts#b170fbd5b54172b74d356a55eb99f0ca8c76c3b39beafe73daf207a08c683591",
   "sourceReview:src/features/privacy/discoveryAdapters.ts#4fcfeac783d9045a893fa5248b80fc98fb348af26b6c52e3494059afa28ba7c1",
-  "sourceReview:src/features/privacy/discoveryCoverage.ts#8678b5a688bf1b572e1a8fc3eb55f15ede80873aa4c7142defd9521faada0f1e",
+  "sourceReview:src/features/privacy/discoveryCoverage.ts#f03030996b385a12ab1d4cd90cfa895c1a36dbba319b3558a1440fde58e6b776",
   "writer:src/features/privacy/discovery.ts#execute:sql",
   "writer:src/features/privacy/discovery.ts#query:subject",
   "writer:src/features/privacy/discoveryAdapters.ts#query:activities",

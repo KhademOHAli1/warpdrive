@@ -17,15 +17,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import type { ProjectSummary } from "../contracts";
 import type { ProjectsTranslator } from "./projectMessages";
+import { useProjectFormatters } from "./useProjectFormatters";
 
 type CardProps = { project: ProjectSummary; labels: ProjectsTranslator };
 
 function ProjectCard({ project, labels }: CardProps) {
-  const format = useFormatters();
+  const format = useProjectFormatters();
   const [copyStatus, setCopyStatus] = useState<"copied" | "copyError" | null>(null);
   const projectLink = `/projects/internal/${encodeURIComponent(project.id)}`;
 

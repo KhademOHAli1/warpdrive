@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import {
   type ProjectItem,
@@ -29,6 +28,7 @@ import {
 } from "../contracts";
 import { ProjectTitleDialog } from "./ProjectTitleDialog";
 import type { ProjectsTranslator } from "./projectMessages";
+import { useProjectFormatters } from "./useProjectFormatters";
 
 export type ProjectItemChanges = Omit<UpdateProjectItemInput, "projectId" | "itemId" | "revision">;
 
@@ -153,7 +153,7 @@ function ItemAssignee({ workspace, item, labels, pending, updateItem }: WorkItem
 
 export function ProjectWorkItemList(props: WorkItemsProps) {
   const { workspace, labels } = props;
-  const format = useFormatters();
+  const format = useProjectFormatters();
   if (workspace.items.length === 0) {
     return (
       <EmptyState
@@ -252,7 +252,7 @@ function BoardCard(props: WorkItemProps) {
   const { item, labels, workspace, pending } = props;
   const { attributes, listeners, transform, setNodeRef, setActivatorNodeRef, isDragging } =
     useDraggable({ id: item.id, disabled: pending || !workspace.canEdit });
-  const format = useFormatters();
+  const format = useProjectFormatters();
   return (
     <li
       ref={setNodeRef}
