@@ -4,7 +4,7 @@ export const industrialInventoryEntry = classifyInventory(
   [
     "sourceReview:src/features/inventory/releases/ui/ManufacturingReleasesFixture.tsx#ef148385d4a8f4185d5e4b43ffe56bcc10baa667244d2d4749f8dc8aa9c1d088",
     "sourceReview:src/features/inventory/releases/fixtures.ts#d31a68530b9339a96294b2d38d44fc6d8b4c58b5295f1bed1c10c92cd792a8a6",
-    "sourceReview:src/features/inventory/InventoryFixture.tsx#b2724472aa2ce6d14d53da45f57b0c78191e0a3f772986dc30c62f5601f0e1cf",
+    "sourceReview:src/features/inventory/InventoryFixture.tsx#4bf14cba019223405d042fb5e96b5623e38f9314c17f7095bec6a6b6e11b5271",
     "derived:src/features/inventory/fixtures.ts",
     "derived:src/features/inventory/projectBridge.ts",
     "derived:src/features/inventory/reads.ts",
@@ -20,7 +20,7 @@ export const industrialInventoryEntry = classifyInventory(
     "sourceReview:src/features/inventory/schema.ts#222634ccdf5be7948afc672fdbfcdae627803496acd920c42f6fa38c6cc0a400",
     "sourceReview:src/features/inventory/service.ts#9ef23e3c5d233178546e7a9db9fd442a3e59e280d251da19008d6f74a299726d",
     "sourceReview:src/features/inventory/stock.ts#db8b66883ea230892e17ace274267f041b8cdd6ffcb708f9727f077b36698b57",
-    "sourceReview:src/features/inventory/ui/InventoryClient.tsx#d8b2364e8aebed1e45d1cb7180ef5973c5b48bd9a402980382a8466944112c00",
+    "sourceReview:src/features/inventory/ui/InventoryClient.tsx#26ffadec72ee83f63c6690e2690cd38653194a514b85d2a841397ccaa2c9ab21",
     "table:inventory_bom_lines",
     "table:inventory_command_receipts",
     "table:inventory_items",

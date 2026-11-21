@@ -2,7 +2,7 @@
 
 import { Archive, Boxes, ClipboardList, PackagePlus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition } from "react";
+import { type ReactNode, useId, useRef, useState, useTransition } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -36,12 +36,14 @@ export function InventoryClient({
   ProductReleases,
   openReleases = false,
   initialItemId,
+  locationsLink,
 }: {
   initial: InventoryWorkspace;
   submit: (command: InventoryCommand) => Promise<InventoryResult>;
   ProductReleases?: InventoryProductReleases;
   openReleases?: boolean;
   initialItemId?: string;
+  locationsLink?: ReactNode;
 }) {
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
@@ -113,7 +115,7 @@ export function InventoryClient({
         description={workspace.deal === null ? undefined : workspace.deal.name}
         actions={workspace.fixture ? <Badge variant="outline">{t.demo}</Badge> : undefined}
       />
-      <nav aria-label={t.sections} className="mb-4 flex gap-4 border-b">
+      <nav aria-label={t.sections} className="mb-4 flex gap-4 border-b has-[a]:flex-wrap">
         <button
           type="button"
           aria-current={view === "items" ? "page" : undefined}
@@ -141,6 +143,7 @@ export function InventoryClient({
             </span>
           )}
         </button>
+        {locationsLink}
       </nav>
       {error !== null && !newItem && (
         <p

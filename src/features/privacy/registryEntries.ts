@@ -81,6 +81,7 @@ import {
 } from "./registryProjectsAccess";
 import { salesInventoryEntries } from "./registrySales";
 import { salesToolingInventoryEntry } from "./registrySalesTooling";
+import { sharedLocationsEntry } from "./registrySharedLocations";
 import type { RegistryEntry } from "./registryTypes";
 import {
   workflowBlocksInventoryEntry,
@@ -114,6 +115,7 @@ export const registryEntries: RegistryEntry[] = [
   projectPublicationInventoryEntry,
   internalProjectsInventoryEntry,
   industrialInventoryEntry,
+  sharedLocationsEntry,
   manufacturingReleasesEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,
