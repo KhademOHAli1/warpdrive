@@ -1,9 +1,10 @@
 "use client";
+import { Kanban, List, RefreshCw, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { useId, useState } from "react";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ToggleField } from "@/components/ui/ToggleField";
 import { useCompanyMessages } from "@/features/company-profile/messages";
 import { CommandFeedback, ProfileError } from "@/features/company-profile/ui/CommandFeedback";
 import { ChoiceField, PRIVATE } from "@/features/company-profile/ui/Fields";
@@ -21,9 +22,14 @@ import { useWorkMessages } from "../messages";
 import { draftForItem, ItemEditor } from "./ItemEditor";
 import { WorkRecords } from "./WorkRecords";
 import { matchWorkFilters, mergeWorkRecords, workItemsUrl } from "./workHubRecords";
+
+const viewButton =
+  "font-medium text-muted-foreground aria-pressed:bg-accent aria-pressed:text-accent-foreground";
+
 export function WorkHub({ data, actorId }: { data: Overview; actorId: string }) {
   const m = useWorkMessages();
   const c = useCompanyMessages();
+  const searchId = useId();
   const [typeId, setTypeId] = useState("");
   const [stageId, setStageId] = useState("");
   const [query, setQuery] = useState("");
@@ -85,10 +91,10 @@ export function WorkHub({ data, actorId }: { data: Overview; actorId: string }) 
           <h1 className="text-display font-semibold">{m.hubTitle}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{m.hubIntro}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {data.permissions.manageProfile || data.permissions.manage ? (
             <Link
-              className="rounded-md border px-3 py-2 text-sm"
+              className={buttonVariants({ variant: "outline" })}
               href="/settings/company/work-profile"
             >
               {m.setup}
@@ -107,57 +113,70 @@ export function WorkHub({ data, actorId }: { data: Overview; actorId: string }) 
       {activeTypes.length === 0 ? (
         <p className="rounded-lg border p-5 text-sm">{m.noTypes}</p>
       ) : null}
-      <div className="grid items-end gap-4 rounded-lg border p-4 sm:grid-cols-2 xl:grid-cols-4">
-        <ChoiceField
-          label={m.workflow}
-          value={typeId}
-          options={[
-            { value: "", label: m.allTypes },
-            ...data.workTypes.map((entry) => ({ value: entry.id, label: entry.name })),
-          ]}
-          disabled={locked}
-          onChange={(value) => {
-            setTypeId(value);
-            setStageId("");
-            resetPage();
-          }}
-        />
-        <ChoiceField
-          label={m.stage}
-          value={stageId}
-          options={[
-            { value: "", label: m.allStages },
-            ...(type?.stages ?? []).map((entry) => ({ value: entry.id, label: entry.name })),
-          ]}
-          disabled={locked || !typeId}
-          onChange={(value) => {
-            setStageId(value);
-            resetPage();
-          }}
-        />
-        <form
-          className="flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setQuery(search.trim());
-            resetPage();
-          }}
-        >
-          <Input
-            aria-label={m.search}
-            placeholder={m.search}
-            value={search}
+      <div className="@container rounded-lg border bg-card">
+        <div className="grid items-end gap-3 p-3 @xs:grid-cols-2 @3xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_max-content] sm:px-4">
+          <form
+            className="min-w-0 space-y-1.5 text-sm @xs:col-span-2 @3xl:col-span-1"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setQuery(search.trim());
+              resetPage();
+            }}
+          >
+            <label htmlFor={searchId} className="block font-medium">
+              {m.search}
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  id={searchId}
+                  className="h-8 ps-8"
+                  type="search"
+                  value={search}
+                  disabled={locked}
+                  maxLength={200}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </div>
+              <Button variant="outline" size="sm" disabled={locked} type="submit">
+                {m.searchAction}
+              </Button>
+            </div>
+          </form>
+          <ChoiceField
+            label={m.workflow}
+            value={typeId}
+            options={[
+              { value: "", label: m.allTypes },
+              ...data.workTypes.map((entry) => ({ value: entry.id, label: entry.name })),
+            ]}
             disabled={locked}
-            maxLength={200}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(value) => {
+              setTypeId(value);
+              setStageId("");
+              resetPage();
+            }}
           />
-          <Button variant="outline" disabled={locked} type="submit">
-            {m.searchAction}
-          </Button>
-        </form>
-        <div className="flex items-center gap-2 text-sm">
-          <Checkbox
-            label={m.showArchived}
+          <ChoiceField
+            label={m.stage}
+            value={stageId}
+            options={[
+              { value: "", label: m.allStages },
+              ...(type?.stages ?? []).map((entry) => ({ value: entry.id, label: entry.name })),
+            ]}
+            disabled={locked || !typeId}
+            onChange={(value) => {
+              setStageId(value);
+              resetPage();
+            }}
+          />
+          <ToggleField
+            label={m.archivedOnly}
+            className="min-h-8 justify-self-start gap-2 px-2 text-sm @xs:col-span-2 @3xl:col-span-1"
             checked={archived}
             disabled={locked}
             onCheckedChange={(value) => {
@@ -165,36 +184,51 @@ export function WorkHub({ data, actorId }: { data: Overview; actorId: string }) 
               resetPage();
             }}
           />
-          {m.showArchived}
         </div>
-      </div>
-      <div className="flex justify-between gap-3">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2 sm:px-4">
+          <fieldset className="inline-flex min-w-0 max-w-full flex-wrap gap-0.5 rounded-lg border bg-muted/40 p-0.5">
+            <legend className="sr-only">{m.viewMode}</legend>
+            <Button
+              variant="ghost"
+              size="sm"
+              static
+              aria-pressed={board}
+              className={viewButton}
+              disabled={locked}
+              onClick={() => setBoard(true)}
+            >
+              <Kanban aria-hidden="true" className="size-4" />
+              {m.board}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              static
+              aria-pressed={!board}
+              className={viewButton}
+              disabled={locked}
+              onClick={() => setBoard(false)}
+            >
+              <List aria-hidden="true" className="size-4" />
+              {m.list}
+            </Button>
+          </fieldset>
           <Button
-            variant={board ? "default" : "outline"}
+            variant="ghost"
+            size="sm"
+            static
+            aria-label={c.refresh}
+            title={c.refresh}
+            className="size-8 p-0 text-muted-foreground"
             disabled={locked}
-            onClick={() => setBoard(true)}
+            onClick={() => {
+              resetPage();
+              if (cursor === null) void records.reload();
+            }}
           >
-            {m.board}
-          </Button>
-          <Button
-            variant={board ? "outline" : "default"}
-            disabled={locked}
-            onClick={() => setBoard(false)}
-          >
-            {m.list}
+            <RefreshCw aria-hidden="true" className="size-4" />
           </Button>
         </div>
-        <Button
-          variant="outline"
-          disabled={locked}
-          onClick={() => {
-            resetPage();
-            if (cursor === null) void records.reload();
-          }}
-        >
-          {c.refresh}
-        </Button>
       </div>
       <CommandFeedback
         state={command}
