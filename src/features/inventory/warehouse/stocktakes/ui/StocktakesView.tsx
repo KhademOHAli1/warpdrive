@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { useHydrated } from "@/lib/useHydrated";
 import { warehouseMessages } from "../../ui/warehouseMessages";
 import type {
   StocktakeDetail,
@@ -32,6 +33,17 @@ function Amount({ value, currency }: { value: string; currency: string }) {
     <bdi>
       {number(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {currency}
     </bdi>
+  );
+}
+
+function RecordedTime({ value, className }: { value: string; className?: string }) {
+  const { dateTime } = useFormatters();
+  const hydrated = useHydrated();
+  // The server and browser can format the same locale differently.
+  return (
+    <time dateTime={value} className={className}>
+      {hydrated ? dateTime(value) : value.slice(0, 10)}
+    </time>
   );
 }
 
@@ -64,7 +76,7 @@ function PartIdentity({
 }
 
 function StocktakeCountRow({ line, t }: { line: StocktakeLine; t: StocktakeMessages }) {
-  const { number, dateTime } = useFormatters();
+  const { number } = useFormatters();
   const difference =
     line.countedQuantity === null ? null : line.countedQuantity - line.expectedOnHand;
   return (
@@ -89,11 +101,7 @@ function StocktakeCountRow({ line, t }: { line: StocktakeLine; t: StocktakeMessa
         {difference === null ? "—" : <bdi>{number(difference, { signDisplay: "exceptZero" })}</bdi>}
       </td>
       <td className={valueCell}>
-        {line.countedAt === null ? (
-          "—"
-        ) : (
-          <time dateTime={line.countedAt}>{dateTime(line.countedAt)}</time>
-        )}
+        {line.countedAt === null ? "—" : <RecordedTime value={line.countedAt} />}
         {line.countedBy !== null && (
           <p className="break-words text-xs text-muted-foreground">
             <bdi>{line.countedBy}</bdi>
@@ -135,7 +143,6 @@ function CountDetails({
   open: OpenStocktakeEditor;
   t: StocktakeMessages;
 }) {
-  const { dateTime } = useFormatters();
   const editable = site.canCount && stocktake.status === "draft";
   const complete =
     stocktake.lines.length > 0 && stocktake.lines.every((line) => line.countedQuantity !== null);
@@ -159,14 +166,14 @@ function CountDetails({
           <div>
             <dt className="text-xs text-muted-foreground">{t.created}</dt>
             <dd>
-              <time dateTime={stocktake.createdAt}>{dateTime(stocktake.createdAt)}</time>
+              <RecordedTime value={stocktake.createdAt} />
             </dd>
           </div>
           {stocktake.closedAt !== null && (
             <div>
               <dt className="text-xs text-muted-foreground">{t.closed}</dt>
               <dd>
-                <time dateTime={stocktake.closedAt}>{dateTime(stocktake.closedAt)}</time>
+                <RecordedTime value={stocktake.closedAt} />
               </dd>
             </div>
           )}
@@ -244,7 +251,6 @@ export function CountsView({
   open: OpenStocktakeEditor;
   t: StocktakeMessages;
 }) {
-  const { dateTime } = useFormatters();
   return (
     <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)]">
       <section className="rounded-lg border bg-card">
@@ -283,8 +289,7 @@ export function CountsView({
                       <Badge variant="outline">{t[row.status]}</Badge>
                     </span>
                     <span className="mt-1 block text-xs text-muted-foreground">
-                      <bdi>{row.locationName}</bdi> ·{" "}
-                      <time dateTime={row.createdAt}>{dateTime(row.createdAt)}</time>
+                      <bdi>{row.locationName}</bdi> · <RecordedTime value={row.createdAt} />
                     </span>
                   </Link>
                 </li>
@@ -303,7 +308,7 @@ export function CountsView({
 }
 
 function ValuationDetails({ value, t }: { value: ValuationDetail; t: StocktakeMessages }) {
-  const { number, dateTime } = useFormatters();
+  const { number } = useFormatters();
   const counts = [
     { label: t.positions, value: value.positions },
     { label: t.quantity, value: value.quantity },
@@ -317,7 +322,7 @@ function ValuationDetails({ value, t }: { value: ValuationDetail; t: StocktakeMe
           <bdi>{value.label}</bdi>
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t.captured} <time dateTime={value.capturedAt}>{dateTime(value.capturedAt)}</time>
+          {t.captured} <RecordedTime value={value.capturedAt} />
         </p>
         <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div>
@@ -424,7 +429,6 @@ export function ValuationsView({
   open: OpenStocktakeEditor;
   t: StocktakeMessages;
 }) {
-  const { dateTime } = useFormatters();
   return (
     <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)]">
       <section className="rounded-lg border bg-card">
@@ -459,12 +463,10 @@ export function ValuationsView({
                     className="block min-w-0 px-3 py-2.5 hover:bg-muted/50 aria-[current=page]:bg-muted"
                   >
                     <bdi className="block break-words text-sm font-medium">{row.label}</bdi>
-                    <time
-                      dateTime={row.capturedAt}
+                    <RecordedTime
+                      value={row.capturedAt}
                       className="mt-1 block text-xs text-muted-foreground"
-                    >
-                      {dateTime(row.capturedAt)}
-                    </time>
+                    />
                   </Link>
                 </li>
               );
