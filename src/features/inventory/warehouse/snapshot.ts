@@ -1,6 +1,7 @@
 import { eq, getTableColumns, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { directoryLocations, directorySites } from "@/features/locations/schema";
+import { hasOpenReturnAtSite } from "../returns/protection";
 import { hasOpenSalesDemand } from "../sales/lifecycle";
 import { inventoryItems } from "../schema";
 import type { StockPositionRow } from "./balances";
@@ -95,6 +96,7 @@ export async function hasWarehouseStock(tx: Db, siteId: string, locationId: stri
   return (
     rows.rows[0]?.has_stock === true ||
     (locationId === null && (await hasOpenSalesDemand(tx, { siteId }))) ||
+    (locationId === null && (await hasOpenReturnAtSite(tx, siteId))) ||
     (await hasOpenWarehouseTransfer(tx, siteId, locationId)) ||
     (await hasOpenProductionBuild(tx, siteId, locationId)) ||
     (locationId !== null && (await hasSubcontractLocationUse(tx, siteId, locationId)))

@@ -405,6 +405,21 @@ export const movementKindMessages = {
     "رزرو سفارش فروش آزاد شد",
   ],
   "sales-shipment": ["Sales shipment posted", "Kundenlieferung gebucht", "ارسال سفارش فروش ثبت شد"],
+  "customer-return": [
+    "Customer return received",
+    "Kundenrückgabe empfangen",
+    "مرجوعی مشتری دریافت شد",
+  ],
+  "return-restock": [
+    "Returned stock released",
+    "Rückgabebestand freigegeben",
+    "موجودی مرجوعی آزاد شد",
+  ],
+  "return-scrap": [
+    "Returned stock scrapped",
+    "Rückgabebestand verschrottet",
+    "موجودی مرجوعی اسقاط شد",
+  ],
   "production-reversal": [
     "Production posting reversed",
     "Fertigungsbuchung storniert",

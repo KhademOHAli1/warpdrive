@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, ExternalLink, PackageCheck } from "lucide-react";
+import { ClipboardList, ExternalLink, PackageCheck, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
@@ -474,6 +474,16 @@ function ShipmentCard({
                 {t.cancelShipment}
               </Button>
             </>
+          )}
+          {order.canReturn === true && shipment.status === "shipped" && (
+            <Link
+              href={`/inventory/returns?shipmentId=${encodeURIComponent(shipment.id)}`}
+              prefetch={false}
+              data-sales-action="createReturn"
+              className="inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-sm font-medium hover:bg-muted"
+            >
+              <RotateCcw className="size-4" aria-hidden="true" /> {t.createReturn}
+            </Link>
           )}
           {order.delivery !== null && shipment.status !== "cancelled" && (
             <Button

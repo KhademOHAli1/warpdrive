@@ -168,6 +168,7 @@ export type SalesShipment = {
 export type SalesOrderDetail = SalesOrderSummary & {
   version: number;
   canEdit: boolean;
+  canReturn?: boolean;
   canFulfill: boolean;
   canCancel?: boolean;
   delivery: { recipient: string; address: string } | null;

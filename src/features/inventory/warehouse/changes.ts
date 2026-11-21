@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import { type CatalogItemPolicy, catalogItemPolicy } from "../catalog/policy";
 import { purchaseOrderLines } from "../purchasing/schema";
 import { isQualityControlledPosition } from "../quality/gates";
+import { isReturnControlledPosition } from "../returns/protection";
 import { InventoryStockError, lockInventoryStock, postInventoryMovement } from "../stock";
 import {
   failWarehouse,
@@ -409,7 +410,8 @@ async function setPositionState(tx: Db, actorId: string, target: Target, command
   if (position.locationId !== target.location.id) failWarehouse("conflict");
   if (
     (await isSubcontractControlledPosition(tx, position)) ||
-    (await isQualityControlledPosition(tx, position))
+    (await isQualityControlledPosition(tx, position)) ||
+    (await isReturnControlledPosition(tx, position))
   )
     failWarehouse("conflict");
   if (position.state === state) {

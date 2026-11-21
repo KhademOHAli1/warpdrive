@@ -258,11 +258,11 @@ async function orderDetail(
             .map(({ id, name }) => [id, name]),
         );
   const open = order.status === "draft" || order.status === "issued";
-  const canEdit =
-    open &&
+  const canEditDeal =
     visibleDeal &&
     order.dealId !== null &&
     (await readInventoryDeal(tx, actor, order.dealId))?.canOrder === true;
+  const canEdit = open && canEditDeal;
   const canCancel =
     canEdit ||
     (order.status === "issued" &&
@@ -274,6 +274,7 @@ async function orderDetail(
     ...orderSummary(row),
     version: order.version,
     canEdit,
+    canReturn: canEditDeal,
     canCancel,
     canFulfill: order.status === "issued" && site?.canManage === true && !site.archived,
     delivery:

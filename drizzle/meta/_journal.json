@@ -995,6 +995,13 @@
       "when": 1795296808642,
       "tag": "0141_inventory_sales_fulfillment",
       "breakpoints": true
+    },
+    {
+      "idx": 142,
+      "version": "7",
+      "when": 1795298427486,
+      "tag": "0142_inventory_customer_returns",
+      "breakpoints": true
     }
   ]
 }

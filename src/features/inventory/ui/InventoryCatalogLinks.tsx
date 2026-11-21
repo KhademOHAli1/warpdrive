@@ -6,6 +6,7 @@ import {
   Factory,
   LibraryBig,
   ListTree,
+  RotateCcw,
   ShoppingCart,
   Truck,
   Warehouse,
@@ -20,6 +21,7 @@ import { catalogMessages } from "../catalog/ui/catalogMessages";
 import { productionMessages } from "../production/ui/messages";
 import { purchaseMessages } from "../purchasing/ui/messages";
 import { inspectionMessages } from "../quality/ui/inspectionMessages";
+import { returnMessages } from "../returns/ui/messages";
 import { salesMessages } from "../sales/ui/messages";
 import { sourcingMessages } from "../sourcing/ui/messages";
 import { warehouseMessages } from "../warehouse/ui/warehouseMessages";
@@ -97,9 +99,14 @@ export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }
           </Link>
           <QualityInspectionsLink />
           {canViewSalesOrders && (
-            <Link href="/inventory/sales-orders" prefetch={false} className={linkStyle}>
-              <ShoppingCart aria-hidden="true" className="size-4" /> {salesMessages[locale].title}
-            </Link>
+            <>
+              <Link href="/inventory/sales-orders" prefetch={false} className={linkStyle}>
+                <ShoppingCart aria-hidden="true" className="size-4" /> {salesMessages[locale].title}
+              </Link>
+              <Link href="/inventory/returns" prefetch={false} className={linkStyle}>
+                <RotateCcw aria-hidden="true" className="size-4" /> {returnMessages[locale].title}
+              </Link>
+            </>
           )}
           <SourcingCatalogLink />
           <PurchaseOrdersLink />

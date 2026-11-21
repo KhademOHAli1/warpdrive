@@ -7,7 +7,7 @@ export const stocktakesEntry = classifyInventory(
     "sourceReview:drizzle/0137_inventory_stocktakes.sql#929c97a11cf74934a8f40ce036edb3b33f4bbc5ccfdfa5a923ca44bc0c73b02e",
     "sourceReview:src/app/(app)/inventory/warehouse/stocktakes/page.tsx#c9a53bf2e241310fefc1341cf1a6205d37f9b89157620073ef1e639eb11a28bb",
     "sourceReview:src/features/inventory/warehouse/stocktakes/countSchema.ts#9a09a6d0ff83697ca1cf65d63bc811bdae064101d3107e477714c4195e0215d7",
-    "sourceReview:src/features/inventory/warehouse/stocktakes/counts.ts#2040e7a9106f788f607c682582c0c7d5608ef2479be0a497108c3892be639721",
+    "sourceReview:src/features/inventory/warehouse/stocktakes/counts.ts#b1fb7f6d8226e4aec5d8e5c690ff5186448c000643c95b3f8f3037bb4c1c7d8d",
     "sourceReview:src/features/inventory/warehouse/stocktakes/router.ts#1cefb70f25e97807e2582ebb6d3672749055307c8255a5d364fd165b81d1fd12",
     "sourceReview:src/features/inventory/warehouse/stocktakes/scope.ts#1004d5db5fe7bfa8bbd727bed453a9b0bb23d1d3dd3ab47e2fa34203cef500d9",
     "sourceReview:src/features/inventory/warehouse/stocktakes/service.ts#38762ac5acbb9d68a5664ee23c8279af5a6822d24d76221681437b76d61ad5a5",

@@ -16,7 +16,7 @@ export const industrialInventoryEntry = classifyInventory(
     "sourceReview:src/features/inventory/fixtures.ts#9f155cf2aa027899855e9e36a7c84dc597ef0c6326af2cb134b523a061e14794",
     "sourceReview:src/features/inventory/projectBridge.ts#b3720f001dc806d3a82a26064950530e4e69f03524c3439978c6992bea4b2dfc",
     "sourceReview:src/features/inventory/reads.ts#5932f4af3104e7e434038dafa7a00874ade25670dbe258e523633286c63017fc",
-    "sourceReview:src/features/inventory/router.ts#31adf93d651022d24532b3147459586c3bf47e7b2f5a13baf88a54422b1e402e",
+    "sourceReview:src/features/inventory/router.ts#c2d33b56b1a7962d8a841af707fc1887c0ee7e43420915edfc9a500af2b5e00a",
     "sourceReview:src/features/inventory/schema.ts#b451736443506e150f1663d2dd92051427ad27c12036018a5cdb068acb6097db",
     "sourceReview:src/features/inventory/service.ts#da6256460c0447ecfa431377a86a34c8db83ea97dbbd7cd99d837912f206ab57",
     "sourceReview:src/features/inventory/stock.ts#0947eea5543129297c5a7f2b29fb104660f2c3687f754ccf50d13c25db95cecd",

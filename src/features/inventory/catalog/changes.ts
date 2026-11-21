@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { hasOpenReturnForPart } from "../returns/protection";
 import { hasOpenSalesDemand } from "../sales/lifecycle";
 import { inventoryItems, inventoryOrderMaterials, inventoryOrders } from "../schema";
 import type {
@@ -303,6 +304,15 @@ async function savePart(tx: Db, records: Records, command: SavePart) {
   validatePartLinks(records, id, familyId, command.profile);
   const profile = normalizeProfile(records, command.profile);
   await validateNonStockTransition(tx, current, profile);
+  if (
+    current !== null &&
+    (profile.stockMode === "virtual" ||
+      profile.isTemplate ||
+      profile.unit !== current.profile.unit ||
+      profile.flags.trackable !== current.profile.flags.trackable) &&
+    (await hasOpenReturnForPart(tx, id))
+  )
+    failCatalog("conflict");
   if (
     current !== null &&
     (profile.stockMode === "virtual" ||

@@ -87,6 +87,7 @@ function stockChangingEvents() {
     eq(events.kind, "state"),
     eq(events.kind, "production-accept"),
     eq(events.kind, "quality-release"),
+    eq(events.kind, "return-restock"),
   );
 }
 

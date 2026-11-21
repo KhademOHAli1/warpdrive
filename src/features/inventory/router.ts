@@ -7,6 +7,7 @@ import { inventoryPurchasingRouter } from "./purchasing/router";
 import { inventoryQualityRouter } from "./quality/router";
 import { readInventoryWorkspace } from "./reads";
 import { manufacturingReleaseRouter } from "./releases/router";
+import { inventoryReturnsRouter } from "./returns/router";
 import { inventorySalesRouter } from "./sales/router";
 import { inventorySourcingRouter } from "./sourcing/router";
 import { inventoryWarehouseRouter } from "./warehouse/router";
@@ -18,6 +19,7 @@ export const inventoryRouter = router({
   purchasing: inventoryPurchasingRouter,
   quality: inventoryQualityRouter,
   releases: manufacturingReleaseRouter,
+  returns: inventoryReturnsRouter,
   sales: inventorySalesRouter,
   sourcing: inventorySourcingRouter,
   warehouse: inventoryWarehouseRouter,
