@@ -155,11 +155,14 @@ def publish(api, plan, evidence, directory, mode):
     if not current:
         current = api.request(f"repos/{repo}/releases", "POST", {"tag_name": tag, "target_commitish": revision, "name": release_name, "body": body, "draft": True, "prerelease": False})
     else:
-        api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"name": release_name, "body": body})
+        # GitHub detaches the release tag when an update omits tag_name.
+        api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"tag_name": tag, "name": release_name, "body": body})
     run("gh", "release", "upload", tag, *[str(p) for p in sorted(Path(directory).iterdir()) if p.is_file()], "--repo", repo, "--clobber")
     reread = api.request(f"repos/{repo}/releases/{current['id']}")
     if reread.get("prerelease") is not False:
         raise GateError("Independent release reread must confirm prerelease:false before stable publication")
+    if reread.get("tag_name") != tag or reread.get("draft") is not True:
+        raise GateError("Independent release reread must confirm the expected stable draft and tag")
     verify_uploaded_assets(directory, reread["assets"])
     if mode == "publish":
         # Recheck live acceptance/CI/milestone immediately before the irreversible publish call.
@@ -168,7 +171,7 @@ def publish(api, plan, evidence, directory, mode):
             raise GateError("Release evidence changed during preparation; rerun the draft action")
         # Named-main findings are mutable live evidence; reread immediately before publish.
         print(json.dumps({"release_security": verify_release_code_scanning(api, repo, revision, **security_options)}, sort_keys=True))
-        api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"draft": False, "prerelease": False, "make_latest": "true"})
+        api.request(f"repos/{repo}/releases/{current['id']}", "PATCH", {"tag_name": tag, "draft": False, "prerelease": False, "make_latest": "true"})
     reread = api.request(f"repos/{repo}/releases/{current['id']}")
     if reread["draft"] != (mode != "publish") or reread["tag_name"] != tag or reread.get("prerelease") is not False:
         raise GateError("Release verification failed")
