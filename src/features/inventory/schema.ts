@@ -41,7 +41,8 @@ export type InventoryStockKind =
   | "production-output"
   | "production-reversal"
   | "production-dispatch"
-  | "production-return";
+  | "production-return"
+  | "asset-commission";
 
 export const inventoryItems = pgTable(
   "inventory_items",
@@ -274,7 +275,7 @@ export const inventoryMovements = pgTable(
         'transfer-dispatch', 'transfer-receive', 'correction', 'correction-reversal',
         'component-install', 'component-remove', 'stock-disassemble', 'production-reserve', 'production-release',
         'production-consume', 'production-output', 'production-reversal',
-        'production-dispatch', 'production-return')`,
+        'production-dispatch', 'production-return', 'asset-commission')`,
     ),
   ],
 );

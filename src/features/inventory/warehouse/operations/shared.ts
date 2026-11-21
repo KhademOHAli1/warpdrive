@@ -50,18 +50,27 @@ export async function requireVisibleParts(tx: Db, actor: OperationsActor, itemId
   for (const itemId of new Set(itemIds)) await visiblePartPolicy(tx, actor, itemId);
 }
 
-export async function readPosition(tx: Db, id: string) {
+export async function readStockPosition(tx: Db, id: string) {
   const [position] = await tx
     .select()
     .from(inventoryStockPositions)
     .where(eq(inventoryStockPositions.id, id));
   if (position === undefined) failOperations("unavailable");
+  return position;
+}
+
+export async function requireUncontrolledPosition(tx: Db, position: Position) {
   if (
     (await isSubcontractControlledPosition(tx, position)) ||
     (await isQualityControlledPosition(tx, position)) ||
     (await isReturnControlledPosition(tx, position))
   )
     failOperations("incompatibleStock");
+}
+
+export async function readPosition(tx: Db, id: string) {
+  const position = await readStockPosition(tx, id);
+  await requireUncontrolledPosition(tx, position);
   return position;
 }
 

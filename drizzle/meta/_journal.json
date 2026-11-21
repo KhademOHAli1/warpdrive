@@ -1009,6 +1009,13 @@
       "when": 1795300745227,
       "tag": "0143_asset_register",
       "breakpoints": true
+    },
+    {
+      "idx": 144,
+      "version": "7",
+      "when": 1795302157905,
+      "tag": "0144_asset_commissioning",
+      "breakpoints": true
     }
   ]
 }

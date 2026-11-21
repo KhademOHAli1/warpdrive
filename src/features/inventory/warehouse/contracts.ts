@@ -139,6 +139,7 @@ export type WarehouseWorkspace = {
   incoming: WarehouseIncoming[];
   organizations: { id: string; name: string }[];
   canManageUnlocated: boolean;
+  commissioningSiteIds?: string[];
 };
 export type WarehouseError =
   | "unavailable"

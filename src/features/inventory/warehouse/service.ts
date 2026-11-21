@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { commissioningSiteIds } from "@/features/assets/commissioning/eligibility";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockDirectory } from "@/features/locations/service";
@@ -29,11 +30,13 @@ export function readWarehouseWorkspace(
     await lockDirectory(tx, "read", signal);
     const actor = await currentInventoryActor(tx, who, signal);
     if (actor === null) return { ok: false, error: "unavailable" };
-    const value = await projectWarehouse(tx, await readWarehouseAccess(tx, actor, signal), query);
+    const access = await readWarehouseAccess(tx, actor, signal);
+    const value = await projectWarehouse(tx, access, query);
+    const commissionableSites = await commissioningSiteIds(tx, actor, access);
     if ((await currentInventoryActor(tx, who, signal)) === null) {
       return { ok: false, error: "unavailable" };
     }
-    return { ok: true, value };
+    return { ok: true, value: { ...value, commissioningSiteIds: commissionableSites } };
   });
 }
 

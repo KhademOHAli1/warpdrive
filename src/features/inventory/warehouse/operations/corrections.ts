@@ -1,5 +1,6 @@
 import { and, eq, gt, isNull, lt, ne, or } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { isCommissionedStock } from "@/features/assets/commissioning/protection";
 import { lockInventoryStock, postInventoryMovement } from "../../stock";
 import { inventoryStockEvents, inventoryStockPositions } from "../schema";
 import type { WarehouseOperationsCommand } from "./contracts";
@@ -73,6 +74,9 @@ async function validateCount(tx: Db, position: Position, quantity: number, track
     return;
   }
   if (quantity > 1) failOperations("invalid");
+  if (quantity > position.onHand && (await isCommissionedStock(tx, position.id))) {
+    failOperations("incompatibleStock");
+  }
   const [active] = await tx
     .select({ id: inventoryStockTransferLines.id })
     .from(inventoryStockTransferLines)

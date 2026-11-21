@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Button } from "@/components/ui/Button";
+import { executeCommissionAssetAction } from "@/features/assets/commissioning/webActions";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { executeWarehouseAction } from "../actions";
@@ -45,6 +46,19 @@ export function WarehouseLive({ actorId, result }: { actorId: string; result: Wa
       submit={(command) => executeWarehouseAction(actorId, command, readCsrfToken())}
       refresh={refresh}
       refreshing={refreshing}
+      commissioning={{
+        siteIds: result.value.commissioningSiteIds ?? [],
+        submit: async (command) => {
+          const commissioned = await executeCommissionAssetAction(
+            actorId,
+            command,
+            readCsrfToken(),
+          );
+          if (commissioned.ok) refresh();
+          return commissioned;
+        },
+        assetHref: (assetId) => `/assets?assetId=${encodeURIComponent(assetId)}`,
+      }}
     />
   );
 }

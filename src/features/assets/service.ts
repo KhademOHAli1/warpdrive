@@ -12,6 +12,7 @@ import {
 } from "@/features/operations-access/scope";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { assetRoleSiteIds } from "./access";
+import { commissionedAssetSerial } from "./commissioning/protection";
 import { type AssetCommand, type AssetResult, type AssetSite, assetCommand } from "./contracts";
 import { applyAssetWorkspaceCommand } from "./registerCommands";
 import { assetRegisterData, persistAssetChanges } from "./repository";
@@ -40,7 +41,7 @@ export async function assetSites(tx: Db, actor: HydratedActor): Promise<AssetSit
   }));
 }
 
-async function lockAssetRegister(tx: Db, mode: "read" | "write", signal: AbortSignal) {
+export async function lockAssetRegister(tx: Db, mode: "read" | "write", signal: AbortSignal) {
   await tx.execute(
     mode === "read"
       ? sql`SELECT pg_advisory_xact_lock_shared(hashtext('warpdrive-assets'), hashtext('register-v1'))`
@@ -117,6 +118,10 @@ async function applyCommand(
   }
 
   const before = { sites: [site], ...(await assetRegisterData(tx, [site.id], false)) };
+  if (command.type === "update") {
+    const recorded = await commissionedAssetSerial(tx, command.assetId);
+    if (recorded !== null && command.serial !== recorded) return { ok: false, error: "state" };
+  }
   const transformed = applyAssetWorkspaceCommand(before, command, actor.name);
   if (!transformed.ok) return transformed;
   await persistAssetChanges(tx, before, transformed.value, actor.id);

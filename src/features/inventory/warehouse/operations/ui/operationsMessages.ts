@@ -420,6 +420,11 @@ export const movementKindMessages = {
     "Rückgabebestand verschrottet",
     "موجودی مرجوعی اسقاط شد",
   ],
+  "asset-commission": [
+    "Stock commissioned as equipment",
+    "Lagerartikel als Betriebsmittel übernommen",
+    "کالای انبار به‌عنوان تجهیز ثبت شد",
+  ],
   "production-reversal": [
     "Production posting reversed",
     "Fertigungsbuchung storniert",

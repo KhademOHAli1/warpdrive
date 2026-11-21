@@ -52,6 +52,14 @@ function defaultFilters(site: string): Filters {
   };
 }
 
+function initialFilters(workspace: AssetsWorkspace, assetId: string | null): Filters {
+  const asset = workspace.records.find(({ id }) => id === assetId);
+  return {
+    ...defaultFilters(asset?.siteId ?? workspace.sites[0]?.id ?? ""),
+    status: asset !== undefined && asset.archivedAt !== null ? "archived" : "active",
+  };
+}
+
 function inScope(site: string, record: { siteId: string }) {
   return site === "" || site === record.siteId;
 }
@@ -335,18 +343,20 @@ export function AssetsRegister({
   initial,
   submit,
   fixture,
+  initialAssetId = null,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
   fixture: boolean;
+  initialAssetId?: string | null;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
   const [source, setSource] = useState(initial);
   const [workspace, setWorkspace] = useState(initial);
   const [tab, setTab] = useState<RegisterTab>("register");
-  const [filters, setFilters] = useState(() => defaultFilters(initial.sites[0]?.id ?? ""));
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filters, setFilters] = useState(() => initialFilters(initial, initialAssetId));
+  const [selectedId, setSelectedId] = useState(initialAssetId);
   const [editor, setEditor] = useState<AssetEditor | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<AssetError | "transport" | null>(null);
