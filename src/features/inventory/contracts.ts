@@ -53,6 +53,7 @@ export type InventoryItem = {
   canSell?: boolean;
   canReceive?: boolean;
   canUseAsComponent?: boolean;
+  available?: number;
 };
 
 export type InventoryProject = {

@@ -43,7 +43,7 @@ export async function postInventoryMovement(
   tx: Db,
   item: StockRow,
   { actorId, requestId, orderId, kind, onHandDelta, reservedDelta }: InventoryMovement,
-): Promise<void> {
+): Promise<string> {
   const onHand = item.onHand + onHandDelta;
   const reserved = item.reserved + reservedDelta;
   if (
@@ -72,15 +72,20 @@ export async function postInventoryMovement(
   if (updated === undefined)
     throw new InventoryStockError("The stock balance changed. Refresh and try again.");
 
-  await tx.insert(inventoryMovements).values({
-    itemId: item.id,
-    actorId,
-    requestId,
-    orderId: orderId ?? null,
-    kind,
-    onHandDelta,
-    reservedDelta,
-  });
+  const [movement] = await tx
+    .insert(inventoryMovements)
+    .values({
+      itemId: item.id,
+      actorId,
+      requestId,
+      orderId: orderId ?? null,
+      kind,
+      onHandDelta,
+      reservedDelta,
+    })
+    .returning({ id: inventoryMovements.id });
+  if (movement === undefined) throw new InventoryStockError("The stock movement was not recorded.");
   item.onHand = onHand;
   item.reserved = reserved;
+  return movement.id;
 }

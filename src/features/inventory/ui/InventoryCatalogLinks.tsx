@@ -1,21 +1,24 @@
 "use client";
 
-import { LibraryBig } from "lucide-react";
+import { LibraryBig, Warehouse } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
 import { catalogMessages } from "../catalog/ui/catalogMessages";
+import { warehouseMessages } from "../warehouse/ui/warehouseMessages";
+
+const linkStyle =
+  "inline-flex items-center gap-2 border-b-2 border-transparent px-2 py-2 text-sm font-medium text-muted-foreground hover:text-foreground";
 
 export function InventoryCatalogLinks() {
   const locale = useLocale();
   return (
     <>
-      <Link
-        href="/inventory/catalog"
-        prefetch={false}
-        className="inline-flex items-center gap-2 border-b-2 border-transparent px-2 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-      >
+      <Link href="/inventory/catalog" prefetch={false} className={linkStyle}>
         <LibraryBig aria-hidden="true" className="size-4" /> {catalogMessages[locale].title}
+      </Link>
+      <Link href="/inventory/warehouse" prefetch={false} className={linkStyle}>
+        <Warehouse aria-hidden="true" className="size-4" /> {warehouseMessages[locale].title}
       </Link>
       <LocationDirectoryLink />
     </>

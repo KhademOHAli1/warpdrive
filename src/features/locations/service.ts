@@ -5,6 +5,7 @@ import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { hasWarehouseStock } from "@/features/inventory/warehouse/snapshot";
 import {
   type LocationsCommand,
   type LocationsError,
@@ -32,7 +33,7 @@ class DirectorySessionExpired extends Error {}
 
 // Lock order is native authority, then the directory. Readers share the directory lock to
 // return one view of grants and locations. Writers serialize hierarchy and grant edges.
-async function lockDirectory(tx: Db, mode: "read" | "write", signal: AbortSignal) {
+export async function lockDirectory(tx: Db, mode: "read" | "write", signal: AbortSignal) {
   await tx.execute(
     mode === "read"
       ? sql`SELECT pg_advisory_xact_lock_shared(hashtext('warpdrive-locations'), hashtext('directory-v1'))`
@@ -199,6 +200,14 @@ async function applyDirectoryChange(
   if (!result.ok) return result;
   const { siteId, locationId, directory } = result;
   if (directory === workspace.directory) return { siteId, locationId };
+
+  if (
+    (command.type === "setSiteArchived" || command.type === "setLocationArchived") &&
+    command.archived &&
+    (await hasWarehouseStock(tx, siteId, locationId))
+  ) {
+    return fail("warehouseStock");
+  }
 
   if (locationId === null) {
     const site = directory.sites.find(({ id }) => id === siteId);

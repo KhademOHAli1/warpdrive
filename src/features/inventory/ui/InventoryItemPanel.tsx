@@ -260,7 +260,7 @@ export function InventorySelectedItem({
         {[
           [t.onHand, item.onHand],
           [t.reserved, item.reserved],
-          [t.available, item.onHand - item.reserved],
+          [t.available, item.available ?? item.onHand - item.reserved],
         ].map(([label, value]) => (
           <div key={label}>
             <dt className="text-xs text-muted-foreground">{label}</dt>

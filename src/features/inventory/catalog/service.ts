@@ -3,7 +3,9 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { lockDirectory } from "@/features/locations/service";
 import { currentInventoryActor } from "../access";
+import { readOrderWarehouseSites } from "../warehouse/legacyScope";
 import { applyCatalogCommand, CatalogCommandFailure, failCatalog } from "./changes";
 import {
   type CatalogCommand,
@@ -25,7 +27,10 @@ export function readCatalogWorkspace(
     await lockInventoryCatalog(tx, signal);
     const actor = await currentInventoryActor(tx, who, signal);
     if (actor === null) return { ok: false, error: "unavailable" };
-    const value = await projectCatalogWorkspace(tx, query, actor.type === "admin");
+    const canManage = actor.type === "admin";
+    if (!canManage) await lockDirectory(tx, "read", signal);
+    const siteIds = await readOrderWarehouseSites(tx, actor);
+    const value = await projectCatalogWorkspace(tx, query, canManage, siteIds);
     if ((await currentInventoryActor(tx, who, signal)) === null) {
       return { ok: false, error: "unavailable" };
     }

@@ -244,7 +244,7 @@ export function InventoryClient({
                           {quantity(item.reserved)}
                         </td>
                         <td className="px-4 py-2 text-end font-semibold tabular-nums">
-                          {quantity(item.onHand - item.reserved)}
+                          {quantity(item.available ?? item.onHand - item.reserved)}
                         </td>
                       </tr>
                     ))}

@@ -216,7 +216,9 @@ function InventoryOrderCard({
               {order.materials.map(({ itemId, quantity: count }) => {
                 const component = workspace.items.find(({ id }) => id === itemId);
                 const remaining =
-                  component === undefined ? 0 : component.onHand - component.reserved;
+                  component === undefined
+                    ? 0
+                    : (component.available ?? component.onHand - component.reserved);
                 const short = order.status === "awaiting_materials" && remaining < count;
                 return (
                   <li

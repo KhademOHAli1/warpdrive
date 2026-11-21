@@ -59,6 +59,7 @@ import * as actions56 from "@/features/integrations/actions.backend";
 import { executeInventoryAction } from "@/features/inventory/actions.backend";
 import { executeCatalogAction } from "@/features/inventory/catalog/actions.backend";
 import { executeManufacturingReleaseAction } from "@/features/inventory/releases/actions.backend";
+import { executeWarehouseAction } from "@/features/inventory/warehouse/actions.backend";
 import * as actions57 from "@/features/labels/actions.backend";
 import * as actions58 from "@/features/leads/leadServerActions.backend";
 import { executeLocationsAction } from "@/features/locations/actions.backend";
@@ -129,6 +130,7 @@ export const commandHandlers = {
   "features/inventory/catalog/actions.executeCatalogAction": executeCatalogAction,
   "features/inventory/releases.executeManufacturingReleaseAction":
     executeManufacturingReleaseAction,
+  "features/inventory/warehouse/actions.executeWarehouseAction": executeWarehouseAction,
   "features/locations/actions.executeLocationsAction": executeLocationsAction,
   "features/projects/actions.createProjectAction": projectActions.createProjectAction,
   "features/projects/actions.createProjectItemAction": projectActions.createProjectItemAction,

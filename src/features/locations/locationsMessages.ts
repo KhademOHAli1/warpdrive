@@ -40,6 +40,7 @@ const en = {
   invalidParent: "Choose an active parent in the same site.",
   circularParent: "A location cannot be moved under itself or a descendant.",
   activeChildren: "Archive the active locations below this record first.",
+  warehouseStock: "Resolve stock and open inbound quantities before archiving.",
   noSharedSites: "No sites have been shared with you.",
   refreshDirectory: "Refresh directory",
   unavailable: "The directory or this record is unavailable. Refresh to check your access.",
@@ -106,6 +107,7 @@ const de = {
   circularParent:
     "Ein Lagerort kann sich selbst oder einem untergeordneten Lagerort nicht zugeordnet werden.",
   activeChildren: "Archivieren Sie zuerst die aktiven Lagerorte unter diesem Eintrag.",
+  warehouseStock: "Bereinigen Sie vor der Archivierung Bestände und offene Zugänge.",
   noSharedSites: "Es wurden keine Standorte für Sie freigegeben.",
   refreshDirectory: "Verzeichnis aktualisieren",
   unavailable:
@@ -173,6 +175,7 @@ const fa = {
   invalidParent: "یک محل بالادست فعال در همان مرکز انتخاب کنید.",
   circularParent: "نمی‌توانید محل را زیرمجموعه خودش یا یکی از محل‌های زیرمجموعه‌اش کنید.",
   activeChildren: "ابتدا محل‌های فعال زیرمجموعه این مورد را بایگانی کنید.",
+  warehouseStock: "پیش از بایگانی، موجودی و مقادیر ورودی باز را تعیین تکلیف کنید.",
   noSharedSites: "هیچ مرکزی با شما به اشتراک گذاشته نشده است.",
   refreshDirectory: "تازه‌سازی فهرست",
   unavailable: "فهرست یا این مورد در دسترس نیست. برای بررسی دسترسی خود آن را تازه‌سازی کنید.",

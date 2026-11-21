@@ -72,6 +72,7 @@ export type LocationsError =
   | "unavailable"
   | "requestConflict"
   | "invalidCommand"
+  | "warehouseStock"
   | "invalidGrant";
 
 export type LocationsResult =

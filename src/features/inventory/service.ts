@@ -3,6 +3,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { lockDirectory } from "@/features/locations/service";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { currentInventoryActor, lockInventoryOrderDeal, readInventoryDeal } from "./access";
 import { canHoldInventory } from "./catalog/eligibility";
@@ -28,6 +29,12 @@ import {
   inventoryTemplates,
 } from "./schema";
 import { InventoryStockError, lockInventoryStock, postInventoryMovement } from "./stock";
+import {
+  applyStockReservation,
+  planStockReservation,
+  settleStockReservation,
+} from "./warehouse/balances";
+import { readOrderWarehouseSites } from "./warehouse/legacyScope";
 
 type Item = typeof inventoryItems.$inferSelect;
 type Order = typeof inventoryOrders.$inferSelect;
@@ -122,8 +129,12 @@ async function changeCatalog(
   const { requestId, itemId } = command;
   const item = stockItem(await lockInventoryStock(tx, [itemId]), itemId);
   if (command.type === "receive") {
-    if (!canHoldInventory(await catalogItemPolicy(tx, itemId))) {
+    const policy = await catalogItemPolicy(tx, itemId);
+    if (!canHoldInventory(policy)) {
       fail("Stock can only be received for an active, stocked part revision.");
+    }
+    if (policy?.flags.trackable === true) {
+      fail("Receive this revision in Warehouse stock to record the serial number.");
     }
     return postInventoryMovement(tx, item, {
       actorId: actor.id,
@@ -176,7 +187,9 @@ async function placeOrder(tx: Db, actor: HydratedActor, command: Place, signal: 
   ) {
     fail("Select a sellable finished product.");
   }
-  const reserved = Math.min(quantity, item.onHand - item.reserved);
+  const warehouseSites = await readOrderWarehouseSites(tx, actor);
+  const allocation = await planStockReservation(tx, item, quantity, warehouseSites);
+  const reserved = allocation.quantity;
   const buildQuantity = quantity - reserved;
   const orderId = randomUUID();
   const order = {
@@ -226,13 +239,44 @@ async function placeOrder(tx: Db, actor: HydratedActor, command: Place, signal: 
       .values(tasks.map((itemId, position) => ({ orderId, projectId, itemId, position })));
   }
   if (reserved > 0) {
-    await postInventoryMovement(tx, item, {
+    const movement = {
       actorId,
       orderId,
       requestId,
       kind: "order-reserve",
       onHandDelta: 0,
       reservedDelta: reserved,
+    } as const;
+    const movementId = await postInventoryMovement(tx, item, movement);
+    await applyStockReservation(tx, item.id, allocation, { ...movement, movementId });
+  }
+}
+
+async function postOrderStock(tx: Db, item: Item, movement: Move & { orderId: string }) {
+  if (movement.kind === "materials-reserve") {
+    const allocation = await planStockReservation(tx, item, movement.reservedDelta, null);
+    if (allocation.quantity !== movement.reservedDelta) {
+      fail("There is insufficient available stock to reserve all materials.");
+    }
+    const movementId = await postInventoryMovement(tx, item, movement);
+    await applyStockReservation(tx, item.id, allocation, {
+      ...movement,
+      kind: movement.kind,
+      movementId,
+    });
+    return;
+  }
+  const prior = { id: item.id, onHand: item.onHand, reserved: item.reserved };
+  const movementId = await postInventoryMovement(tx, item, movement);
+  if (
+    movement.kind === "shipment" ||
+    movement.kind === "build-consume" ||
+    movement.kind === "cancel-release"
+  ) {
+    await settleStockReservation(tx, prior, -movement.reservedDelta, {
+      ...movement,
+      kind: movement.kind,
+      movementId,
     });
   }
 }
@@ -278,7 +322,7 @@ async function changeOrder(
   ]);
   const finished = stockItem(stock, order.itemId);
   const post = (item: Item, movement: Movement) =>
-    postInventoryMovement(tx, item, { actorId: actor.id, requestId, orderId, ...movement });
+    postOrderStock(tx, item, { actorId: actor.id, requestId, orderId, ...movement });
   const postMaterials = async (
     kind: Move["kind"],
     onHandFactor: number,
@@ -297,14 +341,6 @@ async function changeOrder(
   let reserved = order.reserved;
   switch (type) {
     case "reserveMaterials":
-      if (
-        materials.some(({ componentId, quantity }) => {
-          const row = stockItem(stock, componentId);
-          return row.onHand - row.reserved < quantity;
-        })
-      ) {
-        fail("There is insufficient available stock to reserve all materials.");
-      }
       await postMaterials("materials-reserve", 0, 1);
       status = "in_production";
       break;
@@ -364,6 +400,7 @@ export async function runInventoryCommand(
       const actor = await currentInventoryActor(tx, who, signal);
       if (actor === null) fail(inventoryUnavailable);
       await lockInventoryCatalog(tx, signal, command.type === "createItem" ? "write" : "read");
+      await lockDirectory(tx, "read", signal);
       if (dealContext !== null && !(await readInventoryDeal(tx, actor, dealContext))) {
         fail("The deal is unavailable.");
       }

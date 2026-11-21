@@ -376,7 +376,7 @@ export const frontendRouter = router({
       getPreferencesForActor(ctx.db, ctx.actor.id),
       readBaseCurrency(ctx.db, signal),
       listAssignableUsers(ctx.db, signal),
-      listOrgOptions(ctx.db, { ...ctx.actor, primaryVisibilityGroupId: null }, signal),
+      listOrgOptions(ctx.db, ctx.actor, signal),
       workspace.person === null
         ? listPersonMatchCandidates(
             ctx.db,

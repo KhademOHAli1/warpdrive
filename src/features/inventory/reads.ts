@@ -7,6 +7,7 @@ import {
 } from "@/features/agency-projects/schema/agencyProjects";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { lockDirectory } from "@/features/locations/service";
 import {
   type InternalProjectAccess,
   listInternalProjectScope,
@@ -36,6 +37,9 @@ import {
   inventoryOrders,
   inventoryTemplates,
 } from "./schema";
+import { summarizeStockAvailability } from "./warehouse/balances";
+import { readOrderWarehouseSites } from "./warehouse/legacyScope";
+import { readStockSnapshot } from "./warehouse/snapshot";
 
 async function readOrders(tx: Db, actor: HydratedActor, dealId: string | null) {
   const visibleDeals = tx
@@ -151,6 +155,11 @@ async function readCatalog(tx: Db, projects: InventoryProject[], actor: Hydrated
   const items = (await tx.select().from(inventoryItems).orderBy(asc(inventoryItems.sku))).filter(
     ({ id }) => actor.type === "admin" || policies.get(id)?.visibility !== "admin",
   );
+  const warehouseSites = await readOrderWarehouseSites(tx, actor);
+  const snapshot = await readStockSnapshot(
+    tx,
+    items.map(({ id }) => id),
+  );
   const visibleIds = new Set(items.map(({ id }) => id));
   const bom = await tx
     .select({
@@ -186,13 +195,21 @@ async function readCatalog(tx: Db, projects: InventoryProject[], actor: Hydrated
   }
   return items.map((item) => {
     const policy = policies.get(item.id) ?? null;
-    const canReceive = canHoldInventory(policy);
+    const stockable = canHoldInventory(policy);
+    const balance = summarizeStockAvailability(
+      snapshot.balances.get(item.id) ?? item,
+      snapshot.positions.get(item.id) ?? [],
+      warehouseSites,
+    );
     return {
       ...item,
+      onHand: balance.onHand,
+      reserved: balance.reserved,
+      available: stockable ? balance.available : 0,
       partCode: policy?.code ?? item.sku,
-      canReceive,
-      canSell: canReceive && policy?.flags.salable === true,
-      canUseAsComponent: canReceive && policy?.flags.component === true,
+      canReceive: stockable && policy?.flags.trackable !== true,
+      canSell: stockable && policy?.flags.salable === true,
+      canUseAsComponent: stockable && policy?.flags.component === true,
       bom: bomByItem.get(item.id) ?? [],
       template: templates.get(item.id) ?? null,
       releaseAccess: actor.type === "admin" || releaseItems.has(item.id),
@@ -265,6 +282,7 @@ export async function readInventoryWorkspace(
     const actor = await currentInventoryActor(tx, who, signal);
     if (actor === null) return { ok: false, error: inventoryUnavailable };
     await lockInventoryCatalog(tx, signal, "read");
+    await lockDirectory(tx, "read", signal);
     if (dealId !== null && !(await readInventoryDeal(tx, actor, dealId))) {
       return { ok: false, error: "The deal is unavailable." };
     }

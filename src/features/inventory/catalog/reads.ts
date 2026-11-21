@@ -1,6 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { inventoryBomLines, inventoryItems } from "../schema";
+import { summarizeStockAvailability } from "../warehouse/balances";
+import { readStockSnapshot } from "../warehouse/snapshot";
 import {
   blankCatalogProfile,
   type CatalogPart,
@@ -110,6 +112,7 @@ export async function projectCatalogWorkspace(
   tx: Db,
   query: CatalogQuery,
   canManage: boolean,
+  siteIds: string[] | null = null,
 ): Promise<CatalogWorkspace> {
   const records = await readCatalogRecords(tx);
   const categories = new Map(records.categories.map((entry) => [entry.id, entry]));
@@ -117,6 +120,7 @@ export async function projectCatalogWorkspace(
     ({ profile }) => canManage || profile.visibility === "staff",
   );
   const visibleIds = new Set(visibleParts.map(({ id }) => id));
+  const stock = siteIds === null ? null : await readStockSnapshot(tx, [...visibleIds]);
   const uses = new Map<string, string[]>();
   for (const line of await tx
     .select()
@@ -137,8 +141,18 @@ export async function projectCatalogWorkspace(
     if (!matchesQuery(part, search)) continue;
     const parameters = effectiveCatalogParameters(path);
     const values = normalizeCatalogParameters(profile.values, parameters) ?? profile.values;
+    const balance =
+      stock === null
+        ? part
+        : summarizeStockAvailability(
+            stock.balances.get(part.id) ?? part,
+            stock.positions.get(part.id) ?? [],
+            siteIds,
+          );
     parts.push({
       ...part,
+      onHand: balance.onHand,
+      reserved: balance.reserved,
       profile: { ...profile, values },
       parameters,
       whereUsedByIds: uses.get(part.id) ?? [],
