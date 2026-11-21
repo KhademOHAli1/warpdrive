@@ -129,8 +129,10 @@ export function ProjectWorkItemForm({
             onChange={(event) => set("title", event.target.value)}
           />
         </label>
-        <label htmlFor={`${fields}-description`} className="grid gap-1.5 text-sm">
-          <span className="font-medium">{labels("workspace.description")}</span>
+        <div className="grid gap-1.5 text-sm">
+          <label htmlFor={`${fields}-description`} className="font-medium">
+            {labels("workspace.description")}
+          </label>
           <Textarea
             id={`${fields}-description`}
             dir="auto"
@@ -139,7 +141,7 @@ export function ProjectWorkItemForm({
             rows={4}
             onChange={(event) => set("description", event.target.value)}
           />
-        </label>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={labels("workspace.statusColumn")}>
             <Select
