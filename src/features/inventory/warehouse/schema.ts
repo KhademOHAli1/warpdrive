@@ -58,7 +58,10 @@ export type WarehouseStockEventKind =
   | "production-dispatch"
   | "production-return"
   | "production-accept"
-  | "quality-release";
+  | "quality-release"
+  | "sales-reserve"
+  | "sales-release"
+  | "sales-shipment";
 
 export type WarehouseTransferStatus = "draft" | "in_transit" | "received" | "cancelled";
 
@@ -286,7 +289,8 @@ export const inventoryStockEvents = pgTable(
         'transfer-draft', 'transfer-dispatch', 'transfer-receive', 'transfer-cancel', 'correction', 'correction-reversal',
         'stock-split', 'stock-merge', 'component-install', 'component-remove', 'stock-disassemble',
         'production-reserve', 'production-release', 'production-consume', 'production-output',
-        'production-reversal', 'production-dispatch', 'production-return', 'production-accept', 'quality-release')`,
+        'production-reversal', 'production-dispatch', 'production-return', 'production-accept', 'quality-release',
+        'sales-reserve', 'sales-release', 'sales-shipment')`,
     ),
     check(
       "inventory_stock_event_previous_state_check",

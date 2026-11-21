@@ -92,30 +92,40 @@ it("renders the six deal-actions items in Pipedrive order", async () => {
   ]);
 });
 
-it("links to Inventory with the current deal ID when the module is available to a deal reader", async () => {
-  const user = userEvent.setup();
-  const dealId = "4d73164a-881e-4602-8fde-cdeb19aa0ebc";
-  render(
-    <WorkspaceShellProvider
-      brand={{
-        displayName: "Warpdrive",
-        iconUrl: null,
-        accentColor: null,
-        foregroundColor: "#fff",
-      }}
-      modules={[]}
-      canViewWork={false}
-      canViewInventory
-    >
-      <DealActionsMenu {...props} dealId={dealId} canDelete={false} />
-    </WorkspaceShellProvider>,
-  );
-  await user.click(screen.getByRole("button", { name: "Deal actions" }));
-  expect(screen.getByRole("menuitem", { name: "Open Inventory" }).getAttribute("href")).toBe(
-    `/inventory?dealId=${dealId}`,
-  );
-  expect(screen.queryByRole("menuitem", { name: "Delete deal" })).toBeNull();
-});
+it.each([false, true])(
+  "keeps the deal inventory links with live sales available: %s",
+  async (canViewSalesOrders) => {
+    const user = userEvent.setup();
+    const dealId = "4d73164a-881e-4602-8fde-cdeb19aa0ebc";
+    render(
+      <WorkspaceShellProvider
+        brand={{
+          displayName: "Warpdrive",
+          iconUrl: null,
+          accentColor: null,
+          foregroundColor: "#fff",
+        }}
+        modules={[]}
+        canViewWork={false}
+        canViewInventory
+        canViewSalesOrders={canViewSalesOrders}
+      >
+        <DealActionsMenu {...props} dealId={dealId} canDelete={false} />
+      </WorkspaceShellProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Deal actions" }));
+    expect(screen.getByRole("menuitem", { name: "Open Inventory" }).getAttribute("href")).toBe(
+      `/inventory?dealId=${dealId}`,
+    );
+    const salesOrders = screen.queryByRole("menuitem", { name: "Open sales orders" });
+    if (canViewSalesOrders) {
+      expect(salesOrders?.getAttribute("href")).toBe(`/inventory/sales-orders?dealId=${dealId}`);
+    } else {
+      expect(salesOrders).toBeNull();
+    }
+    expect(screen.queryByRole("menuitem", { name: "Delete deal" })).toBeNull();
+  },
+);
 
 it("Copy link writes the deal URL to the clipboard", async () => {
   const user = userEvent.setup();

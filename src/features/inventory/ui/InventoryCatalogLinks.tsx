@@ -6,10 +6,12 @@ import {
   Factory,
   LibraryBig,
   ListTree,
+  ShoppingCart,
   Truck,
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
+import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
 import { trpc } from "@/lib/trpc-client";
@@ -18,6 +20,7 @@ import { catalogMessages } from "../catalog/ui/catalogMessages";
 import { productionMessages } from "../production/ui/messages";
 import { purchaseMessages } from "../purchasing/ui/messages";
 import { inspectionMessages } from "../quality/ui/inspectionMessages";
+import { salesMessages } from "../sales/ui/messages";
 import { sourcingMessages } from "../sourcing/ui/messages";
 import { warehouseMessages } from "../warehouse/ui/warehouseMessages";
 
@@ -75,6 +78,7 @@ function QualityInspectionsLink() {
 
 export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }) {
   const locale = useLocale();
+  const { canViewSalesOrders } = useWorkspaceShell();
   return (
     <>
       <Link href="/inventory/catalog" prefetch={false} className={linkStyle}>
@@ -92,6 +96,11 @@ export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }
             <Factory aria-hidden="true" className="size-4" /> {productionMessages[locale].title}
           </Link>
           <QualityInspectionsLink />
+          {canViewSalesOrders && (
+            <Link href="/inventory/sales-orders" prefetch={false} className={linkStyle}>
+              <ShoppingCart aria-hidden="true" className="size-4" /> {salesMessages[locale].title}
+            </Link>
+          )}
           <SourcingCatalogLink />
           <PurchaseOrdersLink />
         </>

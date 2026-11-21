@@ -54,6 +54,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   const { shell } = await getBootstrap();
   if (shell === null) redirect("/login");
   const { prefs, baseCurrency, brand, navigation, projects } = shell;
+  const inventoryFixtures = inventoryFixturesEnabled();
   return (
     <NativeActorProvider key={ctx.actor.id} actorId={ctx.actor.id}>
       <WorkspaceShellProvider
@@ -63,7 +64,10 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         canViewProjects={projects !== null && (projects.enabled || projects.canEnable)}
         canViewCampaigns={hasNewsletterPermission(ctx.actor, "view") && shell.newsletterConfigured}
         canViewInventory={
-          ctx.actor.isActive && (inventoryFixturesEnabled() || shell.inventoryAvailable === true)
+          ctx.actor.isActive && (inventoryFixtures || shell.inventoryAvailable === true)
+        }
+        canViewSalesOrders={
+          ctx.actor.isActive && !inventoryFixtures && shell.inventoryAvailable === true
         }
         campaignCapabilities={{
           edit: hasNewsletterPermission(ctx.actor, "edit"),

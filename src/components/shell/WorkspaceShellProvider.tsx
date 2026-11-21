@@ -22,6 +22,7 @@ type WorkspaceShell = {
   canViewProjects: boolean;
   canViewCampaigns: boolean;
   canViewInventory: boolean;
+  canViewSalesOrders: boolean;
   campaignCapabilities: CampaignCapabilities;
 };
 const defaults: WorkspaceShell = {
@@ -31,6 +32,7 @@ const defaults: WorkspaceShell = {
   canViewProjects: false,
   canViewCampaigns: false,
   canViewInventory: false,
+  canViewSalesOrders: false,
   campaignCapabilities: noCampaignCapabilities,
 };
 const Context = createContext(defaults);
@@ -41,6 +43,7 @@ export function WorkspaceShellProvider({
   canViewProjects = false,
   canViewCampaigns = false,
   canViewInventory = false,
+  canViewSalesOrders = false,
   campaignCapabilities = noCampaignCapabilities,
   children,
 }: {
@@ -50,6 +53,7 @@ export function WorkspaceShellProvider({
   canViewProjects?: boolean;
   canViewCampaigns?: boolean;
   canViewInventory?: boolean;
+  canViewSalesOrders?: boolean;
   campaignCapabilities?: CampaignCapabilities;
   children: ReactNode;
 }) {
@@ -62,6 +66,7 @@ export function WorkspaceShellProvider({
         canViewProjects,
         canViewCampaigns,
         canViewInventory,
+        canViewSalesOrders,
         campaignCapabilities,
       }}
     >

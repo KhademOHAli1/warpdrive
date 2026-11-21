@@ -394,6 +394,17 @@ export const movementKindMessages = {
     "Seriennummer nach Qualitätsprüfung freigegeben",
     "شماره سریال در بازرسی کیفیت قبول شد",
   ],
+  "sales-reserve": [
+    "Sales stock reserved",
+    "Bestand für Kundenauftrag reserviert",
+    "موجودی سفارش فروش رزرو شد",
+  ],
+  "sales-release": [
+    "Sales reservation released",
+    "Verkaufsreservierung aufgehoben",
+    "رزرو سفارش فروش آزاد شد",
+  ],
+  "sales-shipment": ["Sales shipment posted", "Kundenlieferung gebucht", "ارسال سفارش فروش ثبت شد"],
   "production-reversal": [
     "Production posting reversed",
     "Fertigungsbuchung storniert",

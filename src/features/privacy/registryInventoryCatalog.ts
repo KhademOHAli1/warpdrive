@@ -11,7 +11,7 @@ export const inventoryCatalogEntry = classifyInventory(
     "derived:src/features/inventory/catalog/ui/CatalogWorkspaceView.tsx",
     "sourceReview:drizzle/0130_inventory_catalog.sql#d136c19a705d2f1e81ff9299f00afddb156ec124db1197f7a86871e5d27790dd",
     "sourceReview:src/app/(app)/inventory/catalog/page.tsx#2cba72a9a244266d24b6653ef94887c454ba754d55addc90d38953c90fe9a77c",
-    "sourceReview:src/features/inventory/catalog/changes.ts#51d0f13db7fd31da070510129a30ddfe406e3745e34dabcc04135aab01bb5258",
+    "sourceReview:src/features/inventory/catalog/changes.ts#56cdb5cab799b2531c3a93b0bc77dda4d567c47bb299100ffedb1c17f8489cb0",
     "sourceReview:src/features/inventory/catalog/parameters.ts#7c773048a3f008de1aa3611ba5539039a7c7007fe3d94cde2a89cd6d424dadf8",
     "sourceReview:src/features/inventory/catalog/policy.ts#40cfa255d93e29fe1039d85ea97d0475ec5cc7de1dcf33ee9d9729b5cebe5c00",
     "sourceReview:src/features/inventory/catalog/reads.ts#e5edb5b6a009c21e4292a6f3e9c121ebd0c56137e458f02c13bd75579ae1589d",

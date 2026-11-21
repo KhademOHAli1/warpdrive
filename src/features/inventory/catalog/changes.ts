@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { hasOpenSalesDemand } from "../sales/lifecycle";
 import { inventoryItems, inventoryOrderMaterials, inventoryOrders } from "../schema";
 import type {
   CatalogCategory,
@@ -93,6 +94,17 @@ async function saveState(
     failCatalog("invalid");
   if (records.states.some((entry) => entry.id !== id && entry.code === fields.code))
     failCatalog("duplicate");
+  if (
+    existing !== null &&
+    !active &&
+    (await hasOpenSalesDemand(tx, {
+      itemIds: records.parts
+        .filter(({ profile }) => profile.stateId === existing)
+        .map(({ id }) => id),
+    }))
+  ) {
+    failCatalog("conflict");
+  }
   if (existing === null) await tx.insert(inventoryPartStates).values({ id, ...fields });
   else await tx.update(inventoryPartStates).set(fields).where(eq(inventoryPartStates.id, id));
   return id;
@@ -121,6 +133,11 @@ async function setPartState(
   if (command.stateId !== null && !records.states.some(({ id }) => id === command.stateId))
     failCatalog("invalid");
   if (part.profile.stateId === command.stateId) return part.id;
+  if (
+    records.states.find(({ id }) => id === command.stateId)?.active === false &&
+    (await hasOpenSalesDemand(tx, { itemIds: [part.id] }))
+  )
+    failCatalog("conflict");
   await ensureLegacyPart(tx, records, part);
   await tx
     .update(inventoryPartProfiles)
@@ -286,6 +303,18 @@ async function savePart(tx: Db, records: Records, command: SavePart) {
   validatePartLinks(records, id, familyId, command.profile);
   const profile = normalizeProfile(records, command.profile);
   await validateNonStockTransition(tx, current, profile);
+  if (
+    current !== null &&
+    (profile.stockMode === "virtual" ||
+      profile.isTemplate ||
+      !profile.flags.salable ||
+      profile.unit !== current.profile.unit ||
+      profile.flags.trackable !== current.profile.flags.trackable ||
+      profile.visibility !== current.profile.visibility ||
+      records.states.find(({ id }) => id === profile.stateId)?.active === false) &&
+    (await hasOpenSalesDemand(tx, { itemIds: [id] }))
+  )
+    failCatalog("conflict");
 
   if (current === null) await insertRevision(tx, records, identity, command, profile);
   else {

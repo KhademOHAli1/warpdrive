@@ -1,0 +1,15 @@
+.printDocument {
+  display: none;
+}
+
+@media print {
+  :global(body):has(> .printDocument) > :not(.printDocument) {
+    display: none;
+  }
+
+  .printDocument {
+    display: block;
+    color: #111;
+    background: #fff;
+  }
+}

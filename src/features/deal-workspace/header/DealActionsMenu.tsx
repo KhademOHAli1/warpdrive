@@ -45,7 +45,7 @@ export function DealActionsMenu({
   canDelete,
 }: DealActionsMenuProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
-  const { canViewInventory } = useWorkspaceShell();
+  const { canViewInventory, canViewSalesOrders } = useWorkspaceShell();
 
   const router = useRouter();
   const reportError = useDealActionError();
@@ -104,6 +104,16 @@ export function DealActionsMenu({
           <DropdownMenuItem asChild>
             <Link href={`/inventory?dealId=${encodeURIComponent(dealId)}`} prefetch={false}>
               {translateSales("open_inventory")}
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {canViewSalesOrders && (
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/inventory/sales-orders?dealId=${encodeURIComponent(dealId)}`}
+              prefetch={false}
+            >
+              {translateSales("open_sales_orders")}
             </Link>
           </DropdownMenuItem>
         )}
