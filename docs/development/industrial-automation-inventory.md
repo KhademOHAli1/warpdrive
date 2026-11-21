@@ -2,7 +2,7 @@
 
 ## Summary
 
-Warpdrive will give Sales, Engineering, Production and Warehouse one path from customer inquiry to shipment. The first release lets Sales check actual availability on a CRM deal and place a single-item order. A shortage creates assigned work in Projects and can be resolved with component stock, a completed build and a recorded shipment.
+Warpdrive will deliver full functional coverage of InvenTree and Shelf, with the two capability sets integrated into one workspace for industrial automation and instrumentation. The first release lets Sales check actual availability on a CRM deal, place a single-item order and resolve a shortage through assigned Projects work, a completed build and a recorded shipment. The [parity register](inventory-shelf-inventree-parity.md) defines reference baselines, current evidence, and acceptance for the full programme.
 
 ## Owners and outcomes
 
@@ -48,7 +48,8 @@ Inventory owns reservation, physical quantity and append-only movement effects i
 
 | Phase | Scope and acceptance |
 | --- | --- |
-| **MVP** | Search a warehouse catalogue by SKU/name, view quantities and a single-level BOM, open Inventory from a real deal, and confirm one item/quantity. Reserve existing stock and create a shortage build using a versioned template with named project members. Record receipts, complete assigned work, post build consumption/output and ship once. Test in-stock and shortage orders, stale/concurrent writes, failed permissions, retry safety, application restart and populated PostgreSQL upgrade. Demonstrate a clearly marked Web fixture checkpoint before implementing Core. |
+| **MVP delivered locally** | Search a warehouse catalogue by SKU/name, view quantities and a single-level BOM, open Inventory from a real deal, and confirm one item/quantity. Reserve existing stock and create a shortage build using a template with named project members. Record receipts, complete assigned work, post build consumption/output and ship once. Local qualification covered both order paths, concurrent writes, permissions, retries, a populated PostgreSQL upgrade and a Web-only restart. The Web fixture was demonstrated before Core integration. |
+| **Manufacturing releases** | Add a product Releases tab. Engineering stores a Gerber/drill ZIP, structured manufacturing BOM, placement files, enclosure drawings/models, firmware, labels and test instructions. Approval freezes a manifest with checksums. A shortage build pins the release and BOM, and native Projects work links to the approved package. Qualify Rev A and Rev B builds side by side with authorized downloads. Demonstrate fixtures in Web before adding Core and storage behavior. |
 | **Warehouse and purchasing** | Multi-site/bin stock, decimal units and conversions, lots and serials, purchase planning/receipts, quarantine, transfers, pick/pack, reservations across shipment lines, counts/adjustments, labels and scanner ergonomics. Reconcile a PO-to-count and shipment-to-return trial. |
 | **Engineering and quality** | Engineering and manufacturing BOM revisions, managed multi-file release bundles, ECO, approved substitutions, test plans, calibration, production genealogy, serialized recall, nonconformance and corrective action. Trace a shipment back to components and signed test results. |
 | **Assets and shop floor** | Shelf-class equipment register, custody, kits, timed bookings, audits and maintenance. Add planning at capacity, work center routes, external processing, WIP, rework and manufacturing execution integrations. Evaluate shop-floor gateways independently of sales permissions. |
