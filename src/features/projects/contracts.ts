@@ -102,6 +102,7 @@ export type ProjectItem = ProjectItemContent &
     archivedAt: string | null;
     createdBy: string | null;
     revision: number;
+    productionReleaseOrderId?: string;
   };
 
 export type ProjectSettings = {

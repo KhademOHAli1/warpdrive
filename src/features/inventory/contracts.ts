@@ -48,6 +48,7 @@ export type InventoryItem = {
   reserved: number;
   bom: InventoryBomLine[];
   template: InventoryTemplate | null;
+  releaseAccess?: boolean;
 };
 
 export type InventoryProject = {
@@ -67,6 +68,7 @@ export type InventoryOrder = {
   projectId: string | null;
   tasks: { id: string; title: string; done: boolean }[];
   materials: InventoryBomLine[];
+  release?: { revision: string } | null;
 };
 export type InventoryWorkspace = {
   items: InventoryItem[];

@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   foreignKey,
   index,
@@ -38,10 +39,15 @@ export const inventoryItems = pgTable(
     kind: text("kind").$type<InventoryItem["kind"]>().notNull(),
     onHand: integer("on_hand").notNull().default(0),
     reserved: integer("reserved").notNull().default(0),
+    releaseRequired: boolean("release_required").notNull().default(false),
   },
   (table) => [
     unique("inventory_items_sku_key").on(table.sku),
     check("inventory_items_kind_check", sql`${table.kind} IN ('component', 'product')`),
+    check(
+      "inventory_items_release_required_check",
+      sql`NOT ${table.releaseRequired} OR ${table.kind} = 'product'`,
+    ),
     check("inventory_items_sku_check", sql`${table.sku} ~ '^[A-Z0-9][A-Z0-9_.-]{0,39}$'`),
     check("inventory_items_name_check", sql`length(btrim(${table.name})) BETWEEN 1 AND 120`),
     check("inventory_items_revision_check", sql`length(btrim(${table.revision})) BETWEEN 1 AND 20`),
@@ -126,6 +132,7 @@ export const inventoryOrders = pgTable(
       foreignColumns: [internalProjectSettings.projectId],
     }),
     unique("inventory_orders_id_project_key").on(table.id, table.projectId),
+    unique("inventory_orders_id_item_key").on(table.id, table.itemId),
     index("inventory_orders_deal_created_idx").on(table.dealId, table.createdAt),
     index("inventory_orders_item_idx").on(table.itemId),
     index("inventory_orders_project_idx").on(table.projectId),

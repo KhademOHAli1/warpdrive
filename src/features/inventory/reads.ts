@@ -23,6 +23,11 @@ import type {
 import { inventoryUnavailable } from "./errors";
 import { inventoryProjectsEnabled, readInventoryProjectTaskRows } from "./projectBridge";
 import {
+  inventoryBuildReleases,
+  inventoryProductReleases,
+  inventoryReleaseGrants,
+} from "./releases/schema";
+import {
   inventoryBomLines,
   inventoryItems,
   inventoryOrderMaterials,
@@ -48,9 +53,15 @@ async function readOrders(tx: Db, actor: HydratedActor, dealId: string | null) {
       status: inventoryOrders.status,
       revision: inventoryOrders.revision,
       projectId: inventoryOrders.projectId,
+      releaseRevision: inventoryProductReleases.revision,
     })
     .from(inventoryOrders)
     .leftJoin(visibleDeals, eq(visibleDeals.id, inventoryOrders.dealId))
+    .leftJoin(inventoryBuildReleases, eq(inventoryBuildReleases.orderId, inventoryOrders.id))
+    .leftJoin(
+      inventoryProductReleases,
+      eq(inventoryBuildReleases.releaseId, inventoryProductReleases.id),
+    )
     .where(
       and(
         dealId === null ? undefined : eq(inventoryOrders.dealId, dealId),
@@ -125,7 +136,15 @@ async function readProjectChoices(
   return [...byProject.values()];
 }
 
-async function readCatalog(tx: Db, projects: InventoryProject[]) {
+async function readCatalog(tx: Db, projects: InventoryProject[], actor: HydratedActor) {
+  const grants =
+    actor.type === "admin"
+      ? []
+      : await tx
+          .select({ itemId: inventoryReleaseGrants.itemId })
+          .from(inventoryReleaseGrants)
+          .where(eq(inventoryReleaseGrants.userId, actor.id));
+  const releaseItems = new Set(grants.map(({ itemId }) => itemId));
   const items = await tx.select().from(inventoryItems).orderBy(asc(inventoryItems.sku));
   const bom = await tx
     .select({
@@ -162,6 +181,7 @@ async function readCatalog(tx: Db, projects: InventoryProject[]) {
     ...item,
     bom: bomByItem.get(item.id) ?? [],
     template: templates.get(item.id) ?? null,
+    releaseAccess: actor.type === "admin" || releaseItems.has(item.id),
   }));
 }
 
@@ -206,11 +226,17 @@ async function addOrderDetails(
     steps.push({ id: task.id, title: task.title, done: task.category === "completed" });
     tasks.set(task.orderId, steps);
   }
-  return orders.map((order) => ({
+  return orders.map(({ releaseRevision, ...order }) => ({
     ...order,
     projectId: order.projectId !== null && access.has(order.projectId) ? order.projectId : null,
     materials: materials.get(order.id) ?? [],
     tasks: tasks.get(order.id) ?? [],
+    release:
+      releaseRevision !== null &&
+      order.projectId !== null &&
+      access.get(order.projectId)?.guestAccess === null
+        ? { revision: releaseRevision }
+        : null,
   }));
 }
 
@@ -231,7 +257,7 @@ export async function readInventoryWorkspace(
       ? await projectAccessForOrders(tx, actor, orders, signal)
       : { access: new Map<string, InternalProjectAccess>(), configurable: [] };
     const projects = await readProjectChoices(tx, configurable);
-    const items = await readCatalog(tx, projects);
+    const items = await readCatalog(tx, projects, actor);
     const orderDetails = await addOrderDetails(tx, orders, access);
     // A lock or query can outlast the credential used to admit this read.
     if ((await currentInventoryActor(tx, who, signal)) === null) {

@@ -44,6 +44,7 @@ import {
   matchesInitialProjectItemContent,
   validProjectItemDates,
 } from "./input";
+import { isProjectIntegratorPrincipal } from "./integrator/principal";
 import { attachNewItemPlanning, validateNewItemPlanning } from "./planning/assignments";
 import { internalProjectPlanningAssignments } from "./planning/schema";
 import { recordProjectItemEvent } from "./profile/events";
@@ -153,7 +154,9 @@ export function readInternalProject(
 ) {
   return withInternalProjects<ProjectWorkspace>(db, who, signal, async (tx, actor) => {
     const access = await lockInternalProject(tx, actor, projectId, "read", "work-items");
-    return access.ok ? ok(await projectWorkspaceSnapshot(tx, access.value)) : access;
+    return access.ok
+      ? ok(await projectWorkspaceSnapshot(tx, access.value, !isProjectIntegratorPrincipal(who)))
+      : access;
   });
 }
 
@@ -286,7 +289,9 @@ function changeWorkspace(
     if (!access.ok) return access;
     if (!access.value[capability]) return err("project_forbidden");
     const result = await change(tx, access.value, actor);
-    return result.ok ? ok(await projectWorkspaceSnapshot(tx, access.value)) : result;
+    return result.ok
+      ? ok(await projectWorkspaceSnapshot(tx, access.value, !isProjectIntegratorPrincipal(who)))
+      : result;
   });
 }
 

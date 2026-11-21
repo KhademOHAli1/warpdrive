@@ -35,11 +35,13 @@ export function InventoryClient({
   submit,
   ProductReleases,
   openReleases = false,
+  initialItemId,
 }: {
   initial: InventoryWorkspace;
   submit: (command: InventoryCommand) => Promise<InventoryResult>;
   ProductReleases?: InventoryProductReleases;
   openReleases?: boolean;
+  initialItemId?: string;
 }) {
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
@@ -54,7 +56,9 @@ export function InventoryClient({
     setWorkspace(initial);
   }
   const [view, setView] = useState<"items" | "orders">(initial.deal === null ? "items" : "orders");
-  const [selectedId, setSelectedId] = useState<string | null>(initial.items[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => initial.items.find(({ id }) => id === initialItemId)?.id ?? initial.items[0]?.id ?? null,
+  );
   const [search, setSearch] = useState("");
   const [newItem, setNewItem] = useState(false);
   const [pending, setPending] = useState(false);

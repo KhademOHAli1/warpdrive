@@ -13,6 +13,8 @@ import {
 } from "@/features/agency-projects/schema/agencyProjects";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { inventoryBuildReleases } from "@/features/inventory/releases/schema";
+import { inventoryOrderTasks } from "@/features/inventory/schema";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import type { ProjectGuestAccess, ProjectResult, ProjectSummary, ProjectWorkspace } from "./contracts";
@@ -202,6 +204,7 @@ export async function isEligibleProjectMember(
 export async function projectWorkspaceSnapshot(
   db: Db,
   access: InternalProjectAccess,
+  includeProductionReleases = false,
 ): Promise<ProjectWorkspace> {
   const { summary, ownerEligible, canEdit, canAssign, canManageMembers, canManageSettings } =
     access;
@@ -213,6 +216,18 @@ export async function projectWorkspaceSnapshot(
     .where(eq(agencyProjectMembers.projectId, projectId))
     .orderBy(asc(users.name), asc(users.id));
   const items = await readProjectWorkspaceItems(db, projectId, "active", access.workItemCreatorId);
+  const releaseLinks =
+    includeProductionReleases && access.guestAccess === null
+      ? await db
+          .select({ itemId: inventoryOrderTasks.itemId, orderId: inventoryBuildReleases.orderId })
+          .from(inventoryOrderTasks)
+          .innerJoin(
+            inventoryBuildReleases,
+            eq(inventoryBuildReleases.orderId, inventoryOrderTasks.orderId),
+          )
+          .where(eq(inventoryOrderTasks.projectId, projectId))
+      : [];
+  const orderByTask = new Map(releaseLinks.map(({ itemId, orderId }) => [itemId, orderId]));
   const workStructure = await readProjectWorkStructure(db, projectId);
   const settings = await readInternalProjectSettings(db, projectId);
   const states = await readProjectWorkflowStates(db, projectId);
@@ -220,13 +235,22 @@ export async function projectWorkspaceSnapshot(
     ? await db
         .select(personFields)
         .from(users)
-        .where(and(eq(users.isActive, true), isNull(users.invitedAt), eq(users.projectsGuestOnly, false)))
+        .where(
+          and(
+            eq(users.isActive, true),
+            isNull(users.invitedAt),
+            eq(users.projectsGuestOnly, false),
+          ),
+        )
         .orderBy(asc(users.name), asc(users.id))
     : [];
   return {
     project: summary,
     ...(access.guestAccess === null ? {} : { guestAccess: access.guestAccess }),
-    items,
+    items: items.map((item) => {
+      const orderId = orderByTask.get(item.id);
+      return orderId === undefined ? item : { ...item, productionReleaseOrderId: orderId };
+    }),
     workStructure,
     settings,
     states,

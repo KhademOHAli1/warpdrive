@@ -60,7 +60,11 @@ export interface StorageClient {
   deleteObject(key: string, signal: AbortSignal): Promise<Result<void, AppError>>;
   // Fetch the raw bytes of an object for server-side inspection or attachment
   // delivery. Never used for presigned download URLs served to browsers.
-  getObjectBytes(key: string, signal: AbortSignal): Promise<Result<Buffer, AppError>>;
+  getObjectBytes(
+    key: string,
+    signal: AbortSignal,
+    maxBytes?: number,
+  ): Promise<Result<Buffer, AppError>>;
 }
 
 function buildMinioClient(): Minio.Client {
@@ -208,19 +212,35 @@ class MinioStorageClient implements StorageClient {
     }
   }
 
-  async getObjectBytes(key: string, signal: AbortSignal): Promise<Result<Buffer, AppError>> {
+  async getObjectBytes(
+    key: string,
+    signal: AbortSignal,
+    maxBytes?: number,
+  ): Promise<Result<Buffer, AppError>> {
     signal.throwIfAborted();
     try {
       const stream = await this.client.getObject(env.MINIO_BUCKET, key);
-      signal.throwIfAborted();
-      const chunks: Buffer[] = [];
-      await new Promise<void>((resolve, reject) => {
-        stream.on("data", (chunk: Buffer) => chunks.push(chunk));
-        stream.on("end", resolve);
-        stream.on("error", reject);
-      });
-      return ok(Buffer.concat(chunks));
+      const abort = () => stream.destroy();
+      signal.addEventListener("abort", abort, { once: true });
+      try {
+        if (signal.aborted) stream.destroy();
+        signal.throwIfAborted();
+        const chunks: Buffer[] = [];
+        let bytes = 0;
+        for await (const chunk of stream as AsyncIterable<Buffer>) {
+          bytes += chunk.length;
+          if (maxBytes !== undefined && bytes > maxBytes) {
+            return err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "object exceeds read limit"));
+          }
+          chunks.push(chunk);
+        }
+        signal.throwIfAborted();
+        return ok(Buffer.concat(chunks, bytes));
+      } finally {
+        signal.removeEventListener("abort", abort);
+      }
     } catch (cause) {
+      signal.throwIfAborted();
       return err(storageErr(cause, "get object bytes failed", { key }));
     }
   }

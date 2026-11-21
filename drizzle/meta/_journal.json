@@ -897,6 +897,13 @@
       "when": 1795275095496,
       "tag": "0127_industrial_inventory",
       "breakpoints": true
+    },
+    {
+      "idx": 128,
+      "version": "7",
+      "when": 1795278253477,
+      "tag": "0128_manufacturing_releases",
+      "breakpoints": true
     }
   ]
 }

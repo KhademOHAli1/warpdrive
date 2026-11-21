@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -85,6 +86,14 @@ export function ProjectWorkItemPeek({
           )}
           {lifecycle}
         </header>
+        {item.productionReleaseOrderId !== undefined && (
+          <Link
+            className="mb-4 inline-flex text-sm font-medium text-action hover:underline"
+            href={`/inventory/builds/${encodeURIComponent(item.productionReleaseOrderId)}/release`}
+          >
+            {labels("workspace.productionRelease")}
+          </Link>
+        )}
         {workspace.canEdit ? (
           <ProjectWorkItemForm
             key={`${item.id}:${item.revision}`}

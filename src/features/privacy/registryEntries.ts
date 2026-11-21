@@ -60,6 +60,7 @@ import { internalProjectsInventoryEntry } from "./registryInternalProjects";
 import { kpiInventoryEntry } from "./registryKpis";
 import { mailInventoryEntries } from "./registryMail";
 import { mailSharedInventoryEntries } from "./registryMailShared";
+import { manufacturingReleasesEntry } from "./registryManufacturingReleases";
 import { migrationInventoryEntry } from "./registryMigrations";
 import { newsletterInventoryEntry } from "./registryNewsletter";
 import { newsletterOperationalInventoryEntry } from "./registryNewsletterOperations";
@@ -113,6 +114,7 @@ export const registryEntries: RegistryEntry[] = [
   projectPublicationInventoryEntry,
   internalProjectsInventoryEntry,
   industrialInventoryEntry,
+  manufacturingReleasesEntry,
   analyticsInventoryEntry,
   currentAccountConcentrationInventoryEntry,
   currentLeadHandoffInventoryEntry,

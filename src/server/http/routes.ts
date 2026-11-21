@@ -21,6 +21,7 @@ import * as route8 from "@/app/api/email/delivery-reports/route.backend";
 import * as route11 from "@/app/api/email/private-intake/route.backend";
 import * as route4 from "@/app/api/gmail/oauth/callback/route.backend";
 import * as route2 from "@/app/api/integrations/slack/callback/route.backend";
+import * as manufacturingReleaseFile from "@/app/api/inventory/releases/[releaseId]/files/[artifactId]/route.backend";
 import * as route15 from "@/app/api/mail-connections/[...path]/route.backend";
 import * as route35 from "@/app/api/mcp/route.backend";
 import * as projectCover from "@/app/api/projects/[projectId]/cover/[version]/route.backend";
@@ -40,6 +41,11 @@ import * as route27 from "@/app/t/click/[token]/route.backend";
 import * as route30 from "@/app/t/open/[token]/route.backend";
 
 export const httpRoutes = [
+  {
+    pattern: /^\/api\/inventory\/releases\/([^/]+)\/files\/([^/]+)\/?$/,
+    params: [{ name: "releaseId" }, { name: "artifactId" }],
+    handlers: manufacturingReleaseFile,
+  },
   { pattern: /^\/api\/calendar\/google\/oauth\/callback\/?$/, params: [], handlers: route0 },
   { pattern: /^\/api\/calendar\/google\/oauth\/start\/?$/, params: [], handlers: route1 },
   { pattern: /^\/api\/integrations\/slack\/callback\/?$/, params: [], handlers: route2 },

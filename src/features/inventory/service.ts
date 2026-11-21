@@ -13,6 +13,8 @@ import {
   verifyInventoryTasksComplete,
 } from "./projectBridge";
 import { readInventoryWorkspace } from "./reads";
+import { inventoryBuildReleases } from "./releases/schema";
+import { findActiveRelease } from "./releases/service";
 import {
   inventoryBomLines,
   inventoryCommandReceipts,
@@ -130,6 +132,23 @@ async function changeCatalog(
     });
 }
 
+async function productionMaterials(tx: Db, item: Item) {
+  const release = await findActiveRelease(tx, item.id);
+  if (release !== null) {
+    return {
+      releaseId: release.id,
+      bom: release.bom.map(({ itemId, quantity }) => ({ componentId: itemId, quantity })),
+    };
+  }
+  if (item.releaseRequired)
+    fail("Approve a manufacturing release before accepting a shortage for this product.");
+  const bom = await tx
+    .select()
+    .from(inventoryBomLines)
+    .where(eq(inventoryBomLines.itemId, item.id));
+  return { releaseId: null, bom };
+}
+
 async function placeOrder(tx: Db, actorId: string, command: Place, signal: AbortSignal) {
   const { dealId, itemId, quantity, requestId } = command;
   const item = stockItem(await lockInventoryStock(tx, [itemId]), itemId);
@@ -153,10 +172,7 @@ async function placeOrder(tx: Db, actorId: string, command: Place, signal: Abort
       .select()
       .from(inventoryTemplates)
       .where(eq(inventoryTemplates.itemId, itemId));
-    const bom = await tx
-      .select()
-      .from(inventoryBomLines)
-      .where(eq(inventoryBomLines.itemId, itemId));
+    const { releaseId, bom } = await productionMaterials(tx, item);
     if (template === undefined || bom.length === 0) {
       fail("Configure a BOM and production template before accepting a shortage.");
     }
@@ -173,6 +189,14 @@ async function placeOrder(tx: Db, actorId: string, command: Place, signal: Abort
       .insert(inventoryOrders)
       .values({ ...order, projectId, templateRevision, status: "awaiting_materials" });
     await tx.insert(inventoryOrderMaterials).values(materials);
+    if (releaseId !== null) {
+      await tx.insert(inventoryBuildReleases).values({
+        orderId,
+        itemId,
+        releaseId,
+        templateSteps: template.steps,
+      });
+    }
     const tasks = await createInventoryProjectTasks(tx, actorId, template, signal, orderId);
     await tx
       .insert(inventoryOrderTasks)

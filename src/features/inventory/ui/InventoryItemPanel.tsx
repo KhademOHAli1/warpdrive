@@ -246,7 +246,10 @@ export function InventorySelectedItem({
   openReleases: boolean;
 }) {
   const t = inventoryMessages[useLocale()];
-  const ReleasePanel = item.kind === "product" ? ProductReleases : undefined;
+  const ReleasePanel =
+    item.kind === "product" && (workspace.fixture || item.releaseAccess === true)
+      ? ProductReleases
+      : undefined;
   const receiptId = useId();
   const [receiveQuantity, setReceiveQuantity] = useState("1");
   const details = (

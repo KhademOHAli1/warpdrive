@@ -163,9 +163,16 @@ export class FakeStorageClient implements StorageClient {
     return Promise.resolve(ok(undefined));
   }
 
-  getObjectBytes(key: string, signal: AbortSignal): Promise<Result<Buffer, AppError>> {
+  getObjectBytes(
+    key: string,
+    signal: AbortSignal,
+    maxBytes?: number,
+  ): Promise<Result<Buffer, AppError>> {
     signal.throwIfAborted();
-    this.calls.push({ method: "getObjectBytes", args: { key } });
+    this.calls.push({
+      method: "getObjectBytes",
+      args: maxBytes === undefined ? { key } : { key, maxBytes },
+    });
     const bytes = this.objectBytes.get(key);
     if (bytes === undefined) {
       return Promise.resolve(
@@ -174,6 +181,10 @@ export class FakeStorageClient implements StorageClient {
         ),
       );
     }
+    if (maxBytes !== undefined && bytes.length > maxBytes)
+      return Promise.resolve(
+        err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "object exceeds read limit")),
+      );
     return Promise.resolve(ok(bytes));
   }
 }

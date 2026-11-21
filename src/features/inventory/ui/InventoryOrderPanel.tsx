@@ -19,6 +19,8 @@ import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import type { InventoryItem, InventoryOrder, InventoryWorkspace } from "../contracts";
+import { manufacturingReleaseLiveMessages } from "../releases/ui/manufacturingReleaseLiveMessages";
+import { manufacturingReleaseMessages } from "../releases/ui/manufacturingReleaseMessages";
 import type { FormatQuantity, RunInventoryIntent } from "./InventoryClient";
 import { inventoryMessages } from "./inventoryMessages";
 
@@ -202,6 +204,7 @@ function InventoryOrderCard({
             </div>
           ))}
         </dl>
+        <ProductionReleaseLink order={order} />
         {order.materials.length > 0 && (
           <div>
             <h4 className="mb-1 text-sm font-medium">{t.materials}</h4>
@@ -335,5 +338,23 @@ function InventoryOrderCard({
         )}
       </div>
     </article>
+  );
+}
+
+function ProductionReleaseLink({ order }: { order: InventoryOrder }) {
+  const locale = useLocale();
+  const live = manufacturingReleaseLiveMessages[locale];
+  const t = manufacturingReleaseMessages[locale];
+  if (order.release == null) return null;
+  return (
+    <Link
+      className="inline-flex flex-wrap items-center gap-1.5 text-sm text-action hover:underline"
+      href={`/inventory/builds/${encodeURIComponent(order.id)}/release`}
+    >
+      {live.buildRelease} ·{" "}
+      <bdi>
+        {t.shortRevision} {order.release.revision}
+      </bdi>
+    </Link>
   );
 }

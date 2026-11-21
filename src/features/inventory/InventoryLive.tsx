@@ -6,10 +6,21 @@ import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { executeInventoryAction } from "./actions";
 import type { InventoryResult } from "./contracts";
+import { ManufacturingReleasesLive } from "./releases/ui/ManufacturingReleasesLive";
 import { InventoryClient } from "./ui/InventoryClient";
 import { inventoryMessages } from "./ui/inventoryMessages";
 
-export function InventoryLive({ actorId, result }: { actorId: string; result: InventoryResult }) {
+export function InventoryLive({
+  actorId,
+  result,
+  openReleases,
+  initialItemId,
+}: {
+  actorId: string;
+  result: InventoryResult;
+  openReleases?: boolean;
+  initialItemId?: string;
+}) {
   const router = useRouter();
   const { locale } = useLocalePreferences();
   const t = inventoryMessages[locale];
@@ -28,6 +39,9 @@ export function InventoryLive({ actorId, result }: { actorId: string; result: In
   return (
     <InventoryClient
       initial={initial}
+      ProductReleases={ManufacturingReleasesLive}
+      openReleases={openReleases}
+      initialItemId={initialItemId}
       submit={(command) =>
         executeInventoryAction(actorId, command, initial.deal?.id ?? null, readCsrfToken())
       }

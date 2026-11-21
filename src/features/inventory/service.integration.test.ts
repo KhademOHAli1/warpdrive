@@ -1,9 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { deals, permissionSets, pipelines, sessions, stages, users } from "@/db/schema";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
+import { FakeStorageClient } from "@/features/files/storageFake";
 import { internalProjectItemEvents } from "@/features/projects/profile/schema";
 import { internalProjectItems } from "@/features/projects/schema";
 import {
@@ -16,6 +17,14 @@ import { makeTestDb, type TestDb } from "@/test/db";
 import type { Result } from "@/types/result";
 import type { InventoryCommand, InventoryResult, InventoryWorkspace } from "./contracts";
 import { readInventoryWorkspace } from "./reads";
+import {
+  confirmReleaseArtifactUpload,
+  readReleaseArtifactDownload,
+  requestReleaseArtifactUpload,
+} from "./releases/artifacts";
+import { createReleaseFixture } from "./releases/fixtures";
+import { inventoryBuildReleases, inventoryReleaseArtifacts } from "./releases/schema";
+import { executeReleaseMetadata, readBuildRelease, readReleaseWorkspace } from "./releases/service";
 import { inventoryCommandReceipts, inventoryMovements, inventoryOrders } from "./schema";
 import { runInventoryCommand } from "./service";
 
@@ -542,4 +551,204 @@ test("cancelling a production order releases finished and component reservations
       .from(inventoryOrders)
       .where(eq(inventoryOrders.id, result.id)),
   ).toEqual([{ status: "cancelled" }]);
+});
+
+test("approves versioned Gerber packages and pins builds, materials and authorization to the selected revision", async () => {
+  const admin = await staff("Release administrator", "admin");
+  const editor = await staff("Release engineer");
+  const approver = await staff("Release approver");
+  const operator = await staff("Production operator");
+  const seller = await staff("Release sales", "seller");
+  const outsider = await staff("Other staff");
+  const component = await catalogueItem(admin, "component");
+  const product = await catalogueItem(admin, "product", [{ itemId: component.id, quantity: 9 }]);
+  const deal = await realDeal(seller);
+  const projectId = await productionProject(admin, [operator]);
+  await command(admin, {
+    type: "saveTemplate",
+    requestId: randomUUID(),
+    itemId: product.id,
+    projectId,
+    steps: [{ title: "Build release", assigneeId: operator.userId }],
+  });
+  const storage = new FakeStorageClient();
+  const metadata = (who: NativeSessionRef, change: Parameters<typeof executeReleaseMetadata>[2]) =>
+    executeReleaseMetadata(fixture.db, who, change, signal(), storage);
+  const workspace = (who: NativeSessionRef) =>
+    readReleaseWorkspace(fixture.db, who, product.id, signal());
+  const build = (who: NativeSessionRef, orderId: string) =>
+    readBuildRelease(fixture.db, who, orderId, signal());
+  value(await metadata(admin, { type: "setRequirement", itemId: product.id, required: true }));
+  expect(
+    await command(
+      seller,
+      {
+        type: "place",
+        requestId: randomUUID(),
+        dealId: deal.id,
+        itemId: product.id,
+        quantity: 2,
+      },
+      deal.id,
+    ),
+  ).toMatchObject({ ok: false, error: expect.stringContaining("manufacturing release") });
+  expect(inventory(await read(seller, deal.id)).orders).toEqual([]);
+
+  for (const [userId, role] of [
+    [editor.userId, "editor"],
+    [approver.userId, "approver"],
+  ] as const) {
+    value(await metadata(admin, { type: "setGrant", itemId: product.id, userId, role }));
+  }
+  expect(await workspace(outsider)).toMatchObject({ ok: false });
+  expect(
+    await metadata(approver, { type: "createDraft", itemId: product.id, revision: "DENIED" }),
+  ).toMatchObject({ ok: false });
+  const archive = createReleaseFixture({
+    ...product,
+    sku: "IO-24-DIN",
+  }).releases[0]?.artifacts.find(({ kind }) => kind === "pcbFabrication");
+  if (!archive) throw new Error("The release fixture needs its synthetic PCB archive");
+  const gerber = Buffer.from(await archive.bytes.arrayBuffer());
+
+  async function upload(
+    releaseId: string,
+    kind: "pcbFabrication" | "manufacturingBom",
+    name: string,
+    bytes: Buffer,
+  ) {
+    const { artifactId, post } = value(
+      await requestReleaseArtifactUpload(
+        fixture.db,
+        editor,
+        { releaseId, kind, name, sizeBytes: bytes.length },
+        signal(),
+        storage,
+      ),
+    );
+    const key = post.fields.key;
+    const contentType = post.fields["Content-Type"];
+    if (key === undefined || contentType === undefined)
+      throw new Error("The release upload needs signed object fields");
+    storage.objectsByKey.set(key, { size: bytes.length, contentType });
+    storage.objectBytes.set(key, bytes);
+    value(
+      await confirmReleaseArtifactUpload(
+        fixture.db,
+        editor,
+        { releaseId, artifactId },
+        signal(),
+        storage,
+      ),
+    );
+    return artifactId;
+  }
+
+  async function approve(revision: string, quantity: number) {
+    const { releaseId } = value(
+      await metadata(editor, { type: "createDraft", itemId: product.id, revision }),
+    );
+    if (releaseId === undefined) throw new Error("Expected a new draft ID");
+    expect(await metadata(approver, { type: "approve", releaseId })).toMatchObject({ ok: false });
+    expect(await metadata(editor, { type: "approve", releaseId })).toMatchObject({ ok: false });
+    const id = await upload(releaseId, "pcbFabrication", `gerber-${revision}.zip`, gerber);
+    await upload(
+      releaseId,
+      "manufacturingBom",
+      `bom-${revision}.csv`,
+      Buffer.from(`sku,quantity\n${component.sku},${quantity}\n`),
+    );
+    if (revision === "A") {
+      const [file] = await fixture.db
+        .select()
+        .from(inventoryReleaseArtifacts)
+        .where(eq(inventoryReleaseArtifacts.id, id));
+      if (!file) throw new Error("The approved integrity test needs a sealed object key");
+      storage.objectBytes.set(file.objectKey, Buffer.alloc(gerber.length, 0));
+      expect(await metadata(approver, { type: "approve", releaseId })).toMatchObject({ ok: false });
+      storage.objectBytes.set(file.objectKey, gerber);
+    }
+    value(await metadata(approver, { type: "approve", releaseId }));
+    expect(
+      await requestReleaseArtifactUpload(
+        fixture.db,
+        editor,
+        { releaseId, kind: "pcbFabrication", name: "replacement.zip", sizeBytes: gerber.length },
+        signal(),
+        storage,
+      ),
+    ).toMatchObject({ ok: false });
+    return { releaseId, artifactId: id };
+  }
+
+  async function place(quantity: number) {
+    const snapshot = inventory(
+      await command(
+        seller,
+        {
+          type: "place",
+          requestId: randomUUID(),
+          dealId: deal.id,
+          itemId: product.id,
+          quantity,
+        },
+        deal.id,
+      ),
+    );
+    const order = snapshot.orders.find((entry) => entry.quantity === quantity);
+    if (!order) throw new Error("Expected a new production order");
+    return order;
+  }
+
+  const manifestA = await approve("A", 2);
+  const a = await place(2);
+  const manifestB = await approve("B", 4);
+  const b = await place(3);
+  expect(a.materials).toEqual([{ itemId: component.id, quantity: 4 }]);
+  expect(b.materials).toEqual([{ itemId: component.id, quantity: 12 }]);
+  expect(a.release).toBeNull();
+  expect(value(await build(operator, a.id)).release).toMatchObject({
+    id: manifestA.releaseId,
+    revision: "A",
+    approvedBy: { id: approver.userId },
+    bom: [{ itemId: component.id, sku: component.sku, quantity: 2 }],
+  });
+  expect(value(await build(operator, b.id)).release).toMatchObject({
+    id: manifestB.releaseId,
+    revision: "B",
+    status: "released",
+    bom: [{ itemId: component.id, sku: component.sku, quantity: 4 }],
+  });
+  expect(await workspace(operator)).toMatchObject({ ok: false });
+  expect(await build(seller, a.id)).toMatchObject({ ok: false });
+  const linkedProject = value(await readInternalProject(fixture.db, operator, projectId, signal()));
+  expect(
+    linkedProject.items.map(({ productionReleaseOrderId }) => productionReleaseOrderId),
+  ).toEqual(expect.arrayContaining([a.id, b.id]));
+  const pins = await fixture.db
+    .select()
+    .from(inventoryBuildReleases)
+    .where(eq(inventoryBuildReleases.orderId, a.id));
+  expect(pins).toMatchObject([
+    { releaseId: manifestA.releaseId, templateSteps: [{ assigneeId: operator.userId }] },
+  ]);
+
+  const access = (who: NativeSessionRef, target: typeof manifestA, orderId?: string) =>
+    readReleaseArtifactDownload(fixture.db, who, { ...target, orderId }, signal(), storage);
+  expect(await access(operator, manifestA, b.id)).toMatchObject({ ok: false });
+  expect(await access(outsider, manifestA, a.id)).toMatchObject({ ok: false });
+  expect(value(await access(operator, manifestA, a.id)).bytes).toEqual(gerber);
+
+  const artifact = value(await workspace(approver))
+    .releases.find(({ id }) => id === manifestA.releaseId)
+    ?.artifacts.find(({ id }) => id === manifestA.artifactId);
+  expect(artifact?.sha256).toBe(createHash("sha256").update(gerber).digest("hex"));
+  const [stored] = await fixture.db
+    .select({ key: inventoryReleaseArtifacts.objectKey })
+    .from(inventoryReleaseArtifacts)
+    .where(eq(inventoryReleaseArtifacts.id, manifestA.artifactId));
+  if (!stored) throw new Error("Expected stored release file");
+  storage.objectBytes.set(stored.key, Buffer.alloc(gerber.length, 0));
+  expect(await access(operator, manifestA, a.id)).toMatchObject({ ok: false });
+  expect(value(await access(operator, manifestB, b.id)).bytes).toEqual(gerber);
 });
